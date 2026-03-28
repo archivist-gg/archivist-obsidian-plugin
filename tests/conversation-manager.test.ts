@@ -61,10 +61,10 @@ describe("ConversationManager", () => {
   it("manages open tabs", async () => {
     const c1 = await manager.createConversation("claude-sonnet-4-6");
     const c2 = await manager.createConversation("claude-sonnet-4-6");
-    manager.openTab(c1.id);
-    manager.openTab(c2.id);
+    await manager.openTab(c1.id);
+    await manager.openTab(c2.id);
     expect(manager.getOpenTabs()).toEqual([c1.id, c2.id]);
-    manager.closeTab(c1.id);
+    await manager.closeTab(c1.id);
     expect(manager.getOpenTabs()).toEqual([c2.id]);
   });
 

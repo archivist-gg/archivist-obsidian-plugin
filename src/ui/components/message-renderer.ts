@@ -311,6 +311,168 @@ export function renderThinkingIndicator(parent: HTMLElement): HTMLElement {
 
 // ─── Entity rendering ────────────────────────────────────────────────────────
 
+export interface GeneratedBlockHandle {
+  el: HTMLElement;
+  /** Update from partial tool input JSON containing YAML string */
+  updateFromPartialToolInput(entityType: string, partialJson: string): void;
+  /** Update with final enriched data from tool result */
+  updateFromResult(entityType: string, data: unknown): void;
+}
+
+/**
+ * Extract YAML string from partial JSON like: {"yaml":"name: Veilstalker\nsize: Med...
+ */
+function extractYamlFromPartialJson(buffer: string): string | null {
+  const match = buffer.match(/"yaml"\s*:\s*"/);
+  if (!match) return null;
+  const startIdx = (match.index ?? 0) + match[0].length;
+  let yamlEscaped = buffer.slice(startIdx);
+  // Remove trailing "} or " if the string is complete
+  if (yamlEscaped.endsWith('"}')) yamlEscaped = yamlEscaped.slice(0, -2);
+  else if (yamlEscaped.endsWith('"')) yamlEscaped = yamlEscaped.slice(0, -1);
+  // Unescape JSON string escapes
+  return yamlEscaped
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, "\t")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, "\\");
+}
+
+/**
+ * Parse complete YAML lines from a potentially incomplete YAML string.
+ * Returns a partial object with whatever fields are available.
+ */
+function parsePartialYaml(yamlStr: string): Record<string, unknown> | null {
+  if (!yamlStr.trim()) return null;
+  const lines = yamlStr.split("\n");
+  // Drop the last line if it doesn't end with a newline (might be incomplete)
+  if (!yamlStr.endsWith("\n") && lines.length > 0) {
+    lines.pop();
+  }
+  if (lines.length === 0) return null;
+  const completeYaml = lines.join("\n");
+  try {
+    const parsed = yaml.load(completeYaml);
+    if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
+  } catch { /* incomplete YAML structure, try less */ }
+
+  // Fallback: parse line by line, collecting top-level keys
+  const result: Record<string, unknown> = {};
+  for (const line of lines) {
+    const kvMatch = line.match(/^(\w[\w_]*)\s*:\s*(.+)$/);
+    if (kvMatch) {
+      const [, key, value] = kvMatch;
+      // Try to parse the value
+      try {
+        result[key] = yaml.load(value);
+      } catch {
+        result[key] = value.trim();
+      }
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+export function renderBlockSkeleton(parent: HTMLElement, entityType: string): GeneratedBlockHandle {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-stat-block" });
+
+  // Initial skeleton
+  const skeleton = wrapper.createDiv({ cls: "archivist-inquiry-block-skeleton" });
+  const label = entityType === "monster" ? "Monster" : entityType === "spell" ? "Spell" : "Item";
+  skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-header", text: `Generating ${label}...` });
+  skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-line" });
+  skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-line archivist-inquiry-block-skeleton-short" });
+  skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-line" });
+
+  let lastRenderedKeys = 0;
+
+  return {
+    el: wrapper,
+    updateFromPartialToolInput(eType: string, partialJson: string) {
+      const yamlStr = extractYamlFromPartialJson(partialJson);
+      if (!yamlStr) return;
+
+      const parsed = parsePartialYaml(yamlStr);
+      if (!parsed) return;
+
+      // Only re-render when new keys appear
+      const keyCount = Object.keys(parsed).length;
+      if (keyCount <= lastRenderedKeys) return;
+      lastRenderedKeys = keyCount;
+
+      // Use the existing full renderers if we have enough data, otherwise show partial
+      wrapper.empty();
+      try {
+        if (eType === "monster") {
+          wrapper.appendChild(renderMonsterBlock(parsed as any));
+        } else if (eType === "spell") {
+          wrapper.appendChild(renderSpellBlock(parsed as any));
+        } else if (eType === "item") {
+          wrapper.appendChild(renderItemBlock(parsed as any));
+        }
+      } catch {
+        // Full renderer failed (missing required fields) -- render what we have manually
+        renderMinimalBlock(wrapper, eType, parsed);
+      }
+    },
+    updateFromResult(eType: string, data: unknown) {
+      wrapper.empty();
+      renderGeneratedBlock(wrapper, { type: eType, data });
+    },
+  };
+}
+
+/**
+ * Minimal block rendering when the full renderer can't handle partial data.
+ * Shows available fields in parchment style.
+ */
+function renderMinimalBlock(parent: HTMLElement, entityType: string, data: Record<string, unknown>): void {
+  const block = parent.createDiv({ cls: "archivist-inquiry-partial-block" });
+
+  // Name (always first)
+  if (data.name) {
+    block.createDiv({ cls: "archivist-inquiry-partial-name", text: String(data.name) });
+  }
+
+  // Type line
+  const typeParts: string[] = [];
+  if (data.size) typeParts.push(String(data.size));
+  if (data.type) typeParts.push(String(data.type));
+  if (data.alignment) typeParts.push(String(data.alignment));
+  // Spell: level + school
+  if (data.level !== undefined) typeParts.push(data.level === 0 ? "Cantrip" : `Level ${data.level}`);
+  if (data.school) typeParts.push(String(data.school));
+  // Item: type + rarity
+  if (data.rarity) typeParts.push(String(data.rarity));
+  if (typeParts.length > 0) {
+    block.createDiv({ cls: "archivist-inquiry-partial-type", text: typeParts.join(" ") });
+  }
+
+  // SVG bar
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("height", "3"); svg.setAttribute("width", "100%");
+  svg.setAttribute("viewBox", "0 0 400 3"); svg.setAttribute("preserveAspectRatio", "none");
+  svg.style.display = "block"; svg.style.margin = "6px 0";
+  const poly = document.createElementNS(ns, "polyline");
+  poly.setAttribute("points", "0,0 400,1.5 0,3"); poly.setAttribute("fill", "#922610");
+  svg.appendChild(poly); block.appendChild(svg);
+
+  // Show available properties
+  const skipKeys = new Set(["name", "size", "type", "alignment", "level", "school", "rarity", "subtype"]);
+  for (const [key, value] of Object.entries(data)) {
+    if (skipKeys.has(key) || value === undefined || value === null) continue;
+    if (typeof value === "object") continue; // Skip complex objects for minimal view
+    const line = block.createDiv({ cls: "archivist-inquiry-partial-prop" });
+    const propLabel = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    line.createSpan({ cls: "archivist-inquiry-partial-prop-label", text: propLabel });
+    line.createSpan({ text: ` ${value}` });
+  }
+
+  // Loading bar at bottom
+  block.createDiv({ cls: "archivist-inquiry-partial-loading-bar" });
+}
+
 export function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data: unknown }): void {
   try {
     switch (entity.type) {
@@ -384,6 +546,11 @@ export function getToolSummary(toolName: string, input: Record<string, unknown>)
   // Archivist MCP tools
   if (name === "search_srd") return `"${input.query}"`;
   if (name === "get_srd_entity") return `"${input.name}"`;
+  if ((name === "generate_monster" || name === "generate_spell" || name === "generate_item") && input.yaml) {
+    // Extract name from YAML string
+    const nameMatch = String(input.yaml).match(/^name:\s*(.+)/m);
+    if (nameMatch) return `"${nameMatch[1].trim()}"`;
+  }
   if (name === "generate_monster" && input.monster) return `"${(input.monster as any).name}"`;
   if (name === "generate_spell" && input.spell) return `"${(input.spell as any).name}"`;
   if (name === "generate_item" && input.item) return `"${(input.item as any).name}"`;

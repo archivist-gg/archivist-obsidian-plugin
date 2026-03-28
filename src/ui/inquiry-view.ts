@@ -11,8 +11,10 @@ import {
   renderResponseFooter,
   renderErrorMessage,
   renderGeneratedBlock,
+  renderBlockSkeleton,
   type ThinkingBlockHandle,
   type ToolCallBlockHandle,
+  type GeneratedBlockHandle,
 } from "./components/message-renderer";
 import type { Message } from "../types/conversation";
 import type { StreamEvent } from "../ai/agent-service";
@@ -95,14 +97,14 @@ export class InquiryView extends ItemView {
     });
     if (tabData.length > 0) {
       renderChatTabs(this.root, tabData, {
-        onSelectTab: (id) => { mgr.setActiveTab(id); this.render(); },
-        onCloseTab: (id) => { mgr.closeTab(id); this.render(); },
-        onCloseOtherTabs: (id) => {
-          for (const t of openTabs) if (t !== id) mgr.closeTab(t);
+        onSelectTab: async (id) => { await mgr.setActiveTab(id); this.render(); },
+        onCloseTab: async (id) => { await mgr.closeTab(id); this.render(); },
+        onCloseOtherTabs: async (id) => {
+          for (const t of openTabs) if (t !== id) await mgr.closeTab(t);
           this.render();
         },
-        onCloseAllTabs: () => {
-          for (const t of openTabs) mgr.closeTab(t);
+        onCloseAllTabs: async () => {
+          for (const t of openTabs) await mgr.closeTab(t);
           this.render();
         },
       });
@@ -148,8 +150,8 @@ export class InquiryView extends ItemView {
     // History
     if (this.historyVisible) {
       renderChatHistory(this.root, mgr.listConversations(), activeId, {
-        onSelectConversation: (id) => {
-          mgr.openTab(id);
+        onSelectConversation: async (id) => {
+          await mgr.openTab(id);
           this.historyVisible = false;
           this.render();
         },
@@ -165,7 +167,7 @@ export class InquiryView extends ItemView {
     const mgr = this.pluginRef.conversationManager;
     if (!mgr) return;
     const conv = await mgr.createConversation(this.pluginRef.settings.defaultModel);
-    mgr.openTab(conv.id);
+    await mgr.openTab(conv.id);
     this.render();
   }
 
@@ -177,7 +179,7 @@ export class InquiryView extends ItemView {
     let activeId = mgr.getActiveConversationId();
     if (!activeId) {
       const conv = await mgr.createConversation(this.pluginRef.settings.defaultModel);
-      mgr.openTab(conv.id);
+      await mgr.openTab(conv.id);
       activeId = conv.id;
     }
 
@@ -234,8 +236,18 @@ export class InquiryView extends ItemView {
     let generatedEntity: Message["generatedEntity"] | undefined;
     let currentThinkingBlock: ThinkingBlockHandle | null = null;
     const toolCallBlocks = new Map<string, ToolCallBlockHandle>();
+    const generatedBlocks = new Map<string, { handle: GeneratedBlockHandle; entityType: string }>();
     // Track the latest tool call ID for associating results when toolCallId is missing
     let lastToolCallId: string | undefined;
+
+    const GENERATE_TOOLS = ["generate_monster", "generate_spell", "generate_item"];
+    const getEntityType = (toolName: string): string | null => {
+      const name = toolName.replace("mcp__archivist__", "");
+      if (name === "generate_monster") return "monster";
+      if (name === "generate_spell") return "spell";
+      if (name === "generate_item") return "item";
+      return null;
+    };
 
     const scrollToBottom = () => {
       requestAnimationFrame(() => {
@@ -288,14 +300,33 @@ export class InquiryView extends ItemView {
           case "tool_call_start": {
             const toolId = event.toolCallId ?? `tool-${Date.now()}`;
             lastToolCallId = toolId;
+            const entityType = getEntityType(event.toolName ?? "");
+
             const block = renderToolCallBlock(streamContainer, event.toolName ?? "unknown", toolId);
-            if (event.toolInput) {
-              block.setSummary(event.toolInput);
-            }
+            if (event.toolInput) block.setSummary(event.toolInput);
             toolCallBlocks.set(toolId, block);
-            // Insert tool block before the text div
             streamContainer.insertBefore(block.el, textDiv);
+
+            // For generate tools, show a skeleton stat block immediately
+            if (entityType) {
+              const skeleton = renderBlockSkeleton(streamContainer, entityType);
+              generatedBlocks.set(toolId, { handle: skeleton, entityType });
+              streamContainer.insertBefore(skeleton.el, textDiv);
+            }
+
             scrollToBottom();
+            break;
+          }
+
+          case "tool_input_delta": {
+            const toolId = event.toolCallId ?? lastToolCallId;
+            if (toolId && event.partialJson) {
+              const genBlock = generatedBlocks.get(toolId);
+              if (genBlock) {
+                genBlock.handle.updateFromPartialToolInput(genBlock.entityType, event.partialJson);
+                scrollToBottom();
+              }
+            }
             break;
           }
 
@@ -319,15 +350,22 @@ export class InquiryView extends ItemView {
                 block.setStatus(event.isError ? "error" : "completed");
               }
             }
-            // Detect generated entity in tool result
+            // Detect generated entity in tool result -- update existing skeleton or create new
             if (event.toolResult) {
               try {
                 const parsed = JSON.parse(event.toolResult);
                 if (parsed.type && parsed.data && ["monster", "spell", "item"].includes(parsed.type)) {
                   generatedEntity = { type: parsed.type, data: parsed.data };
-                  const blockWrapper = streamContainer.createDiv({ cls: "archivist-inquiry-stat-block" });
-                  renderGeneratedBlock(blockWrapper, generatedEntity);
-                  streamContainer.insertBefore(blockWrapper, textDiv);
+                  const genBlock = toolId ? generatedBlocks.get(toolId) : undefined;
+                  if (genBlock) {
+                    // Update existing skeleton with enriched data
+                    genBlock.handle.updateFromResult(parsed.type, parsed.data);
+                  } else {
+                    // No skeleton exists -- render fresh
+                    const blockWrapper = streamContainer.createDiv({ cls: "archivist-inquiry-stat-block" });
+                    renderGeneratedBlock(blockWrapper, generatedEntity);
+                    streamContainer.insertBefore(blockWrapper, textDiv);
+                  }
                 }
               } catch { /* not JSON entity */ }
             }

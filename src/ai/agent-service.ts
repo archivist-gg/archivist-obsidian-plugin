@@ -8,9 +8,11 @@ import { createArchivistMcpServer } from "./mcp-server";
 
 export interface StreamEvent {
   type: "text_delta" | "thinking_start" | "thinking_delta" | "thinking_end"
-      | "tool_call_start" | "tool_call_end" | "tool_result"
+      | "tool_call_start" | "tool_input_delta" | "tool_call_end" | "tool_result"
       | "usage" | "compact_boundary"
       | "error" | "done";
+  /** Accumulated partial JSON buffer for tool input streaming */
+  partialJson?: string;
   content?: string;
   toolCallId?: string;
   toolName?: string;
@@ -136,6 +138,8 @@ export class AgentService {
     const toolInputBuffers: Record<number, string> = {};
     // Track tool IDs and names per block index
     const toolMeta: Record<number, { id: string; name: string }> = {};
+    // Throttle tool_input_delta yields
+    const toolInputLastYield: Record<number, number> = {};
     // Deduplication: track tool IDs and text already emitted via stream_event
     const emittedToolIds = new Set<string>();
     let hasStreamedText = false;
@@ -175,7 +179,23 @@ export class AgentService {
               yield { type: "text_delta", content: delta.text ?? "" };
             } else if (delta?.type === "input_json_delta") {
               if (toolInputBuffers[idx] !== undefined) {
+                const prevLen = toolInputBuffers[idx].length;
                 toolInputBuffers[idx] += delta.partial_json ?? "";
+                // Throttle: only yield every ~200 chars of new content
+                const meta = toolMeta[idx];
+                if (meta && toolInputBuffers[idx].length - prevLen >= 0) {
+                  const now = Date.now();
+                  const lastYield = (toolInputLastYield as any)[idx] ?? 0;
+                  if (now - lastYield >= 150) { // Max ~6 updates per second
+                    (toolInputLastYield as any)[idx] = now;
+                    yield {
+                      type: "tool_input_delta",
+                      toolCallId: meta.id,
+                      toolName: meta.name,
+                      partialJson: toolInputBuffers[idx],
+                    };
+                  }
+                }
               }
             }
           } else if (event.type === "content_block_stop") {

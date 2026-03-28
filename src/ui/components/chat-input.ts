@@ -123,8 +123,7 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
     actionBtn.createDiv({ cls: "archivist-inquiry-stop-icon" });
     actionBtn.addEventListener("click", callbacks.onStop);
   } else {
-    const sendIcon = actionBtn.createSpan();
-    setIcon(sendIcon, "send");
+    setIcon(actionBtn, "send");
     actionBtn.addEventListener("click", () => {
       const text = textarea.value.trim();
       if (text) { callbacks.onSend(text); textarea.value = ""; textarea.style.height = "auto"; }
@@ -134,7 +133,16 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
   return wrapper;
 }
 
-function renderContextGauge(parent: HTMLElement, percent: number): void {
+function renderContextGauge(parent: HTMLElement, percent: number, contextTokens?: number): void {
+  const contextWindow = 200000;
+  const used = contextTokens ?? Math.round((percent / 100) * contextWindow);
+  const usedK = (used / 1000).toFixed(1);
+  const maxK = (contextWindow / 1000).toFixed(0);
+  const tooltip = `${usedK}k / ${maxK}k tokens${percent > 80 ? " (Approaching limit)" : ""}`;
+
+  parent.setAttribute("title", tooltip);
+  parent.setAttribute("aria-label", tooltip);
+
   const ns = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(ns, "svg");
   svg.setAttribute("width", "14"); svg.setAttribute("height", "14");

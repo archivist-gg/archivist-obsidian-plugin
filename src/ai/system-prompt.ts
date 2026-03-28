@@ -22,7 +22,7 @@ VAULT SCOPE:
 - Do not read or modify files outside this directory.
 
 TOOLS:
-- For structured stat blocks: use mcp__archivist__generate_monster, mcp__archivist__generate_spell, mcp__archivist__generate_item tools
+- For structured stat blocks: use mcp__archivist__generate_monster, mcp__archivist__generate_spell, mcp__archivist__generate_item tools. Provide the entity data as YAML text (same format as the vault's code blocks).
 - For encounter building: use mcp__archivist__generate_encounter tool
 - For NPC creation: use mcp__archivist__generate_npc tool (then create a note file with Write)
 - For SRD reference: use mcp__archivist__search_srd and mcp__archivist__get_srd_entity tools
@@ -30,6 +30,7 @@ TOOLS:
 - For creating notes: use your built-in Write tool within ${ctx.ttrpgRootDir}
 
 GENERATION RULES:
+- When calling generate_monster, generate_spell, or generate_item, provide the data as YAML text in the 'yaml' parameter. Use the same YAML format as the vault's code blocks.
 - When generating a stat block, the block IS the response. Do not add redundant text describing what is already visible in the block.
 - When generating text content (tavern descriptions, NPC backstories, session prep), write rich descriptive markdown.
 - When creating notes, include YAML frontmatter with type, name, and tags.

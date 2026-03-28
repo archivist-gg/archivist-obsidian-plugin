@@ -33,7 +33,7 @@ export class ConversationManager {
     this.loadFn = loadFn;
     this.saveFn = saveFn;
     this.maxConversations = maxConversations;
-    this.store = { ...EMPTY_STORE };
+    this.store = { conversations: {}, openTabs: [], activeConversationId: null };
   }
 
   async load(): Promise<void> {
@@ -86,23 +86,26 @@ export class ConversationManager {
     await this.save();
   }
 
-  openTab(id: string): void {
+  async openTab(id: string): Promise<void> {
     if (!this.store.openTabs.includes(id)) this.store.openTabs.push(id);
     this.store.activeConversationId = id;
+    await this.save();
   }
 
-  closeTab(id: string): void {
+  async closeTab(id: string): Promise<void> {
     this.store.openTabs = this.store.openTabs.filter((t) => t !== id);
     if (this.store.activeConversationId === id) {
       this.store.activeConversationId = this.store.openTabs[0] ?? null;
     }
+    await this.save();
   }
 
   getOpenTabs(): string[] { return [...this.store.openTabs]; }
   getActiveConversationId(): string | null { return this.store.activeConversationId; }
 
-  setActiveTab(id: string): void {
+  async setActiveTab(id: string): Promise<void> {
     if (this.store.openTabs.includes(id)) this.store.activeConversationId = id;
+    await this.save();
   }
 
   getStore(): ConversationStore { return this.store; }
