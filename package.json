@@ -13,6 +13,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@codemirror/language": "^6.12.3",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "builtin-modules": "^4.0.0",
