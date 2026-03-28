@@ -1,0 +1,35 @@
+import yaml from "js-yaml";
+
+export type ParseResult<T> = {
+  success: true;
+  data: T;
+} | {
+  success: false;
+  error: string;
+};
+
+export function parseYaml<T>(source: string, requiredFields: string[]): ParseResult<T> {
+  try {
+    const data = yaml.load(source) as Record<string, unknown>;
+    if (!data || typeof data !== "object") {
+      return { success: false, error: "Invalid YAML: expected an object" };
+    }
+    for (const field of requiredFields) {
+      if (!(field in data) || data[field] === undefined || data[field] === null || data[field] === "") {
+        return { success: false, error: `Missing required field: ${field}` };
+      }
+    }
+    return { success: true, data: data as T };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { success: false, error: `YAML parse error: ${msg}` };
+  }
+}
+
+export function abilityModifier(score: number): number {
+  return Math.floor((score - 10) / 2);
+}
+
+export function formatModifier(mod: number): string {
+  return mod >= 0 ? `+${mod}` : `${mod}`;
+}
