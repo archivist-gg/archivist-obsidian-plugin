@@ -1,0 +1,9 @@
+{
+  "id": "archivist-ttrpg-blocks",
+  "name": "Archivist TTRPG Blocks",
+  "version": "0.1.0",
+  "minAppVersion": "1.0.0",
+  "description": "Render D&D 5e monster stat blocks, spell blocks, magic item blocks, and inline DnD tags with classic parchment styling.",
+  "author": "Shinoobi",
+  "isDesktopOnly": false
+}
