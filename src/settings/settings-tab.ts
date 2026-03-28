@@ -1,16 +1,10 @@
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
-import type { ArchivistSettings } from "../types/settings";
-
-// TODO(task-17): replace with direct import of ArchivistPlugin once settings/saveSettings are added
-interface ArchivistPluginLike extends Plugin {
-  settings: ArchivistSettings;
-  saveSettings(): Promise<void>;
-}
+import { App, PluginSettingTab, Setting } from "obsidian";
+import type ArchivistPlugin from "../main";
 
 export class ArchivistSettingTab extends PluginSettingTab {
-  plugin: ArchivistPluginLike;
+  plugin: ArchivistPlugin;
 
-  constructor(app: App, plugin: ArchivistPluginLike) {
+  constructor(app: App, plugin: ArchivistPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }

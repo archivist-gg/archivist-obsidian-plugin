@@ -12,24 +12,69 @@ import { MonsterModal } from "./modals/monster-modal";
 import { SpellModal } from "./modals/spell-modal";
 import { ItemModal } from "./modals/item-modal";
 import { inlineTagPlugin } from "./extensions/inline-tag-extension";
+import { InquiryView, VIEW_TYPE_INQUIRY } from "./ui/inquiry-view";
+import { ArchivistSettingTab } from "./settings/settings-tab";
+import { AgentService } from "./ai/agent-service";
+import { ConversationManager } from "./ai/conversation-manager";
+import { SrdStore } from "./ai/srd/srd-store";
+import type { ArchivistSettings } from "./types/settings";
+import { DEFAULT_SETTINGS } from "./types/settings";
 
 export default class ArchivistPlugin extends Plugin {
+  settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
+  agentService: AgentService | null = null;
+  conversationManager: ConversationManager | null = null;
+  private srdStore: SrdStore | null = null;
+
   async onload() {
-    this.registerMarkdownCodeBlockProcessor("monster", (source, el) => {
-      this.renderBlock(source, el, parseMonster, renderMonsterBlock);
+    await this.loadSettings();
+
+    // Initialize SRD store
+    this.srdStore = new SrdStore();
+
+    // Initialize AI services
+    this.agentService = new AgentService(this.srdStore);
+    this.conversationManager = new ConversationManager(
+      async () => {
+        const data = await this.loadData();
+        return data?.conversationStore ?? null;
+      },
+      async (store) => {
+        const data = (await this.loadData()) ?? {};
+        data.conversationStore = store;
+        await this.saveData(data);
+      },
+      this.settings.maxConversations,
+    );
+    await this.conversationManager.load();
+
+    // Register the Inquiry view
+    this.registerView(VIEW_TYPE_INQUIRY, (leaf) => new InquiryView(leaf, this));
+
+    // Ribbon icon
+    this.addRibbonIcon("bot", "Archivist Inquiry", () => this.activateInquiryView());
+
+    // Command to open Inquiry
+    this.addCommand({
+      id: "open-inquiry",
+      name: "Open Archivist Inquiry",
+      callback: () => this.activateInquiryView(),
     });
 
-    this.registerMarkdownCodeBlockProcessor("spell", (source, el) => {
-      this.renderBlock(source, el, parseSpell, renderSpellBlock);
-    });
+    // Existing block processors
+    this.registerMarkdownCodeBlockProcessor("monster", (source, el) =>
+      this.renderBlock(source, el, parseMonster, renderMonsterBlock),
+    );
+    this.registerMarkdownCodeBlockProcessor("spell", (source, el) =>
+      this.renderBlock(source, el, parseSpell, renderSpellBlock),
+    );
+    this.registerMarkdownCodeBlockProcessor("item", (source, el) =>
+      this.renderBlock(source, el, parseItem, renderItemBlock),
+    );
 
-    this.registerMarkdownCodeBlockProcessor("item", (source, el) => {
-      this.renderBlock(source, el, parseItem, renderItemBlock);
-    });
-
+    // Existing post-processor
     this.registerMarkdownPostProcessor((element) => {
-      const codeElements = element.querySelectorAll("code");
-      codeElements.forEach((codeEl) => {
+      element.querySelectorAll("code").forEach((codeEl) => {
         const text = codeEl.textContent ?? "";
         const parsed = parseInlineTag(text);
         if (parsed) {
@@ -39,8 +84,10 @@ export default class ArchivistPlugin extends Plugin {
       });
     });
 
+    // Existing editor extension
     this.registerEditorExtension(inlineTagPlugin);
 
+    // Existing commands
     this.addCommand({
       id: "insert-monster",
       name: "Insert Monster Block",
@@ -48,7 +95,6 @@ export default class ArchivistPlugin extends Plugin {
         new MonsterModal(this.app, editor).open();
       },
     });
-
     this.addCommand({
       id: "insert-spell",
       name: "Insert Spell Block",
@@ -56,7 +102,6 @@ export default class ArchivistPlugin extends Plugin {
         new SpellModal(this.app, editor).open();
       },
     });
-
     this.addCommand({
       id: "insert-item",
       name: "Insert Magic Item Block",
@@ -64,6 +109,22 @@ export default class ArchivistPlugin extends Plugin {
         new ItemModal(this.app, editor).open();
       },
     });
+
+    // Settings tab
+    this.addSettingTab(new ArchivistSettingTab(this.app, this));
+  }
+
+  private async activateInquiryView(): Promise<void> {
+    const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_INQUIRY);
+    if (existing.length > 0) {
+      this.app.workspace.revealLeaf(existing[0]);
+      return;
+    }
+    const leaf = this.app.workspace.getRightLeaf(false);
+    if (leaf) {
+      await leaf.setViewState({ type: VIEW_TYPE_INQUIRY, active: true });
+      this.app.workspace.revealLeaf(leaf);
+    }
   }
 
   private renderBlock<T>(
@@ -82,5 +143,18 @@ export default class ArchivistPlugin extends Plugin {
     }
   }
 
-  onunload() {}
+  async loadSettings(): Promise<void> {
+    const data = await this.loadData();
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data?.settings);
+  }
+
+  async saveSettings(): Promise<void> {
+    const data = (await this.loadData()) ?? {};
+    data.settings = this.settings;
+    await this.saveData(data);
+  }
+
+  onunload() {
+    this.agentService?.abort();
+  }
 }

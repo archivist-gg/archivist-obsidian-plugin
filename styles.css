@@ -68,6 +68,39 @@
   width: 100%;
 }
 
+/* Reset Obsidian theme overrides inside stat blocks */
+.archivist-monster-block *,
+.archivist-spell-block *,
+.archivist-item-block * {
+  border-color: transparent;
+}
+
+.archivist-monster-block h1,
+.archivist-monster-block h2,
+.archivist-monster-block h3,
+.archivist-monster-block h4,
+.archivist-monster-block p,
+.archivist-spell-block h1,
+.archivist-spell-block h2,
+.archivist-spell-block h3,
+.archivist-spell-block h4,
+.archivist-spell-block p,
+.archivist-item-block h1,
+.archivist-item-block h2,
+.archivist-item-block h3,
+.archivist-item-block h4,
+.archivist-item-block p {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  color: inherit;
+  line-height: inherit;
+  letter-spacing: normal;
+}
+
 /* Header Section */
 .archivist-monster-block .stat-block-header {
   margin-bottom: 0.3em;
@@ -130,8 +163,12 @@
   font-size: 13px;
   font-weight: bold;
   font-style: normal;
+  font-variant: small-caps;
   display: inline;
   margin-right: 0.25em;
+  border: none;
+  padding: 0;
+  line-height: inherit;
 }
 
 .archivist-monster-block .property-line p {
@@ -157,6 +194,9 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  border: none;
+  margin: 0;
+  background: transparent;
 }
 
 .archivist-monster-block .abilities-table th {
@@ -165,12 +205,26 @@
   font-size: 14px;
   padding: 0.25em;
   font-family: 'Noto Sans', sans-serif;
+  border: none;
+  background: transparent;
 }
 
 .archivist-monster-block .abilities-table td {
   padding: 0.25em;
   font-size: 14px;
   color: var(--stat-block-header);
+  border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table tr {
+  border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table thead tr {
+  border: none;
+  background: transparent;
 }
 
 .archivist-monster-block .ability-score {
@@ -179,6 +233,25 @@
 
 .archivist-monster-block .ability-modifier {
   font-weight: normal;
+}
+
+/* Stat Block Inline Tags (subtle, matching parchment theme) */
+.archivist-stat-inline-dice {
+  color: #191813;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.archivist-stat-inline-atk {
+  color: #7a200d;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.archivist-stat-inline-dc {
+  color: #191813;
+  font-weight: normal;
+  font-style: normal;
 }
 
 /* Actions Header */
@@ -854,9 +927,11 @@
   white-space: nowrap;
   gap: 4px;
   padding: 6px 12px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   color: #7a200d;
   font-size: 11px;
   font-weight: 600;
@@ -865,17 +940,19 @@
   font-family: 'Noto Sans', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin: 0;
 }
 
 .archivist-monster-block .original-tab-button:hover {
-  background: rgba(122, 32, 13, 0.05);
+  background: rgba(122, 32, 13, 0.05) !important;
   color: #922610;
+  box-shadow: none !important;
 }
 
 .archivist-monster-block .original-tab-button.active {
   color: #922610;
-  border-bottom-color: #922610;
-  background: rgba(122, 32, 13, 0.1);
+  border-bottom-color: #922610 !important;
+  background: rgba(122, 32, 13, 0.1) !important;
 }
 
 .archivist-monster-block .original-tab-button svg {
@@ -1464,3 +1541,249 @@
     padding: 4px 8px;
   }
 }
+
+/* === Archivist Inquiry Chat UI === */
+:root {
+  --archivist-brand: #D97757;
+  --archivist-brand-rgb: 217, 119, 87;
+}
+
+.archivist-inquiry-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--font-text);
+  color: var(--text-normal);
+  background: var(--background-primary);
+}
+
+.archivist-inquiry-header {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.archivist-inquiry-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.archivist-inquiry-header-icon { color: var(--text-muted); display: flex; }
+.archivist-inquiry-header-title { font-size: 13px; font-weight: 600; font-family: 'Libre Baskerville', Georgia, serif; }
+.archivist-inquiry-header-right { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+
+.archivist-inquiry-header-btn {
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--text-faint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.archivist-inquiry-header-btn:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.archivist-inquiry-header-btn svg { width: 14px; height: 14px; }
+
+.archivist-inquiry-tabs {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 0 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
+  background: var(--background-secondary);
+}
+
+.archivist-inquiry-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.archivist-inquiry-tab:hover { color: var(--text-normal); }
+.archivist-inquiry-tab-active { color: var(--archivist-brand); border-bottom-color: var(--archivist-brand); font-weight: 500; }
+.archivist-inquiry-tab-close { font-size: 12px; opacity: 0; cursor: pointer; color: var(--text-faint); transition: opacity 0.15s; }
+.archivist-inquiry-tab:hover .archivist-inquiry-tab-close { opacity: 1; }
+
+.archivist-inquiry-context-menu {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 4px;
+  min-width: 120px;
+}
+.archivist-inquiry-context-menu-item {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text-normal);
+}
+.archivist-inquiry-context-menu-item:hover { background: var(--background-modifier-hover); }
+
+.archivist-inquiry-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.archivist-inquiry-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 40px 20px;
+  opacity: 0.7;
+}
+.archivist-inquiry-welcome svg { color: var(--archivist-brand); margin-bottom: 12px; }
+.archivist-inquiry-welcome-title { font-family: 'Libre Baskerville', Georgia, serif; font-size: 20px; font-weight: 300; color: var(--text-normal); margin-bottom: 6px; }
+.archivist-inquiry-welcome-subtitle { font-size: 12px; color: var(--text-muted); }
+
+.archivist-inquiry-msg-user { align-self: flex-end; max-width: 85%; }
+.archivist-inquiry-msg-bubble {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px 8px 2px 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.archivist-inquiry-msg-assistant { max-width: 95%; position: relative; }
+.archivist-inquiry-msg-text { font-size: 13px; line-height: 1.6; }
+.archivist-inquiry-msg-copy { position: absolute; top: 0; right: -24px; opacity: 0; cursor: pointer; color: var(--text-faint); transition: opacity 0.15s; }
+.archivist-inquiry-msg-assistant:hover .archivist-inquiry-msg-copy { opacity: 1; }
+.archivist-inquiry-msg-copy svg { width: 14px; height: 14px; }
+
+.archivist-inquiry-tool-call { padding: 2px 0; }
+.archivist-inquiry-tool-call-header { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); cursor: pointer; }
+.archivist-inquiry-tool-call-icon { color: var(--archivist-brand); display: flex; }
+.archivist-inquiry-tool-call-icon svg { width: 12px; height: 12px; }
+.archivist-inquiry-tool-call-name { font-family: var(--font-monospace); font-size: 11px; }
+.archivist-inquiry-tool-call-summary { color: var(--text-faint); font-style: italic; }
+.archivist-inquiry-tool-call-status { margin-left: auto; display: flex; }
+.archivist-inquiry-tool-call-status svg { width: 10px; height: 10px; }
+.archivist-inquiry-tool-status-done { color: var(--color-green); }
+.archivist-inquiry-tool-status-running { color: var(--archivist-brand); animation: archivist-pulse 1.5s ease-in-out infinite; }
+
+.archivist-inquiry-stat-block { margin-top: 8px; max-width: 400px; }
+.archivist-inquiry-block-copy {
+  display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px;
+  font-size: 11px; color: var(--text-muted); cursor: pointer;
+  background: var(--background-secondary); border: 1px solid var(--background-modifier-border);
+  margin-top: 6px; width: fit-content; transition: color 0.15s, background 0.15s;
+}
+.archivist-inquiry-block-copy:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.archivist-inquiry-block-copy svg { width: 12px; height: 12px; }
+
+.archivist-inquiry-msg-error {
+  display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 6px;
+  background: rgba(255, 0, 0, 0.05); border: 1px solid var(--text-error); font-size: 12px; color: var(--text-error);
+}
+.archivist-inquiry-msg-error-icon svg { width: 14px; height: 14px; }
+
+.archivist-inquiry-thinking { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); animation: archivist-pulse 1.5s ease-in-out infinite; }
+.archivist-inquiry-thinking-icon svg { width: 14px; height: 14px; color: var(--archivist-brand); animation: archivist-spin 1s linear infinite; }
+
+.archivist-inquiry-input-area { border-top: 1px solid var(--background-modifier-border); padding: 8px; flex-shrink: 0; }
+
+.archivist-inquiry-context-row {
+  display: flex; align-items: center; gap: 6px; padding: 4px 8px; margin-bottom: 6px;
+  background: var(--background-secondary); border-radius: 4px; border: 1px solid rgba(122, 186, 255, 0.15);
+}
+.archivist-inquiry-context-icon { display: flex; color: #7abaff; }
+.archivist-inquiry-context-icon svg { width: 12px; height: 12px; }
+.archivist-inquiry-context-label { font-size: 10px; color: #7abaff; font-weight: 500; }
+.archivist-inquiry-context-preview { font-size: 10px; color: var(--text-faint); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.archivist-inquiry-context-dismiss { font-size: 12px; color: var(--text-faint); cursor: pointer; flex-shrink: 0; }
+
+.archivist-inquiry-input-wrapper { border: 1px solid var(--background-modifier-border); border-radius: 6px; overflow: hidden; }
+.archivist-inquiry-input-streaming { border-color: rgba(var(--archivist-brand-rgb), 0.3); }
+
+.archivist-inquiry-textarea {
+  width: 100%; padding: 8px 10px; background: transparent; border: none; outline: none;
+  resize: none; font-size: 13px; font-family: var(--font-text); color: var(--text-normal);
+  min-height: 36px; max-height: 200px;
+}
+.archivist-inquiry-textarea::placeholder { color: var(--text-faint); }
+
+.archivist-inquiry-toolbar {
+  display: flex; align-items: center; padding: 4px 8px; gap: 8px;
+  border-top: 1px solid var(--background-modifier-border-focus);
+}
+.archivist-inquiry-toolbar-sep { width: 1px; height: 12px; background: var(--background-modifier-border); }
+
+.archivist-inquiry-model-selector {
+  display: flex; align-items: center; gap: 4px; font-size: 10px;
+  color: var(--archivist-brand); font-weight: 500; cursor: pointer; position: relative;
+}
+.archivist-inquiry-model-chevron svg { width: 8px; height: 8px; }
+
+.archivist-inquiry-model-dropdown {
+  position: absolute; bottom: 100%; left: 0; margin-bottom: 4px;
+  background: var(--background-primary); border: 1px solid var(--background-modifier-border);
+  border-radius: 6px; box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1); z-index: 100;
+  min-width: 100px; padding: 4px;
+}
+.archivist-inquiry-model-option { padding: 4px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; color: var(--text-normal); }
+.archivist-inquiry-model-option:hover { background: var(--background-modifier-hover); }
+.archivist-inquiry-model-option-active { background: rgba(var(--archivist-brand-rgb), 0.15); color: var(--archivist-brand); }
+
+.archivist-inquiry-gauge { display: flex; align-items: center; gap: 3px; }
+.archivist-inquiry-gauge-text { font-size: 9px; color: var(--text-faint); }
+
+.archivist-inquiry-perm-toggle { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.archivist-inquiry-perm-label { font-size: 10px; font-weight: 500; color: var(--text-muted); }
+.archivist-inquiry-perm-auto { color: var(--color-green); }
+.archivist-inquiry-toggle { width: 28px; height: 14px; background: var(--background-modifier-border); border-radius: 7px; position: relative; transition: background 0.2s; }
+.archivist-inquiry-toggle-on { background: var(--color-green); }
+.archivist-inquiry-toggle-thumb { width: 10px; height: 10px; background: var(--text-on-accent); border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: left 0.2s; }
+.archivist-inquiry-toggle-on .archivist-inquiry-toggle-thumb { left: 16px; }
+
+.archivist-inquiry-send-btn {
+  margin-left: auto; background: var(--archivist-brand); border-radius: 6px;
+  padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s;
+}
+.archivist-inquiry-send-btn:hover { opacity: 0.85; }
+.archivist-inquiry-send-btn svg { width: 14px; height: 14px; color: white; }
+.archivist-inquiry-stop-btn { background: var(--text-muted); }
+.archivist-inquiry-stop-icon { width: 10px; height: 10px; background: white; border-radius: 1px; }
+
+.archivist-inquiry-history {
+  position: absolute; right: 8px; top: 36px; width: 280px; max-height: 400px;
+  overflow-y: auto; background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border); border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); z-index: 100; padding: 8px;
+  backdrop-filter: blur(20px);
+}
+.archivist-inquiry-history-label { padding: 4px 8px; font-size: 10px; font-weight: 600; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 8px; }
+.archivist-inquiry-history-label:first-child { margin-top: 0; }
+.archivist-inquiry-history-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+.archivist-inquiry-history-item:hover { background: var(--background-modifier-hover); }
+.archivist-inquiry-history-item-active { background: rgba(var(--archivist-brand-rgb), 0.08); }
+.archivist-inquiry-history-icon { display: flex; color: var(--text-faint); }
+.archivist-inquiry-history-icon svg { width: 14px; height: 14px; }
+.archivist-inquiry-history-item-active .archivist-inquiry-history-icon { color: var(--archivist-brand); }
+.archivist-inquiry-history-title { font-size: 12px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.archivist-inquiry-history-chevron { display: flex; color: var(--text-faint); }
+.archivist-inquiry-history-chevron svg { width: 10px; height: 10px; }
+.archivist-inquiry-history-empty { padding: 20px; text-align: center; font-size: 12px; color: var(--text-faint); }
+
+@keyframes archivist-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes archivist-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
