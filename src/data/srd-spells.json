@@ -1,0 +1,143 @@
+[
+  {
+    "name": "Fire Bolt",
+    "level": 0,
+    "school": "evocation",
+    "casting_time": "1 action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Sorcerer", "Wizard"],
+    "description": [
+      "You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 fire damage. A flammable object hit by this spell ignites if it isn't being worn or carried.",
+      "This spell's damage increases by 1d10 when you reach 5th level (2d10), 11th level (3d10), and 17th level (4d10)."
+    ]
+  },
+  {
+    "name": "Shield",
+    "level": 1,
+    "school": "abjuration",
+    "casting_time": "1 reaction, which you take when you are hit by an attack or targeted by the magic missile spell",
+    "range": "Self",
+    "components": "V, S",
+    "duration": "1 round",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Sorcerer", "Wizard"],
+    "description": [
+      "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC, including against the triggering attack, and you take no damage from magic missile."
+    ]
+  },
+  {
+    "name": "Magic Missile",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "1 action",
+    "range": "120 feet",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Sorcerer", "Wizard"],
+    "description": [
+      "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range. A dart deals 1d4 + 1 force damage to its target. The darts all strike simultaneously, and you can direct them to hit one creature or several."
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st."
+    ]
+  },
+  {
+    "name": "Fireball",
+    "level": 3,
+    "school": "evocation",
+    "casting_time": "1 action",
+    "range": "150 feet",
+    "components": "V, S, M (a tiny ball of bat guano and sulfur)",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Sorcerer", "Wizard"],
+    "description": [
+      "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.",
+      "The fire spreads around corners. It ignites flammable objects in the area that aren't being worn or carried."
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd."
+    ]
+  },
+  {
+    "name": "Cure Wounds",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "1 action",
+    "range": "Touch",
+    "components": "V, S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Bard", "Cleric", "Druid", "Paladin", "Ranger"],
+    "description": [
+      "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier. This spell has no effect on undead or constructs."
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d8 for each slot level above 1st."
+    ]
+  },
+  {
+    "name": "Healing Word",
+    "level": 1,
+    "school": "evocation",
+    "casting_time": "1 bonus action",
+    "range": "60 feet",
+    "components": "V",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Bard", "Cleric", "Druid"],
+    "description": [
+      "A creature of your choice that you can see within range regains hit points equal to 1d4 + your spellcasting ability modifier. This spell has no effect on undead or constructs."
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 2nd level or higher, the healing increases by 1d4 for each slot level above 1st."
+    ]
+  },
+  {
+    "name": "Lightning Bolt",
+    "level": 3,
+    "school": "evocation",
+    "casting_time": "1 action",
+    "range": "Self (100-foot line)",
+    "components": "V, S, M (a bit of fur and a rod of amber, crystal, or glass)",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Sorcerer", "Wizard"],
+    "description": [
+      "A stroke of lightning forming a line 100 feet long and 5 feet wide blasts out from you in a direction you choose. Each creature in the line must make a Dexterity saving throw. A creature takes 8d6 lightning damage on a failed save, or half as much damage on a successful one.",
+      "The lightning ignites flammable objects in the area that aren't being worn or carried."
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd."
+    ]
+  },
+  {
+    "name": "Counterspell",
+    "level": 3,
+    "school": "abjuration",
+    "casting_time": "1 reaction, which you take when you see a creature within 60 feet of you casting a spell",
+    "range": "60 feet",
+    "components": "S",
+    "duration": "Instantaneous",
+    "concentration": false,
+    "ritual": false,
+    "classes": ["Sorcerer", "Warlock", "Wizard"],
+    "description": [
+      "You attempt to interrupt a creature in the process of casting a spell. If the creature is casting a spell of 3rd level or lower, its spell fails and has no effect. If it is casting a spell of 4th level or higher, make an ability check using your spellcasting ability. The DC equals 10 + the spell's level. On a success, the creature's spell fails and has no effect."
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 4th level or higher, the interrupted spell has no effect if its level is equal to or less than the level of the spell slot you used."
+    ]
+  }
+]
