@@ -10,7 +10,16 @@ import * as yaml from "js-yaml";
 
 export function renderUserMessage(parent: HTMLElement, message: Message): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-msg-user" });
-  wrapper.createDiv({ cls: "archivist-inquiry-msg-bubble" }).textContent = message.content;
+  const bubble = wrapper.createDiv({ cls: "archivist-inquiry-msg-bubble" });
+  bubble.textContent = message.content;
+  // Copy button (hover-reveal)
+  const copyBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-copy" });
+  setIcon(copyBtn, "copy");
+  copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(message.content);
+    setIcon(copyBtn, "check");
+    setTimeout(() => setIcon(copyBtn, "copy"), 2000);
+  });
   return wrapper;
 }
 
@@ -58,6 +67,18 @@ export function renderErrorMessage(parent: HTMLElement, errorText: string): HTML
   return wrapper;
 }
 
+// ─── Flavor text arrays ─────────────────────────────────────────────────────
+
+const THINKING_FLAVORS = [
+  "Thinking", "Pondering", "Consulting the tomes", "Searching the archives",
+  "Brewing ideas", "Leafing through scrolls", "Deciphering runes",
+];
+
+const COMPLETION_FLAVORS = [
+  "Crafted", "Conjured", "Forged", "Brewed", "Unearthed",
+  "Transcribed", "Inscribed", "Deciphered", "Compiled",
+];
+
 // ─── Streaming components ────────────────────────────────────────────────────
 
 export interface ThinkingBlockHandle {
@@ -72,7 +93,8 @@ export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: s
   header.setAttribute("tabindex", "0");
   header.setAttribute("role", "button");
   header.setAttribute("aria-expanded", "false");
-  const label = header.createSpan({ cls: "archivist-inquiry-thinking-label", text: "Thinking 0s..." });
+  const flavor = THINKING_FLAVORS[Math.floor(Math.random() * THINKING_FLAVORS.length)];
+  const label = header.createSpan({ cls: "archivist-inquiry-thinking-label", text: `${flavor} 0s...` });
   const contentDiv = wrapper.createDiv({ cls: "archivist-inquiry-thinking-content" });
   contentDiv.style.display = "none";
 
@@ -80,7 +102,7 @@ export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: s
   let seconds = 0;
   const timer = setInterval(() => {
     seconds++;
-    label.textContent = `Thinking ${seconds}s...`;
+    label.textContent = `${flavor} ${seconds}s...`;
   }, 1000);
 
   // Toggle collapse
@@ -99,7 +121,7 @@ export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: s
     },
     finalize() {
       clearInterval(timer);
-      label.textContent = `Thought for ${seconds}s`;
+      label.textContent = `${flavor} for ${seconds}s`;
       wrapper.removeClass("archivist-inquiry-thinking-active");
       // Collapse on finalize
       contentDiv.style.display = "none";
@@ -273,7 +295,8 @@ export function renderBashOutput(parent: HTMLElement, output: string): HTMLEleme
 export function renderResponseFooter(parent: HTMLElement, durationMs: number): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-response-footer" });
   const formatted = formatDuration(durationMs);
-  wrapper.createSpan({ text: `Crafted for ${formatted}` });
+  const flavor = COMPLETION_FLAVORS[Math.floor(Math.random() * COMPLETION_FLAVORS.length)];
+  wrapper.createSpan({ text: `${flavor} in ${formatted}` });
   return wrapper;
 }
 
@@ -288,7 +311,7 @@ export function renderThinkingIndicator(parent: HTMLElement): HTMLElement {
 
 // ─── Entity rendering ────────────────────────────────────────────────────────
 
-function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data: unknown }): void {
+export function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data: unknown }): void {
   try {
     switch (entity.type) {
       case "monster": parent.appendChild(renderMonsterBlock(entity.data as any)); break;

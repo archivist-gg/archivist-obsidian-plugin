@@ -1655,7 +1655,13 @@
 .archivist-inquiry-welcome-title { font-family: 'Libre Baskerville', Georgia, serif; font-size: 20px; font-weight: 300; color: var(--text-normal); margin-bottom: 6px; }
 .archivist-inquiry-welcome-subtitle { font-size: 12px; color: var(--text-muted); }
 
-.archivist-inquiry-msg-user { align-self: flex-end; max-width: 85%; }
+.archivist-inquiry-msg-user { align-self: flex-end; max-width: 85%; position: relative; }
+.archivist-inquiry-msg-user .archivist-inquiry-msg-copy {
+  position: absolute; top: 0; left: -24px; opacity: 0;
+  cursor: pointer; color: var(--text-faint); transition: opacity 0.15s;
+}
+.archivist-inquiry-msg-user:hover .archivist-inquiry-msg-copy { opacity: 1; }
+.archivist-inquiry-msg-user .archivist-inquiry-msg-copy svg { width: 14px; height: 14px; }
 .archivist-inquiry-msg-bubble {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
@@ -1757,7 +1763,8 @@
 
 .archivist-inquiry-send-btn {
   margin-left: auto; background: var(--archivist-brand); border-radius: 6px;
-  padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; min-width: 28px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: opacity 0.15s;
 }
 .archivist-inquiry-send-btn:hover { opacity: 0.85; }
@@ -2082,6 +2089,14 @@
   color: var(--text-faint);
   margin-top: 8px;
   padding-top: 4px;
+}
+
+/* -- Compact Boundary -- */
+.archivist-inquiry-compact-boundary {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px; margin: 8px 0; color: var(--text-faint); font-size: 11px;
+  border-top: 1px solid var(--background-modifier-border);
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* -- Streaming Session -- */

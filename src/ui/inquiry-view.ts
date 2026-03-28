@@ -10,6 +10,7 @@ import {
   renderToolCallBlock,
   renderResponseFooter,
   renderErrorMessage,
+  renderGeneratedBlock,
   type ThinkingBlockHandle,
   type ToolCallBlockHandle,
 } from "./components/message-renderer";
@@ -36,6 +37,7 @@ export class InquiryView extends ItemView {
   private historyVisible = false;
   private isStreaming = false;
   private selectedText: string | undefined;
+  private contextPercent = 0;
 
   constructor(leaf: WorkspaceLeaf, pluginRef: ArchivistPluginRef) {
     super(leaf);
@@ -117,7 +119,7 @@ export class InquiryView extends ItemView {
       selectedText: this.selectedText,
       model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
       permissionMode: this.pluginRef.settings.permissionMode,
-      contextPercent: 0,
+      contextPercent: this.contextPercent,
       isStreaming: this.isStreaming,
     };
     renderChatInput(this.root, inputState, {
@@ -317,6 +319,18 @@ export class InquiryView extends ItemView {
                 block.setStatus(event.isError ? "error" : "completed");
               }
             }
+            // Detect generated entity in tool result
+            if (event.toolResult) {
+              try {
+                const parsed = JSON.parse(event.toolResult);
+                if (parsed.type && parsed.data && ["monster", "spell", "item"].includes(parsed.type)) {
+                  generatedEntity = { type: parsed.type, data: parsed.data };
+                  const blockWrapper = streamContainer.createDiv({ cls: "archivist-inquiry-stat-block" });
+                  renderGeneratedBlock(blockWrapper, generatedEntity);
+                  streamContainer.insertBefore(blockWrapper, textDiv);
+                }
+              } catch { /* not JSON entity */ }
+            }
             scrollToBottom();
             break;
           }
@@ -328,6 +342,21 @@ export class InquiryView extends ItemView {
             break;
           }
 
+          case "usage": {
+            // Estimate context window from model (200k default)
+            const contextWindow = 200000;
+            this.contextPercent = Math.round(((event.contextTokens ?? 0) / contextWindow) * 100);
+            this.updateInputArea();
+            break;
+          }
+
+          case "compact_boundary": {
+            const boundary = streamContainer.createDiv({ cls: "archivist-inquiry-compact-boundary" });
+            boundary.createSpan({ text: "Conversation compacted" });
+            streamContainer.insertBefore(boundary, textDiv);
+            break;
+          }
+
           case "done": {
             if (event.durationMs) {
               renderResponseFooter(streamContainer, event.durationMs);
@@ -335,16 +364,6 @@ export class InquiryView extends ItemView {
             scrollToBottom();
             break;
           }
-        }
-
-        // Check for generated entity in text content
-        if (event.type === "text_delta" && event.content) {
-          try {
-            const parsed = JSON.parse(assistantContent);
-            if (parsed.type && parsed.data) {
-              generatedEntity = { type: parsed.type, data: parsed.data };
-            }
-          } catch { /* not JSON, ignore */ }
         }
       }
     } catch (err) {
@@ -389,8 +408,8 @@ export class InquiryView extends ItemView {
       selectedText: this.selectedText,
       model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
       permissionMode: this.pluginRef.settings.permissionMode,
-      contextPercent: 0,
-      isStreaming: false,
+      contextPercent: this.contextPercent,
+      isStreaming: this.isStreaming,
     };
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),

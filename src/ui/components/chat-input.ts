@@ -52,6 +52,11 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
   if (state.isStreaming) textarea.disabled = true;
   textarea.addEventListener("input", () => { textarea.style.height = "auto"; textarea.style.height = Math.min(textarea.scrollHeight, 200) + "px"; });
   textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && state.isStreaming) {
+      e.preventDefault();
+      callbacks.onStop();
+      return;
+    }
     if (e.key === "Enter" && !e.shiftKey && !state.isStreaming) {
       e.preventDefault();
       const text = textarea.value.trim();

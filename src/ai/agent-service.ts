@@ -9,6 +9,7 @@ import { createArchivistMcpServer } from "./mcp-server";
 export interface StreamEvent {
   type: "text_delta" | "thinking_start" | "thinking_delta" | "thinking_end"
       | "tool_call_start" | "tool_call_end" | "tool_result"
+      | "usage" | "compact_boundary"
       | "error" | "done";
   content?: string;
   toolCallId?: string;
@@ -20,6 +21,8 @@ export interface StreamEvent {
   totalCostUsd?: number;
   numTurns?: number;
   durationMs?: number;
+  inputTokens?: number;
+  contextTokens?: number;
 }
 
 export class AgentService {
@@ -133,6 +136,9 @@ export class AgentService {
     const toolInputBuffers: Record<number, string> = {};
     // Track tool IDs and names per block index
     const toolMeta: Record<number, { id: string; name: string }> = {};
+    // Deduplication: track tool IDs and text already emitted via stream_event
+    const emittedToolIds = new Set<string>();
+    let hasStreamedText = false;
 
     try {
       for await (const msg of activeQuery) {
@@ -150,6 +156,7 @@ export class AgentService {
               blockTypes[idx] = "tool_use";
               toolInputBuffers[idx] = "";
               toolMeta[idx] = { id: block.id ?? "", name: block.name ?? "" };
+              emittedToolIds.add(block.id ?? "");
               yield {
                 type: "tool_call_start",
                 toolCallId: block.id,
@@ -164,6 +171,7 @@ export class AgentService {
             if (delta?.type === "thinking_delta") {
               yield { type: "thinking_delta", content: delta.thinking ?? "" };
             } else if (delta?.type === "text_delta") {
+              hasStreamedText = true;
               yield { type: "text_delta", content: delta.text ?? "" };
             } else if (delta?.type === "input_json_delta") {
               if (toolInputBuffers[idx] !== undefined) {
@@ -190,12 +198,12 @@ export class AgentService {
             delete blockTypes[idx];
           }
         } else if (msg.type === "assistant") {
-          // Complete assistant message -- process any blocks not already streamed
+          // Complete assistant message -- skip blocks already emitted via stream_event
           for (const block of (msg as any).message?.content ?? []) {
-            if ("text" in block && block.text) {
+            if ("text" in block && block.text && !hasStreamedText) {
               yield { type: "text_delta", content: block.text };
             }
-            if ("name" in block) {
+            if ("name" in block && !emittedToolIds.has(block.id)) {
               yield {
                 type: "tool_call_start",
                 toolCallId: block.id,
@@ -204,6 +212,14 @@ export class AgentService {
               };
             }
           }
+          // Emit usage information
+          const usage = (msg as any).message?.usage;
+          if (usage) {
+            const contextTokens = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0);
+            yield { type: "usage", inputTokens: usage.input_tokens, contextTokens };
+          }
+        } else if (msg.type === "system" && (msg as any).subtype === "compact_boundary") {
+          yield { type: "compact_boundary" };
         } else if (msg.type === "user") {
           // Tool result messages from the SDK
           const content = (msg as any).message?.content;
