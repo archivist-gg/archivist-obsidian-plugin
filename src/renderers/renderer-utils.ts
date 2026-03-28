@@ -84,13 +84,58 @@ export function createIconProperty(
 }
 
 /**
+ * Render a tag as subtle inline text for use inside stat blocks.
+ * Matches archivist's dnd-formatted-text style: plain text colored to
+ * match the parchment theme, no pill badges.
+ */
+function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement {
+  const span = document.createElement("span");
+
+  switch (tag.type) {
+    case "atk":
+      // Attack: italic, accent color, e.g. "+4 to hit"
+      span.addClass("archivist-stat-inline-atk");
+      span.textContent = `${tag.content} to hit`;
+      break;
+    case "damage":
+      // Damage: normal weight, dark text, e.g. "1d6+2 slashing"
+      span.addClass("archivist-stat-inline-dice");
+      span.textContent = tag.content;
+      break;
+    case "dice":
+      // Dice roll: normal weight, dark text
+      span.addClass("archivist-stat-inline-dice");
+      span.textContent = tag.content;
+      break;
+    case "dc":
+      // DC: normal weight, e.g. "DC 15"
+      span.addClass("archivist-stat-inline-dc");
+      span.textContent = `DC ${tag.content}`;
+      break;
+    case "mod":
+      span.addClass("archivist-stat-inline-dice");
+      span.textContent = tag.content;
+      break;
+    case "check":
+      span.addClass("archivist-stat-inline-dc");
+      span.textContent = tag.content;
+      break;
+    default:
+      span.textContent = tag.content;
+  }
+
+  return span;
+}
+
+/**
  * Render text that may contain inline tags like `dice:2d6+3` or `dc:15`.
- * Plain text is rendered as text nodes; backtick-wrapped tags become inline
- * tag elements.
+ * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
+ * Outside stat blocks (body text), tags render as colorful pill badges.
  */
 export function renderTextWithInlineTags(
   text: string,
   parent: HTMLElement,
+  statBlockMode = true,
 ): void {
   // Match backtick-wrapped tags: `type:content`
   const regex = /`([^`]+)`/g;
@@ -108,7 +153,11 @@ export function renderTextWithInlineTags(
     const tagText = match[1];
     const parsed = parseInlineTag(tagText);
     if (parsed) {
-      parent.appendChild(renderInlineTag(parsed));
+      if (statBlockMode) {
+        parent.appendChild(renderStatBlockTag(parsed));
+      } else {
+        parent.appendChild(renderInlineTag(parsed));
+      }
     } else {
       // Not a valid tag, render as code
       const code = document.createElement("code");

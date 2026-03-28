@@ -1,9 +1,18 @@
-import { ItemView, WorkspaceLeaf, MarkdownView } from "obsidian";
+import { ItemView, WorkspaceLeaf, MarkdownView, MarkdownRenderer } from "obsidian";
 import { renderChatHeader } from "./components/chat-header";
 import { renderChatTabs, type TabData } from "./components/chat-tabs";
 import { renderChatMessages } from "./components/chat-messages";
 import { renderChatInput, type ChatInputState } from "./components/chat-input";
 import { renderChatHistory } from "./components/chat-history";
+import {
+  renderUserMessage,
+  renderThinkingBlock,
+  renderToolCallBlock,
+  renderResponseFooter,
+  renderErrorMessage,
+  type ThinkingBlockHandle,
+  type ToolCallBlockHandle,
+} from "./components/message-renderer";
 import type { Message } from "../types/conversation";
 import type { StreamEvent } from "../ai/agent-service";
 import type { AgentService } from "../ai/agent-service";
@@ -114,8 +123,12 @@ export class InquiryView extends ItemView {
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),
       onStop: () => this.pluginRef.agentService?.abort(),
-      onModelChange: (model) => {
+      onModelChange: async (model) => {
+        // Update active conversation's model in memory
         if (activeConv) activeConv.model = model;
+        // Persist as default for new conversations
+        this.pluginRef.settings.defaultModel = model;
+        await this.pluginRef.saveSettings();
         this.render();
       },
       onPermissionToggle: async () => {
@@ -174,7 +187,20 @@ export class InquiryView extends ItemView {
     });
 
     this.isStreaming = true;
+    // Full render to show user message and set up streaming state
     this.render();
+
+    // Grab DOM references for incremental updates
+    const messagesContainer = this.root?.querySelector(".archivist-inquiry-messages") as HTMLElement | null;
+    if (!messagesContainer) return;
+
+    // Remove the old thinking indicator that render() added (it's the simple "Thinking..." one)
+    const oldIndicator = messagesContainer.querySelector(".archivist-inquiry-thinking");
+    if (oldIndicator) oldIndicator.remove();
+
+    // Create streaming container within the messages area
+    const streamContainer = messagesContainer.createDiv({ cls: "archivist-inquiry-msg-assistant archivist-inquiry-streaming-session" });
+    const textDiv = streamContainer.createDiv({ cls: "archivist-inquiry-msg-text" });
 
     const activeFile = this.app.workspace.getActiveFile();
     let currentNoteContent: string | undefined;
@@ -184,7 +210,8 @@ export class InquiryView extends ItemView {
       } catch { /* ignore read errors */ }
     }
 
-    const vaultPath = (this.app.vault.adapter as any).basePath ?? "";
+    const adapter = this.app.vault.adapter as any;
+    const vaultPath: string = adapter.getBasePath?.() ?? adapter.basePath ?? process.cwd();
     const ttrpgRoot = this.pluginRef.settings.ttrpgRootDir === "/"
       ? vaultPath
       : `${vaultPath}/${this.pluginRef.settings.ttrpgRootDir}`;
@@ -198,22 +225,122 @@ export class InquiryView extends ItemView {
 
     const conv = mgr.getConversation(activeId);
     const model = conv?.model ?? this.pluginRef.settings.defaultModel;
+    const sourcePath = this.app.workspace.getActiveFile()?.path ?? "";
 
+    // Streaming state
     let assistantContent = "";
     let generatedEntity: Message["generatedEntity"] | undefined;
+    let currentThinkingBlock: ThinkingBlockHandle | null = null;
+    const toolCallBlocks = new Map<string, ToolCallBlockHandle>();
+    // Track the latest tool call ID for associating results when toolCallId is missing
+    let lastToolCallId: string | undefined;
+
+    const scrollToBottom = () => {
+      requestAnimationFrame(() => {
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      });
+    };
+
+    const renderTextContent = () => {
+      if (!assistantContent) return;
+      textDiv.empty();
+      MarkdownRenderer.render(this.app, assistantContent, textDiv, sourcePath, null as any);
+    };
 
     try {
       for await (const event of agent.sendMessage(text, this.pluginRef.settings, context, model)) {
-        if (event.type === "text") {
-          assistantContent += event.content ?? "";
-          this.render();
-        } else if (event.type === "error") {
-          assistantContent += `\n\n**Error:** ${event.content}`;
+        switch (event.type) {
+          case "text_delta": {
+            assistantContent += event.content ?? "";
+            renderTextContent();
+            scrollToBottom();
+            break;
+          }
+
+          case "thinking_start": {
+            currentThinkingBlock = renderThinkingBlock(streamContainer, this.app, sourcePath);
+            // Insert thinking block before the text div
+            streamContainer.insertBefore(currentThinkingBlock.el, textDiv);
+            scrollToBottom();
+            break;
+          }
+
+          case "thinking_delta": {
+            if (currentThinkingBlock) {
+              currentThinkingBlock.appendContent(event.content ?? "");
+              scrollToBottom();
+            }
+            break;
+          }
+
+          case "thinking_end": {
+            if (currentThinkingBlock) {
+              currentThinkingBlock.finalize();
+              currentThinkingBlock = null;
+            }
+            break;
+          }
+
+          case "tool_call_start": {
+            const toolId = event.toolCallId ?? `tool-${Date.now()}`;
+            lastToolCallId = toolId;
+            const block = renderToolCallBlock(streamContainer, event.toolName ?? "unknown", toolId);
+            if (event.toolInput) {
+              block.setSummary(event.toolInput);
+            }
+            toolCallBlocks.set(toolId, block);
+            // Insert tool block before the text div
+            streamContainer.insertBefore(block.el, textDiv);
+            scrollToBottom();
+            break;
+          }
+
+          case "tool_call_end": {
+            const toolId = event.toolCallId ?? lastToolCallId;
+            if (toolId) {
+              const block = toolCallBlocks.get(toolId);
+              if (block && event.toolInput) {
+                block.setSummary(event.toolInput);
+              }
+            }
+            break;
+          }
+
+          case "tool_result": {
+            const toolId = event.toolCallId ?? lastToolCallId;
+            if (toolId) {
+              const block = toolCallBlocks.get(toolId);
+              if (block) {
+                block.setResult(event.toolResult ?? "", event.isError === true);
+                block.setStatus(event.isError ? "error" : "completed");
+              }
+            }
+            scrollToBottom();
+            break;
+          }
+
+          case "error": {
+            renderErrorMessage(streamContainer, event.content ?? "Unknown error");
+            assistantContent += `\n\n**Error:** ${event.content}`;
+            scrollToBottom();
+            break;
+          }
+
+          case "done": {
+            if (event.durationMs) {
+              renderResponseFooter(streamContainer, event.durationMs);
+            }
+            scrollToBottom();
+            break;
+          }
         }
-        // Check for generated entity
-        if (event.type === "text" && event.content) {
+
+        // Check for generated entity in text content
+        if (event.type === "text_delta" && event.content) {
           try {
-            const parsed = JSON.parse(event.content);
+            const parsed = JSON.parse(assistantContent);
             if (parsed.type && parsed.data) {
               generatedEntity = { type: parsed.type, data: parsed.data };
             }
@@ -222,8 +349,15 @@ export class InquiryView extends ItemView {
       }
     } catch (err) {
       assistantContent += `\n\n**Error:** ${(err as Error).message}`;
+      renderErrorMessage(streamContainer, (err as Error).message);
     }
 
+    // Finalize any open thinking block
+    if (currentThinkingBlock) {
+      currentThinkingBlock.finalize();
+    }
+
+    // Save the final assistant message
     await mgr.addMessage(activeId, {
       id: "msg-" + Date.now().toString(36),
       role: "assistant",
@@ -233,6 +367,50 @@ export class InquiryView extends ItemView {
     });
 
     this.isStreaming = false;
-    this.render();
+    // Do NOT do a full re-render here -- the streaming session already built the DOM.
+    // Just update the input area to reflect non-streaming state.
+    this.updateInputArea();
+  }
+
+  /** Lightweight update of just the input area without full re-render */
+  private updateInputArea(): void {
+    if (!this.root) return;
+    const mgr = this.pluginRef.conversationManager;
+    if (!mgr) return;
+
+    const activeId = mgr.getActiveConversationId();
+    const activeConv = activeId ? mgr.getConversation(activeId) : undefined;
+
+    // Remove old input area and re-render it
+    const oldInput = this.root.querySelector(".archivist-inquiry-input-area");
+    if (oldInput) oldInput.remove();
+
+    const inputState: ChatInputState = {
+      selectedText: this.selectedText,
+      model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
+      permissionMode: this.pluginRef.settings.permissionMode,
+      contextPercent: 0,
+      isStreaming: false,
+    };
+    renderChatInput(this.root, inputState, {
+      onSend: (text) => this.sendMessage(text),
+      onStop: () => this.pluginRef.agentService?.abort(),
+      onModelChange: async (model) => {
+        if (activeConv) activeConv.model = model;
+        this.pluginRef.settings.defaultModel = model;
+        await this.pluginRef.saveSettings();
+        this.render();
+      },
+      onPermissionToggle: async () => {
+        this.pluginRef.settings.permissionMode =
+          this.pluginRef.settings.permissionMode === "auto" ? "safe" : "auto";
+        await this.pluginRef.saveSettings();
+        this.render();
+      },
+      onDismissSelection: () => {
+        this.selectedText = undefined;
+        this.render();
+      },
+    });
   }
 }

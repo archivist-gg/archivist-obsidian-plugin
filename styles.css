@@ -1787,3 +1787,304 @@
 
 @keyframes archivist-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 @keyframes archivist-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* === Rich Streaming Components === */
+
+/* -- Thinking Block -- */
+.archivist-inquiry-thinking-block {
+  margin: 4px 0;
+  border-radius: 6px;
+}
+
+.archivist-inquiry-thinking-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.archivist-inquiry-thinking-header:hover {
+  opacity: 0.8;
+}
+
+.archivist-inquiry-thinking-label {
+  font-size: 13px;
+  color: var(--archivist-brand);
+  font-style: italic;
+  animation: archivist-pulse 1.5s ease-in-out infinite;
+}
+
+/* When finalized, stop pulsing */
+.archivist-inquiry-thinking-block:not(.archivist-inquiry-thinking-active) .archivist-inquiry-thinking-label {
+  animation: none;
+}
+
+.archivist-inquiry-thinking-content {
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid var(--archivist-brand);
+  margin-left: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.archivist-inquiry-thinking-content p {
+  margin: 0 0 4px;
+}
+
+/* -- Tool Call Block -- */
+.archivist-inquiry-tool-block {
+  margin: 4px 0;
+}
+
+.archivist-inquiry-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px 0;
+  user-select: none;
+}
+
+.archivist-inquiry-tool-header:hover {
+  color: var(--text-normal);
+}
+
+.archivist-inquiry-tool-icon {
+  color: var(--archivist-brand);
+  display: flex;
+  align-items: center;
+}
+
+.archivist-inquiry-tool-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.archivist-inquiry-tool-name {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.archivist-inquiry-tool-summary {
+  color: var(--text-faint);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.archivist-inquiry-tool-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.archivist-inquiry-tool-status svg {
+  width: 12px;
+  height: 12px;
+}
+
+.archivist-inquiry-tool-status.status-running {
+  color: var(--archivist-brand);
+}
+
+.archivist-inquiry-tool-status.status-running svg {
+  animation: archivist-spin 1s linear infinite;
+}
+
+.archivist-inquiry-tool-status.status-completed {
+  color: var(--color-green);
+}
+
+.archivist-inquiry-tool-status.status-error {
+  color: var(--text-error);
+}
+
+.archivist-inquiry-tool-spinner {
+  display: flex;
+  align-items: center;
+}
+
+.archivist-inquiry-tool-spinner svg {
+  width: 12px;
+  height: 12px;
+  animation: archivist-spin 1s linear infinite;
+}
+
+.archivist-inquiry-tool-content {
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid var(--background-modifier-border);
+  margin-left: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.archivist-inquiry-tool-result-text {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 4px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.archivist-inquiry-tool-result-error {
+  border-left-color: var(--text-error);
+}
+
+/* -- Diff Block -- */
+.archivist-inquiry-diff-block {
+  margin: 4px 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.archivist-inquiry-diff-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.archivist-inquiry-diff-header:hover {
+  color: var(--text-normal);
+}
+
+.archivist-inquiry-diff-icon {
+  display: flex;
+  align-items: center;
+  color: var(--archivist-brand);
+}
+
+.archivist-inquiry-diff-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.archivist-inquiry-diff-name {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.archivist-inquiry-diff-file {
+  color: var(--text-faint);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.archivist-inquiry-diff-stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-family: var(--font-monospace);
+  font-size: 10px;
+}
+
+.archivist-inquiry-diff-added {
+  color: var(--color-green);
+}
+
+.archivist-inquiry-diff-removed {
+  color: var(--text-error);
+}
+
+.archivist-inquiry-diff-status {
+  display: flex;
+  align-items: center;
+  color: var(--color-green);
+}
+
+.archivist-inquiry-diff-status svg {
+  width: 10px;
+  height: 10px;
+}
+
+.archivist-inquiry-diff-content {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.archivist-inquiry-diff-line {
+  display: flex;
+  align-items: flex-start;
+  padding: 1px 8px;
+}
+
+.archivist-inquiry-diff-insert {
+  background: rgba(80, 200, 80, 0.15);
+}
+
+.archivist-inquiry-diff-delete {
+  background: rgba(255, 80, 80, 0.15);
+}
+
+.archivist-inquiry-diff-prefix {
+  width: 16px;
+  flex-shrink: 0;
+  color: var(--text-faint);
+  user-select: none;
+}
+
+.archivist-inquiry-diff-text {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.archivist-inquiry-diff-truncated {
+  padding: 4px 8px;
+  font-size: 10px;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* -- Bash Output -- */
+.archivist-inquiry-bash-output pre {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  padding: 8px;
+  margin: 0;
+  max-height: 300px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* -- Response Footer -- */
+.archivist-inquiry-response-footer {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--text-faint);
+  margin-top: 8px;
+  padding-top: 4px;
+}
+
+/* -- Streaming Session -- */
+.archivist-inquiry-streaming-session {
+  /* Keep assistant message styling */
+}

@@ -6,6 +6,8 @@ import { renderItemBlock } from "../../renderers/item-renderer";
 import type { Message } from "../../types/conversation";
 import * as yaml from "js-yaml";
 
+// ─── Saved message rendering (non-streaming) ────────────────────────────────
+
 export function renderUserMessage(parent: HTMLElement, message: Message): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-msg-user" });
   wrapper.createDiv({ cls: "archivist-inquiry-msg-bubble" }).textContent = message.content;
@@ -56,6 +58,226 @@ export function renderErrorMessage(parent: HTMLElement, errorText: string): HTML
   return wrapper;
 }
 
+// ─── Streaming components ────────────────────────────────────────────────────
+
+export interface ThinkingBlockHandle {
+  el: HTMLElement;
+  appendContent(text: string): void;
+  finalize(): void;
+}
+
+export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: string): ThinkingBlockHandle {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-thinking-block" });
+  const header = wrapper.createDiv({ cls: "archivist-inquiry-thinking-header" });
+  header.setAttribute("tabindex", "0");
+  header.setAttribute("role", "button");
+  header.setAttribute("aria-expanded", "false");
+  const label = header.createSpan({ cls: "archivist-inquiry-thinking-label", text: "Thinking 0s..." });
+  const contentDiv = wrapper.createDiv({ cls: "archivist-inquiry-thinking-content" });
+  contentDiv.style.display = "none";
+
+  let accumulated = "";
+  let seconds = 0;
+  const timer = setInterval(() => {
+    seconds++;
+    label.textContent = `Thinking ${seconds}s...`;
+  }, 1000);
+
+  // Toggle collapse
+  header.addEventListener("click", () => {
+    const isExpanded = contentDiv.style.display !== "none";
+    contentDiv.style.display = isExpanded ? "none" : "";
+    header.setAttribute("aria-expanded", String(!isExpanded));
+  });
+
+  return {
+    el: wrapper,
+    appendContent(text: string) {
+      accumulated += text;
+      contentDiv.empty();
+      MarkdownRenderer.render(app, accumulated, contentDiv, sourcePath, null as any);
+    },
+    finalize() {
+      clearInterval(timer);
+      label.textContent = `Thought for ${seconds}s`;
+      wrapper.removeClass("archivist-inquiry-thinking-active");
+      // Collapse on finalize
+      contentDiv.style.display = "none";
+      header.setAttribute("aria-expanded", "false");
+    },
+  };
+}
+
+export interface ToolCallBlockHandle {
+  el: HTMLElement;
+  setResult(content: string, isError: boolean): void;
+  setStatus(status: "running" | "completed" | "error"): void;
+  setSummary(toolInput: Record<string, unknown>): void;
+}
+
+export function renderToolCallBlock(parent: HTMLElement, toolName: string, toolCallId?: string): ToolCallBlockHandle {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-tool-block" });
+  if (toolCallId) wrapper.setAttribute("data-tool-id", toolCallId);
+
+  const header = wrapper.createDiv({ cls: "archivist-inquiry-tool-header" });
+  header.setAttribute("tabindex", "0");
+  header.setAttribute("role", "button");
+  header.setAttribute("aria-expanded", "false");
+
+  const iconEl = header.createSpan({ cls: "archivist-inquiry-tool-icon" });
+  setIcon(iconEl, getToolIcon(toolName));
+
+  const displayName = toolName.replace("mcp__archivist__", "");
+  header.createSpan({ cls: "archivist-inquiry-tool-name", text: displayName });
+
+  const summaryEl = header.createSpan({ cls: "archivist-inquiry-tool-summary" });
+
+  const statusEl = header.createSpan({ cls: "archivist-inquiry-tool-status status-running" });
+  const spinnerEl = statusEl.createSpan({ cls: "archivist-inquiry-tool-spinner" });
+  setIcon(spinnerEl, "loader-2");
+
+  const contentDiv = wrapper.createDiv({ cls: "archivist-inquiry-tool-content" });
+  contentDiv.style.display = "none";
+  contentDiv.textContent = "Running...";
+
+  // Toggle collapse
+  header.addEventListener("click", () => {
+    const isExpanded = contentDiv.style.display !== "none";
+    contentDiv.style.display = isExpanded ? "none" : "";
+    header.setAttribute("aria-expanded", String(!isExpanded));
+  });
+
+  return {
+    el: wrapper,
+    setSummary(toolInput: Record<string, unknown>) {
+      const summary = getToolSummary(toolName, toolInput);
+      if (summary) summaryEl.textContent = summary;
+    },
+    setResult(content: string, isError: boolean) {
+      contentDiv.empty();
+      if (isDiffResult(toolName, content)) {
+        renderDiffContent(contentDiv, toolName, content);
+      } else if (isBashLikeOutput(toolName)) {
+        renderBashOutput(contentDiv, content);
+      } else {
+        // Generic result display
+        const pre = contentDiv.createEl("pre", { cls: "archivist-inquiry-tool-result-text" });
+        const truncated = truncateText(content, 30);
+        pre.textContent = truncated;
+      }
+      if (isError) {
+        contentDiv.addClass("archivist-inquiry-tool-result-error");
+      }
+      // Auto-expand for errors
+      if (isError) {
+        contentDiv.style.display = "";
+        header.setAttribute("aria-expanded", "true");
+      }
+    },
+    setStatus(status: "running" | "completed" | "error") {
+      statusEl.className = "archivist-inquiry-tool-status";
+      statusEl.empty();
+      if (status === "running") {
+        statusEl.addClass("status-running");
+        const s = statusEl.createSpan({ cls: "archivist-inquiry-tool-spinner" });
+        setIcon(s, "loader-2");
+      } else if (status === "completed") {
+        statusEl.addClass("status-completed");
+        setIcon(statusEl, "check");
+      } else {
+        statusEl.addClass("status-error");
+        setIcon(statusEl, "x");
+      }
+    },
+  };
+}
+
+export function renderDiffBlock(parent: HTMLElement, toolName: string, filePath: string, diffText: string): HTMLElement {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-diff-block" });
+  const header = wrapper.createDiv({ cls: "archivist-inquiry-diff-header" });
+  header.setAttribute("tabindex", "0");
+  header.setAttribute("role", "button");
+  header.setAttribute("aria-expanded", "true");
+
+  const iconEl = header.createSpan({ cls: "archivist-inquiry-diff-icon" });
+  setIcon(iconEl, toolName.toLowerCase().includes("write") ? "file-plus" : "file-pen");
+  header.createSpan({ cls: "archivist-inquiry-diff-name", text: toolName.includes("Write") ? "Write" : "Edit" });
+  header.createSpan({ cls: "archivist-inquiry-diff-file", text: filePath });
+
+  const lines = diffText.split("\n");
+  let added = 0;
+  let removed = 0;
+  for (const line of lines) {
+    if (line.startsWith("+") && !line.startsWith("+++")) added++;
+    if (line.startsWith("-") && !line.startsWith("---")) removed++;
+  }
+
+  const statsEl = header.createSpan({ cls: "archivist-inquiry-diff-stats" });
+  if (added > 0) statsEl.createSpan({ cls: "archivist-inquiry-diff-added", text: `+${added}` });
+  if (removed > 0) statsEl.createSpan({ cls: "archivist-inquiry-diff-removed", text: `-${removed}` });
+
+  const statusIcon = header.createSpan({ cls: "archivist-inquiry-diff-status" });
+  setIcon(statusIcon, "check");
+
+  const contentDiv = wrapper.createDiv({ cls: "archivist-inquiry-diff-content" });
+
+  // Render diff lines, max 20
+  const diffLines = lines.filter(l => l.startsWith("+") || l.startsWith("-") || l.startsWith(" "));
+  const maxLines = 20;
+  const visibleLines = diffLines.slice(0, maxLines);
+  for (const line of visibleLines) {
+    const lineEl = contentDiv.createDiv({ cls: "archivist-inquiry-diff-line" });
+    if (line.startsWith("+")) {
+      lineEl.addClass("archivist-inquiry-diff-insert");
+      lineEl.createSpan({ cls: "archivist-inquiry-diff-prefix", text: "+" });
+      lineEl.createSpan({ cls: "archivist-inquiry-diff-text", text: line.slice(1) });
+    } else if (line.startsWith("-")) {
+      lineEl.addClass("archivist-inquiry-diff-delete");
+      lineEl.createSpan({ cls: "archivist-inquiry-diff-prefix", text: "-" });
+      lineEl.createSpan({ cls: "archivist-inquiry-diff-text", text: line.slice(1) });
+    } else {
+      lineEl.createSpan({ cls: "archivist-inquiry-diff-prefix", text: " " });
+      lineEl.createSpan({ cls: "archivist-inquiry-diff-text", text: line.startsWith(" ") ? line.slice(1) : line });
+    }
+  }
+  if (diffLines.length > maxLines) {
+    contentDiv.createDiv({
+      cls: "archivist-inquiry-diff-truncated",
+      text: `... ${diffLines.length - maxLines} more lines`,
+    });
+  }
+
+  // Toggle collapse
+  header.addEventListener("click", () => {
+    const isExpanded = contentDiv.style.display !== "none";
+    contentDiv.style.display = isExpanded ? "none" : "";
+    header.setAttribute("aria-expanded", String(!isExpanded));
+  });
+
+  return wrapper;
+}
+
+export function renderBashOutput(parent: HTMLElement, output: string): HTMLElement {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-bash-output" });
+  const pre = wrapper.createEl("pre");
+  const lines = output.split("\n");
+  const maxLines = 20;
+  if (lines.length > maxLines) {
+    pre.textContent = lines.slice(0, maxLines).join("\n") + `\n... ${lines.length - maxLines} more lines`;
+  } else {
+    pre.textContent = output;
+  }
+  return wrapper;
+}
+
+export function renderResponseFooter(parent: HTMLElement, durationMs: number): HTMLElement {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-response-footer" });
+  const formatted = formatDuration(durationMs);
+  wrapper.createSpan({ text: `Crafted for ${formatted}` });
+  return wrapper;
+}
+
+// Keep the old indicator for backward compat in chat-messages.ts
 export function renderThinkingIndicator(parent: HTMLElement): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-thinking" });
   const iconEl = wrapper.createSpan({ cls: "archivist-inquiry-thinking-icon" });
@@ -63,6 +285,8 @@ export function renderThinkingIndicator(parent: HTMLElement): HTMLElement {
   wrapper.createSpan({ text: "Thinking..." });
   return wrapper;
 }
+
+// ─── Entity rendering ────────────────────────────────────────────────────────
 
 function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data: unknown }): void {
   try {
@@ -96,20 +320,84 @@ function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data:
   });
 }
 
-function getToolIcon(toolName: string): string {
-  const name = toolName.replace("mcp__archivist__", "");
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+export function getToolIcon(toolName: string): string {
+  const name = toolName.replace("mcp__archivist__", "").toLowerCase();
+  if (name === "read" || name === "file-text") return "file-text";
+  if (name === "write") return "file-plus";
+  if (name === "edit") return "file-pen";
+  if (name === "bash") return "terminal";
+  if (name === "glob") return "folder-search";
+  if (name === "grep") return "search";
+  if (name === "websearch" || name === "web_search") return "globe";
+  if (name === "webfetch" || name === "web_fetch") return "download";
+  if (name === "agent" || name === "task") return "bot";
+  if (name.startsWith("mcp__")) return "wand-2";
+  // Archivist MCP tools
   if (name.includes("search")) return "search";
   if (name.includes("get")) return "book-open";
   if (name.includes("generate")) return "wand-2";
   return "wrench";
 }
 
-function getToolSummary(toolName: string, input: Record<string, unknown>): string {
-  const name = toolName.replace("mcp__archivist__", "");
+export function getToolSummary(toolName: string, input: Record<string, unknown>): string {
+  const name = toolName.replace("mcp__archivist__", "").toLowerCase();
+  // File-related tools
+  if ((name === "read" || name === "write" || name === "edit") && input.file_path) {
+    return String(input.file_path).split("/").pop() ?? "";
+  }
+  // Bash
+  if (name === "bash" && input.command) {
+    const cmd = String(input.command);
+    return cmd.length > 60 ? cmd.slice(0, 57) + "..." : cmd;
+  }
+  // Glob
+  if (name === "glob" && input.pattern) return String(input.pattern);
+  // Grep
+  if (name === "grep" && input.pattern) return String(input.pattern);
+  // WebSearch
+  if ((name === "websearch" || name === "web_search") && input.query) return String(input.query);
+  // Archivist MCP tools
   if (name === "search_srd") return `"${input.query}"`;
   if (name === "get_srd_entity") return `"${input.name}"`;
   if (name === "generate_monster" && input.monster) return `"${(input.monster as any).name}"`;
   if (name === "generate_spell" && input.spell) return `"${(input.spell as any).name}"`;
   if (name === "generate_item" && input.item) return `"${(input.item as any).name}"`;
   return "";
+}
+
+function isDiffResult(toolName: string, content: string): boolean {
+  const name = toolName.replace("mcp__archivist__", "").toLowerCase();
+  if (name !== "edit" && name !== "write") return false;
+  // Check if content looks like a diff
+  return content.includes("+++") || content.includes("---") || /^[-+]\s/m.test(content);
+}
+
+function isBashLikeOutput(toolName: string): boolean {
+  const name = toolName.replace("mcp__archivist__", "").toLowerCase();
+  return name === "bash" || name === "terminal";
+}
+
+function renderDiffContent(parent: HTMLElement, toolName: string, content: string): void {
+  // Try to extract file path from diff header
+  let filePath = "";
+  const headerMatch = content.match(/^[+-]{3}\s+[ab]\/(.+)$/m);
+  if (headerMatch) filePath = headerMatch[1];
+
+  renderDiffBlock(parent, toolName, filePath, content);
+}
+
+function truncateText(text: string, maxLines: number): string {
+  const lines = text.split("\n");
+  if (lines.length <= maxLines) return text;
+  return lines.slice(0, maxLines).join("\n") + `\n... ${lines.length - maxLines} more lines`;
+}
+
+function formatDuration(ms: number): string {
+  const totalSeconds = Math.round(ms / 1000);
+  if (totalSeconds < 60) return `${totalSeconds}s`;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return seconds > 0 ? `${minutes}m ${seconds}s` : `${minutes}m`;
 }

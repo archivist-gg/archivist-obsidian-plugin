@@ -88,7 +88,7 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
 
   // 1. Header
   const header = el("div", { cls: "stat-block-header", parent: block });
-  el("h1", { cls: "monster-name", text: monster.name, parent: header });
+  el("div", { cls: "monster-name", text: monster.name, parent: header });
   const typeText = [
     monster.size ? capitalizeWords(monster.size) : "",
     monster.type ? capitalizeWords(monster.type) : "",

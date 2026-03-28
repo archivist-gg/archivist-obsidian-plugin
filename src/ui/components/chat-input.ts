@@ -62,23 +62,35 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
   // Toolbar row
   const toolbar = inputWrapper.createDiv({ cls: "archivist-inquiry-toolbar" });
 
-  // Model selector
-  const modelBtn = toolbar.createDiv({ cls: "archivist-inquiry-model-selector" });
+  // Model selector (dropdown is a child so position: absolute works)
+  const modelContainer = toolbar.createDiv({ cls: "archivist-inquiry-model-selector" });
   const currentModel = MODELS.find((m) => m.id === state.model) ?? MODELS[0];
-  modelBtn.createSpan({ text: currentModel.label });
-  const chevron = modelBtn.createSpan({ cls: "archivist-inquiry-model-chevron" });
+  modelContainer.createSpan({ text: currentModel.label });
+  const chevron = modelContainer.createSpan({ cls: "archivist-inquiry-model-chevron" });
   setIcon(chevron, "chevron-up");
 
-  const modelDropdown = toolbar.createDiv({ cls: "archivist-inquiry-model-dropdown" });
+  const modelDropdown = modelContainer.createDiv({ cls: "archivist-inquiry-model-dropdown" });
   modelDropdown.style.display = "none";
   for (const model of MODELS) {
     const option = modelDropdown.createDiv({
       cls: model.id === state.model ? "archivist-inquiry-model-option archivist-inquiry-model-option-active" : "archivist-inquiry-model-option",
       text: model.label,
     });
-    option.addEventListener("click", () => { callbacks.onModelChange(model.id); modelDropdown.style.display = "none"; });
+    option.addEventListener("click", (e) => {
+      e.stopPropagation();
+      callbacks.onModelChange(model.id);
+      modelDropdown.style.display = "none";
+    });
   }
-  modelBtn.addEventListener("click", () => { modelDropdown.style.display = modelDropdown.style.display === "none" ? "" : "none"; });
+  modelContainer.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isHidden = modelDropdown.style.display === "none";
+    modelDropdown.style.display = isHidden ? "" : "none";
+    if (isHidden) {
+      const dismiss = () => { modelDropdown.style.display = "none"; document.removeEventListener("click", dismiss); };
+      setTimeout(() => document.addEventListener("click", dismiss), 0);
+    }
+  });
 
   toolbar.createDiv({ cls: "archivist-inquiry-toolbar-sep" });
 
