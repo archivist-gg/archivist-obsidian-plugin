@@ -1,0 +1,336 @@
+import { Monster, MonsterFeature } from "../types/monster";
+import { abilityModifier, formatModifier } from "../parsers/yaml-utils";
+import {
+  el,
+  createSvgBar,
+  createPropertyLine,
+  renderTextWithInlineTags,
+} from "./renderer-utils";
+
+function capitalizeWords(str: string): string {
+  return str.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatSpeed(speed: Monster["speed"]): string {
+  if (!speed) return "0 ft.";
+  return Object.entries(speed)
+    .filter(([_, v]) => v)
+    .map(([type, value]) => `${capitalizeWords(type)} ${value} ft.`)
+    .join(", ");
+}
+
+function formatAC(monster: Monster): string {
+  if (!monster.ac || monster.ac.length === 0) return "10";
+  const primary = monster.ac[0];
+  let result = String(primary.ac);
+  if (primary.from && primary.from.length > 0) {
+    result += ` (${primary.from.map((f) => capitalizeWords(f)).join(", ")})`;
+  }
+  return result;
+}
+
+function formatHP(monster: Monster): string {
+  if (!monster.hp) return "0";
+  let result = String(monster.hp.average);
+  if (monster.hp.formula) {
+    result += ` (${monster.hp.formula})`;
+  }
+  return result;
+}
+
+function renderFeatureBlock(
+  parent: HTMLElement,
+  features: MonsterFeature[],
+): void {
+  for (const feature of features) {
+    const featureDiv = el("div", { cls: "archivist-feature", parent });
+    const propLine = el("div", { cls: "archivist-property-line", parent: featureDiv });
+    const nameSpan = el("span", { cls: "archivist-feature-name", parent: propLine });
+    nameSpan.textContent = feature.name + ".";
+    const entrySpan = el("span", { cls: "archivist-feature-entry", parent: propLine });
+    const entryText = feature.entries.join(" ");
+    renderTextWithInlineTags(entryText, entrySpan);
+  }
+}
+
+function renderLegendaryResistance(
+  parent: HTMLElement,
+  count: number,
+): void {
+  const wrapper = el("div", { cls: "archivist-legendary-resistance-inline", parent });
+  const boxes = el("div", { cls: "archivist-legendary-resistance-boxes", parent: wrapper });
+
+  for (let i = 0; i < count; i++) {
+    const box = el("label", { cls: "archivist-legendary-resistance-box", parent: boxes });
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.addClass("archivist-legendary-resistance-checkbox");
+    box.appendChild(checkbox);
+
+    const custom = el("div", { cls: "archivist-legendary-resistance-custom", parent: box });
+
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        const cross = el("div", { cls: "archivist-ability-cross" });
+        custom.appendChild(cross);
+      } else {
+        const cross = custom.querySelector(".archivist-ability-cross");
+        if (cross) cross.remove();
+      }
+    });
+  }
+}
+
+export function renderMonsterBlock(monster: Monster): HTMLElement {
+  const wrapper = el("div", { cls: "archivist-monster-block-wrapper" });
+  const block = el("div", { cls: "archivist-monster-block", parent: wrapper });
+
+  // 1. Header
+  const header = el("div", { cls: "stat-block-header", parent: block });
+  el("h1", { cls: "monster-name", text: monster.name, parent: header });
+  const typeText = [
+    monster.size ? capitalizeWords(monster.size) : "",
+    monster.type ? capitalizeWords(monster.type) : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const fullType = monster.alignment
+    ? `${typeText}, ${capitalizeWords(monster.alignment)}`
+    : typeText;
+  el("p", { cls: "monster-type", text: fullType, parent: header });
+
+  // 2. SVG Bar
+  createSvgBar(block);
+
+  // 3. Core properties (AC, HP, Speed)
+  const coreProps = el("div", { cls: "property-block", parent: block });
+  createPropertyLine(coreProps, "Armor Class", formatAC(monster));
+  createPropertyLine(coreProps, "Hit Points", formatHP(monster));
+  createPropertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
+
+  // 4. SVG Bar
+  createSvgBar(block);
+
+  // 5. Abilities table
+  if (monster.abilities) {
+    const abilitiesBlock = el("div", { cls: "abilities-block", parent: block });
+    const table = el("table", { cls: "abilities-table", parent: abilitiesBlock });
+
+    const thead = el("thead", { parent: table });
+    const headerRow = el("tr", { parent: thead });
+    const abilityNames = ["STR", "DEX", "CON", "INT", "WIS", "CHA"];
+    for (const name of abilityNames) {
+      el("th", { text: name, parent: headerRow });
+    }
+
+    const tbody = el("tbody", { parent: table });
+    const valueRow = el("tr", { parent: tbody });
+    const abilityKeys: (keyof typeof monster.abilities)[] = [
+      "str",
+      "dex",
+      "con",
+      "int",
+      "wis",
+      "cha",
+    ];
+    for (const key of abilityKeys) {
+      const td = el("td", { parent: valueRow });
+      const score = monster.abilities[key];
+      const mod = abilityModifier(score);
+      const scoreSpan = el("span", {
+        cls: "ability-score",
+        text: String(score),
+        parent: td,
+      });
+      void scoreSpan;
+      td.appendChild(document.createTextNode(` (${formatModifier(mod)})`));
+    }
+  }
+
+  // 6. SVG Bar
+  createSvgBar(block);
+
+  // 7. Secondary properties
+  const secondaryProps = el("div", { cls: "property-block", parent: block });
+  let hasSecondary = false;
+
+  if (monster.saves && Object.keys(monster.saves).length > 0) {
+    const savesStr = Object.entries(monster.saves)
+      .map(([k, v]) => `${capitalizeWords(k)} ${formatModifier(v as number)}`)
+      .join(", ");
+    createPropertyLine(secondaryProps, "Saving Throws", savesStr);
+    hasSecondary = true;
+  }
+
+  if (monster.skills && Object.keys(monster.skills).length > 0) {
+    const skillsStr = Object.entries(monster.skills)
+      .map(([k, v]) => `${capitalizeWords(k)} ${formatModifier(v)}`)
+      .join(", ");
+    createPropertyLine(secondaryProps, "Skills", skillsStr);
+    hasSecondary = true;
+  }
+
+  if (
+    monster.damage_vulnerabilities &&
+    monster.damage_vulnerabilities.length > 0
+  ) {
+    createPropertyLine(
+      secondaryProps,
+      "Damage Vulnerabilities",
+      monster.damage_vulnerabilities.map(capitalizeWords).join(", "),
+    );
+    hasSecondary = true;
+  }
+
+  if (monster.damage_resistances && monster.damage_resistances.length > 0) {
+    createPropertyLine(
+      secondaryProps,
+      "Damage Resistances",
+      monster.damage_resistances.map(capitalizeWords).join(", "),
+    );
+    hasSecondary = true;
+  }
+
+  if (monster.damage_immunities && monster.damage_immunities.length > 0) {
+    createPropertyLine(
+      secondaryProps,
+      "Damage Immunities",
+      monster.damage_immunities.map(capitalizeWords).join(", "),
+    );
+    hasSecondary = true;
+  }
+
+  if (
+    monster.condition_immunities &&
+    monster.condition_immunities.length > 0
+  ) {
+    createPropertyLine(
+      secondaryProps,
+      "Condition Immunities",
+      monster.condition_immunities.map(capitalizeWords).join(", "),
+    );
+    hasSecondary = true;
+  }
+
+  if (monster.senses && monster.senses.length > 0) {
+    let sensesStr = monster.senses.join(", ");
+    if (monster.passive_perception) {
+      sensesStr += `, passive Perception ${monster.passive_perception}`;
+    }
+    createPropertyLine(secondaryProps, "Senses", sensesStr);
+    hasSecondary = true;
+  } else if (monster.passive_perception) {
+    createPropertyLine(
+      secondaryProps,
+      "Senses",
+      `passive Perception ${monster.passive_perception}`,
+    );
+    hasSecondary = true;
+  }
+
+  if (monster.languages && monster.languages.length > 0) {
+    createPropertyLine(
+      secondaryProps,
+      "Languages",
+      monster.languages.map(capitalizeWords).join(", "),
+    );
+    hasSecondary = true;
+  }
+
+  if (monster.cr) {
+    createPropertyLine(secondaryProps, "Challenge", monster.cr);
+    hasSecondary = true;
+  }
+
+  // 8. SVG Bar (only if secondary props exist)
+  if (hasSecondary) {
+    createSvgBar(block);
+  }
+
+  // 9. Tab navigation
+  const tabDefs: {
+    id: string;
+    label: string;
+    features: MonsterFeature[] | undefined;
+  }[] = [
+    { id: "traits", label: "Traits", features: monster.traits },
+    { id: "actions", label: "Actions", features: monster.actions },
+    { id: "reactions", label: "Reactions", features: monster.reactions },
+    { id: "legendary", label: "Legendary Actions", features: monster.legendary },
+  ];
+
+  const activeTabs = tabDefs.filter(
+    (t) => t.features && t.features.length > 0,
+  );
+
+  if (activeTabs.length > 0) {
+    const navWrapper = el("div", {
+      cls: "original-tab-navigation-wrapper",
+      parent: block,
+    });
+    const nav = el("div", {
+      cls: "original-tab-navigation",
+      parent: navWrapper,
+    });
+
+    const contentDivs: Map<string, HTMLElement> = new Map();
+
+    for (let i = 0; i < activeTabs.length; i++) {
+      const tab = activeTabs[i];
+      const btn = el("button", {
+        cls: i === 0
+          ? ["original-tab-button", "active"]
+          : "original-tab-button",
+        text: tab.label,
+        parent: nav,
+      });
+
+      btn.addEventListener("click", () => {
+        // Remove active from all buttons
+        nav
+          .querySelectorAll(".original-tab-button")
+          .forEach((b) => b.removeClass("active"));
+        btn.addClass("active");
+
+        // Show/hide content
+        contentDivs.forEach((div, id) => {
+          div.style.display = id === tab.id ? "" : "none";
+        });
+      });
+    }
+
+    // 10. Tab content
+    for (let i = 0; i < activeTabs.length; i++) {
+      const tab = activeTabs[i];
+      const content = el("div", {
+        cls: "original-tab-content",
+        parent: block,
+      });
+      content.style.display = i === 0 ? "" : "none";
+      contentDivs.set(tab.id, content);
+
+      if (tab.id === "legendary") {
+        // Legendary intro text
+        const legendaryCount = monster.legendary_actions ?? 3;
+        const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
+        el("p", {
+          cls: "archivist-legendary-intro",
+          text: introText,
+          parent: content,
+        });
+
+        // Legendary resistance boxes
+        if (monster.legendary_resistance && monster.legendary_resistance > 0) {
+          renderLegendaryResistance(content, monster.legendary_resistance);
+        }
+      }
+
+      if (tab.features) {
+        renderFeatureBlock(content, tab.features);
+      }
+    }
+  }
+
+  return wrapper;
+}
