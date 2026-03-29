@@ -6,6 +6,7 @@
  */
 
 import { getTodayDate } from '../../utils/date';
+import { buildDndSystemPromptSection, type DndPromptContext } from './dndContext';
 
 export interface SystemPromptSettings {
   mediaFolder?: string;
@@ -14,6 +15,7 @@ export interface SystemPromptSettings {
   allowExternalAccess?: boolean;
   vaultPath?: string;
   userName?: string;
+  dndContext?: DndPromptContext;
 }
 
 function getPathRules(vaultPath?: string, allowExternalAccess: boolean = false): string {
@@ -352,6 +354,13 @@ export function buildSystemPrompt(settings: SystemPromptSettings = {}): string {
 
   if (settings.customPrompt?.trim()) {
     prompt += '\n\n## Custom Instructions\n\n' + settings.customPrompt.trim();
+  }
+
+  if (settings.dndContext) {
+    const dndSection = buildDndSystemPromptSection(settings.dndContext);
+    if (dndSection) {
+      prompt += '\n\n' + dndSection;
+    }
   }
 
   return prompt;

@@ -9,6 +9,7 @@ import { formatDurationMmSs } from '../../../utils/date';
 import { processFileLinks, registerFileLinkHandler } from '../../../utils/fileLink';
 import { replaceImageEmbedsWithHtml } from '../../../utils/imageEmbed';
 import { findRewindContext } from '../rewind';
+import { replaceDndCodeFences, type CopyAndSaveCallback } from './DndEntityRenderer';
 import {
   renderStoredAsyncSubagent,
   renderStoredSubagent,
@@ -27,6 +28,7 @@ export class MessageRenderer {
   private rewindCallback?: (messageId: string) => Promise<void>;
   private forkCallback?: (messageId: string) => Promise<void>;
   private liveMessageEls = new Map<string, HTMLElement>();
+  private dndCopyAndSaveCallback?: CopyAndSaveCallback;
 
   private static readonly REWIND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
 
@@ -53,6 +55,11 @@ export class MessageRenderer {
   /** Sets the messages container element. */
   setMessagesEl(el: HTMLElement): void {
     this.messagesEl = el;
+  }
+
+  /** Sets the callback for D&D entity Copy & Save buttons. */
+  setDndCopyAndSaveCallback(cb: CopyAndSaveCallback): void {
+    this.dndCopyAndSaveCallback = cb;
   }
 
   // ============================================
@@ -518,6 +525,9 @@ export class MessageRenderer {
           wrapper.appendChild(copyBtn);
         }
       });
+
+      // Replace D&D code fences (monster/spell/item) with rendered stat blocks
+      replaceDndCodeFences(el, this.dndCopyAndSaveCallback);
 
       // Process file paths to make them clickable links
       processFileLinks(this.app, el);
