@@ -107,6 +107,10 @@ export class SlashCommandDropdown {
     }
   }
 
+  isOpen(): boolean {
+    return this.dropdown !== null;
+  }
+
   destroy(): void {
     this.hide();
   }

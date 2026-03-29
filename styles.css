@@ -1819,7 +1819,7 @@
 .archivist-inquiry-context-preview { font-size: 10px; color: var(--text-faint); font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .archivist-inquiry-context-dismiss { font-size: 12px; color: var(--text-faint); cursor: pointer; flex-shrink: 0; }
 
-.archivist-inquiry-input-wrapper { border: 1px solid var(--background-modifier-border); border-radius: 6px; }
+.archivist-inquiry-input-wrapper { border: 1px solid var(--background-modifier-border); border-radius: 6px; position: relative; }
 .archivist-inquiry-input-streaming { border-color: rgba(var(--archivist-brand-rgb), 0.3); }
 
 .archivist-inquiry-textarea {

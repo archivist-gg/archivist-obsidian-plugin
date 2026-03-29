@@ -140,6 +140,10 @@ export class MentionDropdown {
     }
   }
 
+  isOpen(): boolean {
+    return this.dropdown !== null;
+  }
+
   destroy(): void {
     this.hide();
     if (this.debounceTimer) clearTimeout(this.debounceTimer);

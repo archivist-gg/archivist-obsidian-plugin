@@ -96,7 +96,24 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
     const maxH = Math.max(150, window.innerHeight * 0.4);
     textarea.style.height = Math.min(textarea.scrollHeight, maxH) + "px";
   });
+  // @mention dropdown
+  let mentionDropdown: MentionDropdown | null = null;
+  if (state.vaultFiles && callbacks.onMentionFile) {
+    mentionDropdown = new MentionDropdown(textarea, inputWrapper, () => state.vaultFiles ?? [], callbacks.onMentionFile);
+  }
+
+  // Slash command dropdown
+  let slashDropdown: SlashCommandDropdown | null = null;
+  if (callbacks.onSlashCommand) {
+    slashDropdown = new SlashCommandDropdown(textarea, inputWrapper, callbacks.onSlashCommand);
+  }
+
   textarea.addEventListener("keydown", (e) => {
+    // Let open dropdowns handle navigation keys first
+    const dropdownOpen = mentionDropdown?.isOpen() || slashDropdown?.isOpen();
+    if (dropdownOpen && (e.key === "Enter" || e.key === "Tab" || e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "Escape")) {
+      return; // Dropdown keydown handlers will handle this
+    }
     if (e.key === "Escape" && state.isStreaming) {
       e.preventDefault();
       callbacks.onStop();
@@ -108,16 +125,6 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
       if (text) { callbacks.onSend(text); textarea.value = ""; textarea.style.height = "auto"; }
     }
   });
-
-  // @mention dropdown
-  if (state.vaultFiles && callbacks.onMentionFile) {
-    new MentionDropdown(textarea, inputWrapper, () => state.vaultFiles ?? [], callbacks.onMentionFile);
-  }
-
-  // Slash command dropdown
-  if (callbacks.onSlashCommand) {
-    new SlashCommandDropdown(textarea, inputWrapper, callbacks.onSlashCommand);
-  }
 
   // Toolbar row
   const toolbar = inputWrapper.createDiv({ cls: "archivist-inquiry-toolbar" });
