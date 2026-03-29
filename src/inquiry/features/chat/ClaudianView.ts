@@ -3,7 +3,7 @@ import { ItemView, Notice, Scope, setIcon } from 'obsidian';
 
 import { getContextWindowSize, VIEW_TYPE_CLAUDIAN } from '../../core/types';
 import type InquiryModule from '../../InquiryModule';
-import { LOGO_SVG } from './constants';
+import { createOwlIcon } from '../../../ui/components/owl-icon';
 import { TabBar, TabManager, updatePlanModeUI } from './tabs';
 import type { TabData, TabId } from './tabs/types';
 
@@ -213,16 +213,7 @@ export class ClaudianView extends ItemView {
 
     // Logo (hidden when 2+ tabs)
     this.logoEl = this.titleSlotEl.createSpan({ cls: 'claudian-logo' });
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', LOGO_SVG.viewBox);
-    svg.setAttribute('width', LOGO_SVG.width);
-    svg.setAttribute('height', LOGO_SVG.height);
-    svg.setAttribute('fill', 'none');
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', LOGO_SVG.path);
-    path.setAttribute('fill', LOGO_SVG.fill);
-    svg.appendChild(path);
-    this.logoEl.appendChild(svg);
+    this.logoEl.appendChild(createOwlIcon(18));
 
     // Title text (hidden in header mode when 2+ tabs)
     this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Archivist Inquiry', cls: 'claudian-title-text' });

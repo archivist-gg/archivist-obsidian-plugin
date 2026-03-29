@@ -227,6 +227,10 @@
   background: transparent;
 }
 
+.archivist-monster-block .abilities-table tr:hover {
+  background: transparent;
+}
+
 .archivist-monster-block .ability-score {
   font-weight: bold;
 }

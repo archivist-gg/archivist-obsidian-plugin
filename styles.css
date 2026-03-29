@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
+
 /* Archivist TTRPG Blocks - Plugin Styles */
 /* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css */
 
@@ -460,6 +462,8 @@
   padding: 20px;
   min-height: 200px;
 }
+
+.claudian-welcome svg { color: var(--text-accent); margin-bottom: 12px; }
 
 .claudian-welcome-greeting {
   font-family: 'Copernicus', 'Tiempos Headline', 'Tiempos', Georgia, 'Times New Roman', serif;
@@ -5554,7 +5558,7 @@ code .claudian-file-link:hover {
 
 /* 1. Google Fonts
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
+
 
 /* 2. CSS Custom Properties (from dnd-theme.css)
    ========================================================================== */
@@ -5773,6 +5777,10 @@ code .claudian-file-link:hover {
 
 .archivist-monster-block .abilities-table thead tr {
   border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table tr:hover {
   background: transparent;
 }
 

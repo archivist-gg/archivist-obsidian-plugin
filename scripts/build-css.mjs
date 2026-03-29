@@ -129,9 +129,18 @@ function buildDndCss() {
 
 function build() {
   const claudianCss = buildClaudianCss();
-  const dndCss = buildDndCss();
+  let dndCss = buildDndCss();
+
+  // Extract @import lines from D&D CSS - they must appear at the very top of the output
+  // per CSS spec (browsers silently ignore @import rules that appear after other rules)
+  // Pattern handles url() with embedded semicolons (e.g. Google Fonts URLs)
+  const importPattern = /^@import\s+url\(['"][^'"]*['"]\)\s*;/gm;
+  const importLines = dndCss.match(importPattern) || [];
+  dndCss = dndCss.replace(importPattern, '').trimStart();
 
   const output = [
+    ...importLines,
+    ...(importLines.length > 0 ? [''] : []),
     '/* Archivist TTRPG Blocks - Plugin Styles */',
     '/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css */',
     '',

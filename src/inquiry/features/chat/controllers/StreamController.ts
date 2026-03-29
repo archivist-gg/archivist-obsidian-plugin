@@ -428,7 +428,7 @@ export class StreamController {
     }
 
     state.currentTextContent += text;
-    await renderer.renderContent(state.currentTextEl, state.currentTextContent);
+    await renderer.renderContent(state.currentTextEl, state.currentTextContent, { skipDndReplacement: true });
   }
 
   finalizeCurrentTextBlock(msg?: ChatMessage): void {
@@ -440,6 +440,10 @@ export class StreamController {
       if (state.currentTextEl) {
         renderer.addTextCopyButton(state.currentTextEl, state.currentTextContent);
       }
+    }
+    // Final render without skipDndReplacement to trigger D&D code fence replacement
+    if (state.currentTextEl && state.currentTextContent) {
+      void renderer.renderContent(state.currentTextEl, state.currentTextContent);
     }
     state.currentTextEl = null;
     state.currentTextContent = '';

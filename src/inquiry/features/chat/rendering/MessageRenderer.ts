@@ -8,6 +8,7 @@ import type InquiryModule from '../../../InquiryModule';
 import { formatDurationMmSs } from '../../../utils/date';
 import { processFileLinks, registerFileLinkHandler } from '../../../utils/fileLink';
 import { replaceImageEmbedsWithHtml } from '../../../utils/imageEmbed';
+import { createOwlIcon } from '../../../../ui/components/owl-icon';
 import { findRewindContext } from '../rewind';
 import { replaceDndCodeFences, type CopyAndSaveCallback } from './DndEntityRenderer';
 import {
@@ -132,6 +133,7 @@ export class MessageRenderer {
     // Recreate welcome element after clearing
     const newWelcomeEl = this.messagesEl.createDiv({ cls: 'claudian-welcome' });
     newWelcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: getGreeting() });
+    newWelcomeEl.insertBefore(createOwlIcon(32), newWelcomeEl.firstChild);
 
     for (let i = 0; i < messages.length; i++) {
       this.renderStoredMessage(messages[i], messages, i);
@@ -474,7 +476,7 @@ export class MessageRenderer {
   /**
    * Renders markdown content with code block enhancements.
    */
-  async renderContent(el: HTMLElement, markdown: string): Promise<void> {
+  async renderContent(el: HTMLElement, markdown: string, options?: { skipDndReplacement?: boolean }): Promise<void> {
     el.empty();
 
     try {
@@ -527,7 +529,9 @@ export class MessageRenderer {
       });
 
       // Replace D&D code fences (monster/spell/item) with rendered stat blocks
-      replaceDndCodeFences(el, this.dndCopyAndSaveCallback);
+      if (!options?.skipDndReplacement) {
+        replaceDndCodeFences(el, this.dndCopyAndSaveCallback);
+      }
 
       // Process file paths to make them clickable links
       processFileLinks(this.app, el);

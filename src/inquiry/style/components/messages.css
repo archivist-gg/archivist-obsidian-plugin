@@ -34,6 +34,8 @@
   min-height: 200px;
 }
 
+.claudian-welcome svg { color: var(--text-accent); margin-bottom: 12px; }
+
 .claudian-welcome-greeting {
   font-family: 'Copernicus', 'Tiempos Headline', 'Tiempos', Georgia, 'Times New Roman', serif;
   font-size: 28px;
