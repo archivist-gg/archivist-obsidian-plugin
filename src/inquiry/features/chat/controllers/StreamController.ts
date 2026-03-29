@@ -325,7 +325,7 @@ export class StreamController {
       state.writeEditStates.set(toolId, writeEditState);
       state.toolCallElements.set(toolId, writeEditState.wrapperEl);
     } else {
-      renderToolCall(parentEl, toolCall, state.toolCallElements);
+      renderToolCall(parentEl, toolCall, state.toolCallElements, this.deps.renderer.getDndCopyAndSaveCallback());
     }
     state.pendingTools.delete(toolId);
   }
@@ -400,7 +400,7 @@ export class StreamController {
         }
         finalizeWriteEditBlock(writeEditState, chunk.isError || isBlocked);
       } else {
-        updateToolCallResult(chunk.id, existingToolCall, state.toolCallElements);
+        updateToolCallResult(chunk.id, existingToolCall, state.toolCallElements, this.deps.renderer.getDndCopyAndSaveCallback());
       }
 
       // Notify Obsidian vault so the file tree refreshes after Write/Edit/NotebookEdit

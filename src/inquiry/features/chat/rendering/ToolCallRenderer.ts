@@ -1,4 +1,5 @@
 import { setIcon } from 'obsidian';
+import * as yaml from 'js-yaml';
 
 import { extractResolvedAnswersFromResultText, type TodoItem } from '../../../core/tools';
 import { getToolIcon, MCP_ICON_MARKER } from '../../../core/tools/toolIcons';
@@ -22,7 +23,22 @@ import {
 import type { ToolCallInfo } from '../../../core/types';
 import { MCP_ICON_SVG } from '../../../shared/icons';
 import { setupCollapsible } from './collapsible';
+import { renderDndEntityBlock, type CopyAndSaveCallback } from './DndEntityRenderer';
+import { parseDndCodeFence } from './dndCodeFence';
 import { renderTodoItems } from './todoUtils';
+
+const DND_ENTITY_TOOLS = new Set([
+  'mcp__archivist__generate_monster',
+  'mcp__archivist__generate_spell',
+  'mcp__archivist__generate_item',
+]);
+
+function getDndEntityType(toolName: string): string | null {
+  if (toolName.includes('generate_monster')) return 'monster';
+  if (toolName.includes('generate_spell')) return 'spell';
+  if (toolName.includes('generate_item')) return 'item';
+  return null;
+}
 
 export function setToolIcon(el: HTMLElement, name: string): void {
   const icon = getToolIcon(name);
@@ -288,10 +304,31 @@ function renderWebFetchExpanded(container: HTMLElement, result: string): void {
   }
 }
 
-export function renderExpandedContent(container: HTMLElement, toolName: string, result: string | undefined): void {
+export function renderExpandedContent(
+  container: HTMLElement,
+  toolName: string,
+  result: string | undefined,
+  dndCopyAndSaveCallback?: CopyAndSaveCallback
+): void {
   if (!result) {
     container.createDiv({ cls: 'claudian-tool-empty', text: 'No result' });
     return;
+  }
+
+  // Detect D&D entity tool results and render as stat blocks
+  const entityType = getDndEntityType(toolName);
+  if (entityType && result) {
+    try {
+      const parsed = JSON.parse(result);
+      if (parsed.data) {
+        const yamlStr = yaml.dump(parsed.data);
+        const fenceResult = parseDndCodeFence(entityType, yamlStr);
+        if (fenceResult) {
+          renderDndEntityBlock(container, fenceResult, dndCopyAndSaveCallback);
+          return;
+        }
+      }
+    } catch { /* fall through to default */ }
   }
 
   switch (toolName) {
@@ -519,7 +556,8 @@ function createTodoToggleHandler(
 function renderToolContent(
   content: HTMLElement,
   toolCall: ToolCallInfo,
-  initialText?: string
+  initialText?: string,
+  dndCopyAndSaveCallback?: CopyAndSaveCallback
 ): void {
   if (toolCall.name === TOOL_TODO_WRITE) {
     content.addClass('claudian-tool-content-todo');
@@ -534,14 +572,15 @@ function renderToolContent(
   } else if (initialText) {
     contentFallback(content, initialText);
   } else {
-    renderExpandedContent(content, toolCall.name, toolCall.result);
+    renderExpandedContent(content, toolCall.name, toolCall.result, dndCopyAndSaveCallback);
   }
 }
 
 export function renderToolCall(
   parentEl: HTMLElement,
   toolCall: ToolCallInfo,
-  toolCallElements: Map<string, HTMLElement>
+  toolCallElements: Map<string, HTMLElement>,
+  dndCopyAndSaveCallback?: CopyAndSaveCallback
 ): HTMLElement {
   const { toolEl, header, statusEl, content, currentTaskEl } =
     createToolElementStructure(parentEl, toolCall);
@@ -552,7 +591,7 @@ export function renderToolCall(
   statusEl.addClass(`status-${toolCall.status}`);
   statusEl.setAttribute('aria-label', `Status: ${toolCall.status}`);
 
-  renderToolContent(content, toolCall, 'Running...');
+  renderToolContent(content, toolCall, 'Running...', dndCopyAndSaveCallback);
 
   const state = { isExpanded: false };
   toolCall.isExpanded = false;
@@ -571,7 +610,8 @@ export function renderToolCall(
 export function updateToolCallResult(
   toolId: string,
   toolCall: ToolCallInfo,
-  toolCallElements: Map<string, HTMLElement>
+  toolCallElements: Map<string, HTMLElement>,
+  dndCopyAndSaveCallback?: CopyAndSaveCallback
 ) {
   const toolEl = toolCallElements.get(toolId);
   if (!toolEl) return;
@@ -616,14 +656,15 @@ export function updateToolCallResult(
   const content = toolEl.querySelector('.claudian-tool-content') as HTMLElement;
   if (content) {
     content.empty();
-    renderExpandedContent(content, toolCall.name, toolCall.result);
+    renderExpandedContent(content, toolCall.name, toolCall.result, dndCopyAndSaveCallback);
   }
 }
 
 /** For stored (non-streaming) tool calls — collapsed by default. */
 export function renderStoredToolCall(
   parentEl: HTMLElement,
-  toolCall: ToolCallInfo
+  toolCall: ToolCallInfo,
+  dndCopyAndSaveCallback?: CopyAndSaveCallback
 ): HTMLElement {
   const { toolEl, header, statusEl, content, currentTaskEl } =
     createToolElementStructure(parentEl, toolCall);
@@ -634,7 +675,7 @@ export function renderStoredToolCall(
     setToolStatus(statusEl, toolCall.status);
   }
 
-  renderToolContent(content, toolCall);
+  renderToolContent(content, toolCall, undefined, dndCopyAndSaveCallback);
 
   const state = { isExpanded: false };
   const todoStatusEl = toolCall.name === TOOL_TODO_WRITE ? statusEl : null;

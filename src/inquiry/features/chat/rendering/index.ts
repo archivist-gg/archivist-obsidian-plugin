@@ -36,6 +36,7 @@ export {
   renderToolCall,
   setToolIcon,
   updateToolCallResult,
+  type CopyAndSaveCallback,
 } from './ToolCallRenderer';
 export {
   createWriteEditBlock,

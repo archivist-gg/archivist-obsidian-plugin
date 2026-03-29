@@ -63,6 +63,11 @@ export class MessageRenderer {
     this.dndCopyAndSaveCallback = cb;
   }
 
+  /** Returns the current D&D Copy & Save callback (for use by external renderers). */
+  getDndCopyAndSaveCallback(): CopyAndSaveCallback | undefined {
+    return this.dndCopyAndSaveCallback;
+  }
+
   // ============================================
   // Streaming Message Rendering
   // ============================================
@@ -306,7 +311,7 @@ export class MessageRenderer {
     } else if (isSubagentToolName(toolCall.name)) {
       this.renderTaskSubagent(contentEl, toolCall);
     } else {
-      renderStoredToolCall(contentEl, toolCall);
+      renderStoredToolCall(contentEl, toolCall, this.dndCopyAndSaveCallback);
     }
   }
 
