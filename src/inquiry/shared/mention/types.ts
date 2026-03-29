@@ -59,6 +59,14 @@ export interface AgentMentionProvider {
   }>;
 }
 
+export interface EntityMentionItem {
+  type: 'entity';
+  name: string;
+  entityType: string;
+  slug: string;
+  source: 'srd' | 'custom';
+}
+
 export type MentionItem =
   | FileMentionItem
   | FolderMentionItem
@@ -66,4 +74,5 @@ export type MentionItem =
   | ContextFileMentionItem
   | ContextFolderMentionItem
   | AgentMentionItem
-  | AgentFolderMentionItem;
+  | AgentFolderMentionItem
+  | EntityMentionItem;

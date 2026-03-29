@@ -1,0 +1,313 @@
+/**
+ * EntityAutocompleteDropdown — triggered by `[[` in textarea
+ *
+ * Pure functions (parseEntityReference, resolveEntityReferences) are exported
+ * separately so they can be tested without Obsidian/DOM dependencies.
+ *
+ * The EntityAutocompleteDropdown class handles DOM interactions and requires
+ * an EntityRegistry instance at runtime.
+ */
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface EntityReference {
+  type: string | null;
+  name: string;
+}
+
+/** Valid entity type prefixes for [[type:Name]] syntax. */
+const ENTITY_TYPE_PREFIXES = new Set([
+  'monster',
+  'spell',
+  'item',
+  'doc',
+  'feat',
+  'condition',
+  'class',
+  'background',
+  'armor',
+  'weapon',
+  'equipment',
+]);
+
+// ---------------------------------------------------------------------------
+// Pure functions (testable without DOM/Obsidian)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a single `[[type:Name]]` or `[[Name]]` reference string.
+ * Returns null if the string is not a valid entity reference.
+ */
+export function parseEntityReference(text: string): EntityReference | null {
+  const match = text.match(/^\[\[(.+?)\]\]$/);
+  if (!match) return null;
+
+  const inner = match[1].trim();
+  if (inner.length === 0) return null;
+
+  const colonIndex = inner.indexOf(':');
+  if (colonIndex !== -1) {
+    const typePart = inner.substring(0, colonIndex).trim().toLowerCase();
+    const namePart = inner.substring(colonIndex + 1).trim();
+    if (typePart.length > 0 && namePart.length > 0) {
+      return { type: typePart, name: namePart };
+    }
+  }
+
+  return { type: null, name: inner };
+}
+
+/**
+ * Extract all `[[...]]` entity references from a block of text.
+ */
+export function resolveEntityReferences(text: string): EntityReference[] {
+  const regex = /\[\[(.+?)\]\]/g;
+  const results: EntityReference[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    const fullMatch = `[[${match[1]}]]`;
+    const parsed = parseEntityReference(fullMatch);
+    if (parsed) {
+      results.push(parsed);
+    }
+  }
+
+  return results;
+}
+
+// ---------------------------------------------------------------------------
+// Autocomplete dropdown class (requires DOM + EntityRegistry at runtime)
+// ---------------------------------------------------------------------------
+
+interface AutocompleteResult {
+  slug: string;
+  name: string;
+  entityType: string;
+  source: 'srd' | 'custom';
+}
+
+/**
+ * Autocomplete dropdown that activates when the user types `[[` in a textarea.
+ * Searches the EntityRegistry and inserts `[[type:Name]]` on selection.
+ */
+export class EntityAutocompleteDropdown {
+  private containerEl: HTMLElement;
+  private inputEl: HTMLTextAreaElement;
+  private entityRegistry: any; // Avoid importing EntityRegistry to prevent Obsidian bundling issues
+  private dropdownEl: HTMLElement | null = null;
+  private results: AutocompleteResult[] = [];
+  private selectedIndex = 0;
+  private bracketStartIndex = -1;
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private isVisible = false;
+
+  private static readonly MAX_RESULTS = 20;
+  private static readonly DEBOUNCE_MS = 200;
+
+  constructor(
+    containerEl: HTMLElement,
+    inputEl: HTMLTextAreaElement,
+    entityRegistry: any,
+  ) {
+    this.containerEl = containerEl;
+    this.inputEl = inputEl;
+    this.entityRegistry = entityRegistry;
+  }
+
+  /**
+   * Call from the textarea's input event handler.
+   * Detects `[[` trigger and shows/hides the dropdown.
+   */
+  handleInput(): void {
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+    }
+
+    this.debounceTimer = setTimeout(() => {
+      this.processInput();
+    }, EntityAutocompleteDropdown.DEBOUNCE_MS);
+  }
+
+  /**
+   * Call from the textarea's keydown event handler.
+   * Returns true if the key was consumed by the dropdown.
+   */
+  handleKeydown(e: KeyboardEvent): boolean {
+    if (!this.isVisible) return false;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.selectedIndex = Math.min(this.selectedIndex + 1, this.results.length - 1);
+      this.renderDropdown();
+      return true;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+      this.renderDropdown();
+      return true;
+    }
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      if (this.results.length > 0) {
+        e.preventDefault();
+        this.selectItem(this.selectedIndex);
+        return true;
+      }
+    }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      this.hide();
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Hide and clean up the dropdown.
+   */
+  hide(): void {
+    if (this.dropdownEl) {
+      this.dropdownEl.remove();
+      this.dropdownEl = null;
+    }
+    this.isVisible = false;
+    this.bracketStartIndex = -1;
+    this.results = [];
+    this.selectedIndex = 0;
+  }
+
+  /**
+   * Full cleanup — call on destroy.
+   */
+  destroy(): void {
+    if (this.debounceTimer !== null) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.hide();
+  }
+
+  // -------------------------------------------------------------------------
+  // Private
+  // -------------------------------------------------------------------------
+
+  private processInput(): void {
+    const text = this.inputEl.value;
+    const cursorPos = this.inputEl.selectionStart || 0;
+    const textBeforeCursor = text.substring(0, cursorPos);
+
+    // Find the last unmatched `[[`
+    const lastBracketIndex = textBeforeCursor.lastIndexOf('[[');
+    if (lastBracketIndex === -1) {
+      this.hide();
+      return;
+    }
+
+    // Check it hasn't been closed yet
+    const afterBrackets = textBeforeCursor.substring(lastBracketIndex + 2);
+    if (afterBrackets.includes(']]')) {
+      this.hide();
+      return;
+    }
+
+    this.bracketStartIndex = lastBracketIndex;
+    const query = afterBrackets;
+
+    this.performSearch(query);
+  }
+
+  private performSearch(query: string): void {
+    if (!this.entityRegistry) {
+      this.hide();
+      return;
+    }
+
+    // Check for type prefix (e.g., "monster:" or "spell:fir")
+    let entityType: string | undefined;
+    let searchQuery = query;
+
+    const colonIndex = query.indexOf(':');
+    if (colonIndex !== -1) {
+      const prefix = query.substring(0, colonIndex).toLowerCase();
+      if (ENTITY_TYPE_PREFIXES.has(prefix)) {
+        entityType = prefix;
+        searchQuery = query.substring(colonIndex + 1);
+      }
+    }
+
+    const entities = this.entityRegistry.search(
+      searchQuery,
+      entityType,
+      EntityAutocompleteDropdown.MAX_RESULTS,
+    );
+
+    this.results = entities.map((e: any) => ({
+      slug: e.slug,
+      name: e.name,
+      entityType: e.entityType,
+      source: e.source,
+    }));
+
+    this.selectedIndex = 0;
+
+    if (this.results.length > 0) {
+      this.isVisible = true;
+      this.renderDropdown();
+    } else {
+      this.hide();
+    }
+  }
+
+  private renderDropdown(): void {
+    if (!this.dropdownEl) {
+      this.dropdownEl = this.containerEl.createDiv({
+        cls: 'claudian-entity-autocomplete-dropdown',
+      });
+    }
+
+    this.dropdownEl.empty();
+
+    for (let i = 0; i < this.results.length; i++) {
+      const result = this.results[i];
+      const itemEl = this.dropdownEl.createDiv({
+        cls: `claudian-entity-autocomplete-item${i === this.selectedIndex ? ' is-selected' : ''}`,
+      });
+
+      const nameEl = itemEl.createSpan({ cls: 'claudian-entity-autocomplete-name' });
+      nameEl.setText(result.name);
+
+      const metaEl = itemEl.createSpan({ cls: 'claudian-entity-autocomplete-meta' });
+      metaEl.setText(`${result.entityType}${result.source === 'custom' ? ' (custom)' : ''}`);
+
+      itemEl.addEventListener('click', () => {
+        this.selectItem(i);
+      });
+
+      itemEl.addEventListener('mouseenter', () => {
+        this.selectedIndex = i;
+        this.renderDropdown();
+      });
+    }
+  }
+
+  private selectItem(index: number): void {
+    const item = this.results[index];
+    if (!item) return;
+
+    const text = this.inputEl.value;
+    const cursorPos = this.inputEl.selectionStart || 0;
+    const beforeBrackets = text.substring(0, this.bracketStartIndex);
+    const afterCursor = text.substring(cursorPos);
+
+    const replacement = `[[${item.entityType}:${item.name}]]`;
+    this.inputEl.value = beforeBrackets + replacement + afterCursor;
+    const newCursorPos = beforeBrackets.length + replacement.length;
+    this.inputEl.selectionStart = this.inputEl.selectionEnd = newCursorPos;
+
+    this.hide();
+    this.inputEl.focus();
+  }
+}

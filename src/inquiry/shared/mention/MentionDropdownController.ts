@@ -48,6 +48,7 @@ export class MentionDropdownController {
   private activeAgentFilter = false;
   private mcpManager: McpMentionProvider | null = null;
   private agentService: AgentMentionProvider | null = null;
+  private entityRegistry: any = null;
   private fixed: boolean;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -77,6 +78,10 @@ export class MentionDropdownController {
 
   setAgentService(service: AgentMentionProvider | null): void {
     this.agentService = service;
+  }
+
+  setEntityRegistry(registry: any): void {
+    this.entityRegistry = registry;
   }
 
   preScanExternalContexts(): void {
@@ -334,6 +339,19 @@ export class MentionDropdownController {
     const firstVaultItemIndex = this.filteredMentionItems.length;
     const vaultItemCount = this.appendVaultItems(searchLower);
 
+    if (this.entityRegistry) {
+      const entities = this.entityRegistry.search(searchLower);
+      for (const entity of entities.slice(0, 10)) {
+        this.filteredMentionItems.push({
+          type: 'entity',
+          name: entity.name,
+          entityType: entity.entityType,
+          slug: entity.slug,
+          source: entity.source,
+        });
+      }
+    }
+
     this.selectedMentionIndex = vaultItemCount > 0 ? firstVaultItemIndex : 0;
 
     this.renderMentionDropdown();
@@ -426,6 +444,7 @@ export class MentionDropdownController {
           case 'agent-folder': return 'agent-folder';
           case 'context-file': return 'context-file';
           case 'context-folder': return 'context-folder';
+          case 'entity': return 'entity';
           default: return undefined;
         }
       },
@@ -441,6 +460,9 @@ export class MentionDropdownController {
             break;
           case 'context-file':
             setIcon(iconEl, 'folder-open');
+            break;
+          case 'entity':
+            setIcon(iconEl, 'scroll-text');
             break;
           case 'folder':
           case 'context-folder':
@@ -480,6 +502,12 @@ export class MentionDropdownController {
             textEl.createSpan({
               cls: 'claudian-mention-name claudian-mention-name-context',
             }).setText(item.name);
+            break;
+          case 'entity':
+            textEl.createSpan({
+              cls: 'claudian-mention-name claudian-mention-name-entity',
+            }).setText(`@${item.name}`);
+            textEl.createSpan({ cls: 'claudian-mention-entity-type' }).setText(item.entityType);
             break;
           case 'folder':
             textEl.createSpan({
@@ -573,6 +601,11 @@ export class MentionDropdownController {
         const replacement = `@${selectedItem.id} (agent) `;
         this.insertReplacement(beforeAt, replacement, afterCursor);
         this.callbacks.onAgentMentionSelect?.(selectedItem.id);
+        break;
+      }
+      case 'entity': {
+        const replacement = `@${selectedItem.name} `;
+        this.insertReplacement(beforeAt, replacement, afterCursor);
         break;
       }
       case 'context-folder': {

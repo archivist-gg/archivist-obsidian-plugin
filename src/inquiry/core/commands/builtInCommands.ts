@@ -5,7 +5,7 @@
  * These are handled separately from user-defined slash commands.
  */
 
-export type BuiltInCommandAction = 'clear' | 'add-dir' | 'resume' | 'fork';
+export type BuiltInCommandAction = 'clear' | 'add-dir' | 'resume' | 'fork' | 'generate' | 'search-srd' | 'roll';
 
 export interface BuiltInCommand {
   name: string;
@@ -47,6 +47,27 @@ export const BUILT_IN_COMMANDS: BuiltInCommand[] = [
     name: 'fork',
     description: 'Fork entire conversation to new session',
     action: 'fork',
+  },
+  {
+    name: 'generate',
+    description: 'Generate a D&D entity (monster, spell, item, encounter, NPC)',
+    action: 'generate',
+    hasArgs: true,
+    argumentHint: '<monster|spell|item|encounter|npc> [description]',
+  },
+  {
+    name: 'search-srd',
+    description: 'Search SRD content by name',
+    action: 'search-srd',
+    hasArgs: true,
+    argumentHint: '[query]',
+  },
+  {
+    name: 'roll',
+    description: 'Roll dice (e.g., /roll 2d6+3)',
+    action: 'roll',
+    hasArgs: true,
+    argumentHint: '<notation>',
   },
 ];
 
