@@ -2303,3 +2303,42 @@
   background: rgba(var(--archivist-brand-rgb), 0.15);
   color: var(--archivist-brand);
 }
+
+/* Entity autocomplete dropdown ([[ trigger)
+   ========================================================================== */
+.archivist-inquiry-entity-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  margin-bottom: 4px;
+}
+.archivist-inquiry-entity-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.archivist-inquiry-entity-item:hover,
+.archivist-inquiry-entity-item-active {
+  background: var(--background-modifier-hover);
+}
+.archivist-inquiry-entity-item-icon { color: var(--text-muted); flex-shrink: 0; }
+.archivist-inquiry-entity-item-icon svg { width: 14px; height: 14px; }
+.archivist-inquiry-entity-item-text { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.archivist-inquiry-entity-item-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.archivist-inquiry-entity-item-badge {
+  font-size: 9px; padding: 1px 5px; border-radius: 8px;
+  font-weight: 600; text-transform: uppercase; flex-shrink: 0;
+}
+.archivist-inquiry-entity-badge-srd { background: var(--background-modifier-border); color: var(--text-muted); }
+.archivist-inquiry-entity-badge-custom { background: rgba(var(--archivist-brand-rgb), 0.15); color: var(--archivist-brand); }
+.archivist-inquiry-entity-badge-doc { background: var(--background-modifier-border); color: var(--text-faint); }

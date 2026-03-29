@@ -23,6 +23,8 @@ import type { AgentService } from "../ai/agent-service";
 import type { ConversationManager } from "../ai/conversation-manager";
 import type { ArchivistSettings } from "../types/settings";
 import { slugify, ensureUniqueSlug, generateEntityMarkdown, TYPE_FOLDER_MAP } from "../entities/entity-vault-store";
+import * as yaml from "js-yaml";
+import type { EntityAutocompleteResult } from "./components/entity-autocomplete";
 
 export const VIEW_TYPE_INQUIRY = "archivist-inquiry-view";
 
@@ -194,6 +196,10 @@ export class InquiryView extends ItemView {
     // Input -- use per-tab context percent
     const contextPercent = activeId ? (this.tabContextPercent.get(activeId) ?? 0) : 0;
     const vaultFiles = this.app.vault.getMarkdownFiles().map(f => f.path);
+    const entitySearchFn = this.pluginRef.entityRegistry
+      ? (query: string, entityType?: string) => this.pluginRef.entityRegistry?.search(query, entityType) ?? []
+      : undefined;
+
     const inputState: ChatInputState = {
       selectedText: this.selectedText,
       currentNotePath: this.noteIncluded ? (this.app.workspace.getActiveFile()?.path) : undefined,
@@ -204,6 +210,7 @@ export class InquiryView extends ItemView {
       isStreaming: this.isStreaming,
       vaultFiles,
       mentionedFiles: this.mentionedFiles,
+      entitySearch: entitySearchFn,
     };
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),
@@ -246,6 +253,10 @@ export class InquiryView extends ItemView {
       },
       onSlashCommand: (action: string) => {
         this.handleSlashCommand(action);
+      },
+      onEntitySelect: (_entity: EntityAutocompleteResult) => {
+        // Entity reference is tracked in the message text as [[type:name]].
+        // Context is resolved at send time via resolveEntityReferences().
       },
     });
 
@@ -373,12 +384,15 @@ export class InquiryView extends ItemView {
       ? vaultPath
       : `${vaultPath}/${this.pluginRef.settings.ttrpgRootDir}`;
 
+    const entityContext = this.resolveEntityReferences(text);
+
     const context = {
       ttrpgRootDir: ttrpgRoot,
       currentNotePath: this.noteIncluded ? activeFile?.path : undefined,
       currentNoteContent: this.noteIncluded ? currentNoteContent : undefined,
       selectedText: this.selectedText,
       externalContextPaths: this.pluginRef.settings.externalContextPaths,
+      entityContext,
     };
 
     const conv = mgr.getConversation(activeId);
@@ -696,6 +710,34 @@ export class InquiryView extends ItemView {
     this.updateInputArea();
   }
 
+  /**
+   * Scan message text for [[type:name]] patterns, look up each entity in the
+   * registry, and serialise matching entity data as YAML wrapped in
+   * entity-context tags for injection into the system prompt.
+   */
+  private resolveEntityReferences(text: string): string {
+    const registry = this.pluginRef.entityRegistry;
+    if (!registry) return "";
+
+    const refPattern = /\[\[(?:(\w[\w-]*):)?([^\]]+)\]\]/g;
+    const contexts: string[] = [];
+    let match;
+
+    while ((match = refPattern.exec(text)) !== null) {
+      const [, type, name] = match;
+      const results = registry.search(name, type, 1);
+      if (results.length > 0 && results[0].data) {
+        const entity = results[0];
+        const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
+        contexts.push(
+          `<entity-context type="${entity.entityType}" name="${entity.name}">\n${yamlStr}</entity-context>`,
+        );
+      }
+    }
+
+    return contexts.join("\n\n");
+  }
+
   /** Save a generated entity to the vault as a compendium note */
   private async saveEntityToVault(entityType: string, data: unknown): Promise<string | null> {
     try {
@@ -778,6 +820,10 @@ export class InquiryView extends ItemView {
 
     const ctxPercent = activeId ? (this.tabContextPercent.get(activeId) ?? 0) : 0;
     const vaultFiles = this.app.vault.getMarkdownFiles().map(f => f.path);
+    const entitySearchFn2 = this.pluginRef.entityRegistry
+      ? (query: string, entityType?: string) => this.pluginRef.entityRegistry?.search(query, entityType) ?? []
+      : undefined;
+
     const inputState: ChatInputState = {
       selectedText: this.selectedText,
       currentNotePath: this.noteIncluded ? (this.app.workspace.getActiveFile()?.path) : undefined,
@@ -788,6 +834,7 @@ export class InquiryView extends ItemView {
       isStreaming: this.isStreaming,
       vaultFiles,
       mentionedFiles: this.mentionedFiles,
+      entitySearch: entitySearchFn2,
     };
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),
@@ -830,6 +877,10 @@ export class InquiryView extends ItemView {
       },
       onSlashCommand: (action: string) => {
         this.handleSlashCommand(action);
+      },
+      onEntitySelect: (_entity: EntityAutocompleteResult) => {
+        // Entity reference is tracked in the message text as [[type:name]].
+        // Context is resolved at send time via resolveEntityReferences().
       },
     });
   }

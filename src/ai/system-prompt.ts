@@ -4,6 +4,7 @@ export interface SystemPromptContext {
   currentNoteContent?: string;
   selectedText?: string;
   externalContextPaths?: string[];
+  entityContext?: string;
 }
 
 export function buildSystemPrompt(ctx: SystemPromptContext): string {
@@ -57,6 +58,10 @@ BEHAVIOR:
 
   if (ctx.externalContextPaths && ctx.externalContextPaths.length > 0) {
     parts.push(`\nYou also have access to files in these external directories:\n${ctx.externalContextPaths.map(p => "- " + p).join("\n")}`);
+  }
+
+  if (ctx.entityContext) {
+    parts.push(`\nThe user has referenced the following entities:\n${ctx.entityContext}`);
   }
 
   return parts.join("\n");

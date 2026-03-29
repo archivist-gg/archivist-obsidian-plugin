@@ -1,0 +1,133 @@
+import type { Vault } from "obsidian";
+import type { SrdStore } from "../ai/srd/srd-store";
+import { generateEntityMarkdown, TYPE_FOLDER_MAP } from "./entity-vault-store";
+
+// ---------------------------------------------------------------------------
+// Filename sanitization
+// ---------------------------------------------------------------------------
+
+/** Characters illegal in file names on common OSes. */
+const INVALID_FILENAME_CHARS = /[/:*?"<>|\\]/g;
+
+/**
+ * Replace OS-invalid filename characters with underscores.
+ */
+function sanitizeFilename(name: string): string {
+  return name.replace(INVALID_FILENAME_CHARS, "_");
+}
+
+// ---------------------------------------------------------------------------
+// importSrdToVault
+// ---------------------------------------------------------------------------
+
+/**
+ * Generates vault notes for every SRD entity under `{compendiumRoot}/SRD/`.
+ *
+ * - Creates type subfolders (e.g. `Compendium/SRD/Monsters/`)
+ * - Skips files that already exist (resume-safe)
+ * - Reports progress via optional callback every 50 entities
+ * - Returns the total number of notes created
+ */
+export async function importSrdToVault(
+  vault: Vault,
+  srdStore: SrdStore,
+  compendiumRoot: string,
+  onProgress?: (current: number, total: number) => void,
+): Promise<number> {
+  // 1. Collect all entities
+  const types = srdStore.getTypes();
+  const allEntities: {
+    slug: string;
+    name: string;
+    entityType: string;
+    data: Record<string, unknown>;
+  }[] = [];
+
+  for (const entityType of types) {
+    const entities = srdStore.getAllOfType(entityType);
+    allEntities.push(...entities);
+  }
+
+  const total = allEntities.length;
+  if (total === 0) return 0;
+
+  // 2. Ensure base folder exists
+  const srdRoot = `${compendiumRoot}/SRD`;
+  await ensureFolderExists(vault, compendiumRoot);
+  await ensureFolderExists(vault, srdRoot);
+
+  // 3. Pre-create all type subfolders
+  const neededFolders = new Set<string>();
+  for (const entityType of types) {
+    const folderName = TYPE_FOLDER_MAP[entityType] ?? capitalize(entityType);
+    neededFolders.add(`${srdRoot}/${folderName}`);
+  }
+  for (const folder of neededFolders) {
+    await ensureFolderExists(vault, folder);
+  }
+
+  // 4. Import each entity
+  let created = 0;
+  for (let i = 0; i < allEntities.length; i++) {
+    const entity = allEntities[i];
+    const folderName =
+      TYPE_FOLDER_MAP[entity.entityType] ?? capitalize(entity.entityType);
+    const fileName = sanitizeFilename(entity.name);
+    const filePath = `${srdRoot}/${folderName}/${fileName}.md`;
+
+    // Skip if file already exists (resume support)
+    const existing = vault.getAbstractFileByPath(filePath);
+    if (existing) {
+      // Report progress even for skipped files
+      if (onProgress && (i + 1) % 50 === 0) {
+        onProgress(i + 1, total);
+      }
+      continue;
+    }
+
+    const markdown = generateEntityMarkdown({
+      slug: entity.slug,
+      name: entity.name,
+      entityType: entity.entityType,
+      source: "srd",
+      data: entity.data,
+    });
+
+    await vault.create(filePath, markdown);
+    created++;
+
+    // Report progress every 50 entities
+    if (onProgress && (i + 1) % 50 === 0) {
+      onProgress(i + 1, total);
+    }
+  }
+
+  // Final progress report
+  if (onProgress && total % 50 !== 0) {
+    onProgress(total, total);
+  }
+
+  return created;
+}
+
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates a folder if it does not already exist.
+ */
+async function ensureFolderExists(vault: Vault, path: string): Promise<void> {
+  const existing = vault.getAbstractFileByPath(path);
+  if (!existing) {
+    await vault.createFolder(path);
+  }
+}
+
+/**
+ * Capitalize a string for use as a fallback folder name.
+ */
+function capitalize(s: string): string {
+  if (s.length === 0) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}

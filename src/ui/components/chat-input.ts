@@ -1,6 +1,8 @@
 import { setIcon } from "obsidian";
 import { MentionDropdown } from "./mention-dropdown";
 import { SlashCommandDropdown } from "./slash-commands";
+import { EntityAutocomplete, type EntityAutocompleteResult } from "./entity-autocomplete";
+import type { RegisteredEntity } from "../../entities/entity-registry";
 
 export interface ChatInputState {
   selectedText?: string;
@@ -12,6 +14,7 @@ export interface ChatInputState {
   isStreaming: boolean;
   vaultFiles?: string[];
   mentionedFiles?: string[];
+  entitySearch?: (query: string, entityType?: string) => RegisteredEntity[];
 }
 
 export interface ChatInputCallbacks {
@@ -25,6 +28,7 @@ export interface ChatInputCallbacks {
   onMentionFile?: (path: string) => void;
   onRemoveMention?: (path: string) => void;
   onSlashCommand?: (action: string) => void;
+  onEntitySelect?: (entity: EntityAutocompleteResult) => void;
 }
 
 const MODELS = [
@@ -87,7 +91,7 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
   // Textarea
   const textarea = inputWrapper.createEl("textarea", {
     cls: "archivist-inquiry-textarea",
-    attr: { placeholder: state.isStreaming ? "Archivist is thinking..." : "Ask the Archivist... (@ to mention files, / for commands)", rows: "1" },
+    attr: { placeholder: state.isStreaming ? "Archivist is thinking..." : "Ask the Archivist... (@ files, [[ entities, / commands)", rows: "1" },
   });
   if (state.isStreaming) textarea.disabled = true;
   else requestAnimationFrame(() => textarea.focus());
@@ -108,9 +112,21 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
     slashDropdown = new SlashCommandDropdown(textarea, inputWrapper, callbacks.onSlashCommand);
   }
 
+  // Entity autocomplete dropdown ([[ trigger)
+  let entityDropdown: EntityAutocomplete | null = null;
+  if (state.entitySearch && callbacks.onEntitySelect) {
+    entityDropdown = new EntityAutocomplete(
+      textarea,
+      inputWrapper,
+      state.entitySearch,
+      () => state.vaultFiles ?? [],
+      callbacks.onEntitySelect,
+    );
+  }
+
   textarea.addEventListener("keydown", (e) => {
     // Let open dropdowns handle navigation keys first
-    const dropdownOpen = mentionDropdown?.isOpen() || slashDropdown?.isOpen();
+    const dropdownOpen = mentionDropdown?.isOpen() || slashDropdown?.isOpen() || entityDropdown?.isOpen();
     if (dropdownOpen && (e.key === "Enter" || e.key === "Tab" || e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "Escape")) {
       return; // Dropdown keydown handlers will handle this
     }

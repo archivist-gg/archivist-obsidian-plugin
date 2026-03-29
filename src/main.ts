@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Plugin, Notice } from "obsidian";
 import { parseMonster } from "./parsers/monster-parser";
 import { parseSpell } from "./parsers/spell-parser";
 import { parseItem } from "./parsers/item-parser";
@@ -17,6 +17,9 @@ import { ArchivistSettingTab } from "./settings/settings-tab";
 import { AgentService } from "./ai/agent-service";
 import { ConversationManager } from "./ai/conversation-manager";
 import { SrdStore } from "./ai/srd/srd-store";
+import { EntityRegistry } from "./entities/entity-registry";
+import { importSrdToVault } from "./entities/entity-importer";
+import { parseEntityFrontmatter, TYPE_FOLDER_MAP } from "./entities/entity-vault-store";
 import type { ArchivistSettings } from "./types/settings";
 import { DEFAULT_SETTINGS } from "./types/settings";
 
@@ -24,6 +27,7 @@ export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
   agentService: AgentService | null = null;
   conversationManager: ConversationManager | null = null;
+  entityRegistry: EntityRegistry | null = null;
   private srdStore: SrdStore | null = null;
 
   async onload() {
@@ -32,6 +36,22 @@ export default class ArchivistPlugin extends Plugin {
     // Initialize SRD store with bundled JSON data
     this.srdStore = new SrdStore();
     this.srdStore.loadFromBundledJson();
+
+    // Initialize entity registry and populate from SRD store
+    this.entityRegistry = new EntityRegistry();
+    for (const entityType of this.srdStore.getTypes()) {
+      for (const srdEntity of this.srdStore.getAllOfType(entityType)) {
+        const folder = TYPE_FOLDER_MAP[srdEntity.entityType] ?? srdEntity.entityType;
+        this.entityRegistry.register({
+          slug: srdEntity.slug,
+          name: srdEntity.name,
+          entityType: srdEntity.entityType,
+          source: "srd",
+          filePath: `${this.settings.compendiumRoot}/SRD/${folder}/${srdEntity.name}.md`,
+          data: srdEntity.data,
+        });
+      }
+    }
 
     // Initialize AI services
     this.agentService = new AgentService(this.srdStore);
@@ -113,6 +133,31 @@ export default class ArchivistPlugin extends Plugin {
 
     // Settings tab
     this.addSettingTab(new ArchivistSettingTab(this.app, this));
+
+    // First-load SRD import (async, non-blocking)
+    if (!this.settings.srdImported) {
+      const notice = new Notice("Importing SRD content...", 0);
+      importSrdToVault(
+        this.app.vault,
+        this.srdStore,
+        this.settings.compendiumRoot,
+        (current, total) => {
+          notice.setMessage(`Importing SRD content... ${current}/${total}`);
+        },
+      ).then(async (count) => {
+        notice.hide();
+        new Notice(`SRD import complete. ${count} entities added to vault.`);
+        this.settings.srdImported = true;
+        await this.saveSettings();
+        await this.loadUserEntities();
+      }).catch((err) => {
+        notice.hide();
+        new Notice(`SRD import failed: ${err.message}`);
+        console.error("SRD import failed:", err);
+      });
+    } else {
+      this.loadUserEntities();
+    }
   }
 
   private async activateInquiryView(): Promise<void> {
@@ -153,6 +198,27 @@ export default class ArchivistPlugin extends Plugin {
     const data = (await this.loadData()) ?? {};
     data.settings = this.settings;
     await this.saveData(data);
+  }
+
+  private async loadUserEntities(): Promise<void> {
+    if (!this.entityRegistry) return;
+    const userRoot = `${this.settings.compendiumRoot}/${this.settings.userEntityFolder}`;
+    const files = this.app.vault.getMarkdownFiles()
+      .filter((f: { path: string }) => f.path.startsWith(userRoot));
+
+    for (const file of files) {
+      try {
+        const content = await this.app.vault.cachedRead(file);
+        const entity = parseEntityFrontmatter(content);
+        if (entity) {
+          this.entityRegistry.register({
+            ...entity,
+            source: "custom",
+            filePath: file.path,
+          });
+        }
+      } catch { /* skip unreadable files */ }
+    }
   }
 
   onunload() {
