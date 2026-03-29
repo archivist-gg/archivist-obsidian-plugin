@@ -1,4 +1,4 @@
-export interface TabData { id: string; title: string; isActive: boolean; }
+export interface TabData { id: string; title: string; isActive: boolean; state?: "idle" | "streaming" | "done"; }
 
 export interface ChatTabsCallbacks {
   onSelectTab: (id: string) => void;
@@ -13,6 +13,11 @@ export function renderChatTabs(parent: HTMLElement, tabs: TabData[], callbacks: 
     const tabEl = bar.createDiv({
       cls: tab.isActive ? "archivist-inquiry-tab archivist-inquiry-tab-active" : "archivist-inquiry-tab",
     });
+    if (tab.state === "streaming") {
+      tabEl.createSpan({ cls: "archivist-inquiry-tab-badge archivist-inquiry-tab-badge-streaming" });
+    } else if (tab.state === "done") {
+      tabEl.createSpan({ cls: "archivist-inquiry-tab-badge archivist-inquiry-tab-badge-done" });
+    }
     tabEl.createSpan({ cls: "archivist-inquiry-tab-title", text: tab.title });
     const closeBtn = tabEl.createSpan({ cls: "archivist-inquiry-tab-close", text: "\u00d7" });
     closeBtn.addEventListener("click", (e) => { e.stopPropagation(); callbacks.onCloseTab(tab.id); });

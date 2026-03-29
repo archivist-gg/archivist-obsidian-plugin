@@ -391,6 +391,8 @@ export class InquiryView extends ItemView {
     const generatedBlocks = new Map<string, { handle: GeneratedBlockHandle; entityType: string }>();
     // Track the latest tool call ID for associating results when toolCallId is missing
     let lastToolCallId: string | undefined;
+    // Map tool call IDs to tool names so we can infer entity type from the tool name
+    const toolCallNames = new Map<string, string>();
 
     // Content blocks for persistence (re-rendered on tab switch/reopen)
     const contentBlocks: ContentBlock[] = [];
@@ -517,6 +519,7 @@ export class InquiryView extends ItemView {
             endTextSegment();
             const toolId = event.toolCallId ?? `tool-${Date.now()}`;
             lastToolCallId = toolId;
+            toolCallNames.set(toolId, event.toolName ?? "unknown");
             const entityType = getEntityType(event.toolName ?? "");
 
             const block = renderToolCallBlock(streamContainer, event.toolName ?? "unknown", toolId);
@@ -582,21 +585,43 @@ export class InquiryView extends ItemView {
               }
             }
             // Detect generated entity in tool result -- update existing skeleton or create new
-            if (event.toolResult) {
+            if (event.toolResult && !event.isError) {
               try {
                 const parsed = JSON.parse(event.toolResult);
+                let entityType: string | null = null;
+                let entityData: unknown = null;
+
+                // Case 1: tool result has {type, data} wrapper (normal path)
                 if (parsed.type && parsed.data && ["monster", "spell", "item"].includes(parsed.type)) {
-                  generatedEntity = { type: parsed.type, data: parsed.data };
-                  contentBlocks.push({ type: "generated_entity", entityType: parsed.type, data: parsed.data });
+                  entityType = parsed.type;
+                  entityData = parsed.data;
+                }
+                // Case 2: flat entity data without wrapper -- infer type from tool name
+                else if (parsed.name && toolId) {
+                  const toolName = toolCallNames.get(toolId) ?? "";
+                  const inferredType = getEntityType(toolName);
+                  if (inferredType) {
+                    entityType = inferredType;
+                    entityData = parsed;
+                  }
+                }
+
+                if (entityType && entityData) {
+                  generatedEntity = { type: entityType as any, data: entityData };
+                  contentBlocks.push({ type: "generated_entity", entityType, data: entityData });
                   const genBlock = toolId ? generatedBlocks.get(toolId) : undefined;
                   if (genBlock) {
-                    genBlock.handle.updateFromResult(parsed.type, parsed.data);
+                    genBlock.handle.updateFromResult(entityType, entityData);
                   } else {
                     const blockWrapper = streamContainer.createDiv({ cls: "archivist-inquiry-stat-block" });
                     renderGeneratedBlock(blockWrapper, generatedEntity);
                   }
                 }
-              } catch { /* not JSON entity */ }
+              } catch (err) {
+                // Not JSON or other parse error -- check if this is a generate tool
+                // and the result might be YAML instead of JSON
+                console.debug("[archivist] tool_result not a JSON entity:", err);
+              }
             }
             scrollToBottom();
             break;

@@ -1,24 +1,35 @@
 import { setIcon } from "obsidian";
+import { MentionDropdown } from "./mention-dropdown";
+import { SlashCommandDropdown } from "./slash-commands";
 
 export interface ChatInputState {
   selectedText?: string;
+  currentNotePath?: string;
   model: string;
+  thinkingBudget: string;
   permissionMode: "auto" | "safe";
   contextPercent: number;
   isStreaming: boolean;
+  vaultFiles?: string[];
+  mentionedFiles?: string[];
 }
 
 export interface ChatInputCallbacks {
   onSend: (text: string) => void;
   onStop: () => void;
   onModelChange: (model: string) => void;
+  onThinkingBudgetChange: (budget: string) => void;
   onPermissionToggle: () => void;
   onDismissSelection: () => void;
+  onDismissNote?: () => void;
+  onMentionFile?: (path: string) => void;
+  onRemoveMention?: (path: string) => void;
+  onSlashCommand?: (action: string) => void;
 }
 
 const MODELS = [
-  { id: "claude-sonnet-4-6", label: "Sonnet 4" },
   { id: "claude-opus-4-6", label: "Opus 4" },
+  { id: "claude-sonnet-4-6", label: "Sonnet 4" },
   { id: "claude-haiku-4-5-20251001", label: "Haiku 4" },
 ];
 
@@ -39,6 +50,35 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
     dismissBtn.addEventListener("click", callbacks.onDismissSelection);
   }
 
+  // Context row (current note indicator)
+  if (state.currentNotePath) {
+    const noteRow = wrapper.createDiv({ cls: "archivist-inquiry-context-row archivist-inquiry-context-note" });
+    const iconEl = noteRow.createSpan({ cls: "archivist-inquiry-context-icon" });
+    setIcon(iconEl, "file-text");
+    noteRow.createSpan({ cls: "archivist-inquiry-context-label", text: "Note" });
+    const basename = state.currentNotePath.split("/").pop() ?? state.currentNotePath;
+    noteRow.createSpan({ cls: "archivist-inquiry-context-preview", text: basename });
+    if (callbacks.onDismissNote) {
+      const dismissNoteBtn = noteRow.createSpan({ cls: "archivist-inquiry-context-dismiss", text: "\u00d7" });
+      dismissNoteBtn.addEventListener("click", callbacks.onDismissNote);
+    }
+  }
+
+  // Mentioned files chips
+  if (state.mentionedFiles && state.mentionedFiles.length > 0) {
+    const chipsRow = wrapper.createDiv({ cls: "archivist-inquiry-mention-chips" });
+    for (const filePath of state.mentionedFiles) {
+      const chip = chipsRow.createDiv({ cls: "archivist-inquiry-mention-chip" });
+      const chipIcon = chip.createSpan({ cls: "archivist-inquiry-mention-chip-icon" });
+      setIcon(chipIcon, "file-text");
+      chip.createSpan({ text: filePath.split("/").pop() ?? filePath });
+      if (callbacks.onRemoveMention) {
+        const removeBtn = chip.createSpan({ cls: "archivist-inquiry-mention-chip-remove", text: "\u00d7" });
+        removeBtn.addEventListener("click", () => callbacks.onRemoveMention!(filePath));
+      }
+    }
+  }
+
   // Input wrapper
   const inputWrapper = wrapper.createDiv({
     cls: state.isStreaming ? "archivist-inquiry-input-wrapper archivist-inquiry-input-streaming" : "archivist-inquiry-input-wrapper",
@@ -47,10 +87,15 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
   // Textarea
   const textarea = inputWrapper.createEl("textarea", {
     cls: "archivist-inquiry-textarea",
-    attr: { placeholder: state.isStreaming ? "Archivist is thinking..." : "Ask the Archivist...", rows: "1" },
+    attr: { placeholder: state.isStreaming ? "Archivist is thinking..." : "Ask the Archivist... (@ to mention files, / for commands)", rows: "1" },
   });
   if (state.isStreaming) textarea.disabled = true;
-  textarea.addEventListener("input", () => { textarea.style.height = "auto"; textarea.style.height = Math.min(textarea.scrollHeight, 200) + "px"; });
+  else requestAnimationFrame(() => textarea.focus());
+  textarea.addEventListener("input", () => {
+    textarea.style.height = "auto";
+    const maxH = Math.max(150, window.innerHeight * 0.4);
+    textarea.style.height = Math.min(textarea.scrollHeight, maxH) + "px";
+  });
   textarea.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && state.isStreaming) {
       e.preventDefault();
@@ -63,6 +108,16 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
       if (text) { callbacks.onSend(text); textarea.value = ""; textarea.style.height = "auto"; }
     }
   });
+
+  // @mention dropdown
+  if (state.vaultFiles && callbacks.onMentionFile) {
+    new MentionDropdown(textarea, inputWrapper, () => state.vaultFiles ?? [], callbacks.onMentionFile);
+  }
+
+  // Slash command dropdown
+  if (callbacks.onSlashCommand) {
+    new SlashCommandDropdown(textarea, inputWrapper, callbacks.onSlashCommand);
+  }
 
   // Toolbar row
   const toolbar = inputWrapper.createDiv({ cls: "archivist-inquiry-toolbar" });
@@ -93,6 +148,43 @@ export function renderChatInput(parent: HTMLElement, state: ChatInputState, call
     modelDropdown.style.display = isHidden ? "" : "none";
     if (isHidden) {
       const dismiss = () => { modelDropdown.style.display = "none"; document.removeEventListener("click", dismiss); };
+      setTimeout(() => document.addEventListener("click", dismiss), 0);
+    }
+  });
+
+  toolbar.createDiv({ cls: "archivist-inquiry-toolbar-sep" });
+
+  // Effort level selector (maps to thinking token budgets like Claudian)
+  const thinkingBudgets = [
+    { id: "low", label: "Low" },
+    { id: "medium", label: "Med" },
+    { id: "high", label: "High" },
+    { id: "max", label: "Max" },
+  ];
+  const thinkingContainer = toolbar.createDiv({ cls: "archivist-inquiry-thinking-selector" });
+  thinkingContainer.createSpan({ cls: "archivist-inquiry-thinking-selector-label", text: "Effort:" });
+  const currentBudget = thinkingBudgets.find(b => b.id === state.thinkingBudget) ?? thinkingBudgets[0];
+  thinkingContainer.createSpan({ text: currentBudget.label });
+
+  const thinkingDropdown = thinkingContainer.createDiv({ cls: "archivist-inquiry-thinking-dropdown" });
+  thinkingDropdown.style.display = "none";
+  for (const budget of thinkingBudgets) {
+    const option = thinkingDropdown.createDiv({
+      cls: budget.id === state.thinkingBudget ? "archivist-inquiry-model-option archivist-inquiry-model-option-active" : "archivist-inquiry-model-option",
+      text: budget.label,
+    });
+    option.addEventListener("click", (e) => {
+      e.stopPropagation();
+      callbacks.onThinkingBudgetChange(budget.id);
+      thinkingDropdown.style.display = "none";
+    });
+  }
+  thinkingContainer.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isHidden = thinkingDropdown.style.display === "none";
+    thinkingDropdown.style.display = isHidden ? "" : "none";
+    if (isHidden) {
+      const dismiss = () => { thinkingDropdown.style.display = "none"; document.removeEventListener("click", dismiss); };
       setTimeout(() => document.addEventListener("click", dismiss), 0);
     }
   });

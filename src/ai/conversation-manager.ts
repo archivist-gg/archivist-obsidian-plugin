@@ -45,11 +45,11 @@ export class ConversationManager {
     await this.saveFn(this.store);
   }
 
-  async createConversation(model: string): Promise<Conversation> {
+  async createConversation(model: string, effortLevel?: string): Promise<Conversation> {
     const now = monotonicNow();
     const conv: Conversation = {
       id: generateId(), title: "New conversation",
-      createdAt: now, updatedAt: now, model, messages: [],
+      createdAt: now, updatedAt: now, model, effortLevel, messages: [],
     };
     this.store.conversations[conv.id] = conv;
     this.enforceMax();
@@ -106,6 +106,38 @@ export class ConversationManager {
   async setActiveTab(id: string): Promise<void> {
     if (this.store.openTabs.includes(id)) this.store.activeConversationId = id;
     await this.save();
+  }
+
+  async rewindToMessage(conversationId: string, messageId: string): Promise<void> {
+    const conv = this.store.conversations[conversationId];
+    if (!conv) return;
+    const idx = conv.messages.findIndex(m => m.id === messageId);
+    if (idx === -1) return;
+    // Keep messages up to and including the target user message
+    conv.messages = conv.messages.slice(0, idx + 1);
+    conv.updatedAt = new Date().toISOString();
+    await this.save();
+  }
+
+  async forkConversation(sourceId: string, upToMessageId: string, model: string): Promise<Conversation | null> {
+    const source = this.store.conversations[sourceId];
+    if (!source) return null;
+    const idx = source.messages.findIndex(m => m.id === upToMessageId);
+    if (idx === -1) return null;
+
+    const now = new Date().toISOString();
+    const newId = "conv-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+    const forked: Conversation = {
+      id: newId,
+      title: (source.title || "Untitled") + " (fork)",
+      createdAt: now,
+      updatedAt: now,
+      model,
+      messages: source.messages.slice(0, idx + 1).map(m => ({ ...m })),
+    };
+    this.store.conversations[newId] = forked;
+    await this.save();
+    return forked;
   }
 
   getStore(): ConversationStore { return this.store; }

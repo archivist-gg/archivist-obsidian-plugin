@@ -94,6 +94,7 @@ export class AgentService {
     settings: ArchivistSettings,
     context: SystemPromptContext,
     model?: string,
+    thinkingBudget?: string,
   ): AsyncGenerator<StreamEvent> {
     const { query } = await import("@anthropic-ai/claude-agent-sdk");
 
@@ -115,7 +116,7 @@ export class AgentService {
       return;
     }
 
-    const activeQuery = query({
+    const queryOptions: any = {
       prompt: message,
       options: {
         systemPrompt,
@@ -129,7 +130,15 @@ export class AgentService {
         maxTurns: 15,
         includePartialMessages: true,
       },
-    });
+    };
+    // Map effort levels to thinking token budgets
+    const effortMap: Record<string, number> = { low: 4000, medium: 8000, high: 16000, max: 32000 };
+    const budgetTokens = effortMap[thinkingBudget ?? ""];
+    if (budgetTokens) {
+      queryOptions.options.maxThinkingTokens = budgetTokens;
+    }
+
+    const activeQuery = query(queryOptions);
 
     const startTime = Date.now();
     // Track which content block index is what type, for content_block_stop
@@ -138,14 +147,13 @@ export class AgentService {
     const toolInputBuffers: Record<number, string> = {};
     // Track tool IDs and names per block index
     const toolMeta: Record<number, { id: string; name: string }> = {};
-    // Throttle tool_input_delta yields
-    const toolInputLastYield: Record<number, number> = {};
     // Deduplication: track tool IDs and text already emitted via stream_event
     const emittedToolIds = new Set<string>();
     let hasStreamedText = false;
 
     try {
       for await (const msg of activeQuery) {
+
         if (msg.type === "stream_event") {
           const event = (msg as any).event;
           if (!event) continue;
@@ -153,6 +161,7 @@ export class AgentService {
           if (event.type === "content_block_start") {
             const block = event.content_block;
             const idx = event.index ?? 0;
+
             if (block?.type === "thinking") {
               blockTypes[idx] = "thinking";
               yield { type: "thinking_start" };
@@ -179,22 +188,17 @@ export class AgentService {
               yield { type: "text_delta", content: delta.text ?? "" };
             } else if (delta?.type === "input_json_delta") {
               if (toolInputBuffers[idx] !== undefined) {
-                const prevLen = toolInputBuffers[idx].length;
                 toolInputBuffers[idx] += delta.partial_json ?? "";
-                // Throttle: only yield every ~200 chars of new content
+                // Yield every delta -- no throttle. LLM token speed is already slow enough.
                 const meta = toolMeta[idx];
-                if (meta && toolInputBuffers[idx].length - prevLen >= 0) {
-                  const now = Date.now();
-                  const lastYield = (toolInputLastYield as any)[idx] ?? 0;
-                  if (now - lastYield >= 150) { // Max ~6 updates per second
-                    (toolInputLastYield as any)[idx] = now;
-                    yield {
-                      type: "tool_input_delta",
-                      toolCallId: meta.id,
-                      toolName: meta.name,
-                      partialJson: toolInputBuffers[idx],
-                    };
-                  }
+                if (meta) {
+
+                  yield {
+                    type: "tool_input_delta",
+                    toolCallId: meta.id,
+                    toolName: meta.name,
+                    partialJson: toolInputBuffers[idx],
+                  };
                 }
               }
             }

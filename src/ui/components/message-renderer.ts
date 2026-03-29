@@ -1,14 +1,18 @@
-import { MarkdownRenderer, type App } from "obsidian";
+import { MarkdownRenderer, Component, type App } from "obsidian";
 import { setIcon } from "obsidian";
 import { renderMonsterBlock } from "../../renderers/monster-renderer";
 import { renderSpellBlock } from "../../renderers/spell-renderer";
 import { renderItemBlock } from "../../renderers/item-renderer";
-import type { Message } from "../../types/conversation";
+import { parseMonster } from "../../parsers/monster-parser";
+import { parseSpell } from "../../parsers/spell-parser";
+import { parseItem } from "../../parsers/item-parser";
+import { enhanceCodeBlocks } from "./code-block-enhancer";
+import type { Message, ContentBlock } from "../../types/conversation";
 import * as yaml from "js-yaml";
 
 // ─── Saved message rendering (non-streaming) ────────────────────────────────
 
-export function renderUserMessage(parent: HTMLElement, message: Message): HTMLElement {
+export function renderUserMessage(parent: HTMLElement, message: Message, callbacks?: { onRewind?: (messageId: string) => void; onFork?: (messageId: string) => void }): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-msg-user" });
   const bubble = wrapper.createDiv({ cls: "archivist-inquiry-msg-bubble" });
   bubble.textContent = message.content;
@@ -20,14 +24,76 @@ export function renderUserMessage(parent: HTMLElement, message: Message): HTMLEl
     setIcon(copyBtn, "check");
     setTimeout(() => setIcon(copyBtn, "copy"), 2000);
   });
+  if (callbacks?.onRewind) {
+    const rewindBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-rewind" });
+    setIcon(rewindBtn, "undo-2");
+    rewindBtn.setAttribute("title", "Rewind to here");
+    rewindBtn.addEventListener("click", () => callbacks.onRewind!(message.id));
+  }
+  if (callbacks?.onFork) {
+    const forkBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-fork" });
+    setIcon(forkBtn, "git-branch");
+    forkBtn.setAttribute("title", "Fork from here");
+    forkBtn.addEventListener("click", () => callbacks.onFork!(message.id));
+  }
   return wrapper;
 }
 
-export function renderAssistantMessage(parent: HTMLElement, message: Message, app: App, sourcePath: string): HTMLElement {
+export function renderAssistantMessage(parent: HTMLElement, message: Message, app: App, sourcePath: string, component?: Component, callbacks?: { onFork?: (messageId: string) => void }): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-msg-assistant" });
+  const comp = component ?? new Component();
+
+  // If contentBlocks exist, render them in order (preserves streaming layout)
+  if (message.contentBlocks && message.contentBlocks.length > 0) {
+    for (const block of message.contentBlocks) {
+      switch (block.type) {
+        case "thinking":
+          renderSavedThinkingBlock(wrapper, block.content, app, sourcePath, comp);
+          break;
+        case "tool_call":
+          renderSavedToolCallBlock(wrapper, block.toolName, block.toolInput, block.toolResult, block.isError);
+          break;
+        case "text":
+          if (block.content) {
+            const textDiv = wrapper.createDiv({ cls: "archivist-inquiry-msg-text" });
+            MarkdownRenderer.render(app, block.content, textDiv, sourcePath, comp);
+            enhanceCodeBlocks(textDiv);
+          }
+          break;
+        case "generated_entity": {
+          const bw = wrapper.createDiv({ cls: "archivist-inquiry-stat-block" });
+          renderGeneratedBlock(bw, { type: block.entityType, data: block.data });
+          break;
+        }
+        case "footer":
+          renderResponseFooter(wrapper, block.durationMs);
+          break;
+      }
+    }
+    // Copy button for full text content
+    if (message.content) {
+      const copyBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-copy" });
+      setIcon(copyBtn, "copy");
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard.writeText(message.content);
+        setIcon(copyBtn, "check");
+        setTimeout(() => setIcon(copyBtn, "copy"), 2000);
+      });
+    }
+    if (callbacks?.onFork) {
+      const forkBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-fork" });
+      setIcon(forkBtn, "git-branch");
+      forkBtn.setAttribute("title", "Fork from here");
+      forkBtn.addEventListener("click", () => callbacks.onFork!(message.id));
+    }
+    return wrapper;
+  }
+
+  // Fallback: old-style rendering for messages saved before contentBlocks existed
   if (message.content) {
     const textDiv = wrapper.createDiv({ cls: "archivist-inquiry-msg-text" });
-    MarkdownRenderer.render(app, message.content, textDiv, sourcePath, null as any);
+    MarkdownRenderer.render(app, message.content, textDiv, sourcePath, comp);
+    enhanceCodeBlocks(textDiv);
     const copyBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-copy" });
     setIcon(copyBtn, "copy");
     copyBtn.addEventListener("click", () => {
@@ -39,6 +105,12 @@ export function renderAssistantMessage(parent: HTMLElement, message: Message, ap
   if (message.generatedEntity) {
     const blockWrapper = wrapper.createDiv({ cls: "archivist-inquiry-stat-block" });
     renderGeneratedBlock(blockWrapper, message.generatedEntity);
+  }
+  if (callbacks?.onFork) {
+    const forkBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-fork" });
+    setIcon(forkBtn, "git-branch");
+    forkBtn.setAttribute("title", "Fork from here");
+    forkBtn.addEventListener("click", () => callbacks.onFork!(message.id));
   }
   return wrapper;
 }
@@ -87,7 +159,7 @@ export interface ThinkingBlockHandle {
   finalize(): void;
 }
 
-export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: string): ThinkingBlockHandle {
+export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: string, component?: Component): ThinkingBlockHandle {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-thinking-block" });
   const header = wrapper.createDiv({ cls: "archivist-inquiry-thinking-header" });
   header.setAttribute("tabindex", "0");
@@ -117,7 +189,7 @@ export function renderThinkingBlock(parent: HTMLElement, app: App, sourcePath: s
     appendContent(text: string) {
       accumulated += text;
       contentDiv.empty();
-      MarkdownRenderer.render(app, accumulated, contentDiv, sourcePath, null as any);
+      MarkdownRenderer.render(app, accumulated, contentDiv, sourcePath, component ?? new Component());
     },
     finalize() {
       clearInterval(timer);
@@ -313,70 +385,13 @@ export function renderThinkingIndicator(parent: HTMLElement): HTMLElement {
 
 export interface GeneratedBlockHandle {
   el: HTMLElement;
-  /** Update from partial tool input JSON containing YAML string */
-  updateFromPartialToolInput(entityType: string, partialJson: string): void;
   /** Update with final enriched data from tool result */
   updateFromResult(entityType: string, data: unknown): void;
-}
-
-/**
- * Extract YAML string from partial JSON like: {"yaml":"name: Veilstalker\nsize: Med...
- */
-function extractYamlFromPartialJson(buffer: string): string | null {
-  const match = buffer.match(/"yaml"\s*:\s*"/);
-  if (!match) return null;
-  const startIdx = (match.index ?? 0) + match[0].length;
-  let yamlEscaped = buffer.slice(startIdx);
-  // Remove trailing "} or " if the string is complete
-  if (yamlEscaped.endsWith('"}')) yamlEscaped = yamlEscaped.slice(0, -2);
-  else if (yamlEscaped.endsWith('"')) yamlEscaped = yamlEscaped.slice(0, -1);
-  // Unescape JSON string escapes
-  return yamlEscaped
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t")
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, "\\");
-}
-
-/**
- * Parse complete YAML lines from a potentially incomplete YAML string.
- * Returns a partial object with whatever fields are available.
- */
-function parsePartialYaml(yamlStr: string): Record<string, unknown> | null {
-  if (!yamlStr.trim()) return null;
-  const lines = yamlStr.split("\n");
-  // Drop the last line if it doesn't end with a newline (might be incomplete)
-  if (!yamlStr.endsWith("\n") && lines.length > 0) {
-    lines.pop();
-  }
-  if (lines.length === 0) return null;
-  const completeYaml = lines.join("\n");
-  try {
-    const parsed = yaml.load(completeYaml);
-    if (parsed && typeof parsed === "object") return parsed as Record<string, unknown>;
-  } catch { /* incomplete YAML structure, try less */ }
-
-  // Fallback: parse line by line, collecting top-level keys
-  const result: Record<string, unknown> = {};
-  for (const line of lines) {
-    const kvMatch = line.match(/^(\w[\w_]*)\s*:\s*(.+)$/);
-    if (kvMatch) {
-      const [, key, value] = kvMatch;
-      // Try to parse the value
-      try {
-        result[key] = yaml.load(value);
-      } catch {
-        result[key] = value.trim();
-      }
-    }
-  }
-  return Object.keys(result).length > 0 ? result : null;
 }
 
 export function renderBlockSkeleton(parent: HTMLElement, entityType: string): GeneratedBlockHandle {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-stat-block" });
 
-  // Initial skeleton
   const skeleton = wrapper.createDiv({ cls: "archivist-inquiry-block-skeleton" });
   const label = entityType === "monster" ? "Monster" : entityType === "spell" ? "Spell" : "Item";
   skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-header", text: `Generating ${label}...` });
@@ -384,37 +399,8 @@ export function renderBlockSkeleton(parent: HTMLElement, entityType: string): Ge
   skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-line archivist-inquiry-block-skeleton-short" });
   skeleton.createDiv({ cls: "archivist-inquiry-block-skeleton-line" });
 
-  let lastRenderedKeys = 0;
-
   return {
     el: wrapper,
-    updateFromPartialToolInput(eType: string, partialJson: string) {
-      const yamlStr = extractYamlFromPartialJson(partialJson);
-      if (!yamlStr) return;
-
-      const parsed = parsePartialYaml(yamlStr);
-      if (!parsed) return;
-
-      // Only re-render when new keys appear
-      const keyCount = Object.keys(parsed).length;
-      if (keyCount <= lastRenderedKeys) return;
-      lastRenderedKeys = keyCount;
-
-      // Use the existing full renderers if we have enough data, otherwise show partial
-      wrapper.empty();
-      try {
-        if (eType === "monster") {
-          wrapper.appendChild(renderMonsterBlock(parsed as any));
-        } else if (eType === "spell") {
-          wrapper.appendChild(renderSpellBlock(parsed as any));
-        } else if (eType === "item") {
-          wrapper.appendChild(renderItemBlock(parsed as any));
-        }
-      } catch {
-        // Full renderer failed (missing required fields) -- render what we have manually
-        renderMinimalBlock(wrapper, eType, parsed);
-      }
-    },
     updateFromResult(eType: string, data: unknown) {
       wrapper.empty();
       renderGeneratedBlock(wrapper, { type: eType, data });
@@ -422,67 +408,117 @@ export function renderBlockSkeleton(parent: HTMLElement, entityType: string): Ge
   };
 }
 
+// ─── Saved-state rendering (for tab switching / reopening) ──────────────────
+
+function renderSavedThinkingBlock(parent: HTMLElement, content: string, app: App, sourcePath: string, component: Component): HTMLElement {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-thinking-block" });
+  const header = wrapper.createDiv({ cls: "archivist-inquiry-thinking-header" });
+  header.setAttribute("tabindex", "0");
+  header.setAttribute("role", "button");
+  header.setAttribute("aria-expanded", "false");
+  header.createSpan({ cls: "archivist-inquiry-thinking-label", text: "Thought process" });
+  const contentDiv = wrapper.createDiv({ cls: "archivist-inquiry-thinking-content" });
+  contentDiv.style.display = "none";
+  MarkdownRenderer.render(app, content, contentDiv, sourcePath, component);
+  enhanceCodeBlocks(contentDiv);
+  header.addEventListener("click", () => {
+    const isExpanded = contentDiv.style.display !== "none";
+    contentDiv.style.display = isExpanded ? "none" : "";
+    header.setAttribute("aria-expanded", String(!isExpanded));
+  });
+  return wrapper;
+}
+
+function renderSavedToolCallBlock(parent: HTMLElement, toolName: string, toolInput: Record<string, unknown>, toolResult?: string, isError?: boolean): HTMLElement {
+  const wrapper = parent.createDiv({ cls: "archivist-inquiry-tool-block" });
+  const header = wrapper.createDiv({ cls: "archivist-inquiry-tool-header" });
+  header.setAttribute("tabindex", "0");
+  header.setAttribute("role", "button");
+  header.setAttribute("aria-expanded", "false");
+
+  const iconEl = header.createSpan({ cls: "archivist-inquiry-tool-icon" });
+  setIcon(iconEl, getToolIcon(toolName));
+  const displayName = toolName.replace("mcp__archivist__", "");
+  header.createSpan({ cls: "archivist-inquiry-tool-name", text: displayName });
+  const summary = getToolSummary(toolName, toolInput);
+  if (summary) header.createSpan({ cls: "archivist-inquiry-tool-summary", text: summary });
+
+  const statusEl = header.createSpan({ cls: "archivist-inquiry-tool-status" });
+  if (isError) {
+    statusEl.addClass("status-error");
+    setIcon(statusEl, "x");
+  } else {
+    statusEl.addClass("status-completed");
+    setIcon(statusEl, "check");
+  }
+
+  const contentDiv = wrapper.createDiv({ cls: "archivist-inquiry-tool-content" });
+  contentDiv.style.display = "none";
+  if (toolResult) {
+    if (isDiffResult(toolName, toolResult)) {
+      renderDiffContent(contentDiv, toolName, toolResult);
+    } else if (isBashLikeOutput(toolName)) {
+      renderBashOutput(contentDiv, toolResult);
+    } else {
+      const pre = contentDiv.createEl("pre", { cls: "archivist-inquiry-tool-result-text" });
+      pre.textContent = truncateText(toolResult, 30);
+    }
+    if (isError) contentDiv.addClass("archivist-inquiry-tool-result-error");
+  }
+
+  header.addEventListener("click", () => {
+    const isExpanded = contentDiv.style.display !== "none";
+    contentDiv.style.display = isExpanded ? "none" : "";
+    header.setAttribute("aria-expanded", String(!isExpanded));
+  });
+
+  return wrapper;
+}
+
 /**
- * Minimal block rendering when the full renderer can't handle partial data.
- * Shows available fields in parchment style.
+ * Normalize entity data from AI tool results through the same YAML-round-trip
+ * parsing that code-fence blocks use. This ensures the data matches the typed
+ * interfaces (Monster, Spell, Item) that renderers expect, fixing mismatches
+ * between the raw AI output and the strict types (e.g. ac as number vs array).
  */
-function renderMinimalBlock(parent: HTMLElement, entityType: string, data: Record<string, unknown>): void {
-  const block = parent.createDiv({ cls: "archivist-inquiry-partial-block" });
-
-  // Name (always first)
-  if (data.name) {
-    block.createDiv({ cls: "archivist-inquiry-partial-name", text: String(data.name) });
+function normalizeEntityData(entityType: string, data: unknown): unknown {
+  try {
+    // Convert to YAML then parse through the typed parser, same as code fences
+    const yamlStr = yaml.dump(data, { lineWidth: -1 });
+    switch (entityType) {
+      case "monster": {
+        const result = parseMonster(yamlStr);
+        return result.success ? result.data : data;
+      }
+      case "spell": {
+        const result = parseSpell(yamlStr);
+        return result.success ? result.data : data;
+      }
+      case "item": {
+        const result = parseItem(yamlStr);
+        return result.success ? result.data : data;
+      }
+      default: return data;
+    }
+  } catch {
+    return data; // fallback to raw data if normalization fails
   }
-
-  // Type line
-  const typeParts: string[] = [];
-  if (data.size) typeParts.push(String(data.size));
-  if (data.type) typeParts.push(String(data.type));
-  if (data.alignment) typeParts.push(String(data.alignment));
-  // Spell: level + school
-  if (data.level !== undefined) typeParts.push(data.level === 0 ? "Cantrip" : `Level ${data.level}`);
-  if (data.school) typeParts.push(String(data.school));
-  // Item: type + rarity
-  if (data.rarity) typeParts.push(String(data.rarity));
-  if (typeParts.length > 0) {
-    block.createDiv({ cls: "archivist-inquiry-partial-type", text: typeParts.join(" ") });
-  }
-
-  // SVG bar
-  const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
-  svg.setAttribute("height", "3"); svg.setAttribute("width", "100%");
-  svg.setAttribute("viewBox", "0 0 400 3"); svg.setAttribute("preserveAspectRatio", "none");
-  svg.style.display = "block"; svg.style.margin = "6px 0";
-  const poly = document.createElementNS(ns, "polyline");
-  poly.setAttribute("points", "0,0 400,1.5 0,3"); poly.setAttribute("fill", "#922610");
-  svg.appendChild(poly); block.appendChild(svg);
-
-  // Show available properties
-  const skipKeys = new Set(["name", "size", "type", "alignment", "level", "school", "rarity", "subtype"]);
-  for (const [key, value] of Object.entries(data)) {
-    if (skipKeys.has(key) || value === undefined || value === null) continue;
-    if (typeof value === "object") continue; // Skip complex objects for minimal view
-    const line = block.createDiv({ cls: "archivist-inquiry-partial-prop" });
-    const propLabel = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-    line.createSpan({ cls: "archivist-inquiry-partial-prop-label", text: propLabel });
-    line.createSpan({ text: ` ${value}` });
-  }
-
-  // Loading bar at bottom
-  block.createDiv({ cls: "archivist-inquiry-partial-loading-bar" });
 }
 
 export function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data: unknown }): void {
   try {
+    const normalized = normalizeEntityData(entity.type, entity.data);
     switch (entity.type) {
-      case "monster": parent.appendChild(renderMonsterBlock(entity.data as any)); break;
-      case "spell": parent.appendChild(renderSpellBlock(entity.data as any)); break;
-      case "item": parent.appendChild(renderItemBlock(entity.data as any)); break;
+      case "monster": parent.appendChild(renderMonsterBlock(normalized as any)); break;
+      case "spell": parent.appendChild(renderSpellBlock(normalized as any)); break;
+      case "item": parent.appendChild(renderItemBlock(normalized as any)); break;
       default:
         parent.createEl("pre", { cls: "archivist-inquiry-json" }).textContent = JSON.stringify(entity.data, null, 2);
     }
-  } catch { parent.createDiv({ cls: "archivist-inquiry-msg-error", text: "Failed to render block" }); }
+  } catch (err) {
+    console.error("[archivist] Failed to render generated block:", err, entity);
+    parent.createDiv({ cls: "archivist-inquiry-msg-error", text: "Failed to render block" });
+  }
 
   const copyBtn = parent.createDiv({ cls: "archivist-inquiry-block-copy" });
   const copyIcon = copyBtn.createSpan();

@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS: ArchivistSettings = {
   ttrpgRootDir: "/",
   permissionMode: "safe",
   defaultModel: "claude-sonnet-4-6",
-  thinkingBudget: "auto",
+  thinkingBudget: "medium",
   maxConversations: 50,
   externalContextPaths: [],
 };

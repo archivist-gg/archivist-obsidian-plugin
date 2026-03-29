@@ -10,6 +10,13 @@ export interface ToolResult {
   isError?: boolean;
 }
 
+export type ContentBlock =
+  | { type: "thinking"; content: string }
+  | { type: "tool_call"; toolCallId: string; toolName: string; toolInput: Record<string, unknown>; toolResult?: string; isError?: boolean }
+  | { type: "text"; content: string }
+  | { type: "generated_entity"; entityType: string; data: unknown }
+  | { type: "footer"; durationMs: number };
+
 export interface Message {
   id: string;
   role: "user" | "assistant" | "tool";
@@ -22,6 +29,8 @@ export interface Message {
     type: "monster" | "spell" | "item" | "encounter" | "npc";
     data: unknown;
   };
+  /** Ordered content blocks for faithful re-rendering (thinking, tool calls, text, entities, footer) */
+  contentBlocks?: ContentBlock[];
 }
 
 export interface Conversation {
@@ -30,6 +39,7 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string;
   model: string;
+  effortLevel?: string;
   messages: Message[];
 }
 
