@@ -50,6 +50,13 @@ import {
   sdkSessionExists,
   type SDKSessionLoadResult,
 } from './utils/sdkSession';
+import {
+  slugify,
+  ensureUniqueSlug,
+  generateEntityMarkdown,
+  TYPE_FOLDER_MAP,
+} from '../entities/entity-vault-store';
+import type { EntityRegistry } from '../entities/entity-registry';
 
 // ============================================
 // Subagent data merge helpers (pure functions)
@@ -1263,6 +1270,73 @@ export class InquiryModule {
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the Archivist host plugin's settings (compendiumRoot, userEntityFolder, etc.).
+   * Falls back to sensible defaults if unavailable.
+   */
+  getArchivistSettings(): { compendiumRoot: string; userEntityFolder: string } {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hostSettings = (this.plugin as any).settings;
+    return {
+      compendiumRoot: hostSettings?.compendiumRoot ?? 'Compendium',
+      userEntityFolder: hostSettings?.userEntityFolder ?? 'me',
+    };
+  }
+
+  /**
+   * Saves an entity to the vault as a markdown note.
+   * Used by the "Copy & Save" button in D&D entity blocks rendered in chat.
+   */
+  async saveEntityToVault(entityType: string, data: Record<string, unknown>): Promise<void> {
+    const name = (data.name as string) || 'Unnamed Entity';
+    const baseSlug = slugify(name);
+
+    const registry = this.entityRegistry as EntityRegistry | null;
+    const existingSlugs = registry?.getAllSlugs() ?? new Set<string>();
+    const slug = ensureUniqueSlug(baseSlug, existingSlugs);
+
+    const folder = TYPE_FOLDER_MAP[entityType] || 'Misc';
+    const { compendiumRoot, userEntityFolder } = this.getArchivistSettings();
+    const dirPath = `${compendiumRoot}/${userEntityFolder}/${folder}`;
+
+    // Ensure directory exists
+    try {
+      const existingFolder = this.app.vault.getAbstractFileByPath(dirPath);
+      if (!existingFolder) {
+        await this.app.vault.createFolder(dirPath);
+      }
+    } catch {
+      // Folder may already exist; ignore errors
+    }
+
+    // Generate markdown content
+    const markdown = generateEntityMarkdown({
+      slug,
+      name,
+      entityType,
+      source: 'custom',
+      data,
+    });
+
+    // Create the vault file
+    const filePath = `${dirPath}/${name}.md`;
+    await this.app.vault.create(filePath, markdown);
+
+    // Register in entity registry
+    if (registry) {
+      registry.register({
+        slug,
+        name,
+        entityType,
+        source: 'custom',
+        filePath,
+        data,
+      });
+    }
+
+    new Notice(`Saved to ${filePath}`);
   }
 
   /**

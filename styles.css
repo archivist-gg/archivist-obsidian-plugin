@@ -7090,3 +7090,50 @@ code .claudian-file-link:hover {
     padding: 4px 8px;
   }
 }
+
+/* ===== Entity blocks in chat ===== */
+
+.archivist-entity-block-wrapper { position: relative; margin: 8px 0; }
+
+.archivist-entity-source-badge {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  display: flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 500; text-transform: uppercase;
+  padding: 2px 6px; border-radius: 4px;
+}
+.archivist-entity-source-badge svg { width: 12px; height: 12px; }
+.archivist-entity-source-badge-srd { color: rgba(0,0,0,0.4); }
+.archivist-entity-source-badge-custom { color: var(--text-accent); }
+.archivist-entity-source-badge-ai { color: var(--text-accent); }
+
+.archivist-entity-actions { display: flex; justify-content: flex-end; padding: 4px 8px; }
+.archivist-copy-save-btn {
+  display: flex; align-items: center; gap: 4px; padding: 4px 12px;
+  border-radius: 4px; font-size: 12px; cursor: pointer;
+  background: var(--interactive-normal); border: 1px solid var(--background-modifier-border);
+}
+.archivist-copy-save-btn:hover { background: var(--interactive-hover); }
+.archivist-copy-save-btn svg { width: 14px; height: 14px; }
+
+.archivist-entity-dropdown {
+  position: absolute; bottom: 100%; left: 0; right: 0; max-height: 300px;
+  overflow-y: auto; background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border); border-radius: 8px;
+  z-index: 100; display: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.archivist-entity-dropdown.visible { display: block; }
+.archivist-entity-dropdown-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer;
+}
+.archivist-entity-dropdown-item:hover,
+.archivist-entity-dropdown-item.selected { background: var(--background-modifier-hover); }
+.archivist-entity-dropdown-icon { flex-shrink: 0; color: var(--text-muted); }
+.archivist-entity-dropdown-icon svg { width: 14px; height: 14px; }
+.archivist-entity-dropdown-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.archivist-entity-dropdown-badge {
+  font-size: 9px; font-weight: 600; text-transform: uppercase; padding: 1px 4px; border-radius: 3px;
+}
+.archivist-entity-dropdown-badge-srd { color: var(--text-muted); background: var(--background-modifier-border); }
+.archivist-entity-dropdown-badge-custom { color: var(--text-accent); background: rgba(var(--color-accent-rgb), 0.1); }
+
+.theme-dark .archivist-entity-source-badge-srd { color: rgba(255,255,255,0.4); }

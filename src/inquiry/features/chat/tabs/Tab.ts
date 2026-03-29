@@ -747,6 +747,11 @@ export function initializeTabControllers(
       : undefined,
   );
 
+  // Wire D&D entity copy-and-save callback
+  tab.renderer.setDndCopyAndSaveCallback(async (entityType, data) => {
+    await plugin.saveEntityToVault(entityType, data);
+  });
+
   // Selection controller
   tab.controllers.selectionController = new SelectionController(
     plugin.app,
