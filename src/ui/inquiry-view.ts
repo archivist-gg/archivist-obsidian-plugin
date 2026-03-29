@@ -40,6 +40,8 @@ export class InquiryView extends ItemView {
   private historyVisible = false;
   private isStreaming = false;
   private selectedText: string | undefined;
+  private noteIncluded = true;
+  private mentionedFiles: string[] = [];
   /** DOM cache: conversation ID -> messages container element (survives tab switches) */
   private tabContainers = new Map<string, HTMLElement>();
   /** Per-tab context usage percentage */
@@ -153,6 +155,15 @@ export class InquiryView extends ItemView {
         this.tabContainers.delete(activeId); // Clear cached DOM to force re-render
         this.render();
       },
+      onFork: async (messageId: string) => {
+        if (!activeId) return;
+        const conv = mgr.getConversation(activeId);
+        const forked = await mgr.forkConversation(activeId, messageId, conv?.model ?? this.pluginRef.settings.defaultModel);
+        if (forked) {
+          await mgr.openTab(forked.id);
+          this.render();
+        }
+      },
     };
 
     if (activeId && this.tabContainers.has(activeId)) {
@@ -180,12 +191,17 @@ export class InquiryView extends ItemView {
 
     // Input -- use per-tab context percent
     const contextPercent = activeId ? (this.tabContextPercent.get(activeId) ?? 0) : 0;
+    const vaultFiles = this.app.vault.getMarkdownFiles().map(f => f.path);
     const inputState: ChatInputState = {
       selectedText: this.selectedText,
+      currentNotePath: this.noteIncluded ? (this.app.workspace.getActiveFile()?.path) : undefined,
       model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
+      thinkingBudget: activeConv?.effortLevel ?? this.pluginRef.settings.thinkingBudget ?? "medium",
       permissionMode: this.pluginRef.settings.permissionMode,
       contextPercent,
       isStreaming: this.isStreaming,
+      vaultFiles,
+      mentionedFiles: this.mentionedFiles,
     };
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),
@@ -193,6 +209,12 @@ export class InquiryView extends ItemView {
       onModelChange: async (model) => {
         if (activeConv) activeConv.model = model;
         this.pluginRef.settings.defaultModel = model;
+        await this.pluginRef.saveSettings();
+        this.render();
+      },
+      onThinkingBudgetChange: async (budget: string) => {
+        if (activeConv) activeConv.effortLevel = budget;
+        this.pluginRef.settings.thinkingBudget = budget;
         await this.pluginRef.saveSettings();
         this.render();
       },
@@ -205,6 +227,23 @@ export class InquiryView extends ItemView {
       onDismissSelection: () => {
         this.selectedText = undefined;
         this.render();
+      },
+      onDismissNote: () => {
+        this.noteIncluded = false;
+        this.render();
+      },
+      onMentionFile: (path: string) => {
+        if (!this.mentionedFiles.includes(path)) {
+          this.mentionedFiles.push(path);
+          this.render();
+        }
+      },
+      onRemoveMention: (path: string) => {
+        this.mentionedFiles = this.mentionedFiles.filter(f => f !== path);
+        this.render();
+      },
+      onSlashCommand: (action: string) => {
+        this.handleSlashCommand(action);
       },
     });
 
@@ -230,9 +269,55 @@ export class InquiryView extends ItemView {
   private async createNewChat(): Promise<void> {
     const mgr = this.pluginRef.conversationManager;
     if (!mgr) return;
-    const conv = await mgr.createConversation(this.pluginRef.settings.defaultModel);
+    this.noteIncluded = true;
+    this.mentionedFiles = [];
+    const conv = await mgr.createConversation(this.pluginRef.settings.defaultModel, this.pluginRef.settings.thinkingBudget);
     await mgr.openTab(conv.id);
     this.render();
+  }
+
+  private handleSlashCommand(action: string): void {
+    const mgr = this.pluginRef.conversationManager;
+    if (!mgr) return;
+    const activeId = mgr.getActiveConversationId();
+
+    switch (action) {
+      case "compact":
+        this.sendMessage("/compact");
+        break;
+      case "clear":
+        if (activeId) {
+          mgr.deleteConversation(activeId);
+          this.tabContainers.delete(activeId);
+          this.tabContextPercent.delete(activeId);
+          this.createNewChat();
+        }
+        break;
+      case "model": {
+        const models = ["claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5-20251001"];
+        const cur = this.pluginRef.settings.defaultModel;
+        const idx = models.indexOf(cur);
+        this.pluginRef.settings.defaultModel = models[(idx + 1) % models.length];
+        const activeConv = activeId ? mgr.getConversation(activeId) : undefined;
+        if (activeConv) activeConv.model = this.pluginRef.settings.defaultModel;
+        this.pluginRef.saveSettings();
+        this.render();
+        break;
+      }
+      case "export": {
+        if (!activeId) break;
+        const conv = mgr.getConversation(activeId);
+        if (!conv) break;
+        const md = conv.messages.map(m =>
+          m.role === "user" ? `**You:** ${m.content}` : `**Archivist:** ${m.content}`
+        ).join("\n\n---\n\n");
+        navigator.clipboard.writeText(md);
+        break;
+      }
+      case "help":
+        this.sendMessage("What commands and abilities do you have?");
+        break;
+    }
   }
 
   private async sendMessage(text: string): Promise<void> {
@@ -242,7 +327,7 @@ export class InquiryView extends ItemView {
 
     let activeId = mgr.getActiveConversationId();
     if (!activeId) {
-      const conv = await mgr.createConversation(this.pluginRef.settings.defaultModel);
+      const conv = await mgr.createConversation(this.pluginRef.settings.defaultModel, this.pluginRef.settings.thinkingBudget);
       await mgr.openTab(conv.id);
       activeId = conv.id;
     }
@@ -256,6 +341,8 @@ export class InquiryView extends ItemView {
 
     this.isStreaming = true;
     if (activeId) this.tabStreamingState.set(activeId, "streaming");
+    // Clear cached DOM so render() builds fresh with the new user message
+    if (activeId) this.tabContainers.delete(activeId);
     // Full render to show user message and set up streaming state
     this.render();
 
@@ -286,8 +373,8 @@ export class InquiryView extends ItemView {
 
     const context = {
       ttrpgRootDir: ttrpgRoot,
-      currentNotePath: activeFile?.path,
-      currentNoteContent,
+      currentNotePath: this.noteIncluded ? activeFile?.path : undefined,
+      currentNoteContent: this.noteIncluded ? currentNoteContent : undefined,
       selectedText: this.selectedText,
       externalContextPaths: this.pluginRef.settings.externalContextPaths,
     };
@@ -378,7 +465,8 @@ export class InquiryView extends ItemView {
     };
 
     try {
-      for await (const event of agent.sendMessage(text, this.pluginRef.settings, context, model)) {
+      const effort = conv?.effortLevel ?? this.pluginRef.settings.thinkingBudget ?? "medium";
+      for await (const event of agent.sendMessage(text, this.pluginRef.settings, context, model, effort)) {
         switch (event.type) {
           case "text_delta": {
             ensureTextDiv();
@@ -595,12 +683,17 @@ export class InquiryView extends ItemView {
     if (oldInput) oldInput.remove();
 
     const ctxPercent = activeId ? (this.tabContextPercent.get(activeId) ?? 0) : 0;
+    const vaultFiles = this.app.vault.getMarkdownFiles().map(f => f.path);
     const inputState: ChatInputState = {
       selectedText: this.selectedText,
+      currentNotePath: this.noteIncluded ? (this.app.workspace.getActiveFile()?.path) : undefined,
       model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
+      thinkingBudget: activeConv?.effortLevel ?? this.pluginRef.settings.thinkingBudget ?? "medium",
       permissionMode: this.pluginRef.settings.permissionMode,
       contextPercent: ctxPercent,
       isStreaming: this.isStreaming,
+      vaultFiles,
+      mentionedFiles: this.mentionedFiles,
     };
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),
@@ -608,6 +701,12 @@ export class InquiryView extends ItemView {
       onModelChange: async (model) => {
         if (activeConv) activeConv.model = model;
         this.pluginRef.settings.defaultModel = model;
+        await this.pluginRef.saveSettings();
+        this.render();
+      },
+      onThinkingBudgetChange: async (budget: string) => {
+        if (activeConv) activeConv.effortLevel = budget;
+        this.pluginRef.settings.thinkingBudget = budget;
         await this.pluginRef.saveSettings();
         this.render();
       },
@@ -620,6 +719,23 @@ export class InquiryView extends ItemView {
       onDismissSelection: () => {
         this.selectedText = undefined;
         this.render();
+      },
+      onDismissNote: () => {
+        this.noteIncluded = false;
+        this.render();
+      },
+      onMentionFile: (path: string) => {
+        if (!this.mentionedFiles.includes(path)) {
+          this.mentionedFiles.push(path);
+          this.render();
+        }
+      },
+      onRemoveMention: (path: string) => {
+        this.mentionedFiles = this.mentionedFiles.filter(f => f !== path);
+        this.render();
+      },
+      onSlashCommand: (action: string) => {
+        this.handleSlashCommand(action);
       },
     });
   }

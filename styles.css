@@ -1639,9 +1639,11 @@
   padding: 12px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
   gap: 12px;
   user-select: text;
   -webkit-user-select: text;
+  min-height: 0;
 }
 
 .archivist-inquiry-welcome {
@@ -1825,9 +1827,9 @@
   resize: none; font-size: 13px; font-family: var(--font-text); color: var(--text-normal);
   min-height: 80px; max-height: 40vh; box-shadow: none !important;
 }
-.archivist-inquiry-textarea:focus { border: none; outline: none; box-shadow: none !important; }
+.archivist-inquiry-textarea:focus, .archivist-inquiry-textarea:hover { border: none; outline: none; box-shadow: none !important; background: transparent; }
 .archivist-inquiry-textarea::placeholder { color: var(--text-faint); }
-.archivist-inquiry-input-wrapper:focus-within { border-color: var(--background-modifier-border); }
+.archivist-inquiry-input-wrapper:focus-within, .archivist-inquiry-input-wrapper:hover { border-color: var(--background-modifier-border); }
 
 .archivist-inquiry-toolbar {
   display: flex; align-items: center; padding: 4px 8px; gap: 8px;
@@ -2239,3 +2241,36 @@
 .archivist-inquiry-mention-item-text { flex: 1; min-width: 0; }
 .archivist-inquiry-mention-item-name { font-size: 13px; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .archivist-inquiry-mention-item-path { font-size: 11px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Message rewind button */
+.archivist-inquiry-msg-rewind { position: absolute; top: 8px; left: -28px; opacity: 0; transition: opacity 0.15s; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; }
+.archivist-inquiry-msg-rewind:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.archivist-inquiry-msg-user:hover .archivist-inquiry-msg-rewind { opacity: 1; }
+
+/* Tab badges */
+.archivist-inquiry-tab-badge { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+.archivist-inquiry-tab-badge-streaming { background: #D97757; animation: archivist-badge-pulse 1.5s ease-in-out infinite; }
+.archivist-inquiry-tab-badge-done { background: var(--text-success, #4ade80); }
+@keyframes archivist-badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Message fork button */
+.archivist-inquiry-msg-fork { position: absolute; top: 8px; right: 36px; opacity: 0; transition: opacity 0.15s; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; }
+.archivist-inquiry-msg-fork:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.archivist-inquiry-msg-user:hover .archivist-inquiry-msg-fork,
+.archivist-inquiry-msg-assistant:hover .archivist-inquiry-msg-fork { opacity: 1; }
+
+/* Current note context chip */
+.archivist-inquiry-context-note .archivist-inquiry-context-icon { color: var(--text-accent); }
+
+/* Thinking budget selector */
+.archivist-inquiry-thinking-selector { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 11px; color: var(--text-muted); position: relative; padding: 2px 4px; border-radius: 4px; }
+.archivist-inquiry-thinking-selector:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.archivist-inquiry-thinking-selector-icon { display: flex; }
+.archivist-inquiry-thinking-dropdown { position: absolute; bottom: 100%; left: 0; min-width: 80px; background: var(--background-primary); border: 1px solid var(--background-modifier-border); border-radius: 6px; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); z-index: 100; margin-bottom: 4px; overflow: hidden; }
+
+/* Mentioned file chips */
+.archivist-inquiry-mention-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 8px; }
+.archivist-inquiry-mention-chip { display: flex; align-items: center; gap: 4px; padding: 2px 8px; background: var(--background-secondary); border-radius: 10px; font-size: 11px; color: var(--text-muted); }
+.archivist-inquiry-mention-chip-icon { display: flex; }
+.archivist-inquiry-mention-chip-remove { cursor: pointer; margin-left: 2px; color: var(--text-faint); }
+.archivist-inquiry-mention-chip-remove:hover { color: var(--text-error); }
