@@ -748,8 +748,12 @@ export function initializeTabControllers(
   );
 
   // Wire D&D entity copy-and-save callback
-  tab.renderer.setDndCopyAndSaveCallback(async (entityType, data) => {
-    await plugin.saveEntityToVault(entityType, data);
+  tab.renderer.setDndCopyAndSaveCallback(async (entityType, yamlSource, name) => {
+    const yaml = await import('js-yaml');
+    const data = yaml.load(yamlSource) as Record<string, unknown>;
+    if (data && typeof data === 'object') {
+      await plugin.saveEntityToVault(entityType, data);
+    }
   });
 
   // Selection controller
