@@ -15,7 +15,7 @@ import {
 } from '../../../core/tools/toolNames';
 import type { ChatMessage, StreamChunk, SubagentInfo, ToolCallInfo } from '../../../core/types';
 import type { SDKToolUseResult } from '../../../core/types/diff';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { formatDurationMmSs } from '../../../utils/date';
 import { extractDiffData } from '../../../utils/diff';
 import { getVaultPath, normalizePathForVault } from '../../../utils/path';
@@ -40,7 +40,7 @@ import type { ChatState } from '../state/ChatState';
 import type { FileContextManager } from '../ui';
 
 export interface StreamControllerDeps {
-  plugin: ClaudianPlugin;
+  plugin: InquiryModule;
   state: ChatState;
   renderer: MessageRenderer;
   subagentManager: SubagentManager;

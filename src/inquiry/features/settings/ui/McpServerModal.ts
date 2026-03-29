@@ -10,11 +10,11 @@ import type {
   McpStdioServerConfig,
 } from '../../../core/types';
 import { DEFAULT_MCP_SERVER, getMcpServerType } from '../../../core/types';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { parseCommand } from '../../../utils/mcp';
 
 export class McpServerModal extends Modal {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private existingServer: ClaudianMcpServer | null;
   private onSave: (server: ClaudianMcpServer) => void;
 
@@ -31,7 +31,7 @@ export class McpServerModal extends Modal {
 
   constructor(
     app: App,
-    plugin: ClaudianPlugin,
+    plugin: InquiryModule,
     existingServer: ClaudianMcpServer | null,
     onSave: (server: ClaudianMcpServer) => void,
     initialType?: McpServerType,

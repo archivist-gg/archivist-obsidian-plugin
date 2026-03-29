@@ -4,13 +4,13 @@ import { testMcpServer } from '../../../core/mcp/McpTester';
 import { McpStorage } from '../../../core/storage';
 import type { ClaudianMcpServer, McpServerConfig, McpServerType } from '../../../core/types';
 import { DEFAULT_MCP_SERVER, getMcpServerType } from '../../../core/types';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { McpServerModal } from './McpServerModal';
 import { McpTestModal } from './McpTestModal';
 
 export class McpSettingsManager {
   private containerEl: HTMLElement;
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private servers: ClaudianMcpServer[] = [];
 
   /**
@@ -26,7 +26,7 @@ export class McpSettingsManager {
     }
   }
 
-  constructor(containerEl: HTMLElement, plugin: ClaudianPlugin) {
+  constructor(containerEl: HTMLElement, plugin: InquiryModule) {
     this.containerEl = containerEl;
     this.plugin = plugin;
     this.loadAndRender();

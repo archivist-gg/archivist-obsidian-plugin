@@ -4,7 +4,7 @@ import type { ClaudianService } from '../../../core/agent';
 import type { McpServerManager } from '../../../core/mcp';
 import type { SlashCommand } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { chooseForkTarget } from '../../../shared/modals/ForkTargetModal';
 import {
   activateTab,
@@ -37,7 +37,7 @@ import {
  * TabManager coordinates multiple chat tabs.
  */
 export class TabManager implements TabManagerInterface {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private mcpManager: McpServerManager;
   private containerEl: HTMLElement;
   private view: TabManagerViewHost;
@@ -59,7 +59,7 @@ export class TabManager implements TabManagerInterface {
   }
 
   constructor(
-    plugin: ClaudianPlugin,
+    plugin: InquiryModule,
     mcpManager: McpServerManager,
     containerEl: HTMLElement,
     view: TabManagerViewHost,

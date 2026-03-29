@@ -65,10 +65,10 @@
     }
   },
   "settings": {
-    "title": "Configurações do Claudian",
+    "title": "Configurações do Archivist",
     "customization": "Personalização",
     "userName": {
-      "name": "Como o Claudian deve chamá-lo?",
+      "name": "Como o Archivist deve chamá-lo?",
       "desc": "Seu nome para saudações personalizadas (deixe vazio para saudações genéricas)"
     },
     "excludedTags": {
@@ -138,7 +138,7 @@
     },
     "hiddenSlashCommands": {
       "name": "Comandos ocultos",
-      "desc": "Ocultar comandos slash específicos do menu suspenso. Útil para ocultar comandos do Claude Code que não são relevantes para o Claudian. Digite os nomes dos comandos sem a barra inicial, um por linha.",
+      "desc": "Ocultar comandos slash específicos do menu suspenso. Útil para ocultar comandos do Claude Code que não são relevantes para o Archivist. Digite os nomes dos comandos sem a barra inicial, um por linha.",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {

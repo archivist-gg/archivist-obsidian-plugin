@@ -4,7 +4,7 @@ import type { ApprovalCallbackOptions, ClaudianService } from '../../../core/age
 import { detectBuiltInCommand } from '../../../core/commands';
 import { TOOL_EXIT_PLAN_MODE } from '../../../core/tools/toolNames';
 import type { ApprovalDecision, ChatMessage, ExitPlanModeDecision } from '../../../core/types';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { ResumeSessionDropdown } from '../../../shared/components/ResumeSessionDropdown';
 import { InstructionModal } from '../../../shared/modals/InstructionConfirmModal';
 import { appendBrowserContext, type BrowserSelectionContext } from '../../../utils/browser';
@@ -37,7 +37,7 @@ const APPROVAL_OPTION_MAP: Record<string, ApprovalDecision> = {
 };
 
 export interface InputControllerDeps {
-  plugin: ClaudianPlugin;
+  plugin: InquiryModule;
   state: ChatState;
   renderer: MessageRenderer;
   streamController: StreamController;

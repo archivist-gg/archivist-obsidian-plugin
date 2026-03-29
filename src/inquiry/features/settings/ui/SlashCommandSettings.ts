@@ -3,7 +3,7 @@ import { Modal, Notice, setIcon, Setting } from 'obsidian';
 
 import type { SlashCommand } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { extractFirstParagraph, isSkill, normalizeArgumentHint, parseSlashCommandContent, validateCommandName } from '../../../utils/slashCommand';
 
 function resolveAllowedTools(inputValue: string, parsedTools?: string[]): string[] | undefined {
@@ -18,13 +18,13 @@ function resolveAllowedTools(inputValue: string, parsedTools?: string[]): string
 }
 
 export class SlashCommandModal extends Modal {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private existingCmd: SlashCommand | null;
   private onSave: (cmd: SlashCommand) => Promise<void>;
 
   constructor(
     app: App,
-    plugin: ClaudianPlugin,
+    plugin: InquiryModule,
     existingCmd: SlashCommand | null,
     onSave: (cmd: SlashCommand) => Promise<void>
   ) {
@@ -281,9 +281,9 @@ export class SlashCommandModal extends Modal {
 
 export class SlashCommandSettings {
   private containerEl: HTMLElement;
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
 
-  constructor(containerEl: HTMLElement, plugin: ClaudianPlugin) {
+  constructor(containerEl: HTMLElement, plugin: InquiryModule) {
     this.containerEl = containerEl;
     this.plugin = plugin;
     this.render();

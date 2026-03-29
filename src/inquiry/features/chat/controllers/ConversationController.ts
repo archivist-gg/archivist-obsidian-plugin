@@ -3,7 +3,7 @@ import { Notice, setIcon } from 'obsidian';
 import type { ClaudianService } from '../../../core/agent';
 import type { Conversation } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { confirm } from '../../../shared/modals/ConfirmModal';
 import { cleanupThinkingBlock } from '../rendering';
 import type { MessageRenderer } from '../rendering/MessageRenderer';
@@ -20,7 +20,7 @@ export interface ConversationCallbacks {
 }
 
 export interface ConversationControllerDeps {
-  plugin: ClaudianPlugin;
+  plugin: InquiryModule;
   state: ChatState;
   renderer: MessageRenderer;
   subagentManager: SubagentManager;

@@ -3,7 +3,7 @@ import { query as agentQuery } from '@anthropic-ai/claude-agent-sdk';
 
 import { createCustomSpawnFunction } from '../../../core/agent/customSpawn';
 import { TITLE_GENERATION_SYSTEM_PROMPT } from '../../../core/prompts/titleGeneration';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { getEnhancedPath, getMissingNodeError, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
 
@@ -17,10 +17,10 @@ export type TitleGenerationCallback = (
 ) => Promise<void>;
 
 export class TitleGenerationService {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private activeGenerations: Map<string, AbortController> = new Map();
 
-  constructor(plugin: ClaudianPlugin) {
+  constructor(plugin: InquiryModule) {
     this.plugin = plugin;
   }
 

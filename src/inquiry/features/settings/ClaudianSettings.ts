@@ -1,12 +1,12 @@
 import * as fs from 'fs';
-import type { App } from 'obsidian';
+import type { App, Plugin } from 'obsidian';
 import { Notice, PluginSettingTab, Setting } from 'obsidian';
 
 import { getCurrentPlatformKey, getHostnameKey } from '../../core/types';
 import { DEFAULT_CLAUDE_MODELS, filterVisibleModelOptions } from '../../core/types/models';
 import { getAvailableLocales, getLocaleDisplayName, setLocale, t } from '../../i18n';
 import type { Locale, TranslationKey } from '../../i18n/types';
-import type ClaudianPlugin from '../../main';
+import type InquiryModule from '../../InquiryModule';
 import { findNodeExecutable, formatContextLimit, getCustomModelIds, getEnhancedPath, getModelsFromEnvironment, parseContextLimit, parseEnvironmentVariables } from '../../utils/env';
 import { expandHomePath } from '../../utils/path';
 import { ClaudianView } from '../chat/ClaudianView';
@@ -75,12 +75,12 @@ function addHotkeySettingRow(
 }
 
 export class ClaudianSettingTab extends PluginSettingTab {
-  plugin: ClaudianPlugin;
+  plugin: InquiryModule;
   private contextLimitsContainer: HTMLElement | null = null;
 
-  constructor(app: App, plugin: ClaudianPlugin) {
-    super(app, plugin);
-    this.plugin = plugin;
+  constructor(app: App, inquiryModule: InquiryModule, hostPlugin: Plugin) {
+    super(app, hostPlugin);
+    this.plugin = inquiryModule;
   }
 
   private normalizeModelVariantSettings(): void {

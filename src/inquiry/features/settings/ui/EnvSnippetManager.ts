@@ -3,16 +3,16 @@ import { Modal, Notice, setIcon, Setting } from 'obsidian';
 
 import type { EnvSnippet } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { formatContextLimit, getCustomModelIds, parseContextLimit, parseEnvironmentVariables } from '../../../utils/env';
 import type { ClaudianView } from '../../chat/ClaudianView';
 
 export class EnvSnippetModal extends Modal {
-  plugin: ClaudianPlugin;
+  plugin: InquiryModule;
   snippet: EnvSnippet | null;
   onSave: (snippet: EnvSnippet) => void;
 
-  constructor(app: App, plugin: ClaudianPlugin, snippet: EnvSnippet | null, onSave: (snippet: EnvSnippet) => void) {
+  constructor(app: App, plugin: InquiryModule, snippet: EnvSnippet | null, onSave: (snippet: EnvSnippet) => void) {
     super(app);
     this.plugin = plugin;
     this.snippet = snippet;
@@ -173,10 +173,10 @@ export class EnvSnippetModal extends Modal {
 
 export class EnvSnippetManager {
   private containerEl: HTMLElement;
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private onContextLimitsChange?: () => void;
 
-  constructor(containerEl: HTMLElement, plugin: ClaudianPlugin, onContextLimitsChange?: () => void) {
+  constructor(containerEl: HTMLElement, plugin: InquiryModule, onContextLimitsChange?: () => void) {
     this.containerEl = containerEl;
     this.plugin = plugin;
     this.onContextLimitsChange = onContextLimitsChange;

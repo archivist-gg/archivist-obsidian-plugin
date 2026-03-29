@@ -4,19 +4,19 @@ import { query as agentQuery } from '@anthropic-ai/claude-agent-sdk';
 import { createCustomSpawnFunction } from '../../../core/agent/customSpawn';
 import { buildRefineSystemPrompt } from '../../../core/prompts/instructionRefine';
 import { type InstructionRefineResult, isAdaptiveThinkingModel, THINKING_BUDGETS } from '../../../core/types';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { getEnhancedPath, getMissingNodeError, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
 
 export type RefineProgressCallback = (update: InstructionRefineResult) => void;
 
 export class InstructionRefineService {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private abortController: AbortController | null = null;
   private sessionId: string | null = null;
   private existingInstructions: string = '';
 
-  constructor(plugin: ClaudianPlugin) {
+  constructor(plugin: InquiryModule) {
     this.plugin = plugin;
   }
 

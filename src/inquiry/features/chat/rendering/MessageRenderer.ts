@@ -4,7 +4,7 @@ import { MarkdownRenderer, Notice } from 'obsidian';
 import { isSubagentToolName, isWriteEditTool, TOOL_AGENT_OUTPUT } from '../../../core/tools/toolNames';
 import type { ChatMessage, ImageAttachment, SubagentInfo, ToolCallInfo } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { formatDurationMmSs } from '../../../utils/date';
 import { processFileLinks, registerFileLinkHandler } from '../../../utils/fileLink';
 import { replaceImageEmbedsWithHtml } from '../../../utils/imageEmbed';
@@ -21,7 +21,7 @@ export type RenderContentFn = (el: HTMLElement, markdown: string) => Promise<voi
 
 export class MessageRenderer {
   private app: App;
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private component: Component;
   private messagesEl: HTMLElement;
   private rewindCallback?: (messageId: string) => Promise<void>;
@@ -33,7 +33,7 @@ export class MessageRenderer {
   private static readonly FORK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></svg>`;
 
   constructor(
-    plugin: ClaudianPlugin,
+    plugin: InquiryModule,
     component: Component,
     messagesEl: HTMLElement,
     rewindCallback?: (messageId: string) => Promise<void>,

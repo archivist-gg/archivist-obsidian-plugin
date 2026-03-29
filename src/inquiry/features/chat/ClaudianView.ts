@@ -2,13 +2,13 @@ import type { EventRef, WorkspaceLeaf } from 'obsidian';
 import { ItemView, Notice, Scope, setIcon } from 'obsidian';
 
 import { getContextWindowSize, VIEW_TYPE_CLAUDIAN } from '../../core/types';
-import type ClaudianPlugin from '../../main';
+import type InquiryModule from '../../InquiryModule';
 import { LOGO_SVG } from './constants';
 import { TabBar, TabManager, updatePlanModeUI } from './tabs';
 import type { TabData, TabId } from './tabs/types';
 
 export class ClaudianView extends ItemView {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
 
   // Tab management
   private tabManager: TabManager | null = null;
@@ -38,7 +38,7 @@ export class ClaudianView extends ItemView {
   // Debouncing for tab state persistence
   private pendingPersist: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(leaf: WorkspaceLeaf, plugin: ClaudianPlugin) {
+  constructor(leaf: WorkspaceLeaf, plugin: InquiryModule) {
     super(leaf);
     this.plugin = plugin;
 
@@ -70,7 +70,7 @@ export class ClaudianView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Claudian';
+    return 'Archivist Inquiry';
   }
 
   getIcon(): string {
@@ -225,7 +225,7 @@ export class ClaudianView extends ItemView {
     this.logoEl.appendChild(svg);
 
     // Title text (hidden in header mode when 2+ tabs)
-    this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Claudian', cls: 'claudian-title-text' });
+    this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Archivist Inquiry', cls: 'claudian-title-text' });
 
     // Header actions container (for header mode - initially hidden)
     this.headerActionsEl = header.createDiv({ cls: 'claudian-header-actions claudian-header-actions-slot' });

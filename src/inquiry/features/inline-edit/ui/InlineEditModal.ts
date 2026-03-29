@@ -4,7 +4,7 @@ import { Decoration, EditorView, WidgetType } from '@codemirror/view';
 import type { App, Editor, MarkdownView } from 'obsidian';
 import { Notice } from 'obsidian';
 
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { hideSelectionHighlight, showSelectionHighlight } from '../../../shared/components/SelectionHighlight';
 import { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import { MentionDropdownController } from '../../../shared/mention/MentionDropdownController';
@@ -204,7 +204,7 @@ export class InlineEditModal {
 
   constructor(
     private app: App,
-    private plugin: ClaudianPlugin,
+    private plugin: InquiryModule,
     private editor: Editor,
     private view: MarkdownView,
     private editContext: InlineEditContext,
@@ -274,7 +274,7 @@ class InlineEditController {
 
   constructor(
     private app: App,
-    private plugin: ClaudianPlugin,
+    private plugin: InquiryModule,
     private editorView: EditorView,
     private editor: Editor,
     editContext: InlineEditContext,

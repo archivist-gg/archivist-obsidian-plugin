@@ -30,7 +30,7 @@ import { Notice } from 'obsidian';
 import * as os from 'os';
 import * as path from 'path';
 
-import type ClaudianPlugin from '../../main';
+import type InquiryModule from '../../InquiryModule';
 import { stripCurrentNoteContext } from '../../utils/context';
 import { getEnhancedPath, getMissingNodeError, parseEnvironmentVariables } from '../../utils/env';
 import { getPathAccessType, getVaultPath } from '../../utils/path';
@@ -127,7 +127,7 @@ export interface EnsureReadyOptions {
 }
 
 export class ClaudianService {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private abortController: AbortController | null = null;
   private approvalCallback: ApprovalCallback | null = null;
   private approvalDismisser: (() => void) | null = null;
@@ -173,7 +173,7 @@ export class ClaudianService {
   private _autoTurnSawStreamText = false;
   private _autoTurnCallback: ((chunks: StreamChunk[]) => void) | null = null;
 
-  constructor(plugin: ClaudianPlugin, mcpManager: McpServerManager) {
+  constructor(plugin: InquiryModule, mcpManager: McpServerManager) {
     this.plugin = plugin;
     this.mcpManager = mcpManager;
   }

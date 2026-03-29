@@ -3,7 +3,7 @@ import { Modal, Notice, setIcon, Setting } from 'obsidian';
 
 import type { AgentDefinition } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { confirmDelete } from '../../../shared/modals/ConfirmModal';
 import { validateAgentName } from '../../../utils/agent';
 
@@ -15,13 +15,13 @@ const MODEL_OPTIONS = [
 ] as const;
 
 class AgentModal extends Modal {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private existingAgent: AgentDefinition | null;
   private onSave: (agent: AgentDefinition) => Promise<void>;
 
   constructor(
     app: App,
-    plugin: ClaudianPlugin,
+    plugin: InquiryModule,
     existingAgent: AgentDefinition | null,
     onSave: (agent: AgentDefinition) => Promise<void>
   ) {
@@ -209,9 +209,9 @@ class AgentModal extends Modal {
 
 export class AgentSettings {
   private containerEl: HTMLElement;
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
 
-  constructor(containerEl: HTMLElement, plugin: ClaudianPlugin) {
+  constructor(containerEl: HTMLElement, plugin: InquiryModule) {
     this.containerEl = containerEl;
     this.plugin = plugin;
     this.render();

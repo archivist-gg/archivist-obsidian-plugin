@@ -65,10 +65,10 @@
     }
   },
   "settings": {
-    "title": "Claudian Settings",
+    "title": "Archivist Inquiry Settings",
     "customization": "Customization",
     "userName": {
-      "name": "What should Claudian call you?",
+      "name": "What should Archivist call you?",
       "desc": "Your name for personalized greetings (leave empty for generic greetings)"
     },
     "excludedTags": {
@@ -138,7 +138,7 @@
     },
     "hiddenSlashCommands": {
       "name": "Hidden Commands",
-      "desc": "Hide specific slash commands from the dropdown. Useful for hiding Claude Code commands that are not relevant to Claudian. Enter command names without the leading slash, one per line.",
+      "desc": "Hide specific slash commands from the dropdown. Useful for hiding Claude Code commands that are not relevant to Archivist. Enter command names without the leading slash, one per line.",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {

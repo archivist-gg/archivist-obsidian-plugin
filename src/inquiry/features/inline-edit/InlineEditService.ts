@@ -13,7 +13,7 @@ import {
   TOOL_READ,
 } from '../../core/tools/toolNames';
 import { isAdaptiveThinkingModel, THINKING_BUDGETS } from '../../core/types';
-import type ClaudianPlugin from '../../main';
+import type InquiryModule from '../../InquiryModule';
 import { appendContextFiles } from '../../utils/context';
 import { type CursorContext } from '../../utils/editor';
 import { getEnhancedPath, getMissingNodeError, parseEnvironmentVariables } from '../../utils/env';
@@ -232,11 +232,11 @@ export function extractTextFromSdkMessage(message: any): string | null {
 }
 
 export class InlineEditService {
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
   private abortController: AbortController | null = null;
   private sessionId: string | null = null;
 
-  constructor(plugin: ClaudianPlugin) {
+  constructor(plugin: InquiryModule) {
     this.plugin = plugin;
   }
 

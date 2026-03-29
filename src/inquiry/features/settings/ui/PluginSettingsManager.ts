@@ -1,13 +1,13 @@
 import { Notice, setIcon } from 'obsidian';
 
 import type { ClaudianPlugin as ClaudianPluginType } from '../../../core/types';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 
 export class PluginSettingsManager {
   private containerEl: HTMLElement;
-  private plugin: ClaudianPlugin;
+  private plugin: InquiryModule;
 
-  constructor(containerEl: HTMLElement, plugin: ClaudianPlugin) {
+  constructor(containerEl: HTMLElement, plugin: InquiryModule) {
     this.containerEl = containerEl;
     this.plugin = plugin;
     this.render();

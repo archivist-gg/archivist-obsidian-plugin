@@ -6,7 +6,7 @@ import type { McpServerManager } from '../../../core/mcp';
 import type { ChatMessage, ClaudeModel, Conversation, EffortLevel, PermissionMode, SlashCommand, StreamChunk, ThinkingBudget } from '../../../core/types';
 import { DEFAULT_CLAUDE_MODELS, DEFAULT_EFFORT_LEVEL, DEFAULT_THINKING_BUDGET, getContextWindowSize, isAdaptiveThinkingModel } from '../../../core/types';
 import { t } from '../../../i18n';
-import type ClaudianPlugin from '../../../main';
+import type InquiryModule from '../../../InquiryModule';
 import { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import { getEnhancedPath } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
@@ -39,7 +39,7 @@ import type { TabData, TabDOMElements, TabId } from './types';
 import { generateTabId, TEXTAREA_MAX_HEIGHT_PERCENT, TEXTAREA_MIN_MAX_HEIGHT } from './types';
 
 export interface TabCreateOptions {
-  plugin: ClaudianPlugin;
+  plugin: InquiryModule;
   mcpManager: McpServerManager;
 
   containerEl: HTMLElement;
@@ -237,7 +237,7 @@ function buildTabDOM(contentEl: HTMLElement): TabDOMElements {
  */
 export async function initializeTabService(
   tab: TabData,
-  plugin: ClaudianPlugin,
+  plugin: InquiryModule,
   mcpManager: McpServerManager
 ): Promise<void> {
   if (tab.serviceInitialized) {
@@ -300,7 +300,7 @@ export async function initializeTabService(
 /**
  * Initializes file and image context managers for a tab.
  */
-function initializeContextManagers(tab: TabData, plugin: ClaudianPlugin): void {
+function initializeContextManagers(tab: TabData, plugin: InquiryModule): void {
   const { dom } = tab;
   const app = plugin.app;
 
@@ -371,7 +371,7 @@ function initializeSlashCommands(
 /**
  * Initializes instruction mode and todo panel for a tab.
  */
-function initializeInstructionAndTodo(tab: TabData, plugin: ClaudianPlugin): void {
+function initializeInstructionAndTodo(tab: TabData, plugin: InquiryModule): void {
   const { dom } = tab;
 
   tab.services.instructionRefineService = new InstructionRefineService(plugin);
@@ -421,7 +421,7 @@ function initializeInstructionAndTodo(tab: TabData, plugin: ClaudianPlugin): voi
 /**
  * Creates and wires the input toolbar for a tab.
  */
-function initializeInputToolbar(tab: TabData, plugin: ClaudianPlugin): void {
+function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
   const { dom } = tab;
 
   const inputToolbar = dom.inputWrapper.createDiv({ cls: 'claudian-input-toolbar' });
@@ -523,7 +523,7 @@ export interface InitializeTabUIOptions {
  */
 export function initializeTabUI(
   tab: TabData,
-  plugin: ClaudianPlugin,
+  plugin: InquiryModule,
   options: InitializeTabUIOptions = {}
 ): void {
   const { dom, state } = tab;
@@ -614,7 +614,7 @@ interface ForkSource {
  * Prefers the live service session ID; falls back to persisted conversation metadata.
  * Shows a notice and returns null when no session can be resolved.
  */
-function resolveForkSource(tab: TabData, plugin: ClaudianPlugin): ForkSource | null {
+function resolveForkSource(tab: TabData, plugin: InquiryModule): ForkSource | null {
   let sourceSessionId = tab.service?.getSessionId() ?? null;
 
   if (!sourceSessionId && tab.conversationId) {
@@ -640,7 +640,7 @@ function resolveForkSource(tab: TabData, plugin: ClaudianPlugin): ForkSource | n
 
 async function handleForkRequest(
   tab: TabData,
-  plugin: ClaudianPlugin,
+  plugin: InquiryModule,
   userMessageId: string,
   forkRequestCallback: (forkContext: ForkContext) => Promise<void>,
 ): Promise<void> {
@@ -684,7 +684,7 @@ async function handleForkRequest(
 
 async function handleForkAll(
   tab: TabData,
-  plugin: ClaudianPlugin,
+  plugin: InquiryModule,
   forkRequestCallback: (forkContext: ForkContext) => Promise<void>,
 ): Promise<void> {
   const { state } = tab;
@@ -728,7 +728,7 @@ async function handleForkAll(
 
 export function initializeTabControllers(
   tab: TabData,
-  plugin: ClaudianPlugin,
+  plugin: InquiryModule,
   component: Component,
   mcpManager: McpServerManager,
   forkRequestCallback?: (forkContext: ForkContext) => Promise<void>,
@@ -901,7 +901,7 @@ export function initializeTabControllers(
  * Call this after controllers are initialized.
  * Stores cleanup functions in dom.eventCleanups for proper memory management.
  */
-export function wireTabInputEvents(tab: TabData, plugin: ClaudianPlugin): void {
+export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
   const { dom, ui, state, controllers } = tab;
 
   let wasBangBashActive = ui.bangBashModeManager?.isActive() ?? false;
@@ -1122,7 +1122,7 @@ export async function destroyTab(tab: TabData): Promise<void> {
  * Gets the display title for a tab.
  * Uses synchronous access since we only need the title, not messages.
  */
-export function getTabTitle(tab: TabData, plugin: ClaudianPlugin): string {
+export function getTabTitle(tab: TabData, plugin: InquiryModule): string {
   if (tab.conversationId) {
     const conversation = plugin.getConversationSync(tab.conversationId);
     if (conversation?.title) {
@@ -1133,7 +1133,7 @@ export function getTabTitle(tab: TabData, plugin: ClaudianPlugin): string {
 }
 
 /** Shared between Tab.ts and TabManager.ts to avoid duplication. */
-export function setupServiceCallbacks(tab: TabData, plugin: ClaudianPlugin): void {
+export function setupServiceCallbacks(tab: TabData, plugin: InquiryModule): void {
   if (tab.service && tab.controllers.inputController) {
     tab.service.setApprovalCallback(
       async (toolName, input, description, options) =>
@@ -1237,7 +1237,7 @@ function renderAutoTriggeredTurn(tab: TabData, chunks: StreamChunk[]): void {
   tab.renderer?.scrollToBottom();
 }
 
-export function updatePlanModeUI(tab: TabData, plugin: ClaudianPlugin, mode: PermissionMode): void {
+export function updatePlanModeUI(tab: TabData, plugin: InquiryModule, mode: PermissionMode): void {
   plugin.settings.permissionMode = mode;
   void plugin.saveSettings();
   tab.ui.permissionToggle?.updateDisplay();

@@ -65,10 +65,10 @@
     }
   },
   "settings": {
-    "title": "Claudian 設定",
+    "title": "Archivist 設定",
     "customization": "カスタマイズ",
     "userName": {
-      "name": "Claudian はどのように呼びますか？",
+      "name": "Archivist はどのように呼びますか？",
       "desc": "パーソナライズされた挨拶に使用する名前（空欄で一般の挨拶）"
     },
     "excludedTags": {
@@ -138,7 +138,7 @@
     },
     "hiddenSlashCommands": {
       "name": "非表示コマンド",
-      "desc": "ドロップダウンから特定のスラッシュコマンドを非表示にします。Claudian に関係のない Claude Code コマンドを非表示にするのに便利です。先頭のスラッシュなしでコマンド名を1行に1つ入力してください。",
+      "desc": "ドロップダウンから特定のスラッシュコマンドを非表示にします。Archivist に関係のない Claude Code コマンドを非表示にするのに便利です。先頭のスラッシュなしでコマンド名を1行に1つ入力してください。",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {
