@@ -15,6 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const CLAUDIAN_STYLE_DIR = join(ROOT, 'src', 'inquiry', 'style');
 const DND_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-dnd.css');
+const LAYOUT_OVERRIDES_FILE = join(ROOT, 'src', 'styles', 'archivist-layout-overrides.css');
 const OUTPUT = join(ROOT, 'styles.css');
 const INDEX_FILE = join(CLAUDIAN_STYLE_DIR, 'index.css');
 
@@ -127,9 +128,19 @@ function buildDndCss() {
   return readFileSync(DND_CSS_FILE, 'utf-8');
 }
 
+function buildLayoutOverridesCss() {
+  if (!existsSync(LAYOUT_OVERRIDES_FILE)) {
+    console.error('Missing src/styles/archivist-layout-overrides.css');
+    process.exit(1);
+  }
+
+  return readFileSync(LAYOUT_OVERRIDES_FILE, 'utf-8');
+}
+
 function build() {
   const claudianCss = buildClaudianCss();
   let dndCss = buildDndCss();
+  const layoutOverridesCss = buildLayoutOverridesCss();
 
   // Extract @import lines from D&D CSS - they must appear at the very top of the output
   // per CSS spec (browsers silently ignore @import rules that appear after other rules)
@@ -154,6 +165,12 @@ function build() {
     '   ================================================================ */',
     '',
     dndCss,
+    '',
+    '/* ================================================================',
+    '   PART 3: Layout Overrides (from src/styles/archivist-layout-overrides.css)',
+    '   ================================================================ */',
+    '',
+    layoutOverridesCss,
   ].join('\n');
 
   writeFileSync(OUTPUT, output);

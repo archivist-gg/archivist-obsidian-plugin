@@ -7145,3 +7145,43 @@ code .claudian-file-link:hover {
 .archivist-entity-dropdown-badge-custom { color: var(--text-accent); background: rgba(var(--color-accent-rgb), 0.1); }
 
 .theme-dark .archivist-entity-source-badge-srd { color: rgba(255,255,255,0.4); }
+
+
+/* ================================================================
+   PART 3: Layout Overrides (from src/styles/archivist-layout-overrides.css)
+   ================================================================ */
+
+/* Archivist layout overrides -- match previous Archivist Inquiry layout */
+
+/* Header: fixed height with bottom border */
+.claudian-header {
+  height: 36px;
+  min-height: 36px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 0 8px;
+}
+
+/* Header actions: tighter spacing */
+.claudian-header-actions {
+  gap: 4px;
+}
+
+/* Input area: top border, padding */
+.claudian-input-container {
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 8px;
+}
+
+/* Textarea: smaller font */
+.claudian-input-container textarea {
+  font-size: 13px;
+}
+
+/* Messages: padding on all sides, font size */
+.claudian-messages {
+  padding: 12px;
+}
+
+.claudian-message-content {
+  font-size: 13px;
+}
