@@ -1,33 +1,44 @@
 import { Plugin, Notice } from "obsidian";
+
+// D&D parsers
 import { parseMonster } from "./parsers/monster-parser";
 import { parseSpell } from "./parsers/spell-parser";
 import { parseItem } from "./parsers/item-parser";
 import { parseInlineTag } from "./parsers/inline-tag-parser";
+
+// D&D renderers
 import { renderMonsterBlock } from "./renderers/monster-renderer";
 import { renderSpellBlock } from "./renderers/spell-renderer";
 import { renderItemBlock } from "./renderers/item-renderer";
 import { renderInlineTag } from "./renderers/inline-tag-renderer";
 import { createErrorBlock } from "./renderers/renderer-utils";
+
+// D&D modals
 import { MonsterModal } from "./modals/monster-modal";
 import { SpellModal } from "./modals/spell-modal";
 import { ItemModal } from "./modals/item-modal";
+
+// D&D editor extension
 import { inlineTagPlugin } from "./extensions/inline-tag-extension";
-import { InquiryView, VIEW_TYPE_INQUIRY } from "./ui/inquiry-view";
-import { ArchivistSettingTab } from "./settings/settings-tab";
-import { AgentService } from "./ai/agent-service";
-import { ConversationManager } from "./ai/conversation-manager";
+
+// SRD & entities
 import { SrdStore } from "./ai/srd/srd-store";
 import { EntityRegistry } from "./entities/entity-registry";
 import { importSrdToVault } from "./entities/entity-importer";
 import { parseEntityFrontmatter, TYPE_FOLDER_MAP } from "./entities/entity-vault-store";
+
+// Settings
+import { ArchivistSettingTab } from "./settings/settings-tab";
 import type { ArchivistSettings } from "./types/settings";
 import { DEFAULT_SETTINGS } from "./types/settings";
 
+// Inquiry (Claudian chat engine)
+import { InquiryModule } from "./inquiry/InquiryModule";
+
 export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
-  agentService: AgentService | null = null;
-  conversationManager: ConversationManager | null = null;
   entityRegistry: EntityRegistry | null = null;
+  inquiry: InquiryModule | null = null;
   private srdStore: SrdStore | null = null;
 
   async onload() {
@@ -53,36 +64,11 @@ export default class ArchivistPlugin extends Plugin {
       }
     }
 
-    // Initialize AI services
-    this.agentService = new AgentService(this.srdStore);
-    this.conversationManager = new ConversationManager(
-      async () => {
-        const data = await this.loadData();
-        return data?.conversationStore ?? null;
-      },
-      async (store) => {
-        const data = (await this.loadData()) ?? {};
-        data.conversationStore = store;
-        await this.saveData(data);
-      },
-      this.settings.maxConversations,
-    );
-    await this.conversationManager.load();
+    // Initialize InquiryModule (Claudian chat engine)
+    this.inquiry = new InquiryModule(this, this.app, this.entityRegistry, this.srdStore);
+    await this.inquiry.init();
 
-    // Register the Inquiry view
-    this.registerView(VIEW_TYPE_INQUIRY, (leaf) => new InquiryView(leaf, this));
-
-    // Ribbon icon
-    this.addRibbonIcon("bot", "Archivist Inquiry", () => this.activateInquiryView());
-
-    // Command to open Inquiry
-    this.addCommand({
-      id: "open-inquiry",
-      name: "Open Archivist Inquiry",
-      callback: () => this.activateInquiryView(),
-    });
-
-    // Existing block processors
+    // D&D code block processors
     this.registerMarkdownCodeBlockProcessor("monster", (source, el) =>
       this.renderBlock(source, el, parseMonster, renderMonsterBlock),
     );
@@ -93,7 +79,7 @@ export default class ArchivistPlugin extends Plugin {
       this.renderBlock(source, el, parseItem, renderItemBlock),
     );
 
-    // Existing post-processor
+    // Inline tag post-processor
     this.registerMarkdownPostProcessor((element) => {
       element.querySelectorAll("code").forEach((codeEl) => {
         const text = codeEl.textContent ?? "";
@@ -105,10 +91,10 @@ export default class ArchivistPlugin extends Plugin {
       });
     });
 
-    // Existing editor extension
+    // CodeMirror editor extension
     this.registerEditorExtension(inlineTagPlugin);
 
-    // Existing commands
+    // D&D insert commands
     this.addCommand({
       id: "insert-monster",
       name: "Insert Monster Block",
@@ -131,15 +117,34 @@ export default class ArchivistPlugin extends Plugin {
       },
     });
 
-    // Settings tab
+    // D&D settings tab
     this.addSettingTab(new ArchivistSettingTab(this.app, this));
 
     // First-load SRD import (async, non-blocking)
+    this.triggerSrdImport();
+  }
+
+  async onunload() {
+    await this.inquiry?.destroy();
+  }
+
+  async loadSettings(): Promise<void> {
+    const data = await this.loadData();
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, data?.settings);
+  }
+
+  async saveSettings(): Promise<void> {
+    const data = (await this.loadData()) ?? {};
+    data.settings = this.settings;
+    await this.saveData(data);
+  }
+
+  private triggerSrdImport(): void {
     if (!this.settings.srdImported) {
       const notice = new Notice("Importing SRD content...", 0);
       importSrdToVault(
         this.app.vault,
-        this.srdStore,
+        this.srdStore!,
         this.settings.compendiumRoot,
         (current, total) => {
           notice.setMessage(`Importing SRD content... ${current}/${total}`);
@@ -158,46 +163,6 @@ export default class ArchivistPlugin extends Plugin {
     } else {
       this.loadUserEntities();
     }
-  }
-
-  private async activateInquiryView(): Promise<void> {
-    const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_INQUIRY);
-    if (existing.length > 0) {
-      this.app.workspace.revealLeaf(existing[0]);
-      return;
-    }
-    const leaf = this.app.workspace.getRightLeaf(false);
-    if (leaf) {
-      await leaf.setViewState({ type: VIEW_TYPE_INQUIRY, active: true });
-      this.app.workspace.revealLeaf(leaf);
-    }
-  }
-
-  private renderBlock<T>(
-    source: string,
-    el: HTMLElement,
-    parser: (
-      source: string,
-    ) => { success: true; data: T } | { success: false; error: string },
-    renderer: (data: T) => HTMLElement,
-  ): void {
-    const result = parser(source);
-    if (result.success) {
-      el.appendChild(renderer(result.data));
-    } else {
-      el.appendChild(createErrorBlock(result.error, source));
-    }
-  }
-
-  async loadSettings(): Promise<void> {
-    const data = await this.loadData();
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, data?.settings);
-  }
-
-  async saveSettings(): Promise<void> {
-    const data = (await this.loadData()) ?? {};
-    data.settings = this.settings;
-    await this.saveData(data);
   }
 
   private async loadUserEntities(): Promise<void> {
@@ -221,7 +186,19 @@ export default class ArchivistPlugin extends Plugin {
     }
   }
 
-  onunload() {
-    this.agentService?.abort();
+  private renderBlock<T>(
+    source: string,
+    el: HTMLElement,
+    parser: (
+      source: string,
+    ) => { success: true; data: T } | { success: false; error: string },
+    renderer: (data: T) => HTMLElement,
+  ): void {
+    const result = parser(source);
+    if (result.success) {
+      el.appendChild(renderer(result.data));
+    } else {
+      el.appendChild(createErrorBlock(result.error, source));
+    }
   }
 }
