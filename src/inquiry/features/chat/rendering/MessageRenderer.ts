@@ -16,7 +16,7 @@ import {
   renderStoredSubagent,
 } from './SubagentRenderer';
 import { renderStoredThinkingBlock } from './ThinkingBlockRenderer';
-import { renderStoredToolCall } from './ToolCallRenderer';
+import { renderDndEntityAfterToolCall, renderStoredToolCall } from './ToolCallRenderer';
 import { renderStoredWriteEdit } from './WriteEditRenderer';
 
 export type RenderContentFn = (el: HTMLElement, markdown: string) => Promise<void>;
@@ -313,6 +313,8 @@ export class MessageRenderer {
     } else {
       renderStoredToolCall(contentEl, toolCall, this.dndCopyAndSaveCallback);
     }
+    // Render D&D entity block as a sibling AFTER the tool call collapsible
+    renderDndEntityAfterToolCall(contentEl, toolCall, this.dndCopyAndSaveCallback);
   }
 
   private renderTaskSubagent(

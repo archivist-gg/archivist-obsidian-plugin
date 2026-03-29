@@ -32,6 +32,7 @@ export {
   getToolName,
   getToolSummary,
   isBlockedToolResult,
+  renderDndEntityAfterToolCall,
   renderStoredToolCall,
   renderToolCall,
   setToolIcon,

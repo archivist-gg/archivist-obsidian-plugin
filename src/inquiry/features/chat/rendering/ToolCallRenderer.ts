@@ -63,8 +63,22 @@ export function getToolName(name: string, input: Record<string, unknown>): strin
       return 'Entering plan mode';
     case TOOL_EXIT_PLAN_MODE:
       return 'Plan complete';
-    default:
+    default: {
+      if (name.startsWith('mcp__archivist__')) {
+        const cleanName = name.replace('mcp__archivist__', '');
+        switch (cleanName) {
+          case 'generate_monster': return 'Generating Monster';
+          case 'generate_spell': return 'Generating Spell';
+          case 'generate_item': return 'Generating Item';
+          case 'generate_encounter': return 'Generating Encounter';
+          case 'generate_npc': return 'Generating NPC';
+          case 'search_srd': return 'Searching SRD';
+          case 'get_srd_entity': return 'Loading SRD Entity';
+          default: return cleanName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+      }
       return name;
+    }
   }
 }
 
@@ -95,8 +109,13 @@ export function getToolSummary(name: string, input: Record<string, unknown>): st
       return truncateText(parseToolSearchQuery(input.query as string | undefined), 60);
     case TOOL_TODO_WRITE:
       return '';
-    default:
+    default: {
+      if (name.startsWith('mcp__archivist__')) {
+        const monsterName = (input as any)?.monster?.name || (input as any)?.spell?.name || (input as any)?.item?.name || '';
+        return monsterName;
+      }
       return '';
+    }
   }
 }
 
@@ -313,22 +332,6 @@ export function renderExpandedContent(
   if (!result) {
     container.createDiv({ cls: 'claudian-tool-empty', text: 'No result' });
     return;
-  }
-
-  // Detect D&D entity tool results and render as stat blocks
-  const entityType = getDndEntityType(toolName);
-  if (entityType && result) {
-    try {
-      const parsed = JSON.parse(result);
-      if (parsed.data) {
-        const yamlStr = yaml.dump(parsed.data);
-        const fenceResult = parseDndCodeFence(entityType, yamlStr);
-        if (fenceResult) {
-          renderDndEntityBlock(container, fenceResult, dndCopyAndSaveCallback);
-          return;
-        }
-      }
-    } catch { /* fall through to default */ }
   }
 
   switch (toolName) {
@@ -658,6 +661,33 @@ export function updateToolCallResult(
     content.empty();
     renderExpandedContent(content, toolCall.name, toolCall.result, dndCopyAndSaveCallback);
   }
+}
+
+/**
+ * Renders a D&D entity stat block as a SIBLING element after the tool call block.
+ * Returns true if it rendered, false otherwise.
+ */
+export function renderDndEntityAfterToolCall(
+  parentEl: HTMLElement,
+  toolCall: ToolCallInfo,
+  dndCopyAndSaveCallback?: CopyAndSaveCallback
+): boolean {
+  const entityType = getDndEntityType(toolCall.name);
+  if (!entityType || !toolCall.result) return false;
+
+  try {
+    const parsed = JSON.parse(toolCall.result);
+    if (parsed.data) {
+      const yamlStr = yaml.dump(parsed.data);
+      const fenceResult = parseDndCodeFence(entityType, yamlStr);
+      if (fenceResult) {
+        renderDndEntityBlock(parentEl, fenceResult, dndCopyAndSaveCallback);
+        return true;
+      }
+    }
+  } catch { /* fall through */ }
+
+  return false;
 }
 
 /** For stored (non-streaming) tool calls — collapsed by default. */

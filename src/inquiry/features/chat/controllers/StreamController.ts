@@ -1,5 +1,6 @@
 import { TFile } from 'obsidian';
 
+import { createOwlIcon } from '../../../../ui/components/owl-icon';
 import type { ClaudianService } from '../../../core/agent';
 import { extractResolvedAnswers, extractResolvedAnswersFromResultText, parseTodoInput } from '../../../core/tools';
 import {
@@ -30,6 +31,7 @@ import {
   getToolName,
   getToolSummary,
   isBlockedToolResult,
+  renderDndEntityAfterToolCall,
   renderToolCall,
   updateToolCallResult,
   updateWriteEditWithDiff,
@@ -401,6 +403,11 @@ export class StreamController {
         finalizeWriteEditBlock(writeEditState, chunk.isError || isBlocked);
       } else {
         updateToolCallResult(chunk.id, existingToolCall, state.toolCallElements, this.deps.renderer.getDndCopyAndSaveCallback());
+      }
+
+      // Render D&D entity block as a sibling after the tool call element
+      if (state.currentContentEl) {
+        renderDndEntityAfterToolCall(state.currentContentEl, existingToolCall, this.deps.renderer.getDndCopyAndSaveCallback());
       }
 
       // Notify Obsidian vault so the file tree refreshes after Write/Edit/NotebookEdit
@@ -923,6 +930,7 @@ export class StreamController {
         ? `claudian-thinking ${overrideCls}`
         : 'claudian-thinking';
       state.thinkingEl = state.currentContentEl.createDiv({ cls });
+      state.thinkingEl.appendChild(createOwlIcon(14));
       const text = overrideText || FLAVOR_TEXTS[Math.floor(Math.random() * FLAVOR_TEXTS.length)];
       state.thinkingEl.createSpan({ text });
 

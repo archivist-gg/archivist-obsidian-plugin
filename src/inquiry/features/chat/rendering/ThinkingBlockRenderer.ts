@@ -1,3 +1,4 @@
+import { createOwlIcon } from '../../../../ui/components/owl-icon';
 import { collapseElement, setupCollapsible } from './collapsible';
 
 export type RenderContentFn = (el: HTMLElement, markdown: string) => Promise<void>;
@@ -24,6 +25,9 @@ export function createThinkingBlock(
   header.setAttribute('role', 'button');
   header.setAttribute('aria-expanded', 'false');
   header.setAttribute('aria-label', 'Extended thinking - click to expand');
+
+  // Owl icon before label
+  header.appendChild(createOwlIcon(14));
 
   // Label with timer
   const labelEl = header.createSpan({ cls: 'claudian-thinking-label' });
@@ -106,6 +110,9 @@ export function renderStoredThinkingBlock(
   header.setAttribute('tabindex', '0');
   header.setAttribute('role', 'button');
   header.setAttribute('aria-label', 'Extended thinking - click to expand');
+
+  // Owl icon before label
+  header.appendChild(createOwlIcon(14));
 
   // Label with duration
   const labelEl = header.createSpan({ cls: 'claudian-thinking-label' });

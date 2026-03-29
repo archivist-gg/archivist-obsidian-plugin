@@ -1592,3 +1592,68 @@
 .archivist-entity-dropdown-badge-custom { color: var(--text-accent); background: rgba(var(--color-accent-rgb), 0.1); }
 
 .theme-dark .archivist-entity-source-badge-srd { color: rgba(255,255,255,0.4); }
+
+/* ==========================================================================
+   Claudian D&D Entity Blocks (rendered outside tool call collapsibles)
+   ========================================================================== */
+
+.claudian-dnd-entity-block {
+  position: relative;
+  margin: 8px 0;
+}
+
+.claudian-dnd-source-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--background-secondary);
+}
+
+.claudian-dnd-source-badge svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* D&D entity block actions (Copy & Save) */
+.claudian-dnd-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px 8px;
+}
+
+.claudian-dnd-copy-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.claudian-dnd-copy-save-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.claudian-dnd-copy-save-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.claudian-dnd-copy-save-btn.saved {
+  color: var(--text-accent);
+}
