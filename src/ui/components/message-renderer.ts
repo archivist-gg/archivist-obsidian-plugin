@@ -39,7 +39,7 @@ export function renderUserMessage(parent: HTMLElement, message: Message, callbac
   return wrapper;
 }
 
-export function renderAssistantMessage(parent: HTMLElement, message: Message, app: App, sourcePath: string, component?: Component, callbacks?: { onFork?: (messageId: string) => void }): HTMLElement {
+export function renderAssistantMessage(parent: HTMLElement, message: Message, app: App, sourcePath: string, component?: Component, callbacks?: { onFork?: (messageId: string) => void }, onCopyAndSave?: (entityType: string, data: unknown) => Promise<string | null>): HTMLElement {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-msg-assistant" });
   const comp = component ?? new Component();
 
@@ -62,7 +62,7 @@ export function renderAssistantMessage(parent: HTMLElement, message: Message, ap
           break;
         case "generated_entity": {
           const bw = wrapper.createDiv({ cls: "archivist-inquiry-stat-block" });
-          renderGeneratedBlock(bw, { type: block.entityType, data: block.data });
+          renderGeneratedBlock(bw, { type: block.entityType, data: block.data }, "custom", onCopyAndSave);
           break;
         }
         case "footer":
@@ -104,7 +104,7 @@ export function renderAssistantMessage(parent: HTMLElement, message: Message, ap
   }
   if (message.generatedEntity) {
     const blockWrapper = wrapper.createDiv({ cls: "archivist-inquiry-stat-block" });
-    renderGeneratedBlock(blockWrapper, message.generatedEntity);
+    renderGeneratedBlock(blockWrapper, message.generatedEntity, "custom", onCopyAndSave);
   }
   if (callbacks?.onFork) {
     const forkBtn = wrapper.createDiv({ cls: "archivist-inquiry-msg-fork" });
@@ -389,7 +389,7 @@ export interface GeneratedBlockHandle {
   updateFromResult(entityType: string, data: unknown): void;
 }
 
-export function renderBlockSkeleton(parent: HTMLElement, entityType: string): GeneratedBlockHandle {
+export function renderBlockSkeleton(parent: HTMLElement, entityType: string, onCopyAndSave?: (entityType: string, data: unknown) => Promise<string | null>): GeneratedBlockHandle {
   const wrapper = parent.createDiv({ cls: "archivist-inquiry-stat-block" });
 
   const skeleton = wrapper.createDiv({ cls: "archivist-inquiry-block-skeleton" });
@@ -403,7 +403,7 @@ export function renderBlockSkeleton(parent: HTMLElement, entityType: string): Ge
     el: wrapper,
     updateFromResult(eType: string, data: unknown) {
       wrapper.empty();
-      renderGeneratedBlock(wrapper, { type: eType, data });
+      renderGeneratedBlock(wrapper, { type: eType, data }, "custom", onCopyAndSave);
     },
   };
 }
@@ -505,7 +505,12 @@ function normalizeEntityData(entityType: string, data: unknown): unknown {
   }
 }
 
-export function renderGeneratedBlock(parent: HTMLElement, entity: { type: string; data: unknown }): void {
+export function renderGeneratedBlock(
+  parent: HTMLElement,
+  entity: { type: string; data: unknown },
+  source?: "srd" | "custom",
+  onCopyAndSave?: (entityType: string, data: unknown) => Promise<string | null>,
+): void {
   try {
     const normalized = normalizeEntityData(entity.type, entity.data);
     switch (entity.type) {
@@ -520,24 +525,71 @@ export function renderGeneratedBlock(parent: HTMLElement, entity: { type: string
     parent.createDiv({ cls: "archivist-inquiry-msg-error", text: "Failed to render block" });
   }
 
-  const copyBtn = parent.createDiv({ cls: "archivist-inquiry-block-copy" });
+  // Action row: source badge + copy & save button
+  const actionRow = parent.createDiv({ cls: "archivist-inquiry-block-actions" });
+
+  // Source badge
+  if (source) {
+    const badgeCls = source === "srd"
+      ? "archivist-entity-source-badge archivist-entity-source-srd"
+      : "archivist-entity-source-badge archivist-entity-source-custom";
+    const badge = actionRow.createSpan({ cls: badgeCls });
+    const badgeIcon = badge.createSpan();
+    setIcon(badgeIcon, source === "srd" ? "book-open" : "pen-tool");
+    badge.createSpan({ text: source === "srd" ? "SRD" : "Custom" });
+  }
+
+  // Copy & Save button
+  const copyBtn = actionRow.createDiv({ cls: "archivist-inquiry-block-copy" });
   const copyIcon = copyBtn.createSpan();
-  setIcon(copyIcon, "clipboard-copy");
-  copyBtn.createSpan({ text: "Copy to Clipboard" });
-  copyBtn.addEventListener("click", () => {
+  setIcon(copyIcon, "copy-plus");
+  copyBtn.createSpan({ text: "Copy & Save" });
+  copyBtn.addEventListener("click", async () => {
+    // 1. Copy YAML to clipboard
     const fenceType = entity.type;
     const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
     navigator.clipboard.writeText(`\`\`\`${fenceType}\n${yamlStr}\`\`\``);
-    copyBtn.empty();
-    const checkIcon = copyBtn.createSpan();
-    setIcon(checkIcon, "check");
-    copyBtn.createSpan({ text: "Copied!" });
-    setTimeout(() => {
+
+    // 2. Call save callback if provided
+    if (onCopyAndSave) {
+      try {
+        await onCopyAndSave(entity.type, entity.data);
+        copyBtn.empty();
+        const checkIcon = copyBtn.createSpan();
+        setIcon(checkIcon, "check");
+        copyBtn.createSpan({ text: "Saved!" });
+        setTimeout(() => {
+          copyBtn.empty();
+          const icon2 = copyBtn.createSpan();
+          setIcon(icon2, "copy-plus");
+          copyBtn.createSpan({ text: "Copy & Save" });
+        }, 2000);
+      } catch (err) {
+        console.error("[archivist] Failed to save entity:", err);
+        copyBtn.empty();
+        const errIcon = copyBtn.createSpan();
+        setIcon(errIcon, "x");
+        copyBtn.createSpan({ text: "Save failed" });
+        setTimeout(() => {
+          copyBtn.empty();
+          const icon2 = copyBtn.createSpan();
+          setIcon(icon2, "copy-plus");
+          copyBtn.createSpan({ text: "Copy & Save" });
+        }, 2000);
+      }
+    } else {
+      // No save callback -- just confirm copy
       copyBtn.empty();
-      const icon2 = copyBtn.createSpan();
-      setIcon(icon2, "clipboard-copy");
-      copyBtn.createSpan({ text: "Copy to Clipboard" });
-    }, 2000);
+      const checkIcon = copyBtn.createSpan();
+      setIcon(checkIcon, "check");
+      copyBtn.createSpan({ text: "Copied!" });
+      setTimeout(() => {
+        copyBtn.empty();
+        const icon2 = copyBtn.createSpan();
+        setIcon(icon2, "copy-plus");
+        copyBtn.createSpan({ text: "Copy & Save" });
+      }, 2000);
+    }
   });
 }
 

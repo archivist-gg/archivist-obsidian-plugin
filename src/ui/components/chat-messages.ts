@@ -3,7 +3,7 @@ import type { Message } from "../../types/conversation";
 import { renderUserMessage, renderAssistantMessage, renderThinkingIndicator } from "./message-renderer";
 import { createOwlIcon } from "./owl-icon";
 
-export function renderChatMessages(parent: HTMLElement, messages: Message[], app: App, sourcePath: string, isStreaming: boolean, callbacks?: { onRewind?: (messageId: string) => void; onFork?: (messageId: string) => void }): HTMLElement {
+export function renderChatMessages(parent: HTMLElement, messages: Message[], app: App, sourcePath: string, isStreaming: boolean, callbacks?: { onRewind?: (messageId: string) => void; onFork?: (messageId: string) => void }, onCopyAndSave?: (entityType: string, data: unknown) => Promise<string | null>): HTMLElement {
   const container = parent.createDiv({ cls: "archivist-inquiry-messages" });
   const component = new Component();
   component.load();
@@ -16,7 +16,7 @@ export function renderChatMessages(parent: HTMLElement, messages: Message[], app
   }
   for (const message of messages) {
     if (message.role === "user") renderUserMessage(container, message, callbacks);
-    else if (message.role === "assistant") renderAssistantMessage(container, message, app, sourcePath, component, callbacks);
+    else if (message.role === "assistant") renderAssistantMessage(container, message, app, sourcePath, component, callbacks, onCopyAndSave);
   }
   if (isStreaming) renderThinkingIndicator(container);
   requestAnimationFrame(() => { container.scrollTop = container.scrollHeight; });

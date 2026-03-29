@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownView, MarkdownRenderer } from "obsidian";
+import { ItemView, WorkspaceLeaf, MarkdownView, MarkdownRenderer, Notice } from "obsidian";
 import { renderChatHeader } from "./components/chat-header";
 import { renderChatTabs, type TabData } from "./components/chat-tabs";
 import { renderChatMessages } from "./components/chat-messages";
@@ -22,6 +22,7 @@ import type { StreamEvent } from "../ai/agent-service";
 import type { AgentService } from "../ai/agent-service";
 import type { ConversationManager } from "../ai/conversation-manager";
 import type { ArchivistSettings } from "../types/settings";
+import { slugify, ensureUniqueSlug, generateEntityMarkdown, TYPE_FOLDER_MAP } from "../entities/entity-vault-store";
 
 export const VIEW_TYPE_INQUIRY = "archivist-inquiry-view";
 
@@ -30,6 +31,7 @@ interface ArchivistPluginRef {
   settings: ArchivistSettings;
   conversationManager: ConversationManager | null;
   agentService: AgentService | null;
+  entityRegistry: any;  // EntityRegistry | null
   saveSettings(): Promise<void>;
   app: any;
 }
@@ -174,7 +176,7 @@ export class InquiryView extends ItemView {
     } else {
       // No cache -- render from saved data (first load, history open, or after restart)
       const messages = activeConv?.messages ?? [];
-      const el = renderChatMessages(this.root, messages, this.app, sourcePath, this.isStreaming, chatCallbacks);
+      const el = renderChatMessages(this.root, messages, this.app, sourcePath, this.isStreaming, chatCallbacks, this.entitySaveCallback);
       if (activeId) {
         this.tabContainers.set(activeId, el);
       }
@@ -528,7 +530,7 @@ export class InquiryView extends ItemView {
 
             // For generate tools, show a skeleton stat block immediately
             if (entityType) {
-              const skeleton = renderBlockSkeleton(streamContainer, entityType);
+              const skeleton = renderBlockSkeleton(streamContainer, entityType, this.entitySaveCallback);
               generatedBlocks.set(toolId, { handle: skeleton, entityType });
             }
 
@@ -614,7 +616,7 @@ export class InquiryView extends ItemView {
                     genBlock.handle.updateFromResult(entityType, entityData);
                   } else {
                     const blockWrapper = streamContainer.createDiv({ cls: "archivist-inquiry-stat-block" });
-                    renderGeneratedBlock(blockWrapper, generatedEntity);
+                    renderGeneratedBlock(blockWrapper, generatedEntity, "custom", this.entitySaveCallback);
                   }
                 }
               } catch (err) {
@@ -693,6 +695,73 @@ export class InquiryView extends ItemView {
     // Just update the input area to reflect non-streaming state.
     this.updateInputArea();
   }
+
+  /** Save a generated entity to the vault as a compendium note */
+  private async saveEntityToVault(entityType: string, data: unknown): Promise<string | null> {
+    try {
+      const entityData = data as Record<string, unknown>;
+      const name = String(entityData.name ?? "Unnamed");
+      const registry = this.pluginRef.entityRegistry;
+
+      // 1. Slugify the name
+      const baseSlug = slugify(name);
+
+      // 2. Ensure unique slug against registry
+      const existingSlugs: Set<string> = registry ? registry.getAllSlugs() : new Set<string>();
+      const slug = ensureUniqueSlug(baseSlug, existingSlugs);
+
+      // 3. Build directory path: {compendiumRoot}/{userEntityFolder}/{TypeFolder}/
+      const settings = this.pluginRef.settings;
+      const typeFolder = TYPE_FOLDER_MAP[entityType] ?? entityType;
+      const dirPath = [settings.compendiumRoot, settings.userEntityFolder, typeFolder]
+        .filter(Boolean)
+        .join("/");
+
+      // 4. Create directory if needed
+      const adapter = this.app.vault.adapter;
+      if (!(await adapter.exists(dirPath))) {
+        await adapter.mkdir(dirPath);
+      }
+
+      // 5. Generate markdown content
+      const markdown = generateEntityMarkdown({
+        slug,
+        name,
+        entityType,
+        source: "custom",
+        data: entityData,
+      });
+
+      // 6. Create vault note
+      const filePath = `${dirPath}/${slug}.md`;
+      await this.app.vault.create(filePath, markdown);
+
+      // 7. Register in entity registry
+      if (registry) {
+        registry.register({
+          slug,
+          name,
+          entityType,
+          source: "custom",
+          filePath,
+          data: entityData,
+        });
+      }
+
+      // 8. Show Notice with path
+      new Notice(`Saved: ${filePath}`);
+      return filePath;
+    } catch (err) {
+      console.error("[archivist] Failed to save entity to vault:", err);
+      new Notice(`Failed to save entity: ${(err as Error).message}`);
+      return null;
+    }
+  }
+
+  /** Bound callback for renderGeneratedBlock's onCopyAndSave parameter */
+  private entitySaveCallback = (entityType: string, data: unknown): Promise<string | null> => {
+    return this.saveEntityToVault(entityType, data);
+  };
 
   /** Lightweight update of just the input area without full re-render */
   private updateInputArea(): void {

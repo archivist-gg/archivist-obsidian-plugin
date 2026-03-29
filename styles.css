@@ -1585,7 +1585,7 @@
   align-items: center;
 }
 .archivist-inquiry-header-btn:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
-.archivist-inquiry-header-btn svg { width: 14px; height: 14px; }
+.archivist-inquiry-header-btn svg { width: 16px; height: 16px; }
 
 .archivist-inquiry-tabs {
   display: flex;
@@ -2274,3 +2274,32 @@
 .archivist-inquiry-mention-chip-icon { display: flex; }
 .archivist-inquiry-mention-chip-remove { cursor: pointer; margin-left: 2px; color: var(--text-faint); }
 .archivist-inquiry-mention-chip-remove:hover { color: var(--text-error); }
+
+/* Entity block action row (source badge + copy/save button) */
+.archivist-inquiry-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Source badge on entity blocks */
+.archivist-entity-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 500;
+  margin: 4px 0;
+}
+.archivist-entity-source-badge svg { width: 10px; height: 10px; }
+.archivist-entity-source-srd {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+.archivist-entity-source-custom {
+  background: rgba(var(--archivist-brand-rgb), 0.15);
+  color: var(--archivist-brand);
+}
