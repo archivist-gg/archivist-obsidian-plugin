@@ -5,6 +5,9 @@ export interface ArchivistSettings {
   thinkingBudget: string;
   maxConversations: number;
   externalContextPaths: string[];
+  compendiumRoot: string;
+  userEntityFolder: string;
+  srdImported: boolean;
 }
 
 export const DEFAULT_SETTINGS: ArchivistSettings = {
@@ -14,4 +17,7 @@ export const DEFAULT_SETTINGS: ArchivistSettings = {
   thinkingBudget: "medium",
   maxConversations: 50,
   externalContextPaths: [],
+  compendiumRoot: "Compendium",
+  userEntityFolder: "me",
+  srdImported: false,
 };

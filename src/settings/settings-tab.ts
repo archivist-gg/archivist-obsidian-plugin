@@ -51,6 +51,25 @@ export class ArchivistSettingTab extends PluginSettingTab {
           }),
       );
 
+    // Entity Compendium
+    containerEl.createEl("h3", { text: "Entity Compendium" });
+
+    new Setting(containerEl)
+      .setName("Compendium Root Folder")
+      .setDesc("Root vault folder where entity notes are stored.")
+      .addText((text) =>
+        text.setPlaceholder("Compendium").setValue(this.plugin.settings.compendiumRoot)
+          .onChange(async (value) => { this.plugin.settings.compendiumRoot = value || "Compendium"; await this.plugin.saveSettings(); }),
+      );
+
+    new Setting(containerEl)
+      .setName("User Entity Folder")
+      .setDesc("Subfolder name for user-created and AI-generated entities.")
+      .addText((text) =>
+        text.setPlaceholder("me").setValue(this.plugin.settings.userEntityFolder)
+          .onChange(async (value) => { this.plugin.settings.userEntityFolder = value || "me"; await this.plugin.saveSettings(); }),
+      );
+
     // External Context Directories
     containerEl.createEl("h3", { text: "External Context Directories" });
     containerEl.createEl("p", {
