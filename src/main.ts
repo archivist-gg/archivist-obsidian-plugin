@@ -29,8 +29,9 @@ export default class ArchivistPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    // Initialize SRD store
+    // Initialize SRD store with bundled JSON data
     this.srdStore = new SrdStore();
+    this.srdStore.loadFromBundledJson();
 
     // Initialize AI services
     this.agentService = new AgentService(this.srdStore);
