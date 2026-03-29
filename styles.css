@@ -1659,11 +1659,8 @@
 
 .archivist-inquiry-msg-user { align-self: flex-end; max-width: 85%; position: relative; }
 .archivist-inquiry-msg-user .archivist-inquiry-msg-copy {
-  position: absolute; top: 0; left: -24px; opacity: 0;
-  cursor: pointer; color: var(--text-faint); transition: opacity 0.15s;
+  position: absolute; top: 8px; right: 8px;
 }
-.archivist-inquiry-msg-user:hover .archivist-inquiry-msg-copy { opacity: 1; }
-.archivist-inquiry-msg-user .archivist-inquiry-msg-copy svg { width: 14px; height: 14px; }
 .archivist-inquiry-msg-bubble {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
@@ -1674,7 +1671,15 @@
 }
 .archivist-inquiry-msg-assistant { max-width: 95%; position: relative; }
 .archivist-inquiry-msg-text { font-size: 13px; line-height: 1.6; }
-.archivist-inquiry-msg-copy { position: absolute; top: 0; right: -24px; opacity: 0; cursor: pointer; color: var(--text-faint); transition: opacity 0.15s; }
+.archivist-inquiry-msg-copy {
+  position: absolute; top: 8px; right: 8px;
+  opacity: 0; transition: opacity 0.15s;
+  cursor: pointer; color: var(--text-muted);
+  padding: 4px; border-radius: 4px;
+  background: var(--background-primary);
+}
+.archivist-inquiry-msg-copy:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+.archivist-inquiry-msg-user:hover .archivist-inquiry-msg-copy,
 .archivist-inquiry-msg-assistant:hover .archivist-inquiry-msg-copy { opacity: 1; }
 .archivist-inquiry-msg-copy svg { width: 14px; height: 14px; }
 
@@ -1818,7 +1823,7 @@
 .archivist-inquiry-textarea {
   width: 100%; padding: 10px 12px; background: transparent; border: none; outline: none;
   resize: none; font-size: 13px; font-family: var(--font-text); color: var(--text-normal);
-  min-height: 48px; max-height: 200px; box-shadow: none !important;
+  min-height: 80px; max-height: 40vh; box-shadow: none !important;
 }
 .archivist-inquiry-textarea:focus { border: none; outline: none; box-shadow: none !important; }
 .archivist-inquiry-textarea::placeholder { color: var(--text-faint); }
@@ -2199,3 +2204,38 @@
 .archivist-inquiry-streaming-session {
   /* Keep assistant message styling */
 }
+
+/* Code block enhancements */
+.archivist-inquiry-code-wrapper { position: relative; border-radius: 6px; overflow: hidden; margin: 8px 0; border: 1px solid var(--background-modifier-border); }
+.archivist-inquiry-code-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 12px; background: var(--background-secondary); font-size: 11px; }
+.archivist-inquiry-code-lang { color: var(--text-muted); }
+.archivist-inquiry-code-copy { cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-size: 11px; }
+.archivist-inquiry-code-copy:hover { color: var(--text-normal); }
+.archivist-inquiry-code-wrapper pre { margin: 0 !important; border-radius: 0 !important; border: none !important; }
+
+/* Slash command dropdown */
+.archivist-inquiry-slash-dropdown { position: absolute; bottom: 100%; left: 0; right: 0; max-height: 300px; overflow-y: auto; background: var(--background-primary); border: 1px solid var(--background-modifier-border); border-radius: 6px; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); z-index: 100; margin-bottom: 4px; }
+.archivist-inquiry-slash-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; }
+.archivist-inquiry-slash-item:hover, .archivist-inquiry-slash-item-active { background: var(--background-modifier-hover); }
+.archivist-inquiry-slash-item-icon { color: var(--text-muted); flex-shrink: 0; }
+.archivist-inquiry-slash-item-text { display: flex; flex-direction: column; gap: 1px; }
+.archivist-inquiry-slash-item-name { font-size: 13px; font-weight: 500; color: var(--text-normal); }
+.archivist-inquiry-slash-item-desc { font-size: 11px; color: var(--text-muted); }
+
+/* -- External Context Directories (Settings) -- */
+.archivist-external-paths { margin-top: 8px; }
+.archivist-external-path-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; margin-bottom: 4px; background: var(--background-secondary); border-radius: 4px; border: 1px solid var(--background-modifier-border); }
+.archivist-external-path-text { font-family: var(--font-monospace); font-size: 13px; color: var(--text-normal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; margin-right: 8px; }
+.archivist-external-path-remove { flex-shrink: 0; cursor: pointer; font-size: 12px; }
+.archivist-external-path-add-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.archivist-external-path-input { flex: 1; font-family: var(--font-monospace); font-size: 13px; }
+.archivist-external-path-add-btn { flex-shrink: 0; cursor: pointer; }
+
+/* Mention dropdown */
+.archivist-inquiry-mention-dropdown { position: absolute; bottom: 100%; left: 0; right: 0; max-height: 240px; overflow-y: auto; background: var(--background-primary); border: 1px solid var(--background-modifier-border); border-radius: 6px; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); z-index: 100; margin-bottom: 4px; }
+.archivist-inquiry-mention-item { display: flex; align-items: center; gap: 8px; padding: 6px 12px; cursor: pointer; }
+.archivist-inquiry-mention-item:hover, .archivist-inquiry-mention-item-active { background: var(--background-modifier-hover); }
+.archivist-inquiry-mention-item-icon { color: var(--text-muted); flex-shrink: 0; }
+.archivist-inquiry-mention-item-text { flex: 1; min-width: 0; }
+.archivist-inquiry-mention-item-name { font-size: 13px; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.archivist-inquiry-mention-item-path { font-size: 11px; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

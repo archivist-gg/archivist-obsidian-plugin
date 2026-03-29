@@ -16,7 +16,8 @@ import {
   type ToolCallBlockHandle,
   type GeneratedBlockHandle,
 } from "./components/message-renderer";
-import type { Message } from "../types/conversation";
+import { enhanceCodeBlocks } from "./components/code-block-enhancer";
+import type { Message, ContentBlock } from "../types/conversation";
 import type { StreamEvent } from "../ai/agent-service";
 import type { AgentService } from "../ai/agent-service";
 import type { ConversationManager } from "../ai/conversation-manager";
@@ -39,7 +40,12 @@ export class InquiryView extends ItemView {
   private historyVisible = false;
   private isStreaming = false;
   private selectedText: string | undefined;
-  private contextPercent = 0;
+  /** DOM cache: conversation ID -> messages container element (survives tab switches) */
+  private tabContainers = new Map<string, HTMLElement>();
+  /** Per-tab context usage percentage */
+  private tabContextPercent = new Map<string, number>();
+  /** Per-tab streaming state for tab badges */
+  private tabStreamingState = new Map<string, "idle" | "streaming" | "done">();
 
   constructor(leaf: WorkspaceLeaf, pluginRef: ArchivistPluginRef) {
     super(leaf);
@@ -61,6 +67,9 @@ export class InquiryView extends ItemView {
 
   async onClose(): Promise<void> {
     this.pluginRef.agentService?.abort();
+    this.tabContainers.clear();
+    this.tabContextPercent.clear();
+    this.tabStreamingState.clear();
   }
 
   updateSelection(): void {
@@ -74,9 +83,16 @@ export class InquiryView extends ItemView {
 
   render(): void {
     if (!this.root) return;
-    this.root.empty();
     const mgr = this.pluginRef.conversationManager;
     if (!mgr) return;
+
+    // Detach all cached message containers BEFORE clearing root
+    // (so they survive the DOM wipe and can be re-attached)
+    for (const el of this.tabContainers.values()) {
+      el.remove();
+    }
+
+    this.root.empty();
 
     // Header
     renderChatHeader(this.root, {
@@ -93,44 +109,89 @@ export class InquiryView extends ItemView {
     const activeId = mgr.getActiveConversationId();
     const tabData: TabData[] = openTabs.map((id) => {
       const conv = mgr.getConversation(id);
-      return { id, title: conv?.title ?? "Untitled", isActive: id === activeId };
+      return { id, title: conv?.title ?? "Untitled", isActive: id === activeId, state: this.tabStreamingState.get(id) ?? "idle" };
     });
     if (tabData.length > 0) {
       renderChatTabs(this.root, tabData, {
         onSelectTab: async (id) => { await mgr.setActiveTab(id); this.render(); },
-        onCloseTab: async (id) => { await mgr.closeTab(id); this.render(); },
+        onCloseTab: async (id) => {
+          this.tabContainers.delete(id);
+          this.tabContextPercent.delete(id);
+          this.tabStreamingState.delete(id);
+          await mgr.closeTab(id);
+          this.render();
+        },
         onCloseOtherTabs: async (id) => {
-          for (const t of openTabs) if (t !== id) await mgr.closeTab(t);
+          for (const t of openTabs) {
+            if (t !== id) {
+              this.tabContainers.delete(t);
+              this.tabContextPercent.delete(t);
+              this.tabStreamingState.delete(t);
+              await mgr.closeTab(t);
+            }
+          }
           this.render();
         },
         onCloseAllTabs: async () => {
+          this.tabContainers.clear();
+          this.tabContextPercent.clear();
+          this.tabStreamingState.clear();
           for (const t of openTabs) await mgr.closeTab(t);
           this.render();
         },
       });
     }
 
-    // Messages
+    // Messages -- reuse cached DOM when available (like Claudian's hide/show approach)
     const activeConv = activeId ? mgr.getConversation(activeId) : undefined;
-    const messages = activeConv?.messages ?? [];
     const sourcePath = this.app.workspace.getActiveFile()?.path ?? "";
-    renderChatMessages(this.root, messages, this.app, sourcePath, this.isStreaming);
 
-    // Input
+    const chatCallbacks = {
+      onRewind: async (messageId: string) => {
+        if (!activeId) return;
+        await mgr.rewindToMessage(activeId, messageId);
+        this.tabContainers.delete(activeId); // Clear cached DOM to force re-render
+        this.render();
+      },
+    };
+
+    if (activeId && this.tabContainers.has(activeId)) {
+      // Re-attach the cached messages container (preserves exact streaming DOM)
+      const cached = this.tabContainers.get(activeId)!;
+      this.root.appendChild(cached);
+      requestAnimationFrame(() => { cached.scrollTop = cached.scrollHeight; });
+    } else {
+      // No cache -- render from saved data (first load, history open, or after restart)
+      const messages = activeConv?.messages ?? [];
+      const el = renderChatMessages(this.root, messages, this.app, sourcePath, this.isStreaming, chatCallbacks);
+      if (activeId) {
+        this.tabContainers.set(activeId, el);
+      }
+    }
+
+    // Prune caches for conversations no longer in open tabs
+    for (const id of this.tabContainers.keys()) {
+      if (!openTabs.includes(id)) {
+        this.tabContainers.delete(id);
+        this.tabContextPercent.delete(id);
+        this.tabStreamingState.delete(id);
+      }
+    }
+
+    // Input -- use per-tab context percent
+    const contextPercent = activeId ? (this.tabContextPercent.get(activeId) ?? 0) : 0;
     const inputState: ChatInputState = {
       selectedText: this.selectedText,
       model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
       permissionMode: this.pluginRef.settings.permissionMode,
-      contextPercent: this.contextPercent,
+      contextPercent,
       isStreaming: this.isStreaming,
     };
     renderChatInput(this.root, inputState, {
       onSend: (text) => this.sendMessage(text),
       onStop: () => this.pluginRef.agentService?.abort(),
       onModelChange: async (model) => {
-        // Update active conversation's model in memory
         if (activeConv) activeConv.model = model;
-        // Persist as default for new conversations
         this.pluginRef.settings.defaultModel = model;
         await this.pluginRef.saveSettings();
         this.render();
@@ -156,6 +217,9 @@ export class InquiryView extends ItemView {
           this.render();
         },
         onDeleteConversation: async (id) => {
+          this.tabContainers.delete(id);
+          this.tabContextPercent.delete(id);
+          this.tabStreamingState.delete(id);
           await mgr.deleteConversation(id);
           this.render();
         },
@@ -191,6 +255,7 @@ export class InquiryView extends ItemView {
     });
 
     this.isStreaming = true;
+    if (activeId) this.tabStreamingState.set(activeId, "streaming");
     // Full render to show user message and set up streaming state
     this.render();
 
@@ -204,7 +269,6 @@ export class InquiryView extends ItemView {
 
     // Create streaming container within the messages area
     const streamContainer = messagesContainer.createDiv({ cls: "archivist-inquiry-msg-assistant archivist-inquiry-streaming-session" });
-    const textDiv = streamContainer.createDiv({ cls: "archivist-inquiry-msg-text" });
 
     const activeFile = this.app.workspace.getActiveFile();
     let currentNoteContent: string | undefined;
@@ -225,6 +289,7 @@ export class InquiryView extends ItemView {
       currentNotePath: activeFile?.path,
       currentNoteContent,
       selectedText: this.selectedText,
+      externalContextPaths: this.pluginRef.settings.externalContextPaths,
     };
 
     const conv = mgr.getConversation(activeId);
@@ -240,6 +305,18 @@ export class InquiryView extends ItemView {
     // Track the latest tool call ID for associating results when toolCallId is missing
     let lastToolCallId: string | undefined;
 
+    // Content blocks for persistence (re-rendered on tab switch/reopen)
+    const contentBlocks: ContentBlock[] = [];
+    const toolBlockIndices = new Map<string, number>();
+    let thinkingAccumulator = "";
+    let segmentText = "";
+    const flushTextBlock = () => {
+      if (segmentText.trim()) {
+        contentBlocks.push({ type: "text", content: segmentText });
+      }
+      segmentText = "";
+    };
+
     const GENERATE_TOOLS = ["generate_monster", "generate_spell", "generate_item"];
     const getEntityType = (toolName: string): string | null => {
       const name = toolName.replace("mcp__archivist__", "");
@@ -249,42 +326,88 @@ export class InquiryView extends ItemView {
       return null;
     };
 
+    // --- Auto-scroll logic: only scroll if user is near the bottom ---
+    const SCROLL_THRESHOLD = 30;
+    let autoScrollEnabled = true;
+
+    const scrollHandler = () => {
+      if (!messagesContainer) return;
+      const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight <= SCROLL_THRESHOLD;
+      autoScrollEnabled = isAtBottom;
+    };
+    messagesContainer.addEventListener("scroll", scrollHandler, { passive: true });
+
     const scrollToBottom = () => {
+      if (!autoScrollEnabled) return;
       requestAnimationFrame(() => {
-        if (messagesContainer) {
+        if (messagesContainer && autoScrollEnabled) {
           messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
       });
     };
 
-    const renderTextContent = () => {
-      if (!assistantContent) return;
-      textDiv.empty();
-      MarkdownRenderer.render(this.app, assistantContent, textDiv, sourcePath, null as any);
+    // Yield control to the browser's rendering pipeline.
+    // Without this, microtasks from the async generator run back-to-back
+    // and DOM changes never paint until the entire batch is done.
+    const yieldToRenderer = () => new Promise<void>(r => setTimeout(r, 0));
+
+    // Track current text segment -- a new text div is created for each text run
+    // (so text between tool calls appears in the right order)
+    let currentTextDiv: HTMLElement | null = null;
+    let currentTextContent = "";
+
+    const ensureTextDiv = () => {
+      if (!currentTextDiv) {
+        currentTextDiv = streamContainer.createDiv({ cls: "archivist-inquiry-msg-text" });
+        currentTextContent = "";
+      }
+      return currentTextDiv;
+    };
+
+    const endTextSegment = () => {
+      currentTextDiv = null;
+      // Don't reset currentTextContent -- it's accumulated for the full message
+    };
+
+    const renderCurrentText = () => {
+      if (!currentTextDiv || !currentTextContent) return;
+      currentTextDiv.empty();
+      MarkdownRenderer.render(this.app, currentTextContent, currentTextDiv, sourcePath, this);
+      enhanceCodeBlocks(currentTextDiv);
     };
 
     try {
       for await (const event of agent.sendMessage(text, this.pluginRef.settings, context, model)) {
         switch (event.type) {
           case "text_delta": {
-            assistantContent += event.content ?? "";
-            renderTextContent();
+            ensureTextDiv();
+            const delta = event.content ?? "";
+            currentTextContent += delta;
+            assistantContent += delta;
+            segmentText += delta;
+            renderCurrentText();
             scrollToBottom();
+            await yieldToRenderer();
             break;
           }
 
           case "thinking_start": {
-            currentThinkingBlock = renderThinkingBlock(streamContainer, this.app, sourcePath);
-            // Insert thinking block before the text div
-            streamContainer.insertBefore(currentThinkingBlock.el, textDiv);
+            flushTextBlock();
+            endTextSegment();
+            thinkingAccumulator = "";
+            currentThinkingBlock = renderThinkingBlock(streamContainer, this.app, sourcePath, this);
             scrollToBottom();
+            await yieldToRenderer();
             break;
           }
 
           case "thinking_delta": {
+            thinkingAccumulator += event.content ?? "";
             if (currentThinkingBlock) {
               currentThinkingBlock.appendContent(event.content ?? "");
               scrollToBottom();
+              await yieldToRenderer();
             }
             break;
           }
@@ -294,10 +417,16 @@ export class InquiryView extends ItemView {
               currentThinkingBlock.finalize();
               currentThinkingBlock = null;
             }
+            if (thinkingAccumulator) {
+              contentBlocks.push({ type: "thinking", content: thinkingAccumulator });
+            }
+            thinkingAccumulator = "";
             break;
           }
 
           case "tool_call_start": {
+            flushTextBlock();
+            endTextSegment();
             const toolId = event.toolCallId ?? `tool-${Date.now()}`;
             lastToolCallId = toolId;
             const entityType = getEntityType(event.toolName ?? "");
@@ -305,28 +434,30 @@ export class InquiryView extends ItemView {
             const block = renderToolCallBlock(streamContainer, event.toolName ?? "unknown", toolId);
             if (event.toolInput) block.setSummary(event.toolInput);
             toolCallBlocks.set(toolId, block);
-            streamContainer.insertBefore(block.el, textDiv);
 
             // For generate tools, show a skeleton stat block immediately
             if (entityType) {
               const skeleton = renderBlockSkeleton(streamContainer, entityType);
               generatedBlocks.set(toolId, { handle: skeleton, entityType });
-              streamContainer.insertBefore(skeleton.el, textDiv);
             }
 
+            // Push tool call block for persistence (result filled in on tool_result)
+            const blockIdx = contentBlocks.length;
+            contentBlocks.push({
+              type: "tool_call",
+              toolCallId: toolId,
+              toolName: event.toolName ?? "unknown",
+              toolInput: event.toolInput ?? {},
+            });
+            toolBlockIndices.set(toolId, blockIdx);
+
             scrollToBottom();
+            await yieldToRenderer();
             break;
           }
 
           case "tool_input_delta": {
-            const toolId = event.toolCallId ?? lastToolCallId;
-            if (toolId && event.partialJson) {
-              const genBlock = generatedBlocks.get(toolId);
-              if (genBlock) {
-                genBlock.handle.updateFromPartialToolInput(genBlock.entityType, event.partialJson);
-                scrollToBottom();
-              }
-            }
+            // No progressive rendering -- skeleton stays until tool_result
             break;
           }
 
@@ -336,6 +467,11 @@ export class InquiryView extends ItemView {
               const block = toolCallBlocks.get(toolId);
               if (block && event.toolInput) {
                 block.setSummary(event.toolInput);
+              }
+              // Update contentBlocks with final input
+              const idx = toolBlockIndices.get(toolId);
+              if (idx !== undefined && event.toolInput) {
+                (contentBlocks[idx] as Extract<ContentBlock, { type: "tool_call" }>).toolInput = event.toolInput;
               }
             }
             break;
@@ -349,6 +485,13 @@ export class InquiryView extends ItemView {
                 block.setResult(event.toolResult ?? "", event.isError === true);
                 block.setStatus(event.isError ? "error" : "completed");
               }
+              // Update contentBlocks with result
+              const idx = toolBlockIndices.get(toolId);
+              if (idx !== undefined) {
+                const cb = contentBlocks[idx] as Extract<ContentBlock, { type: "tool_call" }>;
+                cb.toolResult = event.toolResult ?? "";
+                cb.isError = event.isError === true;
+              }
             }
             // Detect generated entity in tool result -- update existing skeleton or create new
             if (event.toolResult) {
@@ -356,15 +499,13 @@ export class InquiryView extends ItemView {
                 const parsed = JSON.parse(event.toolResult);
                 if (parsed.type && parsed.data && ["monster", "spell", "item"].includes(parsed.type)) {
                   generatedEntity = { type: parsed.type, data: parsed.data };
+                  contentBlocks.push({ type: "generated_entity", entityType: parsed.type, data: parsed.data });
                   const genBlock = toolId ? generatedBlocks.get(toolId) : undefined;
                   if (genBlock) {
-                    // Update existing skeleton with enriched data
                     genBlock.handle.updateFromResult(parsed.type, parsed.data);
                   } else {
-                    // No skeleton exists -- render fresh
                     const blockWrapper = streamContainer.createDiv({ cls: "archivist-inquiry-stat-block" });
                     renderGeneratedBlock(blockWrapper, generatedEntity);
-                    streamContainer.insertBefore(blockWrapper, textDiv);
                   }
                 }
               } catch { /* not JSON entity */ }
@@ -383,20 +524,23 @@ export class InquiryView extends ItemView {
           case "usage": {
             // Estimate context window from model (200k default)
             const contextWindow = 200000;
-            this.contextPercent = Math.round(((event.contextTokens ?? 0) / contextWindow) * 100);
+            const percent = Math.round(((event.contextTokens ?? 0) / contextWindow) * 100);
+            if (activeId) this.tabContextPercent.set(activeId, percent);
             this.updateInputArea();
             break;
           }
 
           case "compact_boundary": {
+            endTextSegment();
             const boundary = streamContainer.createDiv({ cls: "archivist-inquiry-compact-boundary" });
             boundary.createSpan({ text: "Conversation compacted" });
-            streamContainer.insertBefore(boundary, textDiv);
             break;
           }
 
           case "done": {
+            flushTextBlock();
             if (event.durationMs) {
+              contentBlocks.push({ type: "footer", durationMs: event.durationMs });
               renderResponseFooter(streamContainer, event.durationMs);
             }
             scrollToBottom();
@@ -414,16 +558,24 @@ export class InquiryView extends ItemView {
       currentThinkingBlock.finalize();
     }
 
-    // Save the final assistant message
+    // Save the final assistant message with full content blocks for re-rendering
     await mgr.addMessage(activeId, {
       id: "msg-" + Date.now().toString(36),
       role: "assistant",
       content: assistantContent,
       timestamp: new Date().toISOString(),
       generatedEntity,
+      contentBlocks: contentBlocks.length > 0 ? contentBlocks : undefined,
     });
 
+    // Clean up scroll listener
+    messagesContainer.removeEventListener("scroll", scrollHandler);
+
     this.isStreaming = false;
+    if (activeId) {
+      this.tabStreamingState.set(activeId, "done");
+      setTimeout(() => { this.tabStreamingState.set(activeId, "idle"); this.render(); }, 3000);
+    }
     // Do NOT do a full re-render here -- the streaming session already built the DOM.
     // Just update the input area to reflect non-streaming state.
     this.updateInputArea();
@@ -442,11 +594,12 @@ export class InquiryView extends ItemView {
     const oldInput = this.root.querySelector(".archivist-inquiry-input-area");
     if (oldInput) oldInput.remove();
 
+    const ctxPercent = activeId ? (this.tabContextPercent.get(activeId) ?? 0) : 0;
     const inputState: ChatInputState = {
       selectedText: this.selectedText,
       model: activeConv?.model ?? this.pluginRef.settings.defaultModel,
       permissionMode: this.pluginRef.settings.permissionMode,
-      contextPercent: this.contextPercent,
+      contextPercent: ctxPercent,
       isStreaming: this.isStreaming,
     };
     renderChatInput(this.root, inputState, {

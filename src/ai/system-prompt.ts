@@ -3,6 +3,7 @@ export interface SystemPromptContext {
   currentNotePath?: string;
   currentNoteContent?: string;
   selectedText?: string;
+  externalContextPaths?: string[];
 }
 
 export function buildSystemPrompt(ctx: SystemPromptContext): string {
@@ -52,6 +53,10 @@ BEHAVIOR:
 
   if (ctx.selectedText) {
     parts.push(`\nCONTEXT -- SELECTED TEXT:\n\`\`\`\n${ctx.selectedText}\n\`\`\``);
+  }
+
+  if (ctx.externalContextPaths && ctx.externalContextPaths.length > 0) {
+    parts.push(`\nYou also have access to files in these external directories:\n${ctx.externalContextPaths.map(p => "- " + p).join("\n")}`);
   }
 
   return parts.join("\n");

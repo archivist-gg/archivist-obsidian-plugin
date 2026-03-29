@@ -50,5 +50,65 @@ export class ArchivistSettingTab extends PluginSettingTab {
             if (!isNaN(num) && num > 0) { this.plugin.settings.maxConversations = num; await this.plugin.saveSettings(); }
           }),
       );
+
+    // External Context Directories
+    containerEl.createEl("h3", { text: "External Context Directories" });
+    containerEl.createEl("p", {
+      text: "Additional directories the AI can access for reference material.",
+      cls: "setting-item-description",
+    });
+
+    this.renderExternalContextPaths(containerEl);
+  }
+
+  private renderExternalContextPaths(containerEl: HTMLElement): void {
+    // Remove old list if re-rendering
+    const oldList = containerEl.querySelector(".archivist-external-paths");
+    if (oldList) oldList.remove();
+
+    const wrapper = containerEl.createDiv({ cls: "archivist-external-paths" });
+    const paths = this.plugin.settings.externalContextPaths;
+
+    // Existing paths
+    for (const path of paths) {
+      const row = wrapper.createDiv({ cls: "archivist-external-path-row" });
+      row.createSpan({ text: path, cls: "archivist-external-path-text" });
+      const removeBtn = row.createEl("button", { text: "Remove", cls: "archivist-external-path-remove" });
+      removeBtn.addEventListener("click", async () => {
+        this.plugin.settings.externalContextPaths = this.plugin.settings.externalContextPaths.filter((p) => p !== path);
+        await this.plugin.saveSettings();
+        this.renderExternalContextPaths(containerEl);
+      });
+    }
+
+    // Add new path
+    const addRow = wrapper.createDiv({ cls: "archivist-external-path-add-row" });
+    const input = addRow.createEl("input", {
+      type: "text",
+      placeholder: "/absolute/path/to/directory",
+      cls: "archivist-external-path-input",
+    });
+    const addBtn = addRow.createEl("button", { text: "Add", cls: "archivist-external-path-add-btn" });
+
+    const addPath = async () => {
+      const value = input.value.trim();
+      if (!value) return;
+      if (this.plugin.settings.externalContextPaths.includes(value)) {
+        input.value = "";
+        return;
+      }
+      this.plugin.settings.externalContextPaths.push(value);
+      await this.plugin.saveSettings();
+      input.value = "";
+      this.renderExternalContextPaths(containerEl);
+    };
+
+    addBtn.addEventListener("click", addPath);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addPath();
+      }
+    });
   }
 }
