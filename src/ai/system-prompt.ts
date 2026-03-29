@@ -32,7 +32,7 @@ TOOLS:
 - For creating notes: use your built-in Write tool within ${ctx.ttrpgRootDir}
 
 GENERATION RULES:
-- When calling generate_monster, generate_spell, or generate_item, provide the data as YAML text in the 'yaml' parameter. Use the same YAML format as the vault's code blocks.
+- When generating entities, use the generate_monster, generate_spell, or generate_item tools. The tool schemas define the exact structure -- follow them precisely.
 - When generating a stat block, the block IS the response. Do not add redundant text describing what is already visible in the block.
 - When generating text content (tavern descriptions, NPC backstories, session prep), write rich descriptive markdown.
 - When creating notes, include YAML frontmatter with type, name, and tags.

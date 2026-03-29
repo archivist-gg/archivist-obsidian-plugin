@@ -1,18 +1,18 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
-import { z } from "zod";
-import * as yamlLib from "js-yaml";
+import { monsterInputSchema } from "../schemas/monster-schema";
+import { spellInputSchema } from "../schemas/spell-schema";
+import { itemInputSchema } from "../schemas/item-schema";
 import { encounterInputSchema } from "../schemas/encounter-schema";
 import { npcInputSchema } from "../schemas/npc-schema";
 import { enrichMonster, enrichSpell, enrichItem } from "../validation/entity-enrichment";
 
 export const generateMonsterTool = tool(
   "generate_monster",
-  "Generate a D&D 5e monster stat block. Provide the complete monster data as YAML text (same format as ```monster code blocks in the vault).",
-  { yaml: z.string().describe("Complete monster stat block as YAML") },
-  async ({ yaml: yamlContent }) => {
+  "Generate a D&D 5e monster stat block. Provide all fields in the structured format. Use 'abilities' for ability scores, 'entries' arrays for feature/action descriptions, arrays for senses/languages/immunities, and objects for ac/hp/speed.",
+  { monster: monsterInputSchema },
+  async ({ monster }) => {
     try {
-      const parsed = yamlLib.load(yamlContent) as Record<string, unknown>;
-      const enriched = enrichMonster(parsed);
+      const enriched = enrichMonster(monster as Record<string, unknown>);
       return { content: [{ type: "text" as const, text: JSON.stringify({ type: "monster", data: enriched }) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
@@ -23,12 +23,11 @@ export const generateMonsterTool = tool(
 
 export const generateSpellTool = tool(
   "generate_spell",
-  "Generate a D&D 5e spell. Provide the complete spell data as YAML text (same format as ```spell code blocks in the vault).",
-  { yaml: z.string().describe("Complete spell data as YAML") },
-  async ({ yaml: yamlContent }) => {
+  "Generate a D&D 5e spell. Provide all fields in the structured format. Use 'description' as an array of paragraph strings, not a single string.",
+  { spell: spellInputSchema },
+  async ({ spell }) => {
     try {
-      const parsed = yamlLib.load(yamlContent) as Record<string, unknown>;
-      const enriched = enrichSpell(parsed);
+      const enriched = enrichSpell(spell as Record<string, unknown>);
       return { content: [{ type: "text" as const, text: JSON.stringify({ type: "spell", data: enriched }) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
@@ -39,12 +38,11 @@ export const generateSpellTool = tool(
 
 export const generateItemTool = tool(
   "generate_item",
-  "Generate a D&D 5e magic item. Provide the complete item data as YAML text (same format as ```item code blocks in the vault).",
-  { yaml: z.string().describe("Complete item data as YAML") },
-  async ({ yaml: yamlContent }) => {
+  "Generate a D&D 5e magic item. Provide all fields in the structured format. Use 'entries' as an array of description strings.",
+  { item: itemInputSchema },
+  async ({ item }) => {
     try {
-      const parsed = yamlLib.load(yamlContent) as Record<string, unknown>;
-      const enriched = enrichItem(parsed);
+      const enriched = enrichItem(item as Record<string, unknown>);
       return { content: [{ type: "text" as const, text: JSON.stringify({ type: "item", data: enriched }) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
