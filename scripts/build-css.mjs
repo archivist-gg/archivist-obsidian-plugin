@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
  * CSS Build Script
- * Concatenates modular CSS files from src/style/ into root styles.css
+ * Concatenates:
+ *   1. Claudian modular CSS from src/inquiry/style/ (via index.css @imports)
+ *   2. D&D-specific CSS from src/styles/archivist-dnd.css
+ * into the root styles.css for the Obsidian plugin.
  */
 
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
@@ -10,15 +13,16 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const STYLE_DIR = join(ROOT, 'src', 'style');
+const CLAUDIAN_STYLE_DIR = join(ROOT, 'src', 'inquiry', 'style');
+const DND_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-dnd.css');
 const OUTPUT = join(ROOT, 'styles.css');
-const INDEX_FILE = join(STYLE_DIR, 'index.css');
+const INDEX_FILE = join(CLAUDIAN_STYLE_DIR, 'index.css');
 
 const IMPORT_PATTERN = /^\s*@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/gm;
 
 function getModuleOrder() {
   if (!existsSync(INDEX_FILE)) {
-    console.error('Missing src/style/index.css');
+    console.error('Missing src/inquiry/style/index.css');
     process.exit(1);
   }
 
@@ -26,7 +30,7 @@ function getModuleOrder() {
   const matches = [...content.matchAll(IMPORT_PATTERN)];
 
   if (matches.length === 0) {
-    console.error('No @import entries found in src/style/index.css');
+    console.error('No @import entries found in src/inquiry/style/index.css');
     process.exit(1);
   }
 
@@ -54,16 +58,16 @@ function listCssFiles(dir, baseDir = dir) {
   return files;
 }
 
-function build() {
+function buildClaudianCss() {
   const moduleOrder = getModuleOrder();
-  const parts = ['/* Claudian Plugin Styles */\n/* Built from src/style/ modules */\n'];
+  const parts = [];
   const missingFiles = [];
   const invalidImports = [];
   const normalizedImports = [];
 
   for (const modulePath of moduleOrder) {
-    const resolvedPath = resolve(STYLE_DIR, modulePath);
-    const relativePath = relative(STYLE_DIR, resolvedPath);
+    const resolvedPath = resolve(CLAUDIAN_STYLE_DIR, modulePath);
+    const relativePath = relative(CLAUDIAN_STYLE_DIR, resolvedPath);
 
     if (relativePath.startsWith('..') || !relativePath.endsWith('.css')) {
       invalidImports.push(modulePath);
@@ -86,7 +90,7 @@ function build() {
   let hasErrors = false;
 
   if (invalidImports.length > 0) {
-    console.error('Invalid @import entries in src/style/index.css:');
+    console.error('Invalid @import entries in src/inquiry/style/index.css:');
     invalidImports.forEach((modulePath) => console.error(`  - ${modulePath}`));
     hasErrors = true;
   }
@@ -97,12 +101,12 @@ function build() {
     hasErrors = true;
   }
 
-  const allCssFiles = listCssFiles(STYLE_DIR).filter((file) => file !== 'index.css');
+  const allCssFiles = listCssFiles(CLAUDIAN_STYLE_DIR).filter((file) => file !== 'index.css');
   const importedSet = new Set(normalizedImports);
   const unlistedFiles = allCssFiles.filter((file) => !importedSet.has(file));
 
   if (unlistedFiles.length > 0) {
-    console.error('Unlisted CSS files (not imported in src/style/index.css):');
+    console.error('Unlisted CSS files (not imported in src/inquiry/style/index.css):');
     unlistedFiles.forEach((file) => console.error(`  - ${file}`));
     hasErrors = true;
   }
@@ -111,7 +115,38 @@ function build() {
     process.exit(1);
   }
 
-  const output = parts.join('\n');
+  return parts.join('\n');
+}
+
+function buildDndCss() {
+  if (!existsSync(DND_CSS_FILE)) {
+    console.error('Missing src/styles/archivist-dnd.css');
+    process.exit(1);
+  }
+
+  return readFileSync(DND_CSS_FILE, 'utf-8');
+}
+
+function build() {
+  const claudianCss = buildClaudianCss();
+  const dndCss = buildDndCss();
+
+  const output = [
+    '/* Archivist TTRPG Blocks - Plugin Styles */',
+    '/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css */',
+    '',
+    '/* ================================================================',
+    '   PART 1: Claudian Chat UI (from src/inquiry/style/)',
+    '   ================================================================ */',
+    claudianCss,
+    '',
+    '/* ================================================================',
+    '   PART 2: D&D 5e Entity Blocks (from src/styles/archivist-dnd.css)',
+    '   ================================================================ */',
+    '',
+    dndCss,
+  ].join('\n');
+
   writeFileSync(OUTPUT, output);
   console.log(`Built styles.css (${(output.length / 1024).toFixed(1)} KB)`);
 }

@@ -1,0 +1,1543 @@
+/* ==========================================================================
+   Archivist Obsidian Plugin - D&D 5e Styles
+   Ported from archivist project CSS
+   ========================================================================== */
+
+/* 1. Google Fonts
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
+
+/* 2. CSS Custom Properties (from dnd-theme.css)
+   ========================================================================== */
+:root {
+  /* D&D Parchment Background */
+  --d5e-parchment: #fdf1dc;
+  --d5e-parchment-dark: #f4e4c1;
+  --d5e-parchment-light: #fef8ee;
+
+  /* D&D Text Colors */
+  --d5e-text-dark: #191813;
+  --d5e-text-accent: #7a200d;
+
+  /* D&D Bar/Header Colors */
+  --d5e-bar-fill: #922610;
+  --d5e-bar-stroke: #922610;
+
+  /* D&D Border Colors */
+  --d5e-border-tan: #d9c484;
+  --d5e-border-tan-light: #e8dcc0;
+  --d5e-border-tan-dark: #c4a95e;
+
+  /* D&D Box Shadows */
+  --d5e-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  --d5e-shadow-light: 0 2px 8px rgba(134, 116, 83, 0.2);
+  --d5e-shadow-heavy: 0 6px 32px rgba(134, 116, 83, 0.4);
+
+  /* Semantic Mappings for Stat Blocks */
+  --stat-block-bg: var(--d5e-parchment);
+  --stat-block-text: var(--d5e-text-dark);
+  --stat-block-header: var(--d5e-text-accent);
+  --stat-block-bar: var(--d5e-bar-fill);
+  --stat-block-border: var(--d5e-border-tan);
+  --stat-block-shadow: var(--d5e-shadow);
+  --stat-block-padding: 0.6em;
+  --stat-block-section-gap: 0.3em;
+}
+
+/* 3. Monster Stat Block (from original-monster-stat-block.css, read-only view)
+   ========================================================================== */
+
+.archivist-monster-block-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.archivist-monster-block {
+  background: var(--stat-block-bg);
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: var(--stat-block-text);
+  position: relative;
+  box-shadow: var(--stat-block-shadow);
+  padding: var(--stat-block-padding);
+  width: 100%;
+}
+
+/* Reset Obsidian theme overrides inside stat blocks */
+.archivist-monster-block *,
+.archivist-spell-block *,
+.archivist-item-block * {
+  border-color: transparent;
+}
+
+.archivist-monster-block h1,
+.archivist-monster-block h2,
+.archivist-monster-block h3,
+.archivist-monster-block h4,
+.archivist-monster-block p,
+.archivist-spell-block h1,
+.archivist-spell-block h2,
+.archivist-spell-block h3,
+.archivist-spell-block h4,
+.archivist-spell-block p,
+.archivist-item-block h1,
+.archivist-item-block h2,
+.archivist-item-block h3,
+.archivist-item-block h4,
+.archivist-item-block p {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  color: inherit;
+  line-height: inherit;
+  letter-spacing: normal;
+}
+
+/* Header Section */
+.archivist-monster-block .stat-block-header {
+  margin-bottom: 0.3em;
+}
+
+.archivist-monster-block .monster-name {
+  font-family:
+    'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond,
+    'Hoefler Text', 'Bitstream Charter', Georgia, serif;
+  color: var(--stat-block-header);
+  font-size: 25px;
+  line-height: 1.2em;
+  margin: 0 0 0 -0.02em;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-variant: small-caps;
+}
+
+.archivist-monster-block .monster-type {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1.2em;
+  margin: 0 0 0.35em;
+  color: var(--stat-block-text);
+}
+
+/* SVG Bar */
+.archivist-monster-block .stat-block-bar {
+  width: 100%;
+  height: 5px;
+  margin: 4px 0;
+}
+
+.archivist-monster-block .stat-block-bar polyline {
+  fill: var(--stat-block-bar);
+  stroke: var(--stat-block-bar);
+  stroke-width: 1;
+}
+
+/* Property Blocks */
+.archivist-monster-block .property-block {
+  padding: 0.3em 0;
+}
+
+.archivist-monster-block .property-line {
+  line-height: 1.4em;
+  margin-bottom: 0.3em;
+  text-indent: -1em;
+  margin-left: 1em;
+}
+
+.archivist-monster-block .property-line.last {
+  margin-bottom: 0;
+}
+
+.archivist-monster-block .property-line h4 {
+  margin: 0;
+  color: var(--stat-block-header);
+  font-size: 13px;
+  font-weight: bold;
+  font-style: normal;
+  font-variant: small-caps;
+  display: inline;
+  margin-right: 0.25em;
+  border: none;
+  padding: 0;
+  line-height: inherit;
+}
+
+.archivist-monster-block .property-line p {
+  margin: 0;
+  display: inline;
+  font-weight: normal;
+  font-size: 13px;
+}
+
+.archivist-monster-block .property-line h4:after {
+  content: '.';
+  font-weight: bold;
+}
+
+/* Abilities Table */
+.archivist-monster-block .abilities-block {
+  text-align: center;
+  color: var(--stat-block-header);
+  padding: var(--stat-block-section-gap) 0;
+}
+
+.archivist-monster-block .abilities-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: none;
+  margin: 0;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table th {
+  font-weight: bold;
+  color: var(--stat-block-header);
+  font-size: 14px;
+  padding: 0.25em;
+  font-family: 'Noto Sans', sans-serif;
+  border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table td {
+  padding: 0.25em;
+  font-size: 14px;
+  color: var(--stat-block-header);
+  border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table tr {
+  border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .abilities-table thead tr {
+  border: none;
+  background: transparent;
+}
+
+.archivist-monster-block .ability-score {
+  font-weight: bold;
+}
+
+.archivist-monster-block .ability-modifier {
+  font-weight: normal;
+}
+
+/* Stat Block Inline Tags (subtle, matching parchment theme) */
+.archivist-stat-inline-dice {
+  color: #191813;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.archivist-stat-inline-atk {
+  color: #7a200d;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.archivist-stat-inline-dc {
+  color: #191813;
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Actions Header */
+.archivist-monster-block .actions-header {
+  font-size: 23px;
+  font-variant: small-caps;
+  font-weight: normal;
+  letter-spacing: 1px;
+  color: #7a200d;
+  margin: 0.45em 0 0.1em;
+  font-family:
+    'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond,
+    'Hoefler Text', 'Bitstream Charter', Georgia, serif;
+  border-bottom: 1px solid #7a200d;
+  padding-bottom: 0.15em;
+  display: block;
+}
+
+/* Action Descriptions */
+.archivist-monster-block .action-description {
+  font-style: italic;
+}
+
+/* Legendary Actions Intro */
+.archivist-monster-block .legendary-intro,
+.archivist-legendary-intro {
+  font-style: italic;
+  margin: 0.25em 0 0.5em;
+  text-indent: 0;
+  margin-left: 0;
+  font-size: 13px;
+  line-height: 1.4em;
+}
+
+/* DnD Formatted Text */
+.dnd-formatted-text {
+  display: inline;
+}
+
+.dnd-formatted-text .inline-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.dnd-formatted-text .dice-roll {
+  color: #191813;
+  font-weight: normal;
+}
+
+.dnd-formatted-text .dice-roll .inline-icon {
+  color: #7a200d;
+}
+
+.dnd-formatted-text .dc-check {
+  color: #191813;
+  font-weight: normal;
+}
+
+.dnd-formatted-text .dc-check .inline-icon {
+  color: #7a200d;
+}
+
+.dnd-formatted-text .chance-roll {
+  color: #191813;
+  font-weight: normal;
+}
+
+.dnd-formatted-text .chance-roll .inline-icon {
+  color: #7a200d;
+}
+
+.dnd-formatted-text .attack-type {
+  font-style: italic;
+  color: #191813;
+}
+
+.dnd-formatted-text .to-hit {
+  color: #7a200d;
+  font-weight: normal;
+}
+
+.dnd-formatted-text .hit-label {
+  color: #7a200d;
+  font-style: italic;
+}
+
+/* 4. Spell Block (from original-spell-block.css, read-only view)
+   ========================================================================== */
+
+.archivist-spell-block-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.archivist-spell-block {
+  background: #fdf1dc;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: #191813;
+  position: relative;
+  box-shadow:
+    0 4px 24px rgba(134, 116, 83, 0.3),
+    0 2px 8px rgba(134, 116, 83, 0.2);
+  padding: 0.6em;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* Header Section */
+.archivist-spell-block .spell-block-header {
+  margin-bottom: 0.3em;
+  border-bottom: 2px solid #7a200d;
+  padding-bottom: 0.3em;
+}
+
+.archivist-spell-block .spell-name {
+  font-family:
+    'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond,
+    'Hoefler Text', 'Bitstream Charter', Georgia, serif;
+  color: #7a200d;
+  font-size: 23px;
+  line-height: 1.2em;
+  margin: 0 0 0.1em -0.02em;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.archivist-spell-block .spell-school {
+  font-style: italic;
+  font-size: 14px;
+  color: #191813;
+  margin-top: 0.2em;
+}
+
+/* Spell Properties */
+.archivist-spell-block .spell-properties {
+  margin: 0.4em 0;
+  padding: 0.4em 0;
+  border-bottom: 1px solid #d9c484;
+}
+
+.archivist-spell-block .property-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.2em 0;
+  font-size: 13px;
+}
+
+.archivist-spell-block .property-icon {
+  width: 14px;
+  height: 14px;
+  color: #7a200d;
+  flex-shrink: 0;
+}
+
+.archivist-spell-block .property-label {
+  font-weight: 600;
+  color: #191813;
+  flex-shrink: 0;
+}
+
+.archivist-spell-block .property-value {
+  color: #191813;
+}
+
+/* Spell Description */
+.archivist-spell-block .spell-description {
+  margin: 0.6em 0;
+  line-height: 1.4em;
+}
+
+.archivist-spell-block .description-paragraph {
+  margin: 0.4em 0;
+  text-align: justify;
+  text-indent: 1em;
+}
+
+.archivist-spell-block .description-paragraph:first-child {
+  text-indent: 0;
+}
+
+/* At Higher Levels Section */
+.archivist-spell-block .spell-higher-levels {
+  margin-top: 0.6em;
+  padding-top: 0.4em;
+  border-top: 1px solid #d9c484;
+}
+
+.archivist-spell-block .higher-levels-header {
+  font-weight: 700;
+  font-style: italic;
+  color: #191813;
+  margin-bottom: 0.2em;
+}
+
+/* Classes Section */
+.archivist-spell-block .spell-classes {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.6em;
+  padding-top: 0.4em;
+  border-top: 1px solid #d9c484;
+  font-size: 12px;
+  color: #666;
+}
+
+.archivist-spell-block .classes-list {
+  font-style: italic;
+}
+
+/* Spell Tags */
+.archivist-spell-block .spell-tags {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 0.6em;
+  justify-content: flex-end;
+}
+
+.archivist-spell-block .spell-tag {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 3px;
+}
+
+.archivist-spell-block .spell-tag.concentration {
+  background: #e74c3c;
+  color: white;
+}
+
+.archivist-spell-block .spell-tag.ritual {
+  background: #3498db;
+  color: white;
+}
+
+/* Markdown Table Styles - D&D 5e PHB Style */
+.archivist-spell-block .markdown-table {
+  width: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  font-size: 13px;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  background: transparent;
+  border: none;
+}
+
+.archivist-spell-block .markdown-table th {
+  background: #e0e5c1;
+  font-weight: 600;
+  color: #191813;
+  text-transform: uppercase;
+  font-size: 12px;
+  padding: 0.4em 0.8em;
+  border: none;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.archivist-spell-block .markdown-table th:first-child {
+  text-align: left;
+}
+
+.archivist-spell-block .markdown-table td {
+  padding: 0.4em 0.8em;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.3;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+}
+
+.archivist-spell-block .markdown-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.archivist-spell-block .markdown-table tbody tr:nth-child(odd) td {
+  background: transparent;
+}
+
+.archivist-spell-block .markdown-table tbody tr:nth-child(even) td {
+  background: #e0e5c1;
+}
+
+.archivist-spell-block .table-wrapper {
+  margin: 0.6em 0;
+  overflow-x: auto;
+}
+
+/* Source Badge Styles */
+.archivist-spell-block .source-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'Noto Sans', sans-serif;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.4);
+  border: none;
+  z-index: 10;
+}
+
+/* 5. Magic Item Block (reuses spell block pattern)
+   ========================================================================== */
+
+.archivist-item-block-wrapper {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.archivist-item-block {
+  background: #fdf1dc;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: #191813;
+  position: relative;
+  box-shadow:
+    0 4px 24px rgba(134, 116, 83, 0.3),
+    0 2px 8px rgba(134, 116, 83, 0.2);
+  padding: 0.6em;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* Item Header */
+.archivist-item-block .archivist-item-block-header {
+  margin-bottom: 0.3em;
+  border-bottom: 2px solid #7a200d;
+  padding-bottom: 0.3em;
+}
+
+.archivist-item-block .archivist-item-name {
+  font-family:
+    'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond,
+    'Hoefler Text', 'Bitstream Charter', Georgia, serif;
+  color: #7a200d;
+  font-size: 23px;
+  line-height: 1.2em;
+  margin: 0 0 0.1em -0.02em;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.archivist-item-block .archivist-item-subtitle {
+  font-style: italic;
+  font-size: 14px;
+  color: #191813;
+  margin-top: 0.2em;
+}
+
+/* Item Properties */
+.archivist-item-block .archivist-item-properties {
+  margin: 0.4em 0;
+  padding: 0.4em 0;
+  border-bottom: 1px solid #d9c484;
+}
+
+.archivist-item-block .property-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.2em 0;
+  font-size: 13px;
+}
+
+.archivist-item-block .property-icon {
+  width: 14px;
+  height: 14px;
+  color: #7a200d;
+  flex-shrink: 0;
+}
+
+.archivist-item-block .property-label {
+  font-weight: 600;
+  color: #191813;
+  flex-shrink: 0;
+}
+
+.archivist-item-block .property-value {
+  color: #191813;
+}
+
+/* Item Description */
+.archivist-item-block .archivist-item-description {
+  margin: 0.6em 0;
+  line-height: 1.4em;
+}
+
+.archivist-item-block .description-paragraph {
+  margin: 0.4em 0;
+  text-align: justify;
+  text-indent: 1em;
+}
+
+.archivist-item-block .description-paragraph:first-child {
+  text-indent: 0;
+}
+
+/* Item Charges */
+.archivist-item-block .archivist-item-charges {
+  margin-top: 0.6em;
+  padding-top: 0.4em;
+  border-top: 1px solid #d9c484;
+  font-size: 13px;
+  font-style: italic;
+  color: #191813;
+}
+
+/* Item Curse Indicator */
+.archivist-item-block .archivist-item-curse {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 3px;
+  background: #e74c3c;
+  color: white;
+  margin-top: 0.4em;
+}
+
+/* Item Markdown Table (same as spell) */
+.archivist-item-block .markdown-table {
+  width: auto;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  font-size: 13px;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  background: transparent;
+  border: none;
+}
+
+.archivist-item-block .markdown-table th {
+  background: #e0e5c1;
+  font-weight: 600;
+  color: #191813;
+  text-transform: uppercase;
+  font-size: 12px;
+  padding: 0.4em 0.8em;
+  border: none;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.archivist-item-block .markdown-table th:first-child {
+  text-align: left;
+}
+
+.archivist-item-block .markdown-table td {
+  padding: 0.4em 0.8em;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.3;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+}
+
+.archivist-item-block .markdown-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.archivist-item-block .markdown-table tbody tr:nth-child(odd) td {
+  background: transparent;
+}
+
+.archivist-item-block .markdown-table tbody tr:nth-child(even) td {
+  background: #e0e5c1;
+}
+
+.archivist-item-block .table-wrapper {
+  margin: 0.6em 0;
+  overflow-x: auto;
+}
+
+/* Source Badge for items */
+.archivist-item-block .source-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'Noto Sans', sans-serif;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.4);
+  border: none;
+  z-index: 10;
+}
+
+/* 6. Shared Property-Line-Icon Styles
+   ========================================================================== */
+
+.archivist-property-line-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.2em 0;
+  font-size: 13px;
+}
+
+.archivist-property-icon {
+  width: 14px;
+  height: 14px;
+  color: #7a200d;
+  flex-shrink: 0;
+}
+
+.archivist-property-label {
+  font-weight: 600;
+  color: #191813;
+  flex-shrink: 0;
+}
+
+.archivist-property-value {
+  color: #191813;
+}
+
+/* 7. Feature Styles
+   ========================================================================== */
+
+.archivist-feature {
+  margin-bottom: 0.3em;
+  line-height: 1.4em;
+  text-indent: -1em;
+  margin-left: 1em;
+}
+
+.archivist-feature-name {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--stat-block-header);
+  font-size: 13px;
+  display: inline;
+  margin-right: 0.25em;
+}
+
+.archivist-feature-entry {
+  display: inline;
+  font-weight: normal;
+  font-size: 13px;
+}
+
+/* 8. Tab Navigation (from monster stat block)
+   ========================================================================== */
+
+.archivist-monster-block .original-tab-navigation-wrapper {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  margin: 0.5em 0;
+  border-bottom: 1px solid #7a200d;
+}
+
+.archivist-monster-block .original-tab-navigation {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding-bottom: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.archivist-monster-block .original-tab-navigation::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fade effect containers */
+.archivist-monster-block .original-tab-fade {
+  position: relative;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  animation: archivistFadeIn 0.3s ease-in-out;
+}
+
+@keyframes archivistFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.archivist-monster-block .original-tab-fade-left {
+  background: linear-gradient(
+    to right,
+    rgba(251, 241, 230, 1) 0%,
+    rgba(251, 241, 230, 0.95) 40%,
+    rgba(251, 241, 230, 0) 100%
+  );
+  padding-right: 15px;
+  margin-right: -15px;
+}
+
+.archivist-monster-block .original-tab-fade-right {
+  background: linear-gradient(
+    to left,
+    rgba(251, 241, 230, 1) 0%,
+    rgba(251, 241, 230, 0.95) 40%,
+    rgba(251, 241, 230, 0) 100%
+  );
+  padding-left: 15px;
+  margin-left: -15px;
+}
+
+/* Arrow buttons */
+.archivist-monster-block .original-tab-nav-arrow {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #7a200d;
+  opacity: 0.5;
+  padding: 0;
+}
+
+.archivist-monster-block .original-tab-nav-arrow:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+.archivist-monster-block .original-tab-nav-arrow-left {
+  margin-right: 8px;
+}
+
+.archivist-monster-block .original-tab-nav-arrow-right {
+  margin-left: 8px;
+}
+
+.archivist-monster-block .original-tab-button {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  gap: 4px;
+  padding: 6px 12px;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: #7a200d;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Noto Sans', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.archivist-monster-block .original-tab-button:hover {
+  background: rgba(122, 32, 13, 0.05) !important;
+  color: #922610;
+  box-shadow: none !important;
+}
+
+.archivist-monster-block .original-tab-button.active {
+  color: #922610;
+  border-bottom-color: #922610 !important;
+  background: rgba(122, 32, 13, 0.1) !important;
+}
+
+.archivist-monster-block .original-tab-button svg {
+  width: 12px;
+  height: 12px;
+}
+
+.archivist-monster-block .original-tab-content {
+  padding: 0.5em 0 0;
+  min-height: 100px;
+}
+
+/* 9. Legendary Resistance Tracking (from legendary-resistance.css)
+   ========================================================================== */
+
+.archivist-legendary-resistance-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  margin-left: 0;
+}
+
+.archivist-legendary-resistance-count {
+  font-size: 12px;
+  color: #766649;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.archivist-legendary-resistance-boxes {
+  display: inline-flex;
+  gap: 3px;
+}
+
+/* Individual Ability Box */
+.archivist-legendary-resistance-box {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.archivist-legendary-resistance-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.archivist-legendary-resistance-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: #fdf1dc;
+  border: 2px solid #d9c484;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: visible;
+}
+
+/* Cross design using CSS */
+.archivist-ability-cross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.archivist-ability-cross::before,
+.archivist-ability-cross::after {
+  content: '';
+  position: absolute;
+  background: #922610;
+  border-radius: 1px;
+}
+
+/* Vertical line of the cross */
+.archivist-ability-cross::before {
+  width: 3px;
+  height: 26px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Horizontal line of the cross */
+.archivist-ability-cross::after {
+  width: 26px;
+  height: 3px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Cross fade-in animation */
+.archivist-ability-cross {
+  animation: archivistCrossFadeIn 0.2s ease-out;
+}
+
+@keyframes archivistCrossFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.archivist-legendary-resistance-checkbox:checked + .archivist-legendary-resistance-custom {
+  background: rgba(146, 38, 16, 0.05);
+  border-color: #922610;
+}
+
+.archivist-legendary-resistance-box:hover .archivist-legendary-resistance-custom {
+  border-color: #922610;
+  box-shadow: 0 0 2px rgba(146, 38, 16, 0.3);
+}
+
+/* Reset Button */
+.archivist-legendary-resistance-reset {
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  color: #766649;
+  transition: all 0.2s ease;
+}
+
+.archivist-legendary-resistance-reset:hover {
+  color: #7a200d;
+}
+
+.archivist-legendary-resistance-reset:hover svg {
+  transform: rotate(-45deg);
+}
+
+/* 10. Inline Tags (from dnd-tag-render.css)
+   ========================================================================== */
+
+/* Base tag styles */
+.archivist-tag {
+  display: inline-flex;
+  align-items: center;
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-left: 2px;
+  margin-right: 2px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  vertical-align: baseline;
+  line-height: normal;
+  white-space: nowrap;
+  background: var(--tag-bg-color);
+  border: 1px solid var(--tag-border-color);
+  color: var(--tag-color);
+}
+
+.archivist-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  filter: brightness(0.95);
+  border-color: var(--tag-color);
+  cursor: pointer;
+}
+
+.archivist-tag-icon {
+  opacity: 0.9;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.2rem;
+}
+
+.archivist-tag-content {
+  font-weight: 600;
+  display: inline;
+}
+
+/* Dice tags - gold */
+.archivist-tag-dice {
+  font-weight: 700;
+  background-color: #fef9f1;
+  border-color: #f5e6c8;
+  color: #8a6e1e;
+}
+
+.archivist-tag-dice:hover {
+  background-color: #fdf6e8;
+  border-color: #8a6e1e;
+}
+
+/* Damage tags - gold */
+.archivist-tag-damage {
+  font-weight: 700;
+  background-color: #fef9f1;
+  border-color: #f5e6c8;
+  color: #8a6e1e;
+}
+
+.archivist-tag-damage:hover {
+  background-color: #fdf6e8;
+  border-color: #8a6e1e;
+}
+
+.archivist-tag-dice .archivist-tag-content,
+.archivist-tag-damage .archivist-tag-content {
+  font-family: monospace;
+  letter-spacing: -0.025em;
+}
+
+/* Attack and combat tags - crimson */
+.archivist-tag-atk,
+.archivist-tag-hit {
+  background-color: #fdf2f5;
+  border-color: #f0c6d1;
+  color: #8a1e3a;
+}
+
+.archivist-tag-atk:hover,
+.archivist-tag-hit:hover {
+  background-color: #fcecf0;
+  border-color: #8a1e3a;
+}
+
+/* Condition tags - magenta */
+.archivist-tag-condition {
+  background-color: #fdf2f9;
+  border-color: #f0c6e7;
+  color: #8a1e70;
+}
+
+.archivist-tag-condition:hover {
+  background-color: #fcebf4;
+  border-color: #8a1e70;
+}
+
+/* DC tags - blue (mapped from dnd-tag-spell) */
+.archivist-tag-dc {
+  background-color: #e8ecf5;
+  border-color: #d1d9eb;
+  color: #1e3a8a;
+}
+
+.archivist-tag-dc:hover {
+  background-color: #dde2f0;
+  border-color: #1e3a8a;
+}
+
+/* Modifier tags - blue (same as dc) */
+.archivist-tag-mod {
+  background-color: #e8ecf5;
+  border-color: #d1d9eb;
+  color: #1e3a8a;
+}
+
+.archivist-tag-mod:hover {
+  background-color: #dde2f0;
+  border-color: #1e3a8a;
+}
+
+/* Check tags - blue (same as dc) */
+.archivist-tag-check {
+  background-color: #e8ecf5;
+  border-color: #d1d9eb;
+  color: #1e3a8a;
+}
+
+.archivist-tag-check:hover {
+  background-color: #dde2f0;
+  border-color: #1e3a8a;
+}
+
+/* Error state */
+.archivist-tag-error {
+  display: inline-flex;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+/* 11. Dark Mode Inline Tags
+   ========================================================================== */
+
+/* Dice - dark mode */
+.theme-dark .archivist-tag-dice {
+  background-color: rgba(138, 110, 30, 0.15);
+  border-color: rgba(138, 110, 30, 0.4);
+  color: #f5d870;
+}
+
+.theme-dark .archivist-tag-dice:hover {
+  background-color: rgba(138, 110, 30, 0.25);
+  border-color: rgba(138, 110, 30, 0.6);
+}
+
+/* Damage - dark mode */
+.theme-dark .archivist-tag-damage {
+  background-color: rgba(138, 110, 30, 0.15);
+  border-color: rgba(138, 110, 30, 0.4);
+  color: #f5d870;
+}
+
+.theme-dark .archivist-tag-damage:hover {
+  background-color: rgba(138, 110, 30, 0.25);
+  border-color: rgba(138, 110, 30, 0.6);
+}
+
+/* Attack/Hit - dark mode */
+.theme-dark .archivist-tag-atk,
+.theme-dark .archivist-tag-hit {
+  background-color: rgba(138, 30, 58, 0.15);
+  border-color: rgba(138, 30, 58, 0.4);
+  color: #f5a3b8;
+}
+
+.theme-dark .archivist-tag-atk:hover,
+.theme-dark .archivist-tag-hit:hover {
+  background-color: rgba(138, 30, 58, 0.25);
+  border-color: rgba(138, 30, 58, 0.6);
+}
+
+/* Condition - dark mode */
+.theme-dark .archivist-tag-condition {
+  background-color: rgba(138, 30, 112, 0.15);
+  border-color: rgba(138, 30, 112, 0.4);
+  color: #f5a3e1;
+}
+
+.theme-dark .archivist-tag-condition:hover {
+  background-color: rgba(138, 30, 112, 0.25);
+  border-color: rgba(138, 30, 112, 0.6);
+}
+
+/* DC - dark mode */
+.theme-dark .archivist-tag-dc {
+  background-color: rgba(30, 58, 138, 0.15);
+  border-color: rgba(30, 58, 138, 0.4);
+  color: #a3b8f5;
+}
+
+.theme-dark .archivist-tag-dc:hover {
+  background-color: rgba(30, 58, 138, 0.25);
+  border-color: rgba(30, 58, 138, 0.6);
+}
+
+/* Modifier - dark mode */
+.theme-dark .archivist-tag-mod {
+  background-color: rgba(30, 58, 138, 0.15);
+  border-color: rgba(30, 58, 138, 0.4);
+  color: #a3b8f5;
+}
+
+.theme-dark .archivist-tag-mod:hover {
+  background-color: rgba(30, 58, 138, 0.25);
+  border-color: rgba(30, 58, 138, 0.6);
+}
+
+/* Check - dark mode */
+.theme-dark .archivist-tag-check {
+  background-color: rgba(30, 58, 138, 0.15);
+  border-color: rgba(30, 58, 138, 0.4);
+  color: #a3b8f5;
+}
+
+.theme-dark .archivist-tag-check:hover {
+  background-color: rgba(30, 58, 138, 0.25);
+  border-color: rgba(30, 58, 138, 0.6);
+}
+
+/* Error - dark mode */
+.theme-dark .archivist-tag-error {
+  background-color: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #f87171;
+}
+
+/* Dark Mode - Legendary Resistance */
+.theme-dark .archivist-legendary-resistance-custom {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-dark .archivist-legendary-resistance-checkbox:checked + .archivist-legendary-resistance-custom {
+  background: rgba(220, 38, 38, 0.2);
+  border-color: #dc2626;
+}
+
+.theme-dark .archivist-ability-cross {
+  color: #ef4444;
+}
+
+.theme-dark .archivist-legendary-resistance-count {
+  color: #9ca3af;
+}
+
+.theme-dark .archivist-legendary-resistance-reset {
+  color: #9ca3af;
+}
+
+.theme-dark .archivist-legendary-resistance-reset:hover {
+  color: #e5e7eb;
+}
+
+/* 12. Error Block Styles
+   ========================================================================== */
+
+.archivist-error-block {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  padding: 0.6em;
+  margin: 0.5em 0;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  color: #191813;
+}
+
+.archivist-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.4em 0.6em;
+  background: #dc2626;
+  color: white;
+  border-radius: 3px;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 0.5em;
+}
+
+.archivist-error-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.archivist-error-source {
+  margin-top: 0.5em;
+  padding: 0.5em;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #991b1b;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Dark mode error block */
+.theme-dark .archivist-error-block {
+  background: rgba(220, 38, 38, 0.1);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.theme-dark .archivist-error-source {
+  background: rgba(220, 38, 38, 0.05);
+  border-color: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+/* 13. Modal Styles
+   ========================================================================== */
+
+.archivist-modal {
+  padding: 1em;
+}
+
+.archivist-modal-repeatable {
+  margin: 0.5em 0;
+  padding: 0.5em;
+  border: 1px solid #d9c484;
+  border-radius: 4px;
+  background: rgba(253, 241, 220, 0.3);
+}
+
+.archivist-modal-repeatable-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.3em 0;
+  padding: 0.3em;
+  border-bottom: 1px solid rgba(217, 196, 132, 0.3);
+}
+
+.archivist-modal-repeatable-row:last-child {
+  border-bottom: none;
+}
+
+/* Dark mode modal */
+.theme-dark .archivist-modal-repeatable {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .archivist-modal-repeatable-row {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* 14. Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .archivist-spell-block {
+    font-size: 13px;
+  }
+
+  .archivist-spell-block .spell-name {
+    font-size: 20px;
+  }
+
+  .archivist-spell-block .property-line {
+    font-size: 12px;
+  }
+
+  .archivist-item-block {
+    font-size: 13px;
+  }
+
+  .archivist-item-block .archivist-item-name {
+    font-size: 20px;
+  }
+
+  .archivist-item-block .property-line {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .archivist-monster-block {
+    font-size: 12px;
+  }
+
+  .archivist-monster-block .monster-name {
+    font-size: 20px;
+  }
+
+  .archivist-monster-block .actions-header {
+    font-size: 18px;
+  }
+
+  .archivist-monster-block-wrapper {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  .archivist-monster-block .original-tab-fade-left,
+  .archivist-monster-block .original-tab-fade-right {
+    padding: 0 8px;
+    margin: 0;
+  }
+
+  .archivist-monster-block .original-tab-nav-arrow {
+    width: 18px;
+    height: 18px;
+  }
+
+  .archivist-monster-block .original-tab-button {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}
