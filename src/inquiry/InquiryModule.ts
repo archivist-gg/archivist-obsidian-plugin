@@ -57,6 +57,9 @@ import {
   TYPE_FOLDER_MAP,
 } from '../entities/entity-vault-store';
 import type { EntityRegistry } from '../entities/entity-registry';
+import { createArchivistMcpServer } from '../ai/mcp-server';
+import type { SrdStore } from '../ai/srd/srd-store';
+import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';
 
 // ============================================
 // Subagent data merge helpers (pure functions)
@@ -230,6 +233,9 @@ export class InquiryModule {
   /** D&D SRD store (optional, injected by Archivist). */
   srdStore: unknown;
 
+  /** In-process SDK MCP server for D&D tools (created from srdStore). */
+  archivistMcpServer: McpSdkServerConfigWithInstance | null = null;
+
   private conversations: Conversation[] = [];
   private runtimeEnvironmentVariables = '';
 
@@ -257,6 +263,15 @@ export class InquiryModule {
     // Initialize MCP manager (shared for agent + UI)
     this.mcpManager = new McpServerManager(this.storage.mcp);
     await this.mcpManager.loadServers();
+
+    // Create in-process MCP server for D&D tools (if SRD store is available)
+    if (this.srdStore) {
+      try {
+        this.archivistMcpServer = createArchivistMcpServer(this.srdStore as SrdStore);
+      } catch (e) {
+        console.error('[InquiryModule] Failed to create Archivist MCP server:', e);
+      }
+    }
 
     // Initialize plugin manager (reads from installed_plugins.json + settings.json)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1276,12 +1291,13 @@ export class InquiryModule {
    * Returns the Archivist host plugin's settings (compendiumRoot, userEntityFolder, etc.).
    * Falls back to sensible defaults if unavailable.
    */
-  getArchivistSettings(): { compendiumRoot: string; userEntityFolder: string } {
+  getArchivistSettings(): { compendiumRoot: string; userEntityFolder: string; ttrpgRootDir: string } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const hostSettings = (this.plugin as any).settings;
     return {
       compendiumRoot: hostSettings?.compendiumRoot ?? 'Compendium',
       userEntityFolder: hostSettings?.userEntityFolder ?? 'me',
+      ttrpgRootDir: hostSettings?.ttrpgRootDir ?? '/',
     };
   }
 

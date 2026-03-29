@@ -12,12 +12,15 @@
 
 import type {
   CanUseTool,
+  McpServerConfig as SdkMcpServerConfig,
+  McpSdkServerConfigWithInstance,
   Options,
 } from '@anthropic-ai/claude-agent-sdk';
 
 import type { McpServerManager } from '../mcp';
 import type { PluginManager } from '../plugins';
 import { buildSystemPrompt, type SystemPromptSettings } from '../prompts/mainAgent';
+import type { DndPromptContext } from '../prompts/dndContext';
 import type { ClaudianSettings, PermissionMode } from '../types';
 import { isAdaptiveThinkingModel, THINKING_BUDGETS } from '../types';
 import { createCustomSpawnFunction } from './customSpawn';
@@ -47,6 +50,10 @@ export interface QueryOptionsContext {
   mcpManager: McpServerManager;
   /** Plugin manager for Claude Code plugins. */
   pluginManager: PluginManager;
+  /** In-process SDK MCP server for D&D tools (optional). */
+  archivistMcpServer?: McpSdkServerConfigWithInstance | null;
+  /** D&D system prompt context (optional). */
+  dndContext?: DndPromptContext;
 }
 
 /**
@@ -148,6 +155,7 @@ export class QueryOptionsBuilder {
       allowExternalAccess: ctx.settings.allowExternalAccess,
       vaultPath: ctx.vaultPath,
       userName: ctx.settings.userName,
+      dndContext: ctx.dndContext,
     };
 
     const budgetSetting = ctx.settings.thinkingBudget;
@@ -189,6 +197,7 @@ export class QueryOptionsBuilder {
       allowExternalAccess: ctx.settings.allowExternalAccess,
       vaultPath: ctx.vaultPath,
       userName: ctx.settings.userName,
+      dndContext: ctx.dndContext,
     });
 
     const options: Options = {
@@ -253,6 +262,7 @@ export class QueryOptionsBuilder {
       allowExternalAccess: ctx.settings.allowExternalAccess,
       vaultPath: ctx.vaultPath,
       userName: ctx.settings.userName,
+      dndContext: ctx.dndContext,
     });
 
     const options: Options = {
@@ -278,7 +288,13 @@ export class QueryOptionsBuilder {
     const mcpMentions = ctx.mcpMentions || new Set<string>();
     const uiEnabledServers = ctx.enabledMcpServers || new Set<string>();
     const combinedMentions = new Set([...mcpMentions, ...uiEnabledServers]);
-    const mcpServers = ctx.mcpManager.getActiveServers(combinedMentions);
+    const userMcpServers = ctx.mcpManager.getActiveServers(combinedMentions);
+
+    // Merge user-configured MCP servers with built-in Archivist MCP server
+    const mcpServers: Record<string, SdkMcpServerConfig> = { ...userMcpServers };
+    if (ctx.archivistMcpServer) {
+      mcpServers['archivist'] = ctx.archivistMcpServer;
+    }
 
     if (Object.keys(mcpServers).length > 0) {
       options.mcpServers = mcpServers;

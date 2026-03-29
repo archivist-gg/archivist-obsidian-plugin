@@ -460,6 +460,12 @@ export class ClaudianService {
     const customEnv = parseEnvironmentVariables(this.plugin.getActiveEnvironmentVariables());
     const enhancedPath = getEnhancedPath(customEnv.PATH, cliPath);
 
+    // Build D&D context from Archivist host settings
+    const archivistSettings = this.plugin.getArchivistSettings();
+    const dndContext = archivistSettings.ttrpgRootDir
+      ? { ttrpgRootDir: archivistSettings.ttrpgRootDir }
+      : undefined;
+
     return {
       vaultPath,
       cliPath,
@@ -468,6 +474,8 @@ export class ClaudianService {
       enhancedPath,
       mcpManager: this.mcpManager,
       pluginManager: this.plugin.pluginManager,
+      archivistMcpServer: this.plugin.archivistMcpServer,
+      dndContext,
     };
   }
 
@@ -1210,10 +1218,13 @@ export class ClaudianService {
     const mcpServersKey = JSON.stringify(mcpServers);
 
     if (this.currentConfig && mcpServersKey !== this.currentConfig.mcpServersKey) {
-      // Convert to McpServerConfig format
+      // Convert to McpServerConfig format and include built-in Archivist MCP server
       const serverConfigs: Record<string, McpServerConfig> = {};
       for (const [name, config] of Object.entries(mcpServers)) {
         serverConfigs[name] = config as McpServerConfig;
+      }
+      if (this.plugin.archivistMcpServer) {
+        serverConfigs['archivist'] = this.plugin.archivistMcpServer;
       }
       try {
         await this.persistentQuery.setMcpServers(serverConfigs);
