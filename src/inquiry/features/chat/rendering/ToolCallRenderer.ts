@@ -40,6 +40,66 @@ function getDndEntityType(toolName: string): string | null {
   return null;
 }
 
+/**
+ * Detects if a tool name is a D&D generation tool and returns the entity type.
+ * Exported for use by StreamController to create skeleton placeholders.
+ */
+export function getDndGenerationEntityType(toolName: string): string | null {
+  return getDndEntityType(toolName);
+}
+
+/**
+ * Renders a skeleton placeholder block for a D&D entity being generated.
+ * Shows pulsing bars that get replaced with partial data as it arrives,
+ * and is ultimately replaced by the full stat block on tool_result.
+ */
+export function renderBlockSkeleton(
+  parentEl: HTMLElement,
+  entityType: string,
+): { el: HTMLElement; updateFromPartial: (data: Record<string, unknown>) => void } {
+  const wrapper = parentEl.createDiv({ cls: 'archivist-stat-block' });
+  const skeleton = wrapper.createDiv({ cls: 'archivist-block-skeleton' });
+
+  const typeLabel = entityType.charAt(0).toUpperCase() + entityType.slice(1);
+  const headerEl = skeleton.createDiv({ cls: 'archivist-skeleton-header', text: `Generating ${typeLabel}...` });
+  skeleton.createDiv({ cls: 'archivist-skeleton-bar' });
+  skeleton.createDiv({ cls: 'archivist-skeleton-bar' });
+  skeleton.createDiv({ cls: 'archivist-skeleton-bar archivist-skeleton-bar-short' });
+
+  const updateFromPartial = (data: Record<string, unknown>) => {
+    const existingPartial = skeleton.querySelector('.archivist-skeleton-partial');
+    const partialEl = existingPartial as HTMLElement || skeleton.createDiv({ cls: 'archivist-skeleton-partial' });
+    if (!existingPartial) {
+      skeleton.querySelectorAll('.archivist-skeleton-bar').forEach(bar => bar.remove());
+    }
+    partialEl.empty();
+
+    if (data.name) {
+      headerEl.setText(String(data.name));
+    }
+    if (data.type || data.size) {
+      partialEl.createDiv({ cls: 'archivist-skeleton-type', text: [data.size, data.type].filter(Boolean).join(' ') });
+    }
+    if (data.ac) {
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `AC: ${typeof data.ac === 'object' ? JSON.stringify(data.ac) : data.ac}` });
+    }
+    if (data.hp) {
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `HP: ${typeof data.hp === 'object' ? JSON.stringify(data.hp) : data.hp}` });
+    }
+    if (data.abilities) {
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: 'Abilities loaded...' });
+    }
+    if (data.level !== undefined) {
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `Level ${data.level} ${data.school || ''}` });
+    }
+    if (data.rarity) {
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `Rarity: ${data.rarity}` });
+    }
+  };
+
+  return { el: wrapper, updateFromPartial };
+}
+
 export function setToolIcon(el: HTMLElement, name: string): void {
   const icon = getToolIcon(name);
   if (icon === MCP_ICON_MARKER) {

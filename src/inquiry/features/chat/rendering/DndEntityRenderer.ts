@@ -71,7 +71,11 @@ export function renderDndEntityBlock(
     const iconSpan = btn.createSpan();
     setIcon(iconSpan, "save");
     btn.createSpan({ text: "Copy & Save" });
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
+      // Copy to clipboard first
+      try {
+        await navigator.clipboard.writeText("```" + result.entityType + "\n" + result.yamlSource + "\n```");
+      } catch { /* clipboard may fail in some contexts */ }
       onCopyAndSave(result.entityType, result.yamlSource, result.name);
     });
   }

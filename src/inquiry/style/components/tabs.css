@@ -17,11 +17,10 @@
 .archivist-tab-dot-streaming { background: var(--claudian-brand); animation: thinking-pulse 1.5s ease-in-out infinite; }
 .archivist-tab-dot-attention { background: var(--text-error); }
 .archivist-tab-close {
-  display: none; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   width: 14px; height: 14px; border-radius: 3px; color: var(--text-faint); cursor: pointer;
 }
 .archivist-tab-close svg { width: 10px; height: 10px; }
-.archivist-tab:hover .archivist-tab-close { display: flex; }
 .archivist-tab-close:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
 .archivist-tab-context-menu {
   background: var(--background-primary); border: 1px solid var(--background-modifier-border);

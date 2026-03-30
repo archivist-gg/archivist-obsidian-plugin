@@ -356,8 +356,8 @@ export const DEFAULT_SETTINGS: ClaudianSettings = {
   slashCommands: [],
 
   // UI preferences
-  maxTabs: 3,  // Default to 3 tabs (safe resource usage)
-  tabBarPosition: 'input',  // Default to input mode (current behavior)
+  maxTabs: 10,  // Default to max tabs
+  tabBarPosition: 'header',  // Default to header position
   enableAutoScroll: true,  // Default to auto-scroll enabled
   openInMainTab: false,  // Default to sidebar (current behavior)
 

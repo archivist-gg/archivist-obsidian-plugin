@@ -128,6 +128,32 @@ function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement
 }
 
 /**
+ * Convert 5etools-style {@...} tags to the plugin's backtick inline-tag format.
+ * Called before backtick regex processing so AI-generated 5etools markup renders correctly.
+ */
+export function convert5eToolsTags(text: string): string {
+  return text
+    // Attack type labels
+    .replace(/\{@atk\s+mw,rw\}/gi, 'Melee or Ranged Weapon Attack:')
+    .replace(/\{@atk\s+mw\}/gi, 'Melee Weapon Attack:')
+    .replace(/\{@atk\s+rw\}/gi, 'Ranged Weapon Attack:')
+    // Hit bonus -> `atk:+N`
+    .replace(/\{@hit\s+(\d+)\}/gi, '`atk:+$1`')
+    // Hit label
+    .replace(/\{@h\}/gi, 'Hit:')
+    // Damage -> `damage:XdY+Z type`
+    .replace(/\{@damage\s+([^}]+)\}/gi, '`damage:$1`')
+    // Dice -> `dice:XdY+Z`
+    .replace(/\{@dice\s+([^}]+)\}/gi, '`dice:$1`')
+    // DC -> `dc:N`
+    .replace(/\{@dc\s+(\d+)\}/gi, '`dc:$1`')
+    // Condition -> plain text
+    .replace(/\{@condition\s+([^}]+)\}/gi, '$1')
+    // Spell -> italicized plain text
+    .replace(/\{@spell\s+([^}]+)\}/gi, '_$1_');
+}
+
+/**
  * Render text that may contain inline tags like `dice:2d6+3` or `dc:15`.
  * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
  * Outside stat blocks (body text), tags render as colorful pill badges.
@@ -137,16 +163,19 @@ export function renderTextWithInlineTags(
   parent: HTMLElement,
   statBlockMode = true,
 ): void {
+  // Convert any 5etools {@...} tags to backtick format before processing
+  const converted = convert5eToolsTags(text);
+
   // Match backtick-wrapped tags: `type:content`
   const regex = /`([^`]+)`/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = regex.exec(text)) !== null) {
+  while ((match = regex.exec(converted)) !== null) {
     // Append any plain text before this match
     if (match.index > lastIndex) {
       parent.appendChild(
-        document.createTextNode(text.slice(lastIndex, match.index)),
+        document.createTextNode(converted.slice(lastIndex, match.index)),
       );
     }
 
@@ -169,8 +198,8 @@ export function renderTextWithInlineTags(
   }
 
   // Append any remaining plain text
-  if (lastIndex < text.length) {
-    parent.appendChild(document.createTextNode(text.slice(lastIndex)));
+  if (lastIndex < converted.length) {
+    parent.appendChild(document.createTextNode(converted.slice(lastIndex)));
   }
 }
 

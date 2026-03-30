@@ -466,6 +466,16 @@ export class InquiryModule {
       this.settings.permissionMode = (pm === 'normal' || pm === 'plan') ? 'guarded' : 'unleashed';
     }
 
+    // Ensure tabs are in header position
+    if ((this.settings as any).tabBarPosition === 'input') {
+      this.settings.tabBarPosition = 'header';
+    }
+
+    // Ensure maxTabs is updated from old default
+    if (this.settings.maxTabs <= 3) {
+      this.settings.maxTabs = 10;
+    }
+
     const didNormalizeModelVariants = this.normalizeModelVariantSettings();
 
     // Initialize and migrate legacy CLI paths to hostname-based paths

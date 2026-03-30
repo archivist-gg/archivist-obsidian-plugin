@@ -27,9 +27,11 @@ import {
   createWriteEditBlock,
   finalizeThinkingBlock,
   finalizeWriteEditBlock,
+  getDndGenerationEntityType,
   getToolName,
   getToolSummary,
   isBlockedToolResult,
+  renderBlockSkeleton,
   renderDndEntityAfterToolCall,
   renderToolCall,
   updateToolCallResult,
@@ -56,6 +58,13 @@ export class StreamController {
   private static readonly ASYNC_SUBAGENT_RESULT_RETRY_DELAYS_MS = [200, 600, 1500] as const;
 
   private deps: StreamControllerDeps;
+
+  /** Active skeleton placeholders for D&D entity generation tools, keyed by tool ID. */
+  private activeSkeletons = new Map<string, {
+    skeleton: ReturnType<typeof renderBlockSkeleton>;
+    accumulatedInput: string;
+    lastValidParse: Record<string, unknown> | null;
+  }>();
 
   constructor(deps: StreamControllerDeps) {
     this.deps = deps;
@@ -242,6 +251,12 @@ export class StreamController {
             summaryEl.setText(getToolSummary(existingToolCall.name, existingToolCall.input));
           }
         }
+
+        // Update skeleton with new partial data if this is a D&D generation tool
+        if (this.activeSkeletons.has(chunk.id)) {
+          this.updateSkeletonFromInput(chunk.id, existingToolCall.input);
+        }
+
         // If still pending, the updated input is already in the toolCall object
       }
       return;
@@ -281,7 +296,43 @@ export class StreamController {
         toolCall,
         parentEl: state.currentContentEl,
       });
+
+      // For D&D generation tools, flush immediately and create a skeleton placeholder
+      const entityType = getDndGenerationEntityType(chunk.name);
+      if (entityType) {
+        this.flushPendingTools();  // render the tool header first
+        const skeleton = renderBlockSkeleton(state.currentContentEl, entityType);
+        this.activeSkeletons.set(chunk.id, {
+          skeleton,
+          accumulatedInput: '',
+          lastValidParse: null,
+        });
+
+        // If the tool input already has data (input arrives fully-formed),
+        // immediately update the skeleton with partial data
+        if (chunk.input && Object.keys(chunk.input).length > 0) {
+          this.updateSkeletonFromInput(chunk.id, chunk.input);
+        }
+      }
+
       this.showThinkingIndicator();
+    }
+  }
+
+  /**
+   * Updates an active skeleton placeholder with entity data extracted from tool input.
+   * The tool input for D&D generation tools typically wraps entity data under a
+   * `monster`, `spell`, or `item` key.
+   */
+  private updateSkeletonFromInput(toolId: string, input: Record<string, unknown>): void {
+    const skeletonState = this.activeSkeletons.get(toolId);
+    if (!skeletonState) return;
+
+    // Entity data is nested under the entity type key (e.g., input.monster, input.spell, input.item)
+    const entityData = (input.monster || input.spell || input.item) as Record<string, unknown> | undefined;
+    if (entityData && typeof entityData === 'object') {
+      skeletonState.lastValidParse = entityData;
+      skeletonState.skeleton.updateFromPartial(entityData);
     }
   }
 
@@ -402,6 +453,13 @@ export class StreamController {
         finalizeWriteEditBlock(writeEditState, chunk.isError || isBlocked);
       } else {
         updateToolCallResult(chunk.id, existingToolCall, state.toolCallElements, this.deps.renderer.getDndCopyAndSaveCallback());
+      }
+
+      // Remove skeleton placeholder before rendering the final D&D entity block
+      const skeletonState = this.activeSkeletons.get(chunk.id);
+      if (skeletonState) {
+        skeletonState.skeleton.el.remove();
+        this.activeSkeletons.delete(chunk.id);
       }
 
       // Render D&D entity block as a sibling after the tool call element

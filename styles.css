@@ -183,11 +183,10 @@
 .archivist-tab-dot-streaming { background: var(--claudian-brand); animation: thinking-pulse 1.5s ease-in-out infinite; }
 .archivist-tab-dot-attention { background: var(--text-error); }
 .archivist-tab-close {
-  display: none; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   width: 14px; height: 14px; border-radius: 3px; color: var(--text-faint); cursor: pointer;
 }
 .archivist-tab-close svg { width: 10px; height: 10px; }
-.archivist-tab:hover .archivist-tab-close { display: flex; }
 .archivist-tab-close:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
 .archivist-tab-context-menu {
   background: var(--background-primary); border: 1px solid var(--background-modifier-border);
@@ -7021,27 +7020,28 @@ code .claudian-file-link:hover {
 /* D&D entity block actions (Copy & Save) */
 .claudian-dnd-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   padding: 4px 12px 8px;
 }
 
 .claudian-dnd-copy-save-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border: none;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text-faint);
+  gap: 6px;
+  padding: 6px 16px;
+  border: 1px solid var(--d5e-border-tan, #d9c484);
+  border-radius: 6px;
+  background: var(--d5e-parchment-light, #fef8ee);
+  color: var(--d5e-text-accent, #7a200d);
   font-size: 12px;
+  font-family: 'Libre Baskerville', Georgia, serif;
   cursor: pointer;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .claudian-dnd-copy-save-btn:hover {
-  color: var(--text-normal);
-  background: var(--background-modifier-hover);
+  background: var(--d5e-parchment-dark, #f4e4c1);
+  border-color: var(--d5e-border-tan-dark, #c4a95e);
 }
 
 .claudian-dnd-copy-save-btn svg {
@@ -7051,6 +7051,70 @@ code .claudian-file-link:hover {
 
 .claudian-dnd-copy-save-btn.saved {
   color: var(--text-accent);
+}
+
+/* 10. Entity Generation Skeleton
+   ========================================================================== */
+
+.archivist-stat-block {
+  max-width: 400px;
+  margin: 8px 0;
+}
+
+.archivist-block-skeleton {
+  background: var(--d5e-parchment, #fdf1dc);
+  border: 1px solid var(--d5e-border-tan, #d9c484);
+  border-radius: 3px;
+  padding: 12px 16px;
+  animation: archivist-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.archivist-skeleton-header {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 16px;
+  color: var(--d5e-text-accent, #7a200d);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.archivist-skeleton-bar {
+  height: 10px;
+  background: rgba(122, 32, 13, 0.12);
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.archivist-skeleton-bar-short {
+  width: 60%;
+}
+
+.archivist-skeleton-partial {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 12px;
+  color: var(--d5e-text-dark, #191813);
+}
+
+.archivist-skeleton-type {
+  font-size: 11px;
+  font-style: italic;
+  margin-bottom: 8px;
+}
+
+.archivist-skeleton-prop {
+  font-size: 11px;
+  margin-bottom: 3px;
+  opacity: 0;
+  animation: archivist-fade-in 0.3s ease forwards;
+}
+
+@keyframes archivist-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes archivist-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 
@@ -7096,3 +7160,44 @@ code .claudian-file-link:hover {
 /* Toolbar: top border, small font, separators */
 .claudian-input-toolbar { border-top: 1px solid var(--background-modifier-border-focus); font-size: 10px; }
 .archivist-toolbar-sep { width: 1px; height: 12px; background: var(--background-modifier-border); flex-shrink: 0; }
+
+/* @ Mention inline pill chips */
+.archivist-inline-mention {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: 10px;
+  background: var(--background-secondary); font-size: 11px;
+  vertical-align: baseline; cursor: default; white-space: nowrap;
+}
+.archivist-inline-mention-icon { display: inline-flex; align-items: center; }
+.archivist-inline-mention-icon svg { width: 12px; height: 12px; }
+
+/* [[ Entity autocomplete dropdown */
+.claudian-entity-autocomplete-dropdown {
+  position: absolute; bottom: 100%; left: 0; right: 0;
+  max-height: 240px; overflow-y: auto;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 100;
+  padding: 4px 0;
+}
+.claudian-entity-autocomplete-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; cursor: pointer;
+  font-size: 12px;
+}
+.claudian-entity-autocomplete-item:hover,
+.claudian-entity-autocomplete-item.is-selected {
+  background: var(--background-secondary);
+}
+.claudian-entity-autocomplete-name {
+  font-weight: 500; color: var(--text-normal);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.claudian-entity-autocomplete-meta {
+  flex-shrink: 0; margin-left: 8px;
+  font-size: 10px; color: var(--text-muted);
+  background: var(--background-modifier-border); border-radius: 4px;
+  padding: 1px 5px;
+}

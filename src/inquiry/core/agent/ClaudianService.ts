@@ -1193,24 +1193,29 @@ export class ClaudianService {
     const mcpServersKey = JSON.stringify(mcpServers);
 
     if (this.currentConfig && mcpServersKey !== this.currentConfig.mcpServersKey) {
-      // Convert to McpServerConfig format and include built-in Archivist MCP server
+      // Convert to McpServerConfig format for user-configured MCP servers
       const serverConfigs: Record<string, McpServerConfig> = {};
       for (const [name, config] of Object.entries(mcpServers)) {
         serverConfigs[name] = config as McpServerConfig;
       }
-      if (this.plugin.archivistMcpServer) {
-        serverConfigs['archivist'] = this.plugin.archivistMcpServer;
-      }
-      try {
-        const mcpResult = await this.persistentQuery.setMcpServers(serverConfigs);
-        if (mcpResult?.errors && Object.keys(mcpResult.errors).length > 0) {
-          console.warn('[ClaudianService] MCP server errors:', JSON.stringify(mcpResult.errors));
+      // Only call setMcpServers when there are actual user servers to manage.
+      // The Archivist MCP server is connected via options.mcpServers at startup.
+      // An empty setMcpServers call would REMOVE archivist (it's a SET, not ADD).
+      // We can't re-add the same instance (Protocol already connected error).
+      const hasUserServers = Object.keys(serverConfigs).length > 0;
+      const hadUserServers = this.currentConfig.mcpServersKey !== '' && this.currentConfig.mcpServersKey !== '{}';
+      if (hasUserServers || hadUserServers) {
+        try {
+          const mcpResult = await this.persistentQuery.setMcpServers(serverConfigs);
+          if (mcpResult?.errors && Object.keys(mcpResult.errors).length > 0) {
+            console.warn('[ClaudianService] MCP server errors:', JSON.stringify(mcpResult.errors));
+          }
+        } catch (e) {
+          console.error('[ClaudianService] setMcpServers failed:', e);
+          new Notice('Failed to update MCP servers');
         }
-        this.currentConfig.mcpServersKey = mcpServersKey;
-      } catch (e) {
-        console.error('[ClaudianService] setMcpServers failed:', e);
-        new Notice('Failed to update MCP servers');
       }
+      this.currentConfig.mcpServersKey = mcpServersKey;
     }
 
     // Track external context paths (used by hooks and for restart detection)

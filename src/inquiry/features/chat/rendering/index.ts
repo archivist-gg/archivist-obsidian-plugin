@@ -28,10 +28,12 @@ export {
   type TodoItem,
 } from './TodoListRenderer';
 export {
+  getDndGenerationEntityType,
   getToolLabel,
   getToolName,
   getToolSummary,
   isBlockedToolResult,
+  renderBlockSkeleton,
   renderDndEntityAfterToolCall,
   renderStoredToolCall,
   renderToolCall,

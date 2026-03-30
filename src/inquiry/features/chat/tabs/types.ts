@@ -35,12 +35,11 @@ import type { NavigationSidebar } from '../ui';
 /**
  * Default number of tabs allowed.
  *
- * Set to 3 to balance usability with resource usage:
+ * Set to 10 to allow generous multi-tasking:
  * - Each tab has its own ClaudianService and persistent query
- * - More tabs = more memory and potential SDK processes
- * - 3 tabs allows multi-tasking without excessive overhead
+ * - 10 tabs matches the MAX_TABS ceiling for full flexibility
  */
-export const DEFAULT_MAX_TABS = 3;
+export const DEFAULT_MAX_TABS = 10;
 
 /**
  * Minimum number of tabs allowed (settings floor).
