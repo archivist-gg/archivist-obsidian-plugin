@@ -1227,9 +1227,13 @@ export class ClaudianService {
         serverConfigs['archivist'] = this.plugin.archivistMcpServer;
       }
       try {
-        await this.persistentQuery.setMcpServers(serverConfigs);
+        const mcpResult = await this.persistentQuery.setMcpServers(serverConfigs);
+        if (mcpResult?.errors && Object.keys(mcpResult.errors).length > 0) {
+          console.warn('[ClaudianService] MCP server errors:', JSON.stringify(mcpResult.errors));
+        }
         this.currentConfig.mcpServersKey = mcpServersKey;
-      } catch {
+      } catch (e) {
+        console.error('[ClaudianService] setMcpServers failed:', e);
         new Notice('Failed to update MCP servers');
       }
     }

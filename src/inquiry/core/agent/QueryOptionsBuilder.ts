@@ -247,6 +247,12 @@ export class QueryOptionsBuilder {
 
     options.spawnClaudeCodeProcess = createCustomSpawnFunction(ctx.enhancedPath);
 
+    // Include Archivist MCP server in persistent query options
+    if (ctx.archivistMcpServer) {
+      options.mcpServers = options.mcpServers || {};
+      options.mcpServers['archivist'] = ctx.archivistMcpServer;
+    }
+
     return options;
   }
 
