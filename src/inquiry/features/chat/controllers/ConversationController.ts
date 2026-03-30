@@ -29,7 +29,7 @@ export interface ConversationControllerDeps {
   getWelcomeEl: () => HTMLElement | null;
   setWelcomeEl: (el: HTMLElement | null) => void;
   getMessagesEl: () => HTMLElement;
-  getInputEl: () => HTMLTextAreaElement;
+  getInputEl: () => HTMLElement;
   getFileContextManager: () => FileContextManager | null;
   getImageContextManager: () => ImageContextManager | null;
   getMcpServerSelector: () => McpServerSelector | null;
@@ -51,6 +51,27 @@ export class ConversationController {
   constructor(deps: ConversationControllerDeps, callbacks: ConversationCallbacks = {}) {
     this.deps = deps;
     this.callbacks = callbacks;
+  }
+
+  /** Clear the input element (works for both textarea and contentEditable). */
+  private clearInputEl(): void {
+    const el = this.deps.getInputEl();
+    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
+      el.value = '';
+    } else {
+      // contentEditable div: remove all children safely
+      while (el.firstChild) el.removeChild(el.firstChild);
+    }
+  }
+
+  /** Set text in the input element (works for both textarea and contentEditable). */
+  private setInputText(text: string): void {
+    const el = this.deps.getInputEl();
+    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
+      el.value = text;
+    } else {
+      el.textContent = text;
+    }
   }
 
   private getAgentService(): ClaudianService | null {
@@ -132,7 +153,7 @@ export class ConversationController {
       // Remount StatusPanel to restore state for new conversation
       this.deps.getStatusPanel()?.remount();
 
-      this.deps.getInputEl().value = '';
+      this.clearInputEl();
 
       const fileCtx = this.deps.getFileContextManager();
       fileCtx?.resetForNewConversation();
@@ -299,7 +320,7 @@ export class ConversationController {
         agentService.setSessionId(resolvedSessionId, externalContextPaths);
       }
 
-      this.deps.getInputEl().value = '';
+      this.clearInputEl();
       this.deps.clearQueuedMessage();
 
       const fileCtx = this.deps.getFileContextManager();
@@ -398,7 +419,7 @@ export class ConversationController {
     state.truncateAt(userMessageId);
 
     const inputEl = this.deps.getInputEl();
-    inputEl.value = userMsg.content;
+    this.setInputText(userMsg.content);
     inputEl.focus();
 
     const welcomeEl = renderer.renderMessages(state.messages, () => this.getGreeting());

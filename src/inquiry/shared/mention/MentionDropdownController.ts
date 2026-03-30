@@ -35,9 +35,51 @@ export interface McpMentionProvider {
   getContextSavingServers: () => Array<{ name: string }>;
 }
 
+/**
+ * Minimal interface for input elements the mention dropdown can work with.
+ * Works with both HTMLTextAreaElement/HTMLInputElement and RichInput.
+ */
+export interface MentionInputLike {
+  /** The underlying DOM element. */
+  readonly el: HTMLElement;
+  /** Get text before cursor. */
+  getTextBeforeCursor(): string;
+  /** Remove count characters before cursor. */
+  removeTextBeforeCursor(count: number): void;
+  /** Get plain text value. */
+  readonly value: string;
+  /** Focus the input. */
+  focus(): void;
+  /** Insert a file chip (optional, only for RichInput). */
+  insertFileChip?(path: string, displayName: string): void;
+  /** Insert a mention chip (optional, only for RichInput). */
+  insertMentionChip?(id: string, displayName: string, icon: string, chipType: 'mcp' | 'agent'): void;
+}
+
+/**
+ * Wraps a standard HTMLTextAreaElement or HTMLInputElement as a MentionInputLike.
+ */
+export function wrapNativeInput(inputEl: HTMLTextAreaElement | HTMLInputElement): MentionInputLike {
+  return {
+    get el() { return inputEl; },
+    getTextBeforeCursor() {
+      const pos = inputEl.selectionStart || 0;
+      return inputEl.value.substring(0, pos);
+    },
+    removeTextBeforeCursor(count: number) {
+      const pos = inputEl.selectionStart || 0;
+      const text = inputEl.value;
+      inputEl.value = text.substring(0, pos - count) + text.substring(pos);
+      inputEl.selectionStart = inputEl.selectionEnd = pos - count;
+    },
+    get value() { return inputEl.value; },
+    focus() { inputEl.focus(); },
+  };
+}
+
 export class MentionDropdownController {
   private containerEl: HTMLElement;
-  private inputEl: HTMLTextAreaElement | HTMLInputElement;
+  private input: MentionInputLike;
   private callbacks: MentionDropdownCallbacks;
   private dropdown: SelectableDropdown<MentionItem>;
   private mentionStartIndex = -1;
@@ -54,12 +96,12 @@ export class MentionDropdownController {
 
   constructor(
     containerEl: HTMLElement,
-    inputEl: HTMLTextAreaElement | HTMLInputElement,
+    input: MentionInputLike,
     callbacks: MentionDropdownCallbacks,
     options: MentionDropdownOptions = {}
   ) {
     this.containerEl = containerEl;
-    this.inputEl = inputEl;
+    this.input = input;
     this.callbacks = callbacks;
     this.fixed = options.fixed ?? false;
 
@@ -138,11 +180,10 @@ export class MentionDropdownController {
     }
 
     this.debounceTimer = setTimeout(() => {
-      const text = this.inputEl.value;
+      const text = this.input.value;
       this.updateMcpMentionsFromText(text);
 
-      const cursorPos = this.inputEl.selectionStart || 0;
-      const textBeforeCursor = text.substring(0, cursorPos);
+      const textBeforeCursor = this.input.getTextBeforeCursor();
       const lastAtIndex = textBeforeCursor.lastIndexOf('@');
 
       if (lastAtIndex === -1) {
@@ -541,7 +582,7 @@ export class MentionDropdownController {
     const dropdownEl = this.dropdown.getElement();
     if (!dropdownEl) return;
 
-    const inputRect = this.inputEl.getBoundingClientRect();
+    const inputRect = this.input.el.getBoundingClientRect();
     dropdownEl.style.position = 'fixed';
     dropdownEl.style.bottom = `${window.innerHeight - inputRect.top + 4}px`;
     dropdownEl.style.left = `${inputRect.left}px`;
@@ -550,19 +591,25 @@ export class MentionDropdownController {
     dropdownEl.style.zIndex = '10001';
   }
 
-  private insertReplacement(beforeAt: string, replacement: string, afterCursor: string): void {
-    this.inputEl.value = beforeAt + replacement + afterCursor;
-    this.inputEl.selectionStart = this.inputEl.selectionEnd = beforeAt.length + replacement.length;
+  /**
+   * Remove the @query text from cursor back to the mention start,
+   * then optionally insert replacement text.
+   */
+  private replaceAtMention(replacement: string): void {
+    const textBeforeCursor = this.input.getTextBeforeCursor();
+    const charsToRemove = textBeforeCursor.length - this.mentionStartIndex;
+    this.input.removeTextBeforeCursor(charsToRemove);
+    if (replacement) {
+      document.execCommand('insertText', false, replacement);
+    }
   }
 
   private returnToFirstLevel(): void {
-    const text = this.inputEl.value;
-    const beforeAt = text.substring(0, this.mentionStartIndex);
-    const cursorPos = this.inputEl.selectionStart || 0;
-    const afterCursor = text.substring(cursorPos);
-
-    this.inputEl.value = beforeAt + '@' + afterCursor;
-    this.inputEl.selectionStart = this.inputEl.selectionEnd = beforeAt.length + 1;
+    // Remove everything from @... to cursor, then re-insert just @
+    const textBeforeCursor = this.input.getTextBeforeCursor();
+    const charsToRemove = textBeforeCursor.length - this.mentionStartIndex;
+    this.input.removeTextBeforeCursor(charsToRemove);
+    document.execCommand('insertText', false, '@');
 
     this.activeContextFilter = null;
     this.activeAgentFilter = false;
@@ -578,15 +625,15 @@ export class MentionDropdownController {
     const selectedItem = this.filteredMentionItems[selectedIndex];
     if (!selectedItem) return;
 
-    const text = this.inputEl.value;
-    const beforeAt = text.substring(0, this.mentionStartIndex);
-    const cursorPos = this.inputEl.selectionStart || 0;
-    const afterCursor = text.substring(cursorPos);
-
     switch (selectedItem.type) {
       case 'mcp-server': {
-        const replacement = `@${selectedItem.name} `;
-        this.insertReplacement(beforeAt, replacement, afterCursor);
+        if (this.input.insertMentionChip) {
+          // Insert inline MCP chip
+          this.replaceAtMention('');
+          this.input.insertMentionChip(selectedItem.name, `@${selectedItem.name}`, 'server', 'mcp');
+        } else {
+          this.replaceAtMention(`@${selectedItem.name} `);
+        }
         this.callbacks.addMentionedMcpServer(selectedItem.name);
         this.callbacks.onMcpMentionChange?.(this.callbacks.getMentionedMcpServers());
         break;
@@ -594,42 +641,50 @@ export class MentionDropdownController {
       case 'agent-folder':
         // Don't modify input text - just show agents submenu
         this.activeAgentFilter = true;
-        this.inputEl.focus();
+        this.input.focus();
         this.showMentionDropdown('Agents/');
         return;
       case 'agent': {
-        const replacement = `@${selectedItem.id} (agent) `;
-        this.insertReplacement(beforeAt, replacement, afterCursor);
+        if (this.input.insertMentionChip) {
+          // Insert inline agent chip
+          this.replaceAtMention('');
+          this.input.insertMentionChip(selectedItem.id, `@${selectedItem.id}`, 'bot', 'agent');
+        } else {
+          this.replaceAtMention(`@${selectedItem.id} (agent) `);
+        }
         this.callbacks.onAgentMentionSelect?.(selectedItem.id);
         break;
       }
       case 'entity': {
-        const replacement = `@${selectedItem.name} `;
-        this.insertReplacement(beforeAt, replacement, afterCursor);
+        this.replaceAtMention(`@${selectedItem.name} `);
         break;
       }
       case 'context-folder': {
-        const replacement = `@${selectedItem.name}/`;
-        this.insertReplacement(beforeAt, replacement, afterCursor);
-        this.inputEl.focus();
+        this.replaceAtMention(`@${selectedItem.name}/`);
+        this.input.focus();
         this.handleInputChange();
         return;
       }
       case 'context-file': {
-        // Display friendly name in input; absolute path resolution happens at send time.
-        const displayName = selectedItem.folderName
-          ? `@${selectedItem.folderName}/${selectedItem.name}`
-          : `@${selectedItem.name}`;
         if (selectedItem.absolutePath) {
           this.callbacks.onAttachFile(selectedItem.absolutePath);
         }
-        // Remove the @mention text -- the file chip above the textarea represents it
-        this.insertReplacement(beforeAt, '', afterCursor);
+        if (this.input.insertFileChip && selectedItem.absolutePath) {
+          // Insert inline file chip
+          const displayName = selectedItem.folderName
+            ? `${selectedItem.folderName}/${selectedItem.name}`
+            : selectedItem.name;
+          this.replaceAtMention('');
+          this.input.insertFileChip(selectedItem.absolutePath, displayName);
+        } else {
+          // Remove @mention text -- file chip above represents it
+          this.replaceAtMention('');
+        }
         break;
       }
       case 'folder': {
         const normalizedPath = this.callbacks.normalizePathForVault(selectedItem.path);
-        this.insertReplacement(beforeAt, `@${normalizedPath ?? selectedItem.path}/ `, afterCursor);
+        this.replaceAtMention(`@${normalizedPath ?? selectedItem.path}/ `);
         break;
       }
       default: {
@@ -637,16 +692,22 @@ export class MentionDropdownController {
         const normalizedPath = this.callbacks.normalizePathForVault(rawPath);
         if (normalizedPath) {
           this.callbacks.onAttachFile(normalizedPath);
-          // Remove the @mention text -- the file chip above the textarea represents it
-          this.insertReplacement(beforeAt, '', afterCursor);
+          if (this.input.insertFileChip) {
+            // Insert inline file chip
+            this.replaceAtMention('');
+            this.input.insertFileChip(normalizedPath, selectedItem.name);
+          } else {
+            // Remove @mention text -- file chip above represents it
+            this.replaceAtMention('');
+          }
         } else {
-          this.insertReplacement(beforeAt, `@${selectedItem.name} `, afterCursor);
+          this.replaceAtMention(`@${selectedItem.name} `);
         }
         break;
       }
     }
 
     this.hide();
-    this.inputEl.focus();
+    this.input.focus();
   }
 }

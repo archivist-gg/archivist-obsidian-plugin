@@ -26,6 +26,8 @@ import type {
   InstructionModeManager,
   McpServerSelector,
   ModelSelector,
+  RichInput,
+  SendButton,
   StatusPanel,
   ThinkingBudgetSelector,
 } from '../ui';
@@ -149,7 +151,9 @@ export interface TabDOMElements {
 
   inputContainerEl: HTMLElement;
   inputWrapper: HTMLElement;
-  inputEl: HTMLTextAreaElement;
+  inputEl: HTMLDivElement;
+  richInput: RichInput;
+  sendButton: SendButton | null;
 
   /** Nav row for tab badges and header icons (above input wrapper). */
   navRowEl: HTMLElement;

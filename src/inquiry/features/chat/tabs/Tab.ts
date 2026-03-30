@@ -33,6 +33,8 @@ import {
   FileContextManager,
   ImageContextManager,
   InstructionModeManager as InstructionModeManagerClass,
+  RichInput,
+  SendButton,
   StatusPanel,
 } from '../ui';
 import type { TabData, TabDOMElements, TabId } from './types';
@@ -135,36 +137,36 @@ export function createTab(options: TabCreateOptions): TabData {
 }
 
 /**
- * Auto-resizes a textarea based on its content.
+ * Auto-resizes an input element (textarea or contentEditable div) based on its content.
  *
  * Logic:
- * - At minimum wrapper height: let flexbox allocate space (textarea fills available)
+ * - At minimum wrapper height: let flexbox allocate space (input fills available)
  * - When content exceeds flex allocation: set min-height to force wrapper growth
  * - When content shrinks: remove min-height override to let wrapper shrink
  * - Max height is capped at 55% of view height (minimum 150px)
  */
-function autoResizeTextarea(textarea: HTMLTextAreaElement): void {
+function autoResizeInput(inputEl: HTMLElement): void {
   // Clear inline min-height to let flexbox compute natural allocation
-  textarea.style.minHeight = '';
+  inputEl.style.minHeight = '';
 
   // Calculate max height: 55% of view height, minimum 150px
-  const viewHeight = textarea.closest('.claudian-container')?.clientHeight ?? window.innerHeight;
+  const viewHeight = inputEl.closest('.claudian-container')?.clientHeight ?? window.innerHeight;
   const maxHeight = Math.max(TEXTAREA_MIN_MAX_HEIGHT, viewHeight * TEXTAREA_MAX_HEIGHT_PERCENT);
 
-  // Get flex-allocated height (what flexbox gives the textarea)
-  const flexAllocatedHeight = textarea.offsetHeight;
+  // Get flex-allocated height (what flexbox gives the input)
+  const flexAllocatedHeight = inputEl.offsetHeight;
 
   // Get content height (what the content actually needs), capped at max
-  const contentHeight = Math.min(textarea.scrollHeight, maxHeight);
+  const contentHeight = Math.min(inputEl.scrollHeight, maxHeight);
 
   // Only set min-height if content exceeds flex allocation
   // This forces the wrapper to grow while letting it shrink when content reduces
   if (contentHeight > flexAllocatedHeight) {
-    textarea.style.minHeight = `${contentHeight}px`;
+    inputEl.style.minHeight = `${contentHeight}px`;
   }
 
   // Always set max-height to enforce the cap
-  textarea.style.maxHeight = `${maxHeight}px`;
+  inputEl.style.maxHeight = `${maxHeight}px`;
 }
 
 /**
@@ -194,15 +196,11 @@ function buildTabDOM(contentEl: HTMLElement): TabDOMElements {
   // Context row inside input wrapper (file chips + selection indicator)
   const contextRowEl = inputWrapper.createDiv({ cls: 'claudian-context-row' });
 
-  // Input textarea
-  const inputEl = inputWrapper.createEl('textarea', {
-    cls: 'claudian-input',
-    attr: {
-      placeholder: 'Ask the Archivist... (@ files, [[ entities, / commands)',
-      rows: '3',
-      dir: 'auto',
-    },
+  // Rich input (contentEditable div replacing textarea)
+  const richInput = new RichInput(inputWrapper, {
+    placeholder: 'Ask the Archivist... (@ files, [[ entities, / commands)',
   });
+  const inputEl = richInput.el;
 
   return {
     contentEl,
@@ -212,6 +210,8 @@ function buildTabDOM(contentEl: HTMLElement): TabDOMElements {
     inputContainerEl,
     inputWrapper,
     inputEl,
+    richInput,
+    sendButton: null,
     navRowEl,
     contextRowEl,
     selectionIndicatorEl: null,
@@ -307,14 +307,14 @@ function initializeContextManagers(tab: TabData, plugin: InquiryModule): void {
   tab.ui.fileContextManager = new FileContextManager(
     app,
     dom.contextRowEl,
-    dom.inputEl,
+    dom.richInput,
     {
       getExcludedTags: () => plugin.settings.excludedTags,
       onChipsChanged: () => {
         tab.controllers.selectionController?.updateContextRowVisibility();
         tab.controllers.browserSelectionController?.updateContextRowVisibility();
         tab.controllers.canvasSelectionController?.updateContextRowVisibility();
-        autoResizeTextarea(dom.inputEl);
+        autoResizeInput(dom.inputEl);
         tab.renderer?.scrollToBottomIfNeeded();
       },
       getExternalContexts: () => tab.ui.externalContextSelector?.getExternalContexts() || [],
@@ -333,7 +333,7 @@ function initializeContextManagers(tab: TabData, plugin: InquiryModule): void {
         tab.controllers.selectionController?.updateContextRowVisibility();
         tab.controllers.browserSelectionController?.updateContextRowVisibility();
         tab.controllers.canvasSelectionController?.updateContextRowVisibility();
-        autoResizeTextarea(dom.inputEl);
+        autoResizeInput(dom.inputEl);
         tab.renderer?.scrollToBottomIfNeeded();
       },
     },
@@ -368,15 +368,37 @@ function initializeSlashCommands(
 }
 
 /**
+ * Creates an InstructionInputLike adapter for a RichInput instance.
+ * Used by InstructionModeManager and BangBashModeManager.
+ */
+function createInputLikeAdapter(richInput: RichInput): import('../ui/InstructionModeManager').InstructionInputLike {
+  return {
+    getValue: () => richInput.value,
+    setValue: (text: string) => {
+      if (text === '') {
+        richInput.clear();
+      } else {
+        richInput.setText(text);
+      }
+    },
+    getPlaceholder: () => richInput.el.dataset.placeholder ?? '',
+    setPlaceholder: (text: string) => {
+      richInput.el.dataset.placeholder = text;
+    },
+  };
+}
+
+/**
  * Initializes instruction mode and todo panel for a tab.
  */
 function initializeInstructionAndTodo(tab: TabData, plugin: InquiryModule): void {
   const { dom } = tab;
+  const inputAdapter = createInputLikeAdapter(dom.richInput);
 
   tab.services.instructionRefineService = new InstructionRefineService(plugin);
   tab.services.titleGenerationService = new TitleGenerationService(plugin);
   tab.ui.instructionModeManager = new InstructionModeManagerClass(
-    dom.inputEl,
+    inputAdapter,
     {
       onSubmit: async (rawInstruction) => {
         await tab.controllers.inputController?.handleInstructionSubmit(rawInstruction);
@@ -393,7 +415,7 @@ function initializeInstructionAndTodo(tab: TabData, plugin: InquiryModule): void
       const bashService = new BangBashService(vaultPath, enhancedPath);
 
       tab.ui.bangBashModeManager = new BangBashModeManagerClass(
-        dom.inputEl,
+        inputAdapter,
         {
           onSubmit: async (command) => {
             const statusPanel = tab.ui.statusPanel;
@@ -539,36 +561,24 @@ export function initializeTabUI(
   );
 
   // Initialize entity autocomplete dropdown ([[entity]] references)
+  // Chips are now inserted inline into the rich input via RichInput.insertEntityChip()
   if (plugin.entityRegistry) {
-    // Create entity chips container in context row
-    const entityChipsEl = dom.contextRowEl.createDiv({ cls: 'archivist-entity-chips' });
-    entityChipsEl.style.display = 'none';
-
-    const entityRefs: { type: string; name: string }[] = [];
-
     tab.ui.entityAutocomplete = new EntityAutocompleteDropdown(
       dom.inputContainerEl,
-      dom.inputEl,
+      dom.richInput,
       plugin.entityRegistry,
       (entityType: string, name: string) => {
-        entityRefs.push({ type: entityType, name });
-        // Create chip
-        const chipEl = entityChipsEl.createDiv({ cls: 'archivist-entity-chip' });
-        chipEl.createSpan({ cls: 'archivist-entity-chip-type', text: entityType });
-        chipEl.createSpan({ cls: 'archivist-entity-chip-name', text: name });
-        const removeEl = chipEl.createSpan({ cls: 'archivist-entity-chip-remove', text: '\u00d7' });
-        removeEl.addEventListener('click', () => {
-          const idx = entityRefs.findIndex(r => r.type === entityType && r.name === name);
-          if (idx >= 0) entityRefs.splice(idx, 1);
-          chipEl.remove();
-          if (entityRefs.length === 0) entityChipsEl.style.display = 'none';
-          dom.contextRowEl.classList.toggle('has-content', dom.contextRowEl.childElementCount > 0);
-        });
-        entityChipsEl.style.display = 'flex';
-        dom.contextRowEl.classList.add('has-content');
+        dom.richInput.insertEntityChip(entityType, name);
       },
     );
   }
+
+  // Create send/stop button (wired in wireTabInputEvents after controllers exist)
+  dom.sendButton = new SendButton(
+    dom.inputWrapper,
+    () => { void tab.controllers.inputController?.sendMessage(); },
+    () => { tab.controllers.inputController?.cancelStreaming(); },
+  );
 
   // Initialize instruction mode and todo panel
   initializeInstructionAndTodo(tab, plugin);
@@ -766,7 +776,7 @@ export function initializeTabControllers(
     dom.selectionIndicatorEl!,
     dom.inputEl,
     dom.contextRowEl,
-    () => autoResizeTextarea(dom.inputEl),
+    () => autoResizeInput(dom.inputEl),
     dom.contentEl,
   );
 
@@ -776,7 +786,7 @@ export function initializeTabControllers(
     dom.browserIndicatorEl!,
     dom.inputEl,
     dom.contextRowEl,
-    () => autoResizeTextarea(dom.inputEl)
+    () => autoResizeInput(dom.inputEl)
   );
 
   // Canvas selection controller
@@ -785,7 +795,7 @@ export function initializeTabControllers(
     dom.canvasIndicatorEl!,
     dom.inputEl,
     dom.contextRowEl,
-    () => autoResizeTextarea(dom.inputEl)
+    () => autoResizeInput(dom.inputEl)
   );
 
   // Stream controller
@@ -853,6 +863,7 @@ export function initializeTabControllers(
     canvasSelectionController: tab.controllers.canvasSelectionController,
     conversationController: tab.controllers.conversationController,
     getInputEl: () => dom.inputEl,
+    getRichInput: () => dom.richInput,
     getInputContainerEl: () => dom.inputContainerEl,
     getWelcomeEl: () => dom.welcomeEl,
     getMessagesEl: () => dom.messagesEl,
@@ -985,7 +996,18 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
   dom.inputEl.addEventListener('keydown', keydownHandler);
   dom.eventCleanups.push(() => dom.inputEl.removeEventListener('keydown', keydownHandler));
 
-  // Input change handler (includes auto-resize)
+  // Input change handler (includes auto-resize and SendButton state)
+  const updateSendButtonState = (): void => {
+    if (!dom.sendButton) return;
+    if (state.isStreaming) {
+      dom.sendButton.setState('streaming');
+    } else if (dom.richInput.isEmpty) {
+      dom.sendButton.setState('idle-empty');
+    } else {
+      dom.sendButton.setState('idle-ready');
+    }
+  };
+
   const inputHandler = () => {
     if (!ui.bangBashModeManager?.isActive()) {
       ui.fileContextManager?.handleInputChange();
@@ -994,11 +1016,22 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
     ui.instructionModeManager?.handleInputChange();
     ui.bangBashModeManager?.handleInputChange();
     syncBangBashSuppression();
-    // Auto-resize textarea based on content
-    autoResizeTextarea(dom.inputEl);
+    updateSendButtonState();
+    // Auto-resize input based on content
+    autoResizeInput(dom.inputEl);
   };
   dom.inputEl.addEventListener('input', inputHandler);
   dom.eventCleanups.push(() => dom.inputEl.removeEventListener('input', inputHandler));
+
+  // Also update SendButton when streaming state changes
+  const origStreamingCallback = state.callbacks.onStreamingStateChanged;
+  state.callbacks = {
+    ...state.callbacks,
+    onStreamingStateChanged: (isStreaming) => {
+      origStreamingCallback?.(isStreaming);
+      updateSendButtonState();
+    },
+  };
 
   // Sidebar focus handler — show selection highlight when focus enters the tab from outside
   const focusHandler = (e: FocusEvent) => {

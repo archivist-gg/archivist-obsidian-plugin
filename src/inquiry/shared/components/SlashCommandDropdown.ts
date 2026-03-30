@@ -41,7 +41,7 @@ export interface SlashCommandDropdownOptions {
 export class SlashCommandDropdown {
   private containerEl: HTMLElement;
   private dropdownEl: HTMLElement | null = null;
-  private inputEl: HTMLTextAreaElement | HTMLInputElement;
+  private inputEl: HTMLElement;
   private callbacks: SlashCommandDropdownCallbacks;
   private enabled = true;
   private onInput: () => void;
@@ -60,7 +60,7 @@ export class SlashCommandDropdown {
 
   constructor(
     containerEl: HTMLElement,
-    inputEl: HTMLTextAreaElement | HTMLInputElement,
+    inputEl: HTMLTextAreaElement | HTMLInputElement | HTMLElement,
     callbacks: SlashCommandDropdownCallbacks,
     options: SlashCommandDropdownOptions = {}
   ) {
@@ -170,21 +170,63 @@ export class SlashCommandDropdown {
     this.requestId = 0;
   }
 
+  private isContentEditable(): boolean {
+    return this.inputEl instanceof HTMLDivElement && this.inputEl.contentEditable === 'true';
+  }
+
   private getInputValue(): string {
-    return this.inputEl.value;
+    if (this.isContentEditable()) {
+      return (this.inputEl.textContent ?? '').replace(/\u200B/g, '');
+    }
+    return (this.inputEl as HTMLTextAreaElement | HTMLInputElement).value;
   }
 
   private getCursorPosition(): number {
-    return this.inputEl.selectionStart || 0;
+    if (this.isContentEditable()) {
+      // Use getTextBeforeCursor-like logic via Selection API
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return 0;
+      try {
+        const range = sel.getRangeAt(0);
+        const preRange = document.createRange();
+        preRange.selectNodeContents(this.inputEl);
+        preRange.setEnd(range.startContainer, range.startOffset);
+        return (preRange.toString() ?? '').replace(/\u200B/g, '').length;
+      } catch {
+        return 0;
+      }
+    }
+    return (this.inputEl as HTMLTextAreaElement | HTMLInputElement).selectionStart || 0;
   }
 
   private setInputValue(value: string): void {
-    this.inputEl.value = value;
+    if (this.isContentEditable()) {
+      this.inputEl.textContent = value;
+      return;
+    }
+    (this.inputEl as HTMLTextAreaElement | HTMLInputElement).value = value;
   }
 
   private setCursorPosition(pos: number): void {
-    this.inputEl.selectionStart = pos;
-    this.inputEl.selectionEnd = pos;
+    if (this.isContentEditable()) {
+      // For contentEditable, place cursor at end after setting value
+      const sel = window.getSelection();
+      if (sel && this.inputEl.childNodes.length > 0) {
+        const range = document.createRange();
+        const textNode = this.inputEl.firstChild;
+        if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+          const offset = Math.min(pos, (textNode.textContent ?? '').length);
+          range.setStart(textNode, offset);
+          range.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+      return;
+    }
+    const el = this.inputEl as HTMLTextAreaElement | HTMLInputElement;
+    el.selectionStart = pos;
+    el.selectionEnd = pos;
   }
 
   private async showDropdown(searchText: string): Promise<void> {

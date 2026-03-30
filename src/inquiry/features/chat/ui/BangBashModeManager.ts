@@ -1,6 +1,7 @@
 import { Notice } from 'obsidian';
 
 import { t } from '../../../i18n';
+import type { InstructionInputLike } from './InstructionModeManager';
 
 export interface BangBashModeCallbacks {
   onSubmit: (command: string) => Promise<void>;
@@ -14,23 +15,23 @@ export interface BangBashModeState {
 }
 
 export class BangBashModeManager {
-  private inputEl: HTMLTextAreaElement;
+  private input: InstructionInputLike;
   private callbacks: BangBashModeCallbacks;
   private state: BangBashModeState = { active: false, rawCommand: '' };
   private isSubmitting = false;
   private originalPlaceholder: string = '';
 
   constructor(
-    inputEl: HTMLTextAreaElement,
+    input: InstructionInputLike,
     callbacks: BangBashModeCallbacks
   ) {
-    this.inputEl = inputEl;
+    this.input = input;
     this.callbacks = callbacks;
-    this.originalPlaceholder = inputEl.placeholder;
+    this.originalPlaceholder = input.getPlaceholder();
   }
 
   handleTriggerKey(e: KeyboardEvent): boolean {
-    if (!this.state.active && this.inputEl.value === '' && e.key === '!') {
+    if (!this.state.active && this.input.getValue() === '' && e.key === '!') {
       if (this.enterMode()) {
         e.preventDefault();
         return true;
@@ -41,7 +42,7 @@ export class BangBashModeManager {
 
   handleInputChange(): void {
     if (!this.state.active) return;
-    this.state.rawCommand = this.inputEl.value;
+    this.state.rawCommand = this.input.getValue();
   }
 
   private enterMode(): boolean {
@@ -50,7 +51,7 @@ export class BangBashModeManager {
 
     wrapper.addClass('claudian-input-bang-bash-mode');
     this.state = { active: true, rawCommand: '' };
-    this.inputEl.placeholder = t('chat.bangBash.placeholder');
+    this.input.setPlaceholder(t('chat.bangBash.placeholder'));
     return true;
   }
 
@@ -60,7 +61,7 @@ export class BangBashModeManager {
       wrapper.removeClass('claudian-input-bang-bash-mode');
     }
     this.state = { active: false, rawCommand: '' };
-    this.inputEl.placeholder = this.originalPlaceholder;
+    this.input.setPlaceholder(this.originalPlaceholder);
   }
 
   handleKeydown(e: KeyboardEvent): boolean {
@@ -110,7 +111,7 @@ export class BangBashModeManager {
   }
 
   clear(): void {
-    this.inputEl.value = '';
+    this.input.setValue('');
     this.exitMode();
     this.callbacks.resetInputHeight?.();
   }

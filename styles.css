@@ -1820,6 +1820,87 @@ body.theme-light .claudian-message-content pre {
   font-family: var(--font-monospace);
 }
 
+/* Rich (contentEditable) input */
+.claudian-rich-input {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 60px;
+  padding: 8px 40px 10px 10px;
+  border: none !important;
+  border-radius: 6px;
+  background: transparent !important;
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: none !important;
+  overflow-y: auto;
+  outline: none !important;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  unicode-bidi: plaintext;
+}
+
+.claudian-rich-input:hover,
+.claudian-rich-input:focus {
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.claudian-rich-input:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Send / Stop button */
+.archivist-send-btn {
+  position: absolute;
+  bottom: 44px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  z-index: 1;
+  padding: 0;
+}
+
+.archivist-send-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.archivist-send-btn[data-state="idle-ready"],
+.archivist-send-btn[data-state="streaming"] {
+  background: var(--claudian-brand);
+  color: #fff;
+}
+
+.archivist-send-btn[data-state="idle-ready"]:hover,
+.archivist-send-btn[data-state="streaming"]:hover {
+  filter: brightness(1.1);
+}
+
+.archivist-send-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Monospace rich input while in bash mode */
+.claudian-input-wrapper.claudian-input-bang-bash-mode .claudian-rich-input {
+  font-family: var(--font-monospace);
+}
+
 
 /* ============================================
    components/context-footer.css
@@ -7070,8 +7151,9 @@ code .claudian-file-link:hover {
   padding: 8px;
 }
 
-/* Textarea: smaller font */
-.claudian-input-container textarea {
+/* Input: smaller font */
+.claudian-input-container textarea,
+.claudian-input-container .claudian-rich-input {
   font-size: 13px;
 }
 
@@ -7098,26 +7180,33 @@ code .claudian-file-link:hover {
 .archivist-inline-mention-icon { display: inline-flex; align-items: center; }
 .archivist-inline-mention-icon svg { width: 12px; height: 12px; }
 
-/* Entity chips in context row */
-.archivist-entity-chips {
-  display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0;
-}
-.archivist-entity-chip {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 2px 8px; border-radius: 12px;
+/* Inline chips (entity, file, MCP, agent) inside rich input */
+.archivist-inline-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: 10px;
   background: rgba(var(--claudian-brand-rgb, 217,119,87), 0.12);
-  font-size: 11px; white-space: nowrap;
+  font-size: 11px; vertical-align: baseline;
+  cursor: default; white-space: nowrap; user-select: none; line-height: 1.4;
 }
-.archivist-entity-chip-type {
+.archivist-inline-chip-type {
   color: var(--claudian-brand); font-weight: 600; text-transform: uppercase; font-size: 9px;
 }
-.archivist-entity-chip-name {
+.archivist-inline-chip-name {
   color: var(--text-normal);
 }
-.archivist-entity-chip-remove {
+.archivist-inline-chip-file {
+  background: var(--background-secondary);
+}
+.archivist-inline-chip-icon {
+  display: inline-flex; align-items: center;
+}
+.archivist-inline-chip-icon svg {
+  width: 12px; height: 12px;
+}
+.archivist-inline-chip-remove {
   cursor: pointer; color: var(--text-faint); margin-left: 2px; font-size: 13px; line-height: 1;
 }
-.archivist-entity-chip-remove:hover { color: var(--text-normal); }
+.archivist-inline-chip-remove:hover { color: var(--text-normal); }
 
 /* [[ Entity autocomplete dropdown */
 .claudian-entity-autocomplete-dropdown {

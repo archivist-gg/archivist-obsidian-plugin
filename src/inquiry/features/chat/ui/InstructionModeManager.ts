@@ -11,20 +11,35 @@ export interface InstructionModeState {
 
 const INSTRUCTION_MODE_PLACEHOLDER = '# Save in custom system prompt';
 
+/**
+ * Minimal input interface for InstructionModeManager.
+ * Works with both HTMLTextAreaElement and RichInput-backed contentEditable divs.
+ */
+export interface InstructionInputLike {
+  /** Get current text value. */
+  getValue(): string;
+  /** Set/clear the text value. */
+  setValue(text: string): void;
+  /** Get current placeholder. */
+  getPlaceholder(): string;
+  /** Set placeholder. */
+  setPlaceholder(text: string): void;
+}
+
 export class InstructionModeManager {
-  private inputEl: HTMLTextAreaElement;
+  private input: InstructionInputLike;
   private callbacks: InstructionModeCallbacks;
   private state: InstructionModeState = { active: false, rawInstruction: '' };
   private isSubmitting = false;
   private originalPlaceholder: string = '';
 
   constructor(
-    inputEl: HTMLTextAreaElement,
+    input: InstructionInputLike,
     callbacks: InstructionModeCallbacks
   ) {
-    this.inputEl = inputEl;
+    this.input = input;
     this.callbacks = callbacks;
-    this.originalPlaceholder = inputEl.placeholder;
+    this.originalPlaceholder = input.getPlaceholder();
   }
 
   /**
@@ -33,7 +48,7 @@ export class InstructionModeManager {
    */
   handleTriggerKey(e: KeyboardEvent): boolean {
     // Only trigger on # keystroke when input is empty and not already in mode
-    if (!this.state.active && this.inputEl.value === '' && e.key === '#') {
+    if (!this.state.active && this.input.getValue() === '' && e.key === '#') {
       if (this.enterMode()) {
         e.preventDefault();
         return true;
@@ -46,7 +61,7 @@ export class InstructionModeManager {
   handleInputChange(): void {
     if (!this.state.active) return;
 
-    const text = this.inputEl.value;
+    const text = this.input.getValue();
     if (text === '') {
       this.exitMode();
     } else {
@@ -66,7 +81,7 @@ export class InstructionModeManager {
 
     wrapper.addClass('claudian-input-instruction-mode');
     this.state = { active: true, rawInstruction: '' };
-    this.inputEl.placeholder = INSTRUCTION_MODE_PLACEHOLDER;
+    this.input.setPlaceholder(INSTRUCTION_MODE_PLACEHOLDER);
     return true;
   }
 
@@ -77,7 +92,7 @@ export class InstructionModeManager {
       wrapper.removeClass('claudian-input-instruction-mode');
     }
     this.state = { active: false, rawInstruction: '' };
-    this.inputEl.placeholder = this.originalPlaceholder;
+    this.input.setPlaceholder(this.originalPlaceholder);
   }
 
   /** Handles keydown events. Returns true if handled. */
@@ -134,14 +149,14 @@ export class InstructionModeManager {
 
   /** Cancels instruction mode and clears input. */
   private cancel(): void {
-    this.inputEl.value = '';
+    this.input.setValue('');
     this.exitMode();
     this.callbacks.resetInputHeight?.();
   }
 
   /** Clears the input and resets state (called after successful submission). */
   clear(): void {
-    this.inputEl.value = '';
+    this.input.setValue('');
     this.exitMode();
     this.callbacks.resetInputHeight?.();
   }
@@ -153,6 +168,6 @@ export class InstructionModeManager {
     if (wrapper) {
       wrapper.removeClass('claudian-input-instruction-mode');
     }
-    this.inputEl.placeholder = this.originalPlaceholder;
+    this.input.setPlaceholder(this.originalPlaceholder);
   }
 }

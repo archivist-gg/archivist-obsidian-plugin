@@ -22,13 +22,13 @@ export class ImageContextManager {
   private containerEl: HTMLElement;
   private previewContainerEl: HTMLElement;
   private imagePreviewEl: HTMLElement;
-  private inputEl: HTMLTextAreaElement;
+  private inputEl: HTMLElement;
   private dropOverlay: HTMLElement | null = null;
   private attachedImages: Map<string, ImageAttachment> = new Map();
 
   constructor(
     containerEl: HTMLElement,
-    inputEl: HTMLTextAreaElement,
+    inputEl: HTMLElement,
     callbacks: ImageContextCallbacks,
     previewContainerEl?: HTMLElement
   ) {

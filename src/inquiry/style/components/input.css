@@ -200,3 +200,84 @@
 .claudian-input-wrapper.claudian-input-bang-bash-mode .claudian-input {
   font-family: var(--font-monospace);
 }
+
+/* Rich (contentEditable) input */
+.claudian-rich-input {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 60px;
+  padding: 8px 40px 10px 10px;
+  border: none !important;
+  border-radius: 6px;
+  background: transparent !important;
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: none !important;
+  overflow-y: auto;
+  outline: none !important;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  unicode-bidi: plaintext;
+}
+
+.claudian-rich-input:hover,
+.claudian-rich-input:focus {
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.claudian-rich-input:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Send / Stop button */
+.archivist-send-btn {
+  position: absolute;
+  bottom: 44px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  z-index: 1;
+  padding: 0;
+}
+
+.archivist-send-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.archivist-send-btn[data-state="idle-ready"],
+.archivist-send-btn[data-state="streaming"] {
+  background: var(--claudian-brand);
+  color: #fff;
+}
+
+.archivist-send-btn[data-state="idle-ready"]:hover,
+.archivist-send-btn[data-state="streaming"]:hover {
+  filter: brightness(1.1);
+}
+
+.archivist-send-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Monospace rich input while in bash mode */
+.claudian-input-wrapper.claudian-input-bang-bash-mode .claudian-rich-input {
+  font-family: var(--font-monospace);
+}

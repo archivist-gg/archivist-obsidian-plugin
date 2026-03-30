@@ -5,7 +5,7 @@ const SCROLL_SPEED = 8;
 
 export interface NavigationControllerDeps {
   getMessagesEl: () => HTMLElement;
-  getInputEl: () => HTMLTextAreaElement;
+  getInputEl: () => HTMLElement;
   getSettings: () => KeyboardNavigationSettings;
   isStreaming: () => boolean;
   /** Returns true if a UI component (dropdown, modal, mode) should handle Escape instead. */

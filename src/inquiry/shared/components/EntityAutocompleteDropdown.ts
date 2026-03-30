@@ -90,12 +90,27 @@ interface AutocompleteResult {
 }
 
 /**
- * Autocomplete dropdown that activates when the user types `[[` in a textarea.
+ * Minimal interface for input elements that the autocomplete can work with.
+ * Works with both HTMLTextAreaElement and RichInput.
+ */
+interface AutocompleteInputLike {
+  /** The underlying DOM element (for focus). */
+  readonly el: HTMLElement;
+  /** Get text before the cursor position. */
+  getTextBeforeCursor(): string;
+  /** Remove a number of characters before the cursor. */
+  removeTextBeforeCursor(count: number): void;
+  /** Focus the input. */
+  focus(): void;
+}
+
+/**
+ * Autocomplete dropdown that activates when the user types `[[` in the input.
  * Searches the EntityRegistry and inserts `[[type:Name]]` on selection.
  */
 export class EntityAutocompleteDropdown {
   private containerEl: HTMLElement;
-  private inputEl: HTMLTextAreaElement;
+  private richInput: AutocompleteInputLike;
   private entityRegistry: any; // Avoid importing EntityRegistry to prevent Obsidian bundling issues
   private dropdownEl: HTMLElement | null = null;
   private results: AutocompleteResult[] = [];
@@ -116,12 +131,12 @@ export class EntityAutocompleteDropdown {
 
   constructor(
     containerEl: HTMLElement,
-    inputEl: HTMLTextAreaElement,
+    richInput: AutocompleteInputLike,
     entityRegistry: any,
     onSelect?: (entityType: string, name: string) => void,
   ) {
     this.containerEl = containerEl;
-    this.inputEl = inputEl;
+    this.richInput = richInput;
     this.entityRegistry = entityRegistry;
     this.onSelect = onSelect;
   }
@@ -204,9 +219,7 @@ export class EntityAutocompleteDropdown {
   // -------------------------------------------------------------------------
 
   private processInput(): void {
-    const text = this.inputEl.value;
-    const cursorPos = this.inputEl.selectionStart || 0;
-    const textBeforeCursor = text.substring(0, cursorPos);
+    const textBeforeCursor = this.richInput.getTextBeforeCursor();
 
     // Find the last unmatched `[[`
     const lastBracketIndex = textBeforeCursor.lastIndexOf('[[');
@@ -306,25 +319,21 @@ export class EntityAutocompleteDropdown {
     const item = this.results[index];
     if (!item) return;
 
-    const text = this.inputEl.value;
-    const cursorPos = this.inputEl.selectionStart || 0;
-    const beforeBrackets = text.substring(0, this.bracketStartIndex);
-    const afterCursor = text.substring(cursorPos);
+    // Calculate how many characters to remove: from [[ to cursor
+    const textBeforeCursor = this.richInput.getTextBeforeCursor();
+    const charsToRemove = textBeforeCursor.length - this.bracketStartIndex;
 
     if (this.onSelect) {
-      // Remove the [[query from textarea -- the chip above represents it
-      this.inputEl.value = beforeBrackets + afterCursor;
-      this.inputEl.selectionStart = this.inputEl.selectionEnd = beforeBrackets.length;
+      // Remove the [[query from input -- the inline chip represents it
+      this.richInput.removeTextBeforeCursor(charsToRemove);
       this.onSelect(item.entityType, item.name);
     } else {
-      // Fallback: insert raw text
-      const replacement = `[[${item.entityType}:${item.name}]]`;
-      this.inputEl.value = beforeBrackets + replacement + afterCursor;
-      const newCursorPos = beforeBrackets.length + replacement.length;
-      this.inputEl.selectionStart = this.inputEl.selectionEnd = newCursorPos;
+      // Fallback: remove [[query and insert raw text
+      this.richInput.removeTextBeforeCursor(charsToRemove);
+      document.execCommand('insertText', false, `[[${item.entityType}:${item.name}]]`);
     }
 
     this.hide();
-    this.inputEl.focus();
+    this.richInput.focus();
   }
 }

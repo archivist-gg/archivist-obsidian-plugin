@@ -1,4 +1,5 @@
 export { type BangBashModeCallbacks, BangBashModeManager, type BangBashModeState } from './BangBashModeManager';
+export { RichInput, type RichInputSerialized, SendButton, type SendButtonState } from './RichInput';
 export { type FileContextCallbacks,FileContextManager } from './FileContext';
 export { type ImageContextCallbacks,ImageContextManager } from './ImageContext';
 export {

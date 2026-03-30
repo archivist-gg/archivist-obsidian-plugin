@@ -7,7 +7,7 @@ import { Notice } from 'obsidian';
 import type InquiryModule from '../../../InquiryModule';
 import { hideSelectionHighlight, showSelectionHighlight } from '../../../shared/components/SelectionHighlight';
 import { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
-import { MentionDropdownController } from '../../../shared/mention/MentionDropdownController';
+import { MentionDropdownController, wrapNativeInput } from '../../../shared/mention/MentionDropdownController';
 import { VaultMentionDataProvider } from '../../../shared/mention/VaultMentionDataProvider';
 import {
   createExternalContextLookupGetter,
@@ -431,7 +431,7 @@ class InlineEditController {
 
     this.mentionDropdown = new MentionDropdownController(
       document.body,
-      this.inputEl,
+      wrapNativeInput(this.inputEl),
       {
         // Inline-edit resolves @mentions at send time from input text.
         onAttachFile: () => {},

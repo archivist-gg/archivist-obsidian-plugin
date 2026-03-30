@@ -23,7 +23,7 @@ import type { SubagentManager } from '../services/SubagentManager';
 import type { TitleGenerationService } from '../services/TitleGenerationService';
 import type { ChatState } from '../state/ChatState';
 import type { QueryOptions } from '../state/types';
-import type { AddExternalContextResult, FileContextManager, ImageContextManager, InstructionModeManager, McpServerSelector, StatusPanel } from '../ui';
+import type { AddExternalContextResult, FileContextManager, ImageContextManager, InstructionModeManager, McpServerSelector, RichInput, StatusPanel } from '../ui';
 import type { BrowserSelectionController } from './BrowserSelectionController';
 import type { CanvasSelectionController } from './CanvasSelectionController';
 import type { ConversationController } from './ConversationController';
@@ -45,7 +45,8 @@ export interface InputControllerDeps {
   browserSelectionController?: BrowserSelectionController;
   canvasSelectionController: CanvasSelectionController;
   conversationController: ConversationController;
-  getInputEl: () => HTMLTextAreaElement;
+  getInputEl: () => HTMLElement;
+  getRichInput?: () => RichInput | null;
   getWelcomeEl: () => HTMLElement | null;
   getMessagesEl: () => HTMLElement;
   getFileContextManager: () => FileContextManager | null;
@@ -120,7 +121,7 @@ export class InputController {
     // During conversation creation/switching, don't send - input is preserved so user can retry
     if (state.isCreatingConversation || state.isSwitchingConversation) return;
 
-    const inputEl = this.deps.getInputEl();
+    const richInput = this.deps.getRichInput?.();
     const imageContextManager = this.deps.getImageContextManager();
     const fileContextManager = this.deps.getFileContextManager();
     const mcpServerSelector = this.deps.getMcpServerSelector();
@@ -128,7 +129,13 @@ export class InputController {
 
     const contentOverride = options?.content;
     const shouldUseInput = contentOverride === undefined;
-    const content = (contentOverride ?? inputEl.value).trim();
+
+    // Serialize rich input to get text, entity refs, and file paths from inline chips
+    const serialized = shouldUseInput && richInput ? richInput.serialize() : null;
+    const content = (contentOverride ?? serialized?.text ?? '').trim();
+    const inlineEntityRefs = serialized?.entityRefs ?? [];
+    const inlineFilePaths = serialized?.filePaths ?? [];
+
     const hasImages = imageContextManager?.hasImages() ?? false;
     if (!content && !hasImages) return;
 
@@ -136,7 +143,7 @@ export class InputController {
     const builtInCmd = detectBuiltInCommand(content);
     if (builtInCmd) {
       if (shouldUseInput) {
-        inputEl.value = '';
+        richInput?.clear();
         this.deps.resetInputHeight();
       }
       await this.executeBuiltInCommand(builtInCmd.command.action, builtInCmd.args);
@@ -169,7 +176,7 @@ export class InputController {
       }
 
       if (shouldUseInput) {
-        inputEl.value = '';
+        richInput?.clear();
         this.deps.resetInputHeight();
       }
       imageContextManager?.clearImages();
@@ -178,7 +185,7 @@ export class InputController {
     }
 
     if (shouldUseInput) {
-      inputEl.value = '';
+      richInput?.clear();
       this.deps.resetInputHeight();
     }
     state.isStreaming = true;
@@ -520,8 +527,10 @@ export class InputController {
     state.queuedMessage = null;
     this.updateQueueIndicator();
 
-    const inputEl = this.deps.getInputEl();
-    inputEl.value = content;
+    const richInput = this.deps.getRichInput?.();
+    if (richInput) {
+      richInput.setText(content);
+    }
     if (images && images.length > 0) {
       this.deps.getImageContextManager()?.setImages(images);
     }
@@ -535,8 +544,10 @@ export class InputController {
     state.queuedMessage = null;
     this.updateQueueIndicator();
 
-    const inputEl = this.deps.getInputEl();
-    inputEl.value = content;
+    const richInput = this.deps.getRichInput?.();
+    if (richInput) {
+      richInput.setText(content);
+    }
     if (images && images.length > 0) {
       this.deps.getImageContextManager()?.setImages(images);
     }

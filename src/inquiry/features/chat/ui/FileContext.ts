@@ -15,6 +15,7 @@ import { externalContextScanner } from '../../../utils/externalContextScanner';
 import { getVaultPath, normalizePathForVault as normalizePathForVaultUtil } from '../../../utils/path';
 import { FileContextState } from './file-context/state/FileContextState';
 import { FileChipsView } from './file-context/view/FileChipsView';
+import type { RichInput } from './RichInput';
 
 export interface FileContextCallbacks {
   getExcludedTags: () => string[];
@@ -29,7 +30,7 @@ export class FileContextManager {
   private callbacks: FileContextCallbacks;
   private chipsContainerEl: HTMLElement;
   private dropdownContainerEl: HTMLElement;
-  private inputEl: HTMLTextAreaElement;
+  private richInput: RichInput;
   private state: FileContextState;
   private mentionDataProvider: VaultMentionDataProvider;
   private chipsView: FileChipsView;
@@ -46,14 +47,14 @@ export class FileContextManager {
   constructor(
     app: App,
     chipsContainerEl: HTMLElement,
-    inputEl: HTMLTextAreaElement,
+    richInput: RichInput,
     callbacks: FileContextCallbacks,
     dropdownContainerEl?: HTMLElement
   ) {
     this.app = app;
     this.chipsContainerEl = chipsContainerEl;
     this.dropdownContainerEl = dropdownContainerEl ?? chipsContainerEl;
-    this.inputEl = inputEl;
+    this.richInput = richInput;
     this.callbacks = callbacks;
 
     this.state = new FileContextState();
@@ -84,7 +85,7 @@ export class FileContextManager {
 
     this.mentionDropdown = new MentionDropdownController(
       this.dropdownContainerEl,
-      this.inputEl,
+      this.richInput,
       {
         onAttachFile: (filePath) => this.state.attachFile(filePath),
         onMcpMentionChange: (servers) => this.onMcpMentionChange?.(servers),
