@@ -1,12 +1,13 @@
-/* Tab bar container - constrained within header, scrollable */
+/* Tab bar container - constrained within header, scrollable, owns the bottom border */
 .claudian-tab-bar-container {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0;
   flex: 1;
   min-width: 0;
   overflow: hidden;
   position: relative;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 /* Scroll arrows */
@@ -48,6 +49,7 @@
   color: var(--text-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   white-space: nowrap;
   flex-shrink: 0;
   transition: color 0.15s, border-color 0.15s;

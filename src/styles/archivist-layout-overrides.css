@@ -1,10 +1,9 @@
 /* Archivist layout overrides -- match previous Archivist Inquiry layout */
 
-/* Header: fixed height with bottom border */
+/* Header: fixed height, no own border (tab bar provides it) */
 .claudian-header {
   height: 36px;
   min-height: 36px;
-  border-bottom: 1px solid var(--background-modifier-border);
   padding: 0 8px;
 }
 
