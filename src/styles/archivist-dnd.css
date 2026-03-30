@@ -51,7 +51,7 @@
   position: relative;
   width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 1.5em auto;
   display: flex;
   justify-content: center;
 }
@@ -351,7 +351,7 @@
 .archivist-spell-block-wrapper {
   position: relative;
   width: 100%;
-  margin: 0;
+  margin: 1.5em 0;
   display: flex;
   justify-content: flex-start;
 }
@@ -583,7 +583,7 @@
 .archivist-item-block-wrapper {
   position: relative;
   width: 100%;
-  margin: 0;
+  margin: 1.5em 0;
   display: flex;
   justify-content: flex-start;
 }
