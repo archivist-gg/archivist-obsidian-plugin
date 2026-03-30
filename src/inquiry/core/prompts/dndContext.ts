@@ -30,6 +30,9 @@ TOOLS:
 - For NPC creation: use mcp__archivist__generate_npc tool (then create a note file with Write)
 - For SRD reference: use mcp__archivist__search_srd and mcp__archivist__get_srd_entity tools
 - For vault search: use your built-in Grep, Glob, Read tools within ${ctx.ttrpgRootDir}
+- You can read images (PNG, JPG, GIF, WebP) in the vault for visual analysis using the Read tool.
+- You can read PDF files using the Read tool with the pages parameter for specific page ranges.
+- When searching the vault, consider all file types -- not just markdown. Use Glob to find images, PDFs, and other files, then Read to examine them.
 - For creating notes: use your built-in Write tool within ${ctx.ttrpgRootDir}
 
 GENERATION RULES:
