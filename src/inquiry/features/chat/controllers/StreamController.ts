@@ -1,6 +1,5 @@
-import { TFile } from 'obsidian';
+import { setIcon, TFile } from 'obsidian';
 
-import { createOwlIcon } from '../../../../ui/components/owl-icon';
 import type { ClaudianService } from '../../../core/agent';
 import { extractResolvedAnswers, extractResolvedAnswersFromResultText, parseTodoInput } from '../../../core/tools';
 import {
@@ -930,9 +929,12 @@ export class StreamController {
         ? `claudian-thinking ${overrideCls}`
         : 'claudian-thinking';
       state.thinkingEl = state.currentContentEl.createDiv({ cls });
-      state.thinkingEl.appendChild(createOwlIcon(14));
-      const text = overrideText || FLAVOR_TEXTS[Math.floor(Math.random() * FLAVOR_TEXTS.length)];
-      state.thinkingEl.createSpan({ text });
+      const flavor = overrideText
+        ? { text: overrideText, icon: 'message-circle' }
+        : FLAVOR_TEXTS[Math.floor(Math.random() * FLAVOR_TEXTS.length)];
+      const iconEl = state.thinkingEl.createSpan({ cls: 'claudian-thinking-icon' });
+      setIcon(iconEl, flavor.icon);
+      state.thinkingEl.createSpan({ text: flavor.text });
 
       // Create timer span with initial value
       const timerSpan = state.thinkingEl.createSpan({ cls: 'claudian-thinking-hint' });
