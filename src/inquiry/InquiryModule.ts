@@ -234,8 +234,14 @@ export class InquiryModule {
   /** D&D SRD store (optional, injected by Archivist). */
   srdStore: unknown;
 
-  /** In-process SDK MCP server for D&D tools (created from srdStore). */
-  archivistMcpServer: McpSdkServerConfigWithInstance | null = null;
+  /** Factory to create fresh in-process MCP server instances for D&D tools.
+   *  Each tab's ClaudianService needs its own instance (Protocol can only connect once). */
+  createArchivistMcpServerInstance: (() => McpSdkServerConfigWithInstance) | null = null;
+
+  /** @deprecated Use createArchivistMcpServerInstance() instead. Kept for interface compat. */
+  get archivistMcpServer(): McpSdkServerConfigWithInstance | null {
+    return this.createArchivistMcpServerInstance?.() ?? null;
+  }
 
   private conversations: Conversation[] = [];
   private runtimeEnvironmentVariables = '';
@@ -267,13 +273,10 @@ export class InquiryModule {
     this.mcpManager = new McpServerManager(this.storage.mcp);
     await this.mcpManager.loadServers();
 
-    // Create in-process MCP server for D&D tools (if SRD store is available)
+    // Set up factory for in-process MCP server (each tab needs its own instance)
     if (this.srdStore) {
-      try {
-        this.archivistMcpServer = createArchivistMcpServer(this.srdStore as SrdStore);
-      } catch (e) {
-        console.error('[InquiryModule] Failed to create Archivist MCP server:', e);
-      }
+      const srdStore = this.srdStore as SrdStore;
+      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(srdStore);
     }
 
     // Initialize plugin manager (reads from installed_plugins.json + settings.json)
