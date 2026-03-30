@@ -199,7 +199,6 @@
   gap: 1px;
   overflow-x: auto;
   scrollbar-width: none;
-  border-bottom: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   flex: 1;
   min-width: 0;
