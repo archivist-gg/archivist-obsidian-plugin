@@ -8,9 +8,9 @@ export type ClaudeModel = string;
 export const DEFAULT_CLAUDE_MODELS: { value: ClaudeModel; label: string; description: string }[] = [
   { value: 'haiku', label: 'Haiku', description: 'Fast and efficient' },
   { value: 'sonnet', label: 'Sonnet', description: 'Balanced performance' },
-  { value: 'sonnet[1m]', label: 'Sonnet 1M', description: 'Balanced performance (1M context window)' },
+  { value: 'sonnet[1m]', label: 'Sonnet', description: 'Balanced performance (1M context window)' },
   { value: 'opus', label: 'Opus', description: 'Most capable' },
-  { value: 'opus[1m]', label: 'Opus 1M', description: 'Most capable (1M context window)' },
+  { value: 'opus[1m]', label: 'Opus', description: 'Most capable (1M context window)' },
 ];
 
 export type ThinkingBudget = 'off' | 'low' | 'medium' | 'high' | 'xhigh';
