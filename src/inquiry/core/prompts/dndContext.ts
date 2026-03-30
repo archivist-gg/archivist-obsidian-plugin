@@ -43,6 +43,29 @@ GENERATION RULES:
 - Include wiki-links ([[Note Name]]) to existing vault notes when relevant.
 - Stop after 7 tool calls to avoid loops.
 
+5eTOOLS INLINE TAGS:
+When writing action/trait/feature entries in stat blocks, use 5etools inline tag syntax. The renderer supports these tags:
+
+Combat tags:
+- {@atk mw} = Melee Weapon Attack:  {@atk rw} = Ranged Weapon Attack:
+- {@atk ms} = Melee Spell Attack:  {@atk rs} = Ranged Spell Attack:
+- {@atk mw,rw} = Melee or Ranged Weapon Attack:
+- {@hit 7} = +7 to hit  {@h} = Hit:
+- {@damage 2d6+4 slashing} = damage roll with type  {@dice 3d6} = generic dice roll
+- {@dc 15} = DC 15  {@recharge 5} = (Recharge 5-6)  {@chance 50} = 50% chance
+
+Entity references:
+- {@spell fireball} {@item longsword} {@creature goblin} {@condition frightened}
+- {@skill Perception} {@sense darkvision} {@action Dash} {@ability str}
+- {@class fighter} {@feat Alert} {@background Acolyte} {@race Elf}
+- {@disease Cackle Fever} {@hazard brown mold} {@plane Shadowfell}
+
+Formatting:
+- {@b bold text} {@i italic text} {@note parenthetical note}
+
+Example action entry using these tags:
+"Melee Weapon Attack: {@hit 7} to hit, reach 5 ft., one target. {@h} {@damage 2d6+4 slashing} slashing damage plus {@damage 1d6 fire} fire damage."
+
 BEHAVIOR:
 - If asked about something in the campaign, search the vault first.
 - If vault has no relevant info, use your D&D 5e training knowledge.
