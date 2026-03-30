@@ -47,8 +47,9 @@
 }
 
 .claudian-header .claudian-tab-bar-container {
-  display: flex;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .claudian-header-btn {

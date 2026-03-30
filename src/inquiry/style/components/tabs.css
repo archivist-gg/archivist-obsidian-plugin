@@ -1,34 +1,96 @@
+/* Tab bar container - constrained within header, scrollable */
+.claudian-tab-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Scroll arrows */
+.archivist-tab-scroll-arrow {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 100%;
+  cursor: pointer;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  z-index: 2;
+  background: var(--background-secondary);
+}
+.archivist-tab-scroll-arrow:hover { color: var(--text-normal); }
+.archivist-tab-scroll-arrow svg { width: 12px; height: 12px; }
+.archivist-tab-scroll-arrow.visible { display: flex; }
+
+/* Tab strip - scrollable row */
 .archivist-tab-bar {
-  display: flex; gap: 1px; overflow-x: auto; scrollbar-width: none;
+  display: flex;
+  gap: 1px;
+  overflow-x: auto;
+  scrollbar-width: none;
   border-bottom: 1px solid var(--background-modifier-border);
-  background: var(--background-secondary); flex-shrink: 0;
+  background: var(--background-secondary);
+  flex: 1;
+  min-width: 0;
 }
 .archivist-tab-bar::-webkit-scrollbar { display: none; }
+
+/* Individual tab */
 .archivist-tab {
-  display: flex; align-items: center; gap: 4px; padding: 6px 12px;
-  font-size: 11px; color: var(--text-muted); cursor: pointer;
-  border-bottom: 2px solid transparent; white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 6px 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: color 0.15s, border-color 0.15s;
 }
 .archivist-tab:hover { color: var(--text-normal); }
 .archivist-tab-active { color: var(--claudian-brand); border-bottom-color: var(--claudian-brand); }
+
 .archivist-tab-title { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+
+/* State dots */
 .archivist-tab-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .archivist-tab-dot-streaming { background: var(--claudian-brand); animation: thinking-pulse 1.5s ease-in-out infinite; }
 .archivist-tab-dot-attention { background: var(--text-error); }
+
+/* Close button - always visible */
 .archivist-tab-close {
-  display: flex; align-items: center; justify-content: center;
-  width: 14px; height: 14px; border-radius: 3px; color: var(--text-faint); cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  color: var(--text-faint);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 .archivist-tab-close svg { width: 10px; height: 10px; }
 .archivist-tab-close:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+
+/* Context menu */
 .archivist-tab-context-menu {
-  background: var(--background-primary); border: 1px solid var(--background-modifier-border);
-  border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 1000;
-  min-width: 120px; padding: 4px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 1000;
+  min-width: 120px;
+  padding: 4px;
 }
 .archivist-tab-context-item { padding: 6px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
 .archivist-tab-context-item:hover { background: var(--background-modifier-hover); }
-/* Keep tab content container */
+
+/* Tab content container */
 .claudian-tab-content-container { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 .claudian-tab-content { position: relative; display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }

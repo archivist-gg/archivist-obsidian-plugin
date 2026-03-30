@@ -15,42 +15,74 @@ export interface TabBarCallbacks {
 }
 
 /**
- * TabBar renders a horizontal text-label tab strip.
- * Each tab shows a title, optional state dot, and close button on hover.
+ * TabBar renders a horizontal text-label tab strip with scroll arrows.
  */
 export class TabBar {
   private containerEl: HTMLElement;
+  private stripEl: HTMLElement;
+  private leftArrow: HTMLElement;
+  private rightArrow: HTMLElement;
   private callbacks: TabBarCallbacks;
   private contextMenuEl: HTMLElement | null = null;
   private boundCloseContextMenu: () => void;
+  private scrollObserver: ResizeObserver | null = null;
 
   constructor(containerEl: HTMLElement, callbacks: TabBarCallbacks) {
     this.containerEl = containerEl;
     this.callbacks = callbacks;
     this.boundCloseContextMenu = () => this.closeContextMenu();
-    this.build();
+
+    // Left scroll arrow
+    this.leftArrow = containerEl.createDiv({ cls: 'archivist-tab-scroll-arrow archivist-tab-scroll-left' });
+    setIcon(this.leftArrow, 'chevron-left');
+    this.leftArrow.addEventListener('click', () => this.scroll(-120));
+
+    // Scrollable tab strip
+    this.stripEl = containerEl.createDiv({ cls: 'archivist-tab-bar' });
+
+    // Right scroll arrow
+    this.rightArrow = containerEl.createDiv({ cls: 'archivist-tab-scroll-arrow archivist-tab-scroll-right' });
+    setIcon(this.rightArrow, 'chevron-right');
+    this.rightArrow.addEventListener('click', () => this.scroll(120));
+
+    // Watch for overflow changes
+    this.stripEl.addEventListener('scroll', () => this.updateArrows());
+    this.scrollObserver = new ResizeObserver(() => this.updateArrows());
+    this.scrollObserver.observe(this.stripEl);
   }
 
-  /** Builds the tab bar UI. */
-  private build(): void {
-    this.containerEl.addClass('archivist-tab-bar');
+  /** Scrolls the tab strip by the given amount. */
+  private scroll(amount: number): void {
+    this.stripEl.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+
+  /** Shows/hides scroll arrows based on overflow state. */
+  private updateArrows(): void {
+    const { scrollLeft, scrollWidth, clientWidth } = this.stripEl;
+    const canScrollLeft = scrollLeft > 1;
+    const canScrollRight = scrollLeft + clientWidth < scrollWidth - 1;
+
+    this.leftArrow.classList.toggle('visible', canScrollLeft);
+    this.rightArrow.classList.toggle('visible', canScrollRight);
   }
 
   /**
    * Updates the tab bar with new tab data.
-   * @param items Tab items to render.
    */
   update(items: TabBarItem[]): void {
-    this.containerEl.empty();
+    this.stripEl.empty();
 
     for (const item of items) {
       this.renderTab(item, items);
     }
+
+    // Update arrows after DOM settles
+    requestAnimationFrame(() => this.updateArrows());
   }
 
   /** Renders a single tab. */
   private renderTab(item: TabBarItem, allItems: TabBarItem[]): void {
-    const tabEl = this.containerEl.createDiv({
+    const tabEl = this.stripEl.createDiv({
       cls: `archivist-tab${item.isActive ? ' archivist-tab-active' : ''}`,
     });
 
@@ -69,7 +101,7 @@ export class TabBar {
     titleEl.setText(item.title);
     titleEl.setAttribute('title', item.title);
 
-    // Close button (visible on hover via CSS)
+    // Close button (always visible)
     if (item.canClose) {
       const closeEl = tabEl.createDiv({ cls: 'archivist-tab-close' });
       setIcon(closeEl, 'x');
@@ -89,6 +121,13 @@ export class TabBar {
       e.preventDefault();
       this.showContextMenu(e, item, allItems);
     });
+
+    // Scroll active tab into view
+    if (item.isActive) {
+      requestAnimationFrame(() => {
+        tabEl.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+      });
+    }
   }
 
   /** Shows a context menu for a tab. */
@@ -100,7 +139,6 @@ export class TabBar {
     menuEl.style.left = `${e.clientX}px`;
     menuEl.style.top = `${e.clientY}px`;
 
-    // Close
     if (item.canClose) {
       const closeItem = menuEl.createDiv({ cls: 'archivist-tab-context-item', text: 'Close' });
       closeItem.addEventListener('click', () => {
@@ -109,7 +147,6 @@ export class TabBar {
       });
     }
 
-    // Close Others
     const otherClosable = allItems.filter(t => t.id !== item.id && t.canClose);
     if (otherClosable.length > 0) {
       const closeOthersItem = menuEl.createDiv({ cls: 'archivist-tab-context-item', text: 'Close Others' });
@@ -121,7 +158,6 @@ export class TabBar {
       });
     }
 
-    // Close All
     const allClosable = allItems.filter(t => t.canClose);
     if (allClosable.length > 1) {
       const closeAllItem = menuEl.createDiv({ cls: 'archivist-tab-context-item', text: 'Close All' });
@@ -134,14 +170,11 @@ export class TabBar {
     }
 
     this.contextMenuEl = menuEl;
-
-    // Close on outside click (next tick to avoid immediate close)
     requestAnimationFrame(() => {
       document.addEventListener('click', this.boundCloseContextMenu, { once: true });
     });
   }
 
-  /** Closes the context menu if open. */
   private closeContextMenu(): void {
     if (this.contextMenuEl) {
       this.contextMenuEl.remove();
@@ -150,10 +183,9 @@ export class TabBar {
     document.removeEventListener('click', this.boundCloseContextMenu);
   }
 
-  /** Destroys the tab bar. */
   destroy(): void {
     this.closeContextMenu();
+    this.scrollObserver?.disconnect();
     this.containerEl.empty();
-    this.containerEl.removeClass('archivist-tab-bar');
   }
 }
