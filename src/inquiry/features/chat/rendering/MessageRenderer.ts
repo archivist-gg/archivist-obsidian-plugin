@@ -137,8 +137,9 @@ export class MessageRenderer {
 
     // Recreate welcome element after clearing
     const newWelcomeEl = this.messagesEl.createDiv({ cls: 'claudian-welcome' });
+    newWelcomeEl.appendChild(createOwlIcon(32));
     newWelcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: getGreeting() });
-    newWelcomeEl.insertBefore(createOwlIcon(32), newWelcomeEl.firstChild);
+    newWelcomeEl.createDiv({ cls: 'claudian-welcome-subtitle', text: 'What knowledge do you seek?' });
 
     for (let i = 0; i < messages.length; i++) {
       this.renderStoredMessage(messages[i], messages, i);
@@ -505,26 +506,25 @@ export class MessageRenderer {
         pre.parentElement?.insertBefore(wrapper, pre);
         wrapper.appendChild(pre);
 
-        // Check for language class and add label
+        // Check for language class and add header bar
         const code = pre.querySelector('code[class*="language-"]');
         if (code) {
           const match = code.className.match(/language-(\w+)/);
           if (match) {
             wrapper.classList.add('has-language');
-            const label = createEl('span', {
-              cls: 'claudian-code-lang-label',
-              text: match[1],
-            });
-            wrapper.appendChild(label);
-            label.addEventListener('click', async () => {
+            const headerBar = createEl('div', { cls: 'archivist-code-header' });
+            headerBar.createEl('span', { text: match[1] });
+            const copyBtn = headerBar.createEl('span', { cls: 'archivist-code-copy', text: 'Copy' });
+            copyBtn.addEventListener('click', async () => {
               try {
                 await navigator.clipboard.writeText(code.textContent || '');
-                label.setText('copied!');
-                setTimeout(() => label.setText(match[1]), 1500);
+                copyBtn.setText('Copied!');
+                setTimeout(() => copyBtn.setText('Copy'), 2000);
               } catch {
                 // Clipboard API may fail in non-secure contexts
               }
             });
+            wrapper.insertBefore(headerBar, pre);
           }
         }
 
