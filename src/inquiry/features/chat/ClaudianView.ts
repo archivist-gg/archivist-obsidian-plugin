@@ -478,7 +478,11 @@ export class ClaudianView extends ItemView {
     this.scope.register([], 'Escape', () => {
       const activeTab = this.tabManager?.getActiveTab();
       if (activeTab?.state.isStreaming) {
-        activeTab.controllers.inputController?.cancelStreaming();
+        // Only cancel streaming if the input area is focused
+        const inputEl = activeTab.dom?.inputEl;
+        if (inputEl && (document.activeElement === inputEl || inputEl.contains(document.activeElement))) {
+          activeTab.controllers.inputController?.cancelStreaming();
+        }
       }
       return false;
     });
