@@ -21,7 +21,7 @@ import type { McpServerManager } from '../mcp';
 import type { PluginManager } from '../plugins';
 import { buildSystemPrompt, type SystemPromptSettings } from '../prompts/mainAgent';
 import type { DndPromptContext } from '../prompts/dndContext';
-import type { ClaudianSettings, PermissionMode } from '../types';
+import type { ClaudianSettings } from '../types';
 import { isAdaptiveThinkingModel } from '../types';
 import { createCustomSpawnFunction } from './customSpawn';
 import {
@@ -184,8 +184,6 @@ export class QueryOptionsBuilder {
 
   /** Builds SDK options for the persistent query. */
   static buildPersistentQueryOptions(ctx: PersistentQueryContext): Options {
-    const permissionMode = ctx.settings.permissionMode;
-
     const systemPrompt = buildSystemPrompt({
       mediaFolder: ctx.settings.mediaFolder,
       customPrompt: ctx.settings.systemPrompt,
@@ -221,7 +219,7 @@ export class QueryOptionsBuilder {
       ...DISABLED_BUILTIN_SUBAGENTS,
     ];
 
-    QueryOptionsBuilder.applyPermissionMode(options, permissionMode, ctx.canUseTool);
+    QueryOptionsBuilder.applyPermissionMode(options, ctx.canUseTool);
     QueryOptionsBuilder.applyThinking(options, ctx.settings, ctx.settings.model);
     options.hooks = ctx.hooks;
 
@@ -254,8 +252,6 @@ export class QueryOptionsBuilder {
 
   /** Builds SDK options for a cold-start query. */
   static buildColdStartQueryOptions(ctx: ColdStartQueryContext): Options {
-    const permissionMode = ctx.settings.permissionMode;
-
     const selectedModel = ctx.modelOverride ?? ctx.settings.model;
     const systemPrompt = buildSystemPrompt({
       mediaFolder: ctx.settings.mediaFolder,
@@ -309,7 +305,7 @@ export class QueryOptionsBuilder {
       ...DISABLED_BUILTIN_SUBAGENTS,
     ];
 
-    QueryOptionsBuilder.applyPermissionMode(options, permissionMode, ctx.canUseTool);
+    QueryOptionsBuilder.applyPermissionMode(options, ctx.canUseTool);
     options.hooks = ctx.hooks;
     QueryOptionsBuilder.applyThinking(options, ctx.settings, ctx.modelOverride ?? ctx.settings.model);
 
@@ -331,12 +327,11 @@ export class QueryOptionsBuilder {
   }
 
   /**
-   * Always sets allowDangerouslySkipPermissions: true to enable dynamic
-   * switching between permission modes without requiring a process restart.
+   * Always sets allowDangerouslySkipPermissions and bypassPermissions
+   * (unleashed mode hardcoded).
    */
   private static applyPermissionMode(
     options: Options,
-    permissionMode: PermissionMode,
     canUseTool?: CanUseTool
   ): void {
     options.allowDangerouslySkipPermissions = true;
@@ -345,11 +340,7 @@ export class QueryOptionsBuilder {
       options.canUseTool = canUseTool;
     }
 
-    if (permissionMode === 'unleashed') {
-      options.permissionMode = 'bypassPermissions';
-    } else {
-      options.permissionMode = 'acceptEdits';
-    }
+    options.permissionMode = 'bypassPermissions';
   }
 
   private static applyExtraArgs(options: Options, settings: ClaudianSettings): void {

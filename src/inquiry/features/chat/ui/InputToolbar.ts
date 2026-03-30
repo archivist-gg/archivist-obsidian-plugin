@@ -6,7 +6,6 @@ import type {
   ClaudeModel,
   ClaudianMcpServer,
   EffortLevel,
-  PermissionMode,
   UsageInfo
 } from '../../../core/types';
 import {
@@ -23,7 +22,6 @@ import { expandHomePath, normalizePathForFilesystem } from '../../../utils/path'
 export interface ToolbarSettings {
   model: ClaudeModel;
   effortLevel: EffortLevel;
-  permissionMode: PermissionMode;
   enableOpus1M: boolean;
   enableSonnet1M: boolean;
 }
@@ -33,7 +31,6 @@ export interface ToolbarCallbacks {
   /** @deprecated Legacy thinking budget removed. Kept for interface compatibility. */
   onThinkingBudgetChange: (budget: string) => Promise<void>;
   onEffortLevelChange: (effort: EffortLevel) => Promise<void>;
-  onPermissionModeChange: (mode: PermissionMode) => Promise<void>;
   getSettings: () => ToolbarSettings;
   getEnvironmentVariables?: () => string;
 }
@@ -188,58 +185,6 @@ export class ThinkingBudgetSelector {
     if (adaptive) {
       this.renderEffortGears();
     }
-  }
-}
-
-export class PermissionToggle {
-  private container: HTMLElement;
-  private toggleEl: HTMLElement | null = null;
-  private labelEl: HTMLElement | null = null;
-  private helpEl: HTMLElement | null = null;
-  private callbacks: ToolbarCallbacks;
-
-  constructor(parentEl: HTMLElement, callbacks: ToolbarCallbacks) {
-    this.callbacks = callbacks;
-    this.container = parentEl.createDiv({ cls: 'claudian-permission-toggle' });
-    this.render();
-  }
-
-  private render() {
-    this.container.empty();
-
-    this.labelEl = this.container.createSpan({ cls: 'claudian-permission-label' });
-    this.toggleEl = this.container.createDiv({ cls: 'claudian-toggle-switch' });
-
-    // Help icon with tooltip
-    this.helpEl = this.container.createDiv({ cls: 'claudian-permission-help' });
-    setIcon(this.helpEl, 'help-circle');
-
-    this.updateDisplay();
-
-    this.toggleEl.addEventListener('click', () => this.toggle());
-  }
-
-  updateDisplay() {
-    if (!this.toggleEl || !this.labelEl || !this.helpEl) return;
-
-    const mode = this.callbacks.getSettings().permissionMode;
-
-    if (mode === 'unleashed') {
-      this.toggleEl.addClass('active');
-      this.labelEl.setText('Unleashed');
-      this.helpEl.setAttribute('aria-label', 'Unleashed: All tool actions are auto-approved without prompting.');
-    } else {
-      this.toggleEl.removeClass('active');
-      this.labelEl.setText('Guarded');
-      this.helpEl.setAttribute('aria-label', 'Guarded: File edits are auto-approved; other actions require confirmation.');
-    }
-  }
-
-  private async toggle() {
-    const current = this.callbacks.getSettings().permissionMode;
-    const newMode: PermissionMode = current === 'unleashed' ? 'guarded' : 'unleashed';
-    await this.callbacks.onPermissionModeChange(newMode);
-    this.updateDisplay();
   }
 }
 
@@ -900,7 +845,6 @@ export function createInputToolbar(
   contextUsageMeter: ContextUsageMeter | null;
   externalContextSelector: ExternalContextSelector;
   mcpServerSelector: McpServerSelector;
-  permissionToggle: PermissionToggle;
 } {
   const modelSelector = new ModelSelector(parentEl, callbacks);
   parentEl.createDiv({ cls: 'archivist-toolbar-sep' });
@@ -909,8 +853,6 @@ export function createInputToolbar(
   const contextUsageMeter = new ContextUsageMeter(parentEl);
   const externalContextSelector = new ExternalContextSelector(parentEl, callbacks);
   const mcpServerSelector = new McpServerSelector(parentEl);
-  parentEl.createDiv({ cls: 'archivist-toolbar-sep' });
-  const permissionToggle = new PermissionToggle(parentEl, callbacks);
 
-  return { modelSelector, thinkingBudgetSelector, contextUsageMeter, externalContextSelector, mcpServerSelector, permissionToggle };
+  return { modelSelector, thinkingBudgetSelector, contextUsageMeter, externalContextSelector, mcpServerSelector };
 }

@@ -26,7 +26,6 @@ import type {
   InstructionModeManager,
   McpServerSelector,
   ModelSelector,
-  PermissionToggle,
   StatusPanel,
   ThinkingBudgetSelector,
 } from '../ui';
@@ -130,7 +129,6 @@ export interface TabUIComponents {
   thinkingBudgetSelector: ThinkingBudgetSelector | null;
   externalContextSelector: ExternalContextSelector | null;
   mcpServerSelector: McpServerSelector | null;
-  permissionToggle: PermissionToggle | null;
   slashCommandDropdown: SlashCommandDropdown | null;
   entityAutocomplete: EntityAutocompleteDropdown | null;
   instructionModeManager: InstructionModeManager | null;

@@ -121,7 +121,6 @@ export function createTab(options: TabCreateOptions): TabData {
       thinkingBudgetSelector: null,
       externalContextSelector: null,
       mcpServerSelector: null,
-      permissionToggle: null,
       slashCommandDropdown: null,
       entityAutocomplete: null,
       instructionModeManager: null,
@@ -431,7 +430,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
     getSettings: () => ({
       model: plugin.settings.model,
       effortLevel: plugin.settings.effortLevel,
-      permissionMode: plugin.settings.permissionMode,
       enableOpus1M: plugin.settings.enableOpus1M,
       enableSonnet1M: plugin.settings.enableSonnet1M,
     }),
@@ -472,10 +470,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
       plugin.settings.effortLevel = effort;
       await plugin.saveSettings();
     },
-    onPermissionModeChange: async (mode) => {
-      plugin.settings.permissionMode = mode;
-      await plugin.saveSettings();
-    },
   });
 
   tab.ui.modelSelector = toolbarComponents.modelSelector;
@@ -483,7 +477,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
   tab.ui.contextUsageMeter = toolbarComponents.contextUsageMeter;
   tab.ui.externalContextSelector = toolbarComponents.externalContextSelector;
   tab.ui.mcpServerSelector = toolbarComponents.mcpServerSelector;
-  tab.ui.permissionToggle = toolbarComponents.permissionToggle;
 
   tab.ui.mcpServerSelector.setMcpManager(plugin.mcpManager);
 
@@ -1220,7 +1213,6 @@ export function setupServiceCallbacks(tab: TabData, plugin: InquiryModule): void
       if (plugin.settings.permissionMode !== mode) {
         plugin.settings.permissionMode = mode;
         void plugin.saveSettings();
-        tab.ui.permissionToggle?.updateDisplay();
       }
     });
   }
