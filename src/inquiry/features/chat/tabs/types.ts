@@ -29,7 +29,6 @@ import type {
   StatusPanel,
   ThinkingBudgetSelector,
 } from '../ui';
-import type { NavigationSidebar } from '../ui';
 
 /**
  * Default number of tabs allowed.
@@ -135,7 +134,6 @@ export interface TabUIComponents {
   bangBashModeManager: BangBashModeManager | null;
   contextUsageMeter: ContextUsageMeter | null;
   statusPanel: StatusPanel | null;
-  navigationSidebar: NavigationSidebar | null;
 }
 
 /**

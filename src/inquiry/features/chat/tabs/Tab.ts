@@ -33,7 +33,6 @@ import {
   FileContextManager,
   ImageContextManager,
   InstructionModeManager as InstructionModeManagerClass,
-  NavigationSidebar,
   StatusPanel,
 } from '../ui';
 import type { TabData, TabDOMElements, TabId } from './types';
@@ -127,7 +126,6 @@ export function createTab(options: TabCreateOptions): TabData {
       bangBashModeManager: null,
       contextUsageMeter: null,
       statusPanel: null,
-      navigationSidebar: null,
     },
     dom,
     renderer: null,
@@ -572,14 +570,6 @@ export function initializeTabUI(
     );
   }
 
-  // Initialize navigation sidebar
-  if (dom.messagesEl.parentElement) {
-    tab.ui.navigationSidebar = new NavigationSidebar(
-      dom.messagesEl.parentElement,
-      dom.messagesEl
-    );
-  }
-
   // Initialize instruction mode and todo panel
   initializeInstructionAndTodo(tab, plugin);
 
@@ -591,15 +581,7 @@ export function initializeTabUI(
     ...state.callbacks,
     onUsageChanged: (usage) => tab.ui.contextUsageMeter?.update(usage),
     onTodosChanged: (todos) => tab.ui.statusPanel?.updateTodos(todos),
-    onAutoScrollChanged: () => tab.ui.navigationSidebar?.updateVisibility(),
   };
-
-  // ResizeObserver to detect overflow changes (e.g., content growth)
-  const resizeObserver = new ResizeObserver(() => {
-    tab.ui.navigationSidebar?.updateVisibility();
-  });
-  resizeObserver.observe(dom.messagesEl);
-  dom.eventCleanups.push(() => resizeObserver.disconnect());
 }
 
 export interface ForkContext {
@@ -1082,8 +1064,6 @@ export function activateTab(tab: TabData): void {
   tab.controllers.selectionController?.start();
   tab.controllers.browserSelectionController?.start();
   tab.controllers.canvasSelectionController?.start();
-  // Refresh navigation sidebar visibility (dimensions now available after display)
-  tab.ui.navigationSidebar?.updateVisibility();
 }
 
 /**
@@ -1133,8 +1113,6 @@ export async function destroyTab(tab: TabData): Promise<void> {
   tab.services.titleGenerationService = null;
   tab.ui.statusPanel?.destroy();
   tab.ui.statusPanel = null;
-  tab.ui.navigationSidebar?.destroy();
-  tab.ui.navigationSidebar = null;
 
   // Cleanup subagents
   tab.services.subagentManager.orphanAllActive();
