@@ -7,6 +7,7 @@ import type InquiryModule from '../../../InquiryModule';
 import { confirm } from '../../../shared/modals/ConfirmModal';
 import { cleanupThinkingBlock } from '../rendering';
 import type { MessageRenderer } from '../rendering/MessageRenderer';
+import { createOwlIcon } from '../../../../ui/components/owl-icon';
 import { findRewindContext } from '../rewind';
 import type { SubagentManager } from '../services/SubagentManager';
 import type { TitleGenerationService } from '../services/TitleGenerationService';
@@ -123,7 +124,9 @@ export class ConversationController {
 
       // Recreate welcome element first (before StatusPanel for consistent ordering)
       const welcomeEl = messagesEl.createDiv({ cls: 'claudian-welcome' });
-      welcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: this.getGreeting() });
+      welcomeEl.appendChild(createOwlIcon(32));
+      welcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: 'Good evening' });
+      welcomeEl.createDiv({ cls: 'claudian-welcome-subtitle', text: 'What knowledge do you seek?' });
       this.deps.setWelcomeEl(welcomeEl);
 
       // Remount StatusPanel to restore state for new conversation
@@ -806,7 +809,9 @@ export class ConversationController {
 
     // Only add greeting if not already present
     if (!welcomeEl.querySelector('.claudian-welcome-greeting')) {
-      welcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: this.getGreeting() });
+      welcomeEl.appendChild(createOwlIcon(32));
+      welcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: 'Good evening' });
+      welcomeEl.createDiv({ cls: 'claudian-welcome-subtitle', text: 'What knowledge do you seek?' });
     }
 
     this.updateWelcomeVisibility();

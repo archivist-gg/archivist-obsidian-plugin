@@ -138,7 +138,7 @@ export class MessageRenderer {
     // Recreate welcome element after clearing
     const newWelcomeEl = this.messagesEl.createDiv({ cls: 'claudian-welcome' });
     newWelcomeEl.appendChild(createOwlIcon(32));
-    newWelcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: getGreeting() });
+    newWelcomeEl.createDiv({ cls: 'claudian-welcome-greeting', text: 'Good evening' });
     newWelcomeEl.createDiv({ cls: 'claudian-welcome-subtitle', text: 'What knowledge do you seek?' });
 
     for (let i = 0; i < messages.length; i++) {
