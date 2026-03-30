@@ -623,7 +623,8 @@ export class MentionDropdownController {
         if (selectedItem.absolutePath) {
           this.callbacks.onAttachFile(selectedItem.absolutePath);
         }
-        this.insertReplacement(beforeAt, `${displayName} `, afterCursor);
+        // Remove the @mention text -- the file chip above the textarea represents it
+        this.insertReplacement(beforeAt, '', afterCursor);
         break;
       }
       case 'folder': {
@@ -636,8 +637,11 @@ export class MentionDropdownController {
         const normalizedPath = this.callbacks.normalizePathForVault(rawPath);
         if (normalizedPath) {
           this.callbacks.onAttachFile(normalizedPath);
+          // Remove the @mention text -- the file chip above the textarea represents it
+          this.insertReplacement(beforeAt, '', afterCursor);
+        } else {
+          this.insertReplacement(beforeAt, `@${selectedItem.name} `, afterCursor);
         }
-        this.insertReplacement(beforeAt, `@${normalizedPath ?? selectedItem.name} `, afterCursor);
         break;
       }
     }

@@ -47,6 +47,27 @@
 .archivist-inline-mention-icon { display: inline-flex; align-items: center; }
 .archivist-inline-mention-icon svg { width: 12px; height: 12px; }
 
+/* Entity chips in context row */
+.archivist-entity-chips {
+  display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 0;
+}
+.archivist-entity-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 12px;
+  background: rgba(var(--claudian-brand-rgb, 217,119,87), 0.12);
+  font-size: 11px; white-space: nowrap;
+}
+.archivist-entity-chip-type {
+  color: var(--claudian-brand); font-weight: 600; text-transform: uppercase; font-size: 9px;
+}
+.archivist-entity-chip-name {
+  color: var(--text-normal);
+}
+.archivist-entity-chip-remove {
+  cursor: pointer; color: var(--text-faint); margin-left: 2px; font-size: 13px; line-height: 1;
+}
+.archivist-entity-chip-remove:hover { color: var(--text-normal); }
+
 /* [[ Entity autocomplete dropdown */
 .claudian-entity-autocomplete-dropdown {
   position: absolute; bottom: 100%; left: 0; right: 0;

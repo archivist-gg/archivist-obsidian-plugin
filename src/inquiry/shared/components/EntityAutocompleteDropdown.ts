@@ -107,6 +107,8 @@ export class EntityAutocompleteDropdown {
   private static readonly MAX_RESULTS = 20;
   private static readonly DEBOUNCE_MS = 200;
 
+  private onSelect?: (entityType: string, name: string) => void;
+
   /** Whether the dropdown is currently visible. */
   get isVisible(): boolean {
     return this._isVisible;
@@ -116,10 +118,12 @@ export class EntityAutocompleteDropdown {
     containerEl: HTMLElement,
     inputEl: HTMLTextAreaElement,
     entityRegistry: any,
+    onSelect?: (entityType: string, name: string) => void,
   ) {
     this.containerEl = containerEl;
     this.inputEl = inputEl;
     this.entityRegistry = entityRegistry;
+    this.onSelect = onSelect;
   }
 
   /**
@@ -307,10 +311,18 @@ export class EntityAutocompleteDropdown {
     const beforeBrackets = text.substring(0, this.bracketStartIndex);
     const afterCursor = text.substring(cursorPos);
 
-    const replacement = `[[${item.entityType}:${item.name}]]`;
-    this.inputEl.value = beforeBrackets + replacement + afterCursor;
-    const newCursorPos = beforeBrackets.length + replacement.length;
-    this.inputEl.selectionStart = this.inputEl.selectionEnd = newCursorPos;
+    if (this.onSelect) {
+      // Remove the [[query from textarea -- the chip above represents it
+      this.inputEl.value = beforeBrackets + afterCursor;
+      this.inputEl.selectionStart = this.inputEl.selectionEnd = beforeBrackets.length;
+      this.onSelect(item.entityType, item.name);
+    } else {
+      // Fallback: insert raw text
+      const replacement = `[[${item.entityType}:${item.name}]]`;
+      this.inputEl.value = beforeBrackets + replacement + afterCursor;
+      const newCursorPos = beforeBrackets.length + replacement.length;
+      this.inputEl.selectionStart = this.inputEl.selectionEnd = newCursorPos;
+    }
 
     this.hide();
     this.inputEl.focus();

@@ -549,10 +549,33 @@ export function initializeTabUI(
 
   // Initialize entity autocomplete dropdown ([[entity]] references)
   if (plugin.entityRegistry) {
+    // Create entity chips container in context row
+    const entityChipsEl = dom.contextRowEl.createDiv({ cls: 'archivist-entity-chips' });
+    entityChipsEl.style.display = 'none';
+
+    const entityRefs: { type: string; name: string }[] = [];
+
     tab.ui.entityAutocomplete = new EntityAutocompleteDropdown(
       dom.inputContainerEl,
       dom.inputEl,
       plugin.entityRegistry,
+      (entityType: string, name: string) => {
+        entityRefs.push({ type: entityType, name });
+        // Create chip
+        const chipEl = entityChipsEl.createDiv({ cls: 'archivist-entity-chip' });
+        chipEl.createSpan({ cls: 'archivist-entity-chip-type', text: entityType });
+        chipEl.createSpan({ cls: 'archivist-entity-chip-name', text: name });
+        const removeEl = chipEl.createSpan({ cls: 'archivist-entity-chip-remove', text: '\u00d7' });
+        removeEl.addEventListener('click', () => {
+          const idx = entityRefs.findIndex(r => r.type === entityType && r.name === name);
+          if (idx >= 0) entityRefs.splice(idx, 1);
+          chipEl.remove();
+          if (entityRefs.length === 0) entityChipsEl.style.display = 'none';
+          dom.contextRowEl.classList.toggle('has-content', dom.contextRowEl.childElementCount > 0);
+        });
+        entityChipsEl.style.display = 'flex';
+        dom.contextRowEl.classList.add('has-content');
+      },
     );
   }
 
