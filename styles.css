@@ -219,7 +219,7 @@
   flex-shrink: 0;
   transition: color 0.15s, border-color 0.15s;
 }
-.archivist-tab:hover { color: var(--text-normal); }
+.archivist-tab:hover { color: var(--claudian-brand); opacity: 0.7; }
 .archivist-tab-active { color: var(--claudian-brand); border-bottom-color: var(--claudian-brand); }
 
 .archivist-tab-title { max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
