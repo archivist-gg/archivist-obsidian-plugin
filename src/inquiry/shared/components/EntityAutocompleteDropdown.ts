@@ -102,10 +102,15 @@ export class EntityAutocompleteDropdown {
   private selectedIndex = 0;
   private bracketStartIndex = -1;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
-  private isVisible = false;
+  private _isVisible = false;
 
   private static readonly MAX_RESULTS = 20;
   private static readonly DEBOUNCE_MS = 200;
+
+  /** Whether the dropdown is currently visible. */
+  get isVisible(): boolean {
+    return this._isVisible;
+  }
 
   constructor(
     containerEl: HTMLElement,
@@ -136,7 +141,7 @@ export class EntityAutocompleteDropdown {
    * Returns true if the key was consumed by the dropdown.
    */
   handleKeydown(e: KeyboardEvent): boolean {
-    if (!this.isVisible) return false;
+    if (!this._isVisible) return false;
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -174,7 +179,7 @@ export class EntityAutocompleteDropdown {
       this.dropdownEl.remove();
       this.dropdownEl = null;
     }
-    this.isVisible = false;
+    this._isVisible = false;
     this.bracketStartIndex = -1;
     this.results = [];
     this.selectedIndex = 0;
@@ -254,7 +259,7 @@ export class EntityAutocompleteDropdown {
     this.selectedIndex = 0;
 
     if (this.results.length > 0) {
-      this.isVisible = true;
+      this._isVisible = true;
       this.renderDropdown();
     } else {
       this.hide();

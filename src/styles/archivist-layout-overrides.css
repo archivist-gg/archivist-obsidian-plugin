@@ -46,3 +46,34 @@
 }
 .archivist-inline-mention-icon { display: inline-flex; align-items: center; }
 .archivist-inline-mention-icon svg { width: 12px; height: 12px; }
+
+/* [[ Entity autocomplete dropdown */
+.claudian-entity-autocomplete-dropdown {
+  position: absolute; bottom: 100%; left: 0; right: 0;
+  max-height: 240px; overflow-y: auto;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  z-index: 100;
+  padding: 4px 0;
+}
+.claudian-entity-autocomplete-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 10px; cursor: pointer;
+  font-size: 12px;
+}
+.claudian-entity-autocomplete-item:hover,
+.claudian-entity-autocomplete-item.is-selected {
+  background: var(--background-secondary);
+}
+.claudian-entity-autocomplete-name {
+  font-weight: 500; color: var(--text-normal);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.claudian-entity-autocomplete-meta {
+  flex-shrink: 0; margin-left: 8px;
+  font-size: 10px; color: var(--text-muted);
+  background: var(--background-modifier-border); border-radius: 4px;
+  padding: 1px 5px;
+}

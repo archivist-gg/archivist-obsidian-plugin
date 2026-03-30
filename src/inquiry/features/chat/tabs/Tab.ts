@@ -7,6 +7,7 @@ import type { ChatMessage, ClaudeModel, Conversation, EffortLevel, PermissionMod
 import { DEFAULT_CLAUDE_MODELS, DEFAULT_EFFORT_LEVEL, getContextWindowSize, isAdaptiveThinkingModel } from '../../../core/types';
 import { t } from '../../../i18n';
 import type InquiryModule from '../../../InquiryModule';
+import { EntityAutocompleteDropdown } from '../../../shared/components/EntityAutocompleteDropdown';
 import { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import { getEnhancedPath } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
@@ -122,6 +123,7 @@ export function createTab(options: TabCreateOptions): TabData {
       mcpServerSelector: null,
       permissionToggle: null,
       slashCommandDropdown: null,
+      entityAutocomplete: null,
       instructionModeManager: null,
       bangBashModeManager: null,
       contextUsageMeter: null,
@@ -545,6 +547,15 @@ export function initializeTabUI(
     () => new Set((plugin.settings.hiddenSlashCommands || []).map(c => c.toLowerCase()))
   );
 
+  // Initialize entity autocomplete dropdown ([[entity]] references)
+  if (plugin.entityRegistry) {
+    tab.ui.entityAutocomplete = new EntityAutocompleteDropdown(
+      dom.inputContainerEl,
+      dom.inputEl,
+      plugin.entityRegistry,
+    );
+  }
+
   // Initialize navigation sidebar
   if (dom.messagesEl.parentElement) {
     tab.ui.navigationSidebar = new NavigationSidebar(
@@ -894,6 +905,7 @@ export function initializeTabControllers(
       if (tab.controllers.inputController?.isResumeDropdownVisible()) return true;
       if (ui.slashCommandDropdown?.isVisible()) return true;
       if (ui.fileContextManager?.isMentionDropdownVisible()) return true;
+      if (ui.entityAutocomplete?.isVisible) return true;
       return false;
     },
   });
@@ -955,6 +967,10 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
       return;
     }
 
+    if (ui.entityAutocomplete?.handleKeydown(e)) {
+      return;
+    }
+
     // Check !e.isComposing for IME support (Chinese, Japanese, Korean, etc.)
     if (e.key === 'Escape' && !e.isComposing && state.isStreaming) {
       e.preventDefault();
@@ -976,6 +992,7 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
     if (!ui.bangBashModeManager?.isActive()) {
       ui.fileContextManager?.handleInputChange();
     }
+    ui.entityAutocomplete?.handleInput();
     ui.instructionModeManager?.handleInputChange();
     ui.bangBashModeManager?.handleInputChange();
     syncBangBashSuppression();
@@ -1088,6 +1105,8 @@ export async function destroyTab(tab: TabData): Promise<void> {
   tab.ui.fileContextManager?.destroy();
   tab.ui.slashCommandDropdown?.destroy();
   tab.ui.slashCommandDropdown = null;
+  tab.ui.entityAutocomplete?.destroy();
+  tab.ui.entityAutocomplete = null;
   tab.ui.instructionModeManager?.destroy();
   tab.ui.instructionModeManager = null;
   tab.ui.bangBashModeManager?.destroy();
