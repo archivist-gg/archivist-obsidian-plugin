@@ -205,30 +205,33 @@ export default class ArchivistPlugin extends Plugin {
       el.appendChild(createErrorBlock(result.error, source));
     }
 
-    // Add delete button (trash icon) — appears in top-right of the block
+    // Add delete button (trash icon) — appears below Obsidian's </> button
     const deleteBtn = el.createDiv({ cls: 'archivist-block-delete-btn' });
     setIcon(deleteBtn, 'trash-2');
     deleteBtn.setAttribute('aria-label', 'Delete block');
-    deleteBtn.addEventListener('click', () => {
+    deleteBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const info = ctx.getSectionInfo(el);
       if (!info) return;
       const editor = this.app.workspace.activeEditor?.editor;
       if (!editor) return;
-      // Delete from the opening fence line to the closing fence line (inclusive)
       const fromLine = info.lineStart;
       const toLine = info.lineEnd;
       const totalLines = editor.lineCount();
       if (toLine + 1 < totalLines) {
-        // Delete including trailing newline
         editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
+        // Keep cursor at the delete position to prevent scroll jump
+        editor.setCursor({ line: fromLine, ch: 0 });
       } else {
-        // Last block in file — delete to end, including leading newline if possible
         const endCh = editor.getLine(toLine).length;
         if (fromLine > 0) {
           const prevLineLen = editor.getLine(fromLine - 1).length;
           editor.replaceRange('', { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
+          editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
         } else {
           editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+          editor.setCursor({ line: 0, ch: 0 });
         }
       }
     });

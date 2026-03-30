@@ -44,19 +44,19 @@
   --stat-block-section-gap: 0.3em;
 }
 
-/* Delete button on stat blocks in live preview */
+/* Delete button on stat blocks — matches Obsidian's </> edit-block-button */
 .archivist-block-delete-btn {
   position: absolute;
-  top: 32px;
+  top: 30px;
   right: 4px;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: var(--radius-s, 4px);
   cursor: pointer;
-  color: var(--text-faint);
+  color: var(--icon-color, var(--text-faint));
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s, color 0.15s, background 0.15s;
@@ -64,8 +64,9 @@
 }
 
 .archivist-block-delete-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75;
 }
 
 /* Show on hover of the code block container (Obsidian's wrapper) */
