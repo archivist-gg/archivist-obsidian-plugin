@@ -36,3 +36,13 @@
 /* Toolbar: top border, small font, separators */
 .claudian-input-toolbar { border-top: 1px solid var(--background-modifier-border-focus); font-size: 10px; }
 .archivist-toolbar-sep { width: 1px; height: 12px; background: var(--background-modifier-border); flex-shrink: 0; }
+
+/* @ Mention inline pill chips */
+.archivist-inline-mention {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 1px 6px; border-radius: 10px;
+  background: var(--background-secondary); font-size: 11px;
+  vertical-align: baseline; cursor: default; white-space: nowrap;
+}
+.archivist-inline-mention-icon { display: inline-flex; align-items: center; }
+.archivist-inline-mention-icon svg { width: 12px; height: 12px; }

@@ -1,5 +1,5 @@
 import type { App, Component } from 'obsidian';
-import { MarkdownRenderer, Notice } from 'obsidian';
+import { MarkdownRenderer, Notice, setIcon } from 'obsidian';
 
 import { isSubagentToolName, isWriteEditTool, TOOL_AGENT_OUTPUT } from '../../../core/tools/toolNames';
 import type { ChatMessage, ImageAttachment, SubagentInfo, ToolCallInfo } from '../../../core/types';
@@ -484,7 +484,7 @@ export class MessageRenderer {
   /**
    * Renders markdown content with code block enhancements.
    */
-  async renderContent(el: HTMLElement, markdown: string, options?: { skipDndReplacement?: boolean }): Promise<void> {
+  async renderContent(el: HTMLElement, markdown: string, options?: { skipDndReplacement?: boolean; mentionedFiles?: string[] }): Promise<void> {
     el.empty();
 
     try {
@@ -542,11 +542,115 @@ export class MessageRenderer {
 
       // Process file paths to make them clickable links
       processFileLinks(this.app, el);
+
+      // Replace @filename mentions with inline pill chips
+      this.postProcessMentionChips(el, options?.mentionedFiles);
     } catch {
       el.createDiv({
         cls: 'claudian-render-error',
         text: 'Failed to render message content.',
       });
+    }
+  }
+
+  // ============================================
+  // @ Mention Chips
+  // ============================================
+
+  /**
+   * Post-processes rendered HTML to replace @filename text with inline pill chips.
+   * Walks text nodes (skipping <pre> and <code> elements) and replaces
+   * @path/to/file.ext patterns with styled chip spans.
+   *
+   * If mentionedFiles is provided, only those exact filenames are matched.
+   * Otherwise, uses a regex pattern to detect @file references.
+   */
+  private postProcessMentionChips(el: HTMLElement, mentionedFiles?: string[]): void {
+    // Match @path/file.ext patterns in text
+    const MENTION_REGEX = /@([\w./-]+\.\w+)/g;
+
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node: Text) => {
+        // Skip nodes inside <pre> or <code> elements
+        let parent = node.parentElement;
+        while (parent && parent !== el) {
+          const tag = parent.tagName.toLowerCase();
+          if (tag === 'pre' || tag === 'code') {
+            return NodeFilter.FILTER_REJECT;
+          }
+          parent = parent.parentElement;
+        }
+        // Reset regex before testing
+        MENTION_REGEX.lastIndex = 0;
+        return node.textContent && MENTION_REGEX.test(node.textContent)
+          ? NodeFilter.FILTER_ACCEPT
+          : NodeFilter.FILTER_SKIP;
+      },
+    });
+
+    // Collect matching text nodes (avoid modifying tree during traversal)
+    const textNodes: Text[] = [];
+    let current = walker.nextNode();
+    while (current) {
+      textNodes.push(current as Text);
+      current = walker.nextNode();
+    }
+
+    // Build a set of mentioned files for fast lookup (if provided)
+    const mentionSet = mentionedFiles
+      ? new Set(mentionedFiles.map(f => f.toLowerCase()))
+      : null;
+
+    for (const textNode of textNodes) {
+      const text = textNode.textContent || '';
+      MENTION_REGEX.lastIndex = 0;
+      const parts: (string | HTMLElement)[] = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+
+      while ((match = MENTION_REGEX.exec(text)) !== null) {
+        const filename = match[1];
+
+        // If mentionedFiles provided, only match those exact files
+        if (mentionSet && !mentionSet.has(filename.toLowerCase())) {
+          continue;
+        }
+
+        // Add text before the match
+        if (match.index > lastIndex) {
+          parts.push(text.slice(lastIndex, match.index));
+        }
+
+        // Create pill chip
+        const chip = createEl('span', { cls: 'archivist-inline-mention' });
+        const iconSpan = chip.createSpan({ cls: 'archivist-inline-mention-icon' });
+        setIcon(iconSpan, 'file-text');
+        chip.createSpan({ text: filename });
+
+        parts.push(chip);
+        lastIndex = match.index + match[0].length;
+      }
+
+      // Only modify if we found matches
+      if (parts.length > 0) {
+        // Add remaining text
+        if (lastIndex < text.length) {
+          parts.push(text.slice(lastIndex));
+        }
+
+        // Replace the text node with the parts
+        const parent = textNode.parentNode;
+        if (!parent) continue;
+        const fragment = document.createDocumentFragment();
+        for (const part of parts) {
+          if (typeof part === 'string') {
+            fragment.appendChild(document.createTextNode(part));
+          } else {
+            fragment.appendChild(part);
+          }
+        }
+        parent.replaceChild(fragment, textNode);
+      }
     }
   }
 
