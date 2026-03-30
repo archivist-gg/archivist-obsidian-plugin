@@ -22,7 +22,7 @@ import type { PluginManager } from '../plugins';
 import { buildSystemPrompt, type SystemPromptSettings } from '../prompts/mainAgent';
 import type { DndPromptContext } from '../prompts/dndContext';
 import type { ClaudianSettings, PermissionMode } from '../types';
-import { isAdaptiveThinkingModel, THINKING_BUDGETS } from '../types';
+import { isAdaptiveThinkingModel } from '../types';
 import { createCustomSpawnFunction } from './customSpawn';
 import {
   computeSystemPromptKey,
@@ -158,10 +158,6 @@ export class QueryOptionsBuilder {
       dndContext: ctx.dndContext,
     };
 
-    const budgetSetting = ctx.settings.thinkingBudget;
-    const budgetConfig = THINKING_BUDGETS.find(b => b.value === budgetSetting);
-    const thinkingTokens = budgetConfig?.tokens ?? null;
-
     // Compute disallowedToolsKey from all disabled MCP tools (pre-registered upfront)
     const allDisallowedTools = ctx.mcpManager.getAllDisallowedMcpTools();
     const disallowedToolsKey = allDisallowedTools.join('|');
@@ -171,7 +167,7 @@ export class QueryOptionsBuilder {
 
     return {
       model: ctx.settings.model,
-      thinkingTokens: thinkingTokens && thinkingTokens > 0 ? thinkingTokens : null,
+      thinkingTokens: null,
       effortLevel: isAdaptiveThinkingModel(ctx.settings.model) ? ctx.settings.effortLevel : null,
       permissionMode: ctx.settings.permissionMode,
       systemPromptKey: computeSystemPromptKey(systemPromptSettings),
@@ -349,10 +345,8 @@ export class QueryOptionsBuilder {
       options.canUseTool = canUseTool;
     }
 
-    if (permissionMode === 'yolo') {
+    if (permissionMode === 'unleashed') {
       options.permissionMode = 'bypassPermissions';
-    } else if (permissionMode === 'plan') {
-      options.permissionMode = 'plan';
     } else {
       options.permissionMode = 'acceptEdits';
     }
@@ -372,11 +366,6 @@ export class QueryOptionsBuilder {
     if (isAdaptiveThinkingModel(model)) {
       options.thinking = { type: 'adaptive' };
       options.effort = settings.effortLevel;
-    } else {
-      const budgetConfig = THINKING_BUDGETS.find(b => b.value === settings.thinkingBudget);
-      if (budgetConfig && budgetConfig.tokens > 0) {
-        options.maxThinkingTokens = budgetConfig.tokens;
-      }
     }
   }
 

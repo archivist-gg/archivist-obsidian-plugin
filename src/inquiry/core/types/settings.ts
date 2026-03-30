@@ -3,7 +3,7 @@
  */
 
 import type { Locale } from '../../i18n/types';
-import type { ClaudeModel, EffortLevel, ThinkingBudget } from './models';
+import type { ClaudeModel, EffortLevel } from './models';
 
 const UNIX_BLOCKED_COMMANDS = [
   'rm -rf',
@@ -118,7 +118,7 @@ export function getCliPlatformKey(): CliPlatformKey {
 export type HostnameCliPaths = Record<string, string>;
 
 /** Permission mode for tool execution. */
-export type PermissionMode = 'yolo' | 'plan' | 'normal';
+export type PermissionMode = 'unleashed' | 'guarded';
 
 /** User decision from the approval modal. */
 export type ApprovalDecision = 'allow' | 'allow-always' | 'deny' | 'cancel';
@@ -161,7 +161,7 @@ export interface CCPermissions {
   /** Rules that always prompt for confirmation */
   ask?: PermissionRule[];
   /** Default permission mode */
-  defaultMode?: 'acceptEdits' | 'bypassPermissions' | 'default' | 'plan';
+  defaultMode?: 'acceptEdits' | 'bypassPermissions' | 'default';
   /** Additional directories to include in permission scope */
   additionalDirectories?: string[];
 }
@@ -245,7 +245,6 @@ export interface ClaudianSettings {
 
   // Model & thinking (Claudian uses enum, CC uses full model ID string)
   model: ClaudeModel;
-  thinkingBudget: ThinkingBudget;  // Legacy token budget for custom models
   effortLevel: EffortLevel;  // Effort level for adaptive thinking models
   enableAutoTitleGeneration: boolean;
   titleGenerationModel: string;  // Model for auto title generation (empty = auto)
@@ -310,18 +309,17 @@ export const DEFAULT_SETTINGS: ClaudianSettings = {
   enableBlocklist: true,
   allowExternalAccess: false,
   blockedCommands: getDefaultBlockedCommands(),
-  permissionMode: 'yolo',
+  permissionMode: 'unleashed',
 
   // Model & thinking
-  model: 'haiku',
-  thinkingBudget: 'off',
+  model: 'opus',
   effortLevel: 'high',
   enableAutoTitleGeneration: true,
-  titleGenerationModel: '',  // Empty = auto (ANTHROPIC_DEFAULT_HAIKU_MODEL or claude-haiku-4-5)
+  titleGenerationModel: 'haiku',
   enableChrome: false,  // Disabled by default
   enableBangBash: false,  // Disabled by default
-  enableOpus1M: false,  // Disabled by default
-  enableSonnet1M: false,  // Disabled by default
+  enableOpus1M: true,  // Enabled by default
+  enableSonnet1M: true,  // Enabled by default
 
   // Content settings
   excludedTags: [],
@@ -350,7 +348,7 @@ export const DEFAULT_SETTINGS: ClaudianSettings = {
   claudeCliPathsByHost: {},  // Per-device paths keyed by hostname
   loadUserClaudeSettings: true,  // Default on for compatibility
 
-  lastClaudeModel: 'haiku',
+  lastClaudeModel: 'opus',
   lastCustomModel: '',
   lastEnvHash: '',
 

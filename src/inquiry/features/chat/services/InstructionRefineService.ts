@@ -3,7 +3,7 @@ import { query as agentQuery } from '@anthropic-ai/claude-agent-sdk';
 
 import { createCustomSpawnFunction } from '../../../core/agent/customSpawn';
 import { buildRefineSystemPrompt } from '../../../core/prompts/instructionRefine';
-import { type InstructionRefineResult, isAdaptiveThinkingModel, THINKING_BUDGETS } from '../../../core/types';
+import { type InstructionRefineResult, isAdaptiveThinkingModel } from '../../../core/types';
 import type InquiryModule from '../../../InquiryModule';
 import { getEnhancedPath, getMissingNodeError, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
@@ -107,11 +107,6 @@ export class InstructionRefineService {
     if (isAdaptiveThinkingModel(this.plugin.settings.model)) {
       options.thinking = { type: 'adaptive' };
       options.effort = this.plugin.settings.effortLevel;
-    } else {
-      const budgetConfig = THINKING_BUDGETS.find(b => b.value === this.plugin.settings.thinkingBudget);
-      if (budgetConfig && budgetConfig.tokens > 0) {
-        options.maxThinkingTokens = budgetConfig.tokens;
-      }
     }
 
     try {

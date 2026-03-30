@@ -108,7 +108,7 @@ export class ConversationController {
       state.currentTodos = null;
       state.pendingNewSessionPlan = null;
       state.planFilePath = null;
-      state.prePlanPermissionMode = null;
+
       state.autoScrollEnabled = plugin.settings.enableAutoScroll ?? true;
 
       // Reset agent service session (no session ID for entry point)
@@ -169,7 +169,7 @@ export class ConversationController {
       state.currentTodos = null;
       state.pendingNewSessionPlan = null;
       state.planFilePath = null;
-      state.prePlanPermissionMode = null;
+
       state.autoScrollEnabled = plugin.settings.enableAutoScroll ?? true;
 
       // Pass persistent paths to prevent stale external contexts

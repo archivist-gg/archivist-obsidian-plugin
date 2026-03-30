@@ -460,10 +460,10 @@ export class InquiryModule {
       slashCommands,
     };
 
-    // Plan mode is ephemeral -- normalize back to normal on load so the app
-    // doesn't start stuck in plan mode after a restart (prePlanPermissionMode is lost)
-    if (this.settings.permissionMode === 'plan') {
-      this.settings.permissionMode = 'normal';
+    // Migrate legacy permission mode values to new names
+    const pm = this.settings.permissionMode as string;
+    if (pm === 'yolo' || pm === 'plan' || pm === 'normal') {
+      this.settings.permissionMode = (pm === 'normal' || pm === 'plan') ? 'guarded' : 'unleashed';
     }
 
     const didNormalizeModelVariants = this.normalizeModelVariantSettings();

@@ -3,8 +3,8 @@ import { Notice } from 'obsidian';
 
 import { ClaudianService } from '../../../core/agent';
 import type { McpServerManager } from '../../../core/mcp';
-import type { ChatMessage, ClaudeModel, Conversation, EffortLevel, PermissionMode, SlashCommand, StreamChunk, ThinkingBudget } from '../../../core/types';
-import { DEFAULT_CLAUDE_MODELS, DEFAULT_EFFORT_LEVEL, DEFAULT_THINKING_BUDGET, getContextWindowSize, isAdaptiveThinkingModel } from '../../../core/types';
+import type { ChatMessage, ClaudeModel, Conversation, EffortLevel, PermissionMode, SlashCommand, StreamChunk } from '../../../core/types';
+import { DEFAULT_CLAUDE_MODELS, DEFAULT_EFFORT_LEVEL, getContextWindowSize, isAdaptiveThinkingModel } from '../../../core/types';
 import { t } from '../../../i18n';
 import type InquiryModule from '../../../InquiryModule';
 import { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
@@ -428,7 +428,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
   const toolbarComponents = createInputToolbar(inputToolbar, {
     getSettings: () => ({
       model: plugin.settings.model,
-      thinkingBudget: plugin.settings.thinkingBudget,
       effortLevel: plugin.settings.effortLevel,
       permissionMode: plugin.settings.permissionMode,
       enableOpus1M: plugin.settings.enableOpus1M,
@@ -439,7 +438,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
       plugin.settings.model = model;
       const isDefaultModel = DEFAULT_CLAUDE_MODELS.find((m) => m.value === model);
       if (isDefaultModel) {
-        plugin.settings.thinkingBudget = DEFAULT_THINKING_BUDGET[model];
         if (isAdaptiveThinkingModel(model)) {
           plugin.settings.effortLevel = DEFAULT_EFFORT_LEVEL[model] ?? 'high';
         }
@@ -465,9 +463,8 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
         };
       }
     },
-    onThinkingBudgetChange: async (budget: ThinkingBudget) => {
-      plugin.settings.thinkingBudget = budget;
-      await plugin.saveSettings();
+    onThinkingBudgetChange: async () => {
+      // Legacy thinking budget removed; adaptive effort is used instead
     },
     onEffortLevelChange: async (effort: EffortLevel) => {
       plugin.settings.effortLevel = effort;
@@ -476,7 +473,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
     onPermissionModeChange: async (mode) => {
       plugin.settings.permissionMode = mode;
       await plugin.saveSettings();
-      dom.inputWrapper.toggleClass('claudian-input-plan-mode', mode === 'plan');
     },
   });
 
@@ -510,7 +506,6 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
     await plugin.saveSettings();
   });
 
-  dom.inputWrapper.toggleClass('claudian-input-plan-mode', plugin.settings.permissionMode === 'plan');
 }
 
 export interface InitializeTabUIOptions {
@@ -1160,14 +1155,7 @@ export function setupServiceCallbacks(tab: TabData, plugin: InquiryModule): void
     tab.service.setExitPlanModeCallback(
       async (input, signal) => {
         const decision = await tab.controllers.inputController?.handleExitPlanMode(input, signal) ?? null;
-        // Revert only on approve; feedback and cancel keep plan mode active.
         if (decision !== null && decision.type !== 'feedback') {
-          // Only restore permission mode if still in plan mode — user may have toggled out via Shift+Tab
-          if (plugin.settings.permissionMode === 'plan') {
-            const restoreMode = tab.state.prePlanPermissionMode ?? 'normal';
-            tab.state.prePlanPermissionMode = null;
-            updatePlanModeUI(tab, plugin, restoreMode);
-          }
           if (decision.type === 'approve-new-session') {
             tab.state.pendingNewSessionPlan = decision.planContent;
             tab.state.cancelRequested = true;
@@ -1185,17 +1173,12 @@ export function setupServiceCallbacks(tab: TabData, plugin: InquiryModule): void
       renderAutoTriggeredTurn(tab, chunks);
     });
     tab.service.setPermissionModeSyncCallback((sdkMode) => {
-      let mode: PermissionMode;
-      if (sdkMode === 'bypassPermissions') mode = 'yolo';
-      else if (sdkMode === 'plan') mode = 'plan';
-      else mode = 'normal';
+      const mode: PermissionMode = sdkMode === 'bypassPermissions' ? 'unleashed' : 'guarded';
 
       if (plugin.settings.permissionMode !== mode) {
-        // Save pre-plan mode when entering plan (for Shift+Tab toggle restore)
-        if (mode === 'plan' && tab.state.prePlanPermissionMode === null) {
-          tab.state.prePlanPermissionMode = plugin.settings.permissionMode;
-        }
-        updatePlanModeUI(tab, plugin, mode);
+        plugin.settings.permissionMode = mode;
+        void plugin.saveSettings();
+        tab.ui.permissionToggle?.updateDisplay();
       }
     });
   }
@@ -1246,9 +1229,3 @@ function renderAutoTriggeredTurn(tab: TabData, chunks: StreamChunk[]): void {
   tab.renderer?.scrollToBottom();
 }
 
-export function updatePlanModeUI(tab: TabData, plugin: InquiryModule, mode: PermissionMode): void {
-  plugin.settings.permissionMode = mode;
-  void plugin.saveSettings();
-  tab.ui.permissionToggle?.updateDisplay();
-  tab.dom.inputWrapper.toggleClass('claudian-input-plan-mode', mode === 'plan');
-}

@@ -64,7 +64,7 @@ import type {
   SlashCommand,
   StreamChunk,
 } from '../types';
-import { isAdaptiveThinkingModel, THINKING_BUDGETS } from '../types';
+import { isAdaptiveThinkingModel } from '../types';
 import { MessageChannel } from './MessageChannel';
 import {
   type ColdStartQueryContext,
@@ -696,17 +696,7 @@ export class ClaudianService {
           }
         }
 
-        // SDK auto-approves EnterPlanMode (checkPermissions → allow),
-        // so canUseTool is never called. Detect the tool_use in the stream
-        // and fire the sync callback to update the UI.
-        if (event.type === 'tool_use' && event.name === TOOL_ENTER_PLAN_MODE) {
-          if (this.currentConfig) {
-            this.currentConfig.permissionMode = 'plan';
-          }
-          if (this.permissionModeSyncCallback) {
-            try { this.permissionModeSyncCallback('plan'); } catch { /* non-critical */ }
-          }
-        }
+        // SDK auto-approves EnterPlanMode — no UI sync needed since plan mode is removed.
 
         if (handler) {
           // Add sessionId to usage chunks (consistent with cold-start path)
@@ -1179,22 +1169,7 @@ export class ClaudianService {
       }
     }
 
-    // Update thinking tokens for custom models (adaptive models don't need dynamic updates)
-    if (!isAdaptiveThinkingModel(selectedModel)) {
-      const budgetConfig = THINKING_BUDGETS.find(b => b.value === this.plugin.settings.thinkingBudget);
-      const thinkingTokens = budgetConfig?.tokens ?? null;
-      const currentThinking = this.currentConfig?.thinkingTokens ?? null;
-      if (thinkingTokens !== currentThinking) {
-        try {
-          await this.persistentQuery.setMaxThinkingTokens(thinkingTokens);
-          if (this.currentConfig) {
-            this.currentConfig.thinkingTokens = thinkingTokens;
-          }
-        } catch {
-          new Notice('Failed to update thinking budget');
-        }
-      }
-    }
+    // Legacy thinking budget removed; adaptive effort is applied via QueryOptionsBuilder.
 
     // Update permission mode if changed
     // Since we always start with allowDangerouslySkipPermissions: true,
@@ -1831,8 +1806,7 @@ export class ClaudianService {
   }
 
   private mapToSDKPermissionMode(mode: PermissionMode): SDKPermissionMode {
-    if (mode === 'yolo') return 'bypassPermissions';
-    if (mode === 'plan') return 'plan';
+    if (mode === 'unleashed') return 'bypassPermissions';
     return 'acceptEdits';
   }
 }

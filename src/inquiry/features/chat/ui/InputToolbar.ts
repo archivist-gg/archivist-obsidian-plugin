@@ -7,7 +7,6 @@ import type {
   ClaudianMcpServer,
   EffortLevel,
   PermissionMode,
-  ThinkingBudget,
   UsageInfo
 } from '../../../core/types';
 import {
@@ -15,7 +14,6 @@ import {
   EFFORT_LEVELS,
   filterVisibleModelOptions,
   isAdaptiveThinkingModel,
-  THINKING_BUDGETS
 } from '../../../core/types';
 import { CHECK_ICON_SVG, MCP_ICON_SVG } from '../../../shared/icons';
 import { getModelsFromEnvironment, parseEnvironmentVariables } from '../../../utils/env';
@@ -24,7 +22,6 @@ import { expandHomePath, normalizePathForFilesystem } from '../../../utils/path'
 
 export interface ToolbarSettings {
   model: ClaudeModel;
-  thinkingBudget: ThinkingBudget;
   effortLevel: EffortLevel;
   permissionMode: PermissionMode;
   enableOpus1M: boolean;
@@ -33,7 +30,8 @@ export interface ToolbarSettings {
 
 export interface ToolbarCallbacks {
   onModelChange: (model: ClaudeModel) => Promise<void>;
-  onThinkingBudgetChange: (budget: ThinkingBudget) => Promise<void>;
+  /** @deprecated Legacy thinking budget removed. Kept for interface compatibility. */
+  onThinkingBudgetChange: (budget: string) => Promise<void>;
   onEffortLevelChange: (effort: EffortLevel) => Promise<void>;
   onPermissionModeChange: (mode: PermissionMode) => Promise<void>;
   getSettings: () => ToolbarSettings;
@@ -131,8 +129,6 @@ export class ThinkingBudgetSelector {
   private container: HTMLElement;
   private effortEl: HTMLElement | null = null;
   private effortGearsEl: HTMLElement | null = null;
-  private budgetEl: HTMLElement | null = null;
-  private budgetGearsEl: HTMLElement | null = null;
   private callbacks: ToolbarCallbacks;
 
   constructor(parentEl: HTMLElement, callbacks: ToolbarCallbacks) {
@@ -149,12 +145,6 @@ export class ThinkingBudgetSelector {
     const effortLabel = this.effortEl.createSpan({ cls: 'claudian-thinking-label-text' });
     effortLabel.setText('Effort:');
     this.effortGearsEl = this.effortEl.createDiv({ cls: 'claudian-thinking-gears' });
-
-    // Legacy budget selector (for custom models)
-    this.budgetEl = this.container.createDiv({ cls: 'claudian-thinking-budget' });
-    const budgetLabel = this.budgetEl.createSpan({ cls: 'claudian-thinking-label-text' });
-    budgetLabel.setText('Thinking:');
-    this.budgetGearsEl = this.budgetEl.createDiv({ cls: 'claudian-thinking-gears' });
 
     this.updateDisplay();
   }
@@ -187,35 +177,6 @@ export class ThinkingBudgetSelector {
     }
   }
 
-  private renderBudgetGears() {
-    if (!this.budgetGearsEl) return;
-    this.budgetGearsEl.empty();
-
-    const currentBudget = this.callbacks.getSettings().thinkingBudget;
-    const currentBudgetInfo = THINKING_BUDGETS.find(b => b.value === currentBudget);
-
-    const currentEl = this.budgetGearsEl.createDiv({ cls: 'claudian-thinking-current' });
-    currentEl.setText(currentBudgetInfo?.label || 'Off');
-
-    const optionsEl = this.budgetGearsEl.createDiv({ cls: 'claudian-thinking-options' });
-
-    for (const budget of [...THINKING_BUDGETS].reverse()) {
-      const gearEl = optionsEl.createDiv({ cls: 'claudian-thinking-gear' });
-      gearEl.setText(budget.label);
-      gearEl.setAttribute('title', budget.tokens > 0 ? `${budget.tokens.toLocaleString()} tokens` : 'Disabled');
-
-      if (budget.value === currentBudget) {
-        gearEl.addClass('selected');
-      }
-
-      gearEl.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        await this.callbacks.onThinkingBudgetChange(budget.value);
-        this.updateDisplay();
-      });
-    }
-  }
-
   updateDisplay() {
     const model = this.callbacks.getSettings().model;
     const adaptive = isAdaptiveThinkingModel(model);
@@ -223,14 +184,9 @@ export class ThinkingBudgetSelector {
     if (this.effortEl) {
       this.effortEl.style.display = adaptive ? '' : 'none';
     }
-    if (this.budgetEl) {
-      this.budgetEl.style.display = adaptive ? 'none' : '';
-    }
 
     if (adaptive) {
       this.renderEffortGears();
-    } else {
-      this.renderBudgetGears();
     }
   }
 }
@@ -239,6 +195,7 @@ export class PermissionToggle {
   private container: HTMLElement;
   private toggleEl: HTMLElement | null = null;
   private labelEl: HTMLElement | null = null;
+  private helpEl: HTMLElement | null = null;
   private callbacks: ToolbarCallbacks;
 
   constructor(parentEl: HTMLElement, callbacks: ToolbarCallbacks) {
@@ -253,36 +210,34 @@ export class PermissionToggle {
     this.labelEl = this.container.createSpan({ cls: 'claudian-permission-label' });
     this.toggleEl = this.container.createDiv({ cls: 'claudian-toggle-switch' });
 
+    // Help icon with tooltip
+    this.helpEl = this.container.createDiv({ cls: 'claudian-permission-help' });
+    setIcon(this.helpEl, 'help-circle');
+
     this.updateDisplay();
 
     this.toggleEl.addEventListener('click', () => this.toggle());
   }
 
   updateDisplay() {
-    if (!this.toggleEl || !this.labelEl) return;
+    if (!this.toggleEl || !this.labelEl || !this.helpEl) return;
 
     const mode = this.callbacks.getSettings().permissionMode;
 
-    if (mode === 'plan') {
-      this.toggleEl.style.display = 'none';
-      this.labelEl.setText('PLAN');
-      this.labelEl.addClass('plan-active');
+    if (mode === 'unleashed') {
+      this.toggleEl.addClass('active');
+      this.labelEl.setText('Unleashed');
+      this.helpEl.setAttribute('aria-label', 'Unleashed: All tool actions are auto-approved without prompting.');
     } else {
-      this.toggleEl.style.display = '';
-      this.labelEl.removeClass('plan-active');
-      if (mode === 'yolo') {
-        this.toggleEl.addClass('active');
-        this.labelEl.setText('YOLO');
-      } else {
-        this.toggleEl.removeClass('active');
-        this.labelEl.setText('Safe');
-      }
+      this.toggleEl.removeClass('active');
+      this.labelEl.setText('Guarded');
+      this.helpEl.setAttribute('aria-label', 'Guarded: File edits are auto-approved; other actions require confirmation.');
     }
   }
 
   private async toggle() {
     const current = this.callbacks.getSettings().permissionMode;
-    const newMode: PermissionMode = current === 'yolo' ? 'normal' : 'yolo';
+    const newMode: PermissionMode = current === 'unleashed' ? 'guarded' : 'unleashed';
     await this.callbacks.onPermissionModeChange(newMode);
     this.updateDisplay();
   }

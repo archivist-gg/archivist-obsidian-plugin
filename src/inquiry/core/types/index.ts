@@ -28,7 +28,6 @@ export {
   isAdaptiveThinkingModel,
   normalizeVisibleModelVariant,
   THINKING_BUDGETS,
-  type ThinkingBudget,
 } from './models';
 
 // SDK types

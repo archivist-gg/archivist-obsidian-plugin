@@ -14,11 +14,6 @@
   min-width: 28px;
 }
 
-.claudian-permission-label.plan-active {
-  color: rgb(92, 148, 140);
-  font-weight: 600;
-}
-
 .claudian-toggle-switch {
   width: 32px;
   height: 18px;
@@ -53,4 +48,21 @@
 .claudian-toggle-switch.active::after {
   transform: translateX(14px);
   background: var(--claudian-brand);
+}
+
+.claudian-permission-help {
+  display: flex;
+  align-items: center;
+  cursor: help;
+  color: var(--text-faint);
+  margin-left: 2px;
+}
+
+.claudian-permission-help svg {
+  width: 12px;
+  height: 12px;
+}
+
+.claudian-permission-help:hover {
+  color: var(--text-muted);
 }
