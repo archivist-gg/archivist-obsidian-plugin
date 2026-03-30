@@ -10,13 +10,9 @@
   padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
-  color: var(--text-muted);
+  color: var(--claudian-brand);
   font-size: 12px;
   transition: color 0.2s ease;
-}
-
-.claudian-model-btn.ready {
-  color: var(--claudian-brand);
 }
 
 .claudian-model-label {

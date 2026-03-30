@@ -903,10 +903,13 @@ export function createInputToolbar(
   permissionToggle: PermissionToggle;
 } {
   const modelSelector = new ModelSelector(parentEl, callbacks);
+  parentEl.createDiv({ cls: 'archivist-toolbar-sep' });
   const thinkingBudgetSelector = new ThinkingBudgetSelector(parentEl, callbacks);
+  parentEl.createDiv({ cls: 'archivist-toolbar-sep' });
   const contextUsageMeter = new ContextUsageMeter(parentEl);
   const externalContextSelector = new ExternalContextSelector(parentEl, callbacks);
   const mcpServerSelector = new McpServerSelector(parentEl);
+  parentEl.createDiv({ cls: 'archivist-toolbar-sep' });
   const permissionToggle = new PermissionToggle(parentEl, callbacks);
 
   return { modelSelector, thinkingBudgetSelector, contextUsageMeter, externalContextSelector, mcpServerSelector, permissionToggle };
