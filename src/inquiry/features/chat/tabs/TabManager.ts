@@ -181,15 +181,19 @@ export class TabManager implements TabManagerInterface {
       } else if (tab.conversationId && tab.state.messages.length > 0 && tab.service) {
         // Tab already has messages loaded - sync service session to conversation
         // This handles the case where user switches between tabs with different sessions
-        const conversation = await this.plugin.getConversationById(tab.conversationId);
-        if (conversation) {
-          const hasMessages = conversation.messages.length > 0;
-          const externalContextPaths = hasMessages
-            ? conversation.externalContextPaths || []
-            : (this.plugin.settings.persistentExternalContextPaths || []);
+        // IMPORTANT: Skip if tab is actively streaming - setSessionId -> ensureReady ->
+        // needsRestart would kill the persistent query and abort the response
+        if (!tab.state.isStreaming) {
+          const conversation = await this.plugin.getConversationById(tab.conversationId);
+          if (conversation) {
+            const hasMessages = conversation.messages.length > 0;
+            const externalContextPaths = hasMessages
+              ? conversation.externalContextPaths || []
+              : (this.plugin.settings.persistentExternalContextPaths || []);
 
-          const resolvedSessionId = tab.service.applyForkState(conversation);
-          tab.service.setSessionId(resolvedSessionId, externalContextPaths);
+            const resolvedSessionId = tab.service.applyForkState(conversation);
+            tab.service.setSessionId(resolvedSessionId, externalContextPaths);
+          }
         }
       } else if (!tab.conversationId && tab.state.messages.length === 0) {
         // New tab with no conversation - initialize welcome greeting
