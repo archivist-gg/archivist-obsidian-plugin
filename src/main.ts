@@ -1,4 +1,5 @@
-import { Plugin, Notice } from "obsidian";
+import { Plugin, Notice, setIcon } from "obsidian";
+import type { MarkdownPostProcessorContext } from "obsidian";
 
 // D&D parsers
 import { parseMonster } from "./parsers/monster-parser";
@@ -70,14 +71,14 @@ export default class ArchivistPlugin extends Plugin {
     await this.inquiry.init();
 
     // D&D code block processors
-    this.registerMarkdownCodeBlockProcessor("monster", (source, el) =>
-      this.renderBlock(source, el, parseMonster, renderMonsterBlock),
+    this.registerMarkdownCodeBlockProcessor("monster", (source, el, ctx) =>
+      this.renderBlock(source, el, ctx, parseMonster, renderMonsterBlock),
     );
-    this.registerMarkdownCodeBlockProcessor("spell", (source, el) =>
-      this.renderBlock(source, el, parseSpell, renderSpellBlock),
+    this.registerMarkdownCodeBlockProcessor("spell", (source, el, ctx) =>
+      this.renderBlock(source, el, ctx, parseSpell, renderSpellBlock),
     );
-    this.registerMarkdownCodeBlockProcessor("item", (source, el) =>
-      this.renderBlock(source, el, parseItem, renderItemBlock),
+    this.registerMarkdownCodeBlockProcessor("item", (source, el, ctx) =>
+      this.renderBlock(source, el, ctx, parseItem, renderItemBlock),
     );
 
     // Inline tag post-processor
@@ -191,6 +192,7 @@ export default class ArchivistPlugin extends Plugin {
   private renderBlock<T>(
     source: string,
     el: HTMLElement,
+    ctx: MarkdownPostProcessorContext,
     parser: (
       source: string,
     ) => { success: true; data: T } | { success: false; error: string },
@@ -202,5 +204,33 @@ export default class ArchivistPlugin extends Plugin {
     } else {
       el.appendChild(createErrorBlock(result.error, source));
     }
+
+    // Add delete button (trash icon) — appears in top-right of the block
+    const deleteBtn = el.createDiv({ cls: 'archivist-block-delete-btn' });
+    setIcon(deleteBtn, 'trash-2');
+    deleteBtn.setAttribute('aria-label', 'Delete block');
+    deleteBtn.addEventListener('click', () => {
+      const info = ctx.getSectionInfo(el);
+      if (!info) return;
+      const editor = this.app.workspace.activeEditor?.editor;
+      if (!editor) return;
+      // Delete from the opening fence line to the closing fence line (inclusive)
+      const fromLine = info.lineStart;
+      const toLine = info.lineEnd;
+      const totalLines = editor.lineCount();
+      if (toLine + 1 < totalLines) {
+        // Delete including trailing newline
+        editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
+      } else {
+        // Last block in file — delete to end, including leading newline if possible
+        const endCh = editor.getLine(toLine).length;
+        if (fromLine > 0) {
+          const prevLineLen = editor.getLine(fromLine - 1).length;
+          editor.replaceRange('', { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
+        } else {
+          editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+        }
+      }
+    });
   }
 }

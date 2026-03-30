@@ -44,6 +44,41 @@
   --stat-block-section-gap: 0.3em;
 }
 
+/* Delete button on stat blocks in live preview */
+.archivist-block-delete-btn {
+  position: absolute;
+  top: 32px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-faint);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  z-index: 10;
+}
+
+.archivist-block-delete-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Show on hover of the code block container (Obsidian's wrapper) */
+div:has(> .archivist-block-delete-btn):hover .archivist-block-delete-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.archivist-block-delete-btn:hover {
+  color: var(--text-error);
+  background: var(--background-modifier-hover);
+}
+
 /* 3. Monster Stat Block (from original-monster-stat-block.css, read-only view)
    ========================================================================== */
 
