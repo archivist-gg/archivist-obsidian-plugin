@@ -1,5 +1,7 @@
+import type { App } from "obsidian";
 import { setIcon } from "obsidian";
 
+import type { EntityRegistry } from "../../../../entities/entity-registry";
 import { parseMonster } from "../../../../parsers/monster-parser";
 import { parseSpell } from "../../../../parsers/spell-parser";
 import { parseItem } from "../../../../parsers/item-parser";
@@ -21,7 +23,9 @@ export type CopyAndSaveCallback = (entityType: string, yamlSource: string, name:
 export function renderDndEntityBlock(
   containerEl: HTMLElement,
   result: DndCodeFenceResult,
-  onCopyAndSave?: CopyAndSaveCallback
+  onCopyAndSave?: CopyAndSaveCallback,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
 ): void {
   const wrapper = containerEl.createDiv({ cls: "claudian-dnd-entity-block" });
 
@@ -64,21 +68,88 @@ export function renderDndEntityBlock(
     fallback.createEl("code", { text: result.yamlSource });
   }
 
-  // Copy & Save button
+  // Action buttons (Copy / Copy & Save)
   if (onCopyAndSave) {
-    const btnRow = wrapper.createDiv({ cls: "claudian-dnd-actions" });
-    const btn = btnRow.createEl("button", { cls: "claudian-dnd-copy-save-btn" });
-    const iconSpan = btn.createSpan();
-    setIcon(iconSpan, "save");
-    btn.createSpan({ text: "Copy & Save" });
-    btn.addEventListener("click", async () => {
-      // Copy to clipboard first
-      try {
-        await navigator.clipboard.writeText("```" + result.entityType + "\n" + result.yamlSource + "\n```");
-      } catch { /* clipboard may fail in some contexts */ }
-      onCopyAndSave(result.entityType, result.yamlSource, result.name);
+    const actionsRow = wrapper.createDiv({ cls: "claudian-dnd-actions" });
+
+    // Check if entity already exists in registry
+    const existingEntity = entityRegistry?.search(result.name, result.entityType, 1)
+      .find(e => e.source === "custom");
+
+    if (existingEntity) {
+      // Already saved -- show Copy-only button + file reference link
+      renderCopyButton(actionsRow, result);
+      renderFileRef(actionsRow, existingEntity.filePath, app);
+    } else {
+      // Not saved -- show Copy & Save button that transitions to saved state
+      renderCopyAndSaveButton(actionsRow, result, onCopyAndSave, entityRegistry, app);
+    }
+  }
+}
+
+/** Renders a Copy-only button that copies the code fence to clipboard. */
+function renderCopyButton(container: HTMLElement, result: DndCodeFenceResult): void {
+  const btn = container.createEl("button", { cls: "archivist-dnd-action-btn" });
+  const iconSpan = btn.createSpan();
+  setIcon(iconSpan, "copy");
+  const labelSpan = btn.createSpan({ text: "Copy" });
+
+  btn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText("```" + result.entityType + "\n" + result.yamlSource + "\n```");
+    } catch { /* clipboard may fail in some contexts */ }
+    labelSpan.setText("Copied!");
+    setTimeout(() => labelSpan.setText("Copy"), 2000);
+  });
+}
+
+/** Renders a file reference link below the button that opens the saved entity file. */
+function renderFileRef(container: HTMLElement, filePath: string, app?: App | null): void {
+  const ref = container.createDiv({ cls: "archivist-dnd-file-ref" });
+  const linkIcon = ref.createSpan({ cls: "archivist-dnd-file-ref-icon" });
+  setIcon(linkIcon, "link");
+  ref.createSpan({ text: filePath });
+
+  if (app) {
+    ref.addEventListener("click", () => {
+      void app.workspace.openLinkText(filePath, "", false);
     });
   }
+}
+
+/** Renders a Copy & Save button that saves, then transitions to Copy + file ref. */
+function renderCopyAndSaveButton(
+  actionsRow: HTMLElement,
+  result: DndCodeFenceResult,
+  onCopyAndSave: CopyAndSaveCallback,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
+): void {
+  const btn = actionsRow.createEl("button", { cls: "archivist-dnd-action-btn" });
+  const iconSpan = btn.createSpan();
+  setIcon(iconSpan, "save");
+  btn.createSpan({ text: "Copy & Save" });
+
+  btn.addEventListener("click", async () => {
+    // Copy to clipboard
+    try {
+      await navigator.clipboard.writeText("```" + result.entityType + "\n" + result.yamlSource + "\n```");
+    } catch { /* clipboard may fail in some contexts */ }
+
+    // Trigger the save callback
+    onCopyAndSave(result.entityType, result.yamlSource, result.name);
+
+    // Transition to saved state: replace actions row contents
+    actionsRow.empty();
+    renderCopyButton(actionsRow, result);
+
+    // Try to find the newly-saved entity for the file ref
+    const saved = entityRegistry?.search(result.name, result.entityType, 1)
+      .find(e => e.source === "custom");
+    if (saved) {
+      renderFileRef(actionsRow, saved.filePath, app);
+    }
+  });
 }
 
 /**
@@ -87,7 +158,9 @@ export function renderDndEntityBlock(
  */
 export function replaceDndCodeFences(
   el: HTMLElement,
-  onCopyAndSave?: CopyAndSaveCallback
+  onCopyAndSave?: CopyAndSaveCallback,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
 ): void {
   const codeBlocks = el.querySelectorAll("pre > code");
   for (const code of Array.from(codeBlocks)) {
@@ -114,6 +187,6 @@ export function replaceDndCodeFences(
     parent.insertBefore(container, insertTarget);
     insertTarget.remove();
 
-    renderDndEntityBlock(container, result, onCopyAndSave);
+    renderDndEntityBlock(container, result, onCopyAndSave, entityRegistry, app);
   }
 }

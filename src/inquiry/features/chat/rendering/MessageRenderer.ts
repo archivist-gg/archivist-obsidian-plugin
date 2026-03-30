@@ -11,6 +11,7 @@ import { replaceImageEmbedsWithHtml } from '../../../utils/imageEmbed';
 import { createOwlIcon } from '../../../../ui/components/owl-icon';
 import { findRewindContext } from '../rewind';
 import { replaceDndCodeFences, type CopyAndSaveCallback } from './DndEntityRenderer';
+import type { EntityRegistry } from '../../../../entities/entity-registry';
 import {
   renderStoredAsyncSubagent,
   renderStoredSubagent,
@@ -537,7 +538,12 @@ export class MessageRenderer {
 
       // Replace D&D code fences (monster/spell/item) with rendered stat blocks
       if (!options?.skipDndReplacement) {
-        replaceDndCodeFences(el, this.dndCopyAndSaveCallback);
+        replaceDndCodeFences(
+          el,
+          this.dndCopyAndSaveCallback,
+          this.plugin.entityRegistry as EntityRegistry | null,
+          this.app,
+        );
       }
 
       // Process file paths to make them clickable links
