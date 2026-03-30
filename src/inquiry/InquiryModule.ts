@@ -60,6 +60,7 @@ import type { EntityRegistry } from '../entities/entity-registry';
 import { createArchivistMcpServer } from '../ai/mcp-server';
 import type { SrdStore } from '../ai/srd/srd-store';
 import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';
+import { registerTablerIcons } from './shared/icons/tabler-icons';
 
 // ============================================
 // Subagent data merge helpers (pure functions)
@@ -256,6 +257,8 @@ export class InquiryModule {
    * Equivalent to Claudian's onload() but delegates API calls to this.plugin.
    */
   async init(): Promise<void> {
+    registerTablerIcons();
+
     await this.loadSettings();
 
     this.cliResolver = new ClaudeCliResolver();

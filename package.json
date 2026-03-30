@@ -15,6 +15,7 @@
   "license": "MIT",
   "devDependencies": {
     "@codemirror/language": "^6.12.3",
+    "@tabler/icons": "^3.41.1",
     "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
