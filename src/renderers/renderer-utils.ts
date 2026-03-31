@@ -84,44 +84,62 @@ export function createIconProperty(
 }
 
 /**
- * Render a tag as subtle inline text for use inside stat blocks.
- * Matches archivist's dnd-formatted-text style: plain text colored to
- * match the parchment theme, no pill badges.
+ * Configuration for stat block inline tag rendering.
+ * Each tag type maps to an icon, CSS class, display formatter, and rollability.
+ */
+interface StatTagConfig {
+  iconName: string;
+  cssClass: string;
+  format: (content: string) => string;
+  rollable: boolean;
+}
+
+const STAT_TAG_CONFIGS: Record<string, StatTagConfig> = {
+  dice: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  damage: { iconName: "dices", cssClass: "archivist-stat-tag-damage", format: (c) => c, rollable: true },
+  atk: { iconName: "swords", cssClass: "archivist-stat-tag-atk", format: (c) => `${c} to hit`, rollable: true },
+  dc: { iconName: "shield", cssClass: "archivist-stat-tag-dc", format: (c) => `DC ${c}`, rollable: false },
+  mod: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  check: { iconName: "shield", cssClass: "archivist-stat-tag-dc", format: (c) => c, rollable: false },
+};
+
+/**
+ * Render an inline tag for use inside stat blocks.
+ * Displays Lucide icons, dashed underlines, and dispatches click-to-roll events
+ * matching the Archivist app's parchment-themed annotation style.
  */
 function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement {
+  const config = STAT_TAG_CONFIGS[tag.type];
   const span = document.createElement("span");
 
-  switch (tag.type) {
-    case "atk":
-      // Attack: italic, accent color, e.g. "+4 to hit"
-      span.addClass("archivist-stat-inline-atk");
-      span.textContent = `${tag.content} to hit`;
-      break;
-    case "damage":
-      // Damage: normal weight, dark text, e.g. "1d6+2 slashing"
-      span.addClass("archivist-stat-inline-dice");
-      span.textContent = tag.content;
-      break;
-    case "dice":
-      // Dice roll: normal weight, dark text
-      span.addClass("archivist-stat-inline-dice");
-      span.textContent = tag.content;
-      break;
-    case "dc":
-      // DC: normal weight, e.g. "DC 15"
-      span.addClass("archivist-stat-inline-dc");
-      span.textContent = `DC ${tag.content}`;
-      break;
-    case "mod":
-      span.addClass("archivist-stat-inline-dice");
-      span.textContent = tag.content;
-      break;
-    case "check":
-      span.addClass("archivist-stat-inline-dc");
-      span.textContent = tag.content;
-      break;
-    default:
-      span.textContent = tag.content;
+  if (!config) {
+    span.textContent = tag.content;
+    return span;
+  }
+
+  span.addClasses(["archivist-stat-tag", config.cssClass]);
+
+  const iconEl = document.createElement("span");
+  iconEl.addClass("archivist-stat-tag-icon");
+  setIcon(iconEl, config.iconName);
+  span.appendChild(iconEl);
+
+  const textEl = document.createElement("span");
+  textEl.textContent = config.format(tag.content);
+  span.appendChild(textEl);
+
+  if (config.rollable) {
+    span.setAttribute("data-dice-notation", tag.content);
+    span.setAttribute("data-dice-type", tag.type);
+    span.setAttribute("title", `${tag.content} -- Click to roll`);
+    span.addEventListener("click", () => {
+      span.dispatchEvent(new CustomEvent("archivist-dice-roll", {
+        bubbles: true,
+        detail: { notation: tag.content, type: tag.type },
+      }));
+    });
+  } else {
+    span.setAttribute("title", config.format(tag.content));
   }
 
   return span;

@@ -297,23 +297,42 @@
   font-weight: normal;
 }
 
-/* Stat Block Inline Tags (subtle, matching parchment theme) */
-.archivist-stat-inline-dice {
-  color: #191813;
-  font-weight: normal;
-  font-style: normal;
+/* Stat Block Interactive Tags (parchment theme) */
+.archivist-stat-tag {
+  display: inline;
 }
-
-.archivist-stat-inline-atk {
+.archivist-stat-tag-icon {
+  display: inline;
+  margin-right: 2px;
+}
+.archivist-stat-tag-icon svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  display: inline;
+}
+.archivist-stat-tag-dice,
+.archivist-stat-tag-damage {
+  color: #922610;
+  border-bottom: 1px dashed #922610;
+  cursor: pointer;
+}
+.archivist-stat-tag-dice:hover,
+.archivist-stat-tag-damage:hover {
+  color: #7a1a08;
+  border-bottom-color: #7a1a08;
+}
+.archivist-stat-tag-atk {
   color: #7a200d;
-  font-weight: normal;
   font-style: italic;
+  cursor: pointer;
+  border-bottom: 1px dashed #7a200d;
 }
-
-.archivist-stat-inline-dc {
+.archivist-stat-tag-dc {
   color: #191813;
-  font-weight: normal;
-  font-style: normal;
+}
+.archivist-stat-tag-dc .archivist-stat-tag-icon svg {
+  color: #555;
 }
 
 /* Actions Header */
