@@ -1666,23 +1666,21 @@ body.theme-light .claudian-message-content pre {
 }
 
 /* Selection indicator (shown when text is selected in editor) */
-/* Match file chip height (24px): chip has 16px remove button + 6px padding + 2px border */
-/* Indicator: 12px text + 10px padding (5+5) + 2px border = 24px */
+/* Positioned above the input wrapper border */
 .claudian-selection-indicator,
 .claudian-browser-selection-indicator,
 .claudian-canvas-indicator {
+  position: absolute;
+  top: -22px;
+  right: 0;
   color: #7abaff;
   font-size: 12px;
   line-height: 1;
   opacity: 0.9;
   pointer-events: none;
   white-space: nowrap;
-  padding: 5px 6px;
-  border: 1px solid transparent;
+  padding: 2px 6px;
   border-radius: 4px;
-  margin-inline-start: auto;
-  flex-shrink: 0;
-  order: 4;
   max-width: min(100%, clamp(220px, 64vw, 560px));
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5447,6 +5445,64 @@ code .claudian-file-link:hover {
   --stat-block-section-gap: 0.3em;
 }
 
+/* Obsidian's </> raw button: add pointer cursor */
+.cm-embed-block:has(.archivist-block-delete-btn) > .edit-block-button {
+  cursor: pointer;
+}
+
+/* Keep raw button visible on hover AND when block is focused (clicked) */
+.cm-embed-block:has(.archivist-block-delete-btn):hover > .edit-block-button,
+.cm-embed-block:has(.archivist-block-delete-btn):focus-within > .edit-block-button {
+  opacity: 1;
+}
+
+/* Keep selection border when block is focused — accent color, matching hover border-radius */
+.cm-embed-block:has(.archivist-block-delete-btn):focus-within {
+  outline: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-s);
+}
+
+/* Delete button — exact same styling as Obsidian's .edit-block-button */
+.archivist-block-delete-btn {
+  position: absolute;
+  padding: var(--size-2-2) var(--size-2-3);
+  top: calc(var(--size-2-2) + 28px);
+  inset-inline-end: var(--size-2-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  z-index: 10;
+}
+
+.archivist-block-delete-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75;
+}
+
+/* Show both buttons on hover or when block is focused (clicked) */
+.cm-embed-block:hover .archivist-block-delete-btn,
+.cm-embed-block:focus-within .archivist-block-delete-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.archivist-block-delete-btn:hover {
+  color: var(--text-error);
+  background: var(--background-modifier-hover);
+}
+
+/* Hide delete button in reading view (no editor to delete from) */
+.markdown-reading-view .archivist-block-delete-btn {
+  display: none;
+}
+
 /* 3. Monster Stat Block (from original-monster-stat-block.css, read-only view)
    ========================================================================== */
 
@@ -5454,7 +5510,7 @@ code .claudian-file-link:hover {
   position: relative;
   width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 1.5em auto;
   display: flex;
   justify-content: center;
 }
@@ -5642,23 +5698,42 @@ code .claudian-file-link:hover {
   font-weight: normal;
 }
 
-/* Stat Block Inline Tags (subtle, matching parchment theme) */
-.archivist-stat-inline-dice {
-  color: #191813;
-  font-weight: normal;
-  font-style: normal;
+/* Stat Block Interactive Tags (parchment theme) */
+.archivist-stat-tag {
+  display: inline;
 }
-
-.archivist-stat-inline-atk {
+.archivist-stat-tag-icon {
+  display: inline;
+  margin-right: 2px;
+}
+.archivist-stat-tag-icon svg {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  display: inline;
+}
+.archivist-stat-tag-dice,
+.archivist-stat-tag-damage {
+  color: #922610;
+  border-bottom: 1px dashed #922610;
+  cursor: pointer;
+}
+.archivist-stat-tag-dice:hover,
+.archivist-stat-tag-damage:hover {
+  color: #7a1a08;
+  border-bottom-color: #7a1a08;
+}
+.archivist-stat-tag-atk {
   color: #7a200d;
-  font-weight: normal;
   font-style: italic;
+  cursor: pointer;
+  border-bottom: 1px dashed #7a200d;
 }
-
-.archivist-stat-inline-dc {
+.archivist-stat-tag-dc {
   color: #191813;
-  font-weight: normal;
-  font-style: normal;
+}
+.archivist-stat-tag-dc .archivist-stat-tag-icon svg {
+  color: #555;
 }
 
 /* Actions Header */
@@ -5753,8 +5828,8 @@ code .claudian-file-link:hover {
 
 .archivist-spell-block-wrapper {
   position: relative;
-  width: 100%;
-  margin: 0;
+  width: calc(100% - 80px);
+  margin: 1.5em auto;
   display: flex;
   justify-content: flex-start;
 }
@@ -5985,8 +6060,8 @@ code .claudian-file-link:hover {
 
 .archivist-item-block-wrapper {
   position: relative;
-  width: 100%;
-  margin: 0;
+  width: calc(100% - 80px);
+  margin: 1.5em auto;
   display: flex;
   justify-content: flex-start;
 }
@@ -6509,255 +6584,57 @@ code .claudian-file-link:hover {
 /* 10. Inline Tags (from dnd-tag-render.css)
    ========================================================================== */
 
-/* Base tag styles */
+/* Editor/Chat Inline Tags -- Warm Gold / Cool Teal / Soft Red */
 .archivist-tag {
-  display: inline-flex;
-  align-items: center;
-  padding-left: 6px;
-  padding-right: 6px;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-left: 2px;
-  margin-right: 2px;
-  border-radius: 9999px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  vertical-align: baseline;
-  line-height: normal;
-  white-space: nowrap;
-  background: var(--tag-bg-color);
-  border: 1px solid var(--tag-border-color);
-  color: var(--tag-color);
+  display: inline;
 }
-
-.archivist-tag:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  filter: brightness(0.95);
-  border-color: var(--tag-color);
-  cursor: pointer;
-}
-
 .archivist-tag-icon {
-  opacity: 0.9;
-  flex-shrink: 0;
+  display: inline;
+  margin-right: 2px;
+}
+.archivist-tag-icon svg {
   width: 12px;
   height: 12px;
-  display: inline-flex;
-  align-items: center;
-  margin-right: 0.2rem;
-}
-
-.archivist-tag-content {
-  font-weight: 600;
+  vertical-align: -1px;
   display: inline;
 }
 
-/* Dice tags - gold */
-.archivist-tag-dice {
-  font-weight: 700;
-  background-color: #fef9f1;
-  border-color: #f5e6c8;
-  color: #8a6e1e;
-}
-
-.archivist-tag-dice:hover {
-  background-color: #fdf6e8;
-  border-color: #8a6e1e;
-}
-
-/* Damage tags - gold */
+/* Default (dark mode) colors */
+.archivist-tag-dice,
 .archivist-tag-damage {
-  font-weight: 700;
-  background-color: #fef9f1;
-  border-color: #f5e6c8;
-  color: #8a6e1e;
+  color: #d4a843;
+  border-bottom: 1px dashed rgba(212, 168, 67, 0.45);
+  cursor: pointer;
 }
-
+.archivist-tag-dice:hover,
 .archivist-tag-damage:hover {
-  background-color: #fdf6e8;
-  border-color: #8a6e1e;
+  color: #e8bc4d;
+  border-bottom-color: rgba(232, 188, 77, 0.6);
 }
-
-.archivist-tag-dice .archivist-tag-content,
-.archivist-tag-damage .archivist-tag-content {
-  font-family: monospace;
-  letter-spacing: -0.025em;
-}
-
-/* Attack and combat tags - crimson */
-.archivist-tag-atk,
-.archivist-tag-hit {
-  background-color: #fdf2f5;
-  border-color: #f0c6d1;
-  color: #8a1e3a;
-}
-
-.archivist-tag-atk:hover,
-.archivist-tag-hit:hover {
-  background-color: #fcecf0;
-  border-color: #8a1e3a;
-}
-
-/* Condition tags - magenta */
-.archivist-tag-condition {
-  background-color: #fdf2f9;
-  border-color: #f0c6e7;
-  color: #8a1e70;
-}
-
-.archivist-tag-condition:hover {
-  background-color: #fcebf4;
-  border-color: #8a1e70;
-}
-
-/* DC tags - blue (mapped from dnd-tag-spell) */
 .archivist-tag-dc {
-  background-color: #e8ecf5;
-  border-color: #d1d9eb;
-  color: #1e3a8a;
+  color: #5ba3b5;
+}
+.archivist-tag-atk {
+  color: #d47070;
+  font-style: italic;
 }
 
-.archivist-tag-dc:hover {
-  background-color: #dde2f0;
-  border-color: #1e3a8a;
+/* Light mode overrides */
+body.theme-light .archivist-tag-dice,
+body.theme-light .archivist-tag-damage {
+  color: #9a7520;
+  border-bottom-color: rgba(154, 117, 32, 0.45);
 }
-
-/* Modifier tags - blue (same as dc) */
-.archivist-tag-mod {
-  background-color: #e8ecf5;
-  border-color: #d1d9eb;
-  color: #1e3a8a;
+body.theme-light .archivist-tag-dice:hover,
+body.theme-light .archivist-tag-damage:hover {
+  color: #7a5d18;
+  border-bottom-color: rgba(122, 93, 24, 0.6);
 }
-
-.archivist-tag-mod:hover {
-  background-color: #dde2f0;
-  border-color: #1e3a8a;
+body.theme-light .archivist-tag-dc {
+  color: #2a7a8c;
 }
-
-/* Check tags - blue (same as dc) */
-.archivist-tag-check {
-  background-color: #e8ecf5;
-  border-color: #d1d9eb;
-  color: #1e3a8a;
-}
-
-.archivist-tag-check:hover {
-  background-color: #dde2f0;
-  border-color: #1e3a8a;
-}
-
-/* Error state */
-.archivist-tag-error {
-  display: inline-flex;
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #ef4444;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-/* 11. Dark Mode Inline Tags
-   ========================================================================== */
-
-/* Dice - dark mode */
-.theme-dark .archivist-tag-dice {
-  background-color: rgba(138, 110, 30, 0.15);
-  border-color: rgba(138, 110, 30, 0.4);
-  color: #f5d870;
-}
-
-.theme-dark .archivist-tag-dice:hover {
-  background-color: rgba(138, 110, 30, 0.25);
-  border-color: rgba(138, 110, 30, 0.6);
-}
-
-/* Damage - dark mode */
-.theme-dark .archivist-tag-damage {
-  background-color: rgba(138, 110, 30, 0.15);
-  border-color: rgba(138, 110, 30, 0.4);
-  color: #f5d870;
-}
-
-.theme-dark .archivist-tag-damage:hover {
-  background-color: rgba(138, 110, 30, 0.25);
-  border-color: rgba(138, 110, 30, 0.6);
-}
-
-/* Attack/Hit - dark mode */
-.theme-dark .archivist-tag-atk,
-.theme-dark .archivist-tag-hit {
-  background-color: rgba(138, 30, 58, 0.15);
-  border-color: rgba(138, 30, 58, 0.4);
-  color: #f5a3b8;
-}
-
-.theme-dark .archivist-tag-atk:hover,
-.theme-dark .archivist-tag-hit:hover {
-  background-color: rgba(138, 30, 58, 0.25);
-  border-color: rgba(138, 30, 58, 0.6);
-}
-
-/* Condition - dark mode */
-.theme-dark .archivist-tag-condition {
-  background-color: rgba(138, 30, 112, 0.15);
-  border-color: rgba(138, 30, 112, 0.4);
-  color: #f5a3e1;
-}
-
-.theme-dark .archivist-tag-condition:hover {
-  background-color: rgba(138, 30, 112, 0.25);
-  border-color: rgba(138, 30, 112, 0.6);
-}
-
-/* DC - dark mode */
-.theme-dark .archivist-tag-dc {
-  background-color: rgba(30, 58, 138, 0.15);
-  border-color: rgba(30, 58, 138, 0.4);
-  color: #a3b8f5;
-}
-
-.theme-dark .archivist-tag-dc:hover {
-  background-color: rgba(30, 58, 138, 0.25);
-  border-color: rgba(30, 58, 138, 0.6);
-}
-
-/* Modifier - dark mode */
-.theme-dark .archivist-tag-mod {
-  background-color: rgba(30, 58, 138, 0.15);
-  border-color: rgba(30, 58, 138, 0.4);
-  color: #a3b8f5;
-}
-
-.theme-dark .archivist-tag-mod:hover {
-  background-color: rgba(30, 58, 138, 0.25);
-  border-color: rgba(30, 58, 138, 0.6);
-}
-
-/* Check - dark mode */
-.theme-dark .archivist-tag-check {
-  background-color: rgba(30, 58, 138, 0.15);
-  border-color: rgba(30, 58, 138, 0.4);
-  color: #a3b8f5;
-}
-
-.theme-dark .archivist-tag-check:hover {
-  background-color: rgba(30, 58, 138, 0.25);
-  border-color: rgba(30, 58, 138, 0.6);
-}
-
-/* Error - dark mode */
-.theme-dark .archivist-tag-error {
-  background-color: rgba(220, 38, 38, 0.15);
-  border-color: rgba(220, 38, 38, 0.4);
-  color: #f87171;
+body.theme-light .archivist-tag-atk {
+  color: #b84040;
 }
 
 /* Dark Mode - Legendary Resistance */
@@ -7130,6 +7007,31 @@ code .claudian-file-link:hover {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Editor entity suggest dropdown */
+.archivist-entity-suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+.archivist-entity-suggest-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.archivist-entity-suggest-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.archivist-entity-suggest-name {
+  flex: 1;
+}
+.archivist-entity-suggest-type {
+  font-size: 11px;
+  color: var(--text-faint);
+  text-transform: capitalize;
+}
+
 
 
 /* ================================================================

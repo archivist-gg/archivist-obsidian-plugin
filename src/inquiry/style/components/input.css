@@ -47,23 +47,21 @@
 }
 
 /* Selection indicator (shown when text is selected in editor) */
-/* Match file chip height (24px): chip has 16px remove button + 6px padding + 2px border */
-/* Indicator: 12px text + 10px padding (5+5) + 2px border = 24px */
+/* Positioned above the input wrapper border */
 .claudian-selection-indicator,
 .claudian-browser-selection-indicator,
 .claudian-canvas-indicator {
+  position: absolute;
+  top: -22px;
+  right: 0;
   color: #7abaff;
   font-size: 12px;
   line-height: 1;
   opacity: 0.9;
   pointer-events: none;
   white-space: nowrap;
-  padding: 5px 6px;
-  border: 1px solid transparent;
+  padding: 2px 6px;
   border-radius: 4px;
-  margin-inline-start: auto;
-  flex-shrink: 0;
-  order: 4;
   max-width: min(100%, clamp(220px, 64vw, 560px));
   overflow: hidden;
   text-overflow: ellipsis;

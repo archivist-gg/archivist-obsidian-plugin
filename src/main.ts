@@ -24,9 +24,6 @@ import { inlineTagPlugin } from "./extensions/inline-tag-extension";
 import { dndBlockDeleteKeymap } from "./extensions/dnd-block-delete-extension";
 import { EntityEditorSuggest } from "./extensions/entity-editor-suggest";
 
-// Dice overlay
-import { DiceOverlay } from "./dice";
-
 // SRD & entities
 import { SrdStore } from "./ai/srd/srd-store";
 import { EntityRegistry } from "./entities/entity-registry";
@@ -100,20 +97,6 @@ export default class ArchivistPlugin extends Plugin {
     // CodeMirror editor extension
     this.registerEditorExtension(inlineTagPlugin);
     this.registerEditorExtension(dndBlockDeleteKeymap);
-
-    // Dice overlay -- catches archivist-dice-roll events from annotation clicks
-    const diceOverlay = new DiceOverlay();
-    this.registerDomEvent(document, 'archivist-dice-roll' as any, (e: CustomEvent) => {
-      const { notation } = e.detail;
-      if (notation) diceOverlay.roll3D(notation);
-    });
-
-    // Lazy-init 3D dice (non-blocking -- falls back to math if it fails)
-    // DiceBox fetches assets via fetch(origin + assetPath + ...) -- in Electron we need file:// URLs
-    const vaultAdapter = this.app.vault.adapter as any;
-    const vaultPluginDir = `${vaultAdapter.basePath}/${this.app.vault.configDir}/plugins/archivist-ttrpg-blocks`;
-    const diceAssetPath = `file://${vaultPluginDir}/assets/dice-box/`;
-    diceOverlay.initialize3D(diceAssetPath);
 
     // Editor entity suggest ([[monster:, [[spell:, [[item:, [[feat:)
     this.registerEditorSuggest(new EntityEditorSuggest(this.app, this.srdStore!));

@@ -1,6 +1,5 @@
-import { setIcon } from 'obsidian';
+import { setIcon, Notice } from 'obsidian';
 import { InlineTag, InlineTagType } from '../parsers/inline-tag-parser';
-import { formatDiceTooltip } from '../dice/diceStats';
 
 interface InlineTagConfig {
   iconName: string;
@@ -36,12 +35,14 @@ export function renderInlineTag(tag: InlineTag): HTMLElement {
   if (config.rollable) {
     span.setAttribute('data-dice-notation', tag.content);
     span.setAttribute('data-dice-type', tag.type);
-    span.setAttribute('title', formatDiceTooltip(tag.content));
-    span.addEventListener('click', () => {
-      span.dispatchEvent(new CustomEvent('archivist-dice-roll', {
-        bubbles: true,
-        detail: { notation: tag.content, type: tag.type },
-      }));
+    span.setAttribute('title', `${config.format(tag.content)} -- Click to roll`);
+    span.addEventListener('click', async () => {
+      const api = (window as any).DiceRoller;
+      if (api) {
+        await api.parseDice(tag.content);
+      } else {
+        new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
+      }
     });
   }
 

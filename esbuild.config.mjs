@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 import path from "path";
 import process from "process";
 import builtins from "builtin-modules";
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "fs";
 
 // Load .env.local if it exists
 if (existsSync(".env.local")) {
@@ -54,14 +54,6 @@ const copyToObsidian = {
         }
       }
 
-      // Copy dice-box assets (WASM, textures, workers) for 3D dice
-      const diceBoxSrc = path.join("node_modules", "@3d-dice", "dice-box", "dist", "assets");
-      if (existsSync(diceBoxSrc)) {
-        const diceBoxDest = path.join(OBSIDIAN_PLUGIN_PATH, "assets", "dice-box");
-        mkdirSync(diceBoxDest, { recursive: true });
-        cpSync(diceBoxSrc, diceBoxDest, { recursive: true });
-        console.log("Copied dice-box assets to Obsidian plugin folder");
-      }
     });
   },
 };
