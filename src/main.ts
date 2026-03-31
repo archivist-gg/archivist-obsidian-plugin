@@ -24,6 +24,9 @@ import { inlineTagPlugin } from "./extensions/inline-tag-extension";
 import { dndBlockDeleteKeymap } from "./extensions/dnd-block-delete-extension";
 import { EntityEditorSuggest } from "./extensions/entity-editor-suggest";
 
+// Dice overlay
+import { DiceOverlay } from "./dice";
+
 // SRD & entities
 import { SrdStore } from "./ai/srd/srd-store";
 import { EntityRegistry } from "./entities/entity-registry";
@@ -97,6 +100,13 @@ export default class ArchivistPlugin extends Plugin {
     // CodeMirror editor extension
     this.registerEditorExtension(inlineTagPlugin);
     this.registerEditorExtension(dndBlockDeleteKeymap);
+
+    // Dice overlay -- catches archivist-dice-roll events from annotation clicks
+    const diceOverlay = new DiceOverlay();
+    this.registerDomEvent(document, 'archivist-dice-roll' as any, (e: CustomEvent) => {
+      const { notation } = e.detail;
+      if (notation) diceOverlay.rollMath(notation);
+    });
 
     // Editor entity suggest ([[monster:, [[spell:, [[item:, [[feat:)
     this.registerEditorSuggest(new EntityEditorSuggest(this.app, this.srdStore!));

@@ -1630,3 +1630,49 @@ body.theme-light .archivist-tag-atk {
   color: var(--text-faint);
   text-transform: capitalize;
 }
+
+/* Dice Roll Overlay
+   ========================================================================== */
+.archivist-dice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.archivist-dice-canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.archivist-dice-result {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.archivist-dice-result.visible {
+  opacity: 1;
+}
+.archivist-dice-result-notation {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+.archivist-dice-result-details {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8px;
+}
+.archivist-dice-result-total {
+  font-size: 48px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}

@@ -1,6 +1,7 @@
 import { setIcon } from "obsidian";
 import { parseInlineTag } from "../parsers/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
+import { formatDiceTooltip } from "../dice/diceStats";
 
 interface ElOptions {
   cls?: string | string[];
@@ -131,7 +132,7 @@ function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement
   if (config.rollable) {
     span.setAttribute("data-dice-notation", tag.content);
     span.setAttribute("data-dice-type", tag.type);
-    span.setAttribute("title", `${tag.content} -- Click to roll`);
+    span.setAttribute("title", formatDiceTooltip(tag.content));
     span.addEventListener("click", () => {
       span.dispatchEvent(new CustomEvent("archivist-dice-roll", {
         bubbles: true,
