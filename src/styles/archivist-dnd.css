@@ -1183,255 +1183,57 @@
 /* 10. Inline Tags (from dnd-tag-render.css)
    ========================================================================== */
 
-/* Base tag styles */
+/* Editor/Chat Inline Tags -- Warm Gold / Cool Teal / Soft Red */
 .archivist-tag {
-  display: inline-flex;
-  align-items: center;
-  padding-left: 6px;
-  padding-right: 6px;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin-left: 2px;
-  margin-right: 2px;
-  border-radius: 9999px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  vertical-align: baseline;
-  line-height: normal;
-  white-space: nowrap;
-  background: var(--tag-bg-color);
-  border: 1px solid var(--tag-border-color);
-  color: var(--tag-color);
+  display: inline;
 }
-
-.archivist-tag:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  filter: brightness(0.95);
-  border-color: var(--tag-color);
-  cursor: pointer;
-}
-
 .archivist-tag-icon {
-  opacity: 0.9;
-  flex-shrink: 0;
+  display: inline;
+  margin-right: 2px;
+}
+.archivist-tag-icon svg {
   width: 12px;
   height: 12px;
-  display: inline-flex;
-  align-items: center;
-  margin-right: 0.2rem;
-}
-
-.archivist-tag-content {
-  font-weight: 600;
+  vertical-align: -1px;
   display: inline;
 }
 
-/* Dice tags - gold */
-.archivist-tag-dice {
-  font-weight: 700;
-  background-color: #fef9f1;
-  border-color: #f5e6c8;
-  color: #8a6e1e;
-}
-
-.archivist-tag-dice:hover {
-  background-color: #fdf6e8;
-  border-color: #8a6e1e;
-}
-
-/* Damage tags - gold */
+/* Default (dark mode) colors */
+.archivist-tag-dice,
 .archivist-tag-damage {
-  font-weight: 700;
-  background-color: #fef9f1;
-  border-color: #f5e6c8;
-  color: #8a6e1e;
+  color: #d4a843;
+  border-bottom: 1px dashed rgba(212, 168, 67, 0.45);
+  cursor: pointer;
 }
-
+.archivist-tag-dice:hover,
 .archivist-tag-damage:hover {
-  background-color: #fdf6e8;
-  border-color: #8a6e1e;
+  color: #e8bc4d;
+  border-bottom-color: rgba(232, 188, 77, 0.6);
 }
-
-.archivist-tag-dice .archivist-tag-content,
-.archivist-tag-damage .archivist-tag-content {
-  font-family: monospace;
-  letter-spacing: -0.025em;
-}
-
-/* Attack and combat tags - crimson */
-.archivist-tag-atk,
-.archivist-tag-hit {
-  background-color: #fdf2f5;
-  border-color: #f0c6d1;
-  color: #8a1e3a;
-}
-
-.archivist-tag-atk:hover,
-.archivist-tag-hit:hover {
-  background-color: #fcecf0;
-  border-color: #8a1e3a;
-}
-
-/* Condition tags - magenta */
-.archivist-tag-condition {
-  background-color: #fdf2f9;
-  border-color: #f0c6e7;
-  color: #8a1e70;
-}
-
-.archivist-tag-condition:hover {
-  background-color: #fcebf4;
-  border-color: #8a1e70;
-}
-
-/* DC tags - blue (mapped from dnd-tag-spell) */
 .archivist-tag-dc {
-  background-color: #e8ecf5;
-  border-color: #d1d9eb;
-  color: #1e3a8a;
+  color: #5ba3b5;
+}
+.archivist-tag-atk {
+  color: #d47070;
+  font-style: italic;
 }
 
-.archivist-tag-dc:hover {
-  background-color: #dde2f0;
-  border-color: #1e3a8a;
+/* Light mode overrides */
+body.theme-light .archivist-tag-dice,
+body.theme-light .archivist-tag-damage {
+  color: #9a7520;
+  border-bottom-color: rgba(154, 117, 32, 0.45);
 }
-
-/* Modifier tags - blue (same as dc) */
-.archivist-tag-mod {
-  background-color: #e8ecf5;
-  border-color: #d1d9eb;
-  color: #1e3a8a;
+body.theme-light .archivist-tag-dice:hover,
+body.theme-light .archivist-tag-damage:hover {
+  color: #7a5d18;
+  border-bottom-color: rgba(122, 93, 24, 0.6);
 }
-
-.archivist-tag-mod:hover {
-  background-color: #dde2f0;
-  border-color: #1e3a8a;
+body.theme-light .archivist-tag-dc {
+  color: #2a7a8c;
 }
-
-/* Check tags - blue (same as dc) */
-.archivist-tag-check {
-  background-color: #e8ecf5;
-  border-color: #d1d9eb;
-  color: #1e3a8a;
-}
-
-.archivist-tag-check:hover {
-  background-color: #dde2f0;
-  border-color: #1e3a8a;
-}
-
-/* Error state */
-.archivist-tag-error {
-  display: inline-flex;
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #ef4444;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-/* 11. Dark Mode Inline Tags
-   ========================================================================== */
-
-/* Dice - dark mode */
-.theme-dark .archivist-tag-dice {
-  background-color: rgba(138, 110, 30, 0.15);
-  border-color: rgba(138, 110, 30, 0.4);
-  color: #f5d870;
-}
-
-.theme-dark .archivist-tag-dice:hover {
-  background-color: rgba(138, 110, 30, 0.25);
-  border-color: rgba(138, 110, 30, 0.6);
-}
-
-/* Damage - dark mode */
-.theme-dark .archivist-tag-damage {
-  background-color: rgba(138, 110, 30, 0.15);
-  border-color: rgba(138, 110, 30, 0.4);
-  color: #f5d870;
-}
-
-.theme-dark .archivist-tag-damage:hover {
-  background-color: rgba(138, 110, 30, 0.25);
-  border-color: rgba(138, 110, 30, 0.6);
-}
-
-/* Attack/Hit - dark mode */
-.theme-dark .archivist-tag-atk,
-.theme-dark .archivist-tag-hit {
-  background-color: rgba(138, 30, 58, 0.15);
-  border-color: rgba(138, 30, 58, 0.4);
-  color: #f5a3b8;
-}
-
-.theme-dark .archivist-tag-atk:hover,
-.theme-dark .archivist-tag-hit:hover {
-  background-color: rgba(138, 30, 58, 0.25);
-  border-color: rgba(138, 30, 58, 0.6);
-}
-
-/* Condition - dark mode */
-.theme-dark .archivist-tag-condition {
-  background-color: rgba(138, 30, 112, 0.15);
-  border-color: rgba(138, 30, 112, 0.4);
-  color: #f5a3e1;
-}
-
-.theme-dark .archivist-tag-condition:hover {
-  background-color: rgba(138, 30, 112, 0.25);
-  border-color: rgba(138, 30, 112, 0.6);
-}
-
-/* DC - dark mode */
-.theme-dark .archivist-tag-dc {
-  background-color: rgba(30, 58, 138, 0.15);
-  border-color: rgba(30, 58, 138, 0.4);
-  color: #a3b8f5;
-}
-
-.theme-dark .archivist-tag-dc:hover {
-  background-color: rgba(30, 58, 138, 0.25);
-  border-color: rgba(30, 58, 138, 0.6);
-}
-
-/* Modifier - dark mode */
-.theme-dark .archivist-tag-mod {
-  background-color: rgba(30, 58, 138, 0.15);
-  border-color: rgba(30, 58, 138, 0.4);
-  color: #a3b8f5;
-}
-
-.theme-dark .archivist-tag-mod:hover {
-  background-color: rgba(30, 58, 138, 0.25);
-  border-color: rgba(30, 58, 138, 0.6);
-}
-
-/* Check - dark mode */
-.theme-dark .archivist-tag-check {
-  background-color: rgba(30, 58, 138, 0.15);
-  border-color: rgba(30, 58, 138, 0.4);
-  color: #a3b8f5;
-}
-
-.theme-dark .archivist-tag-check:hover {
-  background-color: rgba(30, 58, 138, 0.25);
-  border-color: rgba(30, 58, 138, 0.6);
-}
-
-/* Error - dark mode */
-.theme-dark .archivist-tag-error {
-  background-color: rgba(220, 38, 38, 0.15);
-  border-color: rgba(220, 38, 38, 0.4);
-  color: #f87171;
+body.theme-light .archivist-tag-atk {
+  color: #b84040;
 }
 
 /* Dark Mode - Legendary Resistance */

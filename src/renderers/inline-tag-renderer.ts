@@ -1,60 +1,48 @@
-import { setIcon } from "obsidian";
-import { InlineTag, InlineTagType } from "../parsers/inline-tag-parser";
+import { setIcon } from 'obsidian';
+import { InlineTag, InlineTagType } from '../parsers/inline-tag-parser';
 
-interface TagConfig {
+interface InlineTagConfig {
   iconName: string;
   cssClass: string;
   format: (content: string) => string;
+  rollable: boolean;
 }
 
-const TAG_CONFIGS: Record<InlineTagType, TagConfig> = {
-  dice: {
-    iconName: "dices",
-    cssClass: "archivist-tag-dice",
-    format: (c) => c,
-  },
-  damage: {
-    iconName: "dices",
-    cssClass: "archivist-tag-damage",
-    format: (c) => c,
-  },
-  dc: {
-    iconName: "shield",
-    cssClass: "archivist-tag-dc",
-    format: (c) => `DC ${c}`,
-  },
-  atk: {
-    iconName: "swords",
-    cssClass: "archivist-tag-atk",
-    format: (c) => `${c} to hit`,
-  },
-  mod: {
-    iconName: "plus-minus",
-    cssClass: "archivist-tag-mod",
-    format: (c) => c,
-  },
-  check: {
-    iconName: "shield-check",
-    cssClass: "archivist-tag-check",
-    format: (c) => c,
-  },
+const INLINE_TAG_CONFIGS: Record<InlineTagType, InlineTagConfig> = {
+  dice: { iconName: 'dices', cssClass: 'archivist-tag-dice', format: (c) => c, rollable: true },
+  damage: { iconName: 'dices', cssClass: 'archivist-tag-damage', format: (c) => c, rollable: true },
+  dc: { iconName: 'shield', cssClass: 'archivist-tag-dc', format: (c) => `DC ${c}`, rollable: false },
+  atk: { iconName: 'swords', cssClass: 'archivist-tag-atk', format: (c) => `${c} to hit`, rollable: true },
+  mod: { iconName: 'dices', cssClass: 'archivist-tag-dice', format: (c) => c, rollable: true },
+  check: { iconName: 'shield', cssClass: 'archivist-tag-dc', format: (c) => c, rollable: false },
 };
 
 export function renderInlineTag(tag: InlineTag): HTMLElement {
-  const config = TAG_CONFIGS[tag.type];
+  const config = INLINE_TAG_CONFIGS[tag.type];
 
-  const span = document.createElement("span");
-  span.addClasses(["archivist-tag", config.cssClass]);
+  const span = document.createElement('span');
+  span.addClasses(['archivist-tag', config.cssClass]);
 
-  const iconSpan = document.createElement("span");
-  iconSpan.addClass("archivist-tag-icon");
-  setIcon(iconSpan, config.iconName);
-  span.appendChild(iconSpan);
+  const iconEl = document.createElement('span');
+  iconEl.addClass('archivist-tag-icon');
+  setIcon(iconEl, config.iconName);
+  span.appendChild(iconEl);
 
-  const contentSpan = document.createElement("span");
-  contentSpan.addClass("archivist-tag-content");
-  contentSpan.textContent = config.format(tag.content);
-  span.appendChild(contentSpan);
+  const textEl = document.createElement('span');
+  textEl.textContent = config.format(tag.content);
+  span.appendChild(textEl);
+
+  if (config.rollable) {
+    span.setAttribute('data-dice-notation', tag.content);
+    span.setAttribute('data-dice-type', tag.type);
+    span.setAttribute('title', `${tag.content} -- Click to roll`);
+    span.addEventListener('click', () => {
+      span.dispatchEvent(new CustomEvent('archivist-dice-roll', {
+        bubbles: true,
+        detail: { notation: tag.content, type: tag.type },
+      }));
+    });
+  }
 
   return span;
 }
