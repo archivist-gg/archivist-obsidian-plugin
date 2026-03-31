@@ -2,5 +2,7 @@ node_modules/
 main.js
 *.js.map
 data.json
+assets/dice-box/
 .superpowers/
 .worktrees/
+.gitnexus

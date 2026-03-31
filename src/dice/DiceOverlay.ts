@@ -1,5 +1,6 @@
 import { setIcon } from 'obsidian';
 import { rollDice, formatDiceRoll, DiceRoll } from './diceRoller';
+import { simpleDiceBox } from './SimpleDiceBox';
 
 export class DiceOverlay {
   private overlayEl: HTMLElement | null = null;
@@ -7,6 +8,8 @@ export class DiceOverlay {
   private canvasEl: HTMLElement | null = null;
   private hideTimeout: ReturnType<typeof setTimeout> | null = null;
   private escHandler: ((e: KeyboardEvent) => void) | null = null;
+  private is3DInitialized = false;
+  private is3DInitializing = false;
 
   show(): void {
     if (this.overlayEl) return;
@@ -68,5 +71,48 @@ export class DiceOverlay {
 
   isVisible(): boolean {
     return this.overlayEl !== null;
+  }
+
+  async initialize3D(assetPath: string): Promise<void> {
+    if (this.is3DInitialized || this.is3DInitializing) return;
+    this.is3DInitializing = true;
+    try {
+      this.show();
+      await simpleDiceBox.initialize(`#${this.getCanvasId()}`, assetPath);
+      simpleDiceBox.onRollComplete((results: any) => {
+        const total = results.reduce((sum: number, r: any) => sum + r.value, 0);
+        const rolls = results.map((r: any) => r.value);
+        const diceGroups = results.map((r: any) => `${r.qty || 1}d${r.sides}`);
+        const notation = [...new Set(diceGroups)].join('+');
+        this.showResult({
+          notation,
+          rolls,
+          modifier: 0,
+          total,
+          details: rolls.join(' + ') + ` = ${total}`,
+        });
+      });
+      this.is3DInitialized = true;
+      this.hide();
+    } catch (err) {
+      console.warn('[Archivist] 3D dice init failed, using math fallback:', err);
+    } finally {
+      this.is3DInitializing = false;
+    }
+  }
+
+  async roll3D(notation: string): Promise<void> {
+    if (!this.is3DInitialized) {
+      this.rollMath(notation);
+      return;
+    }
+    this.show();
+    try {
+      await simpleDiceBox.roll(notation);
+      // Result handled by onRollComplete callback
+    } catch {
+      // Fallback to math on any 3D error
+      this.rollMath(notation);
+    }
   }
 }

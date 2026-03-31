@@ -105,8 +105,15 @@ export default class ArchivistPlugin extends Plugin {
     const diceOverlay = new DiceOverlay();
     this.registerDomEvent(document, 'archivist-dice-roll' as any, (e: CustomEvent) => {
       const { notation } = e.detail;
-      if (notation) diceOverlay.rollMath(notation);
+      if (notation) diceOverlay.roll3D(notation);
     });
+
+    // Lazy-init 3D dice (non-blocking -- falls back to math if it fails)
+    // DiceBox fetches assets via fetch(origin + assetPath + ...) -- in Electron we need file:// URLs
+    const vaultAdapter = this.app.vault.adapter as any;
+    const vaultPluginDir = `${vaultAdapter.basePath}/${this.app.vault.configDir}/plugins/archivist-ttrpg-blocks`;
+    const diceAssetPath = `file://${vaultPluginDir}/assets/dice-box/`;
+    diceOverlay.initialize3D(diceAssetPath);
 
     // Editor entity suggest ([[monster:, [[spell:, [[item:, [[feat:)
     this.registerEditorSuggest(new EntityEditorSuggest(this.app, this.srdStore!));
