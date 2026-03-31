@@ -22,6 +22,7 @@ import { ItemModal } from "./modals/item-modal";
 // D&D editor extension
 import { inlineTagPlugin } from "./extensions/inline-tag-extension";
 import { dndBlockDeleteKeymap } from "./extensions/dnd-block-delete-extension";
+import { EntityEditorSuggest } from "./extensions/entity-editor-suggest";
 
 // SRD & entities
 import { SrdStore } from "./ai/srd/srd-store";
@@ -96,6 +97,9 @@ export default class ArchivistPlugin extends Plugin {
     // CodeMirror editor extension
     this.registerEditorExtension(inlineTagPlugin);
     this.registerEditorExtension(dndBlockDeleteKeymap);
+
+    // Editor entity suggest ([[monster:, [[spell:, [[item:, [[feat:)
+    this.registerEditorSuggest(new EntityEditorSuggest(this.app, this.srdStore!));
 
     // D&D insert commands
     this.addCommand({
