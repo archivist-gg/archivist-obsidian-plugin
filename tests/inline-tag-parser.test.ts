@@ -2,17 +2,17 @@ import { describe, it, expect } from "vitest";
 import { parseInlineTag } from "../src/parsers/inline-tag-parser";
 
 describe("parseInlineTag", () => {
-  it("parses a roll tag", () => {
+  it("parses a roll tag (alias -> dice)", () => {
     const tag = parseInlineTag("roll: 2d6+3");
     expect(tag).not.toBeNull();
-    expect(tag!.type).toBe("roll");
+    expect(tag!.type).toBe("dice");
     expect(tag!.content).toBe("2d6+3");
   });
 
-  it("parses a d tag", () => {
+  it("parses a d tag (alias -> dice)", () => {
     const tag = parseInlineTag("d: 1d20+5");
     expect(tag).not.toBeNull();
-    expect(tag!.type).toBe("d");
+    expect(tag!.type).toBe("dice");
     expect(tag!.content).toBe("1d20+5");
   });
 
@@ -64,7 +64,26 @@ describe("parseInlineTag", () => {
   it("handles whitespace around prefix and content", () => {
     const tag = parseInlineTag("  roll :  4d6  ");
     expect(tag).not.toBeNull();
-    expect(tag!.type).toBe("roll");
+    expect(tag!.type).toBe("dice");
     expect(tag!.content).toBe("4d6");
+  });
+
+  it("parses roll: alias to dice type", () => {
+    const tag = parseInlineTag("roll: 2d6+3");
+    expect(tag).not.toBeNull();
+    expect(tag!.type).toBe("dice");
+    expect(tag!.content).toBe("2d6+3");
+  });
+
+  it("parses d: alias to dice type", () => {
+    const tag = parseInlineTag("d: 1d20");
+    expect(tag).not.toBeNull();
+    expect(tag!.type).toBe("dice");
+  });
+
+  it("includes formula field as null by default", () => {
+    const tag = parseInlineTag("atk: +5");
+    expect(tag).not.toBeNull();
+    expect(tag!.formula).toBeNull();
   });
 });

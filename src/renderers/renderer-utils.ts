@@ -116,8 +116,6 @@ const STAT_TAG_CONFIGS: Record<string, StatTagConfig> = {
 export function extractDiceNotation(tag: { type: string; content: string }): string | null {
   switch (tag.type) {
     case "dice":
-    case "roll":
-    case "d":
       return tag.content;
     case "damage": {
       const diceMatch = tag.content.match(/^([\dd+\-*/() ]+)/i);
