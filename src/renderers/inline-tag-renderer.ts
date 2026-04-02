@@ -1,5 +1,6 @@
 import { setIcon, Notice } from 'obsidian';
 import { InlineTag, InlineTagType } from '../parsers/inline-tag-parser';
+import { extractDiceNotation, rollDiceWithRender } from './renderer-utils';
 
 interface InlineTagConfig {
   iconName: string;
@@ -39,7 +40,14 @@ export function renderInlineTag(tag: InlineTag): HTMLElement {
     span.addEventListener('click', async () => {
       const api = (window as any).DiceRoller;
       if (api) {
-        await api.parseDice(tag.content);
+        const notation = extractDiceNotation(tag);
+        if (notation) {
+          try {
+            await rollDiceWithRender(api, notation);
+          } catch {
+            new Notice(`Could not roll: ${tag.content}`);
+          }
+        }
       } else {
         new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
       }

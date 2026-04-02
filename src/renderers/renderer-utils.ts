@@ -104,6 +104,45 @@ const STAT_TAG_CONFIGS: Record<string, StatTagConfig> = {
 };
 
 /**
+ * Convert an inline tag's content to a valid dice notation string for the Dice Roller API.
+ * - dice: pass through as-is
+ * - damage: strip trailing damage type text (e.g. "3d8 fire" -> "3d8")
+ * - atk: convert modifier to d20 roll (e.g. "+7 to hit" -> "1d20+7")
+ * - mod: convert modifier to d20 roll (e.g. "+5" -> "1d20+5")
+ * Appends |render to force 3D dice rendering.
+ */
+export function extractDiceNotation(tag: { type: string; content: string }): string | null {
+  switch (tag.type) {
+    case "dice":
+      return tag.content;
+    case "damage": {
+      const diceMatch = tag.content.match(/^([\dd+\-*/() ]+)/i);
+      return diceMatch ? diceMatch[1].trim() : null;
+    }
+    case "atk":
+    case "mod": {
+      const modMatch = tag.content.match(/([+-]?\d+)/);
+      return modMatch ? `1d20${modMatch[1].startsWith("-") || modMatch[1].startsWith("+") ? "" : "+"}${modMatch[1]}` : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Roll dice with 3D rendering.
+ * Uses getRoller then roll(true) to force the 3D animation path.
+ * A fresh roller has hasRunOnce=false, so shouldRender alone won't
+ * trigger 3D — the explicit true argument bypasses that guard.
+ */
+export async function rollDiceWithRender(api: any, notation: string): Promise<void> {
+  const roller = api.getRoller(notation, "", { shouldRender: true });
+  if (roller) {
+    await roller.roll(true);
+  }
+}
+
+/**
  * Render an inline tag for use inside stat blocks.
  * Displays Lucide icons, dashed underlines, and dispatches click-to-roll events
  * matching the Archivist app's parchment-themed annotation style.
@@ -135,7 +174,14 @@ function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement
     span.addEventListener("click", async () => {
       const api = (window as any).DiceRoller;
       if (api) {
-        await api.parseDice(tag.content);
+        const notation = extractDiceNotation(tag);
+        if (notation) {
+          try {
+            await rollDiceWithRender(api, notation);
+          } catch {
+            new Notice(`Could not roll: ${tag.content}`);
+          }
+        }
       } else {
         new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
       }

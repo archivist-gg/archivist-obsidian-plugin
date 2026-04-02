@@ -1295,6 +1295,12 @@
 .archivist-tag-atk {
   color: #d47070;
   font-style: italic;
+  border-bottom: 1px dashed rgba(212, 112, 112, 0.45);
+  cursor: pointer;
+}
+.archivist-tag-atk:hover {
+  color: #e08080;
+  border-bottom-color: rgba(224, 128, 128, 0.6);
 }
 
 /* Light mode overrides */
@@ -1313,6 +1319,11 @@ body.theme-light .archivist-tag-dc {
 }
 body.theme-light .archivist-tag-atk {
   color: #b84040;
+  border-bottom-color: rgba(184, 64, 64, 0.45);
+}
+body.theme-light .archivist-tag-atk:hover {
+  color: #9a3030;
+  border-bottom-color: rgba(154, 48, 48, 0.6);
 }
 
 /* Dark Mode - Legendary Resistance */
