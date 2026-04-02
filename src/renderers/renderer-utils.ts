@@ -96,6 +96,8 @@ interface StatTagConfig {
 
 const STAT_TAG_CONFIGS: Record<string, StatTagConfig> = {
   dice: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  roll: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  d: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
   damage: { iconName: "dices", cssClass: "archivist-stat-tag-damage", format: (c) => c, rollable: true },
   atk: { iconName: "swords", cssClass: "archivist-stat-tag-atk", format: (c) => `${c} to hit`, rollable: true },
   dc: { iconName: "shield", cssClass: "archivist-stat-tag-dc", format: (c) => `DC ${c}`, rollable: false },
@@ -114,6 +116,8 @@ const STAT_TAG_CONFIGS: Record<string, StatTagConfig> = {
 export function extractDiceNotation(tag: { type: string; content: string }): string | null {
   switch (tag.type) {
     case "dice":
+    case "roll":
+    case "d":
       return tag.content;
     case "damage": {
       const diceMatch = tag.content.match(/^([\dd+\-*/() ]+)/i);
@@ -213,9 +217,9 @@ export function convert5eToolsTags(text: string): string {
     .replace(/\{@h\}/gi, 'Hit:')
     // Damage -> `damage:XdY+Z type`
     .replace(/\{@damage\s+([^}]+)\}/gi, '`damage:$1`')
-    // Dice -> `dice:XdY+Z`
-    .replace(/\{@dice\s+([^}]+)\}/gi, '`dice:$1`')
-    .replace(/\{@d20\s+([^}]+)\}/gi, '`dice:d20$1`')
+    // Dice -> `roll:XdY+Z`
+    .replace(/\{@dice\s+([^}]+)\}/gi, '`roll:$1`')
+    .replace(/\{@d20\s+([^}]+)\}/gi, '`roll:d20$1`')
     // DC -> `dc:N`
     .replace(/\{@dc\s+(\d+)\}/gi, '`dc:$1`')
     // Recharge -> "(Recharge X-6)" or "(Recharge)"
@@ -253,7 +257,7 @@ export function convert5eToolsTags(text: string): string {
 }
 
 /**
- * Render text that may contain inline tags like `dice:2d6+3` or `dc:15`.
+ * Render text that may contain inline tags like `roll:2d6+3` or `dc:15`.
  * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
  * Outside stat blocks (body text), tags render as colorful pill badges.
  */

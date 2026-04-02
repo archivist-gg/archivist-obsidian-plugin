@@ -2,11 +2,18 @@ import { describe, it, expect } from "vitest";
 import { parseInlineTag } from "../src/parsers/inline-tag-parser";
 
 describe("parseInlineTag", () => {
-  it("parses a dice tag", () => {
-    const tag = parseInlineTag("dice: 2d6+3");
+  it("parses a roll tag", () => {
+    const tag = parseInlineTag("roll: 2d6+3");
     expect(tag).not.toBeNull();
-    expect(tag!.type).toBe("dice");
+    expect(tag!.type).toBe("roll");
     expect(tag!.content).toBe("2d6+3");
+  });
+
+  it("parses a d tag", () => {
+    const tag = parseInlineTag("d: 1d20+5");
+    expect(tag).not.toBeNull();
+    expect(tag!.type).toBe("d");
+    expect(tag!.content).toBe("1d20+5");
   });
 
   it("parses a damage tag", () => {
@@ -55,9 +62,9 @@ describe("parseInlineTag", () => {
   });
 
   it("handles whitespace around prefix and content", () => {
-    const tag = parseInlineTag("  dice :  4d6  ");
+    const tag = parseInlineTag("  roll :  4d6  ");
     expect(tag).not.toBeNull();
-    expect(tag!.type).toBe("dice");
+    expect(tag!.type).toBe("roll");
     expect(tag!.content).toBe("4d6");
   });
 });

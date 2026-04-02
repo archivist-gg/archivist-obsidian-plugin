@@ -11,6 +11,8 @@ interface InlineTagConfig {
 
 const INLINE_TAG_CONFIGS: Record<InlineTagType, InlineTagConfig> = {
   dice: { iconName: 'dices', cssClass: 'archivist-tag-dice', format: (c) => c, rollable: true },
+  roll: { iconName: 'dices', cssClass: 'archivist-tag-dice', format: (c) => c, rollable: true },
+  d: { iconName: 'dices', cssClass: 'archivist-tag-dice', format: (c) => c, rollable: true },
   damage: { iconName: 'dices', cssClass: 'archivist-tag-damage', format: (c) => c, rollable: true },
   dc: { iconName: 'shield', cssClass: 'archivist-tag-dc', format: (c) => `DC ${c}`, rollable: false },
   atk: { iconName: 'swords', cssClass: 'archivist-tag-atk', format: (c) => `${c} to hit`, rollable: true },

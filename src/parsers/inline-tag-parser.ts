@@ -1,11 +1,11 @@
-export type InlineTagType = "dice" | "damage" | "dc" | "atk" | "mod" | "check";
+export type InlineTagType = "dice" | "roll" | "d" | "damage" | "dc" | "atk" | "mod" | "check";
 
 export interface InlineTag {
   type: InlineTagType;
   content: string;
 }
 
-const VALID_PREFIXES: InlineTagType[] = ["dice", "damage", "dc", "atk", "mod", "check"];
+const VALID_PREFIXES: InlineTagType[] = ["dice", "roll", "d", "damage", "dc", "atk", "mod", "check"];
 
 export function parseInlineTag(text: string): InlineTag | null {
   const colonIndex = text.indexOf(":");
