@@ -99,6 +99,14 @@ export function monsterToEditable(monster: Monster): EditableMonster {
 
   return {
     ...monster,
+    abilities: monster.abilities ? { ...monster.abilities } : undefined,
+    hp: monster.hp ? { ...monster.hp } : undefined,
+    ac: monster.ac ? monster.ac.map(a => ({ ...a, from: a.from ? [...a.from] : undefined })) : undefined,
+    speed: monster.speed ? { ...monster.speed } : undefined,
+    saves: monster.saves ? { ...monster.saves } : undefined,
+    skills: monster.skills ? { ...monster.skills } : undefined,
+    senses: monster.senses ? [...monster.senses] : undefined,
+    languages: monster.languages ? [...monster.languages] : undefined,
     overrides: new Set<string>(),
     saveProficiencies,
     skillProficiencies,
