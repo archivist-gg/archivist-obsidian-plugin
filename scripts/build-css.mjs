@@ -15,6 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
 const CLAUDIAN_STYLE_DIR = join(ROOT, 'src', 'inquiry', 'style');
 const DND_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-dnd.css');
+const EDIT_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-edit.css');
 const LAYOUT_OVERRIDES_FILE = join(ROOT, 'src', 'styles', 'archivist-layout-overrides.css');
 const OUTPUT = join(ROOT, 'styles.css');
 const INDEX_FILE = join(CLAUDIAN_STYLE_DIR, 'index.css');
@@ -128,6 +129,15 @@ function buildDndCss() {
   return readFileSync(DND_CSS_FILE, 'utf-8');
 }
 
+function buildEditCss() {
+  if (!existsSync(EDIT_CSS_FILE)) {
+    console.error('Missing src/styles/archivist-edit.css');
+    process.exit(1);
+  }
+
+  return readFileSync(EDIT_CSS_FILE, 'utf-8');
+}
+
 function buildLayoutOverridesCss() {
   if (!existsSync(LAYOUT_OVERRIDES_FILE)) {
     console.error('Missing src/styles/archivist-layout-overrides.css');
@@ -140,6 +150,7 @@ function buildLayoutOverridesCss() {
 function build() {
   const claudianCss = buildClaudianCss();
   let dndCss = buildDndCss();
+  const editCss = buildEditCss();
   const layoutOverridesCss = buildLayoutOverridesCss();
 
   // Extract @import lines from D&D CSS - they must appear at the very top of the output
@@ -153,7 +164,7 @@ function build() {
     ...importLines,
     ...(importLines.length > 0 ? [''] : []),
     '/* Archivist TTRPG Blocks - Plugin Styles */',
-    '/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css */',
+    '/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css + src/styles/archivist-edit.css */',
     '',
     '/* ================================================================',
     '   PART 1: Claudian Chat UI (from src/inquiry/style/)',
@@ -167,7 +178,13 @@ function build() {
     dndCss,
     '',
     '/* ================================================================',
-    '   PART 3: Layout Overrides (from src/styles/archivist-layout-overrides.css)',
+    '   PART 3: Edit Mode (from src/styles/archivist-edit.css)',
+    '   ================================================================ */',
+    '',
+    editCss,
+    '',
+    '/* ================================================================',
+    '   PART 4: Layout Overrides (from src/styles/archivist-layout-overrides.css)',
     '   ================================================================ */',
     '',
     layoutOverridesCss,

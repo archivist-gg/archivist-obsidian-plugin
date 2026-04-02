@@ -1721,3 +1721,30 @@ body.theme-light .archivist-tag-atk:hover {
   text-transform: capitalize;
 }
 
+/* ==========================================================================
+   Multi-Column Layout (additional classes for edit mode toggle)
+   ========================================================================== */
+
+.archivist-monster-block-wrapper.two-col {
+  max-width: 800px;
+}
+
+.archivist-monster-block.two-col-flow {
+  column-count: 2;
+  column-gap: 16px;
+  column-rule: 1px solid var(--d5e-border-tan);
+}
+
+.archivist-monster-block.two-col-flow .property-line,
+.archivist-monster-block.two-col-flow .archivist-feature,
+.archivist-monster-block.two-col-flow .abilities-block,
+.archivist-monster-block.two-col-flow .stat-block-bar,
+.archivist-monster-block.two-col-flow .archivist-feat-card {
+  break-inside: avoid;
+}
+
+.archivist-block-column-btn.active {
+  background: var(--d5e-bar-fill) !important;
+  color: var(--d5e-parchment) !important;
+}
+

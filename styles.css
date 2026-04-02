@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
 
 /* Archivist TTRPG Blocks - Plugin Styles */
-/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css */
+/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css + src/styles/archivist-edit.css */
 
 /* ================================================================
    PART 1: Claudian Chat UI (from src/inquiry/style/)
@@ -7122,10 +7122,895 @@ body.theme-light .archivist-tag-atk:hover {
   text-transform: capitalize;
 }
 
+/* ==========================================================================
+   Multi-Column Layout (additional classes for edit mode toggle)
+   ========================================================================== */
+
+.archivist-monster-block-wrapper.two-col {
+  max-width: 800px;
+}
+
+.archivist-monster-block.two-col-flow {
+  column-count: 2;
+  column-gap: 16px;
+  column-rule: 1px solid var(--d5e-border-tan);
+}
+
+.archivist-monster-block.two-col-flow .property-line,
+.archivist-monster-block.two-col-flow .archivist-feature,
+.archivist-monster-block.two-col-flow .abilities-block,
+.archivist-monster-block.two-col-flow .stat-block-bar,
+.archivist-monster-block.two-col-flow .archivist-feat-card {
+  break-inside: avoid;
+}
+
+.archivist-block-column-btn.active {
+  background: var(--d5e-bar-fill) !important;
+  color: var(--d5e-parchment) !important;
+}
+
 
 
 /* ================================================================
-   PART 3: Layout Overrides (from src/styles/archivist-layout-overrides.css)
+   PART 3: Edit Mode (from src/styles/archivist-edit.css)
+   ================================================================ */
+
+/* ==========================================================================
+   Archivist Edit Mode Styles
+   CSS for monster stat block inline editing, auto-calculated values,
+   proficiency toggles, collapsible sections, feature cards, tab bars,
+   section dropdowns, tag autocomplete, and custom number spinners.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. Base Edit Input
+   ========================================================================== */
+
+.archivist-edit-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--d5e-border-tan);
+  color: var(--d5e-text-dark);
+  font: inherit;
+  font-size: 14px;
+  padding: 3px 5px;
+  outline: none;
+  text-align: center;
+  min-width: 30px;
+}
+
+.archivist-edit-input:focus {
+  border-bottom-color: var(--d5e-bar-fill);
+  border-bottom-style: solid;
+}
+
+/* Name input — Libre Baskerville, large, small-caps */
+.archivist-edit-input-name {
+  font-family: 'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style',
+    Bookman, 'Goudy Old Style', Garamond, 'Hoefler Text', 'Bitstream Charter',
+    Georgia, serif;
+  font-size: 25px;
+  font-weight: 700;
+  font-variant: small-caps;
+  letter-spacing: 1px;
+  color: var(--d5e-text-accent);
+  width: 85%;
+  text-align: left;
+  padding: 4px 6px;
+  background: transparent;
+  border: 1px dashed var(--d5e-border-tan);
+  outline: none;
+}
+
+.archivist-edit-input-name:focus {
+  border-color: var(--d5e-bar-fill);
+  border-style: solid;
+}
+
+/* Formula-width input */
+.archivist-edit-input.formula {
+  width: 76px;
+}
+
+/* Wide text input */
+.archivist-edit-input.wide {
+  width: 170px;
+  text-align: left;
+}
+
+/* Language input */
+.archivist-edit-input.lang {
+  width: 190px;
+  text-align: left;
+}
+
+/* ==========================================================================
+   2. Select Dropdown
+   ========================================================================== */
+
+.archivist-edit-select {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--d5e-border-tan);
+  color: var(--d5e-text-dark);
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+  padding: 3px 6px;
+  cursor: pointer;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23922610' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  padding-right: 18px;
+}
+
+.archivist-edit-select:focus {
+  border-bottom-color: var(--d5e-bar-fill);
+  border-bottom-style: solid;
+}
+
+.archivist-edit-select option {
+  background: var(--d5e-parchment);
+  color: var(--d5e-text-dark);
+  font-size: 14px;
+}
+
+/* Subtype italic variant */
+.archivist-edit-select.sub {
+  font-style: italic;
+  padding: 4px 20px 4px 6px;
+}
+
+/* ==========================================================================
+   3. Custom Number Spinners
+   ========================================================================== */
+
+.archivist-num-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.archivist-num-in {
+  background: transparent;
+  border: 1px dashed var(--d5e-border-tan);
+  border-radius: 2px;
+  color: var(--d5e-text-dark);
+  font: inherit;
+  font-size: 15px;
+  text-align: center;
+  width: 54px;
+  height: 30px;
+  padding: 4px 18px 4px 4px;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.archivist-num-in::-webkit-inner-spin-button,
+.archivist-num-in::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+.archivist-num-in:focus {
+  border-color: var(--d5e-bar-fill);
+  border-style: solid;
+}
+
+.archivist-num-spin {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+}
+
+.archivist-num-spin button {
+  background: transparent;
+  border: none;
+  color: var(--d5e-border-tan);
+  font-size: 10px;
+  width: 14px;
+  height: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.archivist-num-spin button:hover {
+  color: var(--d5e-bar-fill);
+}
+
+/* ==========================================================================
+   4. Auto-Calculated Values
+   ========================================================================== */
+
+.archivist-auto-value {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.archivist-auto-value:hover {
+  background: rgba(122, 32, 13, 0.06);
+}
+
+.archivist-auto-value.flash {
+  animation: archivist-highlight-update 0.4s ease-out;
+}
+
+.archivist-auto-label {
+  color: #766649;
+  font-size: 11px;
+  font-style: italic;
+  margin-left: 2px;
+}
+
+.archivist-override-mark {
+  color: var(--d5e-bar-fill);
+  font-size: 11px;
+  vertical-align: super;
+  cursor: help;
+  opacity: 0.7;
+  margin-left: 1px;
+}
+
+.archivist-override-mark:hover {
+  opacity: 1;
+}
+
+@keyframes archivist-highlight-update {
+  0% {
+    background: rgba(122, 32, 13, 0.12);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* ==========================================================================
+   5. Proficiency Toggle
+   ========================================================================== */
+
+.archivist-prof-toggle {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--d5e-border-tan);
+  border-radius: 3px;
+  background: rgba(253, 241, 220, 0.3);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archivist-prof-toggle:hover {
+  background: rgba(217, 196, 132, 0.2);
+  transform: scale(1.1);
+}
+
+.archivist-prof-toggle.proficient {
+  border-color: var(--d5e-bar-fill);
+  background: rgba(253, 241, 220, 0.5);
+}
+
+.archivist-prof-toggle.proficient::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--d5e-bar-fill);
+  border-radius: 50%;
+}
+
+.archivist-prof-toggle.expertise {
+  border-color: var(--d5e-bar-fill);
+  background: rgba(253, 241, 220, 0.5);
+  outline: 1px solid var(--d5e-bar-fill);
+  outline-offset: 2px;
+}
+
+.archivist-prof-toggle.expertise::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--d5e-bar-fill);
+  border-radius: 50%;
+}
+
+/* ==========================================================================
+   6. Collapsible Sections
+   ========================================================================== */
+
+.archivist-coll-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  padding: 3px 0;
+  color: var(--d5e-text-accent);
+}
+
+.archivist-coll-header h4 {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--d5e-text-accent);
+}
+
+.archivist-coll-chevron {
+  color: var(--d5e-bar-fill);
+  font-size: 11px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.archivist-coll-chevron.open {
+  transform: rotate(90deg);
+}
+
+/* ==========================================================================
+   7. Section Grids — Saves, Skills, Senses
+   ========================================================================== */
+
+/* Saves: 3-column grid */
+.archivist-saves-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 12px;
+  margin-top: 4px;
+}
+
+.archivist-save-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.archivist-save-item .archivist-save-ability {
+  color: var(--d5e-text-accent);
+  min-width: 30px;
+  font-weight: 600;
+}
+
+/* Skills: 2-column grid */
+.archivist-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 16px;
+  margin-top: 4px;
+}
+
+.archivist-skill-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.archivist-skill-item .archivist-skill-name {
+  color: var(--d5e-text-accent);
+  min-width: 100px;
+}
+
+.archivist-skill-item .archivist-skill-base {
+  color: #a39274;
+  font-weight: normal;
+}
+
+.archivist-skill-item .archivist-skill-value {
+  font-weight: bold;
+}
+
+/* Senses: 2-column grid */
+.archivist-senses-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 16px;
+  margin-top: 4px;
+}
+
+.archivist-sense-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.archivist-sense-item .archivist-sense-name {
+  color: var(--d5e-text-accent);
+  min-width: 90px;
+}
+
+/* ==========================================================================
+   8. Senses-Specific Inputs
+   ========================================================================== */
+
+.archivist-sense-range {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--d5e-border-tan);
+  color: var(--d5e-text-dark);
+  font: inherit;
+  font-size: 14px;
+  padding: 2px 4px;
+  width: 60px;
+  text-align: center;
+  outline: none;
+}
+
+.archivist-sense-range:focus {
+  border-bottom-color: var(--d5e-bar-fill);
+  border-bottom-style: solid;
+}
+
+.archivist-sense-off {
+  color: #a39274;
+  font-style: italic;
+}
+
+/* Passive Perception row: spans full width, dashed top divider */
+.archivist-sense-pp {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  border-top: 1px dashed var(--d5e-border-tan);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.archivist-sense-pp .archivist-sense-pp-label {
+  color: var(--d5e-text-accent);
+  font-weight: 600;
+}
+
+/* Custom sense row: spans full width */
+.archivist-sense-custom {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  border-top: 1px dashed var(--d5e-border-tan);
+  padding-top: 6px;
+  margin-top: 2px;
+}
+
+.archivist-sense-custom-name {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--d5e-border-tan);
+  color: var(--d5e-text-accent);
+  font: inherit;
+  font-size: 14px;
+  padding: 2px 4px;
+  width: 110px;
+  outline: none;
+}
+
+.archivist-sense-custom-name:focus {
+  border-bottom-color: var(--d5e-bar-fill);
+  border-bottom-style: solid;
+}
+
+.archivist-sense-custom-x {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: transparent;
+  border: none;
+  color: #a39274;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.archivist-sense-custom-x:hover {
+  background: var(--d5e-bar-fill);
+  color: white;
+}
+
+.archivist-sense-custom-x svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ==========================================================================
+   9. Feature Cards
+   ========================================================================== */
+
+.archivist-feat-card {
+  position: relative;
+  margin-bottom: 10px;
+  border: 1px solid var(--d5e-border-tan);
+  border-radius: 3px;
+  padding: 8px 10px;
+  background: rgba(244, 228, 193, 0.4);
+}
+
+.archivist-feat-card:hover {
+  border-color: var(--d5e-border-tan-dark);
+}
+
+/* Remove button (X) on feature cards */
+.archivist-feat-card-x {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  background: transparent;
+  border: none;
+  color: #a39274;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.archivist-feat-card-x:hover {
+  background: var(--d5e-bar-fill);
+  color: white;
+}
+
+.archivist-feat-card-x svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Feature name input — bold italic */
+.archivist-feat-name-input {
+  font-weight: bold;
+  font-style: italic;
+  color: var(--d5e-text-accent);
+  border: none;
+  border-bottom: 1px dashed var(--d5e-border-tan);
+  background: transparent;
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+  padding: 3px 4px;
+  outline: none;
+  width: calc(100% - 30px);
+}
+
+.archivist-feat-name-input:focus {
+  border-bottom-color: var(--d5e-bar-fill);
+  border-bottom-style: solid;
+}
+
+/* Feature text textarea — parchment-toned background */
+.archivist-feat-text-input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  background: rgba(253, 241, 220, 0.6);
+  border: 1px solid var(--d5e-border-tan);
+  border-radius: 2px;
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5em;
+  resize: vertical;
+  min-height: 56px;
+  color: var(--d5e-text-dark);
+  outline: none;
+}
+
+.archivist-feat-text-input:focus {
+  border-color: var(--d5e-bar-fill);
+}
+
+/* ==========================================================================
+   10. Add Button (Full Width)
+   ========================================================================== */
+
+.archivist-add-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px 12px;
+  background: rgba(122, 32, 13, 0.05);
+  border: 1px dashed var(--d5e-border-tan);
+  border-radius: 2px;
+  color: var(--d5e-text-accent);
+  font-size: 13px;
+  font-family: 'Noto Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.archivist-add-btn:hover {
+  background: rgba(122, 32, 13, 0.1);
+  border-color: var(--d5e-bar-fill);
+}
+
+/* ==========================================================================
+   11. Tab Bar
+   ========================================================================== */
+
+.archivist-tab-wrap {
+  display: flex;
+  align-items: stretch;
+  margin: 0.5em 0 0;
+  border-bottom: 1px solid var(--d5e-text-accent);
+  overflow: hidden;
+}
+
+.archivist-tabs {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.archivist-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.archivist-tab {
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--d5e-text-accent);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Noto Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.archivist-tab.active {
+  color: var(--d5e-bar-fill);
+  border-bottom-color: var(--d5e-bar-fill);
+  background: rgba(122, 32, 13, 0.1);
+}
+
+.archivist-tab:hover:not(.active) {
+  background: rgba(122, 32, 13, 0.05);
+}
+
+/* Add section tab (+) — prominent, larger */
+.archivist-tab.add-tab {
+  color: var(--d5e-bar-fill);
+  font-size: 18px;
+  font-weight: bold;
+  padding: 4px 14px;
+  border-bottom-color: transparent;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.archivist-tab.add-tab:hover {
+  background: rgba(122, 32, 13, 0.08);
+}
+
+/* Tab content area */
+.archivist-tab-content {
+  padding: 0.5em 0 0;
+  min-height: 50px;
+}
+
+/* ==========================================================================
+   12. Section Dropdown (Add Section)
+   ========================================================================== */
+
+.archivist-section-dropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 0;
+  background: var(--d5e-parchment);
+  border: 1px solid var(--d5e-border-tan);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  z-index: 20;
+  min-width: 160px;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.archivist-section-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--d5e-text-accent);
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: inherit;
+}
+
+.archivist-section-dropdown-item:hover {
+  background: rgba(122, 32, 13, 0.08);
+}
+
+.archivist-section-dropdown-item.disabled {
+  color: #a39274;
+  cursor: default;
+  text-decoration: line-through;
+}
+
+.archivist-section-dropdown-item.disabled:hover {
+  background: transparent;
+}
+
+/* ==========================================================================
+   13. Tag Autocomplete
+   ========================================================================== */
+
+.archivist-tag-autocomplete {
+  background: var(--d5e-parchment);
+  border: 1px solid var(--d5e-border-tan);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(134, 116, 83, 0.3);
+  padding: 4px;
+  min-width: 260px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.archivist-tag-ac-group {
+  padding: 4px 8px 2px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #766649;
+}
+
+.archivist-tag-ac-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--d5e-text-dark);
+  gap: 8px;
+}
+
+.archivist-tag-ac-item:hover,
+.archivist-tag-ac-item.selected {
+  background: rgba(122, 32, 13, 0.08);
+}
+
+.archivist-tag-ac-tag {
+  font-family: 'Noto Sans', monospace;
+  font-size: 12px;
+  color: var(--d5e-bar-fill);
+  white-space: nowrap;
+}
+
+.archivist-tag-ac-desc {
+  font-size: 11px;
+  color: #766649;
+  white-space: nowrap;
+}
+
+.archivist-tag-ac-preview {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--d5e-text-accent);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ==========================================================================
+   14. Edit Mode Stat Block Outline
+   ========================================================================== */
+
+.archivist-monster-block.editing {
+  outline: 2px solid var(--d5e-bar-fill);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   15. Side Button States (Edit Mode)
+   ========================================================================== */
+
+/* Save button — green */
+.archivist-side-btn-save {
+  background: rgba(34, 120, 40, 0.2);
+  color: #5cb85c;
+}
+
+.archivist-side-btn-save:hover {
+  background: rgba(34, 120, 40, 0.45);
+  color: #8de88d;
+}
+
+/* Compendium button — tan/gold */
+.archivist-side-btn-compendium {
+  background: rgba(217, 196, 132, 0.15);
+  color: var(--d5e-border-tan);
+}
+
+.archivist-side-btn-compendium:hover {
+  background: rgba(217, 196, 132, 0.3);
+  color: var(--d5e-border-tan-light);
+}
+
+/* Cancel button — muted */
+.archivist-side-btn-cancel {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.archivist-side-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Active edit button — crimson fill with parchment icon */
+.archivist-side-btn.active {
+  background: var(--d5e-bar-fill);
+  color: var(--d5e-parchment);
+}
+
+/* ==========================================================================
+   16. Rendered Formula Tags in Edit Mode
+   ========================================================================== */
+
+.archivist-rendered-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--d5e-bar-fill);
+  text-decoration: underline dashed var(--d5e-bar-fill);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.archivist-rendered-tag:hover {
+  color: #7a1a08;
+}
+
+.archivist-rendered-tag .archivist-tag-formula {
+  font-size: 10px;
+  color: #766649;
+  font-style: italic;
+  text-decoration: none;
+  margin-left: 2px;
+}
+
+
+/* ================================================================
+   PART 4: Layout Overrides (from src/styles/archivist-layout-overrides.css)
    ================================================================ */
 
 /* Archivist layout overrides -- match previous Archivist Inquiry layout */
