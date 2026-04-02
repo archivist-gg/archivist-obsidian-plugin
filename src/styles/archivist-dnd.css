@@ -79,10 +79,56 @@
   z-index: 10;
 }
 
+/* Monster blocks: delete button moves down to make room for column toggle */
+.archivist-block-delete-btn.archivist-block-delete-btn-monster {
+  top: calc(var(--size-2-2) + 56px);
+}
+
 .archivist-block-delete-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 1.75;
+}
+
+/* Column toggle button — same style as delete button, positioned between </> and trash */
+.archivist-block-column-btn {
+  position: absolute;
+  padding: var(--size-2-2) var(--size-2-3);
+  top: calc(var(--size-2-2) + 28px);
+  inset-inline-end: var(--size-2-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  z-index: 10;
+}
+
+.archivist-block-column-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75;
+}
+
+.archivist-block-column-btn:hover {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+/* Show all side buttons on hover or when block is focused */
+.cm-embed-block:hover .archivist-block-column-btn,
+.cm-embed-block:focus-within .archivist-block-column-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hide column toggle button in reading view */
+.markdown-reading-view .archivist-block-column-btn {
+  display: none;
 }
 
 /* Show both buttons on hover or when block is focused (clicked) */
@@ -112,6 +158,39 @@
   margin: 1.5em auto;
   display: flex;
   justify-content: center;
+}
+
+/* Two-column monster block wrapper — same width as spell/item blocks */
+.archivist-monster-block-wrapper.archivist-monster-two-col {
+  max-width: none;
+  width: calc(100% - 80px);
+  justify-content: flex-start;
+}
+
+/* Two-column flow: entire block content flows into two CSS columns */
+.archivist-monster-two-col-flow {
+  column-count: 2;
+  column-gap: 16px;
+  column-rule: 1px solid var(--d5e-border-tan);
+}
+
+/* Prevent breaks inside elements in two-column flow */
+.archivist-monster-two-col-flow .property-block,
+.archivist-monster-two-col-flow .property-line,
+.archivist-monster-two-col-flow .archivist-feature,
+.archivist-monster-two-col-flow .abilities-block,
+.archivist-monster-two-col-flow .actions-header,
+.archivist-monster-two-col-flow .archivist-legendary-intro,
+.archivist-monster-two-col-flow .archivist-monster-section,
+.archivist-monster-two-col-flow .archivist-legendary-resistance-inline {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+}
+
+/* SVG bars need special handling in column flow */
+.archivist-monster-two-col-flow .stat-block-bar {
+  break-inside: avoid;
+  break-after: avoid;
 }
 
 .archivist-monster-block {

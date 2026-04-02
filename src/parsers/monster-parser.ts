@@ -91,6 +91,7 @@ export function parseMonster(source: string): ParseResult<Monster> {
 
   if (raw.legendary_actions != null) monster.legendary_actions = Number(raw.legendary_actions);
   if (raw.legendary_resistance != null) monster.legendary_resistance = Number(raw.legendary_resistance);
+  if (raw.columns != null) monster.columns = Number(raw.columns);
 
   return { success: true, data: monster };
 }

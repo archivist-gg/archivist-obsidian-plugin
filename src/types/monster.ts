@@ -56,4 +56,5 @@ export interface Monster {
   legendary?: MonsterFeature[];
   legendary_actions?: number;
   legendary_resistance?: number;
+  columns?: number;
 }

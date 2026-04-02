@@ -82,12 +82,21 @@ function renderLegendaryResistance(
   }
 }
 
-export function renderMonsterBlock(monster: Monster): HTMLElement {
-  const wrapper = el("div", { cls: "archivist-monster-block-wrapper" });
+export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLElement {
+  const isTwoCol = columns === 2;
+  const wrapperCls = isTwoCol
+    ? ["archivist-monster-block-wrapper", "archivist-monster-two-col"]
+    : "archivist-monster-block-wrapper";
+  const wrapper = el("div", { cls: wrapperCls });
   const block = el("div", { cls: "archivist-monster-block", parent: wrapper });
 
+  // In two-column mode, all content goes inside a flow container with column-count: 2
+  const contentTarget = isTwoCol
+    ? el("div", { cls: "archivist-monster-two-col-flow", parent: block })
+    : block;
+
   // 1. Header
-  const header = el("div", { cls: "stat-block-header", parent: block });
+  const header = el("div", { cls: "stat-block-header", parent: contentTarget });
   el("div", { cls: "monster-name", text: monster.name, parent: header });
   const typeText = [
     monster.size ? capitalizeWords(monster.size) : "",
@@ -101,20 +110,20 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
   el("p", { cls: "monster-type", text: fullType, parent: header });
 
   // 2. SVG Bar
-  createSvgBar(block);
+  createSvgBar(contentTarget);
 
   // 3. Core properties (AC, HP, Speed)
-  const coreProps = el("div", { cls: "property-block", parent: block });
+  const coreProps = el("div", { cls: "property-block", parent: contentTarget });
   createPropertyLine(coreProps, "Armor Class", formatAC(monster));
   createPropertyLine(coreProps, "Hit Points", formatHP(monster));
   createPropertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
 
   // 4. SVG Bar
-  createSvgBar(block);
+  createSvgBar(contentTarget);
 
   // 5. Abilities table
   if (monster.abilities) {
-    const abilitiesBlock = el("div", { cls: "abilities-block", parent: block });
+    const abilitiesBlock = el("div", { cls: "abilities-block", parent: contentTarget });
     const table = el("table", { cls: "abilities-table", parent: abilitiesBlock });
 
     const thead = el("thead", { parent: table });
@@ -149,10 +158,10 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
   }
 
   // 6. SVG Bar
-  createSvgBar(block);
+  createSvgBar(contentTarget);
 
   // 7. Secondary properties
-  const secondaryProps = el("div", { cls: "property-block", parent: block });
+  const secondaryProps = el("div", { cls: "property-block", parent: contentTarget });
   let hasSecondary = false;
 
   if (monster.saves && Object.keys(monster.saves).length > 0) {
@@ -245,11 +254,11 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
 
   // 8. SVG Bar (only if secondary props exist)
   if (hasSecondary) {
-    createSvgBar(block);
+    createSvgBar(contentTarget);
   }
 
-  // 9. Tab navigation
-  const tabDefs: {
+  // 9. Section definitions (shared by tab mode and two-column mode)
+  const sectionDefs: {
     id: string;
     label: string;
     features: MonsterFeature[] | undefined;
@@ -260,14 +269,51 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
     { id: "legendary", label: "Legendary Actions", features: monster.legendary },
   ];
 
-  const activeTabs = tabDefs.filter(
+  const activeSections = sectionDefs.filter(
     (t) => t.features && t.features.length > 0,
   );
 
-  if (activeTabs.length > 0) {
+  if (activeSections.length > 0 && isTwoCol) {
+    // Two-column mode: render all sections sequentially with headers (no tabs)
+    // Content flows naturally through the two-col-flow container
+    for (const section of activeSections) {
+      const sectionDiv = el("div", {
+        cls: "archivist-monster-section",
+        parent: contentTarget,
+      });
+
+      // Traits render inline without a section header (just like PHB)
+      if (section.id !== "traits") {
+        el("div", {
+          cls: "actions-header",
+          text: section.label,
+          parent: sectionDiv,
+        });
+      }
+
+      if (section.id === "legendary") {
+        const legendaryCount = monster.legendary_actions ?? 3;
+        const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
+        el("p", {
+          cls: "archivist-legendary-intro",
+          text: introText,
+          parent: sectionDiv,
+        });
+
+        if (monster.legendary_resistance && monster.legendary_resistance > 0) {
+          renderLegendaryResistance(sectionDiv, monster.legendary_resistance);
+        }
+      }
+
+      if (section.features) {
+        renderFeatureBlock(sectionDiv, section.features);
+      }
+    }
+  } else if (activeSections.length > 0) {
+    // Single-column mode: tabbed navigation (existing behavior)
     const navWrapper = el("div", {
       cls: "original-tab-navigation-wrapper",
-      parent: block,
+      parent: contentTarget,
     });
     const nav = el("div", {
       cls: "original-tab-navigation",
@@ -276,8 +322,8 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
 
     const contentDivs: Map<string, HTMLElement> = new Map();
 
-    for (let i = 0; i < activeTabs.length; i++) {
-      const tab = activeTabs[i];
+    for (let i = 0; i < activeSections.length; i++) {
+      const tab = activeSections[i];
       const btn = el("button", {
         cls: i === 0
           ? ["original-tab-button", "active"]
@@ -287,31 +333,28 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
       });
 
       btn.addEventListener("click", () => {
-        // Remove active from all buttons
         nav
           .querySelectorAll(".original-tab-button")
           .forEach((b) => b.removeClass("active"));
         btn.addClass("active");
 
-        // Show/hide content
         contentDivs.forEach((div, id) => {
           div.style.display = id === tab.id ? "" : "none";
         });
       });
     }
 
-    // 10. Tab content
-    for (let i = 0; i < activeTabs.length; i++) {
-      const tab = activeTabs[i];
+    // Tab content
+    for (let i = 0; i < activeSections.length; i++) {
+      const tab = activeSections[i];
       const content = el("div", {
         cls: "original-tab-content",
-        parent: block,
+        parent: contentTarget,
       });
       content.style.display = i === 0 ? "" : "none";
       contentDivs.set(tab.id, content);
 
       if (tab.id === "legendary") {
-        // Legendary intro text
         const legendaryCount = monster.legendary_actions ?? 3;
         const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
         el("p", {
@@ -320,7 +363,6 @@ export function renderMonsterBlock(monster: Monster): HTMLElement {
           parent: content,
         });
 
-        // Legendary resistance boxes
         if (monster.legendary_resistance && monster.legendary_resistance > 0) {
           renderLegendaryResistance(content, monster.legendary_resistance);
         }
