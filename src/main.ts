@@ -72,9 +72,62 @@ export default class ArchivistPlugin extends Plugin {
     await this.inquiry.init();
 
     // D&D code block processors
-    this.registerMarkdownCodeBlockProcessor("monster", (source, el, ctx) =>
-      this.renderBlock(source, el, ctx, parseMonster, renderMonsterBlock),
-    );
+    this.registerMarkdownCodeBlockProcessor("monster", (source, el, ctx) => {
+      const result = parseMonster(source);
+      if (!result.success) {
+        el.appendChild(createErrorBlock(result.error, source));
+        return;
+      }
+
+      let columns = 1;
+      let rendered = renderMonsterBlock(result.data, columns);
+      el.appendChild(rendered);
+
+      // Column toggle button — between Obsidian's </> and trash
+      const colBtn = el.createDiv({ cls: 'archivist-block-column-btn' });
+      setIcon(colBtn, 'columns-2');
+      colBtn.setAttribute('aria-label', 'Toggle columns');
+      colBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        columns = columns === 1 ? 2 : 1;
+        const newRendered = renderMonsterBlock(result.data, columns);
+        rendered.replaceWith(newRendered);
+        rendered = newRendered;
+        colBtn.empty();
+        setIcon(colBtn, columns === 2 ? 'layout-list' : 'columns-2');
+      });
+
+      // Trash button — same as renderBlock but with monster-specific positioning class
+      const deleteBtn = el.createDiv({ cls: 'archivist-block-delete-btn archivist-block-delete-btn-monster' });
+      setIcon(deleteBtn, 'trash-2');
+      deleteBtn.setAttribute('aria-label', 'Delete block');
+      deleteBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const info = ctx.getSectionInfo(el);
+        if (!info) return;
+        const editor = this.app.workspace.activeEditor?.editor;
+        if (!editor) return;
+        const fromLine = info.lineStart;
+        const toLine = info.lineEnd;
+        const totalLines = editor.lineCount();
+        if (toLine + 1 < totalLines) {
+          editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
+          editor.setCursor({ line: fromLine, ch: 0 });
+        } else {
+          const endCh = editor.getLine(toLine).length;
+          if (fromLine > 0) {
+            const prevLineLen = editor.getLine(fromLine - 1).length;
+            editor.replaceRange('', { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
+          } else {
+            editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: 0, ch: 0 });
+          }
+        }
+      });
+    });
     this.registerMarkdownCodeBlockProcessor("spell", (source, el, ctx) =>
       this.renderBlock(source, el, ctx, parseSpell, renderSpellBlock),
     );
