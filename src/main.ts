@@ -17,6 +17,8 @@ import { createErrorBlock } from "./renderers/renderer-utils";
 // Edit mode
 import { renderSideButtons } from "./edit/side-buttons";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
+import { renderSpellEditMode } from "./edit/spell-edit-render";
+import { renderItemEditMode } from "./edit/item-edit-render";
 
 // D&D modals
 import { MonsterModal } from "./modals/monster-modal";
@@ -147,12 +149,108 @@ export default class ArchivistPlugin extends Plugin {
         }
       });
     });
-    this.registerMarkdownCodeBlockProcessor("spell", (source, el, ctx) =>
-      this.renderBlock(source, el, ctx, parseSpell, renderSpellBlock),
-    );
-    this.registerMarkdownCodeBlockProcessor("item", (source, el, ctx) =>
-      this.renderBlock(source, el, ctx, parseItem, renderItemBlock),
-    );
+    this.registerMarkdownCodeBlockProcessor("spell", (source, el, ctx) => {
+      const result = parseSpell(source);
+      if (!result.success) {
+        el.appendChild(createErrorBlock(result.error, source));
+        return;
+      }
+      el.appendChild(renderSpellBlock(result.data));
+
+      // Side buttons container
+      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
+
+      // Edit button
+      const editBtn = sideBtns.createDiv({ cls: "archivist-side-btn" });
+      setIcon(editBtn, "pen-line");
+      editBtn.setAttribute("aria-label", "Edit");
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.empty();
+        renderSpellEditMode(result.data, el, ctx, this);
+      });
+
+      // Delete button
+      const deleteBtn = el.createDiv({ cls: "archivist-block-delete-btn" });
+      setIcon(deleteBtn, "trash-2");
+      deleteBtn.setAttribute("aria-label", "Delete block");
+      deleteBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const info = ctx.getSectionInfo(el);
+        if (!info) return;
+        const editor = this.app.workspace.activeEditor?.editor;
+        if (!editor) return;
+        const fromLine = info.lineStart;
+        const toLine = info.lineEnd;
+        const totalLines = editor.lineCount();
+        if (toLine + 1 < totalLines) {
+          editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
+          editor.setCursor({ line: fromLine, ch: 0 });
+        } else {
+          const endCh = editor.getLine(toLine).length;
+          if (fromLine > 0) {
+            const prevLineLen = editor.getLine(fromLine - 1).length;
+            editor.replaceRange("", { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
+          } else {
+            editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: 0, ch: 0 });
+          }
+        }
+      });
+    });
+    this.registerMarkdownCodeBlockProcessor("item", (source, el, ctx) => {
+      const result = parseItem(source);
+      if (!result.success) {
+        el.appendChild(createErrorBlock(result.error, source));
+        return;
+      }
+      el.appendChild(renderItemBlock(result.data));
+
+      // Side buttons container
+      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
+
+      // Edit button
+      const editBtn = sideBtns.createDiv({ cls: "archivist-side-btn" });
+      setIcon(editBtn, "pen-line");
+      editBtn.setAttribute("aria-label", "Edit");
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        el.empty();
+        renderItemEditMode(result.data, el, ctx, this);
+      });
+
+      // Delete button
+      const deleteBtn = el.createDiv({ cls: "archivist-block-delete-btn" });
+      setIcon(deleteBtn, "trash-2");
+      deleteBtn.setAttribute("aria-label", "Delete block");
+      deleteBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const info = ctx.getSectionInfo(el);
+        if (!info) return;
+        const editor = this.app.workspace.activeEditor?.editor;
+        if (!editor) return;
+        const fromLine = info.lineStart;
+        const toLine = info.lineEnd;
+        const totalLines = editor.lineCount();
+        if (toLine + 1 < totalLines) {
+          editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
+          editor.setCursor({ line: fromLine, ch: 0 });
+        } else {
+          const endCh = editor.getLine(toLine).length;
+          if (fromLine > 0) {
+            const prevLineLen = editor.getLine(fromLine - 1).length;
+            editor.replaceRange("", { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
+          } else {
+            editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: 0, ch: 0 });
+          }
+        }
+      });
+    });
 
     // Inline tag post-processor
     this.registerMarkdownPostProcessor((element) => {
@@ -265,51 +363,4 @@ export default class ArchivistPlugin extends Plugin {
     }
   }
 
-  private renderBlock<T>(
-    source: string,
-    el: HTMLElement,
-    ctx: MarkdownPostProcessorContext,
-    parser: (
-      source: string,
-    ) => { success: true; data: T } | { success: false; error: string },
-    renderer: (data: T) => HTMLElement,
-  ): void {
-    const result = parser(source);
-    if (result.success) {
-      el.appendChild(renderer(result.data));
-    } else {
-      el.appendChild(createErrorBlock(result.error, source));
-    }
-
-    // Add delete button (trash icon) — appears below Obsidian's </> button
-    const deleteBtn = el.createDiv({ cls: 'archivist-block-delete-btn' });
-    setIcon(deleteBtn, 'trash-2');
-    deleteBtn.setAttribute('aria-label', 'Delete block');
-    deleteBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const info = ctx.getSectionInfo(el);
-      if (!info) return;
-      const editor = this.app.workspace.activeEditor?.editor;
-      if (!editor) return;
-      const fromLine = info.lineStart;
-      const toLine = info.lineEnd;
-      const totalLines = editor.lineCount();
-      if (toLine + 1 < totalLines) {
-        editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
-        // Keep cursor at the delete position to prevent scroll jump
-        editor.setCursor({ line: fromLine, ch: 0 });
-      } else {
-        const endCh = editor.getLine(toLine).length;
-        if (fromLine > 0) {
-          const prevLineLen = editor.getLine(fromLine - 1).length;
-          editor.replaceRange('', { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
-          editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
-        } else {
-          editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-          editor.setCursor({ line: 0, ch: 0 });
-        }
-      }
-    });
-  }
 }

@@ -10,6 +10,8 @@ export interface ArchivistSettings {
   srdImported: boolean;
   ttrpgRootDir: string;
   externalContextPaths: string[];
+  defaultMultiColumn: boolean;
+  multiColumnThreshold: number;
 }
 
 export const DEFAULT_SETTINGS: ArchivistSettings = {
@@ -18,4 +20,6 @@ export const DEFAULT_SETTINGS: ArchivistSettings = {
   srdImported: false,
   ttrpgRootDir: "/",
   externalContextPaths: [],
+  defaultMultiColumn: false,
+  multiColumnThreshold: 20,
 };
