@@ -92,8 +92,6 @@ export function renderItemEditMode(
   }
   typeSelect.addEventListener("change", () => { draft.type = typeSelect.value || undefined; markDirty(); });
 
-  subtitleRow.appendText(", ");
-
   const raritySelect = subtitleRow.createEl("select", { cls: "archivist-edit-select" });
   const rarEmpty = raritySelect.createEl("option", { text: "-- Rarity --" });
   rarEmpty.value = "";
@@ -118,9 +116,9 @@ export function renderItemEditMode(
 
   // Attunement row: toggle + optional condition
   const attuneRow = props.createDiv({ cls: "archivist-property-line" });
-  const attuneIcon = attuneRow.createEl("span", { cls: "archivist-property-icon" });
+  const attuneIcon = attuneRow.createDiv({ cls: "archivist-property-icon" });
   setIcon(attuneIcon, "sparkles");
-  attuneRow.createEl("span", { cls: "archivist-property-name", text: "Attunement:" });
+  attuneRow.createDiv({ cls: "archivist-property-name", text: "Attunement:" });
 
   const attuneCheck = attuneRow.createEl("input");
   attuneCheck.type = "checkbox";
@@ -197,9 +195,9 @@ export function renderItemEditMode(
 
   // Curse toggle
   const curseRow = props.createDiv({ cls: "archivist-property-line" });
-  const curseIcon = curseRow.createEl("span", { cls: "archivist-property-icon" });
+  const curseIcon = curseRow.createDiv({ cls: "archivist-property-icon" });
   setIcon(curseIcon, "skull");
-  curseRow.createEl("span", { cls: "archivist-property-name", text: "Cursed:" });
+  curseRow.createDiv({ cls: "archivist-property-name", text: "Cursed:" });
   const curseCheck = curseRow.createEl("input");
   curseCheck.type = "checkbox";
   curseCheck.checked = draft.curse ?? false;
@@ -233,7 +231,7 @@ export function renderItemEditMode(
   }
 
   // Add entry button
-  const addDescBtn = descSection.createDiv({ cls: "archivist-side-btn", attr: { style: "display:inline-block;margin-top:4px;" } });
+  const addDescBtn = descSection.createDiv({ cls: "archivist-side-btn archivist-edit-add-btn" });
   setIcon(addDescBtn, "plus");
   addDescBtn.setAttribute("aria-label", "Add entry");
   addDescBtn.addEventListener("click", () => {
@@ -310,9 +308,9 @@ function createEditableProperty(
   onChange: (value: string) => void,
 ): void {
   const row = parent.createDiv({ cls: "archivist-property-line" });
-  const iconSpan = row.createEl("span", { cls: "archivist-property-icon" });
-  setIcon(iconSpan, icon);
-  row.createEl("span", { cls: "archivist-property-name", text: label });
+  const iconEl = row.createDiv({ cls: "archivist-property-icon" });
+  setIcon(iconEl, icon);
+  row.createDiv({ cls: "archivist-property-name", text: label });
   const input = row.createEl("input", { cls: "archivist-edit-input wide" });
   input.type = "text";
   input.value = value;

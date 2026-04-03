@@ -89,8 +89,6 @@ export function renderSpellEditMode(
   }
   levelSelect.addEventListener("change", () => { draft.level = Number(levelSelect.value); markDirty(); });
 
-  subRow.appendText(" ");
-
   const schoolSelect = subRow.createEl("select", { cls: "archivist-edit-select" });
   for (const s of SPELL_SCHOOLS) {
     const opt = schoolSelect.createEl("option", { text: s });
@@ -134,10 +132,8 @@ export function renderSpellEditMode(
   concCheck.type = "checkbox";
   concCheck.checked = draft.concentration ?? false;
   concCheck.addClass("archivist-edit-checkbox");
-  concLabel.appendText(" Concentration");
+  concLabel.createEl("span", { text: "Concentration" });
   concCheck.addEventListener("change", () => { draft.concentration = concCheck.checked || undefined; markDirty(); });
-
-  tagsDiv.appendText("  ");
 
   // Ritual toggle
   const ritLabel = tagsDiv.createEl("label", { cls: "archivist-edit-toggle-label" });
@@ -145,7 +141,7 @@ export function renderSpellEditMode(
   ritCheck.type = "checkbox";
   ritCheck.checked = draft.ritual ?? false;
   ritCheck.addClass("archivist-edit-checkbox");
-  ritLabel.appendText(" Ritual");
+  ritLabel.createEl("span", { text: "Ritual" });
   ritCheck.addEventListener("change", () => { draft.ritual = ritCheck.checked || undefined; markDirty(); });
 
   // =========================================================================
@@ -172,7 +168,7 @@ export function renderSpellEditMode(
   }
 
   // Add description paragraph button
-  const addDescBtn = descSection.createDiv({ cls: "archivist-side-btn", attr: { style: "display:inline-block;margin-top:4px;" } });
+  const addDescBtn = descSection.createDiv({ cls: "archivist-side-btn archivist-edit-add-btn" });
   setIcon(addDescBtn, "plus");
   addDescBtn.setAttribute("aria-label", "Add paragraph");
   addDescBtn.addEventListener("click", () => {
@@ -217,8 +213,8 @@ export function renderSpellEditMode(
   // 7. Classes
   // =========================================================================
 
-  const classesDiv = block.createDiv({ cls: "spell-classes" });
-  const classesIcon = classesDiv.createEl("span", { cls: "archivist-property-icon" });
+  const classesDiv = block.createDiv({ cls: "spell-classes archivist-property-line" });
+  const classesIcon = classesDiv.createEl("div", { cls: "archivist-property-icon" });
   setIcon(classesIcon, "book-open");
 
   const classesInput = classesDiv.createEl("input", { cls: "archivist-edit-input wide" });
@@ -291,9 +287,9 @@ function createEditableProperty(
   onChange: (value: string) => void,
 ): void {
   const row = parent.createDiv({ cls: "archivist-property-line" });
-  const iconSpan = row.createEl("span", { cls: "archivist-property-icon" });
-  setIcon(iconSpan, icon);
-  row.createEl("span", { cls: "archivist-property-name", text: label });
+  const iconEl = row.createDiv({ cls: "archivist-property-icon" });
+  setIcon(iconEl, icon);
+  row.createDiv({ cls: "archivist-property-name", text: label });
   const input = row.createEl("input", { cls: "archivist-edit-input wide" });
   input.type = "text";
   input.value = value;

@@ -885,7 +885,92 @@
 }
 
 /* ==========================================================================
-   14. Edit Mode Stat Block Outline
+   14. Spell & Item Edit Mode — Property Lines, Tags, Sections
+   ========================================================================== */
+
+/* Property line row: icon + label + input in a flex row */
+.archivist-property-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.2em 0;
+  font-size: 14px;
+}
+
+.archivist-property-name {
+  font-weight: 600;
+  color: #191813;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Spell school row in edit mode — flex row with selects */
+.archivist-spell-block.editing .spell-school {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  font-style: normal;
+  font-size: 14px;
+}
+
+/* Item subtitle row in edit mode — flex row with selects */
+.archivist-item-block.editing .archivist-item-subtitle {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  font-style: normal;
+  font-size: 14px;
+}
+
+/* Checkbox for toggles (concentration, ritual, attunement, cursed) */
+.archivist-edit-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--d5e-bar-fill);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Toggle label: label + checkbox in a flex row */
+.archivist-edit-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--d5e-text-dark);
+}
+
+/* Tags row: flex row with gap for concentration/ritual toggles */
+.archivist-spell-block.editing .spell-tags {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 0.4em;
+  justify-content: flex-start;
+}
+
+/* Classes row in edit mode — flex row */
+.archivist-spell-block.editing .spell-classes {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.6em;
+  padding-top: 0.4em;
+}
+
+/* Add paragraph/entry button */
+.archivist-edit-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   14b. Edit Mode Stat Block Outline
    ========================================================================== */
 
 .archivist-monster-block.editing,
