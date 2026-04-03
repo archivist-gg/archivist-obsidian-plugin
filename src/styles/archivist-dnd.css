@@ -91,8 +91,19 @@
   stroke-width: 1.75;
 }
 
-/* DEPRECATED: migrated to .archivist-side-btns */
-.archivist-block-column-btn {
+/* Column toggle inside .archivist-side-btns — reset old absolute positioning
+   so flex layout handles stacking. The old rules below only apply to standalone buttons. */
+.archivist-side-btns .archivist-block-column-btn {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  padding: 0;
+  top: auto;
+  inset-inline-end: auto;
+}
+
+/* DEPRECATED: standalone column button (only if NOT inside .archivist-side-btns) */
+.archivist-block-column-btn:not(.archivist-side-btn) {
   position: absolute;
   padding: var(--size-2-2) var(--size-2-3);
   top: calc(var(--size-2-2) + 28px);
@@ -117,14 +128,14 @@
 }
 
 /* DEPRECATED: migrated to .archivist-side-btns */
-.archivist-block-column-btn:hover {
+.archivist-block-column-btn:not(.archivist-side-btn):hover {
   color: var(--text-accent);
   background: var(--background-modifier-hover);
 }
 
 /* DEPRECATED: migrated to .archivist-side-btns */
-.cm-embed-block:hover .archivist-block-column-btn,
-.cm-embed-block:focus-within .archivist-block-column-btn {
+.cm-embed-block:hover .archivist-block-column-btn:not(.archivist-side-btn),
+.cm-embed-block:focus-within .archivist-block-column-btn:not(.archivist-side-btn) {
   opacity: 1;
   pointer-events: auto;
 }
@@ -1747,9 +1758,4 @@ body.theme-light .archivist-tag-atk:hover {
   break-inside: avoid;
 }
 
-/* DEPRECATED: migrated to .archivist-side-btns */
-.archivist-block-column-btn.active {
-  background: var(--d5e-bar-fill) !important;
-  color: var(--d5e-parchment) !important;
-}
 

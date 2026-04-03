@@ -969,8 +969,8 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Active edit button — crimson fill with parchment icon */
-.archivist-side-btn.active {
+/* Active edit button — crimson fill with parchment icon (edit button only) */
+.archivist-block-edit-btn.active {
   background: var(--d5e-bar-fill);
   color: var(--d5e-parchment);
 }
