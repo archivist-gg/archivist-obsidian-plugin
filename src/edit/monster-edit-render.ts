@@ -94,7 +94,6 @@ export function renderMonsterEditMode(
     renderSideButtons(sideBtns!, {
       state: btnState,
       isColumnActive: false,
-      onSource: () => {},
       onEdit: () => cancelAndExit(),
       onSave: () => saveAndExit(),
       onCompendium: () => {},

@@ -121,12 +121,6 @@ export default class ArchivistPlugin extends Plugin {
         renderSideButtons(sideBtns, {
           state: isEditMode ? "editing" : "default",
           isColumnActive: columns === 2,
-          onSource: () => {
-            const info = ctx.getSectionInfo(el);
-            if (!info) return;
-            const editor = this.app.workspace.activeEditor?.editor;
-            if (editor) editor.setCursor({ line: info.lineStart + 1, ch: 0 });
-          },
           onEdit: () => {
             if (isEditMode) {
               // Toggle back to view mode: re-render by replacing source with itself

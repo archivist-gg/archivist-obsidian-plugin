@@ -4,7 +4,6 @@ export type SideButtonState = "default" | "editing" | "pending";
 
 interface SideButtonConfig {
   state: SideButtonState;
-  onSource: () => void;
   onEdit: () => void;
   onSave: () => void;
   onCompendium: () => void;
@@ -37,12 +36,6 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
     cancelBtn.setAttribute("aria-label", "Cancel");
     cancelBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onCancel(); });
   } else {
-    // Source button (</>) — FIRST
-    const sourceBtn = container.createDiv({ cls: "archivist-side-btn" });
-    setIcon(sourceBtn, "code");
-    sourceBtn.setAttribute("aria-label", "Edit Source");
-    sourceBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onSource(); });
-
     // Column toggle — icon changes based on state
     const colBtn = container.createDiv({
       cls: `archivist-side-btn archivist-block-column-btn ${config.isColumnActive ? "active" : ""}`,

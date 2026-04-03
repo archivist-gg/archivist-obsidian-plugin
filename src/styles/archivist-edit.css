@@ -888,7 +888,7 @@
 
 .archivist-side-btns {
   position: absolute;
-  top: var(--size-2-2);
+  top: calc(var(--size-2-2) + 28px + 4px);
   inset-inline-end: var(--size-2-2);
   display: flex;
   flex-direction: column;
