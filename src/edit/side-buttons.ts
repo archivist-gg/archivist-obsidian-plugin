@@ -11,6 +11,7 @@ interface SideButtonConfig {
   onDelete: () => void;
   onColumnToggle: () => void;
   isColumnActive: boolean;
+  showColumnToggle?: boolean;
 }
 
 export function renderSideButtons(container: HTMLElement, config: SideButtonConfig): void {
@@ -36,13 +37,15 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
     cancelBtn.setAttribute("aria-label", "Cancel");
     cancelBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onCancel(); });
   } else {
-    // Column toggle — icon changes based on state
-    const colBtn = container.createDiv({
-      cls: `archivist-side-btn archivist-block-column-btn ${config.isColumnActive ? "active" : ""}`,
-    });
-    setIcon(colBtn, config.isColumnActive ? "layout-list" : "columns-2");
-    colBtn.setAttribute("aria-label", "Toggle Columns");
-    colBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onColumnToggle(); });
+    // Column toggle — icon changes based on state (only for blocks that support columns)
+    if (config.showColumnToggle !== false) {
+      const colBtn = container.createDiv({
+        cls: `archivist-side-btn archivist-block-column-btn ${config.isColumnActive ? "active" : ""}`,
+      });
+      setIcon(colBtn, config.isColumnActive ? "layout-list" : "columns-2");
+      colBtn.setAttribute("aria-label", "Toggle Columns");
+      colBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onColumnToggle(); });
+    }
 
     // Edit
     const editBtn = container.createDiv({

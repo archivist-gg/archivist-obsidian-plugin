@@ -45,23 +45,23 @@
 }
 
 /* Obsidian's </> raw button: add pointer cursor */
-.cm-embed-block:has(.archivist-block-delete-btn) > .edit-block-button {
+.cm-embed-block:has(.archivist-side-btns) > .edit-block-button {
   cursor: pointer;
 }
 
 /* Keep raw button visible on hover AND when block is focused (clicked) */
-.cm-embed-block:has(.archivist-block-delete-btn):hover > .edit-block-button,
-.cm-embed-block:has(.archivist-block-delete-btn):focus-within > .edit-block-button {
+.cm-embed-block:has(.archivist-side-btns):hover > .edit-block-button,
+.cm-embed-block:has(.archivist-side-btns):focus-within > .edit-block-button {
   opacity: 1;
 }
 
 /* Keep selection border when block is focused — accent color, matching hover border-radius */
-.cm-embed-block:has(.archivist-block-delete-btn):focus-within {
+.cm-embed-block:has(.archivist-side-btns):focus-within {
   outline: 1px solid var(--interactive-accent);
   border-radius: var(--radius-s);
 }
 
-/* Delete button — exact same styling as Obsidian's .edit-block-button */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn {
   position: absolute;
   padding: var(--size-2-2) var(--size-2-3);
@@ -79,18 +79,19 @@
   z-index: 10;
 }
 
-/* Monster blocks: delete button moves down to make room for column toggle */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn.archivist-block-delete-btn-monster {
   top: calc(var(--size-2-2) + 56px);
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 1.75;
 }
 
-/* Column toggle button — same style as delete button, positioned between </> and trash */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-column-btn {
   position: absolute;
   padding: var(--size-2-2) var(--size-2-3);
@@ -108,42 +109,45 @@
   z-index: 10;
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-column-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 1.75;
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-column-btn:hover {
   color: var(--text-accent);
   background: var(--background-modifier-hover);
 }
 
-/* Show all side buttons on hover or when block is focused */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .cm-embed-block:hover .archivist-block-column-btn,
 .cm-embed-block:focus-within .archivist-block-column-btn {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Hide column toggle button in reading view */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .markdown-reading-view .archivist-block-column-btn {
   display: none;
 }
 
-/* Show both buttons on hover or when block is focused (clicked) */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .cm-embed-block:hover .archivist-block-delete-btn,
 .cm-embed-block:focus-within .archivist-block-delete-btn {
   opacity: 1;
   pointer-events: auto;
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn:hover {
   color: var(--text-error);
   background: var(--background-modifier-hover);
 }
 
-/* Hide delete button in reading view (no editor to delete from) */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .markdown-reading-view .archivist-block-delete-btn {
   display: none;
 }
@@ -1743,6 +1747,7 @@ body.theme-light .archivist-tag-atk:hover {
   break-inside: avoid;
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-column-btn.active {
   background: var(--d5e-bar-fill) !important;
   color: var(--d5e-parchment) !important;

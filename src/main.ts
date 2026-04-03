@@ -1,4 +1,4 @@
-import { Plugin, Notice, setIcon } from "obsidian";
+import { Plugin, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 
 // D&D parsers
@@ -169,23 +169,7 @@ export default class ArchivistPlugin extends Plugin {
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
 
-      // Edit button
-      const editBtn = sideBtns.createDiv({ cls: "archivist-side-btn" });
-      setIcon(editBtn, "pen-line");
-      editBtn.setAttribute("aria-label", "Edit");
-      editBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        el.empty();
-        renderSpellEditMode(result.data, el, ctx, this);
-      });
-
-      // Delete button
-      const deleteBtn = el.createDiv({ cls: "archivist-block-delete-btn" });
-      setIcon(deleteBtn, "trash-2");
-      deleteBtn.setAttribute("aria-label", "Delete block");
-      deleteBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      const deleteBlock = () => {
         const info = ctx.getSectionInfo(el);
         if (!info) return;
         const editor = this.app.workspace.activeEditor?.editor;
@@ -207,6 +191,21 @@ export default class ArchivistPlugin extends Plugin {
             editor.setCursor({ line: 0, ch: 0 });
           }
         }
+      };
+
+      renderSideButtons(sideBtns, {
+        state: "default",
+        isColumnActive: false,
+        showColumnToggle: false,
+        onEdit: () => {
+          el.empty();
+          renderSpellEditMode(result.data, el, ctx, this);
+        },
+        onSave: () => {},
+        onCompendium: () => {},
+        onCancel: () => {},
+        onColumnToggle: () => {},
+        onDelete: deleteBlock,
       });
     });
     this.registerMarkdownCodeBlockProcessor("item", (source, el, ctx) => {
@@ -220,23 +219,7 @@ export default class ArchivistPlugin extends Plugin {
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
 
-      // Edit button
-      const editBtn = sideBtns.createDiv({ cls: "archivist-side-btn" });
-      setIcon(editBtn, "pen-line");
-      editBtn.setAttribute("aria-label", "Edit");
-      editBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        el.empty();
-        renderItemEditMode(result.data, el, ctx, this);
-      });
-
-      // Delete button
-      const deleteBtn = el.createDiv({ cls: "archivist-block-delete-btn" });
-      setIcon(deleteBtn, "trash-2");
-      deleteBtn.setAttribute("aria-label", "Delete block");
-      deleteBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      const deleteBlock = () => {
         const info = ctx.getSectionInfo(el);
         if (!info) return;
         const editor = this.app.workspace.activeEditor?.editor;
@@ -258,6 +241,21 @@ export default class ArchivistPlugin extends Plugin {
             editor.setCursor({ line: 0, ch: 0 });
           }
         }
+      };
+
+      renderSideButtons(sideBtns, {
+        state: "default",
+        isColumnActive: false,
+        showColumnToggle: false,
+        onEdit: () => {
+          el.empty();
+          renderItemEditMode(result.data, el, ctx, this);
+        },
+        onSave: () => {},
+        onCompendium: () => {},
+        onCancel: () => {},
+        onColumnToggle: () => {},
+        onDelete: deleteBlock,
       });
     });
 
