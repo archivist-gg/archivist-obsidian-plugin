@@ -5,7 +5,9 @@ import {
   createSvgBar,
   createPropertyLine,
   renderTextWithInlineTags,
+  MonsterFormulaContext,
 } from "./renderer-utils";
+import { proficiencyBonusFromCR } from "../dnd/math";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -41,6 +43,7 @@ function formatHP(monster: Monster): string {
 function renderFeatureBlock(
   parent: HTMLElement,
   features: MonsterFeature[],
+  monsterCtx?: MonsterFormulaContext,
 ): void {
   for (const feature of features) {
     const featureDiv = el("div", { cls: "archivist-feature", parent });
@@ -49,7 +52,7 @@ function renderFeatureBlock(
     nameSpan.textContent = feature.name + ".";
     const entrySpan = el("span", { cls: "archivist-feature-entry", parent: propLine });
     const entryText = feature.entries.join(" ");
-    renderTextWithInlineTags(entryText, entrySpan);
+    renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
   }
 }
 
@@ -89,6 +92,11 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     : "archivist-monster-block-wrapper";
   const wrapper = el("div", { cls: wrapperCls });
   const block = el("div", { cls: "archivist-monster-block", parent: wrapper });
+
+  // Build formula resolution context for inline tags (e.g. `atk:DEX` -> `+4`)
+  const monsterCtx: MonsterFormulaContext | undefined = monster.abilities
+    ? { abilities: monster.abilities, proficiencyBonus: proficiencyBonusFromCR(monster.cr ?? "0") }
+    : undefined;
 
   // In two-column mode, all content goes inside a flow container with column-count: 2
   const contentTarget = isTwoCol
@@ -306,7 +314,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       }
 
       if (section.features) {
-        renderFeatureBlock(sectionDiv, section.features);
+        renderFeatureBlock(sectionDiv, section.features, monsterCtx);
       }
     }
   } else if (activeSections.length > 0) {
@@ -369,7 +377,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       }
 
       if (tab.features) {
-        renderFeatureBlock(content, tab.features);
+        renderFeatureBlock(content, tab.features, monsterCtx);
       }
     }
   }

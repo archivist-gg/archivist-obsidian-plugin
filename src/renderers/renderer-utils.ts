@@ -1,6 +1,17 @@
 import { setIcon, Notice } from "obsidian";
 import { parseInlineTag } from "../parsers/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
+import type { MonsterAbilities } from "../types/monster";
+import { detectFormula, resolveFormulaTag } from "../dnd/formula-tags";
+
+/**
+ * Optional monster context for resolving formula tags (e.g. `atk:DEX`) in view mode.
+ * Only monster stat blocks provide this; spells, items, and standalone tags leave it undefined.
+ */
+export interface MonsterFormulaContext {
+  abilities: MonsterAbilities;
+  proficiencyBonus: number;
+}
 
 interface ElOptions {
   cls?: string | string[];
@@ -145,11 +156,39 @@ export async function rollDiceWithRender(api: any, notation: string): Promise<vo
 }
 
 /**
+ * Resolve formula content for a tag when monster context is available.
+ * Returns the resolved content suitable for the tag's format function,
+ * or the original content if no formula is detected or no context is provided.
+ */
+function resolveTagContent(
+  tagType: string,
+  content: string,
+  monsterCtx?: MonsterFormulaContext,
+): string {
+  if (!monsterCtx) return content;
+  const formula = detectFormula(tagType, content);
+  if (!formula) return content;
+  const resolved = resolveFormulaTag(tagType, content, monsterCtx.abilities, monsterCtx.proficiencyBonus);
+  // resolveFormulaTag for dc returns "DC N" but STAT_TAG_CONFIGS.dc.format already prepends "DC ",
+  // so strip the prefix to avoid "DC DC N".
+  if (tagType === "dc" && resolved.startsWith("DC ")) {
+    return resolved.slice(3);
+  }
+  return resolved;
+}
+
+/**
  * Render an inline tag for use inside stat blocks.
  * Displays Lucide icons, dashed underlines, and dispatches click-to-roll events
  * matching the Archivist app's parchment-themed annotation style.
+ *
+ * When monsterCtx is provided, formula tags (e.g. `atk:DEX`, `dc:WIS`, `damage:1d6+STR`)
+ * are resolved to concrete values using the monster's ability scores and proficiency bonus.
  */
-function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement {
+function renderStatBlockTag(
+  tag: { type: string; content: string },
+  monsterCtx?: MonsterFormulaContext,
+): HTMLElement {
   const config = STAT_TAG_CONFIGS[tag.type];
   const span = document.createElement("span");
 
@@ -157,6 +196,10 @@ function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement
     span.textContent = tag.content;
     return span;
   }
+
+  // Resolve formula tags (e.g. atk:DEX -> +4) when monster context is available
+  const resolvedContent = resolveTagContent(tag.type, tag.content, monsterCtx);
+  const resolvedTag = { type: tag.type, content: resolvedContent };
 
   span.addClasses(["archivist-stat-tag", config.cssClass]);
 
@@ -166,22 +209,22 @@ function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement
   span.appendChild(iconEl);
 
   const textEl = document.createElement("span");
-  textEl.textContent = config.format(tag.content);
+  textEl.textContent = config.format(resolvedContent);
   span.appendChild(textEl);
 
   if (config.rollable) {
-    span.setAttribute("data-dice-notation", tag.content);
+    span.setAttribute("data-dice-notation", resolvedContent);
     span.setAttribute("data-dice-type", tag.type);
-    span.setAttribute("title", `${config.format(tag.content)} -- Click to roll`);
+    span.setAttribute("title", `${config.format(resolvedContent)} -- Click to roll`);
     span.addEventListener("click", async () => {
       const api = (window as any).DiceRoller;
       if (api) {
-        const notation = extractDiceNotation(tag);
+        const notation = extractDiceNotation(resolvedTag);
         if (notation) {
           try {
             await rollDiceWithRender(api, notation);
           } catch {
-            new Notice(`Could not roll: ${tag.content}`);
+            new Notice(`Could not roll: ${resolvedContent}`);
           }
         }
       } else {
@@ -189,7 +232,7 @@ function renderStatBlockTag(tag: { type: string; content: string }): HTMLElement
       }
     });
   } else {
-    span.setAttribute("title", config.format(tag.content));
+    span.setAttribute("title", config.format(resolvedContent));
   }
 
   return span;
@@ -258,11 +301,15 @@ export function convert5eToolsTags(text: string): string {
  * Render text that may contain inline tags like `roll:2d6+3` or `dc:15`.
  * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
  * Outside stat blocks (body text), tags render as colorful pill badges.
+ *
+ * When monsterCtx is provided, formula tags (e.g. `atk:DEX`) are resolved to
+ * concrete values. Only monster stat blocks should pass this parameter.
  */
 export function renderTextWithInlineTags(
   text: string,
   parent: HTMLElement,
   statBlockMode = true,
+  monsterCtx?: MonsterFormulaContext,
 ): void {
   // Convert any 5etools {@...} tags to backtick format before processing
   const converted = convert5eToolsTags(text);
@@ -284,7 +331,7 @@ export function renderTextWithInlineTags(
     const parsed = parseInlineTag(tagText);
     if (parsed) {
       if (statBlockMode) {
-        parent.appendChild(renderStatBlockTag(parsed));
+        parent.appendChild(renderStatBlockTag(parsed, monsterCtx));
       } else {
         parent.appendChild(renderInlineTag(parsed));
       }
