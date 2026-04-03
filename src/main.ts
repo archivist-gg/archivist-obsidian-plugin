@@ -14,6 +14,10 @@ import { renderItemBlock } from "./renderers/item-renderer";
 import { renderInlineTag } from "./renderers/inline-tag-renderer";
 import { createErrorBlock } from "./renderers/renderer-utils";
 
+// Edit mode
+import { renderSideButtons } from "./edit/side-buttons";
+import { renderMonsterEditMode } from "./edit/monster-edit-render";
+
 // D&D modals
 import { MonsterModal } from "./modals/monster-modal";
 import { SpellModal } from "./modals/spell-modal";
@@ -79,26 +83,41 @@ export default class ArchivistPlugin extends Plugin {
         return;
       }
 
-      let columns = 1;
+      let isEditMode = false;
+      let columns = result.data.columns ?? 1;
       let rendered = renderMonsterBlock(result.data, columns);
       el.appendChild(rendered);
 
-      // Column toggle button — between Obsidian's </> and trash
-      const colBtn = el.createDiv({ cls: 'archivist-block-column-btn' });
-      setIcon(colBtn, 'columns-2');
-      colBtn.setAttribute('aria-label', 'Toggle columns');
-      colBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        columns = columns === 1 ? 2 : 1;
-        const newRendered = renderMonsterBlock(result.data, columns);
-        rendered.replaceWith(newRendered);
-        rendered = newRendered;
-        colBtn.empty();
-        setIcon(colBtn, columns === 2 ? 'layout-list' : 'columns-2');
-      });
+      // Side buttons container
+      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
 
-      // Trash button — same as renderBlock but with monster-specific positioning class
+      const updateSideButtons = () => {
+        renderSideButtons(sideBtns, {
+          state: isEditMode ? "editing" : "default",
+          isColumnActive: columns === 2,
+          onEdit: () => {
+            isEditMode = true;
+            // Clear view mode content
+            rendered.remove();
+            sideBtns.addClass("always-visible");
+            // Render edit mode
+            renderMonsterEditMode(result.data, el, ctx, this);
+          },
+          onSave: () => {}, // handled by edit mode internally
+          onCompendium: () => {},
+          onCancel: () => {},
+          onColumnToggle: () => {
+            columns = columns === 1 ? 2 : 1;
+            const newRendered = renderMonsterBlock(result.data, columns);
+            rendered.replaceWith(newRendered);
+            rendered = newRendered;
+            updateSideButtons();
+          },
+        });
+      };
+      updateSideButtons();
+
+      // Delete button
       const deleteBtn = el.createDiv({ cls: 'archivist-block-delete-btn archivist-block-delete-btn-monster' });
       setIcon(deleteBtn, 'trash-2');
       deleteBtn.setAttribute('aria-label', 'Delete block');

@@ -783,8 +783,58 @@
 }
 
 /* ==========================================================================
-   15. Side Button States (Edit Mode)
+   15. Side Button Container & Base Styles
    ========================================================================== */
+
+.archivist-side-btns {
+  position: absolute;
+  top: var(--size-2-2);
+  inset-inline-end: var(--size-2-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.cm-embed-block:hover .archivist-side-btns,
+.cm-embed-block:focus-within .archivist-side-btns,
+.archivist-side-btns.always-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.markdown-reading-view .archivist-side-btns {
+  display: none;
+}
+
+.archivist-side-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s, background 0.15s;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.archivist-side-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75;
+}
+
+.archivist-side-btn:hover {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
 
 /* Save button — green */
 .archivist-side-btn-save {
