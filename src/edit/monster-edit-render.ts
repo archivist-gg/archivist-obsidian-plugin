@@ -132,14 +132,14 @@ export function renderMonsterEditMode(
   sizeSelect.addEventListener("change", () => state.updateField("size", sizeSelect.value));
 
   // Type input
-  const typeInput = typeLine.createEl("input", { cls: "archivist-edit-input wide" });
+  const typeInput = typeLine.createEl("input", { cls: "archivist-edit-input" });
   typeInput.type = "text";
-  typeInput.value = m.type ?? "";
-  typeInput.placeholder = "Type (e.g. Humanoid)";
+  typeInput.value = m.type ? m.type.charAt(0).toUpperCase() + m.type.slice(1) : "";
+  typeInput.placeholder = "Type";
+  typeInput.style.fontStyle = "italic";
   typeInput.addEventListener("input", () => state.updateField("type", typeInput.value));
 
   // Alignment: ethical + moral
-  typeLine.appendText(", ");
   const alignEthical = typeLine.createEl("select", { cls: "archivist-edit-select" });
   for (const a of ALIGNMENT_ETHICAL) {
     const opt = alignEthical.createEl("option", { text: a });
@@ -181,6 +181,7 @@ export function renderMonsterEditMode(
   // -- AC --
   const acLine = coreProps.createDiv({ cls: "property-line" });
   acLine.createEl("h4", { text: "Armor Class" });
+  acLine.appendText(" ");
   const acValue = acLine.createEl("span");
   const acNumWrap = acValue.createDiv({ cls: "archivist-num-wrap", attr: { style: "display:inline-block" } });
   const acInput = acNumWrap.createEl("input", { cls: "archivist-num-in" });
@@ -197,7 +198,7 @@ export function renderMonsterEditMode(
   acSourceInput.type = "text";
   acSourceInput.value = m.ac?.[0]?.from?.join(", ") ?? "";
   acSourceInput.placeholder = "(source)";
-  acSourceInput.style.width = "100px";
+  acSourceInput.style.width = "140px";
   acSourceInput.style.marginLeft = "6px";
   acSourceInput.addEventListener("input", () => {
     const acArr = state.current.ac ?? [{ ac: 10 }];
@@ -209,6 +210,7 @@ export function renderMonsterEditMode(
   // -- HP --
   const hpLine = coreProps.createDiv({ cls: "property-line" });
   hpLine.createEl("h4", { text: "Hit Points" });
+  hpLine.appendText(" ");
   const hpSpan = hpLine.createEl("span");
   const hpValueEl = hpSpan.createEl("span", { cls: "archivist-auto-value", text: String(m.hp?.average ?? 0) });
   refs.hpValue = hpValueEl;
@@ -236,6 +238,7 @@ export function renderMonsterEditMode(
   // -- Speed --
   const speedLine = coreProps.createDiv({ cls: "property-line last" });
   speedLine.createEl("h4", { text: "Speed" });
+  speedLine.appendText(" ");
   const speedSpan = speedLine.createEl("span");
 
   const walkWrap = speedSpan.createDiv({ cls: "archivist-num-wrap", attr: { style: "display:inline-block" } });
@@ -352,7 +355,6 @@ export function renderMonsterEditMode(
     refs.skillToggles[skillLower] = toggle;
 
     item.createEl("span", { cls: "archivist-skill-name", text: skill });
-    item.createEl("span", { cls: "archivist-skill-base", text: `(${ABILITY_NAMES[abilityKey]})` });
 
     const valEl = item.createEl("span", { cls: "archivist-skill-value archivist-auto-value" });
     const score = getAbilityScore(state.current, abilityKey);
@@ -439,6 +441,7 @@ export function renderMonsterEditMode(
 
   const langLine = sensesSection.createDiv({ cls: "property-line" });
   langLine.createEl("h4", { text: "Languages" });
+  langLine.appendText(" ");
   const langInput = langLine.createEl("input", { cls: "archivist-edit-input lang" });
   langInput.type = "text";
   langInput.value = m.languages?.join(", ") ?? "";
@@ -454,9 +457,11 @@ export function renderMonsterEditMode(
 
   const crLine = sensesSection.createDiv({ cls: "property-line last" });
   crLine.createEl("h4", { text: "Challenge" });
+  crLine.appendText(" ");
   const crSpan = crLine.createEl("span");
 
   const crSelect = crSpan.createEl("select", { cls: "archivist-edit-select" });
+  crSelect.style.paddingRight = "18px";
   for (const cr of ALL_CR_VALUES) {
     const opt = crSelect.createEl("option", { text: cr });
     opt.value = cr;
