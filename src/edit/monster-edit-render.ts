@@ -4,6 +4,7 @@ import type ArchivistPlugin from "../main";
 import type { Monster, MonsterAbilities, MonsterFeature } from "../types/monster";
 import type { EditableMonster } from "../dnd/editable-monster";
 import { MonsterEditState } from "./edit-state";
+import { attachTagAutocomplete } from "./tag-autocomplete";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
 import {
@@ -712,6 +713,9 @@ function renderFeatureCard(
     // Auto-resize
     textArea.rows = Math.max(2, textArea.value.split("\n").length);
   });
+
+  // Attach backtick-triggered tag autocomplete
+  attachTagAutocomplete(textArea, state);
 }
 
 // ===========================================================================
