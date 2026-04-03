@@ -136,7 +136,6 @@ export function renderMonsterEditMode(
   typeInput.type = "text";
   typeInput.value = m.type ? m.type.charAt(0).toUpperCase() + m.type.slice(1) : "";
   typeInput.placeholder = "Type";
-  typeInput.style.fontStyle = "italic";
   typeInput.addEventListener("input", () => state.updateField("type", typeInput.value));
 
   // Alignment: ethical + moral
@@ -182,8 +181,7 @@ export function renderMonsterEditMode(
   const acLine = coreProps.createDiv({ cls: "property-line" });
   acLine.createEl("h4", { text: "Armor Class" });
   acLine.appendText(" ");
-  const acValue = acLine.createEl("span");
-  const acNumWrap = acValue.createDiv({ cls: "archivist-num-wrap", attr: { style: "display:inline-block" } });
+  const acNumWrap = acLine.createDiv({ cls: "archivist-num-wrap" });
   const acInput = acNumWrap.createEl("input", { cls: "archivist-num-in" });
   acInput.type = "number";
   acInput.value = String(m.ac?.[0]?.ac ?? 10);
@@ -194,12 +192,10 @@ export function renderMonsterEditMode(
   });
   createSpinButtons(acNumWrap, acInput);
 
-  const acSourceInput = acValue.createEl("input", { cls: "archivist-edit-input" });
+  const acSourceInput = acLine.createEl("input", { cls: "archivist-edit-input wide" });
   acSourceInput.type = "text";
   acSourceInput.value = m.ac?.[0]?.from?.join(", ") ?? "";
   acSourceInput.placeholder = "(source)";
-  acSourceInput.style.width = "140px";
-  acSourceInput.style.marginLeft = "6px";
   acSourceInput.addEventListener("input", () => {
     const acArr = state.current.ac ?? [{ ac: 10 }];
     const fromArr = acSourceInput.value.trim() ? acSourceInput.value.split(",").map(s => s.trim()) : undefined;
@@ -211,10 +207,9 @@ export function renderMonsterEditMode(
   const hpLine = coreProps.createDiv({ cls: "property-line" });
   hpLine.createEl("h4", { text: "Hit Points" });
   hpLine.appendText(" ");
-  const hpSpan = hpLine.createEl("span");
-  const hpValueEl = hpSpan.createEl("span", { cls: "archivist-auto-value", text: String(m.hp?.average ?? 0) });
+  const hpValueEl = hpLine.createEl("span", { cls: "archivist-auto-value", text: String(m.hp?.average ?? 0) });
   refs.hpValue = hpValueEl;
-  const hpAutoLabel = hpSpan.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
+  const hpAutoLabel = hpLine.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
   wireOverride(hpValueEl, hpAutoLabel, "hp", () => state.current.hp?.average ?? 0, (val) => {
     const hp = { ...state.current.hp!, average: val };
     state.setOverride("hp", val);
@@ -223,8 +218,8 @@ export function renderMonsterEditMode(
     state.clearOverride("hp");
   });
 
-  hpSpan.appendText(" ");
-  const hpFormulaInput = hpSpan.createEl("input", { cls: "archivist-edit-input formula" });
+  hpLine.appendText(" ");
+  const hpFormulaInput = hpLine.createEl("input", { cls: "archivist-edit-input formula" });
   hpFormulaInput.type = "text";
   hpFormulaInput.value = m.hp?.formula ?? "";
   hpFormulaInput.placeholder = "e.g. 4d8";
@@ -239,9 +234,8 @@ export function renderMonsterEditMode(
   const speedLine = coreProps.createDiv({ cls: "property-line last" });
   speedLine.createEl("h4", { text: "Speed" });
   speedLine.appendText(" ");
-  const speedSpan = speedLine.createEl("span");
 
-  const walkWrap = speedSpan.createDiv({ cls: "archivist-num-wrap", attr: { style: "display:inline-block" } });
+  const walkWrap = speedLine.createDiv({ cls: "archivist-num-wrap" });
   const walkInput = walkWrap.createEl("input", { cls: "archivist-num-in" });
   walkInput.type = "number";
   walkInput.value = String(m.speed?.walk ?? 30);
@@ -250,7 +244,7 @@ export function renderMonsterEditMode(
     state.updateField("speed", speed);
   });
   createSpinButtons(walkWrap, walkInput);
-  speedSpan.appendText(" ft.");
+  speedLine.appendText(" ft.");
 
   // =========================================================================
   // 4. SVG Bar
@@ -267,7 +261,6 @@ export function renderMonsterEditMode(
   const abHeadRow = abThead.createEl("tr");
   const abTbody = abTable.createEl("tbody");
   const abValRow = abTbody.createEl("tr");
-  const abModRow = abTbody.createEl("tr");
 
   refs.abilityModCells = {};
   refs.abilityScoreCells = {};
@@ -280,7 +273,6 @@ export function renderMonsterEditMode(
     const scoreInput = scoreWrap.createEl("input", { cls: "archivist-num-in" });
     scoreInput.type = "number";
     scoreInput.value = String(getAbilityScore(m, key));
-    scoreInput.style.width = "48px";
     scoreInput.addEventListener("input", () => {
       const abilities = { ...(state.current.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }) };
       abilities[key as keyof MonsterAbilities] = parseInt(scoreInput.value) || 10;
@@ -289,12 +281,11 @@ export function renderMonsterEditMode(
     createSpinButtons(scoreWrap, scoreInput);
     refs.abilityScoreCells[key] = scoreInput;
 
-    const modTd = abModRow.createEl("td");
+    // Modifier in SAME td, below the input
+    const modDiv = valTd.createDiv({ cls: "archivist-ability-mod" });
     const mod = abilityModifier(getAbilityScore(m, key));
-    modTd.textContent = `(${formatModifier(mod)})`;
-    modTd.style.fontSize = "12px";
-    modTd.style.color = "#766649";
-    refs.abilityModCells[key] = modTd;
+    modDiv.textContent = `(${formatModifier(mod)})`;
+    refs.abilityModCells[key] = modDiv;
   }
 
   // =========================================================================
@@ -426,7 +417,6 @@ export function renderMonsterEditMode(
 
   // Add sense button
   const addSenseBtn = sensesGrid.createEl("button", { cls: "archivist-add-btn", text: "+ Add Custom Sense" });
-  addSenseBtn.style.gridColumn = "1 / -1";
   addSenseBtn.addEventListener("click", () => {
     state.current.customSenses.push("New Sense 60 ft.");
     const idx = state.current.customSenses.length - 1;
@@ -458,10 +448,8 @@ export function renderMonsterEditMode(
   const crLine = sensesSection.createDiv({ cls: "property-line last" });
   crLine.createEl("h4", { text: "Challenge" });
   crLine.appendText(" ");
-  const crSpan = crLine.createEl("span");
 
-  const crSelect = crSpan.createEl("select", { cls: "archivist-edit-select" });
-  crSelect.style.paddingRight = "18px";
+  const crSelect = crLine.createEl("select", { cls: "archivist-edit-select" });
   for (const cr of ALL_CR_VALUES) {
     const opt = crSelect.createEl("option", { text: cr });
     opt.value = cr;
@@ -471,10 +459,11 @@ export function renderMonsterEditMode(
     state.updateField("cr", crSelect.value);
   });
 
-  crSpan.appendText(" (");
-  const xpValueEl = crSpan.createEl("span", { cls: "archivist-auto-value", text: formatXP(state.current.xp) });
+  crLine.appendText(" (");
+  const xpValueEl = crLine.createEl("span", { cls: "archivist-auto-value", text: formatXP(state.current.xp) });
   refs.xpValue = xpValueEl;
-  crSpan.appendText(" XP)");
+  crLine.appendText(" XP)");
+  crLine.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
 
   // =========================================================================
   // 12. SVG Bar
@@ -490,7 +479,7 @@ export function renderMonsterEditMode(
   refs.tabBar = tabBarEl;
 
   // Add tab button
-  const addTabBtn = tabWrap.createEl("button", { cls: "archivist-tab add-tab", text: "+" });
+  const addTabBtn = tabBarEl.createEl("button", { cls: "archivist-tab add-tab", text: "+" });
 
   const tabContentEl = block.createDiv({ cls: "archivist-tab-content" });
   refs.tabContent = tabContentEl;
@@ -908,15 +897,33 @@ function renderCustomSenseRow(
   const row = document.createElement("div");
   row.className = "archivist-sense-custom";
 
+  // Parse stored string like "Devil's Sight 60 ft." into name + range
+  const raw = state.current.customSenses[index] ?? "";
+  const rangeMatch = raw.match(/(\d+\s*ft\.?\s*)$/i);
+  const parsedName = rangeMatch ? raw.slice(0, raw.length - rangeMatch[0].length).trim() : raw;
+  const parsedRange = rangeMatch ? rangeMatch[1].trim() : "60 ft.";
+
   const nameInput = document.createElement("input");
   nameInput.className = "archivist-sense-custom-name";
   nameInput.type = "text";
-  nameInput.value = state.current.customSenses[index] ?? "";
+  nameInput.value = parsedName;
+  nameInput.placeholder = "Sense name";
   nameInput.addEventListener("input", () => {
-    state.current.customSenses[index] = nameInput.value;
+    state.current.customSenses[index] = `${nameInput.value} ${rangeInput.value}`.trim();
     state.updateField("customSenses", state.current.customSenses);
   });
   row.appendChild(nameInput);
+
+  const rangeInput = document.createElement("input");
+  rangeInput.className = "archivist-sense-range";
+  rangeInput.type = "text";
+  rangeInput.value = parsedRange;
+  rangeInput.placeholder = "-- ft.";
+  rangeInput.addEventListener("input", () => {
+    state.current.customSenses[index] = `${nameInput.value} ${rangeInput.value}`.trim();
+    state.updateField("customSenses", state.current.customSenses);
+  });
+  row.appendChild(rangeInput);
 
   const removeBtn = document.createElement("button");
   removeBtn.className = "archivist-sense-custom-x";
