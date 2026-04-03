@@ -47,10 +47,9 @@ function renderFeatureBlock(
 ): void {
   for (const feature of features) {
     const featureDiv = el("div", { cls: "archivist-feature", parent });
-    const propLine = el("div", { cls: "archivist-property-line", parent: featureDiv });
-    const nameSpan = el("span", { cls: "archivist-feature-name", parent: propLine });
+    const nameSpan = el("span", { cls: "archivist-feature-name", parent: featureDiv });
     nameSpan.textContent = feature.name + ".";
-    const entrySpan = el("span", { cls: "archivist-feature-entry", parent: propLine });
+    const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });
     const entryText = feature.entries.join(" ");
     renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
   }
