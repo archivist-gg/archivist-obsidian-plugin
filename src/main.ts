@@ -93,39 +93,7 @@ export default class ArchivistPlugin extends Plugin {
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
 
-      const updateSideButtons = () => {
-        renderSideButtons(sideBtns, {
-          state: isEditMode ? "editing" : "default",
-          isColumnActive: columns === 2,
-          onEdit: () => {
-            isEditMode = true;
-            // Clear view mode content
-            rendered.remove();
-            sideBtns.addClass("always-visible");
-            // Render edit mode
-            renderMonsterEditMode(result.data, el, ctx, this);
-          },
-          onSave: () => {}, // handled by edit mode internally
-          onCompendium: () => {},
-          onCancel: () => {},
-          onColumnToggle: () => {
-            columns = columns === 1 ? 2 : 1;
-            const newRendered = renderMonsterBlock(result.data, columns);
-            rendered.replaceWith(newRendered);
-            rendered = newRendered;
-            updateSideButtons();
-          },
-        });
-      };
-      updateSideButtons();
-
-      // Delete button
-      const deleteBtn = el.createDiv({ cls: 'archivist-block-delete-btn archivist-block-delete-btn-monster' });
-      setIcon(deleteBtn, 'trash-2');
-      deleteBtn.setAttribute('aria-label', 'Delete block');
-      deleteBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+      const deleteBlock = () => {
         const info = ctx.getSectionInfo(el);
         if (!info) return;
         const editor = this.app.workspace.activeEditor?.editor;
@@ -147,7 +115,54 @@ export default class ArchivistPlugin extends Plugin {
             editor.setCursor({ line: 0, ch: 0 });
           }
         }
-      });
+      };
+
+      const updateSideButtons = () => {
+        renderSideButtons(sideBtns, {
+          state: isEditMode ? "editing" : "default",
+          isColumnActive: columns === 2,
+          onSource: () => {
+            const info = ctx.getSectionInfo(el);
+            if (!info) return;
+            const editor = this.app.workspace.activeEditor?.editor;
+            if (editor) editor.setCursor({ line: info.lineStart + 1, ch: 0 });
+          },
+          onEdit: () => {
+            if (isEditMode) {
+              // Toggle back to view mode: re-render by replacing source with itself
+              const info = ctx.getSectionInfo(el);
+              if (!info) return;
+              const editor = this.app.workspace.activeEditor?.editor;
+              if (!editor) return;
+              const fromLine = info.lineStart;
+              const toLine = info.lineEnd;
+              const endCh = editor.getLine(toLine).length;
+              const fullText = editor.getRange({ line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+              editor.replaceRange(fullText, { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+              editor.setCursor({ line: fromLine, ch: 0 });
+            } else {
+              isEditMode = true;
+              // Clear view mode content
+              rendered.remove();
+              sideBtns.addClass("always-visible");
+              // Render edit mode
+              renderMonsterEditMode(result.data, el, ctx, this);
+            }
+          },
+          onSave: () => {}, // handled by edit mode internally
+          onCompendium: () => {},
+          onCancel: () => {},
+          onDelete: deleteBlock,
+          onColumnToggle: () => {
+            columns = columns === 1 ? 2 : 1;
+            const newRendered = renderMonsterBlock(result.data, columns);
+            rendered.replaceWith(newRendered);
+            rendered = newRendered;
+            updateSideButtons();
+          },
+        });
+      };
+      updateSideButtons();
     });
     this.registerMarkdownCodeBlockProcessor("spell", (source, el, ctx) => {
       const result = parseSpell(source);

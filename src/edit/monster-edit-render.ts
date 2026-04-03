@@ -90,14 +90,16 @@ export function renderMonsterEditMode(
 
   function updateSideBtns() {
     if (!sideBtns) return;
-    const btnState = state.hasPendingChanges ? "pending" : "editing";
+    const btnState = "pending" as const;
     renderSideButtons(sideBtns!, {
       state: btnState,
       isColumnActive: false,
-      onEdit: () => {},
+      onSource: () => {},
+      onEdit: () => cancelAndExit(),
       onSave: () => saveAndExit(),
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
+      onDelete: () => {},
       onColumnToggle: () => {},
     });
   }
