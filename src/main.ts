@@ -165,7 +165,10 @@ export default class ArchivistPlugin extends Plugin {
         el.appendChild(createErrorBlock(result.error, source));
         return;
       }
-      el.appendChild(renderSpellBlock(result.data));
+
+      let isEditMode = false;
+      let rendered = renderSpellBlock(result.data);
+      el.appendChild(rendered);
 
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
@@ -194,40 +197,43 @@ export default class ArchivistPlugin extends Plugin {
         }
       };
 
-      const exitSpellEditMode = () => {
-        el.empty();
-        el.appendChild(renderSpellBlock(result.data));
-        const newSideBtns = el.createDiv({ cls: "archivist-side-btns" });
-        renderSideButtons(newSideBtns, {
-          state: "default",
+      const exitEditMode = () => {
+        // Remove all children except sideBtns, then restore view mode
+        Array.from(el.children).forEach((child) => {
+          if (child !== sideBtns) child.remove();
+        });
+        isEditMode = false;
+        rendered = renderSpellBlock(result.data);
+        el.insertBefore(rendered, sideBtns);
+        sideBtns.removeClass("always-visible");
+        updateSideButtons();
+      };
+
+      const updateSideButtons = () => {
+        renderSideButtons(sideBtns, {
+          state: isEditMode ? "editing" : "default",
           isColumnActive: false,
           showColumnToggle: false,
           onEdit: () => {
-            el.empty();
-            renderSpellEditMode(result.data, el, ctx, this, exitSpellEditMode);
+            if (isEditMode) {
+              exitEditMode();
+            } else {
+              isEditMode = true;
+              // Clear view mode content
+              rendered.remove();
+              sideBtns.addClass("always-visible");
+              // Render edit mode
+              renderSpellEditMode(result.data, el, ctx, this, exitEditMode);
+            }
           },
-          onSave: () => {},
+          onSave: () => {}, // handled by edit mode internally
           onCompendium: () => {},
-          onCancel: () => {},
-          onColumnToggle: () => {},
+          onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
+          onColumnToggle: () => {},
         });
       };
-
-      renderSideButtons(sideBtns, {
-        state: "default",
-        isColumnActive: false,
-        showColumnToggle: false,
-        onEdit: () => {
-          el.empty();
-          renderSpellEditMode(result.data, el, ctx, this, exitSpellEditMode);
-        },
-        onSave: () => {},
-        onCompendium: () => {},
-        onCancel: () => {},
-        onColumnToggle: () => {},
-        onDelete: deleteBlock,
-      });
+      updateSideButtons();
     });
     this.registerMarkdownCodeBlockProcessor("item", (source, el, ctx) => {
       const result = parseItem(source);
@@ -235,7 +241,10 @@ export default class ArchivistPlugin extends Plugin {
         el.appendChild(createErrorBlock(result.error, source));
         return;
       }
-      el.appendChild(renderItemBlock(result.data));
+
+      let isEditMode = false;
+      let rendered = renderItemBlock(result.data);
+      el.appendChild(rendered);
 
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
@@ -264,40 +273,43 @@ export default class ArchivistPlugin extends Plugin {
         }
       };
 
-      const exitItemEditMode = () => {
-        el.empty();
-        el.appendChild(renderItemBlock(result.data));
-        const newSideBtns = el.createDiv({ cls: "archivist-side-btns" });
-        renderSideButtons(newSideBtns, {
-          state: "default",
+      const exitEditMode = () => {
+        // Remove all children except sideBtns, then restore view mode
+        Array.from(el.children).forEach((child) => {
+          if (child !== sideBtns) child.remove();
+        });
+        isEditMode = false;
+        rendered = renderItemBlock(result.data);
+        el.insertBefore(rendered, sideBtns);
+        sideBtns.removeClass("always-visible");
+        updateSideButtons();
+      };
+
+      const updateSideButtons = () => {
+        renderSideButtons(sideBtns, {
+          state: isEditMode ? "editing" : "default",
           isColumnActive: false,
           showColumnToggle: false,
           onEdit: () => {
-            el.empty();
-            renderItemEditMode(result.data, el, ctx, this, exitItemEditMode);
+            if (isEditMode) {
+              exitEditMode();
+            } else {
+              isEditMode = true;
+              // Clear view mode content
+              rendered.remove();
+              sideBtns.addClass("always-visible");
+              // Render edit mode
+              renderItemEditMode(result.data, el, ctx, this, exitEditMode);
+            }
           },
-          onSave: () => {},
+          onSave: () => {}, // handled by edit mode internally
           onCompendium: () => {},
-          onCancel: () => {},
-          onColumnToggle: () => {},
+          onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
+          onColumnToggle: () => {},
         });
       };
-
-      renderSideButtons(sideBtns, {
-        state: "default",
-        isColumnActive: false,
-        showColumnToggle: false,
-        onEdit: () => {
-          el.empty();
-          renderItemEditMode(result.data, el, ctx, this, exitItemEditMode);
-        },
-        onSave: () => {},
-        onCompendium: () => {},
-        onCancel: () => {},
-        onColumnToggle: () => {},
-        onDelete: deleteBlock,
-      });
+      updateSideButtons();
     });
 
     // Inline tag post-processor

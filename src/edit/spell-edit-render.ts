@@ -32,7 +32,6 @@ export function renderSpellEditMode(
 ): void {
   // Mutable working copy
   const draft: Spell = JSON.parse(JSON.stringify(spell));
-  let hasPendingChanges = false;
 
   // --- Side buttons ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
@@ -43,20 +42,20 @@ export function renderSpellEditMode(
   }
 
   function markDirty() {
-    hasPendingChanges = true;
     updateSideBtns();
   }
 
   function updateSideBtns() {
     if (!sideBtns) return;
-    const btnState = hasPendingChanges ? "pending" : "editing";
+    const btnState = "pending" as const;
     renderSideButtons(sideBtns!, {
       state: btnState,
       isColumnActive: false,
-      onEdit: () => {},
+      onEdit: () => cancelAndExit(),
       onSave: () => saveAndExit(),
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
+      onDelete: () => {},
       onColumnToggle: () => {},
     });
   }

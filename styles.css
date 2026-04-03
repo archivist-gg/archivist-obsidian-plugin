@@ -7183,7 +7183,11 @@ body.theme-light .archivist-tag-atk:hover {
 /* --- Inputs: use background-color (NOT shorthand background) so we don't
        kill background-image (the select chevron SVG) --- */
 .archivist-monster-block.editing input,
-.archivist-monster-block.editing textarea {
+.archivist-monster-block.editing textarea,
+.archivist-spell-block.editing input,
+.archivist-spell-block.editing textarea,
+.archivist-item-block.editing input,
+.archivist-item-block.editing textarea {
   background-color: transparent !important;
   color: var(--d5e-text-dark) !important;
   border-radius: 2px;
@@ -7191,7 +7195,9 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Selects: transparent bg-color but PRESERVE background-image (chevron) */
-.archivist-monster-block.editing select {
+.archivist-monster-block.editing select,
+.archivist-spell-block.editing select,
+.archivist-item-block.editing select {
   background-color: transparent !important;
   color: var(--d5e-text-dark) !important;
   border-radius: 2px;
@@ -7199,18 +7205,24 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Buttons: Obsidian themes these too */
-.archivist-monster-block.editing button {
+.archivist-monster-block.editing button,
+.archivist-spell-block.editing button,
+.archivist-item-block.editing button {
   background-color: transparent !important;
   box-shadow: none !important;
 }
 
 /* Textarea override: parchment-toned, not transparent */
-.archivist-monster-block.editing textarea.archivist-feat-text-input {
+.archivist-monster-block.editing textarea.archivist-feat-text-input,
+.archivist-spell-block.editing textarea.archivist-feat-text-input,
+.archivist-item-block.editing textarea.archivist-feat-text-input {
   background-color: rgba(253, 241, 220, 0.6) !important;
 }
 
 /* Select option dropdown — always parchment bg so items are readable */
-.archivist-monster-block.editing select option {
+.archivist-monster-block.editing select option,
+.archivist-spell-block.editing select option,
+.archivist-item-block.editing select option {
   background-color: var(--d5e-parchment) !important;
   color: var(--d5e-text-dark) !important;
 }
@@ -8044,7 +8056,9 @@ body.theme-light .archivist-tag-atk:hover {
    14. Edit Mode Stat Block Outline
    ========================================================================== */
 
-.archivist-monster-block.editing {
+.archivist-monster-block.editing,
+.archivist-spell-block.editing,
+.archivist-item-block.editing {
   outline: 2px solid var(--d5e-bar-fill);
   outline-offset: 2px;
 }
