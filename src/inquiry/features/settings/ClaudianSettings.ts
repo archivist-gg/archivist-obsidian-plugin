@@ -76,11 +76,14 @@ function addHotkeySettingRow(
 
 export class ClaudianSettingTab extends PluginSettingTab {
   plugin: InquiryModule;
+  private hostPlugin: Plugin;
   private contextLimitsContainer: HTMLElement | null = null;
 
   constructor(app: App, inquiryModule: InquiryModule, hostPlugin: Plugin) {
     super(app, hostPlugin);
     this.plugin = inquiryModule;
+    this.hostPlugin = hostPlugin;
+    this.name = "Archivist";
   }
 
   private normalizeModelVariantSettings(): void {
@@ -91,6 +94,9 @@ export class ClaudianSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     containerEl.addClass('claudian-settings');
+
+    // D&D Content settings
+    this.renderDndContentSettings(containerEl);
 
     setLocale(this.plugin.settings.locale);
 
@@ -723,6 +729,53 @@ export class ClaudianSettingTab extends PluginSettingTab {
         text.inputEl.style.borderColor = 'var(--text-error)';
       }
     });
+  }
+
+  private renderDndContentSettings(containerEl: HTMLElement): void {
+    const hp = this.hostPlugin as any;
+    const settings = hp.settings;
+    const save = () => hp.saveSettings();
+
+    containerEl.createEl("h2", { text: "D&D Content" });
+
+    new Setting(containerEl)
+      .setName("TTRPG Root Directory")
+      .setDesc("Scope AI vault access to this directory. Leave as / for entire vault.")
+      .addText((text) =>
+        text.setPlaceholder("/").setValue(settings.ttrpgRootDir)
+          .onChange(async (value: string) => {
+            settings.ttrpgRootDir = value || "/";
+            await save();
+          }),
+      );
+
+    containerEl.createEl("h3", { text: "Entity Compendium" });
+
+    new Setting(containerEl)
+      .setName("Compendium Root Folder")
+      .setDesc("Root vault folder where entity notes are stored.")
+      .addText((text) =>
+        text.setPlaceholder("Compendium").setValue(settings.compendiumRoot)
+          .onChange(async (value: string) => {
+            settings.compendiumRoot = value || "Compendium";
+            await save();
+          }),
+      );
+
+    new Setting(containerEl)
+      .setName("User Entity Folder")
+      .setDesc("Subfolder name for user-created and AI-generated entities.")
+      .addText((text) =>
+        text.setPlaceholder("me").setValue(settings.userEntityFolder)
+          .onChange(async (value: string) => {
+            settings.userEntityFolder = value || "me";
+            await save();
+          }),
+      );
+
+    // Separator between D&D content and Inquiry settings
+    containerEl.createEl("hr");
+    containerEl.createEl("h2", { text: "Inquiry (AI Chat)" });
   }
 
   private renderContextLimitsSection(): void {

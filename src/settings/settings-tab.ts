@@ -13,6 +13,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
   constructor(app: App, plugin: ArchivistPlugin) {
     super(app, plugin);
     this.plugin = plugin;
+    this.name = "Archivist";
   }
 
   display(): void {

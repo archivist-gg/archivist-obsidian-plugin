@@ -28,6 +28,7 @@ export function renderSpellEditMode(
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext,
   plugin: ArchivistPlugin,
+  onCancelExit?: () => void,
 ): void {
   // Mutable working copy
   const draft: Spell = JSON.parse(JSON.stringify(spell));
@@ -273,16 +274,9 @@ export function renderSpellEditMode(
   }
 
   function cancelAndExit() {
-    const info = ctx.getSectionInfo(el);
-    if (!info) return;
-    const editor = plugin.app.workspace.activeEditor?.editor;
-    if (!editor) return;
-    const fromLine = info.lineStart;
-    const toLine = info.lineEnd;
-    const endCh = editor.getLine(toLine).length;
-    const fullText = editor.getRange({ line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-    editor.replaceRange(fullText, { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-    editor.setCursor({ line: fromLine, ch: 0 });
+    if (onCancelExit) {
+      onCancelExit();
+    }
   }
 }
 

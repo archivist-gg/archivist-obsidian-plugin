@@ -37,7 +37,6 @@ import { importSrdToVault } from "./entities/entity-importer";
 import { parseEntityFrontmatter, TYPE_FOLDER_MAP } from "./entities/entity-vault-store";
 
 // Settings
-import { ArchivistSettingTab } from "./settings/settings-tab";
 import type { ArchivistSettings } from "./types/settings";
 import { DEFAULT_SETTINGS } from "./types/settings";
 
@@ -117,35 +116,37 @@ export default class ArchivistPlugin extends Plugin {
         }
       };
 
+      const exitEditMode = () => {
+        // Remove all children except sideBtns, then restore view mode
+        Array.from(el.children).forEach((child) => {
+          if (child !== sideBtns) child.remove();
+        });
+        isEditMode = false;
+        rendered = renderMonsterBlock(result.data, columns);
+        el.insertBefore(rendered, sideBtns);
+        sideBtns.removeClass("always-visible");
+        updateSideButtons();
+      };
+
       const updateSideButtons = () => {
         renderSideButtons(sideBtns, {
           state: isEditMode ? "editing" : "default",
           isColumnActive: columns === 2,
           onEdit: () => {
             if (isEditMode) {
-              // Toggle back to view mode: re-render by replacing source with itself
-              const info = ctx.getSectionInfo(el);
-              if (!info) return;
-              const editor = this.app.workspace.activeEditor?.editor;
-              if (!editor) return;
-              const fromLine = info.lineStart;
-              const toLine = info.lineEnd;
-              const endCh = editor.getLine(toLine).length;
-              const fullText = editor.getRange({ line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-              editor.replaceRange(fullText, { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-              editor.setCursor({ line: fromLine, ch: 0 });
+              exitEditMode();
             } else {
               isEditMode = true;
               // Clear view mode content
               rendered.remove();
               sideBtns.addClass("always-visible");
               // Render edit mode
-              renderMonsterEditMode(result.data, el, ctx, this);
+              renderMonsterEditMode(result.data, el, ctx, this, exitEditMode);
             }
           },
           onSave: () => {}, // handled by edit mode internally
           onCompendium: () => {},
-          onCancel: () => {},
+          onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
           onColumnToggle: () => {
             columns = columns === 1 ? 2 : 1;
@@ -193,13 +194,33 @@ export default class ArchivistPlugin extends Plugin {
         }
       };
 
+      const exitSpellEditMode = () => {
+        el.empty();
+        el.appendChild(renderSpellBlock(result.data));
+        const newSideBtns = el.createDiv({ cls: "archivist-side-btns" });
+        renderSideButtons(newSideBtns, {
+          state: "default",
+          isColumnActive: false,
+          showColumnToggle: false,
+          onEdit: () => {
+            el.empty();
+            renderSpellEditMode(result.data, el, ctx, this, exitSpellEditMode);
+          },
+          onSave: () => {},
+          onCompendium: () => {},
+          onCancel: () => {},
+          onColumnToggle: () => {},
+          onDelete: deleteBlock,
+        });
+      };
+
       renderSideButtons(sideBtns, {
         state: "default",
         isColumnActive: false,
         showColumnToggle: false,
         onEdit: () => {
           el.empty();
-          renderSpellEditMode(result.data, el, ctx, this);
+          renderSpellEditMode(result.data, el, ctx, this, exitSpellEditMode);
         },
         onSave: () => {},
         onCompendium: () => {},
@@ -243,13 +264,33 @@ export default class ArchivistPlugin extends Plugin {
         }
       };
 
+      const exitItemEditMode = () => {
+        el.empty();
+        el.appendChild(renderItemBlock(result.data));
+        const newSideBtns = el.createDiv({ cls: "archivist-side-btns" });
+        renderSideButtons(newSideBtns, {
+          state: "default",
+          isColumnActive: false,
+          showColumnToggle: false,
+          onEdit: () => {
+            el.empty();
+            renderItemEditMode(result.data, el, ctx, this, exitItemEditMode);
+          },
+          onSave: () => {},
+          onCompendium: () => {},
+          onCancel: () => {},
+          onColumnToggle: () => {},
+          onDelete: deleteBlock,
+        });
+      };
+
       renderSideButtons(sideBtns, {
         state: "default",
         isColumnActive: false,
         showColumnToggle: false,
         onEdit: () => {
           el.empty();
-          renderItemEditMode(result.data, el, ctx, this);
+          renderItemEditMode(result.data, el, ctx, this, exitItemEditMode);
         },
         onSave: () => {},
         onCompendium: () => {},
@@ -301,8 +342,7 @@ export default class ArchivistPlugin extends Plugin {
       },
     });
 
-    // D&D settings tab
-    this.addSettingTab(new ArchivistSettingTab(this.app, this));
+    // Settings tab is registered by InquiryModule (unified D&D + Inquiry settings)
 
     // First-load SRD import (async, non-blocking)
     this.triggerSrdImport();

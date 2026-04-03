@@ -28,6 +28,7 @@ export function renderItemEditMode(
   el: HTMLElement,
   ctx: MarkdownPostProcessorContext,
   plugin: ArchivistPlugin,
+  onCancelExit?: () => void,
 ): void {
   // Mutable working copy
   const draft: Item = JSON.parse(JSON.stringify(item));
@@ -292,16 +293,9 @@ export function renderItemEditMode(
   }
 
   function cancelAndExit() {
-    const info = ctx.getSectionInfo(el);
-    if (!info) return;
-    const editor = plugin.app.workspace.activeEditor?.editor;
-    if (!editor) return;
-    const fromLine = info.lineStart;
-    const toLine = info.lineEnd;
-    const endCh = editor.getLine(toLine).length;
-    const fullText = editor.getRange({ line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-    editor.replaceRange(fullText, { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-    editor.setCursor({ line: fromLine, ch: 0 });
+    if (onCancelExit) {
+      onCancelExit();
+    }
   }
 }
 

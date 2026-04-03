@@ -5446,23 +5446,23 @@ code .claudian-file-link:hover {
 }
 
 /* Obsidian's </> raw button: add pointer cursor */
-.cm-embed-block:has(.archivist-block-delete-btn) > .edit-block-button {
+.cm-embed-block:has(.archivist-side-btns) > .edit-block-button {
   cursor: pointer;
 }
 
 /* Keep raw button visible on hover AND when block is focused (clicked) */
-.cm-embed-block:has(.archivist-block-delete-btn):hover > .edit-block-button,
-.cm-embed-block:has(.archivist-block-delete-btn):focus-within > .edit-block-button {
+.cm-embed-block:has(.archivist-side-btns):hover > .edit-block-button,
+.cm-embed-block:has(.archivist-side-btns):focus-within > .edit-block-button {
   opacity: 1;
 }
 
 /* Keep selection border when block is focused — accent color, matching hover border-radius */
-.cm-embed-block:has(.archivist-block-delete-btn):focus-within {
+.cm-embed-block:has(.archivist-side-btns):focus-within {
   outline: 1px solid var(--interactive-accent);
   border-radius: var(--radius-s);
 }
 
-/* Delete button — exact same styling as Obsidian's .edit-block-button */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn {
   position: absolute;
   padding: var(--size-2-2) var(--size-2-3);
@@ -5480,19 +5480,31 @@ code .claudian-file-link:hover {
   z-index: 10;
 }
 
-/* Monster blocks: delete button moves down to make room for column toggle */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn.archivist-block-delete-btn-monster {
   top: calc(var(--size-2-2) + 56px);
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 1.75;
 }
 
-/* Column toggle button — same style as delete button, positioned between </> and trash */
-.archivist-block-column-btn {
+/* Column toggle inside .archivist-side-btns — reset old absolute positioning
+   so flex layout handles stacking. The old rules below only apply to standalone buttons. */
+.archivist-side-btns .archivist-block-column-btn {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  padding: 0;
+  top: auto;
+  inset-inline-end: auto;
+}
+
+/* DEPRECATED: standalone column button (only if NOT inside .archivist-side-btns) */
+.archivist-block-column-btn:not(.archivist-side-btn) {
   position: absolute;
   padding: var(--size-2-2) var(--size-2-3);
   top: calc(var(--size-2-2) + 28px);
@@ -5509,42 +5521,45 @@ code .claudian-file-link:hover {
   z-index: 10;
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-column-btn svg {
   width: 18px;
   height: 18px;
   stroke-width: 1.75;
 }
 
-.archivist-block-column-btn:hover {
+/* DEPRECATED: migrated to .archivist-side-btns */
+.archivist-block-column-btn:not(.archivist-side-btn):hover {
   color: var(--text-accent);
   background: var(--background-modifier-hover);
 }
 
-/* Show all side buttons on hover or when block is focused */
-.cm-embed-block:hover .archivist-block-column-btn,
-.cm-embed-block:focus-within .archivist-block-column-btn {
+/* DEPRECATED: migrated to .archivist-side-btns */
+.cm-embed-block:hover .archivist-block-column-btn:not(.archivist-side-btn),
+.cm-embed-block:focus-within .archivist-block-column-btn:not(.archivist-side-btn) {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Hide column toggle button in reading view */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .markdown-reading-view .archivist-block-column-btn {
   display: none;
 }
 
-/* Show both buttons on hover or when block is focused (clicked) */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .cm-embed-block:hover .archivist-block-delete-btn,
 .cm-embed-block:focus-within .archivist-block-delete-btn {
   opacity: 1;
   pointer-events: auto;
 }
 
+/* DEPRECATED: migrated to .archivist-side-btns */
 .archivist-block-delete-btn:hover {
   color: var(--text-error);
   background: var(--background-modifier-hover);
 }
 
-/* Hide delete button in reading view (no editor to delete from) */
+/* DEPRECATED: migrated to .archivist-side-btns */
 .markdown-reading-view .archivist-block-delete-btn {
   display: none;
 }
@@ -7144,10 +7159,6 @@ body.theme-light .archivist-tag-atk:hover {
   break-inside: avoid;
 }
 
-.archivist-block-column-btn.active {
-  background: var(--d5e-bar-fill) !important;
-  color: var(--d5e-parchment) !important;
-}
 
 
 
@@ -7163,14 +7174,82 @@ body.theme-light .archivist-tag-atk:hover {
    ========================================================================== */
 
 /* ==========================================================================
+   0. Obsidian Override Reset
+   Obsidian's theme applies dark backgrounds to input/select/textarea inside
+   .markdown-rendered with high specificity. We must beat that for ALL edit
+   inputs inside the stat block.
+   ========================================================================== */
+
+/* --- Inputs: use background-color (NOT shorthand background) so we don't
+       kill background-image (the select chevron SVG) --- */
+.archivist-monster-block.editing input,
+.archivist-monster-block.editing textarea {
+  background-color: transparent !important;
+  color: var(--d5e-text-dark) !important;
+  border-radius: 2px;
+  box-shadow: none !important;
+}
+
+/* Selects: transparent bg-color but PRESERVE background-image (chevron) */
+.archivist-monster-block.editing select {
+  background-color: transparent !important;
+  color: var(--d5e-text-dark) !important;
+  border-radius: 2px;
+  box-shadow: none !important;
+}
+
+/* Buttons: Obsidian themes these too */
+.archivist-monster-block.editing button {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Textarea override: parchment-toned, not transparent */
+.archivist-monster-block.editing textarea.archivist-feat-text-input {
+  background-color: rgba(253, 241, 220, 0.6) !important;
+}
+
+/* Select option dropdown — always parchment bg so items are readable */
+.archivist-monster-block.editing select option {
+  background-color: var(--d5e-parchment) !important;
+  color: var(--d5e-text-dark) !important;
+}
+
+/* Property lines in edit mode — remove hanging indent from view mode */
+.archivist-monster-block.editing .property-line {
+  text-indent: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* Header type line — flex layout, single row, compact */
+.archivist-monster-block.editing .monster-type {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  font-style: normal;
+  font-size: 14px;
+}
+
+/* Type input inside header — shrink to fit, not 170px */
+.archivist-monster-block.editing .monster-type .archivist-edit-input {
+  width: auto;
+  min-width: 60px;
+  max-width: 140px;
+  flex-shrink: 1;
+  text-align: left;
+  font-style: italic;
+}
+
+/* ==========================================================================
    1. Base Edit Input
    ========================================================================== */
 
 .archivist-edit-input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--d5e-border-tan);
-  color: var(--d5e-text-dark);
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 1px dashed var(--d5e-border-tan) !important;
+  color: var(--d5e-text-dark) !important;
   font: inherit;
   font-size: 14px;
   padding: 3px 5px;
@@ -7184,21 +7263,24 @@ body.theme-light .archivist-tag-atk:hover {
   border-bottom-style: solid;
 }
 
-/* Name input — Libre Baskerville, large, small-caps */
-.archivist-edit-input-name {
+/* Name input — Libre Baskerville, large, small-caps
+   Must use high-specificity selector to beat Obsidian's input overrides */
+.archivist-monster-block.editing .archivist-edit-input-name,
+.archivist-spell-block.editing .archivist-edit-input-name,
+.archivist-item-block.editing .archivist-edit-input-name {
   font-family: 'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style',
     Bookman, 'Goudy Old Style', Garamond, 'Hoefler Text', 'Bitstream Charter',
-    Georgia, serif;
-  font-size: 25px;
-  font-weight: 700;
-  font-variant: small-caps;
-  letter-spacing: 1px;
-  color: var(--d5e-text-accent);
+    Georgia, serif !important;
+  font-size: 25px !important;
+  font-weight: 700 !important;
+  font-variant: small-caps !important;
+  letter-spacing: 1px !important;
+  color: var(--d5e-text-accent) !important;
   width: 85%;
   text-align: left;
   padding: 4px 6px;
-  background: transparent;
-  border: 1px dashed var(--d5e-border-tan);
+  background-color: transparent !important;
+  border: 1px dashed var(--d5e-border-tan) !important;
   outline: none;
 }
 
@@ -7229,21 +7311,21 @@ body.theme-light .archivist-tag-atk:hover {
    ========================================================================== */
 
 .archivist-edit-select {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--d5e-border-tan);
-  color: var(--d5e-text-dark);
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 1px dashed var(--d5e-border-tan) !important;
+  color: var(--d5e-text-dark) !important;
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
   padding: 3px 6px;
   cursor: pointer;
   outline: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23922610' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 4px center;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23922610' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 4px center !important;
   padding-right: 18px;
 }
 
@@ -7274,10 +7356,10 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 .archivist-num-in {
-  background: transparent;
-  border: 1px dashed var(--d5e-border-tan);
+  background-color: transparent !important;
+  border: 1px dashed var(--d5e-border-tan) !important;
   border-radius: 2px;
-  color: var(--d5e-text-dark);
+  color: var(--d5e-text-dark) !important;
   font: inherit;
   font-size: 15px;
   text-align: center;
@@ -7324,6 +7406,23 @@ body.theme-light .archivist-tag-atk:hover {
 
 .archivist-num-spin button:hover {
   color: var(--d5e-bar-fill);
+}
+
+/* Ability score inputs — narrower than default */
+.abilities-table .archivist-num-in {
+  width: 48px;
+}
+
+/* Ability modifier display below input */
+.archivist-ability-mod {
+  font-size: 12px;
+  color: #766649;
+  text-align: center;
+}
+
+/* Senses add button — span full grid width */
+.archivist-senses-grid .archivist-add-btn {
+  grid-column: 1 / -1;
 }
 
 /* ==========================================================================
@@ -7541,10 +7640,10 @@ body.theme-light .archivist-tag-atk:hover {
    ========================================================================== */
 
 .archivist-sense-range {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--d5e-border-tan);
-  color: var(--d5e-text-dark);
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 1px dashed var(--d5e-border-tan) !important;
+  color: var(--d5e-text-dark) !important;
   font: inherit;
   font-size: 14px;
   padding: 2px 4px;
@@ -7593,10 +7692,10 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 .archivist-sense-custom-name {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--d5e-border-tan);
-  color: var(--d5e-text-accent);
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 1px dashed var(--d5e-border-tan) !important;
+  color: var(--d5e-text-accent) !important;
   font: inherit;
   font-size: 14px;
   padding: 2px 4px;
@@ -7613,8 +7712,8 @@ body.theme-light .archivist-tag-atk:hover {
   width: 18px;
   height: 18px;
   border-radius: 3px;
-  background: transparent;
-  border: none;
+  background-color: transparent !important;
+  border: none !important;
   color: #a39274;
   cursor: pointer;
   display: flex;
@@ -7651,30 +7750,37 @@ body.theme-light .archivist-tag-atk:hover {
   border-color: var(--d5e-border-tan-dark);
 }
 
-/* Remove button (X) on feature cards */
-.archivist-feat-card-x {
+/* Remove button (X) on feature cards
+   High-specificity selector to beat Obsidian's button theming which causes
+   dark/black squares by applying its own background/border/padding */
+.archivist-monster-block .archivist-feat-card-x {
   position: absolute;
   top: 4px;
   right: 4px;
   width: 22px;
   height: 22px;
   border-radius: 3px;
-  background: transparent;
-  border: none;
-  color: #a39274;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  color: #a39274 !important;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+  padding: 0 !important;
+  box-shadow: none !important;
+  font-size: 14px;
+  line-height: 1;
 }
 
-.archivist-feat-card-x:hover {
-  background: var(--d5e-bar-fill);
-  color: white;
+.archivist-monster-block .archivist-feat-card-x:hover {
+  background-color: var(--d5e-bar-fill) !important;
+  color: white !important;
 }
 
-.archivist-feat-card-x svg {
+.archivist-monster-block .archivist-feat-card-x svg {
   width: 14px;
   height: 14px;
 }
@@ -7683,10 +7789,10 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-feat-name-input {
   font-weight: bold;
   font-style: italic;
-  color: var(--d5e-text-accent);
-  border: none;
-  border-bottom: 1px dashed var(--d5e-border-tan);
-  background: transparent;
+  color: var(--d5e-text-accent) !important;
+  border: none !important;
+  border-bottom: 1px dashed var(--d5e-border-tan) !important;
+  background-color: transparent !important;
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
   padding: 3px 4px;
@@ -7705,15 +7811,15 @@ body.theme-light .archivist-tag-atk:hover {
   width: 100%;
   margin-top: 6px;
   padding: 8px;
-  background: rgba(253, 241, 220, 0.6);
-  border: 1px solid var(--d5e-border-tan);
+  background-color: rgba(253, 241, 220, 0.6) !important;
+  border: 1px solid var(--d5e-border-tan) !important;
   border-radius: 2px;
   font-family: 'Noto Sans', sans-serif;
   font-size: 14px;
   line-height: 1.5em;
   resize: vertical;
   min-height: 56px;
-  color: var(--d5e-text-dark);
+  color: var(--d5e-text-dark) !important;
   outline: none;
 }
 
@@ -7725,15 +7831,17 @@ body.theme-light .archivist-tag-atk:hover {
    10. Add Button (Full Width)
    ========================================================================== */
 
-.archivist-add-btn {
+/* Add button — high-specificity selector to beat Obsidian's global button reset
+   which sets background-color: transparent at (0,2,1) specificity */
+.archivist-monster-block .archivist-add-btn {
   display: block;
   width: 100%;
   margin-top: 8px;
   padding: 7px 12px;
-  background: rgba(122, 32, 13, 0.05);
-  border: 1px dashed var(--d5e-border-tan);
+  background-color: rgba(122, 32, 13, 0.08) !important;
+  border: 1px dashed var(--d5e-border-tan) !important;
   border-radius: 2px;
-  color: var(--d5e-text-accent);
+  color: var(--d5e-text-accent) !important;
   font-size: 13px;
   font-family: 'Noto Sans', sans-serif;
   cursor: pointer;
@@ -7741,9 +7849,9 @@ body.theme-light .archivist-tag-atk:hover {
   text-align: center;
 }
 
-.archivist-add-btn:hover {
-  background: rgba(122, 32, 13, 0.1);
-  border-color: var(--d5e-bar-fill);
+.archivist-monster-block .archivist-add-btn:hover {
+  background-color: rgba(122, 32, 13, 0.14) !important;
+  border-color: var(--d5e-bar-fill) !important;
 }
 
 /* ==========================================================================
@@ -7774,10 +7882,10 @@ body.theme-light .archivist-tag-atk:hover {
 
 .archivist-tab {
   padding: 6px 12px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--d5e-text-accent);
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  color: var(--d5e-text-accent) !important;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -7786,16 +7894,18 @@ body.theme-light .archivist-tag-atk:hover {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+  opacity: 1 !important;
 }
 
-.archivist-tab.active {
-  color: var(--d5e-bar-fill);
-  border-bottom-color: var(--d5e-bar-fill);
-  background: rgba(122, 32, 13, 0.1);
+/* Active tab — high specificity to beat Obsidian button reset */
+.archivist-monster-block .archivist-tab.active {
+  color: var(--d5e-bar-fill) !important;
+  border-bottom-color: var(--d5e-bar-fill) !important;
+  background-color: rgba(122, 32, 13, 0.18) !important;
 }
 
-.archivist-tab:hover:not(.active) {
-  background: rgba(122, 32, 13, 0.05);
+.archivist-monster-block .archivist-tab:hover:not(.active) {
+  background-color: rgba(122, 32, 13, 0.07) !important;
 }
 
 /* Add section tab (+) — prominent, larger */
@@ -7939,13 +8049,14 @@ body.theme-light .archivist-tag-atk:hover {
   outline-offset: 2px;
 }
 
+
 /* ==========================================================================
    15. Side Button Container & Base Styles
    ========================================================================== */
 
 .archivist-side-btns {
   position: absolute;
-  top: var(--size-2-2);
+  top: calc(var(--size-2-2) + 28px + 4px);
   inset-inline-end: var(--size-2-2);
   display: flex;
   flex-direction: column;
@@ -8026,8 +8137,8 @@ body.theme-light .archivist-tag-atk:hover {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* Active edit button — crimson fill with parchment icon */
-.archivist-side-btn.active {
+/* Active edit button — crimson fill with parchment icon (edit button only) */
+.archivist-block-edit-btn.active {
   background: var(--d5e-bar-fill);
   color: var(--d5e-parchment);
 }
