@@ -70,6 +70,10 @@ export class MonsterEditState {
 
   removeSection(section: string): void {
     this._current.activeSections = this._current.activeSections.filter(s => s !== section);
+    // Clear the feature data so the section is not serialized on save
+    if ((this._current as Record<string, unknown>)[section] !== undefined) {
+      (this._current as Record<string, unknown>)[section] = [];
+    }
     this._hasPendingChanges = true;
     this.onChange(this);
   }

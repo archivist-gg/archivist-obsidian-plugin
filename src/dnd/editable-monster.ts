@@ -97,6 +97,43 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   if (monster.reactions && monster.reactions.length > 0) activeSections.push("reactions");
   if (monster.legendary && monster.legendary.length > 0) activeSections.push("legendary");
 
+  // Detect overrides: compare parsed values against auto-calculated values
+  const overrides = new Set<string>();
+
+  // Detect save overrides
+  if (monster.saves) {
+    for (const key of ABILITY_KEYS) {
+      if (monster.saves[key] !== undefined) {
+        const autoValue = savingThrow(abilities[key as keyof MonsterAbilities], true, profBonus);
+        if (monster.saves[key] !== autoValue) {
+          overrides.add(`saves.${key}`);
+        }
+      }
+    }
+  }
+
+  // Detect skill overrides
+  if (monster.skills) {
+    for (const [skillLower, profLevel] of Object.entries(skillProficiencies)) {
+      if (profLevel === "none") continue;
+      const abilityKey = SKILL_ABILITY[skillLower];
+      if (!abilityKey) continue;
+      const abilityScore = abilities[abilityKey as keyof MonsterAbilities];
+      const autoValue = skillBonus(abilityScore, profLevel, profBonus);
+      // Look up the actual stored value (case-insensitive)
+      let storedValue: number | undefined;
+      for (const [k, v] of Object.entries(monster.skills)) {
+        if (k.toLowerCase() === skillLower) {
+          storedValue = v;
+          break;
+        }
+      }
+      if (storedValue !== undefined && storedValue !== autoValue) {
+        overrides.add(`skills.${skillLower}`);
+      }
+    }
+  }
+
   return {
     ...monster,
     abilities: monster.abilities ? { ...monster.abilities } : undefined,
@@ -107,7 +144,7 @@ export function monsterToEditable(monster: Monster): EditableMonster {
     skills: monster.skills ? { ...monster.skills } : undefined,
     senses: monster.senses ? [...monster.senses] : undefined,
     languages: monster.languages ? [...monster.languages] : undefined,
-    overrides: new Set<string>(),
+    overrides,
     saveProficiencies,
     skillProficiencies,
     activeSenses,
@@ -126,18 +163,22 @@ export function editableToMonster(editable: EditableMonster): Monster {
   const abilities = editable.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
   const profBonus = editable.proficiencyBonus;
 
-  // Rebuild saves from proficiency toggles
+  // Rebuild saves from proficiency toggles (respecting overrides)
   const saves: Record<string, number> = {};
   let hasSaves = false;
   for (const key of ABILITY_KEYS) {
     if (editable.saveProficiencies[key]) {
-      const score = abilities[key as keyof MonsterAbilities];
-      saves[key] = savingThrow(score, true, profBonus);
+      if (editable.overrides.has(`saves.${key}`) && editable.saves?.[key] !== undefined) {
+        saves[key] = editable.saves[key]!;
+      } else {
+        const score = abilities[key as keyof MonsterAbilities];
+        saves[key] = savingThrow(score, true, profBonus);
+      }
       hasSaves = true;
     }
   }
 
-  // Rebuild skills from proficiency toggles
+  // Rebuild skills from proficiency toggles (respecting overrides)
   const skills: Record<string, number> = {};
   let hasSkills = false;
   for (const [skillLower, profLevel] of Object.entries(editable.skillProficiencies)) {
@@ -150,7 +191,11 @@ export function editableToMonster(editable: EditableMonster): Monster {
           .split(" ")
           .map(w => w.charAt(0).toUpperCase() + w.slice(1))
           .join(" ");
-        skills[skillName] = skillBonus(score, profLevel, profBonus);
+        if (editable.overrides.has(`skills.${skillLower}`) && editable.skills?.[skillName] !== undefined) {
+          skills[skillName] = editable.skills[skillName];
+        } else {
+          skills[skillName] = skillBonus(score, profLevel, profBonus);
+        }
         hasSkills = true;
       }
     }
@@ -204,10 +249,11 @@ export function editableToMonster(editable: EditableMonster): Monster {
   if (editable.condition_immunities && editable.condition_immunities.length > 0) {
     monster.condition_immunities = editable.condition_immunities;
   }
-  if (editable.traits && editable.traits.length > 0) monster.traits = editable.traits;
-  if (editable.actions && editable.actions.length > 0) monster.actions = editable.actions;
-  if (editable.reactions && editable.reactions.length > 0) monster.reactions = editable.reactions;
-  if (editable.legendary && editable.legendary.length > 0) monster.legendary = editable.legendary;
+  const sections = editable.activeSections ?? [];
+  if (sections.includes("traits") && editable.traits && editable.traits.length > 0) monster.traits = editable.traits;
+  if (sections.includes("actions") && editable.actions && editable.actions.length > 0) monster.actions = editable.actions;
+  if (sections.includes("reactions") && editable.reactions && editable.reactions.length > 0) monster.reactions = editable.reactions;
+  if (sections.includes("legendary") && editable.legendary && editable.legendary.length > 0) monster.legendary = editable.legendary;
   if (editable.legendary_actions !== undefined) monster.legendary_actions = editable.legendary_actions;
   if (editable.legendary_resistance !== undefined) monster.legendary_resistance = editable.legendary_resistance;
   if (editable.columns !== undefined) monster.columns = editable.columns;

@@ -7241,10 +7241,13 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--d5e-text-dark) !important;
 }
 
-/* Property lines in edit mode — remove hanging indent from view mode */
+/* Property lines in edit mode — remove hanging indent, use flex for input sizing */
 .archivist-monster-block.editing .property-line {
   text-indent: 0 !important;
   margin-left: 0 !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.3em;
 }
 
 /* Header type line — flex layout, single row, compact */
@@ -7302,7 +7305,7 @@ body.theme-light .archivist-tag-atk:hover {
   font-variant: small-caps !important;
   letter-spacing: 1px !important;
   color: var(--d5e-text-accent) !important;
-  width: 85%;
+  width: 100% !important;
   text-align: left;
   padding: 4px 6px;
   background-color: transparent !important;
@@ -7326,9 +7329,11 @@ body.theme-light .archivist-tag-atk:hover {
   text-align: left;
 }
 
-/* Language input */
+/* Language input — needs to be wide for long lists like "Common, Draconic, Infernal, Telepathy 120 ft." */
 .archivist-edit-input.lang {
-  width: 190px;
+  flex: 1 1 auto !important;
+  min-width: 200px !important;
+  width: auto !important;
   text-align: left;
 }
 
@@ -7620,6 +7625,14 @@ body.theme-light .archivist-tag-atk:hover {
   font-weight: 600;
 }
 
+.archivist-save-item .archivist-auto-value {
+  font-weight: normal;
+}
+
+.archivist-save-item .archivist-auto-value.proficient-value {
+  font-weight: bold;
+}
+
 /* Skills: 2-column grid */
 .archivist-skills-grid {
   display: grid;
@@ -7646,6 +7659,10 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 .archivist-skill-item .archivist-skill-value {
+  font-weight: normal;
+}
+
+.archivist-skill-item .archivist-skill-value.proficient-value {
   font-weight: bold;
 }
 
@@ -7711,6 +7728,12 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-sense-pp .archivist-sense-pp-label {
   color: var(--d5e-text-accent);
   font-weight: 600;
+}
+
+/* Passive Perception value — purely auto-calculated, not overridable */
+.archivist-sense-pp .archivist-auto-value {
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Custom sense row: spans full width */

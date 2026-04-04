@@ -326,9 +326,31 @@ export function renderMonsterEditMode(
     const valEl = item.createEl("span", { cls: "archivist-auto-value" });
     const score = getAbilityScore(state.current, key);
     const profBonus = state.current.proficiencyBonus;
-    const saveVal = savingThrow(score, state.current.saveProficiencies[key], profBonus);
+    const saveIsOverridden = state.current.overrides.has(`saves.${key}`);
+    const saveVal = saveIsOverridden && state.current.saves?.[key] !== undefined
+      ? state.current.saves[key]!
+      : savingThrow(score, state.current.saveProficiencies[key], profBonus);
     valEl.textContent = formatModifier(saveVal);
+    if (state.current.saveProficiencies[key]) valEl.addClass("proficient-value");
     refs.saveValues[key] = valEl;
+
+    const saveAutoLabel = item.createEl("span", { cls: "archivist-auto-label" });
+    wireOverride(valEl, saveAutoLabel, `saves.${key}`,
+      () => {
+        const sc = getAbilityScore(state.current, key);
+        return savingThrow(sc, state.current.saveProficiencies[key], state.current.proficiencyBonus);
+      },
+      (val) => {
+        if (!state.current.saves) state.current.saves = {};
+        state.current.saves[key] = val;
+        state.setOverride(`saves.${key}`, val);
+      },
+      () => {
+        state.clearOverride(`saves.${key}`);
+      },
+      formatModifier,
+      saveIsOverridden,
+    );
   }
 
   // =========================================================================
@@ -357,9 +379,34 @@ export function renderMonsterEditMode(
 
     const valEl = item.createEl("span", { cls: "archivist-skill-value archivist-auto-value" });
     const score = getAbilityScore(state.current, abilityKey);
-    const bonus = skillBonus(score, profLevel, state.current.proficiencyBonus);
+    const skillIsOverridden = state.current.overrides.has(`skills.${skillLower}`);
+    // Capitalize skill name for Monster.skills format (e.g., "animal handling" -> "Animal Handling")
+    const skillDisplayName = skillLower.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const bonus = skillIsOverridden && state.current.skills?.[skillDisplayName] !== undefined
+      ? state.current.skills[skillDisplayName]
+      : skillBonus(score, profLevel, state.current.proficiencyBonus);
     valEl.textContent = formatModifier(bonus);
+    if (profLevel !== "none") valEl.addClass("proficient-value");
     refs.skillValues[skillLower] = valEl;
+
+    const skillAutoLabel = item.createEl("span", { cls: "archivist-auto-label" });
+    wireOverride(valEl, skillAutoLabel, `skills.${skillLower}`,
+      () => {
+        const sc = getAbilityScore(state.current, abilityKey);
+        const prof = state.current.skillProficiencies[skillLower] ?? "none";
+        return skillBonus(sc, prof, state.current.proficiencyBonus);
+      },
+      (val) => {
+        if (!state.current.skills) state.current.skills = {};
+        state.current.skills[skillDisplayName] = val;
+        state.setOverride(`skills.${skillLower}`, val);
+      },
+      () => {
+        state.clearOverride(`skills.${skillLower}`);
+      },
+      formatModifier,
+      skillIsOverridden,
+    );
   }
 
   // =========================================================================
@@ -421,6 +468,7 @@ export function renderMonsterEditMode(
   const wisScore = getAbilityScore(state.current, "wis");
   const percProf = state.current.skillProficiencies["perception"] ?? "none";
   ppValue.textContent = String(passivePerception(wisScore, percProf, state.current.proficiencyBonus));
+  if (percProf !== "none") ppValue.addClass("proficient-value");
   refs.sensePPValue = ppValue;
 
   // Add sense button
@@ -528,9 +576,9 @@ export function renderMonsterEditMode(
   function saveAndExit() {
     const yamlStr = state.toYaml();
     const info = ctx.getSectionInfo(el);
-    if (!info) return;
+    if (!info) { cancelAndExit(); return; }
     const editor = plugin.app.workspace.activeEditor?.editor;
-    if (!editor) return;
+    if (!editor) { cancelAndExit(); return; }
 
     const fromLine = info.lineStart;
     const toLine = info.lineEnd;
@@ -538,6 +586,9 @@ export function renderMonsterEditMode(
     const newContent = "```monster\n" + yamlStr + "```";
     editor.replaceRange(newContent, { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
     editor.setCursor({ line: fromLine, ch: 0 });
+    // Obsidian re-renders the code block after replaceRange, destroying this DOM.
+    // If re-render is delayed or content is identical, exit edit mode explicitly.
+    if (onCancelExit) onCancelExit();
   }
 
   function cancelAndExit() {
@@ -578,9 +629,16 @@ function updateDom(state: MonsterEditState, refs: DomRefs): void {
   // Saves
   for (const key of ABILITY_KEYS) {
     if (refs.saveValues[key]) {
-      const score = abilities[key as keyof MonsterAbilities];
-      const sv = savingThrow(score, m.saveProficiencies[key], profBonus);
-      flashUpdate(refs.saveValues[key], formatModifier(sv));
+      if (!m.overrides.has(`saves.${key}`)) {
+        const score = abilities[key as keyof MonsterAbilities];
+        const sv = savingThrow(score, m.saveProficiencies[key], profBonus);
+        flashUpdate(refs.saveValues[key], formatModifier(sv));
+      }
+      if (m.saveProficiencies[key]) {
+        refs.saveValues[key].addClass("proficient-value");
+      } else {
+        refs.saveValues[key].removeClass("proficient-value");
+      }
     }
     if (refs.saveToggles[key]) {
       updateSaveToggle(refs.saveToggles[key], m.saveProficiencies[key]);
@@ -592,10 +650,18 @@ function updateDom(state: MonsterEditState, refs: DomRefs): void {
     const skillLower = skill.toLowerCase();
     const abilityKey = SKILL_ABILITY[skillLower];
     if (refs.skillValues[skillLower]) {
-      const score = abilities[abilityKey as keyof MonsterAbilities];
+      if (!m.overrides.has(`skills.${skillLower}`)) {
+        const score = abilities[abilityKey as keyof MonsterAbilities];
+        const prof = m.skillProficiencies[skillLower] ?? "none";
+        const bonus = skillBonus(score, prof, profBonus);
+        flashUpdate(refs.skillValues[skillLower], formatModifier(bonus));
+      }
       const prof = m.skillProficiencies[skillLower] ?? "none";
-      const bonus = skillBonus(score, prof, profBonus);
-      flashUpdate(refs.skillValues[skillLower], formatModifier(bonus));
+      if (prof !== "none") {
+        refs.skillValues[skillLower].addClass("proficient-value");
+      } else {
+        refs.skillValues[skillLower].removeClass("proficient-value");
+      }
     }
     if (refs.skillToggles[skillLower]) {
       updateSkillToggle(refs.skillToggles[skillLower], m.skillProficiencies[skillLower] ?? "none");
@@ -607,6 +673,11 @@ function updateDom(state: MonsterEditState, refs: DomRefs): void {
     const wisScore = abilities.wis;
     const percProf = m.skillProficiencies["perception"] ?? "none";
     flashUpdate(refs.sensePPValue, String(passivePerception(wisScore, percProf, profBonus)));
+    if (percProf !== "none") {
+      refs.sensePPValue.addClass("proficient-value");
+    } else {
+      refs.sensePPValue.removeClass("proficient-value");
+    }
   }
 }
 
@@ -841,9 +912,31 @@ function wireOverride(
   getAutoValue: () => number,
   onSet: (val: number) => void,
   onClear: () => void,
+  fmt: (val: number) => string = String,
+  isAlreadyOverridden = false,
 ): void {
   let overrideInput: HTMLInputElement | null = null;
   let overrideMark: HTMLElement | null = null;
+
+  function createOverrideMark(): HTMLElement {
+    const mark = document.createElement("span");
+    mark.className = "archivist-override-mark";
+    mark.textContent = "*";
+    mark.title = "Overridden -- click to restore auto-calculation";
+    mark.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onClear();
+      if (overrideMark) { overrideMark.remove(); overrideMark = null; }
+      autoLabel.textContent = "(auto)";
+    });
+    return mark;
+  }
+
+  // If already overridden on initial render, show the asterisk mark immediately
+  if (isAlreadyOverridden) {
+    overrideMark = createOverrideMark();
+    valueEl.after(overrideMark);
+  }
 
   valueEl.addEventListener("click", () => {
     if (overrideInput) return; // already open
@@ -868,21 +961,12 @@ function wireOverride(
         overrideInput.remove();
         overrideInput = null;
       }
-      valueEl.textContent = String(val);
+      valueEl.textContent = fmt(val);
       onSet(val);
 
       // Add override mark (asterisk)
       if (!overrideMark) {
-        overrideMark = document.createElement("span");
-        overrideMark.className = "archivist-override-mark";
-        overrideMark.textContent = "*";
-        overrideMark.title = "Overridden -- click to restore auto-calculation";
-        overrideMark.addEventListener("click", (e) => {
-          e.stopPropagation();
-          onClear();
-          if (overrideMark) { overrideMark.remove(); overrideMark = null; }
-          autoLabel.textContent = "(auto)";
-        });
+        overrideMark = createOverrideMark();
       }
       valueEl.after(overrideMark);
     };
@@ -892,7 +976,7 @@ function wireOverride(
       if (e.key === "Enter") { e.preventDefault(); commit(); }
       if (e.key === "Escape") {
         if (overrideInput) { overrideInput.remove(); overrideInput = null; }
-        valueEl.textContent = String(getAutoValue());
+        valueEl.textContent = fmt(getAutoValue());
         autoLabel.textContent = "(auto)";
       }
     });

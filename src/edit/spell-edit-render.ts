@@ -256,9 +256,9 @@ export function renderSpellEditMode(
     });
 
     const info = ctx.getSectionInfo(el);
-    if (!info) return;
+    if (!info) { cancelAndExit(); return; }
     const editor = plugin.app.workspace.activeEditor?.editor;
-    if (!editor) return;
+    if (!editor) { cancelAndExit(); return; }
 
     const fromLine = info.lineStart;
     const toLine = info.lineEnd;
@@ -266,6 +266,9 @@ export function renderSpellEditMode(
     const newContent = "```spell\n" + yamlStr + "```";
     editor.replaceRange(newContent, { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
     editor.setCursor({ line: fromLine, ch: 0 });
+    // Obsidian re-renders the code block after replaceRange, destroying this DOM.
+    // If re-render is delayed or content is identical, exit edit mode explicitly.
+    if (onCancelExit) onCancelExit();
   }
 
   function cancelAndExit() {
