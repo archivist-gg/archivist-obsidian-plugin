@@ -1,5 +1,5 @@
 {
-  "name": "archivist-ttrpg-blocks",
+  "name": "archivist",
   "version": "0.1.0",
   "description": "Obsidian plugin for D&D 5e TTRPG content blocks",
   "main": "main.js",

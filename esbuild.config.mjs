@@ -31,7 +31,7 @@ const OBSIDIAN_PLUGIN_PATH =
         OBSIDIAN_VAULT,
         ".obsidian",
         "plugins",
-        "archivist-ttrpg-blocks"
+        "archivist"
       )
     : null;
 

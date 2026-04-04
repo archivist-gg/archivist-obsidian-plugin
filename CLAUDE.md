@@ -5,10 +5,10 @@ An Obsidian plugin for D&D 5e content: monster stat blocks, spells, magic items,
 ## Build & Deploy
 
 ```bash
-npm run build && /bin/cp main.js styles.css manifest.json /Users/shinoobi/Documents/V/.obsidian/plugins/archivist-ttrpg-blocks/
+npm run build && /bin/cp main.js styles.css manifest.json /Users/shinoobi/Documents/V/.obsidian/plugins/archivist/
 ```
 
-Always deploy after building. The plugin name in Obsidian is `archivist-ttrpg-blocks`.
+Always deploy after building. The plugin name in Obsidian is `archivist`.
 
 ## Architecture
 
