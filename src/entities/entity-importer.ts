@@ -1,6 +1,7 @@
 import type { Vault } from "obsidian";
 import type { SrdStore } from "../ai/srd/srd-store";
 import { generateEntityMarkdown, TYPE_FOLDER_MAP } from "./entity-vault-store";
+import { generateCompendiumMetadata } from "./compendium-manager";
 
 // ---------------------------------------------------------------------------
 // Filename sanitization
@@ -56,6 +57,19 @@ export async function importSrdToVault(
   await ensureFolderExists(vault, compendiumRoot);
   await ensureFolderExists(vault, srdRoot);
 
+  // 2b. Create _compendium.md if it doesn't exist
+  const compMetaPath = `${srdRoot}/_compendium.md`;
+  if (!vault.getAbstractFileByPath(compMetaPath)) {
+    const metaMd = generateCompendiumMetadata({
+      name: "SRD",
+      description: "D&D 5e System Reference Document",
+      readonly: true,
+      homebrew: false,
+      folderPath: srdRoot,
+    });
+    await vault.create(compMetaPath, metaMd);
+  }
+
   // 3. Pre-create all type subfolders
   const neededFolders = new Set<string>();
   for (const entityType of types) {
@@ -89,7 +103,7 @@ export async function importSrdToVault(
       slug: entity.slug,
       name: entity.name,
       entityType: entity.entityType,
-      source: "srd",
+      compendium: "SRD",
       data: entity.data,
     });
 
