@@ -36,7 +36,7 @@ Create a fenced code block with the appropriate language tag. The examples below
 
 ### Monster
 
-![Monster Stat Block](.github/screenshots/monster-stat-block.png)
+<img src=".github/screenshots/monster-stat-block.png" alt="Monster Stat Block" width="470">
 
 ````markdown
 ```monster
@@ -54,7 +54,7 @@ abilities: [23, 10, 21, 14, 11, 19]
 
 ### Spell
 
-![Spell Block](.github/screenshots/spell-block.png)
+<img src=".github/screenshots/spell-block.png" alt="Spell Block" width="700">
 
 ````markdown
 ```spell
@@ -73,7 +73,7 @@ description: |
 
 ### Magic Item
 
-![Item Block](.github/screenshots/item-block.png)
+<img src=".github/screenshots/item-block.png" alt="Item Block" width="700">
 
 ````markdown
 ```item
