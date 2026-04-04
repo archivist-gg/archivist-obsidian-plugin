@@ -538,23 +538,33 @@ export default class ArchivistPlugin extends Plugin {
       await this.saveSettings();
     }
 
-    // SRD import if needed
+    // SRD import if needed — wrapped so a failure still allows discover()
     if (!this.settings.srdImported) {
       const n = new Notice("Importing SRD...", 0);
-      const count = await importSrdToVault(
-        this.app.vault, this.srdStore, this.settings.compendiumRoot,
-        (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
-      );
-      n.setMessage(`SRD import complete: ${count} entities`);
-      setTimeout(() => n.hide(), 3000);
-      this.settings.srdImported = true;
-      await this.saveSettings();
+      try {
+        const count = await importSrdToVault(
+          this.app.vault, this.srdStore, this.settings.compendiumRoot,
+          (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
+        );
+        n.setMessage(`SRD import complete: ${count} entities`);
+        setTimeout(() => n.hide(), 3000);
+        this.settings.srdImported = true;
+        await this.saveSettings();
+      } catch (err) {
+        n.hide();
+        console.error("Archivist: SRD import failed", err);
+        new Notice("SRD import failed — existing compendiums will still load.");
+      }
     }
 
     // Discover all compendiums and load entities
-    await this.compendiumManager.discover();
-    const count = await this.compendiumManager.loadAllEntities();
-    console.log(`Archivist: loaded ${count} entities from ${this.compendiumManager.getAll().length} compendiums`);
+    try {
+      await this.compendiumManager.discover();
+      const count = await this.compendiumManager.loadAllEntities();
+      console.log(`Archivist: loaded ${count} entities from ${this.compendiumManager.getAll().length} compendiums`);
+    } catch (err) {
+      console.error("Archivist: compendium discovery failed", err);
+    }
   }
 
 }
