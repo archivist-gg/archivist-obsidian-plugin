@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseCompendiumRef, CompendiumRef } from "../src/extensions/compendium-ref-extension";
+import { parseCompendiumRef, CompendiumRef } from "../src/extensions/compendium-ref-parser";
 
 describe("parseCompendiumRef", () => {
   it("should parse {{monster:goblin}}", () => {
