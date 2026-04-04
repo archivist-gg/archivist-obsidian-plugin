@@ -1,4 +1,5 @@
-import { setIcon } from "obsidian";
+import * as yaml from "js-yaml";
+import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../main";
 import type { Monster, MonsterAbilities, MonsterFeature } from "../types/monster";
@@ -7,6 +8,7 @@ import { MonsterEditState } from "./edit-state";
 import { attachTagAutocomplete } from "./tag-autocomplete";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
+import { SaveAsNewModal } from "../entities/compendium-modal";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
   STANDARD_SENSES, ALL_SECTIONS, ALIGNMENT_ETHICAL, ALIGNMENT_MORAL,
@@ -69,6 +71,7 @@ export function renderMonsterEditMode(
   ctx: MarkdownPostProcessorContext,
   plugin: ArchivistPlugin,
   onCancelExit?: () => void,
+  compendiumContext?: { slug: string; compendium: string; readonly: boolean },
 ): void {
   const refs: DomRefs = {} as DomRefs;
   refs.saveValues = {};
@@ -97,12 +100,54 @@ export function renderMonsterEditMode(
 
   function updateSideBtns() {
     if (!sideBtns) return;
-    const btnState = "pending" as const;
+    const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
     renderSideButtons(sideBtns!, {
-      state: btnState,
+      state: sideState,
       isColumnActive: false,
+      isReadonly: compendiumContext?.readonly,
       onEdit: () => cancelAndExit(),
-      onSave: () => saveAndExit(),
+      onSave: () => {
+        if (compendiumContext) {
+          const yamlStr = state.toYaml();
+          const yamlData = yaml.load(yamlStr) as Record<string, unknown>;
+          plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
+            .then(() => {
+              new Notice(`Updated ${compendiumContext.slug} in compendium`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        } else {
+          saveAndExit();
+        }
+      },
+      onSaveAsNew: () => {
+        const writable = plugin.compendiumManager?.getWritable() ?? [];
+        if (writable.length === 0) {
+          new Notice("No writable compendiums found. Create one first.");
+          return;
+        }
+        const yamlStr = state.toYaml();
+        const yamlData = yaml.load(yamlStr) as Record<string, unknown>;
+        new SaveAsNewModal(plugin.app, writable, state.current.name, (comp, name) => {
+          yamlData.name = name;
+          plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
+            .then((registered) => {
+              // Replace {{}} ref in editor with new slug
+              const info = ctx.getSectionInfo(el);
+              if (info) {
+                const editor = plugin.app.workspace.activeEditor?.editor;
+                if (editor) {
+                  const from = { line: info.lineStart, ch: 0 };
+                  const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
+                  editor.replaceRange(`{{monster:${registered.slug}}}`, from, to);
+                }
+              }
+              new Notice(`Saved as new to ${comp.name}`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        }).open();
+      },
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
       onDelete: () => {},

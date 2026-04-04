@@ -1,10 +1,11 @@
 import * as yaml from "js-yaml";
-import { setIcon } from "obsidian";
+import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../main";
 import type { Spell } from "../types/spell";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
+import { SaveAsNewModal } from "../entities/compendium-modal";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -29,6 +30,7 @@ export function renderSpellEditMode(
   ctx: MarkdownPostProcessorContext,
   plugin: ArchivistPlugin,
   onCancelExit?: () => void,
+  compendiumContext?: { slug: string; compendium: string; readonly: boolean },
 ): void {
   // Mutable working copy
   const draft: Spell = JSON.parse(JSON.stringify(spell));
@@ -45,14 +47,71 @@ export function renderSpellEditMode(
     updateSideBtns();
   }
 
+  /** Build a clean data object from the draft for serialization. */
+  function buildClean(): Record<string, unknown> {
+    const clean: Record<string, unknown> = { name: draft.name };
+    if (draft.level !== undefined && draft.level !== 0) clean.level = draft.level;
+    if (draft.level === 0) clean.level = 0;
+    if (draft.school) clean.school = draft.school;
+    if (draft.casting_time) clean.casting_time = draft.casting_time;
+    if (draft.range) clean.range = draft.range;
+    if (draft.components) clean.components = draft.components;
+    if (draft.duration) clean.duration = draft.duration;
+    if (draft.concentration) clean.concentration = true;
+    if (draft.ritual) clean.ritual = true;
+    if (draft.description && draft.description.length > 0) clean.description = draft.description;
+    if (draft.at_higher_levels && draft.at_higher_levels.length > 0) clean.at_higher_levels = draft.at_higher_levels;
+    if (draft.classes && draft.classes.length > 0) clean.classes = draft.classes;
+    return clean;
+  }
+
   function updateSideBtns() {
     if (!sideBtns) return;
-    const btnState = "pending" as const;
+    const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
     renderSideButtons(sideBtns!, {
-      state: btnState,
+      state: sideState,
       isColumnActive: false,
+      isReadonly: compendiumContext?.readonly,
       onEdit: () => cancelAndExit(),
-      onSave: () => saveAndExit(),
+      onSave: () => {
+        if (compendiumContext) {
+          const yamlData = buildClean();
+          plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
+            .then(() => {
+              new Notice(`Updated ${compendiumContext.slug} in compendium`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        } else {
+          saveAndExit();
+        }
+      },
+      onSaveAsNew: () => {
+        const writable = plugin.compendiumManager?.getWritable() ?? [];
+        if (writable.length === 0) {
+          new Notice("No writable compendiums found. Create one first.");
+          return;
+        }
+        const yamlData = buildClean();
+        new SaveAsNewModal(plugin.app, writable, draft.name, (comp, name) => {
+          yamlData.name = name;
+          plugin.compendiumManager!.saveEntity(comp.name, "spell", yamlData)
+            .then((registered) => {
+              const info = ctx.getSectionInfo(el);
+              if (info) {
+                const editor = plugin.app.workspace.activeEditor?.editor;
+                if (editor) {
+                  const from = { line: info.lineStart, ch: 0 };
+                  const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
+                  editor.replaceRange(`{{spell:${registered.slug}}}`, from, to);
+                }
+              }
+              new Notice(`Saved as new to ${comp.name}`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        }).open();
+      },
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
       onDelete: () => {},

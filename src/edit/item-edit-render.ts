@@ -1,10 +1,11 @@
 import * as yaml from "js-yaml";
-import { setIcon } from "obsidian";
+import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../main";
 import type { Item } from "../types/item";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
+import { SaveAsNewModal } from "../entities/compendium-modal";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -29,6 +30,7 @@ export function renderItemEditMode(
   ctx: MarkdownPostProcessorContext,
   plugin: ArchivistPlugin,
   onCancelExit?: () => void,
+  compendiumContext?: { slug: string; compendium: string; readonly: boolean },
 ): void {
   // Mutable working copy
   const draft: Item = JSON.parse(JSON.stringify(item));
@@ -45,14 +47,71 @@ export function renderItemEditMode(
     updateSideBtns();
   }
 
+  /** Build a clean data object from the draft for serialization. */
+  function buildClean(): Record<string, unknown> {
+    const clean: Record<string, unknown> = { name: draft.name };
+    if (draft.type) clean.type = draft.type;
+    if (draft.rarity) clean.rarity = draft.rarity;
+    if (draft.attunement !== undefined && draft.attunement !== false) clean.attunement = draft.attunement;
+    if (draft.weight != null) clean.weight = draft.weight;
+    if (draft.value != null) clean.value = draft.value;
+    if (draft.damage) clean.damage = draft.damage;
+    if (draft.damage_type) clean.damage_type = draft.damage_type;
+    if (draft.properties && draft.properties.length > 0) clean.properties = draft.properties;
+    if (draft.charges != null) clean.charges = draft.charges;
+    if (draft.recharge) clean.recharge = draft.recharge;
+    if (draft.curse) clean.curse = true;
+    if (draft.entries && draft.entries.length > 0) clean.entries = draft.entries;
+    return clean;
+  }
+
   function updateSideBtns() {
     if (!sideBtns) return;
-    const btnState = "pending" as const;
+    const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
     renderSideButtons(sideBtns!, {
-      state: btnState,
+      state: sideState,
       isColumnActive: false,
+      isReadonly: compendiumContext?.readonly,
       onEdit: () => cancelAndExit(),
-      onSave: () => saveAndExit(),
+      onSave: () => {
+        if (compendiumContext) {
+          const yamlData = buildClean();
+          plugin.compendiumManager?.updateEntity(compendiumContext.slug, yamlData)
+            .then(() => {
+              new Notice(`Updated ${compendiumContext.slug} in compendium`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        } else {
+          saveAndExit();
+        }
+      },
+      onSaveAsNew: () => {
+        const writable = plugin.compendiumManager?.getWritable() ?? [];
+        if (writable.length === 0) {
+          new Notice("No writable compendiums found. Create one first.");
+          return;
+        }
+        const yamlData = buildClean();
+        new SaveAsNewModal(plugin.app, writable, draft.name, (comp, name) => {
+          yamlData.name = name;
+          plugin.compendiumManager!.saveEntity(comp.name, "item", yamlData)
+            .then((registered) => {
+              const info = ctx.getSectionInfo(el);
+              if (info) {
+                const editor = plugin.app.workspace.activeEditor?.editor;
+                if (editor) {
+                  const from = { line: info.lineStart, ch: 0 };
+                  const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
+                  editor.replaceRange(`{{item:${registered.slug}}}`, from, to);
+                }
+              }
+              new Notice(`Saved as new to ${comp.name}`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        }).open();
+      },
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
       onDelete: () => {},
