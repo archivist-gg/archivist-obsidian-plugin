@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
+
+:root {
+  --d5e-parchment: #fdf1dc;
+  --d5e-text-dark: #191813;
+  --d5e-text-accent: #7a200d;
+  --d5e-bar-fill: #922610;
+  --d5e-bar-stroke: #922610;
+  --d5e-border-tan: #d9c484;
+  --d5e-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  --stat-block-bg: var(--d5e-parchment);
+  --stat-block-text: var(--d5e-text-dark);
+  --stat-block-header: var(--d5e-text-accent);
+  --stat-block-bar: var(--d5e-bar-fill);
+  --stat-block-shadow: var(--d5e-shadow);
+  --stat-block-padding: 0.6em;
+  --stat-block-section-gap: 0.3em;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1e1e2e;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  font-family: 'Noto Sans', sans-serif;
+  min-height: 0;
+}
+
+.archivist-monster-block-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  justify-content: center;
+}
+
+.archivist-monster-block {
+  background: var(--stat-block-bg);
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.2em;
+  color: var(--stat-block-text);
+  position: relative;
+  box-shadow: var(--stat-block-shadow);
+  padding: var(--stat-block-padding);
+  width: 100%;
+}
+
+.stat-block-header { margin-bottom: 0.3em; }
+
+.monster-name {
+  font-family: 'Libre Baskerville', 'Lora', Georgia, serif;
+  color: var(--stat-block-header);
+  font-size: 25px;
+  line-height: 1.2em;
+  margin: 0 0 0 -0.02em;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-variant: small-caps;
+}
+
+.monster-type {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1.2em;
+  margin: 0 0 0.35em;
+  color: var(--stat-block-text);
+}
+
+.stat-block-bar { width: 100%; height: 5px; margin: 4px 0; }
+.stat-block-bar polyline { fill: var(--stat-block-bar); stroke: var(--stat-block-bar); stroke-width: 1; }
+
+.property-block { padding: 0.3em 0; }
+.property-line { line-height: 1.4em; margin-bottom: 0.3em; text-indent: -1em; margin-left: 1em; }
+.property-line.last { margin-bottom: 0; }
+.property-line h4 { margin: 0; color: var(--stat-block-header); font-family: 'Noto Sans', sans-serif; font-size: 13px; font-weight: bold; display: inline; margin-right: 0.25em; }
+.property-line h4:after { content: '.'; font-weight: bold; }
+.property-line p { margin: 0; display: inline; font-family: 'Noto Sans', sans-serif; font-weight: normal; font-size: 13px; color: var(--stat-block-text); }
+
+.abilities-block { text-align: center; color: var(--stat-block-header); padding: var(--stat-block-section-gap) 0; }
+.abilities-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: none; margin: 0; background: transparent; }
+.abilities-table th { font-weight: bold; color: var(--stat-block-header); font-size: 14px; padding: 0.25em; font-family: 'Noto Sans', sans-serif; border: none; background: transparent; text-align: center; }
+.abilities-table td { padding: 0.25em; font-size: 14px; color: var(--d5e-text-dark); border: none; background: transparent; text-align: center; }
+.ability-score { font-weight: normal; }
+
+/* Tab Navigation */
+.original-tab-navigation-wrapper { display: flex; align-items: stretch; position: relative; margin: 0.5em 0; border-bottom: 1px solid #7a200d; }
+.original-tab-navigation { display: flex; gap: 2px; flex: 1; }
+.original-tab-button { display: flex; align-items: center; flex-shrink: 0; white-space: nowrap; gap: 4px; padding: 6px 12px; background: transparent; border: none; border-bottom: 2px solid transparent; border-radius: 0; box-shadow: none; color: #7a200d; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans', sans-serif; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+.original-tab-button.active { color: #922610; border-bottom-color: #922610; background: rgba(122, 32, 13, 0.1); }
+.original-tab-content { padding: 0.5em 0 0; }
+
+/* Features */
+.archivist-feature { margin-bottom: 0.3em; line-height: 1.4em; text-indent: -1em; margin-left: 1em; }
+.archivist-feature-name { font-family: 'Noto Sans', sans-serif; font-weight: bold; font-style: italic; color: var(--stat-block-text); font-size: 13px; display: inline; margin-right: 0.25em; }
+.archivist-feature-entry { display: inline; font-family: 'Noto Sans', sans-serif; font-weight: normal; font-size: 13px; color: var(--stat-block-text); }
+
+/* Inline tags */
+.archivist-stat-tag { display: inline; }
+.archivist-stat-tag-icon { display: inline; margin-right: 2px; }
+.archivist-stat-tag-icon svg { width: 14px; height: 14px; vertical-align: -2px; display: inline; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.archivist-stat-tag-dice, .archivist-stat-tag-damage { color: #922610; border-bottom: 1px dashed #922610; cursor: pointer; }
+.archivist-stat-tag-dice .archivist-stat-tag-icon svg,
+.archivist-stat-tag-damage .archivist-stat-tag-icon svg { stroke: #922610; }
+.archivist-stat-tag-atk { color: #7a200d; font-style: italic; cursor: pointer; border-bottom: 1px dashed #7a200d; }
+.archivist-stat-tag-atk .archivist-stat-tag-icon svg { stroke: #7a200d; }
+.archivist-stat-tag-dc { color: #191813; }
+.archivist-stat-tag-dc .archivist-stat-tag-icon svg { stroke: #555; }
+</style>
+</head>
+<body>
+<div class="archivist-monster-block-wrapper">
+  <div class="archivist-monster-block">
+    <!-- Header -->
+    <div class="stat-block-header">
+      <div class="monster-name">Young Red Dragon</div>
+      <p class="monster-type">Large Dragon, Chaotic Evil</p>
+    </div>
+
+    <svg class="stat-block-bar" height="5" width="100%" preserveAspectRatio="none" viewBox="0 0 400 5"><polyline points="0,0 400,2.5 0,5"></polyline></svg>
+
+    <div class="property-block">
+      <div class="property-line"><h4>Armor Class</h4><p>18 (Natural Armor)</p></div>
+      <div class="property-line"><h4>Hit Points</h4><p>178 (17d10+85)</p></div>
+      <div class="property-line last"><h4>Speed</h4><p>Walk 40 ft., Climb 40 ft., Fly 80 ft.</p></div>
+    </div>
+
+    <svg class="stat-block-bar" height="5" width="100%" preserveAspectRatio="none" viewBox="0 0 400 5"><polyline points="0,0 400,2.5 0,5"></polyline></svg>
+
+    <div class="abilities-block">
+      <table class="abilities-table">
+        <thead><tr><th>STR</th><th>DEX</th><th>CON</th><th>INT</th><th>WIS</th><th>CHA</th></tr></thead>
+        <tbody><tr>
+          <td><span class="ability-score">23</span> (+6)</td>
+          <td><span class="ability-score">10</span> (+0)</td>
+          <td><span class="ability-score">21</span> (+5)</td>
+          <td><span class="ability-score">14</span> (+2)</td>
+          <td><span class="ability-score">11</span> (+0)</td>
+          <td><span class="ability-score">19</span> (+4)</td>
+        </tr></tbody>
+      </table>
+    </div>
+
+    <svg class="stat-block-bar" height="5" width="100%" preserveAspectRatio="none" viewBox="0 0 400 5"><polyline points="0,0 400,2.5 0,5"></polyline></svg>
+
+    <div class="property-block">
+      <div class="property-line"><h4>Saving Throws</h4><p>Dex +4, Con +9, Wis +4, Cha +8</p></div>
+      <div class="property-line"><h4>Skills</h4><p>Perception +8, Stealth +4</p></div>
+      <div class="property-line"><h4>Damage Immunities</h4><p>Fire</p></div>
+      <div class="property-line"><h4>Senses</h4><p>Blindsight 30 ft., Darkvision 120 ft., passive Perception 18</p></div>
+      <div class="property-line"><h4>Languages</h4><p>Common, Draconic</p></div>
+      <div class="property-line last"><h4>Challenge</h4><p>10 (5,900 XP)</p></div>
+    </div>
+
+    <svg class="stat-block-bar" height="5" width="100%" preserveAspectRatio="none" viewBox="0 0 400 5"><polyline points="0,0 400,2.5 0,5"></polyline></svg>
+
+    <div class="original-tab-navigation-wrapper">
+      <div class="original-tab-navigation">
+        <button class="original-tab-button">Traits</button>
+        <button class="original-tab-button active">Actions</button>
+      </div>
+    </div>
+
+    <div class="original-tab-content">
+      <div class="archivist-feature">
+        <span class="archivist-feature-name">Multiattack.</span>
+        <span class="archivist-feature-entry">The dragon makes three attacks: one with its bite and two with its claws.</span>
+      </div>
+      <div class="archivist-feature">
+        <span class="archivist-feature-name">Bite.</span>
+        <span class="archivist-feature-entry">Melee Weapon Attack: <span class="archivist-stat-tag archivist-stat-tag-atk"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span><span>+10 to hit</span></span>, reach 10 ft., one target. Hit: <span class="archivist-stat-tag archivist-stat-tag-damage"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></span><span>2d10+6 piercing</span></span> plus <span class="archivist-stat-tag archivist-stat-tag-damage"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></span><span>1d6 fire</span></span> damage.</span>
+      </div>
+      <div class="archivist-feature">
+        <span class="archivist-feature-name">Claw.</span>
+        <span class="archivist-feature-entry">Melee Weapon Attack: <span class="archivist-stat-tag archivist-stat-tag-atk"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span><span>+10 to hit</span></span>, reach 5 ft., one target. Hit: <span class="archivist-stat-tag archivist-stat-tag-damage"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></span><span>2d6+6 slashing</span></span> damage.</span>
+      </div>
+      <div class="archivist-feature">
+        <span class="archivist-feature-name">Fire Breath (Recharge 5-6).</span>
+        <span class="archivist-feature-entry">The dragon exhales fire in a 30-foot cone. Each creature in that area must make a <span class="archivist-stat-tag archivist-stat-tag-dc"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></span><span>DC 17</span></span> Dexterity saving throw, taking <span class="archivist-stat-tag archivist-stat-tag-damage"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></span><span>16d6 fire</span></span> damage on a failed save, or half as much on a successful one.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -32,20 +32,29 @@ Bundled SRD with 300+ monsters, spells, and items. Supports custom user-created 
 
 ## Usage
 
-Create a fenced code block with the appropriate language tag:
+Create a fenced code block with the appropriate language tag. The examples below show a minimal subset of fields -- see the full YAML reference for all supported properties (saves, skills, senses, traits, actions, etc.).
+
+### Monster
+
+![Monster Stat Block](.github/screenshots/monster-stat-block.png)
 
 ````markdown
 ```monster
-name: Adult Red Dragon
-size: huge
+name: Young Red Dragon
+size: large
 type: dragon
 alignment: chaotic evil
-ac: 19 (natural armor)
-hp: 256 (19d12+133)
+ac: 18 (natural armor)
+hp: 178 (17d10+85)
 speed: 40 ft., climb 40 ft., fly 80 ft.
-abilities: [27, 10, 25, 16, 13, 21]
+abilities: [23, 10, 21, 14, 11, 19]
+# ... saves, skills, senses, traits, actions, etc.
 ```
 ````
+
+### Spell
+
+![Spell Block](.github/screenshots/spell-block.png)
 
 ````markdown
 ```spell
@@ -57,10 +66,14 @@ range: 150 feet
 components: V, S, M (a tiny ball of bat guano and sulfur)
 duration: Instantaneous
 description: |
-  A bright streak flashes from your pointing finger to a point you choose
-  within range and then blossoms with a low roar into an explosion of flame.
+  A bright streak flashes from your pointing finger...
+# ... at_higher_levels, classes, concentration, ritual, etc.
 ```
 ````
+
+### Magic Item
+
+![Item Block](.github/screenshots/item-block.png)
 
 ````markdown
 ```item
@@ -71,6 +84,7 @@ attunement: true
 description: |
   You can use a bonus action to speak this magic sword's command word,
   causing flames to erupt from the blade.
+# ... damage, weight, value, charges, properties, etc.
 ```
 ````
 

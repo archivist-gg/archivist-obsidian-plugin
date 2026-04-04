@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1e1e2e;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.archivist-item-block-wrapper { position: relative; width: 100%; max-width: 520px; display: flex; justify-content: flex-start; }
+
+.archivist-item-block {
+  background: #fdf1dc;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px; line-height: 1.2em; color: #191813;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  padding: 0.6em; width: 100%; border-radius: 4px;
+}
+
+.archivist-item-block-header { margin-bottom: 0.3em; border-bottom: 2px solid #7a200d; padding-bottom: 0.3em; }
+.archivist-item-name { font-family: 'Libre Baskerville', 'Lora', Georgia, serif; color: #7a200d; font-size: 23px; line-height: 1.2em; margin: 0 0 0.1em -0.02em; font-weight: 700; letter-spacing: 1px; }
+.archivist-item-subtitle { font-style: italic; font-size: 14px; color: #191813; margin-top: 0.2em; }
+
+.archivist-item-properties { margin: 0.4em 0; padding: 0.4em 0; border-bottom: 1px solid #d9c484; }
+.archivist-property-line-icon { display: flex; align-items: center; gap: 0.5em; margin: 0.2em 0; font-size: 13px; }
+.archivist-property-icon { width: 14px; height: 14px; flex-shrink: 0; display: flex; align-items: center; }
+.archivist-property-icon svg { width: 14px; height: 14px; stroke: #7a200d; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.archivist-property-label { font-weight: 600; color: #191813; flex-shrink: 0; }
+.archivist-property-value { color: #191813; }
+
+.archivist-item-description { margin: 0.6em 0; line-height: 1.4em; }
+.description-paragraph { margin: 0.4em 0; text-align: justify; font-size: 13px; }
+.description-paragraph:first-child { text-indent: 0; }
+
+/* Inline tags */
+.archivist-stat-tag { display: inline; }
+.archivist-stat-tag-icon { display: inline; margin-right: 2px; }
+.archivist-stat-tag-icon svg { width: 14px; height: 14px; vertical-align: -2px; display: inline; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.archivist-stat-tag-dice, .archivist-stat-tag-damage { color: #922610; border-bottom: 1px dashed #922610; cursor: pointer; }
+.archivist-stat-tag-dice .archivist-stat-tag-icon svg,
+.archivist-stat-tag-damage .archivist-stat-tag-icon svg { stroke: #922610; }
+</style>
+</head>
+<body>
+<div class="archivist-item-block-wrapper">
+  <div class="archivist-item-block">
+    <div class="archivist-item-block-header">
+      <h3 class="archivist-item-name">Flame Tongue</h3>
+      <div class="archivist-item-subtitle">Weapon (Any Sword), Rare (requires attunement)</div>
+    </div>
+
+    <div class="archivist-item-properties">
+      <div class="archivist-property-line-icon">
+        <span class="archivist-property-icon"><svg viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>
+        <span class="archivist-property-label">Attunement:</span>
+        <span class="archivist-property-value">Required</span>
+      </div>
+      <div class="archivist-property-line-icon">
+        <span class="archivist-property-icon"><svg viewBox="0 0 24 24"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg></span>
+        <span class="archivist-property-label">Damage:</span>
+        <span class="archivist-property-value"><span class="archivist-stat-tag archivist-stat-tag-damage"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></span><span>2d6 fire</span></span></span>
+      </div>
+    </div>
+
+    <div class="archivist-item-description">
+      <div class="description-paragraph">You can use a bonus action to speak this magic sword's command word, causing flames to erupt from the blade. These flames shed bright light in a 40-foot radius and dim light for an additional 40 feet. While the sword is ablaze, it deals an extra <span class="archivist-stat-tag archivist-stat-tag-damage"><span class="archivist-stat-tag-icon"><svg viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/></svg></span><span>2d6 fire</span></span> damage to any target it hits. The flames last until you use a bonus action to speak the command word again or until you drop or sheathe the sword.</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
