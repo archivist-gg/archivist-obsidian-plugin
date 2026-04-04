@@ -1,22 +1,46 @@
 import { setIcon } from "obsidian";
 
-export type SideButtonState = "default" | "editing" | "pending";
+export type SideButtonState = "default" | "editing" | "pending" | "compendium-pending";
 
 interface SideButtonConfig {
   state: SideButtonState;
   onEdit: () => void;
   onSave: () => void;
+  onSaveAsNew: () => void;
   onCompendium: () => void;
   onCancel: () => void;
   onDelete: () => void;
   onColumnToggle: () => void;
   isColumnActive: boolean;
   showColumnToggle?: boolean;
+  isReadonly?: boolean;
 }
 
 export function renderSideButtons(container: HTMLElement, config: SideButtonConfig): void {
   container.empty();
   container.addClass("archivist-side-btns");
+
+  if (config.state === "compendium-pending") {
+    // Save button (only if writable)
+    if (!config.isReadonly) {
+      const saveBtn = container.createDiv({ cls: "archivist-side-btn archivist-side-btn-save" });
+      setIcon(saveBtn, "save");
+      saveBtn.title = "Save to compendium";
+      saveBtn.addEventListener("click", config.onSave);
+    }
+    // Save As New button (save icon with + overlay)
+    const saveAsNewBtn = container.createDiv({ cls: "archivist-side-btn archivist-side-btn-save-as-new" });
+    setIcon(saveAsNewBtn, "save");
+    const plusOverlay = saveAsNewBtn.createSpan({ cls: "archivist-plus-overlay", text: "+" });
+    saveAsNewBtn.title = "Save as new entity";
+    saveAsNewBtn.addEventListener("click", config.onSaveAsNew);
+    // Cancel button
+    const cancelBtn = container.createDiv({ cls: "archivist-side-btn" });
+    setIcon(cancelBtn, "x");
+    cancelBtn.title = "Cancel";
+    cancelBtn.addEventListener("click", config.onCancel);
+    return;
+  }
 
   if (config.state === "pending") {
     // Save (green check)
