@@ -52,15 +52,41 @@ export class ArchivistSettingTab extends PluginSettingTab {
           }),
       );
 
-    new Setting(containerEl)
-      .setName("User Entity Folder")
-      .setDesc("Subfolder name for user-created and AI-generated entities.")
-      .addText((text) =>
-        text.setPlaceholder("me").setValue(this.plugin.settings.userEntityFolder)
-          .onChange(async (value) => {
-            this.plugin.settings.userEntityFolder = value || "me";
-            await this.plugin.saveSettings();
-          }),
-      );
+    // Compendiums section
+    containerEl.createEl("h3", { text: "Compendiums" });
+    containerEl.createEl("p", {
+      text: 'Compendiums are collections of D&D entities (monsters, spells, items) stored as folders in your vault. Read-only compendiums cannot be modified \u2014 editing an entity from a read-only compendium will only allow "Save As New" to a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',
+      cls: "setting-item-description",
+    });
+
+    const compManager = (this.plugin as any).compendiumManager;
+    if (compManager) {
+      const allCompendiums = compManager.getAll();
+      const registry = (this.plugin as any).entityRegistry;
+
+      for (const comp of allCompendiums) {
+        // Count entities in this compendium
+        let entityCount = 0;
+        if (registry) {
+          // Search with empty query returns all, then filter by compendium
+          const allEntities = registry.search("", undefined, 99999);
+          entityCount = allEntities.filter((e: any) => e.compendium === comp.name).length;
+        }
+
+        const desc = `${comp.description || ""} \u2014 ${entityCount} entities${comp.homebrew ? " \u2014 homebrew" : ""}`;
+
+        new Setting(containerEl)
+          .setName(comp.name)
+          .setDesc(desc)
+          .addToggle((toggle) => {
+            toggle
+              .setTooltip("Read-only")
+              .setValue(comp.readonly)
+              .onChange(async (value: boolean) => {
+                await compManager.setReadonly(comp.name, value);
+              });
+          });
+      }
+    }
   }
 }
