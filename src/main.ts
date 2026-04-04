@@ -28,13 +28,16 @@ import { ItemModal } from "./modals/item-modal";
 // D&D editor extension
 import { inlineTagPlugin } from "./extensions/inline-tag-extension";
 import { dndBlockDeleteKeymap } from "./extensions/dnd-block-delete-extension";
-import { EntityEditorSuggest } from "./extensions/entity-editor-suggest";
+import { CompendiumEditorSuggest } from "./extensions/compendium-suggest";
+import { compendiumRefPlugin, setCompendiumRefRegistry, parseCompendiumRef } from "./extensions/compendium-ref-extension";
+import * as yaml from "js-yaml";
 
 // SRD & entities
 import { SrdStore } from "./ai/srd/srd-store";
 import { EntityRegistry } from "./entities/entity-registry";
 import { importSrdToVault } from "./entities/entity-importer";
-import { parseEntityFrontmatter, TYPE_FOLDER_MAP } from "./entities/entity-vault-store";
+import { CompendiumManager } from "./entities/compendium-manager";
+import { CompendiumSelectModal } from "./entities/compendium-modal";
 
 // Settings
 import type { ArchivistSettings } from "./types/settings";
@@ -46,6 +49,7 @@ import { InquiryModule } from "./inquiry/InquiryModule";
 export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
   entityRegistry: EntityRegistry | null = null;
+  compendiumManager: CompendiumManager | null = null;
   inquiry: InquiryModule | null = null;
   private srdStore: SrdStore | null = null;
 
@@ -56,21 +60,14 @@ export default class ArchivistPlugin extends Plugin {
     this.srdStore = new SrdStore();
     this.srdStore.loadFromBundledJson();
 
-    // Initialize entity registry and populate from SRD store
+    // Initialize entity registry and compendium manager
     this.entityRegistry = new EntityRegistry();
-    for (const entityType of this.srdStore.getTypes()) {
-      for (const srdEntity of this.srdStore.getAllOfType(entityType)) {
-        const folder = TYPE_FOLDER_MAP[srdEntity.entityType] ?? srdEntity.entityType;
-        this.entityRegistry.register({
-          slug: srdEntity.slug,
-          name: srdEntity.name,
-          entityType: srdEntity.entityType,
-          source: "srd",
-          filePath: `${this.settings.compendiumRoot}/SRD/${folder}/${srdEntity.name}.md`,
-          data: srdEntity.data,
-        });
-      }
-    }
+    this.compendiumManager = new CompendiumManager(
+      this.entityRegistry,
+      this.app.vault,
+      this.settings.compendiumRoot,
+    );
+    setCompendiumRefRegistry(this.entityRegistry);
 
     // Initialize InquiryModule (Claudian chat engine)
     this.inquiry = new InquiryModule(this, this.app, this.entityRegistry, this.srdStore);
@@ -145,7 +142,34 @@ export default class ArchivistPlugin extends Plugin {
             }
           },
           onSave: () => {}, // handled by edit mode internally
-          onCompendium: () => {},
+          onSaveAsNew: () => {},
+          onCompendium: () => {
+            if (!this.compendiumManager) return;
+            const writable = this.compendiumManager.getWritable();
+            if (writable.length === 0) {
+              new Notice("No writable compendiums found. Create one first.");
+              return;
+            }
+            new CompendiumSelectModal(this.app, writable, async (comp) => {
+              try {
+                const registered = await this.compendiumManager!.saveEntity(
+                  comp.name, "monster", result.data as unknown as Record<string, unknown>,
+                );
+                const sectionInfo = ctx.getSectionInfo(el);
+                if (sectionInfo) {
+                  const editor = this.app.workspace.activeEditor?.editor;
+                  if (editor) {
+                    const from = { line: sectionInfo.lineStart, ch: 0 };
+                    const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
+                    editor.replaceRange(`{{monster:${registered.slug}}}`, from, to);
+                  }
+                }
+                new Notice(`Saved to ${comp.name}`);
+              } catch (e: any) {
+                new Notice(`Failed to save: ${e.message}`);
+              }
+            }).open();
+          },
           onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
           onColumnToggle: () => {
@@ -227,7 +251,34 @@ export default class ArchivistPlugin extends Plugin {
             }
           },
           onSave: () => {}, // handled by edit mode internally
-          onCompendium: () => {},
+          onSaveAsNew: () => {},
+          onCompendium: () => {
+            if (!this.compendiumManager) return;
+            const writable = this.compendiumManager.getWritable();
+            if (writable.length === 0) {
+              new Notice("No writable compendiums found. Create one first.");
+              return;
+            }
+            new CompendiumSelectModal(this.app, writable, async (comp) => {
+              try {
+                const registered = await this.compendiumManager!.saveEntity(
+                  comp.name, "spell", result.data as unknown as Record<string, unknown>,
+                );
+                const sectionInfo = ctx.getSectionInfo(el);
+                if (sectionInfo) {
+                  const editor = this.app.workspace.activeEditor?.editor;
+                  if (editor) {
+                    const from = { line: sectionInfo.lineStart, ch: 0 };
+                    const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
+                    editor.replaceRange(`{{spell:${registered.slug}}}`, from, to);
+                  }
+                }
+                new Notice(`Saved to ${comp.name}`);
+              } catch (e: any) {
+                new Notice(`Failed to save: ${e.message}`);
+              }
+            }).open();
+          },
           onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
           onColumnToggle: () => {},
@@ -303,7 +354,34 @@ export default class ArchivistPlugin extends Plugin {
             }
           },
           onSave: () => {}, // handled by edit mode internally
-          onCompendium: () => {},
+          onSaveAsNew: () => {},
+          onCompendium: () => {
+            if (!this.compendiumManager) return;
+            const writable = this.compendiumManager.getWritable();
+            if (writable.length === 0) {
+              new Notice("No writable compendiums found. Create one first.");
+              return;
+            }
+            new CompendiumSelectModal(this.app, writable, async (comp) => {
+              try {
+                const registered = await this.compendiumManager!.saveEntity(
+                  comp.name, "item", result.data as unknown as Record<string, unknown>,
+                );
+                const sectionInfo = ctx.getSectionInfo(el);
+                if (sectionInfo) {
+                  const editor = this.app.workspace.activeEditor?.editor;
+                  if (editor) {
+                    const from = { line: sectionInfo.lineStart, ch: 0 };
+                    const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
+                    editor.replaceRange(`{{item:${registered.slug}}}`, from, to);
+                  }
+                }
+                new Notice(`Saved to ${comp.name}`);
+              } catch (e: any) {
+                new Notice(`Failed to save: ${e.message}`);
+              }
+            }).open();
+          },
           onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
           onColumnToggle: () => {},
@@ -324,12 +402,86 @@ export default class ArchivistPlugin extends Plugin {
       });
     });
 
-    // CodeMirror editor extension
+    // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block)
+    this.registerMarkdownPostProcessor((el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const refPattern = /\{\{[^}]+\}\}/g;
+      const textNodes: Text[] = [];
+      let node: Text | null;
+      while ((node = walker.nextNode() as Text)) {
+        if (refPattern.test(node.textContent || "")) {
+          textNodes.push(node);
+        }
+      }
+      for (const textNode of textNodes) {
+        const text = textNode.textContent || "";
+        refPattern.lastIndex = 0;
+        let match: RegExpExecArray | null;
+        const frag = document.createDocumentFragment();
+        let lastIdx = 0;
+        while ((match = refPattern.exec(text)) !== null) {
+          if (match.index > lastIdx) {
+            frag.appendChild(document.createTextNode(text.substring(lastIdx, match.index)));
+          }
+          const ref = parseCompendiumRef(match[0]);
+          if (ref && this.entityRegistry) {
+            const entity = this.entityRegistry.getBySlug(ref.slug);
+            if (entity && (!ref.entityType || entity.entityType === ref.entityType)) {
+              const yamlStr = yaml.dump(entity.data, { lineWidth: -1, noRefs: true, sortKeys: false });
+              const wrapper = document.createElement("div");
+              wrapper.classList.add("archivist-compendium-ref");
+              let blockRendered: HTMLElement | null = null;
+              switch (entity.entityType) {
+                case "monster": {
+                  const r = parseMonster(yamlStr);
+                  if (r.success) blockRendered = renderMonsterBlock(r.data);
+                  break;
+                }
+                case "spell": {
+                  const r = parseSpell(yamlStr);
+                  if (r.success) blockRendered = renderSpellBlock(r.data);
+                  break;
+                }
+                case "magic-item":
+                case "item": {
+                  const r = parseItem(yamlStr);
+                  if (r.success) blockRendered = renderItemBlock(r.data);
+                  break;
+                }
+              }
+              if (blockRendered) {
+                const badge = document.createElement("div");
+                badge.classList.add("archivist-compendium-badge");
+                badge.textContent = entity.compendium;
+                blockRendered.prepend(badge);
+                wrapper.appendChild(blockRendered);
+              }
+              frag.appendChild(wrapper);
+            } else {
+              const errEl = document.createElement("div");
+              errEl.classList.add("archivist-ref-error");
+              errEl.textContent = `Entity not found: ${match[0].replace(/[{}]/g, "")}`;
+              frag.appendChild(errEl);
+            }
+          } else {
+            frag.appendChild(document.createTextNode(match[0]));
+          }
+          lastIdx = match.index + match[0].length;
+        }
+        if (lastIdx < text.length) {
+          frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+        }
+        textNode.parentNode?.replaceChild(frag, textNode);
+      }
+    });
+
+    // CodeMirror editor extensions
     this.registerEditorExtension(inlineTagPlugin);
     this.registerEditorExtension(dndBlockDeleteKeymap);
+    this.registerEditorExtension(compendiumRefPlugin);
 
-    // Editor entity suggest ([[monster:, [[spell:, [[item:, [[feat:)
-    this.registerEditorSuggest(new EntityEditorSuggest(this.app, this.srdStore!));
+    // Editor entity suggest ({{monster:, {{spell:, etc.)
+    this.registerEditorSuggest(new CompendiumEditorSuggest(this.app, this.entityRegistry));
 
     // D&D insert commands
     this.addCommand({
@@ -356,8 +508,8 @@ export default class ArchivistPlugin extends Plugin {
 
     // Settings tab is registered by InquiryModule (unified D&D + Inquiry settings)
 
-    // First-load SRD import (async, non-blocking)
-    this.triggerSrdImport();
+    // Initialize compendiums and SRD import (async, non-blocking)
+    this.initializeCompendiums();
   }
 
   async onunload() {
@@ -375,51 +527,34 @@ export default class ArchivistPlugin extends Plugin {
     await this.saveData(data);
   }
 
-  private triggerSrdImport(): void {
+  private async initializeCompendiums(): Promise<void> {
+    if (!this.compendiumManager || !this.srdStore) return;
+
+    // Check if SRD folder exists, reset srdImported if missing
+    const srdPath = `${this.settings.compendiumRoot}/SRD`;
+    const srdFolder = this.app.vault.getAbstractFileByPath(srdPath);
+    if (this.settings.srdImported && !srdFolder) {
+      this.settings.srdImported = false;
+      await this.saveSettings();
+    }
+
+    // SRD import if needed
     if (!this.settings.srdImported) {
-      const notice = new Notice("Importing SRD content...", 0);
-      importSrdToVault(
-        this.app.vault,
-        this.srdStore!,
-        this.settings.compendiumRoot,
-        (current, total) => {
-          notice.setMessage(`Importing SRD content... ${current}/${total}`);
-        },
-      ).then(async (count) => {
-        notice.hide();
-        new Notice(`SRD import complete. ${count} entities added to vault.`);
-        this.settings.srdImported = true;
-        await this.saveSettings();
-        await this.loadUserEntities();
-      }).catch((err) => {
-        notice.hide();
-        new Notice(`SRD import failed: ${err.message}`);
-        console.error("SRD import failed:", err);
-      });
-    } else {
-      this.loadUserEntities();
+      const n = new Notice("Importing SRD...", 0);
+      const count = await importSrdToVault(
+        this.app.vault, this.srdStore, this.settings.compendiumRoot,
+        (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
+      );
+      n.setMessage(`SRD import complete: ${count} entities`);
+      setTimeout(() => n.hide(), 3000);
+      this.settings.srdImported = true;
+      await this.saveSettings();
     }
-  }
 
-  private async loadUserEntities(): Promise<void> {
-    if (!this.entityRegistry) return;
-    const userRoot = `${this.settings.compendiumRoot}/${this.settings.userEntityFolder}`;
-    const files = this.app.vault.getMarkdownFiles()
-      .filter((f: { path: string }) => f.path.startsWith(userRoot));
-
-    for (const file of files) {
-      try {
-        const content = await this.app.vault.cachedRead(file);
-        const entity = parseEntityFrontmatter(content);
-        if (entity) {
-          this.entityRegistry.register({
-            ...entity,
-            source: "custom",
-            filePath: file.path,
-          });
-        }
-      } catch { /* skip unreadable files */ }
-    }
+    // Discover all compendiums and load entities
+    await this.compendiumManager.discover();
+    const count = await this.compendiumManager.loadAllEntities();
+    console.log(`Archivist: loaded ${count} entities from ${this.compendiumManager.getAll().length} compendiums`);
   }
 
 }
