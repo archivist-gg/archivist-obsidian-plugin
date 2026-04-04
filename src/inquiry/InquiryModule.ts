@@ -276,7 +276,7 @@ export class InquiryModule {
     // Set up factory for in-process MCP server (each tab needs its own instance)
     if (this.srdStore) {
       const srdStore = this.srdStore as SrdStore;
-      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(srdStore);
+      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(srdStore, (this.plugin as any).compendiumManager);
     }
 
     // Initialize plugin manager (reads from installed_plugins.json + settings.json)
