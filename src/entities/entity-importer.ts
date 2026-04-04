@@ -2,6 +2,7 @@ import type { Vault } from "obsidian";
 import type { SrdStore } from "../ai/srd/srd-store";
 import { generateEntityMarkdown, TYPE_FOLDER_MAP } from "./entity-vault-store";
 import { generateCompendiumMetadata } from "./compendium-manager";
+import { normalizeSrdMonster, normalizeSrdItem, normalizeSrdSpell } from "./srd-normalizer";
 
 // ---------------------------------------------------------------------------
 // Filename sanitization
@@ -99,12 +100,22 @@ export async function importSrdToVault(
       continue;
     }
 
+    // Normalize SRD data to match our parser's expected field names/shapes
+    let entityData = entity.data;
+    if (entity.entityType === "monster") {
+      entityData = normalizeSrdMonster(entityData);
+    } else if (entity.entityType === "spell") {
+      entityData = normalizeSrdSpell(entityData);
+    } else if (entity.entityType === "magic-item") {
+      entityData = normalizeSrdItem(entityData);
+    }
+
     const markdown = generateEntityMarkdown({
       slug: entity.slug,
       name: entity.name,
       entityType: entity.entityType,
       compendium: "SRD",
-      data: entity.data,
+      data: entityData,
     });
 
     await vault.create(filePath, markdown);
