@@ -497,6 +497,7 @@ export function renderMonsterEditMode(
       rebuildTabs();
       renderTabContent(state, refs, activeTabKey);
     });
+    tabBarEl.appendChild(addTabBtn);
   }
 
   rebuildTabs();
@@ -715,12 +716,12 @@ function showSectionDropdown(
   state: MonsterEditState,
   onAdd: () => void,
 ): void {
-  // Remove any existing dropdown
-  const existing = anchor.parentElement?.querySelector(".archivist-section-dropdown");
+  // Remove any existing dropdown — use tab-wrap (positioned ancestor) as container
+  const tabWrap = anchor.closest(".archivist-tab-wrap") ?? anchor.parentElement!;
+  const existing = tabWrap.querySelector(".archivist-section-dropdown");
   if (existing) { existing.remove(); return; }
 
-  const dropdown = anchor.parentElement!.createDiv({ cls: "archivist-section-dropdown" });
-  dropdown.style.position = "absolute";
+  const dropdown = (tabWrap as HTMLElement).createDiv({ cls: "archivist-section-dropdown" });
 
   for (const section of ALL_SECTIONS) {
     const sectionKey = SECTION_KEY_MAP[section];
@@ -890,6 +891,11 @@ function renderCustomSenseRow(
 ): HTMLElement {
   const row = document.createElement("div");
   row.className = "archivist-sense-custom";
+
+  // Filled circle indicator (matches standard sense toggle in "proficient" state)
+  const indicator = document.createElement("div");
+  indicator.className = "archivist-prof-toggle proficient";
+  row.appendChild(indicator);
 
   // Parse stored string like "Devil's Sight 60 ft." into name + range
   const raw = state.current.customSenses[index] ?? "";

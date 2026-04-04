@@ -552,13 +552,14 @@
   border-bottom-style: solid;
 }
 
-.archivist-sense-custom-x {
+/* Custom sense remove button — high specificity to beat Obsidian button reset */
+.archivist-monster-block.editing .archivist-sense-custom-x {
   width: 18px;
   height: 18px;
   border-radius: 3px;
   background-color: transparent !important;
   border: none !important;
-  color: #a39274;
+  color: var(--d5e-text-accent) !important;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -567,9 +568,9 @@
   flex-shrink: 0;
 }
 
-.archivist-sense-custom-x:hover {
-  background: var(--d5e-bar-fill);
-  color: white;
+.archivist-monster-block.editing .archivist-sense-custom-x:hover {
+  background: var(--d5e-bar-fill) !important;
+  color: white !important;
 }
 
 .archivist-sense-custom-x svg {
@@ -675,14 +676,16 @@
    10. Add Button (Full Width)
    ========================================================================== */
 
-/* Add button — high-specificity selector to beat Obsidian's global button reset
+/* Add button — uses .editing to beat Obsidian's global button reset
    which sets background-color: transparent at (0,2,1) specificity */
-.archivist-monster-block .archivist-add-btn {
-  display: block;
+.archivist-monster-block.editing .archivist-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   margin-top: 8px;
   padding: 7px 12px;
-  background-color: rgba(122, 32, 13, 0.08) !important;
+  background-color: rgba(253, 241, 220, 0.3) !important;
   border: 1px dashed var(--d5e-border-tan) !important;
   border-radius: 2px;
   color: var(--d5e-text-accent) !important;
@@ -693,8 +696,8 @@
   text-align: center;
 }
 
-.archivist-monster-block .archivist-add-btn:hover {
-  background-color: rgba(122, 32, 13, 0.14) !important;
+.archivist-monster-block.editing .archivist-add-btn:hover {
+  background-color: rgba(217, 196, 132, 0.3) !important;
   border-color: var(--d5e-bar-fill) !important;
 }
 
@@ -703,11 +706,12 @@
    ========================================================================== */
 
 .archivist-tab-wrap {
+  position: relative;
   display: flex;
   align-items: stretch;
   margin: 0.5em 0 0;
   border-bottom: 1px solid var(--d5e-text-accent);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .archivist-tabs {
@@ -746,6 +750,7 @@
   color: var(--d5e-bar-fill) !important;
   border-bottom-color: var(--d5e-bar-fill) !important;
   background-color: rgba(122, 32, 13, 0.18) !important;
+  margin-bottom: -1px;
 }
 
 .archivist-monster-block .archivist-tab:hover:not(.active) {
@@ -781,7 +786,7 @@
 
 .archivist-section-dropdown {
   position: absolute;
-  bottom: calc(100% + 4px);
+  top: calc(100% + 4px);
   right: 0;
   background: var(--d5e-parchment);
   border: 1px solid var(--d5e-border-tan);

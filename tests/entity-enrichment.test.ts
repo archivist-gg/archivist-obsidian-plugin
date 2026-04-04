@@ -52,6 +52,21 @@ describe("enrichMonster", () => {
     });
     expect(result.languages).toEqual(["Common", "Draconic"]);
   });
+
+  it("preserves entries with inline formula tags", () => {
+    const result = enrichMonster({
+      name: "Goblin",
+      cr: "1/4",
+      abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+      actions: [{
+        name: "Scimitar",
+        entries: ["Melee Weapon Attack: `atk:DEX` to hit, reach 5 ft., one target. Hit: `damage:1d6+DEX` slashing damage."],
+      }],
+    });
+    expect(result.actions).toBeDefined();
+    expect(result.actions[0].entries[0]).toContain("`atk:DEX`");
+    expect(result.actions[0].entries[0]).toContain("`damage:1d6+DEX`");
+  });
 });
 
 describe("enrichSpell", () => {

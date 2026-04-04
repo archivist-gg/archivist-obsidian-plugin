@@ -47,4 +47,52 @@ describe("monsterInputSchema", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("accepts entries with inline formula tags for attacks and damage", () => {
+    const result = monsterInputSchema.safeParse({
+      name: "Goblin", size: "Small", type: "Humanoid", alignment: "Neutral Evil",
+      cr: "1/4", abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+      ac: [{ ac: 15, from: ["leather armor", "shield"] }],
+      hp: { average: 7, formula: "2d6" }, speed: { walk: 30 },
+      actions: [{
+        name: "Scimitar",
+        entries: ["Melee Weapon Attack: `atk:DEX` to hit, reach 5 ft., one target. Hit: `damage:1d6+DEX` slashing damage."],
+      }, {
+        name: "Shortbow",
+        entries: ["Ranged Weapon Attack: `atk:DEX` to hit, range 80/320 ft., one target. Hit: `damage:1d6+DEX` piercing damage."],
+      }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts entries with save DC formula tags", () => {
+    const result = monsterInputSchema.safeParse({
+      name: "Fire Elemental", size: "Large", type: "Elemental", alignment: "Neutral",
+      cr: "5", abilities: { str: 10, dex: 17, con: 16, int: 6, wis: 10, cha: 7 },
+      ac: [{ ac: 13 }], hp: { average: 102, formula: "12d10+36" }, speed: { walk: 50 },
+      traits: [{
+        name: "Fire Form",
+        entries: ["A creature that touches the elemental or hits it with a melee attack while within 5 feet takes `damage:1d10` fire damage. A creature can also make a `dc:DEX` Dexterity saving throw."],
+      }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts entries mixing formula tags and static text", () => {
+    const result = monsterInputSchema.safeParse({
+      name: "Orc", size: "Medium", type: "Humanoid", alignment: "Chaotic Evil",
+      cr: "1/2", abilities: { str: 16, dex: 12, con: 16, int: 7, wis: 11, cha: 10 },
+      ac: [{ ac: 13, from: ["hide armor"] }], hp: { average: 15, formula: "2d8+6" },
+      speed: { walk: 30 },
+      actions: [{
+        name: "Greataxe",
+        entries: ["Melee Weapon Attack: `atk:STR` to hit, reach 5 ft., one target. Hit: `damage:1d12+STR` slashing damage."],
+      }],
+      reactions: [{
+        name: "Aggressive",
+        entries: ["As a bonus action, the orc can move up to its speed toward a hostile creature that it can see."],
+      }],
+    });
+    expect(result.success).toBe(true);
+  });
 });
