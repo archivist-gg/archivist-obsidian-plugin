@@ -252,9 +252,16 @@
   color: var(--d5e-bar-fill);
 }
 
-/* Ability score inputs — narrower than default */
+/* Ability score inputs — narrower than default, symmetric padding for centering */
 .abilities-table .archivist-num-in {
-  width: 48px;
+  width: 56px;
+  padding: 4px 16px !important;
+}
+
+/* Ability score table — center all column content in edit mode */
+.archivist-monster-block.editing .abilities-table th,
+.archivist-monster-block.editing .abilities-table td {
+  text-align: center !important;
 }
 
 /* Ability modifier display below input */
@@ -262,6 +269,7 @@
   font-size: 12px;
   color: #766649;
   text-align: center;
+  margin-top: 2px;
 }
 
 /* Senses add button — span full grid width */
@@ -558,6 +566,7 @@
   height: 18px;
   border-radius: 3px;
   background-color: transparent !important;
+  background-image: none !important;
   border: none !important;
   color: var(--d5e-text-accent) !important;
   cursor: pointer;
@@ -566,11 +575,13 @@
   justify-content: center;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 
 .archivist-monster-block.editing .archivist-sense-custom-x:hover {
-  background: var(--d5e-bar-fill) !important;
-  color: white !important;
+  background-color: rgba(146, 38, 16, 0.15) !important;
+  color: var(--d5e-bar-fill) !important;
 }
 
 .archivist-sense-custom-x svg {
@@ -621,8 +632,8 @@
 }
 
 .archivist-monster-block .archivist-feat-card-x:hover {
-  background-color: var(--d5e-bar-fill) !important;
-  color: white !important;
+  background-color: rgba(146, 38, 16, 0.15) !important;
+  color: var(--d5e-bar-fill) !important;
 }
 
 .archivist-monster-block .archivist-feat-card-x svg {
@@ -676,9 +687,11 @@
    10. Add Button (Full Width)
    ========================================================================== */
 
-/* Add button — uses .editing to beat Obsidian's global button reset
-   which sets background-color: transparent at (0,2,1) specificity */
-.archivist-monster-block.editing .archivist-add-btn {
+/* Add button — uses button.class to beat Obsidian's global button reset
+   which sets background-color: transparent. The type qualifier (button)
+   raises specificity to (0,3,1), beating both the plugin reset at (0,2,1)
+   and any Obsidian .markdown-rendered wrappers. */
+.archivist-monster-block.editing button.archivist-add-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -696,7 +709,7 @@
   text-align: center;
 }
 
-.archivist-monster-block.editing .archivist-add-btn:hover {
+.archivist-monster-block.editing button.archivist-add-btn:hover {
   background-color: rgba(217, 196, 132, 0.3) !important;
   border-color: var(--d5e-bar-fill) !important;
 }
@@ -784,8 +797,8 @@
 
 .archivist-tab-close:hover {
   opacity: 1 !important;
-  background: var(--d5e-bar-fill) !important;
-  color: white !important;
+  background-color: rgba(146, 38, 16, 0.15) !important;
+  color: var(--d5e-bar-fill) !important;
 }
 
 .archivist-tab-close svg {

@@ -364,14 +364,16 @@
   font-family: 'Noto Sans', sans-serif;
   border: none;
   background: transparent;
+  text-align: center;
 }
 
 .archivist-monster-block .abilities-table td {
   padding: 0.25em;
   font-size: 14px;
-  color: var(--stat-block-header);
+  color: var(--d5e-text-dark);
   border: none;
   background: transparent;
+  text-align: center;
 }
 
 .archivist-monster-block .abilities-table tr {
@@ -389,7 +391,7 @@
 }
 
 .archivist-monster-block .ability-score {
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .archivist-monster-block .ability-modifier {

@@ -47,6 +47,12 @@ const SECTION_LABELS: Record<string, string> = {
   lair_actions: "Lair Actions", mythic_actions: "Mythic Actions",
 };
 
+const SECTION_SINGULAR: Record<string, string> = {
+  traits: "Trait", actions: "Action", reactions: "Reaction",
+  legendary: "Legendary Action", bonus_actions: "Bonus Action",
+  lair_actions: "Lair Action", mythic_actions: "Mythic Action",
+};
+
 const SECTION_KEY_MAP: Record<string, SectionKey> = {
   "Traits": "traits", "Actions": "actions", "Reactions": "reactions",
   "Legendary Actions": "legendary", "Bonus Actions": "bonus_actions",
@@ -667,7 +673,8 @@ function renderTabContent(
   }
 
   // Add feature button
-  const addBtn = container.createEl("button", { cls: "archivist-add-btn", text: "+ Add Feature" });
+  const singular = SECTION_SINGULAR[activeKey] ?? "Feature";
+  const addBtn = container.createEl("button", { cls: "archivist-add-btn", text: `+ Add ${singular}` });
   addBtn.addEventListener("click", () => {
     state.addFeature(activeKey);
     renderTabContent(state, refs, activeKey);
