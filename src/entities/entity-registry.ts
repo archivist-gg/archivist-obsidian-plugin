@@ -6,9 +6,11 @@ export interface RegisteredEntity {
   slug: string;
   name: string;
   entityType: string;
-  source: "srd" | "custom";
   filePath: string; // vault-relative path
   data: Record<string, unknown>;
+  compendium: string; // e.g., "SRD", "Homebrew"
+  readonly: boolean; // from compendium metadata
+  homebrew: boolean; // from compendium metadata
 }
 
 // ---------------------------------------------------------------------------

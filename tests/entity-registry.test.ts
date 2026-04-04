@@ -13,9 +13,11 @@ function makeEntity(
     slug: "goblin",
     name: "Goblin",
     entityType: "monster",
-    source: "srd",
     filePath: "Compendium/SRD/Monsters/Goblin.md",
     data: { size: "Small", type: "Humanoid", cr: "1/4" },
+    compendium: "SRD",
+    readonly: true,
+    homebrew: false,
     ...overrides,
   };
 }
@@ -43,7 +45,9 @@ describe("EntityRegistry", () => {
       expect(result).toBeDefined();
       expect(result!.name).toBe("Goblin");
       expect(result!.entityType).toBe("monster");
-      expect(result!.source).toBe("srd");
+      expect(result!.compendium).toBe("SRD");
+      expect(result!.readonly).toBe(true);
+      expect(result!.homebrew).toBe(false);
       expect(result!.filePath).toBe("Compendium/SRD/Monsters/Goblin.md");
     });
 
@@ -57,7 +61,9 @@ describe("EntityRegistry", () => {
         makeEntity({
           slug: "goblin",
           name: "Goblin Chief",
-          source: "custom",
+          compendium: "Homebrew",
+          readonly: false,
+          homebrew: true,
           filePath: "Compendium/Custom/Monsters/Goblin Chief.md",
         }),
       );
@@ -65,7 +71,9 @@ describe("EntityRegistry", () => {
       const result = registry.getBySlug("goblin");
       expect(result).toBeDefined();
       expect(result!.name).toBe("Goblin Chief");
-      expect(result!.source).toBe("custom");
+      expect(result!.compendium).toBe("Homebrew");
+      expect(result!.readonly).toBe(false);
+      expect(result!.homebrew).toBe(true);
       expect(registry.count()).toBe(1);
     });
   });
