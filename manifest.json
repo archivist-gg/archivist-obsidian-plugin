@@ -3,7 +3,7 @@
   "name": "Archivist",
   "version": "0.1.0",
   "minAppVersion": "1.0.0",
-  "description": "Render D&D 5e monster stat blocks, spell blocks, magic item blocks, and inline DnD tags with classic parchment styling.",
+  "description": "D&D 5e/2024 toolkit with an AI agent that generates monsters, spells, items, encounters, and NPCs. Renders parchment stat blocks, inline dice tags, and includes a full SRD compendium.",
   "author": "Shinoobi",
   "isDesktopOnly": false
 }
