@@ -7,7 +7,7 @@ export interface EntityNote {
   slug: string;
   name: string;
   entityType: string;
-  source: "srd" | "custom";
+  compendium: string;
   data: Record<string, unknown>;
 }
 
@@ -70,9 +70,9 @@ export function ensureUniqueSlug(
 // generateEntityMarkdown
 // ---------------------------------------------------------------------------
 /**
- * Produces a complete Obsidian markdown note with YAML frontmatter
- * for an entity. The frontmatter carries the `archivist: true` flag
- * so we can identify our notes later.
+ * Produces a complete Obsidian markdown note with minimal YAML frontmatter
+ * (indexing fields only) and a fenced code block containing the entity YAML.
+ * Opening the note in Obsidian renders the stat block directly.
  */
 export function generateEntityMarkdown(entity: EntityNote): string {
   const frontmatter: Record<string, unknown> = {
@@ -80,30 +80,91 @@ export function generateEntityMarkdown(entity: EntityNote): string {
     entity_type: entity.entityType,
     slug: entity.slug,
     name: entity.name,
-    source: entity.source,
-    data: entity.data,
+    compendium: entity.compendium,
   };
+  const fm = yaml.dump(frontmatter, { lineWidth: -1, noRefs: true, sortKeys: false });
+  const codeBlockType = entity.entityType === "magic-item" ? "item" : entity.entityType;
+  const body = yaml.dump(entity.data, { lineWidth: -1, noRefs: true, sortKeys: false });
+  return `---\n${fm}---\n\n\`\`\`${codeBlockType}\n${body}\`\`\`\n`;
+}
 
-  const yamlStr = yaml.dump(frontmatter, {
-    lineWidth: -1,       // don't wrap long lines
-    noRefs: true,        // don't use YAML anchors
-    sortKeys: false,     // preserve insertion order
-  });
+// ---------------------------------------------------------------------------
+// parseEntityFile
+// ---------------------------------------------------------------------------
+/**
+ * Parses a new-format entity file: minimal frontmatter + fenced code block.
+ * Returns EntityNote or null if the content doesn't match the new format.
+ */
+export function parseEntityFile(content: string): EntityNote | null {
+  if (!content || !content.startsWith("---\n")) return null;
 
-  // Build a simple body summary from the data
-  const body = buildBodySummary(entity);
+  const endIndex = content.indexOf("\n---", 3);
+  if (endIndex === -1) return null;
 
-  return `---\n${yamlStr}---\n# ${entity.name}\n${body}`;
+  const yamlBlock = content.substring(4, endIndex);
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = yaml.load(yamlBlock) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+
+  if (!parsed || typeof parsed !== "object") return null;
+  if (parsed.archivist !== true) return null;
+
+  const slug = parsed.slug;
+  const name = parsed.name;
+  const entityType = parsed.entity_type;
+  const compendium = parsed.compendium;
+
+  if (
+    typeof slug !== "string" ||
+    typeof name !== "string" ||
+    typeof entityType !== "string" ||
+    typeof compendium !== "string"
+  ) {
+    return null;
+  }
+
+  // Extract fenced code block from body
+  const bodyStart = endIndex + 4; // skip "\n---"
+  const bodyContent = content.substring(bodyStart);
+  const codeBlockMatch = bodyContent.match(/```\w+\n([\s\S]*?)```/);
+  if (!codeBlockMatch) return null;
+
+  let data: Record<string, unknown>;
+  try {
+    data = yaml.load(codeBlockMatch[1]) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+
+  if (!data || typeof data !== "object") return null;
+
+  return {
+    slug,
+    name,
+    entityType,
+    compendium,
+    data,
+  };
 }
 
 // ---------------------------------------------------------------------------
 // parseEntityFrontmatter
 // ---------------------------------------------------------------------------
 /**
- * Parses an Obsidian note and returns an EntityNote if it has
- * `archivist: true` frontmatter. Returns null otherwise.
+ * Parses an Obsidian note and returns an EntityNote. Tries the new format
+ * (fenced code block) first, then falls back to the old format (data in
+ * frontmatter) for backward compatibility.
  */
 export function parseEntityFrontmatter(content: string): EntityNote | null {
+  // Try new format first
+  const newResult = parseEntityFile(content);
+  if (newResult) return newResult;
+
+  // Fall back to old format (data blob in frontmatter)
   if (!content || !content.startsWith("---\n")) return null;
 
   const endIndex = content.indexOf("\n---", 3);
@@ -136,62 +197,14 @@ export function parseEntityFrontmatter(content: string): EntityNote | null {
     return null;
   }
 
+  // Map old source values to compendium
+  const compendium = source === "srd" ? "SRD" : "Homebrew";
+
   return {
     slug,
     name,
     entityType,
-    source,
+    compendium,
     data: (data && typeof data === "object" ? data : {}) as Record<string, unknown>,
   };
-}
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Builds a short descriptive body for the note below the heading.
- * This is best-effort -- different entity types have different fields.
- */
-function buildBodySummary(entity: EntityNote): string {
-  const d = entity.data;
-  const parts: string[] = [];
-
-  switch (entity.entityType) {
-    case "monster": {
-      const descriptors = [d.size, d.type, d.alignment].filter(Boolean).join(", ");
-      if (descriptors) parts.push(`*${descriptors}*`);
-      const statLine = [
-        d.ac != null ? `AC ${d.ac}` : null,
-        d.hp != null ? `HP ${d.hp}` : null,
-        d.cr != null ? `CR ${d.cr}` : null,
-      ].filter(Boolean).join(" | ");
-      if (statLine) parts.push(statLine);
-      break;
-    }
-    case "spell": {
-      const meta = [
-        d.level != null ? `Level ${d.level}` : "Cantrip",
-        d.school,
-      ].filter(Boolean).join(", ");
-      if (meta) parts.push(`*${meta}*`);
-      break;
-    }
-    default: {
-      // Generic: list key-value pairs
-      const entries = Object.entries(d).filter(
-        ([k]) => k !== "slug" && k !== "name",
-      );
-      if (entries.length > 0) {
-        const line = entries
-          .slice(0, 4)
-          .map(([k, v]) => `**${k}:** ${v}`)
-          .join(" | ");
-        parts.push(line);
-      }
-      break;
-    }
-  }
-
-  return parts.length > 0 ? `\n${parts.join("\n\n")}\n` : "";
 }

@@ -4,6 +4,7 @@ import {
   ensureUniqueSlug,
   generateEntityMarkdown,
   parseEntityFrontmatter,
+  parseEntityFile,
   TYPE_FOLDER_MAP,
 } from "../src/entities/entity-vault-store";
 import type { EntityNote } from "../src/entities/entity-vault-store";
@@ -71,15 +72,16 @@ describe("ensureUniqueSlug", () => {
 });
 
 // ---------------------------------------------------------------------------
-// generateEntityMarkdown
+// generateEntityMarkdown (new format)
 // ---------------------------------------------------------------------------
 describe("generateEntityMarkdown", () => {
   const entity: EntityNote = {
     slug: "ancient-red-dragon",
     name: "Ancient Red Dragon",
     entityType: "monster",
-    source: "srd",
+    compendium: "SRD",
     data: {
+      name: "Ancient Red Dragon",
       size: "Gargantuan",
       type: "dragon",
       alignment: "chaotic evil",
@@ -109,36 +111,223 @@ describe("generateEntityMarkdown", () => {
     expect(md).toContain("name: Ancient Red Dragon");
   });
 
-  it("includes source in frontmatter", () => {
+  it("includes compendium in frontmatter", () => {
     const md = generateEntityMarkdown(entity);
-    expect(md).toContain("source: srd");
+    expect(md).toContain("compendium: SRD");
   });
 
-  it("includes data in frontmatter", () => {
+  it("does NOT include data: key in frontmatter", () => {
     const md = generateEntityMarkdown(entity);
-    expect(md).toContain("data:");
-    expect(md).toContain("size: Gargantuan");
+    // Split on the closing --- to get just the frontmatter
+    const fmSection = md.split("---")[1];
+    expect(fmSection).not.toContain("data:");
+  });
+
+  it("does NOT include source: in frontmatter", () => {
+    const md = generateEntityMarkdown(entity);
+    const fmSection = md.split("---")[1];
+    expect(fmSection).not.toContain("source:");
   });
 
   it("starts with --- and has closing ---", () => {
     const md = generateEntityMarkdown(entity);
     expect(md.startsWith("---\n")).toBe(true);
-    // Should have exactly two --- markers (open and close)
     const markers = md.split("\n").filter((line) => line.trim() === "---");
     expect(markers.length).toBe(2);
   });
 
-  it("includes a heading with entity name after frontmatter", () => {
+  it("contains a fenced code block with entity type", () => {
     const md = generateEntityMarkdown(entity);
-    expect(md).toContain("# Ancient Red Dragon");
+    expect(md).toContain("```monster\n");
+    expect(md).toContain("```\n");
+  });
+
+  it("contains entity YAML data inside the code block", () => {
+    const md = generateEntityMarkdown(entity);
+    // The code block should contain the entity data fields
+    expect(md).toContain("size: Gargantuan");
+    expect(md).toContain("type: dragon");
+    expect(md).toContain("ac: 22");
+  });
+
+  it("uses 'item' code block type for magic-item entities", () => {
+    const itemEntity: EntityNote = {
+      slug: "bag-of-holding",
+      name: "Bag of Holding",
+      entityType: "magic-item",
+      compendium: "SRD",
+      data: { name: "Bag of Holding", rarity: "uncommon" },
+    };
+    const md = generateEntityMarkdown(itemEntity);
+    expect(md).toContain("```item\n");
+    expect(md).not.toContain("```magic-item");
+  });
+
+  it("does NOT include a heading with entity name (no body summary)", () => {
+    const md = generateEntityMarkdown(entity);
+    expect(md).not.toContain("# Ancient Red Dragon");
   });
 });
 
 // ---------------------------------------------------------------------------
-// parseEntityFrontmatter
+// parseEntityFile (new format)
+// ---------------------------------------------------------------------------
+describe("parseEntityFile", () => {
+  it("parses new format with fenced code block", () => {
+    const content = `---
+archivist: true
+entity_type: monster
+slug: goblin
+name: Goblin
+compendium: SRD
+---
+
+\`\`\`monster
+name: Goblin
+size: Small
+type: humanoid
+\`\`\`
+`;
+    const result = parseEntityFile(content);
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("goblin");
+    expect(result!.name).toBe("Goblin");
+    expect(result!.entityType).toBe("monster");
+    expect(result!.compendium).toBe("SRD");
+    expect(result!.data).toEqual({ name: "Goblin", size: "Small", type: "humanoid" });
+  });
+
+  it("returns null for non-archivist notes", () => {
+    const content = `---
+title: My Note
+---
+# My Note
+Some content.
+`;
+    expect(parseEntityFile(content)).toBeNull();
+  });
+
+  it("returns null for notes without a code block", () => {
+    const content = `---
+archivist: true
+entity_type: monster
+slug: goblin
+name: Goblin
+compendium: SRD
+---
+
+Just some text, no code block.
+`;
+    expect(parseEntityFile(content)).toBeNull();
+  });
+
+  it("returns null for empty content", () => {
+    expect(parseEntityFile("")).toBeNull();
+  });
+
+  it("returns null if frontmatter is missing required fields", () => {
+    const content = `---
+archivist: true
+entity_type: monster
+---
+
+\`\`\`monster
+name: Goblin
+\`\`\`
+`;
+    expect(parseEntityFile(content)).toBeNull();
+  });
+
+  it("parses spell entity", () => {
+    const content = `---
+archivist: true
+entity_type: spell
+slug: fireball
+name: Fireball
+compendium: SRD
+---
+
+\`\`\`spell
+name: Fireball
+level: 3
+school: evocation
+\`\`\`
+`;
+    const result = parseEntityFile(content);
+    expect(result).not.toBeNull();
+    expect(result!.entityType).toBe("spell");
+    expect(result!.data).toEqual({ name: "Fireball", level: 3, school: "evocation" });
+  });
+
+  it("parses magic-item entity (item code block)", () => {
+    const content = `---
+archivist: true
+entity_type: magic-item
+slug: bag-of-holding
+name: Bag of Holding
+compendium: SRD
+---
+
+\`\`\`item
+name: Bag of Holding
+rarity: uncommon
+\`\`\`
+`;
+    const result = parseEntityFile(content);
+    expect(result).not.toBeNull();
+    expect(result!.entityType).toBe("magic-item");
+    expect(result!.compendium).toBe("SRD");
+    expect(result!.data).toEqual({ name: "Bag of Holding", rarity: "uncommon" });
+  });
+
+  it("roundtrips through generate and parseEntityFile", () => {
+    const original: EntityNote = {
+      slug: "fireball",
+      name: "Fireball",
+      entityType: "spell",
+      compendium: "SRD",
+      data: { name: "Fireball", level: 3, school: "evocation" },
+    };
+    const md = generateEntityMarkdown(original);
+    const parsed = parseEntityFile(md);
+    expect(parsed).not.toBeNull();
+    expect(parsed!.slug).toBe(original.slug);
+    expect(parsed!.name).toBe(original.name);
+    expect(parsed!.entityType).toBe(original.entityType);
+    expect(parsed!.compendium).toBe(original.compendium);
+    expect(parsed!.data).toEqual(original.data);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseEntityFrontmatter (backward compat)
 // ---------------------------------------------------------------------------
 describe("parseEntityFrontmatter", () => {
-  it("parses valid archivist frontmatter", () => {
+  it("parses new format via parseEntityFrontmatter", () => {
+    const content = `---
+archivist: true
+entity_type: monster
+slug: goblin
+name: Goblin
+compendium: SRD
+---
+
+\`\`\`monster
+name: Goblin
+size: Small
+type: humanoid
+\`\`\`
+`;
+    const result = parseEntityFrontmatter(content);
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("goblin");
+    expect(result!.name).toBe("Goblin");
+    expect(result!.entityType).toBe("monster");
+    expect(result!.compendium).toBe("SRD");
+    expect(result!.data).toEqual({ name: "Goblin", size: "Small", type: "humanoid" });
+  });
+
+  it("parses old format with source: srd -> compendium: SRD", () => {
     const content = `---
 archivist: true
 entity_type: monster
@@ -156,8 +345,25 @@ data:
     expect(result!.slug).toBe("goblin");
     expect(result!.name).toBe("Goblin");
     expect(result!.entityType).toBe("monster");
-    expect(result!.source).toBe("srd");
+    expect(result!.compendium).toBe("SRD");
     expect(result!.data).toEqual({ size: "Small", type: "humanoid" });
+  });
+
+  it("parses old format with source: custom -> compendium: Homebrew", () => {
+    const content = `---
+archivist: true
+entity_type: monster
+slug: goblin-custom
+name: Goblin Chief
+source: custom
+data:
+  size: Medium
+---
+# Goblin Chief
+`;
+    const result = parseEntityFrontmatter(content);
+    expect(result).not.toBeNull();
+    expect(result!.compendium).toBe("Homebrew");
   });
 
   it("returns null for non-archivist notes", () => {
@@ -202,30 +408,13 @@ entity_type
     expect(parseEntityFrontmatter(content)).toBeNull();
   });
 
-  it("handles custom source", () => {
-    const content = `---
-archivist: true
-entity_type: monster
-slug: goblin-custom
-name: Goblin Chief
-source: custom
-data:
-  size: Medium
----
-# Goblin Chief
-`;
-    const result = parseEntityFrontmatter(content);
-    expect(result).not.toBeNull();
-    expect(result!.source).toBe("custom");
-  });
-
   it("roundtrips through generate and parse", () => {
     const original: EntityNote = {
       slug: "fireball",
       name: "Fireball",
       entityType: "spell",
-      source: "srd",
-      data: { level: 3, school: "evocation" },
+      compendium: "SRD",
+      data: { name: "Fireball", level: 3, school: "evocation" },
     };
     const md = generateEntityMarkdown(original);
     const parsed = parseEntityFrontmatter(md);
@@ -233,7 +422,7 @@ data:
     expect(parsed!.slug).toBe(original.slug);
     expect(parsed!.name).toBe(original.name);
     expect(parsed!.entityType).toBe(original.entityType);
-    expect(parsed!.source).toBe(original.source);
+    expect(parsed!.compendium).toBe(original.compendium);
     expect(parsed!.data).toEqual(original.data);
   });
 });
