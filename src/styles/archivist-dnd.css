@@ -312,10 +312,11 @@
 .archivist-monster-block .property-line h4 {
   margin: 0;
   color: var(--stat-block-header);
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: bold;
   font-style: normal;
-  font-variant: small-caps;
+  font-variant: normal;
   display: inline;
   margin-right: 0.25em;
   border: none;
@@ -326,8 +327,12 @@
 .archivist-monster-block .property-line p {
   margin: 0;
   display: inline;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
   font-size: 13px;
+  color: var(--stat-block-text);
 }
 
 .archivist-monster-block .property-line h4:after {
@@ -429,18 +434,19 @@
   color: #555;
 }
 
-/* Actions Header */
+/* Actions Header — PHB-style section divider (serif, small-caps, crimson) */
 .archivist-monster-block .actions-header {
-  font-size: 23px;
-  font-variant: small-caps;
-  font-weight: normal;
-  letter-spacing: 1px;
-  color: #7a200d;
-  margin: 0.45em 0 0.1em;
   font-family:
     'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond,
     'Hoefler Text', 'Bitstream Charter', Georgia, serif;
-  border-bottom: 1px solid #7a200d;
+  font-size: 23px;
+  font-weight: normal;
+  font-style: normal;
+  font-variant: small-caps;
+  letter-spacing: 1px;
+  color: var(--stat-block-header);
+  margin: 0.45em 0 0.1em;
+  border-bottom: 1px solid var(--stat-block-header);
   padding-bottom: 0.15em;
   display: block;
 }
@@ -985,9 +991,11 @@
 }
 
 .archivist-feature-name {
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-weight: bold;
   font-style: italic;
-  color: var(--stat-block-header);
+  font-variant: normal;
+  color: var(--stat-block-text);
   font-size: 13px;
   display: inline;
   margin-right: 0.25em;
@@ -995,8 +1003,12 @@
 
 .archivist-feature-entry {
   display: inline;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
   font-size: 13px;
+  color: var(--stat-block-text);
 }
 
 /* 8. Tab Navigation (from monster stat block)
