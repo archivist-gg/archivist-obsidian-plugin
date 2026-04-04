@@ -1,5 +1,287 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSrdItem, normalizeSrdSpell } from "../src/entities/srd-normalizer";
+import { normalizeSrdMonster, normalizeSrdItem, normalizeSrdSpell } from "../src/entities/srd-normalizer";
+
+// ---------------------------------------------------------------------------
+// Sample SRD monster data (Adult Red Dragon, trimmed to relevant fields)
+// ---------------------------------------------------------------------------
+
+const ADULT_RED_DRAGON_SRD: Record<string, unknown> = {
+  slug: "adult-red-dragon",
+  desc: "A fearsome dragon.",
+  name: "Adult Red Dragon",
+  size: "Huge",
+  type: "Dragon",
+  subtype: "",
+  group: "Red Dragon",
+  alignment: "chaotic evil",
+  armor_class: 19,
+  armor_desc: "natural armor",
+  hit_points: 256,
+  hit_dice: "19d12+133",
+  speed: { walk: 40, fly: 80, climb: 40 },
+  strength: 27,
+  dexterity: 10,
+  constitution: 25,
+  intelligence: 16,
+  wisdom: 13,
+  charisma: 21,
+  strength_save: null,
+  dexterity_save: 6,
+  constitution_save: 13,
+  intelligence_save: null,
+  wisdom_save: 7,
+  charisma_save: 11,
+  perception: 13,
+  skills: { perception: 13, stealth: 6 },
+  damage_vulnerabilities: "",
+  damage_resistances: "",
+  damage_immunities: "fire",
+  condition_immunities: "",
+  senses: "blindsight 60 ft., darkvision 120 ft., passive Perception 23",
+  languages: "Common, Draconic",
+  challenge_rating: "17",
+  special_abilities: [
+    {
+      name: "Legendary Resistance (3/Day)",
+      desc: "If the dragon fails a saving throw, it can choose to succeed instead.",
+    },
+  ],
+  actions: [
+    {
+      name: "Multiattack",
+      desc: "The dragon can use its Frightful Presence. It then makes three attacks: one with its bite and two with its claws.",
+      attack_bonus: 0,
+      damage_dice: "",
+      damage_bonus: 0,
+    },
+    {
+      name: "Bite",
+      desc: "Melee Weapon Attack: +14 to hit, reach 10 ft., one target. Hit: 19 (2d10 + 8) piercing damage plus 7 (2d6) fire damage.",
+      attack_bonus: 14,
+      damage_dice: "2d10",
+      damage_bonus: 8,
+    },
+  ],
+  legendary_desc: "The dragon can take 3 legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The dragon regains spent legendary actions at the start of its turn.",
+  legendary_actions: [
+    {
+      name: "Detect",
+      desc: "The dragon makes a Wisdom (Perception) check.",
+    },
+    {
+      name: "Tail Attack",
+      desc: "The dragon makes a tail attack.",
+    },
+  ],
+  reactions: null,
+  bonus_actions: null,
+  page_no: 123,
+  environments: ["Mountain", "Hill"],
+  img_main: null,
+  document__slug: "wotc-srd",
+  document__title: "Systems Reference Document",
+  document__license_url: "http://example.com",
+  document__url: "http://example.com",
+  v2_converted_path: "/v2/monsters/adult-red-dragon",
+  spell_list: [],
+};
+
+// ---------------------------------------------------------------------------
+// normalizeSrdMonster
+// ---------------------------------------------------------------------------
+
+describe("normalizeSrdMonster", () => {
+  const result = normalizeSrdMonster(ADULT_RED_DRAGON_SRD);
+
+  it("keeps name, size, type, alignment", () => {
+    expect(result.name).toBe("Adult Red Dragon");
+    expect(result.size).toBe("Huge");
+    expect(result.type).toBe("Dragon");
+    expect(result.alignment).toBe("chaotic evil");
+  });
+
+  it("drops empty subtype", () => {
+    expect(result.subtype).toBeUndefined();
+  });
+
+  it("maps armor_class + armor_desc to ac array", () => {
+    expect(result.ac).toEqual([{ ac: 19, from: ["natural armor"] }]);
+  });
+
+  it("maps hit_points + hit_dice to hp object", () => {
+    expect(result.hp).toEqual({ average: 256, formula: "19d12+133" });
+  });
+
+  it("passes through speed object", () => {
+    expect(result.speed).toEqual({ walk: 40, fly: 80, climb: 40 });
+  });
+
+  it("maps full ability names to abbreviations", () => {
+    expect(result.abilities).toEqual({
+      str: 27, dex: 10, con: 25, int: 16, wis: 13, cha: 21,
+    });
+  });
+
+  it("maps *_save fields, dropping nulls", () => {
+    expect(result.saves).toEqual({ dex: 6, con: 13, wis: 7, cha: 11 });
+  });
+
+  it("passes through skills object", () => {
+    expect(result.skills).toEqual({ perception: 13, stealth: 6 });
+  });
+
+  it("splits senses string into array and extracts passive perception", () => {
+    expect(result.senses).toEqual(["blindsight 60 ft.", "darkvision 120 ft."]);
+    expect(result.passive_perception).toBe(23);
+  });
+
+  it("splits languages string into array", () => {
+    expect(result.languages).toEqual(["Common", "Draconic"]);
+  });
+
+  it("maps challenge_rating to cr", () => {
+    expect(result.cr).toBe("17");
+  });
+
+  it("converts damage_immunities string to array", () => {
+    expect(result.damage_immunities).toEqual(["fire"]);
+  });
+
+  it("drops empty damage/condition strings", () => {
+    expect(result.damage_vulnerabilities).toBeUndefined();
+    expect(result.damage_resistances).toBeUndefined();
+    expect(result.condition_immunities).toBeUndefined();
+  });
+
+  it("maps special_abilities to traits with entries array", () => {
+    expect(result.traits).toEqual([
+      {
+        name: "Legendary Resistance (3/Day)",
+        entries: ["If the dragon fails a saving throw, it can choose to succeed instead."],
+      },
+    ]);
+  });
+
+  it("maps actions with entries array", () => {
+    expect(result.actions).toHaveLength(2);
+    const actions = result.actions as { name: string; entries: string[] }[];
+    expect(actions[0].name).toBe("Multiattack");
+    expect(actions[0].entries).toHaveLength(1);
+    expect(actions[1].name).toBe("Bite");
+    expect(actions[1].entries[0]).toContain("+14 to hit");
+  });
+
+  it("maps legendary_actions to legendary with entries array", () => {
+    expect(result.legendary).toEqual([
+      { name: "Detect", entries: ["The dragon makes a Wisdom (Perception) check."] },
+      { name: "Tail Attack", entries: ["The dragon makes a tail attack."] },
+    ]);
+  });
+
+  it("extracts legendary_actions count from legendary_desc", () => {
+    expect(result.legendary_actions).toBe(3);
+  });
+
+  it("handles null reactions and bonus_actions", () => {
+    expect(result.reactions).toBeUndefined();
+    expect(result.bonus_actions).toBeUndefined();
+  });
+
+  it("drops metadata fields", () => {
+    expect(result.slug).toBeUndefined();
+    expect(result.desc).toBeUndefined();
+    expect(result.group).toBeUndefined();
+    expect(result.page_no).toBeUndefined();
+    expect(result.environments).toBeUndefined();
+    expect(result.document__slug).toBeUndefined();
+    expect(result.v2_converted_path).toBeUndefined();
+    expect(result.spell_list).toBeUndefined();
+  });
+});
+
+describe("normalizeSrdMonster edge cases", () => {
+  it("handles minimal monster with just a name", () => {
+    const result = normalizeSrdMonster({ name: "Unknown Beast" });
+    expect(result.name).toBe("Unknown Beast");
+    expect(result.ac).toBeUndefined();
+    expect(result.hp).toBeUndefined();
+    expect(result.abilities).toBeUndefined();
+  });
+
+  it("handles AC without armor_desc", () => {
+    const result = normalizeSrdMonster({ name: "Test", armor_class: 12, armor_desc: null });
+    expect(result.ac).toEqual([{ ac: 12 }]);
+  });
+
+  it("handles empty armor_desc string", () => {
+    const result = normalizeSrdMonster({ name: "Test", armor_class: 10, armor_desc: "" });
+    expect(result.ac).toEqual([{ ac: 10 }]);
+  });
+
+  it("handles senses without passive perception", () => {
+    const result = normalizeSrdMonster({ name: "Test", senses: "blindsight 30 ft. (blind beyond this radius)" });
+    expect(result.senses).toEqual(["blindsight 30 ft. (blind beyond this radius)"]);
+    expect(result.passive_perception).toBeUndefined();
+  });
+
+  it("handles senses that is only passive perception", () => {
+    const result = normalizeSrdMonster({ name: "Test", senses: "passive Perception 10" });
+    expect(result.senses).toBeUndefined();
+    expect(result.passive_perception).toBe(10);
+  });
+
+  it("handles cr field directly", () => {
+    const result = normalizeSrdMonster({ name: "Test", cr: 5 });
+    expect(result.cr).toBe("5");
+  });
+
+  it("prefers challenge_rating over cr", () => {
+    const result = normalizeSrdMonster({ name: "Test", challenge_rating: "1/2", cr: 99 });
+    expect(result.cr).toBe("1/2");
+  });
+
+  it("handles multiple damage types in comma-separated string", () => {
+    const result = normalizeSrdMonster({ name: "Test", damage_resistances: "cold, fire, lightning" });
+    expect(result.damage_resistances).toEqual(["cold", "fire", "lightning"]);
+  });
+
+  it("handles damage fields that are already arrays", () => {
+    const result = normalizeSrdMonster({ name: "Test", damage_immunities: ["fire", "cold"] });
+    expect(result.damage_immunities).toEqual(["fire", "cold"]);
+  });
+
+  it("handles empty senses and languages strings", () => {
+    const result = normalizeSrdMonster({ name: "Test", senses: "", languages: "" });
+    expect(result.senses).toBeUndefined();
+    expect(result.languages).toBeUndefined();
+  });
+
+  it("normalized output round-trips through monster parser", async () => {
+    const { parseMonster } = await import("../src/parsers/monster-parser");
+    const yaml = await import("js-yaml");
+    const normalized = normalizeSrdMonster(ADULT_RED_DRAGON_SRD);
+    const yamlStr = yaml.dump(normalized, { lineWidth: -1, noRefs: true });
+    const parsed = parseMonster(yamlStr);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.name).toBe("Adult Red Dragon");
+      expect(parsed.data.ac?.[0].ac).toBe(19);
+      expect(parsed.data.ac?.[0].from).toEqual(["natural armor"]);
+      expect(parsed.data.hp?.average).toBe(256);
+      expect(parsed.data.hp?.formula).toBe("19d12+133");
+      expect(parsed.data.abilities?.str).toBe(27);
+      expect(parsed.data.saves?.dex).toBe(6);
+      expect(parsed.data.cr).toBe("17");
+      expect(parsed.data.traits).toHaveLength(1);
+      expect(parsed.data.actions).toHaveLength(2);
+      expect(parsed.data.legendary).toHaveLength(2);
+      expect(parsed.data.legendary_actions).toBe(3);
+      expect(parsed.data.senses).toEqual(["blindsight 60 ft.", "darkvision 120 ft."]);
+      expect(parsed.data.passive_perception).toBe(23);
+      expect(parsed.data.damage_immunities).toEqual(["fire"]);
+    }
+  });
+});
 
 // ---------------------------------------------------------------------------
 // normalizeSrdItem
