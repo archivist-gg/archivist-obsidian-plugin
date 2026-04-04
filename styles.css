@@ -7913,6 +7913,7 @@ body.theme-light .archivist-tag-atk:hover {
   background-color: transparent !important;
   border: none !important;
   border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
   color: var(--d5e-text-accent) !important;
   font-size: 11px;
   font-weight: 600;
@@ -7935,6 +7936,53 @@ body.theme-light .archivist-tag-atk:hover {
 
 .archivist-monster-block .archivist-tab:hover:not(.active) {
   background-color: rgba(122, 32, 13, 0.07) !important;
+}
+
+/* Tab close button — visible on hover or on active tab */
+.archivist-tab-close {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--d5e-text-accent) !important;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 0 !important;
+  opacity: 0;
+}
+
+.archivist-tab:hover .archivist-tab-close,
+.archivist-tab.active .archivist-tab-close {
+  opacity: 0.6;
+}
+
+.archivist-tab-close:hover {
+  opacity: 1 !important;
+  background: var(--d5e-bar-fill) !important;
+  color: white !important;
+}
+
+.archivist-tab-close svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Tab with close button — flex layout for label + x */
+.archivist-tab-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.archivist-tab-inner > * {
+  pointer-events: auto;
 }
 
 /* Add section tab (+) — prominent, larger */
@@ -7967,7 +8015,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-section-dropdown {
   position: absolute;
   top: calc(100% + 4px);
-  right: 0;
+  left: 0;
   background: var(--d5e-parchment);
   border: 1px solid var(--d5e-border-tan);
   border-radius: 4px;
@@ -7982,28 +8030,32 @@ body.theme-light .archivist-tag-atk:hover {
   display: block;
   width: 100%;
   padding: 6px 10px;
-  background: transparent;
-  border: none;
+  background: transparent !important;
+  border: none !important;
   text-align: left;
   font-size: 13px;
-  color: var(--d5e-text-accent);
+  color: var(--d5e-text-accent) !important;
+  font-weight: 400;
   cursor: pointer;
-  border-radius: 2px;
+  border-radius: 2px !important;
   font-family: inherit;
+  box-shadow: none !important;
 }
 
-.archivist-section-dropdown-item:hover {
-  background: rgba(122, 32, 13, 0.08);
+.archivist-section-dropdown .archivist-section-dropdown-item:hover {
+  background-color: rgba(217, 196, 132, 0.35) !important;
 }
 
 .archivist-section-dropdown-item.disabled {
-  color: #a39274;
+  color: #b5a889 !important;
+  font-weight: 400;
   cursor: default;
   text-decoration: line-through;
+  opacity: 0.7;
 }
 
-.archivist-section-dropdown-item.disabled:hover {
-  background: transparent;
+.archivist-section-dropdown .archivist-section-dropdown-item.disabled:hover {
+  background-color: transparent !important;
 }
 
 /* ==========================================================================

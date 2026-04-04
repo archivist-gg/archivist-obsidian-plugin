@@ -621,16 +621,25 @@ function renderTabs(
     const label = SECTION_LABELS[sectionKey] ?? sectionKey;
     const tabBtn = tabBar.createEl("button", {
       cls: `archivist-tab${sectionKey === activeKey ? " active" : ""}`,
-      text: label,
     });
-    tabBtn.addEventListener("click", () => onTabClick(sectionKey));
 
-    // Right-click to remove section
-    tabBtn.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      state.removeSection(sectionKey);
-      onTabClick(state.current.activeSections[0] ?? "");
+    // Inner wrapper for label + close button
+    const inner = tabBtn.createSpan({ cls: "archivist-tab-inner" });
+    inner.createSpan({ text: label });
+
+    // Close button (x)
+    const closeBtn = inner.createEl("span", { cls: "archivist-tab-close" });
+    setIcon(closeBtn, "x");
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (confirm(`Remove "${label}" section?`)) {
+        state.removeSection(sectionKey);
+        const remaining = state.current.activeSections;
+        onTabClick(remaining.length > 0 ? remaining[0] : "");
+      }
     });
+
+    tabBtn.addEventListener("click", () => onTabClick(sectionKey));
   }
 }
 
@@ -716,12 +725,16 @@ function showSectionDropdown(
   state: MonsterEditState,
   onAdd: () => void,
 ): void {
-  // Remove any existing dropdown — use tab-wrap (positioned ancestor) as container
+  // Remove any existing dropdown — use tab-wrap (overflow: visible) as container
   const tabWrap = anchor.closest(".archivist-tab-wrap") ?? anchor.parentElement!;
   const existing = tabWrap.querySelector(".archivist-section-dropdown");
   if (existing) { existing.remove(); return; }
 
   const dropdown = (tabWrap as HTMLElement).createDiv({ cls: "archivist-section-dropdown" });
+  // Position below the "+" button by measuring its offset within tab-wrap
+  const anchorRect = anchor.getBoundingClientRect();
+  const wrapRect = (tabWrap as HTMLElement).getBoundingClientRect();
+  dropdown.style.left = `${anchorRect.left - wrapRect.left}px`;
 
   for (const section of ALL_SECTIONS) {
     const sectionKey = SECTION_KEY_MAP[section];
@@ -1014,7 +1027,11 @@ function getFeatures(m: EditableMonster, key: string): MonsterFeature[] | undefi
     reactions: m.reactions,
     legendary: m.legendary,
   };
-  return featureMap[key] ?? (m as Record<string, unknown>)[key] as MonsterFeature[] | undefined;
+  const result = featureMap[key] ?? (m as Record<string, unknown>)[key] as MonsterFeature[] | undefined;
+  // If the section is active but has no features array yet, return empty array
+  // so the add button still renders
+  if (!result && m.activeSections?.includes(key)) return [];
+  return result;
 }
 
 // ===========================================================================
