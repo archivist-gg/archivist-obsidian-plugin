@@ -508,8 +508,11 @@ export default class ArchivistPlugin extends Plugin {
 
     // Settings tab is registered by InquiryModule (unified D&D + Inquiry settings)
 
-    // Initialize compendiums and SRD import (async, non-blocking)
-    this.initializeCompendiums();
+    // Initialize compendiums after vault index is ready (avoids race conditions
+    // where getAbstractFileByPath returns null for folders that exist on disk)
+    this.app.workspace.onLayoutReady(() => {
+      this.initializeCompendiums();
+    });
   }
 
   async onunload() {
