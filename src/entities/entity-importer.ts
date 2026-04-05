@@ -145,7 +145,11 @@ export async function importSrdToVault(
 async function ensureFolderExists(vault: Vault, path: string): Promise<void> {
   const existing = vault.getAbstractFileByPath(path);
   if (!existing) {
-    await vault.createFolder(path);
+    try {
+      await vault.createFolder(path);
+    } catch {
+      // Folder may already exist on disk but not yet indexed by the vault
+    }
   }
 }
 
