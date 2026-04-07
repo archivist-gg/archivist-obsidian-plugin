@@ -576,14 +576,35 @@ export function renderMonsterEditMode(
   // =========================================================================
 
   const tabWrap = block.createDiv({ cls: "archivist-tab-wrap" });
+
+  // Scroll arrows
+  const scrollLeft = tabWrap.createEl("button", { cls: "archivist-tab-scroll archivist-tab-scroll-left" });
+  setIcon(scrollLeft, "chevron-left");
+
   const tabBarEl = tabWrap.createDiv({ cls: "archivist-tabs" });
   refs.tabBar = tabBarEl;
 
+  const scrollRight = tabWrap.createEl("button", { cls: "archivist-tab-scroll archivist-tab-scroll-right" });
+  setIcon(scrollRight, "chevron-right");
+
   // Add tab button
-  const addTabBtn = tabBarEl.createEl("button", { cls: "archivist-tab add-tab", text: "+" });
+  const addTabBtn = tabWrap.createEl("button", { cls: "archivist-tab add-tab", text: "+" });
 
   const tabContentEl = block.createDiv({ cls: "archivist-tab-content" });
   refs.tabContent = tabContentEl;
+
+  // Scroll arrow visibility logic
+  function updateScrollArrows() {
+    const el = tabBarEl;
+    const canScrollLeft = el.scrollLeft > 0;
+    const canScrollRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+    scrollLeft.toggleClass("visible", canScrollLeft);
+    scrollRight.toggleClass("visible", canScrollRight);
+  }
+
+  tabBarEl.addEventListener("scroll", updateScrollArrows);
+  scrollLeft.addEventListener("click", () => { tabBarEl.scrollLeft -= 120; });
+  scrollRight.addEventListener("click", () => { tabBarEl.scrollLeft += 120; });
 
   // Set initial active tab
   if (state.current.activeSections.length > 0) {
@@ -596,7 +617,8 @@ export function renderMonsterEditMode(
       rebuildTabs();
       renderTabContent(state, refs, activeTabKey);
     });
-    tabBarEl.appendChild(addTabBtn);
+    // Update arrows after DOM settles
+    requestAnimationFrame(updateScrollArrows);
   }
 
   rebuildTabs();

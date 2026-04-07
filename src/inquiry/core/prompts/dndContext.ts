@@ -43,6 +43,10 @@ GENERATION RULES:
 - Include wiki-links ([[Note Name]]) to existing vault notes when relevant.
 - Stop after 7 tool calls to avoid loops.
 
+STAT BLOCK PROSE STYLE:
+- NEVER use em dashes (—) in stat block text. Use commas or restructure the sentence instead.
+- NEVER use semicolons (;) in stat block text. Use separate sentences or commas.
+
 5eTOOLS INLINE TAGS:
 When writing action/trait/feature entries in stat blocks, use 5etools inline tag syntax. The renderer supports these tags:
 

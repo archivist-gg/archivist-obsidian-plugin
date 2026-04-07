@@ -858,6 +858,60 @@
   background: rgba(122, 32, 13, 0.08);
 }
 
+/* Tab scroll arrows — contextual fade */
+.archivist-monster-block .archivist-tab-scroll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+  border: none !important;
+  background: none !important;
+  color: var(--d5e-bar-fill);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+  padding: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+.archivist-monster-block .archivist-tab-scroll.visible {
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
+.archivist-monster-block .archivist-tab-scroll:hover {
+  opacity: 1 !important;
+}
+
+.archivist-monster-block .archivist-tab-scroll svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Gradient fade hints on scroll edges */
+.archivist-monster-block .archivist-tab-scroll-left::after,
+.archivist-monster-block .archivist-tab-scroll-right::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  pointer-events: none;
+}
+
+.archivist-monster-block .archivist-tab-scroll-left::after {
+  right: -16px;
+  background: linear-gradient(to right, var(--d5e-parchment), transparent);
+}
+
+.archivist-monster-block .archivist-tab-scroll-right::before {
+  left: -16px;
+  background: linear-gradient(to left, var(--d5e-parchment), transparent);
+}
+
 /* Tab content area */
 .archivist-monster-block .archivist-tab-content {
   padding: 0.5em 0 0;
