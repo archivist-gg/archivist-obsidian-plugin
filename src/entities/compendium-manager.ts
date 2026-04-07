@@ -365,4 +365,52 @@ export class CompendiumManager {
     };
     this.registry.register(updated);
   }
+
+  /**
+   * Delete an entity file from its compendium and unregister it.
+   */
+  async deleteEntity(slug: string): Promise<void> {
+    const existing = this.registry.getBySlug(slug);
+    if (!existing) {
+      throw new Error(`Entity not found: ${slug}`);
+    }
+
+    const file = this.vault.getAbstractFileByPath(existing.filePath);
+    if (file) {
+      await this.vault.delete(file);
+    }
+
+    this.registry.unregister(slug);
+  }
+
+  /**
+   * Count files referencing a slug via {{type:slug}} or {{slug}} patterns.
+   * Excludes the entity's own compendium file and an optional exclude path.
+   */
+  async countReferences(slug: string, excludePath?: string): Promise<number> {
+    const entity = this.registry.getBySlug(slug);
+    const entityFilePath = entity?.filePath;
+
+    const refPatterns = [
+      `{{${slug}}}`,
+      `{{monster:${slug}}}`,
+      `{{spell:${slug}}}`,
+      `{{item:${slug}}}`,
+    ];
+
+    let count = 0;
+    const files = this.vault.getMarkdownFiles();
+
+    for (const file of files) {
+      if (file.path === entityFilePath) continue;
+      if (excludePath && file.path === excludePath) continue;
+
+      const content = await this.vault.cachedRead(file);
+      if (refPatterns.some((p) => content.includes(p))) {
+        count++;
+      }
+    }
+
+    return count;
+  }
 }
