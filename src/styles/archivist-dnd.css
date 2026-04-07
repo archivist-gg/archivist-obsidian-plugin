@@ -1883,6 +1883,28 @@ body.theme-light .archivist-tag-atk:hover {
   background: rgba(146, 38, 16, 0.1);
 }
 
+/* Delete sub-menu */
+.archivist-delete-menu-open .archivist-side-btn:not(.archivist-delete-sub-btn) {
+  opacity: 0.4;
+}
+
+.archivist-delete-menu-open .archivist-side-btn:last-of-type:not(.archivist-delete-sub-btn) {
+  opacity: 1;
+}
+
+.archivist-delete-sub-btn {
+  animation: archivist-fade-in 0.15s ease;
+}
+
+.archivist-delete-entity-btn {
+  color: #c9553a;
+}
+
+@keyframes archivist-fade-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 /* Autocomplete suggest styles */
 .archivist-suggest-item {
   display: flex;

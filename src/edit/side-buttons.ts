@@ -10,6 +10,8 @@ interface SideButtonConfig {
   onCompendium: () => void;
   onCancel: () => void;
   onDelete: () => void;
+  onDeleteRef?: () => void;
+  onDeleteEntity?: () => void;
   onColumnToggle: () => void;
   isColumnActive: boolean;
   showColumnToggle?: boolean;
@@ -79,10 +81,55 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
     editBtn.setAttribute("aria-label", "Edit");
     editBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onEdit(); });
 
-    // Delete — LAST
+    // Delete — LAST — expands into sub-menu
     const deleteBtn = container.createDiv({ cls: "archivist-side-btn" });
     setIcon(deleteBtn, "trash-2");
-    deleteBtn.setAttribute("aria-label", "Delete Block");
-    deleteBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onDelete(); });
+    deleteBtn.setAttribute("aria-label", "Delete");
+
+    if (config.onDeleteRef || config.onDeleteEntity) {
+      // Expandable delete sub-menu
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = container.hasClass("archivist-delete-menu-open");
+        if (isOpen) {
+          container.removeClass("archivist-delete-menu-open");
+          container.querySelectorAll(".archivist-delete-sub-btn").forEach((el) => el.remove());
+          setIcon(deleteBtn, "trash-2");
+          return;
+        }
+
+        // Switch trash to X (close)
+        container.addClass("archivist-delete-menu-open");
+        setIcon(deleteBtn, "x");
+
+        // Add sub-buttons after the delete button
+        if (config.onDeleteRef) {
+          const refBtn = container.createDiv({ cls: "archivist-side-btn archivist-delete-sub-btn" });
+          setIcon(refBtn, "file-x");
+          refBtn.setAttribute("aria-label", "Remove reference from document");
+          refBtn.title = "Remove reference";
+          refBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            config.onDeleteRef!();
+          });
+        }
+
+        if (config.onDeleteEntity) {
+          const entityBtn = container.createDiv({
+            cls: "archivist-side-btn archivist-delete-sub-btn archivist-delete-entity-btn",
+          });
+          setIcon(entityBtn, "book-x");
+          entityBtn.setAttribute("aria-label", "Delete entity from compendium");
+          entityBtn.title = "Delete from compendium";
+          entityBtn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            config.onDeleteEntity!();
+          });
+        }
+      });
+    } else {
+      // Simple delete (code block path — existing behavior)
+      deleteBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onDelete(); });
+    }
   }
 }
