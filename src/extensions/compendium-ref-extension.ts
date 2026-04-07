@@ -40,20 +40,6 @@ export function setCompendiumRefPlugin(plugin: any): void {
 }
 
 // ---------------------------------------------------------------------------
-// Edit lock — prevents decoration rebuild while editing a compendium ref
-// ---------------------------------------------------------------------------
-
-let editingRefRange: { from: number; to: number } | null = null;
-
-export function setEditingRefRange(range: { from: number; to: number } | null): void {
-  editingRefRange = range;
-}
-
-export function getEditingRefRange(): { from: number; to: number } | null {
-  return editingRefRange;
-}
-
-// ---------------------------------------------------------------------------
 // Cross-document refresh
 // ---------------------------------------------------------------------------
 
@@ -92,6 +78,10 @@ class CompendiumRefWidget extends WidgetType {
     return this.refText === other.refText;
   }
 
+  ignoreEvent(): boolean {
+    return true;
+  }
+
   toDOM(view: EditorView): HTMLElement {
     const ref = parseCompendiumRef(this.refText);
 
@@ -120,35 +110,37 @@ class CompendiumRefWidget extends WidgetType {
       return err;
     }
 
-    // Badge
+    // Badge — inside the stat block wrapper, top-right
     const badge = document.createElement("div");
     badge.className = "archivist-compendium-badge";
     badge.textContent = entity.compendium;
+    rendered.appendChild(badge);
 
     // Container
     const container = document.createElement("div");
     container.className = "archivist-compendium-ref";
-    container.appendChild(badge);
+    container.tabIndex = 0;
     container.appendChild(rendered);
 
-    // Side buttons
+    // Side buttons — column state lives here so it persists across re-renders
+    let columns = 1;
     const sideBtns = document.createElement("div");
     sideBtns.className = "archivist-side-btns";
     container.appendChild(sideBtns);
 
-    this.renderViewSideButtons(sideBtns, entity, ref, view, container);
+    this.renderViewSideButtons(sideBtns, entity, ref, view, container, () => columns, (c) => { columns = c; });
 
     return container;
   }
 
   /** Render entity data into a stat block element. */
-  private renderEntityBlock(entity: { entityType: string; data: Record<string, unknown> }): HTMLElement | null {
+  private renderEntityBlock(entity: { entityType: string; data: Record<string, unknown> }, columns?: number): HTMLElement | null {
     const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
     const type = entity.entityType;
 
     if (type === "monster") {
       const result = parseMonster(yamlStr);
-      if (result.success) return renderMonsterBlock(result.data);
+      if (result.success) return renderMonsterBlock(result.data, columns ?? 1);
     } else if (type === "spell") {
       const result = parseSpell(yamlStr);
       if (result.success) return renderSpellBlock(result.data);
@@ -166,16 +158,22 @@ class CompendiumRefWidget extends WidgetType {
     ref: CompendiumRef,
     view: EditorView,
     container: HTMLElement,
+    getColumns: () => number,
+    setColumns: (c: number) => void,
   ): void {
     const isMonster = entity.entityType === "monster";
-    let columns = 1;
 
     renderSideButtons(sideBtns, {
       state: "default",
-      isColumnActive: columns === 2,
+      isColumnActive: getColumns() === 2,
       showColumnToggle: isMonster,
       onEdit: () => {
         this.enterEditMode(container, sideBtns, entity, ref, view);
+      },
+      onJumpToRef: () => {
+        if (pluginRef && entity.filePath) {
+          pluginRef.app.workspace.openLinkText(entity.filePath, "", true);
+        }
       },
       onSave: () => {},
       onSaveAsNew: () => {},
@@ -190,13 +188,14 @@ class CompendiumRefWidget extends WidgetType {
       },
       onColumnToggle: () => {
         if (!isMonster) return;
-        columns = columns === 1 ? 2 : 1;
-        const renderedBlock = container.querySelector(".archivist-monster-block");
+        const newCols = getColumns() === 1 ? 2 : 1;
+        setColumns(newCols);
+        const renderedBlock = container.querySelector(".archivist-monster-block-wrapper");
         if (renderedBlock) {
-          const newBlock = this.renderEntityBlock({ ...entity, data: { ...entity.data, columns } });
+          const newBlock = this.renderEntityBlock(entity, newCols);
           if (newBlock) renderedBlock.replaceWith(newBlock);
         }
-        this.renderViewSideButtons(sideBtns, entity, ref, view, container);
+        this.renderViewSideButtons(sideBtns, entity, ref, view, container, getColumns, setColumns);
       },
     });
   }
@@ -214,14 +213,10 @@ class CompendiumRefWidget extends WidgetType {
     ref: CompendiumRef,
     view: EditorView,
   ): void {
-    // Compute current range and set edit lock
-    const range = this.getRange(container, view);
-    setEditingRefRange(range);
-
     // Remove rendered stat block (keep side buttons and container)
     const badge = container.querySelector(".archivist-compendium-badge");
     const statBlock = container.querySelector(
-      ".archivist-monster-block, .archivist-spell-block, .archivist-item-block",
+      ".archivist-monster-block-wrapper, .archivist-spell-block-wrapper, .archivist-item-block-wrapper",
     );
     badge?.remove();
     statBlock?.remove();
@@ -235,21 +230,37 @@ class CompendiumRefWidget extends WidgetType {
     };
 
     const onCancelExit = () => {
-      // Clear edit lock
-      setEditingRefRange(null);
-      // Dispatch refresh to rebuild all widgets
+      // Re-render view mode directly into the container
+      while (container.firstChild) container.firstChild.remove();
+
+      // Re-render stat block with badge inside (fetch fresh data from registry)
+      const freshEntity = registryRef?.getBySlug(entity.slug) ?? entity;
+      const rendered = this.renderEntityBlock(freshEntity);
+      if (rendered) {
+        const newBadge = document.createElement("div");
+        newBadge.className = "archivist-compendium-badge";
+        newBadge.textContent = freshEntity.compendium;
+        rendered.appendChild(newBadge);
+        container.appendChild(rendered);
+      }
+
+      // Re-render side buttons with fresh column state
+      let cols = 1;
+      const newSideBtns = document.createElement("div");
+      newSideBtns.className = "archivist-side-btns";
+      container.appendChild(newSideBtns);
+      this.renderViewSideButtons(newSideBtns, freshEntity, ref, view, container, () => cols, (c) => { cols = c; });
+
+      // Also refresh other docs in case entity data changed
       refreshAllCompendiumRefs(pluginRef);
     };
 
     const onReplaceRef = (newRefText: string) => {
       // Replace the {{type:slug}} text in the document via CM6 transaction
-      // Use the mapped edit lock range (stays current through doc changes)
-      const currentRange = getEditingRefRange();
-      if (currentRange) {
-        view.dispatch({
-          changes: { from: currentRange.from, to: currentRange.to, insert: newRefText },
-        });
-      }
+      const { from, to } = this.getRange(container, view);
+      view.dispatch({
+        changes: { from, to, insert: newRefText },
+      });
     };
 
     const type = entity.entityType;
@@ -372,9 +383,6 @@ function buildCompendiumRefDecorations(view: EditorView): DecorationSet {
       // Skip decoration when the cursor is strictly inside the reference (user is typing)
       if (cursorPos > start && cursorPos < end) continue;
 
-      // Skip decoration when this range is locked for editing
-      if (editingRefRange && start === editingRefRange.from && end === editingRefRange.to) continue;
-
       builder.add(
         start,
         end,
@@ -399,19 +407,6 @@ export const compendiumRefPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      // Map editing lock range through document changes
-      if (editingRefRange && update.docChanged) {
-        try {
-          editingRefRange = {
-            from: update.changes.mapPos(editingRefRange.from),
-            to: update.changes.mapPos(editingRefRange.to),
-          };
-        } catch {
-          // Position no longer valid — clear the lock
-          editingRefRange = null;
-        }
-      }
-
       const hasRefresh = update.transactions.some((tr) =>
         tr.effects.some((e) => e.is(compendiumRefreshEffect)),
       );

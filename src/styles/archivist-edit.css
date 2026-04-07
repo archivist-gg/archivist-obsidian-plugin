@@ -1145,8 +1145,15 @@
   transition: opacity 0.15s;
 }
 
+/* Widget side buttons start at top (no </> source button above them) */
+.archivist-compendium-ref > .archivist-side-btns {
+  top: var(--size-2-2);
+}
+
 .cm-embed-block:hover .archivist-side-btns,
 .cm-embed-block:focus-within .archivist-side-btns,
+.archivist-compendium-ref:hover > .archivist-side-btns,
+.archivist-compendium-ref:focus-within > .archivist-side-btns,
 .archivist-side-btns.always-visible {
   opacity: 1;
   pointer-events: auto;

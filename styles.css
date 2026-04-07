@@ -5457,7 +5457,8 @@ code .claudian-file-link:hover {
 }
 
 /* Keep selection border when block is focused — accent color, matching hover border-radius */
-.cm-embed-block:has(.archivist-side-btns):focus-within {
+.cm-embed-block:has(.archivist-side-btns):focus-within,
+.archivist-compendium-ref:focus-within {
   outline: 1px solid var(--interactive-accent);
   border-radius: var(--radius-s);
 }
@@ -7177,35 +7178,67 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* Compendium reference wrapper */
 .archivist-compendium-ref {
+  position: relative;
   margin: 8px 0;
 }
 
-/* Compendium badge on stat blocks */
+/* Compendium badge inside stat block wrapper */
 .archivist-compendium-badge {
   position: absolute;
-  top: 4px;
-  right: 40px;
-  font-size: 10px;
-  padding: 2px 6px;
-  background: rgba(146, 38, 16, 0.1);
-  color: #922610;
+  top: 6px;
+  right: 8px;
+  font-size: 9px;
+  padding: 2px 8px;
+  background: #fdf1dc;
+  color: #7a200d;
+  border: 1px solid #d9c484;
   border-radius: 3px;
   font-family: sans-serif;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   z-index: 1;
+  pointer-events: none;
 }
 
-/* Error placeholder for broken references */
-.archivist-ref-error {
-  padding: 12px 16px;
+/* Entity not found — styled inline alert */
+.archivist-ref-error,
+.archivist-compendium-ref-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
   margin: 8px 0;
-  background: #fdf1dc;
-  border: 1px dashed #d9c484;
+  background: rgba(201, 85, 58, 0.06);
+  border: 1px dashed #c9553a;
   border-radius: 4px;
-  color: #922610;
-  font-style: italic;
+  max-width: 400px;
+}
+
+.archivist-ref-error .archivist-not-found-icon,
+.archivist-compendium-ref-error .archivist-not-found-icon {
+  flex-shrink: 0;
+  color: #c9553a;
+}
+
+.archivist-ref-error .archivist-not-found-text,
+.archivist-compendium-ref-error .archivist-not-found-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.archivist-not-found-label {
+  font-weight: 600;
   font-size: 13px;
+  color: #922610;
+}
+
+.archivist-not-found-ref {
+  font-size: 12px;
+  color: #7a200d;
+  opacity: 0.7;
+  font-family: var(--font-monospace);
 }
 
 /* Save As New button + overlay */
@@ -7228,6 +7261,54 @@ body.theme-light .archivist-tag-atk:hover {
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+
+/* Inline compendium picker dropdown */
+.archivist-compendium-picker {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 140px;
+  background: #fdf1dc;
+  border: 1px solid #d9c484;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.archivist-compendium-picker-option {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #7a200d;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.archivist-compendium-picker-option:hover {
+  background: rgba(146, 38, 16, 0.1);
+}
+
+/* Delete sub-menu */
+.archivist-delete-menu-open .archivist-side-btn:not(.archivist-delete-sub-btn) {
+  opacity: 0.4;
+}
+
+.archivist-delete-menu-open .archivist-side-btn:last-of-type:not(.archivist-delete-sub-btn) {
+  opacity: 1;
+}
+
+.archivist-delete-sub-btn {
+  animation: archivist-fade-in 0.15s ease;
+}
+
+.archivist-delete-entity-btn {
+  color: #c9553a;
+}
+
+@keyframes archivist-fade-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Autocomplete suggest styles */
@@ -8410,8 +8491,15 @@ body.theme-light .archivist-tag-atk:hover {
   transition: opacity 0.15s;
 }
 
+/* Widget side buttons start at top (no </> source button above them) */
+.archivist-compendium-ref > .archivist-side-btns {
+  top: var(--size-2-2);
+}
+
 .cm-embed-block:hover .archivist-side-btns,
 .cm-embed-block:focus-within .archivist-side-btns,
+.archivist-compendium-ref:hover > .archivist-side-btns,
+.archivist-compendium-ref:focus-within > .archivist-side-btns,
 .archivist-side-btns.always-visible {
   opacity: 1;
   pointer-events: auto;

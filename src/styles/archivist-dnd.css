@@ -56,7 +56,8 @@
 }
 
 /* Keep selection border when block is focused — accent color, matching hover border-radius */
-.cm-embed-block:has(.archivist-side-btns):focus-within {
+.cm-embed-block:has(.archivist-side-btns):focus-within,
+.archivist-compendium-ref:focus-within {
   outline: 1px solid var(--interactive-accent);
   border-radius: var(--radius-s);
 }
@@ -1776,23 +1777,27 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* Compendium reference wrapper */
 .archivist-compendium-ref {
+  position: relative;
   margin: 8px 0;
 }
 
-/* Compendium badge on stat blocks */
+/* Compendium badge inside stat block wrapper */
 .archivist-compendium-badge {
   position: absolute;
-  top: 4px;
-  right: 40px;
-  font-size: 10px;
-  padding: 2px 6px;
-  background: rgba(146, 38, 16, 0.1);
-  color: #922610;
+  top: 6px;
+  right: 8px;
+  font-size: 9px;
+  padding: 2px 8px;
+  background: #fdf1dc;
+  color: #7a200d;
+  border: 1px solid #d9c484;
   border-radius: 3px;
   font-family: sans-serif;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   z-index: 1;
+  pointer-events: none;
 }
 
 /* Entity not found — styled inline alert */

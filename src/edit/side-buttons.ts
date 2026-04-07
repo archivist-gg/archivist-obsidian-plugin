@@ -12,6 +12,7 @@ interface SideButtonConfig {
   onDelete: () => void;
   onDeleteRef?: () => void;
   onDeleteEntity?: () => void;
+  onJumpToRef?: () => void;
   onColumnToggle: () => void;
   isColumnActive: boolean;
   showColumnToggle?: boolean;
@@ -63,6 +64,14 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
     cancelBtn.setAttribute("aria-label", "Cancel");
     cancelBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onCancel(); });
   } else {
+    // Jump to reference — first button (only for compendium ref widgets)
+    if (config.onJumpToRef) {
+      const jumpBtn = container.createDiv({ cls: "archivist-side-btn" });
+      setIcon(jumpBtn, "scroll-text");
+      jumpBtn.setAttribute("aria-label", "Open in compendium");
+      jumpBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onJumpToRef!(); });
+    }
+
     // Column toggle — icon changes based on state (only for blocks that support columns)
     if (config.showColumnToggle !== false) {
       const colBtn = container.createDiv({
