@@ -7,13 +7,16 @@ import {
   WidgetType,
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
-import { setIcon } from "obsidian";
+import { setIcon, Notice } from "obsidian";
 import { parseMonster } from "../parsers/monster-parser";
 import { parseSpell } from "../parsers/spell-parser";
 import { parseItem } from "../parsers/item-parser";
 import { renderMonsterBlock } from "../renderers/monster-renderer";
 import { renderSpellBlock } from "../renderers/spell-renderer";
 import { renderItemBlock } from "../renderers/item-renderer";
+import { renderMonsterEditMode } from "../edit/monster-edit-render";
+import { renderSpellEditMode } from "../edit/spell-edit-render";
+import { renderItemEditMode } from "../edit/item-edit-render";
 import { renderSideButtons } from "../edit/side-buttons";
 import { EntityRegistry } from "../entities/entity-registry";
 import type { RegisteredEntity } from "../entities/entity-registry";
@@ -204,7 +207,6 @@ class CompendiumRefWidget extends WidgetType {
     return { from, to: from + this.refText.length };
   }
 
-  /** Enter edit mode — implemented in Task 10. */
   private enterEditMode(
     container: HTMLElement,
     sideBtns: HTMLElement,
@@ -212,21 +214,113 @@ class CompendiumRefWidget extends WidgetType {
     ref: CompendiumRef,
     view: EditorView,
   ): void {
-    // TODO: Task 10
+    // Compute current range and set edit lock
+    const range = this.getRange(container, view);
+    setEditingRefRange(range);
+
+    // Remove rendered stat block (keep side buttons and container)
+    const badge = container.querySelector(".archivist-compendium-badge");
+    const statBlock = container.querySelector(
+      ".archivist-monster-block, .archivist-spell-block, .archivist-item-block",
+    );
+    badge?.remove();
+    statBlock?.remove();
+
+    sideBtns.classList.add("always-visible");
+
+    const compendiumContext = {
+      slug: entity.slug,
+      compendium: entity.compendium,
+      readonly: entity.readonly,
+    };
+
+    const onCancelExit = () => {
+      // Clear edit lock
+      setEditingRefRange(null);
+      // Dispatch refresh to rebuild all widgets
+      refreshAllCompendiumRefs(pluginRef);
+    };
+
+    const onReplaceRef = (newRefText: string) => {
+      // Replace the {{type:slug}} text in the document via CM6 transaction
+      // Use the mapped edit lock range (stays current through doc changes)
+      const currentRange = getEditingRefRange();
+      if (currentRange) {
+        view.dispatch({
+          changes: { from: currentRange.from, to: currentRange.to, insert: newRefText },
+        });
+      }
+    };
+
+    const type = entity.entityType;
+    if (type === "monster") {
+      const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
+      const result = parseMonster(yamlStr);
+      if (result.success) {
+        renderMonsterEditMode(
+          result.data, container, null, pluginRef,
+          onCancelExit, compendiumContext, onReplaceRef,
+        );
+      }
+    } else if (type === "spell") {
+      const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
+      const result = parseSpell(yamlStr);
+      if (result.success) {
+        renderSpellEditMode(
+          result.data, container, null, pluginRef,
+          onCancelExit, compendiumContext, onReplaceRef,
+        );
+      }
+    } else if (type === "item" || type === "magic-item") {
+      const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
+      const result = parseItem(yamlStr);
+      if (result.success) {
+        renderItemEditMode(
+          result.data, container, null, pluginRef,
+          onCancelExit, compendiumContext, onReplaceRef,
+        );
+      }
+    }
   }
 
-  /** Remove the {{type:slug}} text from the document. */
   private deleteRefFromDocument(view: EditorView, container: HTMLElement): void {
-    // TODO: Task 10
+    const { from, to } = this.getRange(container, view);
+    view.dispatch({
+      changes: { from, to, insert: "" },
+    });
   }
 
-  /** Delete entity from compendium with confirmation. */
   private deleteEntityFromCompendium(
     entity: RegisteredEntity,
     view: EditorView,
     container: HTMLElement,
   ): void {
-    // TODO: Task 10
+    if (!pluginRef?.compendiumManager) return;
+
+    const manager = pluginRef.compendiumManager;
+
+    manager.countReferences(entity.slug).then((refCount: number) => {
+      let message = `Delete "${entity.name}" from ${entity.compendium}?`;
+      if (refCount > 0) {
+        message += `\n\nThis entity is referenced in ${refCount} other location${refCount === 1 ? "" : "s"}. Those references will break.`;
+      }
+
+      if (confirm(message)) {
+        // Remove ref from current document
+        const { from, to } = this.getRange(container, view);
+        view.dispatch({
+          changes: { from, to, insert: "" },
+        });
+
+        // Delete entity from compendium
+        manager.deleteEntity(entity.slug)
+          .then(() => {
+            new Notice(`Deleted ${entity.name} from ${entity.compendium}`);
+            refreshAllCompendiumRefs(pluginRef);
+          })
+          .catch((e: Error) => new Notice(`Failed to delete: ${e.message}`));
+      }
+    });
   }
 
   private notFoundEl(ref: CompendiumRef): HTMLElement {
