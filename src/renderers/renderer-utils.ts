@@ -298,6 +298,60 @@ export function convert5eToolsTags(text: string): string {
 }
 
 /**
+ * Append text to a parent element, parsing inline markdown into proper DOM elements.
+ * Supports: ***bold italic***, **bold**, *italic*, _italic_, ~~strikethrough~~, [text](url)
+ * Plain text without markdown is appended as regular text nodes.
+ */
+export function appendMarkdownText(text: string, parent: HTMLElement): void {
+  const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parent.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+
+    if (match[1] !== undefined) {
+      const strong = document.createElement("strong");
+      const em = document.createElement("em");
+      em.textContent = match[1];
+      strong.appendChild(em);
+      parent.appendChild(strong);
+    } else if (match[2] !== undefined) {
+      const strong = document.createElement("strong");
+      strong.textContent = match[2];
+      parent.appendChild(strong);
+    } else if (match[3] !== undefined) {
+      const em = document.createElement("em");
+      em.textContent = match[3];
+      parent.appendChild(em);
+    } else if (match[4] !== undefined) {
+      const em = document.createElement("em");
+      em.textContent = match[4];
+      parent.appendChild(em);
+    } else if (match[5] !== undefined) {
+      const del = document.createElement("del");
+      del.textContent = match[5];
+      parent.appendChild(del);
+    } else if (match[6] !== undefined) {
+      const a = document.createElement("a");
+      a.textContent = match[6];
+      a.href = match[7];
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener");
+      parent.appendChild(a);
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parent.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+}
+
+/**
  * Render text that may contain inline tags like `roll:2d6+3` or `dc:15`.
  * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
  * Outside stat blocks (body text), tags render as colorful pill badges.
@@ -320,11 +374,9 @@ export function renderTextWithInlineTags(
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(converted)) !== null) {
-    // Append any plain text before this match
+    // Append any plain text (with markdown) before this match
     if (match.index > lastIndex) {
-      parent.appendChild(
-        document.createTextNode(converted.slice(lastIndex, match.index)),
-      );
+      appendMarkdownText(converted.slice(lastIndex, match.index), parent);
     }
 
     const tagText = match[1];
@@ -345,9 +397,9 @@ export function renderTextWithInlineTags(
     lastIndex = regex.lastIndex;
   }
 
-  // Append any remaining plain text
+  // Append any remaining plain text (with markdown)
   if (lastIndex < converted.length) {
-    parent.appendChild(document.createTextNode(converted.slice(lastIndex)));
+    appendMarkdownText(converted.slice(lastIndex), parent);
   }
 }
 

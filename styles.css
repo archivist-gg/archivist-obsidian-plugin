@@ -7173,6 +7173,89 @@ body.theme-light .archivist-tag-atk:hover {
   break-inside: avoid;
 }
 
+/* ── Compendium References ── */
+
+/* Compendium reference wrapper */
+.archivist-compendium-ref {
+  margin: 8px 0;
+}
+
+/* Compendium badge on stat blocks */
+.archivist-compendium-badge {
+  position: absolute;
+  top: 4px;
+  right: 40px;
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(146, 38, 16, 0.1);
+  color: #922610;
+  border-radius: 3px;
+  font-family: sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+/* Error placeholder for broken references */
+.archivist-ref-error {
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: #fdf1dc;
+  border: 1px dashed #d9c484;
+  border-radius: 4px;
+  color: #922610;
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* Save As New button + overlay */
+.archivist-side-btn-save-as-new {
+  position: relative;
+}
+
+.archivist-plus-overlay {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #922610;
+  background: #fdf1dc;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Autocomplete suggest styles */
+.archivist-suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.archivist-suggest-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.6;
+}
+
+.archivist-suggest-name {
+  flex: 1;
+}
+
+.archivist-suggest-type,
+.archivist-suggest-compendium {
+  font-size: 11px;
+  opacity: 0.5;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--background-modifier-hover);
+}
 
 
 
@@ -7923,7 +8006,7 @@ body.theme-light .archivist-tag-atk:hover {
    11. Tab Bar
    ========================================================================== */
 
-.archivist-tab-wrap {
+.archivist-monster-block .archivist-tab-wrap {
   position: relative;
   display: flex;
   align-items: stretch;
@@ -7932,7 +8015,7 @@ body.theme-light .archivist-tag-atk:hover {
   overflow: visible;
 }
 
-.archivist-tabs {
+.archivist-monster-block .archivist-tabs {
   display: flex;
   gap: 2px;
   flex: 1;
@@ -7942,11 +8025,11 @@ body.theme-light .archivist-tag-atk:hover {
   scrollbar-width: none;
 }
 
-.archivist-tabs::-webkit-scrollbar {
+.archivist-monster-block .archivist-tabs::-webkit-scrollbar {
   display: none;
 }
 
-.archivist-tab {
+.archivist-monster-block .archivist-tab {
   padding: 6px 12px;
   background-color: transparent !important;
   border: none !important;
@@ -7977,7 +8060,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Tab close button — visible on hover or on active tab */
-.archivist-tab-close {
+.archivist-monster-block .archivist-tab-close {
   width: 16px;
   height: 16px;
   border-radius: 3px;
@@ -7992,39 +8075,39 @@ body.theme-light .archivist-tag-atk:hover {
   flex-shrink: 0;
   margin-left: 4px;
   padding: 0 !important;
-  opacity: 0;
+  opacity: 0.4;
 }
 
-.archivist-tab:hover .archivist-tab-close,
-.archivist-tab.active .archivist-tab-close {
-  opacity: 0.6;
+.archivist-monster-block .archivist-tab:hover .archivist-tab-close,
+.archivist-monster-block .archivist-tab.active .archivist-tab-close {
+  opacity: 0.7;
 }
 
-.archivist-tab-close:hover {
+.archivist-monster-block .archivist-tab-close:hover {
   opacity: 1 !important;
   background-color: rgba(146, 38, 16, 0.15) !important;
   color: var(--d5e-bar-fill) !important;
 }
 
-.archivist-tab-close svg {
+.archivist-monster-block .archivist-tab-close svg {
   width: 10px;
   height: 10px;
 }
 
 /* Tab with close button — flex layout for label + x */
-.archivist-tab-inner {
+.archivist-monster-block .archivist-tab-inner {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   pointer-events: none;
 }
 
-.archivist-tab-inner > * {
+.archivist-monster-block .archivist-tab-inner > * {
   pointer-events: auto;
 }
 
 /* Add section tab (+) — prominent, larger */
-.archivist-tab.add-tab {
+.archivist-monster-block .archivist-tab.add-tab {
   color: var(--d5e-bar-fill);
   font-size: 18px;
   font-weight: bold;
@@ -8036,12 +8119,12 @@ body.theme-light .archivist-tag-atk:hover {
   justify-content: center;
 }
 
-.archivist-tab.add-tab:hover {
+.archivist-monster-block .archivist-tab.add-tab:hover {
   background: rgba(122, 32, 13, 0.08);
 }
 
 /* Tab content area */
-.archivist-tab-content {
+.archivist-monster-block .archivist-tab-content {
   padding: 0.5em 0 0;
   min-height: 50px;
 }
