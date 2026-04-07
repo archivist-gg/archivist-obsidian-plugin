@@ -241,6 +241,50 @@ describe("EntityRegistry", () => {
   });
 
   // -------------------------------------------------------------------------
+  // unregister()
+  // -------------------------------------------------------------------------
+  describe("unregister", () => {
+    it("removes entity by slug", () => {
+      registry.register(makeEntity({ slug: "goblin", name: "Goblin" }));
+      registry.register(makeEntity({ slug: "orc", name: "Orc" }));
+
+      registry.unregister("goblin");
+
+      expect(registry.getBySlug("goblin")).toBeUndefined();
+      expect(registry.getBySlug("orc")).toBeDefined();
+      expect(registry.count()).toBe(1);
+    });
+
+    it("removes entity from type bucket", () => {
+      registry.register(makeEntity({ slug: "goblin", name: "Goblin", entityType: "monster" }));
+      registry.register(
+        makeEntity({ slug: "fireball", name: "Fireball", entityType: "spell" }),
+      );
+
+      registry.unregister("goblin");
+
+      expect(registry.getTypes()).toEqual(["spell"]);
+    });
+
+    it("is a no-op for unknown slug", () => {
+      registry.register(makeEntity({ slug: "goblin", name: "Goblin" }));
+
+      registry.unregister("nonexistent");
+
+      expect(registry.count()).toBe(1);
+    });
+
+    it("cleans up empty type bucket", () => {
+      registry.register(makeEntity({ slug: "goblin", name: "Goblin", entityType: "monster" }));
+
+      registry.unregister("goblin");
+
+      expect(registry.getTypes()).toEqual([]);
+      expect(registry.count()).toBe(0);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // clear()
   // -------------------------------------------------------------------------
   describe("clear", () => {

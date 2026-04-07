@@ -60,6 +60,23 @@ export class EntityRegistry {
   }
 
   /**
+   * Remove an entity by slug. No-op if slug is not registered.
+   */
+  unregister(slug: string): void {
+    const existing = this.bySlug.get(slug);
+    if (!existing) return;
+
+    this.bySlug.delete(slug);
+
+    const bucket = this.byType.get(existing.entityType);
+    if (bucket) {
+      const idx = bucket.findIndex((e) => e.slug === slug);
+      if (idx !== -1) bucket.splice(idx, 1);
+      if (bucket.length === 0) this.byType.delete(existing.entityType);
+    }
+  }
+
+  /**
    * O(1) lookup by slug.
    */
   getBySlug(slug: string): RegisteredEntity | undefined {
