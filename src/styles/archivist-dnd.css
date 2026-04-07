@@ -1857,6 +1857,32 @@ body.theme-light .archivist-tag-atk:hover {
   line-height: 1;
 }
 
+/* Inline compendium picker dropdown */
+.archivist-compendium-picker {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 140px;
+  background: #fdf1dc;
+  border: 1px solid #d9c484;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.archivist-compendium-picker-option {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #7a200d;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.archivist-compendium-picker-option:hover {
+  background: rgba(146, 38, 16, 0.1);
+}
+
 /* Autocomplete suggest styles */
 .archivist-suggest-item {
   display: flex;
