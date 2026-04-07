@@ -37,6 +37,20 @@ export function setCompendiumRefPlugin(plugin: any): void {
 }
 
 // ---------------------------------------------------------------------------
+// Edit lock — prevents decoration rebuild while editing a compendium ref
+// ---------------------------------------------------------------------------
+
+let editingRefRange: { from: number; to: number } | null = null;
+
+export function setEditingRefRange(range: { from: number; to: number } | null): void {
+  editingRefRange = range;
+}
+
+export function getEditingRefRange(): { from: number; to: number } | null {
+  return editingRefRange;
+}
+
+// ---------------------------------------------------------------------------
 // Cross-document refresh
 // ---------------------------------------------------------------------------
 
@@ -264,6 +278,9 @@ function buildCompendiumRefDecorations(view: EditorView): DecorationSet {
       // Skip decoration when the cursor is strictly inside the reference (user is typing)
       if (cursorPos > start && cursorPos < end) continue;
 
+      // Skip decoration when this range is locked for editing
+      if (editingRefRange && start === editingRefRange.from && end === editingRefRange.to) continue;
+
       builder.add(
         start,
         end,
@@ -288,6 +305,19 @@ export const compendiumRefPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
+      // Map editing lock range through document changes
+      if (editingRefRange && update.docChanged) {
+        try {
+          editingRefRange = {
+            from: update.changes.mapPos(editingRefRange.from),
+            to: update.changes.mapPos(editingRefRange.to),
+          };
+        } catch {
+          // Position no longer valid — clear the lock
+          editingRefRange = null;
+        }
+      }
+
       const hasRefresh = update.transactions.some((tr) =>
         tr.effects.some((e) => e.is(compendiumRefreshEffect)),
       );
