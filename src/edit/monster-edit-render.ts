@@ -9,6 +9,7 @@ import { attachTagAutocomplete } from "./tag-autocomplete";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
 import { SaveAsNewModal } from "../entities/compendium-modal";
+import { showCompendiumPicker } from "./compendium-picker";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
   STANDARD_SENSES, ALL_SECTIONS, ALIGNMENT_ETHICAL, ALIGNMENT_MORAL,
@@ -68,10 +69,11 @@ const SECTION_KEY_MAP: Record<string, SectionKey> = {
 export function renderMonsterEditMode(
   monster: Monster,
   el: HTMLElement,
-  ctx: MarkdownPostProcessorContext,
+  ctx: MarkdownPostProcessorContext | null | undefined,
   plugin: ArchivistPlugin,
   onCancelExit?: () => void,
   compendiumContext?: { slug: string; compendium: string; readonly: boolean },
+  onReplaceRef?: (newRefText: string) => void,
 ): void {
   const refs: DomRefs = {} as DomRefs;
   refs.saveValues = {};
@@ -128,25 +130,45 @@ export function renderMonsterEditMode(
         }
         const yamlStr = state.toYaml();
         const yamlData = yaml.load(yamlStr) as Record<string, unknown>;
-        new SaveAsNewModal(plugin.app, writable, state.current.name, (comp, name) => {
-          yamlData.name = name;
-          plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
-            .then((registered) => {
-              // Replace {{}} ref in editor with new slug
-              const info = ctx.getSectionInfo(el);
-              if (info) {
-                const editor = plugin.app.workspace.activeEditor?.editor;
-                if (editor) {
-                  const from = { line: info.lineStart, ch: 0 };
-                  const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
-                  editor.replaceRange(`{{monster:${registered.slug}}}`, from, to);
+
+        if (onReplaceRef) {
+          // Widget path: no modal, auto-name from current title
+          const saveTo = (comp: { name: string }) => {
+            plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
+              .then((registered) => {
+                onReplaceRef(`{{monster:${registered.slug}}}`);
+                new Notice(`Saved as new to ${comp.name}`);
+                if (onCancelExit) onCancelExit();
+              })
+              .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+          };
+
+          if (writable.length === 1) {
+            saveTo(writable[0]);
+          } else {
+            showCompendiumPicker(sideBtns!, writable, saveTo);
+          }
+        } else {
+          // Code block path: use modal (existing behavior)
+          new SaveAsNewModal(plugin.app, writable, state.current.name, (comp, name) => {
+            yamlData.name = name;
+            plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
+              .then((registered) => {
+                const info = ctx?.getSectionInfo(el);
+                if (info) {
+                  const editor = plugin.app.workspace.activeEditor?.editor;
+                  if (editor) {
+                    const from = { line: info.lineStart, ch: 0 };
+                    const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
+                    editor.replaceRange(`{{monster:${registered.slug}}}`, from, to);
+                  }
                 }
-              }
-              new Notice(`Saved as new to ${comp.name}`);
-              if (onCancelExit) onCancelExit();
-            })
-            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
-        }).open();
+                new Notice(`Saved as new to ${comp.name}`);
+                if (onCancelExit) onCancelExit();
+              })
+              .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+          }).open();
+        }
       },
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
@@ -642,6 +664,7 @@ export function renderMonsterEditMode(
 
   function saveAndExit() {
     const yamlStr = state.toYaml();
+    if (!ctx) { cancelAndExit(); return; }
     const info = ctx.getSectionInfo(el);
     if (!info) { cancelAndExit(); return; }
     const editor = plugin.app.workspace.activeEditor?.editor;

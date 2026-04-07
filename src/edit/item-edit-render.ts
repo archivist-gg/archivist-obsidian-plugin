@@ -6,6 +6,7 @@ import type { Item } from "../types/item";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
 import { SaveAsNewModal } from "../entities/compendium-modal";
+import { showCompendiumPicker } from "./compendium-picker";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -27,10 +28,11 @@ const ITEM_RARITIES = [
 export function renderItemEditMode(
   item: Item,
   el: HTMLElement,
-  ctx: MarkdownPostProcessorContext,
+  ctx: MarkdownPostProcessorContext | null | undefined,
   plugin: ArchivistPlugin,
   onCancelExit?: () => void,
   compendiumContext?: { slug: string; compendium: string; readonly: boolean },
+  onReplaceRef?: (newRefText: string) => void,
 ): void {
   // Mutable working copy
   const draft: Item = JSON.parse(JSON.stringify(item));
@@ -93,24 +95,43 @@ export function renderItemEditMode(
           return;
         }
         const yamlData = buildClean();
-        new SaveAsNewModal(plugin.app, writable, draft.name, (comp, name) => {
-          yamlData.name = name;
-          plugin.compendiumManager!.saveEntity(comp.name, "item", yamlData)
-            .then((registered) => {
-              const info = ctx.getSectionInfo(el);
-              if (info) {
-                const editor = plugin.app.workspace.activeEditor?.editor;
-                if (editor) {
-                  const from = { line: info.lineStart, ch: 0 };
-                  const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
-                  editor.replaceRange(`{{item:${registered.slug}}}`, from, to);
+
+        if (onReplaceRef) {
+          const saveTo = (comp: { name: string }) => {
+            plugin.compendiumManager!.saveEntity(comp.name, "item", yamlData)
+              .then((registered) => {
+                onReplaceRef(`{{item:${registered.slug}}}`);
+                new Notice(`Saved as new to ${comp.name}`);
+                if (onCancelExit) onCancelExit();
+              })
+              .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+          };
+
+          if (writable.length === 1) {
+            saveTo(writable[0]);
+          } else {
+            showCompendiumPicker(sideBtns!, writable, saveTo);
+          }
+        } else {
+          new SaveAsNewModal(plugin.app, writable, draft.name, (comp, name) => {
+            yamlData.name = name;
+            plugin.compendiumManager!.saveEntity(comp.name, "item", yamlData)
+              .then((registered) => {
+                const info = ctx?.getSectionInfo(el);
+                if (info) {
+                  const editor = plugin.app.workspace.activeEditor?.editor;
+                  if (editor) {
+                    const from = { line: info.lineStart, ch: 0 };
+                    const to = { line: info.lineEnd, ch: editor.getLine(info.lineEnd).length };
+                    editor.replaceRange(`{{item:${registered.slug}}}`, from, to);
+                  }
                 }
-              }
-              new Notice(`Saved as new to ${comp.name}`);
-              if (onCancelExit) onCancelExit();
-            })
-            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
-        }).open();
+                new Notice(`Saved as new to ${comp.name}`);
+                if (onCancelExit) onCancelExit();
+              })
+              .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+          }).open();
+        }
       },
       onCompendium: () => {},
       onCancel: () => cancelAndExit(),
@@ -335,6 +356,7 @@ export function renderItemEditMode(
       noRefs: true,
     });
 
+    if (!ctx) { cancelAndExit(); return; }
     const info = ctx.getSectionInfo(el);
     if (!info) { cancelAndExit(); return; }
     const editor = plugin.app.workspace.activeEditor?.editor;
