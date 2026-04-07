@@ -9,3 +9,4 @@ export class Setting {}
 export class MarkdownRenderer {
   static renderMarkdown() {}
 }
+export class EditorSuggest {}

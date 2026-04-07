@@ -27,6 +27,27 @@ const TYPE_ICONS: Record<string, string> = {
   weapon: "sword",
 };
 
+export function detectCompendiumTrigger(
+  line: string,
+  cursorCh: number
+): { start: number; query: string } | null {
+  const textBefore = line.substring(0, cursorCh);
+  const lastOpen = textBefore.lastIndexOf("{{");
+  if (lastOpen === -1) return null;
+
+  const afterOpen = textBefore.substring(lastOpen + 2);
+  if (afterOpen.includes("}}")) return null;
+
+  return { start: lastOpen, query: afterOpen };
+}
+
+export function adjustEndForBracketMatch(
+  line: string,
+  endCh: number
+): number {
+  return line.substring(endCh).startsWith("}}") ? endCh + 2 : endCh;
+}
+
 export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
   private registry: EntityRegistry;
 
@@ -37,18 +58,13 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
 
   onTrigger(cursor: EditorPosition, editor: Editor, _file: TFile | null): EditorSuggestTriggerInfo | null {
     const line = editor.getLine(cursor.line);
-    const textBefore = line.substring(0, cursor.ch);
-    const lastOpen = textBefore.lastIndexOf("{{");
-    if (lastOpen === -1) return null;
-
-    // Check there's no closing `}}` after the opening `{{`
-    const afterOpen = textBefore.substring(lastOpen + 2);
-    if (afterOpen.includes("}}")) return null;
+    const result = detectCompendiumTrigger(line, cursor.ch);
+    if (!result) return null;
 
     return {
-      start: { line: cursor.line, ch: lastOpen },
+      start: { line: cursor.line, ch: result.start },
       end: cursor,
-      query: afterOpen,
+      query: result.query,
     };
   }
 
@@ -94,12 +110,11 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
     const start = this.context.start;
     const end = this.context.end;
 
-    // Consume auto-inserted }} from Obsidian's bracket matching
     const line = editor.getLine(end.line);
-    const textAfter = line.substring(end.ch);
-    const adjustedEnd = textAfter.startsWith("}}")
-      ? { line: end.line, ch: end.ch + 2 }
-      : end;
+    const adjustedEnd = {
+      line: end.line,
+      ch: adjustEndForBracketMatch(line, end.ch),
+    };
 
     editor.replaceRange(`{{${entity.entityType}:${entity.slug}}}`, start, adjustedEnd);
   }

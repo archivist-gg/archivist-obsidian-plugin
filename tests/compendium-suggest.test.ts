@@ -1,28 +1,5 @@
 import { describe, it, expect } from "vitest";
-
-/**
- * Test the onTrigger logic extracted as a pure function.
- * We test the detection algorithm directly rather than mocking
- * the full EditorSuggest class.
- */
-
-function detectCompendiumTrigger(
-  line: string,
-  cursorCh: number
-): { start: number; end: number; query: string } | null {
-  const textBefore = line.substring(0, cursorCh);
-  const lastOpen = textBefore.lastIndexOf("{{");
-  if (lastOpen === -1) return null;
-
-  const afterOpen = textBefore.substring(lastOpen + 2);
-  if (afterOpen.includes("}}")) return null;
-
-  return {
-    start: lastOpen,
-    end: cursorCh,
-    query: afterOpen,
-  };
-}
+import { detectCompendiumTrigger, adjustEndForBracketMatch } from "../src/extensions/compendium-suggest";
 
 describe("compendium suggest trigger detection", () => {
   it("triggers on {{ with bracket matching (cursor between {{ and }})", () => {
@@ -63,5 +40,22 @@ describe("compendium suggest trigger detection", () => {
     const result = detectCompendiumTrigger("{{monster:gob", 13);
     expect(result).not.toBeNull();
     expect(result!.query).toBe("monster:gob");
+  });
+});
+
+describe("adjustEndForBracketMatch", () => {
+  it("consumes }} when present at endCh", () => {
+    const result = adjustEndForBracketMatch("{{monster:gob}}", 13);
+    expect(result).toBe(15);
+  });
+
+  it("returns endCh unchanged when no }} follows", () => {
+    const result = adjustEndForBracketMatch("{{monster:gob", 13);
+    expect(result).toBe(13);
+  });
+
+  it("returns endCh unchanged when only single } follows", () => {
+    const result = adjustEndForBracketMatch("{{monster:gob} text", 13);
+    expect(result).toBe(13);
   });
 });
