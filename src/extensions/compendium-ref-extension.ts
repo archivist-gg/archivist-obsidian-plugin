@@ -7,6 +7,7 @@ import {
   WidgetType,
 } from "@codemirror/view";
 import { RangeSetBuilder } from "@codemirror/state";
+import { setIcon } from "obsidian";
 import { parseMonster } from "../parsers/monster-parser";
 import { parseSpell } from "../parsers/spell-parser";
 import { parseItem } from "../parsers/item-parser";
@@ -104,7 +105,26 @@ class CompendiumRefWidget extends WidgetType {
   private notFoundEl(ref: CompendiumRef): HTMLElement {
     const el = document.createElement("div");
     el.className = "archivist-compendium-ref-error";
-    el.textContent = `Entity not found: ${ref.entityType ? ref.entityType + ":" : ""}${ref.slug}`;
+
+    const icon = document.createElement("div");
+    icon.className = "archivist-not-found-icon";
+    setIcon(icon, "alert-triangle");
+    el.appendChild(icon);
+
+    const textWrap = document.createElement("div");
+    textWrap.className = "archivist-not-found-text";
+
+    const label = document.createElement("div");
+    label.className = "archivist-not-found-label";
+    label.textContent = "Entity not found";
+    textWrap.appendChild(label);
+
+    const refText = document.createElement("div");
+    refText.className = "archivist-not-found-ref";
+    refText.textContent = ref.entityType ? `${ref.entityType}:${ref.slug}` : ref.slug;
+    textWrap.appendChild(refText);
+
+    el.appendChild(textWrap);
     return el;
   }
 }

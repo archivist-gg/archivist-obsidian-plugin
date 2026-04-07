@@ -1,4 +1,4 @@
-import { Plugin, Notice } from "obsidian";
+import { Plugin, Notice, setIcon } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 
 // D&D parsers
@@ -460,7 +460,17 @@ export default class ArchivistPlugin extends Plugin {
             } else {
               const errEl = document.createElement("div");
               errEl.classList.add("archivist-ref-error");
-              errEl.textContent = `Entity not found: ${match[0].replace(/[{}]/g, "")}`;
+
+              const icon = errEl.createDiv({ cls: "archivist-not-found-icon" });
+              setIcon(icon, "alert-triangle");
+
+              const textWrap = errEl.createDiv({ cls: "archivist-not-found-text" });
+              textWrap.createDiv({ cls: "archivist-not-found-label", text: "Entity not found" });
+              textWrap.createDiv({
+                cls: "archivist-not-found-ref",
+                text: match[0].replace(/[{}]/g, ""),
+              });
+
               frag.appendChild(errEl);
             }
           } else {
