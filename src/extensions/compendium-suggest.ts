@@ -93,6 +93,14 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
     const editor = this.context.editor;
     const start = this.context.start;
     const end = this.context.end;
-    editor.replaceRange(`{{${entity.entityType}:${entity.slug}}}`, start, end);
+
+    // Consume auto-inserted }} from Obsidian's bracket matching
+    const line = editor.getLine(end.line);
+    const textAfter = line.substring(end.ch);
+    const adjustedEnd = textAfter.startsWith("}}")
+      ? { line: end.line, ch: end.ch + 2 }
+      : end;
+
+    editor.replaceRange(`{{${entity.entityType}:${entity.slug}}}`, start, adjustedEnd);
   }
 }
