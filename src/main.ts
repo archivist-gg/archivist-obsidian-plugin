@@ -478,7 +478,6 @@ export default class ArchivistPlugin extends Plugin {
     // CodeMirror editor extensions
     this.registerEditorExtension(inlineTagPlugin);
     this.registerEditorExtension(dndBlockDeleteKeymap);
-    this.registerEditorExtension(compendiumRefPlugin);
 
     // Editor entity suggest ({{monster:, {{spell:, etc.)
     this.registerEditorSuggest(new CompendiumEditorSuggest(this.app, this.entityRegistry));
@@ -568,6 +567,10 @@ export default class ArchivistPlugin extends Plugin {
     } catch (err) {
       console.error("Archivist: compendium discovery failed", err);
     }
+
+    // Register compendium ref extension after entities are loaded so decorations
+    // can resolve references immediately (avoids "Entity not found" on open)
+    this.registerEditorExtension(compendiumRefPlugin);
   }
 
 }

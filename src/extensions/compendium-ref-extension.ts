@@ -117,6 +117,7 @@ const COMPENDIUM_REF_RE = /\{\{[^}]+\}\}/g;
 
 function buildCompendiumRefDecorations(view: EditorView): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
+  const cursorPos = view.state.selection.main.head;
 
   for (const { from, to } of view.visibleRanges) {
     const text = view.state.doc.sliceString(from, to);
@@ -126,6 +127,10 @@ function buildCompendiumRefDecorations(view: EditorView): DecorationSet {
     while ((m = COMPENDIUM_REF_RE.exec(text)) !== null) {
       const start = from + m.index;
       const end = start + m[0].length;
+
+      // Skip decoration when the cursor is strictly inside the reference (user is typing)
+      if (cursorPos > start && cursorPos < end) continue;
+
       builder.add(
         start,
         end,
@@ -150,7 +155,7 @@ export const compendiumRefPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
+      if (update.docChanged || update.viewportChanged || update.selectionSet) {
         this.decorations = buildCompendiumRefDecorations(update.view);
       }
     }

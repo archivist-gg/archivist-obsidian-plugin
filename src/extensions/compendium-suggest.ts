@@ -116,6 +116,8 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
       ch: adjustEndForBracketMatch(line, end.ch),
     };
 
-    editor.replaceRange(`{{${entity.entityType}:${entity.slug}}}`, start, adjustedEnd);
+    const replacement = `{{${entity.entityType}:${entity.slug}}}`;
+    editor.replaceRange(replacement, start, adjustedEnd);
+    editor.setCursor({ line: start.line, ch: start.ch + replacement.length });
   }
 }
