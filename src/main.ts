@@ -29,7 +29,7 @@ import { ItemModal } from "./modals/item-modal";
 import { inlineTagPlugin } from "./extensions/inline-tag-extension";
 import { dndBlockDeleteKeymap } from "./extensions/dnd-block-delete-extension";
 import { CompendiumEditorSuggest } from "./extensions/compendium-suggest";
-import { compendiumRefPlugin, setCompendiumRefRegistry, parseCompendiumRef } from "./extensions/compendium-ref-extension";
+import { compendiumRefPlugin, setCompendiumRefRegistry, setCompendiumRefPlugin, parseCompendiumRef } from "./extensions/compendium-ref-extension";
 import * as yaml from "js-yaml";
 
 // SRD & entities
@@ -68,6 +68,7 @@ export default class ArchivistPlugin extends Plugin {
       this.settings.compendiumRoot,
     );
     setCompendiumRefRegistry(this.entityRegistry);
+    setCompendiumRefPlugin(this);
 
     // Initialize InquiryModule (Claudian chat engine)
     this.inquiry = new InquiryModule(this, this.app, this.entityRegistry, this.srdStore);

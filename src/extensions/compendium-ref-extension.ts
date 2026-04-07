@@ -14,7 +14,9 @@ import { parseItem } from "../parsers/item-parser";
 import { renderMonsterBlock } from "../renderers/monster-renderer";
 import { renderSpellBlock } from "../renderers/spell-renderer";
 import { renderItemBlock } from "../renderers/item-renderer";
+import { renderSideButtons } from "../edit/side-buttons";
 import { EntityRegistry } from "../entities/entity-registry";
+import type { RegisteredEntity } from "../entities/entity-registry";
 import * as yaml from "js-yaml";
 
 // ---------------------------------------------------------------------------
@@ -25,6 +27,13 @@ let registryRef: EntityRegistry | null = null;
 
 export function setCompendiumRefRegistry(registry: EntityRegistry): void {
   registryRef = registry;
+}
+
+// Module-level plugin reference (set by main.ts at plugin load)
+let pluginRef: any = null;
+
+export function setCompendiumRefPlugin(plugin: any): void {
+  pluginRef = plugin;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,7 +60,7 @@ export function refreshAllCompendiumRefs(plugin: any): void {
 
 // Re-export parser from its own module (kept separate so tests can import without pulling in CM6/obsidian deps)
 export { parseCompendiumRef, CompendiumRef } from "./compendium-ref-parser";
-import { parseCompendiumRef } from "./compendium-ref-parser";
+import { parseCompendiumRef, CompendiumRef } from "./compendium-ref-parser";
 
 // ---------------------------------------------------------------------------
 // CM6 Widget
@@ -66,7 +75,7 @@ class CompendiumRefWidget extends WidgetType {
     return this.refText === other.refText;
   }
 
-  toDOM(): HTMLElement {
+  toDOM(view: EditorView): HTMLElement {
     const ref = parseCompendiumRef(this.refText);
 
     if (!ref || !registryRef) {
@@ -78,7 +87,6 @@ class CompendiumRefWidget extends WidgetType {
 
     const entity = registryRef.getBySlug(ref.slug);
 
-    // If an explicit entityType was given and it doesn't match, treat as not found
     if (entity && ref.entityType && entity.entityType !== ref.entityType) {
       return this.notFoundEl(ref);
     }
@@ -87,41 +95,124 @@ class CompendiumRefWidget extends WidgetType {
       return this.notFoundEl(ref);
     }
 
-    // Dump entity data to YAML for the parsers
-    const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
-
-    let rendered: HTMLElement | null = null;
-    const type = entity.entityType;
-
-    if (type === "monster") {
-      const result = parseMonster(yamlStr);
-      if (result.success) rendered = renderMonsterBlock(result.data);
-    } else if (type === "spell") {
-      const result = parseSpell(yamlStr);
-      if (result.success) rendered = renderSpellBlock(result.data);
-    } else if (type === "item" || type === "magic-item") {
-      const result = parseItem(yamlStr);
-      if (result.success) rendered = renderItemBlock(result.data);
-    }
-
+    const rendered = this.renderEntityBlock(entity);
     if (!rendered) {
       const err = document.createElement("div");
       err.className = "archivist-compendium-ref-error";
-      err.textContent = `Cannot render ${type}: ${ref.slug}`;
+      err.textContent = `Cannot render ${entity.entityType}: ${ref.slug}`;
       return err;
     }
 
-    // Compendium badge
+    // Badge
     const badge = document.createElement("div");
     badge.className = "archivist-compendium-badge";
     badge.textContent = entity.compendium;
 
-    // Wrapper container
+    // Container
     const container = document.createElement("div");
     container.className = "archivist-compendium-ref";
     container.appendChild(badge);
     container.appendChild(rendered);
+
+    // Side buttons
+    const sideBtns = document.createElement("div");
+    sideBtns.className = "archivist-side-btns";
+    container.appendChild(sideBtns);
+
+    this.renderViewSideButtons(sideBtns, entity, ref, view, container);
+
     return container;
+  }
+
+  /** Render entity data into a stat block element. */
+  private renderEntityBlock(entity: { entityType: string; data: Record<string, unknown> }): HTMLElement | null {
+    const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
+    const type = entity.entityType;
+
+    if (type === "monster") {
+      const result = parseMonster(yamlStr);
+      if (result.success) return renderMonsterBlock(result.data);
+    } else if (type === "spell") {
+      const result = parseSpell(yamlStr);
+      if (result.success) return renderSpellBlock(result.data);
+    } else if (type === "item" || type === "magic-item") {
+      const result = parseItem(yamlStr);
+      if (result.success) return renderItemBlock(result.data);
+    }
+    return null;
+  }
+
+  /** Render side buttons for view mode (default state). */
+  private renderViewSideButtons(
+    sideBtns: HTMLElement,
+    entity: RegisteredEntity,
+    ref: CompendiumRef,
+    view: EditorView,
+    container: HTMLElement,
+  ): void {
+    const isMonster = entity.entityType === "monster";
+    let columns = 1;
+
+    renderSideButtons(sideBtns, {
+      state: "default",
+      isColumnActive: columns === 2,
+      showColumnToggle: isMonster,
+      onEdit: () => {
+        this.enterEditMode(container, sideBtns, entity, ref, view);
+      },
+      onSave: () => {},
+      onSaveAsNew: () => {},
+      onCompendium: () => {},
+      onCancel: () => {},
+      onDelete: () => {},
+      onDeleteRef: () => {
+        this.deleteRefFromDocument(view, container);
+      },
+      onDeleteEntity: () => {
+        this.deleteEntityFromCompendium(entity, view, container);
+      },
+      onColumnToggle: () => {
+        if (!isMonster) return;
+        columns = columns === 1 ? 2 : 1;
+        const renderedBlock = container.querySelector(".archivist-monster-block");
+        if (renderedBlock) {
+          const newBlock = this.renderEntityBlock({ ...entity, data: { ...entity.data, columns } });
+          if (newBlock) renderedBlock.replaceWith(newBlock);
+        }
+        this.renderViewSideButtons(sideBtns, entity, ref, view, container);
+      },
+    });
+  }
+
+  /** Get the current document range of this widget's {{...}} text. */
+  private getRange(container: HTMLElement, view: EditorView): { from: number; to: number } {
+    const from = view.posAtDOM(container);
+    return { from, to: from + this.refText.length };
+  }
+
+  /** Enter edit mode — implemented in Task 10. */
+  private enterEditMode(
+    container: HTMLElement,
+    sideBtns: HTMLElement,
+    entity: RegisteredEntity,
+    ref: CompendiumRef,
+    view: EditorView,
+  ): void {
+    // TODO: Task 10
+  }
+
+  /** Remove the {{type:slug}} text from the document. */
+  private deleteRefFromDocument(view: EditorView, container: HTMLElement): void {
+    // TODO: Task 10
+  }
+
+  /** Delete entity from compendium with confirmation. */
+  private deleteEntityFromCompendium(
+    entity: RegisteredEntity,
+    view: EditorView,
+    container: HTMLElement,
+  ): void {
+    // TODO: Task 10
   }
 
   private notFoundEl(ref: CompendiumRef): HTMLElement {
