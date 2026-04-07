@@ -45,11 +45,6 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
     const afterOpen = textBefore.substring(lastOpen + 2);
     if (afterOpen.includes("}}")) return null;
 
-    // Also check the rest of the line after the cursor for a closing `}}`
-    // that would mean we're inside a completed tag
-    const textAfter = line.substring(cursor.ch);
-    if (textAfter.startsWith("}}")) return null;
-
     return {
       start: { line: cursor.line, ch: lastOpen },
       end: cursor,
