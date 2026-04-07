@@ -6,7 +6,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { RangeSetBuilder } from "@codemirror/state";
+import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import { setIcon } from "obsidian";
 import { parseMonster } from "../parsers/monster-parser";
 import { parseSpell } from "../parsers/spell-parser";
@@ -25,6 +25,28 @@ let registryRef: EntityRegistry | null = null;
 
 export function setCompendiumRefRegistry(registry: EntityRegistry): void {
   registryRef = registry;
+}
+
+// ---------------------------------------------------------------------------
+// Cross-document refresh
+// ---------------------------------------------------------------------------
+
+/** Dispatch this effect to force compendium ref decorations to rebuild. */
+export const compendiumRefreshEffect = StateEffect.define<null>();
+
+/**
+ * Refresh compendium ref widgets in all open editor views.
+ * Call after updateEntity() or saveEntity() to propagate changes.
+ */
+export function refreshAllCompendiumRefs(plugin: any): void {
+  plugin.app.workspace.iterateAllLeaves((leaf: any) => {
+    if (leaf.view?.getViewType?.() === "markdown") {
+      const editorView = (leaf.view as any).editor?.cm as EditorView | undefined;
+      if (editorView) {
+        editorView.dispatch({ effects: compendiumRefreshEffect.of(null) });
+      }
+    }
+  });
 }
 
 // Re-export parser from its own module (kept separate so tests can import without pulling in CM6/obsidian deps)
@@ -175,7 +197,10 @@ export const compendiumRefPlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged || update.selectionSet) {
+      const hasRefresh = update.transactions.some((tr) =>
+        tr.effects.some((e) => e.is(compendiumRefreshEffect)),
+      );
+      if (hasRefresh || update.docChanged || update.viewportChanged || update.selectionSet) {
         this.decorations = buildCompendiumRefDecorations(update.view);
       }
     }
