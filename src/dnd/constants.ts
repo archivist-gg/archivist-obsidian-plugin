@@ -65,6 +65,12 @@ export const DAMAGE_TYPES: string[] = [
   "Psychic", "Radiant", "Slashing", "Thunder",
 ];
 
+export const DAMAGE_NONMAGICAL_VARIANTS: string[] = [
+  "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks",
+  "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks not made with Silvered Weapons",
+  "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks not made with Adamantine Weapons",
+];
+
 export const CONDITIONS: string[] = [
   "Blinded", "Charmed", "Deafened", "Exhaustion", "Frightened",
   "Grappled", "Incapacitated", "Invisible", "Paralyzed", "Petrified",

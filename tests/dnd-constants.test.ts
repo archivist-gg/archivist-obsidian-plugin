@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import {
   CR_PROFICIENCY, CR_XP, SIZE_HIT_DICE, SKILL_ABILITY,
   ALL_CR_VALUES, DAMAGE_TYPES, ABILITY_KEYS,
+  DAMAGE_NONMAGICAL_VARIANTS, CONDITIONS,
 } from "../src/dnd/constants";
 
 describe("CR_PROFICIENCY", () => {
@@ -69,5 +70,48 @@ describe("ALL_CR_VALUES", () => {
 describe("ABILITY_KEYS", () => {
   it("has 6 entries in standard order", () => {
     expect(ABILITY_KEYS).toEqual(["str", "dex", "con", "int", "wis", "cha"]);
+  });
+});
+
+describe("DAMAGE_TYPES", () => {
+  it("has 13 standard damage types", () => {
+    expect(DAMAGE_TYPES).toHaveLength(13);
+  });
+  it("includes all standard types", () => {
+    expect(DAMAGE_TYPES).toContain("Fire");
+    expect(DAMAGE_TYPES).toContain("Slashing");
+    expect(DAMAGE_TYPES).toContain("Psychic");
+  });
+});
+
+describe("DAMAGE_NONMAGICAL_VARIANTS", () => {
+  it("has 3 nonmagical variants", () => {
+    expect(DAMAGE_NONMAGICAL_VARIANTS).toHaveLength(3);
+  });
+  it("includes base nonmagical variant", () => {
+    expect(DAMAGE_NONMAGICAL_VARIANTS[0]).toBe(
+      "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks"
+    );
+  });
+  it("includes silvered variant", () => {
+    expect(DAMAGE_NONMAGICAL_VARIANTS[1]).toContain("Silvered");
+  });
+  it("includes adamantine variant", () => {
+    expect(DAMAGE_NONMAGICAL_VARIANTS[2]).toContain("Adamantine");
+  });
+});
+
+describe("CONDITIONS", () => {
+  it("has 15 standard conditions", () => {
+    expect(CONDITIONS).toHaveLength(15);
+  });
+  it("includes key conditions", () => {
+    expect(CONDITIONS).toContain("Blinded");
+    expect(CONDITIONS).toContain("Frightened");
+    expect(CONDITIONS).toContain("Unconscious");
+  });
+  it("is alphabetically sorted", () => {
+    const sorted = [...CONDITIONS].sort();
+    expect(CONDITIONS).toEqual(sorted);
   });
 });
