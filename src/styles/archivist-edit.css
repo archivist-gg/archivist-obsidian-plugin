@@ -1414,3 +1414,78 @@
 .archivist-speed-ft {
   font-size: 13px;
 }
+
+/* ==========================================================================
+   Legendary Checkboxes
+   ========================================================================== */
+
+.archivist-legendary-section {
+  padding: 6px 0 10px;
+}
+
+.archivist-legendary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.archivist-legendary-label {
+  font-weight: bold;
+  color: var(--d5e-bar-fill);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.archivist-legendary-checks {
+  display: flex;
+  gap: 5px;
+}
+
+.archivist-legendary-check {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--d5e-border-tan);
+  border-radius: 3px;
+  background: var(--d5e-parchment-light, #fef8ee);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.archivist-legendary-check-checked {
+  border-color: var(--d5e-bar-fill);
+}
+
+.archivist-legendary-check svg {
+  width: 12px;
+  height: 12px;
+}
+
+.archivist-legendary-adjust {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.archivist-legendary-adjust button {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--d5e-border-tan);
+  border-radius: 2px;
+  background: var(--d5e-parchment-light, #fef8ee);
+  color: var(--d5e-bar-fill);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.archivist-legendary-adjust button:hover {
+  border-color: var(--d5e-bar-fill);
+}
