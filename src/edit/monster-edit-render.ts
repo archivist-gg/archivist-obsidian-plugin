@@ -8,7 +8,7 @@ import { MonsterEditState } from "./edit-state";
 import { attachTagAutocomplete } from "./tag-autocomplete";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
-import { SaveAsNewModal } from "../entities/compendium-modal";
+import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
 import { showCompendiumPicker } from "./compendium-picker";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
@@ -124,36 +124,15 @@ export function renderMonsterEditMode(
       },
       onSaveAsNew: () => {
         const writable = plugin.compendiumManager?.getWritable() ?? [];
-        if (writable.length === 0) {
-          new Notice("No writable compendiums found. Create one first.");
-          return;
-        }
         const yamlStr = state.toYaml();
         const yamlData = yaml.load(yamlStr) as Record<string, unknown>;
 
-        if (onReplaceRef) {
-          // Widget path: no modal, auto-name from current title
-          const saveTo = (comp: { name: string }) => {
-            plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
-              .then((registered) => {
+        const saveTo = (comp: { name: string }) => {
+          plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
+            .then((registered) => {
+              if (onReplaceRef) {
                 onReplaceRef(`{{monster:${registered.slug}}}`);
-                new Notice(`Saved as new to ${comp.name}`);
-                if (onCancelExit) onCancelExit();
-              })
-              .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
-          };
-
-          if (writable.length === 1) {
-            saveTo(writable[0]);
-          } else {
-            showCompendiumPicker(sideBtns!, writable, saveTo);
-          }
-        } else {
-          // Code block path: use modal (existing behavior)
-          new SaveAsNewModal(plugin.app, writable, state.current.name, (comp, name) => {
-            yamlData.name = name;
-            plugin.compendiumManager!.saveEntity(comp.name, "monster", yamlData)
-              .then((registered) => {
+              } else {
                 const info = ctx?.getSectionInfo(el);
                 if (info) {
                   const editor = plugin.app.workspace.activeEditor?.editor;
@@ -163,11 +142,35 @@ export function renderMonsterEditMode(
                     editor.replaceRange(`{{monster:${registered.slug}}}`, from, to);
                   }
                 }
-                new Notice(`Saved as new to ${comp.name}`);
-                if (onCancelExit) onCancelExit();
-              })
-              .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
-          }).open();
+              }
+              new Notice(`Saved as new to ${comp.name}`);
+              if (onCancelExit) onCancelExit();
+            })
+            .catch((e: Error) => new Notice(`Failed to save: ${e.message}`));
+        };
+
+        if (onReplaceRef) {
+          // Widget path: no modal for name
+          if (writable.length === 0) {
+            new CreateCompendiumModal(plugin.app, plugin.compendiumManager!, saveTo).open();
+          } else if (writable.length === 1) {
+            saveTo(writable[0]);
+          } else {
+            showCompendiumPicker(sideBtns!, writable, saveTo);
+          }
+        } else {
+          // Code block path: use modal for name
+          if (writable.length === 0) {
+            new CreateCompendiumModal(plugin.app, plugin.compendiumManager!, (comp) => {
+              yamlData.name = state.current.name;
+              saveTo(comp);
+            }).open();
+          } else {
+            new SaveAsNewModal(plugin.app, writable, state.current.name, (comp, name) => {
+              yamlData.name = name;
+              saveTo(comp);
+            }, plugin.compendiumManager!).open();
+          }
         }
       },
       onCompendium: () => {},

@@ -23,7 +23,7 @@ import {
 import type { ToolCallInfo } from '../../../core/types';
 import { MCP_ICON_SVG } from '../../../shared/icons';
 import { setupCollapsible } from './collapsible';
-import { renderDndEntityBlock, type CopyAndSaveCallback } from './DndEntityRenderer';
+import { renderDndEntityBlock, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
 import { parseDndCodeFence } from './dndCodeFence';
 import { renderTodoItems } from './todoUtils';
 
@@ -730,7 +730,10 @@ export function updateToolCallResult(
 export function renderDndEntityAfterToolCall(
   parentEl: HTMLElement,
   toolCall: ToolCallInfo,
-  dndCopyAndSaveCallback?: CopyAndSaveCallback
+  dndCopyAndSaveCallback?: CopyAndSaveCallback,
+  entityRegistry?: any,
+  app?: any,
+  dndUpdateCallback?: UpdateEntityCallback,
 ): boolean {
   const entityType = getDndEntityType(toolCall.name);
   if (!entityType || !toolCall.result) return false;
@@ -741,7 +744,7 @@ export function renderDndEntityAfterToolCall(
       const yamlStr = yaml.dump(parsed.data);
       const fenceResult = parseDndCodeFence(entityType, yamlStr);
       if (fenceResult) {
-        renderDndEntityBlock(parentEl, fenceResult, dndCopyAndSaveCallback);
+        renderDndEntityBlock(parentEl, fenceResult, dndCopyAndSaveCallback, entityRegistry, app, dndUpdateCallback);
         return true;
       }
     }

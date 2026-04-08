@@ -50,7 +50,7 @@ import {
   sdkSessionExists,
   type SDKSessionLoadResult,
 } from './utils/sdkSession';
-import { CompendiumSelectModal } from '../entities/compendium-modal';
+import { CompendiumSelectModal, CreateCompendiumModal } from '../entities/compendium-modal';
 import { createArchivistMcpServer } from '../ai/mcp-server';
 import type { SrdStore } from '../ai/srd/srd-store';
 import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';
@@ -1315,28 +1315,32 @@ export class InquiryModule {
    * Saves an entity to the vault as a markdown note.
    * Used by the "Copy & Save" button in D&D entity blocks rendered in chat.
    */
-  async saveEntityToVault(entityType: string, data: Record<string, unknown>, compendiumName?: string): Promise<void> {
+  async saveEntityToVault(entityType: string, data: Record<string, unknown>, compendiumName?: string): Promise<string | undefined> {
     const plugin = this.plugin as any;
     const compManager = plugin.compendiumManager;
     if (!compManager) {
       new Notice("Compendium system not initialized");
-      return;
+      return undefined;
     }
 
     if (!compendiumName) {
       const writable = compManager.getWritable();
       if (writable.length === 0) {
-        new Notice("No writable compendiums. Create one first.");
-        return;
+        return new Promise<string | undefined>((resolve) => {
+          new CreateCompendiumModal(this.app, compManager, async (comp) => {
+            const slug = await this.saveEntityToVault(entityType, data, comp.name);
+            resolve(slug);
+          }).open();
+        });
       }
       if (writable.length === 1) {
         compendiumName = writable[0].name;
       } else {
-        return new Promise<void>((resolve) => {
+        return new Promise<string | undefined>((resolve) => {
           new CompendiumSelectModal(this.app, writable, async (comp) => {
-            await this.saveEntityToVault(entityType, data, comp.name);
-            resolve();
-          }).open();
+            const slug = await this.saveEntityToVault(entityType, data, comp.name);
+            resolve(slug);
+          }, compManager).open();
         });
       }
     }
@@ -1344,8 +1348,10 @@ export class InquiryModule {
     try {
       const registered = await compManager.saveEntity(compendiumName, entityType, data);
       new Notice(`Saved to ${registered.filePath}`);
+      return registered.slug;
     } catch (e: any) {
       new Notice(`Failed to save: ${e.message}`);
+      return undefined;
     }
   }
 

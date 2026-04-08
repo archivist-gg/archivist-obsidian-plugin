@@ -37,7 +37,7 @@ import { SrdStore } from "./ai/srd/srd-store";
 import { EntityRegistry } from "./entities/entity-registry";
 import { importSrdToVault } from "./entities/entity-importer";
 import { CompendiumManager } from "./entities/compendium-manager";
-import { CompendiumSelectModal } from "./entities/compendium-modal";
+import { CompendiumSelectModal, CreateCompendiumModal } from "./entities/compendium-modal";
 
 // Settings
 import type { ArchivistSettings } from "./types/settings";
@@ -147,11 +147,7 @@ export default class ArchivistPlugin extends Plugin {
           onCompendium: () => {
             if (!this.compendiumManager) return;
             const writable = this.compendiumManager.getWritable();
-            if (writable.length === 0) {
-              new Notice("No writable compendiums found. Create one first.");
-              return;
-            }
-            new CompendiumSelectModal(this.app, writable, async (comp) => {
+            const saveToComp = async (comp: { name: string }) => {
               try {
                 const registered = await this.compendiumManager!.saveEntity(
                   comp.name, "monster", result.data as unknown as Record<string, unknown>,
@@ -169,7 +165,12 @@ export default class ArchivistPlugin extends Plugin {
               } catch (e: any) {
                 new Notice(`Failed to save: ${e.message}`);
               }
-            }).open();
+            };
+            if (writable.length === 0) {
+              new CreateCompendiumModal(this.app, this.compendiumManager, saveToComp).open();
+            } else {
+              new CompendiumSelectModal(this.app, writable, saveToComp, this.compendiumManager).open();
+            }
           },
           onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
@@ -256,11 +257,7 @@ export default class ArchivistPlugin extends Plugin {
           onCompendium: () => {
             if (!this.compendiumManager) return;
             const writable = this.compendiumManager.getWritable();
-            if (writable.length === 0) {
-              new Notice("No writable compendiums found. Create one first.");
-              return;
-            }
-            new CompendiumSelectModal(this.app, writable, async (comp) => {
+            const saveToComp = async (comp: { name: string }) => {
               try {
                 const registered = await this.compendiumManager!.saveEntity(
                   comp.name, "spell", result.data as unknown as Record<string, unknown>,
@@ -278,7 +275,12 @@ export default class ArchivistPlugin extends Plugin {
               } catch (e: any) {
                 new Notice(`Failed to save: ${e.message}`);
               }
-            }).open();
+            };
+            if (writable.length === 0) {
+              new CreateCompendiumModal(this.app, this.compendiumManager, saveToComp).open();
+            } else {
+              new CompendiumSelectModal(this.app, writable, saveToComp, this.compendiumManager).open();
+            }
           },
           onCancel: () => exitEditMode(),
           onDelete: deleteBlock,
@@ -359,11 +361,7 @@ export default class ArchivistPlugin extends Plugin {
           onCompendium: () => {
             if (!this.compendiumManager) return;
             const writable = this.compendiumManager.getWritable();
-            if (writable.length === 0) {
-              new Notice("No writable compendiums found. Create one first.");
-              return;
-            }
-            new CompendiumSelectModal(this.app, writable, async (comp) => {
+            const saveToComp = async (comp: { name: string }) => {
               try {
                 const registered = await this.compendiumManager!.saveEntity(
                   comp.name, "item", result.data as unknown as Record<string, unknown>,
@@ -381,7 +379,12 @@ export default class ArchivistPlugin extends Plugin {
               } catch (e: any) {
                 new Notice(`Failed to save: ${e.message}`);
               }
-            }).open();
+            };
+            if (writable.length === 0) {
+              new CreateCompendiumModal(this.app, this.compendiumManager, saveToComp).open();
+            } else {
+              new CompendiumSelectModal(this.app, writable, saveToComp, this.compendiumManager).open();
+            }
           },
           onCancel: () => exitEditMode(),
           onDelete: deleteBlock,

@@ -766,7 +766,17 @@ export function initializeTabControllers(
     const yaml = await import('js-yaml');
     const data = yaml.load(yamlSource) as Record<string, unknown>;
     if (data && typeof data === 'object') {
-      await plugin.saveEntityToVault(entityType, data);
+      return await plugin.saveEntityToVault(entityType, data);
+    }
+    return undefined;
+  });
+
+  // Wire D&D entity update callback
+  tab.renderer.setDndUpdateCallback(async (slug, data) => {
+    const hostPlugin = plugin.plugin as any;
+    const compManager = hostPlugin?.compendiumManager;
+    if (compManager) {
+      await compManager.updateEntity(slug, data);
     }
   });
 

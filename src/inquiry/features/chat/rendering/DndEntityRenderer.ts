@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
-import { setIcon } from "obsidian";
+import { setIcon, Notice } from "obsidian";
 
-import type { EntityRegistry } from "../../../../entities/entity-registry";
+import type { EntityRegistry, RegisteredEntity } from "../../../../entities/entity-registry";
 import { parseMonster } from "../../../../parsers/monster-parser";
 import { parseSpell } from "../../../../parsers/spell-parser";
 import { parseItem } from "../../../../parsers/item-parser";
@@ -14,11 +14,12 @@ import { isDndCodeFence, parseDndCodeFence, type DndCodeFenceResult } from "./dn
 // Re-export pure functions and types for external consumers
 export { isDndCodeFence, parseDndCodeFence, type DndCodeFenceResult } from "./dndCodeFence";
 
-export type CopyAndSaveCallback = (entityType: string, yamlSource: string, name: string) => void;
+export type CopyAndSaveCallback = (entityType: string, yamlSource: string, name: string) => Promise<string | undefined> | void;
+export type UpdateEntityCallback = (slug: string, data: Record<string, unknown>) => Promise<void>;
 
 /**
  * Renders a D&D entity stat block into the given container element.
- * Includes a source badge and optional Copy & Save button.
+ * Includes action buttons based on whether the entity exists in the compendium.
  */
 export function renderDndEntityBlock(
   containerEl: HTMLElement,
@@ -26,6 +27,7 @@ export function renderDndEntityBlock(
   onCopyAndSave?: CopyAndSaveCallback,
   entityRegistry?: EntityRegistry | null,
   app?: App | null,
+  onUpdate?: UpdateEntityCallback,
 ): void {
   const wrapper = containerEl.createDiv({ cls: "claudian-dnd-entity-block" });
 
@@ -68,27 +70,57 @@ export function renderDndEntityBlock(
     fallback.createEl("code", { text: result.yamlSource });
   }
 
-  // Action buttons (Copy / Copy & Save)
+  // Action buttons
   if (onCopyAndSave) {
     const actionsRow = wrapper.createDiv({ cls: "claudian-dnd-actions" });
 
-    // Check if entity already exists in registry
+    // Check if entity already exists in registry (by name + type)
     const existingEntity = entityRegistry?.search(result.name, result.entityType, 1)
-      .find(e => e.source === "custom");
+      .find(e => e.name.toLowerCase() === result.name.toLowerCase());
 
     if (existingEntity) {
-      // Already saved -- show Copy-only button + file reference link
-      renderCopyButton(actionsRow, result);
-      renderFileRef(actionsRow, existingEntity.filePath, app);
+      renderSavedEntityActions(actionsRow, result, existingEntity, onCopyAndSave, onUpdate, entityRegistry, app);
     } else {
-      // Not saved -- show Copy & Save button that transitions to saved state
-      renderCopyAndSaveButton(actionsRow, result, onCopyAndSave, entityRegistry, app);
+      renderCopyAndSaveButton(actionsRow, result, onCopyAndSave, onUpdate, entityRegistry, app);
     }
   }
 }
 
-/** Renders a Copy-only button that copies the code fence to clipboard. */
-function renderCopyButton(container: HTMLElement, result: DndCodeFenceResult): void {
+// ---------------------------------------------------------------------------
+// Saved entity actions (entity exists in compendium)
+// ---------------------------------------------------------------------------
+
+function renderSavedEntityActions(
+  actionsRow: HTMLElement,
+  result: DndCodeFenceResult,
+  entity: RegisteredEntity,
+  onCopyAndSave: CopyAndSaveCallback,
+  onUpdate?: UpdateEntityCallback,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
+): void {
+  // Copy (widget reference)
+  renderCopyWidgetRefButton(actionsRow, result, entity.slug);
+
+  // Update (overwrite existing entity data)
+  if (onUpdate && !entity.readonly) {
+    renderUpdateButton(actionsRow, result, entity, onUpdate);
+  }
+
+  // Save As New (save as a different entity)
+  renderSaveAsNewButton(actionsRow, result, onCopyAndSave, onUpdate, entityRegistry, app);
+
+  // File reference link
+  renderFileRef(actionsRow, entity.filePath, app);
+}
+
+// ---------------------------------------------------------------------------
+// Individual button renderers
+// ---------------------------------------------------------------------------
+
+/** Copy button that copies {{type:slug}} widget reference. */
+function renderCopyWidgetRefButton(container: HTMLElement, result: DndCodeFenceResult, slug: string): void {
+  const refText = `{{${result.entityType}:${slug}}}`;
   const btn = container.createEl("button", { cls: "archivist-dnd-action-btn" });
   const iconSpan = btn.createSpan();
   setIcon(iconSpan, "copy");
@@ -96,14 +128,112 @@ function renderCopyButton(container: HTMLElement, result: DndCodeFenceResult): v
 
   btn.addEventListener("click", async () => {
     try {
-      await navigator.clipboard.writeText("```" + result.entityType + "\n" + result.yamlSource + "\n```");
+      await navigator.clipboard.writeText(refText);
     } catch { /* clipboard may fail in some contexts */ }
     labelSpan.setText("Copied!");
     setTimeout(() => labelSpan.setText("Copy"), 2000);
   });
 }
 
-/** Renders a file reference link below the button that opens the saved entity file. */
+/** Update button that overwrites the existing compendium entity with chat data. */
+function renderUpdateButton(
+  container: HTMLElement,
+  result: DndCodeFenceResult,
+  entity: RegisteredEntity,
+  onUpdate: UpdateEntityCallback,
+): void {
+  const btn = container.createEl("button", { cls: "archivist-dnd-action-btn" });
+  const iconSpan = btn.createSpan();
+  setIcon(iconSpan, "refresh-cw");
+  const labelSpan = btn.createSpan({ text: "Update" });
+
+  btn.addEventListener("click", async () => {
+    try {
+      await onUpdate(entity.slug, result.data);
+      labelSpan.setText("Updated!");
+      setTimeout(() => labelSpan.setText("Update"), 2000);
+    } catch (e: any) {
+      new Notice(`Failed to update: ${e.message}`);
+    }
+  });
+}
+
+/** Save As New button for saving as a different entity when one already exists. */
+function renderSaveAsNewButton(
+  actionsRow: HTMLElement,
+  result: DndCodeFenceResult,
+  onCopyAndSave: CopyAndSaveCallback,
+  onUpdate?: UpdateEntityCallback,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
+): void {
+  const btn = actionsRow.createEl("button", { cls: "archivist-dnd-action-btn" });
+  const iconSpan = btn.createSpan();
+  setIcon(iconSpan, "save");
+  btn.createSpan({ text: "Save As New" });
+
+  btn.addEventListener("click", async () => {
+    const slugResult = await onCopyAndSave(result.entityType, result.yamlSource, result.name);
+    const slug = typeof slugResult === "string" ? slugResult : undefined;
+
+    if (slug) {
+      // Copy widget reference
+      try {
+        await navigator.clipboard.writeText(`{{${result.entityType}:${slug}}}`);
+      } catch { /* clipboard may fail */ }
+
+      // Transition: re-render with the newly saved entity
+      actionsRow.empty();
+      const newEntity = entityRegistry?.getBySlug(slug);
+      if (newEntity) {
+        renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
+      } else {
+        renderCopyWidgetRefButton(actionsRow, result, slug);
+      }
+    }
+  });
+}
+
+/** Copy & Save button for entities not yet in the compendium. */
+function renderCopyAndSaveButton(
+  actionsRow: HTMLElement,
+  result: DndCodeFenceResult,
+  onCopyAndSave: CopyAndSaveCallback,
+  onUpdate?: UpdateEntityCallback,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
+): void {
+  const btn = actionsRow.createEl("button", { cls: "archivist-dnd-action-btn" });
+  const iconSpan = btn.createSpan();
+  setIcon(iconSpan, "save");
+  btn.createSpan({ text: "Copy & Save" });
+
+  btn.addEventListener("click", async () => {
+    const slugResult = await onCopyAndSave(result.entityType, result.yamlSource, result.name);
+    const slug = typeof slugResult === "string" ? slugResult : undefined;
+
+    // Copy widget reference (or code fence fallback)
+    const refText = slug
+      ? `{{${result.entityType}:${slug}}}`
+      : "```" + result.entityType + "\n" + result.yamlSource + "\n```";
+    try {
+      await navigator.clipboard.writeText(refText);
+    } catch { /* clipboard may fail */ }
+
+    // Transition to saved state
+    actionsRow.empty();
+    if (slug) {
+      const newEntity = entityRegistry?.getBySlug(slug);
+      if (newEntity) {
+        renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
+      } else {
+        renderCopyWidgetRefButton(actionsRow, result, slug);
+      }
+    }
+  });
+}
+
+/** File reference link that opens the saved entity file. */
 function renderFileRef(container: HTMLElement, filePath: string, app?: App | null): void {
   const ref = container.createDiv({ cls: "archivist-dnd-file-ref" });
   const linkIcon = ref.createSpan({ cls: "archivist-dnd-file-ref-icon" });
@@ -117,41 +247,6 @@ function renderFileRef(container: HTMLElement, filePath: string, app?: App | nul
   }
 }
 
-/** Renders a Copy & Save button that saves, then transitions to Copy + file ref. */
-function renderCopyAndSaveButton(
-  actionsRow: HTMLElement,
-  result: DndCodeFenceResult,
-  onCopyAndSave: CopyAndSaveCallback,
-  entityRegistry?: EntityRegistry | null,
-  app?: App | null,
-): void {
-  const btn = actionsRow.createEl("button", { cls: "archivist-dnd-action-btn" });
-  const iconSpan = btn.createSpan();
-  setIcon(iconSpan, "save");
-  btn.createSpan({ text: "Copy & Save" });
-
-  btn.addEventListener("click", async () => {
-    // Copy to clipboard
-    try {
-      await navigator.clipboard.writeText("```" + result.entityType + "\n" + result.yamlSource + "\n```");
-    } catch { /* clipboard may fail in some contexts */ }
-
-    // Trigger the save callback
-    onCopyAndSave(result.entityType, result.yamlSource, result.name);
-
-    // Transition to saved state: replace actions row contents
-    actionsRow.empty();
-    renderCopyButton(actionsRow, result);
-
-    // Try to find the newly-saved entity for the file ref
-    const saved = entityRegistry?.search(result.name, result.entityType, 1)
-      .find(e => e.source === "custom");
-    if (saved) {
-      renderFileRef(actionsRow, saved.filePath, app);
-    }
-  });
-}
-
 /**
  * Scans an element for `<pre><code>` blocks with D&D language classes
  * and replaces them with rendered stat blocks.
@@ -161,6 +256,7 @@ export function replaceDndCodeFences(
   onCopyAndSave?: CopyAndSaveCallback,
   entityRegistry?: EntityRegistry | null,
   app?: App | null,
+  onUpdate?: UpdateEntityCallback,
 ): void {
   const codeBlocks = el.querySelectorAll("pre > code");
   for (const code of Array.from(codeBlocks)) {
@@ -187,6 +283,6 @@ export function replaceDndCodeFences(
     parent.insertBefore(container, insertTarget);
     insertTarget.remove();
 
-    renderDndEntityBlock(container, result, onCopyAndSave, entityRegistry, app);
+    renderDndEntityBlock(container, result, onCopyAndSave, entityRegistry, app, onUpdate);
   }
 }
