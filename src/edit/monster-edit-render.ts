@@ -322,7 +322,43 @@ export function renderMonsterEditMode(
     state.updateField("speed", speed);
   });
   createSpinButtons(walkWrap, walkInput);
-  speedLine.appendText(" ft.");
+  speedLine.appendText(" ft. ");
+
+  // Extra speed modes (fly, swim, climb, burrow)
+  const extraModes: Array<{ key: "fly" | "swim" | "climb" | "burrow"; label: string }> = [
+    { key: "fly", label: "Fly" },
+    { key: "swim", label: "Swim" },
+    { key: "climb", label: "Climb" },
+    { key: "burrow", label: "Burrow" },
+  ];
+  const hasExtraSpeeds = extraModes.some(({ key }) => (m.speed?.[key] ?? 0) > 0);
+  const extraRow = coreProps.createDiv({ cls: "archivist-speed-extra" });
+  extraRow.style.display = hasExtraSpeeds ? "" : "none";
+
+  const toggleBtn = speedLine.createEl("button", {
+    cls: "archivist-speed-toggle",
+    text: hasExtraSpeeds ? "- Hide" : "+ Other Speeds",
+  });
+  toggleBtn.addEventListener("click", () => {
+    const isVisible = extraRow.style.display !== "none";
+    extraRow.style.display = isVisible ? "none" : "";
+    toggleBtn.textContent = isVisible ? "+ Other Speeds" : "- Hide";
+  });
+
+  for (const { key, label } of extraModes) {
+    const modeWrap = extraRow.createDiv({ cls: "archivist-speed-mode" });
+    modeWrap.createEl("span", { cls: "archivist-speed-label", text: label });
+    const numWrap = modeWrap.createDiv({ cls: "archivist-num-wrap" });
+    const numInput = numWrap.createEl("input", { cls: "archivist-num-in archivist-speed-input" });
+    numInput.type = "number";
+    numInput.value = String(m.speed?.[key] ?? 0);
+    numInput.addEventListener("input", () => {
+      const speed = { ...state.current.speed, [key]: parseInt(numInput.value) || 0 };
+      state.updateField("speed", speed);
+    });
+    createSpinButtons(numWrap, numInput);
+  }
+  extraRow.createEl("span", { cls: "archivist-speed-ft", text: "ft." });
 
   // =========================================================================
   // 4. SVG Bar
