@@ -1253,3 +1253,118 @@
   text-decoration: none;
   margin-left: 2px;
 }
+
+/* ==========================================================================
+   SearchableTagSelect
+   ========================================================================== */
+
+.archivist-tag-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  border: 1px dashed var(--d5e-border-tan);
+  background: var(--d5e-parchment-light, #fef8ee);
+  border-radius: 3px;
+  padding: 4px 6px;
+  min-height: 28px;
+  cursor: text;
+  position: relative;
+}
+
+.archivist-tag-select-focused {
+  border: 1px solid var(--d5e-bar-fill) !important;
+  border-style: solid !important;
+}
+
+.archivist-tag-pill-row {
+  display: contents;
+}
+
+.archivist-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--d5e-bar-fill);
+  color: var(--d5e-parchment);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.archivist-tag-pill-x {
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.archivist-tag-pill-x:hover {
+  opacity: 1;
+}
+
+.archivist-tag-input {
+  border: none !important;
+  background: transparent !important;
+  font: inherit;
+  font-size: 12px;
+  color: var(--d5e-text-dark) !important;
+  outline: none !important;
+  flex: 1;
+  min-width: 60px;
+  padding: 2px 0;
+}
+
+.archivist-tag-dropdown {
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  right: -1px;
+  z-index: 100;
+  border: 1px solid var(--d5e-border-tan);
+  border-top: none;
+  background: var(--d5e-parchment-light, #fef8ee);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.archivist-tag-dropdown-item {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--d5e-text-dark);
+  cursor: pointer;
+}
+
+.archivist-tag-dropdown-item:hover {
+  background: var(--d5e-parchment-dark, #f4e4c1);
+}
+
+.archivist-tag-dropdown-item-highlighted {
+  background: var(--d5e-parchment-dark, #f4e4c1) !important;
+}
+
+.archivist-tag-dropdown-item-selected {
+  color: #999;
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.archivist-tag-dropdown-item-selected:hover {
+  background: transparent;
+}
+
+.archivist-tag-dropdown-custom {
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--d5e-bar-fill);
+  font-style: italic;
+  cursor: pointer;
+  border-top: 1px dashed var(--d5e-border-tan);
+}
+
+.archivist-tag-dropdown-custom:hover {
+  background: var(--d5e-parchment-dark, #f4e4c1);
+}
