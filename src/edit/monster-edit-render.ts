@@ -6,6 +6,7 @@ import type { Monster, MonsterAbilities, MonsterFeature } from "../types/monster
 import type { EditableMonster } from "../dnd/editable-monster";
 import { MonsterEditState } from "./edit-state";
 import { attachTagAutocomplete } from "./tag-autocomplete";
+import { createSearchableTagSelect } from "./searchable-tag-select";
 import { renderSideButtons } from "./side-buttons";
 import { createSvgBar } from "../renderers/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
@@ -13,7 +14,7 @@ import { showCompendiumPicker } from "./compendium-picker";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
   STANDARD_SENSES, ALL_SECTIONS, ALIGNMENT_ETHICAL, ALIGNMENT_MORAL,
-  ALL_CR_VALUES,
+  ALL_CR_VALUES, DAMAGE_TYPES, DAMAGE_NONMAGICAL_VARIANTS, CONDITIONS,
 } from "../dnd/constants";
 import {
   abilityModifier, formatModifier,
@@ -607,7 +608,7 @@ export function renderMonsterEditMode(
   // 11. Challenge Rating
   // =========================================================================
 
-  const crLine = sensesSection.createDiv({ cls: "property-line last" });
+  const crLine = sensesSection.createDiv({ cls: "property-line" });
   crLine.createEl("h4", { text: "Challenge" });
   crLine.appendText(" ");
 
@@ -626,6 +627,52 @@ export function renderMonsterEditMode(
   refs.xpValue = xpValueEl;
   crLine.appendText(" XP)");
   crLine.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
+
+  // =========================================================================
+  // 11b. Damage & Condition Immunities
+  // =========================================================================
+
+  const damagePresets = [...DAMAGE_TYPES, ...DAMAGE_NONMAGICAL_VARIANTS];
+
+  const dmgVulnLine = sensesSection.createDiv({ cls: "property-line" });
+  dmgVulnLine.createEl("h4", { text: "Damage Vulnerabilities" });
+  createSearchableTagSelect({
+    container: dmgVulnLine,
+    presets: damagePresets,
+    selected: [...(m.damage_vulnerabilities ?? [])],
+    onChange: (values) => state.updateField("damage_vulnerabilities", values),
+    placeholder: "Search damage types...",
+  });
+
+  const dmgResLine = sensesSection.createDiv({ cls: "property-line" });
+  dmgResLine.createEl("h4", { text: "Damage Resistances" });
+  createSearchableTagSelect({
+    container: dmgResLine,
+    presets: damagePresets,
+    selected: [...(m.damage_resistances ?? [])],
+    onChange: (values) => state.updateField("damage_resistances", values),
+    placeholder: "Search damage types...",
+  });
+
+  const dmgImmLine = sensesSection.createDiv({ cls: "property-line" });
+  dmgImmLine.createEl("h4", { text: "Damage Immunities" });
+  createSearchableTagSelect({
+    container: dmgImmLine,
+    presets: damagePresets,
+    selected: [...(m.damage_immunities ?? [])],
+    onChange: (values) => state.updateField("damage_immunities", values),
+    placeholder: "Search damage types...",
+  });
+
+  const condImmLine = sensesSection.createDiv({ cls: "property-line last" });
+  condImmLine.createEl("h4", { text: "Condition Immunities" });
+  createSearchableTagSelect({
+    container: condImmLine,
+    presets: CONDITIONS,
+    selected: [...(m.condition_immunities ?? [])],
+    onChange: (values) => state.updateField("condition_immunities", values),
+    placeholder: "Search conditions...",
+  });
 
   // =========================================================================
   // 12. SVG Bar
