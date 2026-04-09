@@ -402,22 +402,28 @@ export function renderMonsterEditMode(
         });
       }
     }
+    attachDropdownCloseHandler();
   }
+
+  let closeHandler: ((e: MouseEvent) => void) | null = null;
 
   function hideSpeedDropdown(): void {
     if (dropdownEl) { dropdownEl.remove(); dropdownEl = null; }
+    if (closeHandler) { document.removeEventListener("click", closeHandler); closeHandler = null; }
   }
 
   addBtn.addEventListener("click", () => {
     if (dropdownEl) { hideSpeedDropdown(); } else { showSpeedDropdown(); }
   });
 
-  // Close dropdown on outside click
-  speedLine.addEventListener("click", (e) => {
-    if (dropdownEl && !addAnchor.contains(e.target as Node)) {
-      hideSpeedDropdown();
-    }
-  });
+  function attachDropdownCloseHandler(): void {
+    closeHandler = (e: MouseEvent) => {
+      if (dropdownEl && !addAnchor.contains(e.target as Node)) {
+        hideSpeedDropdown();
+      }
+    };
+    setTimeout(() => document.addEventListener("click", closeHandler!), 0);
+  }
 
   // Pre-populate existing non-zero speeds
   for (const key of extraModeKeys) {
