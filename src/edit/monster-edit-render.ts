@@ -323,34 +323,29 @@ export function renderMonsterEditMode(
     state.updateField("speed", speed);
   });
   createSpinButtons(walkWrap, walkInput);
-  speedLine.appendText(" ft. ");
+  speedLine.appendText(" ft.");
 
-  // Extra speed modes (fly, swim, climb, burrow)
-  const extraModes: Array<{ key: "fly" | "swim" | "climb" | "burrow"; label: string }> = [
-    { key: "fly", label: "Fly" },
-    { key: "swim", label: "Swim" },
-    { key: "climb", label: "Climb" },
-    { key: "burrow", label: "Burrow" },
-  ];
-  const hasExtraSpeeds = extraModes.some(({ key }) => (m.speed?.[key] ?? 0) > 0);
-  const extraRow = coreProps.createDiv({ cls: "archivist-speed-extra" });
-  extraRow.style.display = hasExtraSpeeds ? "" : "none";
+  // Extra speed modes — inline pick-and-add
+  const extraModeKeys: Array<"fly" | "swim" | "climb" | "burrow"> = ["fly", "swim", "climb", "burrow"];
+  const activeSpeedModes: Set<string> = new Set();
 
-  const toggleBtn = speedLine.createEl("button", {
-    cls: "archivist-speed-toggle",
-    text: hasExtraSpeeds ? "- Hide" : "+ Other Speeds",
-  });
-  toggleBtn.addEventListener("click", () => {
-    const isVisible = extraRow.style.display !== "none";
-    extraRow.style.display = isVisible ? "none" : "";
-    toggleBtn.textContent = isVisible ? "+ Other Speeds" : "- Hide";
-  });
+  function addSpeedMode(key: "fly" | "swim" | "climb" | "burrow"): void {
+    if (activeSpeedModes.has(key)) return;
+    activeSpeedModes.add(key);
 
-  for (const { key, label } of extraModes) {
-    const modeWrap = extraRow.createDiv({ cls: "archivist-speed-mode" });
-    modeWrap.createEl("span", { cls: "archivist-speed-label", text: label });
-    const numWrap = modeWrap.createDiv({ cls: "archivist-num-wrap" });
-    const numInput = numWrap.createEl("input", { cls: "archivist-num-in archivist-speed-input" });
+    // Insert comma before this mode
+    const comma = document.createTextNode(", ");
+    speedLine.insertBefore(comma, addAnchor);
+
+    const modeSpan = document.createElement("span");
+    modeSpan.dataset.speedMode = key;
+    speedLine.insertBefore(modeSpan, addAnchor);
+
+    const label = document.createTextNode(`${key} `);
+    modeSpan.appendChild(label);
+
+    const numWrap = modeSpan.createDiv({ cls: "archivist-num-wrap" });
+    const numInput = numWrap.createEl("input", { cls: "archivist-num-in" });
     numInput.type = "number";
     numInput.value = String(m.speed?.[key] ?? 0);
     numInput.addEventListener("input", () => {
@@ -358,8 +353,78 @@ export function renderMonsterEditMode(
       state.updateField("speed", speed);
     });
     createSpinButtons(numWrap, numInput);
+
+    const ftText = document.createTextNode(" ft.");
+    modeSpan.appendChild(ftText);
+
+    const removeBtn = modeSpan.createEl("span", { cls: "archivist-speed-remove", text: "\u00d7" });
+    removeBtn.addEventListener("click", () => {
+      activeSpeedModes.delete(key);
+      // Remove the preceding comma
+      const prev = modeSpan.previousSibling;
+      if (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent?.includes(",")) {
+        prev.remove();
+      }
+      modeSpan.remove();
+      state.updateField("speed", { ...state.current.speed, [key]: 0 });
+      updateAddButton();
+    });
+
+    updateAddButton();
   }
-  extraRow.createEl("span", { cls: "archivist-speed-ft", text: "ft." });
+
+  // The "+ more" anchor (dropdown container)
+  const addAnchor = speedLine.createEl("span", { cls: "archivist-speed-dropdown-anchor" });
+  const addBtn = addAnchor.createEl("button", { cls: "archivist-speed-add-btn", text: "+ more" });
+  addBtn.style.marginLeft = "6px";
+  let dropdownEl: HTMLElement | null = null;
+
+  function updateAddButton(): void {
+    const allAdded = extraModeKeys.every(k => activeSpeedModes.has(k));
+    addAnchor.style.display = allAdded ? "none" : "";
+  }
+
+  function showSpeedDropdown(): void {
+    hideSpeedDropdown();
+    dropdownEl = addAnchor.createDiv({ cls: "archivist-speed-dropdown" });
+    for (const key of extraModeKeys) {
+      const taken = activeSpeedModes.has(key);
+      const item = dropdownEl.createDiv({
+        cls: taken
+          ? "archivist-speed-dropdown-item archivist-speed-dropdown-item-taken"
+          : "archivist-speed-dropdown-item",
+        text: taken ? `${key.charAt(0).toUpperCase() + key.slice(1)} (added)` : key.charAt(0).toUpperCase() + key.slice(1),
+      });
+      if (!taken) {
+        item.addEventListener("click", () => {
+          addSpeedMode(key);
+          hideSpeedDropdown();
+        });
+      }
+    }
+  }
+
+  function hideSpeedDropdown(): void {
+    if (dropdownEl) { dropdownEl.remove(); dropdownEl = null; }
+  }
+
+  addBtn.addEventListener("click", () => {
+    if (dropdownEl) { hideSpeedDropdown(); } else { showSpeedDropdown(); }
+  });
+
+  // Close dropdown on outside click
+  speedLine.addEventListener("click", (e) => {
+    if (dropdownEl && !addAnchor.contains(e.target as Node)) {
+      hideSpeedDropdown();
+    }
+  });
+
+  // Pre-populate existing non-zero speeds
+  for (const key of extraModeKeys) {
+    if ((m.speed?.[key] ?? 0) > 0) {
+      addSpeedMode(key);
+    }
+  }
 
   // =========================================================================
   // 4. SVG Bar
