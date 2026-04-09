@@ -1016,82 +1016,35 @@ function renderTabContent(
 }
 
 function renderLegendaryCheckboxes(container: HTMLElement, state: MonsterEditState): void {
-  const section = container.createDiv({ cls: "archivist-legendary-section" });
+  const section = container.createDiv({ cls: "archivist-legendary-counts" });
 
-  renderCheckboxRow(section, "Legendary Actions", state.current.legendary_actions ?? 3, (count) => {
-    state.updateField("legendary_actions", count);
+  // Legendary Actions count
+  const actionsField = section.createDiv({ cls: "archivist-legendary-count-field" });
+  actionsField.createEl("span", { cls: "archivist-legendary-count-label", text: "Actions:" });
+  const actionsWrap = actionsField.createDiv({ cls: "archivist-num-wrap" });
+  const actionsInput = actionsWrap.createEl("input", { cls: "archivist-num-in" });
+  actionsInput.type = "number";
+  actionsInput.style.width = "36px";
+  actionsInput.value = String(state.current.legendary_actions ?? 3);
+  actionsInput.addEventListener("input", () => {
+    state.updateField("legendary_actions", parseInt(actionsInput.value) || 0);
   });
+  createSpinButtons(actionsWrap, actionsInput);
 
-  renderCheckboxRow(section, "Legendary Resistance", state.current.legendary_resistance ?? 3, (count) => {
-    state.updateField("legendary_resistance", count);
+  // Legendary Resistance count
+  const resistField = section.createDiv({ cls: "archivist-legendary-count-field" });
+  resistField.createEl("span", { cls: "archivist-legendary-count-label", text: "Resistance:" });
+  const resistWrap = resistField.createDiv({ cls: "archivist-num-wrap" });
+  const resistInput = resistWrap.createEl("input", { cls: "archivist-num-in" });
+  resistInput.type = "number";
+  resistInput.style.width = "36px";
+  resistInput.value = String(state.current.legendary_resistance ?? 0);
+  resistInput.addEventListener("input", () => {
+    state.updateField("legendary_resistance", parseInt(resistInput.value) || 0);
   });
+  createSpinButtons(resistWrap, resistInput);
 
-  createSvgBar(section);
-}
-
-function renderCheckboxRow(
-  parent: HTMLElement,
-  label: string,
-  count: number,
-  onCountChange: (count: number) => void,
-): void {
-  const row = parent.createDiv({ cls: "archivist-legendary-row" });
-  row.createDiv({ cls: "archivist-legendary-label", text: label });
-
-  const checksDiv = row.createDiv({ cls: "archivist-legendary-checks" });
-  const checkedState: boolean[] = new Array(count).fill(false);
-
-  function renderBoxes(): void {
-    checksDiv.empty();
-    for (let i = 0; i < checkedState.length; i++) {
-      const box = checksDiv.createDiv({
-        cls: `archivist-legendary-check${checkedState[i] ? " archivist-legendary-check-checked" : ""}`,
-      });
-      if (checkedState[i]) {
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 12 12");
-        const l1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        l1.setAttribute("x1", "2"); l1.setAttribute("y1", "2");
-        l1.setAttribute("x2", "10"); l1.setAttribute("y2", "10");
-        l1.setAttribute("stroke", "var(--d5e-bar-fill, #922610)");
-        l1.setAttribute("stroke-width", "2.5");
-        l1.setAttribute("stroke-linecap", "round");
-        const l2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        l2.setAttribute("x1", "10"); l2.setAttribute("y1", "2");
-        l2.setAttribute("x2", "2"); l2.setAttribute("y2", "10");
-        l2.setAttribute("stroke", "var(--d5e-bar-fill, #922610)");
-        l2.setAttribute("stroke-width", "2.5");
-        l2.setAttribute("stroke-linecap", "round");
-        svg.appendChild(l1);
-        svg.appendChild(l2);
-        box.appendChild(svg);
-      }
-      box.addEventListener("click", () => {
-        checkedState[i] = !checkedState[i];
-        renderBoxes();
-      });
-    }
-  }
-
-  const adjust = row.createDiv({ cls: "archivist-legendary-adjust" });
-  const minusBtn = adjust.createEl("button", { text: "\u2212" });
-  const plusBtn = adjust.createEl("button", { text: "+" });
-
-  minusBtn.addEventListener("click", () => {
-    if (checkedState.length > 1) {
-      checkedState.pop();
-      onCountChange(checkedState.length);
-      renderBoxes();
-    }
-  });
-
-  plusBtn.addEventListener("click", () => {
-    checkedState.push(false);
-    onCountChange(checkedState.length);
-    renderBoxes();
-  });
-
-  renderBoxes();
+  createSvgBar(container);
 }
 
 function renderFeatureCard(
