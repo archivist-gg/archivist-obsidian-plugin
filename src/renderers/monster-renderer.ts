@@ -84,6 +84,33 @@ function renderLegendaryResistance(
   }
 }
 
+function renderInlineTrackingBoxes(parent: HTMLElement, count: number): void {
+  const container = el("span", { cls: "archivist-legendary-action-boxes", parent });
+  for (let i = 0; i < count; i++) {
+    const box = el("span", { cls: "archivist-legendary-action-box", parent: container });
+    box.addEventListener("click", () => {
+      const isChecked = box.hasClass("archivist-legendary-action-box-checked");
+      if (isChecked) {
+        box.removeClass("archivist-legendary-action-box-checked");
+        box.empty();
+      } else {
+        box.addClass("archivist-legendary-action-box-checked");
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 12 12");
+        const l1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l1.setAttribute("x1", "2"); l1.setAttribute("y1", "2");
+        l1.setAttribute("x2", "10"); l1.setAttribute("y2", "10");
+        const l2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        l2.setAttribute("x1", "10"); l2.setAttribute("y1", "2");
+        l2.setAttribute("x2", "2"); l2.setAttribute("y2", "10");
+        svg.appendChild(l1);
+        svg.appendChild(l2);
+        box.appendChild(svg);
+      }
+    });
+  }
+}
+
 export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLElement {
   const isTwoCol = columns === 2;
   const wrapperCls = isTwoCol
@@ -301,11 +328,12 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       if (section.id === "legendary") {
         const legendaryCount = monster.legendary_actions ?? 3;
         const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
-        el("p", {
+        const introP = el("p", {
           cls: "archivist-legendary-intro",
           text: introText,
           parent: sectionDiv,
         });
+        renderInlineTrackingBoxes(introP, legendaryCount);
 
         if (monster.legendary_resistance && monster.legendary_resistance > 0) {
           renderLegendaryResistance(sectionDiv, monster.legendary_resistance);
@@ -364,11 +392,12 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       if (tab.id === "legendary") {
         const legendaryCount = monster.legendary_actions ?? 3;
         const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
-        el("p", {
+        const introP = el("p", {
           cls: "archivist-legendary-intro",
           text: introText,
           parent: content,
         });
+        renderInlineTrackingBoxes(introP, legendaryCount);
 
         if (monster.legendary_resistance && monster.legendary_resistance > 0) {
           renderLegendaryResistance(content, monster.legendary_resistance);

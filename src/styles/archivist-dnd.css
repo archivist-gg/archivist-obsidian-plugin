@@ -1937,3 +1937,56 @@ body.theme-light .archivist-tag-atk:hover {
   background: var(--background-modifier-hover);
 }
 
+/* ==========================================================================
+   Legendary Action Tracking Boxes (Read Mode)
+   ========================================================================== */
+
+.archivist-legendary-action-boxes {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.archivist-legendary-action-box {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d9c484;
+  border-radius: 2px;
+  background: #fdf1dc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+
+.archivist-legendary-action-box-checked {
+  border-color: #922610;
+}
+
+.archivist-legendary-action-box svg {
+  width: 8px;
+  height: 8px;
+}
+
+.archivist-legendary-action-box svg line {
+  stroke: #922610;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.theme-dark .archivist-legendary-action-box {
+  background: #2b2b2b;
+  border-color: #5a4f3a;
+}
+
+.theme-dark .archivist-legendary-action-box-checked {
+  border-color: #c4683a;
+}
+
+.theme-dark .archivist-legendary-action-box svg line {
+  stroke: #c4683a;
+}
+
