@@ -1370,6 +1370,57 @@
 }
 
 /* ==========================================================================
+   Collapsible Field Sections
+   ========================================================================== */
+
+.archivist-collapse-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 3px 0;
+  user-select: none;
+}
+
+.archivist-collapse-header:hover .archivist-collapse-arrow {
+  color: var(--d5e-bar-fill);
+}
+
+.archivist-collapse-arrow {
+  font-size: 10px;
+  color: var(--d5e-border-tan-dark);
+  width: 12px;
+  text-align: center;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+
+.archivist-collapse-arrow-open {
+  transform: rotate(90deg);
+}
+
+.archivist-collapse-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--d5e-text-accent);
+}
+
+.archivist-collapse-count {
+  font-size: 11px;
+  color: #766649;
+  font-weight: normal;
+}
+
+.archivist-collapse-body {
+  margin-left: 18px;
+  padding: 4px 0 2px;
+}
+
+.archivist-collapse-body-hidden {
+  display: none;
+}
+
+/* ==========================================================================
    Speed Pick & Add
    ========================================================================== */
 
