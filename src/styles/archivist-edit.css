@@ -1264,7 +1264,7 @@
   align-items: center;
   gap: 4px;
   border: 1px dashed var(--d5e-border-tan);
-  background: var(--d5e-parchment-light, #fef8ee);
+  background: transparent;
   border-radius: 3px;
   padding: 4px 6px;
   min-height: 28px;
@@ -1370,40 +1370,9 @@
 }
 
 /* ==========================================================================
-   Collapsible Field Sections
+   Collapsible Field Sections (damage/condition immunities)
+   Reuses .archivist-coll-header / .archivist-coll-chevron from Section 6
    ========================================================================== */
-
-.archivist-collapse-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 3px 0;
-  user-select: none;
-}
-
-.archivist-collapse-header:hover .archivist-collapse-arrow {
-  color: var(--d5e-bar-fill);
-}
-
-.archivist-collapse-arrow {
-  font-size: 10px;
-  color: var(--d5e-border-tan-dark);
-  width: 12px;
-  text-align: center;
-  transition: transform 0.15s;
-  display: inline-block;
-}
-
-.archivist-collapse-arrow-open {
-  transform: rotate(90deg);
-}
-
-.archivist-collapse-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--d5e-text-accent);
-}
 
 .archivist-collapse-count {
   font-size: 11px;

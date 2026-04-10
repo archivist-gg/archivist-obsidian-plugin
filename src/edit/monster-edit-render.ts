@@ -484,7 +484,7 @@ export function renderMonsterEditMode(
   // =========================================================================
 
   const savesSection = block.createDiv({ cls: "property-block" });
-  const { grid: savesGrid } = createCollapsible(savesSection, "Saving Throws", true);
+  const { grid: savesGrid } = createCollapsible(savesSection, "Saving Throws", false);
   savesGrid.addClass("archivist-saves-grid");
   refs.savesGrid = savesGrid;
 
@@ -588,11 +588,59 @@ export function renderMonsterEditMode(
   }
 
   // =========================================================================
-  // 9. Collapsible Senses
+  // 9. Damage & Condition Immunities (Collapsible)
+  // =========================================================================
+
+  const damagePresets = [...DAMAGE_TYPES, ...DAMAGE_NONMAGICAL_VARIANTS];
+
+  interface CollapseField {
+    title: string;
+    presets: string[];
+    selected: string[];
+    field: string;
+    placeholder: string;
+  }
+
+  const collapseFields: CollapseField[] = [
+    { title: "Damage Vulnerabilities", presets: damagePresets, selected: [...(m.damage_vulnerabilities ?? [])], field: "damage_vulnerabilities", placeholder: "Search damage types..." },
+    { title: "Damage Resistances", presets: damagePresets, selected: [...(m.damage_resistances ?? [])], field: "damage_resistances", placeholder: "Search damage types..." },
+    { title: "Damage Immunities", presets: damagePresets, selected: [...(m.damage_immunities ?? [])], field: "damage_immunities", placeholder: "Search damage types..." },
+    { title: "Condition Immunities", presets: CONDITIONS, selected: [...(m.condition_immunities ?? [])], field: "condition_immunities", placeholder: "Search conditions..." },
+  ];
+
+  for (const cf of collapseFields) {
+    const wrapper = block.createDiv({ cls: "property-block" });
+    const header = wrapper.createDiv({ cls: "archivist-coll-header" });
+    const chevron = header.createEl("span", { cls: "archivist-coll-chevron" });
+    setIcon(chevron, "chevron-right");
+    header.createEl("h4", { text: cf.title });
+    const countEl = header.createEl("span", { cls: "archivist-collapse-count", text: `(${cf.selected.length})` });
+
+    const body = wrapper.createDiv({ cls: "archivist-collapse-body archivist-collapse-body-hidden" });
+
+    header.addEventListener("click", () => {
+      body.classList.toggle("archivist-collapse-body-hidden");
+      chevron.classList.toggle("open");
+    });
+
+    createSearchableTagSelect({
+      container: body,
+      presets: cf.presets,
+      selected: cf.selected,
+      onChange: (values) => {
+        state.updateField(cf.field, values);
+        countEl.textContent = `(${values.length})`;
+      },
+      placeholder: cf.placeholder,
+    });
+  }
+
+  // =========================================================================
+  // 10. Collapsible Senses
   // =========================================================================
 
   const sensesSection = block.createDiv({ cls: "property-block" });
-  const { grid: sensesGrid } = createCollapsible(sensesSection, "Senses", true);
+  const { grid: sensesGrid } = createCollapsible(sensesSection, "Senses", false);
   sensesGrid.addClass("archivist-senses-grid");
 
   for (const sense of STANDARD_SENSES) {
@@ -698,63 +746,6 @@ export function renderMonsterEditMode(
   refs.xpValue = xpValueEl;
   crLine.appendText(" XP)");
   crLine.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
-
-  // =========================================================================
-  // 11b. Damage & Condition Immunities (Collapsible)
-  // =========================================================================
-
-  const damagePresets = [...DAMAGE_TYPES, ...DAMAGE_NONMAGICAL_VARIANTS];
-
-  interface CollapseField {
-    title: string;
-    presets: string[];
-    selected: string[];
-    field: string;
-    placeholder: string;
-  }
-
-  const collapseFields: CollapseField[] = [
-    { title: "Damage Vulnerabilities", presets: damagePresets, selected: [...(m.damage_vulnerabilities ?? [])], field: "damage_vulnerabilities", placeholder: "Search damage types..." },
-    { title: "Damage Resistances", presets: damagePresets, selected: [...(m.damage_resistances ?? [])], field: "damage_resistances", placeholder: "Search damage types..." },
-    { title: "Damage Immunities", presets: damagePresets, selected: [...(m.damage_immunities ?? [])], field: "damage_immunities", placeholder: "Search damage types..." },
-    { title: "Condition Immunities", presets: CONDITIONS, selected: [...(m.condition_immunities ?? [])], field: "condition_immunities", placeholder: "Search conditions..." },
-  ];
-
-  for (const cf of collapseFields) {
-    const wrapper = sensesSection.createDiv();
-    const header = wrapper.createDiv({ cls: "archivist-collapse-header" });
-    const arrow = header.createEl("span", { cls: "archivist-collapse-arrow", text: "\u25B6" });
-    header.createEl("span", { cls: "archivist-collapse-title", text: cf.title });
-    const countEl = header.createEl("span", { cls: "archivist-collapse-count", text: `(${cf.selected.length})` });
-
-    const body = wrapper.createDiv({ cls: "archivist-collapse-body" });
-    // Expand if has values, collapse if empty
-    if (cf.selected.length === 0) {
-      body.addClass("archivist-collapse-body-hidden");
-    } else {
-      arrow.addClass("archivist-collapse-arrow-open");
-    }
-
-    header.addEventListener("click", () => {
-      body.classList.toggle("archivist-collapse-body-hidden");
-      arrow.classList.toggle("archivist-collapse-arrow-open");
-    });
-
-    createSearchableTagSelect({
-      container: body,
-      presets: cf.presets,
-      selected: cf.selected,
-      onChange: (values) => {
-        state.updateField(cf.field, values);
-        countEl.textContent = `(${values.length})`;
-      },
-      placeholder: cf.placeholder,
-    });
-  }
-
-  // Last property before SVG bar
-  const condImmWrapper = sensesSection.lastElementChild;
-  if (condImmWrapper) condImmWrapper.addClass("last");
 
   // =========================================================================
   // 12. SVG Bar
