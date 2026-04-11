@@ -9,7 +9,10 @@
  */
 export function decorateProseDice(text: string): string {
   return text.replace(
-    /(?<![`\w])(\d+d\d+(?:\s*[+-]\s*\d+)?)(?![`\w])/g,
-    (match) => `\`dice:${match.replace(/\s+/g, "")}\``,
+    /`[^`]*`|(?<!\w)(\d+d\d+(?:\s*[+-]\s*\d+)?)(?!\w)/g,
+    (match, dice) => {
+      if (dice) return `\`dice:${dice.replace(/\s+/g, "")}\``;
+      return match;
+    },
   );
 }
