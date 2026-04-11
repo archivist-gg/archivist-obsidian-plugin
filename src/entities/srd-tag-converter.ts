@@ -43,10 +43,69 @@ const ABILITY_KEYS: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 export function convertDescToTags(desc: string, ctx: ConversionContext): string {
   try {
     if (!ctx.abilities) return desc;
-    return desc;
+
+    const mods = computeMods(ctx.abilities);
+    const dcTargets = computeDcTargets(mods, ctx.profBonus);
+
+    let result = desc;
+
+    // Pass 1 — DC with explicit ability word
+    result = result.replace(
+      /DC (\d+)\s+(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)/gi,
+      (_match, n, abilityWord) => {
+        const dc = Number(n);
+        const abil = abilityWordToKey(abilityWord);
+        if (abil && dcTargets[abil] === dc) {
+          return `\`dc:${abil.toUpperCase()}\` ${abilityWord}`;
+        }
+        return `\`dc:${dc}\` ${abilityWord}`;
+      },
+    );
+
+    return result;
   } catch {
     return desc;
   }
+}
+
+// --- Helpers ----------------------------------------------------------------
+
+function computeMods(abilities: ConverterAbilities): Record<AbilityKey, number> {
+  return {
+    str: abilityModifier(abilities.str),
+    dex: abilityModifier(abilities.dex),
+    con: abilityModifier(abilities.con),
+    int: abilityModifier(abilities.int),
+    wis: abilityModifier(abilities.wis),
+    cha: abilityModifier(abilities.cha),
+  };
+}
+
+function computeDcTargets(
+  mods: Record<AbilityKey, number>,
+  profBonus: number,
+): Record<AbilityKey, number> {
+  return {
+    str: 8 + profBonus + mods.str,
+    dex: 8 + profBonus + mods.dex,
+    con: 8 + profBonus + mods.con,
+    int: 8 + profBonus + mods.int,
+    wis: 8 + profBonus + mods.wis,
+    cha: 8 + profBonus + mods.cha,
+  };
+}
+
+function abilityWordToKey(word: string): AbilityKey | undefined {
+  const lower = word.toLowerCase();
+  switch (lower) {
+    case "strength": return "str";
+    case "dexterity": return "dex";
+    case "constitution": return "con";
+    case "intelligence": return "int";
+    case "wisdom": return "wis";
+    case "charisma": return "cha";
+  }
+  return undefined;
 }
 
 /**
