@@ -31,15 +31,6 @@ function formatAC(monster: Monster): string {
   return result;
 }
 
-function formatHP(monster: Monster): string {
-  if (!monster.hp) return "0";
-  let result = String(monster.hp.average);
-  if (monster.hp.formula) {
-    result += ` (${monster.hp.formula})`;
-  }
-  return result;
-}
-
 function renderFeatureBlock(
   parent: HTMLElement,
   features: MonsterFeature[],
@@ -107,6 +98,22 @@ function renderLegendarySection(
   }
 }
 
+function createRichPropertyLine(
+  parent: HTMLElement,
+  label: string,
+  renderValue: (valueEl: HTMLElement) => void,
+  isLast?: boolean,
+): HTMLElement {
+  const line = el("div", {
+    cls: isLast ? ["property-line", "last"] : "property-line",
+    parent,
+  });
+  el("h4", { text: label, parent: line });
+  const valueEl = el("p", { parent: line });
+  renderValue(valueEl);
+  return line;
+}
+
 export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLElement {
   const isTwoCol = columns === 2;
   const wrapperCls = isTwoCol
@@ -145,7 +152,20 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
   // 3. Core properties (AC, HP, Speed)
   const coreProps = el("div", { cls: "property-block", parent: contentTarget });
   createPropertyLine(coreProps, "Armor Class", formatAC(monster));
-  createPropertyLine(coreProps, "Hit Points", formatHP(monster));
+  createRichPropertyLine(coreProps, "Hit Points", (valueEl) => {
+    if (!monster.hp) {
+      valueEl.textContent = "0";
+      return;
+    }
+    valueEl.appendChild(document.createTextNode(String(monster.hp.average)));
+    if (monster.hp.formula) {
+      valueEl.appendChild(document.createTextNode(" ("));
+      // Run the formula through the inline-tag pipeline; decorateProseDice
+      // inside convert5eToolsTags turns "19d12+133" into a dice pill.
+      renderTextWithInlineTags(monster.hp.formula, valueEl, true, monsterCtx);
+      valueEl.appendChild(document.createTextNode(")"));
+    }
+  });
   createPropertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
 
   // 4. SVG Bar
