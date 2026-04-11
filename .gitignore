@@ -3,6 +3,7 @@ main.js
 *.js.map
 data.json
 .superpowers/
+docs/superpowers/
 .worktrees/
 .gitnexus
 .playwright-mcp/
