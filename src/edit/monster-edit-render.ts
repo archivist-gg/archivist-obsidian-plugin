@@ -310,7 +310,7 @@ export function renderMonsterEditMode(
   });
 
   // -- Speed --
-  const speedLine = coreProps.createDiv({ cls: "property-line last" });
+  const speedLine = coreProps.createDiv({ cls: "property-line" });
   speedLine.createEl("h4", { text: "Speed" });
   speedLine.appendText(" ");
 
@@ -325,7 +325,10 @@ export function renderMonsterEditMode(
   createSpinButtons(walkWrap, walkInput);
   speedLine.appendText(" ft.");
 
-  // Extra speed modes — inline pick-and-add
+  // Extra speed modes — one row per mode, + Add Speed button at bottom
+  const speedExtraSection = coreProps.createDiv({ cls: "archivist-speed-extra-section" });
+  const extraRowsContainer = speedExtraSection.createDiv({ cls: "archivist-speed-extra-rows" });
+
   const extraModeKeys: Array<"fly" | "swim" | "climb" | "burrow"> = ["fly", "swim", "climb", "burrow"];
   const activeSpeedModes: Set<string> = new Set();
 
@@ -333,18 +336,15 @@ export function renderMonsterEditMode(
     if (activeSpeedModes.has(key)) return;
     activeSpeedModes.add(key);
 
-    // Insert comma before this mode
-    const comma = document.createTextNode(", ");
-    speedLine.insertBefore(comma, addAnchor);
+    const row = extraRowsContainer.createDiv({ cls: "archivist-speed-extra-row" });
+    row.dataset.speedMode = key;
 
-    const modeSpan = document.createElement("span");
-    modeSpan.dataset.speedMode = key;
-    speedLine.insertBefore(modeSpan, addAnchor);
+    row.createEl("span", {
+      cls: "archivist-speed-extra-label",
+      text: key.charAt(0).toUpperCase() + key.slice(1),
+    });
 
-    const label = document.createTextNode(`${key} `);
-    modeSpan.appendChild(label);
-
-    const numWrap = modeSpan.createDiv({ cls: "archivist-num-wrap" });
+    const numWrap = row.createDiv({ cls: "archivist-num-wrap" });
     const numInput = numWrap.createEl("input", { cls: "archivist-num-in" });
     numInput.type = "number";
     numInput.value = String(m.speed?.[key] ?? 0);
@@ -354,18 +354,13 @@ export function renderMonsterEditMode(
     });
     createSpinButtons(numWrap, numInput);
 
-    const ftText = document.createTextNode(" ft.");
-    modeSpan.appendChild(ftText);
+    row.createEl("span", { cls: "archivist-speed-extra-ft", text: "ft." });
 
-    const removeBtn = modeSpan.createEl("span", { cls: "archivist-speed-remove", text: "\u00d7" });
+    const removeBtn = row.createEl("button", { cls: "archivist-speed-extra-x" });
+    setIcon(removeBtn, "x");
     removeBtn.addEventListener("click", () => {
       activeSpeedModes.delete(key);
-      // Remove the preceding comma
-      const prev = modeSpan.previousSibling;
-      if (prev && prev.nodeType === Node.TEXT_NODE && prev.textContent?.includes(",")) {
-        prev.remove();
-      }
-      modeSpan.remove();
+      row.remove();
       state.updateField("speed", { ...state.current.speed, [key]: 0 });
       updateAddButton();
     });
@@ -373,10 +368,9 @@ export function renderMonsterEditMode(
     updateAddButton();
   }
 
-  // The "+ more" anchor (dropdown container)
-  const addAnchor = speedLine.createEl("span", { cls: "archivist-speed-dropdown-anchor" });
-  const addBtn = addAnchor.createEl("button", { cls: "archivist-speed-add-btn", text: "+ more" });
-  addBtn.style.marginLeft = "6px";
+  // "+ Add Speed" button wrapped for dropdown positioning
+  const addAnchor = speedExtraSection.createDiv({ cls: "archivist-speed-add-wrap" });
+  const addBtn = addAnchor.createEl("button", { cls: "archivist-add-btn", text: "+ Add Speed" });
   let dropdownEl: HTMLElement | null = null;
 
   function updateAddButton(): void {

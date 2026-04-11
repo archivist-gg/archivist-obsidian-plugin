@@ -858,12 +858,13 @@
   background: rgba(122, 32, 13, 0.08);
 }
 
-/* Tab scroll arrows — contextual fade */
+/* Tab scroll arrows — contextual fade, collapse when not needed */
 .archivist-monster-block .archivist-tab-scroll {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  width: 0;
+  overflow: hidden;
   flex-shrink: 0;
   border: none !important;
   background: none !important;
@@ -871,13 +872,14 @@
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms ease, width 150ms ease;
   padding: 0 !important;
   position: relative;
   z-index: 1;
 }
 
 .archivist-monster-block .archivist-tab-scroll.visible {
+  width: 24px;
   opacity: 0.6;
   pointer-events: auto;
 }
@@ -891,9 +893,9 @@
   height: 14px;
 }
 
-/* Gradient fade hints on scroll edges */
-.archivist-monster-block .archivist-tab-scroll-left::after,
-.archivist-monster-block .archivist-tab-scroll-right::before {
+/* Gradient fade hints on scroll edges — only when arrow is visible */
+.archivist-monster-block .archivist-tab-scroll-left.visible::after,
+.archivist-monster-block .archivist-tab-scroll-right.visible::before {
   content: "";
   position: absolute;
   top: 0;
@@ -1390,76 +1392,115 @@
 }
 
 /* ==========================================================================
-   Speed Pick & Add
+   Speed Extra Modes (fly/swim/climb/burrow)
    ========================================================================== */
 
-.archivist-speed-remove {
-  font-size: 10px;
-  color: var(--d5e-bar-fill);
-  cursor: pointer;
-  vertical-align: super;
-  margin-left: 1px;
-  margin-right: 2px;
-  opacity: 0.5;
+.archivist-speed-extra-section {
+  padding: 2px 0 0;
+}
+
+.archivist-speed-extra-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.archivist-speed-extra-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  padding: 2px 0;
+}
+
+.archivist-speed-extra-label {
+  min-width: 60px;
+  color: var(--d5e-text-accent);
   font-weight: bold;
+  font-size: 13px;
 }
 
-.archivist-speed-remove:hover {
-  opacity: 1;
+.archivist-speed-extra-ft {
+  color: var(--d5e-text-dark);
+  font-size: 13px;
 }
 
-.archivist-speed-add-btn {
-  font-size: 10px;
-  color: var(--d5e-bar-fill);
-  background: none;
-  border: 1px solid var(--d5e-border-tan);
+/* Remove button — mirrors .archivist-sense-custom-x */
+.archivist-monster-block.editing .archivist-speed-extra-x {
+  width: 18px;
+  height: 18px;
   border-radius: 3px;
-  padding: 1px 6px;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  color: var(--d5e-text-accent) !important;
   cursor: pointer;
-  font-family: inherit;
-  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 
-.archivist-speed-add-btn:hover {
-  border-color: var(--d5e-bar-fill);
+.archivist-monster-block.editing .archivist-speed-extra-x:hover {
+  background-color: rgba(146, 38, 16, 0.15) !important;
+  color: var(--d5e-bar-fill) !important;
 }
 
-.archivist-speed-dropdown-anchor {
+.archivist-speed-extra-x svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* + Add Speed wrapper — anchors the dropdown below the full-width button */
+.archivist-speed-add-wrap {
   position: relative;
-  display: inline-block;
 }
 
+/* Mirrors .archivist-section-dropdown (Add Section menu) for harmony */
 .archivist-speed-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
+  right: 0;
   z-index: 100;
+  background: var(--d5e-parchment);
   border: 1px solid var(--d5e-border-tan);
-  background: var(--d5e-parchment-light, #fef8ee);
-  border-radius: 0 0 3px 3px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  min-width: 120px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 .archivist-speed-dropdown-item {
+  display: block;
+  width: 100%;
   padding: 6px 10px;
-  font-size: 12px;
-  color: var(--d5e-text-dark);
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--d5e-text-accent);
+  font-weight: 400;
   cursor: pointer;
+  border-radius: 2px;
 }
 
-.archivist-speed-dropdown-item:hover {
-  background: var(--d5e-parchment-dark, #f4e4c1);
+.archivist-speed-dropdown .archivist-speed-dropdown-item:hover {
+  background-color: rgba(217, 196, 132, 0.35);
 }
 
 .archivist-speed-dropdown-item-taken {
-  color: #999;
+  color: #b5a889;
   text-decoration: line-through;
   cursor: default;
+  opacity: 0.7;
 }
 
-.archivist-speed-dropdown-item-taken:hover {
-  background: transparent;
+.archivist-speed-dropdown .archivist-speed-dropdown-item-taken:hover {
+  background-color: transparent;
 }
 
 /* ==========================================================================
