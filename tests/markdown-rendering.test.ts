@@ -133,3 +133,22 @@ describe("convert5eToolsTags", () => {
     expect(result).toBe("Melee Weapon Attack: `atk:+7` to hit, Hit: `damage:2d6+3` slashing damage.");
   });
 });
+
+describe("convert5eToolsTags bare-dice decoration", () => {
+  it("wraps bare dice remaining after 5etools rewrites", () => {
+    const input = "takes 2d6 fire damage";
+    const result = convert5eToolsTags(input);
+    expect(result).toBe("takes `dice:2d6` fire damage");
+  });
+
+  it("does not re-wrap dice inside a tag it just created", () => {
+    // {@damage 2d6+4} -> `damage:2d6+4` -- the backtick lookbehind must protect it
+    const input = "{@damage 2d6+4} slashing damage";
+    const result = convert5eToolsTags(input);
+    expect(result).toBe("`damage:2d6+4` slashing damage");
+  });
+
+  it("leaves tagless non-dice text unchanged", () => {
+    expect(convert5eToolsTags("plain prose")).toBe("plain prose");
+  });
+});

@@ -3,6 +3,7 @@ import { parseInlineTag } from "../parsers/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
 import type { MonsterAbilities } from "../types/monster";
 import { detectFormula, resolveFormulaTag } from "../dnd/formula-tags";
+import { decorateProseDice } from "./prose-decorator";
 
 /**
  * Optional monster context for resolving formula tags (e.g. `atk:DEX`) in view mode.
@@ -243,7 +244,7 @@ function renderStatBlockTag(
  * Called before backtick regex processing so AI-generated 5etools markup renders correctly.
  */
 export function convert5eToolsTags(text: string): string {
-  return text
+  const rewritten = text
     // Attack type labels (order matters: compound first)
     .replace(/\{@atk\s+mw,rw\}/gi, 'Melee or Ranged Weapon Attack:')
     .replace(/\{@atk\s+mws\}/gi, 'Melee or Ranged Weapon Attack:')
@@ -295,6 +296,7 @@ export function convert5eToolsTags(text: string): string {
     .replace(/\{@adventure\s+([^|}]+)[^}]*\}/gi, '_$1_')
     // Catch-all: any remaining {@tag content} -> just content
     .replace(/\{@\w+\s+([^}]+)\}/g, '$1');
+  return decorateProseDice(rewritten);
 }
 
 /**
