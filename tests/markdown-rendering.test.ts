@@ -142,7 +142,7 @@ describe("convert5eToolsTags bare-dice decoration", () => {
   });
 
   it("does not re-wrap dice inside a tag it just created", () => {
-    // {@damage 2d6+4} -> `damage:2d6+4` -- the backtick lookbehind must protect it
+    // {@damage 2d6+4} -> `damage:2d6+4` -- the backtick-span alternation branch must protect it
     const input = "{@damage 2d6+4} slashing damage";
     const result = convert5eToolsTags(input);
     expect(result).toBe("`damage:2d6+4` slashing damage");
