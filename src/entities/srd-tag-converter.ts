@@ -31,12 +31,6 @@ export interface ConversionContext {
 
 const ABILITY_KEYS: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 
-// Referenced in later tasks (6-9). Keep imports alive for the build.
-void ABILITY_KEYS;
-void abilityModifier;
-void attackBonus;
-void saveDC;
-
 /**
  * Convert SRD plain-English descriptions (e.g. "Melee Weapon Attack: +14 to hit,
  * Hit: 21 (3d8 + 8) slashing damage") into backtick formula tags
