@@ -198,7 +198,8 @@
 .archivist-monster-two-col-flow .actions-header,
 .archivist-monster-two-col-flow .archivist-legendary-intro,
 .archivist-monster-two-col-flow .archivist-monster-section,
-.archivist-monster-two-col-flow .archivist-legendary-resistance-inline {
+.archivist-monster-two-col-flow .archivist-legendary-resistance,
+.archivist-monster-two-col-flow .archivist-legendary-box-row {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
@@ -1155,138 +1156,79 @@
   min-height: 100px;
 }
 
-/* 9. Legendary Resistance Tracking (from legendary-resistance.css)
+/* 9. Legendary Tracking Boxes (Actions + Resistance)
+   Unified box style — description text, then row of clickable boxes below.
+   Backgrounds use !important to prevent Obsidian editor overrides.
    ========================================================================== */
 
-.archivist-legendary-resistance-inline {
+.archivist-legendary-box-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  margin-left: 0;
+  gap: 6px;
+  margin: 6px 0 12px 0;
+  padding: 0;
+  flex-wrap: wrap;
 }
 
-.archivist-legendary-resistance-count {
-  font-size: 12px;
-  color: #766649;
-  font-weight: normal;
-  font-style: normal;
-}
-
-.archivist-legendary-resistance-boxes {
-  display: inline-flex;
-  gap: 3px;
-}
-
-/* Individual Ability Box */
-.archivist-legendary-resistance-box {
+.archivist-monster-block .archivist-legendary-box {
   position: relative;
-  display: inline-block;
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid var(--d5e-border-tan) !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-radius: 2px !important;
   cursor: pointer;
+  display: inline-block;
+  padding: 0 !important;
+  margin: 0;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease;
+  flex-shrink: 0;
 }
 
-.archivist-legendary-resistance-checkbox {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+.archivist-monster-block .archivist-legendary-box:hover {
+  border-color: var(--d5e-text-accent) !important;
 }
 
-.archivist-legendary-resistance-custom {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  background: #fdf1dc;
-  border: 2px solid #d9c484;
-  border-radius: 3px;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: visible;
+.archivist-monster-block .archivist-legendary-box-checked {
+  border-color: var(--d5e-text-accent) !important;
 }
 
-/* Cross design using CSS */
-.archivist-ability-cross {
+/* X cross inside a checked box — drawn with two rotated pseudo-element lines */
+.archivist-monster-block .archivist-legendary-box-checked::before,
+.archivist-monster-block .archivist-legendary-box-checked::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  width: 2.5px;
+  height: 20px;
+  background-color: var(--d5e-text-accent);
+  border-radius: 1px;
   pointer-events: none;
 }
 
-.archivist-ability-cross::before,
-.archivist-ability-cross::after {
-  content: '';
-  position: absolute;
-  background: #922610;
-  border-radius: 1px;
-}
-
-/* Vertical line of the cross */
-.archivist-ability-cross::before {
-  width: 3px;
-  height: 26px;
-  left: 50%;
-  top: 50%;
+.archivist-monster-block .archivist-legendary-box-checked::before {
   transform: translate(-50%, -50%) rotate(45deg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Horizontal line of the cross */
-.archivist-ability-cross::after {
-  width: 26px;
-  height: 3px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.archivist-monster-block .archivist-legendary-box-checked::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-/* Cross fade-in animation */
-.archivist-ability-cross {
-  animation: archivistCrossFadeIn 0.2s ease-out;
+/* Legendary Resistance trait block — description + boxes below */
+.archivist-legendary-resistance {
+  margin: 8px 0;
 }
 
-@keyframes archivistCrossFadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+.archivist-legendary-resistance-text {
+  margin: 0;
+  font-size: inherit;
+  line-height: 1.5;
 }
 
-.archivist-legendary-resistance-checkbox:checked + .archivist-legendary-resistance-custom {
-  background: rgba(146, 38, 16, 0.05);
-  border-color: #922610;
-}
-
-.archivist-legendary-resistance-box:hover .archivist-legendary-resistance-custom {
-  border-color: #922610;
-  box-shadow: 0 0 2px rgba(146, 38, 16, 0.3);
-}
-
-/* Reset Button */
-.archivist-legendary-resistance-reset {
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  color: #766649;
-  transition: all 0.2s ease;
-}
-
-.archivist-legendary-resistance-reset:hover {
-  color: #7a200d;
-}
-
-.archivist-legendary-resistance-reset:hover svg {
-  transform: rotate(-45deg);
+.archivist-legendary-resistance-text strong {
+  font-style: italic;
 }
 
 /* 10. Inline Tags (from dnd-tag-render.css)
@@ -1354,33 +1296,6 @@ body.theme-light .archivist-tag-atk {
 body.theme-light .archivist-tag-atk:hover {
   color: #9a3030;
   border-bottom-color: rgba(154, 48, 48, 0.6);
-}
-
-/* Dark Mode - Legendary Resistance */
-.theme-dark .archivist-legendary-resistance-custom {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.theme-dark .archivist-legendary-resistance-checkbox:checked + .archivist-legendary-resistance-custom {
-  background: rgba(220, 38, 38, 0.2);
-  border-color: #dc2626;
-}
-
-.theme-dark .archivist-ability-cross {
-  color: #ef4444;
-}
-
-.theme-dark .archivist-legendary-resistance-count {
-  color: #9ca3af;
-}
-
-.theme-dark .archivist-legendary-resistance-reset {
-  color: #9ca3af;
-}
-
-.theme-dark .archivist-legendary-resistance-reset:hover {
-  color: #e5e7eb;
 }
 
 /* 12. Error Block Styles
@@ -1935,58 +1850,5 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 1px 5px;
   border-radius: 3px;
   background: var(--background-modifier-hover);
-}
-
-/* ==========================================================================
-   Legendary Action Tracking Boxes (Read Mode)
-   ========================================================================== */
-
-.archivist-legendary-action-boxes {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-.archivist-legendary-action-box {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #d9c484;
-  border-radius: 2px;
-  background: #fdf1dc;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.15s;
-}
-
-.archivist-legendary-action-box-checked {
-  border-color: #922610;
-}
-
-.archivist-legendary-action-box svg {
-  width: 8px;
-  height: 8px;
-}
-
-.archivist-legendary-action-box svg line {
-  stroke: #922610;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-}
-
-.theme-dark .archivist-legendary-action-box {
-  background: #2b2b2b;
-  border-color: #5a4f3a;
-}
-
-.theme-dark .archivist-legendary-action-box-checked {
-  border-color: #c4683a;
-}
-
-.theme-dark .archivist-legendary-action-box svg line {
-  stroke: #c4683a;
 }
 

@@ -1009,7 +1009,6 @@ function renderLegendaryCheckboxes(container: HTMLElement, state: MonsterEditSta
   const actionsWrap = actionsField.createDiv({ cls: "archivist-num-wrap" });
   const actionsInput = actionsWrap.createEl("input", { cls: "archivist-num-in" });
   actionsInput.type = "number";
-  actionsInput.style.width = "36px";
   actionsInput.value = String(state.current.legendary_actions ?? 3);
   actionsInput.addEventListener("input", () => {
     state.updateField("legendary_actions", parseInt(actionsInput.value) || 0);
@@ -1022,7 +1021,6 @@ function renderLegendaryCheckboxes(container: HTMLElement, state: MonsterEditSta
   const resistWrap = resistField.createDiv({ cls: "archivist-num-wrap" });
   const resistInput = resistWrap.createEl("input", { cls: "archivist-num-in" });
   resistInput.type = "number";
-  resistInput.style.width = "36px";
   resistInput.value = String(state.current.legendary_resistance ?? 0);
   resistInput.addEventListener("input", () => {
     state.updateField("legendary_resistance", parseInt(resistInput.value) || 0);

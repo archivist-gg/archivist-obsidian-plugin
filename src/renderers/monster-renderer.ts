@@ -55,59 +55,55 @@ function renderFeatureBlock(
   }
 }
 
-function renderLegendaryResistance(
-  parent: HTMLElement,
-  count: number,
-): void {
-  const wrapper = el("div", { cls: "archivist-legendary-resistance-inline", parent });
-  const boxes = el("div", { cls: "archivist-legendary-resistance-boxes", parent: wrapper });
+function renderLegendaryBoxes(parent: HTMLElement, count: number): void {
+  const row = el("div", { cls: "archivist-legendary-box-row", parent });
+  const boxes: HTMLElement[] = [];
+  const CHECKED = "archivist-legendary-box-checked";
 
   for (let i = 0; i < count; i++) {
-    const box = el("label", { cls: "archivist-legendary-resistance-box", parent: boxes });
+    const box = el("div", { cls: "archivist-legendary-box", parent: row });
+    boxes.push(box);
+    box.addEventListener("click", () => {
+      const clickedIndex = i;
+      const isChecked = box.hasClass(CHECKED);
+      const currentCount = boxes.filter((b) => b.hasClass(CHECKED)).length;
+      // Click a checked box → decrement count (consume from the rightmost).
+      // Click an unchecked box → fill from the left up to and including the clicked box.
+      const newCount = isChecked ? currentCount - 1 : clickedIndex + 1;
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.addClass("archivist-legendary-resistance-checkbox");
-    box.appendChild(checkbox);
-
-    const custom = el("div", { cls: "archivist-legendary-resistance-custom", parent: box });
-
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
-        const cross = el("div", { cls: "archivist-ability-cross" });
-        custom.appendChild(cross);
-      } else {
-        const cross = custom.querySelector(".archivist-ability-cross");
-        if (cross) cross.remove();
-      }
+      boxes.forEach((b, j) => {
+        if (j < newCount) {
+          b.addClass(CHECKED);
+        } else {
+          b.removeClass(CHECKED);
+        }
+      });
     });
   }
 }
 
-function renderInlineTrackingBoxes(parent: HTMLElement, count: number): void {
-  const container = el("span", { cls: "archivist-legendary-action-boxes", parent });
-  for (let i = 0; i < count; i++) {
-    const box = el("span", { cls: "archivist-legendary-action-box", parent: container });
-    box.addEventListener("click", () => {
-      const isChecked = box.hasClass("archivist-legendary-action-box-checked");
-      if (isChecked) {
-        box.removeClass("archivist-legendary-action-box-checked");
-        box.empty();
-      } else {
-        box.addClass("archivist-legendary-action-box-checked");
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("viewBox", "0 0 12 12");
-        const l1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        l1.setAttribute("x1", "2"); l1.setAttribute("y1", "2");
-        l1.setAttribute("x2", "10"); l1.setAttribute("y2", "10");
-        const l2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        l2.setAttribute("x1", "10"); l2.setAttribute("y1", "2");
-        l2.setAttribute("x2", "2"); l2.setAttribute("y2", "10");
-        svg.appendChild(l1);
-        svg.appendChild(l2);
-        box.appendChild(svg);
-      }
-    });
+function renderLegendarySection(
+  parent: HTMLElement,
+  monster: Monster,
+): void {
+  const legendaryCount = monster.legendary_actions ?? 3;
+  const monsterName = monster.name.toLowerCase();
+
+  const introText = `The ${monsterName} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monsterName} regains spent legendary actions at the start of its turn.`;
+  el("p", { cls: "archivist-legendary-intro", text: introText, parent });
+  renderLegendaryBoxes(parent, legendaryCount);
+
+  if (monster.legendary_resistance && monster.legendary_resistance > 0) {
+    const resCount = monster.legendary_resistance;
+    const resBlock = el("div", { cls: "archivist-legendary-resistance", parent });
+    const resP = el("p", { cls: "archivist-legendary-resistance-text", parent: resBlock });
+    const nameStrong = document.createElement("strong");
+    nameStrong.textContent = `Legendary Resistance (${resCount}/Day). `;
+    resP.appendChild(nameStrong);
+    resP.appendChild(document.createTextNode(
+      `If the ${monsterName} fails a saving throw, it can choose to succeed instead.`
+    ));
+    renderLegendaryBoxes(resBlock, resCount);
   }
 }
 
@@ -326,18 +322,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       }
 
       if (section.id === "legendary") {
-        const legendaryCount = monster.legendary_actions ?? 3;
-        const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
-        const introP = el("p", {
-          cls: "archivist-legendary-intro",
-          text: introText,
-          parent: sectionDiv,
-        });
-        renderInlineTrackingBoxes(introP, legendaryCount);
-
-        if (monster.legendary_resistance && monster.legendary_resistance > 0) {
-          renderLegendaryResistance(sectionDiv, monster.legendary_resistance);
-        }
+        renderLegendarySection(sectionDiv, monster);
       }
 
       if (section.features) {
@@ -390,18 +375,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       contentDivs.set(tab.id, content);
 
       if (tab.id === "legendary") {
-        const legendaryCount = monster.legendary_actions ?? 3;
-        const introText = `The ${monster.name.toLowerCase()} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monster.name.toLowerCase()} regains spent legendary actions at the start of its turn.`;
-        const introP = el("p", {
-          cls: "archivist-legendary-intro",
-          text: introText,
-          parent: content,
-        });
-        renderInlineTrackingBoxes(introP, legendaryCount);
-
-        if (monster.legendary_resistance && monster.legendary_resistance > 0) {
-          renderLegendaryResistance(content, monster.legendary_resistance);
-        }
+        renderLegendarySection(content, monster);
       }
 
       if (tab.features) {

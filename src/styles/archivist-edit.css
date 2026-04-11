@@ -1526,3 +1526,9 @@
   font-weight: bold;
   color: var(--d5e-bar-fill);
 }
+
+/* Reuse ability-score padding for proper gap between number and spin buttons */
+.archivist-legendary-count-field .archivist-num-in {
+  width: 56px;
+  padding: 4px 16px !important;
+}
