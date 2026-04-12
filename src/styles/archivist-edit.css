@@ -438,9 +438,9 @@
 }
 
 .archivist-save-item .archivist-save-ability {
-  color: var(--d5e-text-accent);
+  color: var(--d5e-text-dark);
   min-width: 30px;
-  font-weight: 600;
+  font-weight: normal;
 }
 
 .archivist-save-item .archivist-auto-value {
@@ -467,7 +467,7 @@
 }
 
 .archivist-skill-item .archivist-skill-name {
-  color: var(--d5e-text-accent);
+  color: var(--d5e-text-dark);
   min-width: 100px;
 }
 
@@ -500,7 +500,7 @@
 }
 
 .archivist-sense-item .archivist-sense-name {
-  color: var(--d5e-text-accent);
+  color: var(--d5e-text-dark);
   min-width: 90px;
 }
 
@@ -666,9 +666,9 @@
 
 /* Feature name input — bold italic */
 .archivist-feat-name-input {
-  font-weight: bold;
+  font-weight: normal;
   font-style: italic;
-  color: var(--d5e-text-accent) !important;
+  color: var(--d5e-text-dark) !important;
   border: none !important;
   border-bottom: 1px dashed var(--d5e-border-tan) !important;
   background-color: transparent !important;
