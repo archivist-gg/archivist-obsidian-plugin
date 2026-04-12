@@ -248,3 +248,60 @@ describe("convertDescToTags — Pass 4: Bare dice + DC fallback", () => {
     expect(twice).toBe(once);
   });
 });
+
+describe("convertDescToTags — real SRD regressions", () => {
+  // Goblin: STR 8 (-1), DEX 14 (+2), prof +2 (CR 1/4)
+  // atkTargets: str=+1, dex=+4; mods.str=-1, mods.dex=+2
+  const GOBLIN: ConversionContext = {
+    abilities: { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 },
+    profBonus: 2,
+    actionName: "Scimitar",
+    actionCategory: "action",
+  };
+
+  it("Goblin Scimitar", () => {
+    const input =
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) slashing damage.";
+    expect(convertDescToTags(input, GOBLIN)).toBe(
+      "Melee Weapon Attack: `atk:DEX`, reach 5 ft., one target. Hit: `damage:1d6+DEX` slashing damage.",
+    );
+  });
+
+  // Wolf: STR 12 (+1), DEX 15 (+2), prof +2 (CR 1/4)
+  // atkTargets: str=+3, dex=+4
+  const WOLF: ConversionContext = {
+    abilities: { str: 12, dex: 15, con: 12, int: 3, wis: 12, cha: 6 },
+    profBonus: 2,
+    actionName: "Bite",
+    actionCategory: "action",
+  };
+
+  it("Wolf Bite with knockdown DC", () => {
+    const input =
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 7 (2d4 + 2) piercing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.";
+    // saveDC(str 12) = 8 + 2 + 1 = 11 → matches
+    // atk +4: str=+3 no, dex=+4 yes → DEX (melee keyword makes no difference, single candidate)
+    // damage +2: matches DEX mod → DEX
+    expect(convertDescToTags(input, WOLF)).toBe(
+      "Melee Weapon Attack: `atk:DEX`, reach 5 ft., one target. Hit: `damage:2d4+DEX` piercing damage. If the target is a creature, it must succeed on a `dc:STR` Strength saving throw or be knocked prone.",
+    );
+  });
+
+  // Acolyte spellcaster: INT 10 (+0), WIS 14 (+2), CHA 11 (+0), prof +2
+  // saveDC(wis) = 8 + 2 + 2 = 12; atkBonus(wis) = +2 + 2 = +4
+  const ACOLYTE: ConversionContext = {
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 14, cha: 11 },
+    profBonus: 2,
+    actionName: "Spellcasting",
+    actionCategory: "trait",
+    spellAbility: "wis",
+  };
+
+  it("Acolyte spellcasting description", () => {
+    const input =
+      "The acolyte is a 1st-level spellcaster. Its spellcasting ability is Wisdom (spell save DC 12, +4 to hit with spell attacks).";
+    const result = convertDescToTags(input, ACOLYTE);
+    expect(result).toContain("`dc:WIS`");
+    expect(result).toContain("`atk:WIS`");
+  });
+});
