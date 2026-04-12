@@ -162,13 +162,23 @@ describe("normalizeSrdMonster", () => {
     ]);
   });
 
-  it("maps actions with entries array", () => {
-    expect(result.actions).toHaveLength(2);
+  it("converts Bite action mechanics to formula tags", () => {
     const actions = result.actions as { name: string; entries: string[] }[];
+    expect(actions).toHaveLength(2);
+    // Multiattack — pure prose, no patterns to convert
     expect(actions[0].name).toBe("Multiattack");
     expect(actions[0].entries).toHaveLength(1);
-    expect(actions[1].name).toBe("Bite");
-    expect(actions[1].entries[0]).toContain("+14 to hit");
+    // Bite — attack bonus and damage expressions become formula tags
+    const bite = actions.find((a) => a.name === "Bite");
+    expect(bite).toBeDefined();
+    const entry = bite!.entries[0];
+    expect(entry).toContain("`atk:STR`");
+    expect(entry).toContain("`damage:2d10+STR`");
+    expect(entry).toContain("`damage:2d6`");
+    // Preserves surrounding prose
+    expect(entry).toContain("Melee Weapon Attack:");
+    expect(entry).toContain("piercing damage");
+    expect(entry).toContain("fire damage");
   });
 
   it("maps legendary_actions to legendary with entries array", () => {

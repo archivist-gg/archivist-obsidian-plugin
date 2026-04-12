@@ -1,3 +1,11 @@
+import {
+  convertDescToTags,
+  detectSpellcastingAbility,
+  type ActionCategory,
+  type ConverterAbilities,
+} from "./srd-tag-converter";
+import { proficiencyBonusFromCR } from "../dnd/math";
+
 // ---------------------------------------------------------------------------
 // SRD Data Normalizer
 // ---------------------------------------------------------------------------
@@ -173,7 +181,7 @@ export function normalizeSrdMonster(
   }
 
   // -- Feature blocks -------------------------------------------------------
-  const normalizeFeatures = (
+  const normalizeFeaturesRaw = (
     arr: unknown,
   ): { name: string; entries: string[] }[] | undefined => {
     if (!Array.isArray(arr) || arr.length === 0) return undefined;
@@ -183,24 +191,52 @@ export function normalizeSrdMonster(
     }));
   };
 
+  const abilitiesOut = out.abilities as ConverterAbilities | undefined;
+  const profBonus = proficiencyBonusFromCR(String(out.cr ?? "0"));
+
+  // Build provisional traits to detect spellcasting ability
+  const rawTraits = normalizeFeaturesRaw(raw.special_abilities);
+  const spellAbility = detectSpellcastingAbility(rawTraits);
+
+  const normalizeFeaturesWithTags = (
+    arr: unknown,
+    category: ActionCategory,
+  ): { name: string; entries: string[] }[] | undefined => {
+    const rawFeatures = normalizeFeaturesRaw(arr);
+    if (!rawFeatures) return undefined;
+    if (!abilitiesOut) return rawFeatures;
+    return rawFeatures.map((f) => ({
+      name: f.name,
+      entries: f.entries.map((desc) =>
+        convertDescToTags(desc, {
+          abilities: abilitiesOut,
+          profBonus,
+          actionName: f.name,
+          actionCategory: category,
+          spellAbility,
+        }),
+      ),
+    }));
+  };
+
   // special_abilities -> traits
-  const traits = normalizeFeatures(raw.special_abilities);
+  const traits = normalizeFeaturesWithTags(raw.special_abilities, "trait");
   if (traits) out.traits = traits;
 
   // actions
-  const actions = normalizeFeatures(raw.actions);
+  const actions = normalizeFeaturesWithTags(raw.actions, "action");
   if (actions) out.actions = actions;
 
   // reactions
-  const reactions = normalizeFeatures(raw.reactions);
+  const reactions = normalizeFeaturesWithTags(raw.reactions, "reaction");
   if (reactions) out.reactions = reactions;
 
   // legendary_actions -> legendary
-  const legendary = normalizeFeatures(raw.legendary_actions);
+  const legendary = normalizeFeaturesWithTags(raw.legendary_actions, "legendary");
   if (legendary) out.legendary = legendary;
 
   // bonus_actions
-  const bonusActions = normalizeFeatures(raw.bonus_actions);
+  const bonusActions = normalizeFeaturesWithTags(raw.bonus_actions, "bonus");
   if (bonusActions) out.bonus_actions = bonusActions;
 
   // -- Legendary description -> legendary_actions count ---------------------
