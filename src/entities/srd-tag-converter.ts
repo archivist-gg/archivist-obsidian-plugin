@@ -78,6 +78,28 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
       },
     );
 
+    // Pass 3 — Damage expressions
+    // Matches: optional "21 (" average, required "3d8", optional "+ 8" bonus,
+    // optional ")" closer, optional "slashing" type word, required "damage" keyword.
+    result = result.replace(
+      /(?:(\d+)\s*\()?(\d+d\d+)(?:\s*([+-])\s*(\d+))?\s*\)?(?:\s+(\w+))?\s+damage/gi,
+      (_match, _average, dice, sign, bonusStr, typeWord) => {
+        let inner = dice;
+        if (bonusStr != null) {
+          const bonus = sign === "-" ? -Number(bonusStr) : Number(bonusStr);
+          const matchingAbilities = ABILITY_KEYS.filter((k) => mods[k] === bonus);
+          if (matchingAbilities.length > 0) {
+            const abil = disambiguateAbility(matchingAbilities, ctx, desc);
+            inner = `${dice}+${abil.toUpperCase()}`;
+          } else {
+            inner = `${dice}${bonus >= 0 ? "+" : ""}${bonus}`;
+          }
+        }
+        const typeSuffix = typeWord ? ` ${typeWord} damage` : " damage";
+        return `\`damage:${inner}\`${typeSuffix}`;
+      },
+    );
+
     return result;
   } catch {
     return desc;

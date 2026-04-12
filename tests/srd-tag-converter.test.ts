@@ -154,3 +154,52 @@ describe("convertDescToTags — Pass 2: Attack bonus", () => {
     );
   });
 });
+
+describe("convertDescToTags — Pass 3: Damage expressions", () => {
+  // STR 27 (+8), prof +6
+  const CTX: ConversionContext = {
+    abilities: { str: 27, dex: 10, con: 25, int: 16, wis: 13, cha: 21 },
+    profBonus: 6,
+    actionName: "Bite",
+    actionCategory: "action",
+  };
+
+  it("converts '21 (3d8 + 8) slashing damage' with STR mod match", () => {
+    // STR mod = 8, so +8 matches STR
+    const input = "Hit: 21 (3d8 + 8) slashing damage.";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Hit: `damage:3d8+STR` slashing damage.",
+    );
+  });
+
+  it("strips the average parenthetical when no bonus is present", () => {
+    // No ability mod logic triggers, but the avg '(3d8)' still gets stripped
+    const input = "Hit: 13 (3d8) lightning damage.";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Hit: `damage:3d8` lightning damage.",
+    );
+  });
+
+  it("emits static damage bonus when it does not match any ability mod", () => {
+    // +4 doesn't match any of the dragon's mods (8, 0, 7, 3, 1, 5)
+    const input = "Hit: 11 (2d6 + 4) fire damage.";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Hit: `damage:2d6+4` fire damage.",
+    );
+  });
+
+  it("handles dice without bonus or average", () => {
+    const input = "Takes 1d4 acid damage.";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Takes `damage:1d4` acid damage.",
+    );
+  });
+
+  it("handles multiple damage clauses in one sentence", () => {
+    const input =
+      "Hit: 21 (3d8 + 8) slashing damage plus 13 (3d8) lightning damage.";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Hit: `damage:3d8+STR` slashing damage plus `damage:3d8` lightning damage.",
+    );
+  });
+});
