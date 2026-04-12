@@ -100,6 +100,40 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
       },
     );
 
+    // Pass 1b — DC without ability word (fallback for "spell save DC N")
+    // By this point Pass 1 has already consumed "DC N Ability" patterns,
+    // so only bare "DC N" fragments remain. The lookbehind prevents
+    // re-matching DCs already inside backtick tags (idempotency).
+    result = result.replace(
+      /(?<!`)DC (\d+)(?!\s*(?:Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma))/gi,
+      (_match, n) => {
+        const dc = Number(n);
+        const candidates = ABILITY_KEYS.filter((k) => dcTargets[k] === dc);
+        if (ctx.spellAbility && candidates.includes(ctx.spellAbility as AbilityKey)) {
+          return `\`dc:${ctx.spellAbility.toUpperCase()}\``;
+        }
+        if (candidates.length === 1) {
+          return `\`dc:${candidates[0].toUpperCase()}\``;
+        }
+        if (candidates.length > 1) {
+          const abil = disambiguateAbility(candidates, ctx, desc);
+          return `\`dc:${abil.toUpperCase()}\``;
+        }
+        return `\`dc:${dc}\``;
+      },
+    );
+
+    // Pass 4 — Bare dice in prose (same transform as the render-time decorator)
+    // The alternation branch `[^`]*` consumes backtick-delimited spans and
+    // returns them untouched, so dice already inside tags are protected.
+    result = result.replace(
+      /`[^`]*`|(?<!\w)(\d+d\d+(?:\s*[+-]\s*\d+)?)(?!\w)/g,
+      (match, dice) => {
+        if (dice) return `\`dice:${dice.replace(/\s+/g, "")}\``;
+        return match;
+      },
+    );
+
     return result;
   } catch {
     return desc;

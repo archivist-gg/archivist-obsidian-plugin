@@ -203,3 +203,48 @@ describe("convertDescToTags — Pass 3: Damage expressions", () => {
     );
   });
 });
+
+describe("convertDescToTags — Pass 4: Bare dice + DC fallback", () => {
+  const CTX: ConversionContext = {
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 14, cha: 10 },
+    profBonus: 2,
+    actionName: "Sacred Flame",
+    actionCategory: "action",
+    spellAbility: "wis",
+  };
+
+  it("wraps bare dice left over from earlier passes", () => {
+    // 1d8 has no trailing "damage" word so Pass 3 doesn't match it
+    const input = "roll 1d8 and add your Wisdom modifier";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "roll `dice:1d8` and add your Wisdom modifier",
+    );
+  });
+
+  it("handles a DC without an ability word using spellAbility", () => {
+    // saveDC(wis 14) = 8 + 2 + 2 = 12
+    const input = "spell save DC 12";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "spell save `dc:WIS`",
+    );
+  });
+
+  it("emits static dc:N when no ability matches and no spellAbility hint", () => {
+    const noSpellCtx: ConversionContext = { ...CTX, spellAbility: undefined };
+    const input = "DC 99";
+    expect(convertDescToTags(input, noSpellCtx)).toBe("`dc:99`");
+  });
+
+  it("is idempotent: running twice produces the same output", () => {
+    const input = "Melee Weapon Attack: +14 to hit, 21 (3d8 + 8) slashing damage.";
+    const dragon: ConversionContext = {
+      abilities: { str: 27, dex: 10, con: 25, int: 16, wis: 13, cha: 21 },
+      profBonus: 6,
+      actionName: "Bite",
+      actionCategory: "action",
+    };
+    const once = convertDescToTags(input, dragon);
+    const twice = convertDescToTags(once, dragon);
+    expect(twice).toBe(once);
+  });
+});
