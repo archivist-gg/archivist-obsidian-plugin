@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { enrichMonster } from "../src/ai/validation/entity-enrichment";
+import { enrichMonster, enrichSpell } from "../src/ai/validation/entity-enrichment";
 
 describe("enrichMonster — backtick tag conversion", () => {
   it("converts plain English attack and damage to ability-linked tags", () => {
@@ -122,5 +122,62 @@ describe("enrichMonster — backtick tag conversion", () => {
     };
     const result = enrichMonster(raw);
     expect(result.name).toBe("Blob");
+  });
+});
+
+describe("enrichSpell — backtick tag conversion", () => {
+  it("converts static DC and damage dice in description", () => {
+    const raw: Record<string, unknown> = {
+      name: "Flame Burst",
+      level: 3,
+      description: [
+        "Each creature in the area must make a DC 15 Dexterity saving throw, taking 8d6 fire damage on a failed save, or half as much on a success.",
+      ],
+    };
+    const result = enrichSpell(raw);
+    const desc = (result.description as string[])[0];
+    expect(desc).toContain("`dc:15`");
+    expect(desc).toContain("`damage:8d6`");
+  });
+
+  it("leaves already-tagged description unchanged", () => {
+    const raw: Record<string, unknown> = {
+      name: "Flame Burst",
+      level: 3,
+      description: [
+        "Each creature must make a `dc:15` Dexterity saving throw, taking `damage:8d6` fire damage on a failed save.",
+      ],
+    };
+    const result = enrichSpell(raw);
+    const desc = (result.description as string[])[0];
+    expect(desc).toBe(
+      "Each creature must make a `dc:15` Dexterity saving throw, taking `damage:8d6` fire damage on a failed save.",
+    );
+  });
+
+  it("converts bare dice in at_higher_levels", () => {
+    const raw: Record<string, unknown> = {
+      name: "Flame Burst",
+      level: 3,
+      at_higher_levels: [
+        "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.",
+      ],
+    };
+    const result = enrichSpell(raw);
+    const higher = (result.at_higher_levels as string[])[0];
+    expect(higher).toContain("`dice:1d6`");
+  });
+
+  it("leaves plain text without mechanics unchanged", () => {
+    const raw: Record<string, unknown> = {
+      name: "Detect Magic",
+      level: 1,
+      description: [
+        "For the duration, you sense the presence of magic within 30 feet of you.",
+      ],
+    };
+    const result = enrichSpell(raw);
+    const desc = (result.description as string[])[0];
+    expect(desc).toBe("For the duration, you sense the presence of magic within 30 feet of you.");
   });
 });
