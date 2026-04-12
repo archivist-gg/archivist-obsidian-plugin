@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { enrichMonster, enrichSpell } from "../src/ai/validation/entity-enrichment";
+import { enrichMonster, enrichSpell, enrichItem } from "../src/ai/validation/entity-enrichment";
 
 describe("enrichMonster — backtick tag conversion", () => {
   it("converts plain English attack and damage to ability-linked tags", () => {
@@ -179,5 +179,63 @@ describe("enrichSpell — backtick tag conversion", () => {
     const result = enrichSpell(raw);
     const desc = (result.description as string[])[0];
     expect(desc).toBe("For the duration, you sense the presence of magic within 30 feet of you.");
+  });
+});
+
+describe("enrichItem — backtick tag conversion", () => {
+  it("converts bare damage dice in entries", () => {
+    const raw: Record<string, unknown> = {
+      name: "Flame Tongue",
+      type: "Weapon (any sword)",
+      rarity: "Rare",
+      entries: [
+        "While the sword is ablaze, it deals an extra 2d6 fire damage to any target it hits.",
+      ],
+    };
+    const result = enrichItem(raw);
+    const entry = (result.entries as string[])[0];
+    expect(entry).toContain("`damage:2d6`");
+  });
+
+  it("leaves already-tagged entries unchanged", () => {
+    const raw: Record<string, unknown> = {
+      name: "Flame Tongue",
+      type: "Weapon (any sword)",
+      rarity: "Rare",
+      entries: [
+        "While the sword is ablaze, it deals an extra `damage:2d6` fire damage to any target it hits.",
+      ],
+    };
+    const result = enrichItem(raw);
+    const entry = (result.entries as string[])[0];
+    expect(entry).toBe(
+      "While the sword is ablaze, it deals an extra `damage:2d6` fire damage to any target it hits.",
+    );
+  });
+
+  it("leaves plain text entries unchanged", () => {
+    const raw: Record<string, unknown> = {
+      name: "Bag of Holding",
+      type: "Wondrous item",
+      rarity: "Uncommon",
+      entries: [
+        "This bag has an interior space considerably larger than its outside dimensions.",
+      ],
+    };
+    const result = enrichItem(raw);
+    const entry = (result.entries as string[])[0];
+    expect(entry).toBe(
+      "This bag has an interior space considerably larger than its outside dimensions.",
+    );
+  });
+
+  it("does not crash when item has no entries", () => {
+    const raw: Record<string, unknown> = {
+      name: "Simple Ring",
+      type: "Ring",
+      rarity: "Common",
+    };
+    const result = enrichItem(raw);
+    expect(result.name).toBe("Simple Ring");
   });
 });
