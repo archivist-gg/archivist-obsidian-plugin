@@ -4,6 +4,7 @@ import {
   convertDescToTags,
   detectSpellcastingAbility,
   type ActionCategory,
+  type ConversionContext,
   type ConverterAbilities,
 } from "../../entities/srd-tag-converter";
 import type { Monster } from "../../types/monster";
