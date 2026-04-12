@@ -1240,13 +1240,17 @@ function wireOverride(
         overrideInput = null;
       }
       valueEl.textContent = fmt(val);
-      onSet(val);
 
-      // Add override mark (asterisk)
-      if (!overrideMark) {
-        overrideMark = createOverrideMark();
+      // Only mark as overridden if value differs from auto
+      if (val !== getAutoValue()) {
+        onSet(val);
+        if (!overrideMark) {
+          overrideMark = createOverrideMark();
+        }
+        valueEl.after(overrideMark);
+      } else {
+        autoLabel.textContent = "(auto)";
       }
-      valueEl.after(overrideMark);
     };
 
     overrideInput.addEventListener("blur", commit);
