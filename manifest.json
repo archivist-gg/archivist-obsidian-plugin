@@ -1,7 +1,7 @@
 {
   "id": "archivist",
   "name": "Archivist",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "minAppVersion": "1.0.0",
   "description": "D&D 5e/2024 toolkit with an AI agent that generates monsters, spells, items, encounters, and NPCs. Renders parchment stat blocks, inline dice tags, and includes a full SRD compendium.",
   "author": "Shinoobi",
