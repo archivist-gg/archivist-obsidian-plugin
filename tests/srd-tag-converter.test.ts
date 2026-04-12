@@ -95,3 +95,62 @@ describe("convertDescToTags — Pass 1: DC with ability word", () => {
     expect(convertDescToTags(input, CTX)).toContain("`dc:CON` constitution");
   });
 });
+
+describe("convertDescToTags — Pass 2: Attack bonus", () => {
+  // Dragon: STR 27 (+8), DEX 10 (+0), prof +6
+  // atkTargets: str=+14, dex=+6, con=..., int=..., wis=..., cha=...
+  const CTX: ConversionContext = {
+    abilities: { str: 27, dex: 10, con: 25, int: 16, wis: 13, cha: 21 },
+    profBonus: 6,
+    actionName: "Bite",
+    actionCategory: "action",
+  };
+
+  it("replaces '+14 to hit' with atk:STR when only STR matches", () => {
+    const input = "Melee Weapon Attack: +14 to hit, reach 10 ft.";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Melee Weapon Attack: `atk:STR`, reach 10 ft.",
+    );
+  });
+
+  it("emits static atk:+N when no ability produces that bonus", () => {
+    const input = "Melee Weapon Attack: +99 to hit";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Melee Weapon Attack: `atk:+99`",
+    );
+  });
+
+  it("handles negative attack bonus as static", () => {
+    const input = "Weapon Attack: -2 to hit";
+    expect(convertDescToTags(input, CTX)).toBe(
+      "Weapon Attack: `atk:-2`",
+    );
+  });
+
+  it("disambiguates STR vs DEX in favor of STR for Melee Weapon Attack", () => {
+    // Balanced monster: STR 14 (+2), DEX 14 (+2), prof +2, both → +4
+    const balanced: ConversionContext = {
+      abilities: { str: 14, dex: 14, con: 10, int: 10, wis: 10, cha: 10 },
+      profBonus: 2,
+      actionName: "Scimitar",
+      actionCategory: "action",
+    };
+    const input = "Melee Weapon Attack: +4 to hit";
+    expect(convertDescToTags(input, balanced)).toBe(
+      "Melee Weapon Attack: `atk:STR`",
+    );
+  });
+
+  it("disambiguates STR vs DEX in favor of DEX for Ranged Weapon Attack", () => {
+    const balanced: ConversionContext = {
+      abilities: { str: 14, dex: 14, con: 10, int: 10, wis: 10, cha: 10 },
+      profBonus: 2,
+      actionName: "Shortbow",
+      actionCategory: "action",
+    };
+    const input = "Ranged Weapon Attack: +4 to hit";
+    expect(convertDescToTags(input, balanced)).toBe(
+      "Ranged Weapon Attack: `atk:DEX`",
+    );
+  });
+});

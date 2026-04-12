@@ -62,6 +62,22 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
       },
     );
 
+    // Pass 2 — Attack bonus
+    const atkTargets = computeAtkTargets(mods, ctx.profBonus);
+    result = result.replace(
+      /([+-])(\d+)\s+to\s+hit/g,
+      (_match, sign, n) => {
+        const bonus = sign === "-" ? -Number(n) : Number(n);
+        const candidates = ABILITY_KEYS.filter((k) => atkTargets[k] === bonus);
+        if (candidates.length === 0) {
+          const signedStr = bonus >= 0 ? `+${bonus}` : `${bonus}`;
+          return `\`atk:${signedStr}\``;
+        }
+        const abil = disambiguateAbility(candidates, ctx, desc);
+        return `\`atk:${abil.toUpperCase()}\``;
+      },
+    );
+
     return result;
   } catch {
     return desc;
@@ -93,6 +109,62 @@ function computeDcTargets(
     wis: 8 + profBonus + mods.wis,
     cha: 8 + profBonus + mods.cha,
   };
+}
+
+function computeAtkTargets(
+  mods: Record<AbilityKey, number>,
+  profBonus: number,
+): Record<AbilityKey, number> {
+  return {
+    str: mods.str + profBonus,
+    dex: mods.dex + profBonus,
+    con: mods.con + profBonus,
+    int: mods.int + profBonus,
+    wis: mods.wis + profBonus,
+    cha: mods.cha + profBonus,
+  };
+}
+
+function disambiguateAbility(
+  candidates: AbilityKey[],
+  ctx: ConversionContext,
+  desc: string,
+): AbilityKey {
+  if (candidates.length === 1) return candidates[0];
+
+  const combined = `${desc} ${ctx.actionName}`.toLowerCase();
+
+  const prefers = (abil: AbilityKey): AbilityKey | undefined =>
+    candidates.includes(abil) ? abil : undefined;
+
+  if (/melee\s+or\s+ranged\s+weapon\s+attack/.test(combined)) {
+    return prefers("str") ?? prefers("dex") ?? candidates[0];
+  }
+  if (/melee\s+weapon\s+attack/.test(combined)) {
+    return prefers("str") ?? prefers("dex") ?? candidates[0];
+  }
+  if (/ranged\s+weapon\s+attack/.test(combined)) {
+    return prefers("dex") ?? candidates[0];
+  }
+  if (/spell\s+attack/.test(combined)) {
+    if (ctx.spellAbility && candidates.includes(ctx.spellAbility as AbilityKey)) {
+      return ctx.spellAbility as AbilityKey;
+    }
+    return prefers("wis") ?? candidates[0];
+  }
+
+  // Name-based keyword signals
+  const rangedWords = /\b(bow|crossbow|dart|sling)\b/;
+  const meleeWords = /\b(bite|claw|slam|tail|gore|horns?|fist|hoof|talons?)\b/;
+  if (rangedWords.test(ctx.actionName.toLowerCase())) {
+    return prefers("dex") ?? candidates[0];
+  }
+  if (meleeWords.test(ctx.actionName.toLowerCase())) {
+    return prefers("str") ?? candidates[0];
+  }
+
+  // Deterministic fallback: alphabetical
+  return [...candidates].sort()[0];
 }
 
 function abilityWordToKey(word: string): AbilityKey | undefined {
