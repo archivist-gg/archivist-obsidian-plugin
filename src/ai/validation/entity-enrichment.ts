@@ -1,5 +1,11 @@
 import { getChallengeRatingXP, getProficiencyBonus } from "./cr-xp-mapping";
 import { abilityModifier } from "../../parsers/yaml-utils";
+import {
+  convertDescToTags,
+  detectSpellcastingAbility,
+  type ActionCategory,
+  type ConverterAbilities,
+} from "../../entities/srd-tag-converter";
 import type { Monster } from "../../types/monster";
 import type { Spell } from "../../types/spell";
 import type { Item } from "../../types/item";
@@ -16,7 +22,7 @@ export function enrichMonster(
     ? (raw.languages as string[])
     : ["---"];
 
-  return {
+  const enriched = {
     ...(raw as unknown as Monster),
     cr,
     xp: getChallengeRatingXP(cr),
@@ -24,6 +30,51 @@ export function enrichMonster(
     passive_perception: passivePerception,
     languages,
   } as Monster & { xp?: number; proficiency_bonus?: number };
+
+  // Safety net: convert any plain-English mechanics to backtick formula tags
+  convertMonsterEntries(enriched, cr);
+
+  return enriched;
+}
+
+const MONSTER_SECTIONS: [keyof Monster, ActionCategory][] = [
+  ["traits", "trait"],
+  ["actions", "action"],
+  ["reactions", "reaction"],
+  ["legendary", "legendary"],
+];
+
+function convertMonsterEntries(
+  monster: Monster & Record<string, unknown>,
+  cr: string,
+): void {
+  const abilities = monster.abilities;
+  if (!abilities) return;
+
+  const profBonus = getProficiencyBonus(cr);
+  const spellAbility = detectSpellcastingAbility(
+    monster.traits as { name: string; entries: string[] }[] | undefined,
+  );
+
+  for (const [key, category] of MONSTER_SECTIONS) {
+    const features = monster[key];
+    if (!Array.isArray(features)) continue;
+    for (const feature of features) {
+      const f = feature as { name?: string; entries?: string[] };
+      if (!Array.isArray(f.entries)) continue;
+      f.entries = f.entries.map((desc: string) => {
+        // Skip entries that already use 5etools tags — those are handled at render time
+        if (/\{@\w+/.test(desc)) return desc;
+        return convertDescToTags(desc, {
+          abilities: abilities as ConverterAbilities,
+          profBonus,
+          actionName: f.name ?? "",
+          actionCategory: category,
+          spellAbility,
+        });
+      });
+    }
+  }
 }
 
 export function enrichSpell(raw: Record<string, unknown>): Spell {
