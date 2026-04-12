@@ -93,5 +93,21 @@ export function parseMonster(source: string): ParseResult<Monster> {
   if (raw.legendary_resistance != null) monster.legendary_resistance = Number(raw.legendary_resistance);
   if (raw.columns != null) monster.columns = Number(raw.columns);
 
+  // Extract Legendary Resistance count from traits if not explicitly set.
+  // SRD data stores it as a trait named "Legendary Resistance (3/Day)" rather
+  // than a separate numeric field.
+  if (!monster.legendary_resistance && monster.traits) {
+    const lrIndex = monster.traits.findIndex(t =>
+      /^Legendary Resistance\s*\(/i.test(t.name ?? "")
+    );
+    if (lrIndex !== -1) {
+      const match = monster.traits[lrIndex].name?.match(/\((\d+)\/Day\)/i);
+      if (match) {
+        monster.legendary_resistance = parseInt(match[1], 10);
+        monster.traits.splice(lrIndex, 1);
+      }
+    }
+  }
+
   return { success: true, data: monster };
 }

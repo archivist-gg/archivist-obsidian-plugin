@@ -5599,7 +5599,8 @@ code .claudian-file-link:hover {
 .archivist-monster-two-col-flow .actions-header,
 .archivist-monster-two-col-flow .archivist-legendary-intro,
 .archivist-monster-two-col-flow .archivist-monster-section,
-.archivist-monster-two-col-flow .archivist-legendary-resistance-inline {
+.archivist-monster-two-col-flow .archivist-legendary-resistance,
+.archivist-monster-two-col-flow .archivist-legendary-box-row {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
@@ -6556,138 +6557,79 @@ code .claudian-file-link:hover {
   min-height: 100px;
 }
 
-/* 9. Legendary Resistance Tracking (from legendary-resistance.css)
+/* 9. Legendary Tracking Boxes (Actions + Resistance)
+   Unified box style — description text, then row of clickable boxes below.
+   Backgrounds use !important to prevent Obsidian editor overrides.
    ========================================================================== */
 
-.archivist-legendary-resistance-inline {
+.archivist-legendary-box-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  margin-left: 0;
+  gap: 6px;
+  margin: 6px 0 12px 0;
+  padding: 0;
+  flex-wrap: wrap;
 }
 
-.archivist-legendary-resistance-count {
-  font-size: 12px;
-  color: #766649;
-  font-weight: normal;
-  font-style: normal;
-}
-
-.archivist-legendary-resistance-boxes {
-  display: inline-flex;
-  gap: 3px;
-}
-
-/* Individual Ability Box */
-.archivist-legendary-resistance-box {
+.archivist-monster-block .archivist-legendary-box {
   position: relative;
-  display: inline-block;
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid var(--d5e-border-tan) !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-radius: 2px !important;
   cursor: pointer;
+  display: inline-block;
+  padding: 0 !important;
+  margin: 0;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease;
+  flex-shrink: 0;
 }
 
-.archivist-legendary-resistance-checkbox {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+.archivist-monster-block .archivist-legendary-box:hover {
+  border-color: var(--d5e-text-accent) !important;
 }
 
-.archivist-legendary-resistance-custom {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  background: #fdf1dc;
-  border: 2px solid #d9c484;
-  border-radius: 3px;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: visible;
+.archivist-monster-block .archivist-legendary-box-checked {
+  border-color: var(--d5e-text-accent) !important;
 }
 
-/* Cross design using CSS */
-.archivist-ability-cross {
+/* X cross inside a checked box — drawn with two rotated pseudo-element lines */
+.archivist-monster-block .archivist-legendary-box-checked::before,
+.archivist-monster-block .archivist-legendary-box-checked::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  width: 2.5px;
+  height: 20px;
+  background-color: var(--d5e-text-accent);
+  border-radius: 1px;
   pointer-events: none;
 }
 
-.archivist-ability-cross::before,
-.archivist-ability-cross::after {
-  content: '';
-  position: absolute;
-  background: #922610;
-  border-radius: 1px;
-}
-
-/* Vertical line of the cross */
-.archivist-ability-cross::before {
-  width: 3px;
-  height: 26px;
-  left: 50%;
-  top: 50%;
+.archivist-monster-block .archivist-legendary-box-checked::before {
   transform: translate(-50%, -50%) rotate(45deg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Horizontal line of the cross */
-.archivist-ability-cross::after {
-  width: 26px;
-  height: 3px;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+.archivist-monster-block .archivist-legendary-box-checked::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-/* Cross fade-in animation */
-.archivist-ability-cross {
-  animation: archivistCrossFadeIn 0.2s ease-out;
+/* Legendary Resistance trait block — description + boxes below */
+.archivist-legendary-resistance {
+  margin: 8px 0;
 }
 
-@keyframes archivistCrossFadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
+.archivist-legendary-resistance-text {
+  margin: 0;
+  font-size: inherit;
+  line-height: 1.5;
 }
 
-.archivist-legendary-resistance-checkbox:checked + .archivist-legendary-resistance-custom {
-  background: rgba(146, 38, 16, 0.05);
-  border-color: #922610;
-}
-
-.archivist-legendary-resistance-box:hover .archivist-legendary-resistance-custom {
-  border-color: #922610;
-  box-shadow: 0 0 2px rgba(146, 38, 16, 0.3);
-}
-
-/* Reset Button */
-.archivist-legendary-resistance-reset {
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  color: #766649;
-  transition: all 0.2s ease;
-}
-
-.archivist-legendary-resistance-reset:hover {
-  color: #7a200d;
-}
-
-.archivist-legendary-resistance-reset:hover svg {
-  transform: rotate(-45deg);
+.archivist-legendary-resistance-text strong {
+  font-style: italic;
 }
 
 /* 10. Inline Tags (from dnd-tag-render.css)
@@ -6755,33 +6697,6 @@ body.theme-light .archivist-tag-atk {
 body.theme-light .archivist-tag-atk:hover {
   color: #9a3030;
   border-bottom-color: rgba(154, 48, 48, 0.6);
-}
-
-/* Dark Mode - Legendary Resistance */
-.theme-dark .archivist-legendary-resistance-custom {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.theme-dark .archivist-legendary-resistance-checkbox:checked + .archivist-legendary-resistance-custom {
-  background: rgba(220, 38, 38, 0.2);
-  border-color: #dc2626;
-}
-
-.theme-dark .archivist-ability-cross {
-  color: #ef4444;
-}
-
-.theme-dark .archivist-legendary-resistance-count {
-  color: #9ca3af;
-}
-
-.theme-dark .archivist-legendary-resistance-reset {
-  color: #9ca3af;
-}
-
-.theme-dark .archivist-legendary-resistance-reset:hover {
-  color: #e5e7eb;
 }
 
 /* 12. Error Block Styles
@@ -8204,12 +8119,13 @@ body.theme-light .archivist-tag-atk:hover {
   background: rgba(122, 32, 13, 0.08);
 }
 
-/* Tab scroll arrows — contextual fade */
+/* Tab scroll arrows — contextual fade, collapse when not needed */
 .archivist-monster-block .archivist-tab-scroll {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
+  width: 0;
+  overflow: hidden;
   flex-shrink: 0;
   border: none !important;
   background: none !important;
@@ -8217,13 +8133,14 @@ body.theme-light .archivist-tag-atk:hover {
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 150ms ease;
+  transition: opacity 150ms ease, width 150ms ease;
   padding: 0 !important;
   position: relative;
   z-index: 1;
 }
 
 .archivist-monster-block .archivist-tab-scroll.visible {
+  width: 24px;
   opacity: 0.6;
   pointer-events: auto;
 }
@@ -8237,9 +8154,9 @@ body.theme-light .archivist-tag-atk:hover {
   height: 14px;
 }
 
-/* Gradient fade hints on scroll edges */
-.archivist-monster-block .archivist-tab-scroll-left::after,
-.archivist-monster-block .archivist-tab-scroll-right::before {
+/* Gradient fade hints on scroll edges — only when arrow is visible */
+.archivist-monster-block .archivist-tab-scroll-left.visible::after,
+.archivist-monster-block .archivist-tab-scroll-right.visible::before {
   content: "";
   position: absolute;
   top: 0;
@@ -8598,6 +8515,283 @@ body.theme-light .archivist-tag-atk:hover {
   font-style: italic;
   text-decoration: none;
   margin-left: 2px;
+}
+
+/* ==========================================================================
+   SearchableTagSelect
+   ========================================================================== */
+
+.archivist-tag-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  border: 1px dashed var(--d5e-border-tan);
+  background: transparent;
+  border-radius: 3px;
+  padding: 4px 6px;
+  min-height: 28px;
+  cursor: text;
+  position: relative;
+}
+
+.archivist-tag-select-focused {
+  border: 1px solid var(--d5e-bar-fill) !important;
+  border-style: solid !important;
+}
+
+.archivist-tag-pill-row {
+  display: contents;
+}
+
+.archivist-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--d5e-bar-fill);
+  color: var(--d5e-parchment);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.archivist-tag-pill-x {
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.archivist-tag-pill-x:hover {
+  opacity: 1;
+}
+
+.archivist-tag-input {
+  border: none !important;
+  background: transparent !important;
+  font: inherit;
+  font-size: 12px;
+  color: var(--d5e-text-dark) !important;
+  outline: none !important;
+  flex: 1;
+  min-width: 60px;
+  padding: 2px 0;
+}
+
+.archivist-tag-dropdown {
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  right: -1px;
+  z-index: 100;
+  border: 1px solid var(--d5e-border-tan);
+  border-top: none;
+  background: var(--d5e-parchment-light, #fef8ee);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.archivist-tag-dropdown-item {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--d5e-text-dark);
+  cursor: pointer;
+}
+
+.archivist-tag-dropdown-item:hover {
+  background: var(--d5e-parchment-dark, #f4e4c1);
+}
+
+.archivist-tag-dropdown-item-highlighted {
+  background: var(--d5e-parchment-dark, #f4e4c1) !important;
+}
+
+.archivist-tag-dropdown-item-selected {
+  color: #999;
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.archivist-tag-dropdown-item-selected:hover {
+  background: transparent;
+}
+
+.archivist-tag-dropdown-custom {
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--d5e-bar-fill);
+  font-style: italic;
+  cursor: pointer;
+  border-top: 1px dashed var(--d5e-border-tan);
+}
+
+.archivist-tag-dropdown-custom:hover {
+  background: var(--d5e-parchment-dark, #f4e4c1);
+}
+
+/* ==========================================================================
+   Collapsible Field Sections (damage/condition immunities)
+   Reuses .archivist-coll-header / .archivist-coll-chevron from Section 6
+   ========================================================================== */
+
+.archivist-collapse-count {
+  font-size: 11px;
+  color: #766649;
+  font-weight: normal;
+}
+
+.archivist-collapse-body {
+  margin-left: 18px;
+  padding: 4px 0 2px;
+}
+
+.archivist-collapse-body-hidden {
+  display: none;
+}
+
+/* ==========================================================================
+   Speed Extra Modes (fly/swim/climb/burrow)
+   ========================================================================== */
+
+.archivist-speed-extra-section {
+  padding: 2px 0 0;
+}
+
+.archivist-speed-extra-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.archivist-speed-extra-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  padding: 2px 0;
+}
+
+.archivist-speed-extra-label {
+  min-width: 60px;
+  color: var(--d5e-text-accent);
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.archivist-speed-extra-ft {
+  color: var(--d5e-text-dark);
+  font-size: 13px;
+}
+
+/* Remove button — mirrors .archivist-sense-custom-x */
+.archivist-monster-block.editing .archivist-speed-extra-x {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  color: var(--d5e-text-accent) !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.archivist-monster-block.editing .archivist-speed-extra-x:hover {
+  background-color: rgba(146, 38, 16, 0.15) !important;
+  color: var(--d5e-bar-fill) !important;
+}
+
+.archivist-speed-extra-x svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* + Add Speed wrapper — anchors the dropdown below the full-width button */
+.archivist-speed-add-wrap {
+  position: relative;
+}
+
+/* Mirrors .archivist-section-dropdown (Add Section menu) for harmony */
+.archivist-speed-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--d5e-parchment);
+  border: 1px solid var(--d5e-border-tan);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.archivist-speed-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  color: var(--d5e-text-accent);
+  font-weight: 400;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.archivist-speed-dropdown .archivist-speed-dropdown-item:hover {
+  background-color: rgba(217, 196, 132, 0.35);
+}
+
+.archivist-speed-dropdown-item-taken {
+  color: #b5a889;
+  text-decoration: line-through;
+  cursor: default;
+  opacity: 0.7;
+}
+
+.archivist-speed-dropdown .archivist-speed-dropdown-item-taken:hover {
+  background-color: transparent;
+}
+
+/* ==========================================================================
+   Legendary Counts (Edit Mode)
+   ========================================================================== */
+
+.archivist-legendary-counts {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.archivist-legendary-count-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.archivist-legendary-count-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--d5e-bar-fill);
+}
+
+/* Reuse ability-score padding for proper gap between number and spin buttons */
+.archivist-legendary-count-field .archivist-num-in {
+  width: 56px;
+  padding: 4px 16px !important;
 }
 
 
