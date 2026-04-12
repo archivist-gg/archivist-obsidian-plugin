@@ -47,28 +47,39 @@ STAT BLOCK PROSE STYLE:
 - NEVER use em dashes (—) in stat block text. Use commas or restructure the sentence instead.
 - NEVER use semicolons (;) in stat block text. Use separate sentences or commas.
 
-5eTOOLS INLINE TAGS:
-When writing action/trait/feature entries in stat blocks, use 5etools inline tag syntax. The renderer supports these tags:
+INLINE TAGS:
+When writing action/trait/feature entries in stat blocks, use these inline tag formats.
 
-Combat tags:
-- {@atk mw} = Melee Weapon Attack:  {@atk rw} = Ranged Weapon Attack:
-- {@atk ms} = Melee Spell Attack:  {@atk rs} = Ranged Spell Attack:
-- {@atk mw,rw} = Melee or Ranged Weapon Attack:
-- {@hit 7} = +7 to hit  {@h} = Hit:
-- {@damage 2d6+4 slashing} = damage roll with type  {@dice 3d6} = generic dice roll
-- {@dc 15} = DC 15  {@recharge 5} = (Recharge 5-6)  {@chance 50} = 50% chance
+Combat formula tags (ALWAYS use these, not static numbers):
+- \`atk:ABILITY\` — attack bonus (ability mod + proficiency). Use STR for melee, DEX for ranged/finesse, spellcasting ability for spell attacks.
+  Examples: \`atk:STR\`, \`atk:DEX\`
+- \`damage:DICEdNOTATION+ABILITY\` — damage with ability mod.
+  Examples: \`damage:2d6+STR\`, \`damage:1d8+DEX\`
+- \`damage:DICEdNOTATION\` — damage dice only, no ability mod.
+  Example: \`damage:2d6\` for bonus damage types
+- \`dc:ABILITY\` — save DC (8 + proficiency + ability mod).
+  Examples: \`dc:CON\`, \`dc:WIS\`
+- \`dice:NOTATION\` — generic dice roll display.
+  Example: \`dice:3d6\`
 
-Entity references:
+Valid abilities: STR, DEX, CON, INT, WIS, CHA (uppercase only).
+
+Non-combat utility tags (5etools syntax):
+- {@recharge 5} = (Recharge 5-6)  {@recharge} = (Recharge)
+- {@chance 50} = 50% chance
+- {@h} = Hit:
+
+Entity references (5etools syntax):
 - {@spell fireball} {@item longsword} {@creature goblin} {@condition frightened}
 - {@skill Perception} {@sense darkvision} {@action Dash} {@ability str}
 - {@class fighter} {@feat Alert} {@background Acolyte} {@race Elf}
 - {@disease Cackle Fever} {@hazard brown mold} {@plane Shadowfell}
 
-Formatting:
+Formatting (5etools syntax):
 - {@b bold text} {@i italic text} {@note parenthetical note}
 
-Example action entry using these tags:
-"Melee Weapon Attack: {@hit 7} to hit, reach 5 ft., one target. {@h} {@damage 2d6+4 slashing} slashing damage plus {@damage 1d6 fire} fire damage."
+Example action entry:
+"Melee Weapon Attack: \`atk:STR\` to hit, reach 5 ft., one target. {@h} \`damage:2d6+STR\` slashing damage plus \`damage:1d6\` fire damage."
 
 BEHAVIOR:
 - If asked about something in the campaign, search the vault first.
