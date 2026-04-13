@@ -150,11 +150,11 @@ describe("generateEntityMarkdown", () => {
     expect(md).toContain("ac: 22");
   });
 
-  it("uses 'item' code block type for magic-item entities", () => {
+  it("uses 'item' code block type for item entities", () => {
     const itemEntity: EntityNote = {
       slug: "bag-of-holding",
       name: "Bag of Holding",
-      entityType: "magic-item",
+      entityType: "item",
       compendium: "SRD",
       data: { name: "Bag of Holding", rarity: "uncommon" },
     };
@@ -259,7 +259,28 @@ school: evocation
     expect(result!.data).toEqual({ name: "Fireball", level: 3, school: "evocation" });
   });
 
-  it("parses magic-item entity (item code block)", () => {
+  it("parses item entity (item code block)", () => {
+    const content = `---
+archivist: true
+entity_type: item
+slug: bag-of-holding
+name: Bag of Holding
+compendium: SRD
+---
+
+\`\`\`item
+name: Bag of Holding
+rarity: uncommon
+\`\`\`
+`;
+    const result = parseEntityFile(content);
+    expect(result).not.toBeNull();
+    expect(result!.entityType).toBe("item");
+    expect(result!.compendium).toBe("SRD");
+    expect(result!.data).toEqual({ name: "Bag of Holding", rarity: "uncommon" });
+  });
+
+  it("backward compat: reads magic-item frontmatter as item", () => {
     const content = `---
 archivist: true
 entity_type: magic-item
@@ -275,9 +296,7 @@ rarity: uncommon
 `;
     const result = parseEntityFile(content);
     expect(result).not.toBeNull();
-    expect(result!.entityType).toBe("magic-item");
-    expect(result!.compendium).toBe("SRD");
-    expect(result!.data).toEqual({ name: "Bag of Holding", rarity: "uncommon" });
+    expect(result!.entityType).toBe("item");
   });
 
   it("roundtrips through generate and parseEntityFile", () => {
@@ -434,13 +453,12 @@ describe("TYPE_FOLDER_MAP", () => {
   it("maps all expected entity types", () => {
     expect(TYPE_FOLDER_MAP["monster"]).toBe("Monsters");
     expect(TYPE_FOLDER_MAP["spell"]).toBe("Spells");
-    expect(TYPE_FOLDER_MAP["magic-item"]).toBe("Magic Items");
+    expect(TYPE_FOLDER_MAP["item"]).toBe("Magic Items");
     expect(TYPE_FOLDER_MAP["armor"]).toBe("Armor");
     expect(TYPE_FOLDER_MAP["weapon"]).toBe("Weapons");
     expect(TYPE_FOLDER_MAP["feat"]).toBe("Feats");
     expect(TYPE_FOLDER_MAP["condition"]).toBe("Conditions");
     expect(TYPE_FOLDER_MAP["class"]).toBe("Classes");
     expect(TYPE_FOLDER_MAP["background"]).toBe("Backgrounds");
-    expect(TYPE_FOLDER_MAP["item"]).toBe("Items");
   });
 });

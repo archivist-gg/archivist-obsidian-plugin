@@ -3,7 +3,7 @@ import { z } from "zod";
 const srdEntityTypes = z.enum([
   "monster",
   "spell",
-  "magic-item",
+  "item",
   "armor",
   "weapon",
   "feat",

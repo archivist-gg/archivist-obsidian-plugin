@@ -8,7 +8,7 @@ export interface SrdEntity {
 export type SrdEntityType =
   | "monster"
   | "spell"
-  | "magic-item"
+  | "item"
   | "armor"
   | "weapon"
   | "feat"
@@ -24,7 +24,7 @@ export type SrdDataSources = Record<string, Record<string, unknown>[]>;
 const TYPE_MAP: Record<string, SrdEntityType> = {
   monsters: "monster",
   spells: "spell",
-  magicitems: "magic-item",
+  magicitems: "item",
   armor: "armor",
   weapons: "weapon",
   feats: "feat",

@@ -430,7 +430,8 @@ export default class ArchivistPlugin extends Plugin {
           const ref = parseCompendiumRef(match[0]);
           if (ref && this.entityRegistry) {
             const entity = this.entityRegistry.getBySlug(ref.slug);
-            if (entity && (!ref.entityType || entity.entityType === ref.entityType)) {
+            const typeMatches = !ref.entityType || entity.entityType === ref.entityType;
+            if (entity && typeMatches) {
               const yamlStr = yaml.dump(entity.data, { lineWidth: -1, noRefs: true, sortKeys: false });
               const wrapper = document.createElement("div");
               wrapper.classList.add("archivist-compendium-ref");
@@ -446,7 +447,6 @@ export default class ArchivistPlugin extends Plugin {
                   if (r.success) blockRendered = renderSpellBlock(r.data);
                   break;
                 }
-                case "magic-item":
                 case "item": {
                   const r = parseItem(yamlStr);
                   if (r.success) blockRendered = renderItemBlock(r.data);

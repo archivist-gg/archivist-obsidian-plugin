@@ -5,7 +5,7 @@ import { EntityRegistry, RegisteredEntity } from "../entities/entity-registry";
 const TYPE_PREFIXES: Record<string, string> = {
   monster: "monster",
   spell: "spell",
-  item: "magic-item",
+  item: "item",
   feat: "feat",
   condition: "condition",
   class: "class",
@@ -17,7 +17,6 @@ const TYPE_PREFIXES: Record<string, string> = {
 const TYPE_ICONS: Record<string, string> = {
   monster: "swords",
   spell: "sparkles",
-  "magic-item": "scroll-text",
   item: "scroll-text",
   feat: "star",
   condition: "alert-triangle",
@@ -95,7 +94,7 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
 
     container.createSpan({
       cls: "archivist-suggest-type",
-      text: entity.entityType.replace("magic-", ""),
+      text: entity.entityType,
     });
 
     container.createSpan({

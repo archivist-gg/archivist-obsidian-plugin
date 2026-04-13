@@ -256,7 +256,7 @@ export class EntityAutocompleteDropdown {
       const prefix = query.substring(0, colonIndex).toLowerCase();
       if (ENTITY_TYPE_PREFIXES.has(prefix)) {
         // Map user-facing prefixes to SRD store type names
-        entityType = prefix === 'item' ? 'magic-item' : prefix;
+        entityType = prefix;
         searchQuery = query.substring(colonIndex + 1);
       }
     }

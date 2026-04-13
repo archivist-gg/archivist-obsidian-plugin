@@ -94,7 +94,7 @@ class CompendiumRefWidget extends WidgetType {
 
     const entity = registryRef.getBySlug(ref.slug);
 
-    if (entity && ref.entityType && entity.entityType !== ref.entityType) {
+    if (ref.entityType && entity && entity.entityType !== ref.entityType) {
       return this.notFoundEl(ref);
     }
 
@@ -144,7 +144,7 @@ class CompendiumRefWidget extends WidgetType {
     } else if (type === "spell") {
       const result = parseSpell(yamlStr);
       if (result.success) return renderSpellBlock(result.data);
-    } else if (type === "item" || type === "magic-item") {
+    } else if (type === "item") {
       const result = parseItem(yamlStr);
       if (result.success) return renderItemBlock(result.data);
     }
@@ -282,7 +282,7 @@ class CompendiumRefWidget extends WidgetType {
           onCancelExit, compendiumContext, onReplaceRef,
         );
       }
-    } else if (type === "item" || type === "magic-item") {
+    } else if (type === "item") {
       const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
       const result = parseItem(yamlStr);
       if (result.success) {

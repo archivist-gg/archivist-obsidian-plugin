@@ -257,7 +257,7 @@ export function normalizeSrdMonster(
 const ATTUNEMENT_PREFIX = "requires attunement";
 
 /**
- * Fields specific to open5e magic-item metadata that should be dropped.
+ * Fields specific to open5e item metadata that should be dropped.
  */
 const ITEM_DROP_FIELDS = new Set([
   "slug",
@@ -268,7 +268,7 @@ const ITEM_DROP_FIELDS = new Set([
 ]);
 
 /**
- * Normalize an SRD magic-item record into the shape our item parser expects.
+ * Normalize an SRD item record into the shape our item parser expects.
  *
  * Key transformations:
  * - `desc` (string)        -> `entries` (string[]) split on double newlines

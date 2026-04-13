@@ -84,7 +84,7 @@ describe("SrdStore", () => {
         "class",
         "condition",
         "feat",
-        "magic-item",
+        "item",
         "monster",
         "spell",
         "weapon",
@@ -108,10 +108,10 @@ describe("SrdStore", () => {
       expect(store.getBySlug("nonexistent")).toBeUndefined();
     });
 
-    it("works for magic-item type (maps from magicitems key)", () => {
+    it("works for item type (maps from magicitems key)", () => {
       const entity = store.getBySlug("flame-tongue");
       expect(entity).toBeDefined();
-      expect(entity!.entityType).toBe("magic-item");
+      expect(entity!.entityType).toBe("item");
     });
 
     it("stores original data in data field", () => {
@@ -300,7 +300,7 @@ describe("SrdStore", () => {
         "class",
         "condition",
         "feat",
-        "magic-item",
+        "item",
         "monster",
         "spell",
         "weapon",

@@ -17,14 +17,13 @@ export interface EntityNote {
 export const TYPE_FOLDER_MAP: Record<string, string> = {
   monster: "Monsters",
   spell: "Spells",
-  "magic-item": "Magic Items",
+  item: "Magic Items",
   armor: "Armor",
   weapon: "Weapons",
   feat: "Feats",
   condition: "Conditions",
   class: "Classes",
   background: "Backgrounds",
-  item: "Items",
 };
 
 // ---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ export function generateEntityMarkdown(entity: EntityNote): string {
     compendium: entity.compendium,
   };
   const fm = yaml.dump(frontmatter, { lineWidth: -1, noRefs: true, sortKeys: false });
-  const codeBlockType = entity.entityType === "magic-item" ? "item" : entity.entityType;
+  const codeBlockType = entity.entityType;
   const body = yaml.dump(entity.data, { lineWidth: -1, noRefs: true, sortKeys: false });
   return `---\n${fm}---\n\n\`\`\`${codeBlockType}\n${body}\`\`\`\n`;
 }
@@ -115,7 +114,7 @@ export function parseEntityFile(content: string): EntityNote | null {
 
   const slug = parsed.slug;
   const name = parsed.name;
-  const entityType = parsed.entity_type;
+  let entityType = parsed.entity_type;
   const compendium = parsed.compendium;
 
   if (
@@ -126,6 +125,9 @@ export function parseEntityFile(content: string): EntityNote | null {
   ) {
     return null;
   }
+
+  // Backward compat: "magic-item" was renamed to "item"
+  if (entityType === "magic-item") entityType = "item";
 
   // Extract fenced code block from body
   const bodyStart = endIndex + 4; // skip "\n---"
@@ -184,7 +186,7 @@ export function parseEntityFrontmatter(content: string): EntityNote | null {
 
   const slug = parsed.slug;
   const name = parsed.name;
-  const entityType = parsed.entity_type;
+  let entityType = parsed.entity_type;
   const source = parsed.source;
   const data = parsed.data;
 
@@ -196,6 +198,9 @@ export function parseEntityFrontmatter(content: string): EntityNote | null {
   ) {
     return null;
   }
+
+  // Backward compat: "magic-item" was renamed to "item"
+  if (entityType === "magic-item") entityType = "item";
 
   // Map old source values to compendium
   const compendium = source === "srd" ? "SRD" : "Homebrew";

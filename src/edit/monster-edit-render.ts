@@ -803,7 +803,8 @@ export function renderMonsterEditMode(
   addTabBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     showSectionDropdown(addTabBtn, state, () => {
-      if (!activeTabKey && state.current.activeSections.length > 0) {
+      // Always focus the newly added tab (last in the list)
+      if (state.current.activeSections.length > 0) {
         activeTabKey = state.current.activeSections[state.current.activeSections.length - 1];
       }
       rebuildTabs();
