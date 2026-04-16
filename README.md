@@ -4,7 +4,7 @@ A D&D 5e/2024 toolkit for [Obsidian](https://obsidian.md) with a built-in AI age
 
 ## Features
 
-### AI Agent (Claudian)
+### AI Agent (Archivist Inquiry)
 - **Generate content** -- Ask the Archivist to create monsters, spells, magic items, encounters, and NPCs. Generated content renders directly as styled stat blocks.
 - **SRD lookup** -- Search and retrieve any entity from the bundled D&D 5e SRD (300+ monsters, spells, and items).
 - **Vault-aware** -- Attach vault files and notes as context. The agent can read your campaign documents, session notes, and lore to inform its responses.

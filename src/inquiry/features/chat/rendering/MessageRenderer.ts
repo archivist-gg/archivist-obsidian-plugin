@@ -226,7 +226,7 @@ export class MessageRenderer {
     const msgEl = this.messagesEl.createDiv({ cls: 'claudian-message claudian-message-assistant' });
     const contentEl = msgEl.createDiv({ cls: 'claudian-message-content', attr: { dir: 'auto' } });
     const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
-    textEl.innerHTML = '<span class="claudian-interrupted">Interrupted</span> <span class="claudian-interrupted-hint">· What should Claudian do instead?</span>';
+    textEl.innerHTML = '<span class="claudian-interrupted">Interrupted</span> <span class="claudian-interrupted-hint">· What should Archivist do instead?</span>';
   }
 
   /**

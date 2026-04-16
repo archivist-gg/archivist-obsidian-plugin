@@ -3,6 +3,9 @@
  *
  * Contains all of Claudian's initialization logic but does NOT extend Plugin.
  * Delegates Obsidian API calls (registerView, addCommand, etc.) to the host plugin.
+ *
+ * Credit: Based on the Claudian obsidian plugin by YishenTu
+ * https://github.com/YishenTu/claudian
  */
 
 // Must run before any SDK imports to patch Electron/Node.js realm incompatibility

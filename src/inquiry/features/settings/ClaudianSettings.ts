@@ -39,7 +39,7 @@ function openHotkeySettings(app: App): void {
       // Handle both old and new Obsidian versions
       const searchEl = tab.searchInputEl ?? tab.searchComponent?.inputEl;
       if (searchEl) {
-        searchEl.value = 'Claudian';
+        searchEl.value = 'Archivist Inquiry';
         tab.updateHotkeyVisibility?.();
       }
     }

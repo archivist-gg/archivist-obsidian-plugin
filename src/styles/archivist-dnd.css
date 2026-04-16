@@ -11,7 +11,7 @@
    ========================================================================== */
 :root {
   /* D&D Parchment Background */
-  --d5e-parchment: #fdf1dc;
+  --d5e-parchment: #f0ddbd;
   --d5e-parchment-dark: #f4e4c1;
   --d5e-parchment-light: #fef8ee;
 
@@ -538,7 +538,7 @@
 }
 
 .archivist-spell-block {
-  background: #fdf1dc;
+  background: #f0ddbd;
   font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.2em;
@@ -770,7 +770,7 @@
 }
 
 .archivist-item-block {
-  background: #fdf1dc;
+  background: #f0ddbd;
   font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.2em;
@@ -1587,7 +1587,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 .archivist-block-skeleton {
-  background: var(--d5e-parchment, #fdf1dc);
+  background: var(--d5e-parchment, #f0ddbd);
   border: 1px solid var(--d5e-border-tan, #d9c484);
   border-radius: 3px;
   padding: 12px 16px;
@@ -1703,7 +1703,7 @@ body.theme-light .archivist-tag-atk:hover {
   right: 8px;
   font-size: 9px;
   padding: 2px 8px;
-  background: #fdf1dc;
+  background: #f0ddbd;
   color: #7a200d;
   border: 1px solid #d9c484;
   border-radius: 3px;
@@ -1767,7 +1767,7 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: 10px;
   font-weight: bold;
   color: #922610;
-  background: #fdf1dc;
+  background: #f0ddbd;
   border-radius: 50%;
   width: 12px;
   height: 12px;
@@ -1784,7 +1784,7 @@ body.theme-light .archivist-tag-atk:hover {
   right: 0;
   z-index: 10;
   min-width: 140px;
-  background: #fdf1dc;
+  background: #f0ddbd;
   border: 1px solid #d9c484;
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
