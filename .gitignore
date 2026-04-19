@@ -7,3 +7,5 @@ docs/superpowers/
 .worktrees/
 .gitnexus
 .playwright-mcp/
+CLAUDE.md
+AGENTS.md
