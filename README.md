@@ -1,4 +1,4 @@
-# Archivist TTRPG Blocks — Obsidian Plugin
+# Archivist TTRPG Blocks - Obsidian Plugin
 
 A D&D 5e/2024 toolkit for [Obsidian](https://obsidian.md) with a built-in AI agent powered by Claude. Write YAML code blocks to render parchment-styled stat blocks, or chat with the Archivist to generate entire monsters, spells, items, encounters, and NPCs on the fly.
 
