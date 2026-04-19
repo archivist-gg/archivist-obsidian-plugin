@@ -337,12 +337,19 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
       del.textContent = match[5];
       parent.appendChild(del);
     } else if (match[6] !== undefined) {
-      const a = document.createElement("a");
-      a.textContent = match[6];
-      a.href = match[7];
-      a.setAttribute("target", "_blank");
-      a.setAttribute("rel", "noopener");
-      parent.appendChild(a);
+      const rawUrl = match[7];
+      const safe = /^(https?:|mailto:|#)/i.test(rawUrl);
+      if (!safe) {
+        // Degrade to plain text — no anchor for dangerous schemes
+        parent.appendChild(document.createTextNode(match[6]));
+      } else {
+        const a = document.createElement("a");
+        a.textContent = match[6];
+        a.href = rawUrl;
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener");
+        parent.appendChild(a);
+      }
     }
 
     lastIndex = regex.lastIndex;
