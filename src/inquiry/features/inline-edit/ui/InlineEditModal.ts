@@ -407,8 +407,7 @@ class InlineEditController {
     this.containerEl = container;
 
     this.agentReplyEl = document.createElement('div');
-    this.agentReplyEl.className = 'claudian-inline-agent-reply';
-    this.agentReplyEl.style.display = 'none';
+    this.agentReplyEl.className = 'claudian-inline-agent-reply claudian-inline-hidden';
     container.appendChild(this.agentReplyEl);
 
     const inputWrap = document.createElement('div');
@@ -423,8 +422,7 @@ class InlineEditController {
     inputWrap.appendChild(this.inputEl);
 
     this.spinnerEl = document.createElement('div');
-    this.spinnerEl.className = 'claudian-inline-spinner';
-    this.spinnerEl.style.display = 'none';
+    this.spinnerEl.className = 'claudian-inline-spinner claudian-inline-hidden';
     inputWrap.appendChild(this.spinnerEl);
 
     this.slashCommandDropdown = new SlashCommandDropdown(
@@ -476,7 +474,7 @@ class InlineEditController {
     this.removeSelectionListeners();
 
     this.inputEl.disabled = true;
-    this.spinnerEl.style.display = 'block';
+    this.spinnerEl.classList.remove('claudian-inline-hidden');
 
     const contextFiles = this.resolveContextFilesFromMessage(userMessage);
 
@@ -506,7 +504,7 @@ class InlineEditController {
       }
     }
 
-    this.spinnerEl.style.display = 'none';
+    this.spinnerEl.classList.add('claudian-inline-hidden');
 
     if (result.success) {
       if (result.editedText !== undefined) {
@@ -532,7 +530,7 @@ class InlineEditController {
 
   private showAgentReply(message: string) {
     if (!this.agentReplyEl || !this.containerEl) return;
-    this.agentReplyEl.style.display = 'block';
+    this.agentReplyEl.classList.remove('claudian-inline-hidden');
     this.agentReplyEl.textContent = message;
     this.containerEl.classList.add('has-agent-reply');
   }
@@ -677,7 +675,7 @@ class InlineEditController {
 
     if (e.key === 'Enter' && !e.isComposing) {
       e.preventDefault();
-      this.generate();
+      void this.generate();
     }
   }
 

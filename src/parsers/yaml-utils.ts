@@ -33,3 +33,21 @@ export function abilityModifier(score: number): number {
 export function formatModifier(mod: number): string {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
+
+/**
+ * Convert an unknown value to a string without producing "[object Object]".
+ * Primitives pass through. Objects and arrays are JSON-stringified.
+ * null and undefined return the empty string.
+ */
+export function toStringSafe(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+    return String(value);
+  }
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "";
+  }
+}

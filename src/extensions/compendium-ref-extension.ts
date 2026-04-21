@@ -7,7 +7,8 @@ import {
   WidgetType,
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
-import { setIcon, Notice } from "obsidian";
+import { setIcon, Notice, MarkdownView, type WorkspaceLeaf } from "obsidian";
+import type ArchivistPlugin from "../main";
 import { parseMonster } from "../parsers/monster-parser";
 import { parseSpell } from "../parsers/spell-parser";
 import { parseItem } from "../parsers/item-parser";
@@ -33,9 +34,9 @@ export function setCompendiumRefRegistry(registry: EntityRegistry): void {
 }
 
 // Module-level plugin reference (set by main.ts at plugin load)
-let pluginRef: any = null;
+let pluginRef: ArchivistPlugin | null = null;
 
-export function setCompendiumRefPlugin(plugin: any): void {
+export function setCompendiumRefPlugin(plugin: ArchivistPlugin): void {
   pluginRef = plugin;
 }
 
@@ -50,10 +51,11 @@ export const compendiumRefreshEffect = StateEffect.define<null>();
  * Refresh compendium ref widgets in all open editor views.
  * Call after updateEntity() or saveEntity() to propagate changes.
  */
-export function refreshAllCompendiumRefs(plugin: any): void {
-  plugin.app.workspace.iterateAllLeaves((leaf: any) => {
-    if (leaf.view?.getViewType?.() === "markdown") {
-      const editorView = (leaf.view as any).editor?.cm as EditorView | undefined;
+export function refreshAllCompendiumRefs(plugin: ArchivistPlugin | null): void {
+  if (!plugin) return;
+  plugin.app.workspace.iterateAllLeaves((leaf: WorkspaceLeaf) => {
+    if (leaf.view instanceof MarkdownView) {
+      const editorView = (leaf.view.editor as unknown as { cm?: EditorView }).cm;
       if (editorView) {
         editorView.dispatch({ effects: compendiumRefreshEffect.of(null) });
       }
@@ -172,7 +174,7 @@ class CompendiumRefWidget extends WidgetType {
       },
       onJumpToRef: () => {
         if (pluginRef && entity.filePath) {
-          pluginRef.app.workspace.openLinkText(entity.filePath, "", true);
+          void pluginRef.app.workspace.openLinkText(entity.filePath, "", true);
         }
       },
       onSave: () => {},
@@ -213,6 +215,8 @@ class CompendiumRefWidget extends WidgetType {
     ref: CompendiumRef,
     view: EditorView,
   ): void {
+    if (!pluginRef) return;
+    const plugin = pluginRef;
     // Remove rendered stat block (keep side buttons and container)
     const badge = container.querySelector(".archivist-compendium-badge");
     const statBlock = container.querySelector(
@@ -269,7 +273,7 @@ class CompendiumRefWidget extends WidgetType {
       const result = parseMonster(yamlStr);
       if (result.success) {
         renderMonsterEditMode(
-          result.data, container, null, pluginRef,
+          result.data, container, null, plugin,
           onCancelExit, compendiumContext, onReplaceRef,
         );
       }
@@ -278,7 +282,7 @@ class CompendiumRefWidget extends WidgetType {
       const result = parseSpell(yamlStr);
       if (result.success) {
         renderSpellEditMode(
-          result.data, container, null, pluginRef,
+          result.data, container, null, plugin,
           onCancelExit, compendiumContext, onReplaceRef,
         );
       }
@@ -287,7 +291,7 @@ class CompendiumRefWidget extends WidgetType {
       const result = parseItem(yamlStr);
       if (result.success) {
         renderItemEditMode(
-          result.data, container, null, pluginRef,
+          result.data, container, null, plugin,
           onCancelExit, compendiumContext, onReplaceRef,
         );
       }
@@ -310,7 +314,7 @@ class CompendiumRefWidget extends WidgetType {
 
     const manager = pluginRef.compendiumManager;
 
-    manager.countReferences(entity.slug).then((refCount: number) => {
+    void manager.countReferences(entity.slug).then((refCount: number) => {
       let message = `Delete "${entity.name}" from ${entity.compendium}?`;
       if (refCount > 0) {
         message += `\n\nThis entity is referenced in ${refCount} other location${refCount === 1 ? "" : "s"}. Those references will break.`;

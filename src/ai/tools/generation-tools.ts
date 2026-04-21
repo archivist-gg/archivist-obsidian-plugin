@@ -28,7 +28,7 @@ Example action entries:
   { monster: monsterInputSchema },
   async ({ monster }) => {
     try {
-      const enriched = enrichMonster(monster as Record<string, unknown>);
+      const enriched = enrichMonster(monster);
       return { content: [{ type: "text" as const, text: JSON.stringify({ type: "monster", data: enriched }) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
@@ -50,7 +50,7 @@ Example description entry: "Each creature in a 20-foot radius must make a \`dc:W
   { spell: spellInputSchema },
   async ({ spell }) => {
     try {
-      const enriched = enrichSpell(spell as Record<string, unknown>);
+      const enriched = enrichSpell(spell);
       return { content: [{ type: "text" as const, text: JSON.stringify({ type: "spell", data: enriched }) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
@@ -73,7 +73,7 @@ Example entry: "On a hit, the target takes an extra \`damage:2d6\` fire damage."
   { item: itemInputSchema },
   async ({ item }) => {
     try {
-      const enriched = enrichItem(item as Record<string, unknown>);
+      const enriched = enrichItem(item);
       return { content: [{ type: "text" as const, text: JSON.stringify({ type: "item", data: enriched }) }] };
     } catch (e) {
       return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };

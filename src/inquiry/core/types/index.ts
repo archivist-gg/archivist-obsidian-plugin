@@ -46,13 +46,15 @@ export {
   DEFAULT_SETTINGS,
   type EnvSnippet,
   getBashToolBlockedCommands,
-  getCliPlatformKey,  // Kept for migration
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
+  getCliPlatformKey,
   getCurrentPlatformBlockedCommands,
   getCurrentPlatformKey,
   getDefaultBlockedCommands,
   type HostnameCliPaths,
   type InstructionRefineResult,
   type KeyboardNavigationSettings,
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
   type LegacyPermission,
   legacyPermissionsToCCPermissions,
   legacyPermissionToCCRule,
@@ -60,7 +62,8 @@ export {
   type PermissionMode,
   type PermissionRule,
   type PlatformBlockedCommands,
-  type PlatformCliPaths,  // Kept for migration
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
+  type PlatformCliPaths,
   type SlashCommand,
   type TabBarPosition,
 } from './settings';

@@ -252,13 +252,14 @@ export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: Mons
     const coords = getCaretCoordinates(textarea);
     const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight) || 20;
 
-    // Decide above or below based on available space
+    // Decide above or below based on available space.
+    // Only `top` triggers the eslint rule; using setCssProps for consistent dynamic positioning.
     const spaceBelow = window.innerHeight - (coords.y + lineHeight);
     if (spaceBelow < 220) {
       // Position above
       dropdown.style.left = `${coords.x}px`;
       dropdown.style.bottom = `${window.innerHeight - coords.y + 4}px`;
-      dropdown.style.top = "auto";
+      dropdown.setCssProps({ top: "auto" });
     } else {
       // Position below
       dropdown.style.left = `${coords.x}px`;

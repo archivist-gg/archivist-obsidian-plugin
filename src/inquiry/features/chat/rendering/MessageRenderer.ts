@@ -503,7 +503,7 @@ export class MessageRenderer {
         this.app,
         this.plugin.settings.mediaFolder
       );
-      await MarkdownRenderer.renderMarkdown(processedMarkdown, el, '', this.component);
+      await MarkdownRenderer.render(this.app, processedMarkdown, el, '', this.component);
 
       // Wrap pre elements and move buttons outside scroll area
       el.querySelectorAll('pre').forEach((pre) => {
@@ -524,14 +524,16 @@ export class MessageRenderer {
             const headerBar = createEl('div', { cls: 'archivist-code-header' });
             headerBar.createEl('span', { text: match[1] });
             const copyBtn = headerBar.createEl('span', { cls: 'archivist-code-copy', text: 'Copy' });
-            copyBtn.addEventListener('click', async () => {
-              try {
-                await navigator.clipboard.writeText(code.textContent || '');
-                copyBtn.setText('Copied!');
-                setTimeout(() => copyBtn.setText('Copy'), 2000);
-              } catch {
-                // Clipboard API may fail in non-secure contexts
-              }
+            copyBtn.addEventListener('click', () => {
+              void (async () => {
+                try {
+                  await navigator.clipboard.writeText(code.textContent || '');
+                  copyBtn.setText('Copied!');
+                  setTimeout(() => copyBtn.setText('Copy'), 2000);
+                } catch {
+                  // Clipboard API may fail in non-secure contexts
+                }
+              })();
             });
             wrapper.insertBefore(headerBar, pre);
           }
@@ -685,32 +687,33 @@ export class MessageRenderer {
 
     let feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    copyBtn.addEventListener('click', async (e) => {
+    copyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      void (async () => {
+        try {
+          await navigator.clipboard.writeText(markdown);
+        } catch {
+          // Clipboard API may fail in non-secure contexts
+          return;
+        }
 
-      try {
-        await navigator.clipboard.writeText(markdown);
-      } catch {
-        // Clipboard API may fail in non-secure contexts
-        return;
-      }
+        // Clear any pending timeout from rapid clicks
+        if (feedbackTimeout) {
+          clearTimeout(feedbackTimeout);
+        }
 
-      // Clear any pending timeout from rapid clicks
-      if (feedbackTimeout) {
-        clearTimeout(feedbackTimeout);
-      }
-
-      // Show "copied!" feedback
-      copyBtn.empty();
-      copyBtn.setText('copied!');
-      copyBtn.classList.add('copied');
-
-      feedbackTimeout = setTimeout(() => {
+        // Show "copied!" feedback
         copyBtn.empty();
-        setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
-        copyBtn.classList.remove('copied');
-        feedbackTimeout = null;
-      }, 1500);
+        copyBtn.setText('copied!');
+        copyBtn.classList.add('copied');
+
+        feedbackTimeout = setTimeout(() => {
+          copyBtn.empty();
+          setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
+          copyBtn.classList.remove('copied');
+          feedbackTimeout = null;
+        }, 1500);
+      })();
     });
   }
 
@@ -738,7 +741,7 @@ export class MessageRenderer {
   }
 
   private getOrCreateActionsToolbar(msgEl: HTMLElement): HTMLElement {
-    const existing = msgEl.querySelector('.claudian-user-msg-actions') as HTMLElement | null;
+    const existing = msgEl.querySelector<HTMLElement>('.claudian-user-msg-actions');
     if (existing) return existing;
     return msgEl.createDiv({ cls: 'claudian-user-msg-actions' });
   }
@@ -751,23 +754,25 @@ export class MessageRenderer {
 
     let feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    copyBtn.addEventListener('click', async (e) => {
+    copyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      try {
-        await navigator.clipboard.writeText(content);
-      } catch {
-        return;
-      }
-      if (feedbackTimeout) clearTimeout(feedbackTimeout);
-      copyBtn.empty();
-      copyBtn.setText('copied!');
-      copyBtn.classList.add('copied');
-      feedbackTimeout = setTimeout(() => {
+      void (async () => {
+        try {
+          await navigator.clipboard.writeText(content);
+        } catch {
+          return;
+        }
+        if (feedbackTimeout) clearTimeout(feedbackTimeout);
         copyBtn.empty();
-        setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
-        copyBtn.classList.remove('copied');
-        feedbackTimeout = null;
-      }, 1500);
+        copyBtn.setText('copied!');
+        copyBtn.classList.add('copied');
+        feedbackTimeout = setTimeout(() => {
+          copyBtn.empty();
+          setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
+          copyBtn.classList.remove('copied');
+          feedbackTimeout = null;
+        }, 1500);
+      })();
     });
   }
 
@@ -777,13 +782,15 @@ export class MessageRenderer {
     if (toolbar.firstChild !== btn) toolbar.insertBefore(btn, toolbar.firstChild);
     setIcon(btn, MessageRenderer.REWIND_ICON_NAME);
     btn.setAttribute('aria-label', t('chat.rewind.ariaLabel'));
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      try {
-        await this.rewindCallback?.(messageId);
-      } catch (err) {
-        new Notice(t('chat.rewind.failed', { error: err instanceof Error ? err.message : 'Unknown error' }));
-      }
+      void (async () => {
+        try {
+          await this.rewindCallback?.(messageId);
+        } catch (err) {
+          new Notice(t('chat.rewind.failed', { error: err instanceof Error ? err.message : 'Unknown error' }));
+        }
+      })();
     });
   }
 
@@ -793,13 +800,15 @@ export class MessageRenderer {
     if (toolbar.firstChild !== btn) toolbar.insertBefore(btn, toolbar.firstChild);
     setIcon(btn, MessageRenderer.FORK_ICON_NAME);
     btn.setAttribute('aria-label', t('chat.fork.ariaLabel'));
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      try {
-        await this.forkCallback?.(messageId);
-      } catch (err) {
-        new Notice(t('chat.fork.failed', { error: err instanceof Error ? err.message : 'Unknown error' }));
-      }
+      void (async () => {
+        try {
+          await this.forkCallback?.(messageId);
+        } catch (err) {
+          new Notice(t('chat.fork.failed', { error: err instanceof Error ? err.message : 'Unknown error' }));
+        }
+      })();
     });
   }
 

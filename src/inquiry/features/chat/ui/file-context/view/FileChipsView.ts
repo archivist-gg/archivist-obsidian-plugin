@@ -15,7 +15,7 @@ export class FileChipsView {
     this.callbacks = callbacks;
 
     const firstChild = this.containerEl.firstChild;
-    this.fileIndicatorEl = this.containerEl.createDiv({ cls: 'claudian-file-indicator' });
+    this.fileIndicatorEl = this.containerEl.createDiv({ cls: 'claudian-file-indicator archivist-hidden' });
     if (firstChild) {
       this.containerEl.insertBefore(this.fileIndicatorEl, firstChild);
     }
@@ -29,11 +29,11 @@ export class FileChipsView {
     this.fileIndicatorEl.empty();
 
     if (!filePath) {
-      this.fileIndicatorEl.style.display = 'none';
+      this.fileIndicatorEl.classList.add('archivist-hidden');
       return;
     }
 
-    this.fileIndicatorEl.style.display = 'flex';
+    this.fileIndicatorEl.classList.remove('archivist-hidden');
     this.renderFileChip(filePath, () => {
       this.callbacks.onRemoveAttachment(filePath);
     });

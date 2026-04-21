@@ -1,4 +1,4 @@
-import { Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile } from "obsidian";
+import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile } from "obsidian";
 import { setIcon } from "obsidian";
 import { EntityRegistry, RegisteredEntity } from "../entities/entity-registry";
 
@@ -50,7 +50,7 @@ export function adjustEndForBracketMatch(
 export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
   private registry: EntityRegistry;
 
-  constructor(app: any, registry: EntityRegistry) {
+  constructor(app: App, registry: EntityRegistry) {
     super(app);
     this.registry = registry;
   }

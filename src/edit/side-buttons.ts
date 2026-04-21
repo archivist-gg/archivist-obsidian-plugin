@@ -34,7 +34,7 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
     // Save As New button (save icon with + overlay)
     const saveAsNewBtn = container.createDiv({ cls: "archivist-side-btn archivist-side-btn-save-as-new" });
     setIcon(saveAsNewBtn, "save");
-    const plusOverlay = saveAsNewBtn.createSpan({ cls: "archivist-plus-overlay", text: "+" });
+    saveAsNewBtn.createSpan({ cls: "archivist-plus-overlay", text: "+" });
     saveAsNewBtn.title = "Save as new entity";
     saveAsNewBtn.addEventListener("click", config.onSaveAsNew);
     // Cancel button

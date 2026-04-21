@@ -90,7 +90,9 @@ export class ClaudianSettingsStorage {
 
     const content = await this.adapter.read(CLAUDIAN_SETTINGS_PATH);
     const stored = JSON.parse(content) as Record<string, unknown>;
-    const { activeConversationId: _activeConversationId, show1MModel: _show1MModel, ...storedWithoutLegacy } = stored;
+    const { activeConversationId, show1MModel, ...storedWithoutLegacy } = stored;
+    void activeConversationId;
+    void show1MModel;
 
     // Remove legacy show1MModel from persisted file (replaced by enableOpus1M/enableSonnet1M)
     if ('show1MModel' in stored) {
@@ -107,7 +109,7 @@ export class ClaudianSettingsStorage {
       blockedCommands,
       claudeCliPath: legacyCliPath,
       claudeCliPathsByHost: hostnameCliPaths,
-    } as StoredClaudianSettings;
+    };
   }
 
   async save(settings: StoredClaudianSettings): Promise<void> {
@@ -180,11 +182,8 @@ export class ClaudianSettingsStorage {
    * Get default settings (excluding separately loaded fields).
    */
   private getDefaults(): StoredClaudianSettings {
-    const {
-      slashCommands: _,
-      ...defaults
-    } = DEFAULT_SETTINGS;
-
+    const { slashCommands, ...defaults } = DEFAULT_SETTINGS;
+    void slashCommands;
     return defaults;
   }
 }

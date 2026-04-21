@@ -152,7 +152,7 @@ export class McpTestModal extends Modal {
         cls: 'claudian-mcp-toggle-all-btn',
       });
       this.updateToggleAllButton();
-      this.toggleAllBtn.addEventListener('click', () => this.handleToggleAll());
+      this.toggleAllBtn.addEventListener('click', () => { void this.handleToggleAll(); });
     }
 
     const closeBtn = buttonContainer.createEl('button', {
@@ -197,7 +197,7 @@ export class McpTestModal extends Modal {
         e.stopPropagation();
         if (checkbox.disabled) return;
         checkbox.checked = !checkbox.checked;
-        this.handleToolToggle(tool.name, checkbox, toggleContainer);
+        void this.handleToolToggle(tool.name, checkbox, toggleContainer);
       });
     }
 

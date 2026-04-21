@@ -35,6 +35,18 @@ export interface McpMentionProvider {
   getContextSavingServers: () => Array<{ name: string }>;
 }
 
+/** Minimal structural shape of EntityRegistry the mention dropdown needs. */
+interface EntityRegistryEntry {
+  slug: string;
+  name: string;
+  entityType: string;
+  source: string;
+}
+
+interface EntityRegistryLike {
+  search(query: string): EntityRegistryEntry[];
+}
+
 /**
  * Minimal interface for input elements the mention dropdown can work with.
  * Works with both HTMLTextAreaElement/HTMLInputElement and RichInput.
@@ -90,7 +102,7 @@ export class MentionDropdownController {
   private activeAgentFilter = false;
   private mcpManager: McpMentionProvider | null = null;
   private agentService: AgentMentionProvider | null = null;
-  private entityRegistry: any = null;
+  private entityRegistry: EntityRegistryLike | null = null;
   private fixed: boolean;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -122,7 +134,7 @@ export class MentionDropdownController {
     this.agentService = service;
   }
 
-  setEntityRegistry(registry: any): void {
+  setEntityRegistry(registry: EntityRegistryLike | null): void {
     this.entityRegistry = registry;
   }
 
@@ -598,6 +610,7 @@ export class MentionDropdownController {
     const charsToRemove = textBeforeCursor.length - this.mentionStartIndex;
     this.input.removeTextBeforeCursor(charsToRemove);
     if (replacement) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- only reliable way to insert text while preserving undo stack in contenteditable inputs
       document.execCommand('insertText', false, replacement);
     }
   }
@@ -607,6 +620,7 @@ export class MentionDropdownController {
     const textBeforeCursor = this.input.getTextBeforeCursor();
     const charsToRemove = textBeforeCursor.length - this.mentionStartIndex;
     this.input.removeTextBeforeCursor(charsToRemove);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- only reliable way to insert text while preserving undo stack in contenteditable inputs
     document.execCommand('insertText', false, '@');
 
     this.activeContextFilter = null;

@@ -70,7 +70,7 @@ export function renderSpellEditMode(
   function updateSideBtns() {
     if (!sideBtns) return;
     const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
-    renderSideButtons(sideBtns!, {
+    renderSideButtons(sideBtns, {
       state: sideState,
       isColumnActive: false,
       isReadonly: compendiumContext?.readonly,
@@ -120,7 +120,7 @@ export function renderSpellEditMode(
           } else if (writable.length === 1) {
             saveTo(writable[0]);
           } else {
-            showCompendiumPicker(sideBtns!, writable, saveTo);
+            showCompendiumPicker(sideBtns, writable, saveTo);
           }
         } else {
           if (writable.length === 0) {

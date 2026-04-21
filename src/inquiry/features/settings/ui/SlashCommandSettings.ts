@@ -55,10 +55,8 @@ export class SlashCommandModal extends Modal {
     let contextValue: 'fork' | '' = this.existingCmd?.context ?? '';
     let agentInput: HTMLInputElement;
 
-    /* eslint-disable prefer-const -- assigned in Setting callbacks */
     let disableUserSetting!: Setting;
     let disableUserToggle!: ToggleComponent;
-    /* eslint-enable prefer-const */
 
     const updateSkillOnlyFields = () => {
       const isSkillType = selectedType === 'skill';
@@ -208,7 +206,8 @@ export class SlashCommandModal extends Modal {
       text: 'Save',
       cls: 'claudian-save-btn',
     });
-    saveBtn.addEventListener('click', async () => {
+    saveBtn.addEventListener('click', () => {
+      void (async (): Promise<void> => {
       const name = nameInput.value.trim();
       const nameError = validateCommandName(name);
       if (nameError) {
@@ -263,6 +262,7 @@ export class SlashCommandModal extends Modal {
         return;
       }
       this.close();
+      })();
     });
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -358,12 +358,14 @@ export class SlashCommandSettings {
         attr: { 'aria-label': 'Convert to skill' },
       });
       setIcon(convertBtn, 'package');
-      convertBtn.addEventListener('click', async () => {
-        try {
-          await this.transformToSkill(cmd);
-        } catch {
-          new Notice('Failed to convert to skill');
-        }
+      convertBtn.addEventListener('click', () => {
+        void (async (): Promise<void> => {
+          try {
+            await this.transformToSkill(cmd);
+          } catch {
+            new Notice('Failed to convert to skill');
+          }
+        })();
       });
     }
 
@@ -372,13 +374,15 @@ export class SlashCommandSettings {
       attr: { 'aria-label': 'Delete' },
     });
     setIcon(deleteBtn, 'trash-2');
-    deleteBtn.addEventListener('click', async () => {
-      try {
-        await this.deleteCommand(cmd);
-      } catch {
-        const label = isSkill(cmd) ? 'skill' : 'slash command';
-        new Notice(`Failed to delete ${label}`);
-      }
+    deleteBtn.addEventListener('click', () => {
+      void (async (): Promise<void> => {
+        try {
+          await this.deleteCommand(cmd);
+        } catch {
+          const label = isSkill(cmd) ? 'skill' : 'slash command';
+          new Notice(`Failed to delete ${label}`);
+        }
+      })();
     });
   }
 

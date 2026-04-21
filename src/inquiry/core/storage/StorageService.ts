@@ -77,6 +77,7 @@ interface LegacySettingsJson {
   thinkingBudget?: string;
   permissionMode?: string;
   lastNonPlanPermissionMode?: string;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy schema shape used for migration only
   permissions?: LegacyPermission[];
   excludedTags?: string[];
   mediaFolder?: string;
@@ -230,7 +231,7 @@ export class StorageService {
       enableBlocklist: oldSettings.enableBlocklist ?? DEFAULT_SETTINGS.enableBlocklist,
       allowExternalAccess: oldSettings.allowExternalAccess ?? DEFAULT_SETTINGS.allowExternalAccess,
       blockedCommands: normalizeBlockedCommands(oldSettings.blockedCommands),
-      model: (oldSettings.model as ClaudeModel) ?? DEFAULT_SETTINGS.model,
+      model: oldSettings.model ?? DEFAULT_SETTINGS.model,
       permissionMode: (oldSettings.permissionMode as StoredClaudianSettings['permissionMode']) ?? DEFAULT_SETTINGS.permissionMode,
       excludedTags: oldSettings.excludedTags ?? DEFAULT_SETTINGS.excludedTags,
       mediaFolder: oldSettings.mediaFolder ?? DEFAULT_SETTINGS.mediaFolder,

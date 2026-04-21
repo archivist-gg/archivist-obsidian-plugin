@@ -151,7 +151,11 @@ export class InlineAskUserQuestion {
     if (typeof obj.value === 'string') return obj.value;
     if (typeof obj.text === 'string') return obj.text;
     if (typeof obj.name === 'string') return obj.name;
-    return String(obj);
+    try {
+      return JSON.stringify(obj) ?? '';
+    } catch {
+      return '';
+    }
   }
 
   private renderTabBar(): void {
@@ -426,13 +430,13 @@ export class InlineAskUserQuestion {
       item.toggleClass('is-selected', isSelected);
 
       if (isMulti) {
-        const checkSpan = item.querySelector('.claudian-ask-check') as HTMLElement | null;
+        const checkSpan = item.querySelector<HTMLElement>('.claudian-ask-check');
         if (checkSpan) {
           checkSpan.textContent = isSelected ? '[\u2713] ' : '[ ] ';
           checkSpan.toggleClass('is-checked', isSelected);
         }
       } else {
-        const labelRow = item.querySelector('.claudian-ask-label-row') as HTMLElement | null;
+        const labelRow = item.querySelector<HTMLElement>('.claudian-ask-label-row');
         const existingMark = item.querySelector('.claudian-ask-check-mark');
         if (isSelected && !existingMark && labelRow) {
           labelRow.createSpan({ text: ' \u2713', cls: 'claudian-ask-check-mark' });

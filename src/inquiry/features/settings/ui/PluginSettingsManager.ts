@@ -24,7 +24,7 @@ export class PluginSettingsManager {
       attr: { 'aria-label': 'Refresh' },
     });
     setIcon(refreshBtn, 'refresh-cw');
-    refreshBtn.addEventListener('click', () => this.refreshPlugins());
+    refreshBtn.addEventListener('click', () => { void this.refreshPlugins(); });
 
     const plugins = this.plugin.pluginManager.getPlugins();
 
@@ -85,7 +85,7 @@ export class PluginSettingsManager {
       attr: { 'aria-label': plugin.enabled ? 'Disable' : 'Enable' },
     });
     setIcon(toggleBtn, plugin.enabled ? 'toggle-right' : 'toggle-left');
-    toggleBtn.addEventListener('click', () => this.togglePlugin(plugin.id));
+    toggleBtn.addEventListener('click', () => { void this.togglePlugin(plugin.id); });
   }
 
   private async togglePlugin(pluginId: string) {

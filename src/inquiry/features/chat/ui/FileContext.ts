@@ -69,17 +69,19 @@ export class FileContextManager {
           this.refreshCurrentNoteChip();
         }
       },
-      onOpenFile: async (filePath) => {
+      onOpenFile: (filePath) => {
         const file = this.app.vault.getAbstractFileByPath(filePath);
         if (!(file instanceof TFile)) {
           new Notice(`Could not open file: ${filePath}`);
           return;
         }
-        try {
-          await this.app.workspace.getLeaf().openFile(file);
-        } catch (error) {
-          new Notice(`Failed to open file: ${error instanceof Error ? error.message : String(error)}`);
-        }
+        void (async () => {
+          try {
+            await this.app.workspace.getLeaf().openFile(file);
+          } catch (error) {
+            new Notice(`Failed to open file: ${error instanceof Error ? error.message : String(error)}`);
+          }
+        })();
       },
     });
 

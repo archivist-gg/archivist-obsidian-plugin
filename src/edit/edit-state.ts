@@ -125,7 +125,7 @@ function sectionToMonsterKey(section: string): string | null {
 
 function setNestedField(obj: Record<string, unknown>, path: string, value: unknown): void {
   const parts = path.split(".");
-  let current = obj as Record<string, unknown>;
+  let current = obj;
   for (let i = 0; i < parts.length - 1; i++) {
     if (current[parts[i]] === undefined || current[parts[i]] === null) {
       current[parts[i]] = {};

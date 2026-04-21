@@ -19,7 +19,7 @@ function isAbortSignalLike(target: unknown): boolean {
  * See: #143, #239, #284, #339, #342, #370, #374, #387
  */
 export function patchSetMaxListenersForElectron(): void {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- Node's `events` module is only available in the desktop (Electron) runtime; require keeps this out of the static dependency graph so it is lazily resolved.
   const events = require('events');
 
   if (events.setMaxListeners.__electronPatched) return;

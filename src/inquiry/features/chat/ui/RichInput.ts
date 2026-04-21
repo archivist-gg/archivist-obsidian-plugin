@@ -61,6 +61,7 @@ export class RichInput {
       e.preventDefault();
       const text = e.clipboardData?.getData('text/plain') ?? '';
       if (text) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- execCommand is the only reliable way to insert text into a contentEditable so that undo history survives; the Selection/Range alternatives break native undo.
         document.execCommand('insertText', false, text);
       }
     });
@@ -69,6 +70,7 @@ export class RichInput {
     this.el.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
         e.preventDefault();
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- see note on execCommand above (needed for undo-history-preserving line break in contentEditable).
         document.execCommand('insertLineBreak');
       }
     });
@@ -216,6 +218,7 @@ export class RichInput {
     for (let i = 0; i < count; i++) {
       sel.modify('extend', 'backward', 'character');
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- execCommand('delete') preserves contentEditable undo history; manual Range.deleteContents breaks undo stack.
     document.execCommand('delete', false);
   }
 

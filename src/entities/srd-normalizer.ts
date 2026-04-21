@@ -5,6 +5,7 @@ import {
   type ConverterAbilities,
 } from "./srd-tag-converter";
 import { proficiencyBonusFromCR } from "../dnd/math";
+import { toStringSafe } from "../parsers/yaml-utils";
 
 // ---------------------------------------------------------------------------
 // SRD Data Normalizer
@@ -12,24 +13,6 @@ import { proficiencyBonusFromCR } from "../dnd/math";
 // Transforms raw open5e.com SRD data into the format expected by our parsers.
 // The SRD JSON uses different field names and shapes than our YAML schema.
 // ---------------------------------------------------------------------------
-
-/**
- * Fields to drop from SRD data — metadata that isn't part of the stat block.
- */
-const DROP_FIELDS = new Set([
-  "slug",
-  "desc",
-  "group",
-  "page_no",
-  "environments",
-  "img_main",
-  "document__slug",
-  "document__title",
-  "document__license_url",
-  "document__url",
-  "v2_converted_path",
-  "spell_list",
-]);
 
 // ---------------------------------------------------------------------------
 // Monster normalizer
@@ -58,8 +41,8 @@ export function normalizeSrdMonster(
   if (armorClass != null) {
     const acEntry: Record<string, unknown> = { ac: Number(armorClass) };
     const armorDesc = raw.armor_desc;
-    if (armorDesc != null && String(armorDesc).trim() !== "") {
-      acEntry.from = [String(armorDesc)];
+    if (armorDesc != null && toStringSafe(armorDesc).trim() !== "") {
+      acEntry.from = [toStringSafe(armorDesc)];
     }
     out.ac = [acEntry];
   }
@@ -69,7 +52,7 @@ export function normalizeSrdMonster(
   if (hitPoints != null) {
     const hpObj: Record<string, unknown> = { average: Number(hitPoints) };
     if (raw.hit_dice != null) {
-      hpObj.formula = String(raw.hit_dice);
+      hpObj.formula = toStringSafe(raw.hit_dice);
     }
     out.hp = hpObj;
   }
@@ -129,7 +112,7 @@ export function normalizeSrdMonster(
 
   // -- Senses & Passive Perception ------------------------------------------
   if (raw.senses != null && typeof raw.senses === "string" && raw.senses !== "") {
-    const sensesStr = raw.senses as string;
+    const sensesStr = raw.senses;
     const parts = sensesStr.split(",").map((s: string) => s.trim()).filter(Boolean);
     const senses: string[] = [];
     let passivePerception: number | undefined;
@@ -149,7 +132,7 @@ export function normalizeSrdMonster(
 
   // -- Languages ------------------------------------------------------------
   if (raw.languages != null && typeof raw.languages === "string" && raw.languages !== "") {
-    const langs = (raw.languages as string)
+    const langs = raw.languages
       .split(",")
       .map((s: string) => s.trim())
       .filter(Boolean);
@@ -175,9 +158,9 @@ export function normalizeSrdMonster(
 
   // -- CR -------------------------------------------------------------------
   if (raw.challenge_rating != null) {
-    out.cr = String(raw.challenge_rating);
+    out.cr = toStringSafe(raw.challenge_rating);
   } else if (raw.cr != null) {
-    out.cr = String(raw.cr);
+    out.cr = toStringSafe(raw.cr);
   }
 
   // -- Feature blocks -------------------------------------------------------
@@ -186,13 +169,13 @@ export function normalizeSrdMonster(
   ): { name: string; entries: string[] }[] | undefined => {
     if (!Array.isArray(arr) || arr.length === 0) return undefined;
     return arr.map((f: Record<string, unknown>) => ({
-      name: String(f.name ?? ""),
-      entries: f.desc != null ? [String(f.desc)] : [],
+      name: toStringSafe(f.name),
+      entries: f.desc != null ? [toStringSafe(f.desc)] : [],
     }));
   };
 
   const abilitiesOut = out.abilities as ConverterAbilities | undefined;
-  const profBonus = proficiencyBonusFromCR(String(out.cr ?? "0"));
+  const profBonus = proficiencyBonusFromCR(toStringSafe(out.cr ?? "0"));
 
   // Build provisional traits to detect spellcasting ability
   const rawTraits = normalizeFeaturesRaw(raw.special_abilities);
@@ -241,7 +224,7 @@ export function normalizeSrdMonster(
 
   // -- Legendary description -> legendary_actions count ---------------------
   if (raw.legendary_desc != null && typeof raw.legendary_desc === "string") {
-    const ldMatch = (raw.legendary_desc as string).match(/can take (\d+) legendary action/i);
+    const ldMatch = raw.legendary_desc.match(/can take (\d+) legendary action/i);
     if (ldMatch) {
       out.legendary_actions = Number(ldMatch[1]);
     }
@@ -288,7 +271,7 @@ export function normalizeSrdItem(
 
   // --- desc -> entries -------------------------------------------------------
   if (typeof out.desc === "string") {
-    const text = out.desc as string;
+    const text = out.desc;
     out.entries = text
       .split("\n\n")
       .map((s) => s.trim())
@@ -356,19 +339,19 @@ export function normalizeSrdSpell(
   }
 
   // --- school ---
-  if (raw.school != null) out.school = String(raw.school);
+  if (raw.school != null) out.school = toStringSafe(raw.school);
 
   // --- casting_time ---
-  if (raw.casting_time != null) out.casting_time = String(raw.casting_time);
+  if (raw.casting_time != null) out.casting_time = toStringSafe(raw.casting_time);
 
   // --- range ---
-  if (raw.range != null) out.range = String(raw.range);
+  if (raw.range != null) out.range = toStringSafe(raw.range);
 
   // --- components ---
-  if (raw.components != null) out.components = String(raw.components);
+  if (raw.components != null) out.components = toStringSafe(raw.components);
 
   // --- duration ---
-  if (raw.duration != null) out.duration = String(raw.duration);
+  if (raw.duration != null) out.duration = toStringSafe(raw.duration);
 
   // --- concentration ---
   if (raw.requires_concentration != null) {

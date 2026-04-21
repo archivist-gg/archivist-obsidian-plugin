@@ -24,20 +24,28 @@ import type { ToolCallInfo } from '../../../core/types';
 import { appendSvg, MCP_ICON_SVG } from '../../../shared/icons';
 import { setupCollapsible } from './collapsible';
 import { renderDndEntityBlock, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
+import type { App } from 'obsidian';
+import type { EntityRegistry } from '../../../../entities/entity-registry';
 import { parseDndCodeFence } from './dndCodeFence';
 import { renderTodoItems } from './todoUtils';
-
-const DND_ENTITY_TOOLS = new Set([
-  'mcp__archivist__generate_monster',
-  'mcp__archivist__generate_spell',
-  'mcp__archivist__generate_item',
-]);
 
 function getDndEntityType(toolName: string): string | null {
   if (toolName.includes('generate_monster')) return 'monster';
   if (toolName.includes('generate_spell')) return 'spell';
   if (toolName.includes('generate_item')) return 'item';
   return null;
+}
+
+/** Safe string conversion that handles objects without "[object Object]" output. */
+function safeStringify(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') return String(value);
+  try {
+    return JSON.stringify(value) ?? '';
+  } catch {
+    return '';
+  }
 }
 
 /**
@@ -75,25 +83,25 @@ export function renderBlockSkeleton(
     partialEl.empty();
 
     if (data.name) {
-      headerEl.setText(String(data.name));
+      headerEl.setText(safeStringify(data.name));
     }
     if (data.type || data.size) {
-      partialEl.createDiv({ cls: 'archivist-skeleton-type', text: [data.size, data.type].filter(Boolean).join(' ') });
+      partialEl.createDiv({ cls: 'archivist-skeleton-type', text: [data.size, data.type].filter(Boolean).map(safeStringify).join(' ') });
     }
     if (data.ac) {
-      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `AC: ${typeof data.ac === 'object' ? JSON.stringify(data.ac) : data.ac}` });
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `AC: ${safeStringify(data.ac)}` });
     }
     if (data.hp) {
-      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `HP: ${typeof data.hp === 'object' ? JSON.stringify(data.hp) : data.hp}` });
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `HP: ${safeStringify(data.hp)}` });
     }
     if (data.abilities) {
       partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: 'Abilities loaded...' });
     }
     if (data.level !== undefined) {
-      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `Level ${data.level} ${data.school || ''}` });
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `Level ${safeStringify(data.level)} ${safeStringify(data.school ?? '')}` });
     }
     if (data.rarity) {
-      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `Rarity: ${data.rarity}` });
+      partialEl.createDiv({ cls: 'archivist-skeleton-prop', text: `Rarity: ${safeStringify(data.rarity)}` });
     }
   };
 
@@ -172,8 +180,14 @@ export function getToolSummary(name: string, input: Record<string, unknown>): st
       return '';
     default: {
       if (name.startsWith('mcp__archivist__')) {
-        const monsterName = (input as any)?.monster?.name || (input as any)?.spell?.name || (input as any)?.item?.name || '';
-        return monsterName;
+        const getEntityName = (key: string): string => {
+          const entity = input[key];
+          if (entity && typeof entity === 'object' && 'name' in entity && typeof entity.name === 'string') {
+            return entity.name;
+          }
+          return '';
+        };
+        return getEntityName('monster') || getEntityName('spell') || getEntityName('item');
       }
       return '';
     }
@@ -194,9 +208,9 @@ export function getToolLabel(name: string, input: Record<string, unknown>): stri
       return `Bash: ${cmd.length > 40 ? cmd.substring(0, 40) + '...' : cmd}`;
     }
     case TOOL_GLOB:
-      return `Glob: ${input.pattern || 'files'}`;
+      return `Glob: ${typeof input.pattern === 'string' && input.pattern ? input.pattern : 'files'}`;
     case TOOL_GREP:
-      return `Grep: ${input.pattern || 'pattern'}`;
+      return `Grep: ${typeof input.pattern === 'string' && input.pattern ? input.pattern : 'pattern'}`;
     case TOOL_WEB_SEARCH: {
       const query = (input.query as string) || 'search';
       return `WebSearch: ${query.length > 40 ? query.substring(0, 40) + '...' : query}`;
@@ -543,7 +557,7 @@ function formatAnswer(raw: unknown): string {
 }
 
 function resolveAskUserAnswers(toolCall: ToolCallInfo): Record<string, unknown> | undefined {
-  if (toolCall.resolvedAnswers) return toolCall.resolvedAnswers as Record<string, unknown>;
+  if (toolCall.resolvedAnswers) return toolCall.resolvedAnswers;
 
   const parsed = extractResolvedAnswersFromResultText(toolCall.result);
   if (parsed) {
@@ -730,8 +744,8 @@ export function renderDndEntityAfterToolCall(
   parentEl: HTMLElement,
   toolCall: ToolCallInfo,
   dndCopyAndSaveCallback?: CopyAndSaveCallback,
-  entityRegistry?: any,
-  app?: any,
+  entityRegistry?: EntityRegistry | null,
+  app?: App | null,
   dndUpdateCallback?: UpdateEntityCallback,
 ): boolean {
   const entityType = getDndEntityType(toolCall.name);

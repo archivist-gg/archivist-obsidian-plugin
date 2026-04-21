@@ -3,8 +3,6 @@ import {
   addTextField,
   addDropdown,
   addNumberField,
-  addTextArea,
-  addToggle,
   addRepeatableSection,
   toYamlString,
 } from "./modal-utils";

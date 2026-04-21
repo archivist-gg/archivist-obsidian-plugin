@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { TFile, TFolder } from "obsidian";
 import {
   Compendium,
   parseCompendiumMetadata,
@@ -182,20 +183,20 @@ describe("CompendiumManager", () => {
   // Vault mock helpers
   // -------------------------------------------------------------------------
   function makeFile(name: string, path: string, content: string) {
-    return {
-      name,
-      path,
-      extension: "md",
-      _content: content,
-    };
+    const file = new TFile();
+    file.name = name;
+    file.path = path;
+    file.extension = "md";
+    file._content = content;
+    return file;
   }
 
   function makeFolder(name: string, path: string, children: any[]) {
-    return {
-      name,
-      path,
-      children,
-    };
+    const folder = new TFolder();
+    folder.name = name;
+    folder.path = path;
+    folder.children = children;
+    return folder;
   }
 
   beforeEach(() => {

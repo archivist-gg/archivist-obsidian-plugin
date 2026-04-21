@@ -45,11 +45,15 @@ export class CanvasSelectionController {
     const canvasView = this.getCanvasView();
     if (!canvasView) return;
 
-    const canvas = (canvasView as any).canvas;
+    const viewWithCanvas = canvasView as ItemView & {
+      canvas?: { selection?: Set<{ id: string }> };
+      file?: { path?: string };
+    };
+    const canvas = viewWithCanvas.canvas;
     if (!canvas?.selection) return;
 
-    const selection: Set<{ id: string }> = canvas.selection;
-    const canvasPath = (canvasView as any).file?.path;
+    const selection = canvas.selection;
+    const canvasPath = viewWithCanvas.file?.path;
     if (!canvasPath) return;
 
     const nodeIds = [...selection].map(node => node.id).filter(Boolean);
@@ -73,15 +77,18 @@ export class CanvasSelectionController {
   }
 
   private getCanvasView(): ItemView | null {
+    const hasFile = (view: unknown): boolean =>
+      typeof view === 'object' && view !== null && 'file' in view && view.file != null;
+
     const activeLeaf = this.app.workspace.getMostRecentLeaf?.();
     const activeView = activeLeaf?.view as ItemView | undefined;
-    if (activeView?.getViewType?.() === 'canvas' && (activeView as any).file) {
+    if (activeView?.getViewType?.() === 'canvas' && hasFile(activeView)) {
       return activeView;
     }
 
     const leaves = this.app.workspace.getLeavesOfType('canvas');
     if (leaves.length === 0) return null;
-    const leaf = leaves.find(l => (l.view as any).file);
+    const leaf = leaves.find(l => hasFile(l.view));
     return leaf ? (leaf.view as ItemView) : null;
   }
 
@@ -93,9 +100,9 @@ export class CanvasSelectionController {
       this.indicatorEl.textContent = nodeIds.length === 1
         ? `node "${nodeIds[0]}" selected`
         : `${nodeIds.length} nodes selected`;
-      this.indicatorEl.style.display = 'block';
+      this.indicatorEl.classList.remove('archivist-hidden');
     } else {
-      this.indicatorEl.style.display = 'none';
+      this.indicatorEl.classList.add('archivist-hidden');
     }
     this.updateContextRowVisibility();
   }

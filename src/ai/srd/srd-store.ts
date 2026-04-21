@@ -1,3 +1,13 @@
+import monstersJson from "../../srd/data/monsters.json";
+import spellsJson from "../../srd/data/spells.json";
+import magicitemsJson from "../../srd/data/magicitems.json";
+import armorJson from "../../srd/data/armor.json";
+import weaponsJson from "../../srd/data/weapons.json";
+import featsJson from "../../srd/data/feats.json";
+import conditionsJson from "../../srd/data/conditions.json";
+import classesJson from "../../srd/data/classes.json";
+import backgroundsJson from "../../srd/data/backgrounds.json";
+
 export interface SrdEntity {
   slug: string;
   name: string;
@@ -65,23 +75,20 @@ export class SrdStore {
   }
 
   /**
-   * Load all bundled SRD JSON files via require().
-   * This works in both esbuild (bundled) and Node (test) contexts.
+   * Load all bundled SRD JSON files.
    */
   loadFromBundledJson(): void {
-    /* eslint-disable @typescript-eslint/no-var-requires */
     const sources: SrdDataSources = {
-      monsters: require("../../srd/data/monsters.json"),
-      spells: require("../../srd/data/spells.json"),
-      magicitems: require("../../srd/data/magicitems.json"),
-      armor: require("../../srd/data/armor.json"),
-      weapons: require("../../srd/data/weapons.json"),
-      feats: require("../../srd/data/feats.json"),
-      conditions: require("../../srd/data/conditions.json"),
-      classes: require("../../srd/data/classes.json"),
-      backgrounds: require("../../srd/data/backgrounds.json"),
+      monsters: monstersJson,
+      spells: spellsJson,
+      magicitems: magicitemsJson,
+      armor: armorJson,
+      weapons: weaponsJson,
+      feats: featsJson,
+      conditions: conditionsJson,
+      classes: classesJson,
+      backgrounds: backgroundsJson,
     };
-    /* eslint-enable @typescript-eslint/no-var-requires */
     this.loadFromData(sources);
   }
 

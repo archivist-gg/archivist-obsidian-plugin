@@ -107,7 +107,7 @@ export class InstructionModeManager {
       }
 
       e.preventDefault();
-      this.submit();
+      void this.submit();
       return true;
     }
 

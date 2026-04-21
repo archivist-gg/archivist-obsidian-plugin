@@ -1,4 +1,5 @@
 import * as yaml from "js-yaml";
+import { TFile, TFolder, type Vault, type TAbstractFile } from "obsidian";
 import {
   EntityNote,
   generateEntityMarkdown,
@@ -101,15 +102,15 @@ export function generateCompendiumMetadata(comp: Compendium): string {
  * Recursively collects all .md files from a folder and its subfolders.
  * Vault folders have a `children` array; files have a `name` property.
  */
-function collectMarkdownFiles(folder: any): any[] {
-  const files: any[] = [];
-  if (!folder || !folder.children) return files;
+function collectMarkdownFiles(folder: TAbstractFile | null | undefined): TFile[] {
+  const files: TFile[] = [];
+  if (!(folder instanceof TFolder)) return files;
 
   for (const child of folder.children) {
-    if (child.children) {
-      // It's a subfolder — recurse
+    if (child instanceof TFolder) {
+      // It's a subfolder, recurse
       files.push(...collectMarkdownFiles(child));
-    } else if (child.name && child.name.endsWith(".md")) {
+    } else if (child instanceof TFile && child.name.endsWith(".md")) {
       files.push(child);
     }
   }
@@ -127,10 +128,10 @@ function collectMarkdownFiles(folder: any): any[] {
 export class CompendiumManager {
   private compendiums = new Map<string, Compendium>();
   private registry: EntityRegistry;
-  private vault: any;
+  private vault: Vault;
   private compendiumRoot: string;
 
-  constructor(registry: EntityRegistry, vault: any, compendiumRoot: string) {
+  constructor(registry: EntityRegistry, vault: Vault, compendiumRoot: string) {
     this.registry = registry;
     this.vault = vault;
     this.compendiumRoot = compendiumRoot;
@@ -162,15 +163,15 @@ export class CompendiumManager {
    */
   async discover(): Promise<void> {
     const rootFolder = this.vault.getAbstractFileByPath(this.compendiumRoot);
-    if (!rootFolder || !rootFolder.children) return;
+    if (!(rootFolder instanceof TFolder)) return;
 
     for (const child of rootFolder.children) {
       // Only look at subfolders
-      if (!child.children) continue;
+      if (!(child instanceof TFolder)) continue;
 
       const metaPath = `${child.path}/_compendium.md`;
       const metaFile = this.vault.getAbstractFileByPath(metaPath);
-      if (!metaFile) continue;
+      if (!(metaFile instanceof TFile)) continue;
 
       const content = await this.vault.cachedRead(metaFile);
       const comp = parseCompendiumMetadata(content, child.path);
@@ -190,7 +191,7 @@ export class CompendiumManager {
 
     for (const comp of this.compendiums.values()) {
       const folder = this.vault.getAbstractFileByPath(comp.folderPath);
-      if (!folder || !folder.children) continue;
+      if (!(folder instanceof TFolder)) continue;
 
       const mdFiles = collectMarkdownFiles(folder);
 
@@ -264,7 +265,7 @@ export class CompendiumManager {
 
     const metaPath = `${comp.folderPath}/_compendium.md`;
     const metaFile = this.vault.getAbstractFileByPath(metaPath);
-    if (!metaFile) {
+    if (!(metaFile instanceof TFile)) {
       throw new Error(`Compendium metadata file not found: ${metaPath}`);
     }
 
@@ -343,7 +344,7 @@ export class CompendiumManager {
     }
 
     const file = this.vault.getAbstractFileByPath(existing.filePath);
-    if (!file) {
+    if (!(file instanceof TFile)) {
       throw new Error(`Entity file not found: ${existing.filePath}`);
     }
 

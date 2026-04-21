@@ -1,4 +1,4 @@
-import { App, Editor, Modal, Setting } from "obsidian";
+import { App, Editor, Modal } from "obsidian";
 import {
   addTextField,
   addDropdown,

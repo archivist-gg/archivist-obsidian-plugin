@@ -1553,3 +1553,8 @@
   width: 56px;
   padding: 4px 16px !important;
 }
+
+/* Utility: hide element without removing from DOM */
+.archivist-hidden {
+  display: none !important;
+}

@@ -1,5 +1,5 @@
 import { Monster } from "../types/monster";
-import { ParseResult, parseYaml } from "./yaml-utils";
+import { ParseResult, parseYaml, toStringSafe } from "./yaml-utils";
 
 export function parseMonster(source: string): ParseResult<Monster> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);
@@ -8,14 +8,14 @@ export function parseMonster(source: string): ParseResult<Monster> {
   const raw = result.data;
 
   const monster: Monster = {
-    name: String(raw.name),
+    name: toStringSafe(raw.name),
   };
 
-  if (raw.size != null) monster.size = String(raw.size);
-  if (raw.type != null) monster.type = String(raw.type);
-  if (raw.subtype != null) monster.subtype = String(raw.subtype);
-  if (raw.alignment != null) monster.alignment = String(raw.alignment);
-  if (raw.cr != null) monster.cr = String(raw.cr);
+  if (raw.size != null) monster.size = toStringSafe(raw.size);
+  if (raw.type != null) monster.type = toStringSafe(raw.type);
+  if (raw.subtype != null) monster.subtype = toStringSafe(raw.subtype);
+  if (raw.alignment != null) monster.alignment = toStringSafe(raw.alignment);
+  if (raw.cr != null) monster.cr = toStringSafe(raw.cr);
 
   if (Array.isArray(raw.ac)) {
     monster.ac = raw.ac.map((entry: Record<string, unknown>) => ({
@@ -28,7 +28,7 @@ export function parseMonster(source: string): ParseResult<Monster> {
     const hp = raw.hp as Record<string, unknown>;
     monster.hp = {
       average: Number(hp.average),
-      formula: hp.formula != null ? String(hp.formula) : undefined,
+      formula: hp.formula != null ? toStringSafe(hp.formula) : undefined,
     };
   }
 
@@ -79,7 +79,7 @@ export function parseMonster(source: string): ParseResult<Monster> {
   const parseFeatures = (arr: unknown): { name: string; entries: string[] }[] | undefined => {
     if (!Array.isArray(arr)) return undefined;
     return arr.map((f: Record<string, unknown>) => ({
-      name: String(f.name ?? ""),
+      name: toStringSafe(f.name),
       entries: Array.isArray(f.entries) ? f.entries.map(String) : [],
     }));
   };

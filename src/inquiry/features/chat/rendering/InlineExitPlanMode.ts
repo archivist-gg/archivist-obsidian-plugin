@@ -144,7 +144,7 @@ export class InlineExitPlanMode {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- Node `fs` is desktop-only; dynamic require keeps it out of the mobile bundle graph.
       const fs = require('fs');
       const content = fs.readFileSync(planFilePath, 'utf-8') as string;
       return content.trim() || null;

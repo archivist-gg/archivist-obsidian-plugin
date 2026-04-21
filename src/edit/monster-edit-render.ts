@@ -104,7 +104,7 @@ export function renderMonsterEditMode(
   function updateSideBtns() {
     if (!sideBtns) return;
     const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
-    renderSideButtons(sideBtns!, {
+    renderSideButtons(sideBtns, {
       state: sideState,
       isColumnActive: false,
       isReadonly: compendiumContext?.readonly,
@@ -157,7 +157,7 @@ export function renderMonsterEditMode(
           } else if (writable.length === 1) {
             saveTo(writable[0]);
           } else {
-            showCompendiumPicker(sideBtns!, writable, saveTo);
+            showCompendiumPicker(sideBtns, writable, saveTo);
           }
         } else {
           // Code block path: use modal for name
@@ -455,7 +455,7 @@ export function renderMonsterEditMode(
     scoreInput.value = String(getAbilityScore(m, key));
     scoreInput.addEventListener("input", () => {
       const abilities = { ...(state.current.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }) };
-      abilities[key as keyof MonsterAbilities] = parseInt(scoreInput.value) || 10;
+      abilities[key] = parseInt(scoreInput.value) || 10;
       state.updateField("abilities", abilities);
     });
     createSpinButtons(scoreWrap, scoreInput);
@@ -500,7 +500,7 @@ export function renderMonsterEditMode(
     const profBonus = state.current.proficiencyBonus;
     const saveIsOverridden = state.current.overrides.has(`saves.${key}`);
     const saveVal = saveIsOverridden && state.current.saves?.[key] !== undefined
-      ? state.current.saves[key]!
+      ? state.current.saves[key]
       : savingThrow(score, state.current.saveProficiencies[key], profBonus);
     valEl.textContent = formatModifier(saveVal);
     if (state.current.saveProficiencies[key]) valEl.addClass("proficient-value");
@@ -865,7 +865,7 @@ function updateDom(state: MonsterEditState, refs: DomRefs): void {
   // Ability modifiers
   for (const key of ABILITY_KEYS) {
     if (refs.abilityModCells[key]) {
-      const score = abilities[key as keyof MonsterAbilities];
+      const score = abilities[key];
       refs.abilityModCells[key].textContent = `(${formatModifier(abilityModifier(score))})`;
     }
   }
@@ -874,7 +874,7 @@ function updateDom(state: MonsterEditState, refs: DomRefs): void {
   for (const key of ABILITY_KEYS) {
     if (refs.saveValues[key]) {
       if (!m.overrides.has(`saves.${key}`)) {
-        const score = abilities[key as keyof MonsterAbilities];
+        const score = abilities[key];
         const sv = savingThrow(score, m.saveProficiencies[key], profBonus);
         flashUpdate(refs.saveValues[key], formatModifier(sv));
       }
@@ -1138,16 +1138,16 @@ function createCollapsible(
   headerEl.createEl("h4", { text: title });
 
   const grid = parent.createDiv();
-  grid.style.display = startOpen ? "" : "none";
+  if (!startOpen) grid.addClass("archivist-hidden");
 
   headerEl.addEventListener("click", () => {
     const isOpen = chevron.hasClass("open");
     if (isOpen) {
       chevron.removeClass("open");
-      grid.style.display = "none";
+      grid.addClass("archivist-hidden");
     } else {
       chevron.addClass("open");
-      grid.style.display = "";
+      grid.removeClass("archivist-hidden");
     }
   });
 

@@ -648,13 +648,15 @@ export class ConversationController {
       });
 
       if (!isCurrent) {
-        content.addEventListener('click', async (e) => {
+        content.addEventListener('click', (e) => {
           e.stopPropagation();
-          try {
-            await options.onSelectConversation(conv.id);
-          } catch {
-            new Notice('Failed to load conversation');
-          }
+          void (async () => {
+            try {
+              await options.onSelectConversation(conv.id);
+            } catch {
+              new Notice('Failed to load conversation');
+            }
+          })();
         });
       }
 
@@ -669,13 +671,15 @@ export class ConversationController {
         const regenerateBtn = actions.createEl('button', { cls: 'claudian-action-btn' });
         setIcon(regenerateBtn, 'refresh-cw');
         regenerateBtn.setAttribute('aria-label', 'Regenerate title');
-        regenerateBtn.addEventListener('click', async (e) => {
+        regenerateBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          try {
-            await this.regenerateTitle(conv.id);
-          } catch {
-            new Notice('Failed to regenerate response');
-          }
+          void (async () => {
+            try {
+              await this.regenerateTitle(conv.id);
+            } catch {
+              new Notice('Failed to regenerate response');
+            }
+          })();
         });
       }
 
@@ -690,19 +694,21 @@ export class ConversationController {
       const deleteBtn = actions.createEl('button', { cls: 'claudian-action-btn claudian-delete-btn' });
       setIcon(deleteBtn, 'trash-2');
       deleteBtn.setAttribute('aria-label', 'Delete');
-      deleteBtn.addEventListener('click', async (e) => {
+      deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (state.isStreaming) return;
-        try {
-          await plugin.deleteConversation(conv.id);
-          options.onRerender();
+        void (async () => {
+          try {
+            await plugin.deleteConversation(conv.id);
+            options.onRerender();
 
-          if (conv.id === state.currentConversationId) {
-            await this.loadActive();
+            if (conv.id === state.currentConversationId) {
+              await this.loadActive();
+            }
+          } catch {
+            new Notice('Failed to delete conversation');
           }
-        } catch {
-          new Notice('Failed to delete conversation');
-        }
+        })();
       });
     }
   }
@@ -721,18 +727,20 @@ export class ConversationController {
     input.focus();
     input.select();
 
-    const finishRename = async () => {
-      try {
-        const newTitle = input.value.trim() || currentTitle;
-        await this.deps.plugin.renameConversation(convId, newTitle);
-        this.updateHistoryDropdown();
-      } catch {
-        new Notice('Failed to rename conversation');
-      }
+    const finishRename = (): void => {
+      void (async () => {
+        try {
+          const newTitle = input.value.trim() || currentTitle;
+          await this.deps.plugin.renameConversation(convId, newTitle);
+          this.updateHistoryDropdown();
+        } catch {
+          new Notice('Failed to rename conversation');
+        }
+      })();
     };
 
     input.addEventListener('blur', finishRename);
-    input.addEventListener('keydown', async (e) => {
+    input.addEventListener('keydown', (e) => {
       // Check !e.isComposing for IME support (Chinese, Japanese, Korean, etc.)
       if (e.key === 'Enter' && !e.isComposing) {
         input.blur();
@@ -808,11 +816,7 @@ export class ConversationController {
     const welcomeEl = this.deps.getWelcomeEl();
     if (!welcomeEl) return;
 
-    if (this.deps.state.messages.length === 0) {
-      welcomeEl.style.display = '';
-    } else {
-      welcomeEl.style.display = 'none';
-    }
+    welcomeEl.classList.toggle('archivist-hidden', this.deps.state.messages.length !== 0);
   }
 
   /**

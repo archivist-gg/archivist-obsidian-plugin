@@ -104,6 +104,18 @@ interface AutocompleteInputLike {
   focus(): void;
 }
 
+/** Minimal structural shape of EntityRegistry the dropdown needs. */
+interface EntityRegistryEntry {
+  slug: string;
+  name: string;
+  entityType: string;
+  source: 'srd' | 'custom';
+}
+
+interface EntityRegistryLike {
+  search(query: string, entityType: string | undefined, limit: number): EntityRegistryEntry[];
+}
+
 /**
  * Autocomplete dropdown that activates when the user types `[[` in the input.
  * Searches the EntityRegistry and inserts `[[type:Name]]` on selection.
@@ -111,7 +123,8 @@ interface AutocompleteInputLike {
 export class EntityAutocompleteDropdown {
   private containerEl: HTMLElement;
   private richInput: AutocompleteInputLike;
-  private entityRegistry: any; // Avoid importing EntityRegistry to prevent Obsidian bundling issues
+  // Avoid importing EntityRegistry to prevent Obsidian bundling issues
+  private entityRegistry: EntityRegistryLike;
   private dropdownEl: HTMLElement | null = null;
   private results: AutocompleteResult[] = [];
   private selectedIndex = 0;
@@ -132,7 +145,7 @@ export class EntityAutocompleteDropdown {
   constructor(
     containerEl: HTMLElement,
     richInput: AutocompleteInputLike,
-    entityRegistry: any,
+    entityRegistry: EntityRegistryLike,
     onSelect?: (entityType: string, name: string) => void,
   ) {
     this.containerEl = containerEl;
@@ -267,7 +280,7 @@ export class EntityAutocompleteDropdown {
       EntityAutocompleteDropdown.MAX_RESULTS,
     );
 
-    this.results = entities.map((e: any) => ({
+    this.results = entities.map((e) => ({
       slug: e.slug,
       name: e.name,
       entityType: e.entityType,
@@ -331,6 +344,7 @@ export class EntityAutocompleteDropdown {
     } else {
       // Fallback: remove [[query and insert raw text
       this.richInput.removeTextBeforeCursor(charsToRemove);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- only reliable way to insert text while preserving undo stack in contenteditable inputs
       document.execCommand('insertText', false, `[[${item.entityType}:${item.name}]]`);
     }
 

@@ -39,20 +39,22 @@ export function renderInlineTag(tag: InlineTag): HTMLElement {
     span.setAttribute('data-dice-notation', tag.content);
     span.setAttribute('data-dice-type', tag.type);
     span.setAttribute('title', `${config.format(tag.content)} -- Click to roll`);
-    span.addEventListener('click', async () => {
-      const api = (window as any).DiceRoller;
-      if (api) {
-        const notation = extractDiceNotation(tag);
-        if (notation) {
-          try {
-            await rollDiceWithRender(api, notation);
-          } catch {
-            new Notice(`Could not roll: ${tag.content}`);
+    span.addEventListener('click', () => {
+      void (async () => {
+        const api = (window as unknown as { DiceRoller?: unknown }).DiceRoller;
+        if (api) {
+          const notation = extractDiceNotation(tag);
+          if (notation) {
+            try {
+              await rollDiceWithRender(api, notation);
+            } catch {
+              new Notice(`Could not roll: ${tag.content}`);
+            }
           }
+        } else {
+          new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
         }
-      } else {
-        new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
-      }
+      })();
     });
   }
 

@@ -327,6 +327,11 @@
   margin-top: 1em;
 }
 
+/* Hidden when no custom-model env vars are present (toggled by EnvSnippetManager) */
+.claudian-env-snippet-limits-hidden {
+  display: none;
+}
+
 .claudian-snippet-context-limits .setting-item-description {
   margin-bottom: 0.5em;
 }

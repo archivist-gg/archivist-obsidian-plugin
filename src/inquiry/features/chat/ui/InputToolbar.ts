@@ -112,11 +112,13 @@ export class ModelSelector {
         option.setAttribute('title', model.description);
       }
 
-      option.addEventListener('click', async (e) => {
+      option.addEventListener('click', (e) => {
         e.stopPropagation();
-        await this.callbacks.onModelChange(model.value);
-        this.updateDisplay();
-        this.renderOptions();
+        void (async () => {
+          await this.callbacks.onModelChange(model.value);
+          this.updateDisplay();
+          this.renderOptions();
+        })();
       });
     }
   }
@@ -166,10 +168,12 @@ export class ThinkingBudgetSelector {
         gearEl.addClass('selected');
       }
 
-      gearEl.addEventListener('click', async (e) => {
+      gearEl.addEventListener('click', (e) => {
         e.stopPropagation();
-        await this.callbacks.onEffortLevelChange(effort.value);
-        this.updateDisplay();
+        void (async () => {
+          await this.callbacks.onEffortLevelChange(effort.value);
+          this.updateDisplay();
+        })();
       });
     }
   }
@@ -386,7 +390,7 @@ export class ExternalContextSelector {
     // Click to open native folder picker
     iconWrapper.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.openFolderPicker();
+      void this.openFolderPicker();
     });
 
     this.dropdownEl = this.container.createDiv({ cls: 'claudian-external-context-dropdown' });
@@ -395,8 +399,8 @@ export class ExternalContextSelector {
 
   private async openFolderPicker() {
     try {
-      // Access Electron's dialog through remote
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // Access Electron's dialog through remote.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- `electron` is not a static dependency; it is only available inside Obsidian's desktop renderer.
       const { remote } = require('electron');
       const result = await remote.dialog.showOpenDialog({
         properties: ['openDirectory'],
@@ -490,7 +494,7 @@ export class ExternalContextSelector {
   /** Shorten path for display (replace home dir with ~) */
   private shortenPath(fullPath: string): string {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- Node `os` is desktop-only; require keeps it out of the static dependency graph.
       const os = require('os');
       const homeDir = os.homedir();
       const normalize = (value: string) => value.replace(/\\/g, '/');
@@ -700,7 +704,7 @@ export class McpServerSelector {
 
     // Update item visually in-place (immediate feedback)
     const isEnabled = this.enabledServers.has(name);
-    const checkEl = itemEl.querySelector('.claudian-mcp-selector-check') as HTMLElement | null;
+    const checkEl = itemEl.querySelector<HTMLElement>('.claudian-mcp-selector-check');
 
     if (isEnabled) {
       itemEl.addClass('enabled');
@@ -726,10 +730,10 @@ export class McpServerSelector {
 
     // Show/hide container based on whether there are servers
     if (!hasServers) {
-      this.container.style.display = 'none';
+      this.container.classList.add('archivist-hidden');
       return;
     }
-    this.container.style.display = '';
+    this.container.classList.remove('archivist-hidden');
 
     if (count > 0) {
       this.iconEl.addClass('active');
@@ -757,10 +761,8 @@ export class ContextUsageMeter {
   private circumference: number = 0;
 
   constructor(parentEl: HTMLElement) {
-    this.container = parentEl.createDiv({ cls: 'claudian-context-meter' });
+    this.container = parentEl.createDiv({ cls: 'claudian-context-meter archivist-hidden' });
     this.render();
-    // Initially hidden
-    this.container.style.display = 'none';
   }
 
   private render() {
@@ -819,10 +821,10 @@ export class ContextUsageMeter {
 
   update(usage: UsageInfo | null): void {
     if (!usage || usage.contextTokens <= 0) {
-      this.container.style.display = 'none';
+      this.container.classList.add('archivist-hidden');
       return;
     }
-    this.container.style.display = 'flex';
+    this.container.classList.remove('archivist-hidden');
     const fillLength = (usage.percentage / 100) * this.circumference;
     if (this.fillPath) {
       this.fillPath.style.strokeDashoffset = String(this.circumference - fillLength);

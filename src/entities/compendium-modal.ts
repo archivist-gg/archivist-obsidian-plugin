@@ -70,8 +70,8 @@ export class CreateCompendiumModal extends Modal {
               new Notice(`Created compendium: ${name}`);
               this.close();
               this.onCreated(comp);
-            } catch (e: any) {
-              new Notice(`Failed to create: ${e.message}`);
+            } catch (e: unknown) {
+              new Notice(`Failed to create: ${e instanceof Error ? e.message : String(e)}`);
             }
           }),
       );

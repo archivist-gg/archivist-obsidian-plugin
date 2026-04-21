@@ -53,11 +53,32 @@ import {
   sdkSessionExists,
   type SDKSessionLoadResult,
 } from './utils/sdkSession';
+import type { CompendiumManager } from '../entities/compendium-manager';
 import { CompendiumSelectModal, CreateCompendiumModal } from '../entities/compendium-modal';
 import { createArchivistMcpServer } from '../ai/mcp-server';
 import type { SrdStore } from '../ai/srd/srd-store';
 import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';
+import { FileSystemAdapter } from 'obsidian';
 import { registerTablerIcons } from './shared/icons/tabler-icons';
+
+/**
+ * Optional fields the Archivist host plugin adds on top of the base Obsidian Plugin.
+ * InquiryModule depends on these softly; they may be undefined when the module is
+ * embedded in a different host.
+ */
+interface ArchivistHostPlugin extends Plugin {
+  compendiumManager?: CompendiumManager;
+  settings?: {
+    compendiumRoot?: string;
+    userEntityFolder?: string;
+    ttrpgRootDir?: string;
+  };
+}
+
+/** Legacy settings fields removed during migration. */
+interface LegacyClaudianSettings {
+  claudeCliPaths?: Record<string, string>;
+}
 
 // ============================================
 // Subagent data merge helpers (pure functions)
@@ -273,12 +294,13 @@ export class InquiryModule {
     // Set up factory for in-process MCP server (each tab needs its own instance)
     if (this.srdStore) {
       const srdStore = this.srdStore as SrdStore;
-      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(srdStore, (this.plugin as any).compendiumManager);
+      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(srdStore, (this.plugin as ArchivistHostPlugin).compendiumManager);
     }
 
     // Initialize plugin manager (reads from installed_plugins.json + settings.json)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const vaultPath = (this.app.vault.adapter as any).basePath;
+    const vaultPath = this.app.vault.adapter instanceof FileSystemAdapter
+      ? this.app.vault.adapter.getBasePath()
+      : '';
     this.pluginManager = new PluginManager(vaultPath, this.storage.ccSettings);
     await this.pluginManager.loadPlugins();
 
@@ -292,14 +314,14 @@ export class InquiryModule {
     );
 
     this.plugin.addRibbonIcon('bot', 'Open Archivist Inquiry', () => {
-      this.activateView();
+      void this.activateView();
     });
 
     this.plugin.addCommand({
       id: 'open-inquiry-view',
       name: 'Open chat view',
       callback: () => {
-        this.activateView();
+        void this.activateView();
       },
     });
 
@@ -355,7 +377,7 @@ export class InquiryModule {
         if (!tabManager.canCreateTab()) return false;
 
         if (!checking) {
-          tabManager.createTab();
+          void tabManager.createTab();
         }
         return true;
       },
@@ -378,7 +400,7 @@ export class InquiryModule {
         if (activeTab.state.isStreaming) return false;
 
         if (!checking) {
-          tabManager.createNewConversation();
+          void tabManager.createNewConversation();
         }
         return true;
       },
@@ -399,7 +421,7 @@ export class InquiryModule {
           const activeTabId = tabManager.getActiveTabId();
           if (activeTabId) {
             // When closing the last tab, TabManager will create a new empty one
-            tabManager.closeTab(activeTabId);
+            void tabManager.closeTab(activeTabId);
           }
         }
         return true;
@@ -442,7 +464,7 @@ export class InquiryModule {
     }
 
     if (leaf) {
-      workspace.revealLeaf(leaf);
+      await workspace.revealLeaf(leaf);
     }
   }
 
@@ -467,7 +489,7 @@ export class InquiryModule {
     }
 
     // Ensure tabs are in header position
-    if ((this.settings as any).tabBarPosition === 'input') {
+    if ((this.settings as { tabBarPosition?: string }).tabBarPosition === 'input') {
       this.settings.tabBarPosition = 'header';
     }
 
@@ -484,8 +506,8 @@ export class InquiryModule {
     let didMigrateCliPath = false;
 
     if (!this.settings.claudeCliPathsByHost[hostname]) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const platformPaths = (this.settings as any).claudeCliPaths as Record<string, string> | undefined;
+      const platformPaths = (this.settings as ClaudianSettings & LegacyClaudianSettings).claudeCliPaths;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
       const migratedPath = platformPaths?.[getCliPlatformKey()]?.trim() || this.settings.claudeCliPath?.trim();
 
       if (migratedPath) {
@@ -495,8 +517,7 @@ export class InquiryModule {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (this.settings as any).claudeCliPaths;
+    delete (this.settings as ClaudianSettings & LegacyClaudianSettings).claudeCliPaths;
 
     // Load all conversations from session files (legacy JSONL + native metadata)
     const { conversations: legacyConversations, failedCount } = await this.storage.sessions.loadAllConversations();
@@ -648,12 +669,8 @@ export class InquiryModule {
 
   /** Persists settings to storage. */
   async saveSettings() {
-    // Save settings (excluding slashCommands which are stored separately)
-    const {
-      slashCommands: _,
-      ...settingsToSave
-    } = this.settings;
-
+    const { slashCommands, ...settingsToSave } = this.settings;
+    void slashCommands;
     await this.storage.saveClaudianSettings(settingsToSave);
   }
 
@@ -1305,8 +1322,7 @@ export class InquiryModule {
    * Falls back to sensible defaults if unavailable.
    */
   getArchivistSettings(): { compendiumRoot: string; userEntityFolder: string; ttrpgRootDir: string } {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const hostSettings = (this.plugin as any).settings;
+    const hostSettings = (this.plugin as ArchivistHostPlugin).settings;
     return {
       compendiumRoot: hostSettings?.compendiumRoot ?? 'Compendium',
       userEntityFolder: hostSettings?.userEntityFolder ?? 'me',
@@ -1319,8 +1335,7 @@ export class InquiryModule {
    * Used by the "Copy & Save" button in D&D entity blocks rendered in chat.
    */
   async saveEntityToVault(entityType: string, data: Record<string, unknown>, compendiumName?: string): Promise<string | undefined> {
-    const plugin = this.plugin as any;
-    const compManager = plugin.compendiumManager;
+    const compManager = (this.plugin as ArchivistHostPlugin).compendiumManager;
     if (!compManager) {
       new Notice("Compendium system not initialized");
       return undefined;
@@ -1330,9 +1345,8 @@ export class InquiryModule {
       const writable = compManager.getWritable();
       if (writable.length === 0) {
         return new Promise<string | undefined>((resolve) => {
-          new CreateCompendiumModal(this.app, compManager, async (comp) => {
-            const slug = await this.saveEntityToVault(entityType, data, comp.name);
-            resolve(slug);
+          new CreateCompendiumModal(this.app, compManager, (comp) => {
+            void this.saveEntityToVault(entityType, data, comp.name).then(resolve);
           }).open();
         });
       }
@@ -1340,9 +1354,8 @@ export class InquiryModule {
         compendiumName = writable[0].name;
       } else {
         return new Promise<string | undefined>((resolve) => {
-          new CompendiumSelectModal(this.app, writable, async (comp) => {
-            const slug = await this.saveEntityToVault(entityType, data, comp.name);
-            resolve(slug);
+          new CompendiumSelectModal(this.app, writable, (comp) => {
+            void this.saveEntityToVault(entityType, data, comp.name).then(resolve);
           }, compManager).open();
         });
       }
@@ -1352,8 +1365,9 @@ export class InquiryModule {
       const registered = await compManager.saveEntity(compendiumName, entityType, data);
       new Notice(`Saved to ${registered.filePath}`);
       return registered.slug;
-    } catch (e: any) {
-      new Notice(`Failed to save: ${e.message}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      new Notice(`Failed to save: ${message}`);
       return undefined;
     }
   }

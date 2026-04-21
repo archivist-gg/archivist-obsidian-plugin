@@ -29,9 +29,11 @@ export function createSrdTools(store: SrdStore) {
       // Try slug first
       let entity = store.getBySlug(slug);
 
-      // Fall back to name-based lookup
+      // Fall back to exact-name search (case-insensitive)
       if (!entity && name) {
-        entity = store.getByName(name, entity_type) ?? undefined;
+        const q = name.toLowerCase();
+        const hits = store.search(name, entity_type, 20);
+        entity = hits.find((e) => e.name.toLowerCase() === q);
       }
 
       if (!entity) {

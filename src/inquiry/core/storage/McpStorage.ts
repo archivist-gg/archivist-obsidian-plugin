@@ -139,7 +139,8 @@ export class McpStorage {
     if (Object.keys(claudianServers).length > 0) {
       file._claudian = { ...(existingClaudian ?? {}), servers: claudianServers };
     } else if (existingClaudian) {
-      const { servers: _servers, ...rest } = existingClaudian;
+      const { servers, ...rest } = existingClaudian;
+      void servers;
       if (Object.keys(rest).length > 0) {
         file._claudian = rest;
       } else {
@@ -180,7 +181,7 @@ export class McpStorage {
 
         for (const [name, config] of Object.entries(parsed.mcpServers)) {
           if (isValidMcpServerConfig(config)) {
-            servers.push({ name, config: config as McpServerConfig });
+            servers.push({ name, config });
           }
         }
 
@@ -195,7 +196,7 @@ export class McpStorage {
       // { "command": "...", "args": [...] } or { "type": "sse", "url": "..." }
       if (isValidMcpServerConfig(parsed)) {
         return {
-          servers: [{ name: '', config: parsed as McpServerConfig }],
+          servers: [{ name: '', config: parsed }],
           needsName: true,
         };
       }
@@ -207,7 +208,7 @@ export class McpStorage {
         const [name, config] = entries[0];
         if (isValidMcpServerConfig(config)) {
           return {
-            servers: [{ name, config: config as McpServerConfig }],
+            servers: [{ name, config }],
             needsName: false,
           };
         }
@@ -218,7 +219,7 @@ export class McpStorage {
       const servers: Array<{ name: string; config: McpServerConfig }> = [];
       for (const [name, config] of entries) {
         if (isValidMcpServerConfig(config)) {
-          servers.push({ name, config: config as McpServerConfig });
+          servers.push({ name, config });
         }
       }
 

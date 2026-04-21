@@ -46,7 +46,7 @@ export function enhanceCodeBlocks(container: HTMLElement): void {
     // Copy handler
     copyBtn.addEventListener("click", () => {
       const text = codeEl.textContent ?? "";
-      navigator.clipboard.writeText(text);
+      void navigator.clipboard.writeText(text);
       copyBtn.empty();
       setIcon(copyBtn, "check");
       const copiedLabel = document.createElement("span");

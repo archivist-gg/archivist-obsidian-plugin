@@ -1,5 +1,4 @@
 import { Plugin, Notice, setIcon } from "obsidian";
-import type { MarkdownPostProcessorContext } from "obsidian";
 
 // D&D parsers
 import { parseMonster } from "./parsers/monster-parser";
@@ -162,14 +161,15 @@ export default class ArchivistPlugin extends Plugin {
                   }
                 }
                 new Notice(`Saved to ${comp.name}`);
-              } catch (e: any) {
-                new Notice(`Failed to save: ${e.message}`);
+              } catch (e: unknown) {
+                new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
               }
             };
+            const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
             if (writable.length === 0) {
-              new CreateCompendiumModal(this.app, this.compendiumManager, saveToComp).open();
+              new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
             } else {
-              new CompendiumSelectModal(this.app, writable, saveToComp, this.compendiumManager).open();
+              new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
             }
           },
           onCancel: () => exitEditMode(),
@@ -272,14 +272,15 @@ export default class ArchivistPlugin extends Plugin {
                   }
                 }
                 new Notice(`Saved to ${comp.name}`);
-              } catch (e: any) {
-                new Notice(`Failed to save: ${e.message}`);
+              } catch (e: unknown) {
+                new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
               }
             };
+            const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
             if (writable.length === 0) {
-              new CreateCompendiumModal(this.app, this.compendiumManager, saveToComp).open();
+              new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
             } else {
-              new CompendiumSelectModal(this.app, writable, saveToComp, this.compendiumManager).open();
+              new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
             }
           },
           onCancel: () => exitEditMode(),
@@ -376,14 +377,15 @@ export default class ArchivistPlugin extends Plugin {
                   }
                 }
                 new Notice(`Saved to ${comp.name}`);
-              } catch (e: any) {
-                new Notice(`Failed to save: ${e.message}`);
+              } catch (e: unknown) {
+                new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
               }
             };
+            const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
             if (writable.length === 0) {
-              new CreateCompendiumModal(this.app, this.compendiumManager, saveToComp).open();
+              new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
             } else {
-              new CompendiumSelectModal(this.app, writable, saveToComp, this.compendiumManager).open();
+              new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
             }
           },
           onCancel: () => exitEditMode(),
@@ -524,12 +526,12 @@ export default class ArchivistPlugin extends Plugin {
     // Initialize compendiums after vault index is ready (avoids race conditions
     // where getAbstractFileByPath returns null for folders that exist on disk)
     this.app.workspace.onLayoutReady(() => {
-      this.initializeCompendiums();
+      void this.initializeCompendiums();
     });
   }
 
-  async onunload() {
-    await this.inquiry?.destroy();
+  onunload() {
+    void this.inquiry?.destroy();
   }
 
   async loadSettings(): Promise<void> {

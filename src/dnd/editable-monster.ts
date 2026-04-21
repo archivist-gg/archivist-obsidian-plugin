@@ -104,7 +104,7 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   if (monster.saves) {
     for (const key of ABILITY_KEYS) {
       if (monster.saves[key] !== undefined) {
-        const autoValue = savingThrow(abilities[key as keyof MonsterAbilities], true, profBonus);
+        const autoValue = savingThrow(abilities[key], true, profBonus);
         if (monster.saves[key] !== autoValue) {
           overrides.add(`saves.${key}`);
         }
@@ -171,7 +171,7 @@ export function editableToMonster(editable: EditableMonster): Monster {
       if (editable.overrides.has(`saves.${key}`) && editable.saves?.[key] !== undefined) {
         saves[key] = editable.saves[key]!;
       } else {
-        const score = abilities[key as keyof MonsterAbilities];
+        const score = abilities[key];
         saves[key] = savingThrow(score, true, profBonus);
       }
       hasSaves = true;

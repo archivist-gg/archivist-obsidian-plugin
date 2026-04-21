@@ -29,7 +29,7 @@ export class McpSettingsManager {
   constructor(containerEl: HTMLElement, plugin: InquiryModule) {
     this.containerEl = containerEl;
     this.plugin = plugin;
-    this.loadAndRender();
+    void this.loadAndRender();
   }
 
   private async loadAndRender() {
@@ -73,7 +73,7 @@ export class McpSettingsManager {
     importOption.createSpan({ text: 'Import from clipboard' });
     importOption.addEventListener('click', () => {
       dropdown.removeClass('is-visible');
-      this.importFromClipboard();
+      void this.importFromClipboard();
     });
 
     addBtn.addEventListener('click', (e) => {
@@ -139,14 +139,14 @@ export class McpSettingsManager {
       attr: { 'aria-label': 'Verify (show tools)' },
     });
     setIcon(testBtn, 'zap');
-    testBtn.addEventListener('click', () => this.testServer(server));
+    testBtn.addEventListener('click', () => { void this.testServer(server); });
 
     const toggleBtn = actionsEl.createEl('button', {
       cls: 'claudian-mcp-action-btn',
       attr: { 'aria-label': server.enabled ? 'Disable' : 'Enable' },
     });
     setIcon(toggleBtn, server.enabled ? 'toggle-right' : 'toggle-left');
-    toggleBtn.addEventListener('click', () => this.toggleServer(server));
+    toggleBtn.addEventListener('click', () => { void this.toggleServer(server); });
 
     const editBtn = actionsEl.createEl('button', {
       cls: 'claudian-mcp-action-btn',
@@ -160,7 +160,7 @@ export class McpSettingsManager {
       attr: { 'aria-label': 'Delete' },
     });
     setIcon(deleteBtn, 'trash-2');
-    deleteBtn.addEventListener('click', () => this.deleteServer(server));
+    deleteBtn.addEventListener('click', () => { void this.deleteServer(server); });
   }
 
   private async testServer(server: ClaudianMcpServer) {
@@ -388,6 +388,6 @@ export class McpSettingsManager {
 
   /** Refresh the server list (call after external changes). */
   public refresh() {
-    this.loadAndRender();
+    void this.loadAndRender();
   }
 }

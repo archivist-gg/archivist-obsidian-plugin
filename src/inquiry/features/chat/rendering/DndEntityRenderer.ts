@@ -126,12 +126,14 @@ function renderCopyWidgetRefButton(container: HTMLElement, result: DndCodeFenceR
   setIcon(iconSpan, "copy");
   const labelSpan = btn.createSpan({ text: "Copy" });
 
-  btn.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(refText);
-    } catch { /* clipboard may fail in some contexts */ }
-    labelSpan.setText("Copied!");
-    setTimeout(() => labelSpan.setText("Copy"), 2000);
+  btn.addEventListener("click", () => {
+    void (async () => {
+      try {
+        await navigator.clipboard.writeText(refText);
+      } catch { /* clipboard may fail in some contexts */ }
+      labelSpan.setText("Copied!");
+      setTimeout(() => labelSpan.setText("Copy"), 2000);
+    })();
   });
 }
 
@@ -147,14 +149,17 @@ function renderUpdateButton(
   setIcon(iconSpan, "refresh-cw");
   const labelSpan = btn.createSpan({ text: "Update" });
 
-  btn.addEventListener("click", async () => {
-    try {
-      await onUpdate(entity.slug, result.data);
-      labelSpan.setText("Updated!");
-      setTimeout(() => labelSpan.setText("Update"), 2000);
-    } catch (e: any) {
-      new Notice(`Failed to update: ${e.message}`);
-    }
+  btn.addEventListener("click", () => {
+    void (async () => {
+      try {
+        await onUpdate(entity.slug, result.data);
+        labelSpan.setText("Updated!");
+        setTimeout(() => labelSpan.setText("Update"), 2000);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        new Notice(`Failed to update: ${msg}`);
+      }
+    })();
   });
 }
 
@@ -172,25 +177,27 @@ function renderSaveAsNewButton(
   setIcon(iconSpan, "save");
   btn.createSpan({ text: "Save As New" });
 
-  btn.addEventListener("click", async () => {
-    const slugResult = await onCopyAndSave(result.entityType, result.yamlSource, result.name);
-    const slug = typeof slugResult === "string" ? slugResult : undefined;
+  btn.addEventListener("click", () => {
+    void (async () => {
+      const slugResult = await onCopyAndSave(result.entityType, result.yamlSource, result.name);
+      const slug = typeof slugResult === "string" ? slugResult : undefined;
 
-    if (slug) {
-      // Copy widget reference
-      try {
-        await navigator.clipboard.writeText(`{{${result.entityType}:${slug}}}`);
-      } catch { /* clipboard may fail */ }
+      if (slug) {
+        // Copy widget reference
+        try {
+          await navigator.clipboard.writeText(`{{${result.entityType}:${slug}}}`);
+        } catch { /* clipboard may fail */ }
 
-      // Transition: re-render with the newly saved entity
-      actionsRow.empty();
-      const newEntity = entityRegistry?.getBySlug(slug);
-      if (newEntity) {
-        renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
-      } else {
-        renderCopyWidgetRefButton(actionsRow, result, slug);
+        // Transition: re-render with the newly saved entity
+        actionsRow.empty();
+        const newEntity = entityRegistry?.getBySlug(slug);
+        if (newEntity) {
+          renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
+        } else {
+          renderCopyWidgetRefButton(actionsRow, result, slug);
+        }
       }
-    }
+    })();
   });
 }
 
@@ -208,28 +215,30 @@ function renderCopyAndSaveButton(
   setIcon(iconSpan, "save");
   btn.createSpan({ text: "Copy & Save" });
 
-  btn.addEventListener("click", async () => {
-    const slugResult = await onCopyAndSave(result.entityType, result.yamlSource, result.name);
-    const slug = typeof slugResult === "string" ? slugResult : undefined;
+  btn.addEventListener("click", () => {
+    void (async () => {
+      const slugResult = await onCopyAndSave(result.entityType, result.yamlSource, result.name);
+      const slug = typeof slugResult === "string" ? slugResult : undefined;
 
-    // Copy widget reference (or code fence fallback)
-    const refText = slug
-      ? `{{${result.entityType}:${slug}}}`
-      : "```" + result.entityType + "\n" + result.yamlSource + "\n```";
-    try {
-      await navigator.clipboard.writeText(refText);
-    } catch { /* clipboard may fail */ }
+      // Copy widget reference (or code fence fallback)
+      const refText = slug
+        ? `{{${result.entityType}:${slug}}}`
+        : "```" + result.entityType + "\n" + result.yamlSource + "\n```";
+      try {
+        await navigator.clipboard.writeText(refText);
+      } catch { /* clipboard may fail */ }
 
-    // Transition to saved state
-    actionsRow.empty();
-    if (slug) {
-      const newEntity = entityRegistry?.getBySlug(slug);
-      if (newEntity) {
-        renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
-      } else {
-        renderCopyWidgetRefButton(actionsRow, result, slug);
+      // Transition to saved state
+      actionsRow.empty();
+      if (slug) {
+        const newEntity = entityRegistry?.getBySlug(slug);
+        if (newEntity) {
+          renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
+        } else {
+          renderCopyWidgetRefButton(actionsRow, result, slug);
+        }
       }
-    }
+    })();
   });
 }
 

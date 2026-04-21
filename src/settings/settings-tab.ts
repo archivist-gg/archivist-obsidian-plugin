@@ -55,10 +55,10 @@ export class ArchivistSettingTab extends PluginSettingTab {
       cls: "setting-item-description",
     });
 
-    const compManager = (this.plugin as any).compendiumManager;
+    const compManager = this.plugin.compendiumManager;
     if (compManager) {
       const allCompendiums = compManager.getAll();
-      const registry = (this.plugin as any).entityRegistry;
+      const registry = this.plugin.entityRegistry;
 
       for (const comp of allCompendiums) {
         // Count entities in this compendium
@@ -66,7 +66,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
         if (registry) {
           // Search with empty query returns all, then filter by compendium
           const allEntities = registry.search("", undefined, 99999);
-          entityCount = allEntities.filter((e: any) => e.compendium === comp.name).length;
+          entityCount = allEntities.filter((e) => e.compendium === comp.name).length;
         }
 
         const desc = `${comp.description || ""} \u2014 ${entityCount} entities${comp.homebrew ? " \u2014 homebrew" : ""}`;

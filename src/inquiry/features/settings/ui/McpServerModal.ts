@@ -13,10 +13,12 @@ import { DEFAULT_MCP_SERVER, getMcpServerType } from '../../../core/types';
 import type InquiryModule from '../../../InquiryModule';
 import { parseCommand } from '../../../utils/mcp';
 
+type McpServerSaveHandler = (server: ClaudianMcpServer) => void | Promise<void>;
+
 export class McpServerModal extends Modal {
   private plugin: InquiryModule;
   private existingServer: ClaudianMcpServer | null;
-  private onSave: (server: ClaudianMcpServer) => void;
+  private onSave: McpServerSaveHandler;
 
   private serverName = '';
   private serverType: McpServerType = 'stdio';
@@ -33,7 +35,7 @@ export class McpServerModal extends Modal {
     app: App,
     plugin: InquiryModule,
     existingServer: ClaudianMcpServer | null,
-    onSave: (server: ClaudianMcpServer) => void,
+    onSave: McpServerSaveHandler,
     initialType?: McpServerType,
     prefillConfig?: { name: string; config: McpServerConfig }
   ) {
@@ -300,7 +302,7 @@ export class McpServerModal extends Modal {
       disabledTools: this.existingServer?.disabledTools,
     };
 
-    this.onSave(server);
+    void this.onSave(server);
     this.close();
   }
 

@@ -1,5 +1,5 @@
 import { Spell } from "../types/spell";
-import { ParseResult, parseYaml } from "./yaml-utils";
+import { ParseResult, parseYaml, toStringSafe } from "./yaml-utils";
 
 export function parseSpell(source: string): ParseResult<Spell> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);
@@ -8,15 +8,15 @@ export function parseSpell(source: string): ParseResult<Spell> {
   const raw = result.data;
 
   const spell: Spell = {
-    name: String(raw.name),
+    name: toStringSafe(raw.name),
   };
 
   if (raw.level != null) spell.level = Number(raw.level);
-  if (raw.school != null) spell.school = String(raw.school);
-  if (raw.casting_time != null) spell.casting_time = String(raw.casting_time);
-  if (raw.range != null) spell.range = String(raw.range);
-  if (raw.components != null) spell.components = String(raw.components);
-  if (raw.duration != null) spell.duration = String(raw.duration);
+  if (raw.school != null) spell.school = toStringSafe(raw.school);
+  if (raw.casting_time != null) spell.casting_time = toStringSafe(raw.casting_time);
+  if (raw.range != null) spell.range = toStringSafe(raw.range);
+  if (raw.components != null) spell.components = toStringSafe(raw.components);
+  if (raw.duration != null) spell.duration = toStringSafe(raw.duration);
   if (raw.concentration != null) spell.concentration = Boolean(raw.concentration);
   if (raw.ritual != null) spell.ritual = Boolean(raw.ritual);
   if (Array.isArray(raw.classes)) spell.classes = raw.classes.map(String);

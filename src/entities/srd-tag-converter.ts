@@ -1,6 +1,6 @@
 // src/entities/srd-tag-converter.ts
 
-import { abilityModifier, attackBonus, saveDC } from "../dnd/math";
+import { abilityModifier } from "../dnd/math";
 
 export type AbilityKey = "str" | "dex" | "con" | "int" | "wis" | "cha";
 
@@ -109,7 +109,7 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
       (_match, n) => {
         const dc = Number(n);
         const candidates = ABILITY_KEYS.filter((k) => dcTargets[k] === dc);
-        if (ctx.spellAbility && candidates.includes(ctx.spellAbility as AbilityKey)) {
+        if (ctx.spellAbility && candidates.includes(ctx.spellAbility)) {
           return `\`dc:${ctx.spellAbility.toUpperCase()}\``;
         }
         if (candidates.length === 1) {
@@ -203,8 +203,8 @@ function disambiguateAbility(
     return prefers("dex") ?? candidates[0];
   }
   if (/spell\s+attack/.test(combined)) {
-    if (ctx.spellAbility && candidates.includes(ctx.spellAbility as AbilityKey)) {
-      return ctx.spellAbility as AbilityKey;
+    if (ctx.spellAbility && candidates.includes(ctx.spellAbility)) {
+      return ctx.spellAbility;
     }
     return prefers("wis") ?? candidates[0];
   }

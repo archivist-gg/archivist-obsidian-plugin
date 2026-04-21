@@ -69,8 +69,7 @@ export function createTab(options: TabCreateOptions): TabData {
   const id = tabId ?? generateTabId();
 
   // Create per-tab content container (hidden by default)
-  const contentEl = containerEl.createDiv({ cls: 'claudian-tab-content' });
-  contentEl.style.display = 'none';
+  const contentEl = containerEl.createDiv({ cls: 'claudian-tab-content archivist-hidden' });
 
   // Create ChatState with callbacks
   const state = new ChatState({
@@ -146,8 +145,8 @@ export function createTab(options: TabCreateOptions): TabData {
  * - Max height is capped at 55% of view height (minimum 150px)
  */
 function autoResizeInput(inputEl: HTMLElement): void {
-  // Clear inline min-height to let flexbox compute natural allocation
-  inputEl.style.minHeight = '';
+  // Reset min-height via CSS var so flexbox can compute natural allocation
+  inputEl.setCssProps({ '--claudian-input-min-height': '0px' });
 
   // Calculate max height: 55% of view height, minimum 150px
   const viewHeight = inputEl.closest('.claudian-container')?.clientHeight ?? window.innerHeight;
@@ -159,14 +158,14 @@ function autoResizeInput(inputEl: HTMLElement): void {
   // Get content height (what the content actually needs), capped at max
   const contentHeight = Math.min(inputEl.scrollHeight, maxHeight);
 
-  // Only set min-height if content exceeds flex allocation
-  // This forces the wrapper to grow while letting it shrink when content reduces
-  if (contentHeight > flexAllocatedHeight) {
-    inputEl.style.minHeight = `${contentHeight}px`;
-  }
+  // Only set min-height if content exceeds flex allocation; forces wrapper growth
+  // while letting it shrink when content reduces.
+  const minHeight = contentHeight > flexAllocatedHeight ? `${contentHeight}px` : '0px';
 
-  // Always set max-height to enforce the cap
-  inputEl.style.maxHeight = `${maxHeight}px`;
+  inputEl.setCssProps({
+    '--claudian-input-min-height': minHeight,
+    '--claudian-input-max-height': `${maxHeight}px`,
+  });
 }
 
 /**
@@ -516,9 +515,9 @@ function initializeInputToolbar(tab: TabData, plugin: InquiryModule): void {
   );
 
   // Wire persistence changes
-  tab.ui.externalContextSelector.setOnPersistenceChange(async (paths) => {
+  tab.ui.externalContextSelector.setOnPersistenceChange((paths) => {
     plugin.settings.persistentExternalContextPaths = paths;
-    await plugin.saveSettings();
+    void plugin.saveSettings();
   });
 
 }
@@ -542,16 +541,13 @@ export function initializeTabUI(
   initializeContextManagers(tab, plugin);
 
   // Selection indicator - add to contextRowEl
-  dom.selectionIndicatorEl = dom.contextRowEl.createDiv({ cls: 'claudian-selection-indicator' });
-  dom.selectionIndicatorEl.style.display = 'none';
+  dom.selectionIndicatorEl = dom.contextRowEl.createDiv({ cls: 'claudian-selection-indicator archivist-hidden' });
 
   // Browser selection indicator
-  dom.browserIndicatorEl = dom.contextRowEl.createDiv({ cls: 'claudian-browser-selection-indicator' });
-  dom.browserIndicatorEl.style.display = 'none';
+  dom.browserIndicatorEl = dom.contextRowEl.createDiv({ cls: 'claudian-browser-selection-indicator archivist-hidden' });
 
   // Canvas selection indicator
-  dom.canvasIndicatorEl = dom.contextRowEl.createDiv({ cls: 'claudian-canvas-indicator' });
-  dom.canvasIndicatorEl.style.display = 'none';
+  dom.canvasIndicatorEl = dom.contextRowEl.createDiv({ cls: 'claudian-canvas-indicator archivist-hidden' });
 
   // Initialize slash commands with shared SDK commands callback and hidden commands
   initializeSlashCommands(
@@ -773,8 +769,11 @@ export function initializeTabControllers(
 
   // Wire D&D entity update callback
   tab.renderer.setDndUpdateCallback(async (slug, data) => {
-    const hostPlugin = plugin.plugin as any;
-    const compManager = hostPlugin?.compendiumManager;
+    interface CompendiumHost {
+      compendiumManager?: { updateEntity: (slug: string, data: Record<string, unknown>) => Promise<void> };
+    }
+    const hostPlugin = plugin.plugin as CompendiumHost;
+    const compManager = hostPlugin.compendiumManager;
     if (compManager) {
       await compManager.updateEntity(slug, data);
     }
@@ -1103,7 +1102,7 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
  * Activates a tab (shows it and starts services).
  */
 export function activateTab(tab: TabData): void {
-  tab.dom.contentEl.style.display = 'flex';
+  tab.dom.contentEl.classList.remove('archivist-hidden');
   tab.controllers.selectionController?.start();
   tab.controllers.browserSelectionController?.start();
   tab.controllers.canvasSelectionController?.start();
@@ -1113,7 +1112,7 @@ export function activateTab(tab: TabData): void {
  * Deactivates a tab (hides it and stops services).
  */
 export function deactivateTab(tab: TabData): void {
-  tab.dom.contentEl.style.display = 'none';
+  tab.dom.contentEl.classList.add('archivist-hidden');
   tab.controllers.selectionController?.stop();
   tab.controllers.browserSelectionController?.stop();
   tab.controllers.canvasSelectionController?.stop();

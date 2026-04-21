@@ -32,7 +32,7 @@ export function createCustomSpawnFunction(
     // checks inside Node's internals to fail. Handle abort manually instead.
     const child = spawn(command, args, {
       cwd,
-      env: env as NodeJS.ProcessEnv,
+      env,
       stdio: ['pipe', 'pipe', shouldPipeStderr ? 'pipe' : 'ignore'],
       windowsHide: true,
     });

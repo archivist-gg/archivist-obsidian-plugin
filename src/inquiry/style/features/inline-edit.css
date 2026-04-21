@@ -1,5 +1,10 @@
 /* Inline Edit (CM6 decorations) */
 
+/* Hidden helper for inline-edit spinner and agent reply toggles (replaces inline style.display) */
+.claudian-inline-hidden {
+  display: none;
+}
+
 /* Selection highlight (shared by inline edit and chat) */
 .cm-line .claudian-selection-highlight,
 .claudian-selection-highlight {

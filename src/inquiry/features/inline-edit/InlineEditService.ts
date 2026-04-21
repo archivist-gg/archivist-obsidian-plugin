@@ -1,4 +1,4 @@
-import type { HookCallbackMatcher, Options } from '@anthropic-ai/claude-agent-sdk';
+import type { HookCallbackMatcher, Options, SDKMessage } from '@anthropic-ai/claude-agent-sdk';
 import { query as agentQuery } from '@anthropic-ai/claude-agent-sdk';
 
 import { createCustomSpawnFunction } from '../../core/agent/customSpawn';
@@ -209,21 +209,25 @@ export function createVaultRestrictionHook(vaultPath: string): HookCallbackMatch
   };
 }
 
-export function extractTextFromSdkMessage(message: any): string | null {
-  if (message.type === 'assistant' && message.message?.content) {
-    for (const block of message.message.content) {
-      if (block.type === 'text' && block.text) {
-        return block.text;
+export function extractTextFromSdkMessage(message: SDKMessage): string | null {
+  if (message.type === 'assistant') {
+    const content = message.message.content;
+    if (Array.isArray(content)) {
+      for (const block of content) {
+        if (block.type === 'text' && typeof block.text === 'string' && block.text.length > 0) {
+          return block.text;
+        }
       }
     }
+    return null;
   }
 
   if (message.type === 'stream_event') {
     const event = message.event;
-    if (event?.type === 'content_block_start' && event.content_block?.type === 'text') {
+    if (event.type === 'content_block_start' && event.content_block.type === 'text') {
       return event.content_block.text || null;
     }
-    if (event?.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+    if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
       return event.delta.text || null;
     }
   }

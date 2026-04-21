@@ -155,7 +155,7 @@ export class BrowserSelectionController {
   }
 
   private async extractSelectionFromWebviews(containerEl: HTMLElement): Promise<string | null> {
-    const webviews = Array.from(containerEl.querySelectorAll('webview')) as BrowserLikeWebview[];
+    const webviews: BrowserLikeWebview[] = Array.from(containerEl.querySelectorAll('webview'));
     for (const webview of webviews) {
       if (typeof webview.executeJavaScript !== 'function') continue;
       try {
@@ -214,7 +214,7 @@ export class BrowserSelectionController {
       }
     }
 
-    const embeddableEl = containerEl.querySelector('iframe[src], webview[src]') as HTMLElement | null;
+    const embeddableEl = containerEl.querySelector<HTMLElement>('iframe[src], webview[src]');
     const embeddedSrc = embeddableEl?.getAttribute('src');
     if (embeddedSrc?.trim()) {
       return embeddedSrc.trim();
@@ -250,9 +250,9 @@ export class BrowserSelectionController {
       const lineLabel = lineCount === 1 ? 'line' : 'lines';
       this.indicatorEl.textContent = `${lineCount} ${lineLabel} selected`;
       this.indicatorEl.setAttribute('title', this.buildIndicatorTitle());
-      this.indicatorEl.style.display = 'block';
+      this.indicatorEl.classList.remove('archivist-hidden');
     } else {
-      this.indicatorEl.style.display = 'none';
+      this.indicatorEl.classList.add('archivist-hidden');
       this.indicatorEl.textContent = '';
       this.indicatorEl.removeAttribute('title');
     }

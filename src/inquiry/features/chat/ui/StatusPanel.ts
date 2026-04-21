@@ -120,8 +120,7 @@ export class StatusPanel {
 
     // Bash output container - hidden by default
     this.bashOutputContainerEl = document.createElement('div');
-    this.bashOutputContainerEl.className = 'claudian-status-panel-bash';
-    this.bashOutputContainerEl.style.display = 'none';
+    this.bashOutputContainerEl.className = 'claudian-status-panel-bash archivist-hidden';
 
     this.bashHeaderEl = document.createElement('div');
     this.bashHeaderEl.className = 'claudian-tool-header claudian-status-panel-bash-header';
@@ -147,8 +146,7 @@ export class StatusPanel {
 
     // Todo container
     this.todoContainerEl = document.createElement('div');
-    this.todoContainerEl.className = 'claudian-status-panel-todos';
-    this.todoContainerEl.style.display = 'none';
+    this.todoContainerEl.className = 'claudian-status-panel-todos archivist-hidden';
     this.panelEl.appendChild(this.todoContainerEl);
 
     // Todo header (collapsed view)
@@ -171,8 +169,7 @@ export class StatusPanel {
 
     // Todo content (expanded list)
     this.todoContentEl = document.createElement('div');
-    this.todoContentEl.className = 'claudian-status-panel-content claudian-todo-list-container';
-    this.todoContentEl.style.display = 'none';
+    this.todoContentEl.className = 'claudian-status-panel-content claudian-todo-list-container archivist-hidden';
     this.todoContainerEl.appendChild(this.todoContentEl);
 
     this.containerEl.appendChild(this.panelEl);
@@ -193,13 +190,13 @@ export class StatusPanel {
     this.currentTodos = todos;
 
     if (!todos || todos.length === 0) {
-      this.todoContainerEl.style.display = 'none';
+      this.todoContainerEl.classList.add('archivist-hidden');
       this.todoHeaderEl.empty();
       this.todoContentEl.empty();
       return;
     }
 
-    this.todoContainerEl.style.display = 'block';
+    this.todoContainerEl.classList.remove('archivist-hidden');
 
     // Count completed and find current task
     const completedCount = todos.filter(t => t.status === 'completed').length;
@@ -356,11 +353,11 @@ export class StatusPanel {
     const scroll = options.scroll ?? true;
 
     if (this.currentBashOutputs.size === 0) {
-      this.bashOutputContainerEl.style.display = 'none';
+      this.bashOutputContainerEl.classList.add('archivist-hidden');
       return;
     }
 
-    this.bashOutputContainerEl.style.display = 'block';
+    this.bashOutputContainerEl.classList.remove('archivist-hidden');
     this.bashHeaderEl.empty();
     this.bashContentEl.empty();
 
@@ -383,7 +380,7 @@ export class StatusPanel {
 
     const previewEl = document.createElement('span');
     previewEl.className = 'claudian-tool-current';
-    previewEl.style.display = this.isBashExpanded ? '' : 'none';
+    if (!this.isBashExpanded) previewEl.classList.add('archivist-hidden');
     this.bashHeaderEl.appendChild(previewEl);
 
     const summaryStatusEl = document.createElement('span');
@@ -394,7 +391,7 @@ export class StatusPanel {
       if (latest.status === 'completed') setIcon(summaryStatusEl, 'check');
       if (latest.status === 'error') setIcon(summaryStatusEl, 'x');
     } else {
-      summaryStatusEl.style.display = 'none';
+      summaryStatusEl.classList.add('archivist-hidden');
     }
     this.bashHeaderEl.appendChild(summaryStatusEl);
 

@@ -70,7 +70,7 @@ export function renderItemEditMode(
   function updateSideBtns() {
     if (!sideBtns) return;
     const sideState = compendiumContext ? "compendium-pending" as const : "pending" as const;
-    renderSideButtons(sideBtns!, {
+    renderSideButtons(sideBtns, {
       state: sideState,
       isColumnActive: false,
       isReadonly: compendiumContext?.readonly,
@@ -120,7 +120,7 @@ export function renderItemEditMode(
           } else if (writable.length === 1) {
             saveTo(writable[0]);
           } else {
-            showCompendiumPicker(sideBtns!, writable, saveTo);
+            showCompendiumPicker(sideBtns, writable, saveTo);
           }
         } else {
           if (writable.length === 0) {
@@ -211,10 +211,10 @@ export function renderItemEditMode(
     if (!attuneCheck.checked) {
       draft.attunement = undefined;
       attuneCondInput.value = "";
-      attuneCondInput.style.display = "none";
+      attuneCondInput.addClass("archivist-hidden");
     } else {
       draft.attunement = true;
-      attuneCondInput.style.display = "";
+      attuneCondInput.removeClass("archivist-hidden");
     }
     markDirty();
   });
@@ -226,7 +226,7 @@ export function renderItemEditMode(
     attuneCondInput.value = draft.attunement;
   }
   if (!draft.attunement) {
-    attuneCondInput.style.display = "none";
+    attuneCondInput.addClass("archivist-hidden");
   }
   attuneCondInput.addEventListener("input", () => {
     const val = attuneCondInput.value.trim();

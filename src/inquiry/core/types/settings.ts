@@ -93,6 +93,7 @@ export interface PlatformCliPaths {
 }
 
 /** Platform key for CLI paths. Used for migration only. */
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
 export type CliPlatformKey = keyof PlatformCliPaths;
 
 /**
@@ -397,6 +398,7 @@ export interface InstructionRefineResult {
  *   { toolName: "Read", pattern: "/path/to/file" } → "Read(/path/to/file)"
  *   { toolName: "WebSearch", pattern: "*" } → "WebSearch"
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- accepts legacy input for migration
 export function legacyPermissionToCCRule(legacy: LegacyPermission): PermissionRule {
   const pattern = legacy.pattern.trim();
 
@@ -413,6 +415,7 @@ export function legacyPermissionToCCRule(legacy: LegacyPermission): PermissionRu
  * Only 'always' scope permissions are converted (session = ephemeral).
  */
 export function legacyPermissionsToCCPermissions(
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- accepts legacy input for migration
   legacyPermissions: LegacyPermission[]
 ): CCPermissions {
   const allow: PermissionRule[] = [];

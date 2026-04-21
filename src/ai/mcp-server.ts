@@ -9,8 +9,9 @@ import {
 } from "./tools/generation-tools";
 import { createSrdTools } from "./tools/srd-tools";
 import type { SrdStore } from "./srd/srd-store";
+import type { CompendiumManager } from "../entities/compendium-manager";
 
-export function createArchivistMcpServer(srdStore: SrdStore, compendiumManager?: any) {
+export function createArchivistMcpServer(srdStore: SrdStore, compendiumManager?: CompendiumManager) {
   const { searchSrdTool, getSrdEntityTool } = createSrdTools(srdStore);
 
   const tools = [
@@ -42,8 +43,8 @@ export function createArchivistMcpServer(srdStore: SrdStore, compendiumManager?:
           return {
             content: [{ type: "text" as const, text: JSON.stringify({ success: true, name, description: desc, readonly: isReadonly, homebrew: isHomebrew }) }],
           };
-        } catch (e: any) {
-          return { content: [{ type: "text" as const, text: `Error: ${e.message}` }] };
+        } catch (e: unknown) {
+          return { content: [{ type: "text" as const, text: `Error: ${e instanceof Error ? e.message : String(e)}` }] };
         }
       },
     );

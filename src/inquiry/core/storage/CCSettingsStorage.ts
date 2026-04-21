@@ -40,6 +40,7 @@ function hasClaudianOnlyFields(data: Record<string, unknown>): boolean {
  * Check if a settings object uses the legacy Claudian permissions format.
  * Legacy format: permissions is an array of objects with toolName/pattern.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
 export function isLegacyPermissionsFormat(data: unknown): data is { permissions: LegacyPermission[] } {
   if (!data || typeof data !== 'object') return false;
   const obj = data as Record<string, unknown>;
@@ -104,7 +105,7 @@ export class CCSettingsStorage {
 
     // Check for legacy format and migrate if needed
     if (isLegacyPermissionsFormat(stored)) {
-      const legacyPerms = stored.permissions as LegacyPermission[];
+      const legacyPerms = stored.permissions;
       const ccPerms = legacyPermissionsToCCPermissions(legacyPerms);
 
       // Return migrated permissions but keep other CC fields

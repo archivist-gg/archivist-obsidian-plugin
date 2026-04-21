@@ -222,7 +222,7 @@ export async function testMcpServer(server: ClaudianMcpServer): Promise<McpTestR
       transport = new StdioClientTransport({
         command: cmd,
         args,
-        env: { ...process.env, ...config.env, PATH: getEnhancedPath(config.env?.PATH) } as Record<string, string>,
+        env: { ...process.env, ...config.env, PATH: getEnhancedPath(config.env?.PATH) },
         stderr: 'ignore',
       });
     } else {
@@ -233,6 +233,7 @@ export async function testMcpServer(server: ClaudianMcpServer): Promise<McpTestR
         requestInit: config.headers ? { headers: config.headers } : undefined,
       };
       transport = type === 'sse'
+        // eslint-disable-next-line @typescript-eslint/no-deprecated -- "sse" server type requires SSEClientTransport; StreamableHTTPClientTransport covers the "http" branch
         ? new SSEClientTransport(url, options)
         : new StreamableHTTPClientTransport(url, options);
     }

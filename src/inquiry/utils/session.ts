@@ -64,8 +64,10 @@ function formatToolInput(input: Record<string, unknown>, maxLength = 200): strin
         valueStr = value.length > 100 ? `${value.slice(0, 100)}...` : value;
       } else if (typeof value === 'object') {
         valueStr = '[object]';
-      } else {
+      } else if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
         valueStr = String(value);
+      } else {
+        valueStr = '[unknown]';
       }
       parts.push(`${key}=${valueStr}`);
     }
@@ -185,7 +187,7 @@ export function buildContextFromHistory(messages: ChatMessage[]): string {
     if (message.role === 'assistant' && message.toolCalls?.length) {
       const toolLines = message.toolCalls
         .map(tc => formatToolCallForContext(tc))
-        .filter(Boolean) as string[];
+        .filter(Boolean);
       if (toolLines.length > 0) {
         lines.push(...toolLines);
       }

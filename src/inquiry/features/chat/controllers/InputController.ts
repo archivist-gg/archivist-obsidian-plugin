@@ -133,8 +133,6 @@ export class InputController {
     // Serialize rich input to get text, entity refs, and file paths from inline chips
     const serialized = shouldUseInput && richInput ? richInput.serialize() : null;
     const content = (contentOverride ?? serialized?.text ?? '').trim();
-    const inlineEntityRefs = serialized?.entityRefs ?? [];
-    const inlineFilePaths = serialized?.filePaths ?? [];
 
     const hasImages = imageContextManager?.hasImages() ?? false;
     if (!content && !hasImages) return;
@@ -198,7 +196,7 @@ export class InputController {
     // Hide welcome message when sending first message
     const welcomeEl = this.deps.getWelcomeEl();
     if (welcomeEl) {
-      welcomeEl.style.display = 'none';
+      welcomeEl.classList.add('archivist-hidden');
     }
 
     fileContextManager?.startSession();
@@ -507,9 +505,9 @@ export class InputController {
       }
 
       state.queueIndicatorEl.setText(`⌙ Queued: ${display}`);
-      state.queueIndicatorEl.style.display = 'block';
+      state.queueIndicatorEl.classList.remove('archivist-hidden');
     } else {
-      state.queueIndicatorEl.style.display = 'none';
+      state.queueIndicatorEl.classList.add('archivist-hidden');
     }
   }
 
@@ -553,11 +551,13 @@ export class InputController {
     }
 
     setTimeout(
-      () => this.sendMessage({
-        editorContextOverride: editorContext,
-        browserContextOverride: browserContext ?? null,
-        canvasContextOverride: canvasContext,
-      }),
+      () => {
+        void this.sendMessage({
+          editorContextOverride: editorContext,
+          browserContextOverride: browserContext ?? null,
+          canvasContextOverride: canvasContext,
+        });
+      },
       0
     );
   }
@@ -690,13 +690,15 @@ export class InputController {
         plugin.app,
         rawInstruction,
         {
-          onAccept: async (finalInstruction) => {
-            const currentPrompt = plugin.settings.systemPrompt;
-            plugin.settings.systemPrompt = appendMarkdownSnippet(currentPrompt, finalInstruction);
-            await plugin.saveSettings();
+          onAccept: (finalInstruction) => {
+            void (async () => {
+              const currentPrompt = plugin.settings.systemPrompt;
+              plugin.settings.systemPrompt = appendMarkdownSnippet(currentPrompt, finalInstruction);
+              await plugin.saveSettings();
 
-            new Notice('Instruction added to custom system prompt');
-            instructionModeManager?.clear();
+              new Notice('Instruction added to custom system prompt');
+              instructionModeManager?.clear();
+            })();
           },
           onReject: () => {
             wasCancelled = true;
@@ -876,7 +878,7 @@ export class InputController {
       } catch (err) {
         setPending(null);
         this.restoreInputContainer(inputContainerEl);
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
   }
@@ -920,7 +922,7 @@ export class InputController {
       } catch (err) {
         this.pendingExitPlanModeInline = null;
         this.restoreInputContainer(inputContainerEl);
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
   }
@@ -943,21 +945,21 @@ export class InputController {
 
   private hideInputContainer(inputContainerEl: HTMLElement): void {
     this.inputContainerHideDepth++;
-    inputContainerEl.style.display = 'none';
+    inputContainerEl.classList.add('archivist-hidden');
   }
 
   private restoreInputContainer(inputContainerEl: HTMLElement): void {
     if (this.inputContainerHideDepth <= 0) return;
     this.inputContainerHideDepth--;
     if (this.inputContainerHideDepth === 0) {
-      inputContainerEl.style.display = '';
+      inputContainerEl.classList.remove('archivist-hidden');
     }
   }
 
   private resetInputContainerVisibility(): void {
     if (this.inputContainerHideDepth > 0) {
       this.inputContainerHideDepth = 0;
-      this.deps.getInputContainerEl().style.display = '';
+      this.deps.getInputContainerEl().classList.remove('archivist-hidden');
     }
   }
 

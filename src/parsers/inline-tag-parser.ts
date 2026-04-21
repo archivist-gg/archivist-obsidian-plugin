@@ -20,10 +20,10 @@ export function parseInlineTag(text: string): InlineTag | null {
 
   const prefix = text.slice(0, colonIndex).trim().toLowerCase();
   const resolved = PREFIX_ALIASES[prefix] ?? prefix;
-  if (!VALID_PREFIXES.includes(resolved as InlineTagType)) return null;
+  if (!(VALID_PREFIXES as string[]).includes(resolved)) return null;
 
   const content = text.slice(colonIndex + 1).trim();
   if (content.length === 0) return null;
 
-  return { type: resolved as InlineTagType, content, formula: null };
+  return { type: resolved, content, formula: null };
 }

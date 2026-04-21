@@ -1,11 +1,10 @@
 import { getChallengeRatingXP, getProficiencyBonus } from "./cr-xp-mapping";
-import { abilityModifier } from "../../parsers/yaml-utils";
+import { abilityModifier, toStringSafe } from "../../parsers/yaml-utils";
 import {
   convertDescToTags,
   detectSpellcastingAbility,
   type ActionCategory,
   type ConversionContext,
-  type ConverterAbilities,
 } from "../../entities/srd-tag-converter";
 import type { Monster } from "../../types/monster";
 import type { Spell } from "../../types/spell";
@@ -14,7 +13,7 @@ import type { Item } from "../../types/item";
 export function enrichMonster(
   raw: Record<string, unknown>,
 ): Monster & { xp?: number; proficiency_bonus?: number } {
-  const cr = String(raw.cr ?? "0");
+  const cr = toStringSafe(raw.cr ?? "0");
   const abilities = raw.abilities as Monster["abilities"];
   const wisdomMod = abilities ? abilityModifier(abilities.wis) : 0;
   const passivePerception =
@@ -53,9 +52,7 @@ function convertMonsterEntries(
   if (!abilities) return;
 
   const profBonus = getProficiencyBonus(cr);
-  const spellAbility = detectSpellcastingAbility(
-    monster.traits as { name: string; entries: string[] }[] | undefined,
-  );
+  const spellAbility = detectSpellcastingAbility(monster.traits);
 
   for (const [key, category] of MONSTER_SECTIONS) {
     const features = monster[key];
@@ -67,7 +64,7 @@ function convertMonsterEntries(
         // Skip entries that already use 5etools tags — those are handled at render time
         if (/\{@\w+/.test(desc)) return desc;
         return convertDescToTags(desc, {
-          abilities: abilities as ConverterAbilities,
+          abilities,
           profBonus,
           actionName: f.name ?? "",
           actionCategory: category,

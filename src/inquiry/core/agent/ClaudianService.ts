@@ -52,7 +52,7 @@ import {
   buildPermissionUpdates,
   getActionDescription,
 } from '../security';
-import { TOOL_ASK_USER_QUESTION, TOOL_ENTER_PLAN_MODE, TOOL_EXIT_PLAN_MODE, TOOL_SKILL } from '../tools/toolNames';
+import { TOOL_ASK_USER_QUESTION, TOOL_EXIT_PLAN_MODE, TOOL_SKILL } from '../tools/toolNames';
 import type {
   ApprovalDecision,
   ChatMessage,
@@ -64,7 +64,6 @@ import type {
   SlashCommand,
   StreamChunk,
 } from '../types';
-import { isAdaptiveThinkingModel } from '../types';
 import { MessageChannel } from './MessageChannel';
 import {
   type ColdStartQueryContext,
@@ -324,10 +323,11 @@ export class ClaudianService {
     const config = this.buildPersistentQueryConfig(vaultPath, cliPath, externalContextPaths);
     this.currentConfig = config;
 
-    // await is intentional: yields to microtask queue so fire-and-forget callers
+    // Yield to microtask queue so fire-and-forget callers
     // (e.g. setSessionId → ensureReady) don't synchronously set persistentQuery
+    await Promise.resolve();
     const resumeSessionAt = this.pendingResumeAt;
-    const options = await this.buildPersistentQueryOptions(
+    const options = this.buildPersistentQueryOptions(
       vaultPath,
       cliPath,
       resumeSessionId,
@@ -474,7 +474,7 @@ export class ClaudianService {
       enhancedPath,
       mcpManager: this.mcpManager,
       pluginManager: this.plugin.pluginManager,
-      archivistMcpServer: this.plugin.archivistMcpServer,
+      archivistMcpServer: this.plugin.createArchivistMcpServerInstance?.() ?? null,
       dndContext,
     };
   }
@@ -819,9 +819,9 @@ export class ClaudianService {
       conversationHistory && conversationHistory.length > 0;
 
     if (noSessionButHasHistory) {
-      const historyContext = buildContextFromHistory(conversationHistory!);
+      const historyContext = buildContextFromHistory(conversationHistory);
       const actualPrompt = stripCurrentNoteContext(prompt);
-      promptToSend = buildPromptWithHistoryContext(historyContext, prompt, actualPrompt, conversationHistory!);
+      promptToSend = buildPromptWithHistoryContext(historyContext, prompt, actualPrompt, conversationHistory);
 
       // Note: Do NOT call invalidateSession() here. The cold-start will capture
       // a new session ID anyway, and invalidating would break any persistent query
@@ -1196,7 +1196,7 @@ export class ClaudianService {
       // Convert to McpServerConfig format for user-configured MCP servers
       const serverConfigs: Record<string, McpServerConfig> = {};
       for (const [name, config] of Object.entries(mcpServers)) {
-        serverConfigs[name] = config as McpServerConfig;
+        serverConfigs[name] = config;
       }
       // Only call setMcpServers when there are actual user servers to manage.
       // The Archivist MCP server is connected via options.mcpServers at startup.
@@ -1259,7 +1259,7 @@ export class ClaudianService {
     return false;
   }
 
-  private buildPromptWithImages(prompt: string, images?: ImageAttachment[]): string | AsyncGenerator<any> {
+  private buildPromptWithImages(prompt: string, images?: ImageAttachment[]): string | AsyncGenerator<SDKUserMessage> {
     if (!images || images.length === 0) {
       return prompt;
     }

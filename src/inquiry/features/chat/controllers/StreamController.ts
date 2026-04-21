@@ -240,13 +240,13 @@ export class StreamController {
         // If already rendered, update the header name + summary
         const toolEl = state.toolCallElements.get(chunk.id);
         if (toolEl) {
-          const nameEl = toolEl.querySelector('.claudian-tool-name') as HTMLElement | null
-            ?? toolEl.querySelector('.claudian-write-edit-name') as HTMLElement | null;
+          const nameEl = toolEl.querySelector<HTMLElement>('.claudian-tool-name')
+            ?? toolEl.querySelector<HTMLElement>('.claudian-write-edit-name');
           if (nameEl) {
             nameEl.setText(getToolName(existingToolCall.name, existingToolCall.input));
           }
-          const summaryEl = toolEl.querySelector('.claudian-tool-summary') as HTMLElement | null
-            ?? toolEl.querySelector('.claudian-write-edit-summary') as HTMLElement | null;
+          const summaryEl = toolEl.querySelector<HTMLElement>('.claudian-tool-summary')
+            ?? toolEl.querySelector<HTMLElement>('.claudian-write-edit-summary');
           if (summaryEl) {
             summaryEl.setText(getToolSummary(existingToolCall.name, existingToolCall.input));
           }

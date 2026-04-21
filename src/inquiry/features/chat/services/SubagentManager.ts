@@ -5,7 +5,6 @@ import { isAbsolute, sep } from 'path';
 import { TOOL_TASK } from '../../../core/tools/toolNames';
 import type {
   SubagentInfo,
-  SubagentMode,
   ToolCallInfo,
 } from '../../../core/types';
 import {
@@ -531,7 +530,7 @@ export class SubagentManager {
       id: taskToolId,
       description,
       prompt,
-      mode: 'async' as SubagentMode,
+      mode: 'async',
       isExpanded: false,
       status: 'running',
       toolCalls: [],
@@ -559,7 +558,7 @@ export class SubagentManager {
     const description = (newInput.description as string) || '';
     if (description) {
       info.description = description;
-      const labelEl = wrapperEl.querySelector('.claudian-subagent-label') as HTMLElement | null;
+      const labelEl = wrapperEl.querySelector<HTMLElement>('.claudian-subagent-label');
       if (labelEl) {
         const truncated = description.length > 40 ? description.substring(0, 40) + '...' : description;
         labelEl.setText(truncated);
@@ -568,7 +567,7 @@ export class SubagentManager {
     const prompt = (newInput.prompt as string) || '';
     if (prompt) {
       info.prompt = prompt;
-      const promptEl = wrapperEl.querySelector('.claudian-subagent-prompt-text') as HTMLElement | null;
+      const promptEl = wrapperEl.querySelector<HTMLElement>('.claudian-subagent-prompt-text');
       if (promptEl) {
         promptEl.setText(prompt);
       }
@@ -1012,12 +1011,14 @@ export class SubagentManager {
 
   private unwrapTextPayload(raw: string): string {
     try {
-      const parsed = JSON.parse(raw);
+      const parsed: unknown = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        const textBlock = parsed.find((b: any) => b && typeof b.text === 'string');
-        if (textBlock?.text) return textBlock.text as string;
-      } else if (parsed && typeof parsed === 'object' && typeof parsed.text === 'string') {
-        return parsed.text;
+        const textBlock = parsed.find(
+          (b): b is { text: string } => !!b && typeof b === 'object' && typeof (b as { text?: unknown }).text === 'string'
+        );
+        if (textBlock) return textBlock.text;
+      } else if (parsed && typeof parsed === 'object' && 'text' in parsed && typeof (parsed as { text?: unknown }).text === 'string') {
+        return (parsed as { text: string }).text;
       }
     } catch {
       // Not JSON or not an envelope

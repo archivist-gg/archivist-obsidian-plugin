@@ -7,12 +7,14 @@ import type InquiryModule from '../../../InquiryModule';
 import { formatContextLimit, getCustomModelIds, parseContextLimit, parseEnvironmentVariables } from '../../../utils/env';
 import type { ClaudianView } from '../../chat/ClaudianView';
 
+type EnvSnippetSaveHandler = (snippet: EnvSnippet) => void | Promise<void>;
+
 export class EnvSnippetModal extends Modal {
   plugin: InquiryModule;
   snippet: EnvSnippet | null;
-  onSave: (snippet: EnvSnippet) => void;
+  onSave: EnvSnippetSaveHandler;
 
-  constructor(app: App, plugin: InquiryModule, snippet: EnvSnippet | null, onSave: (snippet: EnvSnippet) => void) {
+  constructor(app: App, plugin: InquiryModule, snippet: EnvSnippet | null, onSave: EnvSnippetSaveHandler) {
     super(app);
     this.plugin = plugin;
     this.snippet = snippet;
@@ -68,7 +70,7 @@ export class EnvSnippetModal extends Modal {
         contextLimits: Object.keys(contextLimits).length > 0 ? contextLimits : undefined,
       };
 
-      this.onSave(snippet);
+      void this.onSave(snippet);
       this.close();
     };
 
@@ -81,11 +83,11 @@ export class EnvSnippetModal extends Modal {
       const uniqueModelIds = getCustomModelIds(envVars);
 
       if (uniqueModelIds.size === 0) {
-        contextLimitsContainer.style.display = 'none';
+        contextLimitsContainer.addClass('claudian-env-snippet-limits-hidden');
         return;
       }
 
-      contextLimitsContainer.style.display = 'block';
+      contextLimitsContainer.removeClass('claudian-env-snippet-limits-hidden');
 
       const existingLimits = this.snippet?.contextLimits ?? this.plugin.settings.customContextLimits ?? {};
 
@@ -194,7 +196,7 @@ export class EnvSnippetManager {
       attr: { 'aria-label': t('settings.envSnippets.addBtn') },
     });
     setIcon(saveBtn, 'plus');
-    saveBtn.addEventListener('click', () => this.saveCurrentEnv());
+    saveBtn.addEventListener('click', () => { void this.saveCurrentEnv(); });
 
     const snippets = this.plugin.settings.envSnippets;
 
@@ -226,12 +228,14 @@ export class EnvSnippetManager {
         attr: { 'aria-label': 'Insert' },
       });
       setIcon(restoreBtn, 'clipboard-paste');
-      restoreBtn.addEventListener('click', async () => {
-        try {
-          await this.insertSnippet(snippet);
-        } catch {
-          new Notice('Failed to insert snippet');
-        }
+      restoreBtn.addEventListener('click', () => {
+        void (async (): Promise<void> => {
+          try {
+            await this.insertSnippet(snippet);
+          } catch {
+            new Notice('Failed to insert snippet');
+          }
+        })();
       });
 
       const editBtn = actionsEl.createEl('button', {
@@ -248,14 +252,16 @@ export class EnvSnippetManager {
         attr: { 'aria-label': 'Delete' },
       });
       setIcon(deleteBtn, 'trash-2');
-      deleteBtn.addEventListener('click', async () => {
-        try {
-          if (confirm(`Delete environment snippet "${snippet.name}"?`)) {
-            await this.deleteSnippet(snippet);
+      deleteBtn.addEventListener('click', () => {
+        void (async (): Promise<void> => {
+          try {
+            if (confirm(`Delete environment snippet "${snippet.name}"?`)) {
+              await this.deleteSnippet(snippet);
+            }
+          } catch {
+            new Notice('Failed to delete snippet');
           }
-        } catch {
-          new Notice('Failed to delete snippet');
-        }
+        })();
       });
     }
   }

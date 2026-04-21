@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import type { App, Plugin } from 'obsidian';
-import { Notice, PluginSettingTab, Setting } from 'obsidian';
+import { Notice, Platform, PluginSettingTab, Setting } from 'obsidian';
 
 import { getCurrentPlatformKey, getHostnameKey } from '../../core/types';
 import { DEFAULT_CLAUDE_MODELS, filterVisibleModelOptions } from '../../core/types/models';
@@ -18,7 +18,7 @@ import { PluginSettingsManager } from './ui/PluginSettingsManager';
 import { SlashCommandSettings } from './ui/SlashCommandSettings';
 
 function formatHotkey(hotkey: { modifiers: string[]; key: string }): string {
-  const isMac = navigator.platform.includes('Mac');
+  const isMac = Platform.isMacOS;
   const modMap: Record<string, string> = isMac
     ? { Mod: '⌘', Ctrl: '⌃', Alt: '⌥', Shift: '⇧', Meta: '⌘' }
     : { Mod: 'Ctrl', Ctrl: 'Ctrl', Alt: 'Alt', Shift: 'Shift', Meta: 'Win' };
@@ -29,8 +29,35 @@ function formatHotkey(hotkey: { modifiers: string[]; key: string }): string {
   return isMac ? [...mods, key].join('') : [...mods, key].join('+');
 }
 
+interface HotkeySettingsTab {
+  searchInputEl?: HTMLInputElement;
+  searchComponent?: { inputEl: HTMLInputElement };
+  updateHotkeyVisibility?: () => void;
+}
+
+interface ObsidianSettingInternal {
+  open: () => void;
+  openTabById: (id: string) => void;
+  activeTab?: HTMLElement & HotkeySettingsTab;
+}
+
+interface ObsidianHotkeyEntry {
+  modifiers: string[];
+  key: string;
+}
+
+interface HotkeyManagerInternal {
+  customKeys?: Record<string, ObsidianHotkeyEntry[]>;
+  defaultKeys?: Record<string, ObsidianHotkeyEntry[]>;
+}
+
+interface AppWithInternals extends App {
+  setting: ObsidianSettingInternal;
+  hotkeyManager?: HotkeyManagerInternal;
+}
+
 function openHotkeySettings(app: App): void {
-  const setting = (app as any).setting;
+  const setting = (app as AppWithInternals).setting;
   setting.open();
   setting.openTabById('hotkeys');
   setTimeout(() => {
@@ -47,12 +74,12 @@ function openHotkeySettings(app: App): void {
 }
 
 function getHotkeyForCommand(app: App, commandId: string): string | null {
-  const hotkeyManager = (app as any).hotkeyManager;
+  const hotkeyManager = (app as AppWithInternals).hotkeyManager;
   if (!hotkeyManager) return null;
 
   const customHotkeys = hotkeyManager.customKeys?.[commandId];
   const defaultHotkeys = hotkeyManager.defaultKeys?.[commandId];
-  const hotkeys = customHotkeys?.length > 0 ? customHotkeys : defaultHotkeys;
+  const hotkeys = (customHotkeys && customHotkeys.length > 0) ? customHotkeys : defaultHotkeys;
 
   if (!hotkeys || hotkeys.length === 0) return null;
 
@@ -136,7 +163,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
             this.plugin.settings.userName = value;
             await this.plugin.saveSettings();
           });
-        text.inputEl.addEventListener('blur', () => this.restartServiceForPromptChange());
+        text.inputEl.addEventListener('blur', () => { void this.restartServiceForPromptChange(); });
       });
 
     new Setting(containerEl)
@@ -169,7 +196,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           });
         text.inputEl.addClass('claudian-settings-media-input');
-        text.inputEl.addEventListener('blur', () => this.restartServiceForPromptChange());
+        text.inputEl.addEventListener('blur', () => { void this.restartServiceForPromptChange(); });
       });
 
     new Setting(containerEl)
@@ -185,7 +212,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
           });
         text.inputEl.rows = 6;
         text.inputEl.cols = 50;
-        text.inputEl.addEventListener('blur', () => this.restartServiceForPromptChange());
+        text.inputEl.addEventListener('blur', () => { void this.restartServiceForPromptChange(); });
       });
 
     new Setting(containerEl)
@@ -292,9 +319,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
           });
 
         text.inputEl.rows = 3;
-        text.inputEl.addEventListener('blur', async () => {
-          await commitValue(true);
-        });
+        text.inputEl.addEventListener('blur', () => { void commitValue(true); });
       });
 
     // Tab bar position setting
@@ -516,7 +541,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
           });
         text.inputEl.rows = 4;
         text.inputEl.cols = 40;
-        text.inputEl.addEventListener('blur', () => this.restartServiceForPromptChange());
+        text.inputEl.addEventListener('blur', () => { void this.restartServiceForPromptChange(); });
       });
 
     new Setting(containerEl).setName(t('settings.environment')).setHeading();
@@ -531,9 +556,11 @@ export class ClaudianSettingTab extends PluginSettingTab {
         text.inputEl.rows = 6;
         text.inputEl.cols = 50;
         text.inputEl.addClass('claudian-settings-env-textarea');
-        text.inputEl.addEventListener('blur', async () => {
-          await this.plugin.applyEnvironmentVariables(text.inputEl.value);
-          this.renderContextLimitsSection();
+        text.inputEl.addEventListener('blur', () => {
+          void (async (): Promise<void> => {
+            await this.plugin.applyEnvironmentVariables(text.inputEl.value);
+            this.renderContextLimitsSection();
+          })();
         });
       });
 
@@ -723,9 +750,18 @@ export class ClaudianSettingTab extends PluginSettingTab {
   }
 
   private renderDndContentSettings(containerEl: HTMLElement): void {
-    const hp = this.hostPlugin as any;
+    // Soft-typed host plugin surface; fields are optional because this module may run in hosts that don't define them.
+    interface DndHostPlugin extends Plugin {
+      settings: {
+        ttrpgRootDir: string;
+        compendiumRoot: string;
+        userEntityFolder: string;
+      };
+      saveSettings: () => Promise<void>;
+    }
+    const hp = this.hostPlugin as DndHostPlugin;
     const settings = hp.settings;
-    const save = () => hp.saveSettings();
+    const save = (): Promise<void> => hp.saveSettings();
 
     new Setting(containerEl).setName("D&D content").setHeading();
 
@@ -809,33 +845,35 @@ export class ClaudianSettingTab extends PluginSettingTab {
       // Validation element
       const validationEl = inputWrapper.createDiv({ cls: 'claudian-context-limit-validation' });
 
-      inputEl.addEventListener('input', async () => {
-        const trimmed = inputEl.value.trim();
+      inputEl.addEventListener('input', () => {
+        void (async (): Promise<void> => {
+          const trimmed = inputEl.value.trim();
 
-        if (!this.plugin.settings.customContextLimits) {
-          this.plugin.settings.customContextLimits = {};
-        }
-
-        if (!trimmed) {
-          // Empty = use default (remove from custom limits)
-          delete this.plugin.settings.customContextLimits[modelId];
-          validationEl.removeClass('is-visible');
-          inputEl.classList.remove('claudian-input-error');
-        } else {
-          const parsed = parseContextLimit(trimmed);
-          if (parsed === null) {
-            validationEl.setText(t('settings.customContextLimits.invalid'));
-            validationEl.addClass('is-visible');
-            inputEl.classList.add('claudian-input-error');
-            return; // Don't save invalid value
+          if (!this.plugin.settings.customContextLimits) {
+            this.plugin.settings.customContextLimits = {};
           }
 
-          this.plugin.settings.customContextLimits[modelId] = parsed;
-          validationEl.removeClass('is-visible');
-          inputEl.classList.remove('claudian-input-error');
-        }
+          if (!trimmed) {
+            // Empty = use default (remove from custom limits)
+            delete this.plugin.settings.customContextLimits[modelId];
+            validationEl.removeClass('is-visible');
+            inputEl.classList.remove('claudian-input-error');
+          } else {
+            const parsed = parseContextLimit(trimmed);
+            if (parsed === null) {
+              validationEl.setText(t('settings.customContextLimits.invalid'));
+              validationEl.addClass('is-visible');
+              inputEl.classList.add('claudian-input-error');
+              return; // Don't save invalid value
+            }
 
-        await this.plugin.saveSettings();
+            this.plugin.settings.customContextLimits[modelId] = parsed;
+            validationEl.removeClass('is-visible');
+            inputEl.classList.remove('claudian-input-error');
+          }
+
+          await this.plugin.saveSettings();
+        })();
       });
     }
   }

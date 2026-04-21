@@ -149,8 +149,13 @@ export function extractDiceNotation(tag: { type: string; content: string }): str
  * A fresh roller has hasRunOnce=false, so shouldRender alone won't
  * trigger 3D — the explicit true argument bypasses that guard.
  */
-export async function rollDiceWithRender(api: any, notation: string): Promise<void> {
-  const roller = api.getRoller(notation, "", { shouldRender: true });
+interface DiceRollerApi {
+  getRoller(notation: string, context: string, opts: { shouldRender: boolean }): { roll: (render: boolean) => Promise<void> } | null;
+}
+
+export async function rollDiceWithRender(api: unknown, notation: string): Promise<void> {
+  const diceApi = api as DiceRollerApi;
+  const roller = diceApi.getRoller(notation, "", { shouldRender: true });
   if (roller) {
     await roller.roll(true);
   }
@@ -217,20 +222,22 @@ function renderStatBlockTag(
     span.setAttribute("data-dice-notation", resolvedContent);
     span.setAttribute("data-dice-type", tag.type);
     span.setAttribute("title", `${config.format(resolvedContent)} -- Click to roll`);
-    span.addEventListener("click", async () => {
-      const api = (window as any).DiceRoller;
-      if (api) {
-        const notation = extractDiceNotation(resolvedTag);
-        if (notation) {
-          try {
-            await rollDiceWithRender(api, notation);
-          } catch {
-            new Notice(`Could not roll: ${resolvedContent}`);
+    span.addEventListener("click", () => {
+      void (async () => {
+        const api = (window as unknown as { DiceRoller?: unknown }).DiceRoller;
+        if (api) {
+          const notation = extractDiceNotation(resolvedTag);
+          if (notation) {
+            try {
+              await rollDiceWithRender(api, notation);
+            } catch {
+              new Notice(`Could not roll: ${resolvedContent}`);
+            }
           }
+        } else {
+          new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
         }
-      } else {
-        new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
-      }
+      })();
     });
   } else {
     span.setAttribute("title", config.format(resolvedContent));

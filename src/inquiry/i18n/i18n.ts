@@ -40,17 +40,17 @@ export function t(key: TranslationKey, params?: Record<string, string | number>)
   const dict = translations[currentLocale];
 
   const keys = key.split('.');
-  let value: any = dict;
+  let value: unknown = dict;
 
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
-      value = value[k];
-    } else {
-      if (currentLocale !== DEFAULT_LOCALE) {
-        return tFallback(key, params);
-      }
-      return key;
+      value = (value as Record<string, unknown>)[k];
+      continue;
     }
+    if (currentLocale !== DEFAULT_LOCALE) {
+      return tFallback(key, params);
+    }
+    return key;
   }
 
   if (typeof value !== 'string') {
@@ -69,14 +69,14 @@ export function t(key: TranslationKey, params?: Record<string, string | number>)
 function tFallback(key: TranslationKey, params?: Record<string, string | number>): string {
   const dict = translations[DEFAULT_LOCALE];
   const keys = key.split('.');
-  let value: any = dict;
+  let value: unknown = dict;
 
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
-      value = value[k];
-    } else {
-      return key;
+      value = (value as Record<string, unknown>)[k];
+      continue;
     }
+    return key;
   }
 
   if (typeof value !== 'string') {

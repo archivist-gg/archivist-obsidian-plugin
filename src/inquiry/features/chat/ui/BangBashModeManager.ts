@@ -70,7 +70,7 @@ export class BangBashModeManager {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
       e.preventDefault();
       if (this.state.rawCommand.trim()) {
-        this.submit();
+        void this.submit();
       }
       return true;
     }
