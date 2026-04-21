@@ -162,3 +162,38 @@
   width: 14px;
   height: 14px;
 }
+
+/* Settings validation / warning message (shared) */
+.claudian-settings-validation-error {
+  color: var(--text-error);
+  font-size: 0.85em;
+  margin-top: -0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+
+.claudian-settings-validation-error.is-visible {
+  display: block;
+}
+
+.claudian-settings-validation-warning {
+  color: var(--text-warning);
+  font-size: 0.85em;
+  margin-top: -0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+
+.claudian-settings-validation-warning.is-visible {
+  display: block;
+}
+
+/* Full-width text input in settings (e.g. CLI path) */
+.claudian-settings-full-width-input {
+  width: 100%;
+}
+
+/* Applied to a text input to mark it invalid (red border) */
+.claudian-settings-input-invalid {
+  border-color: var(--text-error);
+}

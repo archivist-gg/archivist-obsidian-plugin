@@ -14,7 +14,7 @@ import {
   filterVisibleModelOptions,
   isAdaptiveThinkingModel,
 } from '../../../core/types';
-import { CHECK_ICON_SVG, MCP_ICON_SVG } from '../../../shared/icons';
+import { appendSvg, MCP_ICON_SVG } from '../../../shared/icons';
 import { getModelsFromEnvironment, parseEnvironmentVariables } from '../../../utils/env';
 import { filterValidPaths, findConflictingPath, isDuplicatePath, isValidDirectoryPath, validateDirectoryPath } from '../../../utils/externalContext';
 import { expandHomePath, normalizePathForFilesystem } from '../../../utils/path';
@@ -614,7 +614,7 @@ export class McpServerSelector {
     const iconWrapper = this.container.createDiv({ cls: 'claudian-mcp-selector-icon-wrapper' });
 
     this.iconEl = iconWrapper.createDiv({ cls: 'claudian-mcp-selector-icon' });
-    this.iconEl.innerHTML = MCP_ICON_SVG;
+    appendSvg(this.iconEl, MCP_ICON_SVG);
 
     this.badgeEl = iconWrapper.createDiv({ cls: 'claudian-mcp-selector-badge' });
 
@@ -667,7 +667,7 @@ export class McpServerSelector {
     // Checkbox
     const checkEl = itemEl.createDiv({ cls: 'claudian-mcp-selector-check' });
     if (isEnabled) {
-      checkEl.innerHTML = CHECK_ICON_SVG;
+      setIcon(checkEl, 'check');
     }
 
     // Info
@@ -704,10 +704,13 @@ export class McpServerSelector {
 
     if (isEnabled) {
       itemEl.addClass('enabled');
-      if (checkEl) checkEl.innerHTML = CHECK_ICON_SVG;
+      if (checkEl) {
+        checkEl.empty();
+        setIcon(checkEl, 'check');
+      }
     } else {
       itemEl.removeClass('enabled');
-      if (checkEl) checkEl.innerHTML = '';
+      if (checkEl) checkEl.empty();
     }
 
     this.updateDisplay();
@@ -782,17 +785,33 @@ export class ContextUsageMeter {
     const y2 = cy + radius * Math.sin(endRad);
 
     const gaugeEl = this.container.createDiv({ cls: 'claudian-context-meter-gauge' });
-    gaugeEl.innerHTML = `
-      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <path class="claudian-meter-bg"
-          d="M ${x1} ${y1} A ${radius} ${radius} 0 1 1 ${x2} ${y2}"
-          fill="none" stroke-width="${strokeWidth}" stroke-linecap="round"/>
-        <path class="claudian-meter-fill"
-          d="M ${x1} ${y1} A ${radius} ${radius} 0 1 1 ${x2} ${y2}"
-          fill="none" stroke-width="${strokeWidth}" stroke-linecap="round"
-          stroke-dasharray="${this.circumference}" stroke-dashoffset="${this.circumference}"/>
-      </svg>
-    `;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svgEl = document.createElementNS(svgNS, 'svg');
+    svgEl.setAttribute('width', String(size));
+    svgEl.setAttribute('height', String(size));
+    svgEl.setAttribute('viewBox', `0 0 ${size} ${size}`);
+
+    const pathD = `M ${x1} ${y1} A ${radius} ${radius} 0 1 1 ${x2} ${y2}`;
+
+    const bgPath = document.createElementNS(svgNS, 'path');
+    bgPath.setAttribute('class', 'claudian-meter-bg');
+    bgPath.setAttribute('d', pathD);
+    bgPath.setAttribute('fill', 'none');
+    bgPath.setAttribute('stroke-width', String(strokeWidth));
+    bgPath.setAttribute('stroke-linecap', 'round');
+    svgEl.appendChild(bgPath);
+
+    const fillPath = document.createElementNS(svgNS, 'path');
+    fillPath.setAttribute('class', 'claudian-meter-fill');
+    fillPath.setAttribute('d', pathD);
+    fillPath.setAttribute('fill', 'none');
+    fillPath.setAttribute('stroke-width', String(strokeWidth));
+    fillPath.setAttribute('stroke-linecap', 'round');
+    fillPath.setAttribute('stroke-dasharray', String(this.circumference));
+    fillPath.setAttribute('stroke-dashoffset', String(this.circumference));
+    svgEl.appendChild(fillPath);
+
+    gaugeEl.appendChild(svgEl);
     this.fillPath = gaugeEl.querySelector('.claudian-meter-fill');
 
     this.percentEl = this.container.createSpan({ cls: 'claudian-context-meter-percent' });

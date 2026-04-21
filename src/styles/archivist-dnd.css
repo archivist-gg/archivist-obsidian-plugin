@@ -3,9 +3,11 @@
    Ported from archivist project CSS
    ========================================================================== */
 
-/* 1. Google Fonts
+/* 1. Fonts
+   Libre Baskerville and Noto Sans are declared in font-family stacks below
+   with local fallbacks (Georgia, Lora, Calibri, Helvetica, etc.). We do not
+   @import remote fonts — Obsidian plugins should not make external requests.
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
 
 /* 2. CSS Custom Properties (from dnd-theme.css)
    ========================================================================== */

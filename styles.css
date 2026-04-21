@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;700&display=swap');
-
-/* Archivist TTRPG Blocks - Plugin Styles */
+/* Archivist - Plugin Styles */
 /* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css + src/styles/archivist-edit.css */
 
 /* ================================================================
@@ -248,6 +246,7 @@
 
 /* Context menu */
 .archivist-tab-context-menu {
+  position: fixed;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
@@ -1020,6 +1019,12 @@ body.theme-light .claudian-message-content pre {
   padding: 1px 0;
   color: var(--text-muted);
   white-space: pre;
+}
+
+/* Wrapping variant used for long-text tool results (e.g. WebFetch). */
+.claudian-tool-line.claudian-tool-line-wrap {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Hover highlight for file search results */
@@ -2542,6 +2547,7 @@ body.theme-light .claudian-message-content pre {
 /* Fixed positioning for inline editor */
 .claudian-mention-dropdown-fixed {
   position: fixed;
+  right: auto;
   z-index: 10001;
 }
 
@@ -3397,6 +3403,7 @@ code .claudian-file-link:hover {
 /* Fixed positioning for inline editor */
 .claudian-slash-dropdown-fixed {
   position: fixed;
+  right: auto;
   z-index: 10001;
 }
 
@@ -4678,6 +4685,10 @@ code .claudian-file-link:hover {
   margin-top: 4px;
 }
 
+.claudian-context-limit-validation.is-visible {
+  display: block;
+}
+
 /* Environment Snippets Styles */
 .claudian-env-snippets-container {
   margin-top: 16px;
@@ -5342,6 +5353,41 @@ code .claudian-file-link:hover {
   height: 14px;
 }
 
+/* Settings validation / warning message (shared) */
+.claudian-settings-validation-error {
+  color: var(--text-error);
+  font-size: 0.85em;
+  margin-top: -0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+
+.claudian-settings-validation-error.is-visible {
+  display: block;
+}
+
+.claudian-settings-validation-warning {
+  color: var(--text-warning);
+  font-size: 0.85em;
+  margin-top: -0.5em;
+  margin-bottom: 0.5em;
+  display: none;
+}
+
+.claudian-settings-validation-warning.is-visible {
+  display: block;
+}
+
+/* Full-width text input in settings (e.g. CLI path) */
+.claudian-settings-full-width-input {
+  width: 100%;
+}
+
+/* Applied to a text input to mark it invalid (red border) */
+.claudian-settings-input-invalid {
+  border-color: var(--text-error);
+}
+
 
 /* ============================================
    settings/agent-settings.css
@@ -5404,9 +5450,11 @@ code .claudian-file-link:hover {
    Ported from archivist project CSS
    ========================================================================== */
 
-/* 1. Google Fonts
+/* 1. Fonts
+   Libre Baskerville and Noto Sans are declared in font-family stacks below
+   with local fallbacks (Georgia, Lora, Calibri, Helvetica, etc.). We do not
+   @import remote fonts — Obsidian plugins should not make external requests.
    ========================================================================== */
-
 
 /* 2. CSS Custom Properties (from dnd-theme.css)
    ========================================================================== */
@@ -7491,6 +7539,13 @@ body.theme-light .archivist-tag-atk:hover {
   border-style: solid;
 }
 
+/* Inline override input used in the "auto-calc overrides" system.
+   Narrower than a normal .archivist-num-in and rendered inline. */
+.archivist-num-in.archivist-override-input {
+  width: 50px;
+  display: inline-block;
+}
+
 .archivist-num-spin {
   position: absolute;
   right: 2px;
@@ -8236,6 +8291,8 @@ body.theme-light .archivist-tag-atk:hover {
    ========================================================================== */
 
 .archivist-tag-autocomplete {
+  position: fixed;
+  z-index: 100;
   background: var(--d5e-parchment);
   border: 1px solid var(--d5e-border-tan);
   border-radius: 4px;
@@ -8245,6 +8302,18 @@ body.theme-light .archivist-tag-atk:hover {
   max-height: 200px;
   overflow-y: auto;
   font-family: 'Noto Sans', sans-serif;
+}
+
+/* Off-screen textarea mirror used to measure caret position for the
+   autocomplete dropdown. The actual width is set inline at runtime from the
+   textarea's computed style. */
+.archivist-tag-autocomplete-mirror {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  visibility: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .archivist-tag-ac-group {

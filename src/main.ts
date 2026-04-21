@@ -499,21 +499,21 @@ export default class ArchivistPlugin extends Plugin {
     // D&D insert commands
     this.addCommand({
       id: "insert-monster",
-      name: "Insert Monster Block",
+      name: "Insert monster block",
       editorCallback: (editor) => {
         new MonsterModal(this.app, editor).open();
       },
     });
     this.addCommand({
       id: "insert-spell",
-      name: "Insert Spell Block",
+      name: "Insert spell block",
       editorCallback: (editor) => {
         new SpellModal(this.app, editor).open();
       },
     });
     this.addCommand({
       id: "insert-item",
-      name: "Insert Magic Item Block",
+      name: "Insert magic item block",
       editorCallback: (editor) => {
         new ItemModal(this.app, editor).open();
       },
@@ -576,8 +576,7 @@ export default class ArchivistPlugin extends Plugin {
     // Discover all compendiums and load entities
     try {
       await this.compendiumManager.discover();
-      const count = await this.compendiumManager.loadAllEntities();
-      console.log(`Archivist: loaded ${count} entities from ${this.compendiumManager.getAll().length} compendiums`);
+      await this.compendiumManager.loadAllEntities();
     } catch (err) {
       console.error("Archivist: compendium discovery failed", err);
     }

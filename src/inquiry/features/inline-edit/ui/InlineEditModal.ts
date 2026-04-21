@@ -20,7 +20,7 @@ import {
 import { type CursorContext, getEditorView } from '../../../utils/editor';
 import { buildExternalContextDisplayEntries } from '../../../utils/externalContext';
 import { externalContextScanner } from '../../../utils/externalContextScanner';
-import { escapeHtml, normalizeInsertionText } from '../../../utils/inlineEdit';
+import { normalizeInsertionText } from '../../../utils/inlineEdit';
 import { getVaultPath, normalizePathForVault as normalizePathForVaultUtil } from '../../../utils/path';
 import { type InlineEditMode, InlineEditService } from '../InlineEditService';
 
@@ -38,12 +38,12 @@ const showInlineEdit = StateEffect.define<{
 const showDiff = StateEffect.define<{
   from: number;
   to: number;
-  diffHtml: string;
+  diffOps: DiffOp[];
   widget: InlineEditController;
 }>();
 const showInsertion = StateEffect.define<{
   pos: number;
-  diffHtml: string;
+  diffOps: DiffOp[];
   widget: InlineEditController;
 }>();
 const hideInlineEdit = StateEffect.define<null>();
@@ -51,13 +51,17 @@ const hideInlineEdit = StateEffect.define<null>();
 let activeController: InlineEditController | null = null;
 
 class DiffWidget extends WidgetType {
-  constructor(private diffHtml: string, private controller: InlineEditController) {
+  private readonly diffKey: string;
+  constructor(private diffOps: DiffOp[], private controller: InlineEditController) {
     super();
+    // Stable key used by CodeMirror's equality check to avoid re-rendering
+    // the widget when the underlying diff has not changed.
+    this.diffKey = diffOps.map((op) => `${op.type}:${op.text}`).join('\u0000');
   }
   toDOM(): HTMLElement {
     const span = document.createElement('span');
     span.className = 'claudian-inline-diff-replace';
-    span.innerHTML = this.diffHtml;
+    appendDiffOps(span, this.diffOps);
 
     const btns = document.createElement('span');
     btns.className = 'claudian-inline-diff-buttons';
@@ -81,7 +85,7 @@ class DiffWidget extends WidgetType {
     return span;
   }
   eq(other: DiffWidget): boolean {
-    return this.diffHtml === other.diffHtml;
+    return this.diffKey === other.diffKey;
   }
   ignoreEvent(): boolean {
     return true;
@@ -121,13 +125,13 @@ const inlineEditField = StateField.define<DecorationSet>({
       } else if (e.is(showDiff)) {
         const builder = new RangeSetBuilder<Decoration>();
         builder.add(e.value.from, e.value.to, Decoration.replace({
-          widget: new DiffWidget(e.value.diffHtml, e.value.widget),
+          widget: new DiffWidget(e.value.diffOps, e.value.widget),
         }));
         deco = builder.finish();
       } else if (e.is(showInsertion)) {
         const builder = new RangeSetBuilder<Decoration>();
         builder.add(e.value.pos, e.value.pos, Decoration.widget({
-          widget: new DiffWidget(e.value.diffHtml, e.value.widget),
+          widget: new DiffWidget(e.value.diffOps, e.value.widget),
           side: 1, // After the position
         }));
         deco = builder.finish();
@@ -186,15 +190,23 @@ function computeDiff(oldText: string, newText: string): DiffOp[] {
   return ops;
 }
 
-function diffToHtml(ops: DiffOp[]): string {
-  return ops.map(op => {
-    const escaped = escapeHtml(op.text);
+function appendDiffOps(target: HTMLElement, ops: DiffOp[]): void {
+  for (const op of ops) {
     switch (op.type) {
-      case 'delete': return `<span class="claudian-diff-del">${escaped}</span>`;
-      case 'insert': return `<span class="claudian-diff-ins">${escaped}</span>`;
-      default: return escaped;
+      case 'delete': {
+        const span = target.createSpan({ cls: 'claudian-diff-del' });
+        span.setText(op.text);
+        break;
+      }
+      case 'insert': {
+        const span = target.createSpan({ cls: 'claudian-diff-ins' });
+        span.setText(op.text);
+        break;
+      }
+      default:
+        target.appendChild(document.createTextNode(op.text));
     }
-  }).join('');
+  }
 }
 
 export type InlineEditDecision = 'accept' | 'edit' | 'reject';
@@ -541,13 +553,12 @@ class InlineEditController {
     hideSelectionHighlight(this.editorView);
 
     const diffOps = computeDiff(this.selectedText, this.editedText);
-    const diffHtml = diffToHtml(diffOps);
 
     this.editorView.dispatch({
       effects: showDiff.of({
         from: this.selFrom,
         to: this.selTo,
-        diffHtml,
+        diffOps,
         widget: this,
       }),
     });
@@ -563,13 +574,12 @@ class InlineEditController {
     const trimmedText = normalizeInsertionText(this.insertedText);
     this.insertedText = trimmedText;
 
-    const escaped = escapeHtml(trimmedText);
-    const diffHtml = `<span class="claudian-diff-ins">${escaped}</span>`;
+    const diffOps: DiffOp[] = [{ type: 'insert', text: trimmedText }];
 
     this.editorView.dispatch({
       effects: showInsertion.of({
         pos: this.selFrom,
-        diffHtml,
+        diffOps,
         widget: this,
       }),
     });

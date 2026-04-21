@@ -230,6 +230,13 @@
   border-style: solid;
 }
 
+/* Inline override input used in the "auto-calc overrides" system.
+   Narrower than a normal .archivist-num-in and rendered inline. */
+.archivist-num-in.archivist-override-input {
+  width: 50px;
+  display: inline-block;
+}
+
 .archivist-num-spin {
   position: absolute;
   right: 2px;
@@ -975,6 +982,8 @@
    ========================================================================== */
 
 .archivist-tag-autocomplete {
+  position: fixed;
+  z-index: 100;
   background: var(--d5e-parchment);
   border: 1px solid var(--d5e-border-tan);
   border-radius: 4px;
@@ -984,6 +993,18 @@
   max-height: 200px;
   overflow-y: auto;
   font-family: 'Noto Sans', sans-serif;
+}
+
+/* Off-screen textarea mirror used to measure caret position for the
+   autocomplete dropdown. The actual width is set inline at runtime from the
+   textarea's computed style. */
+.archivist-tag-autocomplete-mirror {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  visibility: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .archivist-tag-ac-group {

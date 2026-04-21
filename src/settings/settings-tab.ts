@@ -19,16 +19,14 @@ export class ArchivistSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Archivist - D&D Content" });
 
     containerEl.createEl("p", {
       text: "Chat and AI settings are in the separate Archivist Inquiry settings tab (registered by InquiryModule).",
       cls: "setting-item-description",
     });
 
-    // TTRPG Root Directory
     new Setting(containerEl)
-      .setName("TTRPG Root Directory")
+      .setName("Campaign root directory")
       .setDesc("Scope AI vault access to this directory. Leave as / for entire vault.")
       .addText((text) =>
         text.setPlaceholder("/").setValue(this.plugin.settings.ttrpgRootDir)
@@ -38,11 +36,10 @@ export class ArchivistSettingTab extends PluginSettingTab {
           }),
       );
 
-    // Entity Compendium
-    containerEl.createEl("h3", { text: "Entity Compendium" });
+    new Setting(containerEl).setName("Entity compendium").setHeading();
 
     new Setting(containerEl)
-      .setName("Compendium Root Folder")
+      .setName("Compendium root folder")
       .setDesc("Root vault folder where entity notes are stored.")
       .addText((text) =>
         text.setPlaceholder("Compendium").setValue(this.plugin.settings.compendiumRoot)
@@ -52,8 +49,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
           }),
       );
 
-    // Compendiums section
-    containerEl.createEl("h3", { text: "Compendiums" });
+    new Setting(containerEl).setName("Compendiums").setHeading();
     containerEl.createEl("p", {
       text: 'Compendiums are collections of D&D entities (monsters, spells, items) stored as folders in your vault. Read-only compendiums cannot be modified \u2014 editing an entity from a read-only compendium will only allow "Save As New" to a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',
       cls: "setting-item-description",

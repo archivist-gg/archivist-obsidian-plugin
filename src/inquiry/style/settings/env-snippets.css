@@ -89,6 +89,10 @@
   margin-top: 4px;
 }
 
+.claudian-context-limit-validation.is-visible {
+  display: block;
+}
+
 /* Environment Snippets Styles */
 .claudian-env-snippets-container {
   margin-top: 16px;

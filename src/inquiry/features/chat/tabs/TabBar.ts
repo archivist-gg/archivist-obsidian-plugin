@@ -135,7 +135,6 @@ export class TabBar {
     this.closeContextMenu();
 
     const menuEl = document.body.createDiv({ cls: 'archivist-tab-context-menu' });
-    menuEl.style.position = 'fixed';
     menuEl.style.left = `${e.clientX}px`;
     menuEl.style.top = `${e.clientY}px`;
 

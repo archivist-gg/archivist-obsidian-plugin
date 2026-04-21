@@ -163,7 +163,7 @@ function build() {
   const output = [
     ...importLines,
     ...(importLines.length > 0 ? [''] : []),
-    '/* Archivist TTRPG Blocks - Plugin Styles */',
+    '/* Archivist - Plugin Styles */',
     '/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css + src/styles/archivist-edit.css */',
     '',
     '/* ================================================================',

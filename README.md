@@ -1,6 +1,12 @@
-# Archivist TTRPG Blocks - Obsidian Plugin
+# Archivist - Obsidian Plugin
 
 A D&D 5e/2024 toolkit for [Obsidian](https://obsidian.md) with a built-in AI agent powered by Claude. Write YAML code blocks to render parchment-styled stat blocks, or chat with the Archivist to generate entire monsters, spells, items, encounters, and NPCs on the fly.
+
+## Screenshots
+
+| Monster stat block | Spell block | Magic item |
+| --- | --- | --- |
+| ![Monster](.github/screenshots/monster-stat-block.png) | ![Spell](.github/screenshots/spell-block.png) | ![Item](.github/screenshots/item-block.png) |
 
 ## Features
 
@@ -80,6 +86,26 @@ entries:
 
 Or use the slash commands: `/Monster Block`, `/Spell Block`, `/Item Block` to insert templates.
 
+## Commands
+
+Available via the command palette (`Cmd/Ctrl+P`):
+
+| Command | Description |
+| --- | --- |
+| Archivist: Insert monster block | Insert a monster YAML template at the cursor |
+| Archivist: Insert spell block | Insert a spell YAML template at the cursor |
+| Archivist: Insert magic item block | Insert a magic item YAML template at the cursor |
+| Archivist: Open chat view | Open the Archivist Inquiry chat panel |
+| Archivist: Inline edit | Ask the agent to rewrite the current selection |
+| Archivist: New tab | Open a new Inquiry chat tab |
+| Archivist: New session (in current tab) | Start a fresh conversation in the active tab |
+| Archivist: Close current tab | Close the active Inquiry chat tab |
+
+## Requirements
+
+- **Obsidian** 1.5.8 or newer, desktop only. The Archivist Inquiry agent shells out to Node.js APIs, so this plugin does not run on Obsidian mobile.
+- **Anthropic API key** - required only to use the Archivist Inquiry AI agent. Stat blocks, inline dice tags, and the SRD compendium work without an API key. See [AI Setup](#ai-setup) below.
+
 ## Installation
 
 **Community Plugins (coming soon):**
@@ -92,7 +118,7 @@ Search "Archivist" in Settings > Community Plugins > Browse.
 4. Enable the plugin in Settings > Community Plugins
 
 **Manual:**
-Download `main.js`, `styles.css`, and `manifest.json` from the [latest release](https://github.com/archivist-gg/archivist-obsidian-plugin/releases), place them in `.obsidian/plugins/archivist/`, and enable the plugin.
+Download `main.js`, `styles.css`, and `manifest.json` from the [latest release](https://github.com/archivist-gg/archivist-obsidian-plugin/releases), place them in `.obsidian/plugins/archivist-gg/`, and enable the plugin.
 
 ## AI Setup
 
@@ -109,7 +135,7 @@ npm install
 npm run build
 ```
 
-Copy `main.js`, `styles.css`, and `manifest.json` to your vault's `.obsidian/plugins/archivist/` directory.
+Copy `main.js`, `styles.css`, and `manifest.json` to your vault's `.obsidian/plugins/archivist-gg/` directory.
 
 ## License
 

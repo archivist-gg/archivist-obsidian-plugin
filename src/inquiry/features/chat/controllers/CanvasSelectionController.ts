@@ -73,7 +73,7 @@ export class CanvasSelectionController {
   }
 
   private getCanvasView(): ItemView | null {
-    const activeLeaf = (this.app.workspace as any).activeLeaf ?? this.app.workspace.getMostRecentLeaf?.();
+    const activeLeaf = this.app.workspace.getMostRecentLeaf?.();
     const activeView = activeLeaf?.view as ItemView | undefined;
     if (activeView?.getViewType?.() === 'canvas' && (activeView as any).file) {
       return activeView;

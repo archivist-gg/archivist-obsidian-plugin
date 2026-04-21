@@ -33,9 +33,9 @@ export class MessageRenderer {
   private dndCopyAndSaveCallback?: CopyAndSaveCallback;
   private dndUpdateCallback?: UpdateEntityCallback;
 
-  private static readonly REWIND_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
-
-  private static readonly FORK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></svg>`;
+  private static readonly REWIND_ICON_NAME = 'rotate-ccw';
+  private static readonly FORK_ICON_NAME = 'git-fork';
+  private static readonly COPY_ICON_NAME = 'copy';
 
   constructor(
     plugin: InquiryModule,
@@ -226,7 +226,9 @@ export class MessageRenderer {
     const msgEl = this.messagesEl.createDiv({ cls: 'claudian-message claudian-message-assistant' });
     const contentEl = msgEl.createDiv({ cls: 'claudian-message-content', attr: { dir: 'auto' } });
     const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
-    textEl.innerHTML = '<span class="claudian-interrupted">Interrupted</span> <span class="claudian-interrupted-hint">· What should Archivist do instead?</span>';
+    textEl.createSpan({ cls: 'claudian-interrupted', text: 'Interrupted' });
+    textEl.appendText(' ');
+    textEl.createSpan({ cls: 'claudian-interrupted-hint', text: '\u00b7 What should Archivist do instead?' });
   }
 
   /**
@@ -671,9 +673,6 @@ export class MessageRenderer {
   // Copy Button
   // ============================================
 
-  /** Clipboard icon SVG for copy button. */
-  private static readonly COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
-
   /**
    * Adds a copy button to a text block.
    * Button shows clipboard icon on hover, changes to "copied!" on click.
@@ -682,7 +681,7 @@ export class MessageRenderer {
    */
   addTextCopyButton(textEl: HTMLElement, markdown: string): void {
     const copyBtn = textEl.createSpan({ cls: 'claudian-text-copy-btn' });
-    copyBtn.innerHTML = MessageRenderer.COPY_ICON;
+    setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
 
     let feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -702,12 +701,13 @@ export class MessageRenderer {
       }
 
       // Show "copied!" feedback
-      copyBtn.innerHTML = '';
+      copyBtn.empty();
       copyBtn.setText('copied!');
       copyBtn.classList.add('copied');
 
       feedbackTimeout = setTimeout(() => {
-        copyBtn.innerHTML = MessageRenderer.COPY_ICON;
+        copyBtn.empty();
+        setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
         copyBtn.classList.remove('copied');
         feedbackTimeout = null;
       }, 1500);
@@ -746,7 +746,7 @@ export class MessageRenderer {
   private addUserCopyButton(msgEl: HTMLElement, content: string): void {
     const toolbar = this.getOrCreateActionsToolbar(msgEl);
     const copyBtn = toolbar.createSpan({ cls: 'claudian-user-msg-copy-btn' });
-    copyBtn.innerHTML = MessageRenderer.COPY_ICON;
+    setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
     copyBtn.setAttribute('aria-label', 'Copy message');
 
     let feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -759,11 +759,12 @@ export class MessageRenderer {
         return;
       }
       if (feedbackTimeout) clearTimeout(feedbackTimeout);
-      copyBtn.innerHTML = '';
+      copyBtn.empty();
       copyBtn.setText('copied!');
       copyBtn.classList.add('copied');
       feedbackTimeout = setTimeout(() => {
-        copyBtn.innerHTML = MessageRenderer.COPY_ICON;
+        copyBtn.empty();
+        setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
         copyBtn.classList.remove('copied');
         feedbackTimeout = null;
       }, 1500);
@@ -774,7 +775,7 @@ export class MessageRenderer {
     const toolbar = this.getOrCreateActionsToolbar(msgEl);
     const btn = toolbar.createSpan({ cls: 'claudian-message-rewind-btn' });
     if (toolbar.firstChild !== btn) toolbar.insertBefore(btn, toolbar.firstChild);
-    btn.innerHTML = MessageRenderer.REWIND_ICON;
+    setIcon(btn, MessageRenderer.REWIND_ICON_NAME);
     btn.setAttribute('aria-label', t('chat.rewind.ariaLabel'));
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -790,7 +791,7 @@ export class MessageRenderer {
     const toolbar = this.getOrCreateActionsToolbar(msgEl);
     const btn = toolbar.createSpan({ cls: 'claudian-message-fork-btn' });
     if (toolbar.firstChild !== btn) toolbar.insertBefore(btn, toolbar.firstChild);
-    btn.innerHTML = MessageRenderer.FORK_ICON;
+    setIcon(btn, MessageRenderer.FORK_ICON_NAME);
     btn.setAttribute('aria-label', t('chat.fork.ariaLabel'));
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();

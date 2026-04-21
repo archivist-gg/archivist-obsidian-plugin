@@ -21,7 +21,7 @@ import {
   TOOL_WRITE,
 } from '../../../core/tools/toolNames';
 import type { ToolCallInfo } from '../../../core/types';
-import { MCP_ICON_SVG } from '../../../shared/icons';
+import { appendSvg, MCP_ICON_SVG } from '../../../shared/icons';
 import { setupCollapsible } from './collapsible';
 import { renderDndEntityBlock, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
 import { parseDndCodeFence } from './dndCodeFence';
@@ -103,7 +103,8 @@ export function renderBlockSkeleton(
 export function setToolIcon(el: HTMLElement, name: string): void {
   const icon = getToolIcon(name);
   if (icon === MCP_ICON_MARKER) {
-    el.innerHTML = MCP_ICON_SVG;
+    el.empty();
+    appendSvg(el, MCP_ICON_SVG);
   } else {
     setIcon(el, icon);
   }
@@ -368,9 +369,7 @@ function renderToolSearchExpanded(container: HTMLElement, result: string): void 
 function renderWebFetchExpanded(container: HTMLElement, result: string): void {
   const maxChars = 500;
   const linesEl = container.createDiv({ cls: 'claudian-tool-lines' });
-  const lineEl = linesEl.createDiv({ cls: 'claudian-tool-line' });
-  lineEl.style.whiteSpace = 'pre-wrap';
-  lineEl.style.wordBreak = 'break-word';
+  const lineEl = linesEl.createDiv({ cls: 'claudian-tool-line claudian-tool-line-wrap' });
 
   if (result.length > maxChars) {
     lineEl.setText(result.slice(0, maxChars));

@@ -600,13 +600,13 @@ export class ClaudianSettingTab extends PluginSettingTab {
         toggle
           .setValue(this.plugin.settings.enableBangBash ?? false)
           .onChange(async (value) => {
-            bangBashValidationEl.style.display = 'none';
+            bangBashValidationEl.removeClass('is-visible');
             if (value) {
               const enhancedPath = getEnhancedPath();
               const nodePath = findNodeExecutable(enhancedPath);
               if (!nodePath) {
                 bangBashValidationEl.setText(t('settings.enableBangBash.validation.noNode'));
-                bangBashValidationEl.style.display = 'block';
+                bangBashValidationEl.addClass('is-visible');
                 toggle.setValue(false);
                 return;
               }
@@ -616,27 +616,21 @@ export class ClaudianSettingTab extends PluginSettingTab {
           })
       );
 
-    const bangBashValidationEl = containerEl.createDiv({ cls: 'claudian-bang-bash-validation' });
-    bangBashValidationEl.style.color = 'var(--text-error)';
-    bangBashValidationEl.style.fontSize = '0.85em';
-    bangBashValidationEl.style.marginTop = '-0.5em';
-    bangBashValidationEl.style.marginBottom = '0.5em';
-    bangBashValidationEl.style.display = 'none';
+    const bangBashValidationEl = containerEl.createDiv({
+      cls: 'claudian-bang-bash-validation claudian-settings-validation-error',
+    });
 
     const maxTabsSetting = new Setting(containerEl)
       .setName(t('settings.maxTabs.name'))
       .setDesc(t('settings.maxTabs.desc'));
 
-    const maxTabsWarningEl = containerEl.createDiv({ cls: 'claudian-max-tabs-warning' });
-    maxTabsWarningEl.style.color = 'var(--text-warning)';
-    maxTabsWarningEl.style.fontSize = '0.85em';
-    maxTabsWarningEl.style.marginTop = '-0.5em';
-    maxTabsWarningEl.style.marginBottom = '0.5em';
-    maxTabsWarningEl.style.display = 'none';
+    const maxTabsWarningEl = containerEl.createDiv({
+      cls: 'claudian-max-tabs-warning claudian-settings-validation-warning',
+    });
     maxTabsWarningEl.setText(t('settings.maxTabs.warning'));
 
     const updateMaxTabsWarning = (value: number): void => {
-      maxTabsWarningEl.style.display = value > 5 ? 'block' : 'none';
+      maxTabsWarningEl.toggleClass('is-visible', value > 5);
     };
 
     maxTabsSetting.addSlider((slider) => {
@@ -663,12 +657,9 @@ export class ClaudianSettingTab extends PluginSettingTab {
       .setName(`${t('settings.cliPath.name')} (${hostnameKey})`)
       .setDesc(cliPathDescription);
 
-    const validationEl = containerEl.createDiv({ cls: 'claudian-cli-path-validation' });
-    validationEl.style.color = 'var(--text-error)';
-    validationEl.style.fontSize = '0.85em';
-    validationEl.style.marginTop = '-0.5em';
-    validationEl.style.marginBottom = '0.5em';
-    validationEl.style.display = 'none';
+    const validationEl = containerEl.createDiv({
+      cls: 'claudian-cli-path-validation claudian-settings-validation-error',
+    });
 
     const validatePath = (value: string): string | null => {
       const trimmed = value.trim();
@@ -700,11 +691,11 @@ export class ClaudianSettingTab extends PluginSettingTab {
           const error = validatePath(value);
           if (error) {
             validationEl.setText(error);
-            validationEl.style.display = 'block';
-            text.inputEl.style.borderColor = 'var(--text-error)';
+            validationEl.addClass('is-visible');
+            text.inputEl.addClass('claudian-settings-input-invalid');
           } else {
-            validationEl.style.display = 'none';
-            text.inputEl.style.borderColor = '';
+            validationEl.removeClass('is-visible');
+            text.inputEl.removeClass('claudian-settings-input-invalid');
           }
 
           const trimmed = value.trim();
@@ -720,13 +711,13 @@ export class ClaudianSettingTab extends PluginSettingTab {
           );
         });
       text.inputEl.addClass('claudian-settings-cli-path-input');
-      text.inputEl.style.width = '100%';
+      text.inputEl.addClass('claudian-settings-full-width-input');
 
       const initialError = validatePath(currentValue);
       if (initialError) {
         validationEl.setText(initialError);
-        validationEl.style.display = 'block';
-        text.inputEl.style.borderColor = 'var(--text-error)';
+        validationEl.addClass('is-visible');
+        text.inputEl.addClass('claudian-settings-input-invalid');
       }
     });
   }
@@ -736,10 +727,10 @@ export class ClaudianSettingTab extends PluginSettingTab {
     const settings = hp.settings;
     const save = () => hp.saveSettings();
 
-    containerEl.createEl("h2", { text: "D&D Content" });
+    new Setting(containerEl).setName("D&D content").setHeading();
 
     new Setting(containerEl)
-      .setName("TTRPG Root Directory")
+      .setName("Campaign root directory")
       .setDesc("Scope AI vault access to this directory. Leave as / for entire vault.")
       .addText((text) =>
         text.setPlaceholder("/").setValue(settings.ttrpgRootDir)
@@ -749,10 +740,10 @@ export class ClaudianSettingTab extends PluginSettingTab {
           }),
       );
 
-    containerEl.createEl("h3", { text: "Entity Compendium" });
+    new Setting(containerEl).setName("Entity compendium").setHeading();
 
     new Setting(containerEl)
-      .setName("Compendium Root Folder")
+      .setName("Compendium root folder")
       .setDesc("Root vault folder where entity notes are stored.")
       .addText((text) =>
         text.setPlaceholder("Compendium").setValue(settings.compendiumRoot)
@@ -763,7 +754,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("User Entity Folder")
+      .setName("User entity folder")
       .setDesc("Subfolder name for user-created and AI-generated entities.")
       .addText((text) =>
         text.setPlaceholder("me").setValue(settings.userEntityFolder)
@@ -773,9 +764,8 @@ export class ClaudianSettingTab extends PluginSettingTab {
           }),
       );
 
-    // Separator between D&D content and Inquiry settings
     containerEl.createEl("hr");
-    containerEl.createEl("h2", { text: "Inquiry (AI Chat)" });
+    new Setting(containerEl).setName("Inquiry (AI chat)").setHeading();
   }
 
   private renderContextLimitsSection(): void {
@@ -829,19 +819,19 @@ export class ClaudianSettingTab extends PluginSettingTab {
         if (!trimmed) {
           // Empty = use default (remove from custom limits)
           delete this.plugin.settings.customContextLimits[modelId];
-          validationEl.style.display = 'none';
+          validationEl.removeClass('is-visible');
           inputEl.classList.remove('claudian-input-error');
         } else {
           const parsed = parseContextLimit(trimmed);
           if (parsed === null) {
             validationEl.setText(t('settings.customContextLimits.invalid'));
-            validationEl.style.display = 'block';
+            validationEl.addClass('is-visible');
             inputEl.classList.add('claudian-input-error');
             return; // Don't save invalid value
           }
 
           this.plugin.settings.customContextLimits[modelId] = parsed;
-          validationEl.style.display = 'none';
+          validationEl.removeClass('is-visible');
           inputEl.classList.remove('claudian-input-error');
         }
 

@@ -1,5 +1,5 @@
 {
-  "name": "archivist",
+  "name": "archivist-gg",
   "version": "0.2.0",
   "description": "D&D 5e/2024 toolkit with an AI agent that generates monsters, spells, items, encounters, and NPCs. Renders parchment stat blocks, inline dice tags, and includes a full SRD compendium.",
   "main": "main.js",
@@ -11,8 +11,8 @@
     "test:watch": "vitest --exclude 'tests/inquiry/**'"
   },
   "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "author": "Shinoobi",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "@codemirror/language": "^6.12.3",
     "@tabler/icons": "^3.41.1",

@@ -24,6 +24,7 @@
 /* Fixed positioning for inline editor */
 .claudian-slash-dropdown-fixed {
   position: fixed;
+  right: auto;
   z-index: 10001;
 }
 

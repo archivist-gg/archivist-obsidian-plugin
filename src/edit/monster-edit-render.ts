@@ -1224,9 +1224,7 @@ function wireOverride(
     overrideInput = document.createElement("input");
     overrideInput.type = "number";
     overrideInput.value = String(currentVal);
-    overrideInput.className = "archivist-num-in";
-    overrideInput.style.width = "50px";
-    overrideInput.style.display = "inline-block";
+    overrideInput.className = "archivist-num-in archivist-override-input";
 
     valueEl.textContent = "";
     valueEl.appendChild(overrideInput);

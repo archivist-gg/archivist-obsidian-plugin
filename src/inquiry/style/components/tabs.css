@@ -81,6 +81,7 @@
 
 /* Context menu */
 .archivist-tab-context-menu {
+  position: fixed;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;

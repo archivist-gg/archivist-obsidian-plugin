@@ -1,6 +1,8 @@
 import type { App } from 'obsidian';
 import { Modal, Notice, setIcon } from 'obsidian';
 
+import { appendSvg } from '../../../shared/icons';
+
 import type { McpTestResult, McpTool } from '../../../core/mcp/McpTester';
 
 function formatToggleError(error: unknown): string {
@@ -77,9 +79,10 @@ export class McpTestModal extends Modal {
     const loadingEl = this.contentEl_.createDiv({ cls: 'claudian-mcp-test-loading' });
 
     const spinnerEl = loadingEl.createDiv({ cls: 'claudian-mcp-test-spinner' });
-    spinnerEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-    </svg>`;
+    appendSvg(
+      spinnerEl,
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>'
+    );
 
     loadingEl.createSpan({ text: 'Connecting to MCP server...' });
   }

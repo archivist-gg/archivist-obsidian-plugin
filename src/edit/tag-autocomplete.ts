@@ -114,8 +114,6 @@ function buildTagOptions(abilities: MonsterAbilities, profBonus: number): TagOpt
 function createDropdown(options: TagOption[], filter: string): { el: HTMLElement; items: HTMLElement[]; filteredOptions: TagOption[] } {
   const el = document.createElement("div");
   el.className = "archivist-tag-autocomplete";
-  el.style.position = "fixed";
-  el.style.zIndex = "100";
 
   const items: HTMLElement[] = [];
   const filteredOptions: TagOption[] = [];
@@ -178,6 +176,7 @@ function createDropdown(options: TagOption[], filter: string): { el: HTMLElement
 function getCaretCoordinates(textarea: HTMLTextAreaElement): { x: number; y: number } {
   // Create a mirror div to measure caret position
   const mirror = document.createElement("div");
+  mirror.className = "archivist-tag-autocomplete-mirror";
   const style = window.getComputedStyle(textarea);
   const props = [
     "fontFamily", "fontSize", "fontWeight", "fontStyle", "letterSpacing",
@@ -186,12 +185,7 @@ function getCaretCoordinates(textarea: HTMLTextAreaElement): { x: number; y: num
     "paddingLeft", "border", "borderWidth", "boxSizing",
   ] as const;
 
-  mirror.style.position = "absolute";
-  mirror.style.top = "-9999px";
-  mirror.style.left = "-9999px";
-  mirror.style.visibility = "hidden";
-  mirror.style.whiteSpace = "pre-wrap";
-  mirror.style.wordWrap = "break-word";
+  // Width must match the live textarea's computed width, so keep this inline.
   mirror.style.width = style.width;
 
   for (const prop of props) {
