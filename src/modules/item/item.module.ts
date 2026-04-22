@@ -1,4 +1,3 @@
-import type { App, Editor } from "obsidian";
 import type {
   AIToolRegistry,
   ArchivistModule,
@@ -63,7 +62,7 @@ class ItemModule implements ArchivistModule {
       name: generateItemTool.name,
       description: generateItemTool.description,
       schema: generateItemTool.inputSchema,
-      execute: async (input: unknown) => {
+      execute: (input: unknown) => {
         const args = input as Parameters<typeof generateItemTool.handler>[0];
         return generateItemTool.handler(args, {});
       },
@@ -72,10 +71,10 @@ class ItemModule implements ArchivistModule {
   }
 
   getInsertModal(): ModalConstructor {
-    // ItemModal's constructor is (app, editor); the ArchivistModule
-    // contract widens the trailing args to `...unknown[]`, which is
-    // compatible here.
-    return ItemModal as unknown as new (app: App, editor: Editor) => unknown as ModalConstructor;
+    // ItemModal's `(app, editor)` constructor satisfies ModalConstructor's
+    // `new (app, ...never[]) => { open(): void }` shape directly — the rest
+    // parameter is contravariant so any stricter tuple is assignable.
+    return ItemModal;
   }
 }
 

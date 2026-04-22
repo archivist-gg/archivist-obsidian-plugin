@@ -34,7 +34,7 @@ class EncounterModule implements ArchivistModule {
       name: generateEncounterTool.name,
       description: generateEncounterTool.description,
       schema: generateEncounterTool.inputSchema,
-      execute: async (input: unknown) => {
+      execute: (input: unknown) => {
         const args = input as Parameters<typeof generateEncounterTool.handler>[0];
         return generateEncounterTool.handler(args, {});
       },

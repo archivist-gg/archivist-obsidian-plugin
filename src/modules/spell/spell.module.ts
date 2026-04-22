@@ -1,4 +1,3 @@
-import type { App, Editor } from "obsidian";
 import type {
   AIToolRegistry,
   ArchivistModule,
@@ -63,7 +62,7 @@ class SpellModule implements ArchivistModule {
       name: generateSpellTool.name,
       description: generateSpellTool.description,
       schema: generateSpellTool.inputSchema,
-      execute: async (input: unknown) => {
+      execute: (input: unknown) => {
         const args = input as Parameters<typeof generateSpellTool.handler>[0];
         return generateSpellTool.handler(args, {});
       },
@@ -72,10 +71,10 @@ class SpellModule implements ArchivistModule {
   }
 
   getInsertModal(): ModalConstructor {
-    // SpellModal's constructor is (app, editor); the ArchivistModule
-    // contract widens the trailing args to `...unknown[]`, which is
-    // compatible here.
-    return SpellModal as unknown as new (app: App, editor: Editor) => unknown as ModalConstructor;
+    // SpellModal's `(app, editor)` constructor satisfies ModalConstructor's
+    // `new (app, ...never[]) => { open(): void }` shape directly — the rest
+    // parameter is contravariant so any stricter tuple is assignable.
+    return SpellModal;
   }
 }
 

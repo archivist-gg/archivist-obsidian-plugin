@@ -1,4 +1,4 @@
-import type { App } from "obsidian";
+import type { App, Editor } from "obsidian";
 import type { EntityRegistry } from "../shared/entities/entity-registry";
 import type { CompendiumManager } from "../shared/entities/compendium-manager";
 import type { SrdStore } from "../shared/ai/srd-store";
@@ -57,7 +57,16 @@ export interface AIToolRegistry {
   getAllSdkTools?(): unknown[];
 }
 
-export type ModalConstructor = new (app: App, ...args: unknown[]) => unknown;
+/**
+ * The constructor shape a module's "Insert entity" modal must satisfy.
+ *
+ * Every insert modal in the codebase takes `(app: App, editor: Editor)` and
+ * inherits `open(): void` from Obsidian's `Modal`. Typing the contract with
+ * those exact parameters lets concrete `Modal` subclasses be returned from
+ * `getInsertModal()` without a cast, and lets the insert-command dispatcher
+ * construct them directly.
+ */
+export type ModalConstructor = new (app: App, editor: Editor) => { open(): void };
 
 export interface ArchivistModule {
   /** Unique module identifier */

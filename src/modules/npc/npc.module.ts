@@ -34,7 +34,7 @@ class NpcModule implements ArchivistModule {
       name: generateNpcTool.name,
       description: generateNpcTool.description,
       schema: generateNpcTool.inputSchema,
-      execute: async (input: unknown) => {
+      execute: (input: unknown) => {
         const args = input as Parameters<typeof generateNpcTool.handler>[0];
         return generateNpcTool.handler(args, {});
       },

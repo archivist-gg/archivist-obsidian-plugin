@@ -4,6 +4,14 @@ import { createSrdTools } from "./srd-tools";
 import type { SrdStore } from "./srd-store";
 import type { CompendiumManager } from "../entities/compendium-manager";
 
+// Pull the exact shape `createSdkMcpServer` accepts for its `tools` param
+// straight from the SDK's declared signature. This avoids both the `any[]`
+// escape hatch (disallowed by the Obsidian plugin ESLint config) and the
+// need to re-export the SDK's internal `SdkMcpToolDefinition` generic.
+type SdkMcpServerToolsParam = NonNullable<
+  Parameters<typeof createSdkMcpServer>[0]["tools"]
+>;
+
 /**
  * Build the in-process MCP server the inquiry chat uses for D&D tools.
  *
@@ -20,13 +28,12 @@ export function createArchivistMcpServer(
 ) {
   const { searchSrdTool, getSrdEntityTool } = createSrdTools(srdStore);
 
-  // The SDK's `tool()` returns an opaque `SdkMcpToolDefinition` shape; we
-  // hold module-contributed tools as `unknown` at the boundary and widen
-  // to `any[]` here so the array is assignment-compatible with the SDK's
-  // tools param (which is itself heavily parameterised).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tools: any[] = [
-    ...moduleSdkTools,
+  // Module-contributed SDK tool handles cross the shared boundary as
+  // `unknown` (the shared tree doesn't import SDK-internal types from the
+  // modules tree); assert them into the SDK's own parameter shape here at
+  // the single SDK-adjacent site.
+  const tools: SdkMcpServerToolsParam = [
+    ...(moduleSdkTools as SdkMcpServerToolsParam),
     searchSrdTool,
     getSrdEntityTool,
   ];

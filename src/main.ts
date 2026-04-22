@@ -1,4 +1,4 @@
-import { Plugin, Notice, setIcon, type MarkdownPostProcessorContext } from "obsidian";
+import { Plugin, Notice, setIcon } from "obsidian";
 
 // Module-based registration
 import type {
@@ -264,11 +264,9 @@ export default class ArchivistPlugin extends Plugin {
         id: `insert-${mod.id}`,
         name: INSERT_COMMAND_LABELS[mod.id] ?? defaultLabel,
         editorCallback: (editor) => {
-          // ModalConstructor widens trailing args to `...unknown[]`; in
-          // practice every insert modal takes `(app, editor)`. The returned
-          // instance is typed as `unknown`, so narrow to the minimal shape
-          // needed to call `.open()`.
-          const modal = new ModalCtor(this.app, editor) as { open: () => void };
+          // ModalConstructor's return type already exposes `open(): void`, so
+          // no cast is needed.
+          const modal = new ModalCtor(this.app, editor);
           modal.open();
         },
       });
@@ -283,9 +281,20 @@ export default class ArchivistPlugin extends Plugin {
     });
   }
 
-  async onunload() {
+  onunload(): void {
+    // Obsidian's Plugin base class types `onunload()` as `void`, so we
+    // fire-and-forget the async teardown. Any destroy() rejections are
+    // logged but cannot block the unload path.
+    void this.teardownModules();
+  }
+
+  private async teardownModules(): Promise<void> {
     for (const mod of this.moduleList) {
-      await mod.destroy?.();
+      try {
+        await mod.destroy?.();
+      } catch (e) {
+        console.error(`[archivist] module ${mod.id} destroy() failed:`, e);
+      }
     }
   }
 
@@ -440,7 +449,7 @@ export default class ArchivistPlugin extends Plugin {
         // change (e.g. cancel with no edits).
         mod.renderEditMode?.(el, result.data, {
           plugin: this,
-          ctx: ctx as MarkdownPostProcessorContext,
+          ctx,
           source,
           onExit: exitEditMode,
         });
@@ -452,7 +461,7 @@ export default class ArchivistPlugin extends Plugin {
         const saveToComp = async (comp: { name: string }) => {
           try {
             const registered = await this.compendiumManager!.saveEntity(
-              comp.name, entityType, result.data as unknown as Record<string, unknown>,
+              comp.name, entityType, result.data as Record<string, unknown>,
             );
             const sectionInfo = ctx.getSectionInfo(el);
             if (sectionInfo) {
