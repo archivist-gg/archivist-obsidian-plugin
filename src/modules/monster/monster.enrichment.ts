@@ -1,4 +1,5 @@
-import { abilityModifier, toStringSafe } from "../../shared/parsers/yaml-utils";
+import { abilityModifier } from "../../shared/dnd/math";
+import { toStringSafe } from "../../shared/parsers/yaml-utils";
 import {
   convertDescToTags,
   detectSpellcastingAbility,

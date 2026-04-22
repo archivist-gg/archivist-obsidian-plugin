@@ -1,11 +1,5 @@
 import type { Abilities, AC, HP, Speed, Feature } from "../../shared/types";
 
-export type MonsterAbilities = Abilities;
-export type MonsterAC = AC;
-export type MonsterHP = HP;
-export type MonsterSpeed = Speed;
-export type MonsterFeature = Feature;
-
 export interface Monster {
   name: string;
   size?: string;

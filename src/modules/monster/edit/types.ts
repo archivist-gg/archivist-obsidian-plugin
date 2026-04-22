@@ -1,4 +1,5 @@
-import type { Monster, MonsterAbilities } from "../monster.types";
+import type { Monster } from "../monster.types";
+import type { Abilities } from "../../../shared/types";
 import type { EditableMonster } from "../monster.edit-state";
 
 /**
@@ -75,7 +76,7 @@ export function flashUpdate(el: HTMLElement, newValue: string): void {
 
 export function getAbilityScore(m: EditableMonster | Monster, key: string): number {
   if (!m.abilities) return 10;
-  return m.abilities[key as keyof MonsterAbilities] ?? 10;
+  return m.abilities[key as keyof Abilities] ?? 10;
 }
 
 export function formatXP(xp: number): string {

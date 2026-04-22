@@ -1,4 +1,4 @@
-import type { MonsterAbilities } from "../monster.types";
+import type { Abilities } from "../../../shared/types";
 import type { MonsterEditState } from "../monster.edit-state";
 import { ABILITY_KEYS, ALL_SKILLS, SKILL_ABILITY } from "../../../shared/dnd/constants";
 import {
@@ -59,7 +59,7 @@ export function updateDom(state: MonsterEditState, refs: DomRefs): void {
 
   for (const skill of ALL_SKILLS) {
     const skillLower = skill.toLowerCase();
-    const abilityKey = SKILL_ABILITY[skillLower] as keyof MonsterAbilities;
+    const abilityKey = SKILL_ABILITY[skillLower] as keyof Abilities;
     if (refs.skillValues[skillLower]) {
       if (!m.overrides.has(`skills.${skillLower}`)) {
         const score = abilities[abilityKey];

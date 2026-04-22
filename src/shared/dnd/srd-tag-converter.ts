@@ -30,6 +30,21 @@ export interface ConversionContext {
 const ABILITY_KEYS: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 
 /**
+ * Shared static-fallback context for callers that enrich creature-agnostic
+ * content (spells, magic items) where no real ability mods / prof bonus exist.
+ *
+ * All ability mods = 0 and prof = 0, so no computed target matches any
+ * reasonable value and every pattern falls to the static fallback path
+ * (e.g. `dc:15`, `atk:+7`).
+ */
+export const STATIC_FALLBACK_CONTEXT: ConversionContext = {
+  abilities: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+  profBonus: 0,
+  actionName: "",
+  actionCategory: "trait",
+};
+
+/**
  * Convert SRD plain-English descriptions (e.g. "Melee Weapon Attack: +14 to hit,
  * Hit: 21 (3d8 + 8) slashing damage") into backtick formula tags
  * (e.g. "Melee Weapon Attack: `atk:STR`, Hit: `damage:3d8+STR` slashing damage")

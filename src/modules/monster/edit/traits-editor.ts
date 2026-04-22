@@ -1,5 +1,5 @@
 import { setIcon } from "obsidian";
-import type { MonsterFeature } from "../monster.types";
+import type { Feature } from "../../../shared/types";
 import type { EditableMonster, MonsterEditState } from "../monster.edit-state";
 import { attachTagAutocomplete } from "../../../shared/edit/tag-autocomplete";
 
@@ -11,7 +11,7 @@ import { attachTagAutocomplete } from "../../../shared/edit/tag-autocomplete";
  */
 export function renderFeatureCard(
   container: HTMLElement,
-  feature: MonsterFeature,
+  feature: Feature,
   state: MonsterEditState,
   sectionKey: string,
   index: number,
@@ -57,14 +57,14 @@ export function renderFeatureCard(
  * empty array if the section is active but the array hasn't been
  * initialised yet, so that the "add feature" button still renders.
  */
-export function getFeatures(m: EditableMonster, key: string): MonsterFeature[] | undefined {
-  const featureMap: Record<string, MonsterFeature[] | undefined> = {
+export function getFeatures(m: EditableMonster, key: string): Feature[] | undefined {
+  const featureMap: Record<string, Feature[] | undefined> = {
     traits: m.traits,
     actions: m.actions,
     reactions: m.reactions,
     legendary: m.legendary,
   };
-  const result = featureMap[key] ?? (m as unknown as Record<string, unknown>)[key] as MonsterFeature[] | undefined;
+  const result = featureMap[key] ?? (m as unknown as Record<string, unknown>)[key] as Feature[] | undefined;
   // If the section is active but has no features array yet, return empty array
   // so the add button still renders
   if (!result && m.activeSections?.includes(key)) return [];

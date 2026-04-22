@@ -1,5 +1,3 @@
-// src/shared/edit/compendium-picker.ts
-
 /**
  * Inline dropdown for choosing which compendium to save to.
  * Anchored below a trigger element (e.g., the Save As New button).

@@ -1,5 +1,6 @@
-import { Monster, MonsterFeature } from "./monster.types";
-import { abilityModifier, formatModifier } from "../../shared/parsers/yaml-utils";
+import { Monster } from "./monster.types";
+import type { Feature } from "../../shared/types";
+import { abilityModifier, formatModifier } from "../../shared/dnd/math";
 import {
   el,
   createSvgBar,
@@ -33,7 +34,7 @@ function formatAC(monster: Monster): string {
 
 function renderFeatureBlock(
   parent: HTMLElement,
-  features: MonsterFeature[],
+  features: Feature[],
   monsterCtx?: FormulaContext,
 ): void {
   for (const feature of features) {
@@ -313,7 +314,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
   const sectionDefs: {
     id: string;
     label: string;
-    features: MonsterFeature[] | undefined;
+    features: Feature[] | undefined;
   }[] = [
     { id: "traits", label: "Traits", features: monster.traits },
     { id: "actions", label: "Actions", features: monster.actions },

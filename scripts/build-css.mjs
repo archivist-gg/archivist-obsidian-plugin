@@ -2,7 +2,7 @@
 /**
  * CSS Build Script
  * Concatenates:
- *   1. Claudian modular CSS from src/inquiry/style/ (via index.css @imports)
+ *   1. Claudian modular CSS from src/modules/inquiry/style/ (via index.css @imports)
  *   2. D&D-specific CSS from src/styles/archivist-dnd.css
  * into the root styles.css for the Obsidian plugin.
  */
@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const CLAUDIAN_STYLE_DIR = join(ROOT, 'src', 'inquiry', 'style');
+const CLAUDIAN_STYLE_DIR = join(ROOT, 'src', 'modules', 'inquiry', 'style');
 const DND_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-dnd.css');
 const EDIT_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-edit.css');
 const LAYOUT_OVERRIDES_FILE = join(ROOT, 'src', 'styles', 'archivist-layout-overrides.css');
@@ -24,7 +24,7 @@ const IMPORT_PATTERN = /^\s*@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/gm;
 
 function getModuleOrder() {
   if (!existsSync(INDEX_FILE)) {
-    console.error('Missing src/inquiry/style/index.css');
+    console.error('Missing src/modules/inquiry/style/index.css');
     process.exit(1);
   }
 
@@ -32,7 +32,7 @@ function getModuleOrder() {
   const matches = [...content.matchAll(IMPORT_PATTERN)];
 
   if (matches.length === 0) {
-    console.error('No @import entries found in src/inquiry/style/index.css');
+    console.error('No @import entries found in src/modules/inquiry/style/index.css');
     process.exit(1);
   }
 
@@ -92,7 +92,7 @@ function buildClaudianCss() {
   let hasErrors = false;
 
   if (invalidImports.length > 0) {
-    console.error('Invalid @import entries in src/inquiry/style/index.css:');
+    console.error('Invalid @import entries in src/modules/inquiry/style/index.css:');
     invalidImports.forEach((modulePath) => console.error(`  - ${modulePath}`));
     hasErrors = true;
   }
@@ -108,7 +108,7 @@ function buildClaudianCss() {
   const unlistedFiles = allCssFiles.filter((file) => !importedSet.has(file));
 
   if (unlistedFiles.length > 0) {
-    console.error('Unlisted CSS files (not imported in src/inquiry/style/index.css):');
+    console.error('Unlisted CSS files (not imported in src/modules/inquiry/style/index.css):');
     unlistedFiles.forEach((file) => console.error(`  - ${file}`));
     hasErrors = true;
   }
@@ -164,10 +164,10 @@ function build() {
     ...importLines,
     ...(importLines.length > 0 ? [''] : []),
     '/* Archivist - Plugin Styles */',
-    '/* Built from src/inquiry/style/ modules + src/styles/archivist-dnd.css + src/styles/archivist-edit.css */',
+    '/* Built from src/modules/inquiry/style/ modules + src/styles/archivist-dnd.css + src/styles/archivist-edit.css */',
     '',
     '/* ================================================================',
-    '   PART 1: Claudian Chat UI (from src/inquiry/style/)',
+    '   PART 1: Claudian Chat UI (from src/modules/inquiry/style/)',
     '   ================================================================ */',
     claudianCss,
     '',

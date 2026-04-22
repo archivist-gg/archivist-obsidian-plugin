@@ -1,4 +1,5 @@
-import type { Monster, MonsterAbilities } from "./monster.types";
+import type { Monster } from "./monster.types";
+import type { Abilities } from "../../shared/types";
 import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "../../shared/dnd/constants";
 import {
   abilityModifier,
@@ -52,7 +53,7 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   // Infer skill proficiencies
   const skillProficiencies: Record<string, SkillProficiency> = {};
   for (const [skillLower, abilityKey] of Object.entries(SKILL_ABILITY)) {
-    const abilityScore = abilities[abilityKey as keyof MonsterAbilities];
+    const abilityScore = abilities[abilityKey as keyof Abilities];
     const mod = abilityModifier(abilityScore);
 
     // Look up skill value from monster (case-insensitive match)
@@ -133,7 +134,7 @@ export function monsterToEditable(monster: Monster): EditableMonster {
       if (profLevel === "none") continue;
       const abilityKey = SKILL_ABILITY[skillLower];
       if (!abilityKey) continue;
-      const abilityScore = abilities[abilityKey as keyof MonsterAbilities];
+      const abilityScore = abilities[abilityKey as keyof Abilities];
       const autoValue = skillBonus(abilityScore, profLevel, profBonus);
       // Look up the actual stored value (case-insensitive)
       let storedValue: number | undefined;
@@ -200,7 +201,7 @@ export function editableToMonster(editable: EditableMonster): Monster {
     if (profLevel !== "none") {
       const abilityKey = SKILL_ABILITY[skillLower];
       if (abilityKey) {
-        const score = abilities[abilityKey as keyof MonsterAbilities];
+        const score = abilities[abilityKey as keyof Abilities];
         // Capitalize skill name for the Monster format
         const skillName = skillLower
           .split(" ")
@@ -334,9 +335,9 @@ export function recalculate(monster: EditableMonster, changedField: string): Edi
     if (prof && prof !== "none") {
       const displayName = skillName.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
       if (result.overrides.has(`skills.${skillName}`)) {
-        skills[displayName] = result.skills?.[displayName] ?? skillBonus(abilities[abilityKey as keyof MonsterAbilities], prof, profBonus);
+        skills[displayName] = result.skills?.[displayName] ?? skillBonus(abilities[abilityKey as keyof Abilities], prof, profBonus);
       } else {
-        skills[displayName] = skillBonus(abilities[abilityKey as keyof MonsterAbilities], prof, profBonus);
+        skills[displayName] = skillBonus(abilities[abilityKey as keyof Abilities], prof, profBonus);
       }
       hasSkills = true;
     }

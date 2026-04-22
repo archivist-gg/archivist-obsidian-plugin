@@ -1,4 +1,3 @@
-// src/shared/edit/tag-autocomplete.ts
 // Backtick-triggered autocomplete dropdown for formula tags in feature textareas.
 
 import type { Abilities } from "../types";
