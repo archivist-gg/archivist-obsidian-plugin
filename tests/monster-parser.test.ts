@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseMonster } from "../src/parsers/monster-parser";
+import { parseMonster } from "../src/modules/monster/monster.parser";
 
 describe("parseMonster", () => {
   it("parses a minimal monster (name only)", () => {

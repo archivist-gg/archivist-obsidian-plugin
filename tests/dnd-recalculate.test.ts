@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { recalculate } from "../src/dnd/recalculate";
-import { monsterToEditable } from "../src/dnd/editable-monster";
-import type { Monster } from "../src/types/monster";
+import { recalculate, monsterToEditable } from "../src/modules/monster/monster.edit-state";
+import type { Monster } from "../src/modules/monster/monster.types";
 
 const GOBLIN: Monster = {
   name: "Goblin", size: "Small", type: "Humanoid", alignment: "Neutral Evil",

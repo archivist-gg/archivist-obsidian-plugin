@@ -1,26 +1,28 @@
 import * as yaml from "js-yaml";
 import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
-import type ArchivistPlugin from "../main";
-import { confirm as confirmModal } from "../inquiry/shared/modals/ConfirmModal";
-import type { Monster, MonsterAbilities, MonsterFeature } from "../types/monster";
-import type { EditableMonster } from "../dnd/editable-monster";
-import { MonsterEditState } from "./edit-state";
-import { attachTagAutocomplete } from "../shared/edit/tag-autocomplete";
-import { createSearchableTagSelect } from "../shared/edit/searchable-tag-select";
-import { renderSideButtons } from "../shared/edit/side-buttons";
-import { createSvgBar } from "../shared/rendering/renderer-utils";
-import { SaveAsNewModal, CreateCompendiumModal } from "../shared/entities/compendium-modal";
-import { showCompendiumPicker } from "../shared/edit/compendium-picker";
+// TODO(phase0-task13): plugin wiring still reaches into src/ at the top level
+import type ArchivistPlugin from "../../../main";
+// TODO(phase0-task13): inquiry still exports modals via its internal tree
+import { confirm as confirmModal } from "../../../inquiry/shared/modals/ConfirmModal";
+import type { Monster, MonsterAbilities, MonsterFeature } from "../monster.types";
+import type { EditableMonster } from "../monster.edit-state";
+import { MonsterEditState } from "../monster.edit-state";
+import { attachTagAutocomplete } from "../../../shared/edit/tag-autocomplete";
+import { createSearchableTagSelect } from "../../../shared/edit/searchable-tag-select";
+import { renderSideButtons } from "../../../shared/edit/side-buttons";
+import { createSvgBar } from "../../../shared/rendering/renderer-utils";
+import { SaveAsNewModal, CreateCompendiumModal } from "../../../shared/entities/compendium-modal";
+import { showCompendiumPicker } from "../../../shared/edit/compendium-picker";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
   STANDARD_SENSES, ALL_SECTIONS, ALIGNMENT_ETHICAL, ALIGNMENT_MORAL,
   ALL_CR_VALUES, DAMAGE_TYPES, DAMAGE_NONMAGICAL_VARIANTS, CONDITIONS,
-} from "../shared/dnd/constants";
+} from "../../../shared/dnd/constants";
 import {
   abilityModifier, formatModifier,
   savingThrow, skillBonus, passivePerception,
-} from "../shared/dnd/math";
+} from "../../../shared/dnd/math";
 
 // ---------------------------------------------------------------------------
 // Types

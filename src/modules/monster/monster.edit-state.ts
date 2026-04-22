@@ -1,6 +1,21 @@
-import type { Monster, MonsterAbilities } from "../types/monster";
-import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "../shared/dnd/constants";
-import { abilityModifier, proficiencyBonusFromCR, crToXP, savingThrow, skillBonus, passivePerception } from "../shared/dnd/math";
+import type { Monster, MonsterAbilities } from "./monster.types";
+import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "../../shared/dnd/constants";
+import {
+  abilityModifier,
+  proficiencyBonusFromCR,
+  crToXP,
+  savingThrow,
+  skillBonus,
+  passivePerception,
+  hpFromHitDice,
+  parseHitDiceFormula,
+  hitDiceSizeFromCreatureSize,
+} from "../../shared/dnd/math";
+import { editableToYaml } from "./monster.yaml-serializer";
+
+// -----------------------------------------------------------------------------
+// EditableMonster type and conversion helpers (formerly src/dnd/editable-monster.ts)
+// -----------------------------------------------------------------------------
 
 export type SkillProficiency = "none" | "proficient" | "expertise";
 
@@ -259,4 +274,215 @@ export function editableToMonster(editable: EditableMonster): Monster {
   if (editable.columns !== undefined) monster.columns = editable.columns;
 
   return monster;
+}
+
+// -----------------------------------------------------------------------------
+// recalculate (formerly src/dnd/recalculate.ts)
+// -----------------------------------------------------------------------------
+
+export function recalculate(monster: EditableMonster, changedField: string): EditableMonster {
+  const result = { ...monster };
+  const abilities = result.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+
+  // CR change -> update proficiency bonus and XP
+  if (changedField === "cr") {
+    result.proficiencyBonus = proficiencyBonusFromCR(result.cr ?? "0");
+    if (!result.overrides.has("xp")) {
+      result.xp = crToXP(result.cr ?? "0");
+    }
+  }
+  const profBonus = result.proficiencyBonus;
+
+  // Size change -> update hit dice size in formula
+  if (changedField === "size" && result.hp?.formula) {
+    const parsed = parseHitDiceFormula(result.hp.formula);
+    if (parsed) {
+      const newSize = hitDiceSizeFromCreatureSize(result.size ?? "medium");
+      result.hp = { ...result.hp, formula: `${parsed.count}d${newSize}` };
+    }
+  }
+
+  // Recalculate HP from hit dice + CON mod
+  if (!result.overrides.has("hp") && result.hp?.formula) {
+    const parsed = parseHitDiceFormula(result.hp.formula);
+    if (parsed) {
+      const conMod = abilityModifier(abilities.con);
+      result.hp = { ...result.hp, average: hpFromHitDice(parsed.count, parsed.size, conMod) };
+    }
+  }
+
+  // Recalculate saves
+  const saves: Record<string, number> = {};
+  let hasSaves = false;
+  for (const key of ABILITY_KEYS) {
+    if (result.saveProficiencies[key]) {
+      if (result.overrides.has(`saves.${key}`)) {
+        saves[key] = result.saves?.[key] ?? savingThrow(abilities[key], true, profBonus);
+      } else {
+        saves[key] = savingThrow(abilities[key], true, profBonus);
+      }
+      hasSaves = true;
+    }
+  }
+  result.saves = hasSaves ? saves : undefined;
+
+  // Recalculate skills
+  const skills: Record<string, number> = {};
+  let hasSkills = false;
+  for (const [skillName, abilityKey] of Object.entries(SKILL_ABILITY)) {
+    const prof = result.skillProficiencies[skillName];
+    if (prof && prof !== "none") {
+      const displayName = skillName.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      if (result.overrides.has(`skills.${skillName}`)) {
+        skills[displayName] = result.skills?.[displayName] ?? skillBonus(abilities[abilityKey as keyof MonsterAbilities], prof, profBonus);
+      } else {
+        skills[displayName] = skillBonus(abilities[abilityKey as keyof MonsterAbilities], prof, profBonus);
+      }
+      hasSkills = true;
+    }
+  }
+  result.skills = hasSkills ? skills : undefined;
+
+  // Recalculate passive perception
+  if (!result.overrides.has("passive_perception")) {
+    const percProf = result.skillProficiencies["perception"] ?? "none";
+    result.passive_perception = passivePerception(abilities.wis, percProf, profBonus);
+  }
+
+  return result;
+}
+
+// -----------------------------------------------------------------------------
+// MonsterEditState (formerly src/edit/edit-state.ts)
+// -----------------------------------------------------------------------------
+
+export class MonsterEditState {
+  private original: Monster;
+  private _current: EditableMonster;
+  private _hasPendingChanges = false;
+  private onChange: (state: MonsterEditState) => void;
+
+  constructor(monster: Monster, onChange: (state: MonsterEditState) => void) {
+    this.original = monster;
+    this._current = monsterToEditable(monster);
+    this.onChange = onChange;
+  }
+
+  get current(): EditableMonster { return this._current; }
+  get hasPendingChanges(): boolean { return this._hasPendingChanges; }
+
+  updateField(field: string, value: unknown): void {
+    setNestedField(this._current, field, value);
+    this._current = recalculate(this._current, field);
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  toggleSaveProficiency(ability: string): void {
+    this._current.saveProficiencies[ability] = !this._current.saveProficiencies[ability];
+    this._current = recalculate(this._current, `saves.${ability}`);
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  cycleSkillProficiency(skill: string): void {
+    const current = this._current.skillProficiencies[skill] ?? "none";
+    const next = current === "none" ? "proficient" : current === "proficient" ? "expertise" : "none";
+    this._current.skillProficiencies[skill] = next;
+    this._current = recalculate(this._current, `skills.${skill}`);
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  setOverride(field: string, value: number): void {
+    this._current.overrides.add(field);
+    setNestedField(this._current, field, value);
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  clearOverride(field: string): void {
+    this._current.overrides.delete(field);
+    this._current = recalculate(this._current, field);
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  addSection(section: string): void {
+    if (!this._current.activeSections.includes(section)) {
+      this._current.activeSections.push(section);
+      const key = sectionToMonsterKey(section);
+      if (key && !(this._current as Record<string, unknown>)[key]) {
+        (this._current as Record<string, unknown>)[key] = [];
+      }
+      this._hasPendingChanges = true;
+      this.onChange(this);
+    }
+  }
+
+  removeSection(section: string): void {
+    this._current.activeSections = this._current.activeSections.filter(s => s !== section);
+    // Clear the feature data so the section is not serialized on save
+    if ((this._current as Record<string, unknown>)[section] !== undefined) {
+      (this._current as Record<string, unknown>)[section] = [];
+    }
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  addFeature(sectionKey: string): void {
+    const features = (this._current as Record<string, unknown>)[sectionKey] as Array<{name: string; entries: string[]}> | undefined;
+    if (features) {
+      features.push({ name: "New Feature", entries: [""] });
+    } else {
+      (this._current as Record<string, unknown>)[sectionKey] = [{ name: "New Feature", entries: [""] }];
+    }
+    this._hasPendingChanges = true;
+    this.onChange(this);
+  }
+
+  removeFeature(sectionKey: string, index: number): void {
+    const features = (this._current as Record<string, unknown>)[sectionKey] as Array<unknown> | undefined;
+    if (features && index >= 0 && index < features.length) {
+      features.splice(index, 1);
+      this._hasPendingChanges = true;
+      this.onChange(this);
+    }
+  }
+
+  toYaml(): string {
+    return editableToYaml(this._current);
+  }
+
+  toMonster(): Monster {
+    return editableToMonster(this._current);
+  }
+
+  cancel(): void {
+    this._current = monsterToEditable(this.original);
+    this._hasPendingChanges = false;
+    this.onChange(this);
+  }
+}
+
+function sectionToMonsterKey(section: string): string | null {
+  const map: Record<string, string> = {
+    traits: "traits", actions: "actions", reactions: "reactions",
+    legendary: "legendary", "bonus actions": "bonus_actions",
+    "legendary actions": "legendary", "lair actions": "lair_actions",
+    "mythic actions": "mythic_actions",
+  };
+  return map[section.toLowerCase()] ?? null;
+}
+
+function setNestedField(obj: Record<string, unknown>, path: string, value: unknown): void {
+  const parts = path.split(".");
+  let current = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (current[parts[i]] === undefined || current[parts[i]] === null) {
+      current[parts[i]] = {};
+    }
+    current = current[parts[i]] as Record<string, unknown>;
+  }
+  current[parts[parts.length - 1]] = value;
 }

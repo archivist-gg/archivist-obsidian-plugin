@@ -2,10 +2,10 @@ import type { App } from "obsidian";
 import { setIcon, Notice } from "obsidian";
 
 import type { EntityRegistry, RegisteredEntity } from "../../../../shared/entities/entity-registry";
-import { parseMonster } from "../../../../parsers/monster-parser";
+import { parseMonster } from "../../../../modules/monster/monster.parser";
 import { parseSpell } from "../../../../parsers/spell-parser";
 import { parseItem } from "../../../../parsers/item-parser";
-import { renderMonsterBlock } from "../../../../renderers/monster-renderer";
+import { renderMonsterBlock } from "../../../../modules/monster/monster.renderer";
 import { renderSpellBlock } from "../../../../renderers/spell-renderer";
 import { renderItemBlock } from "../../../../renderers/item-renderer";
 

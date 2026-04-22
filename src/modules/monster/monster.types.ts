@@ -1,4 +1,4 @@
-import type { Abilities, AC, HP, Speed, Feature } from "../shared/types";
+import type { Abilities, AC, HP, Speed, Feature } from "../../shared/types";
 
 export type MonsterAbilities = Abilities;
 export type MonsterAC = AC;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { monsterInputSchema } from "../src/ai/schemas/monster-schema";
+import { monsterInputSchema } from "../src/modules/monster/monster.ai-schema";
 
 describe("monsterInputSchema", () => {
   it("validates a minimal monster", () => {

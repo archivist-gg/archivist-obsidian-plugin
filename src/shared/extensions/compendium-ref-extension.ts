@@ -13,19 +13,19 @@ import type ArchivistPlugin from "../../main";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
 // TODO(phase0-task13): replaced by module registry dispatch
-import { parseMonster } from "../../parsers/monster-parser";
+import { parseMonster } from "../../modules/monster/monster.parser";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { parseSpell } from "../../parsers/spell-parser";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { parseItem } from "../../parsers/item-parser";
 // TODO(phase0-task13): replaced by module registry dispatch
-import { renderMonsterBlock } from "../../renderers/monster-renderer";
+import { renderMonsterBlock } from "../../modules/monster/monster.renderer";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { renderSpellBlock } from "../../renderers/spell-renderer";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { renderItemBlock } from "../../renderers/item-renderer";
 // TODO(phase0-task13): replaced by module registry dispatch
-import { renderMonsterEditMode } from "../../edit/monster-edit-render";
+import { renderMonsterEditMode } from "../../modules/monster/edit/monster-edit-render";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { renderSpellEditMode } from "../../edit/spell-edit-render";
 // TODO(phase0-task13): replaced by module registry dispatch

@@ -1,13 +1,13 @@
-import { Monster, MonsterFeature } from "../types/monster";
-import { abilityModifier, formatModifier } from "../shared/parsers/yaml-utils";
+import { Monster, MonsterFeature } from "./monster.types";
+import { abilityModifier, formatModifier } from "../../shared/parsers/yaml-utils";
 import {
   el,
   createSvgBar,
   createPropertyLine,
   renderTextWithInlineTags,
-} from "../shared/rendering/renderer-utils";
-import type { FormulaContext } from "../shared/types";
-import { proficiencyBonusFromCR } from "../shared/dnd/math";
+} from "../../shared/rendering/renderer-utils";
+import type { FormulaContext } from "../../shared/types";
+import { proficiencyBonusFromCR } from "../../shared/dnd/math";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());

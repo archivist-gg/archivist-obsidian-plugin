@@ -267,7 +267,7 @@ describe("normalizeSrdMonster edge cases", () => {
   });
 
   it("normalized output round-trips through monster parser", async () => {
-    const { parseMonster } = await import("../src/parsers/monster-parser");
+    const { parseMonster } = await import("../src/modules/monster/monster.parser");
     const yaml = await import("js-yaml");
     const normalized = normalizeSrdMonster(ADULT_RED_DRAGON_SRD);
     const yamlStr = yaml.dump(normalized, { lineWidth: -1, noRefs: true });
