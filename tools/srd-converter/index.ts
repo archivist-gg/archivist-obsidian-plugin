@@ -28,7 +28,7 @@ function writeMd(
 ): void {
   const dir = path.join(outputRoot, typeFolder);
   fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, `${sanitizeFilename(entity.frontmatter.slug)}.md`);
+  const file = path.join(dir, `${sanitizeFilename(entity.frontmatter.name)}.md`);
   const frontmatterYaml = yaml.dump(entity.frontmatter, { lineWidth: -1, noRefs: true }).trimEnd();
   const bodyYaml = yaml.dump(entity.data, { lineWidth: -1, noRefs: true }).trimEnd();
   const md = `---\n${frontmatterYaml}\n---\n\n\`\`\`${codeBlockTag}\n${bodyYaml}\n\`\`\`\n`;

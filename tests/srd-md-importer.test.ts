@@ -4,8 +4,8 @@ import { describe, it, expect, vi } from "vitest";
 // doesn't depend on the prebuild script having run.
 vi.mock("../src/data/srd/index.generated", () => ({
   SRD_MD_ENTRIES: [
-    { type: "classes", slug: "rogue", content: "---\narchivist: true\nentity_type: class\nslug: rogue\n---\n\n```class\nname: Rogue\n```\n" },
-    { type: "races", slug: "dwarf", content: "---\narchivist: true\nentity_type: race\nslug: dwarf\n---\n\n```race\nname: Dwarf\n```\n" },
+    { type: "classes", slug: "rogue", name: "Rogue", content: "---\narchivist: true\nentity_type: class\nslug: rogue\n---\n\n```class\nname: Rogue\n```\n" },
+    { type: "races", slug: "dwarf", name: "Dwarf", content: "---\narchivist: true\nentity_type: race\nslug: dwarf\n---\n\n```race\nname: Dwarf\n```\n" },
   ],
 }));
 
@@ -35,16 +35,16 @@ describe("importSrdBundledMdToVault", () => {
     const { vault, adapter } = createFakeVault();
     const created = await importSrdBundledMdToVault(vault as unknown as import("obsidian").Vault, "Compendium");
     expect(created).toBe(2);
-    expect(adapter.files.has("Compendium/SRD/Classes/rogue.md")).toBe(true);
-    expect(adapter.files.has("Compendium/SRD/Races/dwarf.md")).toBe(true);
+    expect(adapter.files.has("Compendium/SRD/Classes/Rogue.md")).toBe(true);
+    expect(adapter.files.has("Compendium/SRD/Races/Dwarf.md")).toBe(true);
   });
 
   it("skips files that already exist", async () => {
     const { vault, adapter } = createFakeVault();
-    adapter.files.set("Compendium/SRD/Classes/rogue.md", "existing content");
+    adapter.files.set("Compendium/SRD/Classes/Rogue.md", "existing content");
     const created = await importSrdBundledMdToVault(vault as unknown as import("obsidian").Vault, "Compendium");
     expect(created).toBe(1);
-    expect(adapter.files.get("Compendium/SRD/Classes/rogue.md")).toBe("existing content");
+    expect(adapter.files.get("Compendium/SRD/Classes/Rogue.md")).toBe("existing content");
   });
 
   it("fires progress callback for every entry", async () => {

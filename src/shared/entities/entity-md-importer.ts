@@ -19,7 +19,7 @@ export async function importSrdBundledMdToVault(
     const entityType = entry.type.replace(/s$/, "");
     const folder = TYPE_FOLDER_MAP[entityType] ?? entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
     const folderPath = `${compendiumRoot}/SRD/${folder}`;
-    const filePath = `${folderPath}/${sanitizeFilename(entry.slug)}.md`;
+    const filePath = `${folderPath}/${sanitizeFilename(entry.name)}.md`;
 
     if (await vault.adapter.exists(filePath)) {
       onProgress?.(i + 1, SRD_MD_ENTRIES.length);
