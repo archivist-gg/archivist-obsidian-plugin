@@ -1,0 +1,34 @@
+.archivist-pc-sheet .pc-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--pc-space-4);
+  margin-top: var(--pc-space-4);
+}
+
+.archivist-pc-sheet .pc-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-3);
+}
+
+.archivist-pc-sheet .pc-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-3);
+}
+
+.archivist-pc-error {
+  padding: var(--pc-space-5);
+  color: var(--pc-crimson);
+  background: var(--pc-parchment-light);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+}
+
+.archivist-pc-warnings {
+  padding: var(--pc-space-3) var(--pc-space-4);
+  margin-bottom: var(--pc-space-3);
+  background: #fff6e0;
+  border-left: 3px solid var(--pc-crimson);
+  font-size: 12px;
+}

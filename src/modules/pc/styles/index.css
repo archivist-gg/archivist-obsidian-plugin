@@ -1,0 +1,6 @@
+/* PC Module style barrel. Order matters: tokens first, then layout skeleton,
+ * then component internals, then entity blocks. */
+@import url('./tokens.css');
+@import url('./layout.css');
+@import url('./components.css');
+@import url('./blocks.css');

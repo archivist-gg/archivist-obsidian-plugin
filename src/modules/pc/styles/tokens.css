@@ -1,0 +1,32 @@
+.archivist-pc-sheet {
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-white: #ffffff;
+
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
+  --pc-space-5: 24px;
+  --pc-space-6: 32px;
+
+  --pc-radius-sm: 4px;
+  --pc-radius-md: 6px;
+  --pc-radius-lg: 12px;
+
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: var(--pc-space-5);
+  min-height: 100%;
+}

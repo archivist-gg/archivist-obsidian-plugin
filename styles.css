@@ -9030,3 +9030,96 @@ body.theme-light .archivist-tag-atk:hover {
   background: var(--background-modifier-border); border-radius: 4px;
   padding: 1px 5px;
 }
+
+
+/* ================================================================
+   PART 5: PC Module (from src/modules/pc/styles/)
+   ================================================================ */
+
+
+/* ============================================
+   pc/tokens.css
+   ============================================ */
+.archivist-pc-sheet {
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-white: #ffffff;
+
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
+  --pc-space-5: 24px;
+  --pc-space-6: 32px;
+
+  --pc-radius-sm: 4px;
+  --pc-radius-md: 6px;
+  --pc-radius-lg: 12px;
+
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: var(--pc-space-5);
+  min-height: 100%;
+}
+
+
+/* ============================================
+   pc/layout.css
+   ============================================ */
+.archivist-pc-sheet .pc-body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--pc-space-4);
+  margin-top: var(--pc-space-4);
+}
+
+.archivist-pc-sheet .pc-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-3);
+}
+
+.archivist-pc-sheet .pc-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-3);
+}
+
+.archivist-pc-error {
+  padding: var(--pc-space-5);
+  color: var(--pc-crimson);
+  background: var(--pc-parchment-light);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+}
+
+.archivist-pc-warnings {
+  padding: var(--pc-space-3) var(--pc-space-4);
+  margin-bottom: var(--pc-space-3);
+  background: #fff6e0;
+  border-left: 3px solid var(--pc-crimson);
+  font-size: 12px;
+}
+
+
+/* ============================================
+   pc/components.css
+   ============================================ */
+/* Filled in by component tasks (header-section, ability-row, saves-panel, ...). */
+
+
+/* ============================================
+   pc/blocks.css
+   ============================================ */
+/* Filled in by the block-components task (class-block, race-block, ...). */
