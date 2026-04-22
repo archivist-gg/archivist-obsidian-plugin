@@ -2,10 +2,10 @@ import { Plugin, Notice, setIcon, type MarkdownPostProcessorContext } from "obsi
 
 // Module-based registration
 import type {
-  AIToolDefinition,
   AIToolRegistry,
   ArchivistModule,
   CoreAPI,
+  RenderContext,
 } from "./core/module-api";
 import { ModuleRegistry } from "./core/module-registry";
 import { monsterModule } from "./modules/monster/monster.module";
@@ -14,20 +14,6 @@ import { itemModule } from "./modules/item/item.module";
 import { npcModule } from "./modules/npc/npc.module";
 import { encounterModule } from "./modules/encounter/encounter.module";
 import { InquiryArchivistModule } from "./modules/inquiry/inquiry.module";
-
-// Per-entity parsers + renderers kept for the column-toggle re-render path
-// and the Reading-mode compendium-ref post-processor (both need direct access
-// to renderer outputs; the ArchivistModule.render method appends into an
-// element rather than returning the rendered node, so the column-toggle path
-// which must swap the rendered node in place uses these directly).
-// TODO(phase0-task13): flow these through the module API so main.ts doesn't
-// need per-type imports.
-import { parseMonster } from "./modules/monster/monster.parser";
-import { parseSpell } from "./modules/spell/spell.parser";
-import { parseItem } from "./modules/item/item.parser";
-import { renderMonsterBlock } from "./modules/monster/monster.renderer";
-import { renderSpellBlock } from "./modules/spell/spell.renderer";
-import { renderItemBlock } from "./modules/item/item.renderer";
 
 import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
@@ -44,9 +30,12 @@ import {
   compendiumRefPlugin,
   setCompendiumRefRegistry,
   setCompendiumRefPlugin,
+  setCompendiumRefModuleRegistry,
+  setCompendiumRefConfirmFn,
   parseCompendiumRef,
+  renderCompendiumRefReadingMode,
 } from "./shared/extensions/compendium-ref-extension";
-import * as yaml from "js-yaml";
+import { confirm as confirmModal } from "./modules/inquiry/shared/modals/ConfirmModal";
 
 // SRD & entities
 import { SrdStore } from "./shared/ai/srd-store";
@@ -69,32 +58,23 @@ import type { InquiryModule } from "./modules/inquiry/InquiryModule";
  * `getAllSdkTools()` to assemble the tool list for `createSdkMcpServer`.
  */
 function createAIToolRegistry(): Required<AIToolRegistry> {
-  const tools: AIToolDefinition[] = [];
+  const tools: import("./core/module-api").AIToolDefinition[] = [];
   const sdkTools: unknown[] = [];
   return {
-    register(toolDef: AIToolDefinition): void {
+    register(toolDef): void {
       tools.push(toolDef);
     },
-    registerSdkTool(sdkTool: unknown): void {
+    registerSdkTool(sdkTool): void {
       sdkTools.push(sdkTool);
     },
-    getAll(): AIToolDefinition[] {
+    getAll() {
       return tools.slice();
     },
-    getAllSdkTools(): unknown[] {
+    getAllSdkTools() {
       return sdkTools.slice();
     },
   };
 }
-
-type EntityBlockRenderer = (data: unknown, columns: number) => HTMLElement;
-
-/** Per-entity-type renderer lookup for the code-block processor. */
-const ENTITY_BLOCK_RENDERERS: Record<string, EntityBlockRenderer> = {
-  monster: (data, columns) => renderMonsterBlock(data as Parameters<typeof renderMonsterBlock>[0], columns),
-  spell: (data) => renderSpellBlock(data as Parameters<typeof renderSpellBlock>[0]),
-  item: (data) => renderItemBlock(data as Parameters<typeof renderItemBlock>[0]),
-};
 
 export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
@@ -122,9 +102,11 @@ export default class ArchivistPlugin extends Plugin {
     );
     setCompendiumRefRegistry(this.entityRegistry);
     setCompendiumRefPlugin(this);
+    setCompendiumRefConfirmFn((app, message, confirmLabel) => confirmModal(app, message, confirmLabel ?? "OK"));
 
     // Initialize module registry + AI-tool registry and assemble core API
     const moduleRegistry = new ModuleRegistry();
+    setCompendiumRefModuleRegistry(moduleRegistry);
     const aiToolRegistry = createAIToolRegistry();
     this.core = {
       plugin: this,
@@ -184,7 +166,10 @@ export default class ArchivistPlugin extends Plugin {
       });
     });
 
-    // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block)
+    // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block).
+    // Dispatches rendering through the module registry via
+    // renderCompendiumRefReadingMode so this post-processor has no per-entity-type
+    // knowledge.
     this.registerMarkdownPostProcessor((el) => {
       const doc = el.doc;
       const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -209,37 +194,16 @@ export default class ArchivistPlugin extends Plugin {
           const ref = parseCompendiumRef(match[0]);
           if (ref && this.entityRegistry) {
             const entity = this.entityRegistry.getBySlug(ref.slug);
-            const typeMatches = !ref.entityType || entity.entityType === ref.entityType;
+            const typeMatches = !ref.entityType || entity?.entityType === ref.entityType;
             if (entity && typeMatches) {
-              const yamlStr = yaml.dump(entity.data, { lineWidth: -1, noRefs: true, sortKeys: false });
               const wrapper = doc.createElement("div");
               wrapper.classList.add("archivist-compendium-ref");
-              let blockRendered: HTMLElement | null = null;
-              switch (entity.entityType) {
-                case "monster": {
-                  const r = parseMonster(yamlStr);
-                  if (r.success) blockRendered = renderMonsterBlock(r.data);
-                  break;
-                }
-                case "spell": {
-                  const r = parseSpell(yamlStr);
-                  if (r.success) blockRendered = renderSpellBlock(r.data);
-                  break;
-                }
-                case "item": {
-                  const r = parseItem(yamlStr);
-                  if (r.success) blockRendered = renderItemBlock(r.data);
-                  break;
-                }
+              const rendered = renderCompendiumRefReadingMode(wrapper, entity);
+              if (rendered) {
+                frag.appendChild(wrapper);
+              } else {
+                frag.appendChild(doc.createTextNode(match[0]));
               }
-              if (blockRendered) {
-                const badge = doc.createElement("div");
-                badge.classList.add("archivist-compendium-badge");
-                badge.textContent = entity.compendium;
-                blockRendered.prepend(badge);
-                wrapper.appendChild(blockRendered);
-              }
-              frag.appendChild(wrapper);
             } else {
               const errEl = doc.createElement("div");
               errEl.classList.add("archivist-ref-error");
@@ -382,14 +346,24 @@ export default class ArchivistPlugin extends Plugin {
   private registerEntityCodeBlock(mod: ArchivistModule): void {
     const codeBlockType = mod.codeBlockType;
     const entityType = mod.entityType;
-    if (!codeBlockType || !entityType || !mod.parseYaml) return;
+    if (!codeBlockType || !entityType || !mod.parseYaml || !mod.render) return;
 
-    const renderBlock = ENTITY_BLOCK_RENDERERS[codeBlockType];
-    if (!renderBlock) {
-      console.warn(`Archivist: no block renderer registered for "${codeBlockType}"`);
-      return;
-    }
-    const supportsColumns = codeBlockType === "monster";
+    const supportsColumns = mod.supportsColumns === true;
+
+    // Render via the module API. Returns the appended node so callers that
+    // must swap it (column-toggle) can do so cheaply.
+    const renderViaModule = (data: unknown, columns: number, doc: Document): HTMLElement | null => {
+      const scratch = doc.createElement("div");
+      const ctx: RenderContext = {
+        plugin: this,
+        ctx: null,
+        ...(supportsColumns ? { columns } : {}),
+      };
+      const appended = mod.render!(scratch, data, ctx);
+      const node = appended ?? (scratch.lastElementChild as HTMLElement | null);
+      if (node && node.parentElement === scratch) scratch.removeChild(node);
+      return node;
+    };
 
     this.registerMarkdownCodeBlockProcessor(codeBlockType, (source, el, ctx) => {
       const result = mod.parseYaml!(source);
@@ -399,13 +373,13 @@ export default class ArchivistPlugin extends Plugin {
       }
 
       let isEditMode = false;
-      // `columns` only meaningful for monsters; for spell/item we keep it at 1.
+      // `columns` only meaningful for modules that opt in; others pin to 1.
       const initialColumns = supportsColumns
         ? ((result.data as { columns?: number }).columns ?? 1)
         : 1;
       let columns = initialColumns;
-      let rendered = renderBlock(result.data, columns);
-      el.appendChild(rendered);
+      let rendered = renderViaModule(result.data, columns, el.doc);
+      if (rendered) el.appendChild(rendered);
 
       // Side buttons container
       const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
@@ -440,8 +414,8 @@ export default class ArchivistPlugin extends Plugin {
           if (child !== sideBtns) child.remove();
         });
         isEditMode = false;
-        rendered = renderBlock(result.data, columns);
-        el.insertBefore(rendered, sideBtns);
+        rendered = renderViaModule(result.data, columns, el.doc);
+        if (rendered) el.insertBefore(rendered, sideBtns);
         sideBtns.removeClass("always-visible");
         updateSideButtons();
       };
@@ -449,7 +423,7 @@ export default class ArchivistPlugin extends Plugin {
       const enterEditMode = () => {
         isEditMode = true;
         // Clear view mode content
-        rendered.remove();
+        rendered?.remove();
         sideBtns.addClass("always-visible");
         // Delegate to the module's edit-mode renderer. The modules read
         // `plugin` / `ctx` from the EditContext and invoke `onExit` when
@@ -513,9 +487,11 @@ export default class ArchivistPlugin extends Plugin {
           onColumnToggle: () => {
             if (!supportsColumns) return;
             columns = columns === 1 ? 2 : 1;
-            const newRendered = renderBlock(result.data, columns);
-            rendered.replaceWith(newRendered);
-            rendered = newRendered;
+            const newRendered = renderViaModule(result.data, columns, el.doc);
+            if (newRendered && rendered) {
+              rendered.replaceWith(newRendered);
+              rendered = newRendered;
+            }
             updateSideButtons();
           },
         });

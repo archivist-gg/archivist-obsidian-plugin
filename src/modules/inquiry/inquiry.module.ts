@@ -8,7 +8,7 @@ export class InquiryArchivistModule implements ArchivistModule {
   private inquiry: InquiryModule | null = null;
 
   register(core: CoreAPI): void {
-    // TODO(phase0-task13): narrow core.plugin typing (currently `unknown`).
+    // TODO(phase1): narrow core.plugin typing (currently `unknown`).
     // InquiryModule accepts any `Plugin` instance for Obsidian-API delegation;
     // the concrete host plugin shape is only consulted via soft optional fields
     // (see ArchivistHostPlugin inside InquiryModule.ts).

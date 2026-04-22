@@ -2,17 +2,16 @@ import type { App } from "obsidian";
 import { setIcon, Notice } from "obsidian";
 
 import type { EntityRegistry, RegisteredEntity } from "../../../../../shared/entities/entity-registry";
-// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+// TODO(phase1): replace the six cross-module parser/renderer imports below
+// with module-registry dispatch. Deferred because renderDndEntityBlock is
+// invoked deep in the inquiry chat UI (MessageRenderer / ToolCallRenderer)
+// which does not yet receive a ModuleRegistry handle; threading one through
+// without a broader inquiry-side refactor is outside Task 13 scope.
 import { parseMonster } from "../../../../monster/monster.parser";
-// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
 import { parseSpell } from "../../../../spell/spell.parser";
-// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
 import { parseItem } from "../../../../item/item.parser";
-// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
 import { renderMonsterBlock } from "../../../../monster/monster.renderer";
-// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
 import { renderSpellBlock } from "../../../../spell/spell.renderer";
-// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
 import { renderItemBlock } from "../../../../item/item.renderer";
 
 import { isDndCodeFence, parseDndCodeFence, type DndCodeFenceResult } from "./dndCodeFence";

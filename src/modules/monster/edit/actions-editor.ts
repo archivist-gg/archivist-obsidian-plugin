@@ -1,8 +1,11 @@
 import { setIcon } from "obsidian";
 import type { MonsterEditState } from "../monster.edit-state";
-// TODO(phase0-task13): plugin wiring still reaches into src/ at the top level
+// TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
+// modules don't reach across into src/main for the concrete class.
 import type ArchivistPlugin from "../../../main";
-// TODO(phase0-task13): inquiry still exports modals via its internal tree
+// TODO(phase1): promote ConfirmModal (and other generic dialogs) out of
+// inquiry/shared/modals into a top-level shared/modals tree so cross-module
+// reuse doesn't reach into a sibling module.
 import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
 import { ALL_SECTIONS } from "../../../shared/dnd/constants";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";

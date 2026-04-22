@@ -1,7 +1,8 @@
 import * as yaml from "js-yaml";
 import { Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
-// TODO(phase0-task13): plugin wiring still reaches into src/ at the top level
+// TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
+// modules don't reach across into src/main for the concrete class.
 import type ArchivistPlugin from "../../../main";
 import type { Monster } from "../monster.types";
 import { MonsterEditState } from "../monster.edit-state";

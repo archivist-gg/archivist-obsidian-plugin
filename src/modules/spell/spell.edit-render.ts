@@ -1,7 +1,8 @@
 import * as yaml from "js-yaml";
 import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
-// TODO(phase0-task13): replaced by module registry dispatch
+// TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
+// modules don't reach across into src/main for the concrete class.
 import type ArchivistPlugin from "../../main";
 import type { Spell } from "./spell.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
