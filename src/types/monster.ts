@@ -1,34 +1,10 @@
-export interface MonsterAbilities {
-  str: number;
-  dex: number;
-  con: number;
-  int: number;
-  wis: number;
-  cha: number;
-}
+import type { Abilities, AC, HP, Speed, Feature } from "../shared/types";
 
-export interface MonsterAC {
-  ac: number;
-  from?: string[];
-}
-
-export interface MonsterHP {
-  average: number;
-  formula?: string;
-}
-
-export interface MonsterSpeed {
-  walk?: number;
-  fly?: number;
-  swim?: number;
-  climb?: number;
-  burrow?: number;
-}
-
-export interface MonsterFeature {
-  name: string;
-  entries: string[];
-}
+export type MonsterAbilities = Abilities;
+export type MonsterAC = AC;
+export type MonsterHP = HP;
+export type MonsterSpeed = Speed;
+export type MonsterFeature = Feature;
 
 export interface Monster {
   name: string;
@@ -37,10 +13,10 @@ export interface Monster {
   subtype?: string;
   alignment?: string;
   cr?: string;
-  ac?: MonsterAC[];
-  hp?: MonsterHP;
-  speed?: MonsterSpeed;
-  abilities?: MonsterAbilities;
+  ac?: AC[];
+  hp?: HP;
+  speed?: Speed;
+  abilities?: Abilities;
   saves?: Partial<Record<string, number>>;
   skills?: Record<string, number>;
   senses?: string[];
@@ -50,10 +26,10 @@ export interface Monster {
   damage_resistances?: string[];
   damage_immunities?: string[];
   condition_immunities?: string[];
-  traits?: MonsterFeature[];
-  actions?: MonsterFeature[];
-  reactions?: MonsterFeature[];
-  legendary?: MonsterFeature[];
+  traits?: Feature[];
+  actions?: Feature[];
+  reactions?: Feature[];
+  legendary?: Feature[];
   legendary_actions?: number;
   legendary_resistance?: number;
   columns?: number;
