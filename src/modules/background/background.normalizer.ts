@@ -57,10 +57,12 @@ function parseToolProfs(desc: string | undefined): BackgroundToolProficiency[] {
 
 function parseLanguages(desc: string | undefined): BackgroundLanguageProficiency[] {
   if (!desc) return [];
-  const countMatch = /(\w+)\s+(?:language|languages)/i.exec(desc);
   const wordToNum: Record<string, number> = { one: 1, two: 2, three: 3 };
-  const n = countMatch ? wordToNum[countMatch[1].toLowerCase()] ?? Number(countMatch[1]) : 1;
-  return [{ kind: "choice", count: n, from: "any" }];
+  const withLang = /(\w+)\s+(?:language|languages)/i.exec(desc);
+  const bareCount = /^\s*(\w+)\b/.exec(desc);
+  const tok = (withLang ?? bareCount)?.[1]?.toLowerCase();
+  const n = tok ? (wordToNum[tok] ?? Number(tok)) : NaN;
+  return [{ kind: "choice", count: Number.isFinite(n) && n > 0 ? n : 1, from: "any" }];
 }
 
 function parseEquipment(desc: string | undefined): BackgroundEquipmentEntry[] {
@@ -99,7 +101,7 @@ export function normalizeSrdBackground(
     language_proficiencies: parseLanguages(langDesc),
     equipment: parseEquipment(equipDesc),
     feature: {
-      name: featureEntry?.name ?? "Background Feature",
+      name: (featureEntry?.name ?? "Background Feature").replace(/^\s*feature:\s*/i, "").trim() || "Background Feature",
       description: featureEntry?.desc ?? "",
     },
     ability_score_increases: null,

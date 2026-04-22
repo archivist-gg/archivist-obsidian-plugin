@@ -21,7 +21,8 @@ describe("normalizeSrdBackground", () => {
     expect(out.frontmatter.entity_type).toBe("background");
     expect(out.data.skill_proficiencies).toContain("insight");
     expect(out.data.skill_proficiencies).toContain("religion");
-    expect(out.data.feature.name.toLowerCase()).toContain("shelter");
+    expect(out.data.language_proficiencies[0]).toMatchObject({ kind: "choice", count: 2, from: "any" });
+    expect(out.data.feature.name).toBe("Shelter of the Faithful");
     expect(out.data.equipment.some((e) => "kind" in e && e.kind === "currency")).toBe(true);
   });
 
