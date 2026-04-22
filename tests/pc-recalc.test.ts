@@ -10,6 +10,7 @@ import {
   computeAbilityScores,
 } from "../src/modules/pc/pc.recalc";
 import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
+import type { RaceEntity } from "../src/modules/race/race.types";
 
 describe("parseDieSize", () => {
   it("parses d-prefixed string", () => expect(parseDieSize("d8")).toBe(8));
@@ -116,7 +117,13 @@ describe("computeAbilityScores", () => {
   it("base + racial ASI sums", () => {
     const r = emptyResolved();
     r.definition.abilities = { str: 10, dex: 14, con: 12, int: 10, wis: 12, cha: 8 };
-    (r as { race: unknown }).race = { slug: "hill-folk", ability_bonuses: { con: 2, wis: 1 } };
+    (r as { race: unknown }).race = {
+      slug: "hill-folk",
+      ability_score_increases: [
+        { ability: "con", amount: 2 },
+        { ability: "wis", amount: 1 },
+      ],
+    };
     const out = computeAbilityScores(r, {});
     expect(out.con).toBe(14);
     expect(out.wis).toBe(13);
@@ -125,7 +132,10 @@ describe("computeAbilityScores", () => {
   it("overrides win over racial ASI", () => {
     const r = emptyResolved();
     r.definition.abilities = { str: 10, dex: 14, con: 12, int: 10, wis: 12, cha: 8 };
-    (r as { race: unknown }).race = { slug: "hill-folk", ability_bonuses: { con: 2 } };
+    (r as { race: unknown }).race = {
+      slug: "hill-folk",
+      ability_score_increases: [{ ability: "con", amount: 2 }],
+    };
     const out = computeAbilityScores(r, { scores: { con: 20 } });
     expect(out.con).toBe(20);
   });
@@ -135,6 +145,33 @@ describe("computeAbilityScores", () => {
     const out = computeAbilityScores(r, {});
     expect(out.dex).toBe(10);
     expect(out.str).toBe(14);
+  });
+  it("race with ability_score_increases contributes to ability scores", () => {
+    const r = emptyResolved();
+    r.definition.abilities = { str: 10, dex: 12, con: 12, int: 10, wis: 10, cha: 10 };
+    (r as { race: RaceEntity }).race = {
+      slug: "hill-folk",
+      name: "Hill Folk",
+      edition: "2014",
+      source: "Test",
+      description: "",
+      size: "medium",
+      speed: { walk: 25 },
+      ability_score_increases: [
+        { ability: "con", amount: 2 },
+        { ability: "wis", amount: 1 },
+      ],
+      age: "",
+      alignment: "",
+      vision: {},
+      languages: { fixed: [] },
+      variant_label: "",
+      variants: [],
+      traits: [],
+    };
+    const out = computeAbilityScores(r, {});
+    expect(out.con).toBe(14);
+    expect(out.wis).toBe(11);
   });
 });
 

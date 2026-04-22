@@ -12,6 +12,7 @@ import { ABILITY_KEYS, SKILL_ABILITY, ALL_SKILLS } from "../../shared/dnd/consta
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { ClassEntity } from "../class/class.types";
 import type { FeatEntity } from "../feat/feat.types";
+import type { RaceEntity } from "../race/race.types";
 import type {
   DerivedStats,
   ResolvedCharacter,
@@ -40,6 +41,37 @@ export function parseDieSize(die: string | number | undefined | null): number | 
   if (typeof die === "number") return die;
   const m = die.match(/^d?(\d+)$/i);
   return m ? parseInt(m[1], 10) : null;
+}
+
+/**
+ * ALL_SKILLS entries are Title Case ("Animal Handling"); DerivedStats.skills
+ * keys are kebab-case SkillSlug ("animal-handling"); shared SKILL_ABILITY keys
+ * are space-lowercase ("animal handling"). These two helpers bridge the gap.
+ */
+function skillSlugFromDisplay(display: string): SkillSlug {
+  return display.toLowerCase().replace(/\s+/g, "-") as SkillSlug;
+}
+
+function skillSlugToAbilityLookup(slug: SkillSlug): string {
+  return slug.replace(/-/g, " ");
+}
+
+/**
+ * Flattens RaceEntity.ability_score_increases into a partial ability→bonus map.
+ * Fixed increases contribute their amount directly. Choice increases are ignored
+ * here — they're expected to come through class.choices with a specific ability
+ * selected, which computeAbilityScores handles separately.
+ */
+export function flattenRaceAsi(race: RaceEntity | null): Partial<Record<Ability, number>> {
+  const out: Partial<Record<Ability, number>> = {};
+  if (!race?.ability_score_increases) return out;
+  for (const asi of race.ability_score_increases) {
+    if ("ability" in asi) {
+      out[asi.ability] = (out[asi.ability] ?? 0) + asi.amount;
+    }
+    // Choice increases are resolved through class.choices; skip here.
+  }
+  return out;
 }
 
 /**
@@ -138,9 +170,9 @@ export function spellcastingForFirstCastingClass(classes: ResolvedClass[]): {
 }
 
 /**
- * Combines racial ASI (from race.ability_bonuses), feat ASI, class-choice ASI
- * (from classes[i].choices[lvl].asi), and user overrides. Overrides win; ASI
- * sources sum unconditionally.
+ * Combines racial ASI (from race.ability_score_increases), feat ASI,
+ * class-choice ASI (from classes[i].choices[lvl].asi), and user overrides.
+ * Overrides win; ASI sources sum unconditionally.
  */
 export function computeAbilityScores(
   resolved: ResolvedCharacter,
@@ -148,12 +180,10 @@ export function computeAbilityScores(
 ): Record<Ability, number> {
   const out = { ...resolved.definition.abilities };
 
-  const race = resolved.race as unknown as { ability_bonuses?: Partial<Record<Ability, number>> } | null;
-  if (race?.ability_bonuses) {
-    for (const ab of ABILITY_KEYS) {
-      const b = race.ability_bonuses[ab];
-      if (typeof b === "number") out[ab] = (out[ab] ?? 0) + b;
-    }
+  const raceBonuses = flattenRaceAsi(resolved.race);
+  for (const ab of ABILITY_KEYS) {
+    const b = raceBonuses[ab];
+    if (typeof b === "number") out[ab] = (out[ab] ?? 0) + b;
   }
 
   for (const c of resolved.classes) {
@@ -228,9 +258,8 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   const expSet = new Set(resolved.definition.skills.expertise);
   const skills: DerivedStats["skills"] = {} as never;
   for (const skill of ALL_SKILLS) {
-    const skillKey = skill.toLowerCase().replace(/\s+/g, "-") as SkillSlug;
-    const abilityLookupKey = skillKey.replace(/-/g, " ");
-    const ab = SKILL_ABILITY[abilityLookupKey] as Ability;
+    const skillKey = skillSlugFromDisplay(skill);
+    const ab = SKILL_ABILITY[skillSlugToAbilityLookup(skillKey)] as Ability;
     const override = overrides.skills?.[skillKey];
     const tri: ProficiencyTri = override?.proficiency
       ?? (expSet.has(skillKey) ? "expertise"
@@ -245,9 +274,9 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   }
 
   // Passives
-  const perceptionTri = (skills as Record<string, { proficiency: ProficiencyTri }>).perception.proficiency;
-  const investigationTri = (skills as Record<string, { proficiency: ProficiencyTri }>).investigation.proficiency;
-  const insightTri = (skills as Record<string, { proficiency: ProficiencyTri }>).insight.proficiency;
+  const perceptionTri = skills.perception.proficiency;
+  const investigationTri = skills.investigation.proficiency;
+  const insightTri = skills.insight.proficiency;
   const passives = {
     perception: overrides.passives?.perception ?? passivePerception(scores.wis, perceptionTri, proficiencyBonus),
     investigation: overrides.passives?.investigation ?? passive(scores.int, investigationTri, proficiencyBonus),
