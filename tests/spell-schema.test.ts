@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { spellInputSchema } from "../src/ai/schemas/spell-schema";
+import { spellInputSchema } from "../src/modules/spell/spell.ai-schema";
 
 describe("spellInputSchema", () => {
   it("validates a valid spell", () => {

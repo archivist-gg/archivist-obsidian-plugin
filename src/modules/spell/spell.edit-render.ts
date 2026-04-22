@@ -1,12 +1,13 @@
 import * as yaml from "js-yaml";
 import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
-import type ArchivistPlugin from "../main";
-import type { Spell } from "../types/spell";
-import { renderSideButtons } from "../shared/edit/side-buttons";
-import { createSvgBar } from "../shared/rendering/renderer-utils";
-import { SaveAsNewModal, CreateCompendiumModal } from "../shared/entities/compendium-modal";
-import { showCompendiumPicker } from "../shared/edit/compendium-picker";
+// TODO(phase0-task13): replaced by module registry dispatch
+import type ArchivistPlugin from "../../main";
+import type { Spell } from "./spell.types";
+import { renderSideButtons } from "../../shared/edit/side-buttons";
+import { createSvgBar } from "../../shared/rendering/renderer-utils";
+import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";
+import { showCompendiumPicker } from "../../shared/edit/compendium-picker";
 
 // ---------------------------------------------------------------------------
 // Constants

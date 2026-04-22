@@ -1,9 +1,8 @@
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
-// TODO(phase0-task9,10): generation-tools still bundles spell/item/encounter/npc
-// until the spell/item modules land. This cross-tree import closes then.
+// TODO(phase0-task10): generation-tools still bundles item/encounter/npc
+// until the item module lands. This cross-tree import closes then.
 import {
-  generateSpellTool,
   generateItemTool,
   generateEncounterTool,
   generateNpcTool,
@@ -11,6 +10,9 @@ import {
 // TODO(phase0-task13): module registry will expose tools via the ArchivistModule
 // interface; importing the monster tool directly is a transient shortcut.
 import { generateMonsterTool } from "../../modules/monster/monster.ai-tools";
+// TODO(phase0-task13): module registry will expose tools via the ArchivistModule
+// interface; importing the spell tool directly is a transient shortcut.
+import { generateSpellTool } from "../../modules/spell/spell.ai-tools";
 import { createSrdTools } from "./srd-tools";
 import type { SrdStore } from "./srd-store";
 import type { CompendiumManager } from "../entities/compendium-manager";

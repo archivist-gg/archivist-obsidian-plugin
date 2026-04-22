@@ -1,5 +1,5 @@
-import { Spell } from "../types/spell";
-import { ParseResult, parseYaml, toStringSafe } from "../shared/parsers/yaml-utils";
+import { Spell } from "./spell.types";
+import { ParseResult, parseYaml, toStringSafe } from "../../shared/parsers/yaml-utils";
 
 export function parseSpell(source: string): ParseResult<Spell> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);

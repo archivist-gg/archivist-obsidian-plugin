@@ -2,13 +2,13 @@ import { Plugin, Notice, setIcon } from "obsidian";
 
 // D&D parsers
 import { parseMonster } from "./modules/monster/monster.parser";
-import { parseSpell } from "./parsers/spell-parser";
+import { parseSpell } from "./modules/spell/spell.parser";
 import { parseItem } from "./parsers/item-parser";
 import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 
 // D&D renderers
 import { renderMonsterBlock } from "./modules/monster/monster.renderer";
-import { renderSpellBlock } from "./renderers/spell-renderer";
+import { renderSpellBlock } from "./modules/spell/spell.renderer";
 import { renderItemBlock } from "./renderers/item-renderer";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
 import { createErrorBlock } from "./shared/rendering/renderer-utils";
@@ -16,12 +16,12 @@ import { createErrorBlock } from "./shared/rendering/renderer-utils";
 // Edit mode
 import { renderSideButtons } from "./shared/edit/side-buttons";
 import { renderMonsterEditMode } from "./modules/monster/edit/monster-edit-render";
-import { renderSpellEditMode } from "./edit/spell-edit-render";
+import { renderSpellEditMode } from "./modules/spell/spell.edit-render";
 import { renderItemEditMode } from "./edit/item-edit-render";
 
 // D&D modals
 import { MonsterModal } from "./modules/monster/monster.modal";
-import { SpellModal } from "./modals/spell-modal";
+import { SpellModal } from "./modules/spell/spell.modal";
 import { ItemModal } from "./modals/item-modal";
 
 // D&D editor extension

@@ -1,10 +1,10 @@
 import { setIcon } from "obsidian";
-import { Spell } from "../types/spell";
+import { Spell } from "./spell.types";
 import {
   el,
   createIconProperty,
   renderTextWithInlineTags,
-} from "../shared/rendering/renderer-utils";
+} from "../../shared/rendering/renderer-utils";
 
 function getSpellHeader(spell: Spell): string {
   const level = spell.level ?? 0;

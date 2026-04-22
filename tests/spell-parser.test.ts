@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseSpell } from "../src/parsers/spell-parser";
+import { parseSpell } from "../src/modules/spell/spell.parser";
 
 describe("parseSpell", () => {
   it("parses a minimal spell (name only)", () => {
