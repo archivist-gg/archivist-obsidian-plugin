@@ -1,34 +1,51 @@
-import { Plugin, Notice, setIcon } from "obsidian";
+import { Plugin, Notice, setIcon, type MarkdownPostProcessorContext } from "obsidian";
 
-// D&D parsers
+// Module-based registration
+import type {
+  AIToolDefinition,
+  AIToolRegistry,
+  ArchivistModule,
+  CoreAPI,
+} from "./core/module-api";
+import { ModuleRegistry } from "./core/module-registry";
+import { monsterModule } from "./modules/monster/monster.module";
+import { spellModule } from "./modules/spell/spell.module";
+import { itemModule } from "./modules/item/item.module";
+import { npcModule } from "./modules/npc/npc.module";
+import { encounterModule } from "./modules/encounter/encounter.module";
+import { InquiryArchivistModule } from "./modules/inquiry/inquiry.module";
+
+// Per-entity parsers + renderers kept for the column-toggle re-render path
+// and the Reading-mode compendium-ref post-processor (both need direct access
+// to renderer outputs; the ArchivistModule.render method appends into an
+// element rather than returning the rendered node, so the column-toggle path
+// which must swap the rendered node in place uses these directly).
+// TODO(phase0-task13): flow these through the module API so main.ts doesn't
+// need per-type imports.
 import { parseMonster } from "./modules/monster/monster.parser";
 import { parseSpell } from "./modules/spell/spell.parser";
 import { parseItem } from "./modules/item/item.parser";
-import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
-
-// D&D renderers
 import { renderMonsterBlock } from "./modules/monster/monster.renderer";
 import { renderSpellBlock } from "./modules/spell/spell.renderer";
 import { renderItemBlock } from "./modules/item/item.renderer";
+
+import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
 import { createErrorBlock } from "./shared/rendering/renderer-utils";
 
-// Edit mode
+// Edit mode scaffolding (shared across entity modules)
 import { renderSideButtons } from "./shared/edit/side-buttons";
-import { renderMonsterEditMode } from "./modules/monster/edit/monster-edit-render";
-import { renderSpellEditMode } from "./modules/spell/spell.edit-render";
-import { renderItemEditMode } from "./modules/item/item.edit-render";
 
-// D&D modals
-import { MonsterModal } from "./modules/monster/monster.modal";
-import { SpellModal } from "./modules/spell/spell.modal";
-import { ItemModal } from "./modules/item/item.modal";
-
-// D&D editor extension
+// Shared CodeMirror extensions
 import { inlineTagPlugin } from "./shared/extensions/inline-tag-extension";
 import { dndBlockDeleteKeymap } from "./shared/extensions/dnd-block-delete-extension";
 import { CompendiumEditorSuggest } from "./shared/extensions/compendium-suggest";
-import { compendiumRefPlugin, setCompendiumRefRegistry, setCompendiumRefPlugin, parseCompendiumRef } from "./shared/extensions/compendium-ref-extension";
+import {
+  compendiumRefPlugin,
+  setCompendiumRefRegistry,
+  setCompendiumRefPlugin,
+  parseCompendiumRef,
+} from "./shared/extensions/compendium-ref-extension";
 import * as yaml from "js-yaml";
 
 // SRD & entities
@@ -42,8 +59,38 @@ import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/
 import type { ArchivistSettings } from "./core/plugin-settings";
 import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 
-// Inquiry (Claudian chat engine)
-import { InquiryModule } from "./modules/inquiry/InquiryModule";
+// Inquiry (Claudian chat engine) — type only; instance is created by the
+// InquiryArchivistModule wrapper during its register() call.
+import type { InquiryModule } from "./modules/inquiry/InquiryModule";
+
+/**
+ * Simple in-memory AI tool registry. Modules push their tool definitions into
+ * this during `register()`; downstream consumers (e.g. the MCP server wiring)
+ * will migrate to reading from here in a follow-up task.
+ *
+ * TODO(phase0-task13): wire `createArchivistMcpServer` to consume the tools
+ * collected here instead of importing each module's tool directly.
+ */
+function createAIToolRegistry(): AIToolRegistry & { getAll(): AIToolDefinition[] } {
+  const tools: AIToolDefinition[] = [];
+  return {
+    register(toolDef: AIToolDefinition): void {
+      tools.push(toolDef);
+    },
+    getAll(): AIToolDefinition[] {
+      return tools.slice();
+    },
+  };
+}
+
+type EntityBlockRenderer = (data: unknown, columns: number) => HTMLElement;
+
+/** Per-entity-type renderer lookup for the code-block processor. */
+const ENTITY_BLOCK_RENDERERS: Record<string, EntityBlockRenderer> = {
+  monster: (data, columns) => renderMonsterBlock(data as Parameters<typeof renderMonsterBlock>[0], columns),
+  spell: (data) => renderSpellBlock(data as Parameters<typeof renderSpellBlock>[0]),
+  item: (data) => renderItemBlock(data as Parameters<typeof renderItemBlock>[0]),
+};
 
 export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
@@ -51,6 +98,8 @@ export default class ArchivistPlugin extends Plugin {
   compendiumManager: CompendiumManager | null = null;
   inquiry: InquiryModule | null = null;
   private srdStore: SrdStore | null = null;
+  private moduleList: ArchivistModule[] = [];
+  private core: CoreAPI | null = null;
 
   async onload() {
     await this.loadSettings();
@@ -70,332 +119,54 @@ export default class ArchivistPlugin extends Plugin {
     setCompendiumRefRegistry(this.entityRegistry);
     setCompendiumRefPlugin(this);
 
-    // Initialize InquiryModule (Claudian chat engine)
-    this.inquiry = new InquiryModule(this, this.app, this.entityRegistry, this.srdStore);
-    await this.inquiry.init();
+    // Initialize module registry + AI-tool registry and assemble core API
+    const moduleRegistry = new ModuleRegistry();
+    const aiToolRegistry = createAIToolRegistry();
+    this.core = {
+      plugin: this,
+      modules: moduleRegistry,
+      entities: this.entityRegistry,
+      compendiums: this.compendiumManager,
+      srd: this.srdStore,
+      aiTools: aiToolRegistry,
+    };
 
-    // D&D code block processors
-    this.registerMarkdownCodeBlockProcessor("monster", (source, el, ctx) => {
-      const result = parseMonster(source);
-      if (!result.success) {
-        el.appendChild(createErrorBlock(result.error, source));
-        return;
+    // Instantiate and register modules. `InquiryArchivistModule` owns the
+    // Claudian chat engine; other modules are shared singletons.
+    const inquiryArchivistModule = new InquiryArchivistModule();
+    this.moduleList = [
+      monsterModule,
+      spellModule,
+      itemModule,
+      npcModule,
+      encounterModule,
+      inquiryArchivistModule,
+    ];
+
+    for (const mod of this.moduleList) {
+      moduleRegistry.register(mod);
+      mod.register(this.core);
+      if (mod.registerAITools) {
+        mod.registerAITools(aiToolRegistry);
       }
+    }
 
-      let isEditMode = false;
-      let columns = result.data.columns ?? 1;
-      let rendered = renderMonsterBlock(result.data, columns);
-      el.appendChild(rendered);
+    // Inquiry is instantiated inside InquiryArchivistModule.register(); hoist
+    // it onto the plugin so legacy callers that still read `plugin.inquiry`
+    // keep working, then drive its async init here.
+    this.inquiry = inquiryArchivistModule.getInquiry();
+    if (this.inquiry) {
+      await this.inquiry.init();
+    }
 
-      // Side buttons container
-      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
-
-      const deleteBlock = () => {
-        const info = ctx.getSectionInfo(el);
-        if (!info) return;
-        const editor = this.app.workspace.activeEditor?.editor;
-        if (!editor) return;
-        const fromLine = info.lineStart;
-        const toLine = info.lineEnd;
-        const totalLines = editor.lineCount();
-        if (toLine + 1 < totalLines) {
-          editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
-          editor.setCursor({ line: fromLine, ch: 0 });
-        } else {
-          const endCh = editor.getLine(toLine).length;
-          if (fromLine > 0) {
-            const prevLineLen = editor.getLine(fromLine - 1).length;
-            editor.replaceRange('', { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
-            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
-          } else {
-            editor.replaceRange('', { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-            editor.setCursor({ line: 0, ch: 0 });
-          }
-        }
-      };
-
-      const exitEditMode = () => {
-        // Remove all children except sideBtns, then restore view mode
-        Array.from(el.children).forEach((child) => {
-          if (child !== sideBtns) child.remove();
-        });
-        isEditMode = false;
-        rendered = renderMonsterBlock(result.data, columns);
-        el.insertBefore(rendered, sideBtns);
-        sideBtns.removeClass("always-visible");
-        updateSideButtons();
-      };
-
-      const updateSideButtons = () => {
-        renderSideButtons(sideBtns, {
-          state: isEditMode ? "editing" : "default",
-          isColumnActive: columns === 2,
-          onEdit: () => {
-            if (isEditMode) {
-              exitEditMode();
-            } else {
-              isEditMode = true;
-              // Clear view mode content
-              rendered.remove();
-              sideBtns.addClass("always-visible");
-              // Render edit mode
-              renderMonsterEditMode(result.data, el, ctx, this, exitEditMode);
-            }
-          },
-          onSave: () => {}, // handled by edit mode internally
-          onSaveAsNew: () => {},
-          onCompendium: () => {
-            if (!this.compendiumManager) return;
-            const writable = this.compendiumManager.getWritable();
-            const saveToComp = async (comp: { name: string }) => {
-              try {
-                const registered = await this.compendiumManager!.saveEntity(
-                  comp.name, "monster", result.data as unknown as Record<string, unknown>,
-                );
-                const sectionInfo = ctx.getSectionInfo(el);
-                if (sectionInfo) {
-                  const editor = this.app.workspace.activeEditor?.editor;
-                  if (editor) {
-                    const from = { line: sectionInfo.lineStart, ch: 0 };
-                    const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
-                    editor.replaceRange(`{{monster:${registered.slug}}}`, from, to);
-                  }
-                }
-                new Notice(`Saved to ${comp.name}`);
-              } catch (e: unknown) {
-                new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
-              }
-            };
-            const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
-            if (writable.length === 0) {
-              new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
-            } else {
-              new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
-            }
-          },
-          onCancel: () => exitEditMode(),
-          onDelete: deleteBlock,
-          onColumnToggle: () => {
-            columns = columns === 1 ? 2 : 1;
-            const newRendered = renderMonsterBlock(result.data, columns);
-            rendered.replaceWith(newRendered);
-            rendered = newRendered;
-            updateSideButtons();
-          },
-        });
-      };
-      updateSideButtons();
-    });
-    this.registerMarkdownCodeBlockProcessor("spell", (source, el, ctx) => {
-      const result = parseSpell(source);
-      if (!result.success) {
-        el.appendChild(createErrorBlock(result.error, source));
-        return;
+    // Register a markdown code-block processor for each module that declares
+    // a `codeBlockType`. The shared helper handles view/edit toggling, side
+    // buttons, compendium save, and (for monster) the column toggle.
+    for (const mod of this.moduleList) {
+      if (mod.codeBlockType && mod.parseYaml) {
+        this.registerEntityCodeBlock(mod);
       }
-
-      let isEditMode = false;
-      let rendered = renderSpellBlock(result.data);
-      el.appendChild(rendered);
-
-      // Side buttons container
-      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
-
-      const deleteBlock = () => {
-        const info = ctx.getSectionInfo(el);
-        if (!info) return;
-        const editor = this.app.workspace.activeEditor?.editor;
-        if (!editor) return;
-        const fromLine = info.lineStart;
-        const toLine = info.lineEnd;
-        const totalLines = editor.lineCount();
-        if (toLine + 1 < totalLines) {
-          editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
-          editor.setCursor({ line: fromLine, ch: 0 });
-        } else {
-          const endCh = editor.getLine(toLine).length;
-          if (fromLine > 0) {
-            const prevLineLen = editor.getLine(fromLine - 1).length;
-            editor.replaceRange("", { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
-            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
-          } else {
-            editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-            editor.setCursor({ line: 0, ch: 0 });
-          }
-        }
-      };
-
-      const exitEditMode = () => {
-        // Remove all children except sideBtns, then restore view mode
-        Array.from(el.children).forEach((child) => {
-          if (child !== sideBtns) child.remove();
-        });
-        isEditMode = false;
-        rendered = renderSpellBlock(result.data);
-        el.insertBefore(rendered, sideBtns);
-        sideBtns.removeClass("always-visible");
-        updateSideButtons();
-      };
-
-      const updateSideButtons = () => {
-        renderSideButtons(sideBtns, {
-          state: isEditMode ? "editing" : "default",
-          isColumnActive: false,
-          showColumnToggle: false,
-          onEdit: () => {
-            if (isEditMode) {
-              exitEditMode();
-            } else {
-              isEditMode = true;
-              // Clear view mode content
-              rendered.remove();
-              sideBtns.addClass("always-visible");
-              // Render edit mode
-              renderSpellEditMode(result.data, el, ctx, this, exitEditMode);
-            }
-          },
-          onSave: () => {}, // handled by edit mode internally
-          onSaveAsNew: () => {},
-          onCompendium: () => {
-            if (!this.compendiumManager) return;
-            const writable = this.compendiumManager.getWritable();
-            const saveToComp = async (comp: { name: string }) => {
-              try {
-                const registered = await this.compendiumManager!.saveEntity(
-                  comp.name, "spell", result.data as unknown as Record<string, unknown>,
-                );
-                const sectionInfo = ctx.getSectionInfo(el);
-                if (sectionInfo) {
-                  const editor = this.app.workspace.activeEditor?.editor;
-                  if (editor) {
-                    const from = { line: sectionInfo.lineStart, ch: 0 };
-                    const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
-                    editor.replaceRange(`{{spell:${registered.slug}}}`, from, to);
-                  }
-                }
-                new Notice(`Saved to ${comp.name}`);
-              } catch (e: unknown) {
-                new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
-              }
-            };
-            const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
-            if (writable.length === 0) {
-              new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
-            } else {
-              new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
-            }
-          },
-          onCancel: () => exitEditMode(),
-          onDelete: deleteBlock,
-          onColumnToggle: () => {},
-        });
-      };
-      updateSideButtons();
-    });
-    this.registerMarkdownCodeBlockProcessor("item", (source, el, ctx) => {
-      const result = parseItem(source);
-      if (!result.success) {
-        el.appendChild(createErrorBlock(result.error, source));
-        return;
-      }
-
-      let isEditMode = false;
-      let rendered = renderItemBlock(result.data);
-      el.appendChild(rendered);
-
-      // Side buttons container
-      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
-
-      const deleteBlock = () => {
-        const info = ctx.getSectionInfo(el);
-        if (!info) return;
-        const editor = this.app.workspace.activeEditor?.editor;
-        if (!editor) return;
-        const fromLine = info.lineStart;
-        const toLine = info.lineEnd;
-        const totalLines = editor.lineCount();
-        if (toLine + 1 < totalLines) {
-          editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
-          editor.setCursor({ line: fromLine, ch: 0 });
-        } else {
-          const endCh = editor.getLine(toLine).length;
-          if (fromLine > 0) {
-            const prevLineLen = editor.getLine(fromLine - 1).length;
-            editor.replaceRange("", { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
-            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
-          } else {
-            editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
-            editor.setCursor({ line: 0, ch: 0 });
-          }
-        }
-      };
-
-      const exitEditMode = () => {
-        // Remove all children except sideBtns, then restore view mode
-        Array.from(el.children).forEach((child) => {
-          if (child !== sideBtns) child.remove();
-        });
-        isEditMode = false;
-        rendered = renderItemBlock(result.data);
-        el.insertBefore(rendered, sideBtns);
-        sideBtns.removeClass("always-visible");
-        updateSideButtons();
-      };
-
-      const updateSideButtons = () => {
-        renderSideButtons(sideBtns, {
-          state: isEditMode ? "editing" : "default",
-          isColumnActive: false,
-          showColumnToggle: false,
-          onEdit: () => {
-            if (isEditMode) {
-              exitEditMode();
-            } else {
-              isEditMode = true;
-              // Clear view mode content
-              rendered.remove();
-              sideBtns.addClass("always-visible");
-              // Render edit mode
-              renderItemEditMode(result.data, el, ctx, this, exitEditMode);
-            }
-          },
-          onSave: () => {}, // handled by edit mode internally
-          onSaveAsNew: () => {},
-          onCompendium: () => {
-            if (!this.compendiumManager) return;
-            const writable = this.compendiumManager.getWritable();
-            const saveToComp = async (comp: { name: string }) => {
-              try {
-                const registered = await this.compendiumManager!.saveEntity(
-                  comp.name, "item", result.data as unknown as Record<string, unknown>,
-                );
-                const sectionInfo = ctx.getSectionInfo(el);
-                if (sectionInfo) {
-                  const editor = this.app.workspace.activeEditor?.editor;
-                  if (editor) {
-                    const from = { line: sectionInfo.lineStart, ch: 0 };
-                    const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
-                    editor.replaceRange(`{{item:${registered.slug}}}`, from, to);
-                  }
-                }
-                new Notice(`Saved to ${comp.name}`);
-              } catch (e: unknown) {
-                new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
-              }
-            };
-            const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
-            if (writable.length === 0) {
-              new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
-            } else {
-              new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
-            }
-          },
-          onCancel: () => exitEditMode(),
-          onDelete: deleteBlock,
-          onColumnToggle: () => {},
-        });
-      };
-      updateSideButtons();
-    });
+    }
 
     // Inline tag post-processor
     this.registerMarkdownPostProcessor((element) => {
@@ -500,28 +271,31 @@ export default class ArchivistPlugin extends Plugin {
     // Editor entity suggest ({{monster:, {{spell:, etc.)
     this.registerEditorSuggest(new CompendiumEditorSuggest(this.app, this.entityRegistry));
 
-    // D&D insert commands
-    this.addCommand({
-      id: "insert-monster",
-      name: "Insert monster block",
-      editorCallback: (editor) => {
-        new MonsterModal(this.app, editor).open();
-      },
-    });
-    this.addCommand({
-      id: "insert-spell",
-      name: "Insert spell block",
-      editorCallback: (editor) => {
-        new SpellModal(this.app, editor).open();
-      },
-    });
-    this.addCommand({
-      id: "insert-item",
-      name: "Insert magic item block",
-      editorCallback: (editor) => {
-        new ItemModal(this.app, editor).open();
-      },
-    });
+    // D&D insert commands — one per module that exposes an insert modal.
+    // Command names preserve the pre-refactor wording so existing hotkey
+    // bindings keep their human-readable label.
+    const INSERT_COMMAND_LABELS: Record<string, string> = {
+      monster: "Insert monster block",
+      spell: "Insert spell block",
+      item: "Insert magic item block",
+    };
+    for (const mod of this.moduleList) {
+      const ModalCtor = mod.getInsertModal?.();
+      if (!ModalCtor) continue;
+      const defaultLabel = `Insert ${mod.id} block`;
+      this.addCommand({
+        id: `insert-${mod.id}`,
+        name: INSERT_COMMAND_LABELS[mod.id] ?? defaultLabel,
+        editorCallback: (editor) => {
+          // ModalConstructor widens trailing args to `...unknown[]`; in
+          // practice every insert modal takes `(app, editor)`. The returned
+          // instance is typed as `unknown`, so narrow to the minimal shape
+          // needed to call `.open()`.
+          const modal = new ModalCtor(this.app, editor) as { open: () => void };
+          modal.open();
+        },
+      });
+    }
 
     // Settings tab is registered by InquiryModule (unified D&D + Inquiry settings)
 
@@ -532,8 +306,10 @@ export default class ArchivistPlugin extends Plugin {
     });
   }
 
-  onunload() {
-    void this.inquiry?.destroy();
+  async onunload() {
+    for (const mod of this.moduleList) {
+      await mod.destroy?.();
+    }
   }
 
   async loadSettings(): Promise<void> {
@@ -590,4 +366,157 @@ export default class ArchivistPlugin extends Plugin {
     this.registerEditorExtension(compendiumRefPlugin);
   }
 
+  /**
+   * Register a markdown code-block processor for an entity module.
+   *
+   * Handles the shared scaffolding all three entity modules (monster, spell,
+   * item) use today: initial view render, side buttons (edit/save/
+   * compendium/delete/column-toggle), edit-mode toggle, and save-to-
+   * compendium flow. Module-specific behavior (parser, renderer, edit-mode
+   * UI, whether the column toggle is shown) is supplied by the module.
+   */
+  private registerEntityCodeBlock(mod: ArchivistModule): void {
+    const codeBlockType = mod.codeBlockType;
+    const entityType = mod.entityType;
+    if (!codeBlockType || !entityType || !mod.parseYaml) return;
+
+    const renderBlock = ENTITY_BLOCK_RENDERERS[codeBlockType];
+    if (!renderBlock) {
+      console.warn(`Archivist: no block renderer registered for "${codeBlockType}"`);
+      return;
+    }
+    const supportsColumns = codeBlockType === "monster";
+
+    this.registerMarkdownCodeBlockProcessor(codeBlockType, (source, el, ctx) => {
+      const result = mod.parseYaml!(source);
+      if (!result.success) {
+        el.appendChild(createErrorBlock(result.error, source));
+        return;
+      }
+
+      let isEditMode = false;
+      // `columns` only meaningful for monsters; for spell/item we keep it at 1.
+      const initialColumns = supportsColumns
+        ? ((result.data as { columns?: number }).columns ?? 1)
+        : 1;
+      let columns = initialColumns;
+      let rendered = renderBlock(result.data, columns);
+      el.appendChild(rendered);
+
+      // Side buttons container
+      const sideBtns = el.createDiv({ cls: "archivist-side-btns" });
+
+      const deleteBlock = () => {
+        const info = ctx.getSectionInfo(el);
+        if (!info) return;
+        const editor = this.app.workspace.activeEditor?.editor;
+        if (!editor) return;
+        const fromLine = info.lineStart;
+        const toLine = info.lineEnd;
+        const totalLines = editor.lineCount();
+        if (toLine + 1 < totalLines) {
+          editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine + 1, ch: 0 });
+          editor.setCursor({ line: fromLine, ch: 0 });
+        } else {
+          const endCh = editor.getLine(toLine).length;
+          if (fromLine > 0) {
+            const prevLineLen = editor.getLine(fromLine - 1).length;
+            editor.replaceRange("", { line: fromLine - 1, ch: prevLineLen }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: fromLine - 1, ch: prevLineLen });
+          } else {
+            editor.replaceRange("", { line: fromLine, ch: 0 }, { line: toLine, ch: endCh });
+            editor.setCursor({ line: 0, ch: 0 });
+          }
+        }
+      };
+
+      const exitEditMode = () => {
+        // Remove all children except sideBtns, then restore view mode
+        Array.from(el.children).forEach((child) => {
+          if (child !== sideBtns) child.remove();
+        });
+        isEditMode = false;
+        rendered = renderBlock(result.data, columns);
+        el.insertBefore(rendered, sideBtns);
+        sideBtns.removeClass("always-visible");
+        updateSideButtons();
+      };
+
+      const enterEditMode = () => {
+        isEditMode = true;
+        // Clear view mode content
+        rendered.remove();
+        sideBtns.addClass("always-visible");
+        // Delegate to the module's edit-mode renderer. The modules read
+        // `plugin` / `ctx` from the EditContext and invoke `onExit` when
+        // they need to restore the view-mode render without a content
+        // change (e.g. cancel with no edits).
+        mod.renderEditMode?.(el, result.data, {
+          plugin: this,
+          ctx: ctx as MarkdownPostProcessorContext,
+          source,
+          onExit: exitEditMode,
+        });
+      };
+
+      const openCompendiumSave = () => {
+        if (!this.compendiumManager) return;
+        const writable = this.compendiumManager.getWritable();
+        const saveToComp = async (comp: { name: string }) => {
+          try {
+            const registered = await this.compendiumManager!.saveEntity(
+              comp.name, entityType, result.data as unknown as Record<string, unknown>,
+            );
+            const sectionInfo = ctx.getSectionInfo(el);
+            if (sectionInfo) {
+              const editor = this.app.workspace.activeEditor?.editor;
+              if (editor) {
+                const from = { line: sectionInfo.lineStart, ch: 0 };
+                const to = { line: sectionInfo.lineEnd, ch: editor.getLine(sectionInfo.lineEnd).length };
+                editor.replaceRange(`{{${entityType}:${registered.slug}}}`, from, to);
+              }
+            }
+            new Notice(`Saved to ${comp.name}`);
+          } catch (e: unknown) {
+            new Notice(`Failed to save: ${e instanceof Error ? e.message : String(e)}`);
+          }
+        };
+        const saveToCompVoid = (comp: { name: string }) => { void saveToComp(comp); };
+        if (writable.length === 0) {
+          new CreateCompendiumModal(this.app, this.compendiumManager, saveToCompVoid).open();
+        } else {
+          new CompendiumSelectModal(this.app, writable, saveToCompVoid, this.compendiumManager).open();
+        }
+      };
+
+      const updateSideButtons = () => {
+        renderSideButtons(sideBtns, {
+          state: isEditMode ? "editing" : "default",
+          isColumnActive: supportsColumns && columns === 2,
+          showColumnToggle: supportsColumns,
+          onEdit: () => {
+            if (isEditMode) {
+              exitEditMode();
+            } else {
+              enterEditMode();
+            }
+          },
+          onSave: () => {}, // handled by edit mode internally
+          onSaveAsNew: () => {},
+          onCompendium: openCompendiumSave,
+          onCancel: () => exitEditMode(),
+          onDelete: deleteBlock,
+          onColumnToggle: () => {
+            if (!supportsColumns) return;
+            columns = columns === 1 ? 2 : 1;
+            const newRendered = renderBlock(result.data, columns);
+            rendered.replaceWith(newRendered);
+            rendered = newRendered;
+            updateSideButtons();
+          },
+        });
+      };
+      updateSideButtons();
+    });
+  }
 }

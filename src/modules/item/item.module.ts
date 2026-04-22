@@ -60,7 +60,7 @@ class ItemModule implements ArchivistModule {
     // plugin accessor.
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderItemEditMode>[2];
-    renderItemEditMode(item, el, mdCtx, plugin);
+    renderItemEditMode(item, el, mdCtx, plugin, ctx.onExit);
   }
 
   registerAITools(registry: AIToolRegistry): void {

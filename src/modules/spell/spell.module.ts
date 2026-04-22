@@ -60,7 +60,7 @@ class SpellModule implements ArchivistModule {
     // plugin accessor.
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderSpellEditMode>[2];
-    renderSpellEditMode(spell, el, mdCtx, plugin);
+    renderSpellEditMode(spell, el, mdCtx, plugin, ctx.onExit);
   }
 
   registerAITools(registry: AIToolRegistry): void {

@@ -14,6 +14,10 @@ export interface RenderContext {
 
 export interface EditContext extends RenderContext {
   source: string;
+  /** Called by the module's edit-mode renderer to exit back to view mode
+   *  when no content change triggers Obsidian to re-render the block
+   *  (e.g. cancel with no edits, save with identical YAML). */
+  onExit?: () => void;
 }
 
 export interface AIToolDefinition {

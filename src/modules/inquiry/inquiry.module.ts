@@ -1,4 +1,4 @@
-// TODO(phase0-task12): CoreAPI.plugin typing will flow through once main.ts wires modules
+import type { Plugin } from "obsidian";
 import type { ArchivistModule, CoreAPI } from "../../core/module-api";
 import { InquiryModule } from "./InquiryModule";
 
@@ -7,9 +7,18 @@ export class InquiryArchivistModule implements ArchivistModule {
   // No entityType, no codeBlockType — inquiry has no entity/code block
   private inquiry: InquiryModule | null = null;
 
-  register(_core: CoreAPI): void {
-    // Task 12 will wire plugin/app/entities/srd properly.
-    // For now this method type-checks but isn't called.
+  register(core: CoreAPI): void {
+    // TODO(phase0-task13): narrow core.plugin typing (currently `unknown`).
+    // InquiryModule accepts any `Plugin` instance for Obsidian-API delegation;
+    // the concrete host plugin shape is only consulted via soft optional fields
+    // (see ArchivistHostPlugin inside InquiryModule.ts).
+    const plugin = core.plugin as Plugin;
+    this.inquiry = new InquiryModule(plugin, plugin.app, core.entities, core.srd);
+  }
+
+  /** Access the underlying InquiryModule instance (present after register()). */
+  getInquiry(): InquiryModule | null {
+    return this.inquiry;
   }
 
   async destroy(): Promise<void> {

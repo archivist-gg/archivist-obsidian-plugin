@@ -60,7 +60,7 @@ class MonsterModule implements ArchivistModule {
     // plugin accessor.
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderMonsterEditMode>[2];
-    renderMonsterEditMode(monster, el, mdCtx, plugin);
+    renderMonsterEditMode(monster, el, mdCtx, plugin, ctx.onExit);
   }
 
   registerAITools(registry: AIToolRegistry): void {
