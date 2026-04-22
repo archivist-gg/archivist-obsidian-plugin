@@ -122,8 +122,7 @@ export function collectResolvedFeatures(
     }
     if (c.subclass) {
       const sSlug = c.subclass.slug;
-      const sByLevel =
-        (c.subclass as unknown as { features_by_level?: Record<number, Feature[]> }).features_by_level ?? {};
+      const sByLevel = c.subclass.features_by_level ?? {};
       for (const [lvlStr, feats0] of Object.entries(sByLevel)) {
         const lvl = parseInt(lvlStr, 10);
         if (Number.isNaN(lvl) || lvl > c.level) continue;
@@ -135,14 +134,14 @@ export function collectResolvedFeatures(
   }
 
   if (race) {
-    const traits = (race as unknown as { traits?: Feature[] }).traits ?? [];
+    const traits = race.traits ?? [];
     for (const feat of traits) {
       out.push({ feature: feat, source: { kind: "race", slug: race.slug } });
     }
   }
 
   if (background) {
-    const bgFeature = (background as unknown as { feature?: Feature }).feature;
+    const bgFeature = background.feature;
     if (bgFeature) {
       out.push({ feature: bgFeature, source: { kind: "background", slug: background.slug } });
     }
@@ -153,8 +152,8 @@ export function collectResolvedFeatures(
     if (bundled.length > 0) {
       for (const f of bundled) out.push({ feature: f, source: { kind: "feat", slug: feat.slug } });
     } else {
-      const name = (feat as unknown as { name?: string }).name ?? feat.slug;
-      const description = (feat as unknown as { description?: string }).description ?? "";
+      const name = feat.name ?? feat.slug;
+      const description = feat.description ?? "";
       out.push({ feature: { name, description }, source: { kind: "feat", slug: feat.slug } });
     }
   }
