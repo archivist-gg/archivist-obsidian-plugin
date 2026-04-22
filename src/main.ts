@@ -14,6 +14,11 @@ import { itemModule } from "./modules/item/item.module";
 import { npcModule } from "./modules/npc/npc.module";
 import { encounterModule } from "./modules/encounter/encounter.module";
 import { InquiryArchivistModule } from "./modules/inquiry/inquiry.module";
+import { classModule } from "./modules/class/class.module";
+import { raceModule } from "./modules/race/race.module";
+import { subclassModule } from "./modules/subclass/subclass.module";
+import { backgroundModule } from "./modules/background/background.module";
+import { featModule } from "./modules/feat/feat.module";
 
 import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
@@ -131,6 +136,11 @@ export default class ArchivistPlugin extends Plugin {
       npcModule,
       encounterModule,
       inquiryArchivistModule,
+      classModule,
+      raceModule,
+      subclassModule,
+      backgroundModule,
+      featModule,
     ];
 
     for (const mod of this.moduleList) {
