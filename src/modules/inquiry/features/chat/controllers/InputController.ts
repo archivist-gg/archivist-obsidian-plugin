@@ -9,7 +9,7 @@ import { ResumeSessionDropdown } from '../../../shared/components/ResumeSessionD
 import { InstructionModal } from '../../../shared/modals/InstructionConfirmModal';
 import { appendBrowserContext, type BrowserSelectionContext } from '../../../utils/browser';
 import { appendCanvasContext, type CanvasSelectionContext } from '../../../utils/canvas';
-import { appendCurrentNote } from '../../../utils/context';
+import { appendContextFiles, appendCurrentNote } from '../../../utils/context';
 import { formatDurationMmSs } from '../../../utils/date';
 import { appendEditorContext, type EditorSelectionContext } from '../../../utils/editor';
 import { appendMarkdownSnippet } from '../../../utils/markdown';
@@ -106,6 +106,7 @@ export class InputController {
     browserContextOverride?: BrowserSelectionContext | null;
     canvasContextOverride?: CanvasSelectionContext | null;
     content?: string;
+    contextFilePathsOverride?: string[];
   }): Promise<void> {
     const {
       plugin,
@@ -154,11 +155,20 @@ export class InputController {
       const editorContext = selectionController.getContext();
       const browserContext = browserSelectionController?.getContext() ?? null;
       const canvasContext = canvasSelectionController.getContext();
+      const filePaths = serialized?.filePaths && serialized.filePaths.length > 0
+        ? [...serialized.filePaths]
+        : undefined;
       // Append to existing queued message if any
       if (state.queuedMessage) {
         state.queuedMessage.content += '\n\n' + content;
         if (images && images.length > 0) {
           state.queuedMessage.images = [...(state.queuedMessage.images || []), ...images];
+        }
+        if (filePaths) {
+          state.queuedMessage.filePaths = [
+            ...(state.queuedMessage.filePaths || []),
+            ...filePaths,
+          ];
         }
         state.queuedMessage.editorContext = editorContext;
         state.queuedMessage.browserContext = browserContext;
@@ -167,6 +177,7 @@ export class InputController {
         state.queuedMessage = {
           content,
           images,
+          filePaths,
           editorContext,
           browserContext,
           canvasContext,
@@ -233,12 +244,24 @@ export class InputController {
     let promptToSend = content;
     let currentNoteForMessage: string | undefined;
 
+    // File-chip paths from RichInput serialization (primary path) or queued-message
+    // replay (override). File chips are NOT in `content` text — they are carried
+    // separately via data-file-path and must be re-attached as <context_files> XML.
+    const contextFilePaths = options?.contextFilePathsOverride
+      ?? serialized?.filePaths
+      ?? [];
+
     // SDK built-in commands (e.g., /compact) must be sent bare — context XML breaks detection
     if (!isCompact) {
       // Append current note context if available
       if (shouldSendCurrentNote && currentNotePath) {
         promptToSend = appendCurrentNote(promptToSend, currentNotePath);
         currentNoteForMessage = currentNotePath;
+      }
+
+      // Append file-chip paths as <context_files> so agent can see referenced files
+      if (contextFilePaths.length > 0) {
+        promptToSend = appendContextFiles(promptToSend, contextFilePaths);
       }
 
       // Append editor context if available
@@ -538,7 +561,7 @@ export class InputController {
     const { state } = this.deps;
     if (!state.queuedMessage) return;
 
-    const { content, images, editorContext, browserContext, canvasContext } = state.queuedMessage;
+    const { content, images, filePaths, editorContext, browserContext, canvasContext } = state.queuedMessage;
     state.queuedMessage = null;
     this.updateQueueIndicator();
 
@@ -556,6 +579,9 @@ export class InputController {
           editorContextOverride: editorContext,
           browserContextOverride: browserContext ?? null,
           canvasContextOverride: canvasContext,
+          // File chips can't be re-materialized in the plain-text input box after
+          // setText(), so pass them through explicitly as <context_files>.
+          contextFilePathsOverride: filePaths,
         });
       },
       0

@@ -21,6 +21,11 @@ import type {
 export interface QueuedMessage {
   content: string;
   images?: ImageAttachment[];
+  /**
+   * File-chip paths carried separately from `content` so they can be re-attached
+   * as <context_files> XML when the queue is drained (see InputController).
+   */
+  filePaths?: string[];
   editorContext: EditorSelectionContext | null;
   browserContext?: BrowserSelectionContext | null;
   canvasContext: CanvasSelectionContext | null;
