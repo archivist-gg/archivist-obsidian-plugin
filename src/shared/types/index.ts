@@ -4,3 +4,4 @@ export type { AC } from "./ac";
 export type { HP } from "./hp";
 export type { Speed } from "./speed";
 export type { Feature } from "./feature";
+export type { Choice, Ability, SkillSlug, FeatCategory } from "./choice";
