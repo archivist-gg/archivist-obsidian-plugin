@@ -30,7 +30,7 @@ export class PluginSettingsManager {
 
     if (plugins.length === 0) {
       const emptyEl = this.containerEl.createDiv({ cls: 'claudian-plugin-empty' });
-      emptyEl.setText('No Claude plugins found.');
+      emptyEl.setText('No plugins found.');
       return;
     }
 
