@@ -339,7 +339,6 @@ export default class ArchivistPlugin extends Plugin {
           this.app.vault, this.srdStore, this.settings.compendiumRoot,
           (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
         );
-        await importSrdBundledMdToVault(this.app.vault, this.settings.compendiumRoot);
         n.setMessage(`SRD import complete: ${count} entities`);
         activeWindow.setTimeout(() => n.hide(), 3000);
         this.settings.srdImported = true;
@@ -349,6 +348,16 @@ export default class ArchivistPlugin extends Plugin {
         console.error("Archivist: SRD import failed", err);
         new Notice("SRD import failed, existing compendiums will still load.");
       }
+    }
+
+    // SRD MD bundle import — idempotent, runs every activation. Fills in
+    // classes/races/subclasses/backgrounds/feats on existing vaults that
+    // predate the bundled-MD pipeline without disturbing already-imported files.
+    try {
+      const created = await importSrdBundledMdToVault(this.app.vault, this.settings.compendiumRoot);
+      if (created > 0) new Notice(`Archivist: imported ${created} bundled SRD files`);
+    } catch (err) {
+      console.error("Archivist: bundled SRD MD import failed", err);
     }
 
     // Discover all compendiums and load entities
