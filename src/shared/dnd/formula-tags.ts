@@ -1,4 +1,4 @@
-import type { FormulaRef } from "../../parsers/inline-tag-parser";
+import type { FormulaRef } from "../rendering/inline-tag-parser";
 import type { Abilities } from "../types/abilities";
 import { abilityModifier, attackBonus, saveDC, formatModifier } from "./math";
 import { ABILITY_KEYS } from "./constants";

@@ -4,7 +4,7 @@ import {
   el,
   createIconProperty,
   renderTextWithInlineTags,
-} from "./renderer-utils";
+} from "../shared/rendering/renderer-utils";
 
 function getSpellHeader(spell: Spell): string {
   const level = spell.level ?? 0;

@@ -5,8 +5,8 @@ import {
   createSvgBar,
   createPropertyLine,
   renderTextWithInlineTags,
-  MonsterFormulaContext,
-} from "./renderer-utils";
+} from "../shared/rendering/renderer-utils";
+import type { FormulaContext } from "../shared/types";
 import { proficiencyBonusFromCR } from "../shared/dnd/math";
 
 function capitalizeWords(str: string): string {
@@ -34,7 +34,7 @@ function formatAC(monster: Monster): string {
 function renderFeatureBlock(
   parent: HTMLElement,
   features: MonsterFeature[],
-  monsterCtx?: MonsterFormulaContext,
+  monsterCtx?: FormulaContext,
 ): void {
   for (const feature of features) {
     const featureDiv = el("div", { cls: "archivist-feature", parent });
@@ -124,8 +124,8 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
   const block = el("div", { cls: "archivist-monster-block", parent: wrapper });
 
   // Build formula resolution context for inline tags (e.g. `atk:DEX` -> `+4`)
-  const monsterCtx: MonsterFormulaContext | undefined = monster.abilities
-    ? { abilities: monster.abilities, proficiencyBonus: proficiencyBonusFromCR(monster.cr ?? "0") }
+  const monsterCtx: FormulaContext | undefined = monster.abilities
+    ? { abilities: monster.abilities, profBonus: proficiencyBonusFromCR(monster.cr ?? "0") }
     : undefined;
 
   // In two-column mode, all content goes inside a flow container with column-count: 2

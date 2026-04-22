@@ -26,13 +26,7 @@ export function parseYaml<T>(source: string, requiredFields: string[]): ParseRes
   }
 }
 
-export function abilityModifier(score: number): number {
-  return Math.floor((score - 10) / 2);
-}
-
-export function formatModifier(mod: number): string {
-  return mod >= 0 ? `+${mod}` : `${mod}`;
-}
+export { abilityModifier, formatModifier } from "../shared/dnd/math";
 
 /**
  * Convert an unknown value to a string without producing "[object Object]".

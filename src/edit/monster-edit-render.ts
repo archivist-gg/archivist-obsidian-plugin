@@ -9,7 +9,7 @@ import { MonsterEditState } from "./edit-state";
 import { attachTagAutocomplete } from "./tag-autocomplete";
 import { createSearchableTagSelect } from "./searchable-tag-select";
 import { renderSideButtons } from "./side-buttons";
-import { createSvgBar } from "../renderers/renderer-utils";
+import { createSvgBar } from "../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
 import { showCompendiumPicker } from "./compendium-picker";
 import {

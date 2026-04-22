@@ -1,5 +1,5 @@
 import { setIcon, Notice } from 'obsidian';
-import { InlineTag, InlineTagType } from '../parsers/inline-tag-parser';
+import { InlineTag, InlineTagType } from './inline-tag-parser';
 import { extractDiceNotation, rollDiceWithRender } from './renderer-utils';
 
 interface InlineTagConfig {

@@ -4,14 +4,14 @@ import { Plugin, Notice, setIcon } from "obsidian";
 import { parseMonster } from "./parsers/monster-parser";
 import { parseSpell } from "./parsers/spell-parser";
 import { parseItem } from "./parsers/item-parser";
-import { parseInlineTag } from "./parsers/inline-tag-parser";
+import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 
 // D&D renderers
 import { renderMonsterBlock } from "./renderers/monster-renderer";
 import { renderSpellBlock } from "./renderers/spell-renderer";
 import { renderItemBlock } from "./renderers/item-renderer";
-import { renderInlineTag } from "./renderers/inline-tag-renderer";
-import { createErrorBlock } from "./renderers/renderer-utils";
+import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
+import { createErrorBlock } from "./shared/rendering/renderer-utils";
 
 // Edit mode
 import { renderSideButtons } from "./edit/side-buttons";

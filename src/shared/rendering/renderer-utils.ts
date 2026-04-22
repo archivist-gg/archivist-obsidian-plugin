@@ -1,18 +1,11 @@
 import { setIcon, Notice } from "obsidian";
-import { parseInlineTag } from "../parsers/inline-tag-parser";
+import { parseInlineTag } from "./inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
-import type { MonsterAbilities } from "../types/monster";
-import { detectFormula, resolveFormulaTag } from "../shared/dnd/formula-tags";
+import type { FormulaContext } from "../types";
+import { detectFormula, resolveFormulaTag } from "../dnd/formula-tags";
 import { decorateProseDice } from "./prose-decorator";
 
-/**
- * Optional monster context for resolving formula tags (e.g. `atk:DEX`) in view mode.
- * Only monster stat blocks provide this; spells, items, and standalone tags leave it undefined.
- */
-export interface MonsterFormulaContext {
-  abilities: MonsterAbilities;
-  proficiencyBonus: number;
-}
+export type { FormulaContext };
 
 interface ElOptions {
   cls?: string | string[];
@@ -171,12 +164,12 @@ export async function rollDiceWithRender(api: unknown, notation: string): Promis
 function resolveTagContent(
   tagType: string,
   content: string,
-  monsterCtx?: MonsterFormulaContext,
+  monsterCtx?: FormulaContext,
 ): string {
   if (!monsterCtx) return content;
   const formula = detectFormula(tagType, content);
   if (!formula) return content;
-  const resolved = resolveFormulaTag(tagType, content, monsterCtx.abilities, monsterCtx.proficiencyBonus);
+  const resolved = resolveFormulaTag(tagType, content, monsterCtx.abilities, monsterCtx.profBonus);
   // resolveFormulaTag for dc returns "DC N" but STAT_TAG_CONFIGS.dc.format already prepends "DC ",
   // so strip the prefix to avoid "DC DC N".
   if (tagType === "dc" && resolved.startsWith("DC ")) {
@@ -195,7 +188,7 @@ function resolveTagContent(
  */
 function renderStatBlockTag(
   tag: { type: string; content: string },
-  monsterCtx?: MonsterFormulaContext,
+  monsterCtx?: FormulaContext,
   doc: Document = activeDocument,
 ): HTMLElement {
   const config = STAT_TAG_CONFIGS[tag.type];
@@ -383,7 +376,7 @@ export function renderTextWithInlineTags(
   text: string,
   parent: HTMLElement,
   statBlockMode = true,
-  monsterCtx?: MonsterFormulaContext,
+  monsterCtx?: FormulaContext,
 ): void {
   // Convert any 5etools {@...} tags to backtick format before processing
   const converted = convert5eToolsTags(text);

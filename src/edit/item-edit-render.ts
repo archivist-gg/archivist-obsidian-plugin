@@ -4,7 +4,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../main";
 import type { Item } from "../types/item";
 import { renderSideButtons } from "./side-buttons";
-import { createSvgBar } from "../renderers/renderer-utils";
+import { createSvgBar } from "../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
 import { showCompendiumPicker } from "./compendium-picker";
 
