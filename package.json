@@ -17,6 +17,7 @@
   "license": "AGPL-3.0",
   "devDependencies": {
     "@codemirror/language": "^6.12.3",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.1",
     "@tabler/icons": "^3.41.1",
     "@types/jest": "^29.5.12",
     "@types/js-yaml": "^4.0.9",
@@ -36,6 +37,8 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.86",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.38.6",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "js-yaml": "^4.1.0",
     "tslib": "^2.7.0",
