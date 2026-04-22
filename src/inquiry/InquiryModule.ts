@@ -55,8 +55,8 @@ import {
 } from './utils/sdkSession';
 import type { CompendiumManager } from '../shared/entities/compendium-manager';
 import { CompendiumSelectModal, CreateCompendiumModal } from '../shared/entities/compendium-modal';
-import { createArchivistMcpServer } from '../ai/mcp-server';
-import type { SrdStore } from '../ai/srd/srd-store';
+import { createArchivistMcpServer } from '../shared/ai/mcp-server';
+import type { SrdStore } from '../shared/ai/srd-store';
 import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';
 import { FileSystemAdapter } from 'obsidian';
 import { registerTablerIcons } from './shared/icons/tabler-icons';

@@ -5,9 +5,9 @@ import { normalizeSrdMonster, normalizeSrdItem, normalizeSrdSpell } from "./srd-
 
 // ---------------------------------------------------------------------------
 // SrdStoreLike — structural interface matching the subset of SrdStore we need.
-// Avoids a cross-tree dep on ../ai/srd/srd-store so this file stays
-// self-contained within src/shared/. The concrete SrdStore in src/ai/srd/
-// satisfies this shape by construction.
+// Keeps the surface area minimal: this importer only reads types/entities, so
+// we avoid importing the concrete class from ../ai/srd-store. The concrete
+// SrdStore in src/shared/ai/srd-store.ts satisfies this shape by construction.
 // ---------------------------------------------------------------------------
 
 interface SrdEntityLike {

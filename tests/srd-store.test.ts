@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { SrdStore } from "../src/ai/srd/srd-store";
-import type { SrdDataSources } from "../src/ai/srd/srd-store";
+import { SrdStore } from "../src/shared/ai/srd-store";
+import type { SrdDataSources } from "../src/shared/ai/srd-store";
 
 // ---------------------------------------------------------------------------
 // Test fixtures -- small representative data for each entity type

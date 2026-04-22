@@ -1,15 +1,18 @@
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
+// TODO(phase0-task10): generation-tools still lives in src/ai/tools/ and bundles
+// entity-specific schemas (monster/spell/item/encounter/npc). It moves into the
+// entity modules in Tasks 8-10; this cross-tree import closes then.
 import {
   generateMonsterTool,
   generateSpellTool,
   generateItemTool,
   generateEncounterTool,
   generateNpcTool,
-} from "./tools/generation-tools";
-import { createSrdTools } from "./tools/srd-tools";
-import type { SrdStore } from "./srd/srd-store";
-import type { CompendiumManager } from "../shared/entities/compendium-manager";
+} from "../../ai/tools/generation-tools";
+import { createSrdTools } from "./srd-tools";
+import type { SrdStore } from "./srd-store";
+import type { CompendiumManager } from "../entities/compendium-manager";
 
 export function createArchivistMcpServer(srdStore: SrdStore, compendiumManager?: CompendiumManager) {
   const { searchSrdTool, getSrdEntityTool } = createSrdTools(srdStore);

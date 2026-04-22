@@ -1,3 +1,5 @@
+// src/srd/data/ holds bundled SRD JSON assets (not a code module); these
+// permanent data imports live outside shared/ by design.
 import monstersJson from "../../srd/data/monsters.json";
 import spellsJson from "../../srd/data/spells.json";
 import magicitemsJson from "../../srd/data/magicitems.json";

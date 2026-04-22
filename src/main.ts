@@ -32,7 +32,7 @@ import { compendiumRefPlugin, setCompendiumRefRegistry, setCompendiumRefPlugin, 
 import * as yaml from "js-yaml";
 
 // SRD & entities
-import { SrdStore } from "./ai/srd/srd-store";
+import { SrdStore } from "./shared/ai/srd-store";
 import { EntityRegistry } from "./shared/entities/entity-registry";
 import { importSrdToVault } from "./shared/entities/entity-importer";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
