@@ -45,6 +45,24 @@ const ABILITY_NAME_TO_SLUG: Record<string, Ability> = {
   intelligence: "int", wisdom: "wis", charisma: "cha",
 };
 
+// SRD 5.1 / 5e standard primary abilities per class. Open5e JSON omits this
+// field, so we map by slug. Covers the 12 SRD classes only; non-SRD
+// entries fall through to a safe fallback.
+const PRIMARY_ABILITIES_BY_SLUG: Record<string, Ability[]> = {
+  barbarian: ["str"],
+  bard: ["cha"],
+  cleric: ["wis"],
+  druid: ["wis"],
+  fighter: ["str", "dex"],
+  monk: ["dex", "wis"],
+  paladin: ["str", "cha"],
+  ranger: ["dex", "wis"],
+  rogue: ["dex"],
+  sorcerer: ["cha"],
+  warlock: ["cha"],
+  wizard: ["int"],
+};
+
 function normalizeHitDie(dice: string | undefined): "d6" | "d8" | "d10" | "d12" {
   const match = /d(6|8|10|12)/i.exec(dice ?? "");
   if (!match) throw new Error(`unrecognized hit_dice: ${dice}`);
@@ -58,16 +76,50 @@ function parseSavingThrows(raw: string | undefined): Ability[] {
     .filter((s): s is Ability => s !== undefined);
 }
 
+function resolvePrimaryAbilities(slug: string, savingThrowsRaw: string | undefined): Ability[] {
+  const byLookup = PRIMARY_ABILITIES_BY_SLUG[slug.toLowerCase()];
+  if (byLookup && byLookup.length > 0) return byLookup;
+  // Fallback: use the first parsed saving throw as the primary ability so
+  // the schema (nonempty) is satisfied even for unknown classes.
+  const saves = parseSavingThrows(savingThrowsRaw);
+  if (saves.length > 0) return [saves[0]];
+  // Last-resort default; still produces a valid (nonempty) array.
+  return ["str"];
+}
+
+const ALL_SKILL_SLUGS: SkillSlug[] = Object.values(SKILL_NAME_TO_SLUG);
+
 function parseSkillChoices(raw: string | undefined): { count: number; from: SkillSlug[] } {
-  if (!raw) return { count: 0, from: [] };
-  const countMatch = /choose\s+(\w+)/i.exec(raw);
-  const wordToNum: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 };
+  // Schema requires count >= 1 and from.length >= 1. When we can't parse a
+  // meaningful value we fall back to a conservative "any skill" default so
+  // the class can still be authored/edited and validation still passes.
+  const fallback: { count: number; from: SkillSlug[] } = { count: 2, from: ALL_SKILL_SLUGS };
+  if (!raw) return fallback;
+
+  const wordToNum: Record<string, number> = {
+    one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8,
+  };
+  // Prefer an explicit word/number immediately after "choose". Skip filler
+  // articles like "any" so "Choose any three" resolves to 3.
+  const countMatch = /choose\s+(?:any\s+)?(\w+)/i.exec(raw);
   const countWord = countMatch?.[1]?.toLowerCase();
-  const count = countWord ? wordToNum[countWord] ?? Number(countWord) : 0;
+  let count = 0;
+  if (countWord) {
+    const byWord = wordToNum[countWord];
+    const byDigit = Number(countWord);
+    if (byWord !== undefined) count = byWord;
+    else if (Number.isFinite(byDigit)) count = byDigit;
+  }
+
   const from: SkillSlug[] = [];
   for (const [name, slug] of Object.entries(SKILL_NAME_TO_SLUG)) {
     if (raw.toLowerCase().includes(name)) from.push(slug);
   }
+
+  // If the text said e.g. "Choose any three" with no skill names listed, the
+  // RAW intent is "any skill" -- substitute the full skill list.
+  if (from.length === 0) return { count: count > 0 ? count : fallback.count, from: ALL_SKILL_SLUGS };
+  if (count <= 0) return { count: fallback.count, from };
   return { count, from };
 }
 
@@ -189,7 +241,7 @@ export function normalizeSrdClass(
     source: "SRD 5.1",
     description: input.desc ?? "",
     hit_die: normalizeHitDie(input.hit_dice),
-    primary_abilities: [],
+    primary_abilities: resolvePrimaryAbilities(input.slug, input.prof_saving_throws),
     saving_throws: parseSavingThrows(input.prof_saving_throws),
     proficiencies: {
       armor: parseArmorProfs(input.prof_armor),
