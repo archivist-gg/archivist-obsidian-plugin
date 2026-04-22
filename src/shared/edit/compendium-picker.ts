@@ -1,4 +1,4 @@
-// src/edit/compendium-picker.ts
+// src/shared/edit/compendium-picker.ts
 
 /**
  * Inline dropdown for choosing which compendium to save to.

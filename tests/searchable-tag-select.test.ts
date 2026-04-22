@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach, beforeAll, vi } from "vitest";
-import { createSearchableTagSelect } from "../src/edit/searchable-tag-select";
+import { createSearchableTagSelect } from "../src/shared/edit/searchable-tag-select";
 
 // Monkey-patch HTMLElement.prototype with Obsidian DOM extension methods
 // so the component code works in jsdom.

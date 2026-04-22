@@ -3,10 +3,10 @@ import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../main";
 import type { Spell } from "../types/spell";
-import { renderSideButtons } from "./side-buttons";
+import { renderSideButtons } from "../shared/edit/side-buttons";
 import { createSvgBar } from "../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
-import { showCompendiumPicker } from "./compendium-picker";
+import { showCompendiumPicker } from "../shared/edit/compendium-picker";
 
 // ---------------------------------------------------------------------------
 // Constants

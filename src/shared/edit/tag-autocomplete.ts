@@ -1,11 +1,22 @@
-// src/edit/tag-autocomplete.ts
+// src/shared/edit/tag-autocomplete.ts
 // Backtick-triggered autocomplete dropdown for formula tags in feature textareas.
 
-import type { MonsterEditState } from "./edit-state";
-import type { MonsterAbilities } from "../types/monster";
-import { resolveFormulaTag } from "../shared/dnd/formula-tags";
-import { abilityModifier, formatModifier } from "../shared/dnd/math";
-import { ABILITY_KEYS, ABILITY_NAMES } from "../shared/dnd/constants";
+import type { Abilities } from "../types";
+import { resolveFormulaTag } from "../dnd/formula-tags";
+import { abilityModifier, formatModifier } from "../dnd/math";
+import { ABILITY_KEYS, ABILITY_NAMES } from "../dnd/constants";
+
+// Structural host interface: minimal shape of the edit-state object this
+// autocomplete reads from. Kept local so this shared module has no dependency
+// on any entity-specific edit-state (monster, and future PC/spell/item, etc.).
+// Any caller supplying `.current.abilities` and `.current.proficiencyBonus`
+// can reuse this autocomplete regardless of their concrete edit-state type.
+interface TagAutocompleteHost {
+  current: {
+    abilities?: Abilities;
+    proficiencyBonus?: number;
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,7 +35,7 @@ interface TagOption {
 // Tag catalog builder
 // ---------------------------------------------------------------------------
 
-function buildTagOptions(abilities: MonsterAbilities, profBonus: number): TagOption[] {
+function buildTagOptions(abilities: Abilities, profBonus: number): TagOption[] {
   const opts: TagOption[] = [];
 
   // --- Attack tags ---
@@ -222,7 +233,7 @@ function getCaretCoordinates(textarea: HTMLTextAreaElement): { x: number; y: num
 // Main export
 // ---------------------------------------------------------------------------
 
-export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: MonsterEditState): void {
+export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: TagAutocompleteHost): void {
   let dropdown: HTMLElement | null = null;
   let itemEls: HTMLElement[] = [];
   let filteredOpts: TagOption[] = [];

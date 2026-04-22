@@ -6,12 +6,12 @@ import { confirm as confirmModal } from "../inquiry/shared/modals/ConfirmModal";
 import type { Monster, MonsterAbilities, MonsterFeature } from "../types/monster";
 import type { EditableMonster } from "../dnd/editable-monster";
 import { MonsterEditState } from "./edit-state";
-import { attachTagAutocomplete } from "./tag-autocomplete";
-import { createSearchableTagSelect } from "./searchable-tag-select";
-import { renderSideButtons } from "./side-buttons";
+import { attachTagAutocomplete } from "../shared/edit/tag-autocomplete";
+import { createSearchableTagSelect } from "../shared/edit/searchable-tag-select";
+import { renderSideButtons } from "../shared/edit/side-buttons";
 import { createSvgBar } from "../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
-import { showCompendiumPicker } from "./compendium-picker";
+import { showCompendiumPicker } from "../shared/edit/compendium-picker";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
   STANDARD_SENSES, ALL_SECTIONS, ALIGNMENT_ETHICAL, ALIGNMENT_MORAL,

@@ -14,7 +14,7 @@ import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
 import { createErrorBlock } from "./shared/rendering/renderer-utils";
 
 // Edit mode
-import { renderSideButtons } from "./edit/side-buttons";
+import { renderSideButtons } from "./shared/edit/side-buttons";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
 import { renderSpellEditMode } from "./edit/spell-edit-render";
 import { renderItemEditMode } from "./edit/item-edit-render";

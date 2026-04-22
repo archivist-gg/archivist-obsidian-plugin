@@ -19,7 +19,7 @@ import { renderItemBlock } from "../renderers/item-renderer";
 import { renderMonsterEditMode } from "../edit/monster-edit-render";
 import { renderSpellEditMode } from "../edit/spell-edit-render";
 import { renderItemEditMode } from "../edit/item-edit-render";
-import { renderSideButtons } from "../edit/side-buttons";
+import { renderSideButtons } from "../shared/edit/side-buttons";
 import { EntityRegistry } from "../entities/entity-registry";
 import type { RegisteredEntity } from "../entities/entity-registry";
 import * as yaml from "js-yaml";
