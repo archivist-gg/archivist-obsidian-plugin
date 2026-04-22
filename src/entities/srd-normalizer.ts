@@ -5,7 +5,7 @@ import {
   type ConverterAbilities,
 } from "../shared/dnd/srd-tag-converter";
 import { proficiencyBonusFromCR } from "../shared/dnd/math";
-import { toStringSafe } from "../parsers/yaml-utils";
+import { toStringSafe } from "../shared/parsers/yaml-utils";
 
 // ---------------------------------------------------------------------------
 // SRD Data Normalizer

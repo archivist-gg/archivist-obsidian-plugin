@@ -1,5 +1,5 @@
 import { Monster, MonsterFeature } from "../types/monster";
-import { abilityModifier, formatModifier } from "../parsers/yaml-utils";
+import { abilityModifier, formatModifier } from "../shared/parsers/yaml-utils";
 import {
   el,
   createSvgBar,

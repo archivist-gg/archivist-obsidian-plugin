@@ -26,7 +26,7 @@ export function parseYaml<T>(source: string, requiredFields: string[]): ParseRes
   }
 }
 
-export { abilityModifier, formatModifier } from "../shared/dnd/math";
+export { abilityModifier, formatModifier } from "../dnd/math";
 
 /**
  * Convert an unknown value to a string without producing "[object Object]".

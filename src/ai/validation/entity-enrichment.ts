@@ -1,5 +1,5 @@
 import { getChallengeRatingXP, getProficiencyBonus } from "./cr-xp-mapping";
-import { abilityModifier, toStringSafe } from "../../parsers/yaml-utils";
+import { abilityModifier, toStringSafe } from "../../shared/parsers/yaml-utils";
 import {
   convertDescToTags,
   detectSpellcastingAbility,

@@ -1,5 +1,5 @@
 import { Monster } from "../types/monster";
-import { ParseResult, parseYaml, toStringSafe } from "./yaml-utils";
+import { ParseResult, parseYaml, toStringSafe } from "../shared/parsers/yaml-utils";
 
 export function parseMonster(source: string): ParseResult<Monster> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);
