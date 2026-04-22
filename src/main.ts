@@ -39,8 +39,8 @@ import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
 
 // Settings
-import type { ArchivistSettings } from "./types/settings";
-import { DEFAULT_SETTINGS } from "./types/settings";
+import type { ArchivistSettings } from "./core/plugin-settings";
+import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 
 // Inquiry (Claudian chat engine)
 import { InquiryModule } from "./inquiry/InquiryModule";
