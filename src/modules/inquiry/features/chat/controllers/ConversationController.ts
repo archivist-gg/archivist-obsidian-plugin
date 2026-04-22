@@ -7,7 +7,7 @@ import type InquiryModule from '../../../InquiryModule';
 import { confirm } from '../../../shared/modals/ConfirmModal';
 import { cleanupThinkingBlock } from '../rendering';
 import type { MessageRenderer } from '../rendering/MessageRenderer';
-import { createOwlIcon } from '../../../../shared/ui/owl-icon';
+import { createOwlIcon } from '../../../../../shared/ui/owl-icon';
 import { findRewindContext } from '../rewind';
 import type { SubagentManager } from '../services/SubagentManager';
 import type { TitleGenerationService } from '../services/TitleGenerationService';

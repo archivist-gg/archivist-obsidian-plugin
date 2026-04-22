@@ -8,10 +8,10 @@ import type InquiryModule from '../../../InquiryModule';
 import { formatDurationMmSs } from '../../../utils/date';
 import { processFileLinks, registerFileLinkHandler } from '../../../utils/fileLink';
 import { replaceImageEmbedsWithHtml } from '../../../utils/imageEmbed';
-import { createOwlIcon } from '../../../../shared/ui/owl-icon';
+import { createOwlIcon } from '../../../../../shared/ui/owl-icon';
 import { findRewindContext } from '../rewind';
 import { replaceDndCodeFences, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
-import type { EntityRegistry } from '../../../../shared/entities/entity-registry';
+import type { EntityRegistry } from '../../../../../shared/entities/entity-registry';
 import {
   renderStoredAsyncSubagent,
   renderStoredSubagent,

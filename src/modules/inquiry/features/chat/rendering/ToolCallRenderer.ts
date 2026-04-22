@@ -25,7 +25,7 @@ import { appendSvg, MCP_ICON_SVG } from '../../../shared/icons';
 import { setupCollapsible } from './collapsible';
 import { renderDndEntityBlock, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
 import type { App } from 'obsidian';
-import type { EntityRegistry } from '../../../../shared/entities/entity-registry';
+import type { EntityRegistry } from '../../../../../shared/entities/entity-registry';
 import { parseDndCodeFence } from './dndCodeFence';
 import { renderTodoItems } from './todoUtils';
 

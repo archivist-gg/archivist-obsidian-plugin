@@ -1,13 +1,19 @@
 import type { App } from "obsidian";
 import { setIcon, Notice } from "obsidian";
 
-import type { EntityRegistry, RegisteredEntity } from "../../../../shared/entities/entity-registry";
-import { parseMonster } from "../../../../modules/monster/monster.parser";
-import { parseSpell } from "../../../../modules/spell/spell.parser";
-import { parseItem } from "../../../../modules/item/item.parser";
-import { renderMonsterBlock } from "../../../../modules/monster/monster.renderer";
-import { renderSpellBlock } from "../../../../modules/spell/spell.renderer";
-import { renderItemBlock } from "../../../../modules/item/item.renderer";
+import type { EntityRegistry, RegisteredEntity } from "../../../../../shared/entities/entity-registry";
+// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+import { parseMonster } from "../../../../monster/monster.parser";
+// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+import { parseSpell } from "../../../../spell/spell.parser";
+// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+import { parseItem } from "../../../../item/item.parser";
+// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+import { renderMonsterBlock } from "../../../../monster/monster.renderer";
+// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+import { renderSpellBlock } from "../../../../spell/spell.renderer";
+// TODO(phase0-task13): replace cross-module direct imports with module-registry dispatch
+import { renderItemBlock } from "../../../../item/item.renderer";
 
 import { isDndCodeFence, parseDndCodeFence, type DndCodeFenceResult } from "./dndCodeFence";
 
