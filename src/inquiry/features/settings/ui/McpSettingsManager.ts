@@ -88,7 +88,7 @@ export class McpSettingsManager {
 
     if (this.servers.length === 0) {
       const emptyEl = this.containerEl.createDiv({ cls: 'claudian-mcp-empty' });
-      emptyEl.setText('No MCP servers configured. Click "add" to add one.');
+      emptyEl.setText('No mcp servers configured. Click "add" to add one.');
       return;
     }
 
@@ -267,7 +267,7 @@ export class McpSettingsManager {
 
       const parsed = McpStorage.tryParseClipboardConfig(text);
       if (!parsed || parsed.servers.length === 0) {
-        new Notice('No valid MCP configuration found in clipboard');
+        new Notice('No valid mcp configuration found in clipboard');
         return;
       }
 
@@ -352,7 +352,7 @@ export class McpSettingsManager {
     }
 
     if (added.length === 0) {
-      new Notice('No new MCP servers imported');
+      new Notice('No new mcp servers imported');
       return;
     }
 

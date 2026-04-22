@@ -659,7 +659,7 @@ export class McpServerSelector {
 
     // Header
     const headerEl = this.dropdownEl.createDiv({ cls: 'claudian-mcp-selector-header' });
-    headerEl.setText('MCP servers');
+    headerEl.setText('Mcp servers');
 
     // Server list
     const listEl = this.dropdownEl.createDiv({ cls: 'claudian-mcp-selector-list' });
@@ -767,7 +767,7 @@ export class McpServerSelector {
       }
     } else {
       this.iconEl.removeClass('active');
-      this.iconEl.setAttribute('title', 'MCP servers (click to enable)');
+      this.iconEl.setAttribute('title', 'Mcp servers (click to enable)');
       this.badgeEl.removeClass('visible');
     }
   }

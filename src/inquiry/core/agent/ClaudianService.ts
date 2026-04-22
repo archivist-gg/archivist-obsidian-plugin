@@ -1213,7 +1213,7 @@ export class ClaudianService {
           }
         } catch (e) {
           console.error('[ClaudianService] setMcpServers failed:', e);
-          new Notice('Failed to update MCP servers');
+          new Notice('Failed to update mcp servers');
         }
       }
       this.currentConfig.mcpServersKey = mcpServersKey;

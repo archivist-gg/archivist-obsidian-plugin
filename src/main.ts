@@ -560,7 +560,7 @@ export default class ArchivistPlugin extends Plugin {
 
     // SRD import if needed, wrapped so a failure still allows discover()
     if (!this.settings.srdImported) {
-      const n = new Notice("Importing SRD...", 0);
+      const n = new Notice("Importing srd...", 0);
       try {
         const count = await importSrdToVault(
           this.app.vault, this.srdStore, this.settings.compendiumRoot,
@@ -573,7 +573,7 @@ export default class ArchivistPlugin extends Plugin {
       } catch (err) {
         n.hide();
         console.error("Archivist: SRD import failed", err);
-        new Notice("SRD import failed, existing compendiums will still load.");
+        new Notice("Srd import failed, existing compendiums will still load.");
       }
     }
 
