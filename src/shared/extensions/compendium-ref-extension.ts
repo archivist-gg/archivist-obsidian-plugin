@@ -75,8 +75,9 @@ export function refreshAllCompendiumRefs(plugin: CompendiumRefHostPlugin | null)
 }
 
 // Re-export parser from its own module (kept separate so tests can import without pulling in CM6/obsidian deps)
-export { parseCompendiumRef, CompendiumRef } from "./compendium-ref-parser";
-import { parseCompendiumRef, CompendiumRef } from "./compendium-ref-parser";
+export { parseCompendiumRef } from "./compendium-ref-parser";
+export type { CompendiumRef } from "./compendium-ref-parser";
+import { parseCompendiumRef, type CompendiumRef } from "./compendium-ref-parser";
 
 // ---------------------------------------------------------------------------
 // Module-registry dispatch helpers
