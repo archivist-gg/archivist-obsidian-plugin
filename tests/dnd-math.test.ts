@@ -3,7 +3,7 @@ import {
   abilityModifier, formatModifier, proficiencyBonusFromCR, crToXP,
   hitDiceSizeFromCreatureSize, hpFromHitDice, savingThrow, skillBonus,
   passivePerception, attackBonus, saveDC, abilityNameToKey, parseHitDiceFormula,
-} from "../src/dnd/math";
+} from "../src/shared/dnd/math";
 
 describe("abilityModifier", () => {
   it("score 10 -> +0", () => expect(abilityModifier(10)).toBe(0));

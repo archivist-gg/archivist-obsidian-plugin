@@ -1,6 +1,4 @@
-// src/entities/srd-tag-converter.ts
-
-import { abilityModifier } from "../dnd/math";
+import { abilityModifier } from "./math";
 
 export type AbilityKey = "str" | "dex" | "con" | "int" | "wis" | "cha";
 

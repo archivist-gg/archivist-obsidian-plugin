@@ -12,6 +12,15 @@ export function proficiencyBonusFromCR(cr: string): number {
   return CR_PROFICIENCY[cr] ?? 2;
 }
 
+/** Proficiency bonus by total character level (1-20) */
+export function proficiencyFromLevel(level: number): number {
+  if (level < 5) return 2;
+  if (level < 9) return 3;
+  if (level < 13) return 4;
+  if (level < 17) return 5;
+  return 6;
+}
+
 export function crToXP(cr: string): number {
   return CR_XP[cr] ?? 0;
 }

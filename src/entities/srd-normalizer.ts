@@ -3,8 +3,8 @@ import {
   detectSpellcastingAbility,
   type ActionCategory,
   type ConverterAbilities,
-} from "./srd-tag-converter";
-import { proficiencyBonusFromCR } from "../dnd/math";
+} from "../shared/dnd/srd-tag-converter";
+import { proficiencyBonusFromCR } from "../shared/dnd/math";
 import { toStringSafe } from "../parsers/yaml-utils";
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,3 @@
-// src/dnd/constants.ts
-
 export const CR_PROFICIENCY: Record<string, number> = {
   "0": 2, "1/8": 2, "1/4": 2, "1/2": 2,
   "1": 2, "2": 2, "3": 2, "4": 2,

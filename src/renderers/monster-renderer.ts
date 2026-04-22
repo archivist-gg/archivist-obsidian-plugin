@@ -7,7 +7,7 @@ import {
   renderTextWithInlineTags,
   MonsterFormulaContext,
 } from "./renderer-utils";
-import { proficiencyBonusFromCR } from "../dnd/math";
+import { proficiencyBonusFromCR } from "../shared/dnd/math";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());

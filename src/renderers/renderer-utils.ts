@@ -2,7 +2,7 @@ import { setIcon, Notice } from "obsidian";
 import { parseInlineTag } from "../parsers/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
 import type { MonsterAbilities } from "../types/monster";
-import { detectFormula, resolveFormulaTag } from "../dnd/formula-tags";
+import { detectFormula, resolveFormulaTag } from "../shared/dnd/formula-tags";
 import { decorateProseDice } from "./prose-decorator";
 
 /**

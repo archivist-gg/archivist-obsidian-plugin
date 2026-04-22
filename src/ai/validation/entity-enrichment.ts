@@ -5,7 +5,7 @@ import {
   detectSpellcastingAbility,
   type ActionCategory,
   type ConversionContext,
-} from "../../entities/srd-tag-converter";
+} from "../../shared/dnd/srd-tag-converter";
 import type { Monster } from "../../types/monster";
 import type { Spell } from "../../types/spell";
 import type { Item } from "../../types/item";

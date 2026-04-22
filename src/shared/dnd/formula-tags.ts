@@ -1,5 +1,5 @@
-import type { FormulaRef } from "../parsers/inline-tag-parser";
-import type { MonsterAbilities } from "../types/monster";
+import type { FormulaRef } from "../../parsers/inline-tag-parser";
+import type { Abilities } from "../types/abilities";
 import { abilityModifier, attackBonus, saveDC, formatModifier } from "./math";
 import { ABILITY_KEYS } from "./constants";
 
@@ -15,10 +15,10 @@ export function detectFormula(tagType: string, content: string): FormulaRef | nu
   return { ability, kind };
 }
 
-export function resolveFormulaTag(tagType: string, content: string, abilities: MonsterAbilities, profBonus: number): string {
+export function resolveFormulaTag(tagType: string, content: string, abilities: Abilities, profBonus: number): string {
   const formula = detectFormula(tagType, content);
   if (!formula) return content;
-  const abilityScore = abilities[formula.ability as keyof MonsterAbilities];
+  const abilityScore = abilities[formula.ability as keyof Abilities];
   switch (formula.kind) {
     case "attack": return formatModifier(attackBonus(abilityScore, profBonus));
     case "dc": return `DC ${saveDC(abilityScore, profBonus)}`;

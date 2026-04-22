@@ -4,7 +4,7 @@ import {
   convertDescToTags,
   detectSpellcastingAbility,
   type ConversionContext,
-} from "../src/entities/srd-tag-converter";
+} from "../src/shared/dnd/srd-tag-converter";
 
 const DRAGON_CTX: ConversionContext = {
   abilities: { str: 27, dex: 10, con: 25, int: 16, wis: 13, cha: 21 },

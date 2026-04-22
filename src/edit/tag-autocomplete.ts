@@ -3,9 +3,9 @@
 
 import type { MonsterEditState } from "./edit-state";
 import type { MonsterAbilities } from "../types/monster";
-import { resolveFormulaTag } from "../dnd/formula-tags";
-import { abilityModifier, formatModifier } from "../dnd/math";
-import { ABILITY_KEYS, ABILITY_NAMES } from "../dnd/constants";
+import { resolveFormulaTag } from "../shared/dnd/formula-tags";
+import { abilityModifier, formatModifier } from "../shared/dnd/math";
+import { ABILITY_KEYS, ABILITY_NAMES } from "../shared/dnd/constants";
 
 // ---------------------------------------------------------------------------
 // Types

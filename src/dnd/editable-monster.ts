@@ -1,6 +1,6 @@
 import type { Monster, MonsterAbilities } from "../types/monster";
-import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "./constants";
-import { abilityModifier, proficiencyBonusFromCR, crToXP, savingThrow, skillBonus, passivePerception } from "./math";
+import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "../shared/dnd/constants";
+import { abilityModifier, proficiencyBonusFromCR, crToXP, savingThrow, skillBonus, passivePerception } from "../shared/dnd/math";
 
 export type SkillProficiency = "none" | "proficient" | "expertise";
 

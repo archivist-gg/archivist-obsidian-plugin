@@ -1,11 +1,11 @@
 import type { EditableMonster } from "./editable-monster";
 import type { MonsterAbilities } from "../types/monster";
-import { SKILL_ABILITY, ABILITY_KEYS } from "./constants";
+import { SKILL_ABILITY, ABILITY_KEYS } from "../shared/dnd/constants";
 import {
   abilityModifier, proficiencyBonusFromCR, crToXP, savingThrow,
   skillBonus, passivePerception, hpFromHitDice, parseHitDiceFormula,
   hitDiceSizeFromCreatureSize,
-} from "./math";
+} from "../shared/dnd/math";
 
 export function recalculate(monster: EditableMonster, changedField: string): EditableMonster {
   const result = { ...monster };

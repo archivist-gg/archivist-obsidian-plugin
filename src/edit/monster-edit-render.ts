@@ -16,11 +16,11 @@ import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,
   STANDARD_SENSES, ALL_SECTIONS, ALIGNMENT_ETHICAL, ALIGNMENT_MORAL,
   ALL_CR_VALUES, DAMAGE_TYPES, DAMAGE_NONMAGICAL_VARIANTS, CONDITIONS,
-} from "../dnd/constants";
+} from "../shared/dnd/constants";
 import {
   abilityModifier, formatModifier,
   savingThrow, skillBonus, passivePerception,
-} from "../dnd/math";
+} from "../shared/dnd/math";
 
 // ---------------------------------------------------------------------------
 // Types
