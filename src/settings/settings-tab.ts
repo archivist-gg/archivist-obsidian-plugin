@@ -51,7 +51,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setName("Compendiums").setHeading();
     containerEl.createEl("p", {
-      text: 'Compendiums are collections of D&D entities (monsters, spells, items) stored as folders in your vault. Read-only compendiums cannot be modified \u2014 editing an entity from a read-only compendium will only allow "Save As New" to a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',
+      text: 'Compendiums are folders of game entities (monsters, spells, items) stored in your vault. Read-only compendiums cannot be edited; "save as new" will create a copy in a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',
       cls: "setting-item-description",
     });
 

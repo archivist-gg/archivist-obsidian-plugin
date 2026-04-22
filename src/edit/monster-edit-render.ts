@@ -275,7 +275,7 @@ export function renderMonsterEditMode(
   const acSourceInput = acLine.createEl("input", { cls: "archivist-edit-input wide" });
   acSourceInput.type = "text";
   acSourceInput.value = m.ac?.[0]?.from?.join(", ") ?? "";
-  acSourceInput.placeholder = "(Source)";
+  acSourceInput.placeholder = "Source";
   acSourceInput.addEventListener("input", () => {
     const acArr = state.current.ac ?? [{ ac: 10 }];
     const fromArr = acSourceInput.value.trim() ? acSourceInput.value.split(",").map(s => s.trim()) : undefined;
@@ -289,7 +289,7 @@ export function renderMonsterEditMode(
   hpLine.appendText(" ");
   const hpValueEl = hpLine.createEl("span", { cls: "archivist-auto-value", text: String(m.hp?.average ?? 0) });
   refs.hpValue = hpValueEl;
-  const hpAutoLabel = hpLine.createEl("span", { cls: "archivist-auto-label", text: "(Auto)" });
+  const hpAutoLabel = hpLine.createEl("span", { cls: "archivist-auto-label", text: "Auto" });
   wireOverride(hpValueEl, hpAutoLabel, "hp", () => state.current.hp?.average ?? 0, (val) => {
     const hp = { ...state.current.hp!, average: val };
     state.setOverride("hp", val);
@@ -302,7 +302,7 @@ export function renderMonsterEditMode(
   const hpFormulaInput = hpLine.createEl("input", { cls: "archivist-edit-input formula" });
   hpFormulaInput.type = "text";
   hpFormulaInput.value = m.hp?.formula ?? "";
-  hpFormulaInput.placeholder = "E.g. 4D8";
+  hpFormulaInput.placeholder = "Example: 4d8";
   refs.hpFormula = hpFormulaInput;
   hpFormulaInput.addEventListener("input", () => {
     const hp = { ...state.current.hp!, formula: hpFormulaInput.value };
@@ -740,7 +740,7 @@ export function renderMonsterEditMode(
   const xpValueEl = crLine.createEl("span", { cls: "archivist-auto-value", text: formatXP(state.current.xp) });
   refs.xpValue = xpValueEl;
   crLine.appendText(" XP)");
-  crLine.createEl("span", { cls: "archivist-auto-label", text: "(Auto)" });
+  crLine.createEl("span", { cls: "archivist-auto-label", text: "Auto" });
 
   // =========================================================================
   // 12. SVG Bar
@@ -1209,7 +1209,7 @@ function wireOverride(
       e.stopPropagation();
       onClear();
       if (overrideMark) { overrideMark.remove(); overrideMark = null; }
-      autoLabel.textContent = "(Auto)";
+      autoLabel.textContent = "Auto";
     });
     return mark;
   }
@@ -1251,7 +1251,7 @@ function wireOverride(
         }
         valueEl.after(overrideMark);
       } else {
-        autoLabel.textContent = "(Auto)";
+        autoLabel.textContent = "Auto";
       }
     };
 
@@ -1261,7 +1261,7 @@ function wireOverride(
       if (e.key === "Escape") {
         if (overrideInput) { overrideInput.remove(); overrideInput = null; }
         valueEl.textContent = fmt(getAutoValue());
-        autoLabel.textContent = "(Auto)";
+        autoLabel.textContent = "Auto";
       }
     });
   });

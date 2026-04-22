@@ -250,7 +250,7 @@ export function createSubagentBlock(
   labelEl.setText(truncateDescription(description));
 
   const countEl = headerEl.createDiv({ cls: 'claudian-subagent-count' });
-  countEl.setText('0 Tool uses');
+  countEl.setText('Tool uses: 0');
 
   const statusEl = headerEl.createDiv({ cls: 'claudian-subagent-status status-running' });
   statusEl.setAttribute('aria-label', 'Status: running');
@@ -292,7 +292,7 @@ export function addSubagentToolCall(
   state.info.toolCalls.push(toolCall);
 
   const toolCount = state.info.toolCalls.length;
-  state.countEl.setText(`${toolCount} tool uses`);
+  state.countEl.setText(`Tool uses: ${toolCount}`);
 
   const toolView = createSubagentToolView(state.toolsContainerEl, toolCall);
   state.toolElements.set(toolCall.id, toolView);
@@ -327,7 +327,7 @@ export function finalizeSubagentBlock(
   state.info.result = result;
 
   state.labelEl.setText(truncateDescription(state.info.description));
-  state.countEl.setText(`${state.info.toolCalls.length} tool uses`);
+  state.countEl.setText(`Tool uses: ${state.info.toolCalls.length}`);
 
   state.statusEl.className = 'claudian-subagent-status';
   state.statusEl.addClass(`status-${state.info.status}`);

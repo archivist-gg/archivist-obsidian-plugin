@@ -186,7 +186,7 @@ export class SlashCommandModal extends Modal {
       cls: 'claudian-sp-content-area',
       attr: {
         rows: '10',
-        placeholder: 'Review this code for:\n$ARGUMENTS\n\n@$1',
+        placeholder: 'Command prompt template',
       },
     });
     const initialContent = this.existingCmd
