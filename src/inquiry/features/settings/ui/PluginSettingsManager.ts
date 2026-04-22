@@ -30,7 +30,7 @@ export class PluginSettingsManager {
 
     if (plugins.length === 0) {
       const emptyEl = this.containerEl.createDiv({ cls: 'claudian-plugin-empty' });
-      emptyEl.setText('No Claude Code plugins found. Enable plugins via the Claude CLI.');
+      emptyEl.setText('No Claude code plugins found. Enable plugins via the Claude CLI.');
       return;
     }
 
@@ -41,7 +41,7 @@ export class PluginSettingsManager {
 
     if (projectPlugins.length > 0) {
       const sectionHeader = listEl.createDiv({ cls: 'claudian-plugin-section-header' });
-      sectionHeader.setText('Project Plugins');
+      sectionHeader.setText('Project plugins');
 
       for (const plugin of projectPlugins) {
         this.renderPluginItem(listEl, plugin);
@@ -50,7 +50,7 @@ export class PluginSettingsManager {
 
     if (userPlugins.length > 0) {
       const sectionHeader = listEl.createDiv({ cls: 'claudian-plugin-section-header' });
-      sectionHeader.setText('User Plugins');
+      sectionHeader.setText('User plugins');
 
       for (const plugin of userPlugins) {
         this.renderPluginItem(listEl, plugin);

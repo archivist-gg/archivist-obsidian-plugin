@@ -119,7 +119,7 @@ export class McpStorage {
     if (await this.adapter.exists(MCP_CONFIG_PATH)) {
       try {
         const raw = await this.adapter.read(MCP_CONFIG_PATH);
-        const parsed = JSON.parse(raw);
+        const parsed: unknown = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
           existing = parsed as Record<string, unknown>;
         }
@@ -154,7 +154,7 @@ export class McpStorage {
     await this.adapter.write(MCP_CONFIG_PATH, content);
   }
 
-  async exists(): Promise<boolean> {
+  exists(): Promise<boolean> {
     return this.adapter.exists(MCP_CONFIG_PATH);
   }
 
@@ -168,18 +168,20 @@ export class McpStorage {
    */
   static parseClipboardConfig(json: string): ParsedMcpConfig {
     try {
-      const parsed = JSON.parse(json);
+      const parsed: unknown = JSON.parse(json);
 
       if (!parsed || typeof parsed !== 'object') {
         throw new Error('Invalid JSON object');
       }
 
+      const parsedRecord = parsed as Record<string, unknown>;
+
       // Format 1: Full Claude Code format
       // { "mcpServers": { "server-name": { "command": "...", ... } } }
-      if (parsed.mcpServers && typeof parsed.mcpServers === 'object') {
+      if (parsedRecord.mcpServers && typeof parsedRecord.mcpServers === 'object') {
         const servers: Array<{ name: string; config: McpServerConfig }> = [];
 
-        for (const [name, config] of Object.entries(parsed.mcpServers)) {
+        for (const [name, config] of Object.entries(parsedRecord.mcpServers as Record<string, unknown>)) {
           if (isValidMcpServerConfig(config)) {
             servers.push({ name, config });
           }
@@ -203,7 +205,7 @@ export class McpStorage {
 
       // Format 3: Single named server
       // { "server-name": { "command": "...", ... } }
-      const entries = Object.entries(parsed);
+      const entries = Object.entries(parsedRecord);
       if (entries.length === 1) {
         const [name, config] = entries[0];
         if (isValidMcpServerConfig(config)) {

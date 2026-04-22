@@ -149,7 +149,7 @@ export class AgentManager {
     return files;
   }
 
-  private async parsePluginAgentFromFile(
+  private parsePluginAgentFromFile(
     filePath: string,
     pluginName: string
   ): Promise<AgentDefinition | null> {
@@ -157,26 +157,26 @@ export class AgentManager {
       const content = fs.readFileSync(filePath, 'utf-8');
       const parsed = parseAgentFile(content);
 
-      if (!parsed) return null;
+      if (!parsed) return Promise.resolve(null);
 
       const { frontmatter, body } = parsed;
       const normalizedPluginName = normalizePluginName(pluginName);
       const id = `${normalizedPluginName}:${frontmatter.name}`;
 
-      if (this.agents.find(a => a.id === id)) return null;
+      if (this.agents.find(a => a.id === id)) return Promise.resolve(null);
 
-      return buildAgentFromFrontmatter(frontmatter, body, {
+      return Promise.resolve(buildAgentFromFrontmatter(frontmatter, body, {
         id,
         source: 'plugin',
         pluginName,
         filePath,
-      });
+      }));
     } catch {
-      return null;
+      return Promise.resolve(null);
     }
   }
 
-  private async parseAgentFromFile(
+  private parseAgentFromFile(
     filePath: string,
     source: 'vault' | 'global'
   ): Promise<AgentDefinition | null> {
@@ -184,20 +184,20 @@ export class AgentManager {
       const content = fs.readFileSync(filePath, 'utf-8');
       const parsed = parseAgentFile(content);
 
-      if (!parsed) return null;
+      if (!parsed) return Promise.resolve(null);
 
       const { frontmatter, body } = parsed;
       const id = frontmatter.name;
 
-      if (this.agents.find(a => a.id === id)) return null;
+      if (this.agents.find(a => a.id === id)) return Promise.resolve(null);
 
-      return buildAgentFromFrontmatter(frontmatter, body, {
+      return Promise.resolve(buildAgentFromFrontmatter(frontmatter, body, {
         id,
         source,
         filePath,
-      });
+      }));
     } catch {
-      return null;
+      return Promise.resolve(null);
     }
   }
 }

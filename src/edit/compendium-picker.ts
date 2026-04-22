@@ -10,14 +10,16 @@ export function showCompendiumPicker(
   compendiums: { name: string }[],
   onSelect: (compendium: { name: string }) => void,
 ): void {
+  const doc = anchor.doc;
+  const win = anchor.win;
   // Remove any existing picker
   anchor.querySelector(".archivist-compendium-picker")?.remove();
 
-  const picker = document.createElement("div");
+  const picker = doc.createElement("div");
   picker.className = "archivist-compendium-picker";
 
   for (const comp of compendiums) {
-    const option = document.createElement("div");
+    const option = doc.createElement("div");
     option.className = "archivist-compendium-picker-option";
     option.textContent = comp.name;
     option.addEventListener("click", (e) => {
@@ -39,10 +41,10 @@ export function showCompendiumPicker(
 
   function cleanup() {
     picker.remove();
-    document.removeEventListener("click", onOutsideClick, true);
+    doc.removeEventListener("click", onOutsideClick, true);
   }
 
-  setTimeout(() => {
-    document.addEventListener("click", onOutsideClick, true);
+  win.setTimeout(() => {
+    doc.addEventListener("click", onOutsideClick, true);
   }, 0);
 }

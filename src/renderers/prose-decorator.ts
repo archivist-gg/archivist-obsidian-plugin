@@ -11,7 +11,7 @@
 export function decorateProseDice(text: string): string {
   return text.replace(
     /`[^`]*`|(?<!\w)(\d+d\d+(?:\s*[+-]\s*\d+)?)(?!\w)/g,
-    (match, dice) => {
+    (match: string, dice: string | undefined) => {
       if (dice) return `\`dice:${dice.replace(/\s+/g, "")}\``;
       return match;
     },

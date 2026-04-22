@@ -107,7 +107,7 @@ export class MonsterModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("archivist-modal");
-    contentEl.createEl("h2", { text: "Create Monster" });
+    contentEl.createEl("h2", { text: "Create monster" });
 
     // Basic Info
     addTextField(contentEl, "Name *", "Goblin", (v) => (this.form.name = v));
@@ -133,7 +133,7 @@ export class MonsterModal extends Modal {
     addNumberField(contentEl, "Burrow", "0", (v) => (this.form.speedBurrow = v));
 
     // Abilities
-    contentEl.createEl("h3", { text: "Ability Scores" });
+    contentEl.createEl("h3", { text: "Ability scores" });
     addNumberField(contentEl, "STR", "10", (v) => (this.form.str = v));
     addNumberField(contentEl, "DEX", "10", (v) => (this.form.dex = v));
     addNumberField(contentEl, "CON", "10", (v) => (this.form.con = v));
@@ -142,7 +142,7 @@ export class MonsterModal extends Modal {
     addNumberField(contentEl, "CHA", "10", (v) => (this.form.cha = v));
 
     // Secondary
-    contentEl.createEl("h3", { text: "Secondary Properties" });
+    contentEl.createEl("h3", { text: "Secondary properties" });
     addTextField(contentEl, "Saving Throws", "dex: 4, con: 2", (v) => (this.form.saves = v));
     addTextField(contentEl, "Skills", "stealth: 6, perception: 2", (v) => (this.form.skills = v));
     addTextField(contentEl, "Senses", "darkvision 60 ft.", (v) => (this.form.senses = v));
@@ -150,7 +150,7 @@ export class MonsterModal extends Modal {
     addTextField(contentEl, "Languages", "Common, Goblin", (v) => (this.form.languages = v));
 
     // Damage/Condition
-    contentEl.createEl("h3", { text: "Resistances & Immunities" });
+    contentEl.createEl("h3", { text: "Resistances & immunities" });
     addTextField(contentEl, "Damage Vulnerabilities", "fire, radiant", (v) => (this.form.damageVulnerabilities = v));
     addTextField(contentEl, "Damage Resistances", "cold, lightning", (v) => (this.form.damageResistances = v));
     addTextField(contentEl, "Damage Immunities", "poison", (v) => (this.form.damageImmunities = v));
@@ -171,7 +171,7 @@ export class MonsterModal extends Modal {
     // Insert button
     const btnContainer = contentEl.createDiv({ cls: "archivist-modal-buttons" });
     const insertBtn = btnContainer.createEl("button", {
-      text: "Insert Monster Block",
+      text: "Insert monster block",
       cls: "mod-cta",
     });
     insertBtn.addEventListener("click", () => {

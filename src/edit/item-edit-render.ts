@@ -35,7 +35,7 @@ export function renderItemEditMode(
   onReplaceRef?: (newRefText: string) => void,
 ): void {
   // Mutable working copy
-  const draft: Item = JSON.parse(JSON.stringify(item));
+  const draft = JSON.parse(JSON.stringify(item)) as Item;
 
   // --- Side buttons ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
@@ -158,14 +158,14 @@ export function renderItemEditMode(
   const nameInput = header.createEl("input", { cls: "archivist-edit-input-name" });
   nameInput.type = "text";
   nameInput.value = draft.name;
-  nameInput.placeholder = "Item Name";
+  nameInput.placeholder = "Item name";
   nameInput.addEventListener("input", () => { draft.name = nameInput.value; markDirty(); });
 
   // Type + Rarity row
   const subtitleRow = header.createDiv({ cls: "archivist-item-subtitle" });
 
   const typeSelect = subtitleRow.createEl("select", { cls: "archivist-edit-select" });
-  const typeEmpty = typeSelect.createEl("option", { text: "-- Type --" });
+  const typeEmpty = typeSelect.createEl("option", { text: "-- type --" });
   typeEmpty.value = "";
   if (!draft.type) typeEmpty.selected = true;
   for (const t of ITEM_TYPES) {
@@ -176,7 +176,7 @@ export function renderItemEditMode(
   typeSelect.addEventListener("change", () => { draft.type = typeSelect.value || undefined; markDirty(); });
 
   const raritySelect = subtitleRow.createEl("select", { cls: "archivist-edit-select" });
-  const rarEmpty = raritySelect.createEl("option", { text: "-- Rarity --" });
+  const rarEmpty = raritySelect.createEl("option", { text: "-- rarity --" });
   rarEmpty.value = "";
   if (!draft.rarity) rarEmpty.selected = true;
   for (const r of ITEM_RARITIES) {
@@ -221,7 +221,7 @@ export function renderItemEditMode(
 
   const attuneCondInput = attuneRow.createEl("input", { cls: "archivist-edit-input wide" });
   attuneCondInput.type = "text";
-  attuneCondInput.placeholder = "Condition (e.g. by a cleric)";
+  attuneCondInput.placeholder = "Condition (e.g. By a cleric)";
   if (typeof draft.attunement === "string") {
     attuneCondInput.value = draft.attunement;
   }

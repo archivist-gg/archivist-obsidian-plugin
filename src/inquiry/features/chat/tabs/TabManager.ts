@@ -560,14 +560,14 @@ export class TabManager implements TabManagerInterface {
    * The command list is the same for all tabs, so we just need one ready service.
    * @returns Array of SDK commands, or empty array if no service is ready.
    */
-  async getSdkCommands(): Promise<SlashCommand[]> {
+  getSdkCommands(): Promise<SlashCommand[]> {
     // Find any tab with a ready service
     for (const tab of this.tabs.values()) {
       if (tab.service?.isReady()) {
         return tab.service.getSupportedCommands();
       }
     }
-    return [];
+    return Promise.resolve([]);
   }
 
   // ============================================

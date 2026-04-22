@@ -93,7 +93,7 @@ function createWikilink(
   linkTarget: string,
   displayText: string
 ): HTMLElement {
-  const link = document.createElement('a');
+  const link = activeDocument.createElement('a');
   link.className = 'claudian-file-link internal-link';
   link.textContent = displayText;
   link.setAttribute('data-href', linkTarget);
@@ -127,7 +127,7 @@ export function registerFileLinkHandler(
 }
 
 function buildFragmentWithLinks(text: string, matches: WikilinkMatch[]): DocumentFragment {
-  const fragment = document.createDocumentFragment();
+  const fragment = activeDocument.createDocumentFragment();
   let currentIndex = text.length;
 
   for (const { index, fullMatch, linkTarget, displayText } of matches) {
@@ -135,7 +135,7 @@ function buildFragmentWithLinks(text: string, matches: WikilinkMatch[]): Documen
 
     if (endIndex < currentIndex) {
       fragment.insertBefore(
-        document.createTextNode(text.slice(endIndex, currentIndex)),
+        activeDocument.createTextNode(text.slice(endIndex, currentIndex)),
         fragment.firstChild
       );
     }
@@ -146,7 +146,7 @@ function buildFragmentWithLinks(text: string, matches: WikilinkMatch[]): Documen
 
   if (currentIndex > 0) {
     fragment.insertBefore(
-      document.createTextNode(text.slice(0, currentIndex)),
+      activeDocument.createTextNode(text.slice(0, currentIndex)),
       fragment.firstChild
     );
   }
@@ -186,7 +186,7 @@ export function processFileLinks(app: App, container: HTMLElement): void {
     codeEl.appendChild(buildFragmentWithLinks(text, matches));
   });
 
-  const walker = document.createTreeWalker(
+  const walker = activeDocument.createTreeWalker(
     container,
     NodeFilter.SHOW_TEXT,
     {

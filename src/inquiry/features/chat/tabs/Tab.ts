@@ -149,7 +149,7 @@ function autoResizeInput(inputEl: HTMLElement): void {
   inputEl.setCssProps({ '--claudian-input-min-height': '0px' });
 
   // Calculate max height: 55% of view height, minimum 150px
-  const viewHeight = inputEl.closest('.claudian-container')?.clientHeight ?? window.innerHeight;
+  const viewHeight = inputEl.closest('.claudian-container')?.clientHeight ?? inputEl.win.innerHeight;
   const maxHeight = Math.max(TEXTAREA_MIN_MAX_HEIGHT, viewHeight * TEXTAREA_MAX_HEIGHT_PERCENT);
 
   // Get flex-allocated height (what flexbox gives the input)
@@ -601,7 +601,7 @@ export interface ForkContext {
 }
 
 function deepCloneMessages(messages: ChatMessage[]): ChatMessage[] {
-  const sc = (globalThis as unknown as { structuredClone?: <T>(value: T) => T }).structuredClone;
+  const sc = (activeWindow as unknown as { structuredClone?: <T>(value: T) => T }).structuredClone;
   if (typeof sc === 'function') {
     return sc(messages);
   }
@@ -1053,14 +1053,15 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
   // Scroll listener for auto-scroll control (tracks position always, not just during streaming)
   const SCROLL_THRESHOLD = 20; // pixels from bottom to consider "at bottom"
   const RE_ENABLE_DELAY = 150; // ms to wait before re-enabling auto-scroll
-  let reEnableTimeout: ReturnType<typeof setTimeout> | null = null;
+  let reEnableTimeout: number | null = null;
+  const win = dom.messagesEl.win;
 
   const isAutoScrollAllowed = (): boolean => plugin.settings.enableAutoScroll ?? true;
 
   const scrollHandler = () => {
     if (!isAutoScrollAllowed()) {
-      if (reEnableTimeout) {
-        clearTimeout(reEnableTimeout);
+      if (reEnableTimeout !== null) {
+        win.clearTimeout(reEnableTimeout);
         reEnableTimeout = null;
       }
       state.autoScrollEnabled = false;
@@ -1072,15 +1073,15 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
 
     if (!isAtBottom) {
       // Immediately disable when user scrolls up
-      if (reEnableTimeout) {
-        clearTimeout(reEnableTimeout);
+      if (reEnableTimeout !== null) {
+        win.clearTimeout(reEnableTimeout);
         reEnableTimeout = null;
       }
       state.autoScrollEnabled = false;
     } else if (!state.autoScrollEnabled) {
       // Debounce re-enabling to avoid bounce during scroll animation
-      if (!reEnableTimeout) {
-        reEnableTimeout = setTimeout(() => {
+      if (reEnableTimeout === null) {
+        reEnableTimeout = win.setTimeout(() => {
           reEnableTimeout = null;
           // Re-verify position before enabling (content may have changed)
           const { scrollTop, scrollHeight, clientHeight } = dom.messagesEl;
@@ -1094,7 +1095,7 @@ export function wireTabInputEvents(tab: TabData, plugin: InquiryModule): void {
   dom.messagesEl.addEventListener('scroll', scrollHandler, { passive: true });
   dom.eventCleanups.push(() => {
     dom.messagesEl.removeEventListener('scroll', scrollHandler);
-    if (reEnableTimeout) clearTimeout(reEnableTimeout);
+    if (reEnableTimeout !== null) win.clearTimeout(reEnableTimeout);
   });
 }
 
@@ -1122,7 +1123,7 @@ export function deactivateTab(tab: TabData): void {
  * Cleans up a tab and releases all resources.
  * Made async to ensure proper cleanup ordering.
  */
-export async function destroyTab(tab: TabData): Promise<void> {
+export function destroyTab(tab: TabData): Promise<void> {
   // Stop polling
   tab.controllers.selectionController?.stop();
   tab.controllers.selectionController?.clear();
@@ -1175,6 +1176,7 @@ export async function destroyTab(tab: TabData): Promise<void> {
 
   // Remove DOM element
   tab.dom.contentEl.remove();
+  return Promise.resolve();
 }
 
 /**

@@ -124,9 +124,9 @@ export class PluginManager {
     });
   }
 
-  private async loadProjectSettings(): Promise<SettingsFile | null> {
+  private loadProjectSettings(): Promise<SettingsFile | null> {
     const projectSettingsPath = path.join(this.vaultPath, '.claude', 'settings.json');
-    return readJsonFile(projectSettingsPath);
+    return Promise.resolve(readJsonFile(projectSettingsPath));
   }
 
   getPlugins(): ClaudianPlugin[] {

@@ -7,16 +7,16 @@ export function createSrdTools(store: SrdStore) {
     "search_srd",
     "Search the D&D 5e SRD database for monsters, spells, magic items, armor, weapons, feats, conditions, classes, or backgrounds by name. Returns ranked summary results.",
     searchSrdInput,
-    async ({ query, entity_type, limit }) => {
+    ({ query, entity_type, limit }) => {
       const results = store.search(query, entity_type, limit);
       const summary = results.map((r) => ({
         slug: r.slug,
         name: r.name,
         entityType: r.entityType,
       }));
-      return {
+      return Promise.resolve({
         content: [{ type: "text" as const, text: JSON.stringify(summary) }],
-      };
+      });
     },
     { annotations: { readOnlyHint: true } },
   );
@@ -25,7 +25,7 @@ export function createSrdTools(store: SrdStore) {
     "get_srd_entity",
     "Get complete details for a specific D&D 5e SRD entity by slug. Returns the full stat block / spell / item data. Falls back to name search if slug not found.",
     getSrdEntityInput,
-    async ({ slug, name, entity_type }) => {
+    ({ slug, name, entity_type }) => {
       // Try slug first
       let entity = store.getBySlug(slug);
 
@@ -37,14 +37,14 @@ export function createSrdTools(store: SrdStore) {
       }
 
       if (!entity) {
-        return {
+        return Promise.resolve({
           content: [{ type: "text" as const, text: `Entity "${slug}" not found in SRD.` }],
           isError: true,
-        };
+        });
       }
-      return {
+      return Promise.resolve({
         content: [{ type: "text" as const, text: JSON.stringify(entity.data) }],
-      };
+      });
     },
     { annotations: { readOnlyHint: true } },
   );

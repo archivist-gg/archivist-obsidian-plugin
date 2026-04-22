@@ -75,7 +75,7 @@ export class SpellModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("archivist-modal");
-    contentEl.createEl("h2", { text: "Create Spell" });
+    contentEl.createEl("h2", { text: "Create spell" });
 
     addTextField(contentEl, "Name *", "Fireball", (v) => (this.form.name = v));
     addDropdown(contentEl, "Level", LEVEL_OPTIONS, (v) => (this.form.level = v));
@@ -93,7 +93,7 @@ export class SpellModal extends Modal {
     // Insert button
     const btnContainer = contentEl.createDiv({ cls: "archivist-modal-buttons" });
     const insertBtn = btnContainer.createEl("button", {
-      text: "Insert Spell Block",
+      text: "Insert spell block",
       cls: "mod-cta",
     });
     insertBtn.addEventListener("click", () => {

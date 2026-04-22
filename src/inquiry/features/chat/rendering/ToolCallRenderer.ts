@@ -752,8 +752,8 @@ export function renderDndEntityAfterToolCall(
   if (!entityType || !toolCall.result) return false;
 
   try {
-    const parsed = JSON.parse(toolCall.result);
-    if (parsed.data) {
+    const parsed: unknown = JSON.parse(toolCall.result);
+    if (parsed && typeof parsed === 'object' && 'data' in parsed && parsed.data) {
       const yamlStr = yaml.dump(parsed.data);
       const fenceResult = parseDndCodeFence(entityType, yamlStr);
       if (fenceResult) {

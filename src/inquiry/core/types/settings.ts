@@ -83,8 +83,9 @@ export function getBashToolBlockedCommands(commands: PlatformBlockedCommands): s
 }
 
 /**
- * Platform-specific Claude CLI paths.
- * @deprecated Use HostnameCliPaths instead. Kept for migration from older versions.
+ * Platform-specific Claude CLI paths (pre-HostnameCliPaths schema).
+ * Retained so legacy settings files can still be read and migrated to
+ * HostnameCliPaths.
  */
 export interface PlatformCliPaths {
   macos: string;
@@ -93,12 +94,10 @@ export interface PlatformCliPaths {
 }
 
 /** Platform key for CLI paths. Used for migration only. */
-// eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
 export type CliPlatformKey = keyof PlatformCliPaths;
 
 /**
- * Map process.platform to CLI platform key.
- * @deprecated Used for migration only.
+ * Map process.platform to CLI platform key. Used for migration only.
  */
 export function getCliPlatformKey(): CliPlatformKey {
   switch (process.platform) {
@@ -126,7 +125,8 @@ export type ApprovalDecision = 'allow' | 'allow-always' | 'deny' | 'cancel';
 
 /**
  * Legacy permission format (pre-CC compatibility).
- * @deprecated Use CCPermissions instead
+ * Retained so old settings files can still be read and migrated.
+ * New code should use CCPermissions.
  */
 export interface LegacyPermission {
   toolName: string;
@@ -398,7 +398,6 @@ export interface InstructionRefineResult {
  *   { toolName: "Read", pattern: "/path/to/file" } → "Read(/path/to/file)"
  *   { toolName: "WebSearch", pattern: "*" } → "WebSearch"
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated -- accepts legacy input for migration
 export function legacyPermissionToCCRule(legacy: LegacyPermission): PermissionRule {
   const pattern = legacy.pattern.trim();
 
@@ -415,7 +414,6 @@ export function legacyPermissionToCCRule(legacy: LegacyPermission): PermissionRu
  * Only 'always' scope permissions are converted (session = ephemeral).
  */
 export function legacyPermissionsToCCPermissions(
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- accepts legacy input for migration
   legacyPermissions: LegacyPermission[]
 ): CCPermissions {
   const allow: PermissionRule[] = [];

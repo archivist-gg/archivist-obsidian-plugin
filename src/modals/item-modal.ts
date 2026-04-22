@@ -62,7 +62,7 @@ export class ItemModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("archivist-modal");
-    contentEl.createEl("h2", { text: "Create Magic Item" });
+    contentEl.createEl("h2", { text: "Create magic item" });
 
     addTextField(contentEl, "Name *", "Flame Tongue Longsword", (v) => (this.form.name = v));
     addTextField(contentEl, "Type", "weapon (longsword)", (v) => (this.form.type = v));
@@ -84,7 +84,7 @@ export class ItemModal extends Modal {
     // Insert button
     const btnContainer = contentEl.createDiv({ cls: "archivist-modal-buttons" });
     const insertBtn = btnContainer.createEl("button", {
-      text: "Insert Item Block",
+      text: "Insert item block",
       cls: "mod-cta",
     });
     insertBtn.addEventListener("click", () => {

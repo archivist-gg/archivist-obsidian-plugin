@@ -400,8 +400,24 @@ export class ExternalContextSelector {
   private async openFolderPicker() {
     try {
       // Access Electron's dialog through remote.
+      interface ElectronOpenDialogResult {
+        canceled: boolean;
+        filePaths: string[];
+      }
+      interface ElectronDialog {
+        showOpenDialog: (options: {
+          properties: string[];
+          title: string;
+        }) => Promise<ElectronOpenDialogResult>;
+      }
+      interface ElectronRemote {
+        dialog: ElectronDialog;
+      }
+      interface ElectronModule {
+        remote: ElectronRemote;
+      }
       // eslint-disable-next-line @typescript-eslint/no-require-imports -- `electron` is not a static dependency; it is only available inside Obsidian's desktop renderer.
-      const { remote } = require('electron');
+      const { remote }: ElectronModule = require('electron') as ElectronModule;
       const result = await remote.dialog.showOpenDialog({
         properties: ['openDirectory'],
         title: 'Select External Context',
@@ -449,7 +465,7 @@ export class ExternalContextSelector {
 
     // Header
     const headerEl = this.dropdownEl.createDiv({ cls: 'claudian-external-context-header' });
-    headerEl.setText('External Contexts');
+    headerEl.setText('External contexts');
 
     // Path list
     const listEl = this.dropdownEl.createDiv({ cls: 'claudian-external-context-list' });
@@ -494,8 +510,11 @@ export class ExternalContextSelector {
   /** Shorten path for display (replace home dir with ~) */
   private shortenPath(fullPath: string): string {
     try {
+      interface OsModule {
+        homedir: () => string;
+      }
       // eslint-disable-next-line @typescript-eslint/no-require-imports -- Node `os` is desktop-only; require keeps it out of the static dependency graph.
-      const os = require('os');
+      const os: OsModule = require('os') as OsModule;
       const homeDir = os.homedir();
       const normalize = (value: string) => value.replace(/\\/g, '/');
       const normalizedFull = normalize(fullPath);
@@ -640,7 +659,7 @@ export class McpServerSelector {
 
     // Header
     const headerEl = this.dropdownEl.createDiv({ cls: 'claudian-mcp-selector-header' });
-    headerEl.setText('MCP Servers');
+    headerEl.setText('MCP servers');
 
     // Server list
     const listEl = this.dropdownEl.createDiv({ cls: 'claudian-mcp-selector-list' });
@@ -787,15 +806,16 @@ export class ContextUsageMeter {
     const y2 = cy + radius * Math.sin(endRad);
 
     const gaugeEl = this.container.createDiv({ cls: 'claudian-context-meter-gauge' });
+    const doc = this.container.doc;
     const svgNS = 'http://www.w3.org/2000/svg';
-    const svgEl = document.createElementNS(svgNS, 'svg');
+    const svgEl = doc.createElementNS(svgNS, 'svg');
     svgEl.setAttribute('width', String(size));
     svgEl.setAttribute('height', String(size));
     svgEl.setAttribute('viewBox', `0 0 ${size} ${size}`);
 
     const pathD = `M ${x1} ${y1} A ${radius} ${radius} 0 1 1 ${x2} ${y2}`;
 
-    const bgPath = document.createElementNS(svgNS, 'path');
+    const bgPath = doc.createElementNS(svgNS, 'path');
     bgPath.setAttribute('class', 'claudian-meter-bg');
     bgPath.setAttribute('d', pathD);
     bgPath.setAttribute('fill', 'none');
@@ -803,7 +823,7 @@ export class ContextUsageMeter {
     bgPath.setAttribute('stroke-linecap', 'round');
     svgEl.appendChild(bgPath);
 
-    const fillPath = document.createElementNS(svgNS, 'path');
+    const fillPath = doc.createElementNS(svgNS, 'path');
     fillPath.setAttribute('class', 'claudian-meter-fill');
     fillPath.setAttribute('d', pathD);
     fillPath.setAttribute('fill', 'none');

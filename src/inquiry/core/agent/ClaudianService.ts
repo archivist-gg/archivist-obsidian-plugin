@@ -656,7 +656,7 @@ export class ClaudianService {
    * The next message only dequeues after onTurnComplete(), which calls onDone()
    * on the current handler. A new handler is registered only when the next query starts.
    */
-  private async routeMessage(message: SDKMessage): Promise<void> {
+  private routeMessage(message: SDKMessage): Promise<void> {
     // Note: Session expiration errors are handled in catch blocks (queryViaSDK, handleAbort)
     // The SDK throws errors as exceptions, not as message types
 
@@ -733,7 +733,7 @@ export class ClaudianService {
       } else {
         this._autoTurnSawStreamText = false;
         if (this._autoTurnBuffer.length === 0) {
-          return;
+          return Promise.resolve();
         }
 
         // Flush buffered chunks from auto-triggered turn (no handler was registered)
@@ -746,6 +746,7 @@ export class ClaudianService {
         }
       }
     }
+    return Promise.resolve();
   }
 
   private registerResponseHandler(handler: ResponseHandler): void {
@@ -1286,6 +1287,7 @@ export class ClaudianService {
     }
 
     async function* messageGenerator() {
+      await Promise.resolve(); // keep async generator signature for yield* compatibility
       yield {
         type: 'user',
         message: {
@@ -1502,7 +1504,7 @@ export class ClaudianService {
     this.resetSession();
   }
 
-  async rewindFiles(sdkUserUuid: string, dryRun?: boolean): Promise<RewindFilesResult> {
+  rewindFiles(sdkUserUuid: string, dryRun?: boolean): Promise<RewindFilesResult> {
     if (!this.persistentQuery) throw new Error('No active query');
     if (this.shuttingDown) throw new Error('Service is shutting down');
     return this.persistentQuery.rewindFiles(sdkUserUuid, { dryRun });

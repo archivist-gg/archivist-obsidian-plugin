@@ -56,7 +56,7 @@ export class ConversationController {
   /** Clear the input element (works for both textarea and contentEditable). */
   private clearInputEl(): void {
     const el = this.deps.getInputEl();
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
+    if (el.instanceOf(HTMLTextAreaElement) || el.instanceOf(HTMLInputElement)) {
       el.value = '';
     } else {
       // contentEditable div: remove all children safely
@@ -67,7 +67,7 @@ export class ConversationController {
   /** Set text in the input element (works for both textarea and contentEditable). */
   private setInputText(text: string): void {
     const el = this.deps.getInputEl();
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
+    if (el.instanceOf(HTMLTextAreaElement) || el.instanceOf(HTMLInputElement)) {
       el.value = text;
     } else {
       el.textContent = text;
@@ -718,7 +718,7 @@ export class ConversationController {
     const titleEl = item.querySelector('.claudian-history-item-title') as HTMLElement;
     if (!titleEl) return;
 
-    const input = document.createElement('input');
+    const input = item.doc.createElement('input');
     input.type = 'text';
     input.className = 'claudian-rename-input';
     input.value = currentTitle;

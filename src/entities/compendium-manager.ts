@@ -1,5 +1,11 @@
 import * as yaml from "js-yaml";
-import { TFile, TFolder, type Vault, type TAbstractFile } from "obsidian";
+import {
+  TFile,
+  TFolder,
+  type FileManager,
+  type Vault,
+  type TAbstractFile,
+} from "obsidian";
 import {
   EntityNote,
   generateEntityMarkdown,
@@ -129,11 +135,18 @@ export class CompendiumManager {
   private compendiums = new Map<string, Compendium>();
   private registry: EntityRegistry;
   private vault: Vault;
+  private fileManager: FileManager;
   private compendiumRoot: string;
 
-  constructor(registry: EntityRegistry, vault: Vault, compendiumRoot: string) {
+  constructor(
+    registry: EntityRegistry,
+    vault: Vault,
+    fileManager: FileManager,
+    compendiumRoot: string,
+  ) {
     this.registry = registry;
     this.vault = vault;
+    this.fileManager = fileManager;
     this.compendiumRoot = compendiumRoot;
   }
 
@@ -378,7 +391,7 @@ export class CompendiumManager {
 
     const file = this.vault.getAbstractFileByPath(existing.filePath);
     if (file) {
-      await this.vault.delete(file);
+      await this.fileManager.trashFile(file);
     }
 
     this.registry.unregister(slug);

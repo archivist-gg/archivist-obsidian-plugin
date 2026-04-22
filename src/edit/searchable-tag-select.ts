@@ -124,7 +124,7 @@ export function createSearchableTagSelect(options: SearchableTagSelectOptions): 
 
   input.addEventListener("blur", () => {
     wrapper.removeClass("archivist-tag-select-focused");
-    setTimeout(hideDropdown, 150);
+    input.win.setTimeout(hideDropdown, 150);
   });
 
   input.addEventListener("input", () => showDropdown());

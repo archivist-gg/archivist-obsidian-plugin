@@ -132,7 +132,7 @@ function renderCopyWidgetRefButton(container: HTMLElement, result: DndCodeFenceR
         await navigator.clipboard.writeText(refText);
       } catch { /* clipboard may fail in some contexts */ }
       labelSpan.setText("Copied!");
-      setTimeout(() => labelSpan.setText("Copy"), 2000);
+      container.win.setTimeout(() => labelSpan.setText("Copy"), 2000);
     })();
   });
 }
@@ -154,7 +154,7 @@ function renderUpdateButton(
       try {
         await onUpdate(entity.slug, result.data);
         labelSpan.setText("Updated!");
-        setTimeout(() => labelSpan.setText("Update"), 2000);
+        container.win.setTimeout(() => labelSpan.setText("Update"), 2000);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
         new Notice(`Failed to update: ${msg}`);
@@ -288,7 +288,7 @@ export function replaceDndCodeFences(
     const parent = insertTarget.parentElement;
     if (!parent) continue;
 
-    const container = document.createElement("div");
+    const container = el.doc.createElement("div");
     parent.insertBefore(container, insertTarget);
     insertTarget.remove();
 

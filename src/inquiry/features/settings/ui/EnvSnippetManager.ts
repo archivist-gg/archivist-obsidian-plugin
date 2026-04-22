@@ -4,6 +4,7 @@ import { Modal, Notice, setIcon, Setting } from 'obsidian';
 import type { EnvSnippet } from '../../../core/types';
 import { t } from '../../../i18n';
 import type InquiryModule from '../../../InquiryModule';
+import { confirmDelete } from '../../../shared/modals/ConfirmModal';
 import { formatContextLimit, getCustomModelIds, parseContextLimit, parseEnvironmentVariables } from '../../../utils/env';
 import type { ClaudianView } from '../../chat/ClaudianView';
 
@@ -164,7 +165,7 @@ export class EnvSnippetModal extends Modal {
     saveBtn.addEventListener('click', () => saveSnippet());
 
     // Focus name input after modal is rendered (timeout for Windows compatibility)
-    setTimeout(() => nameEl?.focus(), 50);
+    activeWindow.setTimeout(() => nameEl?.focus(), 50);
   }
 
   onClose() {
@@ -255,7 +256,11 @@ export class EnvSnippetManager {
       deleteBtn.addEventListener('click', () => {
         void (async (): Promise<void> => {
           try {
-            if (confirm(`Delete environment snippet "${snippet.name}"?`)) {
+            const confirmed = await confirmDelete(
+              this.plugin.app,
+              `Delete environment snippet "${snippet.name}"?`
+            );
+            if (confirmed) {
               await this.deleteSnippet(snippet);
             }
           } catch {
@@ -266,7 +271,7 @@ export class EnvSnippetManager {
     }
   }
 
-  private async saveCurrentEnv() {
+  private saveCurrentEnv() {
     const modal = new EnvSnippetModal(
       this.plugin.app,
       this.plugin,
@@ -284,7 +289,7 @@ export class EnvSnippetManager {
   private async insertSnippet(snippet: EnvSnippet) {
     const snippetContent = snippet.envVars.trim();
 
-    const envTextarea = document.querySelector('.claudian-settings-env-textarea') as HTMLTextAreaElement;
+    const envTextarea = activeDocument.querySelector('.claudian-settings-env-textarea') as HTMLTextAreaElement;
     if (envTextarea) {
       envTextarea.value = snippetContent;
     } else {

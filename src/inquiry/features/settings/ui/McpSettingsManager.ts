@@ -5,6 +5,7 @@ import { McpStorage } from '../../../core/storage';
 import type { ClaudianMcpServer, McpServerConfig, McpServerType } from '../../../core/types';
 import { DEFAULT_MCP_SERVER, getMcpServerType } from '../../../core/types';
 import type InquiryModule from '../../../InquiryModule';
+import { confirmDelete } from '../../../shared/modals/ConfirmModal';
 import { McpServerModal } from './McpServerModal';
 import { McpTestModal } from './McpTestModal';
 
@@ -81,13 +82,13 @@ export class McpSettingsManager {
       dropdown.toggleClass('is-visible', !dropdown.hasClass('is-visible'));
     });
 
-    document.addEventListener('click', () => {
+    activeDocument.addEventListener('click', () => {
       dropdown.removeClass('is-visible');
     });
 
     if (this.servers.length === 0) {
       const emptyEl = this.containerEl.createDiv({ cls: 'claudian-mcp-empty' });
-      emptyEl.setText('No MCP servers configured. Click "Add" to add one.');
+      emptyEl.setText('No MCP servers configured. Click "add" to add one.');
       return;
     }
 
@@ -375,7 +376,11 @@ export class McpSettingsManager {
   }
 
   private async deleteServer(server: ClaudianMcpServer) {
-    if (!confirm(`Delete MCP server "${server.name}"?`)) {
+    const confirmed = await confirmDelete(
+      this.plugin.app,
+      `Delete MCP server "${server.name}"?`
+    );
+    if (!confirmed) {
       return;
     }
 

@@ -447,7 +447,8 @@ export class MessageRenderer {
   showFullImage(image: ImageAttachment): void {
     const dataUri = `data:${image.mediaType};base64,${image.data}`;
 
-    const overlay = document.body.createDiv({ cls: 'claudian-image-modal-overlay' });
+    const doc = this.messagesEl.doc;
+    const overlay = doc.body.createDiv({ cls: 'claudian-image-modal-overlay' });
     const modal = overlay.createDiv({ cls: 'claudian-image-modal' });
 
     modal.createEl('img', {
@@ -467,7 +468,7 @@ export class MessageRenderer {
     };
 
     const close = () => {
-      document.removeEventListener('keydown', handleEsc);
+      doc.removeEventListener('keydown', handleEsc);
       overlay.remove();
     };
 
@@ -475,7 +476,7 @@ export class MessageRenderer {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) close();
     });
-    document.addEventListener('keydown', handleEsc);
+    doc.addEventListener('keydown', handleEsc);
   }
 
   /**
@@ -529,7 +530,7 @@ export class MessageRenderer {
                 try {
                   await navigator.clipboard.writeText(code.textContent || '');
                   copyBtn.setText('Copied!');
-                  setTimeout(() => copyBtn.setText('Copy'), 2000);
+                  this.messagesEl.win.setTimeout(() => copyBtn.setText('Copy'), 2000);
                 } catch {
                   // Clipboard API may fail in non-secure contexts
                 }
@@ -586,7 +587,7 @@ export class MessageRenderer {
     // Match @path/file.ext patterns in text
     const MENTION_REGEX = /@([\w./-]+\.\w+)/g;
 
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+    const walker = el.doc.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
       acceptNode: (node: Text) => {
         // Skip nodes inside <pre> or <code> elements
         let parent = node.parentElement;
@@ -658,10 +659,11 @@ export class MessageRenderer {
         // Replace the text node with the parts
         const parent = textNode.parentNode;
         if (!parent) continue;
-        const fragment = document.createDocumentFragment();
+        const doc = el.doc;
+        const fragment = doc.createDocumentFragment();
         for (const part of parts) {
           if (typeof part === 'string') {
-            fragment.appendChild(document.createTextNode(part));
+            fragment.appendChild(doc.createTextNode(part));
           } else {
             fragment.appendChild(part);
           }
@@ -685,7 +687,7 @@ export class MessageRenderer {
     const copyBtn = textEl.createSpan({ cls: 'claudian-text-copy-btn' });
     setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
 
-    let feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+    let feedbackTimeout: number | null = null;
 
     copyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -697,17 +699,18 @@ export class MessageRenderer {
           return;
         }
 
+        const win = textEl.win;
         // Clear any pending timeout from rapid clicks
-        if (feedbackTimeout) {
-          clearTimeout(feedbackTimeout);
+        if (feedbackTimeout !== null) {
+          win.clearTimeout(feedbackTimeout);
         }
 
         // Show "copied!" feedback
         copyBtn.empty();
-        copyBtn.setText('copied!');
+        copyBtn.setText('Copied!');
         copyBtn.classList.add('copied');
 
-        feedbackTimeout = setTimeout(() => {
+        feedbackTimeout = win.setTimeout(() => {
           copyBtn.empty();
           setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
           copyBtn.classList.remove('copied');
@@ -752,7 +755,7 @@ export class MessageRenderer {
     setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
     copyBtn.setAttribute('aria-label', 'Copy message');
 
-    let feedbackTimeout: ReturnType<typeof setTimeout> | null = null;
+    let feedbackTimeout: number | null = null;
 
     copyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -762,11 +765,12 @@ export class MessageRenderer {
         } catch {
           return;
         }
-        if (feedbackTimeout) clearTimeout(feedbackTimeout);
+        const win = msgEl.win;
+        if (feedbackTimeout !== null) win.clearTimeout(feedbackTimeout);
         copyBtn.empty();
-        copyBtn.setText('copied!');
+        copyBtn.setText('Copied!');
         copyBtn.classList.add('copied');
-        feedbackTimeout = setTimeout(() => {
+        feedbackTimeout = win.setTimeout(() => {
           copyBtn.empty();
           setIcon(copyBtn, MessageRenderer.COPY_ICON_NAME);
           copyBtn.classList.remove('copied');

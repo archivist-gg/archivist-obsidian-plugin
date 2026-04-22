@@ -7,6 +7,8 @@ import { setIcon } from "obsidian";
  * is safe to call repeatedly on the same container.
  */
 export function enhanceCodeBlocks(container: HTMLElement): void {
+  const doc = container.doc;
+  const win = container.win;
   const codeEls = container.querySelectorAll("pre > code");
 
   for (const codeEl of Array.from(codeEls)) {
@@ -23,22 +25,22 @@ export function enhanceCodeBlocks(container: HTMLElement): void {
     pre.classList.add("archivist-code-enhanced");
 
     // Build wrapper that will contain header + pre
-    const wrapper = document.createElement("div");
+    const wrapper = doc.createElement("div");
     wrapper.className = "archivist-inquiry-code-wrapper";
 
     // Header row: language label + copy button
-    const header = document.createElement("div");
+    const header = doc.createElement("div");
     header.className = "archivist-inquiry-code-header";
 
-    const langLabel = document.createElement("span");
+    const langLabel = doc.createElement("span");
     langLabel.className = "archivist-inquiry-code-lang";
     langLabel.textContent = language;
     header.appendChild(langLabel);
 
-    const copyBtn = document.createElement("span");
+    const copyBtn = doc.createElement("span");
     copyBtn.className = "archivist-inquiry-code-copy";
     setIcon(copyBtn, "copy");
-    const copyLabel = document.createElement("span");
+    const copyLabel = doc.createElement("span");
     copyLabel.textContent = "Copy";
     copyBtn.appendChild(copyLabel);
     header.appendChild(copyBtn);
@@ -49,13 +51,13 @@ export function enhanceCodeBlocks(container: HTMLElement): void {
       void navigator.clipboard.writeText(text);
       copyBtn.empty();
       setIcon(copyBtn, "check");
-      const copiedLabel = document.createElement("span");
+      const copiedLabel = doc.createElement("span");
       copiedLabel.textContent = "Copied";
       copyBtn.appendChild(copiedLabel);
-      setTimeout(() => {
+      win.setTimeout(() => {
         copyBtn.empty();
         setIcon(copyBtn, "copy");
-        const resetLabel = document.createElement("span");
+        const resetLabel = doc.createElement("span");
         resetLabel.textContent = "Copy";
         copyBtn.appendChild(resetLabel);
       }, 2000);

@@ -35,7 +35,7 @@ export class InlineExitPlanMode {
     this.resolveCallback = resolve;
     this.signal = signal;
     this.renderContent = renderContent;
-    this.boundKeyDown = this.handleKeyDown.bind(this);
+    this.boundKeyDown = (e: KeyboardEvent) => { this.handleKeyDown(e); };
   }
 
   render(): void {
@@ -144,9 +144,12 @@ export class InlineExitPlanMode {
     }
 
     try {
+      interface FsModule {
+        readFileSync: (path: string, encoding: string) => string;
+      }
       // eslint-disable-next-line @typescript-eslint/no-require-imports -- Node `fs` is desktop-only; dynamic require keeps it out of the mobile bundle graph.
-      const fs = require('fs');
-      const content = fs.readFileSync(planFilePath, 'utf-8') as string;
+      const fs: FsModule = require('fs') as FsModule;
+      const content = fs.readFileSync(planFilePath, 'utf-8');
       return content.trim() || null;
     } catch (err) {
       this.planReadError = err instanceof Error ? err.message : 'unknown error';
@@ -237,7 +240,7 @@ export class InlineExitPlanMode {
 
         if (item.hasClass('claudian-ask-custom-item')) {
           const input = item.querySelector('.claudian-ask-custom-text') as HTMLInputElement;
-          if (input && document.activeElement === input) {
+          if (input && this.containerEl.doc.activeElement === input) {
             input.blur();
             this.isInputFocused = false;
           }

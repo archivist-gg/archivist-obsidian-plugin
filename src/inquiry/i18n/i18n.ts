@@ -58,7 +58,7 @@ export function t(key: TranslationKey, params?: Record<string, string | number>)
   }
 
   if (params) {
-    return value.replace(/\{(\w+)\}/g, (_, param) => {
+    return value.replace(/\{(\w+)\}/g, (_, param: string) => {
       return params[param]?.toString() ?? `{${param}}`;
     });
   }
@@ -84,7 +84,7 @@ function tFallback(key: TranslationKey, params?: Record<string, string | number>
   }
 
   if (params) {
-    return value.replace(/\{(\w+)\}/g, (_, param) => {
+    return value.replace(/\{(\w+)\}/g, (_, param: string) => {
       return params[param]?.toString() ?? `{${param}}`;
     });
   }

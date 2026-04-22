@@ -11,7 +11,7 @@ export function createStopSubagentHook(
 ): HookCallbackMatcher {
   return {
     hooks: [
-      async () => {
+      () => {
         let hasRunning: boolean;
         try {
           hasRunning = getState().hasRunning;
@@ -21,10 +21,10 @@ export function createStopSubagentHook(
         }
 
         if (hasRunning) {
-          return { decision: 'block' as const, reason: STOP_BLOCK_REASON };
+          return Promise.resolve({ decision: 'block' as const, reason: STOP_BLOCK_REASON });
         }
 
-        return {};
+        return Promise.resolve({});
       },
     ],
   };

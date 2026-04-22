@@ -59,7 +59,7 @@ export class InstructionModal extends Modal {
   onOpen() {
     const { contentEl } = this;
     contentEl.addClass('claudian-instruction-modal');
-    this.setTitle('Add Custom Instruction');
+    this.setTitle('Add custom instruction');
 
     // User input section (always visible)
     const inputSection = contentEl.createDiv({ cls: 'claudian-instruction-section' });

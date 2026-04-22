@@ -51,7 +51,7 @@ export class InlineAskUserQuestion {
       showCustomInput: config?.showCustomInput ?? true,
       immediateSelect: config?.immediateSelect ?? false,
     };
-    this.boundKeyDown = this.handleKeyDown.bind(this);
+    this.boundKeyDown = (e: KeyboardEvent) => { this.handleKeyDown(e); };
   }
 
   render(): void {
@@ -107,17 +107,20 @@ export class InlineAskUserQuestion {
   }
 
   private parseQuestions(): AskUserQuestionItem[] {
-    const raw = this.input.questions;
+    const raw: unknown = this.input.questions;
     if (!Array.isArray(raw)) return [];
 
-    return raw
+    return (raw as unknown[])
       .filter(
-        (q): q is { question: string; header?: string; options: unknown[]; multiSelect?: boolean } =>
-          typeof q === 'object' &&
-          q !== null &&
-          typeof q.question === 'string' &&
-          Array.isArray(q.options) &&
-          q.options.length > 0,
+        (q): q is { question: string; header?: string; options: unknown[]; multiSelect?: boolean } => {
+          if (typeof q !== 'object' || q === null) return false;
+          const obj = q as Record<string, unknown>;
+          return (
+            typeof obj.question === 'string' &&
+            Array.isArray(obj.options) &&
+            obj.options.length > 0
+          );
+        },
       )
       .map((q, idx) => ({
         question: q.question,
@@ -469,7 +472,7 @@ export class InlineAskUserQuestion {
 
         if (item.hasClass('claudian-ask-custom-item')) {
           const input = item.querySelector('.claudian-ask-custom-text') as HTMLInputElement;
-          if (input && document.activeElement === input) {
+          if (input && this.containerEl.doc.activeElement === input) {
             input.blur();
             this.isInputFocused = false;
           }
@@ -540,7 +543,7 @@ export class InlineAskUserQuestion {
         e.preventDefault();
         e.stopPropagation();
         this.isInputFocused = false;
-        (document.activeElement as HTMLElement)?.blur();
+        (this.containerEl.doc.activeElement as HTMLElement | null)?.blur();
         this.rootEl.focus();
         return;
       }
@@ -548,7 +551,7 @@ export class InlineAskUserQuestion {
         e.preventDefault();
         e.stopPropagation();
         this.isInputFocused = false;
-        (document.activeElement as HTMLElement)?.blur();
+        (this.containerEl.doc.activeElement as HTMLElement | null)?.blur();
         if (e.key === 'Tab' && e.shiftKey) {
           this.switchTab(this.activeTabIndex - 1);
         } else {

@@ -77,7 +77,6 @@ interface LegacySettingsJson {
   thinkingBudget?: string;
   permissionMode?: string;
   lastNonPlanPermissionMode?: string;
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- legacy schema shape used for migration only
   permissions?: LegacyPermission[];
   excludedTags?: string[];
   mediaFolder?: string;
@@ -363,8 +362,8 @@ export class StorageService {
 
   private async loadDataJson(): Promise<LegacyDataJson | null> {
     try {
-      const data = await this.plugin.loadData();
-      return data || null;
+      const data = (await this.plugin.loadData()) as LegacyDataJson | null | undefined;
+      return data ?? null;
     } catch {
       // data.json may not exist on fresh installs
       return null;
@@ -389,38 +388,38 @@ export class StorageService {
     return this.adapter;
   }
 
-  async getPermissions(): Promise<CCPermissions> {
+  getPermissions(): Promise<CCPermissions> {
     return this.ccSettings.getPermissions();
   }
 
-  async updatePermissions(permissions: CCPermissions): Promise<void> {
+  updatePermissions(permissions: CCPermissions): Promise<void> {
     return this.ccSettings.updatePermissions(permissions);
   }
 
-  async addAllowRule(rule: string): Promise<void> {
+  addAllowRule(rule: string): Promise<void> {
     return this.ccSettings.addAllowRule(createPermissionRule(rule));
   }
 
-  async addDenyRule(rule: string): Promise<void> {
+  addDenyRule(rule: string): Promise<void> {
     return this.ccSettings.addDenyRule(createPermissionRule(rule));
   }
 
   /**
    * Remove a permission rule from all lists.
    */
-  async removePermissionRule(rule: string): Promise<void> {
+  removePermissionRule(rule: string): Promise<void> {
     return this.ccSettings.removeRule(createPermissionRule(rule));
   }
 
-  async updateClaudianSettings(updates: Partial<StoredClaudianSettings>): Promise<void> {
+  updateClaudianSettings(updates: Partial<StoredClaudianSettings>): Promise<void> {
     return this.claudianSettings.update(updates);
   }
 
-  async saveClaudianSettings(settings: StoredClaudianSettings): Promise<void> {
+  saveClaudianSettings(settings: StoredClaudianSettings): Promise<void> {
     return this.claudianSettings.save(settings);
   }
 
-  async loadClaudianSettings(): Promise<StoredClaudianSettings> {
+  loadClaudianSettings(): Promise<StoredClaudianSettings> {
     return this.claudianSettings.load();
   }
 
@@ -462,7 +461,10 @@ export class StorageService {
    */
   async getTabManagerState(): Promise<TabManagerPersistedState | null> {
     try {
-      const data = await this.plugin.loadData();
+      const data = (await this.plugin.loadData()) as
+        | { tabManagerState?: unknown }
+        | null
+        | undefined;
       if (data?.tabManagerState) {
         return this.validateTabManagerState(data.tabManagerState);
       }
@@ -514,7 +516,7 @@ export class StorageService {
 
   async setTabManagerState(state: TabManagerPersistedState): Promise<void> {
     try {
-      const data = (await this.plugin.loadData()) || {};
+      const data = ((await this.plugin.loadData()) as Record<string, unknown> | null | undefined) ?? {};
       data.tabManagerState = state;
       await this.plugin.saveData(data);
     } catch {

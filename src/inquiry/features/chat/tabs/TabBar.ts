@@ -134,7 +134,7 @@ export class TabBar {
   private showContextMenu(e: MouseEvent, item: TabBarItem, allItems: TabBarItem[]): void {
     this.closeContextMenu();
 
-    const menuEl = document.body.createDiv({ cls: 'archivist-tab-context-menu' });
+    const menuEl = this.containerEl.doc.body.createDiv({ cls: 'archivist-tab-context-menu' });
     menuEl.style.left = `${e.clientX}px`;
     menuEl.style.top = `${e.clientY}px`;
 
@@ -170,7 +170,7 @@ export class TabBar {
 
     this.contextMenuEl = menuEl;
     requestAnimationFrame(() => {
-      document.addEventListener('click', this.boundCloseContextMenu, { once: true });
+      this.containerEl.doc.addEventListener('click', this.boundCloseContextMenu, { once: true });
     });
   }
 
@@ -179,7 +179,7 @@ export class TabBar {
       this.contextMenuEl.remove();
       this.contextMenuEl = null;
     }
-    document.removeEventListener('click', this.boundCloseContextMenu);
+    this.containerEl.doc.removeEventListener('click', this.boundCloseContextMenu);
   }
 
   destroy(): void {

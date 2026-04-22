@@ -52,7 +52,7 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
     // Pass 1 — DC with explicit ability word
     result = result.replace(
       /DC (\d+)\s+(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)/gi,
-      (_match, n, abilityWord) => {
+      (_match: string, n: string, abilityWord: string) => {
         const dc = Number(n);
         const abil = abilityWordToKey(abilityWord);
         if (abil && dcTargets[abil] === dc) {
@@ -66,7 +66,7 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
     const atkTargets = computeAtkTargets(mods, ctx.profBonus);
     result = result.replace(
       /([+-])(\d+)\s+to\s+hit/g,
-      (_match, sign, n) => {
+      (_match: string, sign: string, n: string) => {
         const bonus = sign === "-" ? -Number(n) : Number(n);
         const candidates = ABILITY_KEYS.filter((k) => atkTargets[k] === bonus);
         if (candidates.length === 0) {
@@ -83,7 +83,14 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
     // optional ")" closer, optional "slashing" type word, required "damage" keyword.
     result = result.replace(
       /(?:(\d+)\s*\()?(\d+d\d+)(?:\s*([+-])\s*(\d+))?\s*\)?(?:\s+(\w+))?\s+damage/gi,
-      (_match, _average, dice, sign, bonusStr, typeWord) => {
+      (
+        _match: string,
+        _average: string | undefined,
+        dice: string,
+        sign: string | undefined,
+        bonusStr: string | undefined,
+        typeWord: string | undefined,
+      ) => {
         let inner = dice;
         if (bonusStr != null) {
           const bonus = sign === "-" ? -Number(bonusStr) : Number(bonusStr);
@@ -106,7 +113,7 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
     // re-matching DCs already inside backtick tags (idempotency).
     result = result.replace(
       /(?<!`)DC (\d+)(?!\s*(?:Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma))/gi,
-      (_match, n) => {
+      (_match: string, n: string) => {
         const dc = Number(n);
         const candidates = ABILITY_KEYS.filter((k) => dcTargets[k] === dc);
         if (ctx.spellAbility && candidates.includes(ctx.spellAbility)) {
@@ -128,7 +135,7 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
     // returns them untouched, so dice already inside tags are protected.
     result = result.replace(
       /`[^`]*`|(?<!\w)(\d+d\d+(?:\s*[+-]\s*\d+)?)(?!\w)/g,
-      (match, dice) => {
+      (match: string, dice: string | undefined) => {
         if (dice) return `\`dice:${dice.replace(/\s+/g, "")}\``;
         return match;
       },

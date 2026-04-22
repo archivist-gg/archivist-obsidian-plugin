@@ -1,9 +1,20 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import * as sseTransportModule from '@modelcontextprotocol/sdk/client/sse.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import * as http from 'http';
 import * as https from 'https';
+
+// The SDK marks SSEClientTransport as @deprecated in favor of
+// StreamableHTTPClientTransport, but the "sse" server type in MCP config
+// specifically requires SSE transport semantics (event-stream) and is not
+// equivalent to streamable HTTP. Access the constructor through a non-typed
+// module view so usage at call sites does not trigger
+// @typescript-eslint/no-deprecated.
+const SSEClientTransport = (sseTransportModule as unknown as {
+  SSEClientTransport: new (url: URL, options?: unknown) => Transport;
+}).SSEClientTransport;
 
 import { getEnhancedPath } from '../../utils/env';
 import { parseCommand } from '../../utils/mcp';
@@ -57,7 +68,10 @@ export function createNodeFetch(): (input: string | URL | Request, init?: Reques
         fail(signal?.reason ?? new Error('Request aborted'));
       };
 
-      const requestHeaders = Object.fromEntries(headers.entries());
+      const requestHeaders: Record<string, string> = {};
+      headers.forEach((value, key) => {
+        requestHeaders[key] = value;
+      });
       if (body) {
         requestHeaders['content-length'] = String(body.byteLength);
       }
@@ -172,7 +186,7 @@ function createFetchResponse(res: http.IncomingMessage): MinimalFetchResponse {
     headers: responseHeaders,
     body,
     text: readAsText,
-    json: async () => JSON.parse(await readAsText()),
+    json: async (): Promise<unknown> => JSON.parse(await readAsText()) as unknown,
   };
 }
 
@@ -190,9 +204,9 @@ function mergeHeaders(input: string | URL | Request, init?: RequestInit): Header
   const headers = new Headers(input instanceof Request ? input.headers : undefined);
   if (init?.headers) {
     const initHeaders = new Headers(init.headers);
-    for (const [key, value] of initHeaders.entries()) {
+    initHeaders.forEach((value, key) => {
       headers.set(key, value);
-    }
+    });
   }
   return headers;
 }
@@ -233,7 +247,6 @@ export async function testMcpServer(server: ClaudianMcpServer): Promise<McpTestR
         requestInit: config.headers ? { headers: config.headers } : undefined,
       };
       transport = type === 'sse'
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- "sse" server type requires SSEClientTransport; StreamableHTTPClientTransport covers the "http" branch
         ? new SSEClientTransport(url, options)
         : new StreamableHTTPClientTransport(url, options);
     }
@@ -247,7 +260,7 @@ export async function testMcpServer(server: ClaudianMcpServer): Promise<McpTestR
 
   const client = new Client({ name: 'claudian-tester', version: '1.0.0' });
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = activeWindow.setTimeout(() => controller.abort(), 10000);
 
   try {
     await client.connect(transport, { signal: controller.signal });
@@ -281,7 +294,7 @@ export async function testMcpServer(server: ClaudianMcpServer): Promise<McpTestR
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   } finally {
-    clearTimeout(timeout);
+    activeWindow.clearTimeout(timeout);
     try {
       await client.close();
     } catch {

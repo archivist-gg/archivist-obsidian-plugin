@@ -88,10 +88,11 @@ function renderLegendarySection(
     const resCount = monster.legendary_resistance;
     const resBlock = el("div", { cls: "archivist-legendary-resistance", parent });
     const resP = el("p", { cls: "archivist-legendary-resistance-text", parent: resBlock });
-    const nameStrong = document.createElement("strong");
+    const doc = resP.ownerDocument ?? activeDocument;
+    const nameStrong = doc.createElement("strong");
     nameStrong.textContent = `Legendary Resistance (${resCount}/Day). `;
     resP.appendChild(nameStrong);
-    resP.appendChild(document.createTextNode(
+    resP.appendChild(doc.createTextNode(
       `If the ${monsterName} fails a saving throw, it can choose to succeed instead.`
     ));
     renderLegendaryBoxes(resBlock, resCount);
@@ -157,13 +158,14 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
       valueEl.textContent = "0";
       return;
     }
-    valueEl.appendChild(document.createTextNode(String(monster.hp.average)));
+    const doc = valueEl.ownerDocument ?? activeDocument;
+    valueEl.appendChild(doc.createTextNode(String(monster.hp.average)));
     if (monster.hp.formula) {
-      valueEl.appendChild(document.createTextNode(" ("));
+      valueEl.appendChild(doc.createTextNode(" ("));
       // Run the formula through the inline-tag pipeline; decorateProseDice
       // inside convert5eToolsTags turns "19d12+133" into a dice pill.
       renderTextWithInlineTags(monster.hp.formula, valueEl, true, monsterCtx);
-      valueEl.appendChild(document.createTextNode(")"));
+      valueEl.appendChild(doc.createTextNode(")"));
     }
   });
   createPropertyLine(coreProps, "Speed", formatSpeed(monster.speed), true);
@@ -203,7 +205,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
         parent: td,
       });
       void scoreSpan;
-      td.appendChild(document.createTextNode(` (${formatModifier(mod)})`));
+      td.appendChild((td.ownerDocument ?? activeDocument).createTextNode(` (${formatModifier(mod)})`));
     }
   }
 

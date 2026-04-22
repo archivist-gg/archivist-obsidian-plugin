@@ -31,7 +31,7 @@ export function createBlocklistHook(getContext: () => BlocklistContext): HookCal
   return {
     matcher: TOOL_BASH,
     hooks: [
-      async (hookInput) => {
+      (hookInput) => {
         const input = hookInput as {
           tool_name: string;
           tool_input: { command?: string };
@@ -42,17 +42,17 @@ export function createBlocklistHook(getContext: () => BlocklistContext): HookCal
         const bashToolCommands = getBashToolBlockedCommands(context.blockedCommands);
         if (isCommandBlocked(command, bashToolCommands, context.enableBlocklist)) {
           new Notice('Command blocked by security policy');
-          return {
+          return Promise.resolve({
             continue: false,
             hookSpecificOutput: {
               hookEventName: 'PreToolUse' as const,
               permissionDecision: 'deny' as const,
               permissionDecisionReason: `Command blocked by blocklist: ${command}`,
             },
-          };
+          });
         }
 
-        return { continue: true };
+        return Promise.resolve({ continue: true });
       },
     ],
   };
@@ -64,7 +64,7 @@ export function createBlocklistHook(getContext: () => BlocklistContext): HookCal
 export function createVaultRestrictionHook(context: VaultRestrictionContext): HookCallbackMatcher {
   return {
     hooks: [
-      async (hookInput) => {
+      (hookInput) => {
         const input = hookInput as {
           tool_name: string;
           tool_input: Record<string, unknown>;
@@ -84,20 +84,20 @@ export function createVaultRestrictionHook(context: VaultRestrictionContext): Ho
               violation.type === 'export_path_read'
                 ? `Access denied: Command path "${violation.path}" is in an allowed export directory, but export paths are write-only.`
                 : `Access denied: Command path "${violation.path}" is outside the vault. Agent is restricted to vault directory only.`;
-            return {
+            return Promise.resolve({
               continue: false,
               hookSpecificOutput: {
                 hookEventName: 'PreToolUse' as const,
                 permissionDecision: 'deny' as const,
                 permissionDecisionReason: reason,
               },
-            };
+            });
           }
-          return { continue: true };
+          return Promise.resolve({ continue: true });
         }
 
         if (!isFileTool(toolName)) {
-          return { continue: true };
+          return Promise.resolve({ continue: true });
         }
 
         const filePath = getPathFromToolInput(toolName, input.tool_input);
@@ -107,36 +107,36 @@ export function createVaultRestrictionHook(context: VaultRestrictionContext): Ho
 
           // Allow full access to vault, readwrite, and context paths
           if (accessType === 'vault' || accessType === 'readwrite' || accessType === 'context') {
-            return { continue: true };
+            return Promise.resolve({ continue: true });
           }
 
           // Export paths are write-only
           if (isEditTool(toolName) && accessType === 'export') {
-            return { continue: true };
+            return Promise.resolve({ continue: true });
           }
 
           if (!isEditTool(toolName) && accessType === 'export') {
-            return {
+            return Promise.resolve({
               continue: false,
               hookSpecificOutput: {
                 hookEventName: 'PreToolUse' as const,
                 permissionDecision: 'deny' as const,
                 permissionDecisionReason: `Access denied: Path "${filePath}" is in an allowed export directory, but export paths are write-only.`,
               },
-            };
+            });
           }
 
-          return {
+          return Promise.resolve({
             continue: false,
             hookSpecificOutput: {
               hookEventName: 'PreToolUse' as const,
               permissionDecision: 'deny' as const,
               permissionDecisionReason: `Access denied: Path "${filePath}" is outside the vault. Agent is restricted to vault directory only.`,
             },
-          };
+          });
         }
 
-        return { continue: true };
+        return Promise.resolve({ continue: true });
       },
     ],
   };

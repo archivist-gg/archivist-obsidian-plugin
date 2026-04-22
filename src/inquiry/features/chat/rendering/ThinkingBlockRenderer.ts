@@ -8,7 +8,7 @@ export interface ThinkingBlockState {
   labelEl: HTMLElement;
   content: string;
   startTime: number;
-  timerInterval: ReturnType<typeof setInterval> | null;
+  timerInterval: number | null;
   isExpanded: boolean;
 }
 
@@ -31,7 +31,7 @@ export function createThinkingBlock(
   labelEl.setText('Thinking 0s...');
 
   // Start timer interval to update label every second
-  const timerInterval = setInterval(() => {
+  const timerInterval = parentEl.win.setInterval(() => {
     const elapsed = Math.floor((Date.now() - startTime) / 1000);
     labelEl.setText(`Thinking ${elapsed}s...`);
   }, 1000);
@@ -67,8 +67,8 @@ export async function appendThinkingContent(
 
 export function finalizeThinkingBlock(state: ThinkingBlockState): number {
   // Stop the timer
-  if (state.timerInterval) {
-    clearInterval(state.timerInterval);
+  if (state.timerInterval !== null) {
+    state.wrapperEl.win.clearInterval(state.timerInterval);
     state.timerInterval = null;
   }
 
@@ -88,8 +88,8 @@ export function finalizeThinkingBlock(state: ThinkingBlockState): number {
 }
 
 export function cleanupThinkingBlock(state: ThinkingBlockState | null) {
-  if (state?.timerInterval) {
-    clearInterval(state.timerInterval);
+  if (state?.timerInterval != null) {
+    state.wrapperEl.win.clearInterval(state.timerInterval);
   }
 }
 

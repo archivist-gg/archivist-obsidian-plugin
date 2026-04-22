@@ -1,6 +1,7 @@
 import type { TFile } from 'obsidian';
 import { setIcon } from 'obsidian';
 
+import { execContentEditableCommand } from '../../utils/contentEditable';
 import { buildExternalContextDisplayEntries } from '../../utils/externalContext';
 import { type ExternalContextFile, externalContextScanner } from '../../utils/externalContextScanner';
 import { extractMcpMentions } from '../../utils/mcp';
@@ -104,7 +105,7 @@ export class MentionDropdownController {
   private agentService: AgentMentionProvider | null = null;
   private entityRegistry: EntityRegistryLike | null = null;
   private fixed: boolean;
-  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private debounceTimer: number | null = null;
 
   constructor(
     containerEl: HTMLElement,
@@ -142,7 +143,7 @@ export class MentionDropdownController {
     const externalContexts = this.callbacks.getExternalContexts() || [];
     if (externalContexts.length === 0) return;
 
-    setTimeout(() => {
+    activeWindow.setTimeout(() => {
       try {
         externalContextScanner.scanPaths(externalContexts);
       } catch {
@@ -166,7 +167,7 @@ export class MentionDropdownController {
 
   destroy(): void {
     if (this.debounceTimer !== null) {
-      clearTimeout(this.debounceTimer);
+      activeWindow.clearTimeout(this.debounceTimer);
     }
     this.dropdown.destroy();
   }
@@ -188,10 +189,10 @@ export class MentionDropdownController {
 
   handleInputChange(): void {
     if (this.debounceTimer !== null) {
-      clearTimeout(this.debounceTimer);
+      activeWindow.clearTimeout(this.debounceTimer);
     }
 
-    this.debounceTimer = setTimeout(() => {
+    this.debounceTimer = activeWindow.setTimeout(() => {
       const text = this.input.value;
       this.updateMcpMentionsFromText(text);
 
@@ -596,7 +597,7 @@ export class MentionDropdownController {
 
     const inputRect = this.input.el.getBoundingClientRect();
     dropdownEl.addClass('claudian-mention-dropdown-fixed');
-    dropdownEl.style.bottom = `${window.innerHeight - inputRect.top + 4}px`;
+    dropdownEl.style.bottom = `${activeWindow.innerHeight - inputRect.top + 4}px`;
     dropdownEl.style.left = `${inputRect.left}px`;
     dropdownEl.style.width = `${Math.max(inputRect.width, 280)}px`;
   }
@@ -610,8 +611,7 @@ export class MentionDropdownController {
     const charsToRemove = textBeforeCursor.length - this.mentionStartIndex;
     this.input.removeTextBeforeCursor(charsToRemove);
     if (replacement) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- only reliable way to insert text while preserving undo stack in contenteditable inputs
-      document.execCommand('insertText', false, replacement);
+      execContentEditableCommand(activeDocument, 'insertText', replacement);
     }
   }
 
@@ -620,8 +620,7 @@ export class MentionDropdownController {
     const textBeforeCursor = this.input.getTextBeforeCursor();
     const charsToRemove = textBeforeCursor.length - this.mentionStartIndex;
     this.input.removeTextBeforeCursor(charsToRemove);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- only reliable way to insert text while preserving undo stack in contenteditable inputs
-    document.execCommand('insertText', false, '@');
+    execContentEditableCommand(activeDocument, 'insertText', '@');
 
     this.activeContextFilter = null;
     this.activeAgentFilter = false;

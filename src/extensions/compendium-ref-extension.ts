@@ -9,6 +9,7 @@ import {
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import { setIcon, Notice, MarkdownView, type WorkspaceLeaf } from "obsidian";
 import type ArchivistPlugin from "../main";
+import { confirm as confirmModal } from "../inquiry/shared/modals/ConfirmModal";
 import { parseMonster } from "../parsers/monster-parser";
 import { parseSpell } from "../parsers/spell-parser";
 import { parseItem } from "../parsers/item-parser";
@@ -85,10 +86,11 @@ class CompendiumRefWidget extends WidgetType {
   }
 
   toDOM(view: EditorView): HTMLElement {
+    const doc = view.dom.doc;
     const ref = parseCompendiumRef(this.refText);
 
     if (!ref || !registryRef) {
-      const err = document.createElement("code");
+      const err = doc.createElement("code");
       err.className = "archivist-compendium-ref-error";
       err.textContent = this.refText;
       return err;
@@ -97,36 +99,36 @@ class CompendiumRefWidget extends WidgetType {
     const entity = registryRef.getBySlug(ref.slug);
 
     if (ref.entityType && entity && entity.entityType !== ref.entityType) {
-      return this.notFoundEl(ref);
+      return this.notFoundEl(ref, doc);
     }
 
     if (!entity) {
-      return this.notFoundEl(ref);
+      return this.notFoundEl(ref, doc);
     }
 
     const rendered = this.renderEntityBlock(entity);
     if (!rendered) {
-      const err = document.createElement("div");
+      const err = doc.createElement("div");
       err.className = "archivist-compendium-ref-error";
       err.textContent = `Cannot render ${entity.entityType}: ${ref.slug}`;
       return err;
     }
 
-    // Badge — inside the stat block wrapper, top-right
-    const badge = document.createElement("div");
+    // Badge inside the stat block wrapper, top-right
+    const badge = doc.createElement("div");
     badge.className = "archivist-compendium-badge";
     badge.textContent = entity.compendium;
     rendered.appendChild(badge);
 
     // Container
-    const container = document.createElement("div");
+    const container = doc.createElement("div");
     container.className = "archivist-compendium-ref";
     container.tabIndex = 0;
     container.appendChild(rendered);
 
-    // Side buttons — column state lives here so it persists across re-renders
+    // Side buttons: column state lives here so it persists across re-renders
     let columns = 1;
-    const sideBtns = document.createElement("div");
+    const sideBtns = doc.createElement("div");
     sideBtns.className = "archivist-side-btns";
     container.appendChild(sideBtns);
 
@@ -234,6 +236,7 @@ class CompendiumRefWidget extends WidgetType {
     };
 
     const onCancelExit = () => {
+      const doc = container.doc;
       // Re-render view mode directly into the container
       while (container.firstChild) container.firstChild.remove();
 
@@ -241,7 +244,7 @@ class CompendiumRefWidget extends WidgetType {
       const freshEntity = registryRef?.getBySlug(entity.slug) ?? entity;
       const rendered = this.renderEntityBlock(freshEntity);
       if (rendered) {
-        const newBadge = document.createElement("div");
+        const newBadge = doc.createElement("div");
         newBadge.className = "archivist-compendium-badge";
         newBadge.textContent = freshEntity.compendium;
         rendered.appendChild(newBadge);
@@ -250,7 +253,7 @@ class CompendiumRefWidget extends WidgetType {
 
       // Re-render side buttons with fresh column state
       let cols = 1;
-      const newSideBtns = document.createElement("div");
+      const newSideBtns = doc.createElement("div");
       newSideBtns.className = "archivist-side-btns";
       container.appendChild(newSideBtns);
       this.renderViewSideButtons(newSideBtns, freshEntity, ref, view, container, () => cols, (c) => { cols = c; });
@@ -320,7 +323,10 @@ class CompendiumRefWidget extends WidgetType {
         message += `\n\nThis entity is referenced in ${refCount} other location${refCount === 1 ? "" : "s"}. Those references will break.`;
       }
 
-      if (confirm(message)) {
+      const app = pluginRef?.app;
+      if (!app) return;
+      void confirmModal(app, message, "Delete").then((ok) => {
+        if (!ok) return;
         // Remove ref from current document
         const { from, to } = this.getRange(container, view);
         view.dispatch({
@@ -334,28 +340,28 @@ class CompendiumRefWidget extends WidgetType {
             refreshAllCompendiumRefs(pluginRef);
           })
           .catch((e: Error) => new Notice(`Failed to delete: ${e.message}`));
-      }
+      });
     });
   }
 
-  private notFoundEl(ref: CompendiumRef): HTMLElement {
-    const el = document.createElement("div");
+  private notFoundEl(ref: CompendiumRef, doc: Document = activeDocument): HTMLElement {
+    const el = doc.createElement("div");
     el.className = "archivist-compendium-ref-error";
 
-    const icon = document.createElement("div");
+    const icon = doc.createElement("div");
     icon.className = "archivist-not-found-icon";
     setIcon(icon, "alert-triangle");
     el.appendChild(icon);
 
-    const textWrap = document.createElement("div");
+    const textWrap = doc.createElement("div");
     textWrap.className = "archivist-not-found-text";
 
-    const label = document.createElement("div");
+    const label = doc.createElement("div");
     label.className = "archivist-not-found-label";
     label.textContent = "Entity not found";
     textWrap.appendChild(label);
 
-    const refText = document.createElement("div");
+    const refText = doc.createElement("div");
     refText.className = "archivist-not-found-ref";
     refText.textContent = ref.entityType ? `${ref.entityType}:${ref.slug}` : ref.slug;
     textWrap.appendChild(refText);

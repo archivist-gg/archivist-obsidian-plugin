@@ -637,9 +637,9 @@ export class StreamController {
     }
   }
 
-  private async handleSubagentChunk(chunk: StreamChunk, msg: ChatMessage): Promise<void> {
+  private handleSubagentChunk(chunk: StreamChunk, msg: ChatMessage): Promise<void> {
     if (!('parentToolUseId' in chunk) || !chunk.parentToolUseId) {
-      return;
+      return Promise.resolve();
     }
     const parentToolUseId = chunk.parentToolUseId;
     const { subagentManager } = this.deps;
@@ -652,7 +652,7 @@ export class StreamController {
     const subagentState = subagentManager.getSyncSubagent(parentToolUseId);
 
     if (!subagentState) {
-      return;
+      return Promise.resolve();
     }
 
     switch (chunk.type) {
@@ -684,6 +684,7 @@ export class StreamController {
       case 'thinking':
         break;
     }
+    return Promise.resolve();
   }
 
   /** Finalizes a sync subagent when its Agent tool_result is received. */
@@ -847,7 +848,7 @@ export class StreamController {
     if (attempt >= StreamController.ASYNC_SUBAGENT_RESULT_RETRY_DELAYS_MS.length) return;
 
     const delay = StreamController.ASYNC_SUBAGENT_RESULT_RETRY_DELAYS_MS[attempt];
-    setTimeout(() => {
+    this.deps.getMessagesEl().win.setTimeout(() => {
       void this.retryAsyncSubagentResult(subagent, vaultPath, sessionId, attempt);
     }, delay);
   }
@@ -959,9 +960,10 @@ export class StreamController {
     // Early return if no content element
     if (!state.currentContentEl) return;
 
+    const win = this.deps.getMessagesEl().win;
     // Clear any existing timeout
-    if (state.thinkingIndicatorTimeout) {
-      clearTimeout(state.thinkingIndicatorTimeout);
+    if (state.thinkingIndicatorTimeout !== null) {
+      win.clearTimeout(state.thinkingIndicatorTimeout);
       state.thinkingIndicatorTimeout = null;
     }
 
@@ -978,7 +980,7 @@ export class StreamController {
     }
 
     // Schedule showing the indicator after a delay
-    state.thinkingIndicatorTimeout = setTimeout(() => {
+    state.thinkingIndicatorTimeout = win.setTimeout(() => {
       state.thinkingIndicatorTimeout = null;
       // Double-check we still have a content element, no indicator exists, and no thinking block
       if (!state.currentContentEl || state.thinkingEl || state.currentThinkingState) return;
@@ -1000,8 +1002,8 @@ export class StreamController {
         if (!state.responseStartTime) return;
         // Check if element is still connected to DOM (prevents orphaned interval updates)
         if (!timerSpan.isConnected) {
-          if (state.flavorTimerInterval) {
-            clearInterval(state.flavorTimerInterval);
+          if (state.flavorTimerInterval !== null) {
+            win.clearInterval(state.flavorTimerInterval);
             state.flavorTimerInterval = null;
           }
           return;
@@ -1012,10 +1014,10 @@ export class StreamController {
       updateTimer(); // Initial update
 
       // Start interval to update timer every second
-      if (state.flavorTimerInterval) {
-        clearInterval(state.flavorTimerInterval);
+      if (state.flavorTimerInterval !== null) {
+        win.clearInterval(state.flavorTimerInterval);
       }
-      state.flavorTimerInterval = setInterval(updateTimer, 1000);
+      state.flavorTimerInterval = win.setInterval(updateTimer, 1000);
 
       // Queue indicator line (initially hidden)
       state.queueIndicatorEl = state.thinkingEl.createDiv({ cls: 'claudian-queue-indicator' });
@@ -1028,8 +1030,8 @@ export class StreamController {
     const { state } = this.deps;
 
     // Cancel any pending show timeout
-    if (state.thinkingIndicatorTimeout) {
-      clearTimeout(state.thinkingIndicatorTimeout);
+    if (state.thinkingIndicatorTimeout !== null) {
+      this.deps.getMessagesEl().win.clearTimeout(state.thinkingIndicatorTimeout);
       state.thinkingIndicatorTimeout = null;
     }
 
@@ -1070,7 +1072,7 @@ export class StreamController {
     const relativePath = normalizePathForVault(rawPath, vaultPath);
     if (!relativePath || relativePath.startsWith('/')) return;
 
-    setTimeout(() => {
+    this.deps.getMessagesEl().win.setTimeout(() => {
       const { vault } = this.deps.plugin.app;
       const file = vault.getAbstractFileByPath(relativePath);
       if (file instanceof TFile) {

@@ -313,7 +313,7 @@ export class InquiryModule {
       (leaf) => new ClaudianView(leaf, this)
     );
 
-    this.plugin.addRibbonIcon('bot', 'Open Archivist Inquiry', () => {
+    this.plugin.addRibbonIcon('bot', 'Open archivist inquiry', () => {
       void this.activateView();
     });
 
@@ -507,7 +507,6 @@ export class InquiryModule {
 
     if (!this.settings.claudeCliPathsByHost[hostname]) {
       const platformPaths = (this.settings as ClaudianSettings & LegacyClaudianSettings).claudeCliPaths;
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- migration path only
       const migratedPath = platformPaths?.[getCliPlatformKey()]?.trim() || this.settings.claudeCliPath?.trim();
 
       if (migratedPath) {

@@ -370,9 +370,10 @@ export class FileContextManager {
     const fileTags: string[] = [];
 
     if (cache.frontmatter?.tags) {
-      const fmTags = cache.frontmatter.tags;
+      const fmTags: unknown = cache.frontmatter.tags;
       if (Array.isArray(fmTags)) {
-        fileTags.push(...fmTags.map((t: string) => t.replace(/^#/, '')));
+        const stringTags = fmTags.filter((t: unknown): t is string => typeof t === 'string');
+        fileTags.push(...stringTags.map((t) => t.replace(/^#/, '')));
       } else if (typeof fmTags === 'string') {
         fileTags.push(fmTags.replace(/^#/, ''));
       }

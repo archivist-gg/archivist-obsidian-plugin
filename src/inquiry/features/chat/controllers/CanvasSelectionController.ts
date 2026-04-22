@@ -12,7 +12,7 @@ export class CanvasSelectionController {
   private contextRowEl: HTMLElement;
   private onVisibilityChange: (() => void) | null;
   private storedSelection: CanvasSelectionContext | null = null;
-  private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private pollInterval: number | null = null;
 
   constructor(
     app: App,
@@ -29,13 +29,13 @@ export class CanvasSelectionController {
   }
 
   start(): void {
-    if (this.pollInterval) return;
-    this.pollInterval = setInterval(() => this.poll(), CANVAS_POLL_INTERVAL);
+    if (this.pollInterval !== null) return;
+    this.pollInterval = this.inputEl.win.setInterval(() => this.poll(), CANVAS_POLL_INTERVAL);
   }
 
   stop(): void {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
+    if (this.pollInterval !== null) {
+      this.inputEl.win.clearInterval(this.pollInterval);
       this.pollInterval = null;
     }
     this.clear();
@@ -68,7 +68,7 @@ export class CanvasSelectionController {
         this.storedSelection = { canvasPath, nodeIds };
         this.updateIndicator();
       }
-    } else if (document.activeElement !== this.inputEl) {
+    } else if (this.inputEl.doc.activeElement !== this.inputEl) {
       if (this.storedSelection) {
         this.storedSelection = null;
         this.updateIndicator();

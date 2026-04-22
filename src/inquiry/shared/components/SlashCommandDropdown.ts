@@ -171,7 +171,7 @@ export class SlashCommandDropdown {
   }
 
   private isContentEditable(): boolean {
-    return this.inputEl instanceof HTMLDivElement && this.inputEl.contentEditable === 'true';
+    return this.inputEl.instanceOf(HTMLDivElement) && this.inputEl.contentEditable === 'true';
   }
 
   private getInputValue(): string {
@@ -184,11 +184,11 @@ export class SlashCommandDropdown {
   private getCursorPosition(): number {
     if (this.isContentEditable()) {
       // Use getTextBeforeCursor-like logic via Selection API
-      const sel = window.getSelection();
+      const sel = activeWindow.getSelection();
       if (!sel || sel.rangeCount === 0) return 0;
       try {
         const range = sel.getRangeAt(0);
-        const preRange = document.createRange();
+        const preRange = activeDocument.createRange();
         preRange.selectNodeContents(this.inputEl);
         preRange.setEnd(range.startContainer, range.startOffset);
         return (preRange.toString() ?? '').replace(/\u200B/g, '').length;
@@ -210,9 +210,9 @@ export class SlashCommandDropdown {
   private setCursorPosition(pos: number): void {
     if (this.isContentEditable()) {
       // For contentEditable, place cursor at end after setting value
-      const sel = window.getSelection();
+      const sel = activeWindow.getSelection();
       if (sel && this.inputEl.childNodes.length > 0) {
-        const range = document.createRange();
+        const range = activeDocument.createRange();
         const textNode = this.inputEl.firstChild;
         if (textNode && textNode.nodeType === Node.TEXT_NODE) {
           const offset = Math.min(pos, (textNode.textContent ?? '').length);
@@ -381,7 +381,7 @@ export class SlashCommandDropdown {
 
     const inputRect = this.inputEl.getBoundingClientRect();
     this.dropdownEl.addClass('claudian-slash-dropdown-fixed');
-    this.dropdownEl.style.bottom = `${window.innerHeight - inputRect.top + 4}px`;
+    this.dropdownEl.style.bottom = `${activeWindow.innerHeight - inputRect.top + 4}px`;
     this.dropdownEl.style.left = `${inputRect.left}px`;
     this.dropdownEl.style.width = `${Math.max(inputRect.width, 280)}px`;
   }

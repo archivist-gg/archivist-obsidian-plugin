@@ -22,7 +22,8 @@ interface ElOptions {
 }
 
 export function el(tag: string, opts?: ElOptions): HTMLElement {
-  const element = document.createElement(tag);
+  const doc = opts?.parent?.doc ?? activeDocument;
+  const element = doc.createElement(tag);
   if (opts) {
     if (opts.cls) {
       if (Array.isArray(opts.cls)) {
@@ -48,14 +49,15 @@ export function el(tag: string, opts?: ElOptions): HTMLElement {
 
 export function createSvgBar(parent: HTMLElement): SVGElement {
   const ns = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(ns, "svg");
+  const doc = parent.ownerDocument ?? activeDocument;
+  const svg = doc.createElementNS(ns, "svg");
   svg.setAttribute("class", "stat-block-bar");
   svg.setAttribute("height", "5");
   svg.setAttribute("width", "100%");
   svg.setAttribute("preserveAspectRatio", "none");
   svg.setAttribute("viewBox", "0 0 400 5");
 
-  const polyline = document.createElementNS(ns, "polyline");
+  const polyline = doc.createElementNS(ns, "polyline");
   polyline.setAttribute("points", "0,0 400,2.5 0,5");
   svg.appendChild(polyline);
 
@@ -194,9 +196,10 @@ function resolveTagContent(
 function renderStatBlockTag(
   tag: { type: string; content: string },
   monsterCtx?: MonsterFormulaContext,
+  doc: Document = activeDocument,
 ): HTMLElement {
   const config = STAT_TAG_CONFIGS[tag.type];
-  const span = document.createElement("span");
+  const span = doc.createElement("span");
 
   if (!config) {
     span.textContent = tag.content;
@@ -209,12 +212,12 @@ function renderStatBlockTag(
 
   span.addClasses(["archivist-stat-tag", config.cssClass]);
 
-  const iconEl = document.createElement("span");
+  const iconEl = doc.createElement("span");
   iconEl.addClass("archivist-stat-tag-icon");
   setIcon(iconEl, config.iconName);
   span.appendChild(iconEl);
 
-  const textEl = document.createElement("span");
+  const textEl = doc.createElement("span");
   textEl.textContent = config.format(resolvedContent);
   span.appendChild(textEl);
 
@@ -224,7 +227,7 @@ function renderStatBlockTag(
     span.setAttribute("title", `${config.format(resolvedContent)} -- Click to roll`);
     span.addEventListener("click", () => {
       void (async () => {
-        const api = (window as unknown as { DiceRoller?: unknown }).DiceRoller;
+        const api = (span.win as unknown as { DiceRoller?: unknown }).DiceRoller;
         if (api) {
           const notation = extractDiceNotation(resolvedTag);
           if (notation) {
@@ -235,7 +238,7 @@ function renderStatBlockTag(
             }
           }
         } else {
-          new Notice('Install the "Dice Roller" plugin from Community Plugins to roll dice.');
+          new Notice('Install the "dice roller" plugin from community plugins to roll dice.');
         }
       })();
     });
@@ -312,45 +315,46 @@ export function convert5eToolsTags(text: string): string {
  * Plain text without markdown is appended as regular text nodes.
  */
 export function appendMarkdownText(text: string, parent: HTMLElement): void {
+  const doc = parent.ownerDocument ?? activeDocument;
   const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      parent.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+      parent.appendChild(doc.createTextNode(text.slice(lastIndex, match.index)));
     }
 
     if (match[1] !== undefined) {
-      const strong = document.createElement("strong");
-      const em = document.createElement("em");
+      const strong = doc.createElement("strong");
+      const em = doc.createElement("em");
       em.textContent = match[1];
       strong.appendChild(em);
       parent.appendChild(strong);
     } else if (match[2] !== undefined) {
-      const strong = document.createElement("strong");
+      const strong = doc.createElement("strong");
       strong.textContent = match[2];
       parent.appendChild(strong);
     } else if (match[3] !== undefined) {
-      const em = document.createElement("em");
+      const em = doc.createElement("em");
       em.textContent = match[3];
       parent.appendChild(em);
     } else if (match[4] !== undefined) {
-      const em = document.createElement("em");
+      const em = doc.createElement("em");
       em.textContent = match[4];
       parent.appendChild(em);
     } else if (match[5] !== undefined) {
-      const del = document.createElement("del");
+      const del = doc.createElement("del");
       del.textContent = match[5];
       parent.appendChild(del);
     } else if (match[6] !== undefined) {
       const rawUrl = match[7];
       const safe = /^(https?:|mailto:|#)/i.test(rawUrl);
       if (!safe) {
-        // Degrade to plain text — no anchor for dangerous schemes
-        parent.appendChild(document.createTextNode(match[6]));
+        // Degrade to plain text, no anchor for dangerous schemes
+        parent.appendChild(doc.createTextNode(match[6]));
       } else {
-        const a = document.createElement("a");
+        const a = doc.createElement("a");
         a.textContent = match[6];
         a.href = rawUrl;
         a.setAttribute("target", "_blank");
@@ -363,7 +367,7 @@ export function appendMarkdownText(text: string, parent: HTMLElement): void {
   }
 
   if (lastIndex < text.length) {
-    parent.appendChild(document.createTextNode(text.slice(lastIndex)));
+    parent.appendChild(doc.createTextNode(text.slice(lastIndex)));
   }
 }
 
@@ -397,15 +401,16 @@ export function renderTextWithInlineTags(
 
     const tagText = match[1];
     const parsed = parseInlineTag(tagText);
+    const parentDoc = parent.ownerDocument ?? activeDocument;
     if (parsed) {
       if (statBlockMode) {
-        parent.appendChild(renderStatBlockTag(parsed, monsterCtx));
+        parent.appendChild(renderStatBlockTag(parsed, monsterCtx, parentDoc));
       } else {
-        parent.appendChild(renderInlineTag(parsed));
+        parent.appendChild(renderInlineTag(parsed, parentDoc));
       }
     } else {
       // Not a valid tag, render as code
-      const code = document.createElement("code");
+      const code = parentDoc.createElement("code");
       code.textContent = tagText;
       parent.appendChild(code);
     }

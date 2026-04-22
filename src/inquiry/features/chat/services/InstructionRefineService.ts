@@ -26,7 +26,7 @@ export class InstructionRefineService {
   }
 
   /** Refines a raw instruction from user input. */
-  async refineInstruction(
+  refineInstruction(
     rawInstruction: string,
     existingInstructions: string,
     onProgress?: RefineProgressCallback
@@ -38,12 +38,12 @@ export class InstructionRefineService {
   }
 
   /** Continues conversation with a follow-up message (for clarifications). */
-  async continueConversation(
+  continueConversation(
     message: string,
     onProgress?: RefineProgressCallback
   ): Promise<InstructionRefineResult> {
     if (!this.sessionId) {
-      return { success: false, error: 'No active conversation to continue' };
+      return Promise.resolve({ success: false, error: 'No active conversation to continue' });
     }
     return this.sendMessage(message, onProgress);
   }

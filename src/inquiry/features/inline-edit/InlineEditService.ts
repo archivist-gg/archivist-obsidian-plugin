@@ -123,7 +123,7 @@ export function buildInlineEditPrompt(request: InlineEditRequest): string {
 export function createReadOnlyHook(): HookCallbackMatcher {
   return {
     hooks: [
-      async (hookInput) => {
+      (hookInput) => {
         const input = hookInput as {
           tool_name: string;
           tool_input: Record<string, unknown>;
@@ -131,17 +131,17 @@ export function createReadOnlyHook(): HookCallbackMatcher {
         const toolName = input.tool_name;
 
         if (isReadOnlyTool(toolName)) {
-          return { continue: true };
+          return Promise.resolve({ continue: true });
         }
 
-        return {
+        return Promise.resolve({
           continue: false,
           hookSpecificOutput: {
             hookEventName: 'PreToolUse' as const,
             permissionDecision: 'deny' as const,
             permissionDecisionReason: `Inline edit mode: tool "${toolName}" is not allowed (read-only)`,
           },
-        };
+        });
       },
     ],
   };
@@ -152,7 +152,7 @@ export function createVaultRestrictionHook(vaultPath: string): HookCallbackMatch
 
   return {
     hooks: [
-      async (hookInput) => {
+      (hookInput) => {
         const input = hookInput as {
           tool_name: string;
           tool_input: Record<string, unknown>;
@@ -160,20 +160,20 @@ export function createVaultRestrictionHook(vaultPath: string): HookCallbackMatch
 
         const toolName = input.tool_name;
         if (!fileTools.includes(toolName as (typeof fileTools)[number])) {
-          return { continue: true };
+          return Promise.resolve({ continue: true });
         }
 
         const filePath = getPathFromToolInput(toolName, input.tool_input);
         if (!filePath) {
           // Fail-closed: deny if we can't determine the path for a file tool
-          return {
+          return Promise.resolve({
             continue: false,
             hookSpecificOutput: {
               hookEventName: 'PreToolUse' as const,
               permissionDecision: 'deny' as const,
               permissionDecisionReason: `Access denied: Could not determine path for "${toolName}" tool.`,
             },
-          };
+          });
         }
 
         // Allows vault and ~/.claude/ paths (context/readwrite params are undefined)
@@ -182,28 +182,28 @@ export function createVaultRestrictionHook(vaultPath: string): HookCallbackMatch
           accessType = getPathAccessType(filePath, undefined, undefined, vaultPath);
         } catch {
           // Fail-closed: deny if path validation throws (ENOENT, ELOOP, EPERM, etc.)
-          return {
+          return Promise.resolve({
             continue: false,
             hookSpecificOutput: {
               hookEventName: 'PreToolUse' as const,
               permissionDecision: 'deny' as const,
               permissionDecisionReason: `Access denied: Failed to validate path "${filePath}".`,
             },
-          };
+          });
         }
 
         if (accessType === 'vault' || accessType === 'context' || accessType === 'readwrite') {
-          return { continue: true };
+          return Promise.resolve({ continue: true });
         }
 
-        return {
+        return Promise.resolve({
           continue: false,
           hookSpecificOutput: {
             hookEventName: 'PreToolUse' as const,
             permissionDecision: 'deny' as const,
             permissionDecisionReason: `Access denied: Path "${filePath}" is outside allowed paths. Inline edit is restricted to vault and ~/.claude/ directories.`,
           },
-        };
+        });
       },
     ],
   };
@@ -248,15 +248,15 @@ export class InlineEditService {
     this.sessionId = null;
   }
 
-  async editText(request: InlineEditRequest): Promise<InlineEditResult> {
+  editText(request: InlineEditRequest): Promise<InlineEditResult> {
     this.sessionId = null;
     const prompt = buildInlineEditPrompt(request);
     return this.sendMessage(prompt);
   }
 
-  async continueConversation(message: string, contextFiles?: string[]): Promise<InlineEditResult> {
+  continueConversation(message: string, contextFiles?: string[]): Promise<InlineEditResult> {
     if (!this.sessionId) {
-      return { success: false, error: 'No active conversation to continue' };
+      return Promise.resolve({ success: false, error: 'No active conversation to continue' });
     }
     // User content first for slash command detection
     let prompt = message;

@@ -111,8 +111,8 @@ function buildTagOptions(abilities: MonsterAbilities, profBonus: number): TagOpt
 // DOM helpers
 // ---------------------------------------------------------------------------
 
-function createDropdown(options: TagOption[], filter: string): { el: HTMLElement; items: HTMLElement[]; filteredOptions: TagOption[] } {
-  const el = document.createElement("div");
+function createDropdown(doc: Document, options: TagOption[], filter: string): { el: HTMLElement; items: HTMLElement[]; filteredOptions: TagOption[] } {
+  const el = doc.createElement("div");
   el.className = "archivist-tag-autocomplete";
 
   const items: HTMLElement[] = [];
@@ -131,24 +131,24 @@ function createDropdown(options: TagOption[], filter: string): { el: HTMLElement
     // Group header
     if (opt.group !== lastGroup) {
       lastGroup = opt.group;
-      const groupEl = document.createElement("div");
+      const groupEl = doc.createElement("div");
       groupEl.className = "archivist-tag-ac-group";
       groupEl.textContent = opt.group;
       el.appendChild(groupEl);
     }
 
     // Item row
-    const item = document.createElement("div");
+    const item = doc.createElement("div");
     item.className = "archivist-tag-ac-item";
 
-    const left = document.createElement("span");
+    const left = doc.createElement("span");
 
-    const tagSpan = document.createElement("span");
+    const tagSpan = doc.createElement("span");
     tagSpan.className = "archivist-tag-ac-tag";
     tagSpan.textContent = opt.tag;
     left.appendChild(tagSpan);
 
-    const descSpan = document.createElement("span");
+    const descSpan = doc.createElement("span");
     descSpan.className = "archivist-tag-ac-desc";
     descSpan.textContent = "  " + opt.description;
     left.appendChild(descSpan);
@@ -156,7 +156,7 @@ function createDropdown(options: TagOption[], filter: string): { el: HTMLElement
     item.appendChild(left);
 
     if (opt.preview) {
-      const previewSpan = document.createElement("span");
+      const previewSpan = doc.createElement("span");
       previewSpan.className = "archivist-tag-ac-preview";
       previewSpan.textContent = opt.preview;
       item.appendChild(previewSpan);
@@ -174,10 +174,12 @@ function createDropdown(options: TagOption[], filter: string): { el: HTMLElement
 // ---------------------------------------------------------------------------
 
 function getCaretCoordinates(textarea: HTMLTextAreaElement): { x: number; y: number } {
+  const doc = textarea.doc;
+  const win = textarea.win;
   // Create a mirror div to measure caret position
-  const mirror = document.createElement("div");
+  const mirror = doc.createElement("div");
   mirror.className = "archivist-tag-autocomplete-mirror";
-  const style = window.getComputedStyle(textarea);
+  const style = win.getComputedStyle(textarea);
   const props = [
     "fontFamily", "fontSize", "fontWeight", "fontStyle", "letterSpacing",
     "textTransform", "wordSpacing", "textIndent", "whiteSpace",
@@ -194,13 +196,13 @@ function getCaretCoordinates(textarea: HTMLTextAreaElement): { x: number; y: num
     );
   }
 
-  document.body.appendChild(mirror);
+  doc.body.appendChild(mirror);
 
   const textBefore = textarea.value.substring(0, textarea.selectionStart);
   mirror.textContent = textBefore;
 
   // Add a span at the caret position
-  const marker = document.createElement("span");
+  const marker = doc.createElement("span");
   marker.textContent = "|";
   mirror.appendChild(marker);
 
@@ -211,7 +213,7 @@ function getCaretCoordinates(textarea: HTMLTextAreaElement): { x: number; y: num
   const x = rect.left + (markerRect.left - mirror.getBoundingClientRect().left) - textarea.scrollLeft;
   const y = rect.top + (markerRect.top - mirror.getBoundingClientRect().top) - textarea.scrollTop;
 
-  document.body.removeChild(mirror);
+  doc.body.removeChild(mirror);
 
   return { x, y };
 }
@@ -238,7 +240,9 @@ export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: Mons
     // Get filter text (everything after the backtick)
     const filter = backtickPos >= 0 ? textarea.value.substring(backtickPos + 1, textarea.selectionStart) : "";
 
-    const result = createDropdown(allOptions, filter);
+    const doc = textarea.doc;
+    const win = textarea.win;
+    const result = createDropdown(doc, allOptions, filter);
     if (result.filteredOptions.length === 0) {
       return;
     }
@@ -250,15 +254,15 @@ export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: Mons
 
     // Position the dropdown
     const coords = getCaretCoordinates(textarea);
-    const lineHeight = parseFloat(window.getComputedStyle(textarea).lineHeight) || 20;
+    const lineHeight = parseFloat(win.getComputedStyle(textarea).lineHeight) || 20;
 
     // Decide above or below based on available space.
     // Only `top` triggers the eslint rule; using setCssProps for consistent dynamic positioning.
-    const spaceBelow = window.innerHeight - (coords.y + lineHeight);
+    const spaceBelow = win.innerHeight - (coords.y + lineHeight);
     if (spaceBelow < 220) {
       // Position above
       dropdown.style.left = `${coords.x}px`;
-      dropdown.style.bottom = `${window.innerHeight - coords.y + 4}px`;
+      dropdown.style.bottom = `${win.innerHeight - coords.y + 4}px`;
       dropdown.setCssProps({ top: "auto" });
     } else {
       // Position below
@@ -278,7 +282,7 @@ export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: Mons
       });
     }
 
-    document.body.appendChild(dropdown);
+    doc.body.appendChild(dropdown);
     isOpen = true;
   }
 
@@ -345,7 +349,7 @@ export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: Mons
     const allOptions = buildTagOptions(abilities, profBonus);
 
     const filter = textarea.value.substring(backtickPos + 1, textarea.selectionStart);
-    const result = createDropdown(allOptions, filter);
+    const result = createDropdown(textarea.doc, allOptions, filter);
 
     if (result.filteredOptions.length === 0) {
       close();
@@ -450,7 +454,7 @@ export function attachTagAutocomplete(textarea: HTMLTextAreaElement, state: Mons
 
   textarea.addEventListener("blur", () => {
     // Small delay to allow click events on dropdown items to fire
-    setTimeout(() => close(), 150);
+    textarea.win.setTimeout(() => close(), 150);
   });
 
   // Also close on scroll (parent containers)

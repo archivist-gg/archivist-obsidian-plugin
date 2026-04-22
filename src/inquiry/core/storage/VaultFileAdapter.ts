@@ -12,11 +12,11 @@ export class VaultFileAdapter {
 
   constructor(private app: App) {}
 
-  async exists(path: string): Promise<boolean> {
+  exists(path: string): Promise<boolean> {
     return this.app.vault.adapter.exists(path);
   }
 
-  async read(path: string): Promise<string> {
+  read(path: string): Promise<string> {
     return this.app.vault.adapter.read(path);
   }
 

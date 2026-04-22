@@ -49,13 +49,13 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
     // Save (green check)
     const saveBtn = container.createDiv({ cls: "archivist-side-btn archivist-side-btn-save" });
     setIcon(saveBtn, "check");
-    saveBtn.setAttribute("aria-label", "Save Changes");
+    saveBtn.setAttribute("aria-label", "Save changes");
     saveBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onSave(); });
 
     // Compendium (book)
     const compBtn = container.createDiv({ cls: "archivist-side-btn archivist-side-btn-compendium" });
     setIcon(compBtn, "book-open");
-    compBtn.setAttribute("aria-label", "Add to Compendium");
+    compBtn.setAttribute("aria-label", "Add to compendium");
     compBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onCompendium(); });
 
     // Cancel (x)
@@ -78,7 +78,7 @@ export function renderSideButtons(container: HTMLElement, config: SideButtonConf
         cls: `archivist-side-btn archivist-block-column-btn ${config.isColumnActive ? "active" : ""}`,
       });
       setIcon(colBtn, config.isColumnActive ? "layout-list" : "columns-2");
-      colBtn.setAttribute("aria-label", "Toggle Columns");
+      colBtn.setAttribute("aria-label", "Toggle columns");
       colBtn.addEventListener("click", (e) => { e.stopPropagation(); config.onColumnToggle(); });
     }
 

@@ -26,12 +26,12 @@ Example action entries:
 - "Ranged Weapon Attack: \`atk:DEX\` to hit, range 80/320 ft., one target. Hit: \`damage:1d6+DEX\` piercing damage."
 - "Each creature in the area must make a \`dc:CON\` Constitution saving throw, taking \`damage:8d6\` fire damage on a failed save, or half as much on a success."`,
   { monster: monsterInputSchema },
-  async ({ monster }) => {
+  ({ monster }) => {
     try {
       const enriched = enrichMonster(monster);
-      return { content: [{ type: "text" as const, text: JSON.stringify({ type: "monster", data: enriched }) }] };
+      return Promise.resolve({ content: [{ type: "text" as const, text: JSON.stringify({ type: "monster", data: enriched }) }] });
     } catch (e) {
-      return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
+      return Promise.resolve({ content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true });
     }
   },
   { annotations: { readOnlyHint: true } },
@@ -48,12 +48,12 @@ Valid ability keywords: STR, DEX, CON, INT, WIS, CHA (uppercase only).
 
 Example description entry: "Each creature in a 20-foot radius must make a \`dc:WIS\` Dexterity saving throw. A target takes \`damage:8d6\` fire damage on a failed save, or half as much on a success."`,
   { spell: spellInputSchema },
-  async ({ spell }) => {
+  ({ spell }) => {
     try {
       const enriched = enrichSpell(spell);
-      return { content: [{ type: "text" as const, text: JSON.stringify({ type: "spell", data: enriched }) }] };
+      return Promise.resolve({ content: [{ type: "text" as const, text: JSON.stringify({ type: "spell", data: enriched }) }] });
     } catch (e) {
-      return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
+      return Promise.resolve({ content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true });
     }
   },
   { annotations: { readOnlyHint: true } },
@@ -71,12 +71,12 @@ Valid ability keywords: STR, DEX, CON, INT, WIS, CHA (uppercase only).
 
 Example entry: "On a hit, the target takes an extra \`damage:2d6\` fire damage."`,
   { item: itemInputSchema },
-  async ({ item }) => {
+  ({ item }) => {
     try {
       const enriched = enrichItem(item);
-      return { content: [{ type: "text" as const, text: JSON.stringify({ type: "item", data: enriched }) }] };
+      return Promise.resolve({ content: [{ type: "text" as const, text: JSON.stringify({ type: "item", data: enriched }) }] });
     } catch (e) {
-      return { content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true };
+      return Promise.resolve({ content: [{ type: "text" as const, text: `Validation error: ${e}` }], isError: true });
     }
   },
   { annotations: { readOnlyHint: true } },
@@ -86,13 +86,13 @@ export const generateEncounterTool = tool(
   "generate_encounter",
   "Generate a balanced D&D 5e encounter for a party. Provide party size, level, and difficulty. Returns a list of monsters with tactical suggestions. You must fill in the monster details based on SRD data or your knowledge.",
   { encounter: encounterInputSchema },
-  async ({ encounter }) => {
-    return {
+  ({ encounter }) => {
+    return Promise.resolve({
       content: [{
         type: "text" as const,
         text: JSON.stringify({ type: "encounter", params: encounter }),
       }],
-    };
+    });
   },
   { annotations: { readOnlyHint: true } },
 );
@@ -101,13 +101,13 @@ export const generateNpcTool = tool(
   "generate_npc",
   "Generate a D&D NPC with personality, motivation, secrets, appearance, and voice notes. Returns structured NPC data. A note file will be created in the TTRPG directory.",
   { npc: npcInputSchema },
-  async ({ npc }) => {
-    return {
+  ({ npc }) => {
+    return Promise.resolve({
       content: [{
         type: "text" as const,
         text: JSON.stringify({ type: "npc", params: npc }),
       }],
-    };
+    });
   },
   { annotations: { readOnlyHint: true } },
 );

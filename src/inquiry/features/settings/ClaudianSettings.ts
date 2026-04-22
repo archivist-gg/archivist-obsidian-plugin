@@ -60,7 +60,7 @@ function openHotkeySettings(app: App): void {
   const setting = (app as AppWithInternals).setting;
   setting.open();
   setting.openTabById('hotkeys');
-  setTimeout(() => {
+  activeWindow.setTimeout(() => {
     const tab = setting.activeTab;
     if (tab) {
       // Handle both old and new Obsidian versions
@@ -171,7 +171,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
       .setDesc(t('settings.excludedTags.desc'))
       .addTextArea((text) => {
         text
-          .setPlaceholder('system\nprivate\ndraft')
+          .setPlaceholder('System\nprivate\ndraft')
           .setValue(this.plugin.settings.excludedTags.join('\n'))
           .onChange(async (value) => {
             this.plugin.settings.excludedTags = value
@@ -189,7 +189,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
       .setDesc(t('settings.mediaFolder.desc'))
       .addText((text) => {
         text
-          .setPlaceholder('attachments')
+          .setPlaceholder('Attachments')
           .setValue(this.plugin.settings.mediaFolder)
           .onChange(async (value) => {
             this.plugin.settings.mediaFolder = value.trim();
@@ -279,7 +279,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
         const commitValue = async (showError: boolean): Promise<void> => {
           if (saveTimeout !== null) {
-            window.clearTimeout(saveTimeout);
+            activeWindow.clearTimeout(saveTimeout);
             saveTimeout = null;
           }
 
@@ -303,15 +303,15 @@ export class ClaudianSettingTab extends PluginSettingTab {
 
         const scheduleSave = (): void => {
           if (saveTimeout !== null) {
-            window.clearTimeout(saveTimeout);
+            activeWindow.clearTimeout(saveTimeout);
           }
-          saveTimeout = window.setTimeout(() => {
+          saveTimeout = activeWindow.setTimeout(() => {
             void commitValue(false);
           }, 500);
         };
 
         text
-          .setPlaceholder('map w scrollUp\nmap s scrollDown\nmap i focusInput')
+          .setPlaceholder('Map w scrollup\nmap s scrolldown\nmap i focusinput')
           .setValue(pendingValue)
           .onChange((value) => {
             pendingValue = value;
@@ -481,7 +481,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
       .addTextArea((text) => {
         const placeholder = isWindows
           ? 'del /s /q\nrd /s /q\nRemove-Item -Recurse -Force'
-          : 'rm -rf\nchmod 777\nmkfs';
+          : 'Rm -rf\nchmod 777\nmkfs';
         text
           .setPlaceholder(placeholder)
           .setValue(this.plugin.settings.blockedCommands[platformKey].join('\n'))
@@ -503,7 +503,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
         .setDesc(t('settings.blockedCommands.unixDesc'))
         .addTextArea((text) => {
           text
-            .setPlaceholder('rm -rf\nchmod 777\nmkfs')
+            .setPlaceholder('Rm -rf\nchmod 777\nmkfs')
             .setValue(this.plugin.settings.blockedCommands.unix.join('\n'))
             .onChange(async (value) => {
               this.plugin.settings.blockedCommands.unix = value
@@ -763,7 +763,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
     const settings = hp.settings;
     const save = (): Promise<void> => hp.saveSettings();
 
-    new Setting(containerEl).setName("D&D content").setHeading();
+    new Setting(containerEl).setName("D&d content").setHeading();
 
     new Setting(containerEl)
       .setName("Campaign root directory")
@@ -793,7 +793,7 @@ export class ClaudianSettingTab extends PluginSettingTab {
       .setName("User entity folder")
       .setDesc("Subfolder name for user-created and AI-generated entities.")
       .addText((text) =>
-        text.setPlaceholder("me").setValue(settings.userEntityFolder)
+        text.setPlaceholder("Me").setValue(settings.userEntityFolder)
           .onChange(async (value: string) => {
             settings.userEntityFolder = value || "me";
             await save();

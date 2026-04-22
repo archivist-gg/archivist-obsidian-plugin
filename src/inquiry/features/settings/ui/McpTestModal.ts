@@ -259,7 +259,7 @@ export class McpTestModal extends Modal {
     const allDisabled = this.disabledTools.size === this.result.tools.length;
 
     if (allEnabled) {
-      this.toggleAllBtn.setText('Disable All');
+      this.toggleAllBtn.setText('Disable all');
       this.toggleAllBtn.toggleClass('is-destructive', true);
     } else {
       this.toggleAllBtn.setText(allDisabled ? 'Enable All' : 'Enable All');

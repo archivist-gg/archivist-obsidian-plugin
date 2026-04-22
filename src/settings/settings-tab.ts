@@ -21,7 +21,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     containerEl.createEl("p", {
-      text: "Chat and AI settings are in the separate Archivist Inquiry settings tab (registered by InquiryModule).",
+      text: "Chat and AI settings are in the separate archivist inquiry settings tab (registered by inquirymodule).",
       cls: "setting-item-description",
     });
 

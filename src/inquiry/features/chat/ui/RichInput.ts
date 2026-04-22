@@ -6,6 +6,7 @@
  * that autocomplete dropdowns can use instead of textarea.value / selectionStart.
  */
 import { setIcon } from 'obsidian';
+import { execContentEditableCommand } from '../../../utils/contentEditable';
 
 // ---------------------------------------------------------------------------
 // Serialization result
@@ -61,8 +62,7 @@ export class RichInput {
       e.preventDefault();
       const text = e.clipboardData?.getData('text/plain') ?? '';
       if (text) {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- execCommand is the only reliable way to insert text into a contentEditable so that undo history survives; the Selection/Range alternatives break native undo.
-        document.execCommand('insertText', false, text);
+        execContentEditableCommand(this.el.doc, 'insertText', text);
       }
     });
 
@@ -70,8 +70,7 @@ export class RichInput {
     this.el.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Enter' && e.shiftKey && !e.isComposing) {
         e.preventDefault();
-        // eslint-disable-next-line @typescript-eslint/no-deprecated -- see note on execCommand above (needed for undo-history-preserving line break in contentEditable).
-        document.execCommand('insertLineBreak');
+        execContentEditableCommand(this.el.doc, 'insertLineBreak');
       }
     });
   }
@@ -187,17 +186,18 @@ export class RichInput {
 
   /** Get text from start of input to cursor position. */
   getTextBeforeCursor(): string {
-    const sel = window.getSelection();
+    const sel = this.el.win.getSelection();
     if (!sel || sel.rangeCount === 0) return '';
 
     try {
       const range = sel.getRangeAt(0);
-      const preRange = document.createRange();
+      const doc = this.el.doc;
+      const preRange = doc.createRange();
       preRange.selectNodeContents(this.el);
       preRange.setEnd(range.startContainer, range.startOffset);
 
       const fragment = preRange.cloneContents();
-      const tempDiv = document.createElement('div');
+      const tempDiv = doc.createElement('div');
       tempDiv.appendChild(fragment);
 
       // Walk the fragment to extract text, serializing chips the same way
@@ -209,7 +209,7 @@ export class RichInput {
 
   /** Remove `count` characters before the cursor using Selection API. */
   removeTextBeforeCursor(count: number): void {
-    const sel = window.getSelection();
+    const sel = this.el.win.getSelection();
     if (!sel || sel.rangeCount === 0 || count <= 0) return;
 
     this.el.focus();
@@ -218,8 +218,7 @@ export class RichInput {
     for (let i = 0; i < count; i++) {
       sel.modify('extend', 'backward', 'character');
     }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- execCommand('delete') preserves contentEditable undo history; manual Range.deleteContents breaks undo stack.
-    document.execCommand('delete', false);
+    execContentEditableCommand(this.el.doc, 'delete');
   }
 
   /** Returns cursor offset as character count from start (like selectionStart). */
@@ -307,7 +306,7 @@ export class RichInput {
     cls: string;
     dataAttrs: Record<string, string>;
   }): HTMLSpanElement {
-    const chip = document.createElement('span');
+    const chip = this.el.doc.createElement('span');
     chip.className = opts.cls;
     chip.contentEditable = 'false';
     for (const [key, val] of Object.entries(opts.dataAttrs)) {
@@ -333,7 +332,7 @@ export class RichInput {
   }
 
   private insertNodeAtCursor(node: Node): void {
-    const sel = window.getSelection();
+    const sel = this.el.win.getSelection();
     if (!sel || sel.rangeCount === 0) {
       this.el.appendChild(node);
       return;
@@ -351,13 +350,13 @@ export class RichInput {
   }
 
   private insertZeroWidthSpace(): void {
-    const textNode = document.createTextNode(ZERO_WIDTH_SPACE);
+    const textNode = this.el.doc.createTextNode(ZERO_WIDTH_SPACE);
     this.insertNodeAtCursor(textNode);
   }
 
   /** Convert kebab-case to camelCase for dataset keys. */
   private camelCase(str: string): string {
-    return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    return str.replace(/-([a-z])/g, (_: string, c: string) => c.toUpperCase());
   }
 
   /** Extract text from a document fragment, serializing chips inline. */

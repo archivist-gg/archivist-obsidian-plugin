@@ -64,6 +64,7 @@ export default class ArchivistPlugin extends Plugin {
     this.compendiumManager = new CompendiumManager(
       this.entityRegistry,
       this.app.vault,
+      this.app.fileManager,
       this.settings.compendiumRoot,
     );
     setCompendiumRefRegistry(this.entityRegistry);
@@ -410,7 +411,8 @@ export default class ArchivistPlugin extends Plugin {
 
     // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block)
     this.registerMarkdownPostProcessor((el) => {
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      const doc = el.doc;
+      const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT);
       const refPattern = /\{\{[^}]+\}\}/g;
       const textNodes: Text[] = [];
       let node: Text | null;
@@ -423,11 +425,11 @@ export default class ArchivistPlugin extends Plugin {
         const text = textNode.textContent || "";
         refPattern.lastIndex = 0;
         let match: RegExpExecArray | null;
-        const frag = document.createDocumentFragment();
+        const frag = doc.createDocumentFragment();
         let lastIdx = 0;
         while ((match = refPattern.exec(text)) !== null) {
           if (match.index > lastIdx) {
-            frag.appendChild(document.createTextNode(text.substring(lastIdx, match.index)));
+            frag.appendChild(doc.createTextNode(text.substring(lastIdx, match.index)));
           }
           const ref = parseCompendiumRef(match[0]);
           if (ref && this.entityRegistry) {
@@ -435,7 +437,7 @@ export default class ArchivistPlugin extends Plugin {
             const typeMatches = !ref.entityType || entity.entityType === ref.entityType;
             if (entity && typeMatches) {
               const yamlStr = yaml.dump(entity.data, { lineWidth: -1, noRefs: true, sortKeys: false });
-              const wrapper = document.createElement("div");
+              const wrapper = doc.createElement("div");
               wrapper.classList.add("archivist-compendium-ref");
               let blockRendered: HTMLElement | null = null;
               switch (entity.entityType) {
@@ -456,7 +458,7 @@ export default class ArchivistPlugin extends Plugin {
                 }
               }
               if (blockRendered) {
-                const badge = document.createElement("div");
+                const badge = doc.createElement("div");
                 badge.classList.add("archivist-compendium-badge");
                 badge.textContent = entity.compendium;
                 blockRendered.prepend(badge);
@@ -464,7 +466,7 @@ export default class ArchivistPlugin extends Plugin {
               }
               frag.appendChild(wrapper);
             } else {
-              const errEl = document.createElement("div");
+              const errEl = doc.createElement("div");
               errEl.classList.add("archivist-ref-error");
 
               const icon = errEl.createDiv({ cls: "archivist-not-found-icon" });
@@ -480,12 +482,12 @@ export default class ArchivistPlugin extends Plugin {
               frag.appendChild(errEl);
             }
           } else {
-            frag.appendChild(document.createTextNode(match[0]));
+            frag.appendChild(doc.createTextNode(match[0]));
           }
           lastIdx = match.index + match[0].length;
         }
         if (lastIdx < text.length) {
-          frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+          frag.appendChild(doc.createTextNode(text.substring(lastIdx)));
         }
         textNode.parentNode?.replaceChild(frag, textNode);
       }
@@ -535,12 +537,12 @@ export default class ArchivistPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    const data = await this.loadData();
+    const data = (await this.loadData()) as { settings?: Partial<ArchivistSettings> } | null | undefined;
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data?.settings);
   }
 
   async saveSettings(): Promise<void> {
-    const data = (await this.loadData()) ?? {};
+    const data = ((await this.loadData()) as Record<string, unknown> | null | undefined) ?? {};
     data.settings = this.settings;
     await this.saveData(data);
   }
@@ -556,7 +558,7 @@ export default class ArchivistPlugin extends Plugin {
       await this.saveSettings();
     }
 
-    // SRD import if needed — wrapped so a failure still allows discover()
+    // SRD import if needed, wrapped so a failure still allows discover()
     if (!this.settings.srdImported) {
       const n = new Notice("Importing SRD...", 0);
       try {
@@ -565,13 +567,13 @@ export default class ArchivistPlugin extends Plugin {
           (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
         );
         n.setMessage(`SRD import complete: ${count} entities`);
-        setTimeout(() => n.hide(), 3000);
+        activeWindow.setTimeout(() => n.hide(), 3000);
         this.settings.srdImported = true;
         await this.saveSettings();
       } catch (err) {
         n.hide();
         console.error("Archivist: SRD import failed", err);
-        new Notice("SRD import failed — existing compendiums will still load.");
+        new Notice("SRD import failed, existing compendiums will still load.");
       }
     }
 

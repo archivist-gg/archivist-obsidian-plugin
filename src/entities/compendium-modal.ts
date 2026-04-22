@@ -31,13 +31,13 @@ export class CreateCompendiumModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl("h3", { text: "New Compendium" });
+    contentEl.createEl("h3", { text: "New compendium" });
     contentEl.createEl("p", {
       text: "Create a new compendium to store your homebrew entities.",
     });
 
     new Setting(contentEl).setName("Name").addText((text) => {
-      text.setPlaceholder("e.g. Homebrew, Campaign Notes");
+      text.setPlaceholder("E.g. Homebrew, campaign notes");
       text.onChange((value) => { this.compName = value; });
     });
 
@@ -113,7 +113,7 @@ export class CompendiumSelectModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl("h3", { text: "Select Compendium" });
+    contentEl.createEl("h3", { text: "Select compendium" });
     contentEl.createEl("p", {
       text: "Choose which compendium to save this entity to.",
     });
@@ -124,7 +124,7 @@ export class CompendiumSelectModal extends Modal {
         dropdown.addOption(comp.name, `${comp.name} -- ${comp.description}`);
       }
       if (this.manager) {
-        dropdown.addOption(NEW_COMPENDIUM_KEY, "+ New Compendium...");
+        dropdown.addOption(NEW_COMPENDIUM_KEY, "+ new compendium...");
       }
       if (this.selected) {
         dropdown.setValue(this.selected.name);
@@ -199,7 +199,7 @@ export class SaveAsNewModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl("h3", { text: "Save As New Entity" });
+    contentEl.createEl("h3", { text: "Save as new entity" });
 
     // Entity name
     new Setting(contentEl).setName("Name").addText((text) => {
@@ -216,7 +216,7 @@ export class SaveAsNewModal extends Modal {
         dropdown.addOption(comp.name, `${comp.name} -- ${comp.description}`);
       }
       if (this.manager) {
-        dropdown.addOption(NEW_COMPENDIUM_KEY, "+ New Compendium...");
+        dropdown.addOption(NEW_COMPENDIUM_KEY, "+ new compendium...");
       }
       if (this.selected) {
         dropdown.setValue(this.selected.name);

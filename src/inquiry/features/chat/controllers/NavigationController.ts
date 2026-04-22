@@ -26,9 +26,9 @@ export class NavigationController {
 
   constructor(deps: NavigationControllerDeps) {
     this.deps = deps;
-    this.boundMessagesKeydown = this.handleMessagesKeydown.bind(this);
-    this.boundKeyup = this.handleKeyup.bind(this);
-    this.boundInputKeydown = this.handleInputKeydown.bind(this);
+    this.boundMessagesKeydown = (e: KeyboardEvent) => { this.handleMessagesKeydown(e); };
+    this.boundKeyup = (e: KeyboardEvent) => { this.handleKeyup(e); };
+    this.boundInputKeydown = (e: KeyboardEvent) => { this.handleInputKeydown(e); };
   }
 
   initialize(): void {
@@ -46,7 +46,7 @@ export class NavigationController {
 
     // Attach event listeners
     messagesEl.addEventListener('keydown', this.boundMessagesKeydown);
-    document.addEventListener('keyup', this.boundKeyup);
+    messagesEl.doc.addEventListener('keyup', this.boundKeyup);
 
     // Use capture phase to run before other handlers
     inputEl.addEventListener('keydown', this.boundInputKeydown, { capture: true });
@@ -61,11 +61,12 @@ export class NavigationController {
 
     this.stopScrolling();
 
-    // Always clean up document listener first (most important for preventing leaks)
-    document.removeEventListener('keyup', this.boundKeyup);
-
     // Element cleanup - may already be destroyed during view teardown
     const messagesEl = this.deps.getMessagesEl();
+    // Always clean up document listener first (most important for preventing leaks).
+    // Use the same document we attached to (messagesEl.doc in initialize).
+    messagesEl?.doc.removeEventListener('keyup', this.boundKeyup);
+
     messagesEl?.removeEventListener('keydown', this.boundMessagesKeydown);
     messagesEl?.removeClass('claudian-messages-focusable');
 

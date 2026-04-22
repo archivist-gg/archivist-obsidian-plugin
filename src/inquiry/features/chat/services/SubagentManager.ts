@@ -611,7 +611,7 @@ export class SubagentManager {
     if (fromPayload) return fromPayload;
 
     try {
-      const parsed = JSON.parse(result);
+      const parsed: unknown = JSON.parse(result);
 
       if (Array.isArray(parsed)) {
         for (const block of parsed) {
@@ -622,9 +622,15 @@ export class SubagentManager {
         }
       }
 
-      const agentId = parsed.agent_id || parsed.agentId || parsed?.data?.agent_id;
-      if (typeof agentId === 'string' && agentId.length > 0) {
-        return agentId;
+      if (parsed && typeof parsed === 'object') {
+        const record = parsed as Record<string, unknown>;
+        const nestedData = record.data && typeof record.data === 'object'
+          ? (record.data as Record<string, unknown>)
+          : null;
+        const agentId = record.agent_id ?? record.agentId ?? nestedData?.agent_id;
+        if (typeof agentId === 'string' && agentId.length > 0) {
+          return agentId;
+        }
       }
     } catch {
       // Not JSON
@@ -751,16 +757,21 @@ export class SubagentManager {
     if (!trimmed) return false;
 
     try {
-      const parsed = JSON.parse(payload);
-      const status = parsed.retrieval_status || parsed.status;
-      const hasAgents = parsed.agents && Object.keys(parsed.agents).length > 0;
+      const parsed: unknown = JSON.parse(payload);
+      const record: Record<string, unknown> =
+        parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+      const status = record.retrieval_status ?? record.status;
+      const agents = record.agents && typeof record.agents === 'object'
+        ? (record.agents as Record<string, unknown>)
+        : null;
+      const hasAgents = agents !== null && Object.keys(agents).length > 0;
 
       if (status === 'not_ready' || status === 'running' || status === 'pending') {
         return true;
       }
 
-      if (hasAgents) {
-        const agentStatuses = Object.values(parsed.agents as Record<string, unknown>)
+      if (hasAgents && agents) {
+        const agentStatuses = Object.values(agents)
           .map((a) => (a && typeof a === 'object' && 'status' in a && typeof (a as Record<string, unknown>).status === 'string') ? ((a as Record<string, unknown>).status as string).toLowerCase() : '');
         const anyRunning = agentStatuses.some(s =>
           s === 'running' || s === 'pending' || s === 'not_ready'
@@ -803,15 +814,21 @@ export class SubagentManager {
     const payload = this.unwrapTextPayload(result);
 
     try {
-      const parsed = JSON.parse(payload);
+      const parsed: unknown = JSON.parse(payload);
+      const record: Record<string, unknown> =
+        parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
 
-      const taskResult = this.extractResultFromTaskObject(parsed.task);
+      const taskResult = this.extractResultFromTaskObject(record.task);
       if (taskResult) {
         return taskResult;
       }
 
-      if (parsed.agents && agentId && parsed.agents[agentId]) {
-        const agentData = parsed.agents[agentId];
+      const agents = record.agents && typeof record.agents === 'object'
+        ? (record.agents as Record<string, unknown>)
+        : null;
+
+      if (agents && agentId && agents[agentId]) {
+        const agentData = agents[agentId] as Record<string, unknown> | null;
         const parsedResult = this.extractResultFromCandidateString(agentData?.result);
         if (parsedResult) {
           return parsedResult;
@@ -823,10 +840,10 @@ export class SubagentManager {
         return JSON.stringify(agentData, null, 2);
       }
 
-      if (parsed.agents) {
-        const agentIds = Object.keys(parsed.agents);
+      if (agents) {
+        const agentIds = Object.keys(agents);
         if (agentIds.length > 0) {
-          const firstAgent = parsed.agents[agentIds[0]];
+          const firstAgent = agents[agentIds[0]] as Record<string, unknown> | null;
           const parsedResult = this.extractResultFromCandidateString(firstAgent?.result);
           if (parsedResult) {
             return parsedResult;
@@ -839,12 +856,12 @@ export class SubagentManager {
         }
       }
 
-      const parsedResult = this.extractResultFromCandidateString(parsed.result);
+      const parsedResult = this.extractResultFromCandidateString(record.result);
       if (parsedResult) {
         return parsedResult;
       }
 
-      const parsedOutput = this.extractResultFromCandidateString(parsed.output);
+      const parsedOutput = this.extractResultFromCandidateString(record.output);
       if (parsedOutput) {
         return parsedOutput;
       }
@@ -940,19 +957,25 @@ export class SubagentManager {
     }
 
     try {
-      const parsed = JSON.parse(result);
-      const agentId = parsed.agent_id || parsed.agentId;
+      const parsed: unknown = JSON.parse(result);
+      if (parsed && typeof parsed === 'object') {
+        const record = parsed as Record<string, unknown>;
+        const agentId = record.agent_id ?? record.agentId;
 
-      if (typeof agentId === 'string' && agentId.length > 0) {
-        return agentId;
-      }
+        if (typeof agentId === 'string' && agentId.length > 0) {
+          return agentId;
+        }
 
-      if (parsed.data?.agent_id) {
-        return parsed.data.agent_id;
-      }
+        const data = record.data && typeof record.data === 'object'
+          ? (record.data as Record<string, unknown>)
+          : null;
+        if (data && typeof data.agent_id === 'string') {
+          return data.agent_id;
+        }
 
-      if (parsed.id && typeof parsed.id === 'string') {
-        return parsed.id;
+        if (typeof record.id === 'string') {
+          return record.id;
+        }
       }
     } catch {
       // Not JSON
@@ -996,11 +1019,14 @@ export class SubagentManager {
 
   private inferAgentIdFromResult(result: string): string | null {
     try {
-      const parsed = JSON.parse(result);
-      if (parsed.agents && typeof parsed.agents === 'object') {
-        const keys = Object.keys(parsed.agents);
-        if (keys.length > 0) {
-          return keys[0];
+      const parsed: unknown = JSON.parse(result);
+      if (parsed && typeof parsed === 'object') {
+        const record = parsed as Record<string, unknown>;
+        if (record.agents && typeof record.agents === 'object') {
+          const keys = Object.keys(record.agents);
+          if (keys.length > 0) {
+            return keys[0];
+          }
         }
       }
     } catch {

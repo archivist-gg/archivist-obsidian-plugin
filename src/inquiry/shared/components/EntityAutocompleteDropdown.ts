@@ -7,6 +7,7 @@
  * The EntityAutocompleteDropdown class handles DOM interactions and requires
  * an EntityRegistry instance at runtime.
  */
+import { execContentEditableCommand } from '../../utils/contentEditable';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,7 +130,7 @@ export class EntityAutocompleteDropdown {
   private results: AutocompleteResult[] = [];
   private selectedIndex = 0;
   private bracketStartIndex = -1;
-  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private debounceTimer: number | null = null;
   private _isVisible = false;
 
   private static readonly MAX_RESULTS = 20;
@@ -160,10 +161,10 @@ export class EntityAutocompleteDropdown {
    */
   handleInput(): void {
     if (this.debounceTimer !== null) {
-      clearTimeout(this.debounceTimer);
+      activeWindow.clearTimeout(this.debounceTimer);
     }
 
-    this.debounceTimer = setTimeout(() => {
+    this.debounceTimer = activeWindow.setTimeout(() => {
       this.processInput();
     }, EntityAutocompleteDropdown.DEBOUNCE_MS);
   }
@@ -222,7 +223,7 @@ export class EntityAutocompleteDropdown {
    */
   destroy(): void {
     if (this.debounceTimer !== null) {
-      clearTimeout(this.debounceTimer);
+      activeWindow.clearTimeout(this.debounceTimer);
     }
     this.hide();
   }
@@ -344,8 +345,7 @@ export class EntityAutocompleteDropdown {
     } else {
       // Fallback: remove [[query and insert raw text
       this.richInput.removeTextBeforeCursor(charsToRemove);
-      // eslint-disable-next-line @typescript-eslint/no-deprecated -- only reliable way to insert text while preserving undo stack in contenteditable inputs
-      document.execCommand('insertText', false, `[[${item.entityType}:${item.name}]]`);
+      execContentEditableCommand(activeDocument, 'insertText', `[[${item.entityType}:${item.name}]]`);
     }
 
     this.hide();

@@ -36,7 +36,7 @@ export class ClaudianView extends ItemView {
   private pendingTabBarUpdate: number | null = null;
 
   // Debouncing for tab state persistence
-  private pendingPersist: ReturnType<typeof setTimeout> | null = null;
+  private pendingPersist: number | null = null;
 
   constructor(leaf: WorkspaceLeaf, plugin: InquiryModule) {
     super(leaf);
@@ -45,19 +45,22 @@ export class ClaudianView extends ItemView {
     // Hover Editor compatibility: Define load as an instance method that can't be
     // overwritten by prototype patching. Hover Editor patches ClaudianView.prototype.load
     // after our class is defined, but instance methods take precedence over prototype methods.
-    const originalLoad = Object.getPrototypeOf(this).load.bind(this);
+    const proto = Object.getPrototypeOf(this) as { load: (this: ClaudianView) => void };
+    const protoLoad = proto.load;
+    const originalLoad: () => void = () => { protoLoad.call(this); };
     Object.defineProperty(this, 'load', {
-      value: async () => {
+      value: (): Promise<void> => {
         // Ensure containerEl exists before any patched load code tries to use it
         if (!this.containerEl) {
           (this as { containerEl: HTMLElement }).containerEl = createDiv({ cls: 'view-content' });
         }
         // Wrap in try-catch to prevent Hover Editor errors from breaking our view
         try {
-          return await originalLoad();
+          originalLoad();
         } catch {
           // Hover Editor may throw if its DOM setup fails - continue anyway
         }
+        return Promise.resolve();
       },
       writable: false,
       configurable: false,
@@ -69,7 +72,7 @@ export class ClaudianView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Archivist Inquiry';
+    return 'Archivist inquiry';
   }
 
   getIcon(): string {
@@ -215,7 +218,7 @@ export class ClaudianView extends ItemView {
     this.logoEl.appendChild(createOwlIcon(18));
 
     // Title text (hidden in header mode when 2+ tabs)
-    this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Archivist Inquiry', cls: 'claudian-title-text' });
+    this.titleTextEl = this.titleSlotEl.createEl('h4', { text: 'Archivist inquiry', cls: 'claudian-title-text' });
 
     // Header actions container (for header mode - initially hidden)
     this.headerActionsEl = header.createDiv({ cls: 'claudian-header-actions claudian-header-actions-slot archivist-hidden' });
@@ -227,10 +230,11 @@ export class ClaudianView extends ItemView {
    */
   private buildNavRowContent(): HTMLElement {
     // Create a fragment to hold nav row content
-    const fragment = document.createDocumentFragment();
+    const doc = this.containerEl.doc;
+    const fragment = doc.createDocumentFragment();
 
     // Tab badges (left side in nav row, or in title slot for header mode)
-    this.tabBarContainerEl = document.createElement('div');
+    this.tabBarContainerEl = doc.createElement('div');
     this.tabBarContainerEl.className = 'claudian-tab-bar-container';
     this.tabBar = new TabBar(this.tabBarContainerEl, {
       onTabClick: (tabId) => { this.handleTabClick(tabId); },
@@ -240,7 +244,7 @@ export class ClaudianView extends ItemView {
     fragment.appendChild(this.tabBarContainerEl);
 
     // Header actions (right side)
-    this.headerActionsContent = document.createElement('div');
+    this.headerActionsContent = doc.createElement('div');
     this.headerActionsContent.className = 'claudian-header-actions';
 
     // New tab button (plus icon)
@@ -279,7 +283,7 @@ export class ClaudianView extends ItemView {
 
     // Create a wrapper div to hold the fragment (for input mode nav row)
     // Use "display: contents" so the wrapper is transparent to layout.
-    const wrapper = document.createElement('div');
+    const wrapper = doc.createElement('div');
     wrapper.className = 'claudian-contents-wrapper';
     wrapper.appendChild(fragment);
     return wrapper;
@@ -463,8 +467,9 @@ export class ClaudianView extends ItemView {
   // ============================================
 
   private wireEventHandlers(): void {
+    const viewDoc = this.containerEl.doc;
     // Document-level click to close dropdowns
-    this.registerDomEvent(document, 'click', () => {
+    this.registerDomEvent(viewDoc, 'click', () => {
       this.historyDropdown?.removeClass('visible');
     });
 
@@ -477,7 +482,8 @@ export class ClaudianView extends ItemView {
       if (activeTab?.state.isStreaming) {
         // Only cancel streaming if the input area is focused
         const inputEl = activeTab.dom?.inputEl;
-        if (inputEl && (document.activeElement === inputEl || inputEl.contains(document.activeElement))) {
+        const activeEl = viewDoc.activeElement;
+        if (inputEl && (activeEl === inputEl || inputEl.contains(activeEl))) {
           activeTab.controllers.inputController?.cancelStreaming();
         }
       }
@@ -508,7 +514,7 @@ export class ClaudianView extends ItemView {
     );
 
     // Click outside to close mention dropdown
-    this.registerDomEvent(document, 'click', (e) => {
+    this.registerDomEvent(viewDoc, 'click', (e) => {
       const activeTab = this.tabManager?.getActiveTab();
       if (activeTab) {
         const fcm = activeTab.ui.fileContextManager;
@@ -554,10 +560,11 @@ export class ClaudianView extends ItemView {
 
   private persistTabState(): void {
     // Debounce persistence to avoid rapid writes (300ms delay)
+    const win = this.containerEl.win;
     if (this.pendingPersist !== null) {
-      clearTimeout(this.pendingPersist);
+      win.clearTimeout(this.pendingPersist);
     }
-    this.pendingPersist = setTimeout(() => {
+    this.pendingPersist = win.setTimeout(() => {
       this.pendingPersist = null;
       if (!this.tabManager) return;
       const state = this.tabManager.getPersistedState();
@@ -571,7 +578,7 @@ export class ClaudianView extends ItemView {
   private async persistTabStateImmediate(): Promise<void> {
     // Cancel any pending debounced persist
     if (this.pendingPersist !== null) {
-      clearTimeout(this.pendingPersist);
+      this.containerEl.win.clearTimeout(this.pendingPersist);
       this.pendingPersist = null;
     }
     if (!this.tabManager) return;

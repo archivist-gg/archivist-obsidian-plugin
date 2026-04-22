@@ -21,7 +21,7 @@ class InlineTagWidget extends WidgetType {
     if (parsed) {
       return renderInlineTag(parsed);
     }
-    const code = document.createElement("code");
+    const code = activeDocument.createElement("code");
     code.textContent = this.tagText;
     return code;
   }

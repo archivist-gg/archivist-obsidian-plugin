@@ -117,7 +117,7 @@ export class ClaudianSettingsStorage {
     await this.adapter.write(CLAUDIAN_SETTINGS_PATH, content);
   }
 
-  async exists(): Promise<boolean> {
+  exists(): Promise<boolean> {
     return this.adapter.exists(CLAUDIAN_SETTINGS_PATH);
   }
 

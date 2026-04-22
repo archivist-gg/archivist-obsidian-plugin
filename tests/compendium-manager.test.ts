@@ -210,7 +210,9 @@ describe("CompendiumManager", () => {
       createFolder: vi.fn(),
     };
 
-    manager = new CompendiumManager(registry, vault, "Compendium");
+    const fileManager = { trashFile: vi.fn() };
+
+    manager = new CompendiumManager(registry, vault, fileManager, "Compendium");
   });
 
   // -------------------------------------------------------------------------

@@ -550,7 +550,7 @@ export class InputController {
       this.deps.getImageContextManager()?.setImages(images);
     }
 
-    setTimeout(
+    this.deps.getInputEl().win.setTimeout(
       () => {
         void this.sendMessage({
           editorContextOverride: editorContext,
@@ -830,7 +830,7 @@ export class InputController {
     return decision;
   }
 
-  async handleAskUserQuestion(
+  handleAskUserQuestion(
     input: Record<string, unknown>,
     signal?: AbortSignal,
   ): Promise<Record<string, string> | null> {
@@ -883,7 +883,7 @@ export class InputController {
     });
   }
 
-  async handleExitPlanMode(
+  handleExitPlanMode(
     input: Record<string, unknown>,
     signal?: AbortSignal,
   ): Promise<ExitPlanModeDecision | null> {

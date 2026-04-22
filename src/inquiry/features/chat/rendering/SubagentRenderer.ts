@@ -250,7 +250,7 @@ export function createSubagentBlock(
   labelEl.setText(truncateDescription(description));
 
   const countEl = headerEl.createDiv({ cls: 'claudian-subagent-count' });
-  countEl.setText('0 tool uses');
+  countEl.setText('0 Tool uses');
 
   const statusEl = headerEl.createDiv({ cls: 'claudian-subagent-status status-running' });
   statusEl.setAttribute('aria-label', 'Status: running');

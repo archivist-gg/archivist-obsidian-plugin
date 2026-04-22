@@ -2,6 +2,7 @@ import * as yaml from "js-yaml";
 import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../main";
+import { confirm as confirmModal } from "../inquiry/shared/modals/ConfirmModal";
 import type { Monster, MonsterAbilities, MonsterFeature } from "../types/monster";
 import type { EditableMonster } from "../dnd/editable-monster";
 import { MonsterEditState } from "./edit-state";
@@ -258,7 +259,7 @@ export function renderMonsterEditMode(
 
   // -- AC --
   const acLine = coreProps.createDiv({ cls: "property-line" });
-  acLine.createEl("h4", { text: "Armor Class" });
+  acLine.createEl("h4", { text: "Armor class" });
   acLine.appendText(" ");
   const acNumWrap = acLine.createDiv({ cls: "archivist-num-wrap" });
   const acInput = acNumWrap.createEl("input", { cls: "archivist-num-in" });
@@ -274,7 +275,7 @@ export function renderMonsterEditMode(
   const acSourceInput = acLine.createEl("input", { cls: "archivist-edit-input wide" });
   acSourceInput.type = "text";
   acSourceInput.value = m.ac?.[0]?.from?.join(", ") ?? "";
-  acSourceInput.placeholder = "(source)";
+  acSourceInput.placeholder = "(Source)";
   acSourceInput.addEventListener("input", () => {
     const acArr = state.current.ac ?? [{ ac: 10 }];
     const fromArr = acSourceInput.value.trim() ? acSourceInput.value.split(",").map(s => s.trim()) : undefined;
@@ -284,11 +285,11 @@ export function renderMonsterEditMode(
 
   // -- HP --
   const hpLine = coreProps.createDiv({ cls: "property-line" });
-  hpLine.createEl("h4", { text: "Hit Points" });
+  hpLine.createEl("h4", { text: "Hit points" });
   hpLine.appendText(" ");
   const hpValueEl = hpLine.createEl("span", { cls: "archivist-auto-value", text: String(m.hp?.average ?? 0) });
   refs.hpValue = hpValueEl;
-  const hpAutoLabel = hpLine.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
+  const hpAutoLabel = hpLine.createEl("span", { cls: "archivist-auto-label", text: "(Auto)" });
   wireOverride(hpValueEl, hpAutoLabel, "hp", () => state.current.hp?.average ?? 0, (val) => {
     const hp = { ...state.current.hp!, average: val };
     state.setOverride("hp", val);
@@ -301,7 +302,7 @@ export function renderMonsterEditMode(
   const hpFormulaInput = hpLine.createEl("input", { cls: "archivist-edit-input formula" });
   hpFormulaInput.type = "text";
   hpFormulaInput.value = m.hp?.formula ?? "";
-  hpFormulaInput.placeholder = "e.g. 4d8";
+  hpFormulaInput.placeholder = "E.g. 4D8";
   refs.hpFormula = hpFormulaInput;
   hpFormulaInput.addEventListener("input", () => {
     const hp = { ...state.current.hp!, formula: hpFormulaInput.value };
@@ -323,7 +324,7 @@ export function renderMonsterEditMode(
     state.updateField("speed", speed);
   });
   createSpinButtons(walkWrap, walkInput);
-  speedLine.appendText(" ft.");
+  speedLine.appendText(" Ft.");
 
   // Extra speed modes — one row per mode, + Add Speed button at bottom
   const speedExtraSection = coreProps.createDiv({ cls: "archivist-speed-extra-section" });
@@ -354,7 +355,7 @@ export function renderMonsterEditMode(
     });
     createSpinButtons(numWrap, numInput);
 
-    row.createEl("span", { cls: "archivist-speed-extra-ft", text: "ft." });
+    row.createEl("span", { cls: "archivist-speed-extra-ft", text: "Ft." });
 
     const removeBtn = row.createEl("button", { cls: "archivist-speed-extra-x" });
     setIcon(removeBtn, "x");
@@ -370,7 +371,7 @@ export function renderMonsterEditMode(
 
   // "+ Add Speed" button wrapped for dropdown positioning
   const addAnchor = speedExtraSection.createDiv({ cls: "archivist-speed-add-wrap" });
-  const addBtn = addAnchor.createEl("button", { cls: "archivist-add-btn", text: "+ Add Speed" });
+  const addBtn = addAnchor.createEl("button", { cls: "archivist-add-btn", text: "+ add speed" });
   let dropdownEl: HTMLElement | null = null;
 
   function updateAddButton(): void {
@@ -403,7 +404,7 @@ export function renderMonsterEditMode(
 
   function hideSpeedDropdown(): void {
     if (dropdownEl) { dropdownEl.remove(); dropdownEl = null; }
-    if (closeHandler) { document.removeEventListener("click", closeHandler); closeHandler = null; }
+    if (closeHandler) { activeDocument.removeEventListener("click", closeHandler); closeHandler = null; }
   }
 
   addBtn.addEventListener("click", () => {
@@ -416,7 +417,7 @@ export function renderMonsterEditMode(
         hideSpeedDropdown();
       }
     };
-    setTimeout(() => document.addEventListener("click", closeHandler!), 0);
+    activeWindow.setTimeout(() => activeDocument.addEventListener("click", closeHandler!), 0);
   }
 
   // Pre-populate existing non-zero speeds
@@ -683,7 +684,7 @@ export function renderMonsterEditMode(
 
   // Passive Perception
   const ppRow = sensesGrid.createDiv({ cls: "archivist-sense-pp" });
-  ppRow.createEl("span", { cls: "archivist-sense-pp-label", text: "Passive Perception" });
+  ppRow.createEl("span", { cls: "archivist-sense-pp-label", text: "Passive perception" });
   const ppValue = ppRow.createEl("span", { cls: "archivist-auto-value" });
   const wisScore = getAbilityScore(state.current, "wis");
   const percProf = state.current.skillProficiencies["perception"] ?? "none";
@@ -692,7 +693,7 @@ export function renderMonsterEditMode(
   refs.sensePPValue = ppValue;
 
   // Add sense button
-  const addSenseBtn = sensesGrid.createEl("button", { cls: "archivist-add-btn", text: "+ Add Custom Sense" });
+  const addSenseBtn = sensesGrid.createEl("button", { cls: "archivist-add-btn", text: "+ add custom sense" });
   addSenseBtn.addEventListener("click", () => {
     state.current.customSenses.push("New Sense 60 ft.");
     const idx = state.current.customSenses.length - 1;
@@ -711,7 +712,7 @@ export function renderMonsterEditMode(
   const langInput = langLine.createEl("input", { cls: "archivist-edit-input lang" });
   langInput.type = "text";
   langInput.value = m.languages?.join(", ") ?? "";
-  langInput.placeholder = "Common, Draconic, ...";
+  langInput.placeholder = "Common, draconic, ...";
   langInput.addEventListener("input", () => {
     const langs = langInput.value.split(",").map(s => s.trim()).filter(Boolean);
     state.updateField("languages", langs);
@@ -739,7 +740,7 @@ export function renderMonsterEditMode(
   const xpValueEl = crLine.createEl("span", { cls: "archivist-auto-value", text: formatXP(state.current.xp) });
   refs.xpValue = xpValueEl;
   crLine.appendText(" XP)");
-  crLine.createEl("span", { cls: "archivist-auto-label", text: "(auto)" });
+  crLine.createEl("span", { cls: "archivist-auto-label", text: "(Auto)" });
 
   // =========================================================================
   // 12. SVG Bar
@@ -791,7 +792,7 @@ export function renderMonsterEditMode(
       activeTabKey = key;
       rebuildTabs();
       renderTabContent(state, refs, activeTabKey);
-    });
+    }, plugin);
     // Update arrows after DOM settles
     requestAnimationFrame(updateScrollArrows);
   }
@@ -934,6 +935,7 @@ function renderTabs(
   refs: DomRefs,
   activeKey: string | null,
   onTabClick: (key: string) => void,
+  plugin: ArchivistPlugin,
 ): void {
   const tabBar = refs.tabBar;
   tabBar.empty();
@@ -953,11 +955,12 @@ function renderTabs(
     setIcon(closeBtn, "x");
     closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (confirm(`Remove "${label}" section?`)) {
+      void confirmModal(plugin.app, `Remove "${label}" section?`, "Remove").then((ok) => {
+        if (!ok) return;
         state.removeSection(sectionKey);
         const remaining = state.current.activeSections;
         onTabClick(remaining.length > 0 ? remaining[0] : "");
-      }
+      });
     });
 
     tabBtn.addEventListener("click", () => onTabClick(sectionKey));
@@ -1116,11 +1119,11 @@ function showSectionDropdown(
   const closeHandler = (e: MouseEvent) => {
     if (!dropdown.contains(e.target as Node) && e.target !== anchor) {
       dropdown.remove();
-      document.removeEventListener("click", closeHandler);
+      activeDocument.removeEventListener("click", closeHandler);
     }
   };
   // Delay to avoid immediate close from the same click
-  setTimeout(() => document.addEventListener("click", closeHandler), 0);
+  activeWindow.setTimeout(() => activeDocument.addEventListener("click", closeHandler), 0);
 }
 
 // ===========================================================================
@@ -1198,7 +1201,7 @@ function wireOverride(
   let overrideMark: HTMLElement | null = null;
 
   function createOverrideMark(): HTMLElement {
-    const mark = document.createElement("span");
+    const mark = valueEl.doc.createElement("span");
     mark.className = "archivist-override-mark";
     mark.textContent = "*";
     mark.title = "Overridden -- click to restore auto-calculation";
@@ -1206,7 +1209,7 @@ function wireOverride(
       e.stopPropagation();
       onClear();
       if (overrideMark) { overrideMark.remove(); overrideMark = null; }
-      autoLabel.textContent = "(auto)";
+      autoLabel.textContent = "(Auto)";
     });
     return mark;
   }
@@ -1221,7 +1224,7 @@ function wireOverride(
     if (overrideInput) return; // already open
 
     const currentVal = parseInt(valueEl.textContent ?? "0") || 0;
-    overrideInput = document.createElement("input");
+    overrideInput = valueEl.doc.createElement("input");
     overrideInput.type = "number";
     overrideInput.value = String(currentVal);
     overrideInput.className = "archivist-num-in archivist-override-input";
@@ -1248,7 +1251,7 @@ function wireOverride(
         }
         valueEl.after(overrideMark);
       } else {
-        autoLabel.textContent = "(auto)";
+        autoLabel.textContent = "(Auto)";
       }
     };
 
@@ -1258,7 +1261,7 @@ function wireOverride(
       if (e.key === "Escape") {
         if (overrideInput) { overrideInput.remove(); overrideInput = null; }
         valueEl.textContent = fmt(getAutoValue());
-        autoLabel.textContent = "(auto)";
+        autoLabel.textContent = "(Auto)";
       }
     });
   });
@@ -1274,11 +1277,12 @@ function renderCustomSenseRow(
   index: number,
   returnOnly = false,
 ): HTMLElement {
-  const row = document.createElement("div");
+  const doc = grid.doc;
+  const row = doc.createElement("div");
   row.className = "archivist-sense-custom";
 
   // Filled circle indicator (matches standard sense toggle in "proficient" state)
-  const indicator = document.createElement("div");
+  const indicator = doc.createElement("div");
   indicator.className = "archivist-prof-toggle proficient";
   row.appendChild(indicator);
 
@@ -1288,7 +1292,7 @@ function renderCustomSenseRow(
   const parsedName = rangeMatch ? raw.slice(0, raw.length - rangeMatch[0].length).trim() : raw;
   const parsedRange = rangeMatch ? rangeMatch[1].trim() : "60 ft.";
 
-  const nameInput = document.createElement("input");
+  const nameInput = doc.createElement("input");
   nameInput.className = "archivist-sense-custom-name";
   nameInput.type = "text";
   nameInput.value = parsedName;
@@ -1299,7 +1303,7 @@ function renderCustomSenseRow(
   });
   row.appendChild(nameInput);
 
-  const rangeInput = document.createElement("input");
+  const rangeInput = doc.createElement("input");
   rangeInput.className = "archivist-sense-range";
   rangeInput.type = "text";
   rangeInput.value = parsedRange;
@@ -1310,7 +1314,7 @@ function renderCustomSenseRow(
   });
   row.appendChild(rangeInput);
 
-  const removeBtn = document.createElement("button");
+  const removeBtn = doc.createElement("button");
   removeBtn.className = "archivist-sense-custom-x";
   setIcon(removeBtn, "x");
   removeBtn.addEventListener("click", () => {

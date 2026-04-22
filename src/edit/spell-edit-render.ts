@@ -35,7 +35,7 @@ export function renderSpellEditMode(
   onReplaceRef?: (newRefText: string) => void,
 ): void {
   // Mutable working copy
-  const draft: Spell = JSON.parse(JSON.stringify(spell));
+  const draft = JSON.parse(JSON.stringify(spell)) as Spell;
 
   // --- Side buttons ---
   let sideBtns = el.querySelector<HTMLElement>(".archivist-side-btns");
@@ -158,7 +158,7 @@ export function renderSpellEditMode(
   const nameInput = header.createEl("input", { cls: "archivist-edit-input-name" });
   nameInput.type = "text";
   nameInput.value = draft.name;
-  nameInput.placeholder = "Spell Name";
+  nameInput.placeholder = "Spell name";
   nameInput.addEventListener("input", () => { draft.name = nameInput.value; markDirty(); });
 
   // Level + School row
@@ -275,7 +275,7 @@ export function renderSpellEditMode(
 
   const higherSection = block.createDiv({ cls: "spell-higher-levels" });
   const higherHeader = higherSection.createDiv({ cls: "higher-levels-header" });
-  higherHeader.textContent = "At Higher Levels";
+  higherHeader.textContent = "At higher levels";
 
   const higherEntries = draft.at_higher_levels ?? [""];
   if (higherEntries.length === 0) higherEntries.push("");

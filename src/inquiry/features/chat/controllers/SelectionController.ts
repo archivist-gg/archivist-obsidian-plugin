@@ -10,6 +10,16 @@ const SELECTION_POLL_INTERVAL = 250;
 const INPUT_HANDOFF_GRACE_MS = 1500;
 const HIGHLIGHT_KEY = 'claudian-selection';
 
+/**
+ * HighlightRegistry is Map-like (spec: extends Map<string, Highlight>) but the
+ * Map extension only appears in lib.dom.iterable, which this project does not
+ * include. Narrow to the methods we actually use.
+ */
+interface HighlightRegistryLike {
+  set(key: string, value: Highlight): this;
+  delete(key: string): boolean;
+}
+
 export class SelectionController {
   private app: App;
   private indicatorEl: HTMLElement;
@@ -19,7 +29,7 @@ export class SelectionController {
   private onVisibilityChange: (() => void) | null;
   private storedSelection: StoredSelection | null = null;
   private inputHandoffGraceUntil: number | null = null;
-  private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private pollInterval: number | null = null;
   private readonly focusScopePointerDownHandler = () => {
     if (!this.storedSelection) return;
     this.inputHandoffGraceUntil = Date.now() + INPUT_HANDOFF_GRACE_MS;
@@ -47,12 +57,12 @@ export class SelectionController {
     if (this.focusScopeEl !== this.inputEl) {
       this.focusScopeEl.addEventListener('pointerdown', this.focusScopePointerDownHandler);
     }
-    this.pollInterval = setInterval(() => this.poll(), SELECTION_POLL_INTERVAL);
+    this.pollInterval = this.inputEl.win.setInterval(() => this.poll(), SELECTION_POLL_INTERVAL);
   }
 
   stop(): void {
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
+    if (this.pollInterval !== null) {
+      this.inputEl.win.clearInterval(this.pollInterval);
       this.pollInterval = null;
     }
     this.inputEl.removeEventListener('pointerdown', this.focusScopePointerDownHandler);
@@ -135,7 +145,7 @@ export class SelectionController {
       return;
     }
 
-    const selection = document.getSelection();
+    const selection = this.inputEl.doc.getSelection();
     const selectedText = selection?.toString() ?? '';
 
     if (selectedText.trim()) {
@@ -171,8 +181,10 @@ export class SelectionController {
     }
   }
 
-  private get cssHighlights(): HighlightRegistry | null {
-    return typeof CSS !== 'undefined' && CSS.highlights ? CSS.highlights : null;
+  private get cssHighlights(): HighlightRegistryLike | null {
+    return typeof CSS !== 'undefined' && CSS.highlights
+      ? (CSS.highlights as unknown as HighlightRegistryLike)
+      : null;
   }
 
   private rangesMatch(a: Range, b: Range): boolean {
@@ -208,7 +220,7 @@ export class SelectionController {
   }
 
   private isFocusWithinChatSidebar(): boolean {
-    const activeElement = document.activeElement as Node | null;
+    const activeElement = this.inputEl.doc.activeElement as Node | null;
     return activeElement !== null
       && (activeElement === this.focusScopeEl || this.focusScopeEl.contains(activeElement));
   }
@@ -257,7 +269,7 @@ export class SelectionController {
     // Edit mode: prefer native CM6 unfocused selection (.cm-selectionBackground)
     if (sel.editorView && sel.from !== undefined && sel.to !== undefined) {
       const cmSel = sel.editorView.state.selection.main;
-      const nativeVisible = document.activeElement !== this.inputEl
+      const nativeVisible = this.inputEl.doc.activeElement !== this.inputEl
         && cmSel.from === sel.from && cmSel.to === sel.to;
       if (nativeVisible) {
         // Native is showing — clear any stale mock
@@ -271,8 +283,9 @@ export class SelectionController {
 
     // Preview mode: prefer native DOM selection (::selection)
     if (sel.domRanges?.length) {
-      const nativeSel = document.getSelection();
-      const nativeVisible = document.activeElement !== this.inputEl
+      const doc = this.inputEl.doc;
+      const nativeSel = doc.getSelection();
+      const nativeVisible = doc.activeElement !== this.inputEl
         && this.selectionMatchesRanges(nativeSel, sel.domRanges);
       if (nativeVisible) {
         // Native is showing — clear any stale mock
