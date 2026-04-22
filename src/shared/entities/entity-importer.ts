@@ -1,8 +1,26 @@
 import type { Vault } from "obsidian";
-import type { SrdStore } from "../ai/srd/srd-store";
 import { generateEntityMarkdown, TYPE_FOLDER_MAP } from "./entity-vault-store";
 import { generateCompendiumMetadata } from "./compendium-manager";
 import { normalizeSrdMonster, normalizeSrdItem, normalizeSrdSpell } from "./srd-normalizer";
+
+// ---------------------------------------------------------------------------
+// SrdStoreLike — structural interface matching the subset of SrdStore we need.
+// Avoids a cross-tree dep on ../ai/srd/srd-store so this file stays
+// self-contained within src/shared/. The concrete SrdStore in src/ai/srd/
+// satisfies this shape by construction.
+// ---------------------------------------------------------------------------
+
+interface SrdEntityLike {
+  slug: string;
+  name: string;
+  entityType: string;
+  data: Record<string, unknown>;
+}
+
+export interface SrdStoreLike {
+  getTypes(): string[];
+  getAllOfType(entityType: string): SrdEntityLike[];
+}
 
 // ---------------------------------------------------------------------------
 // Filename sanitization
@@ -32,7 +50,7 @@ function sanitizeFilename(name: string): string {
  */
 export async function importSrdToVault(
   vault: Vault,
-  srdStore: SrdStore,
+  srdStore: SrdStoreLike,
   compendiumRoot: string,
   onProgress?: (current: number, total: number) => void,
 ): Promise<number> {

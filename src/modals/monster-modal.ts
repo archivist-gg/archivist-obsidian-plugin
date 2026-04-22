@@ -5,7 +5,7 @@ import {
   addNumberField,
   addRepeatableSection,
   toYamlString,
-} from "./modal-utils";
+} from "../shared/modals/modal-utils";
 
 interface MonsterFormData {
   name: string;

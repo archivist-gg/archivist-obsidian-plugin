@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { EntityRegistry } from "../src/entities/entity-registry";
-import type { RegisteredEntity } from "../src/entities/entity-registry";
+import { EntityRegistry } from "../src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -5,7 +5,7 @@ import {
   addTextArea,
   addToggle,
   toYamlString,
-} from "./modal-utils";
+} from "../shared/modals/modal-utils";
 
 interface SpellFormData {
   name: string;

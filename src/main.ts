@@ -25,18 +25,18 @@ import { SpellModal } from "./modals/spell-modal";
 import { ItemModal } from "./modals/item-modal";
 
 // D&D editor extension
-import { inlineTagPlugin } from "./extensions/inline-tag-extension";
-import { dndBlockDeleteKeymap } from "./extensions/dnd-block-delete-extension";
-import { CompendiumEditorSuggest } from "./extensions/compendium-suggest";
-import { compendiumRefPlugin, setCompendiumRefRegistry, setCompendiumRefPlugin, parseCompendiumRef } from "./extensions/compendium-ref-extension";
+import { inlineTagPlugin } from "./shared/extensions/inline-tag-extension";
+import { dndBlockDeleteKeymap } from "./shared/extensions/dnd-block-delete-extension";
+import { CompendiumEditorSuggest } from "./shared/extensions/compendium-suggest";
+import { compendiumRefPlugin, setCompendiumRefRegistry, setCompendiumRefPlugin, parseCompendiumRef } from "./shared/extensions/compendium-ref-extension";
 import * as yaml from "js-yaml";
 
 // SRD & entities
 import { SrdStore } from "./ai/srd/srd-store";
-import { EntityRegistry } from "./entities/entity-registry";
-import { importSrdToVault } from "./entities/entity-importer";
-import { CompendiumManager } from "./entities/compendium-manager";
-import { CompendiumSelectModal, CreateCompendiumModal } from "./entities/compendium-modal";
+import { EntityRegistry } from "./shared/entities/entity-registry";
+import { importSrdToVault } from "./shared/entities/entity-importer";
+import { CompendiumManager } from "./shared/entities/compendium-manager";
+import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
 
 // Settings
 import type { ArchivistSettings } from "./types/settings";

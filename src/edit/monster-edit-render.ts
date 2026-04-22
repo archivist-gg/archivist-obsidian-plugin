@@ -10,7 +10,7 @@ import { attachTagAutocomplete } from "../shared/edit/tag-autocomplete";
 import { createSearchableTagSelect } from "../shared/edit/searchable-tag-select";
 import { renderSideButtons } from "../shared/edit/side-buttons";
 import { createSvgBar } from "../shared/rendering/renderer-utils";
-import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
+import { SaveAsNewModal, CreateCompendiumModal } from "../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../shared/edit/compendium-picker";
 import {
   ABILITY_KEYS, ABILITY_NAMES, ALL_SIZES, ALL_SKILLS, SKILL_ABILITY,

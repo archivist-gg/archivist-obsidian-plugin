@@ -5,7 +5,7 @@ import type ArchivistPlugin from "../main";
 import type { Item } from "../types/item";
 import { renderSideButtons } from "../shared/edit/side-buttons";
 import { createSvgBar } from "../shared/rendering/renderer-utils";
-import { SaveAsNewModal, CreateCompendiumModal } from "../entities/compendium-modal";
+import { SaveAsNewModal, CreateCompendiumModal } from "../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../shared/edit/compendium-picker";
 
 // ---------------------------------------------------------------------------

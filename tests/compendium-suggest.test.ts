@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { detectCompendiumTrigger, adjustEndForBracketMatch } from "../src/extensions/compendium-suggest";
+import { detectCompendiumTrigger, adjustEndForBracketMatch } from "../src/shared/extensions/compendium-suggest";
 
 describe("compendium suggest trigger detection", () => {
   it("triggers on {{ with bracket matching (cursor between {{ and }})", () => {

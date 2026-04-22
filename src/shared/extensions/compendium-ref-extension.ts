@@ -8,18 +8,29 @@ import {
 } from "@codemirror/view";
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import { setIcon, Notice, MarkdownView, type WorkspaceLeaf } from "obsidian";
-import type ArchivistPlugin from "../main";
-import { confirm as confirmModal } from "../inquiry/shared/modals/ConfirmModal";
-import { parseMonster } from "../parsers/monster-parser";
-import { parseSpell } from "../parsers/spell-parser";
-import { parseItem } from "../parsers/item-parser";
-import { renderMonsterBlock } from "../renderers/monster-renderer";
-import { renderSpellBlock } from "../renderers/spell-renderer";
-import { renderItemBlock } from "../renderers/item-renderer";
-import { renderMonsterEditMode } from "../edit/monster-edit-render";
-import { renderSpellEditMode } from "../edit/spell-edit-render";
-import { renderItemEditMode } from "../edit/item-edit-render";
-import { renderSideButtons } from "../shared/edit/side-buttons";
+// TODO(phase0-task13): replaced by module registry dispatch
+import type ArchivistPlugin from "../../main";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { parseMonster } from "../../parsers/monster-parser";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { parseSpell } from "../../parsers/spell-parser";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { parseItem } from "../../parsers/item-parser";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { renderMonsterBlock } from "../../renderers/monster-renderer";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { renderSpellBlock } from "../../renderers/spell-renderer";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { renderItemBlock } from "../../renderers/item-renderer";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { renderMonsterEditMode } from "../../edit/monster-edit-render";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { renderSpellEditMode } from "../../edit/spell-edit-render";
+// TODO(phase0-task13): replaced by module registry dispatch
+import { renderItemEditMode } from "../../edit/item-edit-render";
+import { renderSideButtons } from "../edit/side-buttons";
 import { EntityRegistry } from "../entities/entity-registry";
 import type { RegisteredEntity } from "../entities/entity-registry";
 import * as yaml from "js-yaml";

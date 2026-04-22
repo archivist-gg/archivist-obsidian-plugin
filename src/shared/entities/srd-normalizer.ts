@@ -3,9 +3,9 @@ import {
   detectSpellcastingAbility,
   type ActionCategory,
   type ConverterAbilities,
-} from "../shared/dnd/srd-tag-converter";
-import { proficiencyBonusFromCR } from "../shared/dnd/math";
-import { toStringSafe } from "../shared/parsers/yaml-utils";
+} from "../dnd/srd-tag-converter";
+import { proficiencyBonusFromCR } from "../dnd/math";
+import { toStringSafe } from "../parsers/yaml-utils";
 
 // ---------------------------------------------------------------------------
 // SRD Data Normalizer

@@ -5,8 +5,8 @@ import {
   parseCompendiumMetadata,
   generateCompendiumMetadata,
   CompendiumManager,
-} from "../src/entities/compendium-manager";
-import { EntityRegistry } from "../src/entities/entity-registry";
+} from "../src/shared/entities/compendium-manager";
+import { EntityRegistry } from "../src/shared/entities/entity-registry";
 
 // ---------------------------------------------------------------------------
 // parseCompendiumMetadata

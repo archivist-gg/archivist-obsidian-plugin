@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSrdMonster, normalizeSrdItem, normalizeSrdSpell } from "../src/entities/srd-normalizer";
+import { normalizeSrdMonster, normalizeSrdItem, normalizeSrdSpell } from "../src/shared/entities/srd-normalizer";
 
 // ---------------------------------------------------------------------------
 // Sample SRD monster data (Adult Red Dragon, trimmed to relevant fields)

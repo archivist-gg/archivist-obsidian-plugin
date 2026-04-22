@@ -8,8 +8,8 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { parseInlineTag } from "../shared/rendering/inline-tag-parser";
-import { renderInlineTag } from "../shared/rendering/inline-tag-renderer";
+import { parseInlineTag } from "../rendering/inline-tag-parser";
+import { renderInlineTag } from "../rendering/inline-tag-renderer";
 
 class InlineTagWidget extends WidgetType {
   constructor(private tagText: string) {

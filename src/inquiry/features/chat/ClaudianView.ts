@@ -3,7 +3,7 @@ import { ItemView, Notice, Scope, setIcon } from 'obsidian';
 
 import { getContextWindowSize, VIEW_TYPE_CLAUDIAN } from '../../core/types';
 import type InquiryModule from '../../InquiryModule';
-import { createOwlIcon } from '../../../ui/components/owl-icon';
+import { createOwlIcon } from '../../../shared/ui/owl-icon';
 import { TabBar, TabManager } from './tabs';
 import type { TabData, TabId } from './tabs/types';
 

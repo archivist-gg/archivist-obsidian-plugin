@@ -53,8 +53,8 @@ import {
   sdkSessionExists,
   type SDKSessionLoadResult,
 } from './utils/sdkSession';
-import type { CompendiumManager } from '../entities/compendium-manager';
-import { CompendiumSelectModal, CreateCompendiumModal } from '../entities/compendium-modal';
+import type { CompendiumManager } from '../shared/entities/compendium-manager';
+import { CompendiumSelectModal, CreateCompendiumModal } from '../shared/entities/compendium-modal';
 import { createArchivistMcpServer } from '../ai/mcp-server';
 import type { SrdStore } from '../ai/srd/srd-store';
 import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';

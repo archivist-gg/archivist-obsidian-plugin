@@ -9,7 +9,7 @@ import {
 } from "./tools/generation-tools";
 import { createSrdTools } from "./tools/srd-tools";
 import type { SrdStore } from "./srd/srd-store";
-import type { CompendiumManager } from "../entities/compendium-manager";
+import type { CompendiumManager } from "../shared/entities/compendium-manager";
 
 export function createArchivistMcpServer(srdStore: SrdStore, compendiumManager?: CompendiumManager) {
   const { searchSrdTool, getSrdEntityTool } = createSrdTools(srdStore);
