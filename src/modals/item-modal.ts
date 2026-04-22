@@ -6,7 +6,7 @@ import {
   addToggle,
   addNumberField,
   toYamlString,
-} from "../shared/modals/modal-utils";
+} from "../shared/ui/modal-utils";
 
 interface ItemFormData {
   name: string;
