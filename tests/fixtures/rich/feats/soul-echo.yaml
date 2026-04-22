@@ -1,0 +1,21 @@
+slug: soul-echo
+name: "Soul Echo"
+edition: "2024"
+source: "Fictional test fixture"
+category: origin
+description: "An invented origin feat used for schema validation."
+prerequisites:
+  - { kind: level, min: 1 }
+benefits:
+  - "You gain a +1 bonus to an ability score of your choice from the pool."
+  - "You gain proficiency in one skill of your choice."
+  - "Once per long rest, you may reroll a failed WIS save."
+effects:
+  - { kind: initiative-bonus, value: 1 }
+  - { kind: proficiency, proficiency_type: saving-throw, value: wis }
+grants_asi:
+  amount: 1
+  pool: [int, wis, cha]
+repeatable: false
+choices:
+  - { kind: skill, count: 1 }

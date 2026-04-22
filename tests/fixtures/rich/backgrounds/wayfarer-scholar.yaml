@@ -1,0 +1,36 @@
+slug: wayfarer-scholar
+name: "Wayfarer Scholar"
+edition: "2024"
+source: "Fictional test fixture"
+description: "An invented 2024-style background used for schema validation."
+skill_proficiencies: [history, insight]
+tool_proficiencies:
+  - { kind: choice, count: 1, from: [cartographers-tools, calligraphers-tools] }
+language_proficiencies:
+  - { kind: choice, count: 2, from: "any" }
+equipment:
+  - { item: traveling-satchel, quantity: 1 }
+  - { item: ink-pot, quantity: 1 }
+  - { item: quill, quantity: 3 }
+  - { kind: currency, gp: 10 }
+feature:
+  name: "Rumor Weaver"
+  description: "Invented — you hear useful rumors faster than other travelers."
+ability_score_increases:
+  pool: [int, wis, cha]
+origin_feat: "[[soul-echo]]"
+suggested_characteristics:
+  personality_traits:
+    "1": "I keep detailed notes on everyone I meet."
+    "2": "I'm suspicious of silence."
+  ideals:
+    "1": { name: "Truth", desc: "A scholar's only loyalty is to the facts.", alignment: "lawful" }
+  bonds:
+    "1": "I search for a lost library mentioned in a half-burned letter."
+  flaws:
+    "1": "I correct others reflexively, even at terrible moments."
+variants:
+  - slug: wayfarer-scholar-cartographer
+    name: "Cartographer Scholar"
+    description: "Invented variant focused on maps."
+    feature: { name: "Mapper's Eye", description: "You recognize landmarks faster." }
