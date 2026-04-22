@@ -10,6 +10,9 @@ export type { ParseResult };
 export interface RenderContext {
   plugin: unknown;
   ctx: unknown;
+  /** Optional column layout hint. Modules that declare `supportsColumns`
+   *  on their ArchivistModule entry read this; others ignore it. */
+  columns?: number;
 }
 
 export interface EditContext extends RenderContext {
@@ -18,8 +21,24 @@ export interface EditContext extends RenderContext {
    *  when no content change triggers Obsidian to re-render the block
    *  (e.g. cancel with no edits, save with identical YAML). */
   onExit?: () => void;
+  /** Optional compendium provenance when editing a {{type:slug}} ref from
+   *  compendium-ref-extension. Present for compendium-sourced blocks, absent
+   *  when editing an inline code-fence. */
+  compendium?: { slug: string; compendium: string; readonly: boolean };
+  /** Replace the {{type:slug}} text in the host document. Provided by the
+   *  compendium-ref caller; unused by the standard code-block processor. */
+  onReplaceRef?: (newRefText: string) => void;
 }
 
+/**
+ * A tool entry in the AI-tool registry.
+ *
+ * Modules register two parallel shapes:
+ *   - `definition` — structured metadata (name/description/schema/execute)
+ *     useful for generic listing / dispatch.
+ *   - `sdkTool` — opaque value accepted by `createSdkMcpServer({ tools })`.
+ *     Held as `unknown` so the shared registry doesn't pull in the SDK type.
+ */
 export interface AIToolDefinition {
   name: string;
   description: string;
@@ -29,6 +48,13 @@ export interface AIToolDefinition {
 
 export interface AIToolRegistry {
   register(tool: AIToolDefinition): void;
+  /** Register the raw SDK-tool handle (output of `tool()` from
+   *  @anthropic-ai/claude-agent-sdk). Used by mcp-server wiring. */
+  registerSdkTool?(sdkTool: unknown): void;
+  /** Retrieve all structured definitions. */
+  getAll?(): AIToolDefinition[];
+  /** Retrieve all raw SDK-tool handles for passing to createSdkMcpServer. */
+  getAllSdkTools?(): unknown[];
 }
 
 export type ModalConstructor = new (app: App, ...args: unknown[]) => unknown;
@@ -40,12 +66,18 @@ export interface ArchivistModule {
   codeBlockType?: string;
   /** Compendium entity type. Optional — inquiry has none. */
   entityType?: string;
+  /** Whether this module's renderer honors `RenderContext.columns` and
+   *  whether callers should show a column-toggle side button. Defaults false. */
+  supportsColumns?: boolean;
   /** Called once on plugin load. Module registers itself with core. */
   register(core: CoreAPI): void;
   /** Parse YAML source → typed entity. Only if codeBlockType is set. */
   parseYaml?(source: string): ParseResult<unknown>;
-  /** Render entity into DOM element. Only if codeBlockType is set. */
-  render?(el: HTMLElement, data: unknown, ctx: RenderContext): void;
+  /** Render entity into DOM element. Modules return the rendered node they
+   *  appended to `el` so that callers performing in-place swaps (e.g. the
+   *  column-toggle re-render) can replace it directly. Returning `void` is
+   *  permitted for modules that don't need swap support. */
+  render?(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement | void;
   /** Render edit mode UI. Only if module supports editing. */
   renderEditMode?(el: HTMLElement, data: unknown, ctx: EditContext): void;
   /** Register AI generation tools with the tool registry. */

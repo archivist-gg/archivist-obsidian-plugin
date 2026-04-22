@@ -64,21 +64,25 @@ import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 import type { InquiryModule } from "./modules/inquiry/InquiryModule";
 
 /**
- * Simple in-memory AI tool registry. Modules push their tool definitions into
- * this during `register()`; downstream consumers (e.g. the MCP server wiring)
- * will migrate to reading from here in a follow-up task.
- *
- * TODO(phase0-task13): wire `createArchivistMcpServer` to consume the tools
- * collected here instead of importing each module's tool directly.
+ * In-memory AI tool registry. Modules push both a structured definition and
+ * a raw SDK-tool handle during `register()`; the MCP server wiring reads
+ * `getAllSdkTools()` to assemble the tool list for `createSdkMcpServer`.
  */
-function createAIToolRegistry(): AIToolRegistry & { getAll(): AIToolDefinition[] } {
+function createAIToolRegistry(): Required<AIToolRegistry> {
   const tools: AIToolDefinition[] = [];
+  const sdkTools: unknown[] = [];
   return {
     register(toolDef: AIToolDefinition): void {
       tools.push(toolDef);
     },
+    registerSdkTool(sdkTool: unknown): void {
+      sdkTools.push(sdkTool);
+    },
     getAll(): AIToolDefinition[] {
       return tools.slice();
+    },
+    getAllSdkTools(): unknown[] {
+      return sdkTools.slice();
     },
   };
 }

@@ -39,6 +39,7 @@ class NpcModule implements ArchivistModule {
         return generateNpcTool.handler(args, {});
       },
     });
+    registry.registerSdkTool?.(generateNpcTool);
   }
 }
 

@@ -15,8 +15,8 @@ import { renderSpellEditMode } from "./spell.edit-render";
 import { SpellModal } from "./spell.modal";
 import { generateSpellTool } from "./spell.ai-tools";
 
-// TODO(phase0-task13): ArchivistPlugin typing will flow through
-// ctx.plugin once the module registry wires plugin access generically.
+// TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
+// so modules don't need to reach into src/main for the concrete class.
 import type ArchivistPlugin from "../../main";
 
 /**
@@ -36,31 +36,26 @@ class SpellModule implements ArchivistModule {
   readonly entityType = "spell";
 
   register(_core: CoreAPI): void {
-    // Task 12 populates this: the registry calls register() during
-    // plugin load, and the module stashes any core handles (e.g. the
-    // compendium manager) it needs for later callbacks. At Task 9 we
-    // only need the module to type-check.
+    // No-op: spell module is stateless; all wiring happens via the
+    // generic code-block processor and compendium-ref registry lookups.
   }
 
   parseYaml(source: string): ParseResult<Spell> {
     return parseSpell(source);
   }
 
-  render(el: HTMLElement, data: unknown, _ctx: RenderContext): void {
+  render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
     const spell = data as Spell;
     const block = renderSpellBlock(spell);
     el.appendChild(block);
+    return block;
   }
 
   renderEditMode(el: HTMLElement, data: unknown, ctx: EditContext): void {
     const spell = data as Spell;
-    // ctx.plugin / ctx.ctx are typed as `unknown` on the interface;
-    // the spell edit-render currently needs the concrete plugin
-    // type. Task 12 narrows this when the registry adds a typed
-    // plugin accessor.
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderSpellEditMode>[2];
-    renderSpellEditMode(spell, el, mdCtx, plugin, ctx.onExit);
+    renderSpellEditMode(spell, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
   }
 
   registerAITools(registry: AIToolRegistry): void {
@@ -73,6 +68,7 @@ class SpellModule implements ArchivistModule {
         return generateSpellTool.handler(args, {});
       },
     });
+    registry.registerSdkTool?.(generateSpellTool);
   }
 
   getInsertModal(): ModalConstructor {

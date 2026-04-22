@@ -39,6 +39,7 @@ class EncounterModule implements ArchivistModule {
         return generateEncounterTool.handler(args, {});
       },
     });
+    registry.registerSdkTool?.(generateEncounterTool);
   }
 }
 

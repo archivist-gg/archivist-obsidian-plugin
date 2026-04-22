@@ -15,8 +15,8 @@ import { renderItemEditMode } from "./item.edit-render";
 import { ItemModal } from "./item.modal";
 import { generateItemTool } from "./item.ai-tools";
 
-// TODO(phase0-task13): ArchivistPlugin typing will flow through
-// ctx.plugin once the module registry wires plugin access generically.
+// TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
+// so modules don't need to reach into src/main for the concrete class.
 import type ArchivistPlugin from "../../main";
 
 /**
@@ -36,31 +36,26 @@ class ItemModule implements ArchivistModule {
   readonly entityType = "item";
 
   register(_core: CoreAPI): void {
-    // Task 12 populates this: the registry calls register() during
-    // plugin load, and the module stashes any core handles (e.g. the
-    // compendium manager) it needs for later callbacks. At Task 9 we
-    // only need the module to type-check.
+    // No-op: item module is stateless; all wiring happens via the
+    // generic code-block processor and compendium-ref registry lookups.
   }
 
   parseYaml(source: string): ParseResult<Item> {
     return parseItem(source);
   }
 
-  render(el: HTMLElement, data: unknown, _ctx: RenderContext): void {
+  render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
     const item = data as Item;
     const block = renderItemBlock(item);
     el.appendChild(block);
+    return block;
   }
 
   renderEditMode(el: HTMLElement, data: unknown, ctx: EditContext): void {
     const item = data as Item;
-    // ctx.plugin / ctx.ctx are typed as `unknown` on the interface;
-    // the item edit-render currently needs the concrete plugin
-    // type. Task 12 narrows this when the registry adds a typed
-    // plugin accessor.
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderItemEditMode>[2];
-    renderItemEditMode(item, el, mdCtx, plugin, ctx.onExit);
+    renderItemEditMode(item, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
   }
 
   registerAITools(registry: AIToolRegistry): void {
@@ -73,6 +68,7 @@ class ItemModule implements ArchivistModule {
         return generateItemTool.handler(args, {});
       },
     });
+    registry.registerSdkTool?.(generateItemTool);
   }
 
   getInsertModal(): ModalConstructor {
