@@ -11,7 +11,7 @@ import { setIcon, Notice, MarkdownView, type WorkspaceLeaf } from "obsidian";
 // TODO(phase0-task13): replaced by module registry dispatch
 import type ArchivistPlugin from "../../main";
 // TODO(phase0-task13): replaced by module registry dispatch
-import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
+import { confirm as confirmModal } from "../../modules/inquiry/shared/modals/ConfirmModal";
 // TODO(phase0-task13): replaced by module registry dispatch
 import { parseMonster } from "../../modules/monster/monster.parser";
 // TODO(phase0-task13): replaced by module registry dispatch

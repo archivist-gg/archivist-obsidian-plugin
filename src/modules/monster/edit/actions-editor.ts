@@ -3,7 +3,7 @@ import type { MonsterEditState } from "../monster.edit-state";
 // TODO(phase0-task13): plugin wiring still reaches into src/ at the top level
 import type ArchivistPlugin from "../../../main";
 // TODO(phase0-task13): inquiry still exports modals via its internal tree
-import { confirm as confirmModal } from "../../../inquiry/shared/modals/ConfirmModal";
+import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
 import { ALL_SECTIONS } from "../../../shared/dnd/constants";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";
 import { createSpinButtons } from "../../../shared/edit/spin-buttons";

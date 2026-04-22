@@ -43,7 +43,7 @@ import type { ArchivistSettings } from "./core/plugin-settings";
 import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 
 // Inquiry (Claudian chat engine)
-import { InquiryModule } from "./inquiry/InquiryModule";
+import { InquiryModule } from "./modules/inquiry/InquiryModule";
 
 export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };

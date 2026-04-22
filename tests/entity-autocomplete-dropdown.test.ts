@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseEntityReference, resolveEntityReferences } from "../src/inquiry/shared/components/EntityAutocompleteDropdown";
+import { parseEntityReference, resolveEntityReferences } from "../src/modules/inquiry/shared/components/EntityAutocompleteDropdown";
 
 describe("parseEntityReference", () => {
   it("parses [[monster:Ancient Red Dragon]]", () => {

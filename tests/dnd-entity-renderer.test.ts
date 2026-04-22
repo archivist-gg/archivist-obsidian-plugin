@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isDndCodeFence, parseDndCodeFence } from "../src/inquiry/features/chat/rendering/dndCodeFence";
+import { isDndCodeFence, parseDndCodeFence } from "../src/modules/inquiry/features/chat/rendering/dndCodeFence";
 
 describe("isDndCodeFence", () => {
   it("detects monster", () => { expect(isDndCodeFence("monster")).toBe(true); });
