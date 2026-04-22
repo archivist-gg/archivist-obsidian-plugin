@@ -1,33 +1,32 @@
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
-// TODO(phase0-task13): module registry will expose tools via the ArchivistModule
-// interface; importing the monster tool directly is a transient shortcut.
-import { generateMonsterTool } from "../../modules/monster/monster.ai-tools";
-// TODO(phase0-task13): module registry will expose tools via the ArchivistModule
-// interface; importing the spell tool directly is a transient shortcut.
-import { generateSpellTool } from "../../modules/spell/spell.ai-tools";
-// TODO(phase0-task13): module registry will expose tools via the ArchivistModule
-// interface; importing the item tool directly is a transient shortcut.
-import { generateItemTool } from "../../modules/item/item.ai-tools";
-// TODO(phase0-task13): module registry will expose tools via the ArchivistModule
-// interface; importing the encounter tool directly is a transient shortcut.
-import { generateEncounterTool } from "../../modules/encounter/encounter.ai-tools";
-// TODO(phase0-task13): module registry will expose tools via the ArchivistModule
-// interface; importing the NPC tool directly is a transient shortcut.
-import { generateNpcTool } from "../../modules/npc/npc.ai-tools";
 import { createSrdTools } from "./srd-tools";
 import type { SrdStore } from "./srd-store";
 import type { CompendiumManager } from "../entities/compendium-manager";
 
-export function createArchivistMcpServer(srdStore: SrdStore, compendiumManager?: CompendiumManager) {
+/**
+ * Build the in-process MCP server the inquiry chat uses for D&D tools.
+ *
+ * `moduleSdkTools` is the list of module-contributed SDK tool handles
+ * (output of `tool()` from @anthropic-ai/claude-agent-sdk, collected by
+ * main.ts from each ArchivistModule via `registerSdkTool`). The shared
+ * tree no longer reaches into `src/modules/*` to import individual tools;
+ * instead, callers pass in whatever the module registry has accumulated.
+ */
+export function createArchivistMcpServer(
+  srdStore: SrdStore,
+  compendiumManager?: CompendiumManager,
+  moduleSdkTools: unknown[] = [],
+) {
   const { searchSrdTool, getSrdEntityTool } = createSrdTools(srdStore);
 
-  const tools = [
-    generateMonsterTool,
-    generateSpellTool,
-    generateItemTool,
-    generateEncounterTool,
-    generateNpcTool,
+  // The SDK's `tool()` returns an opaque `SdkMcpToolDefinition` shape; we
+  // hold module-contributed tools as `unknown` at the boundary and widen
+  // to `any[]` here so the array is assignment-compatible with the SDK's
+  // tools param (which is itself heavily parameterised).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tools: any[] = [
+    ...moduleSdkTools,
     searchSrdTool,
     getSrdEntityTool,
   ];

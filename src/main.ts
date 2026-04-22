@@ -81,6 +81,10 @@ export default class ArchivistPlugin extends Plugin {
   entityRegistry: EntityRegistry | null = null;
   compendiumManager: CompendiumManager | null = null;
   inquiry: InquiryModule | null = null;
+  /** Exposed for InquiryModule.ArchivistHostPlugin hook so the in-process
+   *  MCP server can consume module-contributed SDK tools without having
+   *  to import each module directly. */
+  getModuleSdkTools: (() => unknown[]) | null = null;
   private srdStore: SrdStore | null = null;
   private moduleList: ArchivistModule[] = [];
   private core: CoreAPI | null = null;
@@ -136,6 +140,11 @@ export default class ArchivistPlugin extends Plugin {
         mod.registerAITools(aiToolRegistry);
       }
     }
+
+    // Expose the collected SDK tools so InquiryModule can hand them to
+    // createArchivistMcpServer without importing each module's ai-tools
+    // directly (closes the shared/ → modules/ import edge from mcp-server).
+    this.getModuleSdkTools = () => aiToolRegistry.getAllSdkTools();
 
     // Inquiry is instantiated inside InquiryArchivistModule.register(); hoist
     // it onto the plugin so legacy callers that still read `plugin.inquiry`

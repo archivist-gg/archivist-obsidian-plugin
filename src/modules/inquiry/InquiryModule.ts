@@ -73,6 +73,9 @@ interface ArchivistHostPlugin extends Plugin {
     userEntityFolder?: string;
     ttrpgRootDir?: string;
   };
+  /** Module-contributed SDK tool handles, collected by the host at
+   *  module-registration time. Consumed by createArchivistMcpServer. */
+  getModuleSdkTools?: () => unknown[];
 }
 
 /** Legacy settings fields removed during migration. */
@@ -294,7 +297,12 @@ export class InquiryModule {
     // Set up factory for in-process MCP server (each tab needs its own instance)
     if (this.srdStore) {
       const srdStore = this.srdStore as SrdStore;
-      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(srdStore, (this.plugin as ArchivistHostPlugin).compendiumManager);
+      const host = this.plugin as ArchivistHostPlugin;
+      this.createArchivistMcpServerInstance = () => createArchivistMcpServer(
+        srdStore,
+        host.compendiumManager,
+        host.getModuleSdkTools?.() ?? [],
+      );
     }
 
     // Initialize plugin manager (reads from installed_plugins.json + settings.json)
