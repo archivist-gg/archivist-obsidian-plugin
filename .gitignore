@@ -2,6 +2,7 @@ node_modules/
 main.js
 *.js.map
 data.json
+src/data/srd/index.generated.ts
 .superpowers/
 docs/superpowers/
 .worktrees/

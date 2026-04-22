@@ -4,7 +4,9 @@
   "description": "D&D 5e/2024 toolkit with an AI agent that generates monsters, spells, items, encounters, and NPCs. Renders parchment stat blocks, inline dice tags, and includes a full SRD compendium.",
   "main": "main.js",
   "scripts": {
+    "predev": "node scripts/generate-srd-md-index.mjs",
     "dev": "node esbuild.config.mjs",
+    "prebuild": "node scripts/generate-srd-md-index.mjs",
     "build": "npm run build:css && node esbuild.config.mjs production",
     "build:css": "node scripts/build-css.mjs",
     "lint": "eslint 'src/**/*.ts' 'tools/**/*.ts'",

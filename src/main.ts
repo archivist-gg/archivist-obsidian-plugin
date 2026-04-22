@@ -46,6 +46,7 @@ import { confirm as confirmModal } from "./modules/inquiry/shared/modals/Confirm
 import { SrdStore } from "./shared/ai/srd-store";
 import { EntityRegistry } from "./shared/entities/entity-registry";
 import { importSrdToVault } from "./shared/entities/entity-importer";
+import { importSrdBundledMdToVault } from "./shared/entities/entity-md-importer";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
 
@@ -338,6 +339,7 @@ export default class ArchivistPlugin extends Plugin {
           this.app.vault, this.srdStore, this.settings.compendiumRoot,
           (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
         );
+        await importSrdBundledMdToVault(this.app.vault, this.settings.compendiumRoot);
         n.setMessage(`SRD import complete: ${count} entities`);
         activeWindow.setTimeout(() => n.hide(), 3000);
         this.settings.srdImported = true;

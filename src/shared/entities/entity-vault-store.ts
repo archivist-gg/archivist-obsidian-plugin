@@ -23,6 +23,8 @@ export const TYPE_FOLDER_MAP: Record<string, string> = {
   feat: "Feats",
   condition: "Conditions",
   class: "Classes",
+  race: "Races",
+  subclass: "Subclasses",
   background: "Backgrounds",
 };
 
