@@ -1,5 +1,5 @@
-import { Item } from "../types/item";
-import { ParseResult, parseYaml, toStringSafe } from "../shared/parsers/yaml-utils";
+import { Item } from "./item.types";
+import { ParseResult, parseYaml, toStringSafe } from "../../shared/parsers/yaml-utils";
 
 export function parseItem(source: string): ParseResult<Item> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);

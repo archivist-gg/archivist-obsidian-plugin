@@ -1,9 +1,9 @@
-import { Item } from "../types/item";
+import { Item } from "./item.types";
 import {
   el,
   createIconProperty,
   renderTextWithInlineTags,
-} from "../shared/rendering/renderer-utils";
+} from "../../shared/rendering/renderer-utils";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());

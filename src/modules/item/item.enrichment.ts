@@ -2,7 +2,7 @@ import {
   convertDescToTags,
   type ConversionContext,
 } from "../../shared/dnd/srd-tag-converter";
-import type { Item } from "../../types/item";
+import type { Item } from "./item.types";
 
 /**
  * Dummy context for items: all ability mods = -5, prof = 0.

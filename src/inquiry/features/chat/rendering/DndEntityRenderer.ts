@@ -4,10 +4,10 @@ import { setIcon, Notice } from "obsidian";
 import type { EntityRegistry, RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import { parseMonster } from "../../../../modules/monster/monster.parser";
 import { parseSpell } from "../../../../modules/spell/spell.parser";
-import { parseItem } from "../../../../parsers/item-parser";
+import { parseItem } from "../../../../modules/item/item.parser";
 import { renderMonsterBlock } from "../../../../modules/monster/monster.renderer";
 import { renderSpellBlock } from "../../../../modules/spell/spell.renderer";
-import { renderItemBlock } from "../../../../renderers/item-renderer";
+import { renderItemBlock } from "../../../../modules/item/item.renderer";
 
 import { isDndCodeFence, parseDndCodeFence, type DndCodeFenceResult } from "./dndCodeFence";
 

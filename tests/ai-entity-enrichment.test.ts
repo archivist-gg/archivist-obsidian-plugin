@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { enrichMonster } from "../src/modules/monster/monster.enrichment";
 import { enrichSpell } from "../src/modules/spell/spell.enrichment";
-import { enrichItem } from "../src/ai/validation/entity-enrichment";
+import { enrichItem } from "../src/modules/item/item.enrichment";
 
 describe("enrichMonster — backtick tag conversion", () => {
   it("converts plain English attack and damage to ability-linked tags", () => {
