@@ -227,6 +227,28 @@ describe("recalc (end-to-end)", () => {
     const r = withClasses([]);
     expect(Number.isNaN(recalc(r).totalLevel)).toBe(false);
   });
+
+  it("multi-word skills use kebab-case keys (animal-handling)", () => {
+    const r = withClass(mkClass("rogue", "d8", 5));
+    r.definition.abilities = { str: 10, dex: 12, con: 10, int: 10, wis: 14, cha: 10 };
+    r.definition.skills.proficient = ["animal-handling"];
+    const d = recalc(r);
+    expect(d.skills["animal-handling"]).toBeDefined();
+    expect(d.skills["animal-handling"].proficiency).toBe("proficient");
+    // WIS +2, prof +3 at level 5 → +5
+    expect(d.skills["animal-handling"].bonus).toBe(5);
+  });
+
+  it("sleight-of-hand uses kebab-case key", () => {
+    const r = withClass(mkClass("rogue", "d8", 5));
+    r.definition.abilities = { str: 10, dex: 16, con: 10, int: 10, wis: 10, cha: 10 };
+    r.definition.skills.expertise = ["sleight-of-hand"];
+    r.definition.skills.proficient = ["sleight-of-hand"];
+    const d = recalc(r);
+    expect(d.skills["sleight-of-hand"].proficiency).toBe("expertise");
+    // DEX +3, prof +3, expertise → +3 + 6 = 9
+    expect(d.skills["sleight-of-hand"].bonus).toBe(9);
+  });
 });
 
 // ─────── helpers ───────

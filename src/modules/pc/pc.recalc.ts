@@ -228,10 +228,14 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   const expSet = new Set(resolved.definition.skills.expertise);
   const skills: DerivedStats["skills"] = {} as never;
   for (const skill of ALL_SKILLS) {
-    const skillKey = skill.toLowerCase();
-    const ab = SKILL_ABILITY[skillKey] as Ability;
-    const override = overrides.skills?.[skillKey as SkillSlug];
-    const tri: ProficiencyTri = override?.proficiency ?? (expSet.has(skillKey as SkillSlug) ? "expertise" : profSet.has(skillKey as SkillSlug) ? "proficient" : "none");
+    const skillKey = skill.toLowerCase().replace(/\s+/g, "-") as SkillSlug;
+    const abilityLookupKey = skillKey.replace(/-/g, " ");
+    const ab = SKILL_ABILITY[abilityLookupKey] as Ability;
+    const override = overrides.skills?.[skillKey];
+    const tri: ProficiencyTri = override?.proficiency
+      ?? (expSet.has(skillKey) ? "expertise"
+        : profSet.has(skillKey) ? "proficient"
+        : "none");
     const bonus = override?.bonus ?? skillBonus(scores[ab], tri, proficiencyBonus);
     (skills as Record<string, { bonus: number; proficiency: ProficiencyTri; ability: Ability }>)[skillKey] = {
       bonus,
