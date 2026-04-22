@@ -3,9 +3,9 @@ import type { EntityRegistry } from "../shared/entities/entity-registry";
 import type { CompendiumManager } from "../shared/entities/compendium-manager";
 import type { SrdStore } from "../shared/ai/srd-store";
 import type { ModuleRegistry } from "./module-registry";
+import type { ParseResult } from "../shared/parsers/yaml-utils";
 
-// Re-export the canonical ParseResult from shared/parsers/yaml-utils
-export type { ParseResult } from "../shared/parsers/yaml-utils";
+export type { ParseResult };
 
 export interface RenderContext {
   plugin: unknown;
@@ -39,7 +39,7 @@ export interface ArchivistModule {
   /** Called once on plugin load. Module registers itself with core. */
   register(core: CoreAPI): void;
   /** Parse YAML source → typed entity. Only if codeBlockType is set. */
-  parseYaml?(source: string): import("../shared/parsers/yaml-utils").ParseResult<unknown>;
+  parseYaml?(source: string): ParseResult<unknown>;
   /** Render entity into DOM element. Only if codeBlockType is set. */
   render?(el: HTMLElement, data: unknown, ctx: RenderContext): void;
   /** Render edit mode UI. Only if module supports editing. */
