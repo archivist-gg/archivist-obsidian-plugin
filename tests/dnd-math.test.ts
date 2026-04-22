@@ -3,6 +3,7 @@ import {
   abilityModifier, formatModifier, proficiencyBonusFromCR, crToXP,
   hitDiceSizeFromCreatureSize, hpFromHitDice, savingThrow, skillBonus,
   passivePerception, attackBonus, saveDC, abilityNameToKey, parseHitDiceFormula,
+  passive,
 } from "../src/shared/dnd/math";
 
 describe("abilityModifier", () => {
@@ -104,4 +105,22 @@ describe("abilityNameToKey", () => {
   it("dex -> dex", () => expect(abilityNameToKey("dex")).toBe("dex"));
   it("Wisdom -> null", () => expect(abilityNameToKey("Wisdom")).toBeNull());
   it("FOO -> null", () => expect(abilityNameToKey("FOO")).toBeNull());
+});
+
+describe("passive (generic)", () => {
+  it("returns 10 + ability modifier for non-proficient", () => {
+    expect(passive(14, "none", 2)).toBe(10 + 2);
+  });
+
+  it("adds proficiency bonus when proficient", () => {
+    expect(passive(14, "proficient", 3)).toBe(10 + 2 + 3);
+  });
+
+  it("adds double proficiency bonus for expertise", () => {
+    expect(passive(14, "expertise", 3)).toBe(10 + 2 + 6);
+  });
+
+  it("handles negative modifiers", () => {
+    expect(passive(8, "none", 2)).toBe(10 + -1);
+  });
 });

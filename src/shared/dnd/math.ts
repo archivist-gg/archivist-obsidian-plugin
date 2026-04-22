@@ -51,8 +51,16 @@ export function skillBonus(abilityScore: number, proficiency: "none" | "proficie
   return mod;
 }
 
+/**
+ * Passive score for any skill: 10 + skill bonus. Generalizes `passivePerception`.
+ * Use this for Passive Investigation (INT) and Passive Insight (WIS).
+ */
+export function passive(abilityScore: number, proficiency: "none" | "proficient" | "expertise", profBonus: number): number {
+  return 10 + skillBonus(abilityScore, proficiency, profBonus);
+}
+
 export function passivePerception(wisScore: number, perceptionProf: "none" | "proficient" | "expertise", profBonus: number): number {
-  return 10 + skillBonus(wisScore, perceptionProf, profBonus);
+  return passive(wisScore, perceptionProf, profBonus);
 }
 
 export function attackBonus(abilityScore: number, profBonus: number): number {
