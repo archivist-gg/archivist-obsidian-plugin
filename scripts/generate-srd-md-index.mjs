@@ -10,7 +10,7 @@ const entries = [];
 for (const type of TYPES) {
   const dir = join(ROOT, type);
   if (!existsSync(dir)) continue;
-  const files = readdirSync(dir).filter((f) => f.endsWith(".md"));
+  const files = readdirSync(dir).filter((f) => f.endsWith(".md")).sort();
   for (const f of files) {
     if (!statSync(join(dir, f)).isFile()) continue;
     const slug = f.replace(/\.md$/, "");
