@@ -97,4 +97,16 @@ export default defineConfig([
       ],
     },
   },
+  // Dev CLI tools: progress logging to stdout/stderr is intended behaviour, so
+  // narrow the no-console rule here rather than littering the code with
+  // forbidden eslint-disable comments. `no-console` remains enforced
+  // everywhere else (in obsidianmd's recommended config it is implemented via
+  // `obsidianmd/rule-custom-message`, which wraps `no-console`).
+  {
+    files: ["tools/**/*.ts"],
+    rules: {
+      "no-console": "off",
+      "obsidianmd/rule-custom-message": "off",
+    },
+  },
 ]);

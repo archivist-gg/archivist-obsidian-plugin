@@ -7,8 +7,8 @@
     "dev": "node esbuild.config.mjs",
     "build": "npm run build:css && node esbuild.config.mjs production",
     "build:css": "node scripts/build-css.mjs",
-    "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "lint": "eslint 'src/**/*.ts' 'tools/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' 'tools/**/*.ts' --fix",
     "test": "vitest run --exclude 'tests/inquiry/**'",
     "test:watch": "vitest --exclude 'tests/inquiry/**'",
     "convert-srd": "tsx tools/srd-converter/index.ts"
