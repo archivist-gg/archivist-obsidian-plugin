@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encounterInputSchema, encounterOutputSchema } from "../src/ai/schemas/encounter-schema";
+import { encounterInputSchema, encounterOutputSchema } from "../src/modules/encounter/encounter.ai-schema";
 
 describe("encounterInputSchema", () => {
   it("validates valid encounter input", () => {
