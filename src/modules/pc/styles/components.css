@@ -187,3 +187,15 @@
 .archivist-pc-sheet .pc-ds-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--pc-crimson); }
 .archivist-pc-sheet .pc-ds-dot.filled { background: var(--pc-crimson); }
 .archivist-pc-sheet .pc-ds-dot.filled.failure { background: #922; }
+.archivist-pc-sheet .pc-spells-empty { text-align: center; padding: var(--pc-space-5); color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spells-empty-icon { font-size: 32px; opacity: 0.3; }
+.archivist-pc-sheet .pc-spells-empty-title { font-family: var(--pc-font-serif); font-size: 16px; color: var(--pc-crimson); margin-top: 4px; }
+.archivist-pc-sheet .pc-spells-empty-subtitle { font-size: 11px; margin-top: 4px; }
+.archivist-pc-sheet .pc-spell-summary { font-size: 12px; color: var(--pc-text-soft); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-key { text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-slot-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: var(--pc-space-3); }
+.archivist-pc-sheet .pc-slot-cell { text-align: center; padding: 4px 2px; background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); font-size: 11px; }
+.archivist-pc-sheet .pc-slot-val { font-family: var(--pc-font-serif); font-size: 14px; }
+.archivist-pc-sheet .pc-spell-list { list-style: none; padding: 0; font-size: 12px; }
+.archivist-pc-sheet .pc-spell-list li { padding: 2px 0; }
+.archivist-pc-sheet .pc-spell-slug { color: var(--pc-text-muted); font-size: 10px; }
