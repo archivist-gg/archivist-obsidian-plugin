@@ -25,16 +25,22 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
 
   const ctx = { resolved, derived, core };
 
-  safeRender(sheet, "pc-header", "header-section", registry, ctx);
-  safeRender(sheet, "pc-abilities", "ability-row", registry, ctx);
-  safeRender(sheet, "pc-combat", "combat-stats-row", registry, ctx);
+  // 1. Hero (AC / HP / HD rendered internally by HeaderSection)
+  safeRender(sheet, "pc-hero", "header-section", registry, ctx);
 
+  // 2. Stats band — free-floating abilities (left) + right cluster
+  const band = sheet.createDiv({ cls: "pc-stats-band" });
+  safeRender(band, "pc-abilities", "ability-row", registry, ctx);
+  const right = band.createDiv({ cls: "pc-stats-right" });
+  safeRender(right, "pc-stats-tiles-wrap", "stats-tiles", registry, ctx);
+  safeRender(right, "pc-def-cond-wrap", "defenses-conditions-panel", registry, ctx);
+
+  // 3. Body — trimmed sidebar (skills / senses / proficiencies) + tabs
   const body = sheet.createDiv({ cls: "pc-body" });
   const sidebar = body.createDiv({ cls: "pc-sidebar" });
-  for (const type of ["saves-panel", "senses-panel", "skills-panel", "proficiencies-panel"]) {
+  for (const type of ["skills-panel", "senses-panel", "proficiencies-panel"]) {
     safeRender(sidebar, `pc-${type}`, type, registry, ctx, { wrap: false });
   }
-
   const content = body.createDiv({ cls: "pc-content" });
   safeRender(content, "pc-tabs", "tabs-container", registry, ctx, { wrap: false });
 }
