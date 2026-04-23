@@ -6,26 +6,6 @@ import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { CoreAPI } from "../src/core/module-api";
 import { WorkspaceLeaf } from "obsidian";
-// Import all sheet components so the PCModule registry ends up populated in the test.
-import { HeaderSection } from "../src/modules/pc/components/header-section";
-import { AbilityRow } from "../src/modules/pc/components/ability-row";
-import { CombatStatsRow } from "../src/modules/pc/components/combat-stats-row";
-import { SavesPanel } from "../src/modules/pc/components/saves-panel";
-import { SensesPanel } from "../src/modules/pc/components/senses-panel";
-import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
-import { ProficienciesPanel } from "../src/modules/pc/components/proficiencies-panel";
-import { TabsContainer } from "../src/modules/pc/components/tabs-container";
-import { ActionsTab } from "../src/modules/pc/components/actions-tab";
-import { SpellsTab } from "../src/modules/pc/components/spells-tab";
-import { InventoryTab } from "../src/modules/pc/components/inventory-tab";
-import { FeaturesTab } from "../src/modules/pc/components/features-tab";
-import { BackgroundTab } from "../src/modules/pc/components/background-tab";
-import { NotesTab } from "../src/modules/pc/components/notes-tab";
-import { ClassBlock } from "../src/modules/pc/blocks/class-block";
-import { SubclassBlock } from "../src/modules/pc/blocks/subclass-block";
-import { RaceBlock } from "../src/modules/pc/blocks/race-block";
-import { BackgroundBlock } from "../src/modules/pc/blocks/background-block";
-import { FeatBlock } from "../src/modules/pc/blocks/feat-block";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -66,27 +46,9 @@ const PC_FILE = [
 function bootModule(): PCModule {
   const m = new PCModule();
   const entities = buildMockRegistry([{ slug: "bladesworn", entityType: "class", data: BLADESWORN }]);
+  // PCModule.register() wires all sheet components; no `core.plugin` means
+  // the file-open listener setup is skipped (tests run without a full host).
   m.register({ entities } as unknown as CoreAPI);
-  // Manually wire all components that PCSheetView renders.
-  m.registry.register(new HeaderSection());
-  m.registry.register(new AbilityRow());
-  m.registry.register(new CombatStatsRow());
-  m.registry.register(new SavesPanel());
-  m.registry.register(new SensesPanel());
-  m.registry.register(new SkillsPanel());
-  m.registry.register(new ProficienciesPanel());
-  m.registry.register(new ClassBlock());
-  m.registry.register(new SubclassBlock());
-  m.registry.register(new RaceBlock());
-  m.registry.register(new BackgroundBlock());
-  m.registry.register(new FeatBlock());
-  m.registry.register(new ActionsTab());
-  m.registry.register(new SpellsTab());
-  m.registry.register(new InventoryTab());
-  m.registry.register(new FeaturesTab(m.registry));
-  m.registry.register(new BackgroundTab(m.registry));
-  m.registry.register(new NotesTab());
-  m.registry.register(new TabsContainer(m.registry));
   return m;
 }
 

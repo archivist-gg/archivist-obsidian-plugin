@@ -49,6 +49,19 @@ export class ArchivistSettingTab extends PluginSettingTab {
           }),
       );
 
+    new Setting(containerEl)
+      .setName("Player characters folder")
+      .setDesc("Vault-relative folder where character `.md` files live. Opening files with `archivist-type: pc` frontmatter in this folder renders them as the full-screen character sheet.")
+      .addText((text) =>
+        text
+          .setPlaceholder("Player characters")
+          .setValue(this.plugin.settings.playerCharactersFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.playerCharactersFolder = value || "PlayerCharacters";
+            await this.plugin.saveSettings();
+          }),
+      );
+
     new Setting(containerEl).setName("Compendiums").setHeading();
     containerEl.createEl("p", {
       text: 'Compendiums are collections of D&D entities (monsters, spells, items) stored as folders in your vault. Read-only compendiums cannot be modified \u2014 editing an entity from a read-only compendium will only allow "Save As New" to a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',

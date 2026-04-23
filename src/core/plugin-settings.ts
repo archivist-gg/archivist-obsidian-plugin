@@ -12,6 +12,7 @@ export interface ArchivistSettings {
   externalContextPaths: string[];
   defaultMultiColumn: boolean;
   multiColumnThreshold: number;
+  playerCharactersFolder: string;
 }
 
 export const DEFAULT_SETTINGS: ArchivistSettings = {
@@ -22,4 +23,5 @@ export const DEFAULT_SETTINGS: ArchivistSettings = {
   externalContextPaths: [],
   defaultMultiColumn: false,
   multiColumnThreshold: 20,
+  playerCharactersFolder: "PlayerCharacters",
 };

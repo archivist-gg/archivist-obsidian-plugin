@@ -19,6 +19,7 @@ import { raceModule } from "./modules/race/race.module";
 import { subclassModule } from "./modules/subclass/subclass.module";
 import { backgroundModule } from "./modules/background/background.module";
 import { featModule } from "./modules/feat/feat.module";
+import { pcModule } from "./modules/pc/pc.module";
 
 import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
@@ -142,6 +143,7 @@ export default class ArchivistPlugin extends Plugin {
       subclassModule,
       backgroundModule,
       featModule,
+      pcModule,
     ];
 
     for (const mod of this.moduleList) {
