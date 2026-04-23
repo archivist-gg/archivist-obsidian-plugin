@@ -3,54 +3,61 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { AbilityRow } from "../src/modules/pc/components/ability-row";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
-const derived = (): DerivedStats => ({
-  totalLevel: 5,
-  proficiencyBonus: 3,
-  scores: { str: 8, dex: 18, con: 14, int: 12, wis: 14, cha: 13 },
-  mods: { str: -1, dex: 4, con: 2, int: 1, wis: 2, cha: 1 },
-  saves: {} as never,
-  skills: {} as never,
-  passives: { perception: 0, investigation: 0, insight: 0 },
-  hp: { max: 1, current: 1, temp: 0 },
-  ac: 10,
-  speed: 30,
-  initiative: 0,
-  spellcasting: null,
-  warnings: [],
-});
+function ctx(): ComponentRenderContext {
+  return {
+    derived: {
+      scores: { str: 4, dex: 15, con: 12, int: 21, wis: 13, cha: 10 },
+      mods: { str: -3, dex: 2, con: 1, int: 5, wis: 1, cha: 0 },
+      saves: {
+        str: { bonus: -3, proficient: false },
+        dex: { bonus: 2, proficient: false },
+        con: { bonus: 6, proficient: true },
+        int: { bonus: 10, proficient: true },
+        wis: { bonus: 1, proficient: false },
+        cha: { bonus: 0, proficient: false },
+      },
+    },
+  } as unknown as ComponentRenderContext;
+}
 
-const ctx: ComponentRenderContext = {
-  resolved: {} as ResolvedCharacter,
-  derived: derived(),
-  core: {} as never,
-};
-
-describe("AbilityRow", () => {
-  it("renders 6 cards in canonical order", () => {
-    const container = mountContainer();
-    new AbilityRow().render(container, ctx);
-    const cards = container.querySelectorAll<HTMLDivElement>(".pc-ability-card");
-    expect(cards.length).toBe(6);
-    expect(cards[0].dataset.ability).toBe("str");
-    expect(cards[5].dataset.ability).toBe("cha");
+describe("AbilityRow (V7)", () => {
+  it("renders 6 ability stacks, each with an ability card + save chip", () => {
+    const root = mountContainer();
+    new AbilityRow().render(root, ctx());
+    expect(root.querySelectorAll(".pc-ab-stack").length).toBe(6);
+    expect(root.querySelectorAll(".pc-ab-stack .pc-ab").length).toBe(6);
+    expect(root.querySelectorAll(".pc-ab-stack .pc-save-chip").length).toBe(6);
   });
 
-  it("shows modifier and raw score", () => {
-    const container = mountContainer();
-    new AbilityRow().render(container, ctx);
-    const dex = container.querySelector<HTMLDivElement>('[data-ability="dex"]')!;
-    expect(dex.querySelector(".pc-ability-mod")?.textContent).toBe("+4");
-    expect(dex.querySelector(".pc-ability-score")?.textContent).toBe("18");
+  it("renders label / modifier / score inside each cartouche card", () => {
+    const root = mountContainer();
+    new AbilityRow().render(root, ctx());
+    expect(root.querySelectorAll(".pc-ab .pc-ab-label").length).toBe(6);
+    expect(root.querySelectorAll(".pc-ab .pc-ab-mod").length).toBe(6);
+    expect(root.querySelectorAll(".pc-ab .pc-ab-score").length).toBe(6);
+    expect(root.querySelector(".pc-ab[data-ability='str'] .pc-ab-score")?.textContent).toBe("4");
+    expect(root.querySelector(".pc-ab[data-ability='int'] .pc-ab-mod")?.textContent).toBe("+5");
   });
 
-  it("formats negative modifiers with minus sign", () => {
-    const container = mountContainer();
-    new AbilityRow().render(container, ctx);
-    const str = container.querySelector<HTMLDivElement>('[data-ability="str"]')!;
-    expect(str.querySelector(".pc-ability-mod")?.textContent).toBe("-1");
+  it("marks CON and INT saves proficient; STR/DEX/WIS/CHA plain", () => {
+    const root = mountContainer();
+    new AbilityRow().render(root, ctx());
+    const byAb = (ab: string) =>
+      [...root.querySelectorAll<HTMLElement>(".pc-ab-stack")].find(
+        (s) => s.querySelector(`.pc-ab[data-ability='${ab}']`)
+      )!;
+    expect(byAb("con").querySelector(".pc-save-chip.prof")).not.toBeNull();
+    expect(byAb("int").querySelector(".pc-save-chip.prof")).not.toBeNull();
+    expect(byAb("str").querySelector(".pc-save-chip.prof")).toBeNull();
+    expect(byAb("cha").querySelector(".pc-save-chip.prof")).toBeNull();
+  });
+
+  it("has NO outer container (.pc-ability-container), abilities float free", () => {
+    const root = mountContainer();
+    new AbilityRow().render(root, ctx());
+    expect(root.querySelector(".pc-ability-container")).toBeNull();
   });
 });
