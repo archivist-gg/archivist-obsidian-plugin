@@ -101,7 +101,7 @@ describe("PCResolver", () => {
     char.race = "[[bladesworn]]"; // wrong type
     const { warnings, character } = new PCResolver(reg).resolve(char);
     expect(character.race).toBeNull();
-    expect(warnings.some((w) => w.toLowerCase().includes("not race"))).toBe(true);
+    expect(warnings.some((w) => w.includes("bladesworn") && w.includes("race"))).toBe(true);
   });
 
   it("level-filters class features to characterLevel", () => {

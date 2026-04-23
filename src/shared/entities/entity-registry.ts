@@ -31,18 +31,9 @@ export class EntityRegistry {
    * already exists it is replaced in both maps.
    */
   register(entity: RegisteredEntity): void {
-    const existing = this.bySlug.get(entity.slug);
-
-    // Remove from old type bucket if replacing and type changed
-    if (existing && existing.entityType !== entity.entityType) {
-      const oldBucket = this.byType.get(existing.entityType);
-      if (oldBucket) {
-        const idx = oldBucket.findIndex((e) => e.slug === entity.slug);
-        if (idx !== -1) oldBucket.splice(idx, 1);
-        if (oldBucket.length === 0) this.byType.delete(existing.entityType);
-      }
-    }
-
+    // Distinct-type entries sharing a slug must coexist in byType (e.g. SRD
+    // "acolyte" as both monster and background); only the flat bySlug map is
+    // overwritten, which is the honest behavior for typeless callers.
     this.bySlug.set(entity.slug, entity);
 
     // Upsert into type bucket
@@ -77,10 +68,33 @@ export class EntityRegistry {
   }
 
   /**
+   * Remove the specific (entityType, slug) entry. Needed when multiple
+   * entities share a slug across types and the caller knows which to remove.
+   */
+  unregisterByTypeAndSlug(entityType: string, slug: string): void {
+    const bucket = this.byType.get(entityType);
+    if (bucket) {
+      const idx = bucket.findIndex((e) => e.slug === slug);
+      if (idx !== -1) bucket.splice(idx, 1);
+      if (bucket.length === 0) this.byType.delete(entityType);
+    }
+
+    const flat = this.bySlug.get(slug);
+    if (flat && flat.entityType === entityType) {
+      this.bySlug.delete(slug);
+    }
+  }
+
+  /**
    * O(1) lookup by slug.
    */
   getBySlug(slug: string): RegisteredEntity | undefined {
     return this.bySlug.get(slug);
+  }
+
+  /** O(n) in the type bucket, typically tiny. Returns undefined on miss. */
+  getByTypeAndSlug(entityType: string, slug: string): RegisteredEntity | undefined {
+    return this.byType.get(entityType)?.find((e) => e.slug === slug);
   }
 
   /**

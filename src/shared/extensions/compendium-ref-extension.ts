@@ -144,11 +144,9 @@ class CompendiumRefWidget extends WidgetType {
       return err;
     }
 
-    const entity = registryRef.getBySlug(ref.slug);
-
-    if (ref.entityType && entity && entity.entityType !== ref.entityType) {
-      return this.notFoundEl(ref, doc);
-    }
+    const entity = ref.entityType
+      ? registryRef.getByTypeAndSlug(ref.entityType, ref.slug)
+      : registryRef.getBySlug(ref.slug);
 
     if (!entity) {
       return this.notFoundEl(ref, doc);
@@ -297,7 +295,8 @@ class CompendiumRefWidget extends WidgetType {
       while (container.firstChild) container.firstChild.remove();
 
       // Re-render stat block with badge inside (fetch fresh data from registry)
-      const freshEntity = registryRef?.getBySlug(entity.slug) ?? entity;
+      const freshEntity =
+        registryRef?.getByTypeAndSlug(entity.entityType, entity.slug) ?? entity;
       const rendered = this.renderEntityBlock(freshEntity, container);
       if (rendered) {
         const newBadge = doc.createElement("div");

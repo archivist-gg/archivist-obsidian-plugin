@@ -35,13 +35,9 @@ export class PCResolver {
     const lookup = <T>(rawRef: string | null, type: string): T | null => {
       const slug = stripSlug(rawRef);
       if (!slug) return null;
-      const reg = this.entities.getBySlug(slug);
+      const reg = this.entities.getByTypeAndSlug(type, slug);
       if (!reg) {
-        warnings.push(`Slug [[${slug}]] not found in compendium.`);
-        return null;
-      }
-      if (reg.entityType !== type) {
-        warnings.push(`Slug [[${slug}]] is registered as ${reg.entityType}, not ${type}.`);
+        warnings.push(`Slug [[${slug}]] not found in compendium as ${type}.`);
         return null;
       }
       return reg.data as T;

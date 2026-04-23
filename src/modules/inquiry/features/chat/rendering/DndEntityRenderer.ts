@@ -195,7 +195,7 @@ function renderSaveAsNewButton(
 
         // Transition: re-render with the newly saved entity
         actionsRow.empty();
-        const newEntity = entityRegistry?.getBySlug(slug);
+        const newEntity = entityRegistry?.getByTypeAndSlug(result.entityType, slug);
         if (newEntity) {
           renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
         } else {
@@ -236,7 +236,7 @@ function renderCopyAndSaveButton(
       // Transition to saved state
       actionsRow.empty();
       if (slug) {
-        const newEntity = entityRegistry?.getBySlug(slug);
+        const newEntity = entityRegistry?.getByTypeAndSlug(result.entityType, slug);
         if (newEntity) {
           renderSavedEntityActions(actionsRow, result, newEntity, onCopyAndSave, onUpdate, entityRegistry, app);
         } else {

@@ -215,9 +215,10 @@ export default class ArchivistPlugin extends Plugin {
           }
           const ref = parseCompendiumRef(match[0]);
           if (ref && this.entityRegistry) {
-            const entity = this.entityRegistry.getBySlug(ref.slug);
-            const typeMatches = !ref.entityType || entity?.entityType === ref.entityType;
-            if (entity && typeMatches) {
+            const entity = ref.entityType
+              ? this.entityRegistry.getByTypeAndSlug(ref.entityType, ref.slug)
+              : this.entityRegistry.getBySlug(ref.slug);
+            if (entity) {
               const wrapper = doc.createElement("div");
               wrapper.classList.add("archivist-compendium-ref");
               const rendered = renderCompendiumRefReadingMode(wrapper, entity);

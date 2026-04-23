@@ -79,6 +79,88 @@ describe("EntityRegistry", () => {
   });
 
   // -------------------------------------------------------------------------
+  // getByTypeAndSlug()
+  // -------------------------------------------------------------------------
+  describe("getByTypeAndSlug", () => {
+    it("returns the entity when type and slug both match", () => {
+      registry.register(makeEntity({ slug: "goblin", entityType: "monster" }));
+
+      const result = registry.getByTypeAndSlug("monster", "goblin");
+      expect(result).toBeDefined();
+      expect(result!.name).toBe("Goblin");
+      expect(result!.entityType).toBe("monster");
+    });
+
+    it("returns undefined when the slug exists under a different type", () => {
+      // Regression: D&D 5e SRD has `acolyte` as both monster and background.
+      registry.register(
+        makeEntity({ slug: "acolyte", name: "Acolyte", entityType: "background" }),
+      );
+
+      expect(registry.getByTypeAndSlug("monster", "acolyte")).toBeUndefined();
+    });
+
+    it("returns undefined when the slug does not exist at all", () => {
+      expect(registry.getByTypeAndSlug("monster", "nonexistent")).toBeUndefined();
+    });
+
+    it("retrieves each entity by its type after registering different slugs under different types", () => {
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "background",
+          filePath: "Compendium/SRD/Backgrounds/Acolyte.md",
+        }),
+      );
+      registry.register(
+        makeEntity({
+          slug: "goblin",
+          name: "Goblin",
+          entityType: "monster",
+          filePath: "Compendium/SRD/Monsters/Goblin.md",
+        }),
+      );
+
+      expect(registry.getByTypeAndSlug("background", "acolyte")!.name).toBe("Acolyte");
+      expect(registry.getByTypeAndSlug("monster", "goblin")!.name).toBe("Goblin");
+      // Cross-type lookups return undefined.
+      expect(registry.getByTypeAndSlug("monster", "acolyte")).toBeUndefined();
+      expect(registry.getByTypeAndSlug("background", "goblin")).toBeUndefined();
+    });
+
+    it("after registering monster:acolyte then background:acolyte, both are retrievable via getByTypeAndSlug", () => {
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "monster",
+          filePath: "Compendium/SRD/Monsters/Acolyte.md",
+        }),
+      );
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "background",
+          filePath: "Compendium/SRD/Backgrounds/Acolyte.md",
+        }),
+      );
+
+      const monsterAcolyte = registry.getByTypeAndSlug("monster", "acolyte");
+      const backgroundAcolyte = registry.getByTypeAndSlug("background", "acolyte");
+
+      expect(monsterAcolyte).toBeDefined();
+      expect(monsterAcolyte!.entityType).toBe("monster");
+      expect(monsterAcolyte!.filePath).toBe("Compendium/SRD/Monsters/Acolyte.md");
+
+      expect(backgroundAcolyte).toBeDefined();
+      expect(backgroundAcolyte!.entityType).toBe("background");
+      expect(backgroundAcolyte!.filePath).toBe("Compendium/SRD/Backgrounds/Acolyte.md");
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // search() -- ranked results
   // -------------------------------------------------------------------------
   describe("search ranked results", () => {
@@ -281,6 +363,95 @@ describe("EntityRegistry", () => {
 
       expect(registry.getTypes()).toEqual([]);
       expect(registry.count()).toBe(0);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // unregisterByTypeAndSlug()
+  // -------------------------------------------------------------------------
+  describe("unregisterByTypeAndSlug", () => {
+    it("removes only the specified (type, slug) entry, leaving same-slug-different-type entries intact", () => {
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "monster",
+          filePath: "Compendium/SRD/Monsters/Acolyte.md",
+        }),
+      );
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "background",
+          filePath: "Compendium/SRD/Backgrounds/Acolyte.md",
+        }),
+      );
+
+      registry.unregisterByTypeAndSlug("background", "acolyte");
+
+      expect(registry.getByTypeAndSlug("background", "acolyte")).toBeUndefined();
+      const monsterAcolyte = registry.getByTypeAndSlug("monster", "acolyte");
+      expect(monsterAcolyte).toBeDefined();
+      expect(monsterAcolyte!.entityType).toBe("monster");
+    });
+
+    it("removes from bySlug when flat entry matches the specified type", () => {
+      registry.register(
+        makeEntity({ slug: "goblin", name: "Goblin", entityType: "monster" }),
+      );
+
+      registry.unregisterByTypeAndSlug("monster", "goblin");
+
+      expect(registry.getBySlug("goblin")).toBeUndefined();
+      expect(registry.getByTypeAndSlug("monster", "goblin")).toBeUndefined();
+      expect(registry.count()).toBe(0);
+    });
+
+    it("leaves bySlug entry when flat entry belongs to a different type", () => {
+      // monster registered first, then background overwrites bySlug.
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "monster",
+          filePath: "Compendium/SRD/Monsters/Acolyte.md",
+        }),
+      );
+      registry.register(
+        makeEntity({
+          slug: "acolyte",
+          name: "Acolyte",
+          entityType: "background",
+          filePath: "Compendium/SRD/Backgrounds/Acolyte.md",
+        }),
+      );
+
+      // bySlug holds the background (registered last); removing the monster
+      // must not touch bySlug.
+      registry.unregisterByTypeAndSlug("monster", "acolyte");
+
+      const flat = registry.getBySlug("acolyte");
+      expect(flat).toBeDefined();
+      expect(flat!.entityType).toBe("background");
+    });
+
+    it("is a no-op for unknown (type, slug) pair", () => {
+      registry.register(makeEntity({ slug: "goblin", name: "Goblin", entityType: "monster" }));
+
+      registry.unregisterByTypeAndSlug("spell", "goblin");
+      registry.unregisterByTypeAndSlug("monster", "nonexistent");
+
+      expect(registry.count()).toBe(1);
+      expect(registry.getBySlug("goblin")).toBeDefined();
+    });
+
+    it("cleans up empty type bucket", () => {
+      registry.register(makeEntity({ slug: "goblin", name: "Goblin", entityType: "monster" }));
+
+      registry.unregisterByTypeAndSlug("monster", "goblin");
+
+      expect(registry.getTypes()).toEqual([]);
     });
   });
 

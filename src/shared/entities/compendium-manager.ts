@@ -394,7 +394,7 @@ export class CompendiumManager {
       await this.fileManager.trashFile(file);
     }
 
-    this.registry.unregister(slug);
+    this.registry.unregisterByTypeAndSlug(existing.entityType, slug);
   }
 
   /**
