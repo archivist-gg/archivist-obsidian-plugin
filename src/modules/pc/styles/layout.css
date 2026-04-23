@@ -1,5 +1,20 @@
+/* =============================================================
+ * PC Sheet responsive breakpoints (used across layout.css and
+ * components.css). Keep this list as the single source of truth:
+ *
+ *   lg  >= 1100px   default desktop layout
+ *   md   900-1099px stats-band right cluster stacks its 2x2+def-cond
+ *   sm   760-899px  stats-band becomes single column (abilities row
+ *                   full-width above the right cluster)
+ *   xs   600-759px  body sidebar stacks under content; hero-right
+ *                   wraps under identity; ability row collapses to
+ *                   3 columns; save chips shrink (hide word "SAVE")
+ *   xxs  < 600px    last-resort graceful degradation (2-col ability
+ *                   row; tiles stack; everything stays legible)
+ * ============================================================= */
+
 .archivist-pc-sheet {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   border-radius: var(--pc-radius-lg);
   box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
@@ -19,6 +34,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--pc-space-3);
+  min-width: 0;
 }
 
 .archivist-pc-sheet .pc-content {
@@ -28,12 +44,10 @@
   min-width: 0;
 }
 
+/* sm: body sidebar collapses under content */
 @media (max-width: 760px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
-  }
-  .archivist-pc-sheet .pc-ability-row {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 

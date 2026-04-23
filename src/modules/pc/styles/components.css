@@ -1,6 +1,6 @@
 /* Filled in by component tasks (header-section, ability-row, saves-panel, ...). */
 
-.archivist-pc-sheet .pc-header .pc-header-root {
+.archivist-pc-sheet .pc-header-root {
   display: flex;
   align-items: center;
   gap: var(--pc-space-4);
@@ -154,30 +154,25 @@
   display: flex;
   gap: 12px;
   align-items: stretch;
+  margin-left: auto;
 }
 
-/* AC shield */
+/* AC shield — heraldic outline, no fill. Outer + inner stroke for a trim look. */
 .archivist-pc-sheet .pc-ac-shield {
-  width: 84px;
-  height: 96px;
+  width: 92px;
+  height: 108px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120' preserveAspectRatio='none'><g fill='none' stroke='%231c1811' stroke-linejoin='round' stroke-linecap='round'><path d='M 5 6 L 95 6 L 95 58 Q 95 96 50 116 Q 5 96 5 58 Z' stroke-width='2'/><path d='M 10 11 L 90 11 L 90 58 Q 90 91 50 109 Q 10 91 10 58 Z' stroke-width='0.8' opacity='0.55'/></g></svg>");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
-.archivist-pc-sheet .pc-ac-shield-shell {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #e3d3a5 0%, #c9b286 100%);
-  clip-path: polygon(50% 0%, 100% 12%, 100% 62%, 50% 100%, 0% 62%, 0% 12%);
-  box-shadow: inset 0 0 0 2px var(--pc-text-primary);
-}
+.archivist-pc-sheet .pc-ac-shield-shell,
 .archivist-pc-sheet .pc-ac-shield-trim {
-  position: absolute;
-  inset: 4px;
-  clip-path: polygon(50% 0%, 100% 12%, 100% 62%, 50% 100%, 0% 62%, 0% 12%);
-  box-shadow: inset 0 0 0 1.5px var(--pc-tan);
+  display: none;
 }
 .archivist-pc-sheet .pc-ac-shield-txt { position: relative; text-align: center; }
 .archivist-pc-sheet .pc-ac-shield-label-top,
@@ -341,17 +336,26 @@
    (data URI) on each .pc-ab card. Score pill hangs off the bottom edge. */
 .archivist-pc-sheet .pc-ability-row {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   justify-items: center;
   align-items: start;
   padding-top: 10px;
+  min-width: 0;
 }
-.archivist-pc-sheet .pc-ab-stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.archivist-pc-sheet .pc-ab-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
 .archivist-pc-sheet .pc-ab {
   position: relative;
-  width: 92px;
-  height: 118px;
+  width: 100%;
+  max-width: 72px;
+  aspect-ratio: 92 / 118;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -365,34 +369,34 @@
 .archivist-pc-sheet .pc-ab-label {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 9px;
+  letter-spacing: 0.16em;
   color: var(--pc-text-primary);
   text-transform: uppercase;
-  margin-top: -4px;
+  margin-top: -3px;
 }
 .archivist-pc-sheet .pc-ab-mod {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1;
   color: var(--pc-text-primary);
-  margin: 6px 0 0;
+  margin: 4px 0 0;
 }
 .archivist-pc-sheet .pc-ab-score {
   position: absolute;
-  bottom: -8px;
+  bottom: -7px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  min-width: 32px;
-  padding: 2px 9px;
-  border: 1.5px solid var(--pc-text-primary);
+  min-width: 26px;
+  padding: 1px 7px;
+  border: 1.3px solid var(--pc-text-primary);
   border-radius: 999px;
   background: var(--pc-parchment-light);
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--pc-text-primary);
 }
 
@@ -400,21 +404,35 @@
 .archivist-pc-sheet .pc-save-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 10px 2px 6px;
+  gap: 4px;
+  padding: 1px 7px 1px 4px;
   border-radius: 999px;
   border: 1px solid var(--pc-tan-muted);
   background: rgba(255, 248, 220, 0.5);
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 10px;
+  font-size: 9px;
   color: var(--pc-text-soft);
+  max-width: 100%;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 .archivist-pc-sheet .pc-save-chip b {
   font-weight: 600;
-  letter-spacing: 0.14em;
-  font-size: 9px;
+  letter-spacing: 0.12em;
+  font-size: 8px;
   color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle {
+  width: 10px;
+  height: 10px;
+  border-width: 1.2px;
+  border-radius: 2px;
+}
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.proficient::after,
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.expertise::after {
+  width: 4px;
+  height: 4px;
 }
 .archivist-pc-sheet .pc-save-chip .pc-save-bn { color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-save-chip.prof {
@@ -565,4 +583,90 @@
   color: var(--pc-text-muted);
   font-style: italic;
   font-size: 11px;
+}
+
+.archivist-pc-sheet .pc-def-cond-right { min-width: 0; }
+.archivist-pc-sheet .pc-def-cond-left { min-width: 0; }
+.archivist-pc-sheet .pc-cond-body { display: flex; flex-wrap: wrap; gap: 2px; }
+
+/* ================================================================
+   Responsive — breakpoints documented at the top of layout.css
+   ================================================================ */
+
+/* md (<=1099px) — stats-band right cluster: stack the 2x2 tiles above
+   the defenses/conditions panel so the INITIATIVE/INSPIRATION column
+   no longer overlaps the defenses panel. At this width the stats-band
+   left half also gets tight enough that the SAVE chip's text overflows
+   its ability column — so we drop the chip label here and show only
+   the prof dot + bonus. */
+@media (max-width: 1099px) {
+  .archivist-pc-sheet .pc-stats-right {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .archivist-pc-sheet .pc-save-chip b { display: none; }
+  .archivist-pc-sheet .pc-save-chip { padding: 1px 7px; gap: 3px; }
+}
+
+/* sm (<=899px) — stats-band collapses to a single column (abilities row
+   full width above the right cluster). Tighten its horizontal padding. */
+@media (max-width: 899px) {
+  .archivist-pc-sheet .pc-stats-band {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 18px;
+  }
+  /* When abilities are full-width, the row has lots of horizontal room;
+     uncap max-width so cartouches scale up to the mockup's 92px. */
+  .archivist-pc-sheet .pc-ab {
+    max-width: 92px;
+  }
+}
+
+/* xs (<=759px) — hero-right wraps under the identity block; HP widget
+   drops its min-width so it lays out cleanly below identity; ability
+   row collapses to 3 columns; save chip hides the "SAVE" label. */
+@media (max-width: 759px) {
+  .archivist-pc-sheet .pc-hero-right {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 1 1 280px; }
+  .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
+
+  .archivist-pc-sheet .pc-ability-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 18px;
+  }
+
+  /* Collapse the defenses/conditions merged panel to one column and
+     remove the vertical divider (it visually breaks when stacked). */
+  .archivist-pc-sheet .pc-def-cond {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 10px;
+  }
+  .archivist-pc-sheet .pc-def-cond-left {
+    padding-right: 0;
+    padding-bottom: 10px;
+    border-right: none;
+    border-bottom: 1px solid rgba(58, 42, 20, 0.35);
+  }
+
+  /* Save chip label is already hidden at md — no extra rules here. */
+}
+
+/* xxs (<=599px) — graceful degradation floor. Ability row to 2 cols so
+   cartouches stay legible; stats 2x2 stays 2 wide but gets tighter. */
+@media (max-width: 599px) {
+  .archivist-pc-sheet .pc-ability-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .archivist-pc-sheet .pc-stats-band {
+    padding: 12px 12px;
+  }
+  .archivist-pc-sheet .pc-header-root {
+    padding: var(--pc-space-3);
+    gap: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-name { font-size: 22px; }
 }
