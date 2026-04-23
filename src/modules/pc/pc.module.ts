@@ -7,7 +7,12 @@ import { parsePC } from "./pc.parser";
 import { PCResolver } from "./pc.resolver";
 import { ComponentRegistry } from "./components/component-registry";
 import { HeaderSection } from "./components/header-section";
+import { AcShield } from "./components/ac-shield";
+import { HpWidget } from "./components/hp-widget";
+import { HitDiceWidget } from "./components/hit-dice-widget";
 import { AbilityRow } from "./components/ability-row";
+import { StatsTiles } from "./components/stats-tiles";
+import { DefensesConditionsPanel } from "./components/defenses-conditions-panel";
 import { SensesPanel } from "./components/senses-panel";
 import { SkillsPanel } from "./components/skills-panel";
 import { ProficienciesPanel } from "./components/proficiencies-panel";
@@ -129,16 +134,28 @@ export class PCModule implements ArchivistModule {
 
   private wireComponents(): void {
     const r = this.registry;
+
+    // Hero right cluster widgets (HeaderSection delegates to these)
+    r.register(new AcShield());
+    r.register(new HpWidget());
+    r.register(new HitDiceWidget());
+    // Hero
     r.register(new HeaderSection(r));
+    // Stats band
     r.register(new AbilityRow());
+    r.register(new StatsTiles());
+    r.register(new DefensesConditionsPanel());
+    // Sidebar panels
     r.register(new SensesPanel());
     r.register(new SkillsPanel());
     r.register(new ProficienciesPanel());
+    // Blocks
     r.register(new ClassBlock());
     r.register(new SubclassBlock());
     r.register(new RaceBlock());
     r.register(new BackgroundBlock());
     r.register(new FeatBlock());
+    // Tabs
     r.register(new ActionsTab());
     r.register(new SpellsTab());
     r.register(new InventoryTab());

@@ -79,13 +79,14 @@ describe("PCModule", () => {
     expect(r.success).toBe(true);
   });
 
-  it("wireComponents registers all 17 components", () => {
+  it("wireComponents registers all 22 components", () => {
     const m = new PCModule();
     const core = { entities: new EntityRegistry() } as unknown as CoreAPI;
     m.register(core);
-    expect(m.registry.size()).toBe(17);
+    expect(m.registry.size()).toBe(22);
     for (const type of [
-      "header-section", "ability-row",
+      "header-section", "ac-shield", "hp-widget", "hit-dice-widget",
+      "ability-row", "stats-tiles", "defenses-conditions-panel",
       "senses-panel", "skills-panel", "proficiencies-panel",
       "class-block", "subclass-block", "race-block", "background-block", "feat-block",
       "actions-tab", "spells-tab", "inventory-tab",
