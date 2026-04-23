@@ -2,6 +2,7 @@ import type { SheetComponent, ComponentRenderContext } from "../components/compo
 import type { ClassEntity } from "../../class/class.types";
 import type { ResolvedClass } from "../pc.types";
 import type { Feature } from "../../../shared/types";
+import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class ClassBlock implements SheetComponent {
   readonly type = "class-block";
@@ -34,7 +35,10 @@ export class ClassBlock implements SheetComponent {
         const li = list.createEl("li", { cls: "pc-feature-item" });
         li.createEl("strong", { text: `Level ${lvl} — ${feat.name}` });
         const desc = resolveFeatureDescription(feat, rc.choices[lvl]);
-        if (desc) li.createDiv({ cls: "pc-feature-desc", text: desc });
+        if (desc) {
+          const descEl = li.createDiv({ cls: "pc-feature-desc" });
+          renderTextWithInlineTags(desc, descEl);
+        }
       }
     }
   }

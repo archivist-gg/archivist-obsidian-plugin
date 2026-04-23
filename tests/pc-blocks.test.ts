@@ -142,3 +142,19 @@ describe("FeatBlock", () => {
     expect(container.querySelector(".pc-feat-block")).toBeNull();
   });
 });
+
+describe("V7 inline tags in class features", () => {
+  it("renders backtick tags as inline-tag spans inside feature descriptions", () => {
+    const container = mountContainer();
+    const c = ctx();
+    c.resolved.classes[0].entity = {
+      ...(c.resolved.classes[0].entity as object),
+      features_by_level: {
+        1: [{ name: "Shielded Mind", description: "Save against effects (`dc:int`)." }],
+      },
+    } as never;
+    new ClassBlock().render(container, c);
+    const tag = container.querySelector(".archivist-stat-tag");
+    expect(tag).not.toBeNull();
+  });
+});

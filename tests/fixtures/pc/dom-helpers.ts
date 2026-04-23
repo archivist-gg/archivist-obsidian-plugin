@@ -53,9 +53,20 @@ export function installObsidianDomHelpers(): void {
     return this;
   };
 
+  proto.addClasses = function (this: HTMLElement, classes: string[]) {
+    classes.forEach((cls) => {
+      cls.split(/\s+/).filter(Boolean).forEach((c) => this.classList.add(c));
+    });
+    return this;
+  };
+
   proto.removeClass = function (this: HTMLElement, cls: string) {
     cls.split(/\s+/).filter(Boolean).forEach((c) => this.classList.remove(c));
     return this;
+  };
+
+  proto.hasClass = function (this: HTMLElement, cls: string) {
+    return this.classList.contains(cls);
   };
 
   proto.empty = function (this: HTMLElement) {

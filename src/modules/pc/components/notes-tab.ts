@@ -1,5 +1,6 @@
-import { MarkdownRenderer, type Component } from "obsidian";
+import { type Component } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class NotesTab implements SheetComponent {
   readonly type = "notes-tab";
@@ -14,7 +15,6 @@ export class NotesTab implements SheetComponent {
       return;
     }
     const target = root.createDiv({ cls: "pc-notes-markdown" });
-    const app = (ctx.core as unknown as { app?: unknown }).app;
-    void MarkdownRenderer.render(app as never, notes, target, "", this.component as unknown as never);
+    renderTextWithInlineTags(notes, target);
   }
 }

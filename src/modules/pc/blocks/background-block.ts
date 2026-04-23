@@ -1,4 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
+import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class BackgroundBlock implements SheetComponent {
   readonly type = "background-block";
@@ -9,7 +10,8 @@ export class BackgroundBlock implements SheetComponent {
     const section = el.createDiv({ cls: "pc-block pc-background-block" });
     section.createEl("h3", { cls: "pc-block-title", text: b.name });
     if (b.description) {
-      section.createEl("p", { cls: "pc-block-description", text: b.description });
+      const descEl = section.createEl("p", { cls: "pc-block-description" });
+      renderTextWithInlineTags(b.description, descEl);
     }
     const skills = b.skill_proficiencies ?? [];
     const tools: string[] = [];
@@ -29,7 +31,10 @@ export class BackgroundBlock implements SheetComponent {
     const feature = b.feature;
     if (feature) {
       section.createEl("h4", { cls: "pc-block-subtitle", text: feature.name });
-      if (feature.description) section.createEl("p", { cls: "pc-feature-desc", text: feature.description });
+      if (feature.description) {
+        const descEl = section.createEl("p", { cls: "pc-feature-desc" });
+        renderTextWithInlineTags(feature.description, descEl);
+      }
     }
   }
 }

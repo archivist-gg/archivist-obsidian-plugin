@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
 import type { RaceEntity } from "../../race/race.types";
 import type { Feature } from "../../../shared/types";
+import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class RaceBlock implements SheetComponent {
   readonly type = "race-block";
@@ -11,7 +12,8 @@ export class RaceBlock implements SheetComponent {
     const section = el.createDiv({ cls: "pc-block pc-race-block" });
     section.createEl("h3", { cls: "pc-block-title", text: ctx.resolved.definition.subrace ? `${prettify(ctx.resolved.definition.subrace)} ${r.name}` : r.name });
     if ((r as unknown as { description?: string }).description) {
-      section.createEl("p", { cls: "pc-block-description", text: (r as unknown as { description?: string }).description ?? "" });
+      const descEl = section.createEl("p", { cls: "pc-block-description" });
+      renderTextWithInlineTags((r as unknown as { description?: string }).description ?? "", descEl);
     }
     const meta = section.createDiv({ cls: "pc-block-meta" });
     const size = (r as unknown as { size?: string }).size;
@@ -29,7 +31,10 @@ export class RaceBlock implements SheetComponent {
         const li = list.createEl("li", { cls: "pc-feature-item" });
         li.createEl("strong", { text: t.name });
         const desc = t.description ?? t.entries?.join(" ") ?? "";
-        if (desc) li.createDiv({ cls: "pc-feature-desc", text: desc });
+        if (desc) {
+          const descEl = li.createDiv({ cls: "pc-feature-desc" });
+          renderTextWithInlineTags(desc, descEl);
+        }
       }
     }
   }
