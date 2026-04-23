@@ -1,1 +1,33 @@
-/* Filled in by the block-components task (class-block, race-block, ...). */
+.archivist-pc-sheet .pc-block {
+  background: var(--pc-white);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+  padding: var(--pc-space-3) var(--pc-space-4);
+  margin-bottom: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-block-title {
+  margin: 0 0 var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  color: var(--pc-crimson);
+  font-size: 18px;
+}
+.archivist-pc-sheet .pc-block-subtitle {
+  margin: var(--pc-space-3) 0 var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  color: var(--pc-text-soft);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.archivist-pc-sheet .pc-block-description {
+  font-size: 13px;
+  color: var(--pc-text-primary);
+  margin: 0 0 var(--pc-space-2);
+  line-height: 1.5;
+}
+.archivist-pc-sheet .pc-block-meta { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); font-size: 11px; color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-meta-label { font-weight: 600; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-feature-item { border-left: 2px solid var(--pc-tan); padding-left: var(--pc-space-3); }
+.archivist-pc-sheet .pc-feature-desc { white-space: pre-wrap; font-size: 12px; color: var(--pc-text-primary); margin-top: 2px; line-height: 1.5; }
+.archivist-pc-sheet .pc-feat-prereq { font-size: 11px; color: var(--pc-text-soft); font-style: italic; margin-top: var(--pc-space-1); }
