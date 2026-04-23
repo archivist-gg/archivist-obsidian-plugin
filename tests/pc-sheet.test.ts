@@ -17,8 +17,9 @@ class Probe implements SheetComponent {
 function fullRegistry(): ComponentRegistry {
   const r = new ComponentRegistry();
   for (const t of [
-    "header-section", "ability-row", "combat-stats-row",
-    "saves-panel", "senses-panel", "skills-panel", "proficiencies-panel",
+    "header-section", "ac-shield", "hp-widget", "hit-dice-widget",
+    "ability-row", "stats-tiles", "defenses-conditions-panel",
+    "senses-panel", "skills-panel", "proficiencies-panel",
     "tabs-container",
   ]) r.register(new Probe(t));
   return r;
@@ -37,15 +38,19 @@ describe("renderPCSheet", () => {
     expect(root.querySelector(".archivist-pc-sheet")).not.toBeNull();
   });
 
-  it("renders top strip, body, and sidebar + content", () => {
+  it("renders hero cluster, stats band, sidebar, and tabs content", () => {
     const root = mountContainer();
     renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, warnings: [] });
-    expect(root.querySelector(".pc-header .probe-header-section")).not.toBeNull();
+    expect(root.querySelector(".pc-hero .probe-header-section")).not.toBeNull();
     expect(root.querySelector(".pc-abilities .probe-ability-row")).not.toBeNull();
-    expect(root.querySelector(".pc-combat .probe-combat-stats-row")).not.toBeNull();
-    expect(root.querySelector(".pc-sidebar .probe-saves-panel")).not.toBeNull();
+    expect(root.querySelector(".pc-stats-right .probe-stats-tiles")).not.toBeNull();
+    expect(root.querySelector(".pc-stats-right .probe-defenses-conditions-panel")).not.toBeNull();
     expect(root.querySelector(".pc-sidebar .probe-skills-panel")).not.toBeNull();
+    expect(root.querySelector(".pc-sidebar .probe-senses-panel")).not.toBeNull();
+    expect(root.querySelector(".pc-sidebar .probe-proficiencies-panel")).not.toBeNull();
     expect(root.querySelector(".pc-content .probe-tabs-container")).not.toBeNull();
+    expect(root.querySelector(".probe-saves-panel")).toBeNull();
+    expect(root.querySelector(".probe-combat-stats-row")).toBeNull();
   });
 
   it("renders warning banner when warnings non-empty", () => {
@@ -78,5 +83,18 @@ describe("renderPCSheetError", () => {
     expect(root.textContent).toContain("Boom");
     (root.querySelector<HTMLButtonElement>("button.mod-cta")!).click();
     expect(called).toBe(true);
+  });
+});
+
+describe("buildSubtitle (V7)", () => {
+  it("does NOT include alignment even when set", async () => {
+    const { buildSubtitle } = await import("../src/modules/pc/components/header-section");
+    const r = {
+      race: { name: "Human" },
+      classes: [{ entity: { name: "Artificer" }, level: 13, subclass: null, choices: {} }],
+      background: null,
+      definition: { alignment: "Lawful Neutral", race: "[[human]]", subrace: null },
+    } as any;
+    expect(buildSubtitle(r)).not.toContain("Lawful Neutral");
   });
 });

@@ -1,8 +1,16 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import type { ComponentRegistry } from "./component-registry";
 import type { ResolvedCharacter } from "../pc.types";
 
+/**
+ * V7 hero: crest + name/subtitle on the left, right cluster with AC shield,
+ * HP widget, and Hit Dice widget. Rest buttons removed; alignment dropped
+ * from the subtitle.
+ */
 export class HeaderSection implements SheetComponent {
   readonly type = "header-section";
+
+  constructor(private readonly registry: ComponentRegistry) {}
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-header-root" });
@@ -14,13 +22,15 @@ export class HeaderSection implements SheetComponent {
     identity.createEl("h1", { cls: "pc-name", text: ctx.resolved.definition.name });
     identity.createDiv({ cls: "pc-subtitle", text: buildSubtitle(ctx.resolved) });
 
-    const actions = root.createDiv({ cls: "pc-header-actions" });
-    const shortRest = actions.createEl("button", { cls: "pc-rest-btn", text: "Short rest" });
-    shortRest.setAttribute("disabled", "true");
-    shortRest.setAttribute("title", "Interactive rest flows arrive later");
-    const longRest = actions.createEl("button", { cls: "pc-rest-btn", text: "Long rest" });
-    longRest.setAttribute("disabled", "true");
-    longRest.setAttribute("title", "Interactive rest flows arrive later");
+    const right = root.createDiv({ cls: "pc-hero-right" });
+    for (const type of ["ac-shield", "hp-widget", "hit-dice-widget"] as const) {
+      const c = this.registry.get(type);
+      if (!c) {
+        right.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${type})` });
+        continue;
+      }
+      c.render(right, ctx);
+    }
   }
 }
 
@@ -40,7 +50,7 @@ export function buildSubtitle(resolved: ResolvedCharacter): string {
   if (classLabel.trim()) parts.push(classLabel);
 
   if (resolved.background?.name) parts.push(resolved.background.name);
-  if (resolved.definition.alignment) parts.push(resolved.definition.alignment);
+  // Alignment intentionally dropped in V7.
   return parts.join(" • ");
 }
 

@@ -131,7 +131,7 @@ export class PCModule implements ArchivistModule {
 
   private wireComponents(): void {
     const r = this.registry;
-    r.register(new HeaderSection());
+    r.register(new HeaderSection(r));
     r.register(new AbilityRow());
     r.register(new CombatStatsRow());
     r.register(new SavesPanel());

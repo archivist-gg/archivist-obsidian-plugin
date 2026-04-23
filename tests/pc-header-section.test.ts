@@ -1,8 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import { HeaderSection, buildSubtitle } from "../src/modules/pc/components/header-section";
+import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { SheetComponent, ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -40,8 +41,8 @@ const fakeCtx = (resolved: ResolvedCharacter): ComponentRenderContext => ({
 });
 
 describe("buildSubtitle", () => {
-  it("joins race, class+level, background, alignment with bullets", () => {
-    expect(buildSubtitle(BASE_RESOLVED)).toBe("Hill Folk • Bladesworn 3 • Drifter • Lawful Good");
+  it("joins race, class+level, and background with bullets (alignment dropped in V7)", () => {
+    expect(buildSubtitle(BASE_RESOLVED)).toBe("Hill Folk • Bladesworn 3 • Drifter");
   });
   it("includes subclass in parentheses when present", () => {
     const r = { ...BASE_RESOLVED, classes: [{ ...BASE_RESOLVED.classes[0], subclass: { slug: "path-of-shadow", name: "Path of Shadow" } as never }] };
@@ -55,15 +56,38 @@ describe("buildSubtitle", () => {
   });
 });
 
+class Probe implements SheetComponent {
+  constructor(readonly type: string) {}
+  render(el: HTMLElement) { el.createDiv({ cls: `probe-${this.type}`, text: this.type }); }
+}
+
+function registryWith(types: string[]): ComponentRegistry {
+  const r = new ComponentRegistry();
+  for (const t of types) r.register(new Probe(t));
+  return r;
+}
+
 describe("HeaderSection", () => {
-  it("renders name, subtitle, avatar placeholder, and two disabled rest buttons", () => {
+  it("renders name, subtitle, avatar placeholder, and hero right cluster (no rest buttons)", () => {
     const container = mountContainer();
-    new HeaderSection().render(container, fakeCtx(BASE_RESOLVED));
+    const registry = registryWith(["ac-shield", "hp-widget", "hit-dice-widget"]);
+    new HeaderSection(registry).render(container, fakeCtx(BASE_RESOLVED));
     expect(container.querySelector(".pc-name")?.textContent).toBe("Grendal the Wary");
     expect(container.querySelector(".pc-subtitle")?.textContent).toContain("Hill Folk");
     expect(container.querySelector(".pc-avatar")).not.toBeNull();
-    const btns = container.querySelectorAll<HTMLButtonElement>(".pc-rest-btn");
-    expect(btns.length).toBe(2);
-    btns.forEach((b) => expect(b.hasAttribute("disabled")).toBe(true));
+    expect(container.querySelectorAll(".pc-rest-btn").length).toBe(0);
+    expect(container.querySelector(".pc-hero-right .probe-ac-shield")).not.toBeNull();
+    expect(container.querySelector(".pc-hero-right .probe-hp-widget")).not.toBeNull();
+    expect(container.querySelector(".pc-hero-right .probe-hit-dice-widget")).not.toBeNull();
+  });
+
+  it("falls back to pc-empty-line when a right-cluster widget isn't registered", () => {
+    const container = mountContainer();
+    const registry = registryWith(["hp-widget"]);
+    new HeaderSection(registry).render(container, fakeCtx(BASE_RESOLVED));
+    const missings = [...container.querySelectorAll(".pc-empty-line")].map((e) => e.textContent);
+    expect(missings.some((t) => t?.includes("No renderer for ac-shield"))).toBe(true);
+    expect(missings.some((t) => t?.includes("No renderer for hit-dice-widget"))).toBe(true);
+    expect(container.querySelector(".pc-hero-right .probe-hp-widget")).not.toBeNull();
   });
 });
