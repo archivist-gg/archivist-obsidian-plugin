@@ -9077,11 +9077,21 @@ body.theme-light .archivist-tag-atk:hover {
 /* ============================================
    pc/layout.css
    ============================================ */
+.archivist-pc-sheet {
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: var(--pc-radius-lg);
+  box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  overflow: hidden;
+}
+
+.archivist-pc-sheet .pc-header { padding: 0; }
+
 .archivist-pc-sheet .pc-body {
   display: grid;
   grid-template-columns: 240px 1fr;
   gap: var(--pc-space-4);
-  margin-top: var(--pc-space-4);
+  padding: var(--pc-space-4);
 }
 
 .archivist-pc-sheet .pc-sidebar {
@@ -9094,23 +9104,59 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   flex-direction: column;
   gap: var(--pc-space-3);
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .archivist-pc-sheet .pc-body {
+    grid-template-columns: 1fr;
+  }
+  .archivist-pc-sheet .pc-ability-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .archivist-pc-sheet .pc-combat-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .archivist-pc-error {
+  max-width: 600px;
+  margin: var(--pc-space-5) auto;
   padding: var(--pc-space-5);
   color: var(--pc-crimson);
   background: var(--pc-parchment-light);
   border: 1px solid var(--pc-tan);
   border-radius: var(--pc-radius-md);
+  font-family: var(--pc-font-sans);
+  text-align: center;
+}
+
+.archivist-pc-error h2 {
+  font-family: var(--pc-font-serif);
+  color: var(--pc-crimson);
+  margin: 0 0 var(--pc-space-3);
+}
+
+.archivist-pc-error button.mod-cta {
+  margin-top: var(--pc-space-3);
+  padding: 8px 16px;
+  background: var(--pc-crimson);
+  color: var(--pc-white);
+  border: none;
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
 }
 
 .archivist-pc-warnings {
   padding: var(--pc-space-3) var(--pc-space-4);
-  margin-bottom: var(--pc-space-3);
+  margin: var(--pc-space-3) var(--pc-space-4) 0;
   background: #fff6e0;
   border-left: 3px solid var(--pc-crimson);
   font-size: 12px;
+  border-radius: var(--pc-radius-sm);
 }
+
+.archivist-pc-warnings ul { margin: 0; padding-left: var(--pc-space-4); }
 
 
 /* ============================================
