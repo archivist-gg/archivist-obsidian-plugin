@@ -9198,6 +9198,43 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 2px 8px;
   display: inline-block;
 }
+.archivist-pc-sheet .pc-combat {
+  padding: var(--pc-space-4);
+  border-bottom: 2px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-combat-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(60px, 1fr)) minmax(70px, 1fr) minmax(200px, 2fr);
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-combat-card {
+  background: var(--pc-white);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+  padding: var(--pc-space-2);
+  text-align: center;
+}
+.archivist-pc-sheet .pc-combat-big {
+  font-family: var(--pc-font-serif);
+  font-size: 22px;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-combat-label {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--pc-crimson);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.archivist-pc-sheet .pc-combat-inspiration-icon {
+  font-size: 22px;
+  color: var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-combat-inspiration-icon.filled { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-combat-hp { text-align: left; padding-left: var(--pc-space-3); }
+.archivist-pc-sheet .pc-hp-row { font-family: var(--pc-font-serif); font-size: 22px; margin-top: 2px; }
+.archivist-pc-sheet .pc-hp-temp { font-size: 11px; color: var(--pc-text-soft); margin-left: 6px; }
+.archivist-pc-sheet .pc-hp-hitdice { font-size: 10px; color: var(--pc-text-muted); margin-top: 4px; }
 
 
 /* ============================================
