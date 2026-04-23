@@ -31,7 +31,8 @@ interface HostPlugin {
   app: App & {
     workspace: {
       on: (name: string, cb: (file: TFile | null) => void) => unknown;
-      getLeaf: (f: TFile | null) => WorkspaceLeaf;
+      getLeavesOfType: (type: string) => WorkspaceLeaf[];
+      iterateAllLeaves: (cb: (leaf: WorkspaceLeaf) => void) => void;
     };
     metadataCache: {
       getFileCache: (file: TFile) => { frontmatter?: Record<string, unknown> } | null;
@@ -81,10 +82,27 @@ export class PCModule implements ArchivistModule {
     if (!this.isInPCFolder(file.path, plugin.settings?.playerCharactersFolder)) return;
     const cache = plugin.app.metadataCache.getFileCache(file);
     if (cache?.frontmatter?.["archivist-type"] !== "pc") return;
-    const leaf = plugin.app.workspace.getLeaf(file);
-    const view = (leaf as unknown as { view?: { getViewType: () => string } }).view;
-    if (view?.getViewType?.() === VIEW_TYPE_PC) return;
-    await leaf.setViewState({ type: VIEW_TYPE_PC, state: { file: file.path }, active: true });
+
+    // Find the leaf currently showing this file. Previously used
+    // `workspace.getLeaf(file)`, but Obsidian's `getLeaf(newLeaf?: PaneType | boolean)`
+    // coerced the TFile to truthy and spawned a ghost leaf.
+    const targetLeaf = this.findLeafForFile(plugin, file.path);
+    if (!targetLeaf) return;
+
+    const viewType = (targetLeaf as unknown as { view?: { getViewType?: () => string } }).view?.getViewType?.();
+    if (viewType === VIEW_TYPE_PC) return;
+
+    await targetLeaf.setViewState({ type: VIEW_TYPE_PC, state: { file: file.path }, active: true });
+  }
+
+  private findLeafForFile(plugin: HostPlugin, path: string): WorkspaceLeaf | null {
+    let found: WorkspaceLeaf | null = null;
+    plugin.app.workspace.iterateAllLeaves((leaf) => {
+      if (found) return;
+      const view = (leaf as unknown as { view?: { file?: { path?: string } } }).view;
+      if (view?.file?.path === path) found = leaf;
+    });
+    return found;
   }
 
   private wireComponents(): void {
