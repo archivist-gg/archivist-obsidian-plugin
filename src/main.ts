@@ -92,9 +92,20 @@ export default class ArchivistPlugin extends Plugin {
    *  MCP server can consume module-contributed SDK tools without having
    *  to import each module directly. */
   getModuleSdkTools: (() => unknown[]) | null = null;
+  /** Resolves once initializeCompendiums() finishes (or fails — it resolves
+   *  in finally so consumers can proceed against whatever state the registry
+   *  ended up in). Views that render entity references must await this before
+   *  calling the resolver on cold start, else the registry is empty. */
+  compendiumsReady: Promise<void>;
+  private resolveCompendiumsReady!: () => void;
   private srdStore: SrdStore | null = null;
   private moduleList: ArchivistModule[] = [];
   private core: CoreAPI | null = null;
+
+  constructor(app: ConstructorParameters<typeof Plugin>[0], manifest: ConstructorParameters<typeof Plugin>[1]) {
+    super(app, manifest);
+    this.compendiumsReady = new Promise<void>((resolve) => { this.resolveCompendiumsReady = resolve; });
+  }
 
   async onload() {
     await this.loadSettings();
@@ -324,6 +335,14 @@ export default class ArchivistPlugin extends Plugin {
   }
 
   private async initializeCompendiums(): Promise<void> {
+    try {
+      await this.initializeCompendiumsInner();
+    } finally {
+      this.resolveCompendiumsReady();
+    }
+  }
+
+  private async initializeCompendiumsInner(): Promise<void> {
     if (!this.compendiumManager || !this.srdStore) return;
 
     // Check if SRD folder exists, reset srdImported if missing

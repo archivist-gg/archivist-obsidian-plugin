@@ -1,4 +1,6 @@
-import type { App, TFile, WorkspaceLeaf } from "obsidian";
+import { WorkspaceLeaf } from "obsidian";
+import type { App, ViewState } from "obsidian";
+import { around } from "monkey-around";
 import type { ArchivistModule, CoreAPI, ParseResult } from "../../core/module-api";
 import type { Character } from "./pc.types";
 import { parsePC } from "./pc.parser";
@@ -26,16 +28,12 @@ import { FeatBlock } from "./blocks/feat-block";
 import { PCSheetView, VIEW_TYPE_PC } from "./pc.view";
 
 interface HostPlugin {
+  _loaded?: boolean;
   registerView: (type: string, factory: (leaf: WorkspaceLeaf) => PCSheetView) => void;
-  registerEvent: (ev: unknown) => void;
+  register: (cb: () => void) => void;
   app: App & {
-    workspace: {
-      on: (name: string, cb: (file: TFile | null) => void) => unknown;
-      getLeavesOfType: (type: string) => WorkspaceLeaf[];
-      iterateAllLeaves: (cb: (leaf: WorkspaceLeaf) => void) => void;
-    };
     metadataCache: {
-      getFileCache: (file: TFile) => { frontmatter?: Record<string, unknown> } | null;
+      getCache: (path: string) => { frontmatter?: Record<string, unknown> } | null;
     };
   };
   settings: { playerCharactersFolder?: string };
@@ -50,21 +48,21 @@ export class PCModule implements ArchivistModule {
   registry: ComponentRegistry = new ComponentRegistry();
   resolver: PCResolver | null = null;
 
+  // Per-leaf user override: lets "Edit as Markdown" in the PC view keep the leaf
+  // on the markdown view type without the interceptor re-swapping it.
+  // Keyed by `leaf.id || file.path`, matching the Kanban/Excalidraw pattern.
+  fileModes: Record<string, string> = {};
+
   register(core: CoreAPI): void {
     this.core = core;
     this.resolver = new PCResolver(core.entities);
     this.wireComponents();
 
     const plugin = core.plugin as HostPlugin | null;
-    if (!plugin?.registerView || !plugin?.registerEvent) return;
+    if (!plugin?.registerView || !plugin?.register) return;
 
     plugin.registerView(VIEW_TYPE_PC, (leaf) => new PCSheetView(leaf, this));
-
-    plugin.registerEvent(
-      plugin.app.workspace.on("file-open", (file) => {
-        void this.handleFileOpen(file, plugin);
-      }),
-    );
+    this.installViewSwapInterceptor(plugin);
   }
 
   parseYaml(source: string): ParseResult<Character> {
@@ -77,32 +75,58 @@ export class PCModule implements ArchivistModule {
     return filePath === folder || filePath.startsWith(`${folder}/`);
   }
 
-  private async handleFileOpen(file: TFile | null, plugin: HostPlugin): Promise<void> {
-    if (!file || file.extension !== "md") return;
-    if (!this.isInPCFolder(file.path, plugin.settings?.playerCharactersFolder)) return;
-    const cache = plugin.app.metadataCache.getFileCache(file);
-    if (cache?.frontmatter?.["archivist-type"] !== "pc") return;
-
-    // Find the leaf currently showing this file. Previously used
-    // `workspace.getLeaf(file)`, but Obsidian's `getLeaf(newLeaf?: PaneType | boolean)`
-    // coerced the TFile to truthy and spawned a ghost leaf.
-    const targetLeaf = this.findLeafForFile(plugin, file.path);
-    if (!targetLeaf) return;
-
-    const viewType = (targetLeaf as unknown as { view?: { getViewType?: () => string } }).view?.getViewType?.();
-    if (viewType === VIEW_TYPE_PC) return;
-
-    await targetLeaf.setViewState({ type: VIEW_TYPE_PC, state: { file: file.path }, active: true });
+  shouldRenderAsPC(path: string, plugin: HostPlugin): boolean {
+    if (!path.endsWith(".md")) return false;
+    if (!this.isInPCFolder(path, plugin.settings?.playerCharactersFolder)) return false;
+    const cache = plugin.app.metadataCache.getCache(path);
+    return cache?.frontmatter?.["archivist-type"] === "pc";
   }
 
-  private findLeafForFile(plugin: HostPlugin, path: string): WorkspaceLeaf | null {
-    let found: WorkspaceLeaf | null = null;
-    plugin.app.workspace.iterateAllLeaves((leaf) => {
-      if (found) return;
-      const view = (leaf as unknown as { view?: { file?: { path?: string } } }).view;
-      if (view?.file?.path === path) found = leaf;
+  /**
+   * Rewrite Obsidian's own `leaf.setViewState({ type: "markdown", ... })` call
+   * to `{ type: "archivist-pc-sheet", ... }` synchronously, inside Obsidian's
+   * openFile flow — so cold start, cmd+click-new-tab, and close+reopen all take
+   * the same code path with no race. This is the pattern used by
+   * obsidian-kanban and obsidian-excalidraw-plugin; a `file-open` listener +
+   * post-hoc `setViewState` cannot work reliably because `file-open` fires
+   * mid-flight and any subsequent swap races a variable-length promise chain.
+   */
+  private installViewSwapInterceptor(plugin: HostPlugin): void {
+    const mod = this;
+    const uninstaller = around(WorkspaceLeaf.prototype, {
+      setViewState(next) {
+        return function (this: WorkspaceLeaf, state: ViewState, ...rest: unknown[]) {
+          const filePath = (state?.state as { file?: string } | undefined)?.file;
+          const leafId = (this as unknown as { id?: string }).id;
+          const modeKey = leafId ?? filePath ?? "";
+          // Auto-swap markdown → pc when the file has pc frontmatter, unless the
+          // user has explicitly opted out for this leaf (fileModes[key] === "markdown"),
+          // which the PC view's "Edit as Markdown" action sets before it calls us.
+          if (
+            plugin._loaded !== false &&
+            state?.type === "markdown" &&
+            filePath &&
+            mod.fileModes[modeKey] !== "markdown" &&
+            mod.shouldRenderAsPC(filePath, plugin)
+          ) {
+            mod.fileModes[modeKey] = VIEW_TYPE_PC;
+            return next.call(this, { ...state, type: VIEW_TYPE_PC }, ...rest);
+          }
+          return next.call(this, state, ...rest);
+        };
+      },
+      detach(next) {
+        return function (this: WorkspaceLeaf) {
+          const view = (this as unknown as { view?: { getState?: () => { file?: string } } }).view;
+          const filePath = view?.getState?.()?.file;
+          const leafId = (this as unknown as { id?: string }).id;
+          const modeKey = leafId ?? filePath ?? "";
+          if (modeKey && mod.fileModes[modeKey]) delete mod.fileModes[modeKey];
+          return next.call(this);
+        };
+      },
     });
-    return found;
+    plugin.register(uninstaller);
   }
 
   private wireComponents(): void {

@@ -78,3 +78,9 @@
 }
 
 .archivist-pc-warnings ul { margin: 0; padding-left: var(--pc-space-4); }
+
+.pc-loading-shim {
+  padding: var(--pc-space-4);
+  color: var(--text-muted);
+  font-style: italic;
+}

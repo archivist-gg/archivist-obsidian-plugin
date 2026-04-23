@@ -61,14 +61,16 @@ describe("PCSheetView", () => {
 
   it("renders a full sheet for a happy-path PC file", async () => {
     const v = new PCSheetView(new WorkspaceLeaf(), bootModule());
-    await v.setViewData(PC_FILE, true);
+    v.setViewData(PC_FILE, true);
+    await v.rendered;
     expect(v.contentEl.querySelector(".archivist-pc-sheet")).not.toBeNull();
     expect(v.contentEl.querySelector(".pc-name")?.textContent).toBe("Grendal");
   });
 
   it("shows error panel when code block missing", async () => {
     const v = new PCSheetView(new WorkspaceLeaf(), bootModule());
-    await v.setViewData("---\narchivist-type: pc\n---\n\njust prose.\n", true);
+    v.setViewData("---\narchivist-type: pc\n---\n\njust prose.\n", true);
+    await v.rendered;
     expect(v.contentEl.querySelector(".archivist-pc-error")).not.toBeNull();
     expect(v.contentEl.textContent).toContain("No `pc` code block");
   });
@@ -76,15 +78,35 @@ describe("PCSheetView", () => {
   it("shows error panel on parse failure", async () => {
     const v = new PCSheetView(new WorkspaceLeaf(), bootModule());
     const bad = "```pc\nname: x\n```\n";
-    await v.setViewData(bad, true);
+    v.setViewData(bad, true);
+    await v.rendered;
     expect(v.contentEl.querySelector(".archivist-pc-error")).not.toBeNull();
   });
 
   it("renders warning banner when a slug can't resolve", async () => {
     const v = new PCSheetView(new WorkspaceLeaf(), bootModule());
     const withBadRace = PC_FILE.replace("race: null", 'race: "[[ghost-elf]]"');
-    await v.setViewData(withBadRace, true);
+    v.setViewData(withBadRace, true);
+    await v.rendered;
     expect(v.contentEl.querySelector(".archivist-pc-warnings")).not.toBeNull();
+  });
+
+  it("shows loading shim synchronously, then renders once compendiumsReady resolves", async () => {
+    let resolveReady!: () => void;
+    const readyPromise = new Promise<void>((r) => { resolveReady = r; });
+    const m = bootModule();
+    m.core = { ...m.core!, plugin: { compendiumsReady: readyPromise } } as typeof m.core;
+    const v = new PCSheetView(new WorkspaceLeaf(), m);
+    v.setViewData(PC_FILE, true);
+    // Synchronously: only the shim is rendered; resolver.resolve() has NOT run
+    // yet, so the sheet body is absent.
+    expect(v.contentEl.querySelector(".pc-loading-shim")).not.toBeNull();
+    expect(v.contentEl.querySelector(".archivist-pc-sheet")).toBeNull();
+    // Resolve the gate; the sheet now renders and the shim is gone.
+    resolveReady();
+    await v.rendered;
+    expect(v.contentEl.querySelector(".pc-loading-shim")).toBeNull();
+    expect(v.contentEl.querySelector(".archivist-pc-sheet")).not.toBeNull();
   });
 
   it("onOpen adds 'Edit as Markdown' action", async () => {
@@ -111,7 +133,8 @@ describe("PCSheetView", () => {
 
   it("getViewData returns the raw data passed to setViewData (read-only)", async () => {
     const v = new PCSheetView(new WorkspaceLeaf(), bootModule());
-    await v.setViewData(PC_FILE, true);
+    v.setViewData(PC_FILE, true);
+    await v.rendered;
     expect(v.getViewData()).toBe(PC_FILE);
   });
 });

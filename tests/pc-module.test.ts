@@ -1,47 +1,60 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { WorkspaceLeaf } from "obsidian";
 import { PCModule } from "../src/modules/pc/pc.module";
 import { VIEW_TYPE_PC } from "../src/modules/pc/pc.view";
 import type { CoreAPI } from "../src/core/module-api";
 import { EntityRegistry } from "../src/shared/entities/entity-registry";
 
-// Minimal host-plugin stand-in that records setViewState calls and lets tests
-// fire synthetic file-open events at the handler PCModule registers.
-interface FakeLeaf {
-  view?: { file?: { path: string }; getViewType?: () => string };
-  setViewState: (state: { type: string; state?: unknown; active?: boolean }) => Promise<void>;
-  lastSetViewState: { type: string; state?: unknown; active?: boolean } | null;
-}
-
-function makeLeaf(path?: string, viewType = "markdown"): FakeLeaf {
-  const leaf: FakeLeaf = {
-    view: path ? { file: { path }, getViewType: () => viewType } : undefined,
-    lastSetViewState: null,
-    async setViewState(state) { leaf.lastSetViewState = state; },
-  };
-  return leaf;
-}
-
-function makeHost(leaves: FakeLeaf[], frontmatter: Record<string, unknown> = { "archivist-type": "pc" }) {
-  let fileOpenCb: ((file: unknown) => void) | null = null;
+// Fake host plugin that satisfies the subset of the interface PCModule exercises.
+// `register(cb)` stores the uninstaller so afterEach() can tear the monkey-patch
+// down — essential because `around()` mutates WorkspaceLeaf.prototype, and without
+// cleanup every subsequent test inherits a stale patch.
+function makeHost(frontmatter: Record<string, unknown> | null = { "archivist-type": "pc" }) {
+  const uninstallers: Array<() => void> = [];
   const plugin = {
+    _loaded: true,
     registerView: () => {},
-    registerEvent: () => {},
+    register: (cb: () => void) => { uninstallers.push(cb); },
     app: {
-      workspace: {
-        on: (name: string, cb: (file: unknown) => void) => { if (name === "file-open") fileOpenCb = cb; return {}; },
-        iterateAllLeaves: (cb: (leaf: FakeLeaf) => void) => { for (const l of leaves) cb(l); },
-      },
       metadataCache: {
-        getFileCache: () => ({ frontmatter }),
+        getCache: () => (frontmatter ? { frontmatter } : null),
       },
     },
     settings: { playerCharactersFolder: "PlayerCharacters" },
   };
   return {
     plugin,
-    fire: (file: { path: string; extension: string }) => fileOpenCb?.(file),
+    teardown: () => { while (uninstallers.length) uninstallers.pop()!(); },
   };
 }
+
+// Track setViewState calls landing at the ORIGINAL prototype method (i.e. what
+// Obsidian would have processed). The monkey-patch may rewrite the state before
+// forwarding to the original, so reading this tells us what Obsidian "sees."
+let originalCalls: Array<{ type: string; state?: unknown; active?: boolean }>;
+let originalDetachCalls: number;
+const originalSetViewState = WorkspaceLeaf.prototype.setViewState;
+const originalDetach = (WorkspaceLeaf.prototype as unknown as { detach?: () => void }).detach;
+
+beforeEach(() => {
+  originalCalls = [];
+  originalDetachCalls = 0;
+  WorkspaceLeaf.prototype.setViewState = async function (state: { type: string; state?: unknown; active?: boolean }) {
+    originalCalls.push(state);
+  };
+  (WorkspaceLeaf.prototype as unknown as { detach: () => void }).detach = function () {
+    originalDetachCalls++;
+  };
+});
+
+afterEach(() => {
+  WorkspaceLeaf.prototype.setViewState = originalSetViewState;
+  if (originalDetach) {
+    (WorkspaceLeaf.prototype as unknown as { detach: () => void }).detach = originalDetach;
+  } else {
+    delete (WorkspaceLeaf.prototype as unknown as { detach?: () => void }).detach;
+  }
+});
 
 describe("PCModule", () => {
   it("has the correct identity", () => {
@@ -97,55 +110,122 @@ describe("PCModule", () => {
     expect(m.isInPCFolder("anywhere.md", "")).toBe(true);
   });
 
-  it("file-open listener swaps the leaf that is actually showing the file, not a fresh one", async () => {
+  it("interceptor rewrites setViewState markdown → pc when frontmatter matches", async () => {
     const m = new PCModule();
-    const grendalLeaf = makeLeaf("PlayerCharacters/Grendal.md", "markdown");
-    const otherLeaf = makeLeaf("Daily/2026-04-23.md", "markdown");
-    const ghost = makeLeaf(undefined, "markdown");
-    const host = makeHost([otherLeaf, ghost, grendalLeaf]);
+    const host = makeHost();
     m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
 
-    host.fire({ path: "PlayerCharacters/Grendal.md", extension: "md" });
-    await Promise.resolve(); await Promise.resolve();
+    const leaf = new WorkspaceLeaf();
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" }, active: true });
 
-    expect(grendalLeaf.lastSetViewState?.type).toBe(VIEW_TYPE_PC);
-    expect(otherLeaf.lastSetViewState).toBeNull();
-    expect(ghost.lastSetViewState).toBeNull();
+    expect(originalCalls).toHaveLength(1);
+    expect(originalCalls[0].type).toBe(VIEW_TYPE_PC);
+    expect((originalCalls[0].state as { file: string }).file).toBe("PlayerCharacters/Grendal.md");
+
+    host.teardown();
   });
 
-  it("file-open listener no-ops when the target leaf is already PC view (no re-swap loop)", async () => {
+  it("interceptor passes through files without archivist-type: pc frontmatter", async () => {
     const m = new PCModule();
-    const leaf = makeLeaf("PlayerCharacters/Grendal.md", VIEW_TYPE_PC);
-    const host = makeHost([leaf]);
+    const host = makeHost({ "archivist-type": "monster" });
     m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
 
-    host.fire({ path: "PlayerCharacters/Grendal.md", extension: "md" });
-    await Promise.resolve();
+    const leaf = new WorkspaceLeaf();
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/not-a-pc.md" } });
 
-    expect(leaf.lastSetViewState).toBeNull();
+    expect(originalCalls).toHaveLength(1);
+    expect(originalCalls[0].type).toBe("markdown");
+
+    host.teardown();
   });
 
-  it("file-open listener skips files outside the PC folder", async () => {
+  it("interceptor passes through files outside the PC folder", async () => {
     const m = new PCModule();
-    const leaf = makeLeaf("Daily/Note.md", "markdown");
-    const host = makeHost([leaf]);
+    const host = makeHost();
     m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
 
-    host.fire({ path: "Daily/Note.md", extension: "md" });
-    await Promise.resolve();
+    const leaf = new WorkspaceLeaf();
+    await leaf.setViewState({ type: "markdown", state: { file: "Daily/Note.md" } });
 
-    expect(leaf.lastSetViewState).toBeNull();
+    expect(originalCalls).toHaveLength(1);
+    expect(originalCalls[0].type).toBe("markdown");
+
+    host.teardown();
   });
 
-  it("file-open listener skips when no leaf is currently showing the file (ghost path)", async () => {
+  it("interceptor passes through non-markdown view types unchanged", async () => {
     const m = new PCModule();
-    const unrelated = makeLeaf("PlayerCharacters/Someone.md", "markdown");
-    const host = makeHost([unrelated]);
+    const host = makeHost();
     m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
 
-    host.fire({ path: "PlayerCharacters/Grendal.md", extension: "md" });
-    await Promise.resolve();
+    const leaf = new WorkspaceLeaf();
+    await leaf.setViewState({ type: "canvas", state: { file: "PlayerCharacters/Grendal.md" } });
 
-    expect(unrelated.lastSetViewState).toBeNull();
+    expect(originalCalls).toHaveLength(1);
+    expect(originalCalls[0].type).toBe("canvas");
+
+    host.teardown();
+  });
+
+  it("interceptor respects an explicit 'markdown' override (no re-swap loop)", async () => {
+    // Simulates the PC view's "Edit as Markdown" action: before calling
+    // setViewState({ type: "markdown" }) it sets fileModes[leafId] = "markdown"
+    // so the interceptor passes the call through instead of re-swapping.
+    const m = new PCModule();
+    const host = makeHost();
+    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+
+    const leaf = new WorkspaceLeaf();
+    (leaf as unknown as { id: string }).id = "leaf-1";
+
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" }, active: true });
+    expect(originalCalls[0].type).toBe(VIEW_TYPE_PC);
+
+    // PC view's switchToMarkdown() sets the override before calling setViewState.
+    m.fileModes["leaf-1"] = "markdown";
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" }, active: true });
+    expect(originalCalls[1].type).toBe("markdown");
+
+    // Further markdown calls for the same leaf keep passing through.
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" } });
+    expect(originalCalls[2].type).toBe("markdown");
+
+    host.teardown();
+  });
+
+  it("detach patch clears the fileModes entry so a reopened leaf re-swaps", async () => {
+    const m = new PCModule();
+    const host = makeHost();
+    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+
+    const leaf = new WorkspaceLeaf();
+    (leaf as unknown as { id: string }).id = "leaf-1";
+    (leaf as unknown as { view: { getState: () => { file: string } } }).view = {
+      getState: () => ({ file: "PlayerCharacters/Grendal.md" }),
+    };
+
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" } });
+    expect(m.fileModes["leaf-1"]).toBe(VIEW_TYPE_PC);
+
+    (leaf as unknown as { detach: () => void }).detach();
+    expect(m.fileModes["leaf-1"]).toBeUndefined();
+    expect(originalDetachCalls).toBe(1);
+
+    host.teardown();
+  });
+
+  it("interceptor uninstalls cleanly on plugin teardown", async () => {
+    const m = new PCModule();
+    const host = makeHost();
+    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+
+    host.teardown();
+
+    // After uninstall, the prototype method should behave as the original mock again.
+    const leaf = new WorkspaceLeaf();
+    await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" } });
+
+    expect(originalCalls).toHaveLength(1);
+    expect(originalCalls[0].type).toBe("markdown");
   });
 });
