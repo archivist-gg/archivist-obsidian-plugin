@@ -1,0 +1,76 @@
+import type { CoreAPI } from "../../core/module-api";
+import type { ComponentRegistry } from "./components/component-registry";
+import type { ResolvedCharacter, DerivedStats } from "./pc.types";
+
+export interface RenderSheetOptions {
+  root: HTMLElement;
+  resolved: ResolvedCharacter;
+  derived: DerivedStats;
+  registry: ComponentRegistry;
+  core: CoreAPI;
+  warnings: string[];
+}
+
+/**
+ * Pure DOM render of a resolved + derived PC into `root`. Clears the root
+ * first. Top strip → ability row → combat stats → 2-col body. Warnings get
+ * a banner at the very top.
+ */
+export function renderPCSheet(opts: RenderSheetOptions): void {
+  const { root, resolved, derived, registry, core, warnings } = opts;
+  root.empty();
+  const sheet = root.createDiv({ cls: "archivist-pc-sheet" });
+
+  if (warnings.length > 0) renderWarnings(sheet, warnings);
+
+  const ctx = { resolved, derived, core };
+
+  safeRender(sheet, "pc-header", "header-section", registry, ctx);
+  safeRender(sheet, "pc-abilities", "ability-row", registry, ctx);
+  safeRender(sheet, "pc-combat", "combat-stats-row", registry, ctx);
+
+  const body = sheet.createDiv({ cls: "pc-body" });
+  const sidebar = body.createDiv({ cls: "pc-sidebar" });
+  for (const type of ["saves-panel", "senses-panel", "skills-panel", "proficiencies-panel"]) {
+    safeRender(sidebar, `pc-${type}`, type, registry, ctx, { wrap: false });
+  }
+
+  const content = body.createDiv({ cls: "pc-content" });
+  safeRender(content, "pc-tabs", "tabs-container", registry, ctx, { wrap: false });
+}
+
+/**
+ * Clear-render an error banner with a "Go to markdown" fallback button.
+ */
+export function renderPCSheetError(root: HTMLElement, message: string, onFallback: () => void): void {
+  root.empty();
+  const err = root.createDiv({ cls: "archivist-pc-error" });
+  err.createEl("h2", { text: "Cannot render character sheet" });
+  err.createEl("p", { text: message });
+  const btn = err.createEl("button", { cls: "mod-cta", text: "Edit as Markdown" });
+  btn.addEventListener("click", onFallback);
+}
+
+function renderWarnings(root: HTMLElement, warnings: string[]) {
+  const box = root.createDiv({ cls: "archivist-pc-warnings" });
+  box.createEl("strong", { text: "Warnings:" });
+  const ul = box.createEl("ul");
+  for (const w of warnings) ul.createEl("li", { text: w });
+}
+
+function safeRender(
+  parent: HTMLElement,
+  wrapperCls: string,
+  componentType: string,
+  registry: ComponentRegistry,
+  ctx: { resolved: ResolvedCharacter; derived: DerivedStats; core: CoreAPI },
+  opts: { wrap?: boolean } = { wrap: true },
+) {
+  const component = registry.get(componentType);
+  const host = opts.wrap === false ? parent : parent.createDiv({ cls: wrapperCls });
+  if (!component) {
+    host.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${componentType})` });
+    return;
+  }
+  component.render(host, ctx);
+}
