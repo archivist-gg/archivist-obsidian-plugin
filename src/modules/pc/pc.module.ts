@@ -9,7 +9,6 @@ import { ComponentRegistry } from "./components/component-registry";
 import { HeaderSection } from "./components/header-section";
 import { AbilityRow } from "./components/ability-row";
 import { CombatStatsRow } from "./components/combat-stats-row";
-import { SavesPanel } from "./components/saves-panel";
 import { SensesPanel } from "./components/senses-panel";
 import { SkillsPanel } from "./components/skills-panel";
 import { ProficienciesPanel } from "./components/proficiencies-panel";
@@ -134,7 +133,6 @@ export class PCModule implements ArchivistModule {
     r.register(new HeaderSection(r));
     r.register(new AbilityRow());
     r.register(new CombatStatsRow());
-    r.register(new SavesPanel());
     r.register(new SensesPanel());
     r.register(new SkillsPanel());
     r.register(new ProficienciesPanel());
