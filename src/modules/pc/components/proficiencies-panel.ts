@@ -44,14 +44,18 @@ export function aggregateProficiencies(resolved: ResolvedCharacter): Proficiency
     if (prof.tools?.fixed) for (const t of prof.tools.fixed) tools.add(prettyName(t));
   }
 
-  const raceProf = (resolved.race as unknown as { languages?: string[] })?.languages ?? [];
-  for (const l of raceProf) languages.add(prettyName(l));
+  const raceLangs = resolved.race?.languages;
+  if (raceLangs?.fixed) for (const l of raceLangs.fixed) languages.add(prettyName(l));
 
-  const bgProf = (resolved.background as unknown as {
-    proficiencies?: { skills?: string[]; tools?: string[]; languages?: string[] };
-  })?.proficiencies;
-  if (bgProf?.tools) for (const t of bgProf.tools) tools.add(prettyName(t));
-  if (bgProf?.languages) for (const l of bgProf.languages) languages.add(prettyName(l));
+  const bg = resolved.background;
+  if (bg) {
+    for (const entry of bg.tool_proficiencies ?? []) {
+      if (entry.kind === "fixed") for (const t of entry.items) tools.add(prettyName(t));
+    }
+    for (const entry of bg.language_proficiencies ?? []) {
+      if (entry.kind === "fixed") for (const l of entry.languages) languages.add(prettyName(l));
+    }
+  }
 
   // Feat-level proficiency grants (opaque flag on feat entity).
   for (const f of resolved.feats) {

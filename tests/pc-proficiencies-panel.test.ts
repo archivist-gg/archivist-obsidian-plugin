@@ -10,7 +10,10 @@ beforeAll(() => installObsidianDomHelpers());
 function mkResolved(): ResolvedCharacter {
   return {
     definition: {} as never,
-    race: { slug: "hill-folk", languages: ["common", "dwarvish"] } as never,
+    race: {
+      slug: "hill-folk",
+      languages: { fixed: ["common", "dwarvish"] },
+    } as never,
     classes: [{
       entity: {
         slug: "bladesworn",
@@ -22,7 +25,11 @@ function mkResolved(): ResolvedCharacter {
       } as never,
       level: 5, subclass: null, choices: {},
     }],
-    background: { slug: "drifter", proficiencies: { tools: ["dice-set"], languages: ["thieves-cant"] } } as never,
+    background: {
+      slug: "drifter",
+      tool_proficiencies: [{ kind: "fixed", items: ["dice-set"] }],
+      language_proficiencies: [{ kind: "fixed", languages: ["thieves-cant"] }],
+    } as never,
     feats: [],
     totalLevel: 5,
     features: [],
@@ -40,8 +47,16 @@ describe("aggregateProficiencies", () => {
   });
   it("dedupes across sources", () => {
     const r = mkResolved();
-    (r.race as unknown as { languages?: string[] }).languages = ["common", "thieves-cant"];
+    (r.race as unknown as { languages: { fixed: string[] } }).languages = { fixed: ["common", "thieves-cant"] };
     expect(aggregateProficiencies(r).languages).toEqual(["Common", "Thieves Cant"]);
+  });
+  it("skips choice-kind background proficiencies (no selection yet)", () => {
+    const r = mkResolved();
+    (r.background as unknown as { tool_proficiencies: unknown }).tool_proficiencies = [
+      { kind: "fixed", items: ["dice-set"] },
+      { kind: "choice", count: 1, from: ["lute", "lyre"] },
+    ];
+    expect(aggregateProficiencies(r).tools).toEqual(["Dice Set", "Smiths Tools"]);
   });
 });
 

@@ -35,7 +35,7 @@ function mkResolved(): ResolvedCharacter {
       } as never,
       choices: { 1: { skills: ["athletics", "perception"], expertise: ["athletics"] } },
     }],
-    background: { slug: "drifter", name: "Drifter", description: "Always moving.", proficiencies: { skills: ["insight", "survival"], tools: [], languages: [] }, feature: { name: "Wanderer's Way", description: "Travel is easy." } } as never,
+    background: { slug: "drifter", name: "Drifter", description: "Always moving.", skill_proficiencies: ["insight", "survival"], tool_proficiencies: [], language_proficiencies: [], feature: { name: "Wanderer's Way", description: "Travel is easy." } } as never,
     feats: [{ slug: "sure-step", name: "Sure-Step", description: "Difficult terrain is yours.", prerequisites: ["Dex 13"] } as never],
     totalLevel: 3,
     features: [],
