@@ -35,9 +35,6 @@
   .archivist-pc-sheet .pc-ability-row {
     grid-template-columns: repeat(3, 1fr);
   }
-  .archivist-pc-sheet .pc-combat-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .archivist-pc-error {

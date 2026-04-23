@@ -9114,9 +9114,6 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-ability-row {
     grid-template-columns: repeat(3, 1fr);
   }
-  .archivist-pc-sheet .pc-combat-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .archivist-pc-error {
@@ -9212,81 +9209,6 @@ body.theme-light .archivist-tag-atk:hover {
   cursor: not-allowed;
   opacity: 0.7;
 }
-.archivist-pc-sheet .pc-abilities {
-  padding: var(--pc-space-4);
-  border-bottom: 1px solid var(--pc-tan);
-}
-.archivist-pc-sheet .pc-ability-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: var(--pc-space-3);
-}
-.archivist-pc-sheet .pc-ability-card {
-  text-align: center;
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-3) var(--pc-space-2);
-  background: var(--pc-white);
-}
-.archivist-pc-sheet .pc-ability-label {
-  font-size: 10px;
-  letter-spacing: 1px;
-  color: var(--pc-crimson);
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.archivist-pc-sheet .pc-ability-mod {
-  font-family: var(--pc-font-serif);
-  font-size: 32px;
-  color: var(--pc-text-primary);
-  line-height: 1.1;
-  margin: 4px 0;
-}
-.archivist-pc-sheet .pc-ability-score {
-  font-size: 11px;
-  color: var(--pc-text-muted);
-  background: var(--pc-parchment-dark);
-  border-radius: 10px;
-  padding: 2px 8px;
-  display: inline-block;
-}
-.archivist-pc-sheet .pc-combat {
-  padding: var(--pc-space-4);
-  border-bottom: 2px solid var(--pc-crimson);
-}
-.archivist-pc-sheet .pc-combat-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(60px, 1fr)) minmax(70px, 1fr) minmax(200px, 2fr);
-  gap: var(--pc-space-2);
-}
-.archivist-pc-sheet .pc-combat-card {
-  background: var(--pc-white);
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-2);
-  text-align: center;
-}
-.archivist-pc-sheet .pc-combat-big {
-  font-family: var(--pc-font-serif);
-  font-size: 22px;
-  color: var(--pc-text-primary);
-}
-.archivist-pc-sheet .pc-combat-label {
-  font-size: 9px;
-  letter-spacing: 0.5px;
-  color: var(--pc-crimson);
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-.archivist-pc-sheet .pc-combat-inspiration-icon {
-  font-size: 22px;
-  color: var(--pc-tan-muted);
-}
-.archivist-pc-sheet .pc-combat-inspiration-icon.filled { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-combat-hp { text-align: left; padding-left: var(--pc-space-3); }
-.archivist-pc-sheet .pc-hp-row { font-family: var(--pc-font-serif); font-size: 22px; margin-top: 2px; }
-.archivist-pc-sheet .pc-hp-temp { font-size: 11px; color: var(--pc-text-soft); margin-left: 6px; }
-.archivist-pc-sheet .pc-hp-hitdice { font-size: 10px; color: var(--pc-text-muted); margin-top: 4px; }
 .archivist-pc-sheet .pc-sidebar-section {
   background: var(--pc-white);
   border: 1px solid var(--pc-tan);
@@ -9303,34 +9225,11 @@ body.theme-light .archivist-tag-atk:hover {
   border-bottom: 1px solid var(--pc-tan-muted);
   padding-bottom: 4px;
 }
-.archivist-pc-sheet .pc-saves-list { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
-.archivist-pc-sheet .pc-save-row,
-.archivist-pc-sheet .pc-skill-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-}
-.archivist-pc-sheet .pc-prof-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: 1.5px solid var(--pc-crimson);
-  display: inline-block;
-  flex-shrink: 0;
-}
-.archivist-pc-sheet .pc-prof-dot.filled { background: var(--pc-crimson); }
-.archivist-pc-sheet .pc-prof-dot.expertise {
-  background: var(--pc-crimson);
-  box-shadow: 0 0 0 2px var(--pc-parchment-light), 0 0 0 3.5px var(--pc-crimson);
-}
-.archivist-pc-sheet .pc-save-bonus,
 .archivist-pc-sheet .pc-skill-bonus {
   font-family: var(--pc-font-serif);
   min-width: 22px;
   text-align: right;
 }
-.archivist-pc-sheet .pc-save-name,
 .archivist-pc-sheet .pc-skill-name {
   color: var(--pc-text-primary);
 }
@@ -9404,6 +9303,436 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-tab-panel { display: none; margin-top: var(--pc-space-3); }
 .archivist-pc-sheet .pc-tab-panel.active { display: block; }
+
+/* ================================================================
+   V7 Shared panel (hairline tan border + cream wash)
+   ================================================================ */
+.archivist-pc-sheet .pc-panel {
+  border: 1px solid var(--pc-tan);
+  border-radius: 4px;
+  background: rgba(255, 248, 220, 0.45);
+  padding: 10px 12px;
+}
+
+/* ================================================================
+   V7 Hero right cluster
+   ================================================================ */
+.archivist-pc-sheet .pc-hero-right {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* AC shield */
+.archivist-pc-sheet .pc-ac-shield {
+  width: 84px;
+  height: 96px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.archivist-pc-sheet .pc-ac-shield-shell {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #e3d3a5 0%, #c9b286 100%);
+  clip-path: polygon(50% 0%, 100% 12%, 100% 62%, 50% 100%, 0% 62%, 0% 12%);
+  box-shadow: inset 0 0 0 2px var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-ac-shield-trim {
+  position: absolute;
+  inset: 4px;
+  clip-path: polygon(50% 0%, 100% 12%, 100% 62%, 50% 100%, 0% 62%, 0% 12%);
+  box-shadow: inset 0 0 0 1.5px var(--pc-tan);
+}
+.archivist-pc-sheet .pc-ac-shield-txt { position: relative; text-align: center; }
+.archivist-pc-sheet .pc-ac-shield-label-top,
+.archivist-pc-sheet .pc-ac-shield-label-bot {
+  font-family: var(--pc-font-serif);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  color: var(--pc-text-soft);
+  text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-ac-shield-label-top { margin-top: -8px; }
+.archivist-pc-sheet .pc-ac-shield-num {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.05;
+  color: var(--pc-text-primary);
+}
+
+/* HP widget */
+.archivist-pc-sheet .pc-hp-widget {
+  min-width: 320px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 16px;
+  align-items: center;
+}
+.archivist-pc-sheet .pc-hp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.archivist-pc-sheet .pc-hp-actions button {
+  font-family: var(--pc-font-serif);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  padding: 5px 12px;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-hp-heal { border: 1.2px solid #2f6f3a; color: #2f6f3a; }
+.archivist-pc-sheet .pc-hp-damage { border: 1.2px solid var(--pc-crimson); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-hp-input {
+  width: 72px;
+  text-align: center;
+  padding: 4px;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 13px;
+  border: 1.2px solid var(--pc-tan-muted);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.35);
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-hp-nums {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 14px;
+  text-align: center;
+}
+.archivist-pc-sheet .pc-hp-lbl {
+  font-family: var(--pc-font-serif);
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-hp-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-hp-temp .pc-hp-val { color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-hp-label {
+  text-align: center;
+  font-family: var(--pc-font-serif);
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  color: var(--pc-text-muted);
+  margin-top: 6px;
+}
+
+/* Hit Dice widget */
+.archivist-pc-sheet .pc-hd-widget {
+  min-width: 180px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 14px;
+  align-items: center;
+}
+.archivist-pc-sheet .pc-hd-actions { display: flex; flex-direction: column; gap: 6px; }
+.archivist-pc-sheet .pc-hd-actions button {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+  padding: 3px 12px;
+  border: 1.2px solid var(--pc-tan);
+  color: var(--pc-text-primary);
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-hd-body { text-align: center; }
+.archivist-pc-sheet .pc-hd-nums {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-hd-tot,
+.archivist-pc-sheet .pc-hd-sep { color: var(--pc-text-muted); font-weight: 400; }
+.archivist-pc-sheet .pc-hd-label {
+  font-family: var(--pc-font-serif);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  color: var(--pc-text-muted);
+  margin-top: 6px;
+}
+.archivist-pc-sheet .pc-hd-chips { display: inline-flex; gap: 4px; margin-bottom: 4px; }
+.archivist-pc-sheet .pc-hd-chip {
+  font-family: var(--pc-font-serif);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 2px 9px;
+  border: 1.2px solid var(--pc-tan);
+  color: var(--pc-text-soft);
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-hd-chip.active {
+  border-color: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  background: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-hd-empty {
+  text-align: center;
+  color: var(--pc-text-muted);
+  font-style: italic;
+}
+
+/* ================================================================
+   V7 Stats band
+   ================================================================ */
+.archivist-pc-sheet .pc-stats-band {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--pc-tan);
+}
+
+/* Ability row — no outer container. Cartouche applied as a background image
+   (data URI) on each .pc-ab card. Score pill hangs off the bottom edge. */
+.archivist-pc-sheet .pc-ability-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  justify-items: center;
+  align-items: start;
+  padding-top: 10px;
+}
+.archivist-pc-sheet .pc-ab-stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.archivist-pc-sheet .pc-ab {
+  position: relative;
+  width: 92px;
+  height: 118px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  color: var(--pc-text-primary);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 150' preserveAspectRatio='none'><g fill='none' stroke='%231c1811' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M 50 3 L 95 22 L 95 128 L 50 147 L 5 128 L 5 22 Z'/><path d='M 50 8 L 90 25 L 90 125 L 50 142 L 10 125 L 10 25 Z' stroke-width='0.8' opacity='0.6'/><path d='M 32 16 C 38 10, 44 12, 48 18' stroke-width='1.2'/><path d='M 68 16 C 62 10, 56 12, 52 18' stroke-width='1.2'/><path d='M 40 14 C 44 18, 48 18, 50 20 C 52 18, 56 18, 60 14' stroke-width='1'/><path d='M 32 134 C 38 140, 44 138, 48 132' stroke-width='1.2'/><path d='M 68 134 C 62 140, 56 138, 52 132' stroke-width='1.2'/><path d='M 40 136 C 44 132, 48 132, 50 130 C 52 132, 56 132, 60 136' stroke-width='1'/><circle cx='50' cy='7' r='0.8' fill='%231c1811'/><circle cx='50' cy='143' r='0.8' fill='%231c1811'/></g></svg>");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.archivist-pc-sheet .pc-ab-label {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--pc-text-primary);
+  text-transform: uppercase;
+  margin-top: -4px;
+}
+.archivist-pc-sheet .pc-ab-mod {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--pc-text-primary);
+  margin: 6px 0 0;
+}
+.archivist-pc-sheet .pc-ab-score {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  min-width: 32px;
+  padding: 2px 9px;
+  border: 1.5px solid var(--pc-text-primary);
+  border-radius: 999px;
+  background: var(--pc-parchment-light);
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--pc-text-primary);
+}
+
+/* Save chip */
+.archivist-pc-sheet .pc-save-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--pc-tan-muted);
+  background: rgba(255, 248, 220, 0.5);
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 10px;
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-save-chip b {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  font-size: 9px;
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-save-chip .pc-save-bn { color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-save-chip.prof {
+  border-color: var(--pc-crimson);
+  background: rgba(146, 38, 16, 0.08);
+}
+.archivist-pc-sheet .pc-save-chip.prof b,
+.archivist-pc-sheet .pc-save-chip.prof .pc-save-bn { color: var(--pc-crimson); }
+
+/* Skill row (reuses archivist-prof-toggle for the dot) */
+.archivist-pc-sheet .pc-skill-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 2px 0;
+}
+.archivist-pc-sheet .pc-skill-bonus {
+  font-family: var(--pc-font-serif);
+  min-width: 28px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-skill-name { color: var(--pc-text-primary); }
+
+/* Right cluster of stats band */
+.archivist-pc-sheet .pc-stats-right {
+  display: grid;
+  grid-template-columns: minmax(0, 0.6fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.archivist-pc-sheet .pc-stats-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 8px;
+}
+.archivist-pc-sheet .pc-stats-tile { text-align: center; padding: 10px 6px; }
+.archivist-pc-sheet .pc-stats-tile-lbl {
+  font-family: var(--pc-font-serif);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--pc-text-soft);
+  white-space: nowrap;
+}
+.archivist-pc-sheet .pc-stats-tile-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  margin-top: 3px;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-insp-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+}
+.archivist-pc-sheet .pc-insp-counter button {
+  width: 18px;
+  height: 18px;
+  line-height: 1;
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 11px;
+  border: 1px solid var(--pc-tan);
+  color: var(--pc-text-primary);
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.archivist-pc-sheet .pc-stats-tile-ct {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--pc-text-primary);
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Defenses + Conditions merged panel */
+.archivist-pc-sheet .pc-def-cond {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+}
+.archivist-pc-sheet .pc-def-cond-left {
+  padding-right: 12px;
+  border-right: 1px solid rgba(58, 42, 20, 0.35);
+}
+.archivist-pc-sheet .pc-def-cond-title {
+  font-family: var(--pc-font-serif);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--pc-text-soft);
+  margin-bottom: 4px;
+}
+.archivist-pc-sheet .pc-def-line {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-def-line b { font-weight: 700; }
+.archivist-pc-sheet .pc-def-cond-empty {
+  color: var(--pc-text-muted);
+  font-style: italic;
+  font-size: 12px;
+}
+.archivist-pc-sheet .pc-def-cond-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.archivist-pc-sheet .pc-cond-add {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 10px;
+  line-height: 1;
+  border: 1.2px solid var(--pc-tan);
+  color: var(--pc-text-primary);
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-cond-chip {
+  display: inline-block;
+  font-size: 11px;
+  border: 1px solid var(--pc-crimson);
+  color: var(--pc-crimson);
+  border-radius: 3px;
+  padding: 1px 8px;
+  margin: 0 2px 2px 0;
+  background: rgba(146, 38, 16, 0.08);
+}
+.archivist-pc-sheet .pc-cond-empty {
+  color: var(--pc-text-muted);
+  font-style: italic;
+  font-size: 11px;
+}
 
 
 /* ============================================
