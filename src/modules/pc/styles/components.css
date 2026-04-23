@@ -171,3 +171,19 @@
 .archivist-pc-sheet .pc-prof-body { display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4; }
 .archivist-pc-sheet .pc-prof-key { font-weight: 600; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-tab-body { padding: var(--pc-space-3); background: var(--pc-white); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); }
+.archivist-pc-sheet .pc-tab-heading { font-family: var(--pc-font-serif); color: var(--pc-crimson); font-size: 14px; margin: var(--pc-space-3) 0 var(--pc-space-2); text-transform: uppercase; letter-spacing: 0.5px; }
+.archivist-pc-sheet .pc-empty-line { font-size: 12px; color: var(--pc-text-muted); font-style: italic; }
+.archivist-pc-sheet .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.archivist-pc-sheet .pc-attack-table th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--pc-tan); color: var(--pc-crimson); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-attack-name { font-weight: 600; }
+.archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: 11px; }
+.archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: 14px; }
+.archivist-pc-sheet .pc-death-saves { display: flex; flex-direction: column; gap: var(--pc-space-1); font-size: 12px; }
+.archivist-pc-sheet .pc-ds-row { display: flex; align-items: center; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-ds-label { min-width: 80px; color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-ds-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--pc-crimson); }
+.archivist-pc-sheet .pc-ds-dot.filled { background: var(--pc-crimson); }
+.archivist-pc-sheet .pc-ds-dot.filled.failure { background: #922; }
