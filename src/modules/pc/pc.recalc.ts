@@ -311,6 +311,13 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
     };
   }
 
+  const defenses = {
+    resistances: resolved.definition.defenses?.resistances ?? [],
+    immunities: resolved.definition.defenses?.immunities ?? [],
+    vulnerabilities: resolved.definition.defenses?.vulnerabilities ?? [],
+    condition_immunities: resolved.definition.defenses?.condition_immunities ?? [],
+  };
+
   return {
     totalLevel,
     proficiencyBonus,
@@ -329,5 +336,6 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
     initiative: init,
     spellcasting,
     warnings,
+    defenses,
   };
 }

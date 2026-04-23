@@ -48,7 +48,7 @@ export const GRENDAL_MD = [
   "  spell_slots: {}",
   "  concentration: null",
   "  conditions: []",
-  "  inspiration: true",
+  "  inspiration: 1",
   "```",
   "",
   "## Backstory",

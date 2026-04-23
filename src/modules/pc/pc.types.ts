@@ -47,7 +47,7 @@ export interface CharacterState {
   concentration: string | null;
   conditions: string[];
   death_saves?: { successes: number; failures: number };
-  inspiration?: boolean;
+  inspiration: number;
   currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
   attuned_items?: string[];
 }
@@ -67,6 +67,12 @@ export interface Character {
   equipment: EquipmentEntry[];
   overrides: CharacterOverrides;
   notes?: string;
+  defenses?: {
+    resistances?: string[];
+    immunities?: string[];
+    vulnerabilities?: string[];
+    condition_immunities?: string[];
+  };
   state: CharacterState;
 }
 
@@ -131,4 +137,10 @@ export interface DerivedStats {
     preparedCount?: number;
   } | null;
   warnings: string[];
+  defenses: {
+    resistances: string[];
+    immunities: string[];
+    vulnerabilities: string[];
+    condition_immunities: string[];
+  };
 }

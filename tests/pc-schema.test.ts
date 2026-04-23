@@ -12,6 +12,10 @@ const minimalValid = {
   },
 };
 
+function validMinimalCharacter() {
+  return JSON.parse(JSON.stringify(minimalValid));
+}
+
 describe("characterSchema", () => {
   it("accepts a minimal valid character", () => {
     const r = characterSchema.safeParse(minimalValid);
@@ -57,5 +61,40 @@ describe("characterSchema", () => {
       overrides: { scores: { str: 20 }, ac: 16 },
     });
     expect(r.success).toBe(true);
+  });
+});
+
+describe("V7 schema additions", () => {
+  it("accepts a defenses block with all four categories", () => {
+    const base = validMinimalCharacter();
+    const parsed = characterSchema.parse({
+      ...base,
+      defenses: {
+        resistances: ["fire"],
+        immunities: ["poison"],
+        vulnerabilities: ["radiant"],
+        condition_immunities: ["charmed"],
+      },
+    });
+    expect(parsed.defenses?.resistances).toEqual(["fire"]);
+    expect(parsed.defenses?.condition_immunities).toEqual(["charmed"]);
+  });
+
+  it("defenses is fully optional and every subfield is optional", () => {
+    const base = validMinimalCharacter();
+    expect(characterSchema.safeParse(base).success).toBe(true);
+    expect(characterSchema.safeParse({ ...base, defenses: {} }).success).toBe(true);
+  });
+
+  it("inspiration is a non-negative integer with default 0", () => {
+    const base = validMinimalCharacter();
+    const parsed = characterSchema.parse(base);
+    expect(parsed.state.inspiration).toBe(0);
+
+    const explicit = characterSchema.parse({ ...base, state: { ...base.state, inspiration: 3 } });
+    expect(explicit.state.inspiration).toBe(3);
+
+    const bad = characterSchema.safeParse({ ...base, state: { ...base.state, inspiration: -1 } });
+    expect(bad.success).toBe(false);
   });
 });

@@ -64,7 +64,7 @@ const characterStateSchema = z.object({
     successes: z.number().int().min(0).max(3),
     failures: z.number().int().min(0).max(3),
   }).optional(),
-  inspiration: z.boolean().optional(),
+  inspiration: z.number().int().nonnegative().default(0),
   currency: z.object({
     cp: z.number().int().nonnegative(),
     sp: z.number().int().nonnegative(),
@@ -115,6 +115,12 @@ export const characterSchema = z.object({
   equipment: z.array(equipmentEntrySchema).default([]),
   overrides: characterOverridesSchema,
   notes: z.string().optional(),
+  defenses: z.object({
+    resistances: z.array(z.string()).default([]),
+    immunities: z.array(z.string()).default([]),
+    vulnerabilities: z.array(z.string()).default([]),
+    condition_immunities: z.array(z.string()).default([]),
+  }).partial().optional(),
   state: characterStateSchema,
 });
 
