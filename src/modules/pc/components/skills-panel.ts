@@ -41,10 +41,10 @@ export class SkillsPanel implements SheetComponent {
       const entry = ctx.derived.skills[skillSlug];
       if (!entry) continue;
       const row = list.createDiv({ cls: "pc-skill-row", attr: { "data-skill": skillSlug } });
-      const dotClasses = ["pc-prof-dot"];
-      if (entry.proficiency === "expertise") dotClasses.push("expertise", "filled");
-      else if (entry.proficiency === "proficient") dotClasses.push("filled");
-      row.createSpan({ cls: dotClasses.join(" ") });
+      const toggleClasses = ["archivist-prof-toggle"];
+      if (entry.proficiency === "expertise") toggleClasses.push("expertise");
+      else if (entry.proficiency === "proficient") toggleClasses.push("proficient");
+      row.createSpan({ cls: toggleClasses.join(" ") });
       row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
     }

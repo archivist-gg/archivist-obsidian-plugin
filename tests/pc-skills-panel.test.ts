@@ -55,23 +55,24 @@ describe("SkillsPanel", () => {
     const container = mountContainer();
     new SkillsPanel().render(container, ctx);
     const row = container.querySelector<HTMLDivElement>('[data-skill="stealth"]');
-    const dot = row?.querySelector(".pc-prof-dot");
+    const dot = row?.querySelector(".archivist-prof-toggle");
     expect(dot?.classList.contains("expertise")).toBe(true);
-    expect(dot?.classList.contains("filled")).toBe(true);
+    expect(dot?.classList.contains("proficient")).toBe(false);
   });
 
   it("proficient-but-not-expertise skills get only .filled", () => {
     const container = mountContainer();
     new SkillsPanel().render(container, ctx);
-    const dot = container.querySelector<HTMLDivElement>('[data-skill="athletics"]')?.querySelector(".pc-prof-dot");
-    expect(dot?.classList.contains("filled")).toBe(true);
+    const dot = container.querySelector<HTMLDivElement>('[data-skill="athletics"]')?.querySelector(".archivist-prof-toggle");
+    expect(dot?.classList.contains("proficient")).toBe(true);
     expect(dot?.classList.contains("expertise")).toBe(false);
   });
 
   it("non-proficient skills have a bare dot", () => {
     const container = mountContainer();
     new SkillsPanel().render(container, ctx);
-    const dot = container.querySelector<HTMLDivElement>('[data-skill="perception"]')?.querySelector(".pc-prof-dot");
-    expect(dot?.classList.contains("filled")).toBe(false);
+    const dot = container.querySelector<HTMLDivElement>('[data-skill="perception"]')?.querySelector(".archivist-prof-toggle");
+    expect(dot?.classList.contains("proficient")).toBe(false);
+    expect(dot?.classList.contains("expertise")).toBe(false);
   });
 });
