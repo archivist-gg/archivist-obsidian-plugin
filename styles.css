@@ -9328,6 +9328,30 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-currency-cell { background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); padding: var(--pc-space-2); text-align: center; }
 .archivist-pc-sheet .pc-currency-val { font-family: var(--pc-font-serif); font-size: 16px; }
 .archivist-pc-sheet .pc-currency-label { font-size: 10px; color: var(--pc-crimson); letter-spacing: 0.5px; }
+.archivist-pc-sheet .pc-tabs-bar {
+  display: flex;
+  gap: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan);
+  padding-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--pc-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+.archivist-pc-sheet .pc-tab-btn.active {
+  color: var(--pc-crimson);
+  border-bottom-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-tab-panel { display: none; margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-tab-panel.active { display: block; }
 
 
 /* ============================================
