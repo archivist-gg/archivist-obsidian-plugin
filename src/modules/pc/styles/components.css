@@ -168,3 +168,6 @@
 .archivist-pc-sheet .pc-sense-row { display: flex; justify-content: space-between; align-items: baseline; }
 .archivist-pc-sheet .pc-sense-val { font-family: var(--pc-font-serif); font-size: 16px; }
 .archivist-pc-sheet .pc-skills-list { display: flex; flex-direction: column; gap: 3px; }
+.archivist-pc-sheet .pc-prof-body { display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4; }
+.archivist-pc-sheet .pc-prof-key { font-weight: 600; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
