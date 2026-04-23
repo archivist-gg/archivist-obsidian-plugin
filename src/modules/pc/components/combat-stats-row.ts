@@ -14,7 +14,7 @@ export class CombatStatsRow implements SheetComponent {
 
     const inspCard = row.createDiv({ cls: "pc-combat-card pc-combat-inspiration" });
     inspCard.createDiv({ cls: "pc-combat-label", text: "Heroic Inspiration" });
-    const inspired = !!ctx.resolved.state?.inspiration;
+    const inspired = (ctx.resolved.state?.inspiration ?? 0) > 0;
     inspCard.createDiv({ cls: `pc-combat-inspiration-icon${inspired ? " filled" : ""}`, text: inspired ? "★" : "☆" });
 
     const hpCard = row.createDiv({ cls: "pc-combat-card pc-combat-hp" });

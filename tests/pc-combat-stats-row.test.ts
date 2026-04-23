@@ -18,6 +18,7 @@ const ctx = (d: Partial<DerivedStats> = {}, r: Partial<ResolvedCharacter> = {}):
     saves: {} as never, skills: {} as never,
     passives: { perception: 10, investigation: 10, insight: 10 },
     hp: { max: 44, current: 30, temp: 5 }, ac: 16, speed: 30, initiative: 2,
+    defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [] },
     spellcasting: null, warnings: [], ...d,
   },
   core: {} as never,
@@ -58,7 +59,7 @@ describe("CombatStatsRow", () => {
 
   it("shows inspiration filled star when state.inspiration=true", () => {
     const container = mountContainer();
-    new CombatStatsRow().render(container, ctx({}, { state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: true } }));
+    new CombatStatsRow().render(container, ctx({}, { state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 1 } }));
     expect(container.querySelector(".pc-combat-inspiration-icon.filled")).not.toBeNull();
   });
 
