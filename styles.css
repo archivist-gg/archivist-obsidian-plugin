@@ -9160,6 +9160,44 @@ body.theme-light .archivist-tag-atk:hover {
   cursor: not-allowed;
   opacity: 0.7;
 }
+.archivist-pc-sheet .pc-abilities {
+  padding: var(--pc-space-4);
+  border-bottom: 1px solid var(--pc-tan);
+}
+.archivist-pc-sheet .pc-ability-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-ability-card {
+  text-align: center;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+  padding: var(--pc-space-3) var(--pc-space-2);
+  background: var(--pc-white);
+}
+.archivist-pc-sheet .pc-ability-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--pc-crimson);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.archivist-pc-sheet .pc-ability-mod {
+  font-family: var(--pc-font-serif);
+  font-size: 32px;
+  color: var(--pc-text-primary);
+  line-height: 1.1;
+  margin: 4px 0;
+}
+.archivist-pc-sheet .pc-ability-score {
+  font-size: 11px;
+  color: var(--pc-text-muted);
+  background: var(--pc-parchment-dark);
+  border-radius: 10px;
+  padding: 2px 8px;
+  display: inline-block;
+}
 
 
 /* ============================================
