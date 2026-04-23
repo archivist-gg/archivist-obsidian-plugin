@@ -65,3 +65,62 @@ export const Platform = {
   isMobile: false,
   isDesktop: true,
 };
+
+export class WorkspaceLeaf {
+  view: ItemView | null = null;
+  lastSetViewState: { type: string; state?: unknown; active?: boolean } | null = null;
+  async setViewState(state: { type: string; state?: unknown; active?: boolean }): Promise<void> {
+    this.lastSetViewState = state;
+  }
+  getRoot(): unknown {
+    return null;
+  }
+}
+
+export class ItemView extends Component {
+  leaf: WorkspaceLeaf;
+  contentEl: HTMLElement;
+  containerEl: HTMLElement;
+  app: { workspace: { getLeaf: (f: TFile | null) => WorkspaceLeaf } } = {
+    workspace: { getLeaf: () => this.leaf },
+  };
+  file: TFile | null = null;
+  actions: Array<{ icon: string; title: string; callback: () => void }> = [];
+  constructor(leaf: WorkspaceLeaf) {
+    super();
+    this.leaf = leaf;
+    this.contentEl = document.createElement("div");
+    this.containerEl = document.createElement("div");
+  }
+  getViewType(): string {
+    return "item";
+  }
+  getIcon(): string {
+    return "";
+  }
+  getDisplayText(): string {
+    return "";
+  }
+  addAction(icon: string, title: string, callback: () => void) {
+    this.actions.push({ icon, title, callback });
+  }
+  async onOpen(): Promise<void> {}
+  async onClose(): Promise<void> {}
+}
+
+export class TextFileView extends ItemView {
+  data = "";
+  allowNoFile = false;
+  async setViewData(_data: string, _clear: boolean): Promise<void> {}
+  getViewData(): string {
+    return this.data;
+  }
+  clear(): void {}
+  async onLoadFile(file: TFile): Promise<void> {
+    this.file = file;
+  }
+  async onUnloadFile(_file: TFile): Promise<void> {
+    this.file = null;
+  }
+  requestSave(): void {}
+}
