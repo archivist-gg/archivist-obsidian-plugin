@@ -167,3 +167,4 @@
 .archivist-pc-sheet .pc-senses-list { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
 .archivist-pc-sheet .pc-sense-row { display: flex; justify-content: space-between; align-items: baseline; }
 .archivist-pc-sheet .pc-sense-val { font-family: var(--pc-font-serif); font-size: 16px; }
+.archivist-pc-sheet .pc-skills-list { display: flex; flex-direction: column; gap: 3px; }
