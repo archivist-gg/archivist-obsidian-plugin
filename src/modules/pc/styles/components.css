@@ -968,6 +968,61 @@
   font-weight: 700;
 }
 
+/* Unconscious/dead body — death saves layout replaces the normal CURRENT/MAX/TEMP grid */
+.archivist-pc-sheet .pc-hp-death-header {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-tiny);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--pc-text-soft);
+  margin-bottom: 4px;
+}
+
+.archivist-pc-sheet .pc-hp-widget.unconscious .pc-hp-death-header,
+.archivist-pc-sheet .pc-hp-widget.dead .pc-hp-death-header {
+  color: inherit;
+}
+
+.archivist-pc-sheet .pc-hp-ds-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.archivist-pc-sheet .pc-hp-ds-row:last-of-type {
+  margin-bottom: 6px;
+}
+
+.archivist-pc-sheet .pc-hp-widget .pc-death-save-success,
+.archivist-pc-sheet .pc-hp-widget .pc-death-save-failure {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink, #1b1208);
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 120ms;
+}
+
+.archivist-pc-sheet .pc-hp-widget .pc-death-save-success.filled {
+  background: var(--green, #2a7a2a);
+}
+
+.archivist-pc-sheet .pc-hp-widget .pc-death-save-failure.filled {
+  background: var(--pc-crimson, var(--red, #8a2414));
+}
+
+.archivist-pc-sheet .pc-hp-widget.dead .pc-death-save-failure {
+  border-color: var(--pc-crimson, var(--red, #8a2414));
+}
+
+.archivist-pc-sheet .pc-hp-widget.dead .pc-death-save-failure.filled {
+  background: var(--pc-crimson, var(--red, #8a2414));
+}
+
 .archivist-pc-sheet .pc-skill-row {
   cursor: pointer;
 }

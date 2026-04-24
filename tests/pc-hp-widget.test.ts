@@ -165,4 +165,94 @@ describe("HpWidget — interactive (SP4)", () => {
     expect(editState.heal).toHaveBeenCalledWith(4);
   });
 });
+
+describe("HpWidget — unconscious body swap (SP4 polish)", () => {
+  function unconsciousCtx(successes = 0, failures = 0) {
+    const editState = {
+      heal: vi.fn(),
+      damage: vi.fn(),
+      toggleDeathSaveSuccess: vi.fn(),
+      toggleDeathSaveFailure: vi.fn(),
+    };
+    return {
+      ctx: {
+        derived: { hp: { current: 0, max: 30, temp: 0 } },
+        resolved: { state: { death_saves: { successes, failures } } },
+        editState,
+      } as unknown as ComponentRenderContext,
+      editState,
+    };
+  }
+
+  it("renders death-save dots (3 successes, 3 failures) when HP=0", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(1, 1);
+    new HpWidget().render(root, ctx);
+    expect(root.querySelectorAll(".pc-hp-widget .pc-death-save-success").length).toBe(3);
+    expect(root.querySelectorAll(".pc-hp-widget .pc-death-save-failure").length).toBe(3);
+  });
+
+  it("does NOT render CURRENT/MAX/TEMP tiles when HP=0", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx();
+    new HpWidget().render(root, ctx);
+    expect(root.querySelector(".pc-hp-widget .pc-hp-current")).toBeNull();
+    expect(root.querySelector(".pc-hp-widget .pc-hp-max")).toBeNull();
+    expect(root.querySelector(".pc-hp-widget .pc-hp-temp")).toBeNull();
+  });
+
+  it("filled dots reflect state — successes=2 fills the first 2 success dots", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(2, 0);
+    new HpWidget().render(root, ctx);
+    const successes = [...root.querySelectorAll<HTMLElement>(".pc-hp-widget .pc-death-save-success")];
+    expect(successes[0].classList.contains("filled")).toBe(true);
+    expect(successes[1].classList.contains("filled")).toBe(true);
+    expect(successes[2].classList.contains("filled")).toBe(false);
+  });
+
+  it("death-save dot click dispatches toggleDeathSaveSuccess/Failure", () => {
+    const root = mountContainer();
+    const { ctx, editState } = unconsciousCtx();
+    new HpWidget().render(root, ctx);
+    const successes = [...root.querySelectorAll<HTMLElement>(".pc-hp-widget .pc-death-save-success")];
+    const failures = [...root.querySelectorAll<HTMLElement>(".pc-hp-widget .pc-death-save-failure")];
+    successes[1].click();
+    failures[2].click();
+    expect(editState.toggleDeathSaveSuccess).toHaveBeenCalledWith(1);
+    expect(editState.toggleDeathSaveFailure).toHaveBeenCalledWith(2);
+  });
+
+  it("HEAL button is still present and functional in unconscious state", () => {
+    const root = mountContainer();
+    const { ctx, editState } = unconsciousCtx();
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-widget .pc-hp-input")!;
+    input.value = "5";
+    root.querySelector<HTMLButtonElement>(".pc-hp-widget .pc-hp-heal")!.click();
+    expect(editState.heal).toHaveBeenCalledWith(5);
+  });
+
+  it("dead state (failures=3) renders DEAD label, keeps HEAL clickable", () => {
+    const root = mountContainer();
+    const { ctx, editState } = unconsciousCtx(0, 3);
+    new HpWidget().render(root, ctx);
+    expect(root.querySelector(".pc-hp-widget")?.classList.contains("dead")).toBe(true);
+    expect(root.querySelector(".pc-hp-widget .pc-hp-label")?.textContent).toBe("DEAD");
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-widget .pc-hp-input")!;
+    input.value = "4";
+    root.querySelector<HTMLButtonElement>(".pc-hp-widget .pc-hp-heal")!.click();
+    expect(editState.heal).toHaveBeenCalledWith(4);
+  });
+
+  it("normal HP>0 state still shows CURRENT/MAX/TEMP (no regression)", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(0, 0);
+    // Override to HP>0 for this test
+    (ctx as unknown as { derived: { hp: { current: number; max: number; temp: number } } }).derived.hp = { current: 15, max: 30, temp: 0 };
+    new HpWidget().render(root, ctx);
+    expect(root.querySelector(".pc-hp-widget .pc-hp-current")).not.toBeNull();
+    expect(root.querySelector(".pc-hp-widget .pc-death-save-success")).toBeNull();
+  });
+});
 });

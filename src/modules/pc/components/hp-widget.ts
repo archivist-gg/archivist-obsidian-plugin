@@ -1,10 +1,14 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 
 /**
- * HP widget in the hero right. DOM scaffold only in SP3:
- * HEAL button / number input / DAMAGE button on the left;
- * CURRENT / MAX / TEMP three-up with HIT POINTS label below on the right.
- * SP4 will wire the handlers.
+ * HP widget in the hero right.
+ * - Normal mode (HP > 0): HEAL / input / DAMAGE on the left;
+ *   CURRENT / MAX / TEMP three-up with HIT POINTS label below on the right.
+ * - Unconscious mode (HP = 0, failures < 3): the body swaps to a
+ *   DEATH SAVES panel — 3 success dots + 3 failure dots — with the
+ *   "UNCONSCIOUS" label below. The HEAL/input/DAMAGE column is unchanged.
+ * - Dead mode (HP = 0, failures = 3): same shape as unconscious, label
+ *   becomes "DEAD". HEAL still clickable so a heal cascade can revive.
  */
 export class HpWidget implements SheetComponent {
   readonly type = "hp-widget";
@@ -12,19 +16,21 @@ export class HpWidget implements SheetComponent {
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const wrap = el.createDiv({ cls: "pc-panel pc-hp-widget" });
 
-    // Visual mode class + label
     const ds = ctx.resolved?.state?.death_saves;
+    const hpCurrent = ctx.derived.hp.current;
+    const isUnconscious = hpCurrent === 0;
+    const isDead = isUnconscious && !!ds && ds.failures >= 3;
+
     let labelText = "HIT POINTS";
-    if (ctx.derived.hp.current === 0) {
-      if (ds && ds.failures >= 3) {
-        wrap.addClass("dead");
-        labelText = "DEAD";
-      } else {
-        wrap.addClass("unconscious");
-        labelText = "UNCONSCIOUS";
-      }
+    if (isDead) {
+      wrap.addClass("dead");
+      labelText = "DEAD";
+    } else if (isUnconscious) {
+      wrap.addClass("unconscious");
+      labelText = "UNCONSCIOUS";
     }
 
+    // Action column — always present, always wired the same way.
     const actions = wrap.createDiv({ cls: "pc-hp-actions" });
     const healBtn = actions.createEl("button", { cls: "pc-hp-heal", text: "HEAL" });
     const input = actions.createEl("input", {
@@ -33,14 +39,43 @@ export class HpWidget implements SheetComponent {
     });
     const dmgBtn = actions.createEl("button", { cls: "pc-hp-damage", text: "DAMAGE" });
 
+    // Body — mode-specific.
     const body = wrap.createDiv({ cls: "pc-hp-body" });
-    const nums = body.createDiv({ cls: "pc-hp-nums" });
-    this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
-    this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
-    this.col(nums, "pc-hp-temp", "TEMP", ctx.derived.hp.temp > 0 ? String(ctx.derived.hp.temp) : "—");
+
+    if (isUnconscious) {
+      // Death-saves panel takes over the body.
+      body.createDiv({ cls: "pc-hp-death-header", text: "DEATH SAVES" });
+
+      const dsState = ds ?? { successes: 0, failures: 0 };
+      const successRow = body.createDiv({ cls: "pc-hp-ds-row" });
+      for (let i = 0; i < 3; i++) {
+        const dot = successRow.createSpan({
+          cls: `pc-death-save-success${dsState.successes > i ? " filled" : ""}`,
+        });
+        if (ctx.editState) {
+          dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveSuccess(i as 0 | 1 | 2));
+        }
+      }
+      const failureRow = body.createDiv({ cls: "pc-hp-ds-row" });
+      for (let i = 0; i < 3; i++) {
+        const dot = failureRow.createSpan({
+          cls: `pc-death-save-failure${dsState.failures > i ? " filled" : ""}`,
+        });
+        if (ctx.editState) {
+          dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveFailure(i as 0 | 1 | 2));
+        }
+      }
+    } else {
+      // Normal body — the tiles + HIT POINTS label.
+      const nums = body.createDiv({ cls: "pc-hp-nums" });
+      this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
+      this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
+      this.col(nums, "pc-hp-temp", "TEMP", ctx.derived.hp.temp > 0 ? String(ctx.derived.hp.temp) : "—");
+    }
+
     body.createDiv({ cls: "pc-hp-label", text: labelText });
 
-    // Interactivity
+    // Interactivity — same wiring regardless of mode.
     if (!ctx.editState) return;
     const editState = ctx.editState;
     const readInput = () => Math.max(0, parseInt(input.value || "0", 10));
