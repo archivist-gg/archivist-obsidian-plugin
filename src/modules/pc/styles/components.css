@@ -1233,7 +1233,7 @@
 /* SP4b — defense-type popover (visual parity with pc-cond-popover) */
 .pc-def-popover {
   position: absolute;
-  z-index: 100;
+  z-index: 1000;
   min-width: 200px;
   padding: 6px 0;
   background: var(--pc-bg-soft, #fff6e0);
