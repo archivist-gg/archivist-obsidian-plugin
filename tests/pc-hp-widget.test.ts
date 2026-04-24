@@ -126,6 +126,35 @@ describe("HpWidget — interactive (SP4)", () => {
     expect(root.querySelector(".pc-hp-label")?.textContent).toBe("DEAD");
   });
 
+  it("input accepts typed value via input event then HEAL reads it (typing contract)", () => {
+    // Pins down the "typing works" contract regardless of any document-level
+    // hotkey listener that might intercept keystrokes in the real Obsidian
+    // environment (Bug 1 reproducer).
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 10, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-input")!;
+    input.value = "7";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    root.querySelector<HTMLButtonElement>(".pc-hp-heal")!.click();
+    expect(editState.heal).toHaveBeenCalledWith(7);
+  });
+
+  it("input keydown stops propagation so document-level listeners cannot swallow keystrokes", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 10, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-input")!;
+    const docHandler = vi.fn();
+    document.addEventListener("keydown", docHandler);
+    try {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "5", bubbles: true, cancelable: true }));
+      expect(docHandler).not.toHaveBeenCalled();
+    } finally {
+      document.removeEventListener("keydown", docHandler);
+    }
+  });
+
   it("HEAL button remains clickable in unconscious/dead modes", () => {
     const root = mountContainer();
     const { ctx, editState } = interactiveCtx({ current: 0, max: 30, temp: 0 }, { successes: 0, failures: 3 });

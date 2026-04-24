@@ -133,8 +133,13 @@ export class CharacterEditState {
     const effective = override?.proficient ?? classSaves.includes(ability);
 
     if (!this.character.overrides.saves) this.character.overrides.saves = {};
+    // Don't synthesize `bonus: 0` when no prior override exists. recalc reads
+    // `override?.bonus ?? savingThrow(...)` and `0 ?? x` evaluates to `0`,
+    // which would zero the displayed save bonus. Spread an empty object so
+    // fresh overrides carry only the toggled `proficient` field; existing
+    // overrides preserve their bonus via the spread.
     this.character.overrides.saves[ability] = {
-      ...(this.character.overrides.saves[ability] ?? { bonus: 0 }),
+      ...(this.character.overrides.saves[ability] ?? {}),
       proficient: !effective,
     };
     this.onChange();

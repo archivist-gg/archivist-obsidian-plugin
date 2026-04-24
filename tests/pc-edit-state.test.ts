@@ -258,6 +258,26 @@ describe("CharacterEditState — saves", () => {
     expect(char.overrides.saves?.dex?.proficient).toBe(false);
   });
 
+  it("toggleSaveProficient on fresh state writes only proficient (no bonus:0)", () => {
+    // Bug 2 regression guard: writing `{ bonus: 0, proficient }` caused
+    // recalc's `override?.bonus ?? savingThrow(...)` to return 0 since
+    // `0 ?? x === 0`. The override must omit `bonus` entirely on first toggle.
+    const { es, char } = makeState();
+    es.toggleSaveProficient("dex");
+    expect(char.overrides.saves?.dex).toEqual({ proficient: true });
+    expect(char.overrides.saves?.dex).not.toHaveProperty("bonus", 0);
+    expect(char.overrides.saves?.dex?.bonus).toBeUndefined();
+  });
+
+  it("toggleSaveProficient preserves existing bonus when flipping", () => {
+    const { es, char } = makeState((c) => {
+      c.overrides.saves = { dex: { bonus: 3, proficient: true } };
+    });
+    es.toggleSaveProficient("dex");
+    expect(char.overrides.saves?.dex?.bonus).toBe(3);
+    expect(char.overrides.saves?.dex?.proficient).toBe(false);
+  });
+
   it("clearSaveOverride removes the ability from overrides.saves", () => {
     const { es, char } = makeState((c) => {
       c.overrides.saves = { dex: { bonus: 0, proficient: true } };

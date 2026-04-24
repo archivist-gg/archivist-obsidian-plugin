@@ -34,7 +34,7 @@ export class SaveChip implements SheetComponent {
 
     if (hasOverride) {
       const mark = chip.createSpan({ cls: "archivist-override-mark", text: "*" });
-      mark.setAttribute("title", "Overridden — click to restore class-derived save proficiency");
+      mark.setAttribute("title", "Manual override — click to remove and use the class default");
       if (ctx.editState) {
         mark.addEventListener("click", (e) => {
           e.stopPropagation();

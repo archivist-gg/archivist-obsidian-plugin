@@ -25,7 +25,7 @@ const equipmentEntrySchema = z.object({
 const characterOverridesSchema = z.object({
   scores: z.partialRecord(abilityEnum, z.number().int()).optional(),
   saves: z.partialRecord(abilityEnum, z.object({
-    bonus: z.number().int(),
+    bonus: z.number().int().optional(),
     proficient: z.boolean().optional(),
   })).optional(),
   skills: z.partialRecord(skillEnum, z.object({

@@ -43,6 +43,14 @@ describe("SaveChip (component) — interactive (SP4)", () => {
     expect(root.querySelector(".archivist-override-mark")?.textContent).toBe("*");
   });
 
+  it("override * mark has plain-language tooltip (Bug 3)", () => {
+    const root = mountContainer();
+    const { ctx, ability } = interactiveCtx({ classSaves: [], overrideProf: true });
+    new SaveChip(ability as "str").render(root, ctx);
+    const title = root.querySelector(".archivist-override-mark")?.getAttribute("title");
+    expect(title).toContain("click to remove and use the class default");
+  });
+
   it("does NOT render * when no override", () => {
     const root = mountContainer();
     const { ctx, ability } = interactiveCtx({ classSaves: ["str"] });

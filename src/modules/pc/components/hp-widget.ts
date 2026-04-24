@@ -57,7 +57,14 @@ export class HpWidget implements SheetComponent {
       editState.damage(n);
       input.value = "";
     });
+    // Defensive: stop propagation so any document-level hotkey listener
+    // (e.g. Obsidian's hotkey manager attached to the TextFileView
+    // contentEl) cannot swallow the keystroke before the input processes
+    // it. Without this, typing digits into the HP input produces nothing
+    // because the event is intercepted at a higher capture phase.
+    const stopProp = (e: KeyboardEvent) => e.stopPropagation();
     input.addEventListener("keydown", (e) => {
+      stopProp(e);
       if (e.key !== "Enter") return;
       e.preventDefault();
       const n = readInput();
@@ -65,6 +72,8 @@ export class HpWidget implements SheetComponent {
       editState.heal(n);
       input.value = "";
     });
+    input.addEventListener("keyup", stopProp);
+    input.addEventListener("keypress", stopProp);
   }
 
   private col(parent: HTMLElement, cls: string, label: string, value: string) {

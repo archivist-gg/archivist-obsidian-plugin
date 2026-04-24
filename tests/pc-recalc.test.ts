@@ -193,6 +193,20 @@ describe("recalc (end-to-end)", () => {
     expect(d.saves.dex.bonus).toBe(4 + 3); // DEX mod +4, prof +3
   });
 
+  it("save override with only `proficient` (no bonus) computes bonus from ability+prof (Bug 2)", () => {
+    // Regression: when toggleSaveProficient writes `{ proficient: true }`
+    // without `bonus`, recalc must compute the bonus rather than zero it.
+    const rogue = mkClass("rogue", "d8", 5);
+    (rogue.entity as unknown as { saving_throws: string[] }).saving_throws = ["dex", "int"];
+    const r = withClass(rogue);
+    r.definition.abilities = { str: 8, dex: 18, con: 14, int: 12, wis: 14, cha: 13 };
+    r.definition.overrides = { saves: { dex: { proficient: true } } };
+    const d = recalc(r);
+    expect(d.saves.dex.proficient).toBe(true);
+    // DEX mod +4, prof +3 — must NOT be 0
+    expect(d.saves.dex.bonus).toBe(4 + 3);
+  });
+
   it("computes expertise skill bonus correctly", () => {
     const r = withClass(mkClass("rogue", "d8", 5));
     r.definition.abilities = { str: 8, dex: 18, con: 14, int: 12, wis: 14, cha: 13 };

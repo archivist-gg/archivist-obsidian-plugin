@@ -33,7 +33,7 @@ export type EquipmentEntry =
 
 export interface CharacterOverrides {
   scores?: Partial<Record<Ability, number>>;
-  saves?: Partial<Record<Ability, { bonus: number; proficient?: boolean }>>;
+  saves?: Partial<Record<Ability, { bonus?: number; proficient?: boolean }>>;
   skills?: Partial<Record<SkillSlug, { bonus: number; proficiency?: "none" | "proficient" | "expertise" }>>;
   passives?: Partial<{ perception: number; investigation: number; insight: number }>;
   hp?: { max?: number };
