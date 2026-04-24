@@ -62,3 +62,22 @@ export function parsePC(source: string): ParseResult<Character> {
   }
   return { success: true, data: result.data };
 }
+
+/**
+ * Splice a new YAML body into the markdown file's `pc` code block, leaving
+ * frontmatter and markdown tail byte-identical. `range.startLine` is the
+ * 1-indexed line number of the opening ```pc fence; `range.endLine` is the
+ * 1-indexed line of the closing ``` — both as returned by
+ * `extractPCCodeBlock`.
+ */
+export function spliceCodeBlock(
+  raw: string,
+  range: { startLine: number; endLine: number },
+  newYamlBody: string,
+): string {
+  const lines = raw.split(/\r?\n/);
+  const before = lines.slice(0, range.startLine);       // includes ```pc fence line
+  const after  = lines.slice(range.endLine - 1);        // includes closing ``` line
+  const body   = newYamlBody.split("\n");
+  return [...before, ...body, ...after].join("\n");
+}
