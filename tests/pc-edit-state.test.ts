@@ -570,3 +570,40 @@ describe("CharacterEditState — speed override (SP4c)", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("CharacterEditState — initiative override (SP4c)", () => {
+  it("setInitiativeOverride writes overrides.initiative and notifies", () => {
+    const { es, char, onChange } = makeState();
+    es.setInitiativeOverride(5);
+    expect(char.overrides.initiative).toBe(5);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("setInitiativeOverride accepts negative values", () => {
+    const { es, char } = makeState();
+    es.setInitiativeOverride(-3);
+    expect(char.overrides.initiative).toBe(-3);
+  });
+
+  it("setInitiativeOverride clamps to [-20, 30]", () => {
+    const { es, char } = makeState();
+    es.setInitiativeOverride(-9999);
+    expect(char.overrides.initiative).toBe(-20);
+    es.setInitiativeOverride(9999);
+    expect(char.overrides.initiative).toBe(30);
+  });
+
+  it("setInitiativeOverride no-ops on NaN", () => {
+    const { es, char, onChange } = makeState();
+    es.setInitiativeOverride(NaN);
+    expect(char.overrides.initiative).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("clearInitiativeOverride deletes the key and notifies", () => {
+    const { es, char, onChange } = makeState((c) => { c.overrides.initiative = 5; });
+    es.clearInitiativeOverride();
+    expect(char.overrides.initiative).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});

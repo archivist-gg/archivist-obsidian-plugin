@@ -130,6 +130,18 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Initiative (override) ─────────────────────────────────────────
+  setInitiativeOverride(value: number): void {
+    if (!Number.isFinite(value)) return;
+    this.character.overrides.initiative = Math.max(-20, Math.min(30, Math.floor(value)));
+    this.onChange();
+  }
+
+  clearInitiativeOverride(): void {
+    delete this.character.overrides.initiative;
+    this.onChange();
+  }
+
   // ─── Defenses ──────────────────────────────────────────────────────
   private ensureDefenses(): NonNullable<Character["defenses"]> {
     if (!this.character.defenses) {
