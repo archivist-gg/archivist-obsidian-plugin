@@ -63,12 +63,10 @@ describe("ActionsTab", () => {
     expect(container.querySelector(".pc-hd-entry")?.textContent).toBe("2/3 d8");
   });
 
-  it("renders death saves with the correct dots filled", () => {
+  it("does not render death saves (they live on the HP widget now)", () => {
     const container = mountContainer();
     new ActionsTab().render(container, ctx);
-    const succFilled = container.querySelectorAll(".pc-death-save-success.filled").length;
-    const failFilled = container.querySelectorAll(".pc-death-save-failure.filled").length;
-    expect(succFilled).toBe(1);
-    expect(failFilled).toBe(2);
+    expect(container.querySelector(".pc-death-save-success")).toBeNull();
+    expect(container.querySelector(".pc-death-save-failure")).toBeNull();
   });
 });

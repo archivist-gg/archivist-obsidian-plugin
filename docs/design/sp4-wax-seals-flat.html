@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SP4 — Wax Seals · Flat Variants</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* =============================================================
+       Tokens — copied verbatim from src/modules/pc/styles/tokens.css
+       so these mockups render in the same vocabulary as the sheet.
+       ============================================================= */
+    :root {
+      --pc-parchment-light: #fdf1dc;
+      --pc-parchment-dark: #e8d5b0;
+      --pc-crimson: #922610;
+      --pc-crimson-light: #a83220;
+      --pc-tan: #d9c484;
+      --pc-tan-muted: #c4b07a;
+      --pc-text-primary: #1a1a1a;
+      --pc-text-muted: #8a7a6a;
+      --pc-text-soft: #6b5e4b;
+      --pc-white: #ffffff;
+      /* Green for success — matches the --green, #2a7a2a fallback already
+         used in the live Task 12 death-save CSS. */
+      --pc-green: #2a7a2a;
+      --pc-green-muted: #4a6b3a;
+
+      --pc-font-serif: "Libre Baskerville", Georgia, serif;
+      --pc-font-sans: "Noto Sans", system-ui, -apple-system, sans-serif;
+
+      --pc-fs-mid:     18px;
+      --pc-fs-title:   16px;
+      --pc-fs-heading: 14px;
+      --pc-fs-body:    12px;
+      --pc-fs-small:   11px;
+      --pc-fs-label:   10px;
+      --pc-fs-micro:    8px;
+      --pc-fs-tiny:   7.5px;
+
+      --pc-lh-tight: 1;
+      --pc-lh-snug:  1.2;
+      --pc-lh-body:  1.45;
+
+      --pc-ls-caps-sm: 0.08em;
+      --pc-ls-caps-md: 0.14em;
+      --pc-ls-caps-lg: 0.2em;
+
+      --pc-space-1: 4px;
+      --pc-space-2: 8px;
+      --pc-space-3: 12px;
+      --pc-space-4: 16px;
+
+      --pc-radius-sm: 4px;
+    }
+
+    * { box-sizing: border-box; }
+
+    /* Page chrome — distinct from the mockups so they stand out on it. */
+    body {
+      margin: 0;
+      padding: 56px 32px 96px;
+      font-family: var(--pc-font-sans);
+      background: #2a1c0e;
+      color: var(--pc-parchment-light);
+      line-height: 1.5;
+    }
+    .page-head { max-width: 1440px; margin: 0 auto 48px; padding: 0 8px; }
+    .page-head h1 {
+      font-family: var(--pc-font-serif);
+      font-weight: 700;
+      font-size: 32px;
+      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+      color: var(--pc-parchment-light);
+    }
+    .page-head .sub {
+      font-family: var(--pc-font-serif);
+      font-style: italic;
+      font-size: 15px;
+      color: color-mix(in srgb, var(--pc-parchment-light) 70%, transparent);
+      margin: 0;
+      max-width: 880px;
+    }
+    .grid {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 24px;
+    }
+
+    .variant {
+      /* Match the sheet backdrop — no drop shadows or gradients. */
+      background: var(--pc-parchment-dark, #e8d5b0);
+      color: var(--pc-text-primary);
+      padding: 20px 20px 24px;
+      border: 1px solid var(--pc-tan-muted);
+      border-radius: var(--pc-radius-sm);
+    }
+    .variant-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 1px dotted var(--pc-tan-muted);
+    }
+    .variant-head .name {
+      font-family: var(--pc-font-serif);
+      font-weight: 700;
+      font-size: var(--pc-fs-title);
+      color: var(--pc-text-primary);
+    }
+    .variant-head .letter {
+      font-family: var(--pc-font-serif);
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--pc-crimson);
+      line-height: 1;
+    }
+    .variant-head .tagline {
+      font-family: var(--pc-font-serif);
+      font-style: italic;
+      font-size: var(--pc-fs-small);
+      color: var(--pc-text-soft);
+      margin-top: 2px;
+    }
+
+    .states { display: flex; flex-direction: column; gap: 14px; }
+    .state-row { display: flex; flex-direction: column; gap: 4px; }
+    .state-label {
+      font-family: var(--pc-font-sans);
+      font-size: var(--pc-fs-micro);
+      letter-spacing: var(--pc-ls-caps-md);
+      text-transform: uppercase;
+      color: var(--pc-text-muted);
+    }
+
+    /* =============================================================
+       SHARED HP WIDGET SKELETON
+       Matches the structure + dimensions of the real widget.
+       ============================================================= */
+    .hp-widget {
+      /* Exactly mirrors the real .pc-hp-widget: two-column grid,
+         single parchment background, 1px tan border. */
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: var(--pc-space-3);
+      align-items: center;
+      padding: 6px 10px;
+      background: var(--pc-parchment-light);
+      border: 1px solid var(--pc-tan-muted);
+      border-radius: var(--pc-radius-sm);
+      min-height: 96px;
+    }
+    .hp-widget.stable { border-color: var(--pc-green-muted); }
+    .hp-widget.dead   { border-color: var(--pc-crimson); }
+
+    .hp-actions { display: flex; flex-direction: column; gap: 2px; }
+    .hp-actions button,
+    .hp-actions input {
+      width: 56px; height: 20px; padding: 0;
+      border-radius: var(--pc-radius-sm);
+      font-family: var(--pc-font-serif);
+      line-height: var(--pc-lh-tight);
+      font-size: var(--pc-fs-micro);
+      letter-spacing: var(--pc-ls-caps-sm);
+      text-transform: uppercase;
+      text-align: center;
+      background: transparent;
+      cursor: pointer;
+      color: var(--pc-text-primary);
+    }
+    .hp-actions .heal { border: 1px solid var(--pc-green-muted); color: var(--pc-green-muted); }
+    .hp-actions .dmg  { border: 1px solid var(--pc-crimson); color: var(--pc-crimson); }
+    .hp-actions input {
+      font-weight: 700;
+      font-size: var(--pc-fs-small);
+      border: 1px solid var(--pc-tan-muted);
+      background: transparent;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .hp-body {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px; width: 100%;
+    }
+
+    /* Shared state-word at the bottom. Colour tracks state. */
+    .hp-label {
+      font-family: var(--pc-font-serif);
+      font-size: var(--pc-fs-label);
+      font-weight: 700;
+      letter-spacing: var(--pc-ls-caps-md);
+      text-transform: uppercase;
+      color: var(--pc-text-muted);
+      margin-top: 1px;
+    }
+    .hp-widget.unconscious .hp-label { color: var(--pc-text-primary); }
+    .hp-widget.stable .hp-label      { color: var(--pc-green-muted); }
+    .hp-widget.dead .hp-label        { color: var(--pc-crimson); }
+
+    /* Shared microcap header used in most variants. */
+    .micro-head {
+      font-family: var(--pc-font-sans);
+      font-size: var(--pc-fs-tiny);
+      letter-spacing: var(--pc-ls-caps-lg);
+      text-transform: uppercase;
+      color: var(--pc-text-muted);
+      line-height: var(--pc-lh-tight);
+    }
+
+    /* Flat seal. No shadow, no gradient, no dashed insert. */
+    .seal {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      border: 1px solid var(--pc-tan-muted);
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .seal.success.filled {
+      background: var(--pc-green);
+      border-color: var(--pc-green);
+    }
+    .seal.failure.filled {
+      background: var(--pc-crimson);
+      border-color: var(--pc-crimson);
+    }
+
+    /* =============================================================
+       A1 · ROW WITH LABELS — the most restrained take.
+       Microhead top, two horizontal rows (SUCC / FAIL) with the
+       same 3-dot grid, state word below. Dotted row hairlines for
+       consistency with .pc-prof-line / .pc-sense-row.
+       ============================================================= */
+    .a1 .hp-body { gap: 2px; }
+    .a1 .save-row {
+      display: grid;
+      grid-template-columns: 32px repeat(3, 12px);
+      column-gap: 6px;
+      align-items: center;
+      padding: 2px 0;
+      border-bottom: 1px dotted var(--pc-tan-muted);
+    }
+    .a1 .save-row:last-of-type { border-bottom: none; }
+    .a1 .save-row .row-label {
+      font-family: var(--pc-font-sans);
+      font-size: var(--pc-fs-tiny);
+      letter-spacing: var(--pc-ls-caps-md);
+      text-transform: uppercase;
+      color: var(--pc-text-muted);
+      text-align: right;
+    }
+
+    /* =============================================================
+       A2 · INLINE ROW — most compact.
+       One line: label · dots · divider · dots. State word below.
+       ============================================================= */
+    .a2 .save-line {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .a2 .save-line .divider {
+      width: 1px; height: 12px;
+      background: var(--pc-tan-muted);
+      margin: 0 2px;
+    }
+    .a2 .save-line .side-label {
+      font-family: var(--pc-font-sans);
+      font-size: var(--pc-fs-tiny);
+      letter-spacing: var(--pc-ls-caps-md);
+      text-transform: uppercase;
+      color: var(--pc-text-muted);
+    }
+    .a2 .save-line .dots {
+      display: flex; gap: 5px;
+    }
+
+    /* =============================================================
+       A3 · DIVIDED PAIR — two half-columns separated by a hairline.
+       Matches the "left defenses | right conditions" divider
+       pattern already used in .pc-def-cond.
+       ============================================================= */
+    .a3 .hp-body { width: 100%; }
+    .a3 .pair {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      align-items: center;
+      width: 100%;
+      padding: 2px 4px 6px;
+    }
+    .a3 .pair-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--pc-tan-muted);
+    }
+    .a3 .pair-col {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .a3 .pair-col .col-head {
+      font-family: var(--pc-font-sans);
+      font-size: var(--pc-fs-tiny);
+      letter-spacing: var(--pc-ls-caps-md);
+      text-transform: uppercase;
+      color: var(--pc-text-muted);
+    }
+    .a3 .pair-col .dots {
+      display: flex; gap: 5px;
+    }
+
+    /* =============================================================
+       A4 · DOCUMENT BLOCK — mirrors the card treatments used in
+       .pc-tab-heading / .pc-prof-line. Title in Libre Baskerville
+       bold, italic body caption, six dots in a single row.
+       ============================================================= */
+    .a4 .doc { width: 100%; text-align: center; }
+    .a4 .doc-title {
+      font-family: var(--pc-font-serif);
+      font-weight: 700;
+      font-size: var(--pc-fs-heading);
+      color: var(--pc-text-primary);
+      line-height: var(--pc-lh-tight);
+      padding-bottom: 4px;
+      border-bottom: 1px dotted var(--pc-tan-muted);
+      margin-bottom: 4px;
+    }
+    .a4 .hp-widget.stable .doc-title { color: var(--pc-green-muted); }
+    .a4 .hp-widget.dead   .doc-title { color: var(--pc-crimson); }
+    .a4 .doc-caption {
+      font-family: var(--pc-font-serif);
+      font-style: italic;
+      font-size: var(--pc-fs-tiny);
+      color: var(--pc-text-soft);
+      margin-bottom: 4px;
+    }
+    .a4 .doc-dots {
+      display: flex; justify-content: center; gap: 6px;
+    }
+    .a4 .doc-dots .gap { width: 4px; }
+
+    /* Footnote */
+    .footnote {
+      max-width: 1440px;
+      margin: 48px auto 0;
+      padding: 18px 24px;
+      border-top: 1px solid color-mix(in srgb, var(--pc-parchment-light) 20%, transparent);
+      color: color-mix(in srgb, var(--pc-parchment-light) 55%, transparent);
+      font-family: var(--pc-font-serif);
+      font-style: italic;
+      font-size: 14px;
+    }
+    .footnote kbd {
+      font-family: var(--pc-font-sans);
+      font-style: normal;
+      background: rgba(255,255,255,0.08);
+      padding: 2px 8px; border-radius: 3px;
+      letter-spacing: 0.08em; font-size: 12px;
+    }
+
+    @media (max-width: 1200px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 780px)  { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <header class="page-head">
+    <h1>Wax Seals · Flat, Sheet-Harmonised</h1>
+    <p class="sub">Redrawn using the real PC sheet tokens: <code>--pc-parchment-light</code>, <code>--pc-tan-muted</code>, <code>--pc-crimson</code>, Libre Baskerville serif body, Noto Sans small-caps microlabels. No shadows, no gradients, no 3D — hairline borders and flat fills only. Four variants, each rendered in the three canonical states.</p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ========================= A1 · Row with Labels ========================= -->
+    <article class="variant a1">
+      <header class="variant-head">
+        <div>
+          <div class="name">Row with Labels</div>
+          <div class="tagline">Two rows · SUCC / FAIL · dotted hairline between — mirrors .pc-prof-line</div>
+        </div>
+        <div class="letter">A1</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="save-row"><span class="row-label">Succ</span><span class="seal success filled"></span><span class="seal success"></span><span class="seal success"></span></div>
+              <div class="save-row"><span class="row-label">Fail</span><span class="seal failure filled"></span><span class="seal failure filled"></span><span class="seal failure"></span></div>
+              <div class="hp-label">Unconscious</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="save-row"><span class="row-label">Succ</span><span class="seal success filled"></span><span class="seal success filled"></span><span class="seal success filled"></span></div>
+              <div class="save-row"><span class="row-label">Fail</span><span class="seal failure"></span><span class="seal failure"></span><span class="seal failure"></span></div>
+              <div class="hp-label">Stable</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="save-row"><span class="row-label">Succ</span><span class="seal success filled"></span><span class="seal success"></span><span class="seal success"></span></div>
+              <div class="save-row"><span class="row-label">Fail</span><span class="seal failure filled"></span><span class="seal failure filled"></span><span class="seal failure filled"></span></div>
+              <div class="hp-label">Dead</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ========================= A2 · Inline Row ========================= -->
+    <article class="variant a2">
+      <header class="variant-head">
+        <div>
+          <div class="name">Inline Row</div>
+          <div class="tagline">One line · successes · divider · failures — maximally compact</div>
+        </div>
+        <div class="letter">A2</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="save-line">
+                <span class="side-label">Succ</span>
+                <span class="dots"><span class="seal success filled"></span><span class="seal success"></span><span class="seal success"></span></span>
+                <span class="divider"></span>
+                <span class="dots"><span class="seal failure filled"></span><span class="seal failure filled"></span><span class="seal failure"></span></span>
+                <span class="side-label">Fail</span>
+              </div>
+              <div class="hp-label">Unconscious</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="save-line">
+                <span class="side-label">Succ</span>
+                <span class="dots"><span class="seal success filled"></span><span class="seal success filled"></span><span class="seal success filled"></span></span>
+                <span class="divider"></span>
+                <span class="dots"><span class="seal failure"></span><span class="seal failure"></span><span class="seal failure"></span></span>
+                <span class="side-label">Fail</span>
+              </div>
+              <div class="hp-label">Stable</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="save-line">
+                <span class="side-label">Succ</span>
+                <span class="dots"><span class="seal success filled"></span><span class="seal success"></span><span class="seal success"></span></span>
+                <span class="divider"></span>
+                <span class="dots"><span class="seal failure filled"></span><span class="seal failure filled"></span><span class="seal failure filled"></span></span>
+                <span class="side-label">Fail</span>
+              </div>
+              <div class="hp-label">Dead</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ========================= A3 · Divided Pair ========================= -->
+    <article class="variant a3">
+      <header class="variant-head">
+        <div>
+          <div class="name">Divided Pair</div>
+          <div class="tagline">Two half-columns, vertical hairline divider — mirrors .pc-def-cond</div>
+        </div>
+        <div class="letter">A3</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="pair">
+                <div class="pair-col">
+                  <span class="col-head">Success</span>
+                  <span class="dots"><span class="seal success filled"></span><span class="seal success"></span><span class="seal success"></span></span>
+                </div>
+                <div class="pair-divider"></div>
+                <div class="pair-col">
+                  <span class="col-head">Failure</span>
+                  <span class="dots"><span class="seal failure filled"></span><span class="seal failure filled"></span><span class="seal failure"></span></span>
+                </div>
+              </div>
+              <div class="hp-label">Unconscious</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="pair">
+                <div class="pair-col">
+                  <span class="col-head">Success</span>
+                  <span class="dots"><span class="seal success filled"></span><span class="seal success filled"></span><span class="seal success filled"></span></span>
+                </div>
+                <div class="pair-divider"></div>
+                <div class="pair-col">
+                  <span class="col-head">Failure</span>
+                  <span class="dots"><span class="seal failure"></span><span class="seal failure"></span><span class="seal failure"></span></span>
+                </div>
+              </div>
+              <div class="hp-label">Stable</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="micro-head">DEATH SAVES</div>
+              <div class="pair">
+                <div class="pair-col">
+                  <span class="col-head">Success</span>
+                  <span class="dots"><span class="seal success filled"></span><span class="seal success"></span><span class="seal success"></span></span>
+                </div>
+                <div class="pair-divider"></div>
+                <div class="pair-col">
+                  <span class="col-head">Failure</span>
+                  <span class="dots"><span class="seal failure filled"></span><span class="seal failure filled"></span><span class="seal failure filled"></span></span>
+                </div>
+              </div>
+              <div class="hp-label">Dead</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ========================= A4 · Document Block ========================= -->
+    <article class="variant a4">
+      <header class="variant-head">
+        <div>
+          <div class="name">Document Block</div>
+          <div class="tagline">Title + italic caption + single 6-dot row — mirrors .pc-tab-heading</div>
+        </div>
+        <div class="letter">A4</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="doc">
+                <div class="doc-title">Unconscious</div>
+                <div class="doc-caption">Death saves in progress</div>
+                <div class="doc-dots">
+                  <span class="seal success filled"></span>
+                  <span class="seal success"></span>
+                  <span class="seal success"></span>
+                  <span class="gap"></span>
+                  <span class="seal failure filled"></span>
+                  <span class="seal failure filled"></span>
+                  <span class="seal failure"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="doc">
+                <div class="doc-title">Stable</div>
+                <div class="doc-caption">Three successes · no more saves</div>
+                <div class="doc-dots">
+                  <span class="seal success filled"></span>
+                  <span class="seal success filled"></span>
+                  <span class="seal success filled"></span>
+                  <span class="gap"></span>
+                  <span class="seal failure"></span>
+                  <span class="seal failure"></span>
+                  <span class="seal failure"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="doc">
+                <div class="doc-title">Dead</div>
+                <div class="doc-caption">Three failures · revivify only</div>
+                <div class="doc-dots">
+                  <span class="seal success filled"></span>
+                  <span class="seal success"></span>
+                  <span class="seal success"></span>
+                  <span class="gap"></span>
+                  <span class="seal failure filled"></span>
+                  <span class="seal failure filled"></span>
+                  <span class="seal failure filled"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+  </section>
+
+  <div class="footnote">
+    Reply with <kbd>A1</kbd>, <kbd>A2</kbd>, <kbd>A3</kbd>, or <kbd>A4</kbd>, or a hybrid (e.g. <em>"A4's italic caption above A1's stacked rows"</em>). All four use only PC-sheet tokens — no custom colours, no shadows, no gradients.
+  </div>
+
+</body>
+</html>

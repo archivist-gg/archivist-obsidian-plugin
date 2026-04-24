@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SP4 — Memento Mori · Variations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=UnifrakturCook:wght@700&family=Cormorant+Garamond:wght@500;700&family=Uncial+Antiqua&family=Pirata+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parch: #f1e6cf;
+      --parch-deep: #e8d9b5;
+      --parch-light: #f7efe2;
+      --parch-aged: #ead9b8;
+      --stone: #c9c1b2;
+      --stone-deep: #a39a8a;
+      --stone-shadow: #4a4339;
+      --ink: #2a1c0e;
+      --ink-soft: #5a4426;
+      --ink-faint: #8a7350;
+      --gold: #b98a3a;
+      --gold-deep: #8c6520;
+      --gold-leaf: #d4b868;
+      --crimson: #8a2414;
+      --crimson-deep: #5b1508;
+      --green: #3f6b3a;
+      --plum: #4a2239;
+      --rule: color-mix(in srgb, var(--gold) 60%, transparent);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 56px 32px 96px;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      background:
+        radial-gradient(1200px 800px at 20% 0%, rgba(184,138,58,0.08), transparent),
+        radial-gradient(900px 700px at 80% 100%, rgba(138,36,20,0.06), transparent),
+        #1f1408;
+      color: var(--parch);
+      line-height: 1.5;
+    }
+
+    .page-head { max-width: 1440px; margin: 0 auto 48px; padding: 0 8px; }
+    .page-head h1 {
+      font-family: "UnifrakturCook", "Pirata One", serif;
+      font-weight: 700;
+      font-size: 52px;
+      letter-spacing: 0.01em;
+      margin: 0 0 8px;
+      color: var(--parch-light);
+    }
+    .page-head .sub {
+      font-family: "IM Fell English", serif;
+      font-style: italic;
+      font-size: 17px;
+      color: color-mix(in srgb, var(--parch) 70%, transparent);
+      margin: 0;
+      max-width: 860px;
+    }
+    .page-head .sub::before {
+      content: "— ";
+      color: var(--gold);
+    }
+
+    .grid {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 28px;
+    }
+
+    .variant {
+      background: linear-gradient(180deg, var(--parch-light), var(--parch-aged));
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 28px 24px 32px;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.5) inset,
+        0 -1px 0 rgba(42,28,14,0.12) inset,
+        0 30px 60px -20px rgba(0,0,0,0.6),
+        0 12px 24px -12px rgba(0,0,0,0.4);
+      position: relative;
+    }
+    .variant::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .variant-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .variant-head .name {
+      font-family: "UnifrakturCook", serif;
+      font-size: 28px;
+      letter-spacing: 0;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .variant-head .letter {
+      font-family: "Uncial Antiqua", serif;
+      font-size: 42px;
+      color: var(--crimson);
+      line-height: 1;
+    }
+    .variant-head .tagline {
+      font-family: "IM Fell English", serif;
+      font-style: italic;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      letter-spacing: 0.01em;
+    }
+
+    .states { display: flex; flex-direction: column; gap: 18px; }
+    .state-row { display: flex; flex-direction: column; gap: 6px; }
+    .state-label {
+      font-family: "IM Fell English SC", serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--ink-faint);
+    }
+
+    /* ============ SHARED HP WIDGET SKELETON ============ */
+    .hp-widget {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 14px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1.25px solid var(--ink);
+      border-radius: 4px;
+      background: var(--parch-light);
+      min-height: 108px;
+    }
+    .hp-actions { display: flex; flex-direction: column; gap: 3px; }
+    .hp-actions button,
+    .hp-actions input {
+      width: 62px; height: 22px; padding: 0;
+      border-radius: 3px;
+      font-family: "IM Fell English SC", serif;
+      font-size: 10px; letter-spacing: 0.12em; text-align: center;
+      background: transparent; cursor: pointer; color: var(--ink);
+    }
+    .hp-actions .heal { border: 1px solid var(--green); color: var(--green); }
+    .hp-actions .dmg  { border: 1px solid var(--crimson); color: var(--crimson); }
+    .hp-actions input {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 14px; font-weight: 700;
+      border: 1px solid color-mix(in srgb, var(--gold) 60%, transparent);
+      background: rgba(255,255,255,0.4);
+    }
+    .hp-body {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px;
+      width: 100%;
+    }
+
+    /* ============ C0 · BASELINE (from last round) ============ */
+    .c0 .hp-widget { background: radial-gradient(180px 120px at 50% 100%, color-mix(in srgb, var(--ink) 8%, transparent), transparent 70%), var(--parch-light); }
+    .c0 .rows { display: flex; gap: 14px; align-items: center; }
+    .c0 .col-labels { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .c0 .col-label { font-family: "IM Fell English SC", serif; font-size: 8px; letter-spacing: 0.18em; color: var(--ink-faint); }
+    .c0 .markers { display: grid; grid-template-columns: repeat(3, 8px); gap: 4px; }
+    .c0 .glyph { font-family: "Uncial Antiqua", serif; font-size: 34px; line-height: 1; color: var(--ink); }
+    .c0 .candle { width: 6px; height: 12px; background: var(--ink-faint); opacity: 0.3; border-radius: 1px 1px 0 0; }
+    .c0 .candle.success.filled { background: var(--green); opacity: 1; }
+    .c0 .candle.failure.filled { background: var(--crimson); opacity: 1; }
+    .c0 .hp-widget.stable .glyph { color: var(--green); }
+    .c0 .hp-widget.dead .glyph { color: var(--crimson); }
+    .c0 .hp-label { font-family: "Cormorant Garamond", serif; font-weight: 700; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-soft); }
+    .c0 .hp-widget.dead .hp-label { color: var(--crimson); }
+    .c0 .hp-widget.stable .hp-label { color: var(--green); }
+
+
+    /* ============ C1 · "ILLUMINATED FRAME" ============
+       Thick decorated border with laurel / chain motif at corners.
+       Central blackletter state word. Dots as inkblot circles.
+       Gold-leaf accent lines. Maximally ornamental. */
+    .c1 .hp-widget {
+      background:
+        linear-gradient(180deg, rgba(184,138,58,0.06), transparent 40%, rgba(184,138,58,0.06)),
+        var(--parch-light);
+      border: 2px solid var(--ink);
+      position: relative;
+    }
+    .c1 .hp-widget::before {
+      content: "";
+      position: absolute; inset: 3px;
+      border: 0.5px solid var(--gold-leaf);
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .c1 .hp-widget::after {
+      content: "";
+      position: absolute; inset: 3px;
+      background:
+        radial-gradient(6px 6px at 6px 6px, var(--gold-deep) 40%, transparent 41%),
+        radial-gradient(6px 6px at calc(100% - 6px) 6px, var(--gold-deep) 40%, transparent 41%),
+        radial-gradient(6px 6px at 6px calc(100% - 6px), var(--gold-deep) 40%, transparent 41%),
+        radial-gradient(6px 6px at calc(100% - 6px) calc(100% - 6px), var(--gold-deep) 40%, transparent 41%);
+      pointer-events: none;
+    }
+    .c1 .ornament-word {
+      font-family: "UnifrakturCook", serif;
+      font-weight: 700;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--ink);
+      margin: 2px 0 4px;
+    }
+    .c1 .hp-widget.stable .ornament-word { color: var(--green); }
+    .c1 .hp-widget.dead .ornament-word { color: var(--crimson); }
+    .c1 .inkblot-rows { display: flex; flex-direction: column; gap: 2px; }
+    .c1 .inkblot-row { display: flex; gap: 5px; align-items: center; justify-content: center; }
+    .c1 .ink-label { font-family: "IM Fell English SC", serif; font-size: 8px; letter-spacing: 0.16em; color: var(--ink-faint); width: 24px; text-align: right; padding-right: 4px; }
+    .c1 .inkblot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1px solid var(--ink); background: transparent;
+    }
+    .c1 .inkblot.success.filled {
+      background: var(--ink);
+      box-shadow: 0 0 0 1px var(--ink), 1px 1px 0 0 rgba(63,107,58,0.6);
+    }
+    .c1 .inkblot.failure.filled {
+      background: var(--ink);
+      box-shadow: 0 0 0 1px var(--ink), 1px 1px 0 0 rgba(138,36,20,0.7);
+    }
+    .c1 .inkblot.success.filled { background: var(--green); border-color: color-mix(in srgb, var(--green) 70%, black); }
+    .c1 .inkblot.failure.filled { background: var(--crimson); border-color: color-mix(in srgb, var(--crimson) 70%, black); }
+
+    /* ============ C2 · "TOMBSTONE" ============
+       The body renders as a rounded-top stone marker. Engraved-text effect.
+       Dates replaced with death save counts in Roman numerals.
+       Stone-grey gradient. Very still, very quiet. */
+    .c2 .hp-widget {
+      background: var(--parch-light);
+      padding: 6px 10px;
+    }
+    .c2 .stone {
+      width: 100%;
+      background: linear-gradient(180deg, #d8d2c4, var(--stone) 55%, var(--stone-deep));
+      border-top-left-radius: 50% 22px;
+      border-top-right-radius: 50% 22px;
+      padding: 10px 10px 8px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.55),
+        inset 0 -2px 2px rgba(0,0,0,0.18),
+        0 1px 2px rgba(0,0,0,0.35);
+      text-align: center;
+      min-height: 96px;
+      position: relative;
+    }
+    .c2 .stone::before {
+      content: "";
+      position: absolute; inset: 4px;
+      border: 0.75px solid rgba(74,67,57,0.45);
+      border-top-left-radius: 50% 18px;
+      border-top-right-radius: 50% 18px;
+      pointer-events: none;
+    }
+    .c2 .stone .cross {
+      font-family: "Uncial Antiqua", serif;
+      font-size: 14px;
+      color: var(--stone-shadow);
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.35), 0 -0.5px 0 rgba(0,0,0,0.2);
+      margin-bottom: 1px;
+    }
+    .c2 .stone .hic {
+      font-family: "IM Fell English SC", serif;
+      font-size: 8px;
+      letter-spacing: 0.28em;
+      color: rgba(74,67,57,0.7);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+    }
+    .c2 .stone .inscribed-word {
+      font-family: "UnifrakturCook", serif;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--stone-shadow);
+      text-shadow:
+        0 1px 0 rgba(255,255,255,0.45),
+        0 -0.5px 0 rgba(0,0,0,0.3);
+      margin: 3px 0;
+    }
+    .c2 .stone .counters {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      font-family: "Cormorant Garamond", serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--stone-shadow);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+      letter-spacing: 0.08em;
+    }
+    .c2 .stone .counter { display: flex; flex-direction: column; gap: 0; align-items: center; line-height: 1; }
+    .c2 .stone .counter .num { font-size: 15px; font-weight: 700; }
+    .c2 .stone .counter .sub { font-family: "IM Fell English SC", serif; font-size: 7px; letter-spacing: 0.2em; color: rgba(74,67,57,0.65); margin-top: 1px; }
+    .c2 .stone .dots { display: flex; gap: 4px; justify-content: center; margin-top: 2px; }
+    .c2 .stone .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(74,67,57,0.25); }
+    .c2 .stone .dot.success.filled { background: var(--green); }
+    .c2 .stone .dot.failure.filled { background: var(--crimson); }
+    .c2 .hp-widget.dead .stone { background: linear-gradient(180deg, #c5bdae, #a39a8a 55%, #6f6558); }
+    .c2 .hp-widget.dead .stone .inscribed-word { color: #3a3128; }
+    .c2 .hp-widget.stable .stone { background: linear-gradient(180deg, #d8e0cf, #b9c4ad 55%, #8fa081); }
+    .c2 .hp-widget.stable .stone .inscribed-word { color: #2b3c26; }
+    .c2 .hp-widget.stable .stone .cross,
+    .c2 .hp-widget.stable .stone .hic { color: #2b3c26; }
+
+
+    /* ============ C3 · "REQUIEM CROSS" ============
+       Cruciform arrangement — dots along the horizontal arms of a cross,
+       central glyph at the intersection. Stained-glass jewel tones
+       (plum/crimson/gold). Religious solemnity. */
+    .c3 .hp-widget {
+      background:
+        radial-gradient(closest-side at 50% 50%, rgba(184,138,58,0.1), transparent),
+        var(--parch-light);
+    }
+    .c3 .cross-layout {
+      display: grid;
+      grid-template-columns: auto auto auto auto auto auto auto;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+    }
+    .c3 .arm-bead {
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 1px solid var(--ink);
+      background: transparent;
+      position: relative;
+    }
+    .c3 .arm-bead.success.filled {
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.6), transparent 55%), var(--green);
+      border-color: color-mix(in srgb, var(--green) 60%, black);
+    }
+    .c3 .arm-bead.failure.filled {
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.6), transparent 55%), var(--crimson);
+      border-color: color-mix(in srgb, var(--crimson) 60%, black);
+    }
+    .c3 .arm-bead + .arm-bead {
+      /* connecting "chain" line */
+    }
+    .c3 .cross-glyph {
+      font-family: "Uncial Antiqua", serif;
+      font-size: 28px;
+      line-height: 1;
+      color: var(--ink);
+      padding: 0 4px;
+    }
+    .c3 .hp-widget.stable .cross-glyph { color: var(--green); }
+    .c3 .hp-widget.dead .cross-glyph { color: var(--crimson); }
+    .c3 .cross-rule { width: 10px; height: 1px; background: var(--ink-faint); }
+    .c3 .cross-caption {
+      font-family: "IM Fell English", serif;
+      font-style: italic;
+      font-size: 10px;
+      color: var(--ink-soft);
+      margin-top: 6px;
+      letter-spacing: 0.01em;
+    }
+    .c3 .cross-caption .sep { color: var(--gold); margin: 0 5px; }
+    .c3 .hp-widget.stable .cross-caption strong { color: var(--green); font-style: normal; }
+    .c3 .hp-widget.dead .cross-caption strong { color: var(--crimson); font-style: normal; }
+    .c3 .hp-widget.unconscious .cross-caption strong { color: var(--ink); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; font-family: "IM Fell English SC", serif; font-size: 9px; }
+    .c3 .hp-widget.stable .cross-caption strong,
+    .c3 .hp-widget.dead .cross-caption strong { letter-spacing: 0.1em; text-transform: uppercase; font-family: "IM Fell English SC", serif; font-size: 9px; }
+
+
+    /* ============ C4 · "SIGIL CIRCLE" ============
+       Circular mystical diagram. 6 dots orbit a central alchemical symbol.
+       Inner ring + outer ring, concentric. Geometric, esoteric. */
+    .c4 .hp-widget { background: var(--parch-light); }
+    .c4 .sigil {
+      width: 92px; height: 92px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .c4 .sigil::before {
+      content: "";
+      position: absolute; inset: 6px;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+    .c4 .sigil::after {
+      content: "";
+      position: absolute; inset: 14px;
+      border: 0.75px dashed color-mix(in srgb, var(--ink) 40%, transparent);
+      border-radius: 50%;
+    }
+    .c4 .sigil-glyph {
+      font-family: "Uncial Antiqua", serif;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--ink);
+      z-index: 2;
+    }
+    .c4 .hp-widget.stable .sigil-glyph { color: var(--green); }
+    .c4 .hp-widget.dead .sigil-glyph { color: var(--crimson); }
+    /* six dots at 0°, 60°, 120°, 180°, 240°, 300° — successes top 3, failures bottom 3 */
+    .c4 .orbit-dot {
+      position: absolute;
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      border: 1px solid var(--ink);
+      background: transparent;
+      top: 50%; left: 50%;
+      transform-origin: 0 0;
+    }
+    .c4 .orbit-dot.s0 { transform: translate(-50%, -50%) rotate(-90deg) translateX(42px) rotate(90deg); }
+    .c4 .orbit-dot.s1 { transform: translate(-50%, -50%) rotate(-30deg) translateX(42px) rotate(30deg); }
+    .c4 .orbit-dot.s2 { transform: translate(-50%, -50%) rotate(30deg)  translateX(42px) rotate(-30deg); }
+    .c4 .orbit-dot.f0 { transform: translate(-50%, -50%) rotate(90deg)  translateX(42px) rotate(-90deg); }
+    .c4 .orbit-dot.f1 { transform: translate(-50%, -50%) rotate(150deg) translateX(42px) rotate(-150deg); }
+    .c4 .orbit-dot.f2 { transform: translate(-50%, -50%) rotate(210deg) translateX(42px) rotate(-210deg); }
+    .c4 .orbit-dot.success.filled { background: var(--green); border-color: color-mix(in srgb, var(--green) 60%, black); }
+    .c4 .orbit-dot.failure.filled { background: var(--crimson); border-color: color-mix(in srgb, var(--crimson) 60%, black); }
+    .c4 .sigil-label {
+      font-family: "IM Fell English SC", serif;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      text-align: center;
+    }
+    .c4 .hp-widget.stable .sigil-label { color: var(--green); }
+    .c4 .hp-widget.dead .sigil-label { color: var(--crimson); }
+
+
+    /* ============ FOOTNOTE ============ */
+    .footnote {
+      max-width: 1440px;
+      margin: 56px auto 0;
+      padding: 20px 24px;
+      border-top: 1px solid color-mix(in srgb, var(--parch) 20%, transparent);
+      color: color-mix(in srgb, var(--parch) 55%, transparent);
+      font-family: "IM Fell English", serif;
+      font-style: italic;
+      font-size: 14px;
+    }
+    .footnote kbd {
+      font-family: "IM Fell English SC", serif;
+      font-style: normal;
+      background: rgba(255,255,255,0.08);
+      padding: 2px 8px;
+      border-radius: 3px;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1200px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 780px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="page-head">
+    <h1>Memento Mori · Variations</h1>
+    <p class="sub">Four new takes on the gothic / death-aware direction, plus the original baseline for reference. Each variant is rendered in the three canonical states: actively dying, stabilised, and deceased. Pick one — or mix elements (e.g. "C2's tombstone frame but C1's blackletter typography") — and I'll wire it in.</p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================== C0 · baseline ============================== -->
+    <article class="variant c0">
+      <header class="variant-head">
+        <div>
+          <div class="name">Baseline · Uncial &amp; Candles</div>
+          <div class="tagline">Previous direction · for comparison only</div>
+        </div>
+        <div class="letter">C0</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions">
+              <button class="heal">HEAL</button>
+              <input type="number" placeholder="0">
+              <button class="dmg">DAMAGE</button>
+            </div>
+            <div class="hp-body">
+              <div class="rows">
+                <div class="col-labels">
+                  <span class="col-label">SUC</span>
+                  <div class="markers">
+                    <span class="candle success filled"></span>
+                    <span class="candle success"></span>
+                    <span class="candle success"></span>
+                  </div>
+                </div>
+                <div class="glyph">☥</div>
+                <div class="col-labels">
+                  <span class="col-label">FAIL</span>
+                  <div class="markers">
+                    <span class="candle failure filled"></span>
+                    <span class="candle failure filled"></span>
+                    <span class="candle failure"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="hp-label">UNCONSCIOUS</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions">
+              <button class="heal">HEAL</button>
+              <input type="number" placeholder="0">
+              <button class="dmg">DAMAGE</button>
+            </div>
+            <div class="hp-body">
+              <div class="rows">
+                <div class="col-labels">
+                  <span class="col-label">SUC</span>
+                  <div class="markers">
+                    <span class="candle success filled"></span>
+                    <span class="candle success filled"></span>
+                    <span class="candle success filled"></span>
+                  </div>
+                </div>
+                <div class="glyph">✦</div>
+                <div class="col-labels">
+                  <span class="col-label">FAIL</span>
+                  <div class="markers">
+                    <span class="candle failure"></span>
+                    <span class="candle failure"></span>
+                    <span class="candle failure"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="hp-label">STABLE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions">
+              <button class="heal">HEAL</button>
+              <input type="number" placeholder="0">
+              <button class="dmg">DAMAGE</button>
+            </div>
+            <div class="hp-body">
+              <div class="rows">
+                <div class="col-labels">
+                  <span class="col-label">SUC</span>
+                  <div class="markers">
+                    <span class="candle success filled"></span>
+                    <span class="candle success"></span>
+                    <span class="candle success"></span>
+                  </div>
+                </div>
+                <div class="glyph">☠</div>
+                <div class="col-labels">
+                  <span class="col-label">FAIL</span>
+                  <div class="markers">
+                    <span class="candle failure filled"></span>
+                    <span class="candle failure filled"></span>
+                    <span class="candle failure filled"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="hp-label">DEAD</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ============================== C1 · Illuminated Frame ============================== -->
+    <article class="variant c1">
+      <header class="variant-head">
+        <div>
+          <div class="name">Illuminated Frame</div>
+          <div class="tagline">Ornamental border · blackletter state word · ink-blot dots</div>
+        </div>
+        <div class="letter">C1</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="ornament-word">Unconscious</div>
+              <div class="inkblot-rows">
+                <div class="inkblot-row"><span class="ink-label">SUCC.</span><span class="inkblot success filled"></span><span class="inkblot success"></span><span class="inkblot success"></span></div>
+                <div class="inkblot-row"><span class="ink-label">FAIL.</span><span class="inkblot failure filled"></span><span class="inkblot failure filled"></span><span class="inkblot failure"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="ornament-word">Stabilised</div>
+              <div class="inkblot-rows">
+                <div class="inkblot-row"><span class="ink-label">SUCC.</span><span class="inkblot success filled"></span><span class="inkblot success filled"></span><span class="inkblot success filled"></span></div>
+                <div class="inkblot-row"><span class="ink-label">FAIL.</span><span class="inkblot failure"></span><span class="inkblot failure"></span><span class="inkblot failure"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="ornament-word">Deceased</div>
+              <div class="inkblot-rows">
+                <div class="inkblot-row"><span class="ink-label">SUCC.</span><span class="inkblot success filled"></span><span class="inkblot success"></span><span class="inkblot success"></span></div>
+                <div class="inkblot-row"><span class="ink-label">FAIL.</span><span class="inkblot failure filled"></span><span class="inkblot failure filled"></span><span class="inkblot failure filled"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ============================== C2 · Tombstone ============================== -->
+    <article class="variant c2">
+      <header class="variant-head">
+        <div>
+          <div class="name">Tombstone</div>
+          <div class="tagline">Panel body is the grave marker · engraved state · dots as offerings</div>
+        </div>
+        <div class="letter">C2</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="stone">
+                <div class="cross">†</div>
+                <div class="hic">HIC IACET</div>
+                <div class="inscribed-word">Dying</div>
+                <div class="dots">
+                  <span class="dot success filled"></span><span class="dot success"></span><span class="dot success"></span>
+                  <span style="opacity:0.3">·</span>
+                  <span class="dot failure filled"></span><span class="dot failure filled"></span><span class="dot failure"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="stone">
+                <div class="cross">†</div>
+                <div class="hic">NOT YET</div>
+                <div class="inscribed-word">Stable</div>
+                <div class="dots">
+                  <span class="dot success filled"></span><span class="dot success filled"></span><span class="dot success filled"></span>
+                  <span style="opacity:0.3">·</span>
+                  <span class="dot failure"></span><span class="dot failure"></span><span class="dot failure"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="stone">
+                <div class="cross">†</div>
+                <div class="hic">REQUIESCAT</div>
+                <div class="inscribed-word">In Pace</div>
+                <div class="dots">
+                  <span class="dot success filled"></span><span class="dot success"></span><span class="dot success"></span>
+                  <span style="opacity:0.3">·</span>
+                  <span class="dot failure filled"></span><span class="dot failure filled"></span><span class="dot failure filled"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ============================== C3 · Requiem Cross ============================== -->
+    <article class="variant c3">
+      <header class="variant-head">
+        <div>
+          <div class="name">Requiem Cross</div>
+          <div class="tagline">Cruciform · dots on the crossbar · central glyph at the intersection</div>
+        </div>
+        <div class="letter">C3</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="cross-layout">
+                <span class="arm-bead success filled"></span>
+                <span class="arm-bead success"></span>
+                <span class="arm-bead success"></span>
+                <span class="cross-glyph">☥</span>
+                <span class="arm-bead failure filled"></span>
+                <span class="arm-bead failure filled"></span>
+                <span class="arm-bead failure"></span>
+              </div>
+              <div class="cross-caption"><strong>Unconscious</strong><span class="sep">·</span>Rolling death saves</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="cross-layout">
+                <span class="arm-bead success filled"></span>
+                <span class="arm-bead success filled"></span>
+                <span class="arm-bead success filled"></span>
+                <span class="cross-glyph">✦</span>
+                <span class="arm-bead failure"></span>
+                <span class="arm-bead failure"></span>
+                <span class="arm-bead failure"></span>
+              </div>
+              <div class="cross-caption"><strong>Stable</strong><span class="sep">·</span>No more saves</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="cross-layout">
+                <span class="arm-bead success filled"></span>
+                <span class="arm-bead success"></span>
+                <span class="arm-bead success"></span>
+                <span class="cross-glyph">☠</span>
+                <span class="arm-bead failure filled"></span>
+                <span class="arm-bead failure filled"></span>
+                <span class="arm-bead failure filled"></span>
+              </div>
+              <div class="cross-caption"><strong>Dead</strong><span class="sep">·</span>Revivify only</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- ============================== C4 · Sigil Circle ============================== -->
+    <article class="variant c4">
+      <header class="variant-head">
+        <div>
+          <div class="name">Sigil Circle</div>
+          <div class="tagline">Alchemical diagram · dots orbit a central symbol · concentric rings</div>
+        </div>
+        <div class="letter">C4</div>
+      </header>
+      <div class="states">
+
+        <div class="state-row">
+          <div class="state-label">UNCONSCIOUS · 1 / 2</div>
+          <div class="hp-widget unconscious">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="sigil">
+                <span class="sigil-glyph">☥</span>
+                <span class="orbit-dot success filled s0"></span>
+                <span class="orbit-dot success s1"></span>
+                <span class="orbit-dot success s2"></span>
+                <span class="orbit-dot failure filled f0"></span>
+                <span class="orbit-dot failure filled f1"></span>
+                <span class="orbit-dot failure f2"></span>
+              </div>
+              <div class="sigil-label">Unconscious</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">STABLE · 3 / 0</div>
+          <div class="hp-widget stable">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="sigil">
+                <span class="sigil-glyph">✦</span>
+                <span class="orbit-dot success filled s0"></span>
+                <span class="orbit-dot success filled s1"></span>
+                <span class="orbit-dot success filled s2"></span>
+                <span class="orbit-dot failure f0"></span>
+                <span class="orbit-dot failure f1"></span>
+                <span class="orbit-dot failure f2"></span>
+              </div>
+              <div class="sigil-label">Stable</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="state-row">
+          <div class="state-label">DEAD · x / 3</div>
+          <div class="hp-widget dead">
+            <div class="hp-actions"><button class="heal">HEAL</button><input type="number" placeholder="0"><button class="dmg">DAMAGE</button></div>
+            <div class="hp-body">
+              <div class="sigil">
+                <span class="sigil-glyph">☠</span>
+                <span class="orbit-dot success filled s0"></span>
+                <span class="orbit-dot success s1"></span>
+                <span class="orbit-dot success s2"></span>
+                <span class="orbit-dot failure filled f0"></span>
+                <span class="orbit-dot failure filled f1"></span>
+                <span class="orbit-dot failure filled f2"></span>
+              </div>
+              <div class="sigil-label">Dead</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </article>
+
+  </section>
+
+  <div class="footnote">
+    To pick: reply with <kbd>C1</kbd>, <kbd>C2</kbd>, <kbd>C3</kbd>, or <kbd>C4</kbd>. Hybrids welcome — e.g. <em>"C2's tombstone frame with C1's blackletter typography"</em> or <em>"C4's sigil in C3's cruciform layout"</em>.
+  </div>
+
+</body>
+</html>

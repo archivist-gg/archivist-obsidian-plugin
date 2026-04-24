@@ -154,57 +154,6 @@
 .archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
 .archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); }
 .archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; }
-.archivist-pc-sheet .pc-death-saves {
-  margin-top: 12px;
-  padding: 8px 12px;
-  border: 1px solid var(--gold);
-  border-radius: 4px;
-  background: rgba(255, 248, 220, 0.45);
-}
-
-.archivist-pc-sheet .pc-death-saves-title {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.85em;
-  color: var(--ink);
-  margin-bottom: 6px;
-}
-
-.archivist-pc-sheet .pc-death-saves-row {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-}
-
-.archivist-pc-sheet .pc-death-saves-group {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.archivist-pc-sheet .pc-death-saves-label {
-  font-size: 0.8em;
-  color: var(--ink);
-}
-
-.archivist-pc-sheet .pc-death-save-success,
-.archivist-pc-sheet .pc-death-save-failure {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1px solid var(--ink);
-  cursor: pointer;
-}
-
-.archivist-pc-sheet .pc-death-save-success.filled {
-  background: var(--green, #2a7a2a);
-}
-
-.archivist-pc-sheet .pc-death-save-failure.filled {
-  background: var(--red);
-}
 .archivist-pc-sheet .pc-spells-empty { text-align: center; padding: var(--pc-space-5); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spells-empty-icon { font-size: 32px; opacity: 0.3; }
 .archivist-pc-sheet .pc-spells-empty-title { font-family: var(--pc-font-serif); font-size: var(--pc-fs-title); font-weight: 700; color: var(--pc-crimson); margin-top: 4px; }
