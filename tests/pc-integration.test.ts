@@ -143,3 +143,37 @@ describe("PC end-to-end: Grendal the Wary", () => {
     expect(view.contentEl.querySelector(".archivist-pc-warnings")).toBeNull();
   });
 });
+
+describe("PC end-to-end — overrides round-trip (SP4b)", () => {
+  it("AC override applies to derived.ac, shows mark in the shield, and persists in YAML", async () => {
+    const { view } = boot();
+    await view.setViewData(GRENDAL_MD, true);
+    const root = view.contentEl;
+
+    // Click the AC number to open the inline input
+    const numEl = root.querySelector<HTMLElement>(".pc-ac-shield-num")!;
+    const acBefore = parseInt(numEl.textContent ?? "0", 10);
+    numEl.click();
+    const input = root.querySelector<HTMLInputElement>(".pc-ac-shield input.pc-edit-inline")!;
+    input.value = String(acBefore + 5);
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    await Promise.resolve();
+
+    // Post-render, the AC number reflects the override and the mark is visible
+    const numElAfter = view.contentEl.querySelector<HTMLElement>(".pc-ac-shield-num")!;
+    expect(parseInt(numElAfter.textContent ?? "0", 10)).toBe(acBefore + 5);
+    expect(view.contentEl.querySelector(".pc-ac-shield .archivist-override-mark")).not.toBeNull();
+
+    // Serialized YAML has the override
+    const yaml = view.getViewData();
+    expect(yaml).toMatch(new RegExp(`ac:\\s*${acBefore + 5}`));
+
+    // Clear the override
+    view.contentEl.querySelector<HTMLElement>(".pc-ac-shield .archivist-override-mark")!.click();
+    await Promise.resolve();
+    const numElCleared = view.contentEl.querySelector<HTMLElement>(".pc-ac-shield-num")!;
+    expect(parseInt(numElCleared.textContent ?? "0", 10)).toBe(acBefore);
+    expect(view.contentEl.querySelector(".pc-ac-shield .archivist-override-mark")).toBeNull();
+    expect(view.getViewData()).not.toMatch(/overrides:\s*\n\s+ac:/);
+  });
+});
