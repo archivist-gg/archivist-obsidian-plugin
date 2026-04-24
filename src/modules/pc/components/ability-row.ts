@@ -25,8 +25,13 @@ export class AbilityRow implements SheetComponent {
       card.createDiv({ cls: "pc-ab-mod", text: formatModifier(ctx.derived.mods[ab]) });
       card.createDiv({ cls: "pc-ab-score", text: String(ctx.derived.scores[ab]) });
 
-      const chip = this.registry.get(`save-chip-${ab}`);
-      chip?.render(stack, ctx);
+      const chipType = `save-chip-${ab}`;
+      const chip = this.registry.get(chipType);
+      if (!chip) {
+        stack.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${chipType})` });
+        continue;
+      }
+      chip.render(stack, ctx);
     }
   }
 }

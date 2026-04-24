@@ -74,4 +74,20 @@ describe("AbilityRow (V7)", () => {
     new AbilityRow(makeRegistry()).render(root, ctx());
     expect(root.querySelector(".pc-ability-container")).toBeNull();
   });
+
+  it("renders a placeholder when the registry is missing a SaveChip entry", () => {
+    const root = mountContainer();
+    // Build a registry missing the str chip
+    const r = new ComponentRegistry();
+    for (const abl of ABILITY_KEYS as readonly Ability[]) {
+      if (abl !== "str") r.register(new SaveChip(abl));
+    }
+    new AbilityRow(r).render(root, ctx());
+    // Other abilities render their chips; str gets the placeholder
+    expect(root.querySelectorAll(".pc-save-chip").length).toBe(5);
+    const strStack = [...root.querySelectorAll<HTMLElement>(".pc-ab-stack")].find(
+      (s) => s.querySelector(".pc-ab[data-ability='str']")
+    )!;
+    expect(strStack.querySelector(".pc-empty-line")?.textContent).toBe("(No renderer for save-chip-str)");
+  });
 });
