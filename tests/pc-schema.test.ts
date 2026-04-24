@@ -98,3 +98,42 @@ describe("V7 schema additions", () => {
     expect(bad.success).toBe(false);
   });
 });
+
+describe("SP4 state additions", () => {
+  it("state.exhaustion defaults to 0 when missing", () => {
+    const base = validMinimalCharacter();
+    const parsed = characterSchema.parse(base);
+    expect(parsed.state.exhaustion).toBe(0);
+  });
+
+  it("state.exhaustion accepts integers 0..6", () => {
+    const base = validMinimalCharacter();
+    for (const n of [0, 1, 3, 6]) {
+      const parsed = characterSchema.parse({ ...base, state: { ...base.state, exhaustion: n } });
+      expect(parsed.state.exhaustion).toBe(n);
+    }
+  });
+
+  it("state.exhaustion rejects negatives and values > 6", () => {
+    const base = validMinimalCharacter();
+    expect(characterSchema.safeParse({ ...base, state: { ...base.state, exhaustion: -1 } }).success).toBe(false);
+    expect(characterSchema.safeParse({ ...base, state: { ...base.state, exhaustion: 7 } }).success).toBe(false);
+  });
+
+  it("state.conditions accepts the 14 SRD slugs", () => {
+    const base = validMinimalCharacter();
+    const all = [
+      "blinded","charmed","deafened","frightened","grappled",
+      "incapacitated","invisible","paralyzed","petrified","poisoned",
+      "prone","restrained","stunned","unconscious",
+    ];
+    const parsed = characterSchema.parse({ ...base, state: { ...base.state, conditions: all } });
+    expect(parsed.state.conditions).toEqual(all);
+  });
+
+  it("state.conditions rejects unknown slugs", () => {
+    const base = validMinimalCharacter();
+    const bad = characterSchema.safeParse({ ...base, state: { ...base.state, conditions: ["not-a-real-condition"] } });
+    expect(bad.success).toBe(false);
+  });
+});

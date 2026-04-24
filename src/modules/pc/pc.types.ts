@@ -5,6 +5,9 @@ import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "../background/background.types";
 import type { FeatEntity } from "../feat/feat.types";
 
+export type { ConditionSlug } from "./constants/conditions";
+import type { ConditionSlug } from "./constants/conditions";
+
 // ─────────────────────────────────────────────────────────────
 // Definition (parsed from YAML; slugs unresolved)
 // ─────────────────────────────────────────────────────────────
@@ -45,7 +48,8 @@ export interface CharacterState {
   hit_dice: Record<string, { used: number; total: number }>;
   spell_slots: Record<number, { used: number; total: number }>;
   concentration: string | null;
-  conditions: string[];
+  conditions: ConditionSlug[];
+  exhaustion: number;
   death_saves?: { successes: number; failures: number };
   inspiration: number;
   currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };

@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { CONDITION_SLUGS } from "./constants/conditions";
+
+const conditionSlugEnum = z.enum(CONDITION_SLUGS as unknown as [string, ...string[]]);
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 
@@ -59,7 +62,8 @@ const characterStateSchema = z.object({
     total: z.number().int().nonnegative(),
   })).default({}),
   concentration: z.string().nullable().default(null),
-  conditions: z.array(z.string()).default([]),
+  conditions: z.array(conditionSlugEnum).default([]),
+  exhaustion: z.number().int().min(0).max(6).default(0),
   death_saves: z.object({
     successes: z.number().int().min(0).max(3),
     failures: z.number().int().min(0).max(3),
