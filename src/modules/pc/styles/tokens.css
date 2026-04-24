@@ -49,7 +49,7 @@
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
-  background: var(--pc-parchment-light);
+  background: var(--d5e-parchment, #f0ddbd);
   color: var(--pc-text-primary);
   font-family: var(--pc-font-sans);
   padding: var(--pc-space-5);

@@ -1,9 +1,12 @@
+/* Feature block wrappers — flat on parchment. No card background, no outer
+   border. The title carries a crimson hairline rule. Blocks are separated
+   by generous vertical rhythm. */
 .archivist-pc-sheet .pc-block {
-  background: var(--pc-white);
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-3) var(--pc-space-4);
-  margin-bottom: var(--pc-space-3);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--pc-space-4);
 }
 .archivist-pc-sheet .pc-block-title {
   margin: 0 0 var(--pc-space-2);
@@ -12,6 +15,10 @@
   font-size: var(--pc-fs-title);
   font-weight: 700;
   line-height: var(--pc-lh-snug);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
 }
 .archivist-pc-sheet .pc-block-subtitle {
   margin: var(--pc-space-3) 0 var(--pc-space-2);

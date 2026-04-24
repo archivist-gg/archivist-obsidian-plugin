@@ -1,5 +1,14 @@
 /* Filled in by component tasks (header-section, ability-row, saves-panel, ...). */
 
+/* Flat buttons — override Obsidian/theme button shadows + gradients so every
+ * button inside the PC sheet renders as a clean outlined box. */
+.archivist-pc-sheet button {
+  box-shadow: none !important;
+  text-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 .archivist-pc-sheet .pc-header-root {
   display: flex;
   align-items: center;
@@ -45,39 +54,75 @@
   cursor: not-allowed;
   opacity: 0.7;
 }
+/* Sidebar sections — flat on the parchment. No card background, no outer
+   border, no radius. The section title carries a crimson hairline rule. */
 .archivist-pc-sheet .pc-sidebar-section {
-  background: var(--pc-white);
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-3);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--pc-space-3);
 }
 .archivist-pc-sheet .pc-sidebar-title {
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
   letter-spacing: var(--pc-ls-caps-lg);
   color: var(--pc-crimson);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
   line-height: var(--pc-lh-snug);
   margin-bottom: var(--pc-space-2);
-  border-bottom: 1px solid var(--pc-tan-muted);
-  padding-bottom: 4px;
+  border-bottom: 1px solid var(--pc-crimson);
+  padding-bottom: 3px;
 }
-.archivist-pc-sheet .pc-skill-bonus {
+/* Senses section — boxed numeric value + uppercase serif label; flows flat. */
+.archivist-pc-sheet .pc-senses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-sense-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-sense-row:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-sense-val {
+  order: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--pc-tan);
+  border-radius: 2px;
   font-family: var(--pc-font-serif);
-  min-width: 22px;
-  text-align: right;
+  font-size: var(--pc-fs-title);
+  font-weight: 700;
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  background: transparent;
+  flex-shrink: 0;
 }
-.archivist-pc-sheet .pc-skill-name {
+.archivist-pc-sheet .pc-sense-name {
+  order: 1;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
   color: var(--pc-text-primary);
 }
-.archivist-pc-sheet .pc-senses-list { display: flex; flex-direction: column; gap: 4px; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-sense-row { display: flex; justify-content: space-between; align-items: baseline; }
-.archivist-pc-sheet .pc-sense-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-title); font-weight: 700; line-height: var(--pc-lh-tight); }
-.archivist-pc-sheet .pc-skills-list { display: flex; flex-direction: column; gap: 3px; }
+.archivist-pc-sheet .pc-skills-list { display: flex; flex-direction: column; gap: 0; }
 .archivist-pc-sheet .pc-prof-body { display: flex; flex-direction: column; gap: 4px; font-size: var(--pc-fs-small); line-height: var(--pc-lh-body); }
-.archivist-pc-sheet .pc-prof-key { font-weight: 600; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-prof-line { padding: 3px 0; border-bottom: 1px dotted var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-prof-line:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-prof-key { font-weight: 700; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-tab-body { padding: var(--pc-space-3); background: var(--pc-white); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); }
+/* Tab content body — flat on parchment, no card/border. */
+.archivist-pc-sheet .pc-tab-body { padding: 0; background: transparent; border: none; border-radius: 0; }
 .archivist-pc-sheet .pc-tab-heading {
   font-family: var(--pc-font-serif);
   color: var(--pc-crimson);
@@ -87,9 +132,12 @@
   margin: var(--pc-space-3) 0 var(--pc-space-2);
   text-transform: uppercase;
   letter-spacing: var(--pc-ls-caps-sm);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--pc-crimson);
 }
+.archivist-pc-sheet .pc-tab-heading:first-child { margin-top: 0; }
 .archivist-pc-sheet .pc-empty-line { font-size: var(--pc-fs-body); color: var(--pc-text-muted); font-style: italic; }
-.archivist-pc-sheet .pc-attack-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-attack-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); background: transparent; }
 .archivist-pc-sheet .pc-attack-table th {
   text-align: left;
   padding: 4px 6px;
@@ -99,8 +147,9 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: var(--pc-ls-caps-md);
+  background: transparent;
 }
-.archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); background: transparent; }
 .archivist-pc-sheet .pc-attack-name { font-weight: 600; }
 .archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
 .archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); }
@@ -153,27 +202,47 @@
   letter-spacing: var(--pc-ls-caps-md);
   text-transform: uppercase;
 }
+/* Tabs — styled to match `.archivist-monster-block .archivist-tab` exactly. */
 .archivist-pc-sheet .pc-tabs-bar {
+  position: relative;
   display: flex;
-  gap: var(--pc-space-2);
-  border-bottom: 1px solid var(--pc-tan);
-  padding-bottom: var(--pc-space-2);
+  align-items: stretch;
+  gap: 2px;
+  margin: 0.5em 0 0;
+  border-bottom: 1px solid var(--d5e-text-accent, #7a200d);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.archivist-pc-sheet .pc-tabs-bar::-webkit-scrollbar {
+  display: none;
 }
 .archivist-pc-sheet .pc-tab-btn {
-  background: transparent;
-  border: none;
-  color: var(--pc-text-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--pc-ls-caps-sm);
-  font-size: var(--pc-fs-small);
+  padding: 6px 12px;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--d5e-text-accent, #7a200d) !important;
+  font-size: 11px;
   font-weight: 600;
-  padding: 4px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Noto Sans', sans-serif;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 1 !important;
 }
 .archivist-pc-sheet .pc-tab-btn.active {
-  color: var(--pc-crimson);
-  border-bottom-color: var(--pc-crimson);
+  color: var(--d5e-bar-fill, #922610) !important;
+  border-bottom-color: var(--d5e-bar-fill, #922610) !important;
+  background-color: rgba(122, 32, 13, 0.18) !important;
+  margin-bottom: -1px;
+}
+.archivist-pc-sheet .pc-tab-btn:hover:not(.active) {
+  background-color: rgba(122, 32, 13, 0.07) !important;
 }
 .archivist-pc-sheet .pc-tab-panel { display: none; margin-top: var(--pc-space-3); }
 .archivist-pc-sheet .pc-tab-panel.active { display: block; }
@@ -257,16 +326,19 @@
   box-sizing: border-box;
   border-radius: 4px;
   font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-label);
   line-height: var(--pc-lh-tight);
   text-align: center;
   background: transparent;
   cursor: pointer;
 }
 .archivist-pc-sheet .pc-hp-actions button {
+  font-size: var(--pc-fs-micro);
   font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-md);
+  letter-spacing: var(--pc-ls-caps-sm);
   text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-hp-actions input {
+  font-size: var(--pc-fs-small);
 }
 .archivist-pc-sheet .pc-hp-heal { border: 1px solid #2f6f3a; color: #2f6f3a; }
 .archivist-pc-sheet .pc-hp-damage { border: 1px solid var(--pc-crimson); color: var(--pc-crimson); }
@@ -456,75 +528,140 @@
   padding: 1px 7px;
   border: 1.3px solid var(--pc-text-primary);
   border-radius: 999px;
-  background: var(--pc-parchment-light);
+  background: var(--d5e-parchment, #f0ddbd);
   font-family: var(--pc-font-serif);
   font-weight: 700;
   font-size: var(--pc-fs-label);
   line-height: var(--pc-lh-snug);
   color: var(--pc-text-primary);
+  text-align: center;
 }
 
-/* Save chip */
+/* Save chip — container-less: small toggle + "save" microlabel + bonus.
+   Proficient: filled toggle + crimson bonus with dotted underline. */
 .archivist-pc-sheet .pc-save-chip {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 1px 7px 1px 4px;
-  border-radius: 999px;
-  border: 1px solid var(--pc-tan-muted);
-  background: rgba(255, 248, 220, 0.5);
+  align-items: baseline;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: transparent;
   font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: var(--pc-fs-micro);
   line-height: var(--pc-lh-snug);
   color: var(--pc-text-soft);
   max-width: 100%;
   white-space: nowrap;
-  box-sizing: border-box;
 }
 .archivist-pc-sheet .pc-save-chip b {
   font-weight: 600;
   letter-spacing: var(--pc-ls-caps-md);
   font-size: var(--pc-fs-tiny);
-  color: var(--pc-text-soft);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
 }
 .archivist-pc-sheet .pc-save-chip .archivist-prof-toggle {
-  width: 10px;
-  height: 10px;
-  border-width: 1.2px;
+  width: 12px;
+  height: 12px;
+  border-width: 1.3px;
   border-radius: 2px;
+  align-self: center;
+  opacity: 0.55;
+}
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.proficient,
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.expertise {
+  opacity: 1;
 }
 .archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.proficient::after,
 .archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.expertise::after {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
-.archivist-pc-sheet .pc-save-chip .pc-save-bn { color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-save-chip.prof {
-  border-color: var(--pc-crimson);
-  background: rgba(146, 38, 16, 0.08);
+.archivist-pc-sheet .pc-save-chip .pc-save-bn {
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-save-chip.prof b,
-.archivist-pc-sheet .pc-save-chip.prof .pc-save-bn { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-save-chip.prof b {
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-save-chip.prof .pc-save-bn {
+  color: var(--pc-crimson);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
 
-/* Skill row (reuses archivist-prof-toggle for the dot) */
+/* Skill row — flat, dotted row separator, dotted leader between name + bonus.
+   DOM order is [toggle][bonus][name]; we use flex `order` to render as
+   [toggle][name][leader][bonus]. */
 .archivist-pc-sheet .pc-skill-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
   font-size: var(--pc-fs-body);
   line-height: var(--pc-lh-body);
-  padding: 2px 0;
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-skills-list > .pc-skill-row:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-skill-row .archivist-prof-toggle {
+  order: 0;
+  align-self: center;
+}
+.archivist-pc-sheet .pc-skill-name {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--pc-text-primary);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.archivist-pc-sheet .pc-skill-name::after {
+  content: " ..............................................";
+  color: var(--pc-tan-muted);
+  letter-spacing: 2px;
 }
 .archivist-pc-sheet .pc-skill-bonus {
+  order: 2;
   font-family: var(--pc-font-serif);
   min-width: 28px;
   text-align: right;
   font-weight: 700;
   font-size: var(--pc-fs-small);
   color: var(--pc-text-primary);
+  flex-shrink: 0;
 }
-.archivist-pc-sheet .pc-skill-name { color: var(--pc-text-primary); }
+
+/* Proficient / expertise state — crimson emphasis on name + bonus.
+   :has() is supported in every Chromium ≥ 105 (all current Obsidian builds).
+   The adjacent-sibling path also works because toggle is the first DOM child.*/
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-name,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-name,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-bonus,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-bonus {
+  color: var(--pc-crimson);
+  font-weight: 700;
+}
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-bonus,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-bonus {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+/* Expertise marker glyph — a small ◎ before the bonus (after in DOM since
+   bonus is order:2). Pseudo-element on the name's ::before would sit between
+   toggle and name; put it as a ::before on the bonus instead so it reads
+   as "glyph + bonus" on the right. */
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-bonus::before,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-bonus::before {
+  content: "\25CE";
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 0.85em;
+  color: var(--pc-crimson);
+  text-decoration: none;
+  vertical-align: baseline;
+}
 
 /* Right cluster of stats band */
 .archivist-pc-sheet .pc-stats-right {
@@ -676,7 +813,7 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .archivist-pc-sheet .pc-save-chip b { display: none; }
-  .archivist-pc-sheet .pc-save-chip { padding: 1px 7px; gap: 3px; }
+  .archivist-pc-sheet .pc-save-chip { gap: 3px; }
 }
 
 /* sm (<=899px) — stats-band collapses to a single column (abilities row
