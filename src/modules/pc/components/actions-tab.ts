@@ -47,16 +47,6 @@ export class ActionsTab implements SheetComponent {
       }
     }
 
-    // Hit dice
-    const hdEntries = Object.entries(ctx.resolved.state.hit_dice ?? {});
-    if (hdEntries.length > 0) {
-      root.createEl("h4", { cls: "pc-tab-heading", text: "Hit dice" });
-      const hdRow = root.createDiv({ cls: "pc-hd-row" });
-      for (const [die, { used, total }] of hdEntries) {
-        hdRow.createSpan({ cls: "pc-hd-entry", text: `${total - used}/${total} ${die}` });
-      }
-    }
-
   }
 }
 

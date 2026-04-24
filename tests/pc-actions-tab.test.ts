@@ -57,10 +57,11 @@ describe("ActionsTab", () => {
     expect(container.querySelector(".pc-resource-badge")?.textContent).toContain("Second Wind");
   });
 
-  it("shows hit dice remaining/total", () => {
+  it("does not render a hit dice section (the hero-right HD widget owns that)", () => {
     const container = mountContainer();
     new ActionsTab().render(container, ctx);
-    expect(container.querySelector(".pc-hd-entry")?.textContent).toBe("2/3 d8");
+    expect(container.querySelector(".pc-hd-row")).toBeNull();
+    expect(container.querySelector(".pc-hd-entry")).toBeNull();
   });
 
   it("does not render death saves (they live on the HP widget now)", () => {
