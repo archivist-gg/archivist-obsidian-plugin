@@ -289,6 +289,13 @@ describe("CharacterEditState — conditions", () => {
     es.setExhaustion(-1);
     expect(char.state.exhaustion).toBe(0);
   });
+
+  it("setExhaustion silently no-ops on NaN input", () => {
+    const { es, char, onChange } = makeState((c) => { c.state.exhaustion = 2; });
+    es.setExhaustion(NaN);
+    expect(char.state.exhaustion).toBe(2);
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
 
 describe("CharacterEditState — death saves", () => {

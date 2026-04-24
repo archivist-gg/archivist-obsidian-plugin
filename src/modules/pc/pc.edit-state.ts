@@ -116,6 +116,16 @@ export class CharacterEditState {
   }
 
   // ─── Saves (override mutation) ─────────────────────────────────────
+  /**
+   * Flip the saving-throw proficient bit against the class-derived baseline.
+   *
+   * Writes `{ bonus: <preserved>, proficient: !effective }` into
+   * `overrides.saves[ability]`, creating the entry if absent. The override is
+   * NEVER cleared here even when the new proficient matches the class baseline;
+   * callers who want "no override" must use `clearSaveOverride(ability)`
+   * explicitly. This keeps override semantics unambiguous: presence means the
+   * user asserted something, absence means baseline applies.
+   */
   toggleSaveProficient(ability: Ability): void {
     const { resolved } = this.getContext();
     const classSaves = resolved.classes[0]?.entity?.saving_throws ?? [];
@@ -146,6 +156,7 @@ export class CharacterEditState {
   }
 
   setExhaustion(level: number): void {
+    if (!Number.isFinite(level)) return;
     this.character.state.exhaustion = Math.max(0, Math.min(6, Math.floor(level)));
     this.onChange();
   }
