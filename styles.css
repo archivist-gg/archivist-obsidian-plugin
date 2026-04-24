@@ -10050,14 +10050,35 @@ body.theme-light .archivist-tag-atk:hover {
   cursor: pointer;
 }
 .archivist-pc-sheet .pc-cond-chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: var(--pc-fs-small);
   border: 1px solid var(--pc-crimson);
   color: var(--pc-crimson);
   border-radius: 3px;
-  padding: 1px 8px;
+  padding: 1px 6px;
   margin: 0 2px 2px 0;
   background: rgba(146, 38, 16, 0.08);
+}
+.archivist-pc-sheet .pc-cond-chip-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: currentColor;
+  flex-shrink: 0;
+}
+.archivist-pc-sheet .pc-cond-chip-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.archivist-pc-sheet .pc-cond-chip-label {
+  font-size: 0.95em;
+  line-height: 1;
+}
+.archivist-pc-sheet .pc-cond-chip-exhaustion {
+  cursor: pointer;
 }
 .archivist-pc-sheet .pc-cond-empty {
   color: var(--pc-text-muted);
@@ -10321,6 +10342,22 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-cond-chip .pc-cond-chip-x:hover {
   opacity: 1;
+}
+
+/* PC-scoped override mark: replaces the global .archivist-override-mark
+   cursor:help (defined in src/styles/archivist-edit.css) with a clickable
+   pointer + subtle hover affordance, matched to the PC palette. */
+.archivist-pc-sheet .archivist-override-mark {
+  cursor: pointer;
+  color: var(--pc-crimson, var(--red, #8a2414));
+  font-weight: 700;
+  margin-left: 4px;
+  padding: 0 2px;
+  border-radius: 2px;
+  transition: background-color 120ms;
+}
+.archivist-pc-sheet .archivist-override-mark:hover {
+  background-color: color-mix(in srgb, var(--pc-crimson, var(--red, #8a2414)) 15%, transparent);
 }
 
 
