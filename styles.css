@@ -10370,6 +10370,143 @@ body.theme-light .archivist-tag-atk:hover {
   background-color: color-mix(in srgb, var(--pc-crimson, var(--red, #8a2414)) 15%, transparent);
 }
 
+/* SP4b — inline number input used by numberField and numberOverride.
+   Sized to match the valueEl it replaces. */
+.archivist-pc-sheet input.pc-edit-inline {
+  width: 4ch;
+  min-width: 3ch;
+  padding: 0 2px;
+  margin: 0;
+  border: 1px solid var(--pc-border, #8a6f47);
+  border-radius: 2px;
+  background: var(--pc-bg-soft, #fff6e0);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  text-align: center;
+  line-height: inherit;
+  -moz-appearance: textfield;
+}
+.archivist-pc-sheet input.pc-edit-inline::-webkit-outer-spin-button,
+.archivist-pc-sheet input.pc-edit-inline::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.archivist-pc-sheet input.pc-edit-inline:focus {
+  outline: 1px solid var(--pc-crimson, #8a2414);
+  outline-offset: 1px;
+}
+
+/* SP4b — click affordance on editable values */
+.archivist-pc-sheet .pc-edit-click {
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-edit-click:hover {
+  background-color: color-mix(in srgb, var(--pc-crimson, #8a2414) 8%, transparent);
+  border-radius: 2px;
+}
+
+/* SP4b — defense chips (visual parity with pc-cond-chip) */
+.archivist-pc-sheet .pc-def-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px 1px 8px;
+  margin: 0 3px 0 0;
+  border: 1px solid var(--pc-crimson, #8a2414);
+  border-radius: 10px;
+  color: var(--pc-crimson, #8a2414);
+  background: transparent;
+  font-family: var(--pc-font-body, Georgia, serif);
+  font-size: var(--pc-fs-small, 12px);
+  line-height: 1.4;
+}
+.archivist-pc-sheet .pc-def-chip .pc-def-chip-label {
+  text-transform: lowercase;
+}
+.archivist-pc-sheet .pc-def-chip .pc-def-chip-x {
+  margin-left: 4px;
+  padding: 0 2px;
+  cursor: pointer;
+  opacity: 0.7;
+  line-height: 1;
+}
+.archivist-pc-sheet .pc-def-chip .pc-def-chip-x:hover {
+  opacity: 1;
+}
+
+/* SP4b — per-row + add button */
+.archivist-pc-sheet .pc-def-cond-left .pc-def-add {
+  display: inline-block;
+  padding: 0 6px;
+  margin-left: 4px;
+  border: 1px solid var(--pc-border, #8a6f47);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pc-text-soft, #7c6a4e);
+  font: inherit;
+  font-size: var(--pc-fs-small, 12px);
+  cursor: pointer;
+  vertical-align: baseline;
+  line-height: 1.4;
+}
+.archivist-pc-sheet .pc-def-cond-left .pc-def-add:hover {
+  color: var(--pc-crimson, #8a2414);
+  border-color: var(--pc-crimson, #8a2414);
+}
+
+/* SP4b — defense-type popover (visual parity with pc-cond-popover) */
+.pc-def-popover {
+  position: absolute;
+  z-index: 1000;
+  min-width: 200px;
+  padding: 6px 0;
+  background: var(--pc-bg-soft, #fff6e0);
+  border: 1px solid var(--pc-border, #8a6f47);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-family: var(--pc-font-body, Georgia, serif);
+  color: var(--pc-text-primary, #1c1811);
+}
+.pc-def-popover-header {
+  padding: 4px 10px 6px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pc-text-soft, #7c6a4e);
+  border-bottom: 1px solid var(--pc-border, #8a6f47);
+}
+.pc-def-popover-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+.pc-def-popover-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  cursor: default;
+}
+.pc-def-popover-row:hover {
+  background: color-mix(in srgb, var(--pc-crimson, #8a2414) 8%, transparent);
+}
+.pc-def-popover-row .pc-def-popover-name {
+  font-size: 13px;
+}
+.pc-def-popover-row .pc-def-popover-toggle {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--pc-border, #8a6f47);
+  border-radius: 2px;
+  cursor: pointer;
+  background: transparent;
+}
+.pc-def-popover-row .pc-def-popover-toggle.on {
+  background: var(--pc-crimson, #8a2414);
+  border-color: var(--pc-crimson, #8a2414);
+}
+
 
 /* ============================================
    pc/blocks.css
