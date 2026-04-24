@@ -470,3 +470,66 @@ describe("CharacterEditState — ability score overrides (SP4b)", () => {
     expect(char.overrides.scores).toBeUndefined();
   });
 });
+
+describe("CharacterEditState — defenses (SP4b)", () => {
+  it("addDefense materializes defenses and the target array on first write", () => {
+    const { es, char } = makeState((c) => { delete c.defenses; });
+    es.addDefense("resistances", "fire");
+    expect(char.defenses?.resistances).toEqual(["fire"]);
+  });
+
+  it("addDefense dedupes existing entries", () => {
+    const { es, char, onChange } = makeState();
+    es.addDefense("resistances", "fire");
+    es.addDefense("resistances", "fire");
+    expect(char.defenses?.resistances).toEqual(["fire"]);
+    // Both calls notify (mutator doesn't know outcome in advance)
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("addDefense keeps kinds independent", () => {
+    const { es, char } = makeState();
+    es.addDefense("resistances", "fire");
+    es.addDefense("immunities", "poison");
+    es.addDefense("vulnerabilities", "radiant");
+    expect(char.defenses?.resistances).toEqual(["fire"]);
+    expect(char.defenses?.immunities).toEqual(["poison"]);
+    expect(char.defenses?.vulnerabilities).toEqual(["radiant"]);
+  });
+
+  it("removeDefense removes an entry and keeps array if others remain", () => {
+    const { es, char } = makeState();
+    es.addDefense("resistances", "fire");
+    es.addDefense("resistances", "cold");
+    es.removeDefense("resistances", "fire");
+    expect(char.defenses?.resistances).toEqual(["cold"]);
+  });
+
+  it("removeDefense on missing entry is a no-op but still notifies", () => {
+    const { es, char, onChange } = makeState();
+    es.removeDefense("resistances", "acid");
+    expect(char.defenses?.resistances ?? []).toEqual([]);
+    expect(onChange).toHaveBeenCalled();
+  });
+
+  it("addConditionImmunity stores slug in defenses.condition_immunities", () => {
+    const { es, char } = makeState((c) => { delete c.defenses; });
+    es.addConditionImmunity("charmed");
+    expect(char.defenses?.condition_immunities).toEqual(["charmed"]);
+  });
+
+  it("addConditionImmunity dedupes", () => {
+    const { es, char } = makeState();
+    es.addConditionImmunity("charmed");
+    es.addConditionImmunity("charmed");
+    expect(char.defenses?.condition_immunities).toEqual(["charmed"]);
+  });
+
+  it("removeConditionImmunity removes a slug", () => {
+    const { es, char } = makeState();
+    es.addConditionImmunity("charmed");
+    es.addConditionImmunity("frightened");
+    es.removeConditionImmunity("charmed");
+    expect(char.defenses?.condition_immunities).toEqual(["frightened"]);
+  });
+});

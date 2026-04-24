@@ -118,6 +118,54 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Defenses ──────────────────────────────────────────────────────
+  private ensureDefenses(): NonNullable<Character["defenses"]> {
+    if (!this.character.defenses) {
+      this.character.defenses = {
+        resistances: [],
+        immunities: [],
+        vulnerabilities: [],
+        condition_immunities: [],
+      };
+    }
+    const d = this.character.defenses;
+    d.resistances ??= [];
+    d.immunities ??= [];
+    d.vulnerabilities ??= [];
+    d.condition_immunities ??= [];
+    return d;
+  }
+
+  addDefense(kind: "resistances" | "immunities" | "vulnerabilities", type: string): void {
+    const d = this.ensureDefenses();
+    const list = d[kind]!;
+    if (!list.includes(type)) list.push(type);
+    this.onChange();
+  }
+
+  removeDefense(kind: "resistances" | "immunities" | "vulnerabilities", type: string): void {
+    const d = this.ensureDefenses();
+    const list = d[kind]!;
+    const i = list.indexOf(type);
+    if (i >= 0) list.splice(i, 1);
+    this.onChange();
+  }
+
+  addConditionImmunity(slug: ConditionSlug): void {
+    const d = this.ensureDefenses();
+    const list = d.condition_immunities!;
+    if (!list.includes(slug)) list.push(slug);
+    this.onChange();
+  }
+
+  removeConditionImmunity(slug: ConditionSlug): void {
+    const d = this.ensureDefenses();
+    const list = d.condition_immunities!;
+    const i = list.indexOf(slug);
+    if (i >= 0) list.splice(i, 1);
+    this.onChange();
+  }
+
   // ─── Hit dice ──────────────────────────────────────────────────────
   spendHitDie(dieKey: string): void {
     const hd = this.character.state.hit_dice[dieKey];
