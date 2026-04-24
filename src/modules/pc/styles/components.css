@@ -880,3 +880,24 @@
   }
   .archivist-pc-sheet .pc-name { font-size: var(--pc-fs-display); }
 }
+
+.archivist-pc-sheet .pc-hp-widget.unconscious {
+  border-color: var(--ink);
+  background: color-mix(in srgb, var(--parch) 70%, var(--ink) 8%);
+}
+
+.archivist-pc-sheet .pc-hp-widget.unconscious .pc-hp-label {
+  color: var(--ink);
+  letter-spacing: 0.15em;
+}
+
+.archivist-pc-sheet .pc-hp-widget.dead {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--parch) 65%, var(--red) 10%);
+}
+
+.archivist-pc-sheet .pc-hp-widget.dead .pc-hp-label {
+  color: var(--red);
+  letter-spacing: 0.2em;
+  font-weight: 700;
+}

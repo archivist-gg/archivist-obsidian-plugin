@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { HpWidget } from "../src/modules/pc/components/hp-widget";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -40,4 +40,100 @@ describe("HpWidget", () => {
     expect(input.type).toBe("number");
     expect(input.value).toBe("");
   });
+
+describe("HpWidget — interactive (SP4)", () => {
+  function interactiveCtx(hp: { current: number; max: number; temp: number }, ds?: { successes: number; failures: number }) {
+    const state: Record<string, unknown> = {
+      hp: { ...hp },
+      hit_dice: {},
+      spell_slots: {},
+      concentration: null,
+      conditions: [],
+      inspiration: 0,
+      exhaustion: 0,
+    };
+    if (ds) state.death_saves = ds;
+    const editState = {
+      heal: vi.fn(),
+      damage: vi.fn(),
+    };
+    return {
+      ctx: {
+        derived: { hp },
+        resolved: { state, definition: {} },
+        editState,
+      } as unknown as ComponentRenderContext,
+      editState,
+    };
+  }
+
+  it("HEAL click calls editState.heal with input value", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 10, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-input")!;
+    input.value = "5";
+    root.querySelector<HTMLButtonElement>(".pc-hp-heal")!.click();
+    expect(editState.heal).toHaveBeenCalledWith(5);
+    expect(input.value).toBe("");
+  });
+
+  it("DAMAGE click calls editState.damage with input value", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 10, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-input")!;
+    input.value = "3";
+    root.querySelector<HTMLButtonElement>(".pc-hp-damage")!.click();
+    expect(editState.damage).toHaveBeenCalledWith(3);
+    expect(input.value).toBe("");
+  });
+
+  it("Enter key in input calls editState.heal (same as HEAL click)", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 10, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-input")!;
+    input.value = "7";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    expect(editState.heal).toHaveBeenCalledWith(7);
+  });
+
+  it("no-op when input is empty or 0", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 10, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-hp-heal")!.click();
+    expect(editState.heal).not.toHaveBeenCalled();
+  });
+
+  it("applies .unconscious class when HP = 0 and failures < 3", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 0, max: 30, temp: 0 }, { successes: 1, failures: 2 });
+    new HpWidget().render(root, ctx);
+    const wrap = root.querySelector(".pc-hp-widget")!;
+    expect(wrap.classList.contains("unconscious")).toBe(true);
+    expect(wrap.classList.contains("dead")).toBe(false);
+    expect(root.querySelector(".pc-hp-label")?.textContent).toBe("UNCONSCIOUS");
+  });
+
+  it("applies .dead class when failures = 3", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 0, max: 30, temp: 0 }, { successes: 0, failures: 3 });
+    new HpWidget().render(root, ctx);
+    const wrap = root.querySelector(".pc-hp-widget")!;
+    expect(wrap.classList.contains("dead")).toBe(true);
+    expect(root.querySelector(".pc-hp-label")?.textContent).toBe("DEAD");
+  });
+
+  it("HEAL button remains clickable in unconscious/dead modes", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 0, max: 30, temp: 0 }, { successes: 0, failures: 3 });
+    new HpWidget().render(root, ctx);
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-input")!;
+    input.value = "4";
+    root.querySelector<HTMLButtonElement>(".pc-hp-heal")!.click();
+    expect(editState.heal).toHaveBeenCalledWith(4);
+  });
+});
 });
