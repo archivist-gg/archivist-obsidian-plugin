@@ -4,6 +4,15 @@ import { PCSheetView } from "../src/modules/pc/pc.view";
 import { PCModule } from "../src/modules/pc/pc.module";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { GRENDAL_AFFLICTED_MD } from "./fixtures/pc/grendal-the-wary-afflicted";
+import {
+  HILL_FOLK,
+  BLADESWORN as BLADESWORN_FULL,
+  PATH_OF_SHADOW,
+  DRIFTER,
+  SURE_STEP,
+  LONGSWORD,
+} from "./fixtures/pc/grendal-the-wary";
 import type { CoreAPI } from "../src/core/module-api";
 import { WorkspaceLeaf } from "obsidian";
 
@@ -110,5 +119,50 @@ describe("PCSheetView — write path", () => {
     const hc = vi.spyOn(view as unknown as { handleChange: () => void }, "handleChange");
     view.setViewData(crlfBytes, false);
     expect(hc).not.toHaveBeenCalled();
+  });
+});
+
+describe("PCSheetView — write path on afflicted state", () => {
+  async function bootAfflicted(): Promise<PCSheetView> {
+    const mod = new PCModule();
+    // Same stub set as tests/pc-integration.test.ts — the Grendal fixture
+    // references these entity types via `[[slug]]` in its YAML.
+    const entities = buildMockRegistry([
+      { slug: "hill-folk", entityType: "race", data: HILL_FOLK },
+      { slug: "bladesworn", entityType: "class", data: BLADESWORN_FULL },
+      { slug: "path-of-shadow", entityType: "subclass", data: PATH_OF_SHADOW },
+      { slug: "drifter", entityType: "background", data: DRIFTER },
+      { slug: "sure-step", entityType: "feat", data: SURE_STEP },
+      { slug: "longsword", entityType: "item", data: LONGSWORD },
+    ]);
+    mod.register({ entities } as unknown as CoreAPI);
+    const view = new PCSheetView(new WorkspaceLeaf(), mod);
+    view.setViewData(GRENDAL_AFFLICTED_MD, true);
+    await view.rendered;
+    return view;
+  }
+
+  it("heals Grendal and writes out updated YAML preserving conditions and exhaustion", async () => {
+    const view = await bootAfflicted();
+    // @ts-expect-error — access the view-owned edit state in test
+    view.editState!.heal(10);
+    await Promise.resolve();
+    const out = view.getViewData();
+    expect(out).toMatch(/current:\s*10/);        // was 0, +10
+    expect(out).toMatch(/poisoned/);             // conditions preserved
+    expect(out).toMatch(/frightened/);
+    expect(out).toMatch(/exhaustion:\s*1/);      // exhaustion preserved
+    // Heal crossed HP=0 → >0, so death saves were auto-cleared:
+    expect(out).toMatch(/death_saves[^}]*successes:\s*0[^}]*failures:\s*0/);
+  });
+
+  it("toggling a condition updates conditions list in written YAML", async () => {
+    const view = await bootAfflicted();
+    // @ts-expect-error
+    view.editState!.toggleCondition("poisoned");
+    await Promise.resolve();
+    const out = view.getViewData();
+    expect(out).not.toMatch(/poisoned/);
+    expect(out).toMatch(/frightened/);
   });
 });
