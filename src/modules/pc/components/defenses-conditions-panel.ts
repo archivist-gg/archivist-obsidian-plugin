@@ -1,9 +1,10 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { openConditionsPopover } from "./conditions-popover";
+import { openDefenseTypePopover, type DefenseKind } from "./defense-type-popover";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
-import { CONDITION_DISPLAY_NAMES } from "../constants/conditions";
+import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
 
-const DEFENSE_ROWS: ReadonlyArray<[label: string, key: "resistances" | "immunities" | "vulnerabilities" | "condition_immunities"]> = [
+const DEFENSE_ROWS: ReadonlyArray<[label: string, key: DefenseKind]> = [
   ["Damage Resistances", "resistances"],
   ["Damage Immunities", "immunities"],
   ["Damage Vulnerabilities", "vulnerabilities"],
@@ -11,9 +12,11 @@ const DEFENSE_ROWS: ReadonlyArray<[label: string, key: "resistances" | "immuniti
 ];
 
 /**
- * Merged Defenses + Conditions panel. Single .pc-panel with vertical divider.
- * Left: monster-style property-lines. "none" shown once if all four are empty.
- * Right: active condition chips + static "+" button (SP4 wires the picker).
+ * Merged Defenses + Conditions panel.
+ * Left pane (SP4b): four editable rows, always visible. Each row has chips
+ * for the current values (× removes) and a "+" button that opens the
+ * defense-type popover scoped to that row.
+ * Right pane: conditions chips + exhaustion + "+" (unchanged from SP4).
  */
 export class DefensesConditionsPanel implements SheetComponent {
   readonly type = "defenses-conditions-panel";
@@ -24,19 +27,44 @@ export class DefensesConditionsPanel implements SheetComponent {
     const left = panel.createDiv({ cls: "pc-def-cond-left" });
     left.createDiv({ cls: "pc-def-cond-title", text: "DEFENSES" });
     const def = ctx.derived.defenses;
-    const anyDef = DEFENSE_ROWS.some(([, k]) => (def[k]?.length ?? 0) > 0);
-    if (!anyDef) {
-      left.createDiv({ cls: "pc-def-cond-empty", text: "none" });
-    } else {
-      for (const [label, key] of DEFENSE_ROWS) {
-        const vals = def[key] ?? [];
-        if (vals.length === 0) continue;
-        const p = left.createEl("p", { cls: "pc-def-line" });
-        p.createEl("b", { text: label });
-        p.createSpan({ text: " " + vals.join(", ") });
+    for (const [label, key] of DEFENSE_ROWS) {
+      const row = left.createEl("p", { cls: "pc-def-line" });
+      row.createEl("b", { text: label });
+      row.appendText(" ");
+      const vals = def[key] ?? [];
+      for (const v of vals) {
+        const chip = row.createSpan({ cls: "pc-def-chip" });
+        const displayText = key === "condition_immunities"
+          ? (CONDITION_DISPLAY_NAMES[v as ConditionSlug] ?? v)
+          : v;
+        chip.createSpan({ cls: "pc-def-chip-label", text: displayText });
+        if (ctx.editState) {
+          const x = chip.createSpan({ cls: "pc-def-chip-x", text: "×" });
+          const editState = ctx.editState;
+          x.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (key === "condition_immunities") {
+              editState.removeConditionImmunity(v as ConditionSlug);
+            } else {
+              editState.removeDefense(key, v);
+            }
+          });
+        }
+      }
+      if (ctx.editState) {
+        const addBtn = row.createEl("button", {
+          cls: "pc-def-add",
+          text: "+",
+          attr: { title: `Add ${label.toLowerCase()}` },
+        });
+        addBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openDefenseTypePopover(addBtn, key, ctx);
+        });
       }
     }
 
+    // Right pane — unchanged from SP4
     const right = panel.createDiv({ cls: "pc-def-cond-right" });
     const head = right.createDiv({ cls: "pc-def-cond-head" });
     head.createDiv({ cls: "pc-def-cond-title", text: "CONDITIONS" });
@@ -55,9 +83,6 @@ export class DefensesConditionsPanel implements SheetComponent {
     if (conds.length === 0 && exhaustion === 0) {
       body.createDiv({ cls: "pc-cond-empty", text: "no active conditions" });
     } else {
-      // Exhaustion pill — surfaces level set via the popover so users can
-      // see it on the sheet and click through to adjust without re-opening
-      // the "+" button each time.
       if (exhaustion > 0) {
         const chip = body.createSpan({ cls: "pc-cond-chip pc-cond-chip-exhaustion" });
         const iconWrap = chip.createSpan({ cls: "pc-cond-chip-icon" });

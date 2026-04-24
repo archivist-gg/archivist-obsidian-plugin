@@ -86,7 +86,8 @@ describe("PC end-to-end: Grendal the Wary", () => {
     expect(left?.textContent).toContain("Damage Resistances");
     expect(left?.textContent).toContain("fire");
     expect(left?.textContent).toContain("Condition Immunities");
-    expect(left?.textContent).toContain("charmed");
+    // Condition immunities display as PascalCase name (SP4b)
+    expect(left?.textContent).toContain("Charmed");
   });
 
   it("saves: STR & CON proficient (inline save chips, no sidebar saves list)", async () => {

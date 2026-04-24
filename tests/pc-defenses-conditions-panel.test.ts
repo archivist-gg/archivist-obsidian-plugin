@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { DefensesConditionsPanel } from "../src/modules/pc/components/defenses-conditions-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -40,19 +40,15 @@ describe("DefensesConditionsPanel", () => {
     }));
     const left = root.querySelector(".pc-def-cond-left");
     expect(left?.textContent).toContain("Damage Resistances");
-    expect(left?.textContent).toContain("fire, cold");
+    expect(left?.textContent).toContain("fire");
+    expect(left?.textContent).toContain("cold");
     expect(left?.textContent).toContain("Damage Immunities");
     expect(left?.textContent).toContain("poison");
     expect(left?.textContent).toContain("Damage Vulnerabilities");
     expect(left?.textContent).toContain("radiant");
     expect(left?.textContent).toContain("Condition Immunities");
-    expect(left?.textContent).toContain("charmed");
-  });
-
-  it("shows 'none' once when all four categories are empty", () => {
-    const root = mountContainer();
-    new DefensesConditionsPanel().render(root, ctx());
-    expect(root.querySelector(".pc-def-cond-empty")?.textContent).toBe("none");
+    // Condition immunities display as PascalCase name (matches condition chips in right pane)
+    expect(left?.textContent).toContain("Charmed");
   });
 
   it("renders active condition chips + static + button", () => {
@@ -106,5 +102,56 @@ describe("DefensesConditionsPanel", () => {
     const cond = [...root.querySelectorAll(".pc-cond-chip:not(.pc-cond-chip-exhaustion)")];
     expect(cond.length).toBe(1);
     expect(cond[0].querySelector(".pc-cond-chip-label")?.textContent).toBe("Prone");
+  });
+});
+
+describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
+  it("always renders four labeled rows even when empty", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({ editState: { addDefense: () => {} } }));
+    const left = root.querySelector(".pc-def-cond-left");
+    expect(left?.textContent).toContain("Damage Resistances");
+    expect(left?.textContent).toContain("Damage Immunities");
+    expect(left?.textContent).toContain("Damage Vulnerabilities");
+    expect(left?.textContent).toContain("Condition Immunities");
+    expect(root.querySelector(".pc-def-cond-empty")).toBeNull();
+  });
+
+  it("each row has a + add button when editState is present", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({ editState: {} }));
+    expect(root.querySelectorAll(".pc-def-cond-left .pc-def-add").length).toBe(4);
+  });
+
+  it("read-only fallback (editState null): no + buttons, empty rows still render labels", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx());
+    expect(root.querySelectorAll(".pc-def-cond-left .pc-def-add").length).toBe(0);
+    expect(root.querySelector(".pc-def-cond-left")?.textContent).toContain("Damage Resistances");
+  });
+
+  it("renders a chip per value with × remover", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn() };
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: { resistances: ["fire", "cold"], immunities: [], vulnerabilities: [], condition_immunities: [] },
+      editState,
+    }));
+    const chips = root.querySelectorAll(".pc-def-cond-left .pc-def-chip");
+    expect(chips.length).toBe(2);
+    (chips[0].querySelector<HTMLElement>(".pc-def-chip-x"))!.click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "fire");
+  });
+
+  it("× on a condition immunity chip calls removeConditionImmunity with slug", () => {
+    const root = mountContainer();
+    const editState = { removeConditionImmunity: vi.fn() };
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: ["charmed"] },
+      editState,
+    }));
+    const chip = root.querySelector(".pc-def-cond-left .pc-def-chip")!;
+    (chip.querySelector<HTMLElement>(".pc-def-chip-x"))!.click();
+    expect(editState.removeConditionImmunity).toHaveBeenCalledWith("charmed");
   });
 });
