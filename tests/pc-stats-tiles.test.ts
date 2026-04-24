@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { StatsTiles } from "../src/modules/pc/components/stats-tiles";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -48,5 +48,43 @@ describe("StatsTiles", () => {
     const root = mountContainer();
     new StatsTiles().render(root, ctx());
     expect(root.querySelectorAll(".pc-panel.pc-stats-tile").length).toBe(4);
+  });
+});
+
+describe("StatsTiles — interactive inspiration (SP4)", () => {
+  function interactiveCtx(inspiration: number) {
+    const editState = { setInspiration: vi.fn() };
+    return {
+      ctx: {
+        derived: { proficiencyBonus: 2, initiative: 0, speed: 30 },
+        resolved: { state: { inspiration } },
+        editState,
+      } as unknown as ComponentRenderContext,
+      editState,
+    };
+  }
+
+  it("− click calls setInspiration(current - 1)", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx(3);
+    new StatsTiles().render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-insp-minus")!.click();
+    expect(editState.setInspiration).toHaveBeenCalledWith(2);
+  });
+
+  it("+ click calls setInspiration(current + 1)", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx(3);
+    new StatsTiles().render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-insp-plus")!.click();
+    expect(editState.setInspiration).toHaveBeenCalledWith(4);
+  });
+
+  it("clicking − at 0 calls setInspiration(-1) — edit state floors to 0", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx(0);
+    new StatsTiles().render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-insp-minus")!.click();
+    expect(editState.setInspiration).toHaveBeenCalledWith(-1);
   });
 });

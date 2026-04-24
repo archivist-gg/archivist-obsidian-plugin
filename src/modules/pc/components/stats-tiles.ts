@@ -19,9 +19,15 @@ export class StatsTiles implements SheetComponent {
     const insp = grid.createDiv({ cls: "pc-panel pc-stats-tile", attr: { "data-stat": "insp" } });
     insp.createDiv({ cls: "pc-stats-tile-lbl", text: "INSPIRATION" });
     const counter = insp.createDiv({ cls: "pc-insp-counter" });
-    counter.createEl("button", { cls: "pc-insp-minus", text: "−", attr: { title: "Decrease inspiration" } });
-    counter.createSpan({ cls: "pc-stats-tile-ct", text: String(ctx.resolved?.state?.inspiration ?? 0) });
-    counter.createEl("button", { cls: "pc-insp-plus", text: "+", attr: { title: "Increase inspiration" } });
+    const current = ctx.resolved?.state?.inspiration ?? 0;
+    const minusBtn = counter.createEl("button", { cls: "pc-insp-minus", text: "−", attr: { title: "Decrease inspiration" } });
+    counter.createSpan({ cls: "pc-stats-tile-ct", text: String(current) });
+    const plusBtn = counter.createEl("button", { cls: "pc-insp-plus", text: "+", attr: { title: "Increase inspiration" } });
+
+    if (ctx.editState) {
+      minusBtn.addEventListener("click", () => ctx.editState!.setInspiration(current - 1));
+      plusBtn.addEventListener("click", () => ctx.editState!.setInspiration(current + 1));
+    }
   }
 
   private tile(parent: HTMLElement, stat: string, label: string, value: string) {
