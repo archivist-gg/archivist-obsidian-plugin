@@ -1,93 +1,76 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { AbilityRow } from "../src/modules/pc/components/ability-row";
+import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
-import { SaveChip } from "../src/modules/pc/components/save-chip";
-import { ABILITY_KEYS } from "../src/shared/dnd/constants";
-import type { Ability } from "../src/shared/types";
 
 beforeAll(() => installObsidianDomHelpers());
 
-function ctx(): ComponentRenderContext {
+function makeRegistryWithStubSaveChips(): ComponentRegistry {
+  const reg = new ComponentRegistry();
+  for (const ab of ["str", "dex", "con", "int", "wis", "cha"]) {
+    reg.register({
+      type: `save-chip-${ab}`,
+      render: (el: HTMLElement) => { el.createDiv({ cls: `stub-save-${ab}` }); },
+    });
+  }
+  return reg;
+}
+
+function ctx(opts: { scoreOverrides?: Record<string, number>; editState?: unknown } = {}): ComponentRenderContext {
+  const overrides = opts.scoreOverrides ? { scores: opts.scoreOverrides } : {};
   return {
     derived: {
-      scores: { str: 4, dex: 15, con: 12, int: 21, wis: 13, cha: 10 },
-      mods: { str: -3, dex: 2, con: 1, int: 5, wis: 1, cha: 0 },
-      saves: {
-        str: { bonus: -3, proficient: false },
-        dex: { bonus: 2, proficient: false },
-        con: { bonus: 6, proficient: true },
-        int: { bonus: 10, proficient: true },
-        wis: { bonus: 1, proficient: false },
-        cha: { bonus: 0, proficient: false },
-      },
+      mods: { str: 2, dex: 1, con: 1, int: 0, wis: 1, cha: 0 },
+      scores: { str: 14, dex: 12, con: 13, int: 10, wis: 12, cha: 11 },
+      saves: {},
     },
-    resolved: { definition: { overrides: {} } },
-    editState: null,
+    resolved: { definition: { overrides } },
+    editState: opts.editState ?? null,
   } as unknown as ComponentRenderContext;
 }
 
-function makeRegistry(): ComponentRegistry {
-  const r = new ComponentRegistry();
-  for (const abl of ABILITY_KEYS as readonly Ability[]) {
-    r.register(new SaveChip(abl));
-  }
-  return r;
-}
-
-describe("AbilityRow (V7)", () => {
-  it("renders 6 ability stacks, each with an ability card + save chip", () => {
+describe("AbilityRow — click-to-edit score pill (SP4b)", () => {
+  it("renders six cartouches with score pills", () => {
     const root = mountContainer();
-    new AbilityRow(makeRegistry()).render(root, ctx());
-    expect(root.querySelectorAll(".pc-ab-stack").length).toBe(6);
-    expect(root.querySelectorAll(".pc-ab-stack .pc-ab").length).toBe(6);
-    expect(root.querySelectorAll(".pc-ab-stack .pc-save-chip").length).toBe(6);
+    new AbilityRow(makeRegistryWithStubSaveChips()).render(root, ctx());
+    expect(root.querySelectorAll(".pc-ab-score").length).toBe(6);
   });
 
-  it("renders label / modifier / score inside each cartouche card", () => {
+  it("click STR score opens input, Enter commits setScoreOverride", () => {
     const root = mountContainer();
-    new AbilityRow(makeRegistry()).render(root, ctx());
-    expect(root.querySelectorAll(".pc-ab .pc-ab-label").length).toBe(6);
-    expect(root.querySelectorAll(".pc-ab .pc-ab-mod").length).toBe(6);
-    expect(root.querySelectorAll(".pc-ab .pc-ab-score").length).toBe(6);
-    expect(root.querySelector(".pc-ab[data-ability='str'] .pc-ab-score")?.textContent).toBe("4");
-    expect(root.querySelector(".pc-ab[data-ability='int'] .pc-ab-mod")?.textContent).toBe("+5");
+    const editState = { setScoreOverride: vi.fn(), clearScoreOverride: vi.fn() };
+    new AbilityRow(makeRegistryWithStubSaveChips()).render(root, ctx({ editState }));
+    const str = root.querySelector<HTMLElement>(".pc-ab[data-ability='str'] .pc-ab-score")!;
+    str.click();
+    const input = root.querySelector<HTMLInputElement>(".pc-ab[data-ability='str'] input.pc-edit-inline")!;
+    input.value = "18";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(editState.setScoreOverride).toHaveBeenCalledWith("str", 18);
   });
 
-  it("marks CON and INT saves proficient; STR/DEX/WIS/CHA plain", () => {
+  it("override mark appears on DEX score pill when overridden", () => {
     const root = mountContainer();
-    new AbilityRow(makeRegistry()).render(root, ctx());
-    const byAb = (ab: string) =>
-      [...root.querySelectorAll<HTMLElement>(".pc-ab-stack")].find(
-        (s) => s.querySelector(`.pc-ab[data-ability='${ab}']`)
-      )!;
-    expect(byAb("con").querySelector(".pc-save-chip.prof")).not.toBeNull();
-    expect(byAb("int").querySelector(".pc-save-chip.prof")).not.toBeNull();
-    expect(byAb("str").querySelector(".pc-save-chip.prof")).toBeNull();
-    expect(byAb("cha").querySelector(".pc-save-chip.prof")).toBeNull();
+    const editState = { setScoreOverride: vi.fn(), clearScoreOverride: vi.fn() };
+    new AbilityRow(makeRegistryWithStubSaveChips()).render(root, ctx({
+      editState,
+      scoreOverrides: { dex: 16 },
+    }));
+    const dex = root.querySelector(".pc-ab[data-ability='dex']");
+    expect(dex?.querySelector(".archivist-override-mark")).not.toBeNull();
+    const str = root.querySelector(".pc-ab[data-ability='str']");
+    expect(str?.querySelector(".archivist-override-mark")).toBeNull();
   });
 
-  it("has NO outer container (.pc-ability-container), abilities float free", () => {
+  it("click override mark calls clearScoreOverride(ab)", () => {
     const root = mountContainer();
-    new AbilityRow(makeRegistry()).render(root, ctx());
-    expect(root.querySelector(".pc-ability-container")).toBeNull();
-  });
-
-  it("renders a placeholder when the registry is missing a SaveChip entry", () => {
-    const root = mountContainer();
-    // Build a registry missing the str chip
-    const r = new ComponentRegistry();
-    for (const abl of ABILITY_KEYS as readonly Ability[]) {
-      if (abl !== "str") r.register(new SaveChip(abl));
-    }
-    new AbilityRow(r).render(root, ctx());
-    // Other abilities render their chips; str gets the placeholder
-    expect(root.querySelectorAll(".pc-save-chip").length).toBe(5);
-    const strStack = [...root.querySelectorAll<HTMLElement>(".pc-ab-stack")].find(
-      (s) => s.querySelector(".pc-ab[data-ability='str']")
-    )!;
-    expect(strStack.querySelector(".pc-empty-line")?.textContent).toBe("(No renderer for save-chip-str)");
+    const editState = { setScoreOverride: vi.fn(), clearScoreOverride: vi.fn() };
+    new AbilityRow(makeRegistryWithStubSaveChips()).render(root, ctx({
+      editState,
+      scoreOverrides: { dex: 16 },
+    }));
+    root.querySelector<HTMLElement>(".pc-ab[data-ability='dex'] .archivist-override-mark")!.click();
+    expect(editState.clearScoreOverride).toHaveBeenCalledWith("dex");
   });
 });
