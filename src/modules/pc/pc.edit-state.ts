@@ -88,6 +88,18 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── AC ────────────────────────────────────────────────────────────
+  setAcOverride(value: number): void {
+    if (!Number.isFinite(value)) return;
+    this.character.overrides.ac = Math.max(0, Math.min(50, Math.floor(value)));
+    this.onChange();
+  }
+
+  clearAcOverride(): void {
+    delete this.character.overrides.ac;
+    this.onChange();
+  }
+
   // ─── Hit dice ──────────────────────────────────────────────────────
   spendHitDie(dieKey: string): void {
     const hd = this.character.state.hit_dice[dieKey];

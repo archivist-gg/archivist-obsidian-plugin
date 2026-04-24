@@ -411,3 +411,30 @@ describe("CharacterEditState — HP overrides (SP4b)", () => {
     expect(char.overrides.hp).toBeUndefined();
   });
 });
+
+describe("CharacterEditState — AC overrides (SP4b)", () => {
+  it("setAcOverride stores override and clamps to [0, 50]", () => {
+    const { es, char, onChange } = makeState();
+    es.setAcOverride(18);
+    expect(char.overrides.ac).toBe(18);
+    es.setAcOverride(999);
+    expect(char.overrides.ac).toBe(50);
+    es.setAcOverride(-5);
+    expect(char.overrides.ac).toBe(0);
+    expect(onChange).toHaveBeenCalledTimes(3);
+  });
+
+  it("clearAcOverride deletes the key", () => {
+    const { es, char } = makeState();
+    es.setAcOverride(18);
+    expect(char.overrides.ac).toBe(18);
+    es.clearAcOverride();
+    expect(char.overrides.ac).toBeUndefined();
+  });
+
+  it("clearAcOverride when no override exists is a no-op but still notifies", () => {
+    const { es, onChange } = makeState();
+    es.clearAcOverride();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
