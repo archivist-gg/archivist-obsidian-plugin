@@ -73,7 +73,7 @@ export function parsePC(source: string): ParseResult<Character> {
  */
 export function spliceCodeBlock(
   raw: string,
-  range: ExtractedCodeBlock,
+  range: { startLine: number; endLine: number },
   newYamlBody: string,
 ): string {
   const lines = raw.split(/\r?\n/);

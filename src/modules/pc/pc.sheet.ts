@@ -1,12 +1,15 @@
 import type { CoreAPI } from "../../core/module-api";
 import type { ComponentRegistry } from "./components/component-registry";
+import type { ComponentRenderContext } from "./components/component.types";
 import type { ResolvedCharacter, DerivedStats } from "./pc.types";
+import type { CharacterEditState } from "./pc.edit-state";
 
 export interface RenderSheetOptions {
   root: HTMLElement;
   resolved: ResolvedCharacter;
   derived: DerivedStats;
   registry: ComponentRegistry;
+  editState: CharacterEditState | null;
   core: CoreAPI;
   warnings: string[];
 }
@@ -18,12 +21,13 @@ export interface RenderSheetOptions {
  */
 export function renderPCSheet(opts: RenderSheetOptions): void {
   const { root, resolved, derived, registry, core, warnings } = opts;
+  const prevScroll = root.scrollTop;
   root.empty();
   const sheet = root.createDiv({ cls: "archivist-pc-sheet" });
 
   if (warnings.length > 0) renderWarnings(sheet, warnings);
 
-  const ctx = { resolved, derived, core };
+  const ctx: ComponentRenderContext = { resolved, derived, core, editState: opts.editState };
 
   // 1. Hero (AC / HP / HD rendered internally by HeaderSection)
   safeRender(sheet, "pc-hero", "header-section", registry, ctx);
@@ -43,6 +47,8 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
   }
   const content = body.createDiv({ cls: "pc-content" });
   safeRender(content, "pc-tabs", "tabs-container", registry, ctx, { wrap: false });
+
+  root.scrollTop = prevScroll;
 }
 
 /**
@@ -69,7 +75,7 @@ function safeRender(
   wrapperCls: string,
   componentType: string,
   registry: ComponentRegistry,
-  ctx: { resolved: ResolvedCharacter; derived: DerivedStats; core: CoreAPI },
+  ctx: ComponentRenderContext,
   opts: { wrap?: boolean } = { wrap: true },
 ) {
   const component = registry.get(componentType);

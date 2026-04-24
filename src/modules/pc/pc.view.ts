@@ -1,7 +1,8 @@
 import { TextFileView, type WorkspaceLeaf } from "obsidian";
 import { renderPCSheet, renderPCSheetError } from "./pc.sheet";
-import { extractPCCodeBlock, parsePC } from "./pc.parser";
+import { extractPCCodeBlock, parsePC, spliceCodeBlock } from "./pc.parser";
 import { recalc } from "./pc.recalc";
+import { CharacterEditState } from "./pc.edit-state";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "./pc.types";
 
@@ -11,6 +12,13 @@ export class PCSheetView extends TextFileView {
   private rawFileData = "";
   private character: ResolvedCharacter | null = null;
   private derived: DerivedStats | null = null;
+  private editState: CharacterEditState | null = null;
+  private codeBlockRange: { startLine: number; endLine: number } | null = null;
+  private lastWrittenData: string | null = null;
+  // Track whether editState has been mutated since the file was loaded.
+  // Before any mutation, getViewData() returns the raw file bytes so that
+  // no-op Obsidian save triggers do not normalize the YAML formatting.
+  private isDirty = false;
   // Monotonic counter used to bail stale async renders when setViewData is
   // called again (file switch) before compendiumsReady resolves.
   private renderGeneration = 0;
@@ -36,7 +44,17 @@ export class PCSheetView extends TextFileView {
   }
 
   setViewData(data: string, clear: boolean): void {
+    // Loop guard: Obsidian echoes our just-written bytes back through
+    // setViewData after save. Short-circuit before re-running the render
+    // pipeline (which would rebuild the entire sheet and re-create editState,
+    // losing in-flight session state).
+    if (data === this.lastWrittenData) {
+      this.rawFileData = data;
+      return;
+    }
     this.rawFileData = data;
+    this.isDirty = false;
+    this.lastWrittenData = null;
     if (clear) this.contentEl.empty();
 
     const gen = ++this.renderGeneration;
@@ -68,7 +86,29 @@ export class PCSheetView extends TextFileView {
     const resolveResult = this.mod.resolver.resolve(parsed.data);
     this.character = resolveResult.character;
     this.derived = recalc(this.character);
+    this.codeBlockRange = { startLine: extracted.startLine, endLine: extracted.endLine };
+    this.editState = new CharacterEditState(
+      parsed.data,
+      () => ({ resolved: this.character!, derived: this.derived! }),
+      () => this.handleChange(),
+    );
     this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
+  }
+
+  private handleChange(): void {
+    const gen = this.renderGeneration;
+    if (!this.editState || !this.mod.resolver) return;
+
+    this.isDirty = true;
+    const character = this.editState.getCharacter();
+    const resolveResult = this.mod.resolver.resolve(character);
+    this.character = resolveResult.character;
+    this.derived = recalc(this.character);
+
+    if (gen !== this.renderGeneration) return;
+
+    this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
+    this.requestSave();
   }
 
   private renderLoadingShim(): void {
@@ -76,12 +116,20 @@ export class PCSheetView extends TextFileView {
   }
 
   getViewData(): string {
-    return this.rawFileData;
+    if (!this.editState || !this.codeBlockRange || !this.isDirty) return this.rawFileData;
+    const newYamlBody = this.editState.toYaml();
+    const spliced = spliceCodeBlock(this.rawFileData, this.codeBlockRange, newYamlBody);
+    this.lastWrittenData = spliced;
+    return spliced;
   }
 
   clear(): void {
     this.character = null;
     this.derived = null;
+    this.editState = null;
+    this.codeBlockRange = null;
+    this.lastWrittenData = null;
+    this.isDirty = false;
     this.contentEl.empty();
   }
 
@@ -114,6 +162,7 @@ export class PCSheetView extends TextFileView {
       derived: this.derived,
       registry: this.mod.registry,
       core: this.mod.core,
+      editState: this.editState,
       warnings,
     });
   }

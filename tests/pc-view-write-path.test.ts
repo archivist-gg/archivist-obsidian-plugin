@@ -1,0 +1,102 @@
+/** @vitest-environment jsdom */
+import { describe, it, expect, beforeAll, vi } from "vitest";
+import { PCSheetView } from "../src/modules/pc/pc.view";
+import { PCModule } from "../src/modules/pc/pc.module";
+import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import type { CoreAPI } from "../src/core/module-api";
+import { WorkspaceLeaf } from "obsidian";
+
+beforeAll(() => installObsidianDomHelpers());
+
+const BLADESWORN = {
+  slug: "bladesworn",
+  name: "Bladesworn",
+  edition: "2014",
+  hit_die: "d10",
+  primary_abilities: ["str"],
+  saving_throws: ["str", "con"],
+  features_by_level: { 1: [{ name: "Sworn Blade" }] },
+  proficiencies: { armor: ["light"], weapons: { fixed: [] }, tools: { fixed: [] } },
+};
+
+const PC_FILE = [
+  "---",
+  "archivist-type: pc",
+  "---",
+  "",
+  "```pc",
+  "name: Grendal",
+  "edition: '2014'",
+  "race: null",
+  "subrace: null",
+  "background: null",
+  "class:",
+  "  - name: '[[bladesworn]]'",
+  "    level: 3",
+  "    subclass: null",
+  "    choices: {}",
+  "abilities: { str: 16, dex: 12, con: 14, int: 10, wis: 12, cha: 8 }",
+  "ability_method: manual",
+  "skills: { proficient: [], expertise: [] }",
+  "spells: { known: [], overrides: [] }",
+  "equipment: []",
+  "overrides: {}",
+  "state:",
+  "  hp: { current: 24, max: 24, temp: 0 }",
+  "  hit_dice:",
+  "    d10: { used: 0, total: 3 }",
+  "  spell_slots: {}",
+  "  concentration: null",
+  "  conditions: []",
+  "  inspiration: 0",
+  "  exhaustion: 0",
+  "```",
+  "",
+  "## Backstory",
+  "",
+  "The wary one.",
+].join("\n");
+
+async function bootView(): Promise<{ view: PCSheetView; mod: PCModule }> {
+  const mod = new PCModule();
+  const entities = buildMockRegistry([{ slug: "bladesworn", entityType: "class", data: BLADESWORN }]);
+  mod.register({ entities } as unknown as CoreAPI);
+  const view = new PCSheetView(new WorkspaceLeaf(), mod);
+  view.setViewData(PC_FILE, true);
+  await view.rendered;
+  return { view, mod };
+}
+
+describe("PCSheetView — write path", () => {
+  it("getViewData returns the raw file text before any mutation", async () => {
+    const { view } = await bootView();
+    const out = view.getViewData();
+    expect(out).toContain("hp: { current: 24, max: 24, temp: 0 }");
+    expect(out).toContain("## Backstory");
+  });
+
+  it("mutating via editState updates getViewData output and preserves markdown tail", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error — access the view-owned edit state in test
+    view.editState!.setInspiration(2);
+    await Promise.resolve();
+    const out = view.getViewData();
+    expect(out).toMatch(/inspiration:\s*2/);
+    expect(out.startsWith("---\narchivist-type: pc\n---")).toBe(true);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+
+  it("setViewData no-ops when data === lastWrittenData (loop guard)", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error
+    view.editState!.setInspiration(5);
+    await Promise.resolve();
+    const echoed = view.getViewData();
+
+    // Spy on handleChange to prove setViewData doesn't re-enter the pipeline.
+    const hc = vi.spyOn(view as unknown as { handleChange: () => void }, "handleChange");
+    view.setViewData(echoed, false);
+    expect(hc).not.toHaveBeenCalled();
+  });
+});
