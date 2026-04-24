@@ -93,6 +93,92 @@ export class CharacterEditState {
     }
   }
 
+  // ─── Skills (definition mutation) ──────────────────────────────────
+  cycleSkill(skill: SkillSlug): void {
+    const prof = this.character.skills.proficient;
+    const exp = this.character.skills.expertise;
+    const hasProf = prof.includes(skill);
+    const hasExp = exp.includes(skill);
+
+    if (hasProf && hasExp) {
+      // normalize: remove from both
+      this.character.skills.proficient = prof.filter((s) => s !== skill);
+      this.character.skills.expertise = exp.filter((s) => s !== skill);
+    } else if (!hasProf && !hasExp) {
+      prof.push(skill);
+    } else if (hasProf) {
+      this.character.skills.proficient = prof.filter((s) => s !== skill);
+      exp.push(skill);
+    } else {
+      this.character.skills.expertise = exp.filter((s) => s !== skill);
+    }
+    this.onChange();
+  }
+
+  // ─── Saves (override mutation) ─────────────────────────────────────
+  toggleSaveProficient(ability: Ability): void {
+    const { resolved } = this.getContext();
+    const classSaves = resolved.classes[0]?.entity?.saving_throws ?? [];
+    const override = this.character.overrides.saves?.[ability];
+    const effective = override?.proficient ?? classSaves.includes(ability);
+
+    if (!this.character.overrides.saves) this.character.overrides.saves = {};
+    this.character.overrides.saves[ability] = {
+      ...(this.character.overrides.saves[ability] ?? { bonus: 0 }),
+      proficient: !effective,
+    };
+    this.onChange();
+  }
+
+  clearSaveOverride(ability: Ability): void {
+    if (!this.character.overrides.saves) return;
+    delete this.character.overrides.saves[ability];
+    this.onChange();
+  }
+
+  // ─── Conditions ────────────────────────────────────────────────────
+  toggleCondition(slug: ConditionSlug): void {
+    const list = this.character.state.conditions;
+    const i = list.indexOf(slug);
+    if (i >= 0) list.splice(i, 1);
+    else list.push(slug);
+    this.onChange();
+  }
+
+  setExhaustion(level: number): void {
+    this.character.state.exhaustion = Math.max(0, Math.min(6, Math.floor(level)));
+    this.onChange();
+  }
+
+  // ─── Death saves ───────────────────────────────────────────────────
+  toggleDeathSaveSuccess(index: 0 | 1 | 2): void {
+    this.ensureDeathSaves();
+    const ds = this.character.state.death_saves!;
+    // "on" = filled index, dots fill left-to-right → on iff successes > index
+    if (ds.successes > index) ds.successes -= 1;
+    else ds.successes += 1;
+    this.onChange();
+  }
+
+  toggleDeathSaveFailure(index: 0 | 1 | 2): void {
+    this.ensureDeathSaves();
+    const ds = this.character.state.death_saves!;
+    if (ds.failures > index) ds.failures -= 1;
+    else ds.failures += 1;
+    this.onChange();
+  }
+
+  clearDeathSaves(): void {
+    this.character.state.death_saves = { successes: 0, failures: 0 };
+    this.onChange();
+  }
+
+  private ensureDeathSaves(): void {
+    if (!this.character.state.death_saves) {
+      this.character.state.death_saves = { successes: 0, failures: 0 };
+    }
+  }
+
   // ─── Read-out / serialize ──────────────────────────────────────────
   getCharacter(): Character {
     return this.character;
@@ -102,7 +188,3 @@ export class CharacterEditState {
     return characterToYaml(this.character);
   }
 }
-
-// TODO(SP4 Task 5): remove this dead type export and uncomment the real
-// uses of Ability / SkillSlug / ConditionSlug in the skills/saves/conditions mutators.
-export type _unused = [Ability, SkillSlug, ConditionSlug];

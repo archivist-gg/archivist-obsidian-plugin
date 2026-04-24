@@ -202,3 +202,120 @@ describe("CharacterEditState — toYaml", () => {
     expect(reparsed.success).toBe(true);
   });
 });
+
+describe("CharacterEditState — skills", () => {
+  it("cycleSkill adds to proficient when neither", () => {
+    const { es, char } = makeState();
+    es.cycleSkill("arcana");
+    expect(char.skills.proficient).toContain("arcana");
+    expect(char.skills.expertise).not.toContain("arcana");
+  });
+
+  it("cycleSkill moves proficient → expertise", () => {
+    const { es, char } = makeState((c) => { c.skills.proficient = ["arcana"]; });
+    es.cycleSkill("arcana");
+    expect(char.skills.proficient).not.toContain("arcana");
+    expect(char.skills.expertise).toContain("arcana");
+  });
+
+  it("cycleSkill removes from expertise → none", () => {
+    const { es, char } = makeState((c) => { c.skills.expertise = ["arcana"]; });
+    es.cycleSkill("arcana");
+    expect(char.skills.proficient).not.toContain("arcana");
+    expect(char.skills.expertise).not.toContain("arcana");
+  });
+
+  it("cycleSkill normalizes 'in both' to 'none'", () => {
+    const { es, char } = makeState((c) => {
+      c.skills.proficient = ["arcana"];
+      c.skills.expertise = ["arcana"];
+    });
+    es.cycleSkill("arcana");
+    expect(char.skills.proficient).not.toContain("arcana");
+    expect(char.skills.expertise).not.toContain("arcana");
+  });
+});
+
+describe("CharacterEditState — saves", () => {
+  it("toggleSaveProficient writes NOT effective — class grants str+con, flipping str sets override=false", () => {
+    const { es, char } = makeState();
+    // str is class-derived proficient; toggling should set override to false
+    es.toggleSaveProficient("str");
+    expect(char.overrides.saves?.str?.proficient).toBe(false);
+  });
+
+  it("toggleSaveProficient on a class-non-proficient ability sets override=true", () => {
+    const { es, char } = makeState();
+    es.toggleSaveProficient("dex");
+    expect(char.overrides.saves?.dex?.proficient).toBe(true);
+  });
+
+  it("toggleSaveProficient flips existing override", () => {
+    const { es, char } = makeState((c) => {
+      c.overrides.saves = { dex: { bonus: 0, proficient: true } };
+    });
+    es.toggleSaveProficient("dex");
+    expect(char.overrides.saves?.dex?.proficient).toBe(false);
+  });
+
+  it("clearSaveOverride removes the ability from overrides.saves", () => {
+    const { es, char } = makeState((c) => {
+      c.overrides.saves = { dex: { bonus: 0, proficient: true } };
+    });
+    es.clearSaveOverride("dex");
+    expect(char.overrides.saves?.dex).toBeUndefined();
+  });
+});
+
+describe("CharacterEditState — conditions", () => {
+  it("toggleCondition adds when absent", () => {
+    const { es, char } = makeState();
+    es.toggleCondition("prone");
+    expect(char.state.conditions).toContain("prone");
+  });
+
+  it("toggleCondition removes when present", () => {
+    const { es, char } = makeState((c) => { c.state.conditions = ["prone"]; });
+    es.toggleCondition("prone");
+    expect(char.state.conditions).not.toContain("prone");
+  });
+
+  it("setExhaustion clamps to [0, 6]", () => {
+    const { es, char } = makeState();
+    es.setExhaustion(3);
+    expect(char.state.exhaustion).toBe(3);
+    es.setExhaustion(99);
+    expect(char.state.exhaustion).toBe(6);
+    es.setExhaustion(-1);
+    expect(char.state.exhaustion).toBe(0);
+  });
+});
+
+describe("CharacterEditState — death saves", () => {
+  it("toggleDeathSaveSuccess flips that index on the successes mask (0 → 1 → 0)", () => {
+    const { es, char } = makeState();
+    es.toggleDeathSaveSuccess(0);
+    expect(char.state.death_saves?.successes).toBe(1);
+    es.toggleDeathSaveSuccess(1);
+    expect(char.state.death_saves?.successes).toBe(2);
+    es.toggleDeathSaveSuccess(0);
+    expect(char.state.death_saves?.successes).toBe(1);
+  });
+
+  it("toggleDeathSaveFailure flips that index on the failures counter", () => {
+    const { es, char } = makeState();
+    es.toggleDeathSaveFailure(0);
+    expect(char.state.death_saves?.failures).toBe(1);
+    es.toggleDeathSaveFailure(2);
+    expect(char.state.death_saves?.failures).toBe(2);
+  });
+
+  it("clearDeathSaves zeroes both counters and fires onChange", () => {
+    const { es, char, onChange } = makeState((c) => {
+      c.state.death_saves = { successes: 2, failures: 1 };
+    });
+    es.clearDeathSaves();
+    expect(char.state.death_saves).toEqual({ successes: 0, failures: 0 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
