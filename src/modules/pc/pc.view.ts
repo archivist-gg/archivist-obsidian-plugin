@@ -109,15 +109,28 @@ export class PCSheetView extends TextFileView {
     const gen = this.renderGeneration;
     if (!this.editState || !this.mod.resolver) return;
 
+    // Mark dirty BEFORE the try so we persist the mutation even when the
+    // resolver/recalc/render chain blows up — the editState already mutated
+    // the character and the user's edit would otherwise be lost on close.
     this.isDirty = true;
-    const character = this.editState.getCharacter();
-    const resolveResult = this.mod.resolver.resolve(character);
-    this.character = resolveResult.character;
-    this.derived = recalc(this.character);
 
-    if (gen !== this.renderGeneration) return;
+    try {
+      const character = this.editState.getCharacter();
+      const resolveResult = this.mod.resolver.resolve(character);
+      this.character = resolveResult.character;
+      this.derived = recalc(this.character);
 
-    this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
+      // Stale-render bail: a newer setViewData has started, the in-flight
+      // derivation is from the old editState — do not render OR save.
+      if (gen !== this.renderGeneration) return;
+
+      this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
+    } catch (err) {
+      console.error("[pc] handleChange failed — edit was applied to state, persisting anyway:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      this.showError(`Render failed: ${message}. Your edit was saved.`);
+    }
+
     this.requestSave();
   }
 
@@ -148,6 +161,20 @@ export class PCSheetView extends TextFileView {
       void this.switchToMarkdown();
     });
     await Promise.resolve();
+  }
+
+  async onLoadFile(file: import("obsidian").TFile): Promise<void> {
+    // Obsidian calls this when the view's underlying file changes. Reset all
+    // SP4 mutation/persistence state so no stale references survive across
+    // file switches (especially lastWrittenData, which would otherwise cause
+    // the setViewData loop guard to wrongly suppress a re-render if the new
+    // file's bytes happen to match the previous file's last splice).
+    // setViewData() will repopulate state once the new file's contents arrive.
+    this.editState = null;
+    this.codeBlockRange = null;
+    this.lastWrittenData = null;
+    this.isDirty = false;
+    await super.onLoadFile(file);
   }
 
   private async switchToMarkdown(): Promise<void> {

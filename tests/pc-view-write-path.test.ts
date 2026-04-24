@@ -166,3 +166,46 @@ describe("PCSheetView — write path on afflicted state", () => {
     expect(out).toMatch(/frightened/);
   });
 });
+
+describe("PCSheetView — error boundary + lifecycle", () => {
+  it("handleChange logs and requests save even if renderSheet throws", async () => {
+    const { view } = await bootView();
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    // Force the next renderSheet to throw by monkey-patching:
+    const renderSheet = (view as unknown as { renderSheet: (w: string[]) => void }).renderSheet.bind(view);
+    (view as unknown as { renderSheet: (w: string[]) => void }).renderSheet = () => {
+      throw new Error("boom");
+    };
+    const requestSaveSpy = vi.spyOn(view, "requestSave");
+
+    // @ts-expect-error — mutate via the view-owned edit state
+    view.editState!.setInspiration(9);
+    await Promise.resolve();
+
+    expect(errorSpy).toHaveBeenCalled();
+    expect(requestSaveSpy).toHaveBeenCalled();  // save still fires
+    errorSpy.mockRestore();
+    // restore renderSheet so afterEach doesn't cascade
+    (view as unknown as { renderSheet: (w: string[]) => void }).renderSheet = renderSheet;
+  });
+
+  it("onLoadFile clears editState and lastWrittenData for a fresh file", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error
+    view.editState!.setInspiration(5);
+    await Promise.resolve();
+    expect(view.getViewData()).toMatch(/inspiration:\s*5/);  // dirty + spliced
+
+    // Simulate Obsidian switching to a different file:
+    const fakeFile = { path: "other.md", basename: "other" } as unknown as import("obsidian").TFile;
+    await view.onLoadFile(fakeFile);
+
+    // State should have been reset.
+    // @ts-expect-error — access private
+    expect(view.editState).toBeNull();
+    // @ts-expect-error
+    expect(view.lastWrittenData).toBeNull();
+    // @ts-expect-error
+    expect(view.isDirty).toBe(false);
+  });
+});
