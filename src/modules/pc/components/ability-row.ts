@@ -1,17 +1,19 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import type { ComponentRegistry } from "./component-registry";
 import { ABILITY_KEYS, ABILITY_NAMES } from "../../../shared/dnd/constants";
 import { formatModifier } from "../../../shared/dnd/math";
 import type { Ability } from "../../../shared/types";
-import { renderSaveChip } from "./save-chip";
 
 /**
- * V7 ability row: six ability cards in a grid, free-floating — no outer container.
- * The obelisk cartouche outline comes from a CSS data-URI background on `.pc-ab`
- * (see components.css). Each card: label / modifier / score pill (positioned absolute
- * hanging off the bottom edge). A save chip sits below each card in a stack.
+ * V7 ability row: six ability cards in a grid. Each card has an obelisk
+ * cartouche (label / modifier / score pill) with a save chip stacked below.
+ * Save chip is now a registered component (one per ability) — we look it up
+ * by type `save-chip-{ab}` and delegate rendering.
  */
 export class AbilityRow implements SheetComponent {
   readonly type = "ability-row";
+
+  constructor(private readonly registry: ComponentRegistry) {}
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const grid = el.createDiv({ cls: "pc-ability-row" });
@@ -23,8 +25,8 @@ export class AbilityRow implements SheetComponent {
       card.createDiv({ cls: "pc-ab-mod", text: formatModifier(ctx.derived.mods[ab]) });
       card.createDiv({ cls: "pc-ab-score", text: String(ctx.derived.scores[ab]) });
 
-      const save = ctx.derived.saves[ab];
-      renderSaveChip(stack, { bonus: save.bonus, proficient: save.proficient });
+      const chip = this.registry.get(`save-chip-${ab}`);
+      chip?.render(stack, ctx);
     }
   }
 }

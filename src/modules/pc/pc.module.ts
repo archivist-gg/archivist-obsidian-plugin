@@ -11,6 +11,8 @@ import { AcShield } from "./components/ac-shield";
 import { HpWidget } from "./components/hp-widget";
 import { HitDiceWidget } from "./components/hit-dice-widget";
 import { AbilityRow } from "./components/ability-row";
+import { SaveChip } from "./components/save-chip";
+import { ABILITY_KEYS } from "../../shared/dnd/constants";
 import { StatsTiles } from "./components/stats-tiles";
 import { DefensesConditionsPanel } from "./components/defenses-conditions-panel";
 import { SensesPanel } from "./components/senses-panel";
@@ -148,7 +150,10 @@ export class PCModule implements ArchivistModule {
     // Hero
     r.register(new HeaderSection(r));
     // Stats band
-    r.register(new AbilityRow());
+    for (const abl of ABILITY_KEYS) {
+      r.register(new SaveChip(abl));
+    }
+    r.register(new AbilityRow(r));
     r.register(new StatsTiles());
     r.register(new DefensesConditionsPanel());
     // Sidebar panels

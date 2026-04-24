@@ -3,6 +3,10 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { AbilityRow } from "../src/modules/pc/components/ability-row";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
+import { SaveChip } from "../src/modules/pc/components/save-chip";
+import { ABILITY_KEYS } from "../src/shared/dnd/constants";
+import type { Ability } from "../src/shared/types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -20,13 +24,23 @@ function ctx(): ComponentRenderContext {
         cha: { bonus: 0, proficient: false },
       },
     },
+    resolved: { definition: { overrides: {} } },
+    editState: null,
   } as unknown as ComponentRenderContext;
+}
+
+function makeRegistry(): ComponentRegistry {
+  const r = new ComponentRegistry();
+  for (const abl of ABILITY_KEYS as readonly Ability[]) {
+    r.register(new SaveChip(abl));
+  }
+  return r;
 }
 
 describe("AbilityRow (V7)", () => {
   it("renders 6 ability stacks, each with an ability card + save chip", () => {
     const root = mountContainer();
-    new AbilityRow().render(root, ctx());
+    new AbilityRow(makeRegistry()).render(root, ctx());
     expect(root.querySelectorAll(".pc-ab-stack").length).toBe(6);
     expect(root.querySelectorAll(".pc-ab-stack .pc-ab").length).toBe(6);
     expect(root.querySelectorAll(".pc-ab-stack .pc-save-chip").length).toBe(6);
@@ -34,7 +48,7 @@ describe("AbilityRow (V7)", () => {
 
   it("renders label / modifier / score inside each cartouche card", () => {
     const root = mountContainer();
-    new AbilityRow().render(root, ctx());
+    new AbilityRow(makeRegistry()).render(root, ctx());
     expect(root.querySelectorAll(".pc-ab .pc-ab-label").length).toBe(6);
     expect(root.querySelectorAll(".pc-ab .pc-ab-mod").length).toBe(6);
     expect(root.querySelectorAll(".pc-ab .pc-ab-score").length).toBe(6);
@@ -44,7 +58,7 @@ describe("AbilityRow (V7)", () => {
 
   it("marks CON and INT saves proficient; STR/DEX/WIS/CHA plain", () => {
     const root = mountContainer();
-    new AbilityRow().render(root, ctx());
+    new AbilityRow(makeRegistry()).render(root, ctx());
     const byAb = (ab: string) =>
       [...root.querySelectorAll<HTMLElement>(".pc-ab-stack")].find(
         (s) => s.querySelector(`.pc-ab[data-ability='${ab}']`)
@@ -57,7 +71,7 @@ describe("AbilityRow (V7)", () => {
 
   it("has NO outer container (.pc-ability-container), abilities float free", () => {
     const root = mountContainer();
-    new AbilityRow().render(root, ctx());
+    new AbilityRow(makeRegistry()).render(root, ctx());
     expect(root.querySelector(".pc-ability-container")).toBeNull();
   });
 });
