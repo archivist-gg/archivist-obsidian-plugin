@@ -1,25 +1,52 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { AcShield } from "../src/modules/pc/components/ac-shield";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
-function ctx(ac: number): ComponentRenderContext {
-  return { derived: { ac } } as unknown as ComponentRenderContext;
+function ctx(opts: { ac: number; overrideAc?: number; editState?: unknown }): ComponentRenderContext {
+  const overrides = opts.overrideAc !== undefined ? { ac: opts.overrideAc } : {};
+  return {
+    derived: { ac: opts.ac },
+    resolved: { definition: { overrides } },
+    editState: opts.editState ?? null,
+  } as unknown as ComponentRenderContext;
 }
 
 describe("AcShield", () => {
-  it("renders a shield with ARMOR / number / CLASS text", () => {
+  it("renders the AC number", () => {
     const root = mountContainer();
-    new AcShield().render(root, ctx(14));
-    const shield = root.querySelector(".pc-ac-shield");
-    expect(shield).not.toBeNull();
-    expect(shield?.querySelector(".pc-ac-shield-shell")).not.toBeNull();
-    expect(shield?.querySelector(".pc-ac-shield-trim")).not.toBeNull();
-    expect(shield?.querySelector(".pc-ac-shield-label-top")?.textContent).toBe("ARMOR");
-    expect(shield?.querySelector(".pc-ac-shield-num")?.textContent).toBe("14");
-    expect(shield?.querySelector(".pc-ac-shield-label-bot")?.textContent).toBe("CLASS");
+    new AcShield().render(root, ctx({ ac: 15 }));
+    expect(root.querySelector(".pc-ac-shield-num")?.textContent).toBe("15");
+  });
+
+  it("no edit behavior when editState is null", () => {
+    const root = mountContainer();
+    new AcShield().render(root, ctx({ ac: 15 }));
+    root.querySelector<HTMLElement>(".pc-ac-shield-num")!.click();
+    expect(root.querySelector("input.pc-edit-inline")).toBeNull();
+  });
+
+  it("click number opens input, Enter calls editState.setAcOverride (SP4b)", () => {
+    const root = mountContainer();
+    const editState = { setAcOverride: vi.fn(), clearAcOverride: vi.fn() };
+    new AcShield().render(root, ctx({ ac: 15, editState }));
+    root.querySelector<HTMLElement>(".pc-ac-shield-num")!.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    input.value = "18";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(editState.setAcOverride).toHaveBeenCalledWith(18);
+  });
+
+  it("override mark appears when overrides.ac is set; click clears (SP4b)", () => {
+    const root = mountContainer();
+    const editState = { setAcOverride: vi.fn(), clearAcOverride: vi.fn() };
+    new AcShield().render(root, ctx({ ac: 18, overrideAc: 18, editState }));
+    const mark = root.querySelector<HTMLElement>(".archivist-override-mark");
+    expect(mark).not.toBeNull();
+    mark!.click();
+    expect(editState.clearAcOverride).toHaveBeenCalledTimes(1);
   });
 });

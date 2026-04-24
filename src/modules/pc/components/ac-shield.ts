@@ -1,8 +1,9 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { numberOverride } from "./edit-primitives";
 
 /**
- * Pentagonal AC shield — ARMOR label top, big number, CLASS label bottom.
- * Shape comes from CSS clip-path on two layered divs (.shell + .trim) in components.css.
+ * Heraldic AC shield — ARMOR label top, big number, CLASS label bottom.
+ * Number is click-to-edit and shows `*` when overrides.ac is set.
  */
 export class AcShield implements SheetComponent {
   readonly type = "ac-shield";
@@ -13,7 +14,19 @@ export class AcShield implements SheetComponent {
     shield.createDiv({ cls: "pc-ac-shield-trim" });
     const txt = shield.createDiv({ cls: "pc-ac-shield-txt" });
     txt.createDiv({ cls: "pc-ac-shield-label-top", text: "ARMOR" });
-    txt.createDiv({ cls: "pc-ac-shield-num", text: String(ctx.derived.ac) });
+    const numEl = txt.createDiv({ cls: "pc-ac-shield-num", text: String(ctx.derived.ac) });
     txt.createDiv({ cls: "pc-ac-shield-label-bot", text: "CLASS" });
+
+    if (!ctx.editState) return;
+    const editState = ctx.editState;
+    const overrides = ctx.resolved.definition?.overrides;
+    numberOverride(numEl, {
+      getEffective: () => ctx.derived.ac,
+      isOverridden: () => overrides?.ac !== undefined,
+      onSet: (n) => editState.setAcOverride(n),
+      onClear: () => editState.clearAcOverride(),
+      min: 0,
+      max: 50,
+    });
   }
 }
