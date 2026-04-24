@@ -58,16 +58,33 @@ export class ActionsTab implements SheetComponent {
     }
 
     // Death saves
-    const ds = ctx.resolved.state.death_saves;
-    if (ds) {
-      root.createEl("h4", { cls: "pc-tab-heading", text: "Death saves" });
+    if (ctx.resolved.state.hp.current === 0 || ctx.resolved.state.death_saves) {
+      const ds = ctx.resolved.state.death_saves ?? { successes: 0, failures: 0 };
       const block = root.createDiv({ cls: "pc-death-saves" });
-      const succ = block.createDiv({ cls: "pc-ds-row" });
-      succ.createSpan({ cls: "pc-ds-label", text: "Successes" });
-      for (let i = 0; i < 3; i++) succ.createSpan({ cls: `pc-ds-dot${i < ds.successes ? " filled" : ""}` });
-      const fail = block.createDiv({ cls: "pc-ds-row" });
-      fail.createSpan({ cls: "pc-ds-label", text: "Failures" });
-      for (let i = 0; i < 3; i++) fail.createSpan({ cls: `pc-ds-dot${i < ds.failures ? " filled failure" : ""}` });
+      block.createDiv({ cls: "pc-death-saves-title", text: "Death Saves" });
+      const row = block.createDiv({ cls: "pc-death-saves-row" });
+
+      const successes = row.createDiv({ cls: "pc-death-saves-group" });
+      successes.createSpan({ cls: "pc-death-saves-label", text: "Successes" });
+      for (let i = 0; i < 3; i++) {
+        const dot = successes.createSpan({
+          cls: `pc-death-save-success${ds.successes > i ? " filled" : ""}`,
+        });
+        if (ctx.editState) {
+          dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveSuccess(i as 0 | 1 | 2));
+        }
+      }
+
+      const failures = row.createDiv({ cls: "pc-death-saves-group" });
+      failures.createSpan({ cls: "pc-death-saves-label", text: "Failures" });
+      for (let i = 0; i < 3; i++) {
+        const dot = failures.createSpan({
+          cls: `pc-death-save-failure${ds.failures > i ? " filled" : ""}`,
+        });
+        if (ctx.editState) {
+          dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveFailure(i as 0 | 1 | 2));
+        }
+      }
     }
   }
 }

@@ -66,9 +66,8 @@ describe("ActionsTab", () => {
   it("renders death saves with the correct dots filled", () => {
     const container = mountContainer();
     new ActionsTab().render(container, ctx);
-    const rows = container.querySelectorAll(".pc-ds-row");
-    const succFilled = rows[0].querySelectorAll(".pc-ds-dot.filled").length;
-    const failFilled = rows[1].querySelectorAll(".pc-ds-dot.filled").length;
+    const succFilled = container.querySelectorAll(".pc-death-save-success.filled").length;
+    const failFilled = container.querySelectorAll(".pc-death-save-failure.filled").length;
     expect(succFilled).toBe(1);
     expect(failFilled).toBe(2);
   });
