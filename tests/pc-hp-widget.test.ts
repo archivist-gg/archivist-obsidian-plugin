@@ -254,5 +254,49 @@ describe("HpWidget — unconscious body swap (SP4 polish)", () => {
     expect(root.querySelector(".pc-hp-widget .pc-hp-current")).not.toBeNull();
     expect(root.querySelector(".pc-hp-widget .pc-death-save-success")).toBeNull();
   });
+
+  it("renders STABLE class + label when HP=0 and successes=3 (and failures<3)", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(3, 0);
+    new HpWidget().render(root, ctx);
+    const wrap = root.querySelector(".pc-hp-widget")!;
+    expect(wrap.classList.contains("stable")).toBe(true);
+    expect(wrap.classList.contains("unconscious")).toBe(false);
+    expect(wrap.classList.contains("dead")).toBe(false);
+    expect(root.querySelector(".pc-hp-widget .pc-hp-label")?.textContent).toBe("STABLE");
+  });
+
+  it("STABLE precedence: dead wins when both successes=3 AND failures=3", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(3, 3);
+    new HpWidget().render(root, ctx);
+    expect(root.querySelector(".pc-hp-widget")?.classList.contains("dead")).toBe(true);
+    expect(root.querySelector(".pc-hp-widget")?.classList.contains("stable")).toBe(false);
+    expect(root.querySelector(".pc-hp-widget .pc-hp-label")?.textContent).toBe("DEAD");
+  });
+
+  it("STABLE still shows death-save dots (for potential un-click)", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(3, 0);
+    new HpWidget().render(root, ctx);
+    expect(root.querySelectorAll(".pc-hp-widget .pc-death-save-success").length).toBe(3);
+    expect(root.querySelectorAll(".pc-hp-widget .pc-death-save-failure").length).toBe(3);
+    const successDots = [...root.querySelectorAll<HTMLElement>(".pc-hp-widget .pc-death-save-success")];
+    expect(successDots.every((d) => d.classList.contains("filled"))).toBe(true);
+  });
+
+  it("STABLE column structure: two columns (Success/Failure) without a divider", () => {
+    const root = mountContainer();
+    const { ctx } = unconsciousCtx(3, 0);
+    new HpWidget().render(root, ctx);
+    const pair = root.querySelector(".pc-hp-ds-pair")!;
+    const cols = pair.querySelectorAll(".pc-hp-ds-col");
+    expect(cols.length).toBe(2);
+    // Columns contain the "Success" and "Failure" labels (in order)
+    const heads = [...root.querySelectorAll<HTMLElement>(".pc-hp-ds-col-head")].map(
+      (h) => h.textContent?.trim()
+    );
+    expect(heads).toEqual(["Success", "Failure"]);
+  });
 });
 });

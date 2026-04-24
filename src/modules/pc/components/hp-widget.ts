@@ -4,11 +4,15 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
  * HP widget in the hero right.
  * - Normal mode (HP > 0): HEAL / input / DAMAGE on the left;
  *   CURRENT / MAX / TEMP three-up with HIT POINTS label below on the right.
- * - Unconscious mode (HP = 0, failures < 3): the body swaps to a
- *   DEATH SAVES panel — 3 success dots + 3 failure dots — with the
- *   "UNCONSCIOUS" label below. The HEAL/input/DAMAGE column is unchanged.
- * - Dead mode (HP = 0, failures = 3): same shape as unconscious, label
- *   becomes "DEAD". HEAL still clickable so a heal cascade can revive.
+ * - Unconscious mode (HP = 0, successes < 3, failures < 3): the body swaps
+ *   to an A3 two-column DEATH SAVES panel (Success / Failure, no divider)
+ *   with the "UNCONSCIOUS" label below. HEAL/input/DAMAGE is unchanged.
+ * - Stable mode (HP = 0, successes ≥ 3, failures < 3): same shape; label
+ *   becomes "STABLE". The dots are still interactive so a mis-tap can be
+ *   reverted back to UNCONSCIOUS.
+ * - Dead mode (HP = 0, failures ≥ 3): same shape; label becomes "DEAD".
+ *   HEAL stays clickable so a heal cascade can revive.
+ * Priority when HP=0: failures≥3 (DEAD) > successes≥3 (STABLE) > UNCONSCIOUS.
  */
 export class HpWidget implements SheetComponent {
   readonly type = "hp-widget";
@@ -20,11 +24,15 @@ export class HpWidget implements SheetComponent {
     const hpCurrent = ctx.derived.hp.current;
     const isUnconscious = hpCurrent === 0;
     const isDead = isUnconscious && !!ds && ds.failures >= 3;
+    const isStable = isUnconscious && !isDead && !!ds && ds.successes >= 3;
 
     let labelText = "HIT POINTS";
     if (isDead) {
       wrap.addClass("dead");
       labelText = "DEAD";
+    } else if (isStable) {
+      wrap.addClass("stable");
+      labelText = "STABLE";
     } else if (isUnconscious) {
       wrap.addClass("unconscious");
       labelText = "UNCONSCIOUS";
@@ -43,22 +51,32 @@ export class HpWidget implements SheetComponent {
     const body = wrap.createDiv({ cls: "pc-hp-body" });
 
     if (isUnconscious) {
-      // Death-saves panel takes over the body.
+      // A3 two-column death-saves panel: "Success" and "Failure" columns,
+      // no vertical divider — just spacing. DEATH SAVES header on top,
+      // state label (UNCONSCIOUS / STABLE / DEAD) rendered below via
+      // the shared body.createDiv({ cls: "pc-hp-label" }) call.
       body.createDiv({ cls: "pc-hp-death-header", text: "DEATH SAVES" });
 
       const dsState = ds ?? { successes: 0, failures: 0 };
-      const successRow = body.createDiv({ cls: "pc-hp-ds-row" });
+      const pair = body.createDiv({ cls: "pc-hp-ds-pair" });
+
+      const successCol = pair.createDiv({ cls: "pc-hp-ds-col" });
+      successCol.createSpan({ cls: "pc-hp-ds-col-head", text: "Success" });
+      const successDots = successCol.createSpan({ cls: "pc-hp-ds-dots" });
       for (let i = 0; i < 3; i++) {
-        const dot = successRow.createSpan({
+        const dot = successDots.createSpan({
           cls: `pc-death-save-success${dsState.successes > i ? " filled" : ""}`,
         });
         if (ctx.editState) {
           dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveSuccess(i as 0 | 1 | 2));
         }
       }
-      const failureRow = body.createDiv({ cls: "pc-hp-ds-row" });
+
+      const failureCol = pair.createDiv({ cls: "pc-hp-ds-col" });
+      failureCol.createSpan({ cls: "pc-hp-ds-col-head", text: "Failure" });
+      const failureDots = failureCol.createSpan({ cls: "pc-hp-ds-dots" });
       for (let i = 0; i < 3; i++) {
-        const dot = failureRow.createSpan({
+        const dot = failureDots.createSpan({
           cls: `pc-death-save-failure${dsState.failures > i ? " filled" : ""}`,
         });
         if (ctx.editState) {
