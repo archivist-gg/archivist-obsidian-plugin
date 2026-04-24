@@ -29,14 +29,14 @@ function caster(): ResolvedCharacter {
 describe("SpellsTab", () => {
   it("shows empty state for non-caster", () => {
     const container = mountContainer();
-    new SpellsTab().render(container, { resolved: nonCaster(), derived: { spellcasting: null } as DerivedStats, core: {} as never });
+    new SpellsTab().render(container, { resolved: nonCaster(), derived: { spellcasting: null } as DerivedStats, core: {} as never, editState: null });
     expect(container.querySelector(".pc-spells-empty-title")?.textContent).toBe("No Spellcasting");
   });
 
   it("renders DC/atk summary, slot grid, and spell list for a caster", () => {
     const container = mountContainer();
     const d: DerivedStats = { spellcasting: { ability: "int", saveDC: 15, attackBonus: 7 } } as DerivedStats;
-    new SpellsTab().render(container, { resolved: caster(), derived: d, core: {} as never });
+    new SpellsTab().render(container, { resolved: caster(), derived: d, core: {} as never, editState: null });
     expect(container.querySelector(".pc-spell-summary")?.textContent).toContain("15");
     expect(container.querySelector(".pc-spell-summary")?.textContent).toContain("+7");
     expect(container.querySelectorAll(".pc-slot-cell").length).toBe(2);
@@ -49,7 +49,7 @@ describe("SpellsTab", () => {
     const r = caster();
     (r.definition.spells as { known: string[] }).known = [];
     const d: DerivedStats = { spellcasting: { ability: "int", saveDC: 15, attackBonus: 7 } } as DerivedStats;
-    new SpellsTab().render(container, { resolved: r, derived: d, core: {} as never });
+    new SpellsTab().render(container, { resolved: r, derived: d, core: {} as never, editState: null });
     expect(container.querySelector(".pc-empty-line")?.textContent).toMatch(/No spells/);
   });
 });

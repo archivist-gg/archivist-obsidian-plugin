@@ -21,7 +21,7 @@ function mkResolved(notes?: string): ResolvedCharacter {
 }
 
 function mkCtx(notes?: string): ComponentRenderContext {
-  return { resolved: mkResolved(notes), derived: {} as DerivedStats, core: {} as never };
+  return { resolved: mkResolved(notes), derived: {} as DerivedStats, core: {} as never, editState: null };
 }
 
 describe("NotesTab", () => {

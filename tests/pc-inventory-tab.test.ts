@@ -25,7 +25,7 @@ function mkResolved(): ResolvedCharacter {
   };
 }
 
-const ctx: ComponentRenderContext = { resolved: mkResolved(), derived: {} as DerivedStats, core: {} as never };
+const ctx: ComponentRenderContext = { resolved: mkResolved(), derived: {} as DerivedStats, core: {} as never, editState: null };
 
 describe("InventoryTab", () => {
   it("renders equipped badge for equipped items", () => {

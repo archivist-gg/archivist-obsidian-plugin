@@ -19,6 +19,7 @@ const ctx: ComponentRenderContext = {
   resolved: {} as ResolvedCharacter,
   derived: {} as DerivedStats,
   core: {} as never,
+  editState: null,
 };
 
 describe("BackgroundTab", () => {

@@ -47,14 +47,24 @@ export class PCSheetView extends TextFileView {
     // Loop guard: Obsidian echoes our just-written bytes back through
     // setViewData after save. Short-circuit before re-running the render
     // pipeline (which would rebuild the entire sheet and re-create editState,
-    // losing in-flight session state).
-    if (data === this.lastWrittenData) {
+    // losing in-flight session state). Normalize CRLF→LF on both sides so the
+    // guard still fires on Windows, where TextFileView.save() rewrites with
+    // CRLF after our spliceCodeBlock emits LF-joined bytes.
+    const normalized = data.replace(/\r\n/g, "\n");
+    if (this.lastWrittenData !== null && normalized === this.lastWrittenData) {
       this.rawFileData = data;
       return;
     }
     this.rawFileData = data;
     this.isDirty = false;
     this.lastWrittenData = null;
+    // Null the current-load fields so a queued handleChange microtask (from a
+    // prior UI event) that fires after setViewData resets state but before the
+    // deferred ready.then() runs hits the `!this.editState` early-return
+    // instead of mutating this.character/derived with values derived from a
+    // stale editState.
+    this.editState = null;
+    this.codeBlockRange = null;
     if (clear) this.contentEl.empty();
 
     const gen = ++this.renderGeneration;

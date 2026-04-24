@@ -65,6 +65,7 @@ describe("ProficienciesPanel", () => {
     resolved: mkResolved(),
     derived: {} as DerivedStats,
     core: {} as never,
+    editState: null,
   };
   it("renders four labelled lines", () => {
     const container = mountContainer();
@@ -84,7 +85,7 @@ describe("ProficienciesPanel", () => {
     r.background = null;
     r.race = null;
     const container = mountContainer();
-    new ProficienciesPanel().render(container, { resolved: r, derived: {} as DerivedStats, core: {} as never });
+    new ProficienciesPanel().render(container, { resolved: r, derived: {} as DerivedStats, core: {} as never, editState: null });
     const vals = [...container.querySelectorAll(".pc-prof-vals")].map((v) => v.textContent);
     expect(vals).toEqual(["—", "—", "—", "—"]);
   });

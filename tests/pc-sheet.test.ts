@@ -33,14 +33,14 @@ describe("renderPCSheet", () => {
   it("empties root then writes the sheet wrapper", () => {
     const root = mountContainer();
     root.createDiv({ cls: "should-be-cleared" });
-    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, warnings: [] });
+    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, editState: null, warnings: [] });
     expect(root.querySelector(".should-be-cleared")).toBeNull();
     expect(root.querySelector(".archivist-pc-sheet")).not.toBeNull();
   });
 
   it("renders hero cluster, stats band, sidebar, and tabs content", () => {
     const root = mountContainer();
-    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, warnings: [] });
+    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, editState: null, warnings: [] });
     expect(root.querySelector(".pc-hero .probe-header-section")).not.toBeNull();
     expect(root.querySelector(".pc-abilities .probe-ability-row")).not.toBeNull();
     expect(root.querySelector(".pc-stats-right .probe-stats-tiles")).not.toBeNull();
@@ -55,20 +55,20 @@ describe("renderPCSheet", () => {
 
   it("renders warning banner when warnings non-empty", () => {
     const root = mountContainer();
-    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, warnings: ["Missing race", "Bad slug"] });
+    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, editState: null, warnings: ["Missing race", "Bad slug"] });
     const items = root.querySelectorAll(".archivist-pc-warnings li");
     expect(items.length).toBe(2);
   });
 
   it("does not render warning banner when empty", () => {
     const root = mountContainer();
-    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, warnings: [] });
+    renderPCSheet({ root, resolved, derived, registry: fullRegistry(), core, editState: null, warnings: [] });
     expect(root.querySelector(".archivist-pc-warnings")).toBeNull();
   });
 
   it("shows '(No renderer for X)' for unregistered components", () => {
     const root = mountContainer();
-    renderPCSheet({ root, resolved, derived, registry: new ComponentRegistry(), core, warnings: [] });
+    renderPCSheet({ root, resolved, derived, registry: new ComponentRegistry(), core, editState: null, warnings: [] });
     const missings = [...root.querySelectorAll(".pc-empty-line")].map((e) => e.textContent);
     expect(missings.some((t) => t?.includes("No renderer for header-section"))).toBe(true);
   });

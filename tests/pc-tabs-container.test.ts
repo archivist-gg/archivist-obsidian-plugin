@@ -13,7 +13,7 @@ class Probe implements SheetComponent {
   render(el: HTMLElement, _ctx?: ComponentRenderContext) { el.createDiv({ cls: `probe-${this.type}`, text: this.type }); }
 }
 
-const ctx: ComponentRenderContext = { resolved: {} as ResolvedCharacter, derived: {} as DerivedStats, core: {} as never };
+const ctx: ComponentRenderContext = { resolved: {} as ResolvedCharacter, derived: {} as DerivedStats, core: {} as never, editState: null };
 
 function mkRegistry(): ComponentRegistry {
   const r = new ComponentRegistry();

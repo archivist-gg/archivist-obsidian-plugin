@@ -38,6 +38,7 @@ const fakeCtx = (resolved: ResolvedCharacter): ComponentRenderContext => ({
   resolved,
   derived: {} as DerivedStats,
   core: {} as never,
+  editState: null,
 });
 
 describe("buildSubtitle", () => {

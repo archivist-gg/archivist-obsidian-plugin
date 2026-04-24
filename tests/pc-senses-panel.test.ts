@@ -13,6 +13,7 @@ const ctx: ComponentRenderContext = {
     passives: { perception: 14, investigation: 10, insight: 11 },
   } as DerivedStats,
   core: {} as never,
+  editState: null,
 };
 
 describe("SensesPanel", () => {

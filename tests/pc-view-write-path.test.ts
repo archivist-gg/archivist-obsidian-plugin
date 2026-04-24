@@ -99,4 +99,16 @@ describe("PCSheetView — write path", () => {
     view.setViewData(echoed, false);
     expect(hc).not.toHaveBeenCalled();
   });
+
+  it("setViewData loop guard works across LF/CRLF echo (Windows simulation)", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error
+    view.editState!.setInspiration(7);
+    await Promise.resolve();
+    const lfBytes = view.getViewData();
+    const crlfBytes = lfBytes.replace(/\n/g, "\r\n");  // simulate Obsidian Windows save
+    const hc = vi.spyOn(view as unknown as { handleChange: () => void }, "handleChange");
+    view.setViewData(crlfBytes, false);
+    expect(hc).not.toHaveBeenCalled();
+  });
 });

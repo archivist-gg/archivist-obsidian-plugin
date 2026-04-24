@@ -47,6 +47,7 @@ const ctx = (): ComponentRenderContext => ({
   resolved: mkResolved(),
   derived: {} as DerivedStats,
   core: {} as never,
+  editState: null,
 });
 
 describe("resolveFeatureDescription", () => {

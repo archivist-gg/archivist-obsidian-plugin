@@ -33,6 +33,7 @@ const ctx: ComponentRenderContext = {
     }),
   } as DerivedStats,
   core: {} as never,
+  editState: null,
 };
 
 describe("SkillsPanel", () => {
