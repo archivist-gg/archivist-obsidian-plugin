@@ -74,10 +74,12 @@ describe("PC end-to-end: Grendal the Wary", () => {
     ).toBe("+2");
     expect(
       root.querySelector(".pc-hp-widget .pc-hp-current .pc-hp-val")?.textContent,
-    ).toBe("38");
+    ).toContain("38");
+    // toContain rather than toBe — SP4b appends an override `*` mark inside
+    // the value element when overrides.hp.max is set on the fixture.
     expect(
       root.querySelector(".pc-hp-widget .pc-hp-max .pc-hp-val")?.textContent,
-    ).toBe("44");
+    ).toContain("44");
     // Right cluster containers exist.
     expect(root.querySelector(".pc-stats-right .pc-stats-tiles")).not.toBeNull();
     expect(root.querySelector(".pc-stats-right .pc-def-cond")).not.toBeNull();

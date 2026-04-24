@@ -127,6 +127,6 @@ export function numberOverride(valueEl: HTMLElement, opts: NumberOverrideOpts): 
       e.stopPropagation();
       opts.onClear();
     });
-    valueEl.insertAdjacentElement("afterend", mark);
+    valueEl.appendChild(mark);
   }
 }

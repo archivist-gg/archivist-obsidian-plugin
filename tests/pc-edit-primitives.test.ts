@@ -162,7 +162,7 @@ describe("numberOverride", () => {
     const mark = root.querySelector<HTMLElement>(".archivist-override-mark");
     expect(mark).not.toBeNull();
     expect(mark!.textContent).toBe("*");
-    expect(mark!.previousSibling).toBe(valueEl);
+    expect(mark!.parentElement).toBe(valueEl);
   });
 
   it("click on valueEl opens input with getEffective() value and commit calls onSet", () => {
