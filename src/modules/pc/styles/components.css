@@ -617,11 +617,6 @@
   overflow: hidden;
   white-space: nowrap;
 }
-.archivist-pc-sheet .pc-skill-name::after {
-  content: " ..............................................";
-  color: var(--pc-tan-muted);
-  letter-spacing: 2px;
-}
 .archivist-pc-sheet .pc-skill-bonus {
   order: 2;
   font-family: var(--pc-font-serif);
@@ -728,11 +723,17 @@
   text-align: center;
 }
 
-/* Defenses + Conditions merged panel */
+/* Defenses + Conditions merged panel.
+ * The panel sits inside a safeRender wrapper div; both must stretch to
+ * match the height of the stats-tiles column on its left. */
+.archivist-pc-sheet .pc-def-cond-wrap {
+  display: flex;
+}
 .archivist-pc-sheet .pc-def-cond {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 16px;
+  flex: 1 1 auto;
 }
 .archivist-pc-sheet .pc-def-cond-left {
   padding-right: 12px;

@@ -23,11 +23,17 @@
 
 .archivist-pc-sheet .pc-header { padding: 0; }
 
+/* Body: the sidebar and content columns are both grid cells stretched to
+ * the same height, so a `border-right` on the sidebar naturally spans the
+ * full body. We zero the body's vertical padding and push it onto each
+ * column instead — that lets the sidebar's border sit flush against the
+ * stats-band rule above and the sheet footer below. Horizontal padding
+ * stays on the body so the two columns share a consistent outer inset. */
 .archivist-pc-sheet .pc-body {
   display: grid;
   grid-template-columns: 240px 1fr;
-  gap: var(--pc-space-4);
-  padding: var(--pc-space-4);
+  gap: var(--pc-space-5);
+  padding: 0 var(--pc-space-4);
 }
 
 .archivist-pc-sheet .pc-sidebar {
@@ -35,6 +41,8 @@
   flex-direction: column;
   gap: var(--pc-space-3);
   min-width: 0;
+  padding: var(--pc-space-4) var(--pc-space-4) var(--pc-space-4) 0;
+  border-right: 1px solid var(--pc-tan);
 }
 
 .archivist-pc-sheet .pc-content {
@@ -42,12 +50,23 @@
   flex-direction: column;
   gap: var(--pc-space-3);
   min-width: 0;
+  padding: var(--pc-space-4) 0;
 }
 
-/* sm: body sidebar collapses under content */
+/* sm: body sidebar collapses under content — swap the vertical divider
+ * for a horizontal one so the two sections stay clearly demarcated. */
 @media (max-width: 760px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
+    padding: 0 var(--pc-space-4) var(--pc-space-4);
+  }
+  .archivist-pc-sheet .pc-sidebar {
+    padding: var(--pc-space-4) 0 var(--pc-space-3);
+    border-right: none;
+    border-bottom: 1px solid var(--pc-tan);
+  }
+  .archivist-pc-sheet .pc-content {
+    padding: var(--pc-space-3) 0 0;
   }
 }
 

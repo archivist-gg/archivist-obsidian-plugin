@@ -9055,6 +9055,31 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-font-serif: 'Libre Baskerville', Georgia, serif;
   --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
 
+  /* --------------------------------------------------------------
+   * Type scale — 9 sizes, mapped to roles. Every selector below
+   * references one of these; no raw px font-sizes elsewhere.
+   * -------------------------------------------------------------- */
+  --pc-fs-display: 22px;      /* character name */
+  --pc-fs-big:     22px;      /* primary big values (ab-mod, ac-num, tile-val) */
+  --pc-fs-mid:     18px;      /* secondary big values (hp-val, hd-nums) */
+  --pc-fs-title:   16px;      /* block title, currency/sense/slot large val */
+  --pc-fs-heading: 14px;      /* tab heading, block subtitle */
+  --pc-fs-body:    12px;      /* body text, skill rows, tables, descriptions */
+  --pc-fs-small:   11px;      /* secondary meta, tab buttons, inline bonuses */
+  --pc-fs-label:   10px;      /* section/microcap labels (uppercase) */
+  --pc-fs-micro:    8px;      /* super-tight uppercase labels (cartouche / tile) */
+  --pc-fs-tiny:   7.5px;      /* tightest microcap (save-chip "SAVE") */
+
+  --pc-lh-tight:  1;
+  --pc-lh-snug:   1.2;
+  --pc-lh-value:  1.05;
+  --pc-lh-body:   1.45;
+
+  /* Uppercase micro-label letter-spacing ramp (smaller = wider). */
+  --pc-ls-caps-sm:    0.08em;    /* 11-14px uppercase (buttons, subtitle) */
+  --pc-ls-caps-md:    0.14em;    /* 8-10px standard microcap */
+  --pc-ls-caps-lg:    0.2em;     /* 7.5-8px display microcap (AC / HP / HD) */
+
   --pc-space-1: 4px;
   --pc-space-2: 8px;
   --pc-space-3: 12px;
@@ -9066,7 +9091,7 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
-  background: var(--pc-parchment-light);
+  background: var(--d5e-parchment, #f0ddbd);
   color: var(--pc-text-primary);
   font-family: var(--pc-font-sans);
   padding: var(--pc-space-5);
@@ -9077,8 +9102,23 @@ body.theme-light .archivist-tag-atk:hover {
 /* ============================================
    pc/layout.css
    ============================================ */
+/* =============================================================
+ * PC Sheet responsive breakpoints (used across layout.css and
+ * components.css). Keep this list as the single source of truth:
+ *
+ *   lg  >= 1100px   default desktop layout
+ *   md   900-1099px stats-band right cluster stacks its 2x2+def-cond
+ *   sm   760-899px  stats-band becomes single column (abilities row
+ *                   full-width above the right cluster)
+ *   xs   600-759px  body sidebar stacks under content; hero-right
+ *                   wraps under identity; ability row collapses to
+ *                   3 columns; save chips shrink (hide word "SAVE")
+ *   xxs  < 600px    last-resort graceful degradation (2-col ability
+ *                   row; tiles stack; everything stays legible)
+ * ============================================================= */
+
 .archivist-pc-sheet {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
   border-radius: var(--pc-radius-lg);
   box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
@@ -9087,17 +9127,26 @@ body.theme-light .archivist-tag-atk:hover {
 
 .archivist-pc-sheet .pc-header { padding: 0; }
 
+/* Body: the sidebar and content columns are both grid cells stretched to
+ * the same height, so a `border-right` on the sidebar naturally spans the
+ * full body. We zero the body's vertical padding and push it onto each
+ * column instead — that lets the sidebar's border sit flush against the
+ * stats-band rule above and the sheet footer below. Horizontal padding
+ * stays on the body so the two columns share a consistent outer inset. */
 .archivist-pc-sheet .pc-body {
   display: grid;
   grid-template-columns: 240px 1fr;
-  gap: var(--pc-space-4);
-  padding: var(--pc-space-4);
+  gap: var(--pc-space-5);
+  padding: 0 var(--pc-space-4);
 }
 
 .archivist-pc-sheet .pc-sidebar {
   display: flex;
   flex-direction: column;
   gap: var(--pc-space-3);
+  min-width: 0;
+  padding: var(--pc-space-4) var(--pc-space-4) var(--pc-space-4) 0;
+  border-right: 1px solid var(--pc-tan);
 }
 
 .archivist-pc-sheet .pc-content {
@@ -9105,14 +9154,23 @@ body.theme-light .archivist-tag-atk:hover {
   flex-direction: column;
   gap: var(--pc-space-3);
   min-width: 0;
+  padding: var(--pc-space-4) 0;
 }
 
+/* sm: body sidebar collapses under content — swap the vertical divider
+ * for a horizontal one so the two sections stay clearly demarcated. */
 @media (max-width: 760px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
+    padding: 0 var(--pc-space-4) var(--pc-space-4);
   }
-  .archivist-pc-sheet .pc-ability-row {
-    grid-template-columns: repeat(3, 1fr);
+  .archivist-pc-sheet .pc-sidebar {
+    padding: var(--pc-space-4) 0 var(--pc-space-3);
+    border-right: none;
+    border-bottom: 1px solid var(--pc-tan);
+  }
+  .archivist-pc-sheet .pc-content {
+    padding: var(--pc-space-3) 0 0;
   }
 }
 
@@ -9149,7 +9207,7 @@ body.theme-light .archivist-tag-atk:hover {
   margin: var(--pc-space-3) var(--pc-space-4) 0;
   background: #fff6e0;
   border-left: 3px solid var(--pc-crimson);
-  font-size: 12px;
+  font-size: var(--pc-fs-body);
   border-radius: var(--pc-radius-sm);
 }
 
@@ -9167,7 +9225,16 @@ body.theme-light .archivist-tag-atk:hover {
    ============================================ */
 /* Filled in by component tasks (header-section, ability-row, saves-panel, ...). */
 
-.archivist-pc-sheet .pc-header .pc-header-root {
+/* Flat buttons — override Obsidian/theme button shadows + gradients so every
+ * button inside the PC sheet renders as a clean outlined box. */
+.archivist-pc-sheet button {
+  box-shadow: none !important;
+  text-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.archivist-pc-sheet .pc-header-root {
   display: flex;
   align-items: center;
   gap: var(--pc-space-4);
@@ -9186,7 +9253,9 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
 .archivist-pc-sheet .pc-name {
   font-family: var(--pc-font-serif);
-  font-size: 28px;
+  font-size: var(--pc-fs-display);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
   margin: 0;
   color: var(--pc-crimson);
   letter-spacing: 0.5px;
@@ -9194,7 +9263,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-subtitle {
   font-style: italic;
   color: var(--pc-text-soft);
-  font-size: 13px;
+  font-size: var(--pc-fs-body);
   margin-top: 2px;
 }
 .archivist-pc-sheet .pc-header-actions { display: flex; gap: var(--pc-space-2); }
@@ -9202,55 +9271,115 @@ body.theme-light .archivist-tag-atk:hover {
   background: var(--pc-parchment-light);
   border: 1px solid var(--pc-tan);
   padding: 6px 12px;
-  font-size: 11px;
-  letter-spacing: 0.5px;
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
   text-transform: uppercase;
   color: var(--pc-crimson);
   cursor: not-allowed;
   opacity: 0.7;
 }
+/* Sidebar sections — flat on the parchment. No card background, no outer
+   border, no radius. The section title carries a crimson hairline rule. */
 .archivist-pc-sheet .pc-sidebar-section {
-  background: var(--pc-white);
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-3);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--pc-space-3);
 }
 .archivist-pc-sheet .pc-sidebar-title {
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  letter-spacing: var(--pc-ls-caps-lg);
   color: var(--pc-crimson);
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
   margin-bottom: var(--pc-space-2);
-  border-bottom: 1px solid var(--pc-tan-muted);
-  padding-bottom: 4px;
+  border-bottom: 1px solid var(--pc-crimson);
+  padding-bottom: 3px;
 }
-.archivist-pc-sheet .pc-skill-bonus {
+/* Senses section — boxed numeric value + uppercase serif label; flows flat. */
+.archivist-pc-sheet .pc-senses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-sense-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-sense-row:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-sense-val {
+  order: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--pc-tan);
+  border-radius: 2px;
   font-family: var(--pc-font-serif);
-  min-width: 22px;
-  text-align: right;
+  font-size: var(--pc-fs-title);
+  font-weight: 700;
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  background: transparent;
+  flex-shrink: 0;
 }
-.archivist-pc-sheet .pc-skill-name {
+.archivist-pc-sheet .pc-sense-name {
+  order: 1;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
   color: var(--pc-text-primary);
 }
-.archivist-pc-sheet .pc-senses-list { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
-.archivist-pc-sheet .pc-sense-row { display: flex; justify-content: space-between; align-items: baseline; }
-.archivist-pc-sheet .pc-sense-val { font-family: var(--pc-font-serif); font-size: 16px; }
-.archivist-pc-sheet .pc-skills-list { display: flex; flex-direction: column; gap: 3px; }
-.archivist-pc-sheet .pc-prof-body { display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4; }
-.archivist-pc-sheet .pc-prof-key { font-weight: 600; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-skills-list { display: flex; flex-direction: column; gap: 0; }
+.archivist-pc-sheet .pc-prof-body { display: flex; flex-direction: column; gap: 4px; font-size: var(--pc-fs-small); line-height: var(--pc-lh-body); }
+.archivist-pc-sheet .pc-prof-line { padding: 3px 0; border-bottom: 1px dotted var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-prof-line:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-prof-key { font-weight: 700; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-tab-body { padding: var(--pc-space-3); background: var(--pc-white); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); }
-.archivist-pc-sheet .pc-tab-heading { font-family: var(--pc-font-serif); color: var(--pc-crimson); font-size: 14px; margin: var(--pc-space-3) 0 var(--pc-space-2); text-transform: uppercase; letter-spacing: 0.5px; }
-.archivist-pc-sheet .pc-empty-line { font-size: 12px; color: var(--pc-text-muted); font-style: italic; }
-.archivist-pc-sheet .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.archivist-pc-sheet .pc-attack-table th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--pc-tan); color: var(--pc-crimson); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-.archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); }
+/* Tab content body — flat on parchment, no card/border. */
+.archivist-pc-sheet .pc-tab-body { padding: 0; background: transparent; border: none; border-radius: 0; }
+.archivist-pc-sheet .pc-tab-heading {
+  font-family: var(--pc-font-serif);
+  color: var(--pc-crimson);
+  font-size: var(--pc-fs-heading);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  margin: var(--pc-space-3) 0 var(--pc-space-2);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-tab-heading:first-child { margin-top: 0; }
+.archivist-pc-sheet .pc-empty-line { font-size: var(--pc-fs-body); color: var(--pc-text-muted); font-style: italic; }
+.archivist-pc-sheet .pc-attack-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); background: transparent; }
+.archivist-pc-sheet .pc-attack-table th {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--pc-tan);
+  color: var(--pc-crimson);
+  font-size: var(--pc-fs-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  background: transparent;
+}
+.archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); background: transparent; }
 .archivist-pc-sheet .pc-attack-name { font-weight: 600; }
 .archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: 11px; }
-.archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: 14px; }
-.archivist-pc-sheet .pc-death-saves { display: flex; flex-direction: column; gap: var(--pc-space-1); font-size: 12px; }
+.archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; }
+.archivist-pc-sheet .pc-death-saves { display: flex; flex-direction: column; gap: var(--pc-space-1); font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-ds-row { display: flex; align-items: center; gap: var(--pc-space-2); }
 .archivist-pc-sheet .pc-ds-label { min-width: 80px; color: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-ds-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--pc-crimson); }
@@ -9258,48 +9387,87 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-ds-dot.filled.failure { background: #922; }
 .archivist-pc-sheet .pc-spells-empty { text-align: center; padding: var(--pc-space-5); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spells-empty-icon { font-size: 32px; opacity: 0.3; }
-.archivist-pc-sheet .pc-spells-empty-title { font-family: var(--pc-font-serif); font-size: 16px; color: var(--pc-crimson); margin-top: 4px; }
-.archivist-pc-sheet .pc-spells-empty-subtitle { font-size: 11px; margin-top: 4px; }
-.archivist-pc-sheet .pc-spell-summary { font-size: 12px; color: var(--pc-text-soft); margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-key { text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-spells-empty-title { font-family: var(--pc-font-serif); font-size: var(--pc-fs-title); font-weight: 700; color: var(--pc-crimson); margin-top: 4px; }
+.archivist-pc-sheet .pc-spells-empty-subtitle { font-size: var(--pc-fs-small); margin-top: 4px; }
+.archivist-pc-sheet .pc-spell-summary { font-size: var(--pc-fs-body); color: var(--pc-text-soft); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-key {
+  text-transform: uppercase;
+  font-size: var(--pc-fs-label);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-crimson);
+}
 .archivist-pc-sheet .pc-slot-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: var(--pc-space-3); }
-.archivist-pc-sheet .pc-slot-cell { text-align: center; padding: 4px 2px; background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); font-size: 11px; }
-.archivist-pc-sheet .pc-slot-val { font-family: var(--pc-font-serif); font-size: 14px; }
-.archivist-pc-sheet .pc-spell-list { list-style: none; padding: 0; font-size: 12px; }
+.archivist-pc-sheet .pc-slot-cell { text-align: center; padding: 4px 2px; background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-slot-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; line-height: var(--pc-lh-tight); }
+.archivist-pc-sheet .pc-spell-list { list-style: none; padding: 0; font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-spell-list li { padding: 2px 0; }
-.archivist-pc-sheet .pc-spell-slug { color: var(--pc-text-muted); font-size: 10px; }
-.archivist-pc-sheet .pc-inventory-list { list-style: none; padding: 0; font-size: 12px; display: flex; flex-direction: column; gap: 4px; }
+.archivist-pc-sheet .pc-spell-slug { color: var(--pc-text-muted); font-size: var(--pc-fs-label); }
+.archivist-pc-sheet .pc-inventory-list { list-style: none; padding: 0; font-size: var(--pc-fs-body); display: flex; flex-direction: column; gap: 4px; }
 .archivist-pc-sheet .pc-inventory-item { display: flex; gap: var(--pc-space-2); align-items: center; padding: 4px 0; border-bottom: 1px solid var(--pc-tan-muted); }
 .archivist-pc-sheet .pc-item-name { flex: 1; }
 .archivist-pc-sheet .pc-item-qty { font-family: var(--pc-font-serif); color: var(--pc-text-soft); }
-.archivist-pc-sheet .pc-item-badge { font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 6px; border-radius: 8px; }
+.archivist-pc-sheet .pc-item-badge {
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
 .archivist-pc-sheet .pc-item-equipped { background: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-item-attuned { background: #6b3a1a; color: var(--pc-white); }
 .archivist-pc-sheet .pc-currency-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--pc-space-2); }
 .archivist-pc-sheet .pc-currency-cell { background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); padding: var(--pc-space-2); text-align: center; }
-.archivist-pc-sheet .pc-currency-val { font-family: var(--pc-font-serif); font-size: 16px; }
-.archivist-pc-sheet .pc-currency-label { font-size: 10px; color: var(--pc-crimson); letter-spacing: 0.5px; }
+.archivist-pc-sheet .pc-currency-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-title); font-weight: 700; line-height: var(--pc-lh-tight); }
+.archivist-pc-sheet .pc-currency-label {
+  font-size: var(--pc-fs-label);
+  color: var(--pc-crimson);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+}
+/* Tabs — styled to match `.archivist-monster-block .archivist-tab` exactly. */
 .archivist-pc-sheet .pc-tabs-bar {
+  position: relative;
   display: flex;
-  gap: var(--pc-space-2);
-  border-bottom: 1px solid var(--pc-tan);
-  padding-bottom: var(--pc-space-2);
+  align-items: stretch;
+  gap: 2px;
+  margin: 0.5em 0 0;
+  border-bottom: 1px solid var(--d5e-text-accent, #7a200d);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.archivist-pc-sheet .pc-tabs-bar::-webkit-scrollbar {
+  display: none;
 }
 .archivist-pc-sheet .pc-tab-btn {
-  background: transparent;
-  border: none;
-  color: var(--pc-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 6px 12px;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--d5e-text-accent, #7a200d) !important;
   font-size: 11px;
   font-weight: 600;
-  padding: 4px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Noto Sans', sans-serif;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 1 !important;
 }
 .archivist-pc-sheet .pc-tab-btn.active {
-  color: var(--pc-crimson);
-  border-bottom-color: var(--pc-crimson);
+  color: var(--d5e-bar-fill, #922610) !important;
+  border-bottom-color: var(--d5e-bar-fill, #922610) !important;
+  background-color: rgba(122, 32, 13, 0.18) !important;
+  margin-bottom: -1px;
+}
+.archivist-pc-sheet .pc-tab-btn:hover:not(.active) {
+  background-color: rgba(122, 32, 13, 0.07) !important;
 }
 .archivist-pc-sheet .pc-tab-panel { display: none; margin-top: var(--pc-space-3); }
 .archivist-pc-sheet .pc-tab-panel.active { display: block; }
@@ -9321,160 +9489,179 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   gap: 12px;
   align-items: stretch;
+  margin-left: auto;
 }
 
-/* AC shield */
+/* AC shield — heraldic outline, no fill. Outer + inner stroke for a trim look. */
 .archivist-pc-sheet .pc-ac-shield {
-  width: 84px;
-  height: 96px;
+  width: 72px;
+  height: 84px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120' preserveAspectRatio='none'><g fill='none' stroke='%231c1811' stroke-linejoin='round' stroke-linecap='round'><path d='M 5 6 L 95 6 L 95 58 Q 95 96 50 116 Q 5 96 5 58 Z' stroke-width='2'/><path d='M 10 11 L 90 11 L 90 58 Q 90 91 50 109 Q 10 91 10 58 Z' stroke-width='0.8' opacity='0.55'/></g></svg>");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
-.archivist-pc-sheet .pc-ac-shield-shell {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, #e3d3a5 0%, #c9b286 100%);
-  clip-path: polygon(50% 0%, 100% 12%, 100% 62%, 50% 100%, 0% 62%, 0% 12%);
-  box-shadow: inset 0 0 0 2px var(--pc-text-primary);
-}
+.archivist-pc-sheet .pc-ac-shield-shell,
 .archivist-pc-sheet .pc-ac-shield-trim {
-  position: absolute;
-  inset: 4px;
-  clip-path: polygon(50% 0%, 100% 12%, 100% 62%, 50% 100%, 0% 62%, 0% 12%);
-  box-shadow: inset 0 0 0 1.5px var(--pc-tan);
+  display: none;
 }
 .archivist-pc-sheet .pc-ac-shield-txt { position: relative; text-align: center; }
 .archivist-pc-sheet .pc-ac-shield-label-top,
 .archivist-pc-sheet .pc-ac-shield-label-bot {
   font-family: var(--pc-font-serif);
-  font-size: 8px;
-  letter-spacing: 0.22em;
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
   color: var(--pc-text-soft);
   text-transform: uppercase;
+  line-height: var(--pc-lh-snug);
 }
-.archivist-pc-sheet .pc-ac-shield-label-top { margin-top: -8px; }
+.archivist-pc-sheet .pc-ac-shield-label-top { margin-top: -6px; }
 .archivist-pc-sheet .pc-ac-shield-num {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 28px;
-  line-height: 1.05;
+  font-size: var(--pc-fs-big);
+  line-height: var(--pc-lh-value);
   color: var(--pc-text-primary);
 }
 
 /* HP widget */
 .archivist-pc-sheet .pc-hp-widget {
-  min-width: 320px;
+  min-width: 240px;
   display: grid;
   grid-template-columns: auto 1fr;
-  column-gap: 16px;
+  column-gap: 12px;
   align-items: center;
+  padding: 6px 10px;
 }
 .archivist-pc-sheet .pc-hp-actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
-.archivist-pc-sheet .pc-hp-actions button {
-  font-family: var(--pc-font-serif);
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  padding: 5px 12px;
+.archivist-pc-sheet .pc-hp-actions button,
+.archivist-pc-sheet .pc-hp-actions input {
+  width: 56px;
+  height: 20px;
+  padding: 0;
+  box-sizing: border-box;
   border-radius: 4px;
+  font-family: var(--pc-font-serif);
+  line-height: var(--pc-lh-tight);
+  text-align: center;
   background: transparent;
   cursor: pointer;
+}
+.archivist-pc-sheet .pc-hp-actions button {
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
   text-transform: uppercase;
 }
-.archivist-pc-sheet .pc-hp-heal { border: 1.2px solid #2f6f3a; color: #2f6f3a; }
-.archivist-pc-sheet .pc-hp-damage { border: 1.2px solid var(--pc-crimson); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-hp-actions input {
+  font-size: var(--pc-fs-small);
+}
+.archivist-pc-sheet .pc-hp-heal { border: 1px solid #2f6f3a; color: #2f6f3a; }
+.archivist-pc-sheet .pc-hp-damage { border: 1px solid var(--pc-crimson); color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-hp-input {
-  width: 72px;
-  text-align: center;
-  padding: 4px;
-  font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 13px;
-  border: 1.2px solid var(--pc-tan-muted);
-  border-radius: 4px;
+  border: 1px solid var(--pc-tan-muted);
   background: rgba(255, 255, 255, 0.35);
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hp-nums {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  column-gap: 14px;
+  column-gap: 10px;
   text-align: center;
 }
 .archivist-pc-sheet .pc-hp-lbl {
   font-family: var(--pc-font-serif);
-  font-size: 8.5px;
-  letter-spacing: 0.16em;
+  font-size: var(--pc-fs-tiny);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
   color: var(--pc-text-soft);
+  line-height: var(--pc-lh-snug);
 }
 .archivist-pc-sheet .pc-hp-val {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 26px;
-  line-height: 1;
+  font-size: var(--pc-fs-mid);
+  line-height: var(--pc-lh-tight);
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hp-temp .pc-hp-val { color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-hp-label {
   text-align: center;
   font-family: var(--pc-font-serif);
-  font-size: 9px;
-  letter-spacing: 0.26em;
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
   color: var(--pc-text-muted);
-  margin-top: 6px;
+  margin-top: 2px;
+  line-height: var(--pc-lh-snug);
 }
 
 /* Hit Dice widget */
 .archivist-pc-sheet .pc-hd-widget {
-  min-width: 180px;
+  min-width: 130px;
   display: grid;
   grid-template-columns: auto 1fr;
-  column-gap: 14px;
+  column-gap: 10px;
   align-items: center;
+  padding: 6px 10px;
 }
-.archivist-pc-sheet .pc-hd-actions { display: flex; flex-direction: column; gap: 6px; }
+.archivist-pc-sheet .pc-hd-actions { display: flex; flex-direction: column; gap: 2px; }
 .archivist-pc-sheet .pc-hd-actions button {
+  width: 26px;
+  height: 20px;
+  padding: 0;
+  box-sizing: border-box;
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 14px;
-  line-height: 1;
-  padding: 3px 12px;
-  border: 1.2px solid var(--pc-tan);
+  font-size: var(--pc-fs-small);
+  line-height: var(--pc-lh-tight);
+  border: 1px solid var(--pc-tan);
   color: var(--pc-text-primary);
   background: transparent;
   border-radius: 4px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .archivist-pc-sheet .pc-hd-body { text-align: center; }
 .archivist-pc-sheet .pc-hd-nums {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 26px;
-  line-height: 1;
+  font-size: var(--pc-fs-mid);
+  line-height: var(--pc-lh-tight);
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-hd-tot,
 .archivist-pc-sheet .pc-hd-sep { color: var(--pc-text-muted); font-weight: 400; }
 .archivist-pc-sheet .pc-hd-label {
   font-family: var(--pc-font-serif);
-  font-size: 9px;
-  letter-spacing: 0.24em;
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
   color: var(--pc-text-muted);
-  margin-top: 6px;
+  margin-top: 2px;
+  line-height: var(--pc-lh-snug);
 }
 .archivist-pc-sheet .pc-hd-chips { display: inline-flex; gap: 4px; margin-bottom: 4px; }
 .archivist-pc-sheet .pc-hd-chip {
   font-family: var(--pc-font-serif);
   font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: var(--pc-fs-label);
+  letter-spacing: var(--pc-ls-caps-sm);
   padding: 2px 9px;
   border: 1.2px solid var(--pc-tan);
   color: var(--pc-text-soft);
@@ -9508,17 +9695,26 @@ body.theme-light .archivist-tag-atk:hover {
    (data URI) on each .pc-ab card. Score pill hangs off the bottom edge. */
 .archivist-pc-sheet .pc-ability-row {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   justify-items: center;
   align-items: start;
   padding-top: 10px;
+  min-width: 0;
 }
-.archivist-pc-sheet .pc-ab-stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.archivist-pc-sheet .pc-ab-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
 .archivist-pc-sheet .pc-ab {
   position: relative;
-  width: 92px;
-  height: 118px;
+  width: 100%;
+  max-width: 72px;
+  aspect-ratio: 92 / 118;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9532,82 +9728,160 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-ab-label {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: var(--pc-fs-micro);
+  letter-spacing: var(--pc-ls-caps-md);
   color: var(--pc-text-primary);
   text-transform: uppercase;
-  margin-top: -4px;
+  line-height: var(--pc-lh-snug);
+  margin-top: -3px;
 }
 .archivist-pc-sheet .pc-ab-mod {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 28px;
-  line-height: 1;
+  font-size: var(--pc-fs-big);
+  line-height: var(--pc-lh-tight);
   color: var(--pc-text-primary);
-  margin: 6px 0 0;
+  margin: 4px 0 0;
 }
 .archivist-pc-sheet .pc-ab-score {
   position: absolute;
-  bottom: -8px;
+  bottom: -7px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  min-width: 32px;
-  padding: 2px 9px;
-  border: 1.5px solid var(--pc-text-primary);
+  min-width: 26px;
+  padding: 1px 7px;
+  border: 1.3px solid var(--pc-text-primary);
   border-radius: 999px;
-  background: var(--pc-parchment-light);
+  background: var(--d5e-parchment, #f0ddbd);
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--pc-fs-label);
+  line-height: var(--pc-lh-snug);
   color: var(--pc-text-primary);
+  text-align: center;
 }
 
-/* Save chip */
+/* Save chip — container-less: small toggle + "save" microlabel + bonus.
+   Proficient: filled toggle + crimson bonus with dotted underline. */
 .archivist-pc-sheet .pc-save-chip {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 10px 2px 6px;
-  border-radius: 999px;
-  border: 1px solid var(--pc-tan-muted);
-  background: rgba(255, 248, 220, 0.5);
+  align-items: baseline;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: transparent;
   font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: 10px;
+  line-height: var(--pc-lh-snug);
   color: var(--pc-text-soft);
+  max-width: 100%;
+  white-space: nowrap;
 }
 .archivist-pc-sheet .pc-save-chip b {
   font-weight: 600;
-  letter-spacing: 0.14em;
-  font-size: 9px;
+  letter-spacing: var(--pc-ls-caps-md);
+  font-size: var(--pc-fs-tiny);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle {
+  width: 12px;
+  height: 12px;
+  border-width: 1.3px;
+  border-radius: 2px;
+  align-self: center;
+  opacity: 0.55;
+}
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.proficient,
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.expertise {
+  opacity: 1;
+}
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.proficient::after,
+.archivist-pc-sheet .pc-save-chip .archivist-prof-toggle.expertise::after {
+  width: 5px;
+  height: 5px;
+}
+.archivist-pc-sheet .pc-save-chip .pc-save-bn {
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-save-chip.prof b {
   color: var(--pc-text-soft);
 }
-.archivist-pc-sheet .pc-save-chip .pc-save-bn { color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-save-chip.prof {
-  border-color: var(--pc-crimson);
-  background: rgba(146, 38, 16, 0.08);
+.archivist-pc-sheet .pc-save-chip.prof .pc-save-bn {
+  color: var(--pc-crimson);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
 }
-.archivist-pc-sheet .pc-save-chip.prof b,
-.archivist-pc-sheet .pc-save-chip.prof .pc-save-bn { color: var(--pc-crimson); }
 
-/* Skill row (reuses archivist-prof-toggle for the dot) */
+/* Skill row — flat, dotted row separator, dotted leader between name + bonus.
+   DOM order is [toggle][bonus][name]; we use flex `order` to render as
+   [toggle][name][leader][bonus]. */
 .archivist-pc-sheet .pc-skill-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
-  font-size: 12px;
-  padding: 2px 0;
+  font-size: var(--pc-fs-body);
+  line-height: var(--pc-lh-body);
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-skills-list > .pc-skill-row:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-skill-row .archivist-prof-toggle {
+  order: 0;
+  align-self: center;
+}
+.archivist-pc-sheet .pc-skill-name {
+  order: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--pc-text-primary);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .archivist-pc-sheet .pc-skill-bonus {
+  order: 2;
   font-family: var(--pc-font-serif);
   min-width: 28px;
   text-align: right;
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--pc-fs-small);
   color: var(--pc-text-primary);
+  flex-shrink: 0;
 }
-.archivist-pc-sheet .pc-skill-name { color: var(--pc-text-primary); }
+
+/* Proficient / expertise state — crimson emphasis on name + bonus.
+   :has() is supported in every Chromium ≥ 105 (all current Obsidian builds).
+   The adjacent-sibling path also works because toggle is the first DOM child.*/
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-name,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-name,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-bonus,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-bonus {
+  color: var(--pc-crimson);
+  font-weight: 700;
+}
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-bonus,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-bonus {
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+/* Expertise marker glyph — a small ◎ before the bonus (after in DOM since
+   bonus is order:2). Pseudo-element on the name's ::before would sit between
+   toggle and name; put it as a ::before on the bonus instead so it reads
+   as "glyph + bonus" on the right. */
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.proficient) .pc-skill-bonus::before,
+.archivist-pc-sheet .pc-skill-row:has(.archivist-prof-toggle.expertise) .pc-skill-bonus::before {
+  content: "\25CE";
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 0.85em;
+  color: var(--pc-crimson);
+  text-decoration: none;
+  vertical-align: baseline;
+}
 
 /* Right cluster of stats band */
 .archivist-pc-sheet .pc-stats-right {
@@ -9625,16 +9899,19 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-stats-tile { text-align: center; padding: 10px 6px; }
 .archivist-pc-sheet .pc-stats-tile-lbl {
   font-family: var(--pc-font-serif);
-  font-size: 8.5px;
-  letter-spacing: 0.14em;
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
   color: var(--pc-text-soft);
+  line-height: var(--pc-lh-snug);
   white-space: nowrap;
 }
 .archivist-pc-sheet .pc-stats-tile-val {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 22px;
-  line-height: 1;
+  font-size: var(--pc-fs-big);
+  line-height: var(--pc-lh-tight);
   margin-top: 3px;
   color: var(--pc-text-primary);
 }
@@ -9647,10 +9924,10 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-insp-counter button {
   width: 18px;
   height: 18px;
-  line-height: 1;
+  line-height: var(--pc-lh-tight);
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--pc-fs-small);
   border: 1px solid var(--pc-tan);
   color: var(--pc-text-primary);
   background: transparent;
@@ -9664,18 +9941,24 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-stats-tile-ct {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--pc-fs-title);
   color: var(--pc-text-primary);
-  line-height: 1;
+  line-height: var(--pc-lh-tight);
   min-width: 18px;
   text-align: center;
 }
 
-/* Defenses + Conditions merged panel */
+/* Defenses + Conditions merged panel.
+ * The panel sits inside a safeRender wrapper div; both must stretch to
+ * match the height of the stats-tiles column on its left. */
+.archivist-pc-sheet .pc-def-cond-wrap {
+  display: flex;
+}
 .archivist-pc-sheet .pc-def-cond {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 16px;
+  flex: 1 1 auto;
 }
 .archivist-pc-sheet .pc-def-cond-left {
   padding-right: 12px;
@@ -9683,22 +9966,25 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-def-cond-title {
   font-family: var(--pc-font-serif);
-  font-size: 9px;
-  letter-spacing: 0.22em;
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
   color: var(--pc-text-soft);
+  line-height: var(--pc-lh-snug);
   margin-bottom: 4px;
 }
 .archivist-pc-sheet .pc-def-line {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: var(--pc-fs-body);
+  line-height: var(--pc-lh-body);
   color: var(--pc-text-primary);
 }
 .archivist-pc-sheet .pc-def-line b { font-weight: 700; }
 .archivist-pc-sheet .pc-def-cond-empty {
   color: var(--pc-text-muted);
   font-style: italic;
-  font-size: 12px;
+  font-size: var(--pc-fs-body);
 }
 .archivist-pc-sheet .pc-def-cond-head {
   display: flex;
@@ -9709,9 +9995,9 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cond-add {
   font-family: var(--pc-font-serif);
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--pc-fs-small);
   padding: 2px 10px;
-  line-height: 1;
+  line-height: var(--pc-lh-tight);
   border: 1.2px solid var(--pc-tan);
   color: var(--pc-text-primary);
   background: transparent;
@@ -9720,7 +10006,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-cond-chip {
   display: inline-block;
-  font-size: 11px;
+  font-size: var(--pc-fs-small);
   border: 1px solid var(--pc-crimson);
   color: var(--pc-crimson);
   border-radius: 3px;
@@ -9731,43 +10017,167 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cond-empty {
   color: var(--pc-text-muted);
   font-style: italic;
-  font-size: 11px;
+  font-size: var(--pc-fs-small);
+}
+
+.archivist-pc-sheet .pc-def-cond-right { min-width: 0; }
+.archivist-pc-sheet .pc-def-cond-left { min-width: 0; }
+.archivist-pc-sheet .pc-cond-body { display: flex; flex-wrap: wrap; gap: 2px; }
+
+/* ================================================================
+   Responsive — breakpoints documented at the top of layout.css
+   ================================================================ */
+
+/* md (<=1099px) — stats-band right cluster: stack the 2x2 tiles above
+   the defenses/conditions panel so the INITIATIVE/INSPIRATION column
+   no longer overlaps the defenses panel. At this width the stats-band
+   left half also gets tight enough that the SAVE chip's text overflows
+   its ability column — so we drop the chip label here and show only
+   the prof dot + bonus. */
+@media (max-width: 1099px) {
+  .archivist-pc-sheet .pc-stats-right {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .archivist-pc-sheet .pc-save-chip b { display: none; }
+  .archivist-pc-sheet .pc-save-chip { gap: 3px; }
+}
+
+/* sm (<=899px) — stats-band collapses to a single column (abilities row
+   full width above the right cluster). Tighten its horizontal padding. */
+@media (max-width: 899px) {
+  .archivist-pc-sheet .pc-stats-band {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px 18px;
+  }
+  /* When abilities are full-width, the row has lots of horizontal room;
+     uncap max-width so cartouches scale up to the mockup's 92px. */
+  .archivist-pc-sheet .pc-ab {
+    max-width: 92px;
+  }
+}
+
+/* xs (<=759px) — hero-right wraps under the identity block; HP widget
+   drops its min-width so it lays out cleanly below identity; ability
+   row collapses to 3 columns; save chip hides the "SAVE" label. */
+@media (max-width: 759px) {
+  .archivist-pc-sheet .pc-hero-right {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .archivist-pc-sheet .pc-hp-widget { min-width: 0; flex: 1 1 280px; }
+  .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
+
+  .archivist-pc-sheet .pc-ability-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 18px;
+  }
+
+  /* Collapse the defenses/conditions merged panel to one column and
+     remove the vertical divider (it visually breaks when stacked). */
+  .archivist-pc-sheet .pc-def-cond {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 10px;
+  }
+  .archivist-pc-sheet .pc-def-cond-left {
+    padding-right: 0;
+    padding-bottom: 10px;
+    border-right: none;
+    border-bottom: 1px solid rgba(58, 42, 20, 0.35);
+  }
+
+  /* Save chip label is already hidden at md — no extra rules here. */
+}
+
+/* xxs (<=599px) — graceful degradation floor. Ability row to 2 cols so
+   cartouches stay legible; stats 2x2 stays 2 wide but gets tighter. */
+@media (max-width: 599px) {
+  .archivist-pc-sheet .pc-ability-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .archivist-pc-sheet .pc-stats-band {
+    padding: 12px 12px;
+  }
+  .archivist-pc-sheet .pc-header-root {
+    padding: var(--pc-space-3);
+    gap: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-name { font-size: var(--pc-fs-display); }
 }
 
 
 /* ============================================
    pc/blocks.css
    ============================================ */
+/* Feature block wrappers — flat on parchment. No card background, no outer
+   border. The title carries a crimson hairline rule. Blocks are separated
+   by generous vertical rhythm. */
 .archivist-pc-sheet .pc-block {
-  background: var(--pc-white);
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-3) var(--pc-space-4);
-  margin-bottom: var(--pc-space-3);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--pc-space-4);
 }
 .archivist-pc-sheet .pc-block-title {
   margin: 0 0 var(--pc-space-2);
   font-family: var(--pc-font-serif);
   color: var(--pc-crimson);
-  font-size: 18px;
+  font-size: var(--pc-fs-title);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
 }
 .archivist-pc-sheet .pc-block-subtitle {
   margin: var(--pc-space-3) 0 var(--pc-space-2);
   font-family: var(--pc-font-serif);
   color: var(--pc-text-soft);
-  font-size: 14px;
+  font-size: var(--pc-fs-heading);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--pc-ls-caps-sm);
+  line-height: var(--pc-lh-snug);
 }
 .archivist-pc-sheet .pc-block-description {
-  font-size: 13px;
+  font-size: var(--pc-fs-body);
   color: var(--pc-text-primary);
   margin: 0 0 var(--pc-space-2);
-  line-height: 1.5;
+  line-height: var(--pc-lh-body);
 }
-.archivist-pc-sheet .pc-block-meta { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); font-size: 11px; color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-block-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-3);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
 .archivist-pc-sheet .pc-meta-label { font-weight: 600; color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-feature-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-feature-item { border-left: 2px solid var(--pc-tan); padding-left: var(--pc-space-3); }
-.archivist-pc-sheet .pc-feature-desc { white-space: pre-wrap; font-size: 12px; color: var(--pc-text-primary); margin-top: 2px; line-height: 1.5; }
-.archivist-pc-sheet .pc-feat-prereq { font-size: 11px; color: var(--pc-text-soft); font-style: italic; margin-top: var(--pc-space-1); }
+.archivist-pc-sheet .pc-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-feature-item {
+  border-left: 2px solid var(--pc-tan);
+  padding-left: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-feature-desc {
+  white-space: pre-wrap;
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  margin-top: 2px;
+  line-height: var(--pc-lh-body);
+}
+.archivist-pc-sheet .pc-feat-prereq {
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  font-style: italic;
+  margin-top: var(--pc-space-1);
+}
