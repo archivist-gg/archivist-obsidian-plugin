@@ -20,24 +20,40 @@ export class HitDiceWidget implements SheetComponent {
       return;
     }
 
+    const active = ctx.editState?.sessionState.activeHitDie ?? dies[0];
+    if (ctx.editState && ctx.editState.sessionState.activeHitDie == null) {
+      // idempotent init — first render of this session picks the lowest die
+      ctx.editState.sessionState.activeHitDie = active;
+    }
+
     const actions = wrap.createDiv({ cls: "pc-hd-actions" });
-    actions.createEl("button", { cls: "pc-hd-plus", text: "+", attr: { title: "Restore hit die" } });
-    actions.createEl("button", { cls: "pc-hd-minus", text: "−", attr: { title: "Spend hit die" } });
+    const plusBtn = actions.createEl("button", {
+      cls: "pc-hd-plus",
+      text: "+",
+      attr: { title: "Restore hit die" },
+    });
+    const minusBtn = actions.createEl("button", {
+      cls: "pc-hd-minus",
+      text: "−",
+      attr: { title: "Spend hit die" },
+    });
 
     const body = wrap.createDiv({ cls: "pc-hd-body" });
 
     if (dies.length > 1) {
       const chips = body.createDiv({ cls: "pc-hd-chips" });
-      dies.forEach((die, i) => {
-        chips.createSpan({
-          cls: `pc-hd-chip${i === 0 ? " active" : ""}`,
+      for (const die of dies) {
+        const chip = chips.createSpan({
+          cls: `pc-hd-chip${die === active ? " active" : ""}`,
           text: die,
           attr: { "data-die": die },
         });
-      });
+        if (ctx.editState) {
+          chip.addEventListener("click", () => ctx.editState!.setActiveHitDie(die));
+        }
+      }
     }
 
-    const active = dies[0];
     const { used, total } = hd[active];
     const remaining = total - used;
     const nums = body.createDiv({ cls: "pc-hd-nums" });
@@ -46,5 +62,9 @@ export class HitDiceWidget implements SheetComponent {
     nums.createSpan({ cls: "pc-hd-tot", text: String(total) });
 
     body.createDiv({ cls: "pc-hd-label", text: `HIT DICE · ${active}` });
+
+    if (!ctx.editState) return;
+    plusBtn.addEventListener("click", () => ctx.editState!.restoreHitDie(active));
+    minusBtn.addEventListener("click", () => ctx.editState!.spendHitDie(active));
   }
 }
