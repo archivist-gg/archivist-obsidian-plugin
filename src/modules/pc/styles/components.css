@@ -901,3 +901,7 @@
   letter-spacing: 0.2em;
   font-weight: 700;
 }
+
+.archivist-pc-sheet .pc-skill-row {
+  cursor: pointer;
+}

@@ -47,6 +47,9 @@ export class SkillsPanel implements SheetComponent {
       row.createSpan({ cls: toggleClasses.join(" ") });
       row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
+      if (ctx.editState) {
+        row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));
+      }
     }
   }
 }

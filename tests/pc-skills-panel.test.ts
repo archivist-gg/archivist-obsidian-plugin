@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -75,5 +75,31 @@ describe("SkillsPanel", () => {
     const dot = container.querySelector<HTMLDivElement>('[data-skill="perception"]')?.querySelector(".archivist-prof-toggle");
     expect(dot?.classList.contains("proficient")).toBe(false);
     expect(dot?.classList.contains("expertise")).toBe(false);
+  });
+});
+
+describe("SkillsPanel — interactive (SP4)", () => {
+  function interactiveCtx(skills: Record<string, { bonus: number; proficiency: "none" | "proficient" | "expertise"; ability: string }>) {
+    const editState = { cycleSkill: vi.fn() };
+    return {
+      ctx: {
+        derived: { skills },
+        resolved: { state: { conditions: [] } },
+        editState,
+      } as unknown as ComponentRenderContext,
+      editState,
+    };
+  }
+
+  it("row click calls cycleSkill with the skill slug", () => {
+    const root = mountContainer();
+    const skills = {
+      arcana: { bonus: 0, proficiency: "none" as const, ability: "int" },
+    };
+    const { ctx, editState } = interactiveCtx(skills);
+    new SkillsPanel().render(root, ctx);
+    const row = root.querySelector<HTMLElement>("[data-skill='arcana']")!;
+    row.click();
+    expect(editState.cycleSkill).toHaveBeenCalledWith("arcana");
   });
 });
