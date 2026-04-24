@@ -10172,80 +10172,86 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-name { font-size: var(--pc-fs-display); }
 }
 
+/* Widget-mode state outlines — thin border-colour shift only.
+   Backgrounds from the previous iteration were stripped in favour of
+   a flatter look that matches the sheet-harmonised A3 dot treatment. */
 .archivist-pc-sheet .pc-hp-widget.unconscious {
-  border-color: var(--ink);
-  background: color-mix(in srgb, var(--parch) 70%, var(--ink) 8%);
+  /* Default tan border is fine for UNCONSCIOUS; no override. */
 }
-
-.archivist-pc-sheet .pc-hp-widget.unconscious .pc-hp-label {
-  color: var(--ink);
-  letter-spacing: 0.15em;
+.archivist-pc-sheet .pc-hp-widget.stable {
+  border-color: var(--pc-green-muted, #4a6b3a);
 }
-
 .archivist-pc-sheet .pc-hp-widget.dead {
-  border-color: var(--red);
-  background: color-mix(in srgb, var(--parch) 65%, var(--red) 10%);
+  border-color: var(--pc-crimson);
 }
 
-.archivist-pc-sheet .pc-hp-widget.dead .pc-hp-label {
-  color: var(--red);
-  letter-spacing: 0.2em;
-  font-weight: 700;
-}
+/* State-specific label colour */
+.archivist-pc-sheet .pc-hp-widget.stable .pc-hp-label { color: var(--pc-green-muted, #4a6b3a); }
+.archivist-pc-sheet .pc-hp-widget.dead   .pc-hp-label { color: var(--pc-crimson); }
 
-/* Unconscious/dead body — death saves layout replaces the normal CURRENT/MAX/TEMP grid */
+/* Death-saves panel inside the HP widget (unconscious/stable/dead states). */
 .archivist-pc-sheet .pc-hp-death-header {
-  font-family: var(--pc-font-serif);
+  font-family: var(--pc-font-sans);
   font-size: var(--pc-fs-tiny);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-sm);
+  letter-spacing: var(--pc-ls-caps-lg);
   text-transform: uppercase;
+  color: var(--pc-text-muted);
   text-align: center;
-  color: var(--pc-text-soft);
-  margin-bottom: 4px;
+  line-height: var(--pc-lh-tight);
+  margin-bottom: 3px;
 }
 
-.archivist-pc-sheet .pc-hp-widget.unconscious .pc-hp-death-header,
-.archivist-pc-sheet .pc-hp-widget.dead .pc-hp-death-header {
-  color: inherit;
-}
-
-.archivist-pc-sheet .pc-hp-ds-row {
+.archivist-pc-sheet .pc-hp-ds-pair {
   display: flex;
-  gap: 8px;
+  align-items: flex-start;
   justify-content: center;
-  margin-bottom: 4px;
+  gap: 20px;
+  padding: 2px 0 4px;
 }
 
-.archivist-pc-sheet .pc-hp-ds-row:last-of-type {
-  margin-bottom: 6px;
+.archivist-pc-sheet .pc-hp-ds-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
+.archivist-pc-sheet .pc-hp-ds-col-head {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-tiny);
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+  line-height: var(--pc-lh-tight);
+}
+
+.archivist-pc-sheet .pc-hp-ds-dots {
+  display: flex;
+  gap: 6px;
+}
+
+/* Flat 12×12 dots — override Task 12's 14×14 sizing inside the HP widget
+   context so they match the sheet-harmonised A3 mockup. */
 .archivist-pc-sheet .pc-hp-widget .pc-death-save-success,
 .archivist-pc-sheet .pc-hp-widget .pc-death-save-failure {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  border: 1.5px solid var(--ink, #1b1208);
+  border: 1px solid var(--pc-tan-muted);
+  background: transparent;
   display: inline-block;
   cursor: pointer;
-  transition: background-color 120ms;
+  transition: background-color 120ms, border-color 120ms;
 }
 
 .archivist-pc-sheet .pc-hp-widget .pc-death-save-success.filled {
-  background: var(--green, #2a7a2a);
+  background: var(--pc-green, #2a7a2a);
+  border-color: var(--pc-green, #2a7a2a);
 }
 
 .archivist-pc-sheet .pc-hp-widget .pc-death-save-failure.filled {
-  background: var(--pc-crimson, var(--red, #8a2414));
-}
-
-.archivist-pc-sheet .pc-hp-widget.dead .pc-death-save-failure {
-  border-color: var(--pc-crimson, var(--red, #8a2414));
-}
-
-.archivist-pc-sheet .pc-hp-widget.dead .pc-death-save-failure.filled {
-  background: var(--pc-crimson, var(--red, #8a2414));
+  background: var(--pc-crimson);
+  border-color: var(--pc-crimson);
 }
 
 .archivist-pc-sheet .pc-skill-row {
