@@ -950,3 +950,150 @@
 .archivist-pc-sheet .pc-skill-row {
   cursor: pointer;
 }
+
+/* ================================================================
+   Conditions popover — attached to document.body, anchored
+   beneath the "+" button of the defenses-conditions panel.
+   ================================================================ */
+.pc-cond-popover {
+  position: absolute;
+  z-index: 1000;
+  background: var(--pc-parchment-light, var(--parch, #f7efe2));
+  border: 1.5px solid var(--pc-tan, var(--gold, #b98a3a));
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  min-width: 220px;
+  font-family: var(--pc-font-serif, serif);
+  color: var(--pc-text-primary, var(--ink, #1b1208));
+}
+.pc-cond-popover-header {
+  font-weight: 700;
+  font-size: var(--pc-fs-small, 12px);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--pc-tan, var(--gold, #b98a3a));
+  margin-bottom: 6px;
+}
+.pc-cond-popover-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pc-cond-popover-row {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 2px;
+  cursor: default;
+}
+.pc-cond-popover-row .pc-cond-icon-wrap {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pc-text-primary, var(--ink, #1b1208));
+}
+.pc-cond-popover-row .pc-cond-icon-wrap svg {
+  width: 18px;
+  height: 18px;
+}
+.pc-cond-popover-row .pc-cond-name {
+  font-size: var(--pc-fs-small, 12px);
+}
+.pc-cond-toggle {
+  width: 28px;
+  height: 14px;
+  border-radius: 7px;
+  border: 1px solid var(--pc-tan, var(--gold, #b98a3a));
+  background: transparent;
+  position: relative;
+  cursor: pointer;
+  transition: background 120ms;
+}
+.pc-cond-toggle::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pc-tan, var(--gold, #b98a3a));
+  transition: left 120ms, background 120ms;
+}
+.pc-cond-toggle.on {
+  background: var(--pc-crimson, var(--red, #8a2414));
+  border-color: var(--pc-crimson, var(--red, #8a2414));
+}
+.pc-cond-toggle.on::after {
+  left: 15px;
+  background: var(--pc-parchment-light, var(--parch, #f7efe2));
+}
+.pc-cond-popover-divider {
+  height: 1px;
+  background: var(--pc-tan, var(--gold, #b98a3a));
+  opacity: 0.5;
+  margin: 8px 0 6px;
+}
+.pc-cond-popover-exhaustion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pc-cond-exhaustion-header {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.pc-cond-exhaustion-header .pc-cond-icon-wrap svg {
+  width: 18px;
+  height: 18px;
+}
+.pc-cond-exhaustion-level {
+  font-size: var(--pc-fs-small, 12px);
+  color: var(--pc-text-soft, #4a3a26);
+}
+.pc-cond-exhaustion-pills {
+  display: flex;
+  gap: 2px;
+  justify-content: space-between;
+}
+.pc-cond-exhaustion-pill {
+  flex: 1;
+  text-align: center;
+  border: 1px solid var(--pc-tan, var(--gold, #b98a3a));
+  border-radius: 3px;
+  padding: 2px 0;
+  font-size: var(--pc-fs-small, 12px);
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  transition: background 120ms, color 120ms;
+}
+.pc-cond-exhaustion-pill:hover {
+  background: color-mix(in srgb, var(--pc-parchment-light, #f7efe2) 70%, var(--pc-crimson, #8a2414) 8%);
+}
+.pc-cond-exhaustion-pill.active {
+  background: var(--pc-crimson, var(--red, #8a2414));
+  color: var(--pc-parchment-light, var(--parch, #f7efe2));
+  border-color: var(--pc-crimson, var(--red, #8a2414));
+}
+
+/* chip × remove button (added when editState is active) */
+.archivist-pc-sheet .pc-cond-chip .pc-cond-chip-x {
+  display: inline-block;
+  margin-left: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.7;
+}
+.archivist-pc-sheet .pc-cond-chip .pc-cond-chip-x:hover {
+  opacity: 1;
+}

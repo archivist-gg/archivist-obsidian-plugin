@@ -1,4 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { openConditionsPopover } from "./conditions-popover";
 
 const DEFENSE_ROWS: ReadonlyArray<[label: string, key: "resistances" | "immunities" | "vulnerabilities" | "condition_immunities"]> = [
   ["Damage Resistances", "resistances"],
@@ -37,11 +38,14 @@ export class DefensesConditionsPanel implements SheetComponent {
     const right = panel.createDiv({ cls: "pc-def-cond-right" });
     const head = right.createDiv({ cls: "pc-def-cond-head" });
     head.createDiv({ cls: "pc-def-cond-title", text: "CONDITIONS" });
-    head.createEl("button", {
+    const addBtn = head.createEl("button", {
       cls: "pc-cond-add",
       text: "+",
       attr: { title: "Add condition" },
     });
+    if (ctx.editState) {
+      addBtn.addEventListener("click", () => openConditionsPopover(addBtn, ctx));
+    }
 
     const conds = ctx.resolved?.state?.conditions ?? [];
     const body = right.createDiv({ cls: "pc-cond-body" });
@@ -49,7 +53,14 @@ export class DefensesConditionsPanel implements SheetComponent {
       body.createDiv({ cls: "pc-cond-empty", text: "no active conditions" });
     } else {
       for (const c of conds) {
-        body.createSpan({ cls: "pc-cond-chip", text: c });
+        const chip = body.createSpan({ cls: "pc-cond-chip", text: c });
+        if (ctx.editState) {
+          const x = chip.createSpan({ cls: "pc-cond-chip-x", text: "×" });
+          x.addEventListener("click", (e) => {
+            e.stopPropagation();
+            ctx.editState!.toggleCondition(c);
+          });
+        }
       }
     }
   }
