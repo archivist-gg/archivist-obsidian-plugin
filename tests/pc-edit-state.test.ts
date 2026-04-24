@@ -1,0 +1,164 @@
+import { describe, it, expect, vi } from "vitest";
+import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+import { parsePC } from "../src/modules/pc/pc.parser";
+import type { Character, DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+
+const MINIMAL_YAML = [
+  "name: Grendal",
+  "edition: '2014'",
+  "race: null",
+  "subrace: null",
+  "background: null",
+  "class:",
+  "  - name: '[[bladesworn]]'",
+  "    level: 3",
+  "    subclass: null",
+  "    choices: {}",
+  "abilities: { str: 16, dex: 12, con: 14, int: 10, wis: 12, cha: 8 }",
+  "ability_method: manual",
+  "skills: { proficient: [], expertise: [] }",
+  "spells: { known: [], overrides: [] }",
+  "equipment: []",
+  "overrides: {}",
+  "state:",
+  "  hp: { current: 24, max: 24, temp: 0 }",
+  "  hit_dice:",
+  "    d10: { used: 0, total: 3 }",
+  "  spell_slots: {}",
+  "  concentration: null",
+  "  conditions: []",
+  "  inspiration: 0",
+].join("\n");
+
+function makeState(over?: (c: Character) => void): { es: CharacterEditState; char: Character; onChange: ReturnType<typeof vi.fn> } {
+  const parsed = parsePC(MINIMAL_YAML);
+  if (!parsed.success) throw new Error(parsed.error);
+  const char = parsed.data;
+  over?.(char);
+  const onChange = vi.fn();
+  const es = new CharacterEditState(
+    char,
+    () => ({
+      resolved: { classes: [{ entity: { saving_throws: ["str", "con"] } }] } as unknown as ResolvedCharacter,
+      derived: { hp: { max: 24, current: char.state.hp.current, temp: char.state.hp.temp } } as unknown as DerivedStats,
+    }),
+    onChange,
+  );
+  return { es, char, onChange };
+}
+
+describe("CharacterEditState — HP", () => {
+  it("heal(5) adds 5, capped at derived.hp.max", () => {
+    const { es, char, onChange } = makeState((c) => { c.state.hp.current = 20; });
+    es.heal(5);
+    expect(char.state.hp.current).toBe(24);  // capped at 24
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("heal with current=0 clears death_saves", () => {
+    const { es, char } = makeState((c) => {
+      c.state.hp.current = 0;
+      c.state.death_saves = { successes: 2, failures: 1 };
+    });
+    es.heal(3);
+    expect(char.state.hp.current).toBe(3);
+    expect(char.state.death_saves).toEqual({ successes: 0, failures: 0 });
+  });
+
+  it("heal does NOT clear death_saves when HP stays at 0", () => {
+    const { es, char } = makeState((c) => {
+      c.state.hp.current = 0;
+      c.state.death_saves = { successes: 1, failures: 0 };
+    });
+    es.heal(0);
+    expect(char.state.death_saves).toEqual({ successes: 1, failures: 0 });
+  });
+
+  it("damage(8) subtracts from temp first then current, floored at 0", () => {
+    const { es, char } = makeState((c) => { c.state.hp.current = 20; c.state.hp.temp = 5; });
+    es.damage(8);
+    expect(char.state.hp.temp).toBe(0);
+    expect(char.state.hp.current).toBe(17);  // 20 - (8 - 5)
+  });
+
+  it("damage floors current at 0, never negative", () => {
+    const { es, char } = makeState((c) => { c.state.hp.current = 3; c.state.hp.temp = 0; });
+    es.damage(10);
+    expect(char.state.hp.current).toBe(0);
+  });
+
+  it("damage does NOT auto-clear death_saves", () => {
+    const { es, char } = makeState((c) => {
+      c.state.hp.current = 5;
+      c.state.death_saves = { successes: 1, failures: 0 };
+    });
+    es.damage(10);
+    expect(char.state.hp.current).toBe(0);
+    expect(char.state.death_saves).toEqual({ successes: 1, failures: 0 });
+  });
+});
+
+describe("CharacterEditState — hit dice", () => {
+  it("spendHitDie increments used, capped at total", () => {
+    const { es, char } = makeState();
+    es.spendHitDie("d10");
+    expect(char.state.hit_dice.d10.used).toBe(1);
+    es.spendHitDie("d10");
+    es.spendHitDie("d10");
+    es.spendHitDie("d10");  // should be no-op: already at total
+    expect(char.state.hit_dice.d10.used).toBe(3);
+  });
+
+  it("restoreHitDie decrements used, floored at 0", () => {
+    const { es, char } = makeState((c) => { c.state.hit_dice.d10.used = 2; });
+    es.restoreHitDie("d10");
+    expect(char.state.hit_dice.d10.used).toBe(1);
+    es.restoreHitDie("d10");
+    es.restoreHitDie("d10");  // no-op
+    expect(char.state.hit_dice.d10.used).toBe(0);
+  });
+
+  it("spend/restore unknown die key is a no-op", () => {
+    const { es, onChange } = makeState();
+    es.spendHitDie("d20");
+    es.restoreHitDie("d20");
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("setActiveHitDie updates sessionState and fires onChange", () => {
+    const { es, onChange } = makeState();
+    es.setActiveHitDie("d10");
+    expect(es.sessionState.activeHitDie).toBe("d10");
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("CharacterEditState — inspiration", () => {
+  it("setInspiration clamps at 0", () => {
+    const { es, char } = makeState();
+    es.setInspiration(-3);
+    expect(char.state.inspiration).toBe(0);
+  });
+
+  it("setInspiration accepts positive integers", () => {
+    const { es, char } = makeState();
+    es.setInspiration(4);
+    expect(char.state.inspiration).toBe(4);
+  });
+
+  it("setInspiration fires onChange once per call", () => {
+    const { es, onChange } = makeState();
+    es.setInspiration(1);
+    es.setInspiration(2);
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("CharacterEditState — toYaml", () => {
+  it("returns a valid YAML string round-trippable through parsePC", () => {
+    const { es } = makeState((c) => { c.state.hp.current = 10; });
+    const dumped = es.toYaml();
+    const reparsed = parsePC(dumped);
+    expect(reparsed.success).toBe(true);
+  });
+});
