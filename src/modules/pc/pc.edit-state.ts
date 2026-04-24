@@ -31,6 +31,7 @@ export class CharacterEditState {
 
   // ─── HP ────────────────────────────────────────────────────────────
   heal(amount: number): void {
+    if (!Number.isFinite(amount)) return;
     const { derived } = this.getContext();
     const hp = this.character.state.hp;
     const wasZero = hp.current === 0;
@@ -41,6 +42,7 @@ export class CharacterEditState {
   }
 
   damage(amount: number): void {
+    if (!Number.isFinite(amount)) return;
     const hp = this.character.state.hp;
     const n = Math.max(0, amount);
     const fromTemp = Math.min(hp.temp, n);
@@ -50,6 +52,7 @@ export class CharacterEditState {
   }
 
   setTempHP(amount: number): void {
+    if (!Number.isFinite(amount)) return;
     this.character.state.hp.temp = Math.max(0, amount);
     this.onChange();
   }
@@ -78,6 +81,7 @@ export class CharacterEditState {
 
   // ─── Inspiration ───────────────────────────────────────────────────
   setInspiration(value: number): void {
+    if (!Number.isFinite(value)) return;
     this.character.state.inspiration = Math.max(0, Math.floor(value));
     this.onChange();
   }
@@ -99,5 +103,6 @@ export class CharacterEditState {
   }
 }
 
-// Keep unused imports referenced for future tasks (Ability, SkillSlug, ConditionSlug).
+// TODO(SP4 Task 5): remove this dead type export and uncomment the real
+// uses of Ability / SkillSlug / ConditionSlug in the skills/saves/conditions mutators.
 export type _unused = [Ability, SkillSlug, ConditionSlug];

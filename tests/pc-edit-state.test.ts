@@ -96,6 +96,39 @@ describe("CharacterEditState — HP", () => {
     expect(char.state.hp.current).toBe(0);
     expect(char.state.death_saves).toEqual({ successes: 1, failures: 0 });
   });
+
+  it("heal / damage / setTempHP silently no-op on NaN input", () => {
+    const { es, char, onChange } = makeState((c) => { c.state.hp.current = 10; c.state.hp.temp = 2; });
+    es.heal(NaN);
+    es.damage(NaN);
+    es.setTempHP(NaN);
+    expect(char.state.hp.current).toBe(10);
+    expect(char.state.hp.temp).toBe(2);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});
+
+describe("CharacterEditState — temp HP", () => {
+  it("setTempHP clamps negative to 0", () => {
+    const { es, char } = makeState((c) => { c.state.hp.temp = 5; });
+    es.setTempHP(-3);
+    expect(char.state.hp.temp).toBe(0);
+  });
+
+  it("setTempHP unconditionally replaces (does not stack with prior value)", () => {
+    // Pins current behavior: whatever the caller passes wins, even if lower.
+    // Widget layer (Task 7) owns the 2014-RAW "new replaces old only if higher" decision.
+    const { es, char } = makeState((c) => { c.state.hp.temp = 8; });
+    es.setTempHP(3);
+    expect(char.state.hp.temp).toBe(3);
+  });
+
+  it("setTempHP fires onChange once per call", () => {
+    const { es, onChange } = makeState();
+    es.setTempHP(5);
+    es.setTempHP(7);
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("CharacterEditState — hit dice", () => {
@@ -151,6 +184,13 @@ describe("CharacterEditState — inspiration", () => {
     es.setInspiration(1);
     es.setInspiration(2);
     expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("setInspiration silently no-ops on NaN input", () => {
+    const { es, char, onChange } = makeState((c) => { c.state.inspiration = 1; });
+    es.setInspiration(NaN);
+    expect(char.state.inspiration).toBe(1);
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
 
