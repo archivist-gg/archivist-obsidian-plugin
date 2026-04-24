@@ -106,28 +106,41 @@ describe("DefensesConditionsPanel", () => {
 });
 
 describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
-  it("always renders four labeled rows even when empty", () => {
-    const root = mountContainer();
-    new DefensesConditionsPanel().render(root, ctx({ editState: { addDefense: () => {} } }));
-    const left = root.querySelector(".pc-def-cond-left");
-    expect(left?.textContent).toContain("Damage Resistances");
-    expect(left?.textContent).toContain("Damage Immunities");
-    expect(left?.textContent).toContain("Damage Vulnerabilities");
-    expect(left?.textContent).toContain("Condition Immunities");
-    expect(root.querySelector(".pc-def-cond-empty")).toBeNull();
-  });
-
-  it("each row has a + add button when editState is present", () => {
+  it("empty state: renders 'no active defenses' + single + button on the title row", () => {
     const root = mountContainer();
     new DefensesConditionsPanel().render(root, ctx({ editState: {} }));
-    expect(root.querySelectorAll(".pc-def-cond-left .pc-def-add").length).toBe(4);
+    const left = root.querySelector(".pc-def-cond-left")!;
+    expect(left.querySelector(".pc-def-empty")?.textContent).toBe("no active defenses");
+    // Single + button (head-level), no per-kind labels when empty
+    expect(left.querySelectorAll(".pc-def-add-main").length).toBe(1);
+    expect(left.textContent).not.toContain("Damage Resistances");
+    expect(left.textContent).not.toContain("Condition Immunities");
   });
 
-  it("read-only fallback (editState null): no + buttons, empty rows still render labels", () => {
+  it("populated state: renders only non-empty kind rows (hides empty ones)", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: ["fire"],
+        immunities: [],
+        vulnerabilities: [],
+        condition_immunities: ["charmed"],
+      },
+      editState: {},
+    }));
+    const left = root.querySelector(".pc-def-cond-left")!;
+    expect(left.textContent).toContain("Damage Resistances");
+    expect(left.textContent).toContain("Condition Immunities");
+    expect(left.textContent).not.toContain("Damage Immunities");
+    expect(left.textContent).not.toContain("Damage Vulnerabilities");
+    expect(left.querySelector(".pc-def-empty")).toBeNull();
+  });
+
+  it("read-only fallback (editState null): no + button, empty state still rendered", () => {
     const root = mountContainer();
     new DefensesConditionsPanel().render(root, ctx());
-    expect(root.querySelectorAll(".pc-def-cond-left .pc-def-add").length).toBe(0);
-    expect(root.querySelector(".pc-def-cond-left")?.textContent).toContain("Damage Resistances");
+    expect(root.querySelector(".pc-def-cond-left .pc-def-add-main")).toBeNull();
+    expect(root.querySelector(".pc-def-cond-left .pc-def-empty")?.textContent).toBe("no active defenses");
   });
 
   it("renders a chip per value with × remover", () => {

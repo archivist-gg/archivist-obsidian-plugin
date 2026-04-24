@@ -13,10 +13,11 @@ const DEFENSE_ROWS: ReadonlyArray<[label: string, key: DefenseKind]> = [
 
 /**
  * Merged Defenses + Conditions panel.
- * Left pane (SP4b): four editable rows, always visible. Each row has chips
- * for the current values (× removes) and a "+" button that opens the
- * defense-type popover scoped to that row.
- * Right pane: conditions chips + exhaustion + "+" (unchanged from SP4).
+ * Left pane: single `+` button on the title row opens a tabbed picker that
+ * selects kind (resistance / immunity / vulnerability / condition immunity)
+ * then type. Body shows grouped chips per kind — empty kinds are hidden, and
+ * when nothing is set the body shows "no active defenses".
+ * Right pane: conditions chips + exhaustion + `+` (unchanged from SP4).
  */
 export class DefensesConditionsPanel implements SheetComponent {
   readonly type = "defenses-conditions-panel";
@@ -24,47 +25,57 @@ export class DefensesConditionsPanel implements SheetComponent {
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const panel = el.createDiv({ cls: "pc-panel pc-def-cond" });
 
+    // ─── Left pane: DEFENSES ───────────────────────────────────────
     const left = panel.createDiv({ cls: "pc-def-cond-left" });
-    left.createDiv({ cls: "pc-def-cond-title", text: "DEFENSES" });
+    const leftHead = left.createDiv({ cls: "pc-def-cond-head" });
+    leftHead.createDiv({ cls: "pc-def-cond-title", text: "DEFENSES" });
+    if (ctx.editState) {
+      const defAdd = leftHead.createEl("button", {
+        cls: "pc-def-add-main",
+        text: "+",
+        attr: { title: "Add defense" },
+      });
+      defAdd.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openDefenseTypePopover(defAdd, ctx);
+      });
+    }
+
     const def = ctx.derived.defenses;
-    for (const [label, key] of DEFENSE_ROWS) {
-      const row = left.createEl("p", { cls: "pc-def-line" });
-      row.createEl("b", { text: label });
-      row.appendText(" ");
-      const vals = def[key] ?? [];
-      for (const v of vals) {
-        const chip = row.createSpan({ cls: "pc-def-chip" });
-        const displayText = key === "condition_immunities"
-          ? (CONDITION_DISPLAY_NAMES[v as ConditionSlug] ?? v)
-          : v;
-        chip.createSpan({ cls: "pc-def-chip-label", text: displayText });
-        if (ctx.editState) {
-          const x = chip.createSpan({ cls: "pc-def-chip-x", text: "×" });
-          const editState = ctx.editState;
-          x.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (key === "condition_immunities") {
-              editState.removeConditionImmunity(v as ConditionSlug);
-            } else {
-              editState.removeDefense(key, v);
-            }
-          });
+    const leftBody = left.createDiv({ cls: "pc-def-body" });
+    const allEmpty = DEFENSE_ROWS.every(([, key]) => (def[key] ?? []).length === 0);
+    if (allEmpty) {
+      leftBody.createDiv({ cls: "pc-def-empty", text: "no active defenses" });
+    } else {
+      for (const [label, key] of DEFENSE_ROWS) {
+        const vals = def[key] ?? [];
+        if (vals.length === 0) continue;
+        const row = leftBody.createEl("p", { cls: "pc-def-line" });
+        row.createEl("b", { text: label });
+        row.appendText(" ");
+        for (const v of vals) {
+          const chip = row.createSpan({ cls: "pc-def-chip" });
+          const displayText = key === "condition_immunities"
+            ? (CONDITION_DISPLAY_NAMES[v as ConditionSlug] ?? v)
+            : v;
+          chip.createSpan({ cls: "pc-def-chip-label", text: displayText });
+          if (ctx.editState) {
+            const x = chip.createSpan({ cls: "pc-def-chip-x", text: "×" });
+            const editState = ctx.editState;
+            x.addEventListener("click", (e) => {
+              e.stopPropagation();
+              if (key === "condition_immunities") {
+                editState.removeConditionImmunity(v as ConditionSlug);
+              } else {
+                editState.removeDefense(key, v);
+              }
+            });
+          }
         }
-      }
-      if (ctx.editState) {
-        const addBtn = row.createEl("button", {
-          cls: "pc-def-add",
-          text: "+",
-          attr: { title: `Add ${label.toLowerCase()}` },
-        });
-        addBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          openDefenseTypePopover(addBtn, key, ctx);
-        });
       }
     }
 
-    // Right pane — unchanged from SP4
+    // ─── Right pane: CONDITIONS (unchanged from SP4) ───────────────
     const right = panel.createDiv({ cls: "pc-def-cond-right" });
     const head = right.createDiv({ cls: "pc-def-cond-head" });
     head.createDiv({ cls: "pc-def-cond-title", text: "CONDITIONS" });

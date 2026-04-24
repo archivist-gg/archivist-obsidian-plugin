@@ -1,24 +1,30 @@
 import type { ComponentRenderContext } from "./component.types";
 import { DAMAGE_TYPES } from "../../../shared/dnd/constants";
-import {
-  CONDITION_SLUGS,
-  CONDITION_DISPLAY_NAMES,
-} from "../constants/conditions";
+import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "../constants/conditions";
 
 export type DefenseKind = "resistances" | "immunities" | "vulnerabilities" | "condition_immunities";
 
-const KIND_HEADERS: Record<DefenseKind, string> = {
-  resistances: "Damage Resistances",
-  immunities: "Damage Immunities",
-  vulnerabilities: "Damage Vulnerabilities",
-  condition_immunities: "Condition Immunities",
-};
+const KIND_TABS: ReadonlyArray<{ key: DefenseKind; label: string }> = [
+  { key: "resistances", label: "Resistance" },
+  { key: "immunities", label: "Immunity" },
+  { key: "vulnerabilities", label: "Vulnerability" },
+  { key: "condition_immunities", label: "Condition Imm." },
+];
 
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
 
+/**
+ * Single popover for adding any defense (damage resistance / immunity /
+ * vulnerability / condition immunity). Shows a tab bar with the four
+ * kinds; clicking a tab updates the list below to toggleable damage types
+ * or condition slugs scoped to that kind. Kind selection is an in-popover
+ * step rather than a separate flow — no "back" button needed.
+ *
+ * See conditions-popover.ts for the click-race rationale on the document
+ * `click` handler (the opening click must not self-close the popover).
+ */
 export function openDefenseTypePopover(
   anchor: HTMLElement,
-  kind: DefenseKind,
   ctx: ComponentRenderContext,
 ): void {
   closeDefenseTypePopover();
@@ -31,39 +37,64 @@ export function openDefenseTypePopover(
   popover.style.top = `${rect.bottom + activeWindow.scrollY + 4}px`;
   popover.style.left = `${rect.left + activeWindow.scrollX}px`;
 
-  popover.createDiv({ cls: "pc-def-popover-header", text: KIND_HEADERS[kind] });
+  popover.createDiv({ cls: "pc-def-popover-header", text: "Add Defense" });
+
+  const tabBar = popover.createDiv({ cls: "pc-def-popover-tabs" });
   const list = popover.createDiv({ cls: "pc-def-popover-list" });
 
-  if (kind === "condition_immunities") {
-    const active = new Set(ctx.derived.defenses.condition_immunities);
-    for (const slug of CONDITION_SLUGS) {
-      addRow(list, CONDITION_DISPLAY_NAMES[slug], active.has(slug), () => {
-        if (active.has(slug)) {
-          editState.removeConditionImmunity(slug);
-          active.delete(slug);
-        } else {
-          editState.addConditionImmunity(slug);
-          active.add(slug);
-        }
-      });
+  let activeKind: DefenseKind = "resistances";
+
+  const renderList = () => {
+    while (list.firstChild) list.firstChild.remove();
+    if (activeKind === "condition_immunities") {
+      const active = new Set(ctx.derived.defenses.condition_immunities);
+      for (const slug of CONDITION_SLUGS) {
+        addRow(list, CONDITION_DISPLAY_NAMES[slug], active.has(slug), () => {
+          if (active.has(slug)) {
+            editState.removeConditionImmunity(slug);
+            active.delete(slug);
+          } else {
+            editState.addConditionImmunity(slug);
+            active.add(slug);
+          }
+        });
+      }
+    } else {
+      const kind = activeKind;
+      const arr = ctx.derived.defenses[kind] ?? [];
+      const active = new Set(arr);
+      for (const type of DAMAGE_TYPES) {
+        const storeKey = type.toLowerCase();
+        addRow(list, type, active.has(storeKey), () => {
+          if (active.has(storeKey)) {
+            editState.removeDefense(kind, storeKey);
+            active.delete(storeKey);
+          } else {
+            editState.addDefense(kind, storeKey);
+            active.add(storeKey);
+          }
+        });
+      }
     }
-  } else {
-    const arr = ctx.derived.defenses[kind] ?? [];
-    const active = new Set(arr);
-    for (const type of DAMAGE_TYPES) {
-      // Damage types stored lowercase (matches existing fixture convention)
-      const storeKey = type.toLowerCase();
-      addRow(list, type, active.has(storeKey), () => {
-        if (active.has(storeKey)) {
-          editState.removeDefense(kind, storeKey);
-          active.delete(storeKey);
-        } else {
-          editState.addDefense(kind, storeKey);
-          active.add(storeKey);
-        }
+  };
+
+  for (const { key, label } of KIND_TABS) {
+    const tab = tabBar.createEl("button", {
+      cls: `pc-def-popover-tab${key === activeKind ? " active" : ""}`,
+      text: label,
+      attr: { "data-kind": key },
+    });
+    tab.addEventListener("click", (e) => {
+      e.stopPropagation();
+      activeKind = key;
+      tabBar.querySelectorAll<HTMLElement>(".pc-def-popover-tab").forEach((t) => {
+        t.classList.toggle("active", t.getAttribute("data-kind") === key);
       });
-    }
+      renderList();
+    });
   }
+
+  renderList();
 
   const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") closeDefenseTypePopover(); };
   const onClick = (e: MouseEvent) => {
