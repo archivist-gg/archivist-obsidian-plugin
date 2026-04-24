@@ -9947,12 +9947,25 @@ body.theme-light .archivist-tag-atk:hover {
  * match the height of the stats-tiles column on its left. */
 .archivist-pc-sheet .pc-def-cond-wrap {
   display: flex;
+  /* SP4b — cap the panel's height so defenses/conditions with many chips
+     scroll internally instead of stretching the stats-tiles column on the
+     left. 180px roughly matches the 2x2 tiles grid height. */
+  max-height: 180px;
+  min-height: 0;
 }
 .archivist-pc-sheet .pc-def-cond {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 16px;
   flex: 1 1 auto;
+  min-height: 0;
+}
+.archivist-pc-sheet .pc-def-cond-left,
+.archivist-pc-sheet .pc-def-cond-right {
+  /* SP4b — each pane scrolls its own body when content exceeds the panel
+     height cap set on .pc-def-cond-wrap. */
+  min-height: 0;
+  overflow-y: auto;
 }
 .archivist-pc-sheet .pc-def-cond-left {
   padding-right: 12px;
@@ -9969,12 +9982,18 @@ body.theme-light .archivist-tag-atk:hover {
   margin-bottom: 4px;
 }
 .archivist-pc-sheet .pc-def-line {
-  margin: 0;
-  font-size: var(--pc-fs-body);
+  margin: 0 0 3px 0;
+  font-size: var(--pc-fs-tiny);
   line-height: var(--pc-lh-body);
   color: var(--pc-text-primary);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
 }
-.archivist-pc-sheet .pc-def-line b { font-weight: 700; }
+/* SP4b — labels use normal weight (not bold) to reduce visual noise on the
+   editable left pane. The pane title ("DEFENSES") carries the visual weight. */
+.archivist-pc-sheet .pc-def-line b { font-weight: 500; }
 .archivist-pc-sheet .pc-def-cond-empty {
   color: var(--pc-text-muted);
   font-style: italic;
@@ -10407,26 +10426,54 @@ body.theme-light .archivist-tag-atk:hover {
   border-radius: 2px;
 }
 
+/* SP4b — the `*` override mark hangs off the value's top-right corner,
+   absolutely positioned against an inline-block value so the underlying
+   number stays visually centered. Parent containers (.pc-ac-shield-txt
+   and .pc-hp-nums) already set text-align: center, so shrinking the value
+   element to inline-block keeps it centered while giving the mark a
+   reference box the width of the actual number text. */
+.archivist-pc-sheet .pc-ac-shield-num,
+.archivist-pc-sheet .pc-hp-val {
+  display: inline-block;
+  position: relative;
+}
+/* .pc-ab-score is already position: absolute with a pill-sized min-width,
+   so it already acts as a positioning context for the mark. */
+.archivist-pc-sheet .pc-ac-shield-num .archivist-override-mark,
+.archivist-pc-sheet .pc-hp-val .archivist-override-mark,
+.archivist-pc-sheet .pc-ab-score .archivist-override-mark {
+  position: absolute;
+  top: 0;
+  right: -8px;
+  font-size: 0.5em;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+/* AC shield has the tightest vertical geometry — ARMOR label sits right
+   above the number. Push the mark further down so it doesn't touch it. */
+.archivist-pc-sheet .pc-ac-shield-num .archivist-override-mark {
+  top: 6px;
+  right: -6px;
+}
+
 /* SP4b — defense chips (visual parity with pc-cond-chip) */
 .archivist-pc-sheet .pc-def-chip {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px 1px 8px;
-  margin: 0 3px 0 0;
-  border: 1px solid var(--pc-crimson, #8a2414);
-  border-radius: 10px;
-  color: var(--pc-crimson, #8a2414);
-  background: transparent;
-  font-family: var(--pc-font-body, Georgia, serif);
-  font-size: var(--pc-fs-small, 12px);
-  line-height: 1.4;
+  gap: 4px;
+  font-size: var(--pc-fs-small);
+  border: 1px solid var(--pc-crimson);
+  color: var(--pc-crimson);
+  border-radius: 3px;
+  padding: 1px 6px;
+  margin: 0 2px 0 0;
+  background: rgba(146, 38, 16, 0.08);
 }
 .archivist-pc-sheet .pc-def-chip .pc-def-chip-label {
-  text-transform: lowercase;
+  text-transform: capitalize;
 }
 .archivist-pc-sheet .pc-def-chip .pc-def-chip-x {
-  margin-left: 4px;
-  padding: 0 2px;
   cursor: pointer;
   opacity: 0.7;
   line-height: 1;
@@ -10435,20 +10482,34 @@ body.theme-light .archivist-tag-atk:hover {
   opacity: 1;
 }
 
-/* SP4b — per-row + add button */
-.archivist-pc-sheet .pc-def-cond-left .pc-def-add {
-  display: inline-block;
-  padding: 0 6px;
-  margin-left: 4px;
-  border: 1px solid var(--pc-border, #8a6f47);
-  border-radius: 10px;
+/* SP4b — single + button on the DEFENSES title row (mirrors .pc-cond-add). */
+.archivist-pc-sheet .pc-def-cond-left .pc-def-add-main {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  padding: 2px 10px;
+  line-height: var(--pc-lh-tight);
+  border: 1.2px solid var(--pc-tan);
+  color: var(--pc-text-primary);
   background: transparent;
-  color: var(--pc-text-soft, #7c6a4e);
-  font: inherit;
-  font-size: var(--pc-fs-small, 12px);
+  border-radius: 4px;
   cursor: pointer;
-  vertical-align: baseline;
-  line-height: 1.4;
+}
+.archivist-pc-sheet .pc-def-cond-left .pc-def-add-main:hover {
+  color: var(--pc-crimson);
+  border-color: var(--pc-crimson);
+}
+
+/* SP4b — empty state "no active defenses" styled like pc-cond-empty */
+.archivist-pc-sheet .pc-def-empty {
+  color: var(--pc-text-muted);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+}
+.archivist-pc-sheet .pc-def-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .archivist-pc-sheet .pc-def-cond-left .pc-def-add:hover {
   color: var(--pc-crimson, #8a2414);
@@ -10477,8 +10538,39 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft, #7c6a4e);
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
+/* SP4b — kind tab bar inside the defense popover */
+.pc-def-popover-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--pc-border, #8a6f47);
+}
+.pc-def-popover-tab {
+  padding: 4px 2px;
+  border: 0;
+  border-right: 1px solid var(--pc-border, #8a6f47);
+  background: transparent;
+  color: var(--pc-text-soft, #7c6a4e);
+  font-family: var(--pc-font-serif, Georgia, serif);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+}
+.pc-def-popover-tab:last-child {
+  border-right: 0;
+}
+.pc-def-popover-tab:hover {
+  background: color-mix(in srgb, var(--pc-crimson, #8a2414) 8%, transparent);
+  color: var(--pc-text-primary, #1c1811);
+}
+.pc-def-popover-tab.active {
+  background: color-mix(in srgb, var(--pc-crimson, #8a2414) 12%, transparent);
+  color: var(--pc-crimson, #8a2414);
+}
 .pc-def-popover-list {
-  max-height: 280px;
+  max-height: 240px;
   overflow-y: auto;
 }
 .pc-def-popover-row {
