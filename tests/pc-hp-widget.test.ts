@@ -299,4 +299,88 @@ describe("HpWidget — unconscious body swap (SP4 polish)", () => {
     expect(heads).toEqual(["Success", "Failure"]);
   });
 });
+
+describe("HpWidget — click-to-edit numerics (SP4b)", () => {
+  function interactiveCtx(hp: { current: number; max: number; temp: number }, overridesHpMax?: number) {
+    const state: Record<string, unknown> = {
+      hp: { ...hp }, hit_dice: {}, spell_slots: {},
+      concentration: null, conditions: [], inspiration: 0, exhaustion: 0,
+    };
+    const editState = {
+      heal: vi.fn(), damage: vi.fn(),
+      setCurrentHp: vi.fn(), setTempHP: vi.fn(),
+      setMaxHpOverride: vi.fn(), clearMaxHpOverride: vi.fn(),
+    };
+    const overrides = overridesHpMax !== undefined ? { hp: { max: overridesHpMax } } : {};
+    return {
+      ctx: {
+        derived: { hp },
+        resolved: { state, definition: { overrides } },
+        editState,
+      } as unknown as ComponentRenderContext,
+      editState,
+    };
+  }
+
+  it("click CURRENT value opens input, Enter commits via setCurrentHp", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 20, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const val = root.querySelector<HTMLElement>(".pc-hp-current .pc-hp-val")!;
+    val.click();
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-current input.pc-edit-inline")!;
+    input.value = "15";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(editState.setCurrentHp).toHaveBeenCalledWith(15);
+  });
+
+  it("click MAX value opens input, Enter commits via setMaxHpOverride", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 20, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const val = root.querySelector<HTMLElement>(".pc-hp-max .pc-hp-val")!;
+    val.click();
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-max input.pc-edit-inline")!;
+    input.value = "40";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(editState.setMaxHpOverride).toHaveBeenCalledWith(40);
+  });
+
+  it("click TEMP opens input with 0 when display shows dash", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 20, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const val = root.querySelector<HTMLElement>(".pc-hp-temp .pc-hp-val")!;
+    expect(val.textContent).toBe("—");
+    val.click();
+    const input = root.querySelector<HTMLInputElement>(".pc-hp-temp input.pc-edit-inline")!;
+    expect(input.value).toBe("0");
+  });
+
+  it("renders override mark on MAX column when overrides.hp.max is set", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 20, max: 40, temp: 0 }, 40);
+    new HpWidget().render(root, ctx);
+    const mark = root.querySelector(".pc-hp-max .archivist-override-mark");
+    expect(mark).not.toBeNull();
+    expect(mark!.textContent).toBe("*");
+  });
+
+  it("click on MAX override mark calls clearMaxHpOverride", () => {
+    const root = mountContainer();
+    const { ctx, editState } = interactiveCtx({ current: 20, max: 40, temp: 0 }, 40);
+    new HpWidget().render(root, ctx);
+    root.querySelector<HTMLElement>(".pc-hp-max .archivist-override-mark")!.click();
+    expect(editState.clearMaxHpOverride).toHaveBeenCalledTimes(1);
+  });
+
+  it("unconscious mode does NOT render editable CURRENT/MAX/TEMP inputs", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 0, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    // Death-saves panel should replace the nums
+    expect(root.querySelector(".pc-hp-current")).toBeNull();
+    expect(root.querySelector(".pc-hp-max")).toBeNull();
+  });
+});
 });

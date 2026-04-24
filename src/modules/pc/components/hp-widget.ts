@@ -1,4 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { numberField, numberOverride } from "./edit-primitives";
 
 /**
  * HP widget in the hero right.
@@ -86,9 +87,37 @@ export class HpWidget implements SheetComponent {
     } else {
       // Normal body — the tiles + HIT POINTS label.
       const nums = body.createDiv({ cls: "pc-hp-nums" });
-      this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
-      this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
-      this.col(nums, "pc-hp-temp", "TEMP", ctx.derived.hp.temp > 0 ? String(ctx.derived.hp.temp) : "—");
+      const curVal = this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
+      const maxVal = this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
+      const tempVal = this.col(
+        nums,
+        "pc-hp-temp",
+        "TEMP",
+        ctx.derived.hp.temp > 0 ? String(ctx.derived.hp.temp) : "—",
+      );
+
+      if (ctx.editState) {
+        const editState = ctx.editState;
+        numberField(curVal, {
+          getValue: () => ctx.resolved.state.hp.current,
+          onSet: (n) => editState.setCurrentHp(n),
+          min: 0,
+          max: ctx.derived.hp.max,
+        });
+        const overridesHp = ctx.resolved.definition?.overrides?.hp;
+        numberOverride(maxVal, {
+          getEffective: () => ctx.derived.hp.max,
+          isOverridden: () => overridesHp?.max !== undefined,
+          onSet: (n) => editState.setMaxHpOverride(n),
+          onClear: () => editState.clearMaxHpOverride(),
+          min: 1,
+        });
+        numberField(tempVal, {
+          getValue: () => ctx.resolved.state.hp.temp,
+          onSet: (n) => editState.setTempHP(n),
+          min: 0,
+        });
+      }
     }
 
     body.createDiv({ cls: "pc-hp-label", text: labelText });
@@ -129,9 +158,9 @@ export class HpWidget implements SheetComponent {
     input.addEventListener("keypress", stopProp);
   }
 
-  private col(parent: HTMLElement, cls: string, label: string, value: string) {
+  private col(parent: HTMLElement, cls: string, label: string, value: string): HTMLElement {
     const col = parent.createDiv({ cls: `pc-hp-col ${cls}` });
     col.createDiv({ cls: "pc-hp-lbl", text: label });
-    col.createDiv({ cls: "pc-hp-val", text: value });
+    return col.createDiv({ cls: "pc-hp-val", text: value });
   }
 }
