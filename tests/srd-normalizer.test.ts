@@ -282,7 +282,10 @@ describe("normalizeSrdMonster edge cases", () => {
       expect(parsed.data.abilities?.str).toBe(27);
       expect(parsed.data.saves?.dex).toBe(6);
       expect(parsed.data.cr).toBe("17");
-      expect(parsed.data.traits).toHaveLength(1);
+      // Parser extracts "Legendary Resistance (3/Day)" out of traits into
+      // `legendary_resistance` and splices it from the traits array.
+      expect(parsed.data.traits).toHaveLength(0);
+      expect(parsed.data.legendary_resistance).toBe(3);
       expect(parsed.data.actions).toHaveLength(2);
       expect(parsed.data.legendary).toHaveLength(2);
       expect(parsed.data.legendary_actions).toBe(3);
