@@ -84,7 +84,7 @@
   margin: var(--pc-space-3) var(--pc-space-4) 0;
   background: #fff6e0;
   border-left: 3px solid var(--pc-crimson);
-  font-size: 12px;
+  font-size: var(--pc-fs-body);
   border-radius: var(--pc-radius-sm);
 }
 

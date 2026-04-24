@@ -13,6 +13,31 @@
   --pc-font-serif: 'Libre Baskerville', Georgia, serif;
   --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
 
+  /* --------------------------------------------------------------
+   * Type scale — 9 sizes, mapped to roles. Every selector below
+   * references one of these; no raw px font-sizes elsewhere.
+   * -------------------------------------------------------------- */
+  --pc-fs-display: 22px;      /* character name */
+  --pc-fs-big:     22px;      /* primary big values (ab-mod, ac-num, tile-val) */
+  --pc-fs-mid:     18px;      /* secondary big values (hp-val, hd-nums) */
+  --pc-fs-title:   16px;      /* block title, currency/sense/slot large val */
+  --pc-fs-heading: 14px;      /* tab heading, block subtitle */
+  --pc-fs-body:    12px;      /* body text, skill rows, tables, descriptions */
+  --pc-fs-small:   11px;      /* secondary meta, tab buttons, inline bonuses */
+  --pc-fs-label:   10px;      /* section/microcap labels (uppercase) */
+  --pc-fs-micro:    8px;      /* super-tight uppercase labels (cartouche / tile) */
+  --pc-fs-tiny:   7.5px;      /* tightest microcap (save-chip "SAVE") */
+
+  --pc-lh-tight:  1;
+  --pc-lh-snug:   1.2;
+  --pc-lh-value:  1.05;
+  --pc-lh-body:   1.45;
+
+  /* Uppercase micro-label letter-spacing ramp (smaller = wider). */
+  --pc-ls-caps-sm:    0.08em;    /* 11-14px uppercase (buttons, subtitle) */
+  --pc-ls-caps-md:    0.14em;    /* 8-10px standard microcap */
+  --pc-ls-caps-lg:    0.2em;     /* 7.5-8px display microcap (AC / HP / HD) */
+
   --pc-space-1: 4px;
   --pc-space-2: 8px;
   --pc-space-3: 12px;
