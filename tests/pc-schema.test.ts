@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, expectTypeOf } from "vitest";
 import { characterSchema } from "../src/modules/pc/pc.schema";
+import type { ConditionSlug } from "../src/modules/pc/constants/conditions";
 
 const minimalValid = {
   name: "Grendal",
@@ -135,5 +136,10 @@ describe("SP4 state additions", () => {
     const base = validMinimalCharacter();
     const bad = characterSchema.safeParse({ ...base, state: { ...base.state, conditions: ["not-a-real-condition"] } });
     expect(bad.success).toBe(false);
+  });
+
+  it("schema output narrows conditions to ConditionSlug[]", () => {
+    const parsed = characterSchema.parse(validMinimalCharacter());
+    expectTypeOf(parsed.state.conditions).toEqualTypeOf<ConditionSlug[]>();
   });
 });

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { CONDITION_SLUGS } from "./constants/conditions";
 
-const conditionSlugEnum = z.enum(CONDITION_SLUGS as unknown as [string, ...string[]]);
+const conditionSlugEnum = z.enum(CONDITION_SLUGS);
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 
