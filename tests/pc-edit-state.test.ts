@@ -346,3 +346,68 @@ describe("CharacterEditState — death saves", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("CharacterEditState — HP overrides (SP4b)", () => {
+  it("setCurrentHp clamps to [0, derived.hp.max]", () => {
+    const { es, char, onChange } = makeState((c) => { c.state.hp.current = 20; });
+    es.setCurrentHp(999);
+    expect(char.state.hp.current).toBe(24); // derived.hp.max in fixture
+    es.setCurrentHp(-5);
+    expect(char.state.hp.current).toBe(0);
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("setCurrentHp crossing 0→positive clears death_saves", () => {
+    const { es, char } = makeState((c) => {
+      c.state.hp.current = 0;
+      c.state.death_saves = { successes: 2, failures: 1 };
+    });
+    es.setCurrentHp(8);
+    expect(char.state.hp.current).toBe(8);
+    expect(char.state.death_saves).toEqual({ successes: 0, failures: 0 });
+  });
+
+  it("setCurrentHp staying at 0 preserves death_saves", () => {
+    const { es, char } = makeState((c) => {
+      c.state.hp.current = 0;
+      c.state.death_saves = { successes: 1, failures: 2 };
+    });
+    es.setCurrentHp(0);
+    expect(char.state.death_saves).toEqual({ successes: 1, failures: 2 });
+  });
+
+  it("setMaxHpOverride stores override, clamps min to 1, triggers onChange", () => {
+    const { es, char, onChange } = makeState();
+    es.setMaxHpOverride(40);
+    expect(char.overrides.hp?.max).toBe(40);
+    es.setMaxHpOverride(0);
+    expect(char.overrides.hp?.max).toBe(1);
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("setMaxHpOverride clamps state.hp.current down if new max is lower", () => {
+    const { es, char } = makeState((c) => { c.state.hp.current = 24; });
+    es.setMaxHpOverride(10);
+    expect(char.state.hp.current).toBe(10);
+  });
+
+  it("setMaxHpOverride above current does NOT raise current", () => {
+    const { es, char } = makeState((c) => { c.state.hp.current = 15; });
+    es.setMaxHpOverride(40);
+    expect(char.state.hp.current).toBe(15);
+  });
+
+  it("setMaxHpOverride does not touch state.hp.temp in either direction", () => {
+    const { es, char } = makeState((c) => { c.state.hp.temp = 7; });
+    es.setMaxHpOverride(5);
+    expect(char.state.hp.temp).toBe(7);
+  });
+
+  it("clearMaxHpOverride deletes the key and drops overrides.hp if empty", () => {
+    const { es, char } = makeState();
+    es.setMaxHpOverride(40);
+    expect(char.overrides.hp).toBeDefined();
+    es.clearMaxHpOverride();
+    expect(char.overrides.hp).toBeUndefined();
+  });
+});

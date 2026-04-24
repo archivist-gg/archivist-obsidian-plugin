@@ -57,6 +57,37 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  setCurrentHp(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const { derived } = this.getContext();
+    const hp = this.character.state.hp;
+    const wasZero = hp.current === 0;
+    const next = Math.max(0, Math.min(derived.hp.max, Math.floor(value)));
+    hp.current = next;
+    if (wasZero && next > 0) this.clearDeathSavesNoNotify();
+    this.onChange();
+  }
+
+  setMaxHpOverride(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(1, Math.floor(value));
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.max = next;
+    if (this.character.state.hp.current > next) {
+      this.character.state.hp.current = next;
+    }
+    this.onChange();
+  }
+
+  clearMaxHpOverride(): void {
+    if (!this.character.overrides.hp) { this.onChange(); return; }
+    delete this.character.overrides.hp.max;
+    if (Object.keys(this.character.overrides.hp).length === 0) {
+      delete this.character.overrides.hp;
+    }
+    this.onChange();
+  }
+
   // ─── Hit dice ──────────────────────────────────────────────────────
   spendHitDie(dieKey: string): void {
     const hd = this.character.state.hit_dice[dieKey];
