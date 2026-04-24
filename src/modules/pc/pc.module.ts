@@ -95,11 +95,17 @@ export class PCModule implements ArchivistModule {
    * mid-flight and any subsequent swap races a variable-length promise chain.
    */
   private installViewSwapInterceptor(plugin: HostPlugin): void {
+    // monkey-around factories return plain `function` expressions so they get
+    // their own `this` bound by Obsidian to the WorkspaceLeaf; we need a stable
+    // alias to the PCModule instance inside those bodies.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const mod = this;
+    type SetViewStateFn = (this: WorkspaceLeaf, state: ViewState, ...rest: unknown[]) => Promise<void>;
+    type DetachFn = (this: WorkspaceLeaf) => void;
     const uninstaller = around(WorkspaceLeaf.prototype, {
-      setViewState(next) {
-        return function (this: WorkspaceLeaf, state: ViewState, ...rest: unknown[]) {
-          const filePath = (state?.state as { file?: string } | undefined)?.file;
+      setViewState(next: SetViewStateFn): SetViewStateFn {
+        return function (this: WorkspaceLeaf, state: ViewState, ...rest: unknown[]): Promise<void> {
+          const filePath = typeof state?.state?.file === "string" ? state.state.file : undefined;
           const leafId = (this as unknown as { id?: string }).id;
           const modeKey = leafId ?? filePath ?? "";
           // Auto-swap markdown → pc when the file has pc frontmatter, unless the
@@ -113,19 +119,19 @@ export class PCModule implements ArchivistModule {
             mod.shouldRenderAsPC(filePath, plugin)
           ) {
             mod.fileModes[modeKey] = VIEW_TYPE_PC;
-            return next.call(this, { ...state, type: VIEW_TYPE_PC }, ...rest);
+            return (next.call(this, { ...state, type: VIEW_TYPE_PC }, ...rest)) as Promise<void>;
           }
-          return next.call(this, state, ...rest);
+          return (next.call(this, state, ...rest)) as Promise<void>;
         };
       },
-      detach(next) {
-        return function (this: WorkspaceLeaf) {
+      detach(next: DetachFn): DetachFn {
+        return function (this: WorkspaceLeaf): void {
           const view = (this as unknown as { view?: { getState?: () => { file?: string } } }).view;
           const filePath = view?.getState?.()?.file;
           const leafId = (this as unknown as { id?: string }).id;
           const modeKey = leafId ?? filePath ?? "";
           if (modeKey && mod.fileModes[modeKey]) delete mod.fileModes[modeKey];
-          return next.call(this);
+          next.call(this);
         };
       },
     });
