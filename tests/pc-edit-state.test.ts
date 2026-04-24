@@ -438,3 +438,35 @@ describe("CharacterEditState — AC overrides (SP4b)", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("CharacterEditState — ability score overrides (SP4b)", () => {
+  it("setScoreOverride stores override per ability, clamped to [1, 30]", () => {
+    const { es, char } = makeState();
+    es.setScoreOverride("str", 20);
+    expect(char.overrides.scores?.str).toBe(20);
+    es.setScoreOverride("dex", 999);
+    expect(char.overrides.scores?.dex).toBe(30);
+    es.setScoreOverride("con", 0);
+    expect(char.overrides.scores?.con).toBe(1);
+  });
+
+  it("setScoreOverride allows different abilities independently", () => {
+    const { es, char } = makeState();
+    es.setScoreOverride("str", 18);
+    es.setScoreOverride("wis", 14);
+    expect(char.overrides.scores?.str).toBe(18);
+    expect(char.overrides.scores?.wis).toBe(14);
+    expect(char.overrides.scores?.dex).toBeUndefined();
+  });
+
+  it("clearScoreOverride removes a single ability and drops overrides.scores when empty", () => {
+    const { es, char } = makeState();
+    es.setScoreOverride("str", 18);
+    es.setScoreOverride("wis", 14);
+    es.clearScoreOverride("str");
+    expect(char.overrides.scores?.str).toBeUndefined();
+    expect(char.overrides.scores?.wis).toBe(14);
+    es.clearScoreOverride("wis");
+    expect(char.overrides.scores).toBeUndefined();
+  });
+});

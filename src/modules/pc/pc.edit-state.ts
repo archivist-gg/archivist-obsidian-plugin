@@ -100,6 +100,24 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Ability scores ────────────────────────────────────────────────
+  setScoreOverride(ability: Ability, value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(1, Math.min(30, Math.floor(value)));
+    if (!this.character.overrides.scores) this.character.overrides.scores = {};
+    this.character.overrides.scores[ability] = next;
+    this.onChange();
+  }
+
+  clearScoreOverride(ability: Ability): void {
+    if (!this.character.overrides.scores) { this.onChange(); return; }
+    delete this.character.overrides.scores[ability];
+    if (Object.keys(this.character.overrides.scores).length === 0) {
+      delete this.character.overrides.scores;
+    }
+    this.onChange();
+  }
+
   // ─── Hit dice ──────────────────────────────────────────────────────
   spendHitDie(dieKey: string): void {
     const hd = this.character.state.hit_dice[dieKey];
