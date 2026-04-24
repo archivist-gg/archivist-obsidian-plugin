@@ -76,3 +76,23 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   input.addEventListener("keypress", stopProp);
   input.addEventListener("blur", () => { if (!done) commit(); });
 }
+
+export interface NumberFieldOpts {
+  getValue: () => number;
+  onSet: (value: number) => void;
+  min?: number;
+  max?: number;
+}
+
+export function numberField(valueEl: HTMLElement, opts: NumberFieldOpts): void {
+  valueEl.classList.add("pc-edit-click");
+  valueEl.addEventListener("click", () => {
+    makeInlineInput(valueEl, {
+      initial: opts.getValue(),
+      min: opts.min,
+      max: opts.max,
+      onCommit: opts.onSet,
+      onCancel: () => { /* onChange() rerender will restore valueEl */ },
+    });
+  });
+}

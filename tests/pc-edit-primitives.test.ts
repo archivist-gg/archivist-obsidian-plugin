@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { makeInlineInput } from "../src/modules/pc/components/edit-primitives";
+import { numberField } from "../src/modules/pc/components/edit-primitives";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -77,5 +78,62 @@ describe("makeInlineInput", () => {
     input.dispatchEvent(new Event("blur"));
     expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onCommit).toHaveBeenCalledWith(7);
+  });
+});
+
+describe("numberField", () => {
+  it("clicking valueEl opens inline input preloaded with getValue()", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "12" });
+    let value = 12;
+    numberField(valueEl, { getValue: () => value, onSet: (n) => { value = n; } });
+    valueEl.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline");
+    expect(input?.value).toBe("12");
+  });
+
+  it("commit calls onSet with new value", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "12" });
+    const onSet = vi.fn();
+    numberField(valueEl, { getValue: () => 12, onSet });
+    valueEl.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    input.value = "20";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(onSet).toHaveBeenCalledWith(20);
+  });
+
+  it("cancel leaves value unchanged and does not call onSet", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "12" });
+    const onSet = vi.fn();
+    numberField(valueEl, { getValue: () => 12, onSet });
+    valueEl.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(onSet).not.toHaveBeenCalled();
+  });
+
+  it("reads from getValue(), not valueEl.textContent (temp HP dash safety)", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "—" });
+    const onSet = vi.fn();
+    numberField(valueEl, { getValue: () => 0, onSet });
+    valueEl.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    expect(input.value).toBe("0");
+  });
+
+  it("respects min/max clamps on commit", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "5" });
+    const onSet = vi.fn();
+    numberField(valueEl, { getValue: () => 5, onSet, min: 0, max: 10 });
+    valueEl.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    input.value = "999";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(onSet).toHaveBeenCalledWith(10);
   });
 });
