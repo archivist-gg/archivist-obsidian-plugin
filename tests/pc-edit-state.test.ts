@@ -533,3 +533,40 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     expect(char.defenses?.condition_immunities).toEqual(["frightened"]);
   });
 });
+
+describe("CharacterEditState — speed override (SP4c)", () => {
+  it("setSpeedOverride writes overrides.speed and notifies", () => {
+    const { es, char, onChange } = makeState();
+    es.setSpeedOverride(40);
+    expect(char.overrides.speed).toBe(40);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("setSpeedOverride clamps to [0, 240]", () => {
+    const { es, char } = makeState();
+    es.setSpeedOverride(-10);
+    expect(char.overrides.speed).toBe(0);
+    es.setSpeedOverride(9999);
+    expect(char.overrides.speed).toBe(240);
+  });
+
+  it("setSpeedOverride floors fractional input", () => {
+    const { es, char } = makeState();
+    es.setSpeedOverride(30.7);
+    expect(char.overrides.speed).toBe(30);
+  });
+
+  it("setSpeedOverride silently no-ops on NaN", () => {
+    const { es, char, onChange } = makeState();
+    es.setSpeedOverride(NaN);
+    expect(char.overrides.speed).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("clearSpeedOverride deletes the key and notifies", () => {
+    const { es, char, onChange } = makeState((c) => { c.overrides.speed = 40; });
+    es.clearSpeedOverride();
+    expect(char.overrides.speed).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});

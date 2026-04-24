@@ -118,6 +118,18 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Speed (override) ──────────────────────────────────────────────
+  setSpeedOverride(value: number): void {
+    if (!Number.isFinite(value)) return;
+    this.character.overrides.speed = Math.max(0, Math.min(240, Math.floor(value)));
+    this.onChange();
+  }
+
+  clearSpeedOverride(): void {
+    delete this.character.overrides.speed;
+    this.onChange();
+  }
+
   // ─── Defenses ──────────────────────────────────────────────────────
   private ensureDefenses(): NonNullable<Character["defenses"]> {
     if (!this.character.defenses) {
