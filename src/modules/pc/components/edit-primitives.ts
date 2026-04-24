@@ -96,3 +96,37 @@ export function numberField(valueEl: HTMLElement, opts: NumberFieldOpts): void {
     });
   });
 }
+
+export interface NumberOverrideOpts {
+  getEffective: () => number;
+  isOverridden: () => boolean;
+  onSet: (value: number) => void;
+  onClear: () => void;
+  min?: number;
+  max?: number;
+}
+
+export function numberOverride(valueEl: HTMLElement, opts: NumberOverrideOpts): void {
+  valueEl.classList.add("pc-edit-click");
+  valueEl.addEventListener("click", () => {
+    makeInlineInput(valueEl, {
+      initial: opts.getEffective(),
+      min: opts.min,
+      max: opts.max,
+      onCommit: opts.onSet,
+      onCancel: () => { /* onChange() rerender will restore valueEl */ },
+    });
+  });
+
+  if (opts.isOverridden()) {
+    const mark = (valueEl.ownerDocument ?? document).createElement("span");
+    mark.className = "archivist-override-mark";
+    mark.textContent = "*";
+    mark.title = "Manual override — click to remove and use the auto-calculated value";
+    mark.addEventListener("click", (e) => {
+      e.stopPropagation();
+      opts.onClear();
+    });
+    valueEl.insertAdjacentElement("afterend", mark);
+  }
+}

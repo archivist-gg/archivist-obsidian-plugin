@@ -1,8 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { makeInlineInput } from "../src/modules/pc/components/edit-primitives";
-import { numberField } from "../src/modules/pc/components/edit-primitives";
+import { makeInlineInput, numberField, numberOverride } from "../src/modules/pc/components/edit-primitives";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -135,5 +134,71 @@ describe("numberField", () => {
     input.value = "999";
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(onSet).toHaveBeenCalledWith(10);
+  });
+});
+
+describe("numberOverride", () => {
+  it("renders no override mark when isOverridden() is false", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "10" });
+    numberOverride(valueEl, {
+      getEffective: () => 10,
+      isOverridden: () => false,
+      onSet: () => {},
+      onClear: () => {},
+    });
+    expect(root.querySelector(".archivist-override-mark")).toBeNull();
+  });
+
+  it("renders crimson * after valueEl when isOverridden() is true", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "14" });
+    numberOverride(valueEl, {
+      getEffective: () => 14,
+      isOverridden: () => true,
+      onSet: () => {},
+      onClear: () => {},
+    });
+    const mark = root.querySelector<HTMLElement>(".archivist-override-mark");
+    expect(mark).not.toBeNull();
+    expect(mark!.textContent).toBe("*");
+    expect(mark!.previousSibling).toBe(valueEl);
+  });
+
+  it("click on valueEl opens input with getEffective() value and commit calls onSet", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "14" });
+    const onSet = vi.fn();
+    numberOverride(valueEl, {
+      getEffective: () => 14,
+      isOverridden: () => false,
+      onSet,
+      onClear: () => {},
+    });
+    valueEl.click();
+    const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    expect(input.value).toBe("14");
+    input.value = "18";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(onSet).toHaveBeenCalledWith(18);
+  });
+
+  it("click on override mark calls onClear and stops propagation to valueEl", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "18" });
+    const onClear = vi.fn();
+    const onSet = vi.fn();
+    numberOverride(valueEl, {
+      getEffective: () => 18,
+      isOverridden: () => true,
+      onSet,
+      onClear,
+    });
+    const mark = root.querySelector<HTMLElement>(".archivist-override-mark")!;
+    mark.click();
+    expect(onClear).toHaveBeenCalledTimes(1);
+    // The mark click must NOT bubble to valueEl (which would open an input)
+    expect(root.querySelector("input.pc-edit-inline")).toBeNull();
+    expect(onSet).not.toHaveBeenCalled();
   });
 });
