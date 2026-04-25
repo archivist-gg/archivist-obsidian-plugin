@@ -298,7 +298,11 @@ export function normalizeSrdArmor(
   };
   const plusMax = Number(raw.plus_max ?? 0);
   if (acObj.add_dex && plusMax > 0) acObj.dex_max = plusMax;
-  if (typeof raw.ac_string === "string" && raw.ac_string.length > 0) {
+  if (out.category === "shield" && Number(acObj.flat) > 0) {
+    // Open5e's ac_string for shields is "0 +N" which renders as a bare "0 +2".
+    // The conventional shield display is just the flat bonus.
+    acObj.description = `+${acObj.flat}`;
+  } else if (typeof raw.ac_string === "string" && raw.ac_string.length > 0) {
     acObj.description = raw.ac_string;
   }
   out.ac = acObj;
