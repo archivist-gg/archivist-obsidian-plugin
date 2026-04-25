@@ -179,3 +179,109 @@ describe("PC end-to-end — overrides round-trip (SP4b)", () => {
     expect(view.getViewData()).not.toMatch(/overrides:\s*\n\s+ac:/);
   });
 });
+
+describe("PC end-to-end — overrides round-trip (SP4c)", () => {
+  // Helpers: click + type + Enter, then await microtask. Always re-query
+  // the DOM after — re-render replaces the elements.
+  async function commit(view: PCSheetView, valueSelector: string, next: number): Promise<void> {
+    view.contentEl.querySelector<HTMLElement>(valueSelector)!.click();
+    const input = view.contentEl.querySelector<HTMLInputElement>("input.pc-edit-inline")!;
+    input.value = String(next);
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    await Promise.resolve();
+  }
+
+  async function clearViaMark(view: PCSheetView, markSelector: string): Promise<void> {
+    view.contentEl.querySelector<HTMLElement>(markSelector)!.click();
+    await Promise.resolve();
+  }
+
+  it("speed override applies, persists in YAML, and clears", async () => {
+    const { view } = boot();
+    await view.setViewData(GRENDAL_MD, true);
+    const baseline = view.contentEl.querySelector(".pc-stats-tile[data-stat='speed'] .pc-stats-tile-num")?.textContent ?? "";
+
+    await commit(view, ".pc-stats-tile[data-stat='speed'] .pc-stats-tile-num", 40);
+
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='speed'] .pc-stats-tile-num")?.textContent).toContain("40");
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='speed'] .archivist-override-mark")).not.toBeNull();
+    expect(view.getViewData()).toMatch(/speed:\s*40/);
+
+    await clearViaMark(view, ".pc-stats-tile[data-stat='speed'] .archivist-override-mark");
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='speed'] .pc-stats-tile-num")?.textContent).toBe(baseline);
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='speed'] .archivist-override-mark")).toBeNull();
+    expect(view.getViewData()).not.toMatch(/overrides:[\s\S]*?\n\s+speed:/);
+  });
+
+  it("initiative override applies, persists in YAML, and clears", async () => {
+    const { view } = boot();
+    await view.setViewData(GRENDAL_MD, true);
+    const baseline = view.contentEl.querySelector(".pc-stats-tile[data-stat='init'] .pc-stats-tile-val")?.textContent ?? "";
+
+    await commit(view, ".pc-stats-tile[data-stat='init'] .pc-stats-tile-val", 7);
+
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='init'] .pc-stats-tile-val")?.textContent).toContain("+7");
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='init'] .archivist-override-mark")).not.toBeNull();
+    expect(view.getViewData()).toMatch(/initiative:\s*7/);
+
+    await clearViaMark(view, ".pc-stats-tile[data-stat='init'] .archivist-override-mark");
+    expect(view.contentEl.querySelector(".pc-stats-tile[data-stat='init'] .pc-stats-tile-val")?.textContent).toBe(baseline);
+  });
+
+  it("passive perception override applies, persists, and clears", async () => {
+    const { view } = boot();
+    await view.setViewData(GRENDAL_MD, true);
+    // PASSIVE_ROWS in senses-panel.ts renders Perception first.
+    const baseline = view.contentEl.querySelectorAll(".pc-sense-row")[0]?.querySelector(".pc-sense-val")?.textContent ?? "";
+
+    await commit(view, ".pc-sense-row:nth-child(1) .pc-sense-val", 22);
+
+    const row = view.contentEl.querySelectorAll(".pc-sense-row")[0];
+    expect(row.querySelector(".pc-sense-val")?.textContent).toContain("22");
+    expect(row.querySelector(".archivist-override-mark")).not.toBeNull();
+    expect(view.getViewData()).toMatch(/passives:[\s\S]*?perception:\s*22/);
+
+    await clearViaMark(view, ".pc-sense-row:nth-child(1) .archivist-override-mark");
+    const cleared = view.contentEl.querySelectorAll(".pc-sense-row")[0];
+    expect(cleared.querySelector(".pc-sense-val")?.textContent).toBe(baseline);
+    expect(cleared.querySelector(".archivist-override-mark")).toBeNull();
+  });
+
+  it("skill bonus override applies, persists, and clears (Athletics)", async () => {
+    const { view } = boot();
+    await view.setViewData(GRENDAL_MD, true);
+    const baseline = view.contentEl.querySelector("[data-skill='athletics'] .pc-skill-bonus")?.textContent ?? "";
+
+    await commit(view, "[data-skill='athletics'] .pc-skill-bonus", 12);
+
+    const row = view.contentEl.querySelector<HTMLElement>("[data-skill='athletics']")!;
+    expect(row.querySelector(".pc-skill-bonus")?.textContent).toContain("+12");
+    expect(row.querySelector(".archivist-override-mark")).not.toBeNull();
+    expect(view.getViewData()).toMatch(/skills:[\s\S]*?athletics:[\s\S]*?bonus:\s*12/);
+
+    await clearViaMark(view, "[data-skill='athletics'] .archivist-override-mark");
+    const cleared = view.contentEl.querySelector<HTMLElement>("[data-skill='athletics']")!;
+    expect(cleared.querySelector(".pc-skill-bonus")?.textContent).toBe(baseline);
+    // Parent dropped — no `overrides.skills:` block remains for this slug.
+    expect(view.getViewData()).not.toMatch(/skills:[\s\S]*?athletics:[\s\S]*?bonus:/);
+  });
+
+  it("save bonus override applies, persists, and clears (STR)", async () => {
+    const { view } = boot();
+    await view.setViewData(GRENDAL_MD, true);
+    // .pc-save-chip is a sibling of .pc-ab inside .pc-ab-stack — use :has() to scope.
+    const stackSel = ".pc-ab-stack:has(.pc-ab[data-ability='str'])";
+    const baseline = view.contentEl.querySelector(`${stackSel} .pc-save-bn`)?.textContent ?? "";
+
+    await commit(view, `${stackSel} .pc-save-bn`, 9);
+
+    const chip = view.contentEl.querySelector<HTMLElement>(`${stackSel} .pc-save-chip`)!;
+    expect(chip.querySelector(".pc-save-bn")?.textContent).toContain("+9");
+    expect(chip.querySelector(".pc-save-bn .archivist-override-mark")).not.toBeNull();
+    expect(view.getViewData()).toMatch(/saves:[\s\S]*?str:[\s\S]*?bonus:\s*9/);
+
+    await clearViaMark(view, `${stackSel} .pc-save-bn .archivist-override-mark`);
+    const cleared = view.contentEl.querySelector<HTMLElement>(`${stackSel} .pc-save-chip`)!;
+    expect(cleared.querySelector(".pc-save-bn")?.textContent).toBe(baseline);
+  });
+});
