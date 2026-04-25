@@ -280,10 +280,67 @@ describe("CharacterEditState — saves", () => {
 
   it("clearSaveProficientOverride removes the ability from overrides.saves", () => {
     const { es, char } = makeState((c) => {
-      c.overrides.saves = { dex: { bonus: 0, proficient: true } };
+      c.overrides.saves = { dex: { proficient: true } };
     });
     es.clearSaveProficientOverride("dex");
     expect(char.overrides.saves?.dex).toBeUndefined();
+  });
+});
+
+describe("CharacterEditState — save bonus override (SP4c)", () => {
+  it("setSaveBonusOverride materializes parent and writes bonus", () => {
+    const { es, char, onChange } = makeState();
+    expect(char.overrides.saves).toBeUndefined();
+    es.setSaveBonusOverride("str", 7);
+    expect(char.overrides.saves).toEqual({ str: { bonus: 7 } });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("setSaveBonusOverride preserves an existing proficient flag on the same ability", () => {
+    const { es, char } = makeState((c) => { c.overrides.saves = { str: { proficient: true } }; });
+    es.setSaveBonusOverride("str", 7);
+    expect(char.overrides.saves?.str).toEqual({ proficient: true, bonus: 7 });
+  });
+
+  it("setSaveBonusOverride clamps to [-20, 30] and floors", () => {
+    const { es, char } = makeState();
+    es.setSaveBonusOverride("dex", -9999);
+    expect(char.overrides.saves?.dex?.bonus).toBe(-20);
+    es.setSaveBonusOverride("dex", 9999);
+    expect(char.overrides.saves?.dex?.bonus).toBe(30);
+    es.setSaveBonusOverride("dex", 5.9);
+    expect(char.overrides.saves?.dex?.bonus).toBe(5);
+  });
+
+  it("setSaveBonusOverride no-ops on NaN", () => {
+    const { es, char, onChange } = makeState();
+    es.setSaveBonusOverride("str", NaN);
+    expect(char.overrides.saves).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("clearSaveBonusOverride deletes the bonus half but keeps proficient", () => {
+    const { es, char } = makeState((c) => { c.overrides.saves = { str: { bonus: 7, proficient: true } }; });
+    es.clearSaveBonusOverride("str");
+    expect(char.overrides.saves?.str).toEqual({ proficient: true });
+  });
+
+  it("clearSaveBonusOverride drops the entry when proficient is unset", () => {
+    const { es, char } = makeState((c) => { c.overrides.saves = { str: { bonus: 7 } }; });
+    es.clearSaveBonusOverride("str");
+    expect(char.overrides.saves?.str).toBeUndefined();
+  });
+
+  it("clearSaveBonusOverride drops the parent when last save entry is cleared", () => {
+    const { es, char } = makeState((c) => { c.overrides.saves = { str: { bonus: 7 } }; });
+    es.clearSaveBonusOverride("str");
+    expect(char.overrides.saves).toBeUndefined();
+  });
+
+  it("clearSaveProficientOverride drops the entry when bonus is unset (regression)", () => {
+    const { es, char } = makeState((c) => { c.overrides.saves = { str: { proficient: true } }; });
+    es.clearSaveProficientOverride("str");
+    expect(char.overrides.saves).toBeUndefined();
   });
 });
 

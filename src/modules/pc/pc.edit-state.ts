@@ -320,8 +320,44 @@ export class CharacterEditState {
   }
 
   clearSaveProficientOverride(ability: Ability): void {
-    if (!this.character.overrides.saves) return;
-    delete this.character.overrides.saves[ability];
+    const saves = this.character.overrides.saves;
+    if (!saves || !saves[ability]) { this.onChange(); return; }
+    const { proficient: _prof, ...rest } = saves[ability]!;
+    if (Object.keys(rest).length === 0) {
+      delete saves[ability];
+    } else {
+      saves[ability] = rest;
+    }
+    if (Object.keys(saves).length === 0) {
+      delete this.character.overrides.saves;
+    }
+    this.onChange();
+  }
+
+  // ─── Save bonus (override) ─────────────────────────────────────────
+  setSaveBonusOverride(ability: Ability, value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(-20, Math.min(30, Math.floor(value)));
+    if (!this.character.overrides.saves) this.character.overrides.saves = {};
+    this.character.overrides.saves[ability] = {
+      ...(this.character.overrides.saves[ability] ?? {}),
+      bonus: next,
+    };
+    this.onChange();
+  }
+
+  clearSaveBonusOverride(ability: Ability): void {
+    const saves = this.character.overrides.saves;
+    if (!saves || !saves[ability]) { this.onChange(); return; }
+    const { bonus: _bonus, ...rest } = saves[ability]!;
+    if (Object.keys(rest).length === 0) {
+      delete saves[ability];
+    } else {
+      saves[ability] = rest;
+    }
+    if (Object.keys(saves).length === 0) {
+      delete this.character.overrides.saves;
+    }
     this.onChange();
   }
 
