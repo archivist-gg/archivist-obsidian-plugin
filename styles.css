@@ -6341,6 +6341,39 @@ code .claudian-file-link:hover {
   color: #191813;
 }
 
+/* Armor / Weapon property rows (Phase 0.5).
+   The armor and weapon renderers use a label-then-value pattern without
+   icons. Match the item-block visual vocabulary: bold label on the left,
+   value on the right, both inside a flex row with a separating gap. */
+.archivist-item-block .archivist-item-property {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  margin: 0.2em 0;
+  font-size: 13px;
+  color: #191813;
+}
+
+.archivist-item-block .archivist-item-property-label {
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.archivist-item-block .archivist-item-property-label::after {
+  content: ":";
+  margin-left: 0;
+}
+
+.archivist-item-block .archivist-item-property-value {
+  color: #191813;
+}
+
+/* Conditional weapon property — dotted underline + tooltip cursor */
+.archivist-item-block .archivist-weapon-conditional-property {
+  text-decoration: underline dotted #7a200d;
+  cursor: help;
+}
+
 /* Item Description */
 .archivist-item-block .archivist-item-description {
   margin: 0.6em 0;
