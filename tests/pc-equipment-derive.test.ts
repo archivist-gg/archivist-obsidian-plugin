@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { computeAppliedBonuses } from "../src/modules/pc/pc.equipment";
 import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { ItemEntity } from "../src/modules/item/item.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
 const baseChar = (): Character => ({
   name: "T", edition: "2014", race: null, subrace: null, background: null,
@@ -86,5 +88,38 @@ describe("computeAppliedBonuses", () => {
     const warnings: string[] = [];
     computeAppliedBonuses(mkResolved(c), profs, registry, warnings);
     expect(warnings.some((w) => w.includes("ghost-cloak"))).toBe(true);
+  });
+
+  it("two static items on SAME ability → highest wins, warning emitted", () => {
+    const STR_21: ItemEntity = {
+      name: "Belt of Hill Giant Strength",
+      slug: "belt-21",
+      type: "wondrous",
+      rarity: "rare",
+      bonuses: { ability_scores: { static: { str: 21 } } },
+      attunement: { required: true },
+    };
+    const STR_19: ItemEntity = {
+      name: "Gauntlets of Ogre Power",
+      slug: "gauntlets-19",
+      type: "wondrous",
+      rarity: "uncommon",
+      bonuses: { ability_scores: { static: { str: 19 } } },
+      attunement: { required: true },
+    };
+    const reg = buildMockRegistry([
+      { slug: "belt-21", entityType: "item", name: "Belt of Hill Giant Strength", data: STR_21 },
+      { slug: "gauntlets-19", entityType: "item", name: "Gauntlets of Ogre Power", data: STR_19 },
+    ]);
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[belt-21]]", equipped: true, attuned: true },
+      { item: "[[gauntlets-19]]", equipped: true, attuned: true },
+    ];
+    const warnings: string[] = [];
+    const b = computeAppliedBonuses(mkResolved(c), profs, reg, warnings);
+    expect(b.ability_statics.str).toBe(21);
+    expect(warnings.length).toBe(1);
+    expect(warnings[0]).toMatch(/STR/i);
   });
 });

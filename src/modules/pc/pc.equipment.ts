@@ -10,6 +10,12 @@ import type {
   ProficiencySet,
 } from "./pc.types";
 
+const ABILITY_KEYS: readonly Ability[] = ["str", "dex", "con", "int", "wis", "cha"];
+
+function isAbilityKey(k: string): k is Ability {
+  return (ABILITY_KEYS as readonly string[]).includes(k);
+}
+
 interface ProficienciesForQuery {
   armor: ProficiencySet;
   weapons: ProficiencySet;
@@ -42,6 +48,9 @@ function lookupEntity(
   if (!slug) return { entity: null, entityType: null };
   const found = registry.getBySlug(slug);
   if (!found) return { entity: null, entityType: null };
+  // Registry stores data as Record<string, unknown>; the entityType discriminator
+  // returned alongside narrows the runtime type, but TS can't follow it.
+  // Cleaner registry typing is an SP6+ refactor.
   return {
     entity: found.data as unknown as ArmorEntity | WeaponEntity | ItemEntity,
     entityType: found.entityType,
@@ -93,23 +102,24 @@ export function computeAppliedBonuses(
     if (typeof b.spell_save_dc === "number") out.spell_save_dc += b.spell_save_dc;
 
     if (b.ability_scores?.bonus) {
-      for (const [ab, n] of Object.entries(b.ability_scores.bonus) as [Ability, number][]) {
-        if (typeof n === "number") out.ability_bonuses[ab] = (out.ability_bonuses[ab] ?? 0) + n;
+      for (const [k, n] of Object.entries(b.ability_scores.bonus)) {
+        if (!isAbilityKey(k) || typeof n !== "number") continue;
+        out.ability_bonuses[k] = (out.ability_bonuses[k] ?? 0) + n;
       }
     }
     if (b.ability_scores?.static) {
-      for (const [ab, n] of Object.entries(b.ability_scores.static) as [Ability, number][]) {
-        if (typeof n !== "number") continue;
-        const prev = out.ability_statics[ab];
+      for (const [k, n] of Object.entries(b.ability_scores.static)) {
+        if (!isAbilityKey(k) || typeof n !== "number") continue;
+        const prev = out.ability_statics[k];
         if (prev === undefined) {
-          out.ability_statics[ab] = n;
+          out.ability_statics[k] = n;
         } else {
           if (n !== prev) {
             warnings.push(
-              `Multiple static ${ab.toUpperCase()} bonuses on equipped+attuned items; using highest (${Math.max(prev, n)}).`,
+              `Multiple static ${k.toUpperCase()} bonuses on equipped+attuned items; using highest (${Math.max(prev, n)}).`,
             );
           }
-          out.ability_statics[ab] = Math.max(prev, n);
+          out.ability_statics[k] = Math.max(prev, n);
         }
       }
     }
