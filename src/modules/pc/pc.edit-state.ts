@@ -296,7 +296,7 @@ export class CharacterEditState {
    * Writes `{ bonus: <preserved>, proficient: !effective }` into
    * `overrides.saves[ability]`, creating the entry if absent. The override is
    * NEVER cleared here even when the new proficient matches the class baseline;
-   * callers who want "no override" must use `clearSaveOverride(ability)`
+   * callers who want "no override" must use `clearSaveProficientOverride(ability)`
    * explicitly. This keeps override semantics unambiguous: presence means the
    * user asserted something, absence means baseline applies.
    */
@@ -319,7 +319,7 @@ export class CharacterEditState {
     this.onChange();
   }
 
-  clearSaveOverride(ability: Ability): void {
+  clearSaveProficientOverride(ability: Ability): void {
     if (!this.character.overrides.saves) return;
     delete this.character.overrides.saves[ability];
     this.onChange();

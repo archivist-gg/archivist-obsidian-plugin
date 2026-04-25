@@ -15,7 +15,7 @@ describe("SaveChip (component) — interactive (SP4)", () => {
   } = {}) {
     const editState = {
       toggleSaveProficient: vi.fn(),
-      clearSaveOverride: vi.fn(),
+      clearSaveProficientOverride: vi.fn(),
     };
     const abl = opts.ability ?? "str";
     const classSaves = opts.classSaves ?? [];
@@ -66,12 +66,12 @@ describe("SaveChip (component) — interactive (SP4)", () => {
     expect(editState.toggleSaveProficient).toHaveBeenCalledWith("str");
   });
 
-  it("click on * mark calls clearSaveOverride (and stops propagation)", () => {
+  it("click on * mark calls clearSaveProficientOverride (and stops propagation)", () => {
     const root = mountContainer();
     const { ctx, editState, ability } = interactiveCtx({ classSaves: [], overrideProf: true });
     new SaveChip(ability as "str").render(root, ctx);
     root.querySelector<HTMLElement>(".archivist-override-mark")!.click();
-    expect(editState.clearSaveOverride).toHaveBeenCalledWith("str");
+    expect(editState.clearSaveProficientOverride).toHaveBeenCalledWith("str");
     // toggleSaveProficient must NOT have been called (stopPropagation worked)
     expect(editState.toggleSaveProficient).not.toHaveBeenCalled();
   });

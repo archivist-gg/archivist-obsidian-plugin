@@ -278,11 +278,11 @@ describe("CharacterEditState — saves", () => {
     expect(char.overrides.saves?.dex?.proficient).toBe(false);
   });
 
-  it("clearSaveOverride removes the ability from overrides.saves", () => {
+  it("clearSaveProficientOverride removes the ability from overrides.saves", () => {
     const { es, char } = makeState((c) => {
       c.overrides.saves = { dex: { bonus: 0, proficient: true } };
     });
-    es.clearSaveOverride("dex");
+    es.clearSaveProficientOverride("dex");
     expect(char.overrides.saves?.dex).toBeUndefined();
   });
 });

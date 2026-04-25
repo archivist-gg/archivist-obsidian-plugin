@@ -38,7 +38,7 @@ export class SaveChip implements SheetComponent {
       if (ctx.editState) {
         mark.addEventListener("click", (e) => {
           e.stopPropagation();
-          ctx.editState!.clearSaveOverride(ability);
+          ctx.editState!.clearSaveProficientOverride(ability);
         });
       }
     }
