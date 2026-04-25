@@ -172,9 +172,9 @@ describe("normalizeSrdMonster", () => {
     const bite = actions.find((a) => a.name === "Bite");
     expect(bite).toBeDefined();
     const entry = bite!.entries[0];
-    expect(entry).toContain("`atk:STR`");
-    expect(entry).toContain("`damage:2d10+STR`");
-    expect(entry).toContain("`damage:2d6`");
+    expect(entry).toContain("`atk:STR+PB`");
+    expect(entry).toContain("`dmg:2d10+STR`");
+    expect(entry).toContain("`dmg:2d6`");
     // Preserves surrounding prose
     expect(entry).toContain("Melee Weapon Attack:");
     expect(entry).toContain("piercing damage");

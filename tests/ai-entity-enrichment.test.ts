@@ -21,8 +21,8 @@ describe("enrichMonster — backtick tag conversion", () => {
     };
     const result = enrichMonster(raw);
     const entry = (result.actions as { name: string; entries: string[] }[])[0].entries[0];
-    expect(entry).toContain("`atk:STR`");
-    expect(entry).toContain("`damage:1d12+STR`");
+    expect(entry).toContain("`atk:STR+PB`");
+    expect(entry).toContain("`dmg:1d12+STR`");
     expect(entry).not.toContain("+5 to hit");
     expect(entry).not.toContain("9 (1d12 + 3)");
   });
@@ -111,9 +111,9 @@ describe("enrichMonster — backtick tag conversion", () => {
     const result = enrichMonster(raw);
     const actionEntry = (result.actions as { name: string; entries: string[] }[])[0].entries[0];
     const reactionEntry = (result.reactions as { name: string; entries: string[] }[])[0].entries[0];
-    expect(actionEntry).toContain("`atk:STR`");
-    expect(actionEntry).toContain("`damage:1d6+STR`");
-    expect(reactionEntry).toContain("`damage:1d6`");
+    expect(actionEntry).toContain("`atk:STR+PB`");
+    expect(actionEntry).toContain("`dmg:1d6+STR`");
+    expect(reactionEntry).toContain("`dmg:1d6`");
   });
 
   it("does not crash when monster has no feature sections", () => {
@@ -139,7 +139,7 @@ describe("enrichSpell — backtick tag conversion", () => {
     const result = enrichSpell(raw);
     const desc = (result.description as string[])[0];
     expect(desc).toContain("`dc:15`");
-    expect(desc).toContain("`damage:8d6`");
+    expect(desc).toContain("`dmg:8d6`");
   });
 
   it("leaves already-tagged description unchanged", () => {
@@ -196,7 +196,7 @@ describe("enrichItem — backtick tag conversion", () => {
     };
     const result = enrichItem(raw);
     const entry = (result.entries as string[])[0];
-    expect(entry).toContain("`damage:2d6`");
+    expect(entry).toContain("`dmg:2d6`");
   });
 
   it("leaves already-tagged entries unchanged", () => {

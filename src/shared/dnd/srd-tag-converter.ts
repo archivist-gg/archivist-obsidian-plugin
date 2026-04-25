@@ -44,10 +44,49 @@ export const STATIC_FALLBACK_CONTEXT: ConversionContext = {
   actionCategory: "trait",
 };
 
+const NATURAL_MELEE_NAMES = /\b(bite|claws?|slam|gore|tail|hooves|tusks?|talons?|fist|horns?)\b/i;
+const FINESSE_WEAPON_NAMES = /\b(shortsword|rapier|dagger|whip|scimitar)\b/i;
+const RANGED_WEAPON_NAMES = /\b(bow|crossbow|sling|dart|blowgun|javelin)\b/i;
+const SPELL_ATTACK_PHRASES = /\bspell\s+attack\b/i;
+
+function preferredAbilitiesForAttack(actionName: string, desc: string, spellAbility?: AbilityKey): AbilityKey[] {
+  const combined = `${actionName} ${desc}`;
+  if (SPELL_ATTACK_PHRASES.test(combined) && spellAbility) return [spellAbility];
+
+  if (RANGED_WEAPON_NAMES.test(actionName)) return ["dex"];
+  if (FINESSE_WEAPON_NAMES.test(actionName)) return ["str", "dex"];
+  if (NATURAL_MELEE_NAMES.test(actionName)) return ["str", "dex"];
+  return ["str", "dex"];
+}
+
+function identifyAbility(
+  damageBonus: number | null,
+  preferred: AbilityKey[],
+  mods: Record<AbilityKey, number>,
+): AbilityKey | null {
+  if (damageBonus === null) return null;
+  const candidates = ABILITY_KEYS.filter((k) => mods[k] === damageBonus);
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
+  for (const p of preferred) {
+    if (candidates.includes(p)) return p;
+  }
+  return [...candidates].sort()[0];
+}
+
+function parseDamageBonusFromHitText(desc: string, attackPos: number): number | null {
+  const window = desc.slice(attackPos, attackPos + 250);
+  const damageRe = /Hit:\s*(?:\d+\s*\()?\d+d\d+(?:\s*([+-])\s*(\d+))?\s*\)?\s*\w*\s+damage/i;
+  const m = window.match(damageRe);
+  if (!m) return null;
+  if (m[1] === undefined || m[2] === undefined) return 0;
+  return m[1] === "-" ? -Number(m[2]) : Number(m[2]);
+}
+
 /**
  * Convert SRD plain-English descriptions (e.g. "Melee Weapon Attack: +14 to hit,
  * Hit: 21 (3d8 + 8) slashing damage") into backtick formula tags
- * (e.g. "Melee Weapon Attack: `atk:STR`, Hit: `damage:3d8+STR` slashing damage")
+ * (e.g. "Melee Weapon Attack: `atk:STR+PB`, Hit: `dmg:3d8+STR` slashing damage")
  * by reverse-inferring which ability mod + prof produced the static value.
  *
  * Pure. Deterministic. Never throws: wraps everything in try/catch and returns
@@ -75,25 +114,39 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
       },
     );
 
-    // Pass 2 — Attack bonus
-    const atkTargets = computeAtkTargets(mods, ctx.profBonus);
+    // Pass 2 — Attack bonus, damage-driven attribution (Phase 0.5)
     result = result.replace(
       /([+-])(\d+)\s+to\s+hit/g,
-      (_match: string, sign: string, n: string) => {
-        const bonus = sign === "-" ? -Number(n) : Number(n);
-        const candidates = ABILITY_KEYS.filter((k) => atkTargets[k] === bonus);
-        if (candidates.length === 0) {
-          const signedStr = bonus >= 0 ? `+${bonus}` : `${bonus}`;
-          return `\`atk:${signedStr}\``;
+      (_match: string, sign: string, n: string, attackPos: number) => {
+        const attackBonus = sign === "-" ? -Number(n) : Number(n);
+
+        // Re-find the action name: scan back from attackPos for the most recent
+        // "Action Name." pattern; fall back to ctx.actionName.
+        const before = desc.slice(Math.max(0, attackPos - 200), attackPos);
+        const actionMatch = before.match(/(?:^|\.\s+)([A-Z][\w\s,'-]{1,40})\./);
+        const actionName = actionMatch ? actionMatch[1] : ctx.actionName;
+
+        const damageBonus = parseDamageBonusFromHitText(desc, attackPos);
+        const preferred = preferredAbilitiesForAttack(actionName, desc, ctx.spellAbility);
+        const ability = identifyAbility(damageBonus, preferred, mods);
+
+        if (ability === null) {
+          const literal = attackBonus >= 0 ? `+${attackBonus}` : `${attackBonus}`;
+          return `\`atk:${literal}\``;
         }
-        const abil = disambiguateAbility(candidates, ctx, desc);
-        return `\`atk:${abil.toUpperCase()}\``;
+        if (attackBonus === mods[ability] + ctx.profBonus) {
+          return `\`atk:${ability.toUpperCase()}+PB\``;
+        }
+        if (attackBonus === mods[ability]) {
+          return `\`atk:${ability.toUpperCase()}\``;
+        }
+        // Ability identified but neither variant matches → designed value, literal.
+        const literal = attackBonus >= 0 ? `+${attackBonus}` : `${attackBonus}`;
+        return `\`atk:${literal}\``;
       },
     );
 
-    // Pass 3 — Damage expressions
-    // Matches: optional "21 (" average, required "3d8", optional "+ 8" bonus,
-    // optional ")" closer, optional "slashing" type word, required "damage" keyword.
+    // Pass 3 — Damage expressions, emit canonical `dmg:` (Phase 0.5)
     result = result.replace(
       /(?:(\d+)\s*\()?(\d+d\d+)(?:\s*([+-])\s*(\d+))?\s*\)?(?:\s+(\w+))?\s+damage/gi,
       (
@@ -109,14 +162,24 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
           const bonus = sign === "-" ? -Number(bonusStr) : Number(bonusStr);
           const matchingAbilities = ABILITY_KEYS.filter((k) => mods[k] === bonus);
           if (matchingAbilities.length > 0) {
-            const abil = disambiguateAbility(matchingAbilities, ctx, desc);
-            inner = `${dice}+${abil.toUpperCase()}`;
+            const preferred = preferredAbilitiesForAttack(ctx.actionName, "", ctx.spellAbility);
+            const pick = preferred.find((p) => matchingAbilities.includes(p)) ?? [...matchingAbilities].sort()[0];
+            inner = `${dice}+${pick.toUpperCase()}`;
           } else {
             inner = `${dice}${bonus >= 0 ? "+" : ""}${bonus}`;
           }
         }
         const typeSuffix = typeWord ? ` ${typeWord} damage` : " damage";
-        return `\`damage:${inner}\`${typeSuffix}`;
+        return `\`dmg:${inner}\`${typeSuffix}`;
+      },
+    );
+
+    // Pass 3b — Flat damage like "Hit: 1 piercing damage" → emit dmg:1
+    result = result.replace(
+      /Hit:\s*(\d+)\s+(\w+)?\s*damage/gi,
+      (_match: string, n: string, typeWord: string | undefined) => {
+        const tt = typeWord ? ` ${typeWord} damage` : " damage";
+        return `Hit: \`dmg:${n}\`${tt}`;
       },
     );
 
@@ -184,20 +247,6 @@ function computeDcTargets(
     int: 8 + profBonus + mods.int,
     wis: 8 + profBonus + mods.wis,
     cha: 8 + profBonus + mods.cha,
-  };
-}
-
-function computeAtkTargets(
-  mods: Record<AbilityKey, number>,
-  profBonus: number,
-): Record<AbilityKey, number> {
-  return {
-    str: mods.str + profBonus,
-    dex: mods.dex + profBonus,
-    con: mods.con + profBonus,
-    int: mods.int + profBonus,
-    wis: mods.wis + profBonus,
-    cha: mods.cha + profBonus,
   };
 }
 
