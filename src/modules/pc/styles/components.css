@@ -1228,11 +1228,23 @@
 .archivist-pc-sheet .pc-save-bn {
   display: inline-block;
   position: relative;
+  /* SP4c-fix B — promote value spans above decorative parent backgrounds
+     (e.g. the heraldic shield SVG painted on .pc-ac-shield, the obelisk
+     cartouche painted on .pc-ab) so the value text and its hover bg
+     always paint on top of the decoration. Without this, the value
+     element's hover background-color can render visually behind the
+     parent's background-image when an ancestor establishes a separate
+     stacking context (an Obsidian theme override, a transform on the
+     view container, etc.). z-index: 1 against z-index: auto ancestors
+     also keeps these spans below floating UI like the .pc-ab-score
+     pill (z-index: 2) and popovers (z-index: 1000). */
+  z-index: 1;
 }
 /* SP4c — .pc-sense-val keeps its existing inline-flex centering, so it only
    needs position: relative for the override mark to anchor correctly. */
 .archivist-pc-sheet .pc-sense-val {
   position: relative;
+  z-index: 1;
 }
 /* .pc-ab-score is already position: absolute with a pill-sized min-width,
    so it already acts as a positioning context for the mark. */
@@ -1246,11 +1258,19 @@
 .archivist-pc-sheet .pc-save-bn .archivist-override-mark {
   position: absolute;
   top: -2px;
-  right: -12px;
+  right: -10px;
   font-size: 0.85em;
   line-height: 1;
   margin: 0;
   padding: 1px 3px;
+  /* SP4c-fix D — base .archivist-override-mark sets min-width: 14px so the
+     `*` has a comfortable 20×N click target inline. For absolute-positioned
+     marks that target is decorative-only (the parent value still receives
+     the click), so let the box auto-size to the glyph (~6-7px) instead.
+     Without this override the mark is ~20px wide and `right: -10px` puts
+     its left edge ~10px INSIDE the value's right edge, visibly overlapping
+     the digit. */
+  min-width: 0;
 }
 /* SP4c — speed tile splits into number + unit; render inline so they read as
    one visual chunk and the override mark anchors only to the number. */
@@ -1271,10 +1291,13 @@
   margin-left: 1px;
 }
 /* AC shield has the tightest vertical geometry — ARMOR label sits right
-   above the number. Push the mark further down so it doesn't touch it. */
+   above the number, and the curved shield border closes in just past the
+   value's right edge. Push the mark down (clear of "ARMOR") and only just
+   outside the value box — far enough to not overlap the digit, close enough
+   that the shield's right curve doesn't truncate the `*` glyph. */
 .archivist-pc-sheet .pc-ac-shield-num .archivist-override-mark {
   top: 6px;
-  right: -6px;
+  right: -8px;
 }
 
 /* SP4b — defense chips (visual parity with pc-cond-chip) */
