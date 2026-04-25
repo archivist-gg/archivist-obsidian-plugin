@@ -12,7 +12,12 @@ export interface InlineTag {
 }
 
 const VALID_PREFIXES: InlineTagType[] = ["dice", "damage", "dc", "atk", "mod", "check"];
-const PREFIX_ALIASES: Record<string, InlineTagType> = { roll: "dice", d: "dice" };
+const PREFIX_ALIASES: Record<string, InlineTagType> = {
+  roll: "dice",
+  d: "dice",
+  attack: "atk",
+  dmg: "damage",
+};
 
 export function parseInlineTag(text: string): InlineTag | null {
   const colonIndex = text.indexOf(":");
