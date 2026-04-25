@@ -5,9 +5,13 @@ import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type {
   AppliedBonuses,
+  DerivedEquipment,
   EquipmentEntry,
+  EquippedSlots,
   ResolvedCharacter,
+  ResolvedEquipped,
   ProficiencySet,
+  SlotKey,
 } from "./pc.types";
 
 const ABILITY_KEYS: readonly Ability[] = ["str", "dex", "con", "int", "wis", "cha"];
@@ -153,4 +157,108 @@ export function computeAppliedBonuses(
   }
 
   return out;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Pass B: slot assignment + attack rows + AC
+// (Task 6: slot assignment only; AC + attack rows stubbed for Tasks 7/8.)
+// ─────────────────────────────────────────────────────────────
+
+function isWeaponEntity(e: unknown): e is WeaponEntity {
+  if (!e || typeof e !== "object") return false;
+  if (!("damage" in e) || !("category" in e)) return false;
+  const cat = (e as { category: unknown }).category;
+  return typeof cat === "string" && /melee|ranged/.test(cat);
+}
+
+function isTwoHanded(weapon: WeaponEntity): boolean {
+  return weapon.properties.some((p) => p === "two_handed");
+}
+
+function defaultSlotForType(
+  entityType: string | null,
+  entity: ArmorEntity | WeaponEntity | ItemEntity | null,
+): SlotKey | null {
+  if (entityType === "weapon") return "mainhand";
+  if (entityType === "armor") {
+    if (entity && "category" in entity && entity.category === "shield") return "shield";
+    return "armor";
+  }
+  return null;
+}
+
+function assignSlots(
+  resolved: ResolvedCharacter,
+  registry: EntityRegistry,
+  warnings: string[],
+): EquippedSlots {
+  const slots: EquippedSlots = {};
+  const eq = resolved.definition.equipment ?? [];
+
+  // First sweep: explicit slot.
+  for (let i = 0; i < eq.length; i++) {
+    const entry = eq[i];
+    if (!entry.equipped || !entry.slot) continue;
+    const { entity } = lookupEntity(entry, registry);
+    if (slots[entry.slot]) {
+      warnings.push(`${entry.slot} slot conflict: ${entry.item} ignored (already taken).`);
+      continue;
+    }
+    const placed: ResolvedEquipped = { index: i, entity, entry };
+    slots[entry.slot] = placed;
+  }
+
+  // Second sweep: derived slot.
+  for (let i = 0; i < eq.length; i++) {
+    const entry = eq[i];
+    if (!entry.equipped || entry.slot) continue;
+    const { entity, entityType } = lookupEntity(entry, registry);
+    if (!entity || !entityType) continue;
+
+    const defaultSlot = defaultSlotForType(entityType, entity);
+    if (!defaultSlot) continue;
+
+    const placed: ResolvedEquipped = { index: i, entity, entry };
+    if (defaultSlot === "mainhand") {
+      if (!slots.mainhand) slots.mainhand = placed;
+      else if (!slots.offhand) slots.offhand = placed;
+      else warnings.push(`No free hand for ${entry.item}; entry remains equipped without slot.`);
+    } else {
+      if (slots[defaultSlot]) {
+        warnings.push(`${defaultSlot} slot already filled; ${entry.item} ignored.`);
+      } else {
+        slots[defaultSlot] = placed;
+      }
+    }
+  }
+
+  // Two-handed + shield interaction.
+  const main = slots.mainhand?.entity;
+  if (main && isWeaponEntity(main) && isTwoHanded(main) && slots.shield) {
+    warnings.push(`Two-handed weapon equipped; shield ignored.`);
+  }
+
+  return slots;
+}
+
+export function computeSlotsAndAttacks(
+  resolved: ResolvedCharacter,
+  _mods: Record<Ability, number>,
+  _profs: ProficienciesForQuery,
+  registry: EntityRegistry,
+  warnings: string[],
+): DerivedEquipment {
+  const equippedSlots = assignSlots(resolved, registry, warnings);
+  const overrides = resolved.definition.overrides ?? {};
+
+  // Stub the rest until subsequent tasks fill in AC chain (Task 7) and attack rows (Task 8).
+  return {
+    ac: 0,
+    acBreakdown: [],
+    attacks: [],
+    equippedSlots,
+    carriedWeight: 0,
+    attunementUsed: (resolved.definition.equipment ?? []).filter((e) => e.attuned).length,
+    attunementLimit: overrides.attunement_limit ?? 3,
+  };
 }

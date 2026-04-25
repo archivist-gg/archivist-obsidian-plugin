@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeAppliedBonuses } from "../src/modules/pc/pc.equipment";
+import { computeAppliedBonuses, computeSlotsAndAttacks } from "../src/modules/pc/pc.equipment";
 import { recalc } from "../src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { ItemEntity } from "../src/modules/item/item.types";
@@ -208,5 +208,78 @@ describe("recalc + Pass A", () => {
     const d = recalc(mkResolved(c), reg);
     expect(d.defenses.resistances).toContain("cold");
     expect(d.defenses.resistances).toContain("fire");
+  });
+});
+
+describe("computeSlotsAndAttacks — slot assignment", () => {
+  const registry = buildEquipmentRegistry();
+  const profs = { armor: { categories: [], specific: [] }, weapons: { categories: ["simple", "martial"], specific: [] }, tools: { categories: [], specific: [] } };
+  const mods = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+
+  it("equipped armor lands in armor slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[plate]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, []);
+    expect(d.equippedSlots.armor?.entity?.name).toBe("Plate");
+  });
+
+  it("equipped shield lands in shield slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[shield]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, []);
+    expect(d.equippedSlots.shield?.entity?.name).toBe("Shield");
+  });
+
+  it("first equipped weapon → mainhand", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[longsword]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, []);
+    expect(d.equippedSlots.mainhand?.entity?.name).toBe("Longsword");
+    expect(d.equippedSlots.offhand).toBeUndefined();
+  });
+
+  it("two equipped weapons → mainhand then offhand", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[shortsword]]", equipped: true },
+      { item: "[[shortsword]]", equipped: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, []);
+    expect(d.equippedSlots.mainhand?.index).toBe(0);
+    expect(d.equippedSlots.offhand?.index).toBe(1);
+  });
+
+  it("explicit slot overrides default", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[shortsword]]", equipped: true, slot: "offhand" },
+      { item: "[[longsword]]", equipped: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, []);
+    expect(d.equippedSlots.offhand?.entity?.name).toBe("Shortsword");
+    expect(d.equippedSlots.mainhand?.entity?.name).toBe("Longsword");
+  });
+
+  it("two armors equipped → first wins + warning", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[plate]]", equipped: true },
+      { item: "[[studded-leather]]", equipped: true },
+    ];
+    const w: string[] = [];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, w);
+    expect(d.equippedSlots.armor?.entity?.name).toBe("Plate");
+    expect(w.some((m) => /armor/i.test(m))).toBe(true);
+  });
+
+  it("two-handed mainhand + equipped shield → warning", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[greatsword]]", equipped: true },
+      { item: "[[shield]]", equipped: true },
+    ];
+    const w: string[] = [];
+    computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, w);
+    expect(w.some((m) => /two-handed.*shield|shield.*ignored/i.test(m))).toBe(true);
   });
 });
