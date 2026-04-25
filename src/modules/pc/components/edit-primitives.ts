@@ -33,7 +33,11 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
 
   const input = doc.createElement("input");
   input.type = "number";
-  input.className = "pc-edit-inline";
+  // Preserve valueEl's classes so layout-affecting CSS (flex order,
+  // min-width, text-align, font weight, etc.) continues to apply to the
+  // input. Without this, e.g. .pc-skill-bonus { order: 2 } is lost and
+  // the input falls into the wrong visual slot. See Bug A.
+  input.className = `pc-edit-inline ${valueEl.className}`.trim();
   input.value = String(opts.initial);
   if (opts.min !== undefined) input.min = String(opts.min);
   if (opts.max !== undefined) input.max = String(opts.max);
@@ -62,6 +66,13 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   const cancel = () => {
     if (done) return;
     done = true;
+    // Restore the original value element in place of the input. We hold
+    // a reference to valueEl (it's still in memory, just detached from
+    // the DOM after valueEl.remove() during input setup), so re-inserting
+    // it preserves all event listeners that numberOverride/numberField
+    // attached. See Bug C.
+    parent.insertBefore(valueEl, input);
+    input.remove();
     opts.onCancel();
   };
 

@@ -14,7 +14,9 @@ describe("makeInlineInput", () => {
     expect(input).not.toBeNull();
     expect(input!.type).toBe("number");
     expect(input!.value).toBe("17");
-    expect(root.querySelector(".pc-val")).toBeNull();
+    // Original div was detached. The input now ALSO carries .pc-val
+    // (class preservation, Bug A fix), so we check the div tag is gone.
+    expect(root.querySelector("div.pc-val")).toBeNull();
   });
 
   it("calls onCommit(parsedInt) on Enter and clamps to [min, max]", () => {
@@ -77,6 +79,44 @@ describe("makeInlineInput", () => {
     input.dispatchEvent(new Event("blur"));
     expect(onCommit).toHaveBeenCalledTimes(1);
     expect(onCommit).toHaveBeenCalledWith(7);
+  });
+
+  it("input preserves valueEl's className for layout inheritance (Bug A)", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-skill-bonus pc-edit-click", text: "+5" });
+    makeInlineInput(valueEl, { initial: 5, onCommit: () => {}, onCancel: () => {} });
+    const input = root.querySelector<HTMLInputElement>("input")!;
+    expect(input.classList.contains("pc-edit-inline")).toBe(true);
+    expect(input.classList.contains("pc-skill-bonus")).toBe(true);
+    expect(input.classList.contains("pc-edit-click")).toBe(true);
+  });
+
+  it("Escape key restores valueEl in place of input (Bug C)", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ cls: "pc-val", text: "18" });
+    const onCancel = vi.fn();
+    makeInlineInput(valueEl, { initial: 18, onCommit: () => {}, onCancel });
+    // input is in the DOM, valueEl div is detached. Note: the input also
+    // carries .pc-val (class preservation, Bug A fix), so check div tag.
+    expect(root.querySelector("input.pc-edit-inline")).not.toBeNull();
+    expect(root.querySelector("div.pc-val")).toBeNull();
+    // Escape cancels
+    const input = root.querySelector<HTMLInputElement>("input")!;
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    // valueEl restored, input gone
+    expect(root.querySelector("input.pc-edit-inline")).toBeNull();
+    expect(root.querySelector("div.pc-val")?.textContent).toBe("18");
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("blur after no input change calls onCommit with the initial value", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ text: "10" });
+    const onCommit = vi.fn();
+    makeInlineInput(valueEl, { initial: 10, onCommit, onCancel: () => {} });
+    const input = root.querySelector<HTMLInputElement>("input")!;
+    input.dispatchEvent(new FocusEvent("blur"));
+    expect(onCommit).toHaveBeenCalledWith(10);
   });
 });
 
