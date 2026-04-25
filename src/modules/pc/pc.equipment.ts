@@ -258,6 +258,7 @@ export function computeSlotsAndAttacks(
     attacks: [],
     equippedSlots,
     carriedWeight: 0,
+    // Attunement is persistent: an attuned item still occupies a slot even when unequipped (SRD).
     attunementUsed: (resolved.definition.equipment ?? []).filter((e) => e.attuned).length,
     attunementLimit: overrides.attunement_limit ?? 3,
   };
