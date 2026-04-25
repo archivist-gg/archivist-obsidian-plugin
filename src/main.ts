@@ -21,6 +21,7 @@ import { backgroundModule } from "./modules/background/background.module";
 import { featModule } from "./modules/feat/feat.module";
 import { pcModule } from "./modules/pc/pc.module";
 import { armorModule } from "./modules/armor/armor.module";
+import { weaponModule } from "./modules/weapon/weapon.module";
 
 import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
@@ -156,6 +157,7 @@ export default class ArchivistPlugin extends Plugin {
       backgroundModule,
       featModule,
       armorModule,
+      weaponModule,
       pcModule,
     ];
 
