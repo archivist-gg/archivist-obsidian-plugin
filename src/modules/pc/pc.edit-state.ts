@@ -161,6 +161,28 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Skill bonus (override) ────────────────────────────────────────
+  setSkillBonusOverride(skill: SkillSlug, value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(-20, Math.min(30, Math.floor(value)));
+    if (!this.character.overrides.skills) this.character.overrides.skills = {};
+    // The skill schema requires `bonus` when an entry exists. SP4c only sets
+    // the bonus half — any future proficiency-override writer that wants to
+    // preserve an existing bonus must spread the prior entry.
+    this.character.overrides.skills[skill] = { bonus: next };
+    this.onChange();
+  }
+
+  clearSkillBonusOverride(skill: SkillSlug): void {
+    const skills = this.character.overrides.skills;
+    if (!skills) { this.onChange(); return; }
+    delete skills[skill];
+    if (Object.keys(skills).length === 0) {
+      delete this.character.overrides.skills;
+    }
+    this.onChange();
+  }
+
   // ─── Defenses ──────────────────────────────────────────────────────
   private ensureDefenses(): NonNullable<Character["defenses"]> {
     if (!this.character.defenses) {

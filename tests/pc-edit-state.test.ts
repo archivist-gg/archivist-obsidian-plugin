@@ -661,3 +661,65 @@ describe("CharacterEditState — passive sense overrides (SP4c)", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("CharacterEditState — skill bonus override (SP4c)", () => {
+  it("setSkillBonusOverride materializes parent and writes entry", () => {
+    const { es, char, onChange } = makeState();
+    expect(char.overrides.skills).toBeUndefined();
+    es.setSkillBonusOverride("athletics", 12);
+    expect(char.overrides.skills).toEqual({ athletics: { bonus: 12 } });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("setSkillBonusOverride preserves other skill entries", () => {
+    const { es, char } = makeState();
+    es.setSkillBonusOverride("athletics", 12);
+    es.setSkillBonusOverride("stealth", 7);
+    expect(char.overrides.skills).toEqual({ athletics: { bonus: 12 }, stealth: { bonus: 7 } });
+  });
+
+  it("setSkillBonusOverride clamps to [-20, 30] and floors", () => {
+    const { es, char } = makeState();
+    es.setSkillBonusOverride("arcana", -9999);
+    expect(char.overrides.skills?.arcana?.bonus).toBe(-20);
+    es.setSkillBonusOverride("arcana", 9999);
+    expect(char.overrides.skills?.arcana?.bonus).toBe(30);
+    es.setSkillBonusOverride("arcana", 5.9);
+    expect(char.overrides.skills?.arcana?.bonus).toBe(5);
+  });
+
+  it("setSkillBonusOverride no-ops on NaN (no parent materialized)", () => {
+    const { es, char, onChange } = makeState();
+    es.setSkillBonusOverride("arcana", NaN);
+    expect(char.overrides.skills).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("clearSkillBonusOverride drops the whole entry, no { bonus: undefined } remnant", () => {
+    const { es, char } = makeState((c) => { c.overrides.skills = { athletics: { bonus: 12 }, stealth: { bonus: 7 } }; });
+    es.clearSkillBonusOverride("athletics");
+    expect(char.overrides.skills).toEqual({ stealth: { bonus: 7 } });
+    expect(char.overrides.skills?.athletics).toBeUndefined();
+  });
+
+  it("clearSkillBonusOverride drops the parent when last skill is cleared", () => {
+    const { es, char } = makeState((c) => { c.overrides.skills = { athletics: { bonus: 12 } }; });
+    es.clearSkillBonusOverride("athletics");
+    expect(char.overrides.skills).toBeUndefined();
+  });
+
+  it("clearSkillBonusOverride is a no-op if parent is absent (still notifies)", () => {
+    const { es, char, onChange } = makeState();
+    es.clearSkillBonusOverride("athletics");
+    expect(char.overrides.skills).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("cycleSkill does not clear an existing bonus override (Risk #4)", () => {
+    // The user's bonus assertion is independent of the proficiency state;
+    // cycling proficiency via cycleSkill must not touch overrides.skills.
+    const { es, char } = makeState((c) => { c.overrides.skills = { athletics: { bonus: 12 } }; });
+    es.cycleSkill("athletics");
+    expect(char.overrides.skills?.athletics?.bonus).toBe(12);
+  });
+});
