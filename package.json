@@ -13,7 +13,8 @@
     "lint:fix": "eslint 'src/**/*.ts' 'tools/**/*.ts' --fix",
     "test": "vitest run --exclude 'tests/inquiry/**'",
     "test:watch": "vitest --exclude 'tests/inquiry/**'",
-    "convert-srd": "tsx tools/srd-converter/index.ts"
+    "convert-srd": "tsx tools/srd-converter/index.ts",
+    "regenerate-srd-monsters": "tsx scripts/regenerate-srd-monsters.ts"
   },
   "keywords": [],
   "author": "Shinoobi",
