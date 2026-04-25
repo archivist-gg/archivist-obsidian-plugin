@@ -62,17 +62,24 @@ export function parsePC(source: string): ParseResult<Character> {
   }
   const data = result.data as Character;
   // SP5 migration: lift legacy state.currency to definition.currency.
-  // Definition value wins when both are present.
-  const legacyCurrency = (data.state as unknown as { currency?: Character["currency"] }).currency;
+  // Definition value wins when both are present. The legacy fields are
+  // declared @deprecated on CharacterState; we access them through a
+  // single typed view that intentionally omits the deprecation markers
+  // (the project's eslint config forbids disabling no-deprecated).
+  const legacyState = data.state as {
+    currency?: Character["currency"];
+    attuned_items?: string[];
+  };
+  const legacyCurrency = legacyState.currency;
   if (legacyCurrency && !data.currency) {
     data.currency = legacyCurrency;
   }
   if (legacyCurrency) {
-    delete (data.state as unknown as { currency?: unknown }).currency;
+    delete legacyState.currency;
   }
   // SP5 migration: drop legacy state.attuned_items (per-entry attuned flag is canonical).
-  if ((data.state as unknown as { attuned_items?: unknown }).attuned_items) {
-    delete (data.state as unknown as { attuned_items?: unknown }).attuned_items;
+  if (legacyState.attuned_items) {
+    delete legacyState.attuned_items;
   }
   return { success: true, data };
 }
