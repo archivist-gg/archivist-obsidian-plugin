@@ -14,7 +14,8 @@
     "test": "vitest run --exclude 'tests/inquiry/**'",
     "test:watch": "vitest --exclude 'tests/inquiry/**'",
     "convert-srd": "tsx tools/srd-converter/index.ts",
-    "regenerate-srd-monsters": "tsx scripts/regenerate-srd-monsters.ts"
+    "regenerate-srd-monsters": "tsx scripts/regenerate-srd-monsters.ts",
+    "migrate-formula-tags": "tsx scripts/migrate-formula-tags.ts"
   },
   "keywords": [],
   "author": "Shinoobi",
