@@ -1,4 +1,5 @@
 import { Item } from "./item.types";
+import type { ItemEntity } from "./item.types";
 import {
   el,
   createIconProperty,
@@ -97,7 +98,11 @@ export function renderItemBlock(item: Item): HTMLElement {
     );
   }
 
-  // 3. Description
+  // 3. Mechanical summary (structured magic-item fields)
+  const mechSummary = renderItemMechanicalSummary(item);
+  if (mechSummary) block.appendChild(mechSummary);
+
+  // 4. Description
   if (item.entries && item.entries.length > 0) {
     const descDiv = el("div", {
       cls: "archivist-item-description",
@@ -133,4 +138,132 @@ export function renderItemBlock(item: Item): HTMLElement {
   }
 
   return wrapper;
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Mechanical summary — compact display of structured magic-item fields.
+// Returns null when no structured fields are present (legacy prose-only items).
+// ──────────────────────────────────────────────────────────────────────────
+
+function appendSummaryRow(parent: HTMLElement, label: string, value: string): void {
+  const doc = parent.ownerDocument ?? activeDocument;
+  const row = doc.createElement("div");
+  row.className = "archivist-item-summary-row";
+  const labelEl = doc.createElement("span");
+  labelEl.className = "archivist-item-summary-label";
+  labelEl.textContent = label;
+  const valueEl = doc.createElement("span");
+  valueEl.className = "archivist-item-summary-value";
+  valueEl.textContent = value;
+  row.appendChild(labelEl);
+  row.appendChild(valueEl);
+  parent.appendChild(row);
+}
+
+function formatBonus(n: number): string {
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+function describeBonuses(b: NonNullable<ItemEntity["bonuses"]>): string[] {
+  const out: string[] = [];
+  if (b.ac !== undefined) out.push(`AC ${formatBonus(b.ac)}`);
+  if (b.weapon_attack !== undefined) out.push(`Atk ${formatBonus(b.weapon_attack)}`);
+  if (b.weapon_damage !== undefined) out.push(`Dmg ${formatBonus(b.weapon_damage)}`);
+  if (b.spell_attack !== undefined) out.push(`Spell Atk ${formatBonus(b.spell_attack)}`);
+  if (b.spell_save_dc !== undefined) out.push(`Spell DC ${formatBonus(b.spell_save_dc)}`);
+  if (b.saving_throws !== undefined) out.push(`Saves ${formatBonus(b.saving_throws)}`);
+  if (b.speed) {
+    const parts: string[] = [];
+    for (const [k, v] of Object.entries(b.speed)) {
+      if (v !== undefined) parts.push(`${k} ${typeof v === "number" ? `${v} ft` : v}`);
+    }
+    if (parts.length > 0) out.push(`Speed ${parts.join(", ")}`);
+  }
+  if (b.ability_scores?.static) {
+    for (const [k, v] of Object.entries(b.ability_scores.static)) {
+      out.push(`${k.toUpperCase()} = ${v}`);
+    }
+  }
+  return out;
+}
+
+function describeCharges(c: NonNullable<ItemEntity["charges"]>): string {
+  if (typeof c === "number") return `${c} charges`;
+  const parts = [`${c.max} charges`];
+  if (c.recharge) parts.push(`recharge ${c.recharge}`);
+  if (c.recharge_amount) parts.push(`${c.recharge_amount}`);
+  return parts.join(" • ");
+}
+
+function describeSpells(s: NonNullable<ItemEntity["attached_spells"]>): string {
+  const parts: string[] = [];
+  if (s.will?.length) parts.push(`At will: ${s.will.join(", ")}`);
+  if (s.charges) {
+    for (const [cost, names] of Object.entries(s.charges).sort(
+      ([a], [b]) => Number(a) - Number(b),
+    )) {
+      parts.push(`${cost} ch: ${names.join(", ")}`);
+    }
+  }
+  if (s.daily) {
+    for (const [k, names] of Object.entries(s.daily)) {
+      parts.push(`${k}/day: ${names.join(", ")}`);
+    }
+  }
+  if (s.rest) {
+    for (const [k, names] of Object.entries(s.rest)) {
+      parts.push(`${k}/rest: ${names.join(", ")}`);
+    }
+  }
+  return parts.join(" • ");
+}
+
+function hasMechanicalSummary(item: ItemEntity): boolean {
+  if (item.bonuses && Object.keys(item.bonuses).length > 0) return true;
+  if (item.charges) return true;
+  if (item.attached_spells) return true;
+  if (item.grants && Object.keys(item.grants).length > 0) return true;
+  if (item.resist && item.resist.length > 0) return true;
+  if (item.immune && item.immune.length > 0) return true;
+  if (item.vulnerable && item.vulnerable.length > 0) return true;
+  return false;
+}
+
+export function renderItemMechanicalSummary(item: ItemEntity): HTMLElement | null {
+  if (!hasMechanicalSummary(item)) return null;
+
+  const summary = activeDocument.createElement("div");
+  summary.className = "archivist-item-summary";
+
+  if (item.bonuses) {
+    const bonusList = describeBonuses(item.bonuses);
+    if (bonusList.length > 0) appendSummaryRow(summary, "Bonuses", bonusList.join(", "));
+  }
+  if (item.charges) {
+    appendSummaryRow(summary, "Charges", describeCharges(item.charges));
+  }
+  if (item.attached_spells) {
+    const desc = describeSpells(item.attached_spells);
+    if (desc) appendSummaryRow(summary, "Spells", desc);
+  }
+  if (item.resist?.length) appendSummaryRow(summary, "Resist", item.resist.join(", "));
+  if (item.immune?.length) appendSummaryRow(summary, "Immune", item.immune.join(", "));
+  if (item.vulnerable?.length)
+    appendSummaryRow(summary, "Vulnerable", item.vulnerable.join(", "));
+  if (item.grants) {
+    const parts: string[] = [];
+    if (item.grants.proficiency) parts.push("Proficiency");
+    if (item.grants.languages) {
+      if (item.grants.languages === true) parts.push("Languages");
+      else parts.push(`Languages: ${item.grants.languages.join(", ")}`);
+    }
+    if (item.grants.senses) {
+      for (const [k, v] of Object.entries(item.grants.senses)) {
+        if (v !== undefined) parts.push(`${k} ${v} ft`);
+      }
+    }
+    if (parts.length > 0) appendSummaryRow(summary, "Grants", parts.join(" • "));
+  }
+
+  return summary;
 }
