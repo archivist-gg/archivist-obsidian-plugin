@@ -249,7 +249,8 @@ export function renderItemEditMode(
   });
 
   // Damage
-  createEditableProperty(props, "swords", "Damage:", draft.damage ?? "", (v) => {
+  const damageStr = typeof draft.damage === "string" ? draft.damage : "";
+  createEditableProperty(props, "swords", "Damage:", damageStr, (v) => {
     draft.damage = v || undefined;
     markDirty();
   });
@@ -267,7 +268,8 @@ export function renderItemEditMode(
   });
 
   // Charges (number)
-  createEditableProperty(props, "zap", "Charges:", draft.charges != null ? String(draft.charges) : "", (v) => {
+  const chargesStr = typeof draft.charges === "number" ? String(draft.charges) : "";
+  createEditableProperty(props, "zap", "Charges:", chargesStr, (v) => {
     draft.charges = v ? Number(v) : undefined;
     markDirty();
   });
@@ -300,7 +302,9 @@ export function renderItemEditMode(
   const descHeader = descSection.createDiv({ cls: "higher-levels-header" });
   descHeader.textContent = "Description";
 
-  const descEntries = draft.entries ?? [""];
+  const descEntries: string[] = (draft.entries ?? [""]).map((e) =>
+    typeof e === "string" ? e : String(e),
+  );
   if (descEntries.length === 0) descEntries.push("");
 
   for (let i = 0; i < descEntries.length; i++) {

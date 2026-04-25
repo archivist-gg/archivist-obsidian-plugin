@@ -80,12 +80,13 @@ export function renderItemBlock(item: Item): HTMLElement {
     createIconProperty(props, "coins", "Value:", `${item.value} gp`);
   }
 
-  if (item.damage) {
+  if (typeof item.damage === "string") {
     const damageStr = item.damage_type
       ? `${item.damage} ${item.damage_type}`
       : item.damage;
     createIconProperty(props, "swords", "Damage:", damageStr);
   }
+  // TODO(SP5/Task 11): render structured damage (object form)
 
   if (item.properties && item.properties.length > 0) {
     createIconProperty(
@@ -104,12 +105,12 @@ export function renderItemBlock(item: Item): HTMLElement {
     });
     for (const entry of item.entries) {
       const p = el("div", { cls: "description-paragraph", parent: descDiv });
-      renderTextWithInlineTags(entry, p);
+      renderTextWithInlineTags(typeof entry === "string" ? entry : String(entry), p);
     }
   }
 
   // 4. Charges
-  if (item.charges) {
+  if (typeof item.charges === "number") {
     let chargesText = `${item.charges} charges`;
     if (item.recharge) {
       chargesText += `. Recharge: ${item.recharge}`;
@@ -120,6 +121,7 @@ export function renderItemBlock(item: Item): HTMLElement {
       parent: block,
     });
   }
+  // TODO(SP5/Task 11): render structured charges (object form)
 
   // 5. Curse
   if (item.curse) {
