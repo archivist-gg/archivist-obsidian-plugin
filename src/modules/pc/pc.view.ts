@@ -95,7 +95,7 @@ export class PCSheetView extends TextFileView {
     if (!this.mod.resolver) return this.showError("PC module not initialized.");
     const resolveResult = this.mod.resolver.resolve(parsed.data);
     this.character = resolveResult.character;
-    this.derived = recalc(this.character, this.mod.resolver.registry);
+    this.derived = recalc(this.character, this.mod.resolver?.registry);
     this.codeBlockRange = { startLine: extracted.startLine, endLine: extracted.endLine };
     this.editState = new CharacterEditState(
       parsed.data,
@@ -118,7 +118,7 @@ export class PCSheetView extends TextFileView {
       const character = this.editState.getCharacter();
       const resolveResult = this.mod.resolver.resolve(character);
       this.character = resolveResult.character;
-      this.derived = recalc(this.character, this.mod.resolver.registry);
+      this.derived = recalc(this.character, this.mod.resolver?.registry);
 
       // Stale-render bail: a newer setViewData has started, the in-flight
       // derivation is from the old editState — do not render OR save.

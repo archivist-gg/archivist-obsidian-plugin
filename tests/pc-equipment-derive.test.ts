@@ -161,4 +161,38 @@ describe("recalc + Pass A", () => {
     const d = recalc(mkResolved(c));
     expect(d.saves.str.bonus).toBe(0);
   });
+
+  it("user override wins over static and bonus", () => {
+    const c = baseChar();
+    c.abilities.str = 8;
+    c.equipment = [{ item: "[[belt-of-hill-giant-strength]]", equipped: true, attuned: true }];
+    c.overrides = { scores: { str: 12 } };
+    const d = recalc(mkResolved(c), registry);
+    expect(d.scores.str).toBe(12);
+  });
+
+  it("recalc-level defenses merge: character base + equipped item", () => {
+    const RING_OF_FIRE_RESIST: ItemEntity = {
+      name: "Ring of Fire Resistance",
+      slug: "ring-of-fire-resist",
+      type: "ring",
+      rarity: "rare",
+      // computeAppliedBonuses currently early-continues when item.bonuses is
+      // absent, which would also skip the resist/immune propagation below it.
+      // Empty bonuses object is truthy and bypasses the gate; the actual
+      // saving_throws/ability_scores branches inside are no-ops.
+      bonuses: {},
+      resist: ["fire"],
+      attunement: { required: true },
+    };
+    const reg = buildMockRegistry([
+      { slug: "ring-of-fire-resist", entityType: "item", name: "Ring of Fire Resistance", data: RING_OF_FIRE_RESIST },
+    ]);
+    const c = baseChar();
+    c.defenses = { resistances: ["cold"] };
+    c.equipment = [{ item: "[[ring-of-fire-resist]]", equipped: true, attuned: true }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.defenses.resistances).toContain("cold");
+    expect(d.defenses.resistances).toContain("fire");
+  });
 });
