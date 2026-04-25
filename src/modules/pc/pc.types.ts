@@ -83,8 +83,10 @@ export interface CharacterState {
   exhaustion: number;
   death_saves?: { successes: number; failures: number };
   inspiration: number;
-  // currency moved to Character.currency (SP5)
-  // attuned_items removed; per-entry attuned flag is canonical (SP5)
+  /** @deprecated SP5: moved to Character.currency. Tolerated until Task 4 parser migration strips it. */
+  currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
+  /** @deprecated SP5: removed; per-entry attuned flag is canonical. Tolerated until Task 4 parser migration strips it. */
+  attuned_items?: string[];
 }
 
 export interface Character {
