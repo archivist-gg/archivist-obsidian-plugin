@@ -15,6 +15,7 @@ import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
 import type {
   DerivedStats,
+  ProficiencySet,
   ResolvedCharacter,
   ResolvedClass,
   CharacterOverrides,
@@ -225,6 +226,75 @@ export function computeAbilityScores(
   return out;
 }
 
+interface ClassProficiencies {
+  armor?: { categories?: string[]; specific?: string[] } | string[];
+  weapons?: { categories?: string[]; specific?: string[] } | string[];
+  tools?: { categories?: string[]; specific?: string[] } | string[];
+  languages?: string[];
+}
+
+function normalizeProfList(input: ClassProficiencies["armor"]): { categories: string[]; specific: string[] } {
+  if (!input) return { categories: [], specific: [] };
+  if (Array.isArray(input)) return { categories: [], specific: input };
+  return { categories: input.categories ?? [], specific: input.specific ?? [] };
+}
+
+function mergeInto(target: ProficiencySet, source: { categories: string[]; specific: string[] }): void {
+  for (const c of source.categories) if (!target.categories.includes(c)) target.categories.push(c);
+  for (const s of source.specific) if (!target.specific.includes(s)) target.specific.push(s);
+}
+
+export function computeProficiencies(
+  resolved: ResolvedCharacter,
+): { armor: ProficiencySet; weapons: ProficiencySet; tools: ProficiencySet; languages: string[]; saves: Ability[] } {
+  const armor: ProficiencySet = { categories: [], specific: [] };
+  const weapons: ProficiencySet = { categories: [], specific: [] };
+  const tools: ProficiencySet = { categories: [], specific: [] };
+  const languages = new Set<string>();
+
+  for (const c of resolved.classes) {
+    const p = (c.entity as unknown as { proficiencies?: ClassProficiencies })?.proficiencies;
+    if (!p) continue;
+    mergeInto(armor, normalizeProfList(p.armor));
+    mergeInto(weapons, normalizeProfList(p.weapons));
+    mergeInto(tools, normalizeProfList(p.tools));
+    p.languages?.forEach((l) => languages.add(l));
+  }
+
+  const racePr = (resolved.race as unknown as { proficiencies?: ClassProficiencies })?.proficiencies;
+  if (racePr) {
+    mergeInto(armor, normalizeProfList(racePr.armor));
+    mergeInto(weapons, normalizeProfList(racePr.weapons));
+    mergeInto(tools, normalizeProfList(racePr.tools));
+    racePr.languages?.forEach((l) => languages.add(l));
+  }
+
+  const bgPr = (resolved.background as unknown as { proficiencies?: ClassProficiencies })?.proficiencies;
+  if (bgPr) {
+    mergeInto(armor, normalizeProfList(bgPr.armor));
+    mergeInto(weapons, normalizeProfList(bgPr.weapons));
+    mergeInto(tools, normalizeProfList(bgPr.tools));
+    bgPr.languages?.forEach((l) => languages.add(l));
+  }
+
+  for (const f of resolved.feats) {
+    const grants = (f as unknown as { grants_proficiency?: ClassProficiencies }).grants_proficiency;
+    if (!grants) continue;
+    mergeInto(armor, normalizeProfList(grants.armor));
+    mergeInto(weapons, normalizeProfList(grants.weapons));
+    mergeInto(tools, normalizeProfList(grants.tools));
+    grants.languages?.forEach((l) => languages.add(l));
+  }
+
+  return {
+    armor,
+    weapons,
+    tools,
+    languages: Array.from(languages).sort(),
+    saves: [],
+  };
+}
+
 export function recalc(resolved: ResolvedCharacter): DerivedStats {
   const warnings: string[] = [];
   const overrides = resolved.definition.overrides ?? {};
@@ -324,6 +394,7 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
     scores,
     mods,
     saves,
+    proficiencies: computeProficiencies(resolved),
     skills,
     passives,
     hp: {

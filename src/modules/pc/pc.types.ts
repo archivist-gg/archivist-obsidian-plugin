@@ -116,6 +116,11 @@ export interface ResolvedCharacter {
   state: CharacterState;
 }
 
+export interface ProficiencySet {
+  categories: string[];
+  specific: string[];
+}
+
 // ─────────────────────────────────────────────────────────────
 // Derived (output of recalc; consumed by components)
 // ─────────────────────────────────────────────────────────────
@@ -126,6 +131,13 @@ export interface DerivedStats {
   scores: Record<Ability, number>;
   mods: Record<Ability, number>;
   saves: Record<Ability, { bonus: number; proficient: boolean }>;
+  proficiencies: {
+    armor: ProficiencySet;
+    weapons: ProficiencySet;
+    tools: ProficiencySet;
+    languages: string[];
+    saves: Ability[];
+  };
   skills: Record<SkillSlug, {
     bonus: number;
     proficiency: "none" | "proficient" | "expertise";
