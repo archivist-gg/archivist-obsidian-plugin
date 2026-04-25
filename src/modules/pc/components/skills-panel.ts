@@ -2,6 +2,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { ALL_SKILLS } from "../../../shared/dnd/constants";
 import { formatModifier } from "../../../shared/dnd/math";
 import type { SkillSlug } from "../../../shared/types";
+import { numberOverride } from "./edit-primitives";
 
 const SKILL_DISPLAY_NAMES: Record<SkillSlug, string> = {
   "acrobatics": "Acrobatics",
@@ -45,10 +46,18 @@ export class SkillsPanel implements SheetComponent {
       if (entry.proficiency === "expertise") toggleClasses.push("expertise");
       else if (entry.proficiency === "proficient") toggleClasses.push("proficient");
       row.createSpan({ cls: toggleClasses.join(" ") });
-      row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
+      const bonusEl = row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
       if (ctx.editState) {
         row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));
+        bonusEl.addEventListener("click", (e) => e.stopPropagation());
+        numberOverride(bonusEl, {
+          getEffective: () => entry.bonus,
+          isOverridden: () => ctx.resolved.definition?.overrides?.skills?.[skillSlug]?.bonus !== undefined,
+          onSet: (n) => ctx.editState!.setSkillBonusOverride(skillSlug, n),
+          onClear: () => ctx.editState!.clearSkillBonusOverride(skillSlug),
+          min: -20, max: 30,
+        });
       }
     }
   }
