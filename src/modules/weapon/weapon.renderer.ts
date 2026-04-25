@@ -1,7 +1,7 @@
 import type { WeaponEntity, WeaponProperty } from "./weapon.types";
 
 function capitalize(s: string): string {
-  return s.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/_/g, " ");
+  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatDamage(d: WeaponEntity["damage"]): string {

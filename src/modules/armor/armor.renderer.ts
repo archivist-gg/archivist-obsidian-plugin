@@ -8,7 +8,7 @@ function buildSubtitle(armor: ArmorEntity): string {
 }
 
 function capitalize(s: string): string {
-  return s.replace(/\b\w/g, (c) => c.toUpperCase()).replace(/_/g, " ");
+  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatAC(ac: ArmorEntity["ac"]): string {
