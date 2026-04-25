@@ -1,7 +1,7 @@
 // Backtick-triggered autocomplete dropdown for formula tags in feature textareas.
 
 import type { Abilities } from "../types";
-import { resolveFormulaTag } from "../dnd/formula-tags";
+import { resolveTag } from "../dnd/formula-tags";
 import { abilityModifier, formatModifier } from "../dnd/math";
 import { ABILITY_KEYS, ABILITY_NAMES } from "../dnd/constants";
 
@@ -21,7 +21,7 @@ interface TagAutocompleteHost {
 // Types
 // ---------------------------------------------------------------------------
 
-interface TagOption {
+export interface TagOption {
   group: string;
   tag: string;        // display text, e.g. `atk:STR`
   insertText: string; // what gets inserted (with backticks)
@@ -34,19 +34,33 @@ interface TagOption {
 // Tag catalog builder
 // ---------------------------------------------------------------------------
 
-function buildTagOptions(abilities: Abilities, profBonus: number): TagOption[] {
+export function buildTagOptions(abilities: Abilities, profBonus: number): TagOption[] {
   const opts: TagOption[] = [];
 
   // --- Attack tags ---
   for (const key of ABILITY_KEYS) {
     const name = ABILITY_NAMES[key];
-    const preview = resolveFormulaTag("atk", name, abilities, profBonus);
+    const ctx = { abilities, proficiencyBonus: profBonus };
+
+    // Non-proficient form: ability mod alone
+    const noPb = resolveTag("atk", name, ctx);
     opts.push({
       group: "Attack",
       tag: `atk:${name}`,
       insertText: `\`atk:${name}\``,
+      description: `${name} mod`,
+      preview: noPb.display,
+      hasPlaceholder: false,
+    });
+
+    // Proficient form: ability mod + PB
+    const withPb = resolveTag("atk", `${name}+PB`, ctx);
+    opts.push({
+      group: "Attack",
+      tag: `atk:${name}+PB`,
+      insertText: `\`atk:${name}+PB\``,
       description: `${name} + Prof`,
-      preview,
+      preview: withPb.display,
       hasPlaceholder: false,
     });
   }
@@ -69,13 +83,13 @@ function buildTagOptions(abilities: Abilities, profBonus: number): TagOption[] {
   // --- Save DC tags ---
   for (const key of ABILITY_KEYS) {
     const name = ABILITY_NAMES[key];
-    const preview = resolveFormulaTag("dc", name, abilities, profBonus);
+    const preview = resolveTag("dc", name, { abilities, proficiencyBonus: profBonus });
     opts.push({
       group: "Save DC",
       tag: `dc:${name}`,
       insertText: `\`dc:${name}\``,
       description: `8 + Prof + ${name}`,
-      preview,
+      preview: preview.display,
       hasPlaceholder: false,
     });
   }
