@@ -142,6 +142,25 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Passive senses (override) ─────────────────────────────────────
+  setPassiveOverride(kind: "perception" | "investigation" | "insight", value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(0, Math.min(40, Math.floor(value)));
+    if (!this.character.overrides.passives) this.character.overrides.passives = {};
+    this.character.overrides.passives[kind] = next;
+    this.onChange();
+  }
+
+  clearPassiveOverride(kind: "perception" | "investigation" | "insight"): void {
+    const passives = this.character.overrides.passives;
+    if (!passives) { this.onChange(); return; }
+    delete passives[kind];
+    if (Object.keys(passives).length === 0) {
+      delete this.character.overrides.passives;
+    }
+    this.onChange();
+  }
+
   // ─── Defenses ──────────────────────────────────────────────────────
   private ensureDefenses(): NonNullable<Character["defenses"]> {
     if (!this.character.defenses) {

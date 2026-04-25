@@ -607,3 +607,57 @@ describe("CharacterEditState — initiative override (SP4c)", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("CharacterEditState — passive sense overrides (SP4c)", () => {
+  it("setPassiveOverride('perception', n) materializes parent and writes the key", () => {
+    const { es, char, onChange } = makeState();
+    expect(char.overrides.passives).toBeUndefined();
+    es.setPassiveOverride("perception", 18);
+    expect(char.overrides.passives).toEqual({ perception: 18 });
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("setPassiveOverride for each kind preserves the others", () => {
+    const { es, char } = makeState();
+    es.setPassiveOverride("perception", 18);
+    es.setPassiveOverride("investigation", 12);
+    es.setPassiveOverride("insight", 14);
+    expect(char.overrides.passives).toEqual({ perception: 18, investigation: 12, insight: 14 });
+  });
+
+  it("setPassiveOverride clamps to [0, 40] and floors", () => {
+    const { es, char } = makeState();
+    es.setPassiveOverride("perception", -5);
+    expect(char.overrides.passives?.perception).toBe(0);
+    es.setPassiveOverride("perception", 999);
+    expect(char.overrides.passives?.perception).toBe(40);
+    es.setPassiveOverride("perception", 18.9);
+    expect(char.overrides.passives?.perception).toBe(18);
+  });
+
+  it("setPassiveOverride no-ops on NaN (no parent materialized)", () => {
+    const { es, char, onChange } = makeState();
+    es.setPassiveOverride("perception", NaN);
+    expect(char.overrides.passives).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("clearPassiveOverride deletes the key but keeps parent if other kinds set", () => {
+    const { es, char } = makeState((c) => { c.overrides.passives = { perception: 18, investigation: 12 }; });
+    es.clearPassiveOverride("perception");
+    expect(char.overrides.passives).toEqual({ investigation: 12 });
+  });
+
+  it("clearPassiveOverride drops the parent when last key is cleared", () => {
+    const { es, char } = makeState((c) => { c.overrides.passives = { perception: 18 }; });
+    es.clearPassiveOverride("perception");
+    expect(char.overrides.passives).toBeUndefined();
+  });
+
+  it("clearPassiveOverride is a no-op if parent is absent (still notifies for re-render parity)", () => {
+    const { es, char, onChange } = makeState();
+    es.clearPassiveOverride("perception");
+    expect(char.overrides.passives).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
