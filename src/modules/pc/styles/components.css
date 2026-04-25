@@ -1168,30 +1168,40 @@
 }
 
 /* SP4b — inline number input used by numberField and numberOverride.
-   Sized to match the valueEl it replaces. */
+   Visually minimal so it sits in place of the value text it replaces:
+   no native widget chrome (border, background, spinners), just a subtle
+   dashed outline that communicates "edit mode" and a solid focus ring. */
 .archivist-pc-sheet input.pc-edit-inline {
-  width: 4ch;
-  min-width: 3ch;
-  padding: 0 2px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  width: 3ch;
+  min-width: 2ch;
+  padding: 0;
   margin: 0;
-  border: 1px solid var(--pc-border, #8a6f47);
-  border-radius: 2px;
-  background: var(--pc-bg-soft, #fff6e0);
+  border: none;
+  background: transparent;
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
   color: inherit;
-  text-align: center;
+  text-align: inherit;
   line-height: inherit;
-  -moz-appearance: textfield;
+  height: auto;
+  box-sizing: content-box;
+  vertical-align: baseline;
+  outline: 1px dashed var(--pc-crimson, #8a2414);
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 .archivist-pc-sheet input.pc-edit-inline::-webkit-outer-spin-button,
 .archivist-pc-sheet input.pc-edit-inline::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 .archivist-pc-sheet input.pc-edit-inline:focus {
-  outline: 1px solid var(--pc-crimson, #8a2414);
+  outline: 2px solid var(--pc-crimson, #8a2414);
   outline-offset: 1px;
 }
 
