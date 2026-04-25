@@ -1208,7 +1208,11 @@
    element to inline-block keeps it centered while giving the mark a
    reference box the width of the actual number text. */
 .archivist-pc-sheet .pc-ac-shield-num,
-.archivist-pc-sheet .pc-hp-val {
+.archivist-pc-sheet .pc-hp-val,
+.archivist-pc-sheet .pc-stats-tile-num,
+.archivist-pc-sheet .pc-sense-val,
+.archivist-pc-sheet .pc-skill-bonus,
+.archivist-pc-sheet .pc-save-bn {
   display: inline-block;
   position: relative;
 }
@@ -1216,7 +1220,11 @@
    so it already acts as a positioning context for the mark. */
 .archivist-pc-sheet .pc-ac-shield-num .archivist-override-mark,
 .archivist-pc-sheet .pc-hp-val .archivist-override-mark,
-.archivist-pc-sheet .pc-ab-score .archivist-override-mark {
+.archivist-pc-sheet .pc-ab-score .archivist-override-mark,
+.archivist-pc-sheet .pc-stats-tile-num .archivist-override-mark,
+.archivist-pc-sheet .pc-sense-val .archivist-override-mark,
+.archivist-pc-sheet .pc-skill-bonus .archivist-override-mark,
+.archivist-pc-sheet .pc-save-bn .archivist-override-mark {
   position: absolute;
   top: 0;
   right: -8px;
@@ -1224,6 +1232,18 @@
   line-height: 1;
   margin: 0;
   padding: 0;
+}
+/* SP4c — speed tile splits into number + unit; render inline so they read as
+   one visual chunk and the override mark anchors only to the number. */
+.archivist-pc-sheet .pc-stats-tile[data-stat="speed"] .pc-stats-tile-val {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+.archivist-pc-sheet .pc-stats-tile-unit {
+  font-size: 0.65em;
+  opacity: 0.75;
+  margin-left: 1px;
 }
 /* AC shield has the tightest vertical geometry — ARMOR label sits right
    above the number. Push the mark further down so it doesn't touch it. */
