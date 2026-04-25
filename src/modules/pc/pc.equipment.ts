@@ -94,6 +94,22 @@ export function computeAppliedBonuses(
     if (entityType !== "item") continue; // armor/weapon bonuses applied in Pass B
 
     const item = entity as ItemEntity;
+
+    // Defenses and senses live on ItemEntity directly (not on bonuses) — propagate
+    // regardless of whether the item has a bonuses object.
+    item.resist?.forEach((s) => out.defenses.resistances.push(s));
+    item.immune?.forEach((s) => out.defenses.immunities.push(s));
+    item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
+    item.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
+
+    const senses = item.grants?.senses;
+    if (senses) {
+      if (typeof senses.darkvision === "number") out.senses.darkvision = Math.max(out.senses.darkvision, senses.darkvision);
+      if (typeof senses.tremorsense === "number") out.senses.tremorsense = Math.max(out.senses.tremorsense, senses.tremorsense);
+      if (typeof senses.truesight === "number") out.senses.truesight = Math.max(out.senses.truesight, senses.truesight);
+      if (typeof senses.blindsight === "number") out.senses.blindsight = Math.max(out.senses.blindsight, senses.blindsight);
+    }
+
     const b = item.bonuses;
     if (!b) continue;
 
@@ -133,19 +149,6 @@ export function computeAppliedBonuses(
       }
       if (typeof b.speed.swim === "number") out.speed_bonuses.swim += b.speed.swim;
       if (typeof b.speed.climb === "number") out.speed_bonuses.climb += b.speed.climb;
-    }
-
-    item.resist?.forEach((s) => out.defenses.resistances.push(s));
-    item.immune?.forEach((s) => out.defenses.immunities.push(s));
-    item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
-    item.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
-
-    const senses = item.grants?.senses;
-    if (senses) {
-      if (typeof senses.darkvision === "number") out.senses.darkvision = Math.max(out.senses.darkvision, senses.darkvision);
-      if (typeof senses.tremorsense === "number") out.senses.tremorsense = Math.max(out.senses.tremorsense, senses.tremorsense);
-      if (typeof senses.truesight === "number") out.senses.truesight = Math.max(out.senses.truesight, senses.truesight);
-      if (typeof senses.blindsight === "number") out.senses.blindsight = Math.max(out.senses.blindsight, senses.blindsight);
     }
   }
 

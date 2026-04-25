@@ -123,6 +123,23 @@ describe("computeAppliedBonuses", () => {
     expect(warnings.length).toBe(1);
     expect(warnings[0]).toMatch(/STR/i);
   });
+
+  it("item with resist but no bonuses field still propagates defenses", () => {
+    const RING_NO_BONUSES: ItemEntity = {
+      name: "Ring of Fire Resistance", slug: "ring-fire-no-bonuses",
+      type: "ring", rarity: "uncommon",
+      resist: ["fire"],
+      attunement: { required: true },
+      // no `bonuses` field
+    };
+    const reg = buildMockRegistry([
+      { slug: "ring-fire-no-bonuses", entityType: "item", name: "Ring of Fire Resistance", data: RING_NO_BONUSES },
+    ]);
+    const c = baseChar();
+    c.equipment = [{ item: "[[ring-fire-no-bonuses]]", equipped: true, attuned: true }];
+    const b = computeAppliedBonuses(mkResolved(c), profs, reg, []);
+    expect(b.defenses.resistances).toContain("fire");
+  });
 });
 
 describe("recalc + Pass A", () => {
@@ -177,10 +194,7 @@ describe("recalc + Pass A", () => {
       slug: "ring-of-fire-resist",
       type: "ring",
       rarity: "rare",
-      // computeAppliedBonuses currently early-continues when item.bonuses is
-      // absent, which would also skip the resist/immune propagation below it.
-      // Empty bonuses object is truthy and bypasses the gate; the actual
-      // saving_throws/ability_scores branches inside are no-ops.
+      // Defenses now propagate independently of the bonuses gate (now correctly handled).
       bonuses: {},
       resist: ["fire"],
       attunement: { required: true },
