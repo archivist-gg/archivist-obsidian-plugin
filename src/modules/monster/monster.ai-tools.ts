@@ -9,18 +9,23 @@ export const generateMonsterTool = tool(
 IMPORTANT: In all trait/action/reaction/legendary 'entries' text, use inline formula tags instead of static numbers for attack rolls, damage, and save DCs. This enables auto-recalculation when ability scores change in edit mode.
 
 Tag syntax (always wrapped in backticks within the entry string):
-- \`atk:ABILITY\` — attack bonus (ability mod + proficiency). Example: \`atk:STR\`, \`atk:DEX\`
-- \`damage:DICEdNOTATION+ABILITY\` — damage roll with ability mod. Example: \`damage:1d6+STR\`, \`damage:2d6+DEX\`
-- \`damage:DICEdNOTATION\` — static damage dice with no ability mod. Example: \`damage:2d6\`
-- \`dc:ABILITY\` — save DC (8 + proficiency + ability mod). Example: \`dc:WIS\`, \`dc:CON\`
+- \`atk:ABILITY\` — ability mod alone (use for non-proficient natural attacks like ghoul bite, cat claws — when "+N to hit" doesn't include the proficiency bonus). Example: \`atk:DEX\`
+- \`atk:ABILITY+PB\` — ability mod + proficiency (use for proficient attacks; the typical case for trained warriors and most predatory creatures). Example: \`atk:STR+PB\`
+- \`atk:+N\` — literal bonus when ability/proficiency attribution is unknown or the value is a designed constant. Example: \`atk:+2\`
+- \`atk:ABILITY+PB+N\` — magic-weapon attack with extra bonus. Example: \`atk:DEX+PB+1\`
+- \`dmg:DICE+ABILITY\` — die plus ability mod. Proficiency is NEVER added to damage. Example: \`dmg:1d8+STR\`
+- \`dmg:DICE\` — pure dice, no modifier. Example: \`dmg:2d6\`
+- \`dmg:DICE+ABILITY+N\` — magic-weapon damage. Example: \`dmg:1d8+STR+2\`
+- \`dc:ABILITY\` — 8 + ability mod + PB. PB is ALWAYS implicit; never write +PB on dc. Example: \`dc:WIS\`
+- \`dc:N\` — literal DC. Example: \`dc:15\`
 
 Valid ability keywords: STR, DEX, CON, INT, WIS, CHA (uppercase only).
 Use STR for melee weapon attacks, DEX for ranged/finesse weapon attacks, and the appropriate spellcasting ability for spell attacks/DCs.
 
-Example action entries:
-- "Melee Weapon Attack: \`atk:STR\` to hit, reach 5 ft., one target. Hit: \`damage:2d6+STR\` slashing damage."
-- "Ranged Weapon Attack: \`atk:DEX\` to hit, range 80/320 ft., one target. Hit: \`damage:1d6+DEX\` piercing damage."
-- "Each creature in the area must make a \`dc:CON\` Constitution saving throw, taking \`damage:8d6\` fire damage on a failed save, or half as much on a success."`,
+Worked examples:
+- "Melee Weapon Attack: \`atk:STR+PB\` to hit, reach 5 ft. Hit: \`dmg:2d6+STR\` slashing." (proficient melee with greatsword)
+- "Melee Weapon Attack: \`atk:DEX\` to hit (non-proficient bite). Hit: \`dmg:2d6+DEX\` piercing." (ghoul bite)
+- "Each creature in the area must succeed on a \`dc:CON\` save, taking \`dmg:8d6\` fire damage on a fail." (breath weapon)`,
   { monster: monsterInputSchema },
   ({ monster }) => {
     try {

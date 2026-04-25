@@ -31,11 +31,12 @@ const speedSchema = z.object({
 const featureSchema = z.object({
   name: z.string(),
   entries: z.array(z.string().describe(
-    "Feature text. Use inline formula tags for attack rolls, damage, and save DCs: " +
-    "`atk:ABILITY` for attack bonus (e.g. `atk:STR`, `atk:DEX`), " +
-    "`damage:DICE+ABILITY` for damage (e.g. `damage:1d6+STR`, `damage:2d6`), " +
-    "`dc:ABILITY` for save DC (e.g. `dc:WIS`, `dc:CON`). " +
-    "Use the ability that makes sense: STR for melee, DEX for ranged/finesse, spellcasting ability for spells."
+    "Inline tag forms: " +
+    "`atk:ABILITY` for non-proficient attacks (ability mod alone), " +
+    "`atk:ABILITY+PB` for proficient attacks (ability mod + proficiency), " +
+    "`atk:+N` for literal attack bonuses, " +
+    "`dmg:DICE+ABILITY` for damage rolls (PB never added to damage), " +
+    "`dc:ABILITY` for save DCs (proficiency always included implicitly)."
   )),
 });
 
