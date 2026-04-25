@@ -1,5 +1,5 @@
 import type { Ability, SkillSlug } from "../../shared/types";
-import type { Character, DerivedStats, ResolvedCharacter } from "./pc.types";
+import type { Character, DerivedStats, PassiveKind, ResolvedCharacter } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 
@@ -143,7 +143,7 @@ export class CharacterEditState {
   }
 
   // ─── Passive senses (override) ─────────────────────────────────────
-  setPassiveOverride(kind: "perception" | "investigation" | "insight", value: number): void {
+  setPassiveOverride(kind: PassiveKind, value: number): void {
     if (!Number.isFinite(value)) return;
     const next = Math.max(0, Math.min(40, Math.floor(value)));
     if (!this.character.overrides.passives) this.character.overrides.passives = {};
@@ -151,7 +151,7 @@ export class CharacterEditState {
     this.onChange();
   }
 
-  clearPassiveOverride(kind: "perception" | "investigation" | "insight"): void {
+  clearPassiveOverride(kind: PassiveKind): void {
     const passives = this.character.overrides.passives;
     if (!passives) { this.onChange(); return; }
     delete passives[kind];

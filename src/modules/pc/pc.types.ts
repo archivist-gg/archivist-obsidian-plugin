@@ -31,6 +31,8 @@ export interface SpellOverride {
 export type EquipmentEntry =
   | { item: string; equipped?: boolean; attuned?: boolean; qty?: number; notes?: string };
 
+export type PassiveKind = "perception" | "investigation" | "insight";
+
 export interface CharacterOverrides {
   scores?: Partial<Record<Ability, number>>;
   saves?: Partial<Record<Ability, { bonus?: number; proficient?: boolean }>>;
