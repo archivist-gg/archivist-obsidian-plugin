@@ -234,6 +234,182 @@ export function normalizeSrdMonster(
 }
 
 // ---------------------------------------------------------------------------
+// Armor normalizer
+// ---------------------------------------------------------------------------
+
+const ARMOR_CATEGORY_MAP: Record<string, string> = {
+  "light armor": "light",
+  "medium armor": "medium",
+  "heavy armor": "heavy",
+  shield: "shield",
+  spell: "spell",
+  "class feature": "feature",
+  natural: "natural",
+};
+
+const ARMOR_DROP_FIELDS = new Set([
+  "document__slug",
+  "document__title",
+  "document__license_url",
+  "document__url",
+  // Open5e raw fields we lift into the canonical `ac` object below.
+  "base_ac",
+  "plus_dex_mod",
+  "plus_con_mod",
+  "plus_wis_mod",
+  "plus_flat_mod",
+  "plus_max",
+  "ac_string",
+]);
+
+/**
+ * Normalize an Open5e armor record into the shape the armor parser expects.
+ *
+ * Open5e splits AC into `base_ac`, `plus_dex_mod`, `plus_con_mod`, `plus_wis_mod`,
+ * `plus_flat_mod`, `plus_max`, `ac_string`. The plugin schema expects a single
+ * structured `ac: { base, flat, add_dex, dex_max?, add_con, add_wis, description? }`.
+ * Categories arrive as title case ("Heavy Armor", "Class Feature") and are
+ * lowercased to the canonical enum.
+ */
+export function normalizeSrdArmor(
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  // Pass-through scalars (excluding fields we lift into ac{}).
+  for (const [k, v] of Object.entries(raw)) {
+    if (ARMOR_DROP_FIELDS.has(k) || k.startsWith("document__")) continue;
+    out[k] = v;
+  }
+
+  // -- Category --------------------------------------------------------------
+  if (typeof raw.category === "string") {
+    const key = raw.category.toLowerCase().trim();
+    out.category = ARMOR_CATEGORY_MAP[key] ?? key;
+  }
+
+  // -- AC --------------------------------------------------------------------
+  const acObj: Record<string, unknown> = {
+    base: Number(raw.base_ac ?? 0),
+    flat: Number(raw.plus_flat_mod ?? 0),
+    add_dex: Boolean(raw.plus_dex_mod),
+    add_con: Boolean(raw.plus_con_mod),
+    add_wis: Boolean(raw.plus_wis_mod),
+  };
+  const plusMax = Number(raw.plus_max ?? 0);
+  if (acObj.add_dex && plusMax > 0) acObj.dex_max = plusMax;
+  if (typeof raw.ac_string === "string" && raw.ac_string.length > 0) {
+    acObj.description = raw.ac_string;
+  }
+  out.ac = acObj;
+
+  // -- Cleanup empty/null fields the schema would reject or clutter ----------
+  if (raw.strength_requirement == null) delete out.strength_requirement;
+  if (raw.stealth_disadvantage === false) delete out.stealth_disadvantage;
+  if (raw.weight === "") delete out.weight;
+  if (raw.cost === "0 gp") delete out.cost;
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Weapon normalizer
+// ---------------------------------------------------------------------------
+
+const WEAPON_CATEGORY_MAP: Record<string, string> = {
+  "simple melee weapons": "simple-melee",
+  "simple ranged weapons": "simple-ranged",
+  "martial melee weapons": "martial-melee",
+  "martial ranged weapons": "martial-ranged",
+  natural: "natural",
+};
+
+const WEAPON_DROP_FIELDS = new Set([
+  "document__slug",
+  "document__title",
+  "document__license_url",
+  "document__url",
+  "damage_dice",
+  "damage_type",
+]);
+
+// Property strings whose hyphen form needs converting to the underscore form
+// the Phase 0.5 weapon parser's FLAG_PROPERTIES set recognizes.
+const HYPHEN_PROPERTY_MAP: Record<string, string> = {
+  "two-handed": "two_handed",
+};
+
+function normalizeWeaponProperty(p: unknown): unknown {
+  if (typeof p !== "string") return p;
+  const lower = p.toLowerCase().trim();
+  return HYPHEN_PROPERTY_MAP[lower] ?? p;
+}
+
+function parseWeightLb(v: unknown): number | string | undefined {
+  if (typeof v === "number") return v;
+  if (typeof v !== "string") return undefined;
+  const trimmed = v.trim();
+  if (trimmed === "") return undefined;
+  const m = trimmed.match(/^([\d.]+)\s*lb\.?$/i);
+  if (m) {
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : trimmed;
+  }
+  return trimmed;
+}
+
+/**
+ * Normalize an Open5e weapon record into the shape the weapon parser expects.
+ *
+ * Open5e splits damage into `damage_dice` and `damage_type`; the plugin
+ * schema expects a single structured `damage: { dice, type, versatile_dice? }`.
+ * Categories arrive as title case ("Martial Ranged Weapons") and are mapped
+ * to the canonical kebab-case enum. Hyphen-form property names like
+ * "two-handed" are converted to "two_handed" so the parser's flag set
+ * recognizes them.
+ */
+export function normalizeSrdWeapon(
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+
+  for (const [k, v] of Object.entries(raw)) {
+    if (WEAPON_DROP_FIELDS.has(k) || k.startsWith("document__")) continue;
+    out[k] = v;
+  }
+
+  // -- Category --------------------------------------------------------------
+  if (typeof raw.category === "string") {
+    const key = raw.category.toLowerCase().trim();
+    out.category = WEAPON_CATEGORY_MAP[key] ?? key;
+  }
+
+  // -- Damage ----------------------------------------------------------------
+  const dice = raw.damage_dice;
+  const dtype = raw.damage_type;
+  if (dice != null || dtype != null) {
+    out.damage = {
+      dice: typeof dice === "string" ? dice : "",
+      type: typeof dtype === "string" ? dtype : "",
+    };
+  }
+
+  // -- Properties (normalize hyphen-form names) ------------------------------
+  if (Array.isArray(raw.properties)) {
+    out.properties = raw.properties.map(normalizeWeaponProperty);
+  }
+
+  // -- Weight (strip "lb." suffix to a number where possible) ---------------
+  const w = parseWeightLb(raw.weight);
+  if (w === undefined) delete out.weight;
+  else out.weight = w;
+
+  if (raw.cost === "0 gp" || raw.cost === "") delete out.cost;
+
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Magic Item normalizer
 // ---------------------------------------------------------------------------
 
