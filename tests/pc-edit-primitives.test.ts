@@ -201,4 +201,23 @@ describe("numberOverride", () => {
     expect(root.querySelector("input.pc-edit-inline")).toBeNull();
     expect(onSet).not.toHaveBeenCalled();
   });
+
+  it("override mark click is gated on confirm — onClear NOT called when user cancels", () => {
+    vi.stubGlobal("confirm", () => false);
+    try {
+      const root = mountContainer();
+      const valueEl = root.createDiv({ cls: "pc-val", text: "18" });
+      const onClear = vi.fn();
+      numberOverride(valueEl, {
+        getEffective: () => 18,
+        isOverridden: () => true,
+        onSet: vi.fn(),
+        onClear,
+      });
+      root.querySelector<HTMLElement>(".archivist-override-mark")!.click();
+      expect(onClear).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

@@ -1156,8 +1156,11 @@
   color: var(--pc-crimson, var(--red, #8a2414));
   font-weight: 700;
   margin-left: 4px;
-  padding: 0 2px;
-  border-radius: 2px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  display: inline-block;
+  min-width: 14px;
+  text-align: center;
   transition: background-color 120ms;
 }
 .archivist-pc-sheet .archivist-override-mark:hover {
@@ -1232,12 +1235,12 @@
 .archivist-pc-sheet .pc-skill-bonus .archivist-override-mark,
 .archivist-pc-sheet .pc-save-bn .archivist-override-mark {
   position: absolute;
-  top: 0;
-  right: -8px;
-  font-size: 0.5em;
+  top: -2px;
+  right: -12px;
+  font-size: 0.85em;
   line-height: 1;
   margin: 0;
-  padding: 0;
+  padding: 1px 3px;
 }
 /* SP4c — speed tile splits into number + unit; render inline so they read as
    one visual chunk and the override mark anchors only to the number. */

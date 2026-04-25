@@ -125,7 +125,10 @@ export function numberOverride(valueEl: HTMLElement, opts: NumberOverrideOpts): 
     mark.title = "Manual override — click to remove and use the auto-calculated value";
     mark.addEventListener("click", (e) => {
       e.stopPropagation();
-      opts.onClear();
+      const win = (valueEl.ownerDocument ?? document).defaultView ?? window;
+      if (win.confirm("Clear this manual override and revert to the auto-calculated value?")) {
+        opts.onClear();
+      }
     });
     valueEl.appendChild(mark);
   }

@@ -25,6 +25,12 @@ export function installObsidianDomHelpers(): void {
   if (g[INSTALLED]) return;
   g[INSTALLED] = true;
 
+  // jsdom's window.confirm returns false by default. The override-mark click
+  // handlers gate clear on a confirm dialog, so default-false would cause every
+  // existing mark-click test to fail. Auto-confirm in tests; specific tests
+  // that want to exercise the false path can override via vi.stubGlobal.
+  (globalThis as { confirm: () => boolean }).confirm = () => true;
+
   const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
 
   proto.createDiv = function (this: HTMLElement, opts?: ElOpts) {

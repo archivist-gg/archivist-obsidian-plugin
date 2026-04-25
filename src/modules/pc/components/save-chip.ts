@@ -56,7 +56,10 @@ export class SaveChip implements SheetComponent {
       if (ctx.editState) {
         mark.addEventListener("click", (e) => {
           e.stopPropagation();
-          ctx.editState!.clearSaveProficientOverride(ability);
+          const win = (mark.ownerDocument ?? document).defaultView ?? window;
+          if (win.confirm("Clear the save proficiency override and revert to the class default?")) {
+            ctx.editState!.clearSaveProficientOverride(ability);
+          }
         });
       }
     }
