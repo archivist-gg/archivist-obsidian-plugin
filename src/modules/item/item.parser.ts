@@ -1,34 +1,56 @@
 import { Item } from "./item.types";
-import { ParseResult, parseYaml, toStringSafe } from "../../shared/parsers/yaml-utils";
+import { ParseResult, parseYaml } from "../../shared/parsers/yaml-utils";
+import { itemEntitySchema } from "./item.schema";
+
+const KNOWN_KEYS = new Set([
+  "name", "slug", "type", "rarity",
+  "base_item",
+  "bonuses",
+  "resist", "immune", "vulnerable", "condition_immune",
+  "charges", "attached_spells", "attunement",
+  "grants", "container", "light",
+  "cursed", "sentient", "focus", "tier",
+  "damage", "weapon_category", "armor_category",
+  "weight", "cost",
+  "source", "page", "edition",
+  "entries", "raw",
+  // Legacy fields kept
+  "damage_dice", "damage_type", "properties", "recharge", "curse",
+]);
+
+function migrateAttunement(raw: Record<string, unknown>): void {
+  // The new canonical attunement shape is { required, restriction?, tags? }.
+  // Legacy YAML uses boolean | string. Auto-promote so downstream sees
+  // the canonical shape consistently.
+  const v = raw.attunement;
+  if (v === undefined || v === null) return;
+  if (typeof v === "object" && !Array.isArray(v)) return; // already canonical
+  if (typeof v === "boolean") {
+    raw.attunement = { required: v };
+  } else if (typeof v === "string") {
+    raw.attunement = { required: true, restriction: v };
+  }
+}
 
 export function parseItem(source: string): ParseResult<Item> {
-  const result = parseYaml<Record<string, unknown>>(source, ["name"]);
-  if (!result.success) return result;
+  const raw = parseYaml<Record<string, unknown>>(source, ["name"]);
+  if (!raw.success) return raw;
 
-  const raw = result.data;
+  migrateAttunement(raw.data);
 
-  const item: Item = {
-    name: toStringSafe(raw.name),
-  };
-
-  if (raw.type != null) item.type = toStringSafe(raw.type);
-  if (raw.rarity != null) item.rarity = toStringSafe(raw.rarity);
-  if (raw.attunement != null && raw.attunement !== null) {
-    if (typeof raw.attunement === "boolean") {
-      item.attunement = raw.attunement;
-    } else if (typeof raw.attunement === "string") {
-      item.attunement = raw.attunement;
-    }
+  const result = itemEntitySchema.safeParse(raw.data);
+  if (!result.success) {
+    return { success: false, error: `item schema validation failed: ${result.error.message}` };
   }
-  if (raw.weight != null) item.weight = Number(raw.weight);
-  if (raw.value != null) item.value = Number(raw.value);
-  if (raw.damage != null) item.damage = toStringSafe(raw.damage);
-  if (raw.damage_type != null) item.damage_type = toStringSafe(raw.damage_type);
-  if (Array.isArray(raw.properties)) item.properties = raw.properties.map(String);
-  if (raw.charges != null && raw.charges !== null) item.charges = Number(raw.charges);
-  if (raw.recharge != null && raw.recharge !== null) item.recharge = toStringSafe(raw.recharge);
-  if (raw.curse != null) item.curse = Boolean(raw.curse);
-  if (Array.isArray(raw.entries)) item.entries = raw.entries.map(String);
 
-  return { success: true, data: item };
+  const entity = result.data as unknown as Item;
+  const extras: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw.data)) {
+    if (!KNOWN_KEYS.has(k)) extras[k] = v;
+  }
+  if (Object.keys(extras).length > 0) {
+    entity.raw = { ...(entity.raw ?? {}), ...extras };
+  }
+
+  return { success: true, data: entity };
 }

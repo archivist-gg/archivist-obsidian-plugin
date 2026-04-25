@@ -34,7 +34,7 @@ entries:
       const i = result.data;
       expect(i.name).toBe("Flame Tongue Longsword");
       expect(i.rarity).toBe("Rare");
-      expect(i.attunement).toBe(true);
+      expect(i.attunement).toEqual({ required: true });
       expect(i.weight).toBe(3);
       expect(i.properties).toEqual(["Versatile (1d10)"]);
       expect(i.entries?.length).toBe(1);
@@ -45,7 +45,7 @@ entries:
     const result = parseItem("name: Test\nattunement: by a warlock");
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.attunement).toBe("by a warlock");
+      expect(result.data.attunement).toEqual({ required: true, restriction: "by a warlock" });
     }
   });
 });
