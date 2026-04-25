@@ -60,7 +60,21 @@ export function parsePC(source: string): ParseResult<Character> {
     const path = issue.path.length ? issue.path.join(".") : "(root)";
     return { success: false, error: `${path}: ${issue.message}` };
   }
-  return { success: true, data: result.data };
+  const data = result.data as Character;
+  // SP5 migration: lift legacy state.currency to definition.currency.
+  // Definition value wins when both are present.
+  const legacyCurrency = (data.state as unknown as { currency?: Character["currency"] }).currency;
+  if (legacyCurrency && !data.currency) {
+    data.currency = legacyCurrency;
+  }
+  if (legacyCurrency) {
+    delete (data.state as unknown as { currency?: unknown }).currency;
+  }
+  // SP5 migration: drop legacy state.attuned_items (per-entry attuned flag is canonical).
+  if ((data.state as unknown as { attuned_items?: unknown }).attuned_items) {
+    delete (data.state as unknown as { attuned_items?: unknown }).attuned_items;
+  }
+  return { success: true, data };
 }
 
 /**

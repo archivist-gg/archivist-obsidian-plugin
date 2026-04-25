@@ -7,7 +7,26 @@ import type { Character } from "./pc.types";
  * `monster.yaml-serializer.ts`.
  */
 export function characterToYaml(character: Character): string {
-  return yaml.dump(character, {
+  // Strip migrated fields defensively. The parser already removes them, but
+  // serialization is the last line of defense — never emit state.currency or
+  // state.attuned_items even if upstream code re-introduces them.
+  const cloned = JSON.parse(JSON.stringify(character)) as Character;
+  delete (cloned.state as unknown as { currency?: unknown }).currency;
+  delete (cloned.state as unknown as { attuned_items?: unknown }).attuned_items;
+  // Ensure currency is emitted before state (parser migration may have appended
+  // currency to the end of the object when lifting from state.currency).
+  if (cloned.currency !== undefined) {
+    const { state, ...rest } = cloned;
+    const reordered = { ...rest, state } as Character;
+    return yaml.dump(reordered, {
+      lineWidth: -1,
+      quotingType: '"',
+      forceQuotes: false,
+      sortKeys: false,
+      noRefs: true,
+    });
+  }
+  return yaml.dump(cloned, {
     lineWidth: -1,
     quotingType: '"',
     forceQuotes: false,
