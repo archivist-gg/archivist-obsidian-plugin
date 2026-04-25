@@ -12,6 +12,12 @@ describe("parseArmor", () => {
     }
   });
 
+  it("parses medium armor with capped DEX", () => {
+    const r = parseArmor(BREASTPLATE);
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.ac.dex_max).toBe(2);
+  });
+
   it("parses a shield with flat AC bonus", () => {
     const r = parseArmor(SHIELD);
     expect(r.success).toBe(true);
