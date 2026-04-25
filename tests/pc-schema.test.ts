@@ -143,3 +143,62 @@ describe("SP4 state additions", () => {
     expectTypeOf(parsed.state.conditions).toEqualTypeOf<ConditionSlug[]>();
   });
 });
+
+const baseCharacter = {
+  name: "T", edition: "2014", race: null, subrace: null, background: null,
+  class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+  abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+  ability_method: "manual",
+  skills: { proficient: [], expertise: [] },
+  spells: { known: [], overrides: [] },
+  equipment: [],
+  overrides: {},
+  state: { hp: { current: 10, max: 10, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], death_saves: { successes: 0, failures: 0 }, inspiration: 0, exhaustion: 0 },
+};
+
+describe("characterSchema — SP5 additions", () => {
+  it("accepts a legacy entry (no slot/overrides/state)", () => {
+    const r = characterSchema.safeParse({ ...baseCharacter, equipment: [{ item: "[[longsword]]", equipped: true }] });
+    expect(r.success).toBe(true);
+  });
+
+  it("accepts an entry with slot + overrides + state.charges", () => {
+    const r = characterSchema.safeParse({
+      ...baseCharacter,
+      equipment: [{
+        item: "[[wand-of-fireballs]]",
+        equipped: true,
+        attuned: true,
+        slot: null,
+        overrides: { name: "Old Faithful", bonus: 1, damage_bonus: 1, extra_damage: "1d6 fire", ac_bonus: 0 },
+        state: { charges: { current: 5, max: 7 }, recovery: { amount: "1d6+1", reset: "dawn" } },
+      }],
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejects an unknown slot value", () => {
+    const r = characterSchema.safeParse({ ...baseCharacter, equipment: [{ item: "[[longsword]]", slot: "feet" }] });
+    expect(r.success).toBe(false);
+  });
+
+  it("accepts top-level currency", () => {
+    const r = characterSchema.safeParse({ ...baseCharacter, currency: { cp: 0, sp: 0, ep: 0, gp: 100, pp: 0 } });
+    expect(r.success).toBe(true);
+  });
+
+  it("accepts overrides.attunement_limit", () => {
+    const r = characterSchema.safeParse({ ...baseCharacter, overrides: { attunement_limit: 4 } });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejects negative attunement_limit", () => {
+    const r = characterSchema.safeParse({ ...baseCharacter, overrides: { attunement_limit: -1 } });
+    expect(r.success).toBe(false);
+  });
+
+  it("no longer requires state.currency (legacy field still accepted for migration)", () => {
+    const r = characterSchema.safeParse({ ...baseCharacter, state: { ...baseCharacter.state, currency: { cp: 1, sp: 2, ep: 3, gp: 4, pp: 5 } } });
+    expect(r.success).toBe(true); // tolerated until migration step in Task 4
+  });
+});

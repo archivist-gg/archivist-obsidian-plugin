@@ -408,5 +408,11 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
     spellcasting,
     warnings,
     defenses,
+    acBreakdown: [],
+    attacks: [],
+    equippedSlots: {},
+    carriedWeight: 0,
+    attunementUsed: 0,
+    attunementLimit: overrides.attunement_limit ?? 3,
   };
 }

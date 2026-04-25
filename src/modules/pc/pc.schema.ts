@@ -14,12 +14,42 @@ const skillEnum = z.enum([
 
 const proficiencyTri = z.enum(["none", "proficient", "expertise"]);
 
+const slotEnum = z.enum(["mainhand", "offhand", "armor", "shield"]);
+
+const equipmentEntryOverridesSchema = z.object({
+  name: z.string().optional(),
+  bonus: z.number().int().optional(),
+  damage_bonus: z.number().int().optional(),
+  extra_damage: z.string().optional(),
+  ac_bonus: z.number().int().optional(),
+}).strict();
+
+const equipmentEntryStateSchema = z.object({
+  charges: z.object({
+    current: z.number().int().nonnegative(),
+    max: z.number().int().nonnegative(),
+  }).optional(),
+  recovery: z.object({
+    amount: z.string(),
+    reset: z.enum(["dawn", "short", "long"]),
+  }).optional(),
+  depletion_risk: z.object({
+    trigger: z.string(),
+    roll: z.string(),
+    threshold: z.number().int(),
+    effect: z.string(),
+  }).optional(),
+}).strict();
+
 const equipmentEntrySchema = z.object({
   item: z.string().min(1),
   equipped: z.boolean().optional(),
   attuned: z.boolean().optional(),
   qty: z.number().int().positive().optional(),
   notes: z.string().optional(),
+  slot: slotEnum.nullable().optional(),
+  overrides: equipmentEntryOverridesSchema.optional(),
+  state: equipmentEntryStateSchema.optional(),
 });
 
 const characterOverridesSchema = z.object({
@@ -45,6 +75,7 @@ const characterOverridesSchema = z.object({
     saveDC: z.number().int().optional(),
     attackBonus: z.number().int().optional(),
   }).optional(),
+  attunement_limit: z.number().int().nonnegative().optional(),
 }).default({});
 
 const characterStateSchema = z.object({
@@ -118,6 +149,13 @@ export const characterSchema = z.object({
   }).default({ known: [], overrides: [] }),
   equipment: z.array(equipmentEntrySchema).default([]),
   overrides: characterOverridesSchema,
+  currency: z.object({
+    cp: z.number().int().nonnegative(),
+    sp: z.number().int().nonnegative(),
+    ep: z.number().int().nonnegative(),
+    gp: z.number().int().nonnegative(),
+    pp: z.number().int().nonnegative(),
+  }).optional(),
   notes: z.string().optional(),
   defenses: z.object({
     resistances: z.array(z.string()).default([]),

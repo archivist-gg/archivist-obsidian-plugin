@@ -4,6 +4,9 @@ import type { RaceEntity } from "../race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "../background/background.types";
 import type { FeatEntity } from "../feat/feat.types";
+import type { ArmorEntity } from "../armor/armor.types";
+import type { WeaponEntity } from "../weapon/weapon.types";
+import type { ItemEntity } from "../item/item.types";
 
 export type { ConditionSlug } from "./constants/conditions";
 import type { ConditionSlug } from "./constants/conditions";
@@ -28,8 +31,33 @@ export interface SpellOverride {
   overrides: Record<string, unknown>;
 }
 
+export type SlotKey = "mainhand" | "offhand" | "armor" | "shield";
+
+export interface EquipmentEntryOverrides {
+  name?: string;
+  bonus?: number;
+  damage_bonus?: number;
+  extra_damage?: string;
+  ac_bonus?: number;
+}
+
+export interface EquipmentEntryState {
+  charges?: { current: number; max: number };
+  recovery?: { amount: string; reset: "dawn" | "short" | "long" };
+  depletion_risk?: { trigger: string; roll: string; threshold: number; effect: string };
+}
+
 export type EquipmentEntry =
-  | { item: string; equipped?: boolean; attuned?: boolean; qty?: number; notes?: string };
+  | {
+      item: string;
+      equipped?: boolean;
+      attuned?: boolean;
+      qty?: number;
+      notes?: string;
+      slot?: SlotKey | null;
+      overrides?: EquipmentEntryOverrides;
+      state?: EquipmentEntryState;
+    };
 
 export type PassiveKind = "perception" | "investigation" | "insight";
 
@@ -43,6 +71,7 @@ export interface CharacterOverrides {
   speed?: number;
   initiative?: number;
   spellcasting?: { saveDC?: number; attackBonus?: number };
+  attunement_limit?: number;
 }
 
 export interface CharacterState {
@@ -54,8 +83,8 @@ export interface CharacterState {
   exhaustion: number;
   death_saves?: { successes: number; failures: number };
   inspiration: number;
-  currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
-  attuned_items?: string[];
+  // currency moved to Character.currency (SP5)
+  // attuned_items removed; per-entry attuned flag is canonical (SP5)
 }
 
 export interface Character {
@@ -72,6 +101,7 @@ export interface Character {
   spells: { known: string[]; overrides: SpellOverride[] };
   equipment: EquipmentEntry[];
   overrides: CharacterOverrides;
+  currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
   notes?: string;
   defenses?: {
     resistances?: string[];
@@ -125,6 +155,59 @@ export interface ProficiencySet {
 // Derived (output of recalc; consumed by components)
 // ─────────────────────────────────────────────────────────────
 
+export interface ACTerm {
+  source: string;
+  amount: number;
+  kind: "armor" | "shield" | "item" | "unarmored" | "override" | "dex" | "ability";
+}
+
+export interface AttackRow {
+  id: string;
+  name: string;
+  range?: string;
+  toHit: number;
+  damageDice: string;
+  damageType: string;
+  extraDamage?: string;
+  properties: string[];
+  proficient: boolean;
+  breakdown: { toHit: ACTerm[]; damage: ACTerm[] };
+}
+
+export interface ResolvedEquipped {
+  index: number;
+  entity: ArmorEntity | WeaponEntity | ItemEntity | null;
+  entry: EquipmentEntry;
+}
+
+export interface EquippedSlots {
+  mainhand?: ResolvedEquipped;
+  offhand?: ResolvedEquipped;
+  armor?: ResolvedEquipped;
+  shield?: ResolvedEquipped;
+}
+
+export interface AppliedBonuses {
+  ability_bonuses: Partial<Record<Ability, number>>;
+  ability_statics: Partial<Record<Ability, number>>;
+  save_bonus: number;
+  speed_bonuses: { walk: number; fly: number | "walk" | null; swim: number; climb: number };
+  spell_attack: number;
+  spell_save_dc: number;
+  defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] };
+  senses: { darkvision: number; tremorsense: number; truesight: number; blindsight: number };
+}
+
+export interface DerivedEquipment {
+  ac: number;
+  acBreakdown: ACTerm[];
+  attacks: AttackRow[];
+  equippedSlots: EquippedSlots;
+  carriedWeight: number;
+  attunementUsed: number;
+  attunementLimit: number;
+}
+
 export interface DerivedStats {
   totalLevel: number;
   proficiencyBonus: number;
@@ -161,4 +244,10 @@ export interface DerivedStats {
     vulnerabilities: string[];
     condition_immunities: string[];
   };
+  acBreakdown: ACTerm[];
+  attacks: AttackRow[];
+  equippedSlots: EquippedSlots;
+  carriedWeight: number;
+  attunementUsed: number;
+  attunementLimit: number;
 }
