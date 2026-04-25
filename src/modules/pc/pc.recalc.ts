@@ -13,6 +13,8 @@ import type { Ability, SkillSlug } from "../../shared/types";
 import type { ClassEntity } from "../class/class.types";
 import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
+import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import { computeAppliedBonuses, emptyAppliedBonuses } from "./pc.equipment";
 import type {
   DerivedStats,
   ProficiencySet,
@@ -295,11 +297,36 @@ export function computeProficiencies(
   };
 }
 
-export function recalc(resolved: ResolvedCharacter): DerivedStats {
+export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): DerivedStats {
   const warnings: string[] = [];
   const overrides = resolved.definition.overrides ?? {};
 
-  const scores = computeAbilityScores(resolved, overrides);
+  // Pass A: apply equipment-derived bonuses (only when registry is available).
+  // The legacy single-arg call path keeps an empty AppliedBonuses so all the
+  // arithmetic below is a no-op and existing callsites/tests stay green.
+  const profsForApply = computeProficiencies(resolved);
+  const applied = registry
+    ? computeAppliedBonuses(resolved, profsForApply, registry, warnings)
+    : emptyAppliedBonuses();
+
+  // Ability scores: base computation, then apply Pass A bonus first, then
+  // static (only when it raises the score), then user overrides win.
+  const baseScores = computeAbilityScores(resolved, overrides);
+  const scores: Record<Ability, number> = { ...baseScores };
+  for (const ab of ABILITY_KEYS) {
+    const bonus = applied.ability_bonuses[ab];
+    if (typeof bonus === "number") scores[ab] += bonus;
+  }
+  for (const ab of ABILITY_KEYS) {
+    const stat = applied.ability_statics[ab];
+    if (typeof stat === "number" && stat > scores[ab]) scores[ab] = stat;
+  }
+  if (overrides.scores) {
+    for (const ab of ABILITY_KEYS) {
+      const o = overrides.scores[ab];
+      if (typeof o === "number") scores[ab] = o;
+    }
+  }
   const mods: Record<Ability, number> = {
     str: abilityModifier(scores.str),
     dex: abilityModifier(scores.dex),
@@ -319,7 +346,7 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   for (const ab of ABILITY_KEYS) {
     const override = overrides.saves?.[ab];
     const prof = override?.proficient ?? saveProfs.has(ab);
-    const bonus = override?.bonus ?? savingThrow(scores[ab], prof, proficiencyBonus);
+    const bonus = override?.bonus ?? (savingThrow(scores[ab], prof, proficiencyBonus) + applied.save_bonus);
     saves[ab] = { bonus, proficient: prof };
   }
 
@@ -362,7 +389,7 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   const ac = overrides.ac ?? acDerived;
 
   // Speed
-  const speed = overrides.speed ?? speedFromRace(resolved);
+  const speed = overrides.speed ?? (speedFromRace(resolved) + applied.speed_bonuses.walk);
   if (!resolved.race) warnings.push("No race resolved; speed defaulted to 30.");
 
   // Initiative
@@ -372,8 +399,8 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   let spellcasting: DerivedStats["spellcasting"] = null;
   const casting = spellcastingForFirstCastingClass(resolved.classes);
   if (casting) {
-    const saveDCDerived = saveDC(scores[casting.ability], proficiencyBonus);
-    const atkDerived = attackBonus(scores[casting.ability], proficiencyBonus);
+    const saveDCDerived = saveDC(scores[casting.ability], proficiencyBonus) + applied.spell_save_dc;
+    const atkDerived = attackBonus(scores[casting.ability], proficiencyBonus) + applied.spell_attack;
     spellcasting = {
       ability: casting.ability,
       saveDC: overrides.spellcasting?.saveDC ?? saveDCDerived,
@@ -382,10 +409,22 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
   }
 
   const defenses = {
-    resistances: resolved.definition.defenses?.resistances ?? [],
-    immunities: resolved.definition.defenses?.immunities ?? [],
-    vulnerabilities: resolved.definition.defenses?.vulnerabilities ?? [],
-    condition_immunities: resolved.definition.defenses?.condition_immunities ?? [],
+    resistances: [
+      ...(resolved.definition.defenses?.resistances ?? []),
+      ...applied.defenses.resistances,
+    ],
+    immunities: [
+      ...(resolved.definition.defenses?.immunities ?? []),
+      ...applied.defenses.immunities,
+    ],
+    vulnerabilities: [
+      ...(resolved.definition.defenses?.vulnerabilities ?? []),
+      ...applied.defenses.vulnerabilities,
+    ],
+    condition_immunities: [
+      ...(resolved.definition.defenses?.condition_immunities ?? []),
+      ...applied.defenses.condition_immunities,
+    ],
   };
 
   return {
@@ -394,7 +433,7 @@ export function recalc(resolved: ResolvedCharacter): DerivedStats {
     scores,
     mods,
     saves,
-    proficiencies: computeProficiencies(resolved),
+    proficiencies: profsForApply,
     skills,
     passives,
     hp: {

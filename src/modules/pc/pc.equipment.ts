@@ -22,7 +22,7 @@ interface ProficienciesForQuery {
   tools: ProficiencySet;
 }
 
-function emptyAppliedBonuses(): AppliedBonuses {
+export function emptyAppliedBonuses(): AppliedBonuses {
   return {
     ability_bonuses: {},
     ability_statics: {},

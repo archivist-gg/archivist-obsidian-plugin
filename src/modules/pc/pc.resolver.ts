@@ -29,6 +29,11 @@ export function stripSlug(ref: string | null): string | null {
 export class PCResolver {
   constructor(private readonly entities: EntityRegistry) {}
 
+  /** Exposed so recalc() can apply equipment bonuses (Pass A / Pass B). */
+  get registry(): EntityRegistry {
+    return this.entities;
+  }
+
   resolve(character: Character): ResolveResult {
     const warnings: string[] = [];
 

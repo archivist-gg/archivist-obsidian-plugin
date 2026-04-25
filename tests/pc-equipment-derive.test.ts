@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeAppliedBonuses } from "../src/modules/pc/pc.equipment";
+import { recalc } from "../src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { ItemEntity } from "../src/modules/item/item.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
@@ -121,5 +122,43 @@ describe("computeAppliedBonuses", () => {
     expect(b.ability_statics.str).toBe(21);
     expect(warnings.length).toBe(1);
     expect(warnings[0]).toMatch(/STR/i);
+  });
+});
+
+describe("recalc + Pass A", () => {
+  const registry = buildEquipmentRegistry();
+
+  it("equipped+attuned cloak of protection adds +1 to all saves", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[cloak-of-protection]]", equipped: true, attuned: true }];
+    const r = mkResolved(c);
+    const d = recalc(r, registry);
+    for (const ab of ["str", "dex", "con", "int", "wis", "cha"] as const) {
+      expect(d.saves[ab].bonus).toBe(1);
+    }
+  });
+
+  it("belt of hill giant strength sets STR to 21 → STR mod = +5", () => {
+    const c = baseChar();
+    c.abilities.str = 8;
+    c.equipment = [{ item: "[[belt-of-hill-giant-strength]]", equipped: true, attuned: true }];
+    const d = recalc(mkResolved(c), registry);
+    expect(d.scores.str).toBe(21);
+    expect(d.mods.str).toBe(5);
+  });
+
+  it("static is no-op when current score is higher", () => {
+    const c = baseChar();
+    c.abilities.str = 22;
+    c.equipment = [{ item: "[[belt-of-hill-giant-strength]]", equipped: true, attuned: true }];
+    const d = recalc(mkResolved(c), registry);
+    expect(d.scores.str).toBe(22);
+  });
+
+  it("recalc(resolved) without registry preserves legacy behavior", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[cloak-of-protection]]", equipped: true, attuned: true }];
+    const d = recalc(mkResolved(c));
+    expect(d.saves.str.bonus).toBe(0);
   });
 });
