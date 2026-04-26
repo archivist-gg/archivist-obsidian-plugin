@@ -84,6 +84,14 @@ describe("parseTagTerms — slug terms", () => {
     expect(r.slugTerms).toEqual(["longsword", "blessing"]);
   });
 
+  it("parses hyphenated slug bodies without splitting on internal '-'", () => {
+    const r = parseTagTerms("STR+PB+[[plus-one-longsword]]");
+    if ("error" in r) throw new Error(r.error);
+    expect(r.abilityTerm).toBe("str");
+    expect(r.pbTerm).toBe(true);
+    expect(r.slugTerms).toEqual(["plus-one-longsword"]);
+  });
+
   it("rejects malformed slug ([[ unbalanced)", () => {
     const r = parseTagTerms("STR+[[longsword");
     expect("error" in r).toBe(true);

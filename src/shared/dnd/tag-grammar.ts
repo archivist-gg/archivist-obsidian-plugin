@@ -45,17 +45,30 @@ export function parseTagTerms(content: string): ParsedTerms | { error: string } 
   if (trimmed.length === 0) return { error: "empty content" };
 
   // Tokenize on +/- between terms while preserving sign on each term.
+  // Skip over [[...]] regions so slug bodies can contain '+' or '-'
+  // (e.g. plus-one-longsword, ghost-blade).
   const tokens: string[] = [];
   let i = 0;
+  const advancePastTerm = (start: number): number => {
+    let j = start;
+    while (j < trimmed.length && trimmed[j] !== "+" && trimmed[j] !== "-") {
+      if (trimmed[j] === "[" && trimmed[j + 1] === "[") {
+        const close = trimmed.indexOf("]]", j + 2);
+        if (close === -1) return trimmed.length; // unbalanced — let SLUG_RE flag the error
+        j = close + 2;
+        continue;
+      }
+      j++;
+    }
+    return j;
+  };
   while (i < trimmed.length) {
     if (trimmed[i] === "+" || trimmed[i] === "-") {
-      let j = i + 1;
-      while (j < trimmed.length && trimmed[j] !== "+" && trimmed[j] !== "-") j++;
+      const j = advancePastTerm(i + 1);
       tokens.push(trimmed.slice(i, j));
       i = j;
     } else {
-      let j = i;
-      while (j < trimmed.length && trimmed[j] !== "+" && trimmed[j] !== "-") j++;
+      const j = advancePastTerm(i);
       tokens.push(trimmed.slice(i, j));
       i = j;
     }
