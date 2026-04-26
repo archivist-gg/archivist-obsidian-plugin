@@ -14,8 +14,9 @@ import type { ClassEntity } from "../class/class.types";
 import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import { computeAppliedBonuses, emptyAppliedBonuses } from "./pc.equipment";
+import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
 import type {
+  DerivedEquipment,
   DerivedStats,
   ProficiencySet,
   ResolvedCharacter,
@@ -384,8 +385,15 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   const hpMaxDerived = multiclassMaxHP(resolved.classes, mods.con);
   const hpMax = overrides.hp?.max ?? hpMaxDerived;
 
-  // AC
-  const acDerived = unarmoredAC(resolved, mods, warnings);
+  // AC + attacks (Pass B). Falls back to unarmored when no registry available.
+  let derivedEquipment: DerivedEquipment | null = null;
+  let acDerived: number;
+  if (registry) {
+    derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus);
+    acDerived = derivedEquipment.equippedSlots.armor ? derivedEquipment.ac : unarmoredAC(resolved, mods, warnings);
+  } else {
+    acDerived = unarmoredAC(resolved, mods, warnings);
+  }
   const ac = overrides.ac ?? acDerived;
 
   // Speed
@@ -447,11 +455,11 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     spellcasting,
     warnings,
     defenses,
-    acBreakdown: [],
-    attacks: [],
-    equippedSlots: {},
-    carriedWeight: 0,
-    attunementUsed: 0,
-    attunementLimit: overrides.attunement_limit ?? 3,
+    acBreakdown: derivedEquipment?.acBreakdown ?? [],
+    attacks: derivedEquipment?.attacks ?? [],
+    equippedSlots: derivedEquipment?.equippedSlots ?? {},
+    carriedWeight: derivedEquipment?.carriedWeight ?? 0,
+    attunementUsed: derivedEquipment?.attunementUsed ?? 0,
+    attunementLimit: derivedEquipment?.attunementLimit ?? (overrides.attunement_limit ?? 3),
   };
 }

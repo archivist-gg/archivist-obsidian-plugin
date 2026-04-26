@@ -549,7 +549,7 @@ export function computeSlotsAndAttacks(
   profs: ProficienciesForQuery,
   registry: EntityRegistry,
   warnings: string[],
-  proficiencyBonus = 2,
+  proficiencyBonus: number,
 ): DerivedEquipment {
   const equippedSlots = assignSlots(resolved, registry, warnings);
   const overrides = resolved.definition.overrides ?? {};
