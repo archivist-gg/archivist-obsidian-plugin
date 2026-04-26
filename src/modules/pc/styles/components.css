@@ -1455,21 +1455,27 @@
 .pc-attack-info { cursor: help; opacity: 0.6; }
 .pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
 
+/* AC tooltip — follows the PC sheet's parchment aesthetic so it stays
+ * readable inside the Obsidian dark theme. Pulling raw --background-primary
+ * here resolves to a near-black surface in dark mode, making the dark
+ * --pc-text-primary content effectively invisible. */
 .pc-ac-tooltip {
   position: absolute;
-  background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
   padding: 0.5em;
-  font-size: 12px;
+  font-size: var(--pc-fs-body);
   z-index: 100;
   min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 .pc-ac-tooltip-total { font-weight: 600; margin-bottom: 0.3em; }
 .pc-ac-tooltip-row { display: flex; justify-content: space-between; padding: 0.1em 0; }
 .pc-ac-tooltip-row.is-greyed { opacity: 0.5; }
-.pc-ac-tooltip-override { font-weight: 600; color: var(--color-accent); }
-.pc-ac-tooltip-divider { color: var(--text-muted); font-size: 10px; text-align: center; margin: 0.2em 0; }
+.pc-ac-tooltip-override { font-weight: 600; color: var(--pc-crimson); }
+.pc-ac-tooltip-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }

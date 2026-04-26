@@ -16,6 +16,7 @@ import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
 import type {
+  ACTerm,
   DerivedEquipment,
   DerivedStats,
   ProficiencySet,
@@ -113,28 +114,60 @@ export function unarmoredAC(
   mods: Record<Ability, number>,
   warnings: string[],
 ): number {
-  const base = 10 + mods.dex;
+  return unarmoredACBreakdown(resolved, mods, warnings).total;
+}
+
+/**
+ * Same logic as `unarmoredAC` but also returns a structured breakdown of the
+ * contributing terms (Base 10, DEX, optional class unarmored defense ability).
+ * Used by recalc to assemble a richer acBreakdown when no armor is equipped.
+ */
+export function unarmoredACBreakdown(
+  resolved: ResolvedCharacter,
+  mods: Record<Ability, number>,
+  warnings: string[],
+): { total: number; terms: ACTerm[] } {
+  const baseTerms: ACTerm[] = [
+    { source: "Unarmored", amount: 10, kind: "unarmored" },
+    { source: "DEX modifier", amount: mods.dex, kind: "dex" },
+  ];
+
   for (const rf of resolved.features) {
     const feat = rf.feature as unknown as { unarmored_defense?: { ability: Ability }; name?: string };
     if (feat.unarmored_defense?.ability) {
-      return 10 + mods.dex + (mods[feat.unarmored_defense.ability] ?? 0);
+      const ab = feat.unarmored_defense.ability;
+      const amt = mods[ab] ?? 0;
+      const terms: ACTerm[] = [
+        ...baseTerms,
+        { source: `${ab.toUpperCase()} modifier (Unarmored Defense)`, amount: amt, kind: "ability" },
+      ];
+      return { total: 10 + mods.dex + amt, terms };
     }
   }
-  // Heuristic fallback.
+
+  // Heuristic fallback by feature name.
   for (const rf of resolved.features) {
     const name = (rf.feature.name ?? "").toLowerCase();
     if (!/unarmored\s*defense/.test(name)) continue;
-    // Disambiguate Monk vs Barbarian via the class slug.
     if (rf.source.kind === "class" && rf.source.slug.includes("monk")) {
       warnings.push(`Unarmored Defense detected by name on ${rf.source.slug}; populate unarmored_defense:{ability:wis} flag for accuracy.`);
-      return 10 + mods.dex + mods.wis;
+      const terms: ACTerm[] = [
+        ...baseTerms,
+        { source: "WIS modifier (Unarmored Defense)", amount: mods.wis, kind: "ability" },
+      ];
+      return { total: 10 + mods.dex + mods.wis, terms };
     }
     if (rf.source.kind === "class" && rf.source.slug.includes("barbarian")) {
       warnings.push(`Unarmored Defense detected by name on ${rf.source.slug}; populate unarmored_defense:{ability:con} flag for accuracy.`);
-      return 10 + mods.dex + mods.con;
+      const terms: ACTerm[] = [
+        ...baseTerms,
+        { source: "CON modifier (Unarmored Defense)", amount: mods.con, kind: "ability" },
+      ];
+      return { total: 10 + mods.dex + mods.con, terms };
     }
   }
-  return base;
+
+  return { total: 10 + mods.dex, terms: baseTerms };
 }
 
 /** Initiative = DEX mod + Alert (+5 in 2014). Extendable via feat flags. */
@@ -386,13 +419,38 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   const hpMax = overrides.hp?.max ?? hpMaxDerived;
 
   // AC + attacks (Pass B). Falls back to unarmored when no registry available.
+  //
+  // Bug fix: when no armor is equipped, the previous code returned the bare
+  // unarmored AC and discarded `derivedEquipment.ac` entirely — so magic-item
+  // AC bonuses (Bracers of Defense, Cloak of Protection, Ring of Protection)
+  // never applied to an unarmored character. We now layer the equipment-derived
+  // item/override AC contributions on top of the unarmored base, while still
+  // dropping armor/shield/dex contributions from the equipment breakdown
+  // (there's no armor, and the unarmored base already includes its own DEX).
   let derivedEquipment: DerivedEquipment | null = null;
   let acDerived: number;
+  let acBreakdownDerived: ACTerm[] = [];
   if (registry) {
     derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus);
-    acDerived = derivedEquipment.equippedSlots.armor ? derivedEquipment.ac : unarmoredAC(resolved, mods, warnings);
+    if (derivedEquipment.equippedSlots.armor) {
+      acDerived = derivedEquipment.ac;
+      acBreakdownDerived = derivedEquipment.acBreakdown;
+    } else {
+      const { total: unarmored, terms: unarmoredTerms } = unarmoredACBreakdown(resolved, mods, warnings);
+      // Pull only additive contributions (item bonuses + per-entry overrides);
+      // armor/shield/dex are skipped because no armor is equipped and the
+      // unarmored base already incorporates DEX (and class unarmored defense).
+      const additive = derivedEquipment.acBreakdown.filter(
+        (b) => b.kind === "item" || b.kind === "override",
+      );
+      const additiveSum = additive.reduce((sum, b) => sum + b.amount, 0);
+      acDerived = unarmored + additiveSum;
+      acBreakdownDerived = [...unarmoredTerms, ...additive];
+    }
   } else {
-    acDerived = unarmoredAC(resolved, mods, warnings);
+    const { total, terms } = unarmoredACBreakdown(resolved, mods, warnings);
+    acDerived = total;
+    acBreakdownDerived = terms;
   }
   const ac = overrides.ac ?? acDerived;
 
@@ -455,7 +513,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     spellcasting,
     warnings,
     defenses,
-    acBreakdown: derivedEquipment?.acBreakdown ?? [],
+    acBreakdown: acBreakdownDerived,
     attacks: derivedEquipment?.attacks ?? [],
     equippedSlots: derivedEquipment?.equippedSlots ?? {},
     carriedWeight: derivedEquipment?.carriedWeight ?? 0,
