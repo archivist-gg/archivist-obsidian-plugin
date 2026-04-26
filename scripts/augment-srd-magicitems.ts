@@ -17,6 +17,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { CURATED_CONDITIONS_MAP } from "./augment/condition-map";
+import { extractConditionsFromProse } from "./augment/condition-extractor";
+import type { BonusFieldPath } from "../src/modules/item/item.conditions.types";
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -100,6 +103,19 @@ export function slugify(name: string): string {
     .replace(/\s+/g, "-")
     .replace(/-{2,}/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function entriesText(ref: ReferenceItemEntry): string {
+  const out: string[] = [];
+  function walk(x: unknown): void {
+    if (typeof x === "string") out.push(x);
+    else if (Array.isArray(x)) x.forEach(walk);
+    else if (x && typeof x === "object") {
+      for (const v of Object.values(x as Record<string, unknown>)) walk(v);
+    }
+  }
+  walk(ref.entries);
+  return out.join(" ");
 }
 
 /**
@@ -295,6 +311,64 @@ export function mapReferenceFields(
 
   if (Object.keys(bonuses).length > 0) out.bonuses = bonuses;
 
+  // -- conditions ----------------------------------------------------------
+  // Wrap numeric bonus fields with Condition arrays from the curated map
+  // (preferred) or regex sweep (fallback). Emits raw entries as a last
+  // resort so prose-only condition language is captured.
+  if (out.bonuses) {
+    const slug = slugify(ref.name);
+    const curated = CURATED_CONDITIONS_MAP[slug];
+    const fieldsPresent: BonusFieldPath[] = [];
+
+    // Identify which numeric bonus paths are currently flat numbers in the
+    // augmented bonuses object - those are candidates for wrapping.
+    for (const f of [
+      "ac", "saving_throws", "spell_attack", "spell_save_dc",
+      "weapon_attack", "weapon_damage",
+      "speed.walk", "speed.fly", "speed.swim", "speed.climb",
+    ] as const) {
+      const path = f.split(".");
+      let target: unknown = out.bonuses;
+      for (const p of path) {
+        if (target && typeof target === "object") {
+          target = (target as Record<string, unknown>)[p];
+        } else {
+          target = undefined;
+        }
+      }
+      if (typeof target === "number") fieldsPresent.push(f);
+    }
+
+    let perField: Partial<Record<BonusFieldPath, unknown>> = {};
+    if (curated) {
+      perField = curated as Partial<Record<BonusFieldPath, unknown>>;
+    } else if (fieldsPresent.length > 0) {
+      const text = entriesText(ref);
+      const ex = extractConditionsFromProse(text, fieldsPresent);
+      perField = ex.perField;
+      if (ex.usedRaw) warnings.push(`raw condition fallback on ${ref.name}: ${slug}`);
+    }
+
+    for (const field of fieldsPresent) {
+      const conds = perField[field];
+      if (!Array.isArray(conds) || conds.length === 0) continue;
+
+      // Wrap the existing flat number with { value, when }.
+      const path = field.split(".");
+      const last = path.pop()!;
+      let target = out.bonuses as Record<string, unknown>;
+      for (const p of path) {
+        const next = target[p];
+        if (typeof next !== "object" || next === null) break;
+        target = next as Record<string, unknown>;
+      }
+      const flat = target[last];
+      if (typeof flat === "number") {
+        target[last] = { value: flat, when: conds };
+      }
+    }
+  }
+
   // -- resist/immune/vulnerable/condition_immune ----------------------------
   if (Array.isArray(ref.resist) && ref.resist.length > 0) {
     out.resist = ref.resist.filter((s): s is string => typeof s === "string");
@@ -473,6 +547,23 @@ function main(): void {
       console.log(`  ${sampleName}: ${fields.join(", ") || "(no structured fields)"}`);
     }
   }
+
+  const conditionsTouched = items.filter((it) => {
+    const b = (it as { bonuses?: unknown }).bonuses;
+    if (!b || typeof b !== "object") return false;
+    for (const v of Object.values(b as Record<string, unknown>)) {
+      if (v && typeof v === "object" && "when" in v) return true;
+      if (v && typeof v === "object") {
+        for (const inner of Object.values(v as Record<string, unknown>)) {
+          if (inner && typeof inner === "object" && "when" in inner) return true;
+        }
+      }
+    }
+    return false;
+  }).length;
+  console.log(`Conditional bonuses written on ${conditionsTouched} items.`);
+  const rawWarnings = warnings.filter((w) => w.startsWith("raw condition fallback"));
+  console.log(`Raw fallback used on ${rawWarnings.length} items (growth list).`);
 }
 
 // Only run when invoked directly (not when imported by tests).
