@@ -19,7 +19,18 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "con": 19
+        }
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "amulet-of-proof-against-detection-and-location",
@@ -30,7 +41,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "amulet-of-the-planes",
@@ -41,7 +56,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "animated-shield",
@@ -52,7 +71,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "apparatus-of-the-crab",
@@ -74,7 +97,12 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "plate armor"
   },
   {
     "slug": "armor-of-resistance",
@@ -107,7 +135,14 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 2
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "arrow-of-slaying",
@@ -129,7 +164,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "bag-of-devouring",
@@ -140,7 +176,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "bag-of-holding",
@@ -151,7 +188,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "bag-of-tricks",
@@ -173,7 +211,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "belt-of-dwarvenkind",
@@ -184,7 +223,24 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "con": 2
+        }
+      }
+    },
+    "resist": [
+      "poison"
+    ],
+    "attunement": {
+      "required": true
+    },
+    "grants": {
+      "languages": true
+    },
+    "tier": "major"
   },
   {
     "slug": "belt-of-giant-strength",
@@ -217,7 +273,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "boots-of-levitation",
@@ -228,7 +285,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "will": [
+        "levitate"
+      ]
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "boots-of-speed",
@@ -239,7 +305,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "boots-of-striding-and-springing",
@@ -250,7 +320,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "boots-of-the-winterlands",
@@ -261,7 +335,14 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "cold"
+    ],
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "bowl-of-commanding-water-elementals",
@@ -272,7 +353,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "bracers-of-archery",
@@ -283,7 +372,17 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_damage": 2
+    },
+    "attunement": {
+      "required": true
+    },
+    "grants": {
+      "proficiency": true
+    },
+    "tier": "major"
   },
   {
     "slug": "bracers-of-defense",
@@ -294,7 +393,14 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 2
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "brazier-of-commanding-fire-elementals",
@@ -305,7 +411,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "brooch-of-shielding",
@@ -316,7 +430,14 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "force"
+    ],
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "broom-of-flying",
@@ -327,7 +448,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "candle-of-invocation",
@@ -338,7 +460,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cape-of-the-mountebank",
@@ -349,7 +475,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "dimension door"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "carpet-of-flying",
@@ -371,7 +505,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "chime-of-opening",
@@ -382,7 +524,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "circlet-of-blasting",
@@ -393,7 +536,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "scorching ray"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "cloak-of-arachnida",
@@ -404,7 +555,21 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "poison"
+    ],
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "web"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cloak-of-displacement",
@@ -415,7 +580,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cloak-of-elvenkind",
@@ -426,7 +595,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cloak-of-protection",
@@ -437,7 +610,15 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 1,
+      "saving_throws": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cloak-of-the-bat",
@@ -448,7 +629,18 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "polymorph"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cloak-of-the-manta-ray",
@@ -459,7 +651,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "crystal-ball",
@@ -470,7 +663,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cube-of-force",
@@ -481,7 +678,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 36,
+      "recharge": "dawn",
+      "recharge_amount": "1d20"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "cubic-gate",
@@ -492,7 +698,13 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "tier": "major"
   },
   {
     "slug": "dagger-of-venom",
@@ -503,7 +715,13 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major",
+    "base_item": "dagger"
   },
   {
     "slug": "dancing-sword",
@@ -525,7 +743,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "deck-of-illusions",
@@ -536,7 +755,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "deck-of-many-things",
@@ -547,7 +767,11 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "grants": {
+      "proficiency": true
+    },
+    "tier": "major"
   },
   {
     "slug": "defender",
@@ -569,7 +793,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 1,
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "dimensional-shackles",
@@ -580,7 +813,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "dragon-scale-mail",
@@ -613,7 +847,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "dust-of-dryness",
@@ -624,7 +859,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "dust-of-sneezing-and-choking",
@@ -635,7 +871,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "dwarven-plate",
@@ -646,7 +883,12 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 2
+    },
+    "tier": "major",
+    "base_item": "plate armor"
   },
   {
     "slug": "dwarven-thrower",
@@ -657,7 +899,22 @@
     "requires_attunement": "requires attunement by a dwarf",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a dwarf",
+      "tags": [
+        {
+          "race": "dwarf"
+        }
+      ]
+    },
+    "tier": "major",
+    "base_item": "warhammer"
   },
   {
     "slug": "efficient-quiver",
@@ -679,7 +936,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "elemental-gem",
@@ -701,7 +959,14 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 1
+    },
+    "grants": {
+      "proficiency": true
+    },
+    "tier": "major"
   },
   {
     "slug": "eversmoking-bottle",
@@ -712,7 +977,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "eyes-of-charming",
@@ -723,7 +989,22 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "charm person"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "eyes-of-minute-seeing",
@@ -734,7 +1015,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "eyes-of-the-eagle",
@@ -745,7 +1027,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "feather-token",
@@ -789,7 +1075,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "frost-brand",
@@ -811,7 +1098,18 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 19
+        }
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "gem-of-brightness",
@@ -822,7 +1120,9 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": 50,
+    "tier": "major"
   },
   {
     "slug": "gem-of-seeing",
@@ -833,7 +1133,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "giant-slayer",
@@ -855,7 +1164,11 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "gloves-of-missile-snaring",
@@ -866,7 +1179,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "gloves-of-swimming-and-climbing",
@@ -877,7 +1194,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "goggles-of-night",
@@ -888,7 +1209,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "hammer-of-thunderbolts",
@@ -899,7 +1221,23 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ability_scores": {
+        "bonus": {
+          "str": 4
+        }
+      }
+    },
+    "charges": {
+      "max": 5,
+      "recharge": "dawn",
+      "recharge_amount": "1d4 + 1"
+    },
+    "tier": "major",
+    "base_item": "maul"
   },
   {
     "slug": "handy-haversack",
@@ -921,7 +1259,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "will": [
+        "disguise self"
+      ]
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "headband-of-intellect",
@@ -932,7 +1279,18 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "int": 19
+        }
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "helm-of-brilliance",
@@ -943,7 +1301,14 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "fire"
+    ],
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "helm-of-comprehending-languages",
@@ -954,7 +1319,13 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "will": [
+        "comprehend languages"
+      ]
+    },
+    "tier": "minor"
   },
   {
     "slug": "helm-of-telepathy",
@@ -965,7 +1336,21 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "suggestion"
+        ]
+      },
+      "will": [
+        "detect thoughts"
+      ]
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "helm-of-teleportation",
@@ -976,7 +1361,23 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "teleport"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "holy-avenger",
@@ -998,7 +1399,9 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major",
+    "base_item": "horn"
   },
   {
     "slug": "horn-of-valhalla",
@@ -1020,7 +1423,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "horseshoes-of-speed",
@@ -1031,7 +1435,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "immovable-rod",
@@ -1042,7 +1447,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "instant-fortress",
@@ -1086,7 +1492,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "javelin-of-lightning",
@@ -1097,7 +1504,9 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major",
+    "base_item": "javelin"
   },
   {
     "slug": "lantern-of-revealing",
@@ -1108,7 +1517,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "luck-blade",
@@ -1130,7 +1540,12 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "mace"
   },
   {
     "slug": "mace-of-smiting",
@@ -1141,7 +1556,13 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major",
+    "base_item": "mace"
   },
   {
     "slug": "mace-of-terror",
@@ -1152,7 +1573,17 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "mace"
   },
   {
     "slug": "mantle-of-spell-resistance",
@@ -1163,7 +1594,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "manual-of-bodily-health",
@@ -1174,7 +1609,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "con": 2
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "manual-of-gainful-exercise",
@@ -1185,7 +1628,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "str": 2
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "manual-of-golems",
@@ -1207,7 +1658,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "dex": 2
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "marvelous-pigments",
@@ -1229,7 +1688,23 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "detect thoughts"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "mirror-of-life-trapping",
@@ -1240,7 +1715,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "mithral-armor",
@@ -1262,7 +1738,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "necklace-of-fireballs",
@@ -1273,7 +1753,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "necklace-of-prayer-beads",
@@ -1284,7 +1765,23 @@
     "requires_attunement": "requires attunement by a cleric, druid, or paladin",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true,
+      "restriction": "by a cleric, druid, or paladin",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "paladin"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "nine-lives-stealer",
@@ -1306,7 +1803,12 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "longbow"
   },
   {
     "slug": "oil-of-etherealness",
@@ -1317,7 +1819,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "oil-of-sharpness",
@@ -1328,7 +1831,12 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "minor"
   },
   {
     "slug": "oil-of-slipperiness",
@@ -1339,7 +1847,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "orb-of-dragonkind",
@@ -1350,7 +1859,32 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d4 + 3"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "daylight"
+        ],
+        "2": [
+          "death ward"
+        ],
+        "3": [
+          "cure wounds#5",
+          "scrying"
+        ]
+      },
+      "will": [
+        "detect magic"
+      ]
+    },
+    "attunement": {
+      "required": true
+    }
   },
   {
     "slug": "pearl-of-power",
@@ -1361,7 +1895,17 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "periapt-of-health",
@@ -1372,7 +1916,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "periapt-of-proof-against-poison",
@@ -1383,7 +1928,14 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "immune": [
+      "poison"
+    ],
+    "condition_immune": [
+      "poisoned"
+    ],
+    "tier": "major"
   },
   {
     "slug": "periapt-of-wound-closure",
@@ -1394,7 +1946,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "philter-of-love",
@@ -1405,7 +1961,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "pipes-of-haunting",
@@ -1416,7 +1973,13 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "tier": "major"
   },
   {
     "slug": "pipes-of-the-sewers",
@@ -1427,7 +1990,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "plate-armor-of-etherealness",
@@ -1438,7 +2010,19 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "etherealness"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "plate armor"
   },
   {
     "slug": "portable-hole",
@@ -1449,7 +2033,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-animal-friendship",
@@ -1460,7 +2045,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-clairvoyance",
@@ -1471,7 +2057,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-climbing",
@@ -1482,7 +2069,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-diminution",
@@ -1493,7 +2081,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-flying",
@@ -1504,7 +2093,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-gaseous-form",
@@ -1515,7 +2105,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-giant-strength",
@@ -1537,7 +2128,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-healing",
@@ -1548,7 +2140,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-heroism",
@@ -1559,7 +2152,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-invisibility",
@@ -1570,7 +2164,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-mind-reading",
@@ -1581,7 +2176,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-poison",
@@ -1592,7 +2188,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-resistance",
@@ -1614,7 +2211,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "potion-of-water-breathing",
@@ -1625,7 +2223,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "restorative-ointment",
@@ -1647,7 +2246,22 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "animal friendship",
+          "fear",
+          "speak with animals"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-djinni-summoning",
@@ -1658,7 +2272,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-elemental-command",
@@ -1680,7 +2298,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-feather-falling",
@@ -1691,7 +2318,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-free-action",
@@ -1702,7 +2333,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-invisibility",
@@ -1713,7 +2348,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-jumping",
@@ -1724,7 +2363,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "will": [
+        "jump"
+      ]
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-mind-shielding",
@@ -1735,7 +2383,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-protection",
@@ -1746,7 +2398,15 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 1,
+      "saving_throws": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-regeneration",
@@ -1757,7 +2417,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-resistance",
@@ -1779,7 +2443,28 @@
     "requires_attunement": "requires attunement outdoors at night",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 6,
+      "recharge": "dawn",
+      "recharge_amount": "1d6"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "faerie fire"
+        ]
+      },
+      "will": [
+        "dancing lights",
+        "light"
+      ]
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "outdoors at night"
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-spell-storing",
@@ -1790,7 +2475,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-spell-turning",
@@ -1801,7 +2490,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-swimming",
@@ -1812,7 +2505,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "ring-of-telekinesis",
@@ -1823,7 +2517,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "will": [
+        "telekinesis"
+      ]
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-the-ram",
@@ -1834,7 +2537,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-three-wishes",
@@ -1845,7 +2557,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "wish"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-warmth",
@@ -1856,7 +2576,14 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "cold"
+    ],
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "ring-of-water-walking",
@@ -1867,7 +2594,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "ring-of-x-ray-vision",
@@ -1878,7 +2606,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "robe-of-eyes",
@@ -1889,7 +2621,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "robe-of-scintillating-colors",
@@ -1900,7 +2636,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "robe-of-stars",
@@ -1911,7 +2656,25 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "saving_throws": 1
+    },
+    "charges": {
+      "max": 6,
+      "recharge_amount": "1d6"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile#5"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "robe-of-the-archmagi",
@@ -1922,7 +2685,27 @@
     "requires_attunement": "requires attunement by a sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "spell_attack": 2,
+      "spell_save_dc": 2
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "robe-of-useful-items",
@@ -1933,7 +2716,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "rod-of-absorption",
@@ -1944,7 +2728,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "rod-of-alertness",
@@ -1955,7 +2743,23 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 1,
+      "saving_throws": 1
+    },
+    "attached_spells": {
+      "will": [
+        "detect evil and good",
+        "detect magic",
+        "detect poison and disease",
+        "see invisibility"
+      ]
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "rod-of-lordly-might",
@@ -1966,7 +2770,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "mace"
   },
   {
     "slug": "rod-of-rulership",
@@ -1977,7 +2790,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "rod-of-security",
@@ -1988,7 +2805,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "rope-of-climbing",
@@ -1999,7 +2817,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "rope-of-entanglement",
@@ -2010,7 +2829,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "scarab-of-protection",
@@ -2021,7 +2841,12 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": 12,
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "scimitar-of-speed",
@@ -2032,7 +2857,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "scimitar"
   },
   {
     "slug": "shield-of-missile-attraction",
@@ -2043,7 +2877,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "slippers-of-spider-climbing",
@@ -2054,7 +2892,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "sovereign-glue",
@@ -2065,7 +2907,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "spell-scroll",
@@ -2087,7 +2930,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "sphere-of-annihilation",
@@ -2098,7 +2945,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "staff-of-charming",
@@ -2109,7 +2957,41 @@
     "requires_attunement": "requires attunement by a bard, cleric, druid, sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "charm person",
+          "command",
+          "comprehend languages"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a bard, cleric, druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-fire",
@@ -2120,7 +3002,47 @@
     "requires_attunement": "requires attunement by a druid, sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "fire"
+    ],
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 4"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "burning hands"
+        ],
+        "3": [
+          "fireball"
+        ],
+        "4": [
+          "wall of fire"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-frost",
@@ -2131,7 +3053,48 @@
     "requires_attunement": "requires attunement by a druid, sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "resist": [
+      "cold"
+    ],
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 4"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "fog cloud"
+        ],
+        "4": [
+          "ice storm",
+          "wall of ice"
+        ],
+        "5": [
+          "cone of cold"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-healing",
@@ -2142,7 +3105,41 @@
     "requires_attunement": "requires attunement by a bard, cleric, or druid",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 4"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "cure wounds"
+        ],
+        "2": [
+          "lesser restoration"
+        ],
+        "5": [
+          "mass cure wounds"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a bard, cleric, or druid",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-power",
@@ -2153,7 +3150,56 @@
     "requires_attunement": "requires attunement by a sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ac": 2,
+      "weapon_attack": 2,
+      "weapon_damage": 2,
+      "spell_attack": 2,
+      "saving_throws": 2
+    },
+    "charges": {
+      "max": 20,
+      "recharge": "dawn",
+      "recharge_amount": "2d8 + 4"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile",
+          "ray of enfeeblement"
+        ],
+        "2": [
+          "levitate"
+        ],
+        "5": [
+          "cone of cold",
+          "fireball#5",
+          "hold monster",
+          "lightning bolt#5",
+          "wall of force"
+        ],
+        "6": [
+          "globe of invulnerability"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-striking",
@@ -2164,7 +3210,20 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 4"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-swarming-insects",
@@ -2175,7 +3234,47 @@
     "requires_attunement": "requires attunement by a bard, cleric, druid, sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 4"
+    },
+    "attached_spells": {
+      "charges": {
+        "4": [
+          "giant insect"
+        ],
+        "5": [
+          "insect plague"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a bard, cleric, druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-the-magi",
@@ -2186,7 +3285,68 @@
     "requires_attunement": "requires attunement by a sorcerer, warlock, or wizard",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2,
+      "spell_attack": 2
+    },
+    "charges": {
+      "max": 50,
+      "recharge": "dawn",
+      "recharge_amount": "4d6 + 2"
+    },
+    "attached_spells": {
+      "charges": {
+        "2": [
+          "flaming sphere",
+          "invisibility",
+          "knock",
+          "web"
+        ],
+        "3": [
+          "dispel magic"
+        ],
+        "4": [
+          "ice storm",
+          "wall of fire"
+        ],
+        "5": [
+          "passwall",
+          "telekinesis"
+        ],
+        "7": [
+          "conjure elemental",
+          "fireball#7",
+          "lightning bolt#7",
+          "plane shift"
+        ]
+      },
+      "will": [
+        "arcane lock",
+        "detect magic",
+        "enlarge/reduce",
+        "light",
+        "mage hand",
+        "protection from evil and good"
+      ]
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-the-python",
@@ -2197,7 +3357,23 @@
     "requires_attunement": "requires attunement by a cleric, druid, or warlock",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true,
+      "restriction": "by a cleric, druid, or warlock",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "warlock"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-the-woodlands",
@@ -2208,7 +3384,51 @@
     "requires_attunement": "requires attunement by a druid",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2,
+      "spell_attack": 2
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 4"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "animal friendship",
+          "speak with animals"
+        ],
+        "2": [
+          "barkskin",
+          "locate animals or plants"
+        ],
+        "3": [
+          "speak with plants"
+        ],
+        "5": [
+          "awaken"
+        ],
+        "6": [
+          "wall of thorns"
+        ]
+      },
+      "will": [
+        "pass without trace"
+      ]
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a druid",
+      "tags": [
+        {
+          "class": "druid"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-thunder-and-lightning",
@@ -2219,7 +3439,15 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "staff-of-withering",
@@ -2230,7 +3458,28 @@
     "requires_attunement": "requires attunement by a cleric, druid, or warlock",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a cleric, druid, or warlock",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "warlock"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "stone-of-controlling-earth-elementals",
@@ -2241,7 +3490,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "stone-of-good-luck-luckstone",
@@ -2263,7 +3520,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "longsword"
   },
   {
     "slug": "sword-of-life-stealing",
@@ -2307,7 +3573,23 @@
     "requires_attunement": "requires attunement by a creature of good alignment",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "spell_attack": 2
+    },
+    "charges": 7,
+    "attunement": {
+      "required": true,
+      "restriction": "by a creature of good alignment",
+      "tags": [
+        {
+          "alignment": [
+            "G"
+          ]
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "talisman-of-the-sphere",
@@ -2318,7 +3600,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "talisman-of-ultimate-evil",
@@ -2329,7 +3615,23 @@
     "requires_attunement": "requires attunement by a creature of evil alignment",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "spell_attack": 2
+    },
+    "charges": 6,
+    "attunement": {
+      "required": true,
+      "restriction": "by a creature of evil alignment",
+      "tags": [
+        {
+          "alignment": [
+            "E"
+          ]
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "tome-of-clear-thought",
@@ -2340,7 +3642,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "int": 2
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "tome-of-leadership-and-influence",
@@ -2351,7 +3661,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "cha": 2
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "tome-of-understanding",
@@ -2362,7 +3680,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "bonuses": {
+      "ability_scores": {
+        "bonus": {
+          "wis": 2
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "trident-of-fish-command",
@@ -2373,7 +3699,24 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "dominate beast"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major",
+    "base_item": "trident"
   },
   {
     "slug": "universal-solvent",
@@ -2384,7 +3727,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "minor"
   },
   {
     "slug": "vicious-weapon",
@@ -2417,7 +3761,32 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "2": [
+          "hold person"
+        ],
+        "5": [
+          "hold monster"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-enemy-detection",
@@ -2428,7 +3797,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-fear",
@@ -2439,7 +3817,23 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "command"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-fireballs",
@@ -2450,7 +3844,29 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "fireball"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-lightning-bolts",
@@ -2461,7 +3877,29 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "lightning bolt"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-magic-detection",
@@ -2472,7 +3910,20 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "detect magic"
+        ]
+      }
+    },
+    "tier": "minor"
   },
   {
     "slug": "wand-of-magic-missiles",
@@ -2483,7 +3934,20 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-paralysis",
@@ -2494,7 +3958,22 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-polymorph",
@@ -2505,7 +3984,29 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "polymorph"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-secrets",
@@ -2516,7 +4017,13 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "1d3"
+    },
+    "tier": "minor"
   },
   {
     "slug": "wand-of-the-war-mage-1-2-or-3",
@@ -2538,7 +4045,29 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "web"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "wand-of-wonder",
@@ -2549,7 +4078,38 @@
     "requires_attunement": "requires attunement by a spellcaster",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "1d6 + 1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "darkness",
+          "detect thoughts",
+          "enlarge/reduce",
+          "faerie fire",
+          "fireball",
+          "gust of wind",
+          "invisibility",
+          "lightning bolt",
+          "slow",
+          "stinking cloud"
+        ]
+      }
+    },
+    "attunement": {
+      "required": true,
+      "restriction": "by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "weapon-1-2-or-3",
@@ -2571,7 +4131,8 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "tier": "major"
   },
   {
     "slug": "wind-fan",
@@ -2582,7 +4143,15 @@
     "requires_attunement": "",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "gust of wind"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "winged-boots",
@@ -2593,7 +4162,11 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   },
   {
     "slug": "wings-of-flying",
@@ -2604,6 +4177,10 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "attunement": {
+      "required": true
+    },
+    "tier": "major"
   }
 ]

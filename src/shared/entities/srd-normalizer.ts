@@ -431,12 +431,36 @@ const ITEM_DROP_FIELDS = new Set([
 ]);
 
 /**
+ * Structured-mechanical fields that may have been merged onto the bundled
+ * record by the augmentation script. They are passed through verbatim so
+ * downstream parsers / the entity registry can read them off `ItemEntity`.
+ */
+const ITEM_STRUCTURED_PASSTHROUGH = [
+  "bonuses",
+  "resist",
+  "immune",
+  "vulnerable",
+  "condition_immune",
+  "attached_spells",
+  "grants",
+  "charges",
+  "tier",
+  "base_item",
+] as const;
+
+/**
  * Normalize an SRD item record into the shape our item parser expects.
  *
  * Key transformations:
  * - `desc` (string)        -> `entries` (string[]) split on double newlines
  * - `requires_attunement`  -> `attunement` (boolean | string)
- * - Drops open5e metadata fields (slug, document__*)
+ * - Drops metadata fields (slug, document__*)
+ *
+ * Structured mechanical fields (bonuses, resist, immune, vulnerable,
+ * condition_immune, attached_spells, grants, charges, tier, base_item) are
+ * passed through unchanged when present. A canonical `attunement` object
+ * (with `required`, `restriction`, `tags`) on the input takes precedence
+ * over the legacy `requires_attunement` string.
  */
 export function normalizeSrdItem(
   raw: Record<string, unknown>,
@@ -459,8 +483,17 @@ export function normalizeSrdItem(
     delete out.desc;
   }
 
-  // --- requires_attunement -> attunement -------------------------------------
-  if ("requires_attunement" in out) {
+  // --- attunement (canonical object form takes precedence) -------------------
+  // The augmenter may have written a structured `attunement: { required, … }`.
+  // Honor that and skip the legacy string-derivation step entirely so we don't
+  // overwrite the richer shape with a plain bool/string.
+  const hasCanonicalAttunement =
+    out.attunement !== undefined &&
+    typeof out.attunement === "object" &&
+    out.attunement !== null &&
+    !Array.isArray(out.attunement);
+
+  if (!hasCanonicalAttunement && "requires_attunement" in out) {
     const ra = out.requires_attunement;
     if (typeof ra === "string") {
       const lower = ra.toLowerCase().trim();
@@ -480,8 +513,16 @@ export function normalizeSrdItem(
     } else {
       out.attunement = false;
     }
+  }
+  // Always strip the legacy field after canonical resolution.
+  if ("requires_attunement" in out) {
     delete out.requires_attunement;
   }
+
+  // --- Structured fields pass through unchanged ------------------------------
+  // (no-op when absent; the for-loop above already copied them onto `out`,
+  // this list documents the supported fields and is referenced by tests.)
+  void ITEM_STRUCTURED_PASSTHROUGH;
 
   return out;
 }
