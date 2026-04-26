@@ -1,9 +1,12 @@
 import type { ACTerm } from "../pc.types";
+import type { InformationalBonus } from "../../item/item.conditions.types";
+import { conditionsToText } from "../../item/item.conditions";
 
 export interface ACTooltipOpts {
   ac: number;
   breakdown: ACTerm[];
   overridden: boolean;
+  informational?: InformationalBonus[];
 }
 
 export function renderACTooltip(parent: HTMLElement, opts: ACTooltipOpts): HTMLElement {
@@ -19,6 +22,18 @@ export function renderACTooltip(parent: HTMLElement, opts: ACTooltipOpts): HTMLE
     row.createSpan({ cls: "pc-ac-tooltip-source", text: t.source });
     row.createSpan({ cls: "pc-ac-tooltip-amount", text: formatSignedAmount(t.amount) });
   }
+
+  const info = opts.informational ?? [];
+  if (info.length > 0) {
+    tip.createDiv({ cls: "pc-ac-tooltip-divider", text: "── situational ──" });
+    for (const i of info) {
+      const row = tip.createDiv({ cls: "pc-ac-tooltip-row pc-ac-tooltip-row--situational" });
+      row.createSpan({ cls: "pc-ac-tooltip-source", text: i.source });
+      row.createSpan({ cls: "pc-ac-tooltip-amount", text: formatSignedAmount(i.value) });
+      row.createSpan({ cls: "pc-ac-tooltip-condition", text: conditionsToText(i.conditions) });
+    }
+  }
+
   return tip;
 }
 

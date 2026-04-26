@@ -10750,6 +10750,12 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-ac-tooltip-row.is-greyed { opacity: 0.5; }
 .pc-ac-tooltip-override { font-weight: 600; color: var(--pc-crimson); }
 .pc-ac-tooltip-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
+.pc-ac-tooltip-row--situational { font-style: italic; opacity: 0.85; }
+.pc-ac-tooltip-row--situational .pc-ac-tooltip-condition {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-label);
+  margin-left: var(--pc-space-1);
+}
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }

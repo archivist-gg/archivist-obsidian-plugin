@@ -26,7 +26,12 @@ export class AcShield implements SheetComponent {
       tipEl = activeDocument.createElement("div");
       tipEl.className = "pc-ac-tooltip-host";
       shield.appendChild(tipEl);
-      renderACTooltip(tipEl, { ac: ctx.derived.ac, breakdown: ctx.derived.acBreakdown ?? [], overridden });
+      renderACTooltip(tipEl, {
+        ac: ctx.derived.ac,
+        breakdown: ctx.derived.acBreakdown ?? [],
+        overridden,
+        informational: ctx.derived.acInformational ?? [],
+      });
     };
     const hideTip = () => {
       tipEl?.remove();
