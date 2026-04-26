@@ -46,10 +46,8 @@ export function visibleItems(items: VisibleEntry[], filters: FilterState): Visib
 
     if (search.length > 0) {
       const name = displayName(entry, resolved).toLowerCase();
-      const e = resolved.entity as { type?: string; tags?: string[] } | null;
-      const type = (e?.type ?? "").toLowerCase();
-      const tags = (e?.tags ?? []).join(" ").toLowerCase();
-      if (!name.includes(search) && !type.includes(search) && !tags.includes(search)) return false;
+      const type = ((resolved.entity as { type?: string } | null)?.type ?? "").toLowerCase();
+      if (!name.includes(search) && !type.includes(search)) return false;
     }
 
     return true;
