@@ -1,5 +1,6 @@
 import { Item } from "./item.types";
 import type { ItemEntity } from "./item.types";
+import type { ConditionalBonus } from "./item.conditions.types";
 import {
   el,
   createIconProperty,
@@ -166,14 +167,26 @@ function formatBonus(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
+// Phase 0: item-card summary renders only flat-number bonuses; conditional
+// bonuses are surfaced later in the inventory row expand (Task 21).
+function flatBonus(b: number | ConditionalBonus | undefined): number | undefined {
+  return typeof b === "number" ? b : undefined;
+}
+
 function describeBonuses(b: NonNullable<ItemEntity["bonuses"]>): string[] {
   const out: string[] = [];
-  if (b.ac !== undefined) out.push(`AC ${formatBonus(b.ac)}`);
-  if (b.weapon_attack !== undefined) out.push(`Atk ${formatBonus(b.weapon_attack)}`);
-  if (b.weapon_damage !== undefined) out.push(`Dmg ${formatBonus(b.weapon_damage)}`);
-  if (b.spell_attack !== undefined) out.push(`Spell Atk ${formatBonus(b.spell_attack)}`);
-  if (b.spell_save_dc !== undefined) out.push(`Spell DC ${formatBonus(b.spell_save_dc)}`);
-  if (b.saving_throws !== undefined) out.push(`Saves ${formatBonus(b.saving_throws)}`);
+  const ac = flatBonus(b.ac);
+  if (ac !== undefined) out.push(`AC ${formatBonus(ac)}`);
+  const atk = flatBonus(b.weapon_attack);
+  if (atk !== undefined) out.push(`Atk ${formatBonus(atk)}`);
+  const dmg = flatBonus(b.weapon_damage);
+  if (dmg !== undefined) out.push(`Dmg ${formatBonus(dmg)}`);
+  const spellAtk = flatBonus(b.spell_attack);
+  if (spellAtk !== undefined) out.push(`Spell Atk ${formatBonus(spellAtk)}`);
+  const spellDc = flatBonus(b.spell_save_dc);
+  if (spellDc !== undefined) out.push(`Spell DC ${formatBonus(spellDc)}`);
+  const saves = flatBonus(b.saving_throws);
+  if (saves !== undefined) out.push(`Saves ${formatBonus(saves)}`);
   if (b.speed) {
     const parts: string[] = [];
     for (const [k, v] of Object.entries(b.speed)) {
