@@ -1,6 +1,6 @@
-import { setIcon } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
 import type { ResolvedEquipped, SlotKey } from "../../pc.types";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 
 const SLOT_ORDER: SlotKey[] = ["mainhand", "offhand", "armor", "shield"];
 const SLOT_LABEL: Record<SlotKey, string> = {
@@ -28,7 +28,7 @@ export class LoadoutStrip implements SheetComponent {
       const cell = root.createDiv({ cls: "pc-loadout-slot", attr: { "data-slot": key } });
 
       const iconEl = cell.createDiv({ cls: "pc-loadout-icon" });
-      setIcon(iconEl, SLOT_ICON[key]);
+      setInventoryIcon(iconEl, SLOT_ICON[key]);
 
       const info = cell.createDiv({ cls: "pc-loadout-info" });
       info.createDiv({ cls: "pc-loadout-lbl", text: SLOT_LABEL[key] });

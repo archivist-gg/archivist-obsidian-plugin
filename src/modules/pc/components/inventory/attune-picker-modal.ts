@@ -1,6 +1,7 @@
-import { Modal, setIcon, type App } from "obsidian";
+import { Modal, type App } from "obsidian";
 import type { VisibleEntry } from "./filter-state";
 import { iconForEntity } from "./icon-mapping";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 
 export interface AttunePickerOptions {
   slotIndex: number;
@@ -34,7 +35,7 @@ export class AttunePickerModal extends Modal {
     for (const cand of this.opts.candidates) {
       const row = list.createDiv({ cls: "pc-attune-picker-row" });
       const ic = row.createSpan({ cls: "pc-attune-picker-icon" });
-      setIcon(ic, iconForEntity(cand.resolved, cand.entry));
+      setInventoryIcon(ic, iconForEntity(cand.resolved, cand.entry));
       const e = cand.resolved.entity as { name?: string; type?: string; rarity?: string } | null;
       const text = row.createDiv({ cls: "pc-attune-picker-text" });
       text.createDiv({ cls: "pc-attune-picker-name", text: e?.name ?? cand.entry.item });

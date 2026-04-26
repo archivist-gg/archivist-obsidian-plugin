@@ -1,6 +1,7 @@
-import { Modal, setIcon, type App } from "obsidian";
+import { Modal, type App } from "obsidian";
 import type { ResolvedEquipped } from "../../pc.types";
 import { iconForEntity } from "./icon-mapping";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 
 export interface AttuneConflictOptions {
   slots: ResolvedEquipped[];      // currently-attuned, in slot order
@@ -49,7 +50,7 @@ function renderConflictCell(parent: HTMLElement, occupant: ResolvedEquipped, inc
   cell.createDiv({ cls: "pc-attune-conflict-role", text: incoming ? "Incoming" : "Slot" });
   const med = cell.createDiv({ cls: "pc-medallion" });
   const ic = med.createSpan({ cls: "pc-medallion-icon" });
-  setIcon(ic, iconForEntity(occupant, occupant.entry));
+  setInventoryIcon(ic, iconForEntity(occupant, occupant.entry));
   cell.createDiv({ cls: "pc-attune-conflict-name", text: e?.name ?? occupant.entry.item });
   return cell;
 }

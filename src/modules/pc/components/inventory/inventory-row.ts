@@ -1,8 +1,8 @@
-import { setIcon } from "obsidian";
 import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { iconForEntity } from "./icon-mapping";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 import { requiresAttunement } from "./requires-attunement";
 import { prettifyName } from "./filter-state";
 
@@ -40,7 +40,7 @@ export class InventoryRow {
 
     // Icon column
     const iconCell = row.createDiv({ cls: "pc-inv-icon" });
-    setIcon(iconCell, iconForEntity(ctx.resolved, ctx.entry));
+    setInventoryIcon(iconCell, iconForEntity(ctx.resolved, ctx.entry));
 
     // Name + subtitle column
     const nameCell = row.createDiv({ cls: "pc-inv-name-cell" });

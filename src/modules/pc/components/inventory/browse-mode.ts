@@ -1,10 +1,10 @@
 import type { App } from "obsidian";
-import { setIcon } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { visibleItems, type FilterState, type VisibleEntry } from "./filter-state";
 import { iconForEntity } from "./icon-mapping";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 import { renderCustomItemInput } from "./custom-item-input";
 import { renderRowExpand } from "./inventory-row-expand";
 
@@ -108,7 +108,7 @@ function renderBrowseRow(
   row.createDiv({ cls: "pc-inv-toggle-cell" });
 
   const iconCell = row.createDiv({ cls: "pc-inv-icon" });
-  setIcon(iconCell, iconForEntity(v.resolved, v.entry));
+  setInventoryIcon(iconCell, iconForEntity(v.resolved, v.entry));
 
   const nameCell = row.createDiv({ cls: "pc-inv-name-cell" });
   nameCell.createDiv({ cls: nameClass(e), text: e?.name ?? v.entry.item });

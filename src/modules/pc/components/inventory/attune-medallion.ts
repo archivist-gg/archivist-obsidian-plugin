@@ -1,6 +1,6 @@
-import { setIcon } from "obsidian";
 import type { ResolvedEquipped } from "../../pc.types";
 import { iconForEntity } from "./icon-mapping";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 
 export interface MedallionOpts {
   slotIndex: number;
@@ -26,7 +26,7 @@ export function renderMedallion(parent: HTMLElement, opts: MedallionOpts): HTMLE
   if (!opts.occupant) {
     m.classList.add("empty");
     const ic = m.createSpan({ cls: "pc-medallion-icon" });
-    setIcon(ic, "plus");
+    setInventoryIcon(ic, "plus");
     m.addEventListener("click", () => opts.onClickEmpty(opts.slotIndex));
     return wrapper;
   }
@@ -36,7 +36,7 @@ export function renderMedallion(parent: HTMLElement, opts: MedallionOpts): HTMLE
   if (rarityCls) m.classList.add(rarityCls);
 
   const ic = m.createSpan({ cls: "pc-medallion-icon" });
-  setIcon(ic, iconForEntity(opts.occupant, opts.occupant.entry));
+  setInventoryIcon(ic, iconForEntity(opts.occupant, opts.occupant.entry));
 
   m.addEventListener("click", () => opts.onClickFilled(opts.occupant!, m));
 
