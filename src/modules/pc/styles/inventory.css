@@ -427,3 +427,57 @@
 .archivist-pc-sheet .pc-medallion-name.rarity-very-rare { color: var(--pc-rarity-very-rare); }
 .archivist-pc-sheet .pc-medallion-name.rarity-legendary { color: var(--pc-rarity-legendary); }
 .archivist-pc-sheet .pc-medallion-name.rarity-artifact  { color: var(--pc-rarity-artifact); }
+
+/* ---------- Inventory header (loadout + attunement side by side) ---------- */
+.archivist-pc-sheet .pc-inv-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--pc-space-4);
+  padding-bottom: var(--pc-space-3);
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  margin-bottom: var(--pc-space-3);
+  align-items: center;
+}
+.archivist-pc-sheet .pc-inv-header-loadout { min-width: 0; }
+.archivist-pc-sheet .pc-inv-header-attune {
+  padding-left: var(--pc-space-4);
+  border-left: 1px solid var(--pc-tan);
+}
+
+/* Attunement strip — label + medallion row */
+.archivist-pc-sheet .pc-attune-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-attune-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.archivist-pc-sheet .pc-attune-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
+  color: var(--pc-text-muted);
+  text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-attune-count {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-title);
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  margin-top: 4px;
+}
+.archivist-pc-sheet .pc-attune-count em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-medallion-row {
+  display: flex;
+  gap: var(--pc-space-2);
+}

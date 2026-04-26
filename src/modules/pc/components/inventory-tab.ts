@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { FilterState } from "./inventory/filter-state";
 import { LoadoutStrip } from "./inventory/loadout-strip";
+import { AttunementStrip } from "./inventory/attunement-strip";
 import { CurrencyStrip } from "./inventory/currency-strip";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
@@ -17,8 +18,12 @@ export class InventoryTab implements SheetComponent {
     let filters: FilterState = { status: "all", types: new Set(), rarities: new Set(), search: "" };
 
     const header = root.createDiv({ cls: "pc-inv-header" });
-    new LoadoutStrip().render(header, ctx);
-    // (attunement-strip will be added in Phase 7)
+    const loadoutHost = header.createDiv({ cls: "pc-inv-header-loadout" });
+    new LoadoutStrip().render(loadoutHost, ctx);
+    const attuneHost = header.createDiv({ cls: "pc-inv-header-attune" });
+    new AttunementStrip({
+      // onPickEmpty and onClickFilled hookups land in Tasks 19/20.
+    }).render(attuneHost, ctx);
 
     const toolbarHost = root.createDiv({ cls: "pc-inv-toolbar-host" });
     const filtersHost = root.createDiv({ cls: "pc-inv-filters-host" });

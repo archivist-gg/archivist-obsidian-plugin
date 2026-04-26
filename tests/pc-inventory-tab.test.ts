@@ -81,4 +81,12 @@ describe("InventoryTab (redesigned)", () => {
     expect(root.querySelector(".pc-inv-meta-suffix")?.textContent).toMatch(/2 items/);
     expect(root.querySelector(".pc-inv-meta-suffix")?.textContent).toMatch(/12\.5/);
   });
+
+  it("renders attunement strip with N medallions matching attunementLimit", () => {
+    const c = baseChar();
+    const root = mountContainer();
+    new InventoryTab().render(root, ctxWith(c, { attunementLimit: 3 }));
+    expect(root.querySelectorAll(".pc-medallion")).toHaveLength(3);
+    expect(root.querySelector(".pc-attune-count")?.textContent).toMatch(/0\s*\/\s*3/);
+  });
 });
