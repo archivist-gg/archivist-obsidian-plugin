@@ -8,10 +8,12 @@ import { AttunePickerModal } from "./inventory/attune-picker-modal";
 import { AttuneConflictModal } from "./inventory/attune-conflict-modal";
 import { requiresAttunement } from "./inventory/requires-attunement";
 import { CurrencyStrip } from "./inventory/currency-strip";
+import { ManageCoinMode } from "./inventory/manage-coin-mode";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
 import { InventoryList } from "./inventory/inventory-list";
 import { BrowseMode } from "./inventory/browse-mode";
+import { setIcon } from "obsidian";
 
 export class InventoryTab implements SheetComponent {
   readonly type = "inventory-tab";
@@ -109,8 +111,23 @@ export class InventoryTab implements SheetComponent {
 
     drawAll();
 
-    const currencyHost = root.createDiv({ cls: "pc-inv-currency-host" });
-    new CurrencyStrip().render(currencyHost, ctx);
+    let coinMode: "strip" | "expanded" = "strip";
+
+    const coinHost = root.createDiv({ cls: "pc-inv-currency-host" });
+    const drawCoin = (): void => {
+      coinHost.empty();
+      const heading = coinHost.createDiv({ cls: "pc-coin-heading-row" });
+      const h4 = heading.createEl("h4", { cls: "pc-tab-heading", text: "Currency" });
+      const toggle = h4.createEl("button", { cls: "pc-coin-mode-toggle", attr: { title: "Manage coin" } });
+      setIcon(toggle, coinMode === "strip" ? "settings" : "x");
+      toggle.addEventListener("click", () => {
+        coinMode = coinMode === "strip" ? "expanded" : "strip";
+        drawCoin();
+      });
+      if (coinMode === "strip") new CurrencyStrip().render(coinHost, ctx);
+      else new ManageCoinMode().render(coinHost, ctx);
+    };
+    drawCoin();
   }
 }
 

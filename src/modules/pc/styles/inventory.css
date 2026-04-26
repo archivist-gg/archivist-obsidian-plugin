@@ -714,3 +714,96 @@
   border-radius: var(--pc-radius-sm);
   cursor: pointer;
 }
+
+/* ---------- Manage Coin mode ---------- */
+.archivist-pc-sheet .pc-coin-heading-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-coin-mode-toggle {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+}
+.archivist-pc-sheet .pc-coin-mode-toggle svg {
+  width: 12px; height: 12px;
+  color: var(--pc-text-muted);
+  stroke-width: 1.5;
+}
+.archivist-pc-sheet .pc-coin-mode-toggle:hover svg { color: var(--pc-crimson); }
+
+.archivist-pc-sheet .pc-coin-mgr {
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  background: rgba(255, 248, 220, 0.45);
+}
+.archivist-pc-sheet .pc-coin-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 80px;
+  gap: var(--pc-space-3);
+  padding: 4px 0;
+  align-items: baseline;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-coin-name {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+}
+.archivist-pc-sheet .pc-coin-rate {
+  font-size: var(--pc-fs-label);
+  font-style: italic;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-coin-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-heading);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.archivist-pc-sheet .pc-coin-val.editable { cursor: pointer; }
+.archivist-pc-sheet .pc-coin-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--pc-tan);
+}
+.archivist-pc-sheet .pc-coin-total-lbl {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-coin-total-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-title);
+}
+.archivist-pc-sheet .pc-coin-actions {
+  display: flex;
+  gap: var(--pc-space-2);
+  margin-top: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-coin-clear {
+  padding: 3px 10px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid rgba(146, 38, 16, 0.4);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
