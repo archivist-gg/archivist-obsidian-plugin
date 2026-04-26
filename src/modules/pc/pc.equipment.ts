@@ -169,8 +169,8 @@ export function computeAppliedBonuses(
     if (b.ability_scores?.bonus) {
       for (const [k, v] of Object.entries(b.ability_scores.bonus)) {
         if (!isAbilityKey(k)) continue;
-        pushApply(readNumericBonus(v as number | { value: number; when: [] } | undefined, ctx),
-          `ability_scores.bonus.${k}` as BonusFieldPath,
+        pushApply(readNumericBonus(v, ctx),
+          `ability_scores.bonus.${k}`,
           item.name, out.informational,
           (val) => { out.ability_bonuses[k] = (out.ability_bonuses[k] ?? 0) + val; });
       }
@@ -198,7 +198,7 @@ export function computeAppliedBonuses(
       if (b.speed.fly === "walk") {
         out.speed_bonuses.fly = "walk";
       } else {
-        pushApply(readNumericBonus(b.speed.fly as number | { value: number; when: [] } | undefined, ctx),
+        pushApply(readNumericBonus(b.speed.fly, ctx),
           "speed.fly", item.name, out.informational,
           (v) => {
             const cur = out.speed_bonuses.fly;
