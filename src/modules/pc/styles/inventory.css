@@ -222,3 +222,17 @@
 .archivist-pc-sheet .pc-inv-action.danger {
   border-color: rgba(146, 38, 16, 0.4);
 }
+
+/* ---------- Inventory list container + empty state ---------- */
+.archivist-pc-sheet .pc-inv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.archivist-pc-sheet .pc-inv-row-host { display: contents; }
+.archivist-pc-sheet .pc-inv-empty {
+  padding: var(--pc-space-4) var(--pc-space-3);
+  font-style: italic;
+  color: var(--pc-text-muted);
+  text-align: center;
+}
