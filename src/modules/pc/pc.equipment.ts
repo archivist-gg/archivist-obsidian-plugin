@@ -4,6 +4,7 @@ import type { ItemEntity } from "../item/item.types";
 import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type {
+  ACTerm,
   AppliedBonuses,
   DerivedEquipment,
   EquipmentEntry,
@@ -171,6 +172,10 @@ function isWeaponEntity(e: unknown): e is WeaponEntity {
   return typeof cat === "string" && /melee|ranged/.test(cat);
 }
 
+function isArmorEntity(e: unknown): e is ArmorEntity {
+  return !!e && typeof e === "object" && "ac" in e && "category" in e && !("damage" in e);
+}
+
 function isTwoHanded(weapon: WeaponEntity): boolean {
   return weapon.properties.some((p) => p === "two_handed");
 }
@@ -241,9 +246,69 @@ function assignSlots(
   return slots;
 }
 
+function computeAC(
+  equippedSlots: EquippedSlots,
+  resolved: ResolvedCharacter,
+  mods: Record<Ability, number>,
+  registry: EntityRegistry,
+): { ac: number; breakdown: ACTerm[] } {
+  const breakdown: ACTerm[] = [];
+  const armorSlot = equippedSlots.armor;
+  const armorEntity = armorSlot?.entity as ArmorEntity | undefined;
+
+  let ac = 10;
+  if (armorEntity && isArmorEntity(armorEntity)) {
+    ac = armorEntity.ac.base + armorEntity.ac.flat;
+    breakdown.push({ source: armorEntity.name, amount: armorEntity.ac.base + armorEntity.ac.flat, kind: "armor" });
+    if (armorEntity.ac.add_dex) {
+      const dexCap = armorEntity.ac.dex_max ?? Number.POSITIVE_INFINITY;
+      const dexAdd = Math.min(mods.dex, dexCap);
+      ac += dexAdd;
+      breakdown.push({ source: `DEX modifier${dexCap !== Number.POSITIVE_INFINITY ? " (capped)" : ""}`, amount: dexAdd, kind: "dex" });
+    }
+  } else {
+    // Unarmored: 10 + DEX (Unarmored Defense already handled by recalc's fallback;
+    // here we only show base + DEX as an unarmored breakdown when no armor is equipped).
+    ac = 10 + mods.dex;
+    breakdown.push({ source: "Base", amount: 10, kind: "unarmored" });
+    breakdown.push({ source: "DEX modifier", amount: mods.dex, kind: "dex" });
+  }
+
+  // Per-armor entry override.
+  if (armorSlot?.entry.overrides?.ac_bonus) {
+    const n = armorSlot.entry.overrides.ac_bonus;
+    ac += n;
+    breakdown.push({ source: `${armorEntity?.name ?? "Armor"} (override)`, amount: n, kind: "override" });
+  }
+
+  // Shield (only if mainhand isn't two-handed).
+  const main = equippedSlots.mainhand?.entity;
+  const mainIsTwoHanded = main && isWeaponEntity(main) && isTwoHanded(main);
+  const shieldEntity = equippedSlots.shield?.entity as ArmorEntity | undefined;
+  if (shieldEntity && isArmorEntity(shieldEntity) && !mainIsTwoHanded) {
+    const n = shieldEntity.ac.base + shieldEntity.ac.flat;
+    ac += n;
+    breakdown.push({ source: shieldEntity.name, amount: n, kind: "shield" });
+  }
+
+  // Equipped+attuned items.bonuses.ac (AC-bonus magic items).
+  for (const entry of resolved.definition.equipment ?? []) {
+    const { entity, entityType } = lookupEntity(entry, registry);
+    if (!entity || entityType !== "item") continue;
+    if (!isAttunedActive(entry, entity)) continue;
+    const item = entity as ItemEntity;
+    if (typeof item.bonuses?.ac === "number" && item.bonuses.ac !== 0) {
+      ac += item.bonuses.ac;
+      breakdown.push({ source: item.name, amount: item.bonuses.ac, kind: "item" });
+    }
+  }
+
+  return { ac, breakdown };
+}
+
 export function computeSlotsAndAttacks(
   resolved: ResolvedCharacter,
-  _mods: Record<Ability, number>,
+  mods: Record<Ability, number>,
   _profs: ProficienciesForQuery,
   registry: EntityRegistry,
   warnings: string[],
@@ -251,10 +316,10 @@ export function computeSlotsAndAttacks(
   const equippedSlots = assignSlots(resolved, registry, warnings);
   const overrides = resolved.definition.overrides ?? {};
 
-  // Stub the rest until subsequent tasks fill in AC chain (Task 7) and attack rows (Task 8).
+  const { ac, breakdown } = computeAC(equippedSlots, resolved, mods, registry);
   return {
-    ac: 0,
-    acBreakdown: [],
+    ac,
+    acBreakdown: breakdown,
     attacks: [],
     equippedSlots,
     carriedWeight: 0,

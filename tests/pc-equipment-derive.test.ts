@@ -283,3 +283,75 @@ describe("computeSlotsAndAttacks — slot assignment", () => {
     expect(w.some((m) => /two-handed.*shield|shield.*ignored/i.test(m))).toBe(true);
   });
 });
+
+describe("computeSlotsAndAttacks — AC chain", () => {
+  const registry = buildEquipmentRegistry();
+  const profs = { armor: { categories: ["light", "medium", "heavy"], specific: [] }, weapons: { categories: ["simple", "martial"], specific: [] }, tools: { categories: [], specific: [] } };
+
+  it("plate (heavy, no DEX): AC 18 ignoring DEX", () => {
+    const c = baseChar(); c.abilities.dex = 20;
+    c.equipment = [{ item: "[[plate]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 5, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(18);
+  });
+
+  it("studded leather (light): AC 12 + DEX", () => {
+    const c = baseChar(); c.abilities.dex = 16;
+    c.equipment = [{ item: "[[studded-leather]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 3, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(15);
+  });
+
+  it("breastplate (medium, dex_max 2): AC 14 + min(DEX, 2)", () => {
+    const c = baseChar(); c.abilities.dex = 18;
+    c.equipment = [{ item: "[[breastplate]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 4, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(16);
+  });
+
+  it("plate + shield: AC 20", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[plate]]", equipped: true }, { item: "[[shield]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(20);
+  });
+
+  it("plate + shield + cloak of protection (attuned): AC 21", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[plate]]", equipped: true },
+      { item: "[[shield]]", equipped: true },
+      { item: "[[cloak-of-protection]]", equipped: true, attuned: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(21);
+  });
+
+  it("plate with overrides.ac_bonus=1: AC 19", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[plate]]", equipped: true, overrides: { ac_bonus: 1 } }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(19);
+  });
+
+  it("two-handed mainhand + equipped shield → shield AC contribution dropped", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[plate]]", equipped: true }, { item: "[[greatsword]]", equipped: true }, { item: "[[shield]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(18);
+  });
+
+  it("acBreakdown enumerates each contributing term", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[plate]]", equipped: true },
+      { item: "[[shield]]", equipped: true },
+      { item: "[[cloak-of-protection]]", equipped: true, attuned: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    const sources = d.acBreakdown.map((t) => t.source);
+    expect(sources).toContain("Plate");
+    expect(sources).toContain("Shield");
+    expect(sources).toContain("Cloak of Protection");
+  });
+});
