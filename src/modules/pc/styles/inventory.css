@@ -291,3 +291,53 @@
   gap: 4px;
 }
 .archivist-pc-sheet .pc-inv-add-icon svg { width: 12px; height: 12px; stroke-width: 1.7; }
+
+/* ---------- Filter chip groups ---------- */
+.archivist-pc-sheet .pc-inv-filter-row {
+  display: flex;
+  gap: var(--pc-space-3);
+  flex-wrap: wrap;
+  padding: var(--pc-space-1) 0 var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-filter-group {
+  display: flex;
+  gap: var(--pc-space-1);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.archivist-pc-sheet .pc-inv-filter-group-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+  margin-right: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-inv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  background: rgba(255, 248, 220, 0.45);
+  border: 1px solid var(--pc-tan);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-chip:hover {
+  border-color: var(--pc-crimson);
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-chip.active {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-chip-icon svg {
+  width: 11px; height: 11px;
+  stroke-width: 1.5;
+  color: currentColor;
+}
