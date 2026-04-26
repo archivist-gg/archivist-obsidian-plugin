@@ -16,17 +16,13 @@ const SLOT_ICON: Record<SlotKey, string> = {
   shield:   "shield",
 };
 
-interface MinimalEditState {
-  unequipItem: (index: number) => void;
-}
-
 export class LoadoutStrip implements SheetComponent {
   readonly type = "loadout-strip";
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-loadout-strip" });
-    const slots = ctx.derived.equippedSlots ?? {};
-    const editState = ctx.editState as MinimalEditState | null;
+    const slots = ctx.derived.equippedSlots;
+    const editState = ctx.editState;
 
     for (const key of SLOT_ORDER) {
       const cell = root.createDiv({ cls: "pc-loadout-slot", attr: { "data-slot": key } });
@@ -55,6 +51,8 @@ export class LoadoutStrip implements SheetComponent {
   }
 }
 
+// Differs from filter-state.displayName: prettifies the [[slug]] fallback
+// because loadout cells are visually prominent.
 function displayName(slot: ResolvedEquipped): string {
   return slot.entry.overrides?.name ?? (slot.entity as { name?: string } | null)?.name ?? prettyName(slot.entry.item);
 }
