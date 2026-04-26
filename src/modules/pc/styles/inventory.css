@@ -543,3 +543,55 @@
   border-color: rgba(146, 38, 16, 0.4);
   margin-left: auto;
 }
+
+/* ---------- Attune conflict modal ---------- */
+/* Modal mounts on document.body, so selectors are NOT scoped under
+ * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
+.pc-attune-conflict .pc-attune-conflict-row {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+.pc-attune-conflict-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: 6px;
+  background: rgba(255, 248, 220, 0.45);
+  cursor: pointer;
+  min-width: 80px;
+}
+.pc-attune-conflict-cell:hover {
+  background: rgba(146, 38, 16, 0.06);
+  border-color: var(--pc-crimson, #922610);
+}
+.pc-attune-conflict-cell.incoming {
+  background: rgba(95, 45, 140, 0.06);
+  cursor: default;
+}
+.pc-attune-conflict-role {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pc-text-muted, #8a7a6a);
+}
+.pc-attune-conflict-name {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90px;
+}
+.pc-attune-conflict-arrow {
+  font-size: 22px;
+  color: var(--pc-crimson, #922610);
+}
