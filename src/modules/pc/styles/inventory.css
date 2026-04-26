@@ -60,6 +60,7 @@
   color: var(--pc-text-muted);
 }
 .archivist-pc-sheet .pc-loadout-stat {
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
   line-height: var(--pc-lh-snug);
@@ -156,6 +157,7 @@
 .archivist-pc-sheet .pc-inv-name.rarity-artifact  { color: var(--pc-rarity-artifact);  font-style: italic; font-weight: 800; }
 .archivist-pc-sheet .pc-inv-name.rarity-legacy    { color: var(--pc-rarity-legacy);    font-style: italic; }
 .archivist-pc-sheet .pc-inv-sub {
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
   letter-spacing: var(--pc-ls-caps-sm);
   color: var(--pc-text-muted);
@@ -171,6 +173,7 @@
 .archivist-pc-sheet .pc-inv-stat,
 .archivist-pc-sheet .pc-inv-weight,
 .archivist-pc-sheet .pc-inv-qty-cost {
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
   white-space: nowrap;
@@ -232,6 +235,7 @@
 .archivist-pc-sheet .pc-inv-row-host { display: contents; }
 .archivist-pc-sheet .pc-inv-empty {
   padding: var(--pc-space-4) var(--pc-space-3);
+  font-family: var(--pc-font-serif);
   font-style: italic;
   color: var(--pc-text-muted);
   text-align: center;
@@ -646,6 +650,7 @@
 /* ---------- Browse mode (Add Item) ---------- */
 .archivist-pc-sheet .pc-inv-browse-banner {
   padding: var(--pc-space-2) 0;
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
   font-style: italic;
@@ -755,6 +760,7 @@
   font-weight: 700;
 }
 .archivist-pc-sheet .pc-coin-rate {
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
   font-style: italic;
   color: var(--pc-text-muted);
@@ -820,6 +826,7 @@
 }
 .archivist-pc-sheet .pc-inv-inline-field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .archivist-pc-sheet .pc-inv-inline-lbl {
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
   font-weight: 700;
   letter-spacing: var(--pc-ls-caps-md);
@@ -844,6 +851,7 @@
 }
 .archivist-pc-sheet .pc-inv-inline-help {
   grid-column: 1 / -1;
+  font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
   color: var(--pc-text-muted);
   font-style: italic;
