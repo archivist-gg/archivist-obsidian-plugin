@@ -103,3 +103,40 @@ describe("InventoryTab (redesigned)", () => {
     expect(root.querySelector(".pc-inv-browse-banner")).toBeNull();
   });
 });
+
+describe("InventoryTab — full integration", () => {
+  it("renders header / toolbar / filters / list / attunement strip / currency strip together", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[longsword]]", equipped: true },
+      { item: "[[plate]]" },
+      { item: "[[ring-of-evasion]]", attuned: true },
+      { item: "50 ft of hempen rope" },
+    ];
+    c.currency = { pp: 0, gp: 24, ep: 0, sp: 5, cp: 0 };
+
+    const root = mountContainer();
+    new InventoryTab().render(root, ctxWith(c, { ac: 14, carriedWeight: 24, attunementUsed: 1, attunementLimit: 3 }));
+
+    // Header — loadout (4 slots) + attunement (3 medallions)
+    expect(root.querySelectorAll(".pc-loadout-slot")).toHaveLength(4);
+    expect(root.querySelectorAll(".pc-medallion")).toHaveLength(3);
+
+    // Toolbar — search input + Add Item button
+    expect(root.querySelector(".pc-inv-search input")).toBeTruthy();
+    expect(root.querySelector(".pc-inv-add")).toBeTruthy();
+
+    // Filter chip groups (Status + Type + Rarity in list mode)
+    expect([...root.querySelectorAll(".pc-inv-filter-group-label")].map((l) => l.textContent))
+      .toEqual(["Status", "Type", "Rarity"]);
+
+    // List rows — one per equipment entry
+    expect(root.querySelectorAll(".pc-inv-row").length).toBe(4);
+
+    // Currency strip — all 5 coins
+    expect(root.querySelectorAll(".pc-currency-cell")).toHaveLength(5);
+
+    // Carried-weight in heading
+    expect(root.querySelector(".pc-inv-meta-suffix")?.textContent).toMatch(/24/);
+  });
+});
