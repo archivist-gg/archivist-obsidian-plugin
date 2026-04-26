@@ -3,6 +3,7 @@
 import type { FormulaRef } from "../rendering/inline-tag-parser";
 import type { Abilities } from "../types/abilities";
 import type { EntityRegistry } from "../entities/entity-registry";
+import type { FormulaContext } from "../types/formula-context";
 import { abilityModifier, formatModifier } from "./math";
 import {
   CanonicalTagType,
@@ -11,14 +12,8 @@ import {
   ABILITIES,
 } from "./tag-grammar";
 
-export type { CanonicalTagType };
+export type { CanonicalTagType, FormulaContext };
 export { normalizeTagType, parseTagTerms };
-
-export interface FormulaContext {
-  abilities: Abilities;
-  proficiencyBonus: number;
-  compendium?: EntityRegistry;
-}
 
 // Slug resolution: look up [[slug]] terms in the compendium and pull the
 // numeric bonus that's relevant to the current tag type.

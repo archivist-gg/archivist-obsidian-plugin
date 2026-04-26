@@ -197,7 +197,6 @@ export interface AppliedBonuses {
   spell_attack: number;
   spell_save_dc: number;
   defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] };
-  senses: { darkvision: number; tremorsense: number; truesight: number; blindsight: number };
 }
 
 export interface DerivedEquipment {

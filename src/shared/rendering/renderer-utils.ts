@@ -169,7 +169,7 @@ function resolveTagContent(
   if (!monsterCtx) return content;
   const formula = detectFormula(tagType, content);
   if (!formula) return content;
-  const resolved = resolveFormulaTag(tagType, content, monsterCtx.abilities, monsterCtx.profBonus);
+  const resolved = resolveFormulaTag(tagType, content, monsterCtx.abilities, monsterCtx.proficiencyBonus);
   // resolveFormulaTag for dc returns "DC N" but STAT_TAG_CONFIGS.dc.format already prepends "DC ",
   // so strip the prefix to avoid "DC DC N".
   if (tagType === "dc" && resolved.startsWith("DC ")) {

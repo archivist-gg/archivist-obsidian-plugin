@@ -126,7 +126,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
 
   // Build formula resolution context for inline tags (e.g. `atk:DEX` -> `+4`)
   const monsterCtx: FormulaContext | undefined = monster.abilities
-    ? { abilities: monster.abilities, profBonus: proficiencyBonusFromCR(monster.cr ?? "0") }
+    ? { abilities: monster.abilities, proficiencyBonus: proficiencyBonusFromCR(monster.cr ?? "0") }
     : undefined;
 
   // In two-column mode, all content goes inside a flow container with column-count: 2

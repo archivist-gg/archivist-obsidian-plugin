@@ -9,7 +9,7 @@ export function buildFormulaContext(
 ): FormulaContext {
   return {
     abilities: resolved.definition.abilities,
-    profBonus: derived.proficiencyBonus,
+    proficiencyBonus: derived.proficiencyBonus,
     compendium: registry,
   };
 }

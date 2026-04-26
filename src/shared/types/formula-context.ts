@@ -3,6 +3,6 @@ import type { EntityRegistry } from "../entities/entity-registry";
 
 export interface FormulaContext {
   abilities: Abilities;
-  profBonus: number;
+  proficiencyBonus: number;
   compendium?: EntityRegistry;
 }

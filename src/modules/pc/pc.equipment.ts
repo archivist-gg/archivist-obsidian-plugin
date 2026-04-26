@@ -28,6 +28,7 @@ interface ProficienciesForQuery {
   tools: ProficiencySet;
 }
 
+// TODO(SP6+): wire item.grants.senses through DerivedStats.senses + SensesPanel
 export function emptyAppliedBonuses(): AppliedBonuses {
   return {
     ability_bonuses: {},
@@ -37,7 +38,6 @@ export function emptyAppliedBonuses(): AppliedBonuses {
     spell_attack: 0,
     spell_save_dc: 0,
     defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [] },
-    senses: { darkvision: 0, tremorsense: 0, truesight: 0, blindsight: 0 },
   };
 }
 
@@ -101,20 +101,12 @@ export function computeAppliedBonuses(
 
     const item = entity as ItemEntity;
 
-    // Defenses and senses live on ItemEntity directly (not on bonuses) — propagate
+    // Defenses live on ItemEntity directly (not on bonuses) — propagate
     // regardless of whether the item has a bonuses object.
     item.resist?.forEach((s) => out.defenses.resistances.push(s));
     item.immune?.forEach((s) => out.defenses.immunities.push(s));
     item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
     item.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
-
-    const senses = item.grants?.senses;
-    if (senses) {
-      if (typeof senses.darkvision === "number") out.senses.darkvision = Math.max(out.senses.darkvision, senses.darkvision);
-      if (typeof senses.tremorsense === "number") out.senses.tremorsense = Math.max(out.senses.tremorsense, senses.tremorsense);
-      if (typeof senses.truesight === "number") out.senses.truesight = Math.max(out.senses.truesight, senses.truesight);
-      if (typeof senses.blindsight === "number") out.senses.blindsight = Math.max(out.senses.blindsight, senses.blindsight);
-    }
 
     const b = item.bonuses;
     if (!b) continue;

@@ -72,13 +72,13 @@ describe("resolveTag with slug terms", () => {
 });
 
 describe("buildFormulaContext", () => {
-  it("populates abilities, profBonus, compendium", () => {
+  it("populates abilities, proficiencyBonus, compendium", () => {
     const c = baseChar(); c.abilities.str = 16;
     const resolved = mkResolved(c);
     const derived = recalc(resolved, registry);
     const ctx = buildFormulaContext(resolved, derived, registry);
     expect(ctx.abilities.str).toBe(16);
-    expect(ctx.profBonus).toBe(derived.proficiencyBonus);
+    expect(ctx.proficiencyBonus).toBe(derived.proficiencyBonus);
     expect(ctx.compendium).toBe(registry);
   });
 });

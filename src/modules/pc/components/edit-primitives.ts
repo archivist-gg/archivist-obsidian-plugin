@@ -155,7 +155,6 @@ export function currencyCell(parent: HTMLElement, opts: CurrencyCellOpts): HTMLE
   const cell = parent.createDiv({ cls: "pc-currency-cell" });
   const valEl = cell.createDiv({ cls: "pc-currency-val", text: String(opts.value) });
   cell.createDiv({ cls: "pc-currency-label", text: opts.coin });
-  valEl.style.cursor = "pointer";
   valEl.addEventListener("click", () => {
     makeInlineInput(valEl, {
       initial: opts.value, min: 0, max: 999_999,
