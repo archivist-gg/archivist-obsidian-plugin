@@ -250,6 +250,7 @@ export interface DerivedStats {
     condition_immunities: string[];
   };
   acBreakdown: ACTerm[];
+  acInformational: import("../item/item.conditions.types").InformationalBonus[];
   attacks: AttackRow[];
   equippedSlots: EquippedSlots;
   carriedWeight: number;

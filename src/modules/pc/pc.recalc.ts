@@ -24,6 +24,7 @@ import type {
   ResolvedClass,
   CharacterOverrides,
 } from "./pc.types";
+import type { InformationalBonus } from "../item/item.conditions.types";
 
 type ProficiencyTri = "none" | "proficient" | "expertise";
 
@@ -430,11 +431,13 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   let derivedEquipment: DerivedEquipment | null = null;
   let acDerived: number;
   let acBreakdownDerived: ACTerm[] = [];
+  let acInformationalDerived: InformationalBonus[] = [];
   if (registry) {
     derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus);
     if (derivedEquipment.equippedSlots.armor) {
       acDerived = derivedEquipment.ac;
       acBreakdownDerived = derivedEquipment.acBreakdown;
+      acInformationalDerived = derivedEquipment.acInformational;
     } else {
       const { total: unarmored, terms: unarmoredTerms } = unarmoredACBreakdown(resolved, mods, warnings);
       // Pull only additive contributions (item bonuses + per-entry overrides);
@@ -446,6 +449,10 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       const additiveSum = additive.reduce((sum, b) => sum + b.amount, 0);
       acDerived = unarmored + additiveSum;
       acBreakdownDerived = [...unarmoredTerms, ...additive];
+      // Magic items still source these conditional AC bonuses even on the
+      // unarmored path (the additive merge above already includes their
+      // numeric contributions); carry the situational pool through.
+      acInformationalDerived = derivedEquipment.acInformational;
     }
   } else {
     const { total, terms } = unarmoredACBreakdown(resolved, mods, warnings);
@@ -514,6 +521,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     warnings,
     defenses,
     acBreakdown: acBreakdownDerived,
+    acInformational: acInformationalDerived,
     attacks: derivedEquipment?.attacks ?? [],
     equippedSlots: derivedEquipment?.equippedSlots ?? {},
     carriedWeight: derivedEquipment?.carriedWeight ?? 0,
