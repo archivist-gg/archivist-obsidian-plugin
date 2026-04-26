@@ -1,33 +1,24 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedCharacter } from "../pc.types";
+import { AttackRows } from "./attack-rows";
 
 export class ActionsTab implements SheetComponent {
   readonly type = "actions-tab";
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-tab-body pc-actions-body" });
-
-    // Attacks
     root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });
-    const weapons = (ctx.resolved.definition.equipment ?? []).filter((e) => /weapon|sword|bow|axe|hammer|dagger|mace|spear|club|flail|rapier|staff|crossbow/i.test(e.item));
+
+    new AttackRows().render(root, ctx);
+
     const featureAttacks = collectFeatureAttacks(ctx.resolved);
-    if (weapons.length === 0 && featureAttacks.length === 0) {
-      root.createDiv({ cls: "pc-empty-line", text: "No attacks." });
-    } else {
-      const table = root.createEl("table", { cls: "pc-attack-table" });
-      const thead = table.createEl("thead").createEl("tr");
-      for (const col of ["Attack", "Range", "Hit", "Damage", "Notes"]) thead.createEl("th", { text: col });
-      const tbody = table.createEl("tbody");
-      for (const w of weapons) {
-        const tr = tbody.createEl("tr");
-        tr.createEl("td", { cls: "pc-attack-name", text: stripSlug(w.item) });
-        tr.createEl("td", { text: "—" });
-        tr.createEl("td", { text: "—" });
-        tr.createEl("td", { text: "—" });
-        tr.createEl("td", { text: w.notes ?? (w.equipped ? "equipped" : "") });
-      }
+    if (featureAttacks.length > 0) {
+      const t = root.createEl("table", { cls: "pc-attack-table pc-feature-attacks" });
+      const thead = t.createEl("thead").createEl("tr");
+      for (const col of ["Name", "Range", "Hit", "Damage", "Source"]) thead.createEl("th", { text: col });
+      const tbody = t.createEl("tbody");
       for (const a of featureAttacks) {
-        const tr = tbody.createEl("tr");
+        const tr = tbody.createEl("tr", { cls: "pc-attack-row" });
         tr.createEl("td", { cls: "pc-attack-name", text: a.name });
         tr.createEl("td", { text: a.range ?? "—" });
         tr.createEl("td", { text: a.toHit ?? "—" });
@@ -36,27 +27,18 @@ export class ActionsTab implements SheetComponent {
       }
     }
 
-    // Resource badges (read-only)
     const resourceFeatures = ctx.resolved.features.filter((rf) => rf.feature.grants_resource || rf.feature.resources);
     if (resourceFeatures.length > 0) {
       root.createEl("h4", { cls: "pc-tab-heading", text: "Resources" });
       const strip = root.createDiv({ cls: "pc-resource-strip" });
       for (const rf of resourceFeatures) {
-        const badge = strip.createDiv({ cls: "pc-resource-badge" });
-        badge.createSpan({ cls: "pc-resource-name", text: rf.feature.name });
+        strip.createDiv({ cls: "pc-resource-badge" }).createSpan({ cls: "pc-resource-name", text: rf.feature.name });
       }
     }
-
   }
 }
 
-interface DisplayAttack {
-  name: string;
-  range?: string;
-  toHit?: string;
-  damage?: string;
-  source: string;
-}
+interface DisplayAttack { name: string; range?: string; toHit?: string; damage?: string; source: string }
 
 function collectFeatureAttacks(resolved: ResolvedCharacter): DisplayAttack[] {
   const out: DisplayAttack[] = [];
@@ -74,8 +56,4 @@ function collectFeatureAttacks(resolved: ResolvedCharacter): DisplayAttack[] {
     }
   }
   return out;
-}
-
-function stripSlug(ref: string): string {
-  return ref.replace(/^\[\[(.+)\]\]$/, "$1").replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
