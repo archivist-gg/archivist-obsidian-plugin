@@ -479,8 +479,8 @@ function computeAttacks(
     } else if (isItemEntity(entity) && typeof entity.base_item === "string") {
       const baseSlug = entity.base_item;
       const found = registry.getByTypeAndSlug("weapon", baseSlug);
-      if (found && isWeaponEntity(found.data as unknown)) {
-        weapon = found.data as unknown as WeaponEntity;
+      if (found && isWeaponEntity(found.data)) {
+        weapon = found.data;
       } else {
         warnings.push(`Magic weapon ${entity.name} references missing base_item [[${baseSlug}]].`);
         continue;

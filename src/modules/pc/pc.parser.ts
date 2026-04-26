@@ -60,7 +60,7 @@ export function parsePC(source: string): ParseResult<Character> {
     const path = issue.path.length ? issue.path.join(".") : "(root)";
     return { success: false, error: `${path}: ${issue.message}` };
   }
-  const data = result.data as Character;
+  const data = result.data;
   // SP5 migration: lift legacy state.currency to definition.currency.
   // Definition value wins when both are present. The legacy fields are
   // declared @deprecated on CharacterState; we access them through a

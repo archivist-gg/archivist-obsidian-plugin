@@ -23,7 +23,7 @@ export class AcShield implements SheetComponent {
     let tipEl: HTMLElement | null = null;
     const showTip = () => {
       if (tipEl) return;
-      tipEl = document.createElement("div");
+      tipEl = activeDocument.createElement("div");
       tipEl.className = "pc-ac-tooltip-host";
       shield.appendChild(tipEl);
       renderACTooltip(tipEl, { ac: ctx.derived.ac, breakdown: ctx.derived.acBreakdown ?? [], overridden });

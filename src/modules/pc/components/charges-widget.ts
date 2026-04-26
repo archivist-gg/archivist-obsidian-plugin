@@ -12,7 +12,6 @@ export function renderChargesWidget(parent: HTMLElement, opts: ChargesWidgetOpts
   const stepper = w.createDiv({ cls: "pc-charges-stepper" });
 
   const cur = stepper.createSpan({ cls: "pc-charges-current", text: String(opts.current) });
-  cur.style.cursor = "pointer";
   stepper.createSpan({ cls: "pc-charges-sep", text: "/" });
   stepper.createSpan({ cls: "pc-charges-max", text: String(opts.max) });
 

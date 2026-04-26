@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { EquipmentEntry, EquippedSlots, ResolvedEquipped, SlotKey } from "../pc.types";
+import type { EquipmentEntry, ResolvedEquipped, SlotKey } from "../pc.types";
 import { currencyCell } from "./edit-primitives";
 import { renderChargesWidget } from "./charges-widget";
 
@@ -42,7 +42,7 @@ export class InventoryTab implements SheetComponent {
         cell.createDiv({ cls: "pc-inventory-slot-name", text: displayName(occupant) });
         cell.createDiv({ cls: "pc-inventory-slot-stat", text: slotStat(occupant) });
         if (editState) {
-          const btn = cell.createEl("button", { cls: "pc-inventory-unequip-btn", text: "unequip" });
+          const btn = cell.createEl("button", { cls: "pc-inventory-unequip-btn", text: "Unequip" });
           btn.addEventListener("click", () => editState.unequipItem(occupant.index));
         }
       } else {
@@ -77,7 +77,7 @@ export class InventoryTab implements SheetComponent {
     if (editState) {
       const addBtn = root.createEl("button", { cls: "pc-inventory-add-btn", text: "+ add item" });
       addBtn.addEventListener("click", () => {
-        const slug = window.prompt("Item slug (e.g. longsword):");
+        const slug = activeWindow.prompt("Item slug (e.g. longsword):");
         if (slug) editState.addItem(slug.trim());
       });
     }
@@ -112,7 +112,7 @@ export class InventoryTab implements SheetComponent {
       if (entry.attuned) editState.unattuneItem(i);
       else {
         const r = editState.attuneItem(i);
-        if (r.kind === "rejected") window.alert("Attunement limit reached. Unattune another item first or raise the cap.");
+        if (r.kind === "rejected") activeWindow.alert("Attunement limit reached. Unattune another item first or raise the cap.");
       }
     });
 
@@ -122,7 +122,7 @@ export class InventoryTab implements SheetComponent {
       else {
         const r = editState.equipItem(i);
         if (r.kind === "conflict" && typeof r.withIndex === "number") {
-          if (window.confirm("Slot occupied — replace currently-equipped item?")) {
+          if (activeWindow.confirm("Slot occupied — replace currently-equipped item?")) {
             editState.unequipItem(r.withIndex);
             editState.equipItem(i);
           }
@@ -132,7 +132,7 @@ export class InventoryTab implements SheetComponent {
 
     const rm = row.createEl("button", { cls: "pc-inventory-remove-btn", text: "×" });
     rm.addEventListener("click", () => {
-      if (entry.equipped && !window.confirm("Item is equipped — remove anyway?")) return;
+      if (entry.equipped && !activeWindow.confirm("Item is equipped — remove anyway?")) return;
       editState.removeItem(i);
     });
   }

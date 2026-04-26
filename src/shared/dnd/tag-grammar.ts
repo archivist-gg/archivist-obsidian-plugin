@@ -32,7 +32,7 @@ const ABILITY_RE = /^(str|dex|con|int|wis|cha)$/i;
 const PB_RE = /^pb$/i;
 const DICE_RE = /^(\d+)d(\d+)$/;
 const LITERAL_RE = /^([+-]?\d+)$/;
-const SLUG_RE = /^\[\[([^\[\]]+)\]\]$/;
+const SLUG_RE = /^\[\[([^[\]]+)\]\]$/;
 
 export function parseTagTerms(content: string): ParsedTerms | { error: string } {
   const out: ParsedTerms = {
