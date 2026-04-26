@@ -4,6 +4,9 @@ import type { CharacterEditState } from "../../pc.edit-state";
 import { renderItemBlock } from "../../../item/item.renderer";
 import { renderWeaponBlock } from "../../../weapon/weapon.renderer";
 import { renderArmorBlock } from "../../../armor/armor.renderer";
+import type { WeaponEntity } from "../../../weapon/weapon.types";
+import type { ArmorEntity } from "../../../armor/armor.types";
+import type { Item } from "../../../item/item.types";
 import { requiresAttunement } from "./requires-attunement";
 
 export interface RowExpandCtx {
@@ -21,21 +24,20 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
     const placeholder = expand.createDiv({ cls: "pc-inv-inline-form" });
     placeholder.createSpan({ text: ctx.entry.item, cls: "pc-inv-inline-name" });
   } else if (ctx.resolved.entityType === "weapon") {
-    expand.appendChild(renderWeaponBlock(ctx.resolved.entity as never));
+    expand.appendChild(renderWeaponBlock(ctx.resolved.entity as WeaponEntity));
   } else if (ctx.resolved.entityType === "armor") {
-    expand.appendChild(renderArmorBlock(ctx.resolved.entity as never));
+    expand.appendChild(renderArmorBlock(ctx.resolved.entity as ArmorEntity));
   } else {
-    expand.appendChild(renderItemBlock(ctx.resolved.entity as never));
+    expand.appendChild(renderItemBlock(ctx.resolved.entity as Item));
   }
 
   // PC-actions strip — sits below the block, separate concern.
-  if (ctx.editState) renderActionsStrip(expand, ctx);
+  if (ctx.editState) renderActionsStrip(expand, ctx, ctx.editState);
   return expand;
 }
 
-function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx): void {
+function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: CharacterEditState): void {
   const strip = parent.createDiv({ cls: "pc-inv-actions" });
-  const editState = ctx.editState!;
   const i = ctx.resolved.index;
 
   // Equip / Unequip
