@@ -1,5 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { AttackRow } from "../pc.types";
+import { conditionsToText } from "../../item/item.conditions";
 
 export class AttackRows implements SheetComponent {
   readonly type = "attack-rows";
@@ -28,8 +29,25 @@ export class AttackRows implements SheetComponent {
       const info = notes.createSpan({ cls: "pc-attack-info", text: "ⓘ" });
       info.title = breakdownTitle(a);
       if (!a.proficient) notes.createSpan({ cls: "pc-attack-non-prof", text: "(non-prof)" });
+
+      // Situational subline for conditional bonuses.
+      if (a.informational && a.informational.length > 0) {
+        const sub = tbody.createEl("tr", { cls: "pc-attack-row-situational" });
+        const td = sub.createEl("td");
+        td.setAttribute("colspan", "5");
+        for (const i of a.informational) {
+          const line = td.createDiv({ cls: "pc-attack-row-situational-line" });
+          line.createSpan({ text: `${i.source}: ${formatSigned(i.value)} ${fieldLabel(i.field)} ${conditionsToText(i.conditions)}` });
+        }
+      }
     }
   }
+}
+
+function fieldLabel(field: string): string {
+  if (field === "weapon_attack") return "to hit";
+  if (field === "weapon_damage") return "dmg";
+  return field;
 }
 
 function formatSigned(n: number): string {

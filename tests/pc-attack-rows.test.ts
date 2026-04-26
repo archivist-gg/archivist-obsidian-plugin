@@ -48,3 +48,46 @@ describe("AttackRows", () => {
     expect(c.querySelector(".pc-attack-damage")?.textContent).toMatch(/1d6 fire/);
   });
 });
+
+describe("attack row situational subline", () => {
+  it("renders a subline when AttackRow.informational has entries", () => {
+    const c = mountContainer();
+    new AttackRows().render(
+      c,
+      ctx([
+        sampleAttack({
+          id: "0:standard",
+          name: "Sun Blade",
+          range: "melee",
+          toHit: 5,
+          damageDice: "1d8",
+          damageType: "radiant",
+          properties: ["versatile"],
+          proficient: true,
+          breakdown: { toHit: [], damage: [] },
+          informational: [
+            {
+              field: "weapon_damage",
+              source: "Sun Blade",
+              value: 2,
+              conditions: [{ kind: "vs_creature_type", value: "undead" }],
+            },
+          ],
+        }),
+      ]),
+    );
+    const sub = c.querySelector(".pc-attack-row-situational");
+    expect(sub).not.toBeNull();
+    const text = sub?.textContent ?? "";
+    expect(text).toContain("Sun Blade");
+    expect(text).toContain("vs undead");
+    expect(text).toContain("+2");
+    expect(text).toContain("dmg");
+  });
+
+  it("renders no subline when AttackRow.informational is undefined", () => {
+    const c = mountContainer();
+    new AttackRows().render(c, ctx([sampleAttack({ informational: undefined })]));
+    expect(c.querySelector(".pc-attack-row-situational")).toBeNull();
+  });
+});

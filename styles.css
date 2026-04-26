@@ -10729,6 +10729,13 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-attack-info { cursor: help; opacity: 0.6; }
 .pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
 
+.pc-attack-row-situational td {
+  font-style: italic;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-label);
+  padding: 0.1em 0.5em 0.3em 1.5em;
+}
+
 /* AC tooltip — follows the PC sheet's parchment aesthetic so it stays
  * readable inside the Obsidian dark theme. Pulling raw --background-primary
  * here resolves to a near-black surface in dark mode, making the dark
