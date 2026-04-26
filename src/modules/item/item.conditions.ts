@@ -71,3 +71,23 @@ export function evaluateCondition(
     }
   }
 }
+
+/**
+ * AND-combine a list of conditions.
+ * - Empty list -> "true" (always-applies; matches flat-number semantics).
+ * - Any "false" -> "false" (engine certainty short-circuits informational).
+ * - Else any "informational" -> "informational".
+ * - Else "true".
+ */
+export function evaluateConditions(
+  conds: Condition[],
+  ctx: ConditionContext,
+): ConditionOutcome {
+  let sawInformational = false;
+  for (const c of conds) {
+    const o = evaluateCondition(c, ctx);
+    if (o === "false") return "false";
+    if (o === "informational") sawInformational = true;
+  }
+  return sawInformational ? "informational" : "true";
+}

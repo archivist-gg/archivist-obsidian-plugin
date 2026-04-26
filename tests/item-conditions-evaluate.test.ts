@@ -1,6 +1,7 @@
 // tests/item-conditions-evaluate.test.ts
 import { describe, it, expect } from "vitest";
 import { evaluateCondition } from "../src/modules/item/item.conditions";
+import { evaluateConditions } from "../src/modules/item/item.conditions";
 import type { ConditionContext } from "../src/modules/item/item.conditions.types";
 
 function ctx(over: Partial<ConditionContext> = {}): ConditionContext {
@@ -135,5 +136,47 @@ describe("evaluateCondition - raw and any_of", () => {
       ],
     };
     expect(evaluateCondition(cond, ctx())).toBe("informational");
+  });
+});
+
+describe("evaluateConditions - AND-combine", () => {
+  it("empty array -> true (always-applies)", () => {
+    expect(evaluateConditions([], ctx())).toBe("true");
+  });
+
+  it("all true -> true", () => {
+    const r = evaluateConditions([{ kind: "no_armor" }, { kind: "no_shield" }], ctx());
+    expect(r).toBe("true");
+  });
+
+  it("any false -> false (false beats informational)", () => {
+    const c = ctx({
+      derived: {
+        equippedSlots: {
+          armor: { index: 0, entity: null, entityType: "armor", entry: { item: "x" } },
+        },
+      },
+    });
+    const r = evaluateConditions(
+      [{ kind: "no_armor" }, { kind: "underwater" }],
+      c,
+    );
+    expect(r).toBe("false");
+  });
+
+  it("any informational with no false -> informational", () => {
+    const r = evaluateConditions(
+      [{ kind: "no_armor" }, { kind: "underwater" }],
+      ctx(),
+    );
+    expect(r).toBe("informational");
+  });
+
+  it("all informational -> informational", () => {
+    const r = evaluateConditions(
+      [{ kind: "underwater" }, { kind: "vs_attack_type", value: "ranged" }],
+      ctx(),
+    );
+    expect(r).toBe("informational");
   });
 });
