@@ -5,6 +5,12 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { DerivedStats, EquippedSlots, EquipmentEntry, ResolvedCharacter, Character } from "../src/modules/pc/pc.types";
 
+const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
+vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
+  confirm: confirmMock,
+  confirmDelete: vi.fn().mockResolvedValue(true),
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const baseChar = (): Character => ({
@@ -62,7 +68,8 @@ describe("LoadoutStrip", () => {
     expect(armorSlot?.querySelector(".pc-loadout-stat")?.textContent).toMatch(/AC 18/);
   });
 
-  it("clicking unequip on a filled slot calls editState.unequipItem with index", () => {
+  it("clicking unequip on a filled slot calls editState.unequipItem with index", async () => {
+    confirmMock.mockClear();
     const slots: Partial<EquippedSlots> = {
       mainhand: {
         index: 3,
@@ -71,13 +78,70 @@ describe("LoadoutStrip", () => {
         entityType: "weapon",
       },
     };
-    const editState = { unequipItem: vi.fn() };
+    const editState = { unequipItem: vi.fn(), unattuneItem: vi.fn() };
     const root = mountContainer();
     new LoadoutStrip().render(root, ctxWith(slots, editState));
     const btn = root.querySelector("[data-slot='mainhand'] .pc-loadout-unequip") as HTMLElement;
     expect(btn).toBeTruthy();
     btn.click();
+    await Promise.resolve();
+    expect(confirmMock).not.toHaveBeenCalled();
     expect(editState.unequipItem).toHaveBeenCalledWith(3);
+    expect(editState.unattuneItem).not.toHaveBeenCalled();
+  });
+
+  describe("Unequip + attunement flow", () => {
+    it("clicking Unequip on attuned slot shows confirm; on confirm, unattunes then unequips", async () => {
+      confirmMock.mockClear();
+      confirmMock.mockResolvedValueOnce(true);
+      const slots: Partial<EquippedSlots> = {
+        mainhand: {
+          index: 7,
+          entry: { item: "[[ring-of-evasion]]", equipped: true, attuned: true } as EquipmentEntry,
+          entity: { name: "Ring of Evasion" } as never,
+          entityType: "item",
+        },
+      };
+      const order: string[] = [];
+      const unequipItem = vi.fn(() => { order.push("unequip"); });
+      const unattuneItem = vi.fn(() => { order.push("unattune"); });
+      const editState = { unequipItem, unattuneItem };
+      const root = mountContainer();
+      new LoadoutStrip().render(root, ctxWith(slots, editState));
+      const btn = root.querySelector("[data-slot='mainhand'] .pc-loadout-unequip") as HTMLElement;
+      btn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(unattuneItem).toHaveBeenCalledWith(7);
+      expect(unequipItem).toHaveBeenCalledWith(7);
+      expect(order).toEqual(["unattune", "unequip"]);
+    });
+
+    it("clicking Unequip on attuned slot; on cancel, leaves state unchanged", async () => {
+      confirmMock.mockClear();
+      confirmMock.mockResolvedValueOnce(false);
+      const slots: Partial<EquippedSlots> = {
+        mainhand: {
+          index: 7,
+          entry: { item: "[[ring-of-evasion]]", equipped: true, attuned: true } as EquipmentEntry,
+          entity: { name: "Ring of Evasion" } as never,
+          entityType: "item",
+        },
+      };
+      const unequipItem = vi.fn();
+      const unattuneItem = vi.fn();
+      const editState = { unequipItem, unattuneItem };
+      const root = mountContainer();
+      new LoadoutStrip().render(root, ctxWith(slots, editState));
+      const btn = root.querySelector("[data-slot='mainhand'] .pc-loadout-unequip") as HTMLElement;
+      btn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(unattuneItem).not.toHaveBeenCalled();
+      expect(unequipItem).not.toHaveBeenCalled();
+    });
   });
 
   it("renders slot type icon as a typographic glyph", () => {

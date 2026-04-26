@@ -9,6 +9,7 @@ import type { ArmorEntity } from "../../../armor/armor.types";
 import type { Item } from "../../../item/item.types";
 import { requiresAttunement } from "./requires-attunement";
 import { renderInlineItemForm } from "./inline-item-form";
+import { unequipWithAttunementCheck } from "./unequip-flow";
 
 export interface RowExpandCtx {
   entry: EquipmentEntry;
@@ -54,8 +55,11 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
   const equipBtn = strip.createEl("button", { cls: "pc-inv-action", text: ctx.entry.equipped ? "Unequip" : "Equip" });
   if (ctx.entry.equipped) equipBtn.classList.add("active");
   equipBtn.addEventListener("click", () => {
-    if (ctx.entry.equipped) editState.unequipItem(i);
-    else editState.equipItem(i);
+    if (ctx.entry.equipped) {
+      void unequipWithAttunementCheck(ctx.app, editState, ctx.entry, i);
+    } else {
+      editState.equipItem(i);
+    }
   });
 
   // Attune / Unattune — only when required

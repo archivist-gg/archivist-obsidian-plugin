@@ -4,6 +4,12 @@ import { InventoryRow } from "../src/modules/pc/components/inventory/inventory-r
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
 
+const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
+vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
+  confirm: confirmMock,
+  confirmDelete: vi.fn().mockResolvedValue(true),
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const make = (
@@ -101,5 +107,75 @@ describe("InventoryRow", () => {
     (root.querySelector(".pc-inv-toggle") as HTMLElement).click();
     expect(equipItem).toHaveBeenCalledWith(0);
     expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  describe("unequip + attunement flow", () => {
+    it("clicking toggle on a non-attuned equipped item unequips directly without confirm", async () => {
+      confirmMock.mockClear();
+      const it = make("[[longsword]]", {
+        entity: { name: "Longsword" },
+        entityType: "weapon",
+        entry: { equipped: true, attuned: false },
+      });
+      const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
+      const unequipItem = vi.fn();
+      const unattuneItem = vi.fn();
+      const editState = { equipItem, unequipItem, unattuneItem };
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: editState as never });
+      (root.querySelector(".pc-inv-toggle") as HTMLElement).click();
+      // Allow any pending microtasks to settle
+      await Promise.resolve();
+      expect(confirmMock).not.toHaveBeenCalled();
+      expect(unequipItem).toHaveBeenCalledWith(0);
+      expect(unattuneItem).not.toHaveBeenCalled();
+    });
+
+    it("clicking toggle on an attuned item shows confirm modal; on confirm, unattunes then unequips", async () => {
+      confirmMock.mockClear();
+      confirmMock.mockResolvedValueOnce(true);
+      const it = make("[[ring-of-evasion]]", {
+        entity: { name: "Ring of Evasion", type: "ring", attunement: true },
+        entityType: "item",
+        entry: { equipped: true, attuned: true },
+      });
+      const order: string[] = [];
+      const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
+      const unequipItem = vi.fn(() => { order.push("unequip"); });
+      const unattuneItem = vi.fn(() => { order.push("unattune"); });
+      const editState = { equipItem, unequipItem, unattuneItem };
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: editState as never });
+      (root.querySelector(".pc-inv-toggle") as HTMLElement).click();
+      // Wait for confirm promise + subsequent calls
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(unattuneItem).toHaveBeenCalledWith(0);
+      expect(unequipItem).toHaveBeenCalledWith(0);
+      expect(order).toEqual(["unattune", "unequip"]);
+    });
+
+    it("clicking toggle on an attuned item; on cancel, leaves state unchanged", async () => {
+      confirmMock.mockClear();
+      confirmMock.mockResolvedValueOnce(false);
+      const it = make("[[ring-of-evasion]]", {
+        entity: { name: "Ring of Evasion", type: "ring", attunement: true },
+        entityType: "item",
+        entry: { equipped: true, attuned: true },
+      });
+      const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
+      const unequipItem = vi.fn();
+      const unattuneItem = vi.fn();
+      const editState = { equipItem, unequipItem, unattuneItem };
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: editState as never });
+      (root.querySelector(".pc-inv-toggle") as HTMLElement).click();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(unattuneItem).not.toHaveBeenCalled();
+      expect(unequipItem).not.toHaveBeenCalled();
+    });
   });
 });

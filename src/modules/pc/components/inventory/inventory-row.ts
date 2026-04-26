@@ -5,6 +5,7 @@ import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 import { requiresAttunement } from "./requires-attunement";
 import { prettifyName } from "./filter-state";
+import { unequipWithAttunementCheck } from "./unequip-flow";
 
 export interface InventoryRowCtx {
   entry: EquipmentEntry;
@@ -140,7 +141,7 @@ function qtyOrCost(ctx: InventoryRowCtx): string {
 function handleToggleClick(ctx: InventoryRowCtx): void {
   if (!ctx.editState) return;
   if (ctx.entry.equipped) {
-    ctx.editState.unequipItem(ctx.resolved.index);
+    void unequipWithAttunementCheck(ctx.app, ctx.editState, ctx.entry, ctx.resolved.index);
   } else {
     ctx.editState.equipItem(ctx.resolved.index);
   }

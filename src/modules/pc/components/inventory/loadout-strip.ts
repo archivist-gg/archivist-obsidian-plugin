@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
 import type { ResolvedEquipped, SlotKey } from "../../pc.types";
 import { setInventoryIcon } from "../../assets/inventory-icons";
+import { unequipWithAttunementCheck } from "./unequip-flow";
 
 const SLOT_ORDER: SlotKey[] = ["mainhand", "offhand", "armor", "shield"];
 const SLOT_LABEL: Record<SlotKey, string> = {
@@ -45,7 +46,9 @@ export class LoadoutStrip implements SheetComponent {
 
       if (editState) {
         const btn = cell.createEl("button", { cls: "pc-loadout-unequip", text: "Unequip" });
-        btn.addEventListener("click", () => editState.unequipItem(occupant.index));
+        btn.addEventListener("click", () => {
+          void unequipWithAttunementCheck(ctx.app, editState, occupant.entry, occupant.index);
+        });
       }
     }
   }

@@ -5,6 +5,12 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
 
+const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
+vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
+  confirm: confirmMock,
+  confirmDelete: vi.fn().mockResolvedValue(true),
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const make = (
@@ -116,5 +122,85 @@ describe("renderRowExpand", () => {
     const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("equip")) as HTMLElement;
     eqBtn.click();
     expect(equipItem).toHaveBeenCalledWith(5); // resolved.index
+  });
+
+  describe("Unequip + attunement flow", () => {
+    it("clicking Unequip on a non-attuned equipped item unequips directly without confirm", async () => {
+      confirmMock.mockClear();
+      const { entry, resolved } = make(
+        "[[longsword]]",
+        { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } },
+        { entityType: "weapon", entry: { equipped: true, attuned: false } },
+      );
+      const unequipItem = vi.fn();
+      const unattuneItem = vi.fn();
+      const editState = {
+        equipItem: vi.fn().mockReturnValue({ kind: "ok" }),
+        unequipItem, removeItem: vi.fn(),
+        attuneItem: vi.fn().mockReturnValue({ kind: "ok" }), unattuneItem,
+      };
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never });
+      const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("unequip")) as HTMLElement;
+      eqBtn.click();
+      await Promise.resolve();
+      expect(confirmMock).not.toHaveBeenCalled();
+      expect(unequipItem).toHaveBeenCalledWith(5);
+      expect(unattuneItem).not.toHaveBeenCalled();
+    });
+
+    it("clicking Unequip on an attuned item shows confirm; on confirm, unattunes then unequips", async () => {
+      confirmMock.mockClear();
+      confirmMock.mockResolvedValueOnce(true);
+      const { entry, resolved } = make(
+        "[[ring-of-evasion]]",
+        { name: "Ring of Evasion", type: "ring", attunement: true },
+        { entityType: "item", entry: { equipped: true, attuned: true } },
+      );
+      const order: string[] = [];
+      const unequipItem = vi.fn(() => { order.push("unequip"); });
+      const unattuneItem = vi.fn(() => { order.push("unattune"); });
+      const editState = {
+        equipItem: vi.fn().mockReturnValue({ kind: "ok" }),
+        unequipItem, removeItem: vi.fn(),
+        attuneItem: vi.fn().mockReturnValue({ kind: "ok" }), unattuneItem,
+      };
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never });
+      const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("unequip")) as HTMLElement;
+      eqBtn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(unattuneItem).toHaveBeenCalledWith(5);
+      expect(unequipItem).toHaveBeenCalledWith(5);
+      expect(order).toEqual(["unattune", "unequip"]);
+    });
+
+    it("clicking Unequip on an attuned item; on cancel, leaves state unchanged", async () => {
+      confirmMock.mockClear();
+      confirmMock.mockResolvedValueOnce(false);
+      const { entry, resolved } = make(
+        "[[ring-of-evasion]]",
+        { name: "Ring of Evasion", type: "ring", attunement: true },
+        { entityType: "item", entry: { equipped: true, attuned: true } },
+      );
+      const unequipItem = vi.fn();
+      const unattuneItem = vi.fn();
+      const editState = {
+        equipItem: vi.fn().mockReturnValue({ kind: "ok" }),
+        unequipItem, removeItem: vi.fn(),
+        attuneItem: vi.fn().mockReturnValue({ kind: "ok" }), unattuneItem,
+      };
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never });
+      const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("unequip")) as HTMLElement;
+      eqBtn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(confirmMock).toHaveBeenCalledTimes(1);
+      expect(unattuneItem).not.toHaveBeenCalled();
+      expect(unequipItem).not.toHaveBeenCalled();
+    });
   });
 });
