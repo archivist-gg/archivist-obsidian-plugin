@@ -1,3 +1,4 @@
+import type { App } from "obsidian";
 import type { CoreAPI } from "../../core/module-api";
 import type { ComponentRegistry } from "./components/component-registry";
 import type { ComponentRenderContext } from "./components/component.types";
@@ -11,6 +12,7 @@ export interface RenderSheetOptions {
   registry: ComponentRegistry;
   editState: CharacterEditState | null;
   core: CoreAPI;
+  app: App;
   warnings: string[];
 }
 
@@ -20,14 +22,14 @@ export interface RenderSheetOptions {
  * a banner at the very top.
  */
 export function renderPCSheet(opts: RenderSheetOptions): void {
-  const { root, resolved, derived, registry, core, warnings } = opts;
+  const { root, resolved, derived, registry, core, app, warnings } = opts;
   const prevScroll = root.scrollTop;
   root.empty();
   const sheet = root.createDiv({ cls: "archivist-pc-sheet" });
 
   if (warnings.length > 0) renderWarnings(sheet, warnings);
 
-  const ctx: ComponentRenderContext = { resolved, derived, core, editState: opts.editState };
+  const ctx: ComponentRenderContext = { resolved, derived, core, app, editState: opts.editState };
 
   // 1. Hero (AC / HP / HD rendered internally by HeaderSection)
   safeRender(sheet, "pc-hero", "header-section", registry, ctx);

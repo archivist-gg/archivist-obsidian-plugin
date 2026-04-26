@@ -200,6 +200,7 @@ export class PCSheetView extends TextFileView {
       derived: this.derived,
       registry: this.mod.registry,
       core: this.mod.core,
+      app: this.app,
       editState: this.editState,
       warnings,
     });

@@ -32,6 +32,7 @@ function ctxWith(c: Character, derivedOverrides: Partial<DerivedStats> = {}, edi
       ...derivedOverrides,
     } as DerivedStats,
     core: {} as never,
+    app: {} as never,
     editState: editState as never,
   };
 }

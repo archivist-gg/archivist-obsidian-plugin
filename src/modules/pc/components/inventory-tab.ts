@@ -1,3 +1,4 @@
+import { type App, Modal, Notice } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { EquipmentEntry, ResolvedEquipped, SlotKey } from "../pc.types";
 import { currencyCell } from "./edit-primitives";
@@ -71,14 +72,13 @@ export class InventoryTab implements SheetComponent {
       root.createDiv({ cls: "pc-empty-line", text: "Nothing carried." });
     } else {
       const list = root.createDiv({ cls: "pc-inventory-carried-list" });
-      eq.forEach((entry, i) => this.renderCarriedRow(list, entry, i, editState));
+      eq.forEach((entry, i) => this.renderCarriedRow(list, entry, i, editState, ctx.app));
     }
 
     if (editState) {
       const addBtn = root.createEl("button", { cls: "pc-inventory-add-btn", text: "+ add item" });
       addBtn.addEventListener("click", () => {
-        const slug = activeWindow.prompt("Item slug (e.g. longsword):");
-        if (slug) editState.addItem(slug.trim());
+        new AddItemModal(ctx.app, (slug) => editState.addItem(slug)).open();
       });
     }
   }
@@ -90,7 +90,7 @@ export class InventoryTab implements SheetComponent {
     attuneItem: (i: number) => { kind: string };
     unattuneItem: (i: number) => void;
     setCharges: (i: number, current: number, max?: number) => void;
-  }): void {
+  }, app: App): void {
     const row = list.createDiv({ cls: "pc-inventory-carried-row" });
     row.createSpan({ cls: "pc-inventory-item-name", text: entry.overrides?.name ?? prettyName(entry.item) });
     if (entry.qty && entry.qty > 1) row.createSpan({ cls: "pc-inventory-item-qty", text: `×${entry.qty}` });
@@ -112,7 +112,9 @@ export class InventoryTab implements SheetComponent {
       if (entry.attuned) editState.unattuneItem(i);
       else {
         const r = editState.attuneItem(i);
-        if (r.kind === "rejected") activeWindow.alert("Attunement limit reached. Unattune another item first or raise the cap.");
+        if (r.kind === "rejected") {
+          new Notice("Attunement limit reached. Unattune another item first or raise the cap.");
+        }
       }
     });
 
@@ -122,17 +124,32 @@ export class InventoryTab implements SheetComponent {
       else {
         const r = editState.equipItem(i);
         if (r.kind === "conflict" && typeof r.withIndex === "number") {
-          if (activeWindow.confirm("Slot occupied — replace currently-equipped item?")) {
-            editState.unequipItem(r.withIndex);
-            editState.equipItem(i);
-          }
+          const conflictIndex = r.withIndex;
+          new ConfirmModal(app, {
+            title: "Replace equipped item?",
+            message: "Slot occupied — replace the currently-equipped item?",
+            confirmLabel: "Replace",
+            onConfirm: () => {
+              editState.unequipItem(conflictIndex);
+              editState.equipItem(i);
+            },
+          }).open();
         }
       }
     });
 
     const rm = row.createEl("button", { cls: "pc-inventory-remove-btn", text: "×" });
     rm.addEventListener("click", () => {
-      if (entry.equipped && !activeWindow.confirm("Item is equipped — remove anyway?")) return;
+      if (entry.equipped) {
+        new ConfirmModal(app, {
+          title: "Remove equipped item?",
+          message: "Item is equipped — remove anyway?",
+          confirmLabel: "Remove",
+          danger: true,
+          onConfirm: () => editState.removeItem(i),
+        }).open();
+        return;
+      }
       editState.removeItem(i);
     });
   }
@@ -170,4 +187,98 @@ function prettyName(itemRef: string): string {
   const m = itemRef.match(/^\[\[(.+)\]\]$/);
   if (m) return m[1].replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return itemRef;
+}
+
+// ---------------------------------------------------------------------------
+// Modals
+//
+// Electron's renderer process (which Obsidian uses) blocks `window.prompt`,
+// `window.alert`, and `window.confirm` at runtime — they throw "not supported"
+// errors. The eslint `no-alert` rule exists for that exact reason. So inventory
+// edit prompts go through Obsidian's `Modal` primitive instead.
+// ---------------------------------------------------------------------------
+
+class AddItemModal extends Modal {
+  private input!: HTMLInputElement;
+
+  constructor(app: App, private onSubmit: (slug: string) => void) {
+    super(app);
+  }
+
+  onOpen(): void {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("archivist-modal");
+    contentEl.createEl("h2", { text: "Add item" });
+    contentEl.createEl("p", { text: "Enter the item slug to add." });
+
+    this.input = contentEl.createEl("input", {
+      type: "text",
+      cls: "pc-inventory-add-input",
+      attr: { placeholder: "Longsword" },
+    });
+    this.input.focus();
+    this.input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this.commit();
+      }
+    });
+
+    const btnRow = contentEl.createDiv({ cls: "archivist-modal-buttons" });
+    const cancelBtn = btnRow.createEl("button", { text: "Cancel" });
+    cancelBtn.addEventListener("click", () => this.close());
+    const addBtn = btnRow.createEl("button", { text: "Add", cls: "mod-cta" });
+    addBtn.addEventListener("click", () => this.commit());
+  }
+
+  private commit(): void {
+    const slug = this.input.value.trim();
+    if (!slug) return;
+    this.onSubmit(slug);
+    this.close();
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+  }
+}
+
+interface ConfirmModalOptions {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  danger?: boolean;
+  onConfirm: () => void;
+}
+
+class ConfirmModal extends Modal {
+  constructor(app: App, private opts: ConfirmModalOptions) {
+    super(app);
+  }
+
+  onOpen(): void {
+    const { contentEl } = this;
+    contentEl.empty();
+    contentEl.addClass("archivist-modal");
+    contentEl.createEl("h2", { text: this.opts.title });
+    contentEl.createEl("p", { text: this.opts.message });
+
+    const btnRow = contentEl.createDiv({ cls: "archivist-modal-buttons" });
+    const cancelBtn = btnRow.createEl("button", { text: this.opts.cancelLabel ?? "Cancel" });
+    cancelBtn.addEventListener("click", () => this.close());
+    const confirmBtn = btnRow.createEl("button", {
+      text: this.opts.confirmLabel ?? "Confirm",
+      cls: this.opts.danger ? "mod-warning" : "mod-cta",
+    });
+    confirmBtn.addEventListener("click", () => {
+      this.opts.onConfirm();
+      this.close();
+    });
+  }
+
+  onClose(): void {
+    this.contentEl.empty();
+  }
 }

@@ -1468,6 +1468,7 @@
   cursor: pointer;
 }
 .pc-inventory-attune-btn.is-on { background: var(--color-green); color: white; }
+.pc-inventory-add-input { width: 100%; margin-bottom: 0.75em; }
 
 .pc-attack-rows .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .pc-attack-table th,
