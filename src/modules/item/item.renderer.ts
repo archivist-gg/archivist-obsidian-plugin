@@ -190,7 +190,9 @@ function describeBonuses(b: NonNullable<ItemEntity["bonuses"]>): string[] {
   if (b.speed) {
     const parts: string[] = [];
     for (const [k, v] of Object.entries(b.speed)) {
-      if (v !== undefined) parts.push(`${k} ${typeof v === "number" ? `${v} ft` : v}`);
+      if (typeof v === "number") parts.push(`${k} ${v} ft`);
+      else if (v === "walk") parts.push(`${k} walk`);
+      // else: ConditionalBonus — skip, surface in Task 21
     }
     if (parts.length > 0) out.push(`Speed ${parts.join(", ")}`);
   }
