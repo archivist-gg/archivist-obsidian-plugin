@@ -87,4 +87,18 @@ describe("InventoryList", () => {
     (rows[1] as HTMLElement).click();
     expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(2);
   });
+
+  it("uses entity data when registry has a matching slug", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[longsword]]" }];
+    const longsword = { name: "Longsword of Sharpness", rarity: "rare" };
+    const root = mountContainer();
+    new InventoryList().render(root, {
+      ...ctx(c),
+      core: { entities: { getBySlug: (slug: string) => slug === "longsword" ? { entityType: "item", data: longsword } : null } } as never,
+    });
+    const name = root.querySelector(".pc-inv-name");
+    expect(name?.textContent).toBe("Longsword of Sharpness");
+    expect(name?.classList.contains("rarity-rare")).toBe(true);
+  });
 });
