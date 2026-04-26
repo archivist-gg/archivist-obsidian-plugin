@@ -1,284 +1,76 @@
-import { type App, Modal, Notice } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { EquipmentEntry, ResolvedEquipped, SlotKey } from "../pc.types";
-import { currencyCell } from "./edit-primitives";
-import { renderChargesWidget } from "./charges-widget";
-
-const COIN_KEYS = ["pp", "gp", "ep", "sp", "cp"] as const;
-const SLOT_ORDER: SlotKey[] = ["mainhand", "offhand", "armor", "shield"];
-const SLOT_LABEL: Record<SlotKey, string> = { mainhand: "MAINHAND", offhand: "OFFHAND", armor: "ARMOR", shield: "SHIELD" };
+import type { FilterState } from "./inventory/filter-state";
+import { LoadoutStrip } from "./inventory/loadout-strip";
+import { CurrencyStrip } from "./inventory/currency-strip";
+import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
+import { InventoryFilters } from "./inventory/inventory-filters";
+import { InventoryList } from "./inventory/inventory-list";
 
 export class InventoryTab implements SheetComponent {
   readonly type = "inventory-tab";
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-tab-body pc-inventory-body" });
-    const editState = ctx.editState as null | {
-      equipItem: (i: number) => { kind: string; withIndex?: number; slot?: SlotKey };
-      unequipItem: (i: number) => void;
-      removeItem: (i: number) => void;
-      attuneItem: (i: number) => { kind: string };
-      unattuneItem: (i: number) => void;
-      addItem: (slug: string, opts?: { equipped?: boolean; slot?: SlotKey }) => void;
-      setCurrency: (coin: "pp"|"gp"|"ep"|"sp"|"cp", n: number) => void;
-      setCharges: (i: number, current: number, max?: number) => void;
+
+    // Local UI state (not persisted)
+    let mode: ToolbarMode = "list";
+    let filters: FilterState = { status: "all", types: new Set(), rarities: new Set(), search: "" };
+
+    const header = root.createDiv({ cls: "pc-inv-header" });
+    new LoadoutStrip().render(header, ctx);
+    // (attunement-strip will be added in Phase 7)
+
+    const toolbarHost = root.createDiv({ cls: "pc-inv-toolbar-host" });
+    const filtersHost = root.createDiv({ cls: "pc-inv-filters-host" });
+    const meta = root.createDiv({ cls: "pc-inv-meta" });
+    const body = root.createDiv({ cls: "pc-inv-body" });
+
+    const drawAll = (): void => {
+      toolbarHost.empty();
+      filtersHost.empty();
+      meta.empty();
+      body.empty();
+
+      new InventoryToolbar({
+        mode,
+        initialSearch: filters.search,
+        onSearch: (s) => { filters = { ...filters, search: s }; redrawBody(); },
+        onAdd: () => { mode = "browse"; drawAll(); },
+        onDone: () => { mode = "list"; drawAll(); },
+      }).render(toolbarHost);
+
+      new InventoryFilters({
+        filters, mode,
+        onChange: (next) => { filters = next; redrawBody(); },
+      }).render(filtersHost);
+
+      drawMeta();
+      redrawBody();
     };
 
-    this.renderEquipped(root, ctx, editState);
-    this.renderCarried(root, ctx, editState);
-    this.renderCurrency(root, ctx, editState);
-  }
-
-  private renderEquipped(root: HTMLElement, ctx: ComponentRenderContext, editState: null | { equipItem: (i: number) => unknown; unequipItem: (i: number) => void }): void {
-    root.createEl("h4", { cls: "pc-tab-heading", text: "Equipped" });
-    const grid = root.createDiv({ cls: "pc-inventory-slot-grid" });
-    const slots = ctx.derived.equippedSlots ?? {};
-
-    for (const key of SLOT_ORDER) {
-      const cell = grid.createDiv({ cls: "pc-inventory-slot" });
-      cell.setAttribute("data-slot", key);
-      cell.createDiv({ cls: "pc-inventory-slot-label", text: SLOT_LABEL[key] });
-      const occupant = slots[key];
-      if (occupant) {
-        cell.createDiv({ cls: "pc-inventory-slot-name", text: displayName(occupant) });
-        cell.createDiv({ cls: "pc-inventory-slot-stat", text: slotStat(occupant) });
-        if (editState) {
-          const btn = cell.createEl("button", { cls: "pc-inventory-unequip-btn", text: "Unequip" });
-          btn.addEventListener("click", () => editState.unequipItem(occupant.index));
-        }
-      } else {
-        cell.createDiv({ cls: "pc-inventory-slot-empty", text: "—" });
-      }
-    }
-
-    const att = root.createDiv({ cls: "pc-inventory-attunement" });
-    att.setText(`${ctx.derived.attunementUsed ?? 0} / ${ctx.derived.attunementLimit ?? 3} attuned`);
-  }
-
-  private renderCarried(root: HTMLElement, ctx: ComponentRenderContext, editState: null | {
-    equipItem: (i: number) => { kind: string; withIndex?: number };
-    unequipItem: (i: number) => void;
-    removeItem: (i: number) => void;
-    attuneItem: (i: number) => { kind: string };
-    unattuneItem: (i: number) => void;
-    addItem: (slug: string) => void;
-    setCharges: (i: number, current: number, max?: number) => void;
-  }): void {
-    const eq = ctx.resolved.definition.equipment ?? [];
-    const heading = root.createEl("h4", { cls: "pc-tab-heading" });
-    heading.setText(`Carried (${eq.length} items, ${ctx.derived.carriedWeight ?? 0} lbs)`);
-
-    if (eq.length === 0) {
-      root.createDiv({ cls: "pc-empty-line", text: "Nothing carried." });
-    } else {
-      const list = root.createDiv({ cls: "pc-inventory-carried-list" });
-      eq.forEach((entry, i) => this.renderCarriedRow(list, entry, i, editState, ctx.app));
-    }
-
-    if (editState) {
-      const addBtn = root.createEl("button", { cls: "pc-inventory-add-btn", text: "+ add item" });
-      addBtn.addEventListener("click", () => {
-        new AddItemModal(ctx.app, (slug) => editState.addItem(slug)).open();
+    const drawMeta = (): void => {
+      meta.empty();
+      const heading = meta.createEl("h4", { cls: "pc-tab-heading", text: "Inventory" });
+      const carried = ctx.derived.carriedWeight ?? 0;
+      const count = ctx.resolved.definition.equipment?.length ?? 0;
+      heading.createSpan({
+        cls: "pc-inv-meta-suffix",
+        text: ` ${count} items · ${carried.toFixed(carried % 1 === 0 ? 0 : 1)} lb carried`,
       });
-    }
-  }
+    };
 
-  private renderCarriedRow(list: HTMLElement, entry: EquipmentEntry, i: number, editState: null | {
-    equipItem: (i: number) => { kind: string; withIndex?: number };
-    unequipItem: (i: number) => void;
-    removeItem: (i: number) => void;
-    attuneItem: (i: number) => { kind: string };
-    unattuneItem: (i: number) => void;
-    setCharges: (i: number, current: number, max?: number) => void;
-  }, app: App): void {
-    const row = list.createDiv({ cls: "pc-inventory-carried-row" });
-    row.createSpan({ cls: "pc-inventory-item-name", text: entry.overrides?.name ?? prettyName(entry.item) });
-    if (entry.qty && entry.qty > 1) row.createSpan({ cls: "pc-inventory-item-qty", text: `×${entry.qty}` });
-
-    if (entry.state?.charges && editState) {
-      const chargesHost = row.createSpan({ cls: "pc-inventory-charges-host" });
-      renderChargesWidget(chargesHost, {
-        current: entry.state.charges.current,
-        max: entry.state.charges.max,
-        recovery: entry.state.recovery ? `${entry.state.recovery.amount} at ${entry.state.recovery.reset}` : undefined,
-        onSetCurrent: (n) => editState.setCharges(i, n),
-      });
-    }
-
-    if (!editState) return;
-
-    const attuneBtn = row.createEl("button", { cls: `pc-inventory-attune-btn${entry.attuned ? " is-on" : ""}`, text: entry.attuned ? "attuned ●" : "attune" });
-    attuneBtn.addEventListener("click", () => {
-      if (entry.attuned) editState.unattuneItem(i);
-      else {
-        const r = editState.attuneItem(i);
-        if (r.kind === "rejected") {
-          new Notice("Attunement limit reached. Unattune another item first or raise the cap.");
-        }
-      }
-    });
-
-    const equipBtn = row.createEl("button", { cls: "pc-inventory-equip-btn", text: entry.equipped ? "unequip" : "equip" });
-    equipBtn.addEventListener("click", () => {
-      if (entry.equipped) editState.unequipItem(i);
-      else {
-        const r = editState.equipItem(i);
-        if (r.kind === "conflict" && typeof r.withIndex === "number") {
-          const conflictIndex = r.withIndex;
-          new ConfirmModal(app, {
-            title: "Replace equipped item?",
-            message: "Slot occupied — replace the currently-equipped item?",
-            confirmLabel: "Replace",
-            onConfirm: () => {
-              editState.unequipItem(conflictIndex);
-              editState.equipItem(i);
-            },
-          }).open();
-        }
-      }
-    });
-
-    const rm = row.createEl("button", { cls: "pc-inventory-remove-btn", text: "×" });
-    rm.addEventListener("click", () => {
-      if (entry.equipped) {
-        new ConfirmModal(app, {
-          title: "Remove equipped item?",
-          message: "Item is equipped — remove anyway?",
-          confirmLabel: "Remove",
-          danger: true,
-          onConfirm: () => editState.removeItem(i),
-        }).open();
-        return;
-      }
-      editState.removeItem(i);
-    });
-  }
-
-  private renderCurrency(root: HTMLElement, ctx: ComponentRenderContext, editState: null | { setCurrency: (coin: "pp"|"gp"|"ep"|"sp"|"cp", n: number) => void }): void {
-    const cur = ctx.resolved.definition.currency;
-    if (!cur && !editState) return;
-    root.createEl("h4", { cls: "pc-tab-heading", text: "Currency" });
-    const strip = root.createDiv({ cls: "pc-currency-row" });
-    for (const coin of COIN_KEYS) {
-      const value = cur?.[coin] ?? 0;
-      if (editState) {
-        currencyCell(strip, { coin: coin.toUpperCase(), value, onSet: (n) => editState.setCurrency(coin, n) });
+    const redrawBody = (): void => {
+      body.empty();
+      if (mode === "list") {
+        new InventoryList({ filters }).render(body, ctx);
       } else {
-        const cell = strip.createDiv({ cls: "pc-currency-cell" });
-        cell.createDiv({ cls: "pc-currency-val", text: String(value) });
-        cell.createDiv({ cls: "pc-currency-label", text: coin.toUpperCase() });
+        body.createDiv({ cls: "pc-inv-empty", text: "Browse mode coming in Phase 9." });
       }
-    }
-  }
-}
+    };
 
-function displayName(slot: ResolvedEquipped): string {
-  return slot.entry.overrides?.name ?? slot.entity?.name ?? prettyName(slot.entry.item);
-}
+    drawAll();
 
-function slotStat(slot: ResolvedEquipped): string {
-  const entity = slot.entity as { ac?: { base?: number; flat?: number }; damage?: { dice?: string; type?: string } } | null;
-  if (entity?.ac) return `AC ${entity.ac.base ?? 0}${entity.ac.flat ? `+${entity.ac.flat}` : ""}`;
-  if (entity?.damage) return `${entity.damage.dice} ${entity.damage.type}`;
-  return "";
-}
-
-function prettyName(itemRef: string): string {
-  const m = itemRef.match(/^\[\[(.+)\]\]$/);
-  if (m) return m[1].replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  return itemRef;
-}
-
-// ---------------------------------------------------------------------------
-// Modals
-//
-// Electron's renderer process (which Obsidian uses) blocks `window.prompt`,
-// `window.alert`, and `window.confirm` at runtime — they throw "not supported"
-// errors. The eslint `no-alert` rule exists for that exact reason. So inventory
-// edit prompts go through Obsidian's `Modal` primitive instead.
-// ---------------------------------------------------------------------------
-
-class AddItemModal extends Modal {
-  private input!: HTMLInputElement;
-
-  constructor(app: App, private onSubmit: (slug: string) => void) {
-    super(app);
-  }
-
-  onOpen(): void {
-    const { contentEl } = this;
-    contentEl.empty();
-    contentEl.addClass("archivist-modal");
-    contentEl.createEl("h2", { text: "Add item" });
-    contentEl.createEl("p", { text: "Enter the item slug to add." });
-
-    this.input = contentEl.createEl("input", {
-      type: "text",
-      cls: "pc-inventory-add-input",
-      attr: { placeholder: "Longsword" },
-    });
-    this.input.focus();
-    this.input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        this.commit();
-      }
-    });
-
-    const btnRow = contentEl.createDiv({ cls: "archivist-modal-buttons" });
-    const cancelBtn = btnRow.createEl("button", { text: "Cancel" });
-    cancelBtn.addEventListener("click", () => this.close());
-    const addBtn = btnRow.createEl("button", { text: "Add", cls: "mod-cta" });
-    addBtn.addEventListener("click", () => this.commit());
-  }
-
-  private commit(): void {
-    const slug = this.input.value.trim();
-    if (!slug) return;
-    this.onSubmit(slug);
-    this.close();
-  }
-
-  onClose(): void {
-    this.contentEl.empty();
-  }
-}
-
-interface ConfirmModalOptions {
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  danger?: boolean;
-  onConfirm: () => void;
-}
-
-class ConfirmModal extends Modal {
-  constructor(app: App, private opts: ConfirmModalOptions) {
-    super(app);
-  }
-
-  onOpen(): void {
-    const { contentEl } = this;
-    contentEl.empty();
-    contentEl.addClass("archivist-modal");
-    contentEl.createEl("h2", { text: this.opts.title });
-    contentEl.createEl("p", { text: this.opts.message });
-
-    const btnRow = contentEl.createDiv({ cls: "archivist-modal-buttons" });
-    const cancelBtn = btnRow.createEl("button", { text: this.opts.cancelLabel ?? "Cancel" });
-    cancelBtn.addEventListener("click", () => this.close());
-    const confirmBtn = btnRow.createEl("button", {
-      text: this.opts.confirmLabel ?? "Confirm",
-      cls: this.opts.danger ? "mod-warning" : "mod-cta",
-    });
-    confirmBtn.addEventListener("click", () => {
-      this.opts.onConfirm();
-      this.close();
-    });
-  }
-
-  onClose(): void {
-    this.contentEl.empty();
+    const currencyHost = root.createDiv({ cls: "pc-inv-currency-host" });
+    new CurrencyStrip().render(currencyHost, ctx);
   }
 }

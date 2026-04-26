@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { InventoryTab } from "../src/modules/pc/components/inventory-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, EquippedSlots, ResolvedCharacter, Character } from "../src/modules/pc/pc.types";
+import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "../src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -19,49 +19,50 @@ const baseChar = (): Character => ({
   state: { hp: { current: 10, max: 10, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 0, exhaustion: 0 },
 });
 
-const slotFor = (name: string, category = "armor"): never =>
-  ({ index: 0, entity: { name, category, ac: { base: 18, flat: 0, add_dex: false } } as never, entry: {} as never } as never);
-
-function ctxWith(c: Character, derivedOverrides: Partial<DerivedStats> = {}, editState: object | null = null): ComponentRenderContext {
+function ctxWith(c: Character, derivedOverrides: Partial<DerivedStats> = {}): ComponentRenderContext {
   return {
     resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], state: c.state } as ResolvedCharacter,
-    derived: {
-      ac: 0, acBreakdown: [], attacks: [],
-      equippedSlots: {} as EquippedSlots,
-      carriedWeight: 0, attunementUsed: 0, attunementLimit: 3,
-      ...derivedOverrides,
-    } as DerivedStats,
-    core: {} as never,
+    derived: { ac: 0, acBreakdown: [], attacks: [], equippedSlots: {} as EquippedSlots, carriedWeight: 0, attunementUsed: 0, attunementLimit: 3, ...derivedOverrides } as DerivedStats,
+    core: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
-    editState: editState as never,
+    editState: null,
   };
 }
 
-describe("InventoryTab", () => {
-  it("renders four slot widgets", () => {
-    const c = baseChar();
+describe("InventoryTab (redesigned)", () => {
+  it("renders the four loadout slots", () => {
     const root = mountContainer();
-    new InventoryTab().render(root, ctxWith(c));
-    const slots = root.querySelectorAll(".pc-inventory-slot");
+    new InventoryTab().render(root, ctxWith(baseChar()));
+    const slots = root.querySelectorAll(".pc-loadout-slot");
     expect(slots).toHaveLength(4);
-    expect([...slots].map((s) => s.getAttribute("data-slot"))).toEqual(["mainhand", "offhand", "armor", "shield"]);
   });
 
-  it("renders attunement count line", () => {
-    const c = baseChar();
+  it("renders toolbar with search and Add Item button", () => {
     const root = mountContainer();
-    new InventoryTab().render(root, ctxWith(c, { attunementUsed: 2, attunementLimit: 3 }));
-    expect(root.querySelector(".pc-inventory-attunement")?.textContent).toMatch(/2\s*\/\s*3/);
+    new InventoryTab().render(root, ctxWith(baseChar()));
+    expect(root.querySelector(".pc-inv-search input")).toBeTruthy();
+    expect(root.querySelector(".pc-inv-add")).toBeTruthy();
   });
 
-  it("carried section lists every entry with equip/remove buttons (when editState present)", () => {
+  it("renders three filter chip groups", () => {
+    const root = mountContainer();
+    new InventoryTab().render(root, ctxWith(baseChar()));
+    const labels = [...root.querySelectorAll(".pc-inv-filter-group-label")].map((l) => l.textContent);
+    expect(labels).toEqual(["Status", "Type", "Rarity"]);
+  });
+
+  it("renders empty-state message when no equipment", () => {
+    const root = mountContainer();
+    new InventoryTab().render(root, ctxWith(baseChar()));
+    expect(root.querySelector(".pc-inv-empty")?.textContent).toMatch(/no items/i);
+  });
+
+  it("renders alphabetical rows for each equipment entry", () => {
     const c = baseChar();
     c.equipment = [{ item: "[[longsword]]" }, { item: "[[plate]]" }];
-    const editState = { equipItem: vi.fn(), removeItem: vi.fn(), unequipItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn(), addItem: vi.fn(), setCurrency: vi.fn(), setCharges: vi.fn() };
     const root = mountContainer();
-    new InventoryTab().render(root, ctxWith(c, {}, editState));
-    expect(root.querySelectorAll(".pc-inventory-carried-row")).toHaveLength(2);
-    expect(root.querySelectorAll(".pc-inventory-equip-btn").length).toBeGreaterThan(0);
+    new InventoryTab().render(root, ctxWith(c));
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(2);
   });
 
   it("currency strip renders all 5 coins", () => {
@@ -72,14 +73,12 @@ describe("InventoryTab", () => {
     expect(root.querySelectorAll(".pc-currency-cell")).toHaveLength(5);
   });
 
-  it("clicking equip-btn calls editState.equipItem with the index", () => {
+  it("renders carried-weight + count in heading", () => {
     const c = baseChar();
-    c.equipment = [{ item: "[[longsword]]" }];
-    const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
-    const editState = { equipItem, unequipItem: vi.fn(), removeItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn(), addItem: vi.fn(), setCurrency: vi.fn(), setCharges: vi.fn() };
+    c.equipment = [{ item: "[[a]]" }, { item: "[[b]]" }];
     const root = mountContainer();
-    new InventoryTab().render(root, ctxWith(c, {}, editState));
-    (root.querySelector(".pc-inventory-equip-btn") as HTMLElement).click();
-    expect(equipItem).toHaveBeenCalledWith(0);
+    new InventoryTab().render(root, ctxWith(c, { carriedWeight: 12.5 }));
+    expect(root.querySelector(".pc-inv-meta-suffix")?.textContent).toMatch(/2 items/);
+    expect(root.querySelector(".pc-inv-meta-suffix")?.textContent).toMatch(/12\.5/);
   });
 });
