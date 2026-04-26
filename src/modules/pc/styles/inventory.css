@@ -642,3 +642,75 @@
   text-align: center;
   padding: 12px;
 }
+
+/* ---------- Browse mode (Add Item) ---------- */
+.archivist-pc-sheet .pc-inv-browse-banner {
+  padding: var(--pc-space-2) 0;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+  font-style: italic;
+  text-align: center;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-add-mini {
+  padding: 2px 8px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-add-mini:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+}
+
+/* Custom-item dashed input strip */
+.archivist-pc-sheet .pc-inv-custom-input {
+  display: flex;
+  gap: var(--pc-space-2);
+  align-items: center;
+  margin-top: var(--pc-space-3);
+  padding: var(--pc-space-2);
+  border: 1px dashed var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  background: rgba(255, 248, 220, 0.4);
+}
+.archivist-pc-sheet .pc-inv-custom-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-inv-custom-input input {
+  flex: 1;
+  border: 1px solid var(--pc-tan);
+  padding: 4px 8px;
+  border-radius: var(--pc-radius-sm);
+  background: transparent;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  outline: none;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-inv-custom-input button {
+  padding: 4px 12px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
