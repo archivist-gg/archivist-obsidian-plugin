@@ -13,6 +13,7 @@ const DEFAULT_FILTERS: FilterState = {
 
 export interface InventoryListOptions {
   filters?: FilterState;
+  onAttuneConflict?: (incomingIndex: number) => void;
 }
 
 export class InventoryList implements SheetComponent {
@@ -40,18 +41,24 @@ export class InventoryList implements SheetComponent {
 
     for (const item of filtered) {
       const rowHost = root.createDiv({ cls: "pc-inv-row-host" });
-      drawRow(rowHost, item, ctx, expanded);
+      drawRow(rowHost, item, ctx, expanded, this.opts.onAttuneConflict);
     }
   }
 }
 
-function drawRow(host: HTMLElement, item: VisibleEntry, ctx: ComponentRenderContext, expanded: Set<number>): void {
+function drawRow(
+  host: HTMLElement,
+  item: VisibleEntry,
+  ctx: ComponentRenderContext,
+  expanded: Set<number>,
+  onAttuneConflict?: (incomingIndex: number) => void,
+): void {
   host.empty();
   const isExpanded = expanded.has(item.resolved.index);
   const onToggle = (i: number) => {
     if (expanded.has(i)) expanded.delete(i);
     else expanded.add(i);
-    drawRow(host, item, ctx, expanded);
+    drawRow(host, item, ctx, expanded, onAttuneConflict);
   };
   new InventoryRow().render(host, {
     entry: item.entry,
@@ -67,6 +74,7 @@ function drawRow(host: HTMLElement, item: VisibleEntry, ctx: ComponentRenderCont
       resolved: item.resolved,
       app: ctx.app,
       editState: ctx.editState,
+      onAttuneConflict,
     });
   }
 }

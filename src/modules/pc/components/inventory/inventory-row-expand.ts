@@ -14,6 +14,7 @@ export interface RowExpandCtx {
   resolved: ResolvedEquipped;
   app: App;
   editState: CharacterEditState | null;
+  onAttuneConflict?: (incomingIndex: number) => void;
 }
 
 export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLElement {
@@ -53,8 +54,14 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
     const attuneBtn = strip.createEl("button", { cls: "pc-inv-action", text: ctx.entry.attuned ? "Unattune" : "Attune" });
     if (ctx.entry.attuned) attuneBtn.classList.add("active");
     attuneBtn.addEventListener("click", () => {
-      if (ctx.entry.attuned) editState.unattuneItem(i);
-      else editState.attuneItem(i);
+      if (ctx.entry.attuned) {
+        editState.unattuneItem(i);
+        return;
+      }
+      const result = editState.attuneItem(i);
+      if (result.kind === "rejected") {
+        ctx.onAttuneConflict?.(i);
+      }
     });
   }
 
