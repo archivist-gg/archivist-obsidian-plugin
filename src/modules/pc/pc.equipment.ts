@@ -6,6 +6,7 @@ import type { WeaponEntity } from "../weapon/weapon.types";
 import type {
   ACTerm,
   AppliedBonuses,
+  AttackRow,
   DerivedEquipment,
   EquipmentEntry,
   EquippedSlots,
@@ -183,11 +184,23 @@ function isTwoHanded(weapon: WeaponEntity): boolean {
 function defaultSlotForType(
   entityType: string | null,
   entity: ArmorEntity | WeaponEntity | ItemEntity | null,
+  registry: EntityRegistry,
 ): SlotKey | null {
   if (entityType === "weapon") return "mainhand";
   if (entityType === "armor") {
     if (entity && "category" in entity && entity.category === "shield") return "shield";
     return "armor";
+  }
+  // Magic items with a base_item pointing to a known weapon/armor route to
+  // the matching slot so they participate in attack rows / AC.
+  if (entityType === "item" && isItemEntity(entity) && typeof entity.base_item === "string") {
+    const base = registry.getByTypeAndSlug("weapon", entity.base_item);
+    if (base) return "mainhand";
+    const baseArmor = registry.getByTypeAndSlug("armor", entity.base_item);
+    if (baseArmor) {
+      const armorData = baseArmor.data as unknown as ArmorEntity;
+      return armorData.category === "shield" ? "shield" : "armor";
+    }
   }
   return null;
 }
@@ -220,7 +233,7 @@ function assignSlots(
     const { entity, entityType } = lookupEntity(entry, registry);
     if (!entity || !entityType) continue;
 
-    const defaultSlot = defaultSlotForType(entityType, entity);
+    const defaultSlot = defaultSlotForType(entityType, entity, registry);
     if (!defaultSlot) continue;
 
     const placed: ResolvedEquipped = { index: i, entity, entry };
@@ -307,21 +320,243 @@ function computeAC(
   return { ac, breakdown };
 }
 
+// ─────────────────────────────────────────────────────────────
+// Attack rows (Pass B, second half).
+// Resolves equipped weapons (including magic items with base_item) into
+// AttackRow entries. Picks the right ability mod (STR/DEX/finesse-best),
+// stacks magic-item bonuses with per-entry overrides, applies proficiency,
+// and emits a versatile "two-handed" second row only when the offhand is
+// free.
+// ─────────────────────────────────────────────────────────────
+
+function hasProperty(weapon: WeaponEntity, prop: string): boolean {
+  return weapon.properties.some((p) => p === prop);
+}
+
+function attackAbility(weapon: WeaponEntity, mods: Record<Ability, number>): Ability {
+  const isRanged = /ranged/.test(weapon.category);
+  if (isRanged) return "dex";
+  if (hasProperty(weapon, "finesse")) return mods.dex >= mods.str ? "dex" : "str";
+  return "str";
+}
+
+function isWeaponSlugProficient(
+  weapon: WeaponEntity,
+  weaponSlug: string,
+  profs: ProficienciesForQuery,
+): boolean {
+  const wp = profs.weapons;
+  if (wp.specific.includes(weaponSlug)) return true;
+  // WeaponEntity.category is like "martial-melee" / "simple-ranged"; map to
+  // the simple/martial axis used in proficiency category lists.
+  const cat = weapon.category;
+  if (typeof cat === "string") {
+    if (/^simple\b/.test(cat) && wp.categories.includes("simple")) return true;
+    if (/^martial\b/.test(cat) && wp.categories.includes("martial")) return true;
+    if (wp.categories.includes(cat)) return true;
+  }
+  return false;
+}
+
+/**
+ * Sums weapon_attack/weapon_damage bonuses from the magic ItemEntity (when
+ * the equipped entry is an item with a base_item), defaulting to 0/0 for
+ * plain weapon entities.
+ */
+function magicBonusesForWeaponEntry(
+  entity: ArmorEntity | WeaponEntity | ItemEntity | null,
+): { attack: number; damage: number } {
+  if (!entity || !isItemEntity(entity)) return { attack: 0, damage: 0 };
+  const b = entity.bonuses;
+  return {
+    attack: typeof b?.weapon_attack === "number" ? b.weapon_attack : 0,
+    damage: typeof b?.weapon_damage === "number" ? b.weapon_damage : 0,
+  };
+}
+
+function buildAttackRow(args: {
+  id: string;
+  name: string;
+  weapon: WeaponEntity;
+  baseDice: string;
+  ability: Ability;
+  mods: Record<Ability, number>;
+  proficient: boolean;
+  proficiencyBonus: number;
+  magicAttack: number;
+  magicDamage: number;
+  entryAttack: number;
+  entryDamage: number;
+  extraDamage?: string;
+}): AttackRow {
+  const {
+    id, name, weapon, baseDice, ability, mods, proficient, proficiencyBonus,
+    magicAttack, magicDamage, entryAttack, entryDamage, extraDamage,
+  } = args;
+
+  const abilityMod = mods[ability];
+  const pb = proficient ? proficiencyBonus : 0;
+  const toHit = abilityMod + pb + magicAttack + entryAttack;
+  const dmgFlat = abilityMod + magicDamage + entryDamage;
+  const damageDice = `${baseDice}${dmgFlat >= 0 ? "+" : ""}${dmgFlat}`.replace(/\+0$/, "");
+
+  const toHitBreakdown: ACTerm[] = [
+    { source: `${ability.toUpperCase()} modifier`, amount: abilityMod, kind: "ability" },
+  ];
+  if (pb !== 0) toHitBreakdown.push({ source: "Proficiency bonus", amount: pb, kind: "ability" });
+  if (magicAttack !== 0) toHitBreakdown.push({ source: "Magic", amount: magicAttack, kind: "item" });
+  if (entryAttack !== 0) toHitBreakdown.push({ source: "Override", amount: entryAttack, kind: "override" });
+
+  const damageBreakdown: ACTerm[] = [
+    { source: `${ability.toUpperCase()} modifier`, amount: abilityMod, kind: "ability" },
+  ];
+  if (magicDamage !== 0) damageBreakdown.push({ source: "Magic", amount: magicDamage, kind: "item" });
+  if (entryDamage !== 0) damageBreakdown.push({ source: "Override", amount: entryDamage, kind: "override" });
+
+  const range = weapon.range
+    ? `${weapon.range.normal}/${weapon.range.long} ft`
+    : undefined;
+
+  // Filter out conditional-property objects so the consumer gets a clean
+  // list of property names. WeaponProperty is a union of string literals and
+  // ConditionalProperty objects; narrow to the string literal arm.
+  const stringProps: string[] = weapon.properties.filter(
+    (p): p is Exclude<typeof p, { kind: "conditional" }> => typeof p === "string",
+  );
+
+  return {
+    id,
+    name,
+    range,
+    toHit,
+    damageDice,
+    damageType: weapon.damage.type,
+    extraDamage,
+    properties: stringProps,
+    proficient,
+    breakdown: { toHit: toHitBreakdown, damage: damageBreakdown },
+  };
+}
+
+function computeAttacks(
+  equippedSlots: EquippedSlots,
+  mods: Record<Ability, number>,
+  profs: ProficienciesForQuery,
+  registry: EntityRegistry,
+  warnings: string[],
+  proficiencyBonus: number,
+): AttackRow[] {
+  const rows: AttackRow[] = [];
+  const handedSlots: Array<{ key: "mainhand" | "offhand"; placed: ResolvedEquipped | undefined }> = [
+    { key: "mainhand", placed: equippedSlots.mainhand },
+    { key: "offhand", placed: equippedSlots.offhand },
+  ];
+
+  for (const { key, placed } of handedSlots) {
+    if (!placed) continue;
+    const { entity, entry } = placed;
+    if (!entity) continue;
+
+    // Resolve the underlying WeaponEntity. Direct weapon entries use entity
+    // as-is; ItemEntity entries with base_item resolve through the registry.
+    let weapon: WeaponEntity | null = null;
+    if (isWeaponEntity(entity)) {
+      weapon = entity;
+    } else if (isItemEntity(entity) && typeof entity.base_item === "string") {
+      const baseSlug = entity.base_item;
+      const found = registry.getByTypeAndSlug("weapon", baseSlug);
+      if (found && isWeaponEntity(found.data as unknown)) {
+        weapon = found.data as unknown as WeaponEntity;
+      } else {
+        warnings.push(`Magic weapon ${entity.name} references missing base_item [[${baseSlug}]].`);
+        continue;
+      }
+    } else {
+      continue;
+    }
+
+    // Determine slug for proficiency check: prefer the literal slug from the
+    // equipment entry (so the magic-item slug counts), fall back to the
+    // weapon's own slug.
+    const slugFromEntry = unwrapSlug(entry.item) ?? weapon.slug;
+    const proficient = isWeaponSlugProficient(weapon, slugFromEntry, profs)
+      || isWeaponSlugProficient(weapon, weapon.slug, profs);
+    if (!proficient) {
+      warnings.push(`Character not proficient with ${weapon.name}; proficiency bonus excluded.`);
+    }
+
+    const ability = attackAbility(weapon, mods);
+    const { attack: magicAttack, damage: magicDamage } = magicBonusesForWeaponEntry(entity);
+    const ovr = entry.overrides ?? {};
+    const entryAttack = typeof ovr.bonus === "number" ? ovr.bonus : 0;
+    const entryDamage = typeof ovr.damage_bonus === "number" ? ovr.damage_bonus : 0;
+    const extraDamage = typeof ovr.extra_damage === "string" ? ovr.extra_damage : undefined;
+    const displayName = ovr.name ?? weapon.name;
+
+    const baseRow = buildAttackRow({
+      id: `${key}:${weapon.slug}`,
+      name: displayName,
+      weapon,
+      baseDice: weapon.damage.dice,
+      ability,
+      mods,
+      proficient,
+      proficiencyBonus,
+      magicAttack,
+      magicDamage,
+      entryAttack,
+      entryDamage,
+      extraDamage,
+    });
+    rows.push(baseRow);
+
+    // Versatile second row: only when the weapon is versatile, has a
+    // versatile_dice, AND the offhand is free (so the player could grip
+    // two-handed).
+    if (
+      key === "mainhand"
+      && hasProperty(weapon, "versatile")
+      && typeof weapon.damage.versatile_dice === "string"
+      && !equippedSlots.offhand
+    ) {
+      rows.push(buildAttackRow({
+        id: `${key}:${weapon.slug}:versatile`,
+        name: `${displayName} (versatile)`,
+        weapon,
+        baseDice: weapon.damage.versatile_dice,
+        ability,
+        mods,
+        proficient,
+        proficiencyBonus,
+        magicAttack,
+        magicDamage,
+        entryAttack,
+        entryDamage,
+        extraDamage,
+      }));
+    }
+  }
+
+  return rows;
+}
+
 export function computeSlotsAndAttacks(
   resolved: ResolvedCharacter,
   mods: Record<Ability, number>,
-  _profs: ProficienciesForQuery,
+  profs: ProficienciesForQuery,
   registry: EntityRegistry,
   warnings: string[],
+  proficiencyBonus = 2,
 ): DerivedEquipment {
   const equippedSlots = assignSlots(resolved, registry, warnings);
   const overrides = resolved.definition.overrides ?? {};
 
   const { ac, breakdown } = computeAC(equippedSlots, resolved, mods, registry);
+  const attacks = computeAttacks(equippedSlots, mods, profs, registry, warnings, proficiencyBonus);
   return {
     ac,
     acBreakdown: breakdown,
-    attacks: [],
+    attacks,
     equippedSlots,
     carriedWeight: 0,
     // Attunement is persistent: an attuned item still occupies a slot even when unequipped (SRD).

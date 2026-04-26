@@ -373,3 +373,89 @@ describe("computeSlotsAndAttacks — AC chain", () => {
     expect(sources).toContain("Cloak of Protection");
   });
 });
+
+describe("computeSlotsAndAttacks — attack rows", () => {
+  const registry = buildEquipmentRegistry();
+  const fullProfs = { armor: { categories: [], specific: [] }, weapons: { categories: ["simple", "martial"], specific: [] }, tools: { categories: [], specific: [] } };
+  const noWeaponProfs = { armor: { categories: [], specific: [] }, weapons: { categories: [], specific: [] }, tools: { categories: [], specific: [] } };
+
+  it("STR-based melee (longsword, STR +3, proficient, PB +2): hit +5, dmg 1d8+3", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[longsword]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    const main = d.attacks[0];
+    expect(main.toHit).toBe(5);
+    expect(main.damageDice).toBe("1d8+3");
+    expect(main.damageType).toBe("slashing");
+    expect(main.proficient).toBe(true);
+  });
+
+  it("DEX-based ranged (shortbow, DEX +3, proficient): hit +5, dmg 1d6+3", () => {
+    const c = baseChar(); c.abilities.dex = 16;
+    c.equipment = [{ item: "[[shortbow]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 3, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks[0].toHit).toBe(5);
+    expect(d.attacks[0].damageDice).toBe("1d6+3");
+  });
+
+  it("finesse weapon picks max(STR, DEX)", () => {
+    const c = baseChar(); c.abilities.dex = 16; c.abilities.str = 8;
+    c.equipment = [{ item: "[[rapier]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: -1, dex: 3, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks[0].toHit).toBe(5);
+  });
+
+  it("non-proficient weapon: PB excluded + warning", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[longsword]]", equipped: true }];
+    const w: string[] = [];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, noWeaponProfs, registry, w);
+    expect(d.attacks[0].toHit).toBe(3);
+    expect(d.attacks[0].proficient).toBe(false);
+    expect(w.some((m) => /not proficient/i.test(m))).toBe(true);
+  });
+
+  it("magic weapon (item entity with bonuses) layered with per-entry override", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[plus-one-longsword]]", equipped: true, overrides: { bonus: 1, damage_bonus: 1 } }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks[0].toHit).toBe(7);
+    expect(d.attacks[0].damageDice).toBe("1d8+5");
+  });
+
+  it("entry overrides.extra_damage appended", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[longsword]]", equipped: true, overrides: { extra_damage: "1d6 fire" } }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks[0].extraDamage).toBe("1d6 fire");
+  });
+
+  it("versatile alone in mainhand → 1h + 2h rows", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[longsword]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks).toHaveLength(2);
+    expect(d.attacks[0].damageDice).toBe("1d8+3");
+    expect(d.attacks[1].damageDice).toBe("1d10+3");
+    expect(d.attacks[1].name).toMatch(/versatile/i);
+  });
+
+  it("dual-wield two longswords → both rows, NO versatile second-row (offhand occupied)", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [
+      { item: "[[longsword]]", equipped: true },
+      { item: "[[longsword]]", equipped: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks).toHaveLength(2);
+    expect(d.attacks.every((a) => !/versatile/i.test(a.name))).toBe(true);
+  });
+
+  it("two-handed weapon (greatsword) renders one row", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[greatsword]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks).toHaveLength(1);
+    expect(d.attacks[0].damageDice).toBe("2d6+3");
+  });
+});
