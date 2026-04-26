@@ -8,6 +8,8 @@ import type { ResolvedCharacter, DerivedStats } from "./pc.types";
 
 export const VIEW_TYPE_PC = "archivist-pc-sheet";
 
+const DEFAULT_ACTIVE_TAB = "panel-actions";
+
 export class PCSheetView extends TextFileView {
   private rawFileData = "";
   private character: ResolvedCharacter | null = null;
@@ -22,6 +24,13 @@ export class PCSheetView extends TextFileView {
   // Monotonic counter used to bail stale async renders when setViewData is
   // called again (file switch) before compendiumsReady resolves.
   private renderGeneration = 0;
+  // Currently-active tab panel id. Lifted up here from TabsContainer so it
+  // survives the renderSheet-driven re-render that every editState mutation
+  // triggers (root.empty() in renderPCSheet wipes the tab DOM, and without
+  // this anchor the container would always re-activate the first tab).
+  // Reset only on file switch (onLoadFile / setViewData(clear=true) / clear),
+  // never on internal mutations.
+  private activeTabId: string = DEFAULT_ACTIVE_TAB;
   // Exposed for tests to await the deferred render. Obsidian itself treats
   // setViewData as sync (void return) and never awaits it.
   rendered: Promise<void> = Promise.resolve();
@@ -65,6 +74,9 @@ export class PCSheetView extends TextFileView {
     // stale editState.
     this.editState = null;
     this.codeBlockRange = null;
+    // Reset active tab on file switch — opening a different PC should land
+    // the user on Actions, not whatever tab the previous PC happened to be on.
+    this.activeTabId = DEFAULT_ACTIVE_TAB;
     if (clear) this.contentEl.empty();
 
     const gen = ++this.renderGeneration;
@@ -154,6 +166,7 @@ export class PCSheetView extends TextFileView {
     this.codeBlockRange = null;
     this.lastWrittenData = null;
     this.isDirty = false;
+    this.activeTabId = DEFAULT_ACTIVE_TAB;
     this.contentEl.empty();
   }
 
@@ -175,6 +188,7 @@ export class PCSheetView extends TextFileView {
     this.codeBlockRange = null;
     this.lastWrittenData = null;
     this.isDirty = false;
+    this.activeTabId = DEFAULT_ACTIVE_TAB;
     await super.onLoadFile(file);
   }
 
@@ -203,6 +217,10 @@ export class PCSheetView extends TextFileView {
       app: this.app,
       editState: this.editState,
       warnings,
+      activeTabId: this.activeTabId,
+      onActiveTabChange: (panelId) => {
+        this.activeTabId = panelId;
+      },
     });
   }
 

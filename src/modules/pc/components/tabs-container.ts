@@ -21,6 +21,17 @@ export class TabsContainer implements SheetComponent {
     const buttons: HTMLButtonElement[] = [];
     const panelEls: HTMLDivElement[] = [];
 
+    // Resolve which tab should be active on initial render. If the parent
+    // view tracks tab state and passes it through ctx (the production path),
+    // honor it so re-renders triggered by editState mutations don't kick the
+    // user back to Actions. If unset (test fixtures that pre-date this
+    // contract, or any direct caller that doesn't care), fall back to the
+    // first declared tab.
+    const initialActive =
+      ctx.activeTabId && TAB_DEF.some(([, id]) => id === ctx.activeTabId)
+        ? ctx.activeTabId
+        : TAB_DEF[0][1];
+
     for (const [type, panelId, label] of TAB_DEF) {
       const btn = tabBar.createEl("button", { cls: "pc-tab-btn", text: label, attr: { "data-tab": panelId } });
       const panel = panels.createDiv({ cls: "pc-tab-panel", attr: { id: panelId } });
@@ -29,9 +40,12 @@ export class TabsContainer implements SheetComponent {
       else panel.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${type})` });
       buttons.push(btn);
       panelEls.push(panel);
-      btn.addEventListener("click", () => setActive(buttons, panelEls, panelId));
+      btn.addEventListener("click", () => {
+        setActive(buttons, panelEls, panelId);
+        ctx.onActiveTabChange?.(panelId);
+      });
     }
-    setActive(buttons, panelEls, TAB_DEF[0][1]);
+    setActive(buttons, panelEls, initialActive);
   }
 }
 

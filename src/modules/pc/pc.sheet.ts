@@ -14,6 +14,12 @@ export interface RenderSheetOptions {
   core: CoreAPI;
   app: App;
   warnings: string[];
+  /** Active tab to restore on this render (lifted up to PCSheetView so it
+   *  survives editState-triggered re-renders). Optional: TabsContainer falls
+   *  back to its first tab if unset. */
+  activeTabId?: string;
+  /** Setter the parent uses to remember tab clicks across re-renders. */
+  onActiveTabChange?: (panelId: string) => void;
 }
 
 /**
@@ -29,7 +35,15 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
 
   if (warnings.length > 0) renderWarnings(sheet, warnings);
 
-  const ctx: ComponentRenderContext = { resolved, derived, core, app, editState: opts.editState };
+  const ctx: ComponentRenderContext = {
+    resolved,
+    derived,
+    core,
+    app,
+    editState: opts.editState,
+    activeTabId: opts.activeTabId,
+    onActiveTabChange: opts.onActiveTabChange,
+  };
 
   // 1. Hero (AC / HP / HD rendered internally by HeaderSection)
   safeRender(sheet, "pc-hero", "header-section", registry, ctx);
