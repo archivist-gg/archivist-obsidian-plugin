@@ -1441,3 +1441,57 @@
   background: var(--pc-crimson, #8a2414);
   border-color: var(--pc-crimson, #8a2414);
 }
+
+/* === SP5 Equipment === */
+
+.pc-inventory-slot-grid { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 0.5em; margin: 0.5em 0; }
+.pc-inventory-slot { border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 0.5em; text-align: center; background: var(--background-secondary); }
+.pc-inventory-slot-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.25em; }
+.pc-inventory-slot-name { font-weight: 600; font-size: 13px; }
+.pc-inventory-slot-stat { font-size: 11px; color: var(--text-muted); }
+.pc-inventory-slot-empty { color: var(--text-faint); font-size: 18px; }
+.pc-inventory-attunement { margin-top: 0.5em; font-size: 12px; color: var(--text-muted); }
+.pc-inventory-carried-list { display: flex; flex-direction: column; gap: 0.3em; margin: 0.5em 0; }
+.pc-inventory-carried-row { display: flex; align-items: center; gap: 0.5em; padding: 0.2em 0; }
+.pc-inventory-item-name { flex: 1; }
+.pc-inventory-attune-btn,
+.pc-inventory-equip-btn,
+.pc-inventory-unequip-btn,
+.pc-inventory-remove-btn,
+.pc-inventory-add-btn {
+  padding: 0.15em 0.5em;
+  font-size: 11px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.pc-inventory-attune-btn.is-on { background: var(--color-green); color: white; }
+
+.pc-attack-rows .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pc-attack-table th,
+.pc-attack-table td { padding: 0.3em 0.5em; text-align: left; }
+.pc-attack-table th { background: var(--background-secondary); font-weight: 600; }
+.pc-attack-info { cursor: help; opacity: 0.6; }
+.pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
+
+.pc-ac-tooltip {
+  position: absolute;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 0.5em;
+  font-size: 12px;
+  z-index: 100;
+  min-width: 200px;
+}
+.pc-ac-tooltip-total { font-weight: 600; margin-bottom: 0.3em; }
+.pc-ac-tooltip-row { display: flex; justify-content: space-between; padding: 0.1em 0; }
+.pc-ac-tooltip-row.is-greyed { opacity: 0.5; }
+.pc-ac-tooltip-override { font-weight: 600; color: var(--color-accent); }
+.pc-ac-tooltip-divider { color: var(--text-muted); font-size: 10px; text-align: center; margin: 0.2em 0; }
+
+.pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
+.pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }
+.pc-charges-current { cursor: pointer; font-weight: 600; }
+.pc-charges-recovery { font-size: 10px; color: var(--text-muted); margin-top: 0.1em; }
