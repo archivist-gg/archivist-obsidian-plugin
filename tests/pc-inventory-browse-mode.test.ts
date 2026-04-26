@@ -80,4 +80,71 @@ describe("BrowseMode", () => {
       .render(root, ctxWithRegistry(new Map(), { addItem: vi.fn() }));
     expect(root.querySelector(".pc-inv-custom-input")).toBeTruthy();
   });
+
+  it("clicking a row expands it inline (sibling .pc-inv-expand appears)", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],
+    ]);
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithRegistry(reg, { addItem: vi.fn() }));
+    const firstRow = root.querySelector(".pc-inv-row") as HTMLElement;
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(0);
+    firstRow.click();
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(1);
+  });
+
+  it("clicking the same row again collapses it", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],
+    ]);
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithRegistry(reg, { addItem: vi.fn() }));
+    const firstRow = root.querySelector(".pc-inv-row") as HTMLElement;
+    firstRow.click();
+    firstRow.click();
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(0);
+  });
+
+  it("clicking the + Add button does NOT toggle expand", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],
+    ]);
+    const addItem = vi.fn();
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithRegistry(reg, { addItem }));
+    (root.querySelector(".pc-inv-add-mini") as HTMLElement).click();
+    expect(addItem).toHaveBeenCalledWith("longsword");
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(0);
+  });
+
+  it("multiple rows can be expanded simultaneously", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],
+      ["plate", { entityType: "armor", data: { name: "Plate", category: "heavy", ac: { base: 18 } } }],
+    ]);
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithRegistry(reg, { addItem: vi.fn() }));
+    const rows = root.querySelectorAll(".pc-inv-row");
+    (rows[0] as HTMLElement).click();
+    (rows[1] as HTMLElement).click();
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(2);
+  });
+
+  it("expanded row shows entity block (no PC actions strip)", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],
+    ]);
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithRegistry(reg, { addItem: vi.fn() }));
+    const firstRow = root.querySelector(".pc-inv-row") as HTMLElement;
+    firstRow.click();
+    expect(root.querySelector(".pc-inv-expand")).toBeTruthy();
+    // No equip / remove / attune buttons in browse mode
+    expect(root.querySelector(".pc-inv-actions")).toBeFalsy();
+  });
 });

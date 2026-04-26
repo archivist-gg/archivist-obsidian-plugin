@@ -6,6 +6,7 @@ import type { CharacterEditState } from "../../pc.edit-state";
 import { visibleItems, type FilterState, type VisibleEntry } from "./filter-state";
 import { iconForEntity } from "./icon-mapping";
 import { renderCustomItemInput } from "./custom-item-input";
+import { renderRowExpand } from "./inventory-row-expand";
 
 const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 
@@ -43,7 +44,13 @@ export class BrowseMode implements SheetComponent {
       });
     } else {
       const list = root.createDiv({ cls: "pc-inv-list" });
-      for (const v of filtered) renderBrowseRow(list, v, editState, ctx.app);
+      // Expand state is per-render (closure scoped), keyed by slug since
+      // browse-mode rows all share `index: -1` from the registry sweep.
+      const expanded = new Set<string>();
+      for (const v of filtered) {
+        const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
+        drawBrowseRow(rowHost, v, editState, ctx.app, expanded);
+      }
     }
 
     if (editState) {
@@ -54,8 +61,47 @@ export class BrowseMode implements SheetComponent {
   }
 }
 
-function renderBrowseRow(parent: HTMLElement, v: VisibleEntry, editState: CharacterEditState | null, _app: App): void {
+function browseKey(v: VisibleEntry): string {
+  return v.entry.item;
+}
+
+function drawBrowseRow(
+  host: HTMLElement,
+  v: VisibleEntry,
+  editState: CharacterEditState | null,
+  app: App,
+  expanded: Set<string>,
+): void {
+  host.empty();
+  const key = browseKey(v);
+  const isExpanded = expanded.has(key);
+  renderBrowseRow(host, v, editState, app, isExpanded, () => {
+    if (expanded.has(key)) expanded.delete(key);
+    else expanded.add(key);
+    drawBrowseRow(host, v, editState, app, expanded);
+  });
+  if (isExpanded) {
+    // Pass editState: null so renderRowExpand skips the PC-actions strip
+    // (Equip / Attune / Remove are inventory-row concerns, not browse-mode).
+    renderRowExpand(host, {
+      entry: v.entry,
+      resolved: v.resolved,
+      app,
+      editState: null,
+    });
+  }
+}
+
+function renderBrowseRow(
+  parent: HTMLElement,
+  v: VisibleEntry,
+  editState: CharacterEditState | null,
+  _app: App,
+  isExpanded: boolean,
+  onToggle: () => void,
+): void {
   const row = parent.createDiv({ cls: "pc-inv-row" });
+  if (isExpanded) row.classList.add("expanded");
   const e = v.resolved.entity as { name?: string; type?: string; rarity?: string; weight?: number; value?: number } | null;
 
   // Spacer for the toggle column (no toggle in browse mode)
@@ -80,11 +126,16 @@ function renderBrowseRow(parent: HTMLElement, v: VisibleEntry, editState: Charac
   if (editState) {
     const add = addCell.createEl("button", { cls: "pc-inv-add-mini" });
     add.appendText("+ Add");
-    add.addEventListener("click", () => {
+    add.addEventListener("click", (ev) => {
+      ev.stopPropagation();
       const slug = v.entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
       if (slug) editState.addItem(slug);
     });
   }
+
+  // Row click toggles inline expand. Must come after the +Add wiring so the
+  // button's stopPropagation has somewhere to stop.
+  row.addEventListener("click", () => onToggle());
 }
 
 function nameClass(e: { rarity?: string } | null): string {
