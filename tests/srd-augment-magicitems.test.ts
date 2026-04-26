@@ -350,7 +350,9 @@ describe("augmentItems", () => {
     const { items, augmentedCount } = augmentItems(openItems, referenceConcrete, []);
     expect(augmentedCount).toBe(2);
     const bracers = items.find((i) => i.name === "Bracers of Defense");
-    expect(bracers?.bonuses).toEqual({ ac: 2 });
+    expect(bracers?.bonuses).toEqual({
+      ac: { value: 2, when: [{ kind: "no_armor" }, { kind: "no_shield" }] },
+    });
     expect(bracers?.attunement).toEqual({ required: true });
     expect(bracers?.tier).toBe("major");
     const ring = items.find((i) => i.name === "Ring of Protection");
