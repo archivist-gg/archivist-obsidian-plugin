@@ -89,4 +89,17 @@ describe("InventoryTab (redesigned)", () => {
     expect(root.querySelectorAll(".pc-medallion")).toHaveLength(3);
     expect(root.querySelector(".pc-attune-count")?.textContent).toMatch(/0\s*\/\s*3/);
   });
+
+  it("clicking Add Item switches to browse mode and shows Done", () => {
+    const root = mountContainer();
+    new InventoryTab().render(root, ctxWith(baseChar()));
+    expect(root.querySelector(".pc-inv-add")).toBeTruthy();
+    expect(root.querySelector(".pc-inv-done")).toBeNull();
+    (root.querySelector(".pc-inv-add") as HTMLElement).click();
+    expect(root.querySelector(".pc-inv-done")).toBeTruthy();
+    expect(root.querySelector(".pc-inv-browse-banner")).toBeTruthy();
+    (root.querySelector(".pc-inv-done") as HTMLElement).click();
+    expect(root.querySelector(".pc-inv-add")).toBeTruthy();
+    expect(root.querySelector(".pc-inv-browse-banner")).toBeNull();
+  });
 });

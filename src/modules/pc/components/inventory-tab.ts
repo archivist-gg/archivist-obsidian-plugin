@@ -11,6 +11,7 @@ import { CurrencyStrip } from "./inventory/currency-strip";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
 import { InventoryList } from "./inventory/inventory-list";
+import { BrowseMode } from "./inventory/browse-mode";
 
 export class InventoryTab implements SheetComponent {
   readonly type = "inventory-tab";
@@ -102,7 +103,7 @@ export class InventoryTab implements SheetComponent {
           onAttuneConflict: (idx) => openConflictModal(ctx, idx),
         }).render(body, ctx);
       } else {
-        body.createDiv({ cls: "pc-inv-empty", text: "Browse mode coming in Phase 9." });
+        new BrowseMode({ filters }).render(body, ctx);
       }
     };
 
