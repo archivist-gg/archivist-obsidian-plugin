@@ -401,3 +401,97 @@ describe("augmentItems", () => {
     expect(items[0].bonuses).toEqual({ ac: 2 });
   });
 });
+
+describe("augmenter - condition extraction", () => {
+  it("Bracers of Defense ac wrapped with no_armor + no_shield", () => {
+    const ref = {
+      name: "Bracers of Defense",
+      bonusAc: "+2",
+      entries: ["...if you are wearing no armor and using no {@item shield|PHB}..."],
+    };
+    const out = mapReferenceFields(ref as never, []);
+    expect(out.bonuses?.ac).toEqual({
+      value: 2,
+      when: [{ kind: "no_armor" }, { kind: "no_shield" }],
+    });
+  });
+
+  it("Sun Blade weapon_damage wrapped vs undead curated", () => {
+    const ref = {
+      name: "Sun Blade",
+      bonusWeapon: "+2",
+      entries: ["...this weapon deals an extra 1d8 radiant damage to undead..."],
+    };
+    const out = mapReferenceFields(ref as never, []);
+    expect(out.bonuses?.weapon_damage).toEqual({
+      value: 2,
+      when: [{ kind: "vs_creature_type", value: "undead" }],
+    });
+  });
+
+  it("Bracers of Archery weapon_damage with on_attack_type + any_of", () => {
+    const ref = {
+      name: "Bracers of Archery",
+      bonusWeaponDamage: "+2",
+      entries: ["...you gain a +2 bonus to damage rolls on ranged attacks made with such weapons..."],
+    };
+    const out = mapReferenceFields(ref as never, []);
+    expect(out.bonuses?.weapon_damage).toMatchObject({
+      value: 2,
+      when: expect.arrayContaining([
+        { kind: "on_attack_type", value: "ranged" },
+      ]),
+    });
+  });
+
+  it("regex sweep matches against ranged attacks to ac field", () => {
+    const ref = {
+      name: "Made-Up Item",
+      bonusAc: "+2",
+      entries: ["You gain a +2 bonus to AC against ranged attacks while you wield this."],
+    };
+    const out = mapReferenceFields(ref as never, []);
+    expect(out.bonuses?.ac).toEqual({
+      value: 2,
+      when: [{ kind: "vs_attack_type", value: "ranged" }],
+    });
+  });
+
+  it("regex raw fallback emits raw + warning for unmapped condition language", () => {
+    const ref = {
+      name: "Strange Cloak",
+      bonusAc: "+1",
+      entries: ["You gain +1 AC if you are dancing under a full moon."],
+    };
+    const warnings: string[] = [];
+    const out = mapReferenceFields(ref as never, warnings);
+    expect(out.bonuses?.ac).toMatchObject({
+      value: 1,
+      when: [{ kind: "raw", text: expect.stringContaining("dancing") }],
+    });
+    expect(warnings.some((w) => w.startsWith("raw condition fallback"))).toBe(true);
+  });
+
+  it("Cloak of Protection stays flat while-equipped is not a condition", () => {
+    const ref = {
+      name: "Cloak of Protection",
+      bonusAc: "+1",
+      bonusSavingThrow: "+1",
+      entries: ["You gain a +1 bonus to AC and saving throws while you wear this cloak."],
+    };
+    const out = mapReferenceFields(ref as never, []);
+    expect(out.bonuses?.ac).toBe(1);
+    expect(out.bonuses?.saving_throws).toBe(1);
+  });
+
+  it("items with no condition language stay flat", () => {
+    const ref = {
+      name: "+1 Longsword",
+      bonusWeapon: "+1",
+      entries: ["You gain a +1 bonus to attack and damage rolls made with this magic weapon."],
+    };
+    const out = mapReferenceFields(ref as never, []);
+    expect(out.bonuses?.weapon_attack).toBe(1);
+    expect(out.bonuses?.weapon_damage).toBe(1);
+  });
+});
