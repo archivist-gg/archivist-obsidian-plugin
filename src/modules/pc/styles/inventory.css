@@ -595,3 +595,50 @@
   font-size: 22px;
   color: var(--pc-crimson, #922610);
 }
+
+/* ---------- Attune picker modal ----------
+ * Modal mounts on document.body, so selectors are NOT scoped under
+ * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
+.pc-attune-picker .pc-attune-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+}
+.pc-attune-picker .pc-attune-picker-row {
+  display: grid;
+  grid-template-columns: 18px 1fr 60px;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 4px;
+  border-bottom: 1px dotted var(--pc-tan-muted, #c4b07a);
+}
+.pc-attune-picker-icon svg { width: 14px; height: 14px; stroke-width: 1.5; }
+.pc-attune-picker-name {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pc-attune-picker-sub {
+  font-size: 10px;
+  color: var(--pc-text-muted, #8a7a6a);
+}
+.pc-attune-picker-pick {
+  padding: 2px 8px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pc-crimson, #922610);
+  background: transparent;
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.pc-attune-picker-empty {
+  font-style: italic;
+  color: var(--pc-text-muted, #8a7a6a);
+  text-align: center;
+  padding: 12px;
+}

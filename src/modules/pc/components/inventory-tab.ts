@@ -1,8 +1,10 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { FilterState } from "./inventory/filter-state";
+import type { FilterState, VisibleEntry } from "./inventory/filter-state";
 import { LoadoutStrip } from "./inventory/loadout-strip";
 import { AttunementStrip } from "./inventory/attunement-strip";
 import { showAttunePopover } from "./inventory/attune-popover";
+import { AttunePickerModal } from "./inventory/attune-picker-modal";
+import { requiresAttunement } from "./inventory/requires-attunement";
 import { CurrencyStrip } from "./inventory/currency-strip";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
@@ -32,6 +34,22 @@ export class InventoryTab implements SheetComponent {
           onUnattune: (i) => editState.unattuneItem(i),
           onFindInList: (_i) => { /* deferred — see "Deferred polish" section at end of plan */ },
         });
+      },
+      onPickEmpty: (slotIdx) => {
+        if (!ctx.editState) return;
+        const editState = ctx.editState;
+        const candidates = collectAttunableCandidates(ctx);
+        new AttunePickerModal(ctx.app, {
+          slotIndex: slotIdx,
+          candidates,
+          onPick: (entryIdx) => {
+            const result = editState.attuneItem(entryIdx);
+            if (result.kind === "rejected") {
+              // Should not happen because picker filtered to non-attuned, but guard anyway.
+              openConflictModal(ctx, entryIdx);
+            }
+          },
+        }).open();
       },
     }).render(attuneHost, ctx);
 
@@ -88,4 +106,24 @@ export class InventoryTab implements SheetComponent {
     const currencyHost = root.createDiv({ cls: "pc-inv-currency-host" });
     new CurrencyStrip().render(currencyHost, ctx);
   }
+}
+
+function collectAttunableCandidates(ctx: ComponentRenderContext): VisibleEntry[] {
+  const equipment = ctx.resolved.definition.equipment ?? [];
+  const reg = ctx.core?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null } | undefined;
+  const out: VisibleEntry[] = [];
+  equipment.forEach((entry, index) => {
+    if (entry.attuned) return;
+    const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
+    const found = slug ? reg?.getBySlug?.(slug) : null;
+    const entity = found ? ((found.data ?? {}) as never) : null;
+    const entityType = found ? (found.entityType ?? null) : null;
+    if (!requiresAttunement(entity)) return;
+    out.push({ entry, resolved: { index, entity, entityType, entry } });
+  });
+  return out;
+}
+
+function openConflictModal(_ctx: ComponentRenderContext, _incomingIndex: number): void {
+  // Implemented in Task 20.
 }
