@@ -2,6 +2,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { FilterState } from "./inventory/filter-state";
 import { LoadoutStrip } from "./inventory/loadout-strip";
 import { AttunementStrip } from "./inventory/attunement-strip";
+import { showAttunePopover } from "./inventory/attune-popover";
 import { CurrencyStrip } from "./inventory/currency-strip";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
@@ -22,7 +23,16 @@ export class InventoryTab implements SheetComponent {
     new LoadoutStrip().render(loadoutHost, ctx);
     const attuneHost = header.createDiv({ cls: "pc-inv-header-attune" });
     new AttunementStrip({
-      // onPickEmpty and onClickFilled hookups land in Tasks 19/20.
+      onClickFilled: (occupant, anchor) => {
+        if (!ctx.editState) return;
+        const editState = ctx.editState;
+        showAttunePopover({
+          anchor,
+          occupant,
+          onUnattune: (i) => editState.unattuneItem(i),
+          onFindInList: (_i) => { /* deferred — see "Deferred polish" section at end of plan */ },
+        });
+      },
     }).render(attuneHost, ctx);
 
     const toolbarHost = root.createDiv({ cls: "pc-inv-toolbar-host" });

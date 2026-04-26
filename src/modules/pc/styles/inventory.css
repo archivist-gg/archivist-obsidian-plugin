@@ -481,3 +481,65 @@
   display: flex;
   gap: var(--pc-space-2);
 }
+
+/* ---------- Attune popover ---------- */
+/* Popover lives in document.body, so selectors are NOT scoped under
+ * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
+.pc-attune-popover {
+  position: absolute;
+  min-width: 240px;
+  max-width: 300px;
+  background: var(--pc-parchment-light, #fdf1dc);
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: var(--pc-radius-sm, 4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  padding: 10px 12px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  z-index: 1000;
+}
+.pc-attune-popover .pc-attune-pop-name {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  color: var(--pc-crimson, #922610);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.pc-attune-popover .pc-attune-pop-subtitle {
+  font-style: italic;
+  font-size: 11px;
+  color: var(--pc-text-primary, #1a1a1a);
+  margin-top: 2px;
+}
+.pc-attune-popover .pc-attune-pop-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--pc-text-primary, #1a1a1a);
+  padding-top: 6px;
+  margin-top: 6px;
+  border-top: 1px dotted var(--pc-tan-muted, #c4b07a);
+}
+.pc-attune-popover .pc-attune-pop-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dotted var(--pc-tan-muted, #c4b07a);
+}
+.pc-attune-popover .pc-attune-pop-actions button {
+  padding: 2px 8px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--pc-tan, #d9c484);
+  background: transparent;
+  color: var(--pc-text-soft, #6b5e4b);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.pc-attune-popover .pc-attune-pop-unattune {
+  color: var(--pc-crimson, #922610);
+  border-color: rgba(146, 38, 16, 0.4);
+  margin-left: auto;
+}
