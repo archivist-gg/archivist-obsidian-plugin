@@ -178,3 +178,47 @@
 }
 .archivist-pc-sheet .pc-inv-weight,
 .archivist-pc-sheet .pc-inv-qty-cost { text-align: right; }
+
+/* ---------- Row expand (item-block + PC actions) ---------- */
+.archivist-pc-sheet .pc-inv-expand {
+  background: rgba(146, 38, 16, 0.04);
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-inv-expand .archivist-item-block-wrapper {
+  width: 100%;
+  margin: var(--pc-space-1) 0 var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-actions {
+  display: flex;
+  gap: var(--pc-space-2);
+  flex-wrap: wrap;
+  padding-top: var(--pc-space-2);
+  border-top: 1px dotted var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-inv-action {
+  padding: 3px 10px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-action:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-action.active {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-action.danger {
+  border-color: rgba(146, 38, 16, 0.4);
+}
