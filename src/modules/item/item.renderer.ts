@@ -13,6 +13,12 @@ function capitalizeWords(str: string): string {
 function formatAttunement(attunement: Item["attunement"]): string {
   if (attunement === true) return "Required";
   if (typeof attunement === "string") return attunement;
+  if (typeof attunement === "object" && attunement !== null) {
+    const required = (attunement as { required?: boolean }).required === true;
+    if (!required) return "Not Required";
+    const restriction = (attunement as { restriction?: string }).restriction;
+    return restriction ? `Required (${restriction})` : "Required";
+  }
   return "Not Required";
 }
 
@@ -98,11 +104,7 @@ export function renderItemBlock(item: Item): HTMLElement {
     );
   }
 
-  // 3. Mechanical summary (structured magic-item fields)
-  const mechSummary = renderItemMechanicalSummary(item);
-  if (mechSummary) block.appendChild(mechSummary);
-
-  // 4. Description
+  // 3. Description
   if (item.entries && item.entries.length > 0) {
     const descDiv = el("div", {
       cls: "archivist-item-description",
