@@ -4,6 +4,7 @@ import { renderRowExpand } from "../src/modules/pc/components/inventory/inventor
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
+import { bracersOfDefense, cloakOfProtection } from "./__fixtures__/items-conditional";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
 vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
@@ -122,6 +123,36 @@ describe("renderRowExpand", () => {
     const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("equip")) as HTMLElement;
     eqBtn.click();
     expect(equipItem).toHaveBeenCalledWith(5); // resolved.index
+  });
+
+  describe("situational caption", () => {
+    it("shows situational bonuses caption for items with conditional bonuses", () => {
+      const { entry, resolved } = make(
+        "[[bracers-of-defense]]",
+        bracersOfDefense as unknown as object,
+        { entityType: "item" },
+      );
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: null });
+      const cap = root.querySelector(".pc-inv-expand-situational");
+      expect(cap).toBeTruthy();
+      const text = cap?.textContent ?? "";
+      expect(text).toContain("+2");
+      expect(text).toContain("AC");
+      expect(text).toContain("no armor");
+      expect(text).toContain("no shield");
+    });
+
+    it("does not render the caption for unconditional items", () => {
+      const { entry, resolved } = make(
+        "[[cloak-of-protection]]",
+        cloakOfProtection as unknown as object,
+        { entityType: "item" },
+      );
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: null });
+      expect(root.querySelector(".pc-inv-expand-situational")).toBeNull();
+    });
   });
 
   describe("Unequip + attunement flow", () => {
