@@ -309,6 +309,24 @@ describe("computeSlotsAndAttacks — AC chain", () => {
     expect(d.ac).toBe(16);
   });
 
+  it("breastplate cap doesn't apply when DEX mod is below cap", () => {
+    const c = baseChar(); c.abilities.dex = 12;
+    c.equipment = [{ item: "[[breastplate]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 1, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(15);
+    const dexTerm = d.acBreakdown.find((t) => t.kind === "dex");
+    expect(dexTerm?.source).toBe("DEX modifier");
+  });
+
+  it("breastplate cap label shows (capped) when DEX mod exceeds cap", () => {
+    const c = baseChar(); c.abilities.dex = 18;
+    c.equipment = [{ item: "[[breastplate]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 4, con: 0, int: 0, wis: 0, cha: 0 }, profs, registry, []);
+    expect(d.ac).toBe(16);
+    const dexTerm = d.acBreakdown.find((t) => t.kind === "dex");
+    expect(dexTerm?.source).toBe("DEX modifier (capped)");
+  });
+
   it("plate + shield: AC 20", () => {
     const c = baseChar();
     c.equipment = [{ item: "[[plate]]", equipped: true }, { item: "[[shield]]", equipped: true }];

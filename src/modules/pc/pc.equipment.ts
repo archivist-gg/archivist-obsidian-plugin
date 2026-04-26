@@ -254,7 +254,7 @@ function computeAC(
 ): { ac: number; breakdown: ACTerm[] } {
   const breakdown: ACTerm[] = [];
   const armorSlot = equippedSlots.armor;
-  const armorEntity = armorSlot?.entity as ArmorEntity | undefined;
+  const armorEntity = armorSlot?.entity ?? null;
 
   let ac = 10;
   if (armorEntity && isArmorEntity(armorEntity)) {
@@ -264,7 +264,8 @@ function computeAC(
       const dexCap = armorEntity.ac.dex_max ?? Number.POSITIVE_INFINITY;
       const dexAdd = Math.min(mods.dex, dexCap);
       ac += dexAdd;
-      breakdown.push({ source: `DEX modifier${dexCap !== Number.POSITIVE_INFINITY ? " (capped)" : ""}`, amount: dexAdd, kind: "dex" });
+      const capped = mods.dex > dexCap;
+      breakdown.push({ source: `DEX modifier${capped ? " (capped)" : ""}`, amount: dexAdd, kind: "dex" });
     }
   } else {
     // Unarmored: 10 + DEX (Unarmored Defense already handled by recalc's fallback;
@@ -275,16 +276,16 @@ function computeAC(
   }
 
   // Per-armor entry override.
-  if (armorSlot?.entry.overrides?.ac_bonus) {
-    const n = armorSlot.entry.overrides.ac_bonus;
-    ac += n;
-    breakdown.push({ source: `${armorEntity?.name ?? "Armor"} (override)`, amount: n, kind: "override" });
+  const acBonus = armorSlot?.entry.overrides?.ac_bonus;
+  if (typeof acBonus === "number" && acBonus !== 0) {
+    ac += acBonus;
+    breakdown.push({ source: `${armorEntity?.name ?? "Armor"} (override)`, amount: acBonus, kind: "override" });
   }
 
   // Shield (only if mainhand isn't two-handed).
   const main = equippedSlots.mainhand?.entity;
   const mainIsTwoHanded = main && isWeaponEntity(main) && isTwoHanded(main);
-  const shieldEntity = equippedSlots.shield?.entity as ArmorEntity | undefined;
+  const shieldEntity = equippedSlots.shield?.entity ?? null;
   if (shieldEntity && isArmorEntity(shieldEntity) && !mainIsTwoHanded) {
     const n = shieldEntity.ac.base + shieldEntity.ac.flat;
     ac += n;
