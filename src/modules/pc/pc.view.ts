@@ -101,6 +101,7 @@ export class PCSheetView extends TextFileView {
       parsed.data,
       () => ({ resolved: this.character!, derived: this.derived! }),
       () => this.handleChange(),
+      this.mod.resolver?.registry ?? null,
     );
     this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
   }

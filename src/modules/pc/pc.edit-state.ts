@@ -1,7 +1,9 @@
 import type { Ability, SkillSlug } from "../../shared/types";
-import type { Character, DerivedStats, PassiveKind, ResolvedCharacter } from "./pc.types";
+import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { Character, DerivedStats, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
+import * as eq from "./pc.equipment-edit";
 
 export interface EditStateContext {
   resolved: ResolvedCharacter;
@@ -27,6 +29,7 @@ export class CharacterEditState {
     private character: Character,
     private getContext: () => EditStateContext,
     private onChange: () => void,
+    private registry: EntityRegistry | null = null,
   ) {}
 
   // ─── HP ────────────────────────────────────────────────────────────
@@ -412,5 +415,66 @@ export class CharacterEditState {
 
   toYaml(): string {
     return characterToYaml(this.character);
+  }
+
+  // ─── Equipment ─────────────────────────────────────────────────
+  addItem(slug: string, opts: { equipped?: boolean; slot?: SlotKey | null } = {}): void {
+    eq.addItem(this.character, slug, opts, this.registry ?? undefined);
+    this.onChange();
+  }
+
+  removeItem(index: number): void {
+    eq.removeItem(this.character, index);
+    this.onChange();
+  }
+
+  equipItem(index: number): eq.EquipResult {
+    if (!this.registry) return { kind: "ok" };
+    const r = eq.equipItem(this.character, index, this.registry);
+    if (r.kind === "ok") this.onChange();
+    return r;
+  }
+
+  unequipItem(index: number): void {
+    eq.unequipItem(this.character, index);
+    this.onChange();
+  }
+
+  attuneItem(index: number): eq.AttuneResult {
+    if (!this.registry) return { kind: "ok" };
+    const r = eq.attuneItem(this.character, index, this.registry);
+    if (r.kind === "ok") this.onChange();
+    return r;
+  }
+
+  unattuneItem(index: number): void {
+    eq.unattuneItem(this.character, index);
+    this.onChange();
+  }
+
+  setCharges(index: number, current: number, max?: number): void {
+    eq.setCharges(this.character, index, current, max);
+    this.onChange();
+  }
+
+  clearCharges(index: number): void {
+    eq.clearCharges(this.character, index);
+    this.onChange();
+  }
+
+  setCurrency(coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
+    eq.setCurrency(this.character, coin, value);
+    this.onChange();
+  }
+
+  setAttunementLimitOverride(n: number): void {
+    if (!Number.isFinite(n)) return;
+    this.character.overrides.attunement_limit = Math.max(0, Math.floor(n));
+    this.onChange();
+  }
+
+  clearAttunementLimitOverride(): void {
+    delete this.character.overrides.attunement_limit;
+    this.onChange();
   }
 }
