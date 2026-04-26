@@ -65,25 +65,18 @@ export class InventoryTab implements SheetComponent {
 
     const drawAll = (): void => {
       toolbarHost.empty();
-      filtersHost.empty();
       meta.empty();
-      body.empty();
 
       new InventoryToolbar({
         mode,
         initialSearch: filters.search,
-        onSearch: (s) => { filters = { ...filters, search: s }; redrawBody(); },
+        onSearch: (s) => { filters = { ...filters, search: s }; redrawFiltersAndBody(); },
         onAdd: () => { mode = "browse"; drawAll(); },
         onDone: () => { mode = "list"; drawAll(); },
       }).render(toolbarHost);
 
-      new InventoryFilters({
-        filters, mode,
-        onChange: (next) => { filters = next; redrawBody(); },
-      }).render(filtersHost);
-
       drawMeta();
-      redrawBody();
+      redrawFiltersAndBody();
     };
 
     const drawMeta = (): void => {
@@ -97,7 +90,18 @@ export class InventoryTab implements SheetComponent {
       });
     };
 
-    const redrawBody = (): void => {
+    // Re-renders both the filters and the list/browse body. Used whenever
+    // `filters` or `mode` changes via a chip click / search input. The toolbar
+    // is intentionally NOT re-rendered here so the search input keeps focus
+    // and value as the user types. See bug fix: clicking a chip a second time
+    // to deselect requires the filters component to re-render with fresh state.
+    const redrawFiltersAndBody = (): void => {
+      filtersHost.empty();
+      new InventoryFilters({
+        filters, mode,
+        onChange: (next) => { filters = next; redrawFiltersAndBody(); },
+      }).render(filtersHost);
+
       body.empty();
       if (mode === "list") {
         new InventoryList({

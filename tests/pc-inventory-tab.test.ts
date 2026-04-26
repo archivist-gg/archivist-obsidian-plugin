@@ -102,6 +102,52 @@ describe("InventoryTab (redesigned)", () => {
     expect(root.querySelector(".pc-inv-add")).toBeTruthy();
     expect(root.querySelector(".pc-inv-browse-banner")).toBeNull();
   });
+
+  it("clicking the same Type chip twice toggles it on then off (filters re-render)", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[longsword]]" },
+      { item: "[[plate]]" },
+    ];
+    const root = mountContainer();
+    // Provide a getBySlug that classifies longsword as a weapon and plate as armor.
+    const ctx: ComponentRenderContext = {
+      resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], state: c.state } as ResolvedCharacter,
+      derived: { ac: 0, acBreakdown: [], attacks: [], equippedSlots: {} as EquippedSlots, carriedWeight: 0, attunementUsed: 0, attunementLimit: 3 } as DerivedStats,
+      core: {
+        entities: {
+          getBySlug: (slug: string) => {
+            if (slug === "longsword") return { entityType: "weapon", data: { name: "Longsword", type: "weapon" } };
+            if (slug === "plate")     return { entityType: "armor",  data: { name: "Plate",     type: "armor"  } };
+            return null;
+          },
+        },
+      } as never,
+      app: {} as never,
+      editState: null,
+    };
+    new InventoryTab().render(root, ctx);
+
+    // Sanity: both rows show before any filter is applied.
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(2);
+
+    const findChip = (label: string): HTMLElement =>
+      [...root.querySelectorAll(".pc-inv-chip")].find((c) => c.textContent?.toLowerCase().includes(label)) as HTMLElement;
+
+    // First click: select Weapons. Chip becomes active; only the weapon row remains.
+    const weaponChip1 = findChip("weapons");
+    expect(weaponChip1).toBeTruthy();
+    weaponChip1.click();
+    const weaponChip2 = findChip("weapons"); // re-query: filters re-render replaces nodes
+    expect(weaponChip2.classList.contains("active")).toBe(true);
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(1);
+
+    // Second click on the SAME chip: should deselect. Chip no longer active; both rows return.
+    weaponChip2.click();
+    const weaponChip3 = findChip("weapons");
+    expect(weaponChip3.classList.contains("active")).toBe(false);
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(2);
+  });
 });
 
 describe("InventoryTab — full integration", () => {
