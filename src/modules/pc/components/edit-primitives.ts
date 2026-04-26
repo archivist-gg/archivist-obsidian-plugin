@@ -144,3 +144,24 @@ export function numberOverride(valueEl: HTMLElement, opts: NumberOverrideOpts): 
     valueEl.appendChild(mark);
   }
 }
+
+export interface CurrencyCellOpts {
+  coin: string;
+  value: number;
+  onSet: (n: number) => void;
+}
+
+export function currencyCell(parent: HTMLElement, opts: CurrencyCellOpts): HTMLElement {
+  const cell = parent.createDiv({ cls: "pc-currency-cell" });
+  const valEl = cell.createDiv({ cls: "pc-currency-val", text: String(opts.value) });
+  cell.createDiv({ cls: "pc-currency-label", text: opts.coin });
+  valEl.style.cursor = "pointer";
+  valEl.addEventListener("click", () => {
+    makeInlineInput(valEl, {
+      initial: opts.value, min: 0, max: 999_999,
+      onCommit: (n) => opts.onSet(n),
+      onCancel: () => {},
+    });
+  });
+  return cell;
+}
