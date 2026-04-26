@@ -51,11 +51,19 @@ export function showAttunePopover(opts: PopoverOpts): HTMLElement {
   // Close on outside click / Escape
   const close = (): void => cleanup();
   const onKey = (ev: KeyboardEvent): void => { if (ev.key === "Escape") close(); };
-  doc.body.addEventListener("click", close, { once: true });
+  // Defer body-click registration to the next tick so the originating click
+  // (which is still bubbling when this code runs) doesn't immediately trigger
+  // close on the bubble target. See WHATWG DOM spec: listener lists are cloned
+  // at each invocation target during dispatch, so synchronously-added listeners
+  // would fire on bubble targets that haven't been reached yet.
+  activeWindow.setTimeout(() => {
+    doc.body.addEventListener("click", close, { once: true });
+  }, 0);
   doc.addEventListener("keydown", onKey);
 
   function cleanup(): void {
     pop.remove();
+    doc.body.removeEventListener("click", close);
     doc.removeEventListener("keydown", onKey);
   }
 

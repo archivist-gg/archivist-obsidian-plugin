@@ -52,12 +52,33 @@ describe("showAttunePopover", () => {
     expect(onFindInList).toHaveBeenCalledWith(4);
   });
 
-  it("clicking outside closes the popover", () => {
+  it("clicking outside closes the popover", async () => {
     const root = mountContainer();
     const anchor = root.createDiv();
     showAttunePopover({ anchor, occupant: occupant(), onUnattune: vi.fn(), onFindInList: vi.fn() });
     expect(document.body.querySelector(".pc-attune-popover")).toBeTruthy();
+    // Wait for the deferred body-click listener to register before clicking outside.
+    await new Promise((r) => setTimeout(r, 0));
     document.body.click();
+    expect(document.body.querySelector(".pc-attune-popover")).toBeNull();
+  });
+
+  it("does NOT close immediately if the originating click bubbles to body", async () => {
+    const root = mountContainer();
+    const anchor = root.createDiv();
+
+    showAttunePopover({ anchor, occupant: occupant(), onUnattune: vi.fn(), onFindInList: vi.fn() });
+    expect(document.body.querySelector(".pc-attune-popover")).toBeTruthy();
+
+    // Simulate the originating click finishing its bubble — fire a click event on body
+    // synchronously from within the same tick the popover opened. The bubbling click
+    // should NOT close the popover.
+    document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(document.body.querySelector(".pc-attune-popover")).toBeTruthy();
+
+    // After a setTimeout(0), the body-click listener IS attached and a NEW click closes it.
+    await new Promise((r) => setTimeout(r, 0));
+    document.body.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(document.body.querySelector(".pc-attune-popover")).toBeNull();
   });
 });
