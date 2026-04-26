@@ -359,18 +359,36 @@ function isWeaponSlugProficient(
 }
 
 /**
- * Sums weapon_attack/weapon_damage bonuses from the magic ItemEntity (when
- * the equipped entry is an item with a base_item), defaulting to 0/0 for
- * plain weapon entities.
+ * Combined magic-item + per-entry weapon bonuses for the equipped entry.
+ * Looks up the entity for the entry, sums the magic ItemEntity's
+ * weapon_attack/weapon_damage with the entry's own override bonuses, and
+ * surfaces extra_damage / sourceName for the breakdown tooltip.
  */
 function magicBonusesForWeaponEntry(
-  entity: ArmorEntity | WeaponEntity | ItemEntity | null,
-): { attack: number; damage: number } {
-  if (!entity || !isItemEntity(entity)) return { attack: 0, damage: 0 };
-  const b = entity.bonuses;
+  entry: EquipmentEntry,
+  registry: EntityRegistry,
+): { atk: number; dmg: number; extra?: string; sourceName?: string } {
+  const { entity } = lookupEntity(entry, registry);
+  const ovr = entry.overrides ?? {};
+  const entryAttack = typeof ovr.bonus === "number" ? ovr.bonus : 0;
+  const entryDamage = typeof ovr.damage_bonus === "number" ? ovr.damage_bonus : 0;
+  const extra = typeof ovr.extra_damage === "string" ? ovr.extra_damage : undefined;
+
+  let itemAttack = 0;
+  let itemDamage = 0;
+  let sourceName: string | undefined;
+  if (entity && isItemEntity(entity)) {
+    const b = entity.bonuses;
+    itemAttack = typeof b?.weapon_attack === "number" ? b.weapon_attack : 0;
+    itemDamage = typeof b?.weapon_damage === "number" ? b.weapon_damage : 0;
+    sourceName = entity.name;
+  }
+
   return {
-    attack: typeof b?.weapon_attack === "number" ? b.weapon_attack : 0,
-    damage: typeof b?.weapon_damage === "number" ? b.weapon_damage : 0,
+    atk: itemAttack + entryAttack,
+    dmg: itemDamage + entryDamage,
+    extra,
+    sourceName,
   };
 }
 
@@ -383,39 +401,35 @@ function buildAttackRow(args: {
   mods: Record<Ability, number>;
   proficient: boolean;
   proficiencyBonus: number;
-  magicAttack: number;
-  magicDamage: number;
-  entryAttack: number;
-  entryDamage: number;
-  extraDamage?: string;
+  magic: { atk: number; dmg: number; extra?: string; sourceName?: string };
 }): AttackRow {
-  const {
-    id, name, weapon, baseDice, ability, mods, proficient, proficiencyBonus,
-    magicAttack, magicDamage, entryAttack, entryDamage, extraDamage,
-  } = args;
+  const { id, name, weapon, baseDice, ability, mods, proficient, proficiencyBonus, magic } = args;
 
   const abilityMod = mods[ability];
   const pb = proficient ? proficiencyBonus : 0;
-  const toHit = abilityMod + pb + magicAttack + entryAttack;
-  const dmgFlat = abilityMod + magicDamage + entryDamage;
+  const toHit = abilityMod + pb + magic.atk;
+  const dmgFlat = abilityMod + magic.dmg;
   const damageDice = `${baseDice}${dmgFlat >= 0 ? "+" : ""}${dmgFlat}`.replace(/\+0$/, "");
 
+  const magicSource = magic.sourceName ? `${magic.sourceName} bonus` : "Magic weapon";
+
+  // Plan contract: emit all 3 terms structurally (Task 16 may filter zeros itself).
   const toHitBreakdown: ACTerm[] = [
     { source: `${ability.toUpperCase()} modifier`, amount: abilityMod, kind: "ability" },
+    { source: "Proficiency bonus", amount: proficient ? proficiencyBonus : 0, kind: "ability" },
+    { source: magicSource, amount: magic.atk, kind: "item" },
   ];
-  if (pb !== 0) toHitBreakdown.push({ source: "Proficiency bonus", amount: pb, kind: "ability" });
-  if (magicAttack !== 0) toHitBreakdown.push({ source: "Magic", amount: magicAttack, kind: "item" });
-  if (entryAttack !== 0) toHitBreakdown.push({ source: "Override", amount: entryAttack, kind: "override" });
 
   const damageBreakdown: ACTerm[] = [
+    { source: "Base damage", amount: 0, kind: "ability" },
     { source: `${ability.toUpperCase()} modifier`, amount: abilityMod, kind: "ability" },
+    { source: magicSource, amount: magic.dmg, kind: "item" },
   ];
-  if (magicDamage !== 0) damageBreakdown.push({ source: "Magic", amount: magicDamage, kind: "item" });
-  if (entryDamage !== 0) damageBreakdown.push({ source: "Override", amount: entryDamage, kind: "override" });
 
-  const range = weapon.range
-    ? `${weapon.range.normal}/${weapon.range.long} ft`
-    : undefined;
+  const isRanged = /ranged/.test(weapon.category);
+  const range = isRanged && weapon.range
+    ? `${weapon.range.normal}/${weapon.range.long}`
+    : "melee";
 
   // Filter out conditional-property objects so the consumer gets a clean
   // list of property names. WeaponProperty is a union of string literals and
@@ -431,7 +445,7 @@ function buildAttackRow(args: {
     toHit,
     damageDice,
     damageType: weapon.damage.type,
-    extraDamage,
+    extraDamage: magic.extra,
     properties: stringProps,
     proficient,
     breakdown: { toHit: toHitBreakdown, damage: damageBreakdown },
@@ -486,15 +500,12 @@ function computeAttacks(
     }
 
     const ability = attackAbility(weapon, mods);
-    const { attack: magicAttack, damage: magicDamage } = magicBonusesForWeaponEntry(entity);
+    const magic = magicBonusesForWeaponEntry(entry, registry);
     const ovr = entry.overrides ?? {};
-    const entryAttack = typeof ovr.bonus === "number" ? ovr.bonus : 0;
-    const entryDamage = typeof ovr.damage_bonus === "number" ? ovr.damage_bonus : 0;
-    const extraDamage = typeof ovr.extra_damage === "string" ? ovr.extra_damage : undefined;
     const displayName = ovr.name ?? weapon.name;
 
     const baseRow = buildAttackRow({
-      id: `${key}:${weapon.slug}`,
+      id: `${placed.index}:standard`,
       name: displayName,
       weapon,
       baseDice: weapon.damage.dice,
@@ -502,11 +513,7 @@ function computeAttacks(
       mods,
       proficient,
       proficiencyBonus,
-      magicAttack,
-      magicDamage,
-      entryAttack,
-      entryDamage,
-      extraDamage,
+      magic,
     });
     rows.push(baseRow);
 
@@ -520,19 +527,15 @@ function computeAttacks(
       && !equippedSlots.offhand
     ) {
       rows.push(buildAttackRow({
-        id: `${key}:${weapon.slug}:versatile`,
-        name: `${displayName} (versatile)`,
+        id: `${placed.index}:versatile`,
+        name: `${displayName} (versatile, 2h)`,
         weapon,
         baseDice: weapon.damage.versatile_dice,
         ability,
         mods,
         proficient,
         proficiencyBonus,
-        magicAttack,
-        magicDamage,
-        entryAttack,
-        entryDamage,
-        extraDamage,
+        magic,
       }));
     }
   }

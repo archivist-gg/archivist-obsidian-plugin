@@ -458,4 +458,13 @@ describe("computeSlotsAndAttacks — attack rows", () => {
     expect(d.attacks).toHaveLength(1);
     expect(d.attacks[0].damageDice).toBe("2d6+3");
   });
+
+  it("versatile second-row name format and range", () => {
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[longsword]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, []);
+    expect(d.attacks[0].range).toBe("melee");
+    expect(d.attacks[1].name).toBe("Longsword (versatile, 2h)");
+    expect(d.attacks[1].range).toBe("melee");
+  });
 });
