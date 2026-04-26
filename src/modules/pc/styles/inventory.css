@@ -83,3 +83,98 @@
   color: var(--pc-parchment-light);
   border-color: var(--pc-crimson);
 }
+
+/* ---------- Inventory row (collapsed) ---------- */
+.archivist-pc-sheet .pc-inv-row {
+  display: grid;
+  grid-template-columns: 18px 18px 1fr 96px 42px 56px;
+  gap: var(--pc-space-2);
+  align-items: center;
+  padding: 6px 4px 6px 6px;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s ease;
+}
+.archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
+
+/* Crimson rail when equipped or attuned (or both — single rail) */
+.archivist-pc-sheet .pc-inv-row.equipped,
+.archivist-pc-sheet .pc-inv-row.attuned {
+  border-left: 1.5px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-row.expanded {
+  background: rgba(146, 38, 16, 0.04);
+  border-bottom-color: transparent;
+}
+
+/* Toggle (square checkbox) */
+.archivist-pc-sheet .pc-inv-toggle-cell { display: flex; justify-content: center; }
+.archivist-pc-sheet .pc-inv-toggle {
+  width: 13px; height: 13px;
+  border: 1.3px solid var(--pc-text-primary);
+  border-radius: 2px;
+  opacity: 0.5;
+  position: relative;
+}
+.archivist-pc-sheet .pc-inv-toggle.on { opacity: 1; }
+.archivist-pc-sheet .pc-inv-toggle.on::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--pc-crimson);
+  border-radius: 1px;
+}
+
+/* Type icon */
+.archivist-pc-sheet .pc-inv-icon { display: flex; align-items: center; justify-content: center; }
+.archivist-pc-sheet .pc-inv-icon svg {
+  width: 14px; height: 14px;
+  color: var(--pc-text-primary);
+  stroke-width: 1.5;
+}
+
+/* Name + subtitle */
+.archivist-pc-sheet .pc-inv-name-cell { min-width: 0; }
+.archivist-pc-sheet .pc-inv-name {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.archivist-pc-sheet .pc-inv-name.is-inline {
+  font-style: italic;
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-inv-name.rarity-uncommon  { color: var(--pc-rarity-uncommon);  font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-rare      { color: var(--pc-rarity-rare);      font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-very-rare { color: var(--pc-rarity-very-rare); font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-legendary { color: var(--pc-rarity-legendary); font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-artifact  { color: var(--pc-rarity-artifact);  font-style: italic; font-weight: 800; }
+.archivist-pc-sheet .pc-inv-name.rarity-legacy    { color: var(--pc-rarity-legacy);    font-style: italic; }
+.archivist-pc-sheet .pc-inv-sub {
+  font-size: var(--pc-fs-label);
+  letter-spacing: var(--pc-ls-caps-sm);
+  color: var(--pc-text-muted);
+  line-height: var(--pc-lh-snug);
+  margin-top: 1px;
+}
+.archivist-pc-sheet .pc-inv-sub b {
+  color: var(--pc-text-soft);
+  font-weight: 600;
+}
+
+/* Stat / weight / qty cells */
+.archivist-pc-sheet .pc-inv-stat,
+.archivist-pc-sheet .pc-inv-weight,
+.archivist-pc-sheet .pc-inv-qty-cost {
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.archivist-pc-sheet .pc-inv-weight,
+.archivist-pc-sheet .pc-inv-qty-cost { text-align: right; }
