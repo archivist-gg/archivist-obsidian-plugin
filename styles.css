@@ -9124,6 +9124,22 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
+  /* --------------------------------------------------------------
+   * Rarity palette — italic + tinted hue for item names.
+   * Common defaults to the existing primary text color (no override).
+   * -------------------------------------------------------------- */
+  --pc-rarity-common:    var(--pc-text-primary);
+  --pc-rarity-uncommon:  #2f6f3a;
+  --pc-rarity-rare:      #1f3f7a;
+  --pc-rarity-very-rare: #5d2d8c;
+  --pc-rarity-legendary: #a3590a;
+  --pc-rarity-artifact:  var(--pc-crimson);
+  --pc-rarity-legacy:    #8a5a2a;
+
+  /* Attunement medallion sizing (used by attune-medallion.ts) */
+  --pc-medallion-size:   50px;
+  --pc-medallion-stroke: 1.5px;
+
   background: var(--d5e-parchment, #f0ddbd);
   color: var(--pc-text-primary);
   font-family: var(--pc-font-sans);
@@ -10703,30 +10719,8 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* === SP5 Equipment === */
 
-.pc-inventory-slot-grid { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 0.5em; margin: 0.5em 0; }
-.pc-inventory-slot { border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 0.5em; text-align: center; background: var(--background-secondary); }
-.pc-inventory-slot-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.25em; }
-.pc-inventory-slot-name { font-weight: 600; font-size: 13px; }
-.pc-inventory-slot-stat { font-size: 11px; color: var(--text-muted); }
-.pc-inventory-slot-empty { color: var(--text-faint); font-size: 18px; }
-.pc-inventory-attunement { margin-top: 0.5em; font-size: 12px; color: var(--text-muted); }
-.pc-inventory-carried-list { display: flex; flex-direction: column; gap: 0.3em; margin: 0.5em 0; }
-.pc-inventory-carried-row { display: flex; align-items: center; gap: 0.5em; padding: 0.2em 0; }
-.pc-inventory-item-name { flex: 1; }
-.pc-inventory-attune-btn,
-.pc-inventory-equip-btn,
-.pc-inventory-unequip-btn,
-.pc-inventory-remove-btn,
-.pc-inventory-add-btn {
-  padding: 0.15em 0.5em;
-  font-size: 11px;
-  border: 1px solid var(--background-modifier-border);
-  background: var(--background-primary);
-  border-radius: 3px;
-  cursor: pointer;
-}
-.pc-inventory-attune-btn.is-on { background: var(--color-green); color: white; }
-.pc-inventory-add-input { width: 100%; margin-bottom: 0.75em; }
+/* Inventory tab styles moved to inventory.css as part of the redesign.
+ * .pc-charges-widget and .pc-ac-tooltip stay below — they're shared. */
 
 .pc-attack-rows .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .pc-attack-table th,
@@ -10735,21 +10729,27 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-attack-info { cursor: help; opacity: 0.6; }
 .pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
 
+/* AC tooltip — follows the PC sheet's parchment aesthetic so it stays
+ * readable inside the Obsidian dark theme. Pulling raw --background-primary
+ * here resolves to a near-black surface in dark mode, making the dark
+ * --pc-text-primary content effectively invisible. */
 .pc-ac-tooltip {
   position: absolute;
-  background: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
   padding: 0.5em;
-  font-size: 12px;
+  font-size: var(--pc-fs-body);
   z-index: 100;
   min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 .pc-ac-tooltip-total { font-weight: 600; margin-bottom: 0.3em; }
 .pc-ac-tooltip-row { display: flex; justify-content: space-between; padding: 0.1em 0; }
 .pc-ac-tooltip-row.is-greyed { opacity: 0.5; }
-.pc-ac-tooltip-override { font-weight: 600; color: var(--color-accent); }
-.pc-ac-tooltip-divider { color: var(--text-muted); font-size: 10px; text-align: center; margin: 0.2em 0; }
+.pc-ac-tooltip-override { font-weight: 600; color: var(--pc-crimson); }
+.pc-ac-tooltip-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }
@@ -10830,4 +10830,909 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft);
   font-style: italic;
   margin-top: var(--pc-space-1);
+}
+
+
+/* ============================================
+   pc/inventory.css
+   ============================================ */
+/* PC Inventory Redesign — all rules scoped under .archivist-pc-sheet.
+ * Filled in incrementally by the inventory tasks. Do not put rules
+ * in components.css; keep inventory-specific styles isolated here so
+ * the redesign can be reverted as a single file if needed. */
+
+/* ---------- Loadout strip (4 worn slots) ---------- */
+.archivist-pc-sheet .pc-loadout-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-loadout-slot {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-loadout-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  background: rgba(255, 248, 220, 0.45);
+  flex-shrink: 0;
+}
+.archivist-pc-sheet .pc-loadout-icon svg {
+  width: 16px;
+  height: 16px;
+  color: var(--pc-text-primary);
+  stroke-width: 1.5;
+}
+.archivist-pc-sheet .pc-loadout-info {
+  flex: 1;
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-loadout-lbl {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+  line-height: var(--pc-lh-snug);
+}
+.archivist-pc-sheet .pc-loadout-val {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  color: var(--pc-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.archivist-pc-sheet .pc-loadout-val.is-empty {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-loadout-stat {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+  line-height: var(--pc-lh-snug);
+}
+.archivist-pc-sheet .pc-loadout-unequip {
+  padding: 2px 8px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.archivist-pc-sheet .pc-loadout-unequip:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+
+/* ---------- Inventory row (collapsed) ---------- */
+.archivist-pc-sheet .pc-inv-row {
+  display: grid;
+  grid-template-columns: 18px 18px 1fr 96px 42px 56px;
+  gap: var(--pc-space-2);
+  align-items: center;
+  padding: 6px 4px 6px 6px;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.12s ease;
+}
+.archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
+
+/* Crimson rail when equipped or attuned (or both — single rail) */
+.archivist-pc-sheet .pc-inv-row.equipped,
+.archivist-pc-sheet .pc-inv-row.attuned {
+  border-left: 1.5px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-row.expanded {
+  background: rgba(146, 38, 16, 0.04);
+  border-bottom-color: transparent;
+}
+
+/* Toggle (square checkbox) */
+.archivist-pc-sheet .pc-inv-toggle-cell { display: flex; justify-content: center; }
+.archivist-pc-sheet .pc-inv-toggle {
+  width: 13px; height: 13px;
+  border: 1.3px solid var(--pc-text-primary);
+  border-radius: 2px;
+  opacity: 0.5;
+  position: relative;
+}
+.archivist-pc-sheet .pc-inv-toggle.on { opacity: 1; }
+.archivist-pc-sheet .pc-inv-toggle.on::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: var(--pc-crimson);
+  border-radius: 1px;
+}
+
+/* Type icon */
+.archivist-pc-sheet .pc-inv-icon { display: flex; align-items: center; justify-content: center; }
+.archivist-pc-sheet .pc-inv-icon svg {
+  width: 14px; height: 14px;
+  color: var(--pc-text-primary);
+  stroke-width: 1.5;
+}
+
+/* Name + subtitle */
+.archivist-pc-sheet .pc-inv-name-cell { min-width: 0; }
+.archivist-pc-sheet .pc-inv-name {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.archivist-pc-sheet .pc-inv-name.is-inline {
+  font-style: italic;
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-inv-name.rarity-uncommon  { color: var(--pc-rarity-uncommon);  font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-rare      { color: var(--pc-rarity-rare);      font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-very-rare { color: var(--pc-rarity-very-rare); font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-legendary { color: var(--pc-rarity-legendary); font-style: italic; }
+.archivist-pc-sheet .pc-inv-name.rarity-artifact  { color: var(--pc-rarity-artifact);  font-style: italic; font-weight: 800; }
+.archivist-pc-sheet .pc-inv-name.rarity-legacy    { color: var(--pc-rarity-legacy);    font-style: italic; }
+.archivist-pc-sheet .pc-inv-sub {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  letter-spacing: var(--pc-ls-caps-sm);
+  color: var(--pc-text-muted);
+  line-height: var(--pc-lh-snug);
+  margin-top: 1px;
+}
+.archivist-pc-sheet .pc-inv-sub b {
+  color: var(--pc-text-soft);
+  font-weight: 600;
+}
+
+/* Stat / weight / qty cells */
+.archivist-pc-sheet .pc-inv-stat,
+.archivist-pc-sheet .pc-inv-weight,
+.archivist-pc-sheet .pc-inv-qty-cost {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.archivist-pc-sheet .pc-inv-weight,
+.archivist-pc-sheet .pc-inv-qty-cost { text-align: right; }
+
+/* ---------- Row expand (item-block + PC actions) ---------- */
+.archivist-pc-sheet .pc-inv-expand {
+  background: rgba(146, 38, 16, 0.04);
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-inv-expand .archivist-item-block-wrapper {
+  width: 100%;
+  margin: var(--pc-space-1) 0 var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-actions {
+  display: flex;
+  gap: var(--pc-space-2);
+  flex-wrap: wrap;
+  padding-top: var(--pc-space-2);
+  border-top: 1px dotted var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-inv-action {
+  padding: 3px 10px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-action:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-action.active {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-action.danger {
+  border-color: rgba(146, 38, 16, 0.4);
+}
+
+/* ---------- Inventory list container + empty state ---------- */
+.archivist-pc-sheet .pc-inv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.archivist-pc-sheet .pc-inv-row-host { display: contents; }
+.archivist-pc-sheet .pc-inv-empty {
+  padding: var(--pc-space-4) var(--pc-space-3);
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  color: var(--pc-text-muted);
+  text-align: center;
+}
+
+/* ---------- Toolbar (search + add/done) ---------- */
+.archivist-pc-sheet .pc-inv-toolbar {
+  display: flex;
+  gap: var(--pc-space-2);
+  margin-bottom: var(--pc-space-2);
+  align-items: center;
+}
+.archivist-pc-sheet .pc-inv-search {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-1);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: 4px 8px;
+  background: rgba(255, 248, 220, 0.45);
+  flex: 1;
+}
+.archivist-pc-sheet .pc-inv-search-icon svg {
+  width: 13px; height: 13px;
+  color: var(--pc-text-muted);
+  stroke-width: 1.5;
+}
+.archivist-pc-sheet .pc-inv-search input {
+  border: none;
+  background: transparent;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  flex: 1;
+  outline: none;
+  color: var(--pc-text-primary);
+  min-width: 0;
+}
+.archivist-pc-sheet .pc-inv-search input::placeholder {
+  color: var(--pc-text-muted);
+  font-style: italic;
+}
+.archivist-pc-sheet .pc-inv-add,
+.archivist-pc-sheet .pc-inv-done {
+  padding: 5px 12px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-parchment-light);
+  background: var(--pc-crimson);
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.archivist-pc-sheet .pc-inv-add-icon svg { width: 12px; height: 12px; stroke-width: 1.7; }
+
+/* ---------- Filter chip groups ---------- */
+.archivist-pc-sheet .pc-inv-filter-row {
+  display: flex;
+  gap: var(--pc-space-3);
+  flex-wrap: wrap;
+  padding: var(--pc-space-1) 0 var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-filter-group {
+  display: flex;
+  gap: var(--pc-space-1);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.archivist-pc-sheet .pc-inv-filter-group-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+  margin-right: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-inv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  background: rgba(255, 248, 220, 0.45);
+  border: 1px solid var(--pc-tan);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-chip:hover {
+  border-color: var(--pc-crimson);
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-chip.active {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-inv-chip-icon svg {
+  width: 11px; height: 11px;
+  stroke-width: 1.5;
+  color: currentColor;
+}
+
+/* ---------- Attune medallions ---------- */
+.archivist-pc-sheet .pc-medallion-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: var(--pc-medallion-size);
+}
+.archivist-pc-sheet .pc-medallion {
+  width: var(--pc-medallion-size);
+  height: var(--pc-medallion-size);
+  border-radius: 50%;
+  border: var(--pc-medallion-stroke) solid var(--pc-text-primary);
+  display: grid;
+  place-items: center;
+  background: rgba(255, 248, 220, 0.5);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.archivist-pc-sheet .pc-medallion::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px solid var(--pc-text-primary);
+  opacity: 0.3;
+  pointer-events: none;
+}
+.archivist-pc-sheet .pc-medallion:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+.archivist-pc-sheet .pc-medallion-icon svg {
+  width: 18px; height: 18px;
+  color: var(--pc-text-primary);
+  stroke-width: 1.5;
+}
+.archivist-pc-sheet .pc-medallion.empty {
+  border-style: dashed;
+  border-color: var(--pc-tan);
+  background: transparent;
+  opacity: 0.7;
+}
+.archivist-pc-sheet .pc-medallion.empty::before { display: none; }
+.archivist-pc-sheet .pc-medallion.empty .pc-medallion-icon svg {
+  width: 14px; height: 14px;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-medallion.empty:hover {
+  border-color: var(--pc-crimson);
+  border-style: solid;
+  opacity: 1;
+}
+.archivist-pc-sheet .pc-medallion.empty:hover .pc-medallion-icon svg { color: var(--pc-crimson); }
+
+.archivist-pc-sheet .pc-medallion.rarity-uncommon  { border-color: var(--pc-rarity-uncommon); }
+.archivist-pc-sheet .pc-medallion.rarity-rare      { border-color: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-medallion.rarity-very-rare { border-color: var(--pc-rarity-very-rare); }
+.archivist-pc-sheet .pc-medallion.rarity-legendary { border-color: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-medallion.rarity-artifact  { border-color: var(--pc-rarity-artifact); }
+.archivist-pc-sheet .pc-medallion.rarity-uncommon::before  { border-color: var(--pc-rarity-uncommon); }
+.archivist-pc-sheet .pc-medallion.rarity-rare::before      { border-color: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-medallion.rarity-very-rare::before { border-color: var(--pc-rarity-very-rare); }
+.archivist-pc-sheet .pc-medallion.rarity-legendary::before { border-color: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-medallion.rarity-artifact::before  { border-color: var(--pc-rarity-artifact); }
+
+.archivist-pc-sheet .pc-medallion-name {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 700;
+  font-style: italic;
+  text-align: center;
+  color: var(--pc-text-soft);
+  line-height: 1.1;
+  max-width: var(--pc-medallion-size);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.archivist-pc-sheet .pc-medallion-name.rarity-uncommon  { color: var(--pc-rarity-uncommon); }
+.archivist-pc-sheet .pc-medallion-name.rarity-rare      { color: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-medallion-name.rarity-very-rare { color: var(--pc-rarity-very-rare); }
+.archivist-pc-sheet .pc-medallion-name.rarity-legendary { color: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-medallion-name.rarity-artifact  { color: var(--pc-rarity-artifact); }
+
+/* ---------- Inventory header (loadout + attunement side by side) ---------- */
+.archivist-pc-sheet .pc-inv-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--pc-space-4);
+  padding-bottom: var(--pc-space-3);
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  margin-bottom: var(--pc-space-3);
+  align-items: center;
+}
+.archivist-pc-sheet .pc-inv-header-loadout { min-width: 0; }
+.archivist-pc-sheet .pc-inv-header-attune {
+  padding-left: var(--pc-space-4);
+  border-left: 1px solid var(--pc-tan);
+}
+
+/* Attunement strip — label + medallion row */
+.archivist-pc-sheet .pc-attune-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-attune-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.archivist-pc-sheet .pc-attune-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-lg);
+  color: var(--pc-text-muted);
+  text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-attune-count {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-title);
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-primary);
+  margin-top: 4px;
+}
+.archivist-pc-sheet .pc-attune-count em {
+  font-style: normal;
+  font-weight: 400;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-medallion-row {
+  display: flex;
+  gap: var(--pc-space-2);
+}
+
+/* ---------- Attune popover ---------- */
+/* Popover lives in document.body, so selectors are NOT scoped under
+ * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
+.pc-attune-popover {
+  position: absolute;
+  min-width: 240px;
+  max-width: 300px;
+  background: var(--pc-parchment-light, #fdf1dc);
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: var(--pc-radius-sm, 4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  padding: 10px 12px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  z-index: 1000;
+}
+.pc-attune-popover .pc-attune-pop-name {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  color: var(--pc-crimson, #922610);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.pc-attune-popover .pc-attune-pop-subtitle {
+  font-style: italic;
+  font-size: 11px;
+  color: var(--pc-text-primary, #1a1a1a);
+  margin-top: 2px;
+}
+.pc-attune-popover .pc-attune-pop-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--pc-text-primary, #1a1a1a);
+  padding-top: 6px;
+  margin-top: 6px;
+  border-top: 1px dotted var(--pc-tan-muted, #c4b07a);
+}
+.pc-attune-popover .pc-attune-pop-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dotted var(--pc-tan-muted, #c4b07a);
+}
+.pc-attune-popover .pc-attune-pop-actions button {
+  padding: 2px 8px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--pc-tan, #d9c484);
+  background: transparent;
+  color: var(--pc-text-soft, #6b5e4b);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.pc-attune-popover .pc-attune-pop-unattune {
+  color: var(--pc-crimson, #922610);
+  border-color: rgba(146, 38, 16, 0.4);
+  margin-left: auto;
+}
+
+/* ---------- Attune conflict modal ---------- */
+/* Modal mounts on document.body, so selectors are NOT scoped under
+ * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
+.pc-attune-conflict .pc-attune-conflict-row {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+.pc-attune-conflict-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: 6px;
+  background: rgba(255, 248, 220, 0.45);
+  cursor: pointer;
+  min-width: 80px;
+}
+.pc-attune-conflict-cell:hover {
+  background: rgba(146, 38, 16, 0.06);
+  border-color: var(--pc-crimson, #922610);
+}
+.pc-attune-conflict-cell.incoming {
+  background: rgba(95, 45, 140, 0.06);
+  cursor: default;
+}
+.pc-attune-conflict-role {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pc-text-muted, #8a7a6a);
+}
+.pc-attune-conflict-name {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 11px;
+  font-style: italic;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 90px;
+}
+.pc-attune-conflict-arrow {
+  font-size: 22px;
+  color: var(--pc-crimson, #922610);
+}
+
+/* ---------- Attune picker modal ----------
+ * Modal mounts on document.body, so selectors are NOT scoped under
+ * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
+.pc-attune-picker .pc-attune-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+}
+.pc-attune-picker .pc-attune-picker-row {
+  display: grid;
+  grid-template-columns: 18px 1fr 60px;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 4px;
+  border-bottom: 1px dotted var(--pc-tan-muted, #c4b07a);
+}
+.pc-attune-picker-icon svg { width: 14px; height: 14px; stroke-width: 1.5; }
+.pc-attune-picker-name {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pc-attune-picker-sub {
+  font-size: 10px;
+  color: var(--pc-text-muted, #8a7a6a);
+}
+.pc-attune-picker-pick {
+  padding: 2px 8px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pc-crimson, #922610);
+  background: transparent;
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.pc-attune-picker-empty {
+  font-style: italic;
+  color: var(--pc-text-muted, #8a7a6a);
+  text-align: center;
+  padding: 12px;
+}
+
+/* ---------- Browse mode (Add Item) ---------- */
+.archivist-pc-sheet .pc-inv-browse-banner {
+  padding: var(--pc-space-2) 0;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+  font-style: italic;
+  text-align: center;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-add-mini {
+  padding: 2px 8px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-add-mini:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+}
+
+/* Custom-item dashed input strip */
+.archivist-pc-sheet .pc-inv-custom-input {
+  display: flex;
+  gap: var(--pc-space-2);
+  align-items: center;
+  margin-top: var(--pc-space-3);
+  padding: var(--pc-space-2);
+  border: 1px dashed var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  background: rgba(255, 248, 220, 0.4);
+}
+.archivist-pc-sheet .pc-inv-custom-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-inv-custom-input input {
+  flex: 1;
+  border: 1px solid var(--pc-tan);
+  padding: 4px 8px;
+  border-radius: var(--pc-radius-sm);
+  background: transparent;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  outline: none;
+  color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-inv-custom-input button {
+  padding: 4px 12px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+
+/* ---------- Manage Coin mode ---------- */
+.archivist-pc-sheet .pc-coin-heading-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-coin-mode-toggle {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+}
+.archivist-pc-sheet .pc-coin-mode-toggle svg {
+  width: 12px; height: 12px;
+  color: var(--pc-text-muted);
+  stroke-width: 1.5;
+}
+.archivist-pc-sheet .pc-coin-mode-toggle:hover svg { color: var(--pc-crimson); }
+
+.archivist-pc-sheet .pc-coin-mgr {
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  background: rgba(255, 248, 220, 0.45);
+}
+.archivist-pc-sheet .pc-coin-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 80px;
+  gap: var(--pc-space-3);
+  padding: 4px 0;
+  align-items: baseline;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-coin-name {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+}
+.archivist-pc-sheet .pc-coin-rate {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-style: italic;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-coin-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-heading);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.archivist-pc-sheet .pc-coin-val.editable { cursor: pointer; }
+.archivist-pc-sheet .pc-coin-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--pc-tan);
+}
+.archivist-pc-sheet .pc-coin-total-lbl {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-coin-total-val {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-title);
+}
+.archivist-pc-sheet .pc-coin-actions {
+  display: flex;
+  gap: var(--pc-space-2);
+  margin-top: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-coin-clear {
+  padding: 3px 10px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid rgba(146, 38, 16, 0.4);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+
+/* ---------- Inline custom item form ---------- */
+.archivist-pc-sheet .pc-inv-inline-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--pc-space-3);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  background: rgba(255, 248, 220, 0.4);
+  border: 1px dashed var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+}
+.archivist-pc-sheet .pc-inv-inline-field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.archivist-pc-sheet .pc-inv-inline-lbl {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-inv-inline-val {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-inv-inline-val:hover { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-inv-inline-text-input {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  padding: 2px 4px;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+}
+.archivist-pc-sheet .pc-inv-inline-help {
+  grid-column: 1 / -1;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  font-style: italic;
+  margin-top: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-inline-promote {
+  color: var(--pc-crimson);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+/* ---------- Responsive ---------- */
+
+/* xs+: header collapses to single column (loadout above attune, no divider) */
+@media (max-width: 759px) {
+  .archivist-pc-sheet .pc-inv-header {
+    grid-template-columns: 1fr;
+    gap: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-inv-header-attune {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px dotted var(--pc-tan-muted);
+    padding-top: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-loadout-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .archivist-pc-sheet .pc-inv-row {
+    grid-template-columns: 18px 18px 1fr 70px 36px;  /* drop qty/cost column */
+  }
+  .archivist-pc-sheet .pc-inv-qty-cost { display: none; }
+}
+
+/* xxs: loadout 4×1; rows lose Weight column (kept in a tooltip-like state) */
+@media (max-width: 599px) {
+  .archivist-pc-sheet .pc-loadout-strip {
+    grid-template-columns: 1fr;
+  }
+  .archivist-pc-sheet .pc-inv-row {
+    grid-template-columns: 18px 18px 1fr 70px;  /* drop weight column too */
+  }
+  .archivist-pc-sheet .pc-inv-weight { display: none; }
+  .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
+  .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
