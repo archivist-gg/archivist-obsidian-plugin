@@ -3,6 +3,7 @@ import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { iconForEntity } from "./icon-mapping";
+import { requiresAttunement } from "./requires-attunement";
 
 export interface InventoryRowCtx {
   entry: EquipmentEntry;
@@ -81,7 +82,7 @@ function rarityCssClass(resolved: ResolvedEquipped): string | null {
 }
 
 function fillSubtitle(sub: HTMLElement, ctx: InventoryRowCtx): void {
-  const e = ctx.resolved.entity as { type?: string; rarity?: string; attunement?: unknown } | null;
+  const e = ctx.resolved.entity as { type?: string; rarity?: string } | null;
   const parts: { text: string; bold?: boolean }[] = [];
 
   if (ctx.entry.equipped) parts.push({ text: `Equipped${ctx.entry.slot ? ` · ${ctx.entry.slot}` : ""}`, bold: true });
@@ -96,7 +97,7 @@ function fillSubtitle(sub: HTMLElement, ctx: InventoryRowCtx): void {
   } else {
     if (e.type)    parts.push({ text: capitalize(e.type) });
     if (e.rarity)  parts.push({ text: e.rarity.toLowerCase() });
-    if (e.attunement) parts.push({ text: "requires attunement" });
+    if (requiresAttunement(ctx.resolved.entity)) parts.push({ text: "requires attunement" });
   }
 
   parts.forEach((p, i) => {
@@ -123,7 +124,7 @@ function keyStat(ctx: InventoryRowCtx): string {
 
 function formatWeight(ctx: InventoryRowCtx): string {
   const e = ctx.resolved.entity as { weight?: number } | null;
-  const w = e?.weight ?? (ctx.entry as { weight?: number }).weight;
+  const w = e?.weight;
   if (typeof w === "number" && w > 0) return `${w} lb`;
   return "—";
 }
