@@ -1,4 +1,4 @@
-import { setIcon } from "obsidian";
+import { setInventoryIcon } from "../../assets/inventory-icons";
 import type { FilterState, StatusFilter } from "./filter-state";
 
 export interface FiltersOptions {
@@ -15,14 +15,14 @@ const STATUS_CHIPS: { key: StatusFilter; label: string }[] = [
 ];
 
 const TYPE_CHIPS: { key: string; label: string; icon: string }[] = [
-  { key: "weapon",   label: "Weapons",  icon: "sword" },
-  { key: "armor",    label: "Armor",    icon: "shield" },
-  { key: "wondrous", label: "Wondrous", icon: "sparkles" },
-  { key: "ring",     label: "Ring",     icon: "tabler-ring" },
-  { key: "potion",   label: "Potion",   icon: "flask-conical" },
-  { key: "scroll",   label: "Scroll",   icon: "scroll" },
-  { key: "wand",     label: "Wand",     icon: "tabler-wand" },
-  { key: "tool",     label: "Tool",     icon: "wrench" },
+  { key: "weapon",   label: "Weapons",  icon: "sword" },        // Lucide — generic weapon glyph
+  { key: "armor",    label: "Armor",    icon: "shield" },       // Lucide — generic armor glyph
+  { key: "wondrous", label: "Wondrous", icon: "sparkles" },     // Lucide
+  { key: "ring",     label: "Ring",     icon: "ring" },         // game-icons (was: tabler-ring)
+  { key: "potion",   label: "Potion",   icon: "flask-conical" },// Lucide
+  { key: "scroll",   label: "Scroll",   icon: "scroll" },       // Lucide
+  { key: "wand",     label: "Wand",     icon: "wand" },         // game-icons (was: tabler-wand)
+  { key: "tool",     label: "Tool",     icon: "wrench" },       // Lucide
 ];
 
 const RARITY_CHIPS = ["common", "uncommon", "rare", "very-rare", "legendary"];
@@ -59,7 +59,7 @@ export class InventoryFilters {
     for (const c of TYPE_CHIPS) {
       const chip = group.createEl("button", { cls: "pc-inv-chip" });
       const ic = chip.createSpan({ cls: "pc-inv-chip-icon" });
-      setIcon(ic, c.icon);
+      setInventoryIcon(ic, c.icon);
       chip.appendText(" " + c.label);
       if (this.opts.filters.types.has(c.key)) chip.classList.add("active");
       chip.addEventListener("click", () => {
