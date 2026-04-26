@@ -15,6 +15,12 @@ import type {
   ProficiencySet,
   SlotKey,
 } from "./pc.types";
+import { readNumericBonus } from "../item/item.bonuses";
+import type {
+  ConditionContext,
+  BonusFieldPath,
+  InformationalBonus,
+} from "../item/item.conditions.types";
 
 const ABILITY_KEYS: readonly Ability[] = ["str", "dex", "con", "int", "wis", "cha"];
 
@@ -80,6 +86,42 @@ function isAttunedActive(entry: EquipmentEntry, entity: ItemEntity | ArmorEntity
   return entry.attuned === true;
 }
 
+function unwrapClassSlug(maybeWiki: string | null | undefined): string {
+  if (!maybeWiki) return "";
+  const m = /^\[\[([^\]]+)\]\]$/.exec(maybeWiki);
+  return (m ? m[1] : maybeWiki).toLowerCase();
+}
+
+function buildConditionContext(
+  resolved: ResolvedCharacter,
+  equippedSlots: EquippedSlots,
+): ConditionContext {
+  return {
+    derived: { equippedSlots },
+    classList: resolved.definition.class ?? [],
+    race: resolved.definition.race,
+    subclasses: (resolved.definition.class ?? [])
+      .map((c) => c.subclass)
+      .filter((s): s is string => typeof s === "string" && s.length > 0)
+      .map(unwrapClassSlug),
+  };
+}
+
+function pushApply(
+  outcome: ReturnType<typeof readNumericBonus>,
+  field: BonusFieldPath,
+  source: string,
+  pool: InformationalBonus[],
+  onApply: (value: number) => void,
+): void {
+  if (!outcome) return;
+  if (outcome.kind === "applied") onApply(outcome.value);
+  else if (outcome.kind === "informational") {
+    pool.push({ field, source, value: outcome.value, conditions: outcome.conditions });
+  }
+  // skipped -> drop silently
+}
+
 export function computeAppliedBonuses(
   resolved: ResolvedCharacter,
   _profs: ProficienciesForQuery,
@@ -88,6 +130,13 @@ export function computeAppliedBonuses(
 ): AppliedBonuses {
   const out = emptyAppliedBonuses();
   const equipment = resolved.definition.equipment ?? [];
+
+  // Pass A doesn't yet know slot assignments. Use an empty-slot context for
+  // condition evaluation; Pass A only consumes Tier-1 conditions like
+  // is_class/is_race/is_subclass that don't depend on slots, and the
+  // affected fields here (saves, spells, abilities, speeds) currently have
+  // no slot-dependent SRD conditions.
+  const ctx = buildConditionContext(resolved, {});
 
   for (const entry of equipment) {
     const { entity, entityType } = lookupEntity(entry, registry);
@@ -98,12 +147,10 @@ export function computeAppliedBonuses(
       continue;
     }
     if (!isAttunedActive(entry, entity)) continue;
-    if (entityType !== "item") continue; // armor/weapon bonuses applied in Pass B
+    if (entityType !== "item") continue;
 
     const item = entity as ItemEntity;
 
-    // Defenses live on ItemEntity directly (not on bonuses) — propagate
-    // regardless of whether the item has a bonuses object.
     item.resist?.forEach((s) => out.defenses.resistances.push(s));
     item.immune?.forEach((s) => out.defenses.immunities.push(s));
     item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
@@ -112,14 +159,20 @@ export function computeAppliedBonuses(
     const b = item.bonuses;
     if (!b) continue;
 
-    if (typeof b.saving_throws === "number") out.save_bonus += b.saving_throws;
-    if (typeof b.spell_attack === "number") out.spell_attack += b.spell_attack;
-    if (typeof b.spell_save_dc === "number") out.spell_save_dc += b.spell_save_dc;
+    pushApply(readNumericBonus(b.saving_throws, ctx), "saving_throws", item.name,
+      out.informational, (v) => { out.save_bonus += v; });
+    pushApply(readNumericBonus(b.spell_attack, ctx), "spell_attack", item.name,
+      out.informational, (v) => { out.spell_attack += v; });
+    pushApply(readNumericBonus(b.spell_save_dc, ctx), "spell_save_dc", item.name,
+      out.informational, (v) => { out.spell_save_dc += v; });
 
     if (b.ability_scores?.bonus) {
-      for (const [k, n] of Object.entries(b.ability_scores.bonus)) {
-        if (!isAbilityKey(k) || typeof n !== "number") continue;
-        out.ability_bonuses[k] = (out.ability_bonuses[k] ?? 0) + n;
+      for (const [k, v] of Object.entries(b.ability_scores.bonus)) {
+        if (!isAbilityKey(k)) continue;
+        pushApply(readNumericBonus(v as number | { value: number; when: [] } | undefined, ctx),
+          `ability_scores.bonus.${k}` as BonusFieldPath,
+          item.name, out.informational,
+          (val) => { out.ability_bonuses[k] = (out.ability_bonuses[k] ?? 0) + val; });
       }
     }
     if (b.ability_scores?.static) {
@@ -140,14 +193,22 @@ export function computeAppliedBonuses(
     }
 
     if (b.speed) {
-      if (typeof b.speed.walk === "number") out.speed_bonuses.walk += b.speed.walk;
-      if (b.speed.fly === "walk") out.speed_bonuses.fly = "walk";
-      else if (typeof b.speed.fly === "number") {
-        const cur = out.speed_bonuses.fly;
-        out.speed_bonuses.fly = (typeof cur === "number" ? cur : 0) + b.speed.fly;
+      pushApply(readNumericBonus(b.speed.walk, ctx), "speed.walk", item.name,
+        out.informational, (v) => { out.speed_bonuses.walk += v; });
+      if (b.speed.fly === "walk") {
+        out.speed_bonuses.fly = "walk";
+      } else {
+        pushApply(readNumericBonus(b.speed.fly as number | { value: number; when: [] } | undefined, ctx),
+          "speed.fly", item.name, out.informational,
+          (v) => {
+            const cur = out.speed_bonuses.fly;
+            out.speed_bonuses.fly = (typeof cur === "number" ? cur : 0) + v;
+          });
       }
-      if (typeof b.speed.swim === "number") out.speed_bonuses.swim += b.speed.swim;
-      if (typeof b.speed.climb === "number") out.speed_bonuses.climb += b.speed.climb;
+      pushApply(readNumericBonus(b.speed.swim, ctx), "speed.swim", item.name,
+        out.informational, (v) => { out.speed_bonuses.swim += v; });
+      pushApply(readNumericBonus(b.speed.climb, ctx), "speed.climb", item.name,
+        out.informational, (v) => { out.speed_bonuses.climb += v; });
     }
   }
 
