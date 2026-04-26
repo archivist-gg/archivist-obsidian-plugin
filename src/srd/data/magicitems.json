@@ -137,7 +137,15 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "ac": 2
+      "ac": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "vs_attack_type",
+            "value": "ranged"
+          }
+        ]
+      }
     },
     "attunement": {
       "required": true
@@ -374,7 +382,28 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "weapon_damage": 2
+      "weapon_damage": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "on_attack_type",
+            "value": "ranged"
+          },
+          {
+            "kind": "any_of",
+            "conditions": [
+              {
+                "kind": "with_weapon_property",
+                "value": "longbow"
+              },
+              {
+                "kind": "with_weapon_property",
+                "value": "shortbow"
+              }
+            ]
+          }
+        ]
+      }
     },
     "attunement": {
       "required": true
@@ -395,7 +424,17 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "ac": 2
+      "ac": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "no_armor"
+          },
+          {
+            "kind": "no_shield"
+          }
+        ]
+      }
     },
     "attunement": {
       "required": true
@@ -795,9 +834,33 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "ac": 1,
-      "weapon_attack": 1,
-      "weapon_damage": 1
+      "ac": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "While wearing the armor, you have disadvantage on attack rolls against demons and on saving throws against their spells and special abilities."
+          }
+        ]
+      },
+      "weapon_attack": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "While wearing the armor, you have disadvantage on attack rolls against demons and on saving throws against their spells and special abilities."
+          }
+        ]
+      },
+      "weapon_damage": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "While wearing the armor, you have disadvantage on attack rolls against demons and on saving throws against their spells and special abilities."
+          }
+        ]
+      }
     },
     "attunement": {
       "required": true
@@ -885,7 +948,15 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "ac": 2
+      "ac": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "In addition, if an effect moves you against your will along the ground, you can use your reaction to reduce the distance you are moved by up to 10 feet."
+          }
+        ]
+      }
     },
     "tier": "major",
     "base_item": "plate armor"
@@ -1223,8 +1294,24 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "weapon_attack": 1,
-      "weapon_damage": 1,
+      "weapon_attack": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "While you are attuned to this weapon and holding it, your Strength score increases by 4 and can exceed 20, but not 30."
+          }
+        ]
+      },
+      "weapon_damage": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "While you are attuned to this weapon and holding it, your Strength score increases by 4 and can exceed 20, but not 30."
+          }
+        ]
+      },
       "ability_scores": {
         "bonus": {
           "str": 4
@@ -1558,8 +1645,24 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "weapon_attack": 1,
-      "weapon_damage": 1
+      "weapon_attack": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "vs_creature_type",
+            "value": "construct"
+          }
+        ]
+      },
+      "weapon_damage": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "vs_creature_type",
+            "value": "construct"
+          }
+        ]
+      }
     },
     "tier": "major",
     "base_item": "mace"
@@ -2687,8 +2790,24 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "spell_attack": 2,
-      "spell_save_dc": 2
+      "spell_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "You have advantage on saving throws against spell and other magical effects."
+          }
+        ]
+      },
+      "spell_save_dc": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "You have advantage on saving throws against spell and other magical effects."
+          }
+        ]
+      }
     },
     "attunement": {
       "required": true,
@@ -3152,11 +3271,51 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "ac": 2,
-      "weapon_attack": 2,
-      "weapon_damage": 2,
-      "spell_attack": 2,
-      "saving_throws": 2
+      "ac": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Retributive Strike entries You can use an action to break the staff over your knee or against a solid surface, performing a retributive strike."
+          }
+        ]
+      },
+      "weapon_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Retributive Strike entries You can use an action to break the staff over your knee or against a solid surface, performing a retributive strike."
+          }
+        ]
+      },
+      "weapon_damage": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Retributive Strike entries You can use an action to break the staff over your knee or against a solid surface, performing a retributive strike."
+          }
+        ]
+      },
+      "spell_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Retributive Strike entries You can use an action to break the staff over your knee or against a solid surface, performing a retributive strike."
+          }
+        ]
+      },
+      "saving_throws": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Retributive Strike entries You can use an action to break the staff over your knee or against a solid surface, performing a retributive strike."
+          }
+        ]
+      }
     },
     "charges": {
       "max": 20,
@@ -3287,9 +3446,33 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "weapon_attack": 2,
-      "weapon_damage": 2,
-      "spell_attack": 2
+      "weapon_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Spell Absorption entries While holding the staff, you have advantage on saving throws against spells."
+          }
+        ]
+      },
+      "weapon_damage": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Spell Absorption entries While holding the staff, you have advantage on saving throws against spells."
+          }
+        ]
+      },
+      "spell_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "Spell Absorption entries While holding the staff, you have advantage on saving throws against spells."
+          }
+        ]
+      }
     },
     "charges": {
       "max": 50,
@@ -3523,7 +3706,15 @@
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
       "weapon_attack": 2,
-      "weapon_damage": 2
+      "weapon_damage": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "vs_creature_type",
+            "value": "undead"
+          }
+        ]
+      }
     },
     "attunement": {
       "required": true
@@ -3575,7 +3766,15 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "spell_attack": 2
+      "spell_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "If you are a good cleric or paladin, you can use the talisman as a holy symbol, and you gain a +2 bonus to spell attack rolls while you wear or hold it."
+          }
+        ]
+      }
     },
     "charges": 7,
     "attunement": {
@@ -3617,7 +3816,15 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "bonuses": {
-      "spell_attack": 2
+      "spell_attack": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "raw",
+            "text": "If you are an evil cleric or paladin, you can use the talisman as a holy symbol, and you gain a +2 bonus to spell attack rolls while you wear or hold it."
+          }
+        ]
+      }
     },
     "charges": 6,
     "attunement": {
