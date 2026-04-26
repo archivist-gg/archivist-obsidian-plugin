@@ -82,6 +82,10 @@ export function installObsidianDomHelpers(): void {
   proto.appendText = function (this: HTMLElement, text: string) {
     this.appendChild(document.createTextNode(text));
   };
+
+  proto.setText = function (this: HTMLElement, text: string) {
+    this.textContent = text;
+  };
 }
 
 export function mountContainer(): HTMLElement {

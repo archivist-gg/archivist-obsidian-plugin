@@ -1,5 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { numberOverride } from "./edit-primitives";
+import { renderACTooltip } from "./ac-tooltip";
 
 /**
  * Heraldic AC shield — ARMOR label top, big number, CLASS label bottom.
@@ -16,6 +17,23 @@ export class AcShield implements SheetComponent {
     txt.createDiv({ cls: "pc-ac-shield-label-top", text: "ARMOR" });
     const numEl = txt.createDiv({ cls: "pc-ac-shield-num", text: String(ctx.derived.ac) });
     txt.createDiv({ cls: "pc-ac-shield-label-bot", text: "CLASS" });
+
+    // Hover/click breakdown.
+    const overridden = ctx.resolved.definition?.overrides?.ac !== undefined;
+    let tipEl: HTMLElement | null = null;
+    const showTip = () => {
+      if (tipEl) return;
+      tipEl = document.createElement("div");
+      tipEl.className = "pc-ac-tooltip-host";
+      shield.appendChild(tipEl);
+      renderACTooltip(tipEl, { ac: ctx.derived.ac, breakdown: ctx.derived.acBreakdown ?? [], overridden });
+    };
+    const hideTip = () => {
+      tipEl?.remove();
+      tipEl = null;
+    };
+    shield.addEventListener("mouseenter", showTip);
+    shield.addEventListener("mouseleave", hideTip);
 
     if (!ctx.editState) return;
     const editState = ctx.editState;
