@@ -49,6 +49,22 @@
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
+  /* --------------------------------------------------------------
+   * Rarity palette — italic + tinted hue for item names.
+   * Common defaults to the existing primary text color (no override).
+   * -------------------------------------------------------------- */
+  --pc-rarity-common:    var(--pc-text-primary);
+  --pc-rarity-uncommon:  #2f6f3a;
+  --pc-rarity-rare:      #1f3f7a;
+  --pc-rarity-very-rare: #5d2d8c;
+  --pc-rarity-legendary: #a3590a;
+  --pc-rarity-artifact:  var(--pc-crimson);
+  --pc-rarity-legacy:    #8a5a2a;
+
+  /* Attunement medallion sizing (used by attune-medallion.ts) */
+  --pc-medallion-size:   50px;
+  --pc-medallion-stroke: 1.5px;
+
   background: var(--d5e-parchment, #f0ddbd);
   color: var(--pc-text-primary);
   font-family: var(--pc-font-sans);
