@@ -1,0 +1,4 @@
+/* PC Inventory Redesign — all rules scoped under .archivist-pc-sheet.
+ * Filled in incrementally by the inventory tasks. Do not put rules
+ * in components.css; keep inventory-specific styles isolated here so
+ * the redesign can be reverted as a single file if needed. */
