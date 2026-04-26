@@ -11,23 +11,47 @@ import {
   PATH_OF_SHADOW,
   DRIFTER,
   SURE_STEP,
-  LONGSWORD,
 } from "./fixtures/pc/grendal-the-wary";
+import {
+  PLATE,
+  SHIELD,
+  LONGSWORD,
+  CLOAK_OF_PROTECTION,
+} from "./fixtures/pc/equipment-fixtures";
+import { extractPCCodeBlock, parsePC } from "../src/modules/pc/pc.parser";
+import { PCResolver } from "../src/modules/pc/pc.resolver";
+import { recalc } from "../src/modules/pc/pc.recalc";
 import { WorkspaceLeaf } from "obsidian";
 import type { CoreAPI } from "../src/core/module-api";
+import type { EntityRegistry } from "../src/shared/entities/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
-function boot(): { view: PCSheetView; mod: PCModule } {
-  const mod = new PCModule();
-  const entities = buildMockRegistry([
+function buildGrendalRegistry(): EntityRegistry {
+  // Grendal's longsword is registered as a proper WeaponEntity (SP5 shape) so
+  // the equipment derive can build attack rows and apply weapon properties.
+  // Plate/shield/cloak come from the SP5 equipment fixtures.
+  return buildMockRegistry([
     { slug: "hill-folk", entityType: "race", data: HILL_FOLK },
     { slug: "bladesworn", entityType: "class", data: BLADESWORN },
     { slug: "path-of-shadow", entityType: "subclass", data: PATH_OF_SHADOW },
     { slug: "drifter", entityType: "background", data: DRIFTER },
     { slug: "sure-step", entityType: "feat", data: SURE_STEP },
-    { slug: "longsword", entityType: "item", data: LONGSWORD },
+    { slug: "plate", entityType: "armor", name: "Plate", data: PLATE },
+    { slug: "shield", entityType: "armor", name: "Shield", data: SHIELD },
+    { slug: "longsword", entityType: "weapon", name: "Longsword", data: LONGSWORD },
+    {
+      slug: "cloak-of-protection",
+      entityType: "item",
+      name: "Cloak of Protection",
+      data: CLOAK_OF_PROTECTION,
+    },
   ]);
+}
+
+function boot(): { view: PCSheetView; mod: PCModule } {
+  const mod = new PCModule();
+  const entities = buildGrendalRegistry();
   mod.register({ entities } as unknown as CoreAPI);
   return { view: new PCSheetView(new WorkspaceLeaf(), mod), mod };
 }
@@ -283,5 +307,62 @@ describe("PC end-to-end — overrides round-trip (SP4c)", () => {
     await clearViaMark(view, `${stackSel} .pc-save-bn .archivist-override-mark`);
     const cleared = view.contentEl.querySelector<HTMLElement>(`${stackSel} .pc-save-chip`)!;
     expect(cleared.querySelector(".pc-save-bn")?.textContent).toBe(baseline);
+  });
+});
+
+describe("Grendal — SP5 equipment integration", () => {
+  // Drive parser → resolver → recalc with the same Grendal markdown the DOM
+  // tests use, then assert against the derived object directly. Hits the same
+  // pipeline as the view but exposes the structured AC breakdown and attack
+  // rows that aren't easy to read off the rendered DOM.
+  function deriveGrendal(): {
+    derived: ReturnType<typeof recalc>;
+    registry: EntityRegistry;
+  } {
+    const registry = buildGrendalRegistry();
+    const extracted = extractPCCodeBlock(GRENDAL_MD);
+    if (!extracted) throw new Error("expected pc code block in Grendal fixture");
+    const parsed = parsePC(extracted.yaml);
+    if (!parsed.success) throw new Error(`parse failed: ${parsed.error}`);
+    const resolved = new PCResolver(registry).resolve(parsed.data).character;
+    const derived = recalc(resolved, registry);
+    return { derived, registry };
+  }
+
+  it("AC reflects plate + shield + cloak of protection (heavy armor ignores DEX)", () => {
+    const { derived } = deriveGrendal();
+    // Plate (heavy, AC 18, no DEX) + Shield (+2) + Cloak of Protection (+1, attuned) = 21.
+    // Grendal's DEX is 14 (mod +2), but heavy armor zeroes DEX contribution.
+    expect(derived.ac).toBe(21);
+    const sources = derived.acBreakdown.map((t) => t.source);
+    expect(sources).toEqual(
+      expect.arrayContaining(["Plate", "Shield", "Cloak of Protection"]),
+    );
+  });
+
+  it("renders an attack row for the equipped longsword", () => {
+    const { derived } = deriveGrendal();
+    expect(derived.attacks.length).toBeGreaterThan(0);
+    // Longsword is versatile — first row is 1h (1d8), second is 2h (1d10).
+    const main = derived.attacks[0];
+    expect(main.name).toMatch(/longsword/i);
+    // STR 16 (mod +3), proficient (martial) at level 5 (PB +3) → +6 to hit.
+    expect(main.toHit).toBe(6);
+    expect(main.damageDice).toBe("1d8+3");
+    expect(main.damageType).toBe("slashing");
+    expect(main.proficient).toBe(true);
+  });
+
+  it("acBreakdown enumerates each contributing term in order", () => {
+    const { derived } = deriveGrendal();
+    // Heavy armor (plate) suppresses the dex term entirely; the breakdown
+    // should contain exactly Plate (base) + Shield + Cloak of Protection.
+    const sources = derived.acBreakdown.map((t) => t.source);
+    expect(sources).toContain("Plate");
+    expect(sources).toContain("Shield");
+    expect(sources).toContain("Cloak of Protection");
+    // Sum of the breakdown amounts must reconcile with derived.ac.
+    const total = derived.acBreakdown.reduce((s, t) => s + t.amount, 0);
+    expect(total).toBe(derived.ac);
   });
 });
