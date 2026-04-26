@@ -1,23 +1,78 @@
 import { z } from "zod";
 
+// --------------------------------------------------------------------------
+// Condition schemas - discriminated union with recursive any_of.
+// --------------------------------------------------------------------------
+
+import type { Condition } from "./item.conditions.types";
+
+const tier1Conditions = [
+  z.object({ kind: z.literal("no_armor") }),
+  z.object({ kind: z.literal("no_shield") }),
+  z.object({ kind: z.literal("wielding_two_handed") }),
+  z.object({ kind: z.literal("is_class"), value: z.string() }),
+  z.object({ kind: z.literal("is_race"), value: z.string() }),
+  z.object({ kind: z.literal("is_subclass"), value: z.string() }),
+] as const;
+
+const tier2Conditions = [
+  z.object({ kind: z.literal("vs_creature_type"), value: z.string() }),
+  z.object({ kind: z.literal("vs_attack_type"), value: z.enum(["ranged", "melee"]) }),
+  z.object({ kind: z.literal("on_attack_type"), value: z.enum(["ranged", "melee"]) }),
+  z.object({ kind: z.literal("with_weapon_property"), value: z.string() }),
+  z.object({ kind: z.literal("vs_spell_save") }),
+] as const;
+
+const tier3Conditions = [
+  z.object({ kind: z.literal("lighting"), value: z.enum(["dim", "bright", "daylight", "darkness"]) }),
+  z.object({ kind: z.literal("underwater") }),
+  z.object({ kind: z.literal("movement_state"), value: z.enum(["flying", "swimming", "climbing", "mounted"]) }),
+] as const;
+
+const tier4Conditions = [
+  z.object({ kind: z.literal("has_condition"), value: z.string() }),
+  z.object({ kind: z.literal("is_concentrating") }),
+  z.object({ kind: z.literal("bloodied") }),
+] as const;
+
+const rawCondition = z.object({ kind: z.literal("raw"), text: z.string() });
+
+export const conditionSchema: z.ZodType<Condition> = z.lazy(() =>
+  z.discriminatedUnion("kind", [
+    ...tier1Conditions,
+    ...tier2Conditions,
+    ...tier3Conditions,
+    ...tier4Conditions,
+    rawCondition,
+    z.object({ kind: z.literal("any_of"), conditions: z.array(conditionSchema) }),
+  ]),
+);
+
+const conditionalBonusSchema = z.object({
+  value: z.number().int(),
+  when: z.array(conditionSchema),
+});
+
+const numberOrConditional = z.union([z.number().int(), conditionalBonusSchema]);
+
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 
 const bonusesSchema = z.object({
-  ac: z.number().int().optional(),
-  weapon_attack: z.number().int().optional(),
-  weapon_damage: z.number().int().optional(),
-  spell_attack: z.number().int().optional(),
-  spell_save_dc: z.number().int().optional(),
-  saving_throws: z.number().int().optional(),
+  ac: numberOrConditional.optional(),
+  weapon_attack: numberOrConditional.optional(),
+  weapon_damage: numberOrConditional.optional(),
+  spell_attack: numberOrConditional.optional(),
+  spell_save_dc: numberOrConditional.optional(),
+  saving_throws: numberOrConditional.optional(),
   ability_scores: z.object({
     static: z.record(abilityEnum, z.number().int()).optional(),
-    bonus: z.record(abilityEnum, z.number().int()).optional(),
+    bonus: z.record(abilityEnum, numberOrConditional).optional(),
   }).optional(),
   speed: z.object({
-    walk: z.number().optional(),
-    fly: z.union([z.number(), z.literal("walk")]).optional(),
-    swim: z.number().optional(),
-    climb: z.number().optional(),
+    walk: numberOrConditional.optional(),
+    fly: z.union([numberOrConditional, z.literal("walk")]).optional(),
+    swim: numberOrConditional.optional(),
+    climb: numberOrConditional.optional(),
   }).optional(),
 });
 

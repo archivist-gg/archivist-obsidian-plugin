@@ -1,5 +1,6 @@
 import type { Ability, ArmorCategory } from "../armor/armor.types";
 import type { WeaponCategory, WeaponEntity } from "../weapon/weapon.types";
+import type { ConditionalBonus } from "./item.conditions.types";
 
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 export type ItemRarity =
@@ -27,21 +28,21 @@ export interface ItemEntity {
   base_item?: string;
 
   bonuses?: {
-    ac?: number;
-    weapon_attack?: number;
-    weapon_damage?: number;
-    spell_attack?: number;
-    spell_save_dc?: number;
-    saving_throws?: number;
+    ac?: number | ConditionalBonus;
+    weapon_attack?: number | ConditionalBonus;
+    weapon_damage?: number | ConditionalBonus;
+    spell_attack?: number | ConditionalBonus;
+    spell_save_dc?: number | ConditionalBonus;
+    saving_throws?: number | ConditionalBonus;
     ability_scores?: {
       static?: Partial<Record<Ability, number>>;
-      bonus?: Partial<Record<Ability, number>>;
+      bonus?: Partial<Record<Ability, number | ConditionalBonus>>;
     };
     speed?: {
-      walk?: number;
-      fly?: number | "walk";
-      swim?: number;
-      climb?: number;
+      walk?: number | ConditionalBonus;
+      fly?: number | ConditionalBonus | "walk";
+      swim?: number | ConditionalBonus;
+      climb?: number | ConditionalBonus;
     };
   };
 
