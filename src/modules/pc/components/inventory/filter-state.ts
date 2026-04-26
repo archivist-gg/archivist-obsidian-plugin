@@ -14,11 +14,17 @@ export interface VisibleEntry {
   resolved: ResolvedEquipped;
 }
 
+export function prettifyName(item: string): string {
+  const m = item.match(/^\[\[(.+)\]\]$/);
+  if (m) return m[1].replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return item;
+}
+
 export function displayName(entry: EquipmentEntry, resolved: ResolvedEquipped): string {
   if (entry.overrides?.name) return entry.overrides.name;
   const e = resolved.entity as { name?: string } | null;
   if (e?.name) return e.name;
-  return entry.item;
+  return prettifyName(entry.item);
 }
 
 export function visibleItems(items: VisibleEntry[], filters: FilterState): VisibleEntry[] {

@@ -4,6 +4,7 @@ import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { iconForEntity } from "./icon-mapping";
 import { requiresAttunement } from "./requires-attunement";
+import { prettifyName } from "./filter-state";
 
 export interface InventoryRowCtx {
   entry: EquipmentEntry;
@@ -72,7 +73,7 @@ function displayName(ctx: InventoryRowCtx): string {
   if (ctx.entry.overrides?.name) return ctx.entry.overrides.name;
   const e = ctx.resolved.entity as { name?: string } | null;
   if (e?.name) return e.name;
-  return ctx.entry.item;
+  return prettifyName(ctx.entry.item);
 }
 
 function rarityCssClass(resolved: ResolvedEquipped): string | null {
