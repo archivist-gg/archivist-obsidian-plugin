@@ -318,7 +318,7 @@ function computeAC(
   resolved: ResolvedCharacter,
   mods: Record<Ability, number>,
   registry: EntityRegistry,
-): { ac: number; breakdown: ACTerm[] } {
+): { ac: number; breakdown: ACTerm[]; informational: InformationalBonus[] } {
   const breakdown: ACTerm[] = [];
   const armorSlot = equippedSlots.armor;
   const armorEntity = armorSlot?.entity ?? null;
@@ -360,18 +360,29 @@ function computeAC(
   }
 
   // Equipped+attuned items.bonuses.ac (AC-bonus magic items).
+  const acInformational: InformationalBonus[] = [];
+  const acCtx = buildConditionContext(resolved, equippedSlots);
   for (const entry of resolved.definition.equipment ?? []) {
     const { entity, entityType } = lookupEntity(entry, registry);
     if (!entity || entityType !== "item") continue;
     if (!isAttunedActive(entry, entity)) continue;
     const item = entity as ItemEntity;
-    if (typeof item.bonuses?.ac === "number" && item.bonuses.ac !== 0) {
-      ac += item.bonuses.ac;
-      breakdown.push({ source: item.name, amount: item.bonuses.ac, kind: "item" });
+    const out = readNumericBonus(item.bonuses?.ac, acCtx);
+    if (!out) continue;
+    if (out.kind === "applied") {
+      ac += out.value;
+      breakdown.push({ source: item.name, amount: out.value, kind: "item" });
+    } else if (out.kind === "informational") {
+      acInformational.push({
+        field: "ac",
+        source: item.name,
+        value: out.value,
+        conditions: out.conditions,
+      });
     }
   }
 
-  return { ac, breakdown };
+  return { ac, breakdown, informational: acInformational };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -421,7 +432,14 @@ function isWeaponSlugProficient(
 function magicBonusesForWeaponEntry(
   entry: EquipmentEntry,
   registry: EntityRegistry,
-): { atk: number; dmg: number; extra?: string; sourceName?: string } {
+  ctx: ConditionContext,
+): {
+  atk: number;
+  dmg: number;
+  extra?: string;
+  sourceName?: string;
+  informational: InformationalBonus[];
+} {
   const { entity } = lookupEntity(entry, registry);
   const ovr = entry.overrides ?? {};
   const entryAttack = typeof ovr.bonus === "number" ? ovr.bonus : 0;
@@ -431,11 +449,19 @@ function magicBonusesForWeaponEntry(
   let itemAttack = 0;
   let itemDamage = 0;
   let sourceName: string | undefined;
+  const informational: InformationalBonus[] = [];
+
   if (entity && isItemEntity(entity)) {
-    const b = entity.bonuses;
-    itemAttack = typeof b?.weapon_attack === "number" ? b.weapon_attack : 0;
-    itemDamage = typeof b?.weapon_damage === "number" ? b.weapon_damage : 0;
     sourceName = entity.name;
+    const b = entity.bonuses;
+    const atkOut = readNumericBonus(b?.weapon_attack, ctx);
+    const dmgOut = readNumericBonus(b?.weapon_damage, ctx);
+    if (atkOut?.kind === "applied") itemAttack = atkOut.value;
+    else if (atkOut?.kind === "informational")
+      informational.push({ field: "weapon_attack", source: entity.name, value: atkOut.value, conditions: atkOut.conditions });
+    if (dmgOut?.kind === "applied") itemDamage = dmgOut.value;
+    else if (dmgOut?.kind === "informational")
+      informational.push({ field: "weapon_damage", source: entity.name, value: dmgOut.value, conditions: dmgOut.conditions });
   }
 
   return {
@@ -443,6 +469,7 @@ function magicBonusesForWeaponEntry(
     dmg: itemDamage + entryDamage,
     extra,
     sourceName,
+    informational,
   };
 }
 
@@ -455,7 +482,7 @@ function buildAttackRow(args: {
   mods: Record<Ability, number>;
   proficient: boolean;
   proficiencyBonus: number;
-  magic: { atk: number; dmg: number; extra?: string; sourceName?: string };
+  magic: { atk: number; dmg: number; extra?: string; sourceName?: string; informational: InformationalBonus[] };
 }): AttackRow {
   const { id, name, weapon, baseDice, ability, mods, proficient, proficiencyBonus, magic } = args;
 
@@ -503,6 +530,7 @@ function buildAttackRow(args: {
     properties: stringProps,
     proficient,
     breakdown: { toHit: toHitBreakdown, damage: damageBreakdown },
+    informational: args.magic.informational.length > 0 ? args.magic.informational : undefined,
   };
 }
 
@@ -513,6 +541,7 @@ function computeAttacks(
   registry: EntityRegistry,
   warnings: string[],
   proficiencyBonus: number,
+  ctx: ConditionContext,
 ): AttackRow[] {
   const rows: AttackRow[] = [];
   const handedSlots: Array<{ key: "mainhand" | "offhand"; placed: ResolvedEquipped | undefined }> = [
@@ -554,7 +583,7 @@ function computeAttacks(
     }
 
     const ability = attackAbility(weapon, mods);
-    const magic = magicBonusesForWeaponEntry(entry, registry);
+    const magic = magicBonusesForWeaponEntry(entry, registry, ctx);
     const ovr = entry.overrides ?? {};
     const displayName = ovr.name ?? weapon.name;
 
@@ -608,12 +637,13 @@ export function computeSlotsAndAttacks(
   const equippedSlots = assignSlots(resolved, registry, warnings);
   const overrides = resolved.definition.overrides ?? {};
 
-  const { ac, breakdown } = computeAC(equippedSlots, resolved, mods, registry);
-  const attacks = computeAttacks(equippedSlots, mods, profs, registry, warnings, proficiencyBonus);
+  const acOut = computeAC(equippedSlots, resolved, mods, registry);
+  const ctx = buildConditionContext(resolved, equippedSlots);
+  const attacks = computeAttacks(equippedSlots, mods, profs, registry, warnings, proficiencyBonus, ctx);
   return {
-    ac,
-    acBreakdown: breakdown,
-    acInformational: [],
+    ac: acOut.ac,
+    acBreakdown: acOut.breakdown,
+    acInformational: acOut.informational,
     attacks,
     equippedSlots,
     carriedWeight: 0,
