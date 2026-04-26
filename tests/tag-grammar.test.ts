@@ -20,17 +20,17 @@ describe("normalizeTagType", () => {
 describe("parseTagTerms", () => {
   it("parses a single ability", () => {
     const r = parseTagTerms("STR");
-    expect(r).toEqual({ abilityTerm: "str", pbTerm: false, literalTerms: [], diceTerms: [] });
+    expect(r).toEqual({ abilityTerm: "str", pbTerm: false, literalTerms: [], diceTerms: [], slugTerms: [] });
   });
 
   it("parses ability + PB", () => {
     const r = parseTagTerms("STR+PB");
-    expect(r).toEqual({ abilityTerm: "str", pbTerm: true, literalTerms: [], diceTerms: [] });
+    expect(r).toEqual({ abilityTerm: "str", pbTerm: true, literalTerms: [], diceTerms: [], slugTerms: [] });
   });
 
   it("parses signed literal", () => {
-    expect(parseTagTerms("+5")).toEqual({ pbTerm: false, literalTerms: [5], diceTerms: [] });
-    expect(parseTagTerms("-2")).toEqual({ pbTerm: false, literalTerms: [-2], diceTerms: [] });
+    expect(parseTagTerms("+5")).toEqual({ pbTerm: false, literalTerms: [5], diceTerms: [], slugTerms: [] });
+    expect(parseTagTerms("-2")).toEqual({ pbTerm: false, literalTerms: [-2], diceTerms: [], slugTerms: [] });
   });
 
   it("parses dice + ability + literal", () => {
@@ -40,6 +40,7 @@ describe("parseTagTerms", () => {
       pbTerm: false,
       literalTerms: [2],
       diceTerms: [{ count: 1, sides: 8 }],
+      slugTerms: [],
     });
   });
 
@@ -50,6 +51,7 @@ describe("parseTagTerms", () => {
       pbTerm: true,
       literalTerms: [2],
       diceTerms: [{ count: 1, sides: 8 }],
+      slugTerms: [],
     });
   });
 
@@ -64,5 +66,32 @@ describe("parseTagTerms", () => {
 
   it("rejects unrecognized terms", () => {
     expect(parseTagTerms("STR+FOO")).toHaveProperty("error");
+  });
+});
+
+describe("parseTagTerms — slug terms", () => {
+  it("parses [[longsword]] alongside ability + PB", () => {
+    const r = parseTagTerms("STR+PB+[[longsword]]");
+    if ("error" in r) throw new Error(r.error);
+    expect(r.abilityTerm).toBe("str");
+    expect(r.pbTerm).toBe(true);
+    expect(r.slugTerms).toEqual(["longsword"]);
+  });
+
+  it("parses multiple slug terms", () => {
+    const r = parseTagTerms("DEX+[[longsword]]+[[blessing]]");
+    if ("error" in r) throw new Error(r.error);
+    expect(r.slugTerms).toEqual(["longsword", "blessing"]);
+  });
+
+  it("rejects malformed slug ([[ unbalanced)", () => {
+    const r = parseTagTerms("STR+[[longsword");
+    expect("error" in r).toBe(true);
+  });
+
+  it("preserves backward compatibility — no slug, no slugTerms or empty", () => {
+    const r = parseTagTerms("STR+PB");
+    if ("error" in r) throw new Error(r.error);
+    expect(r.slugTerms ?? []).toEqual([]);
   });
 });

@@ -11,6 +11,7 @@ export interface ParsedTerms {
   pbTerm: boolean;
   literalTerms: number[];
   diceTerms: { count: number; sides: number }[];
+  slugTerms: string[];
 }
 
 const TAG_TYPE_ALIASES: Record<string, CanonicalTagType> = {
@@ -31,12 +32,14 @@ const ABILITY_RE = /^(str|dex|con|int|wis|cha)$/i;
 const PB_RE = /^pb$/i;
 const DICE_RE = /^(\d+)d(\d+)$/;
 const LITERAL_RE = /^([+-]?\d+)$/;
+const SLUG_RE = /^\[\[([^\[\]]+)\]\]$/;
 
 export function parseTagTerms(content: string): ParsedTerms | { error: string } {
   const out: ParsedTerms = {
     pbTerm: false,
     literalTerms: [],
     diceTerms: [],
+    slugTerms: [],
   };
   const trimmed = content.trim();
   if (trimmed.length === 0) return { error: "empty content" };
@@ -83,6 +86,11 @@ export function parseTagTerms(content: string): ParsedTerms | { error: string } 
     if (PB_RE.test(body)) {
       if (out.pbTerm) return { error: "duplicate PB term" };
       out.pbTerm = true;
+      continue;
+    }
+    const slugMatch = body.match(SLUG_RE);
+    if (slugMatch) {
+      out.slugTerms.push(slugMatch[1]);
       continue;
     }
     if (LITERAL_RE.test(signed)) {
