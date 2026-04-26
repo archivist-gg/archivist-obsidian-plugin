@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import type { Character, DerivedStats, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { Character, DerivedStats, EquipmentEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
@@ -464,6 +464,13 @@ export class CharacterEditState {
 
   setCurrency(coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
     eq.setCurrency(this.character, coin, value);
+    this.onChange();
+  }
+
+  patchInlineItem(index: number, patch: Partial<EquipmentEntry>): void {
+    const entry = this.character.equipment[index];
+    if (!entry) return;
+    Object.assign(entry, patch);
     this.onChange();
   }
 

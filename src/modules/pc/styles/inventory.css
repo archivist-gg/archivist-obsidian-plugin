@@ -807,3 +807,50 @@
   border-radius: var(--pc-radius-sm);
   cursor: pointer;
 }
+
+/* ---------- Inline custom item form ---------- */
+.archivist-pc-sheet .pc-inv-inline-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--pc-space-3);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  background: rgba(255, 248, 220, 0.4);
+  border: 1px dashed var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+}
+.archivist-pc-sheet .pc-inv-inline-field { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.archivist-pc-sheet .pc-inv-inline-lbl {
+  font-size: var(--pc-fs-label);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-inv-inline-val {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 0;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-inv-inline-val:hover { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-inv-inline-text-input {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  padding: 2px 4px;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+}
+.archivist-pc-sheet .pc-inv-inline-help {
+  grid-column: 1 / -1;
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  font-style: italic;
+  margin-top: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-inline-promote {
+  color: var(--pc-crimson);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}

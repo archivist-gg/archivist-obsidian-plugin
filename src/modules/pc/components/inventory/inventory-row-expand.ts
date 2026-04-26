@@ -8,6 +8,7 @@ import type { WeaponEntity } from "../../../weapon/weapon.types";
 import type { ArmorEntity } from "../../../armor/armor.types";
 import type { Item } from "../../../item/item.types";
 import { requiresAttunement } from "./requires-attunement";
+import { renderInlineItemForm } from "./inline-item-form";
 
 export interface RowExpandCtx {
   entry: EquipmentEntry;
@@ -21,9 +22,17 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
   const expand = parent.createDiv({ cls: "pc-inv-expand" });
 
   if (!ctx.resolved.entity) {
-    // Inline custom item — defer to inline-item-form (Task 24). For now, placeholder.
-    const placeholder = expand.createDiv({ cls: "pc-inv-inline-form" });
-    placeholder.createSpan({ text: ctx.entry.item, cls: "pc-inv-inline-name" });
+    if (ctx.editState) {
+      const editState = ctx.editState;
+      renderInlineItemForm(expand, {
+        entry: ctx.entry,
+        index: ctx.resolved.index,
+        onChange: (patch) => editState.patchInlineItem(ctx.resolved.index, patch),
+      });
+    } else {
+      expand.createDiv({ cls: "pc-inv-inline-form" })
+        .createSpan({ text: ctx.entry.item, cls: "pc-inv-inline-name" });
+    }
   } else if (ctx.resolved.entityType === "weapon") {
     expand.appendChild(renderWeaponBlock(ctx.resolved.entity as WeaponEntity));
   } else if (ctx.resolved.entityType === "armor") {
