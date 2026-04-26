@@ -854,3 +854,39 @@
   text-decoration: underline dotted;
   cursor: pointer;
 }
+
+/* ---------- Responsive ---------- */
+
+/* xs+: header collapses to single column (loadout above attune, no divider) */
+@media (max-width: 759px) {
+  .archivist-pc-sheet .pc-inv-header {
+    grid-template-columns: 1fr;
+    gap: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-inv-header-attune {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px dotted var(--pc-tan-muted);
+    padding-top: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-loadout-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .archivist-pc-sheet .pc-inv-row {
+    grid-template-columns: 18px 18px 1fr 70px 36px;  /* drop qty/cost column */
+  }
+  .archivist-pc-sheet .pc-inv-qty-cost { display: none; }
+}
+
+/* xxs: loadout 4×1; rows lose Weight column (kept in a tooltip-like state) */
+@media (max-width: 599px) {
+  .archivist-pc-sheet .pc-loadout-strip {
+    grid-template-columns: 1fr;
+  }
+  .archivist-pc-sheet .pc-inv-row {
+    grid-template-columns: 18px 18px 1fr 70px;  /* drop weight column too */
+  }
+  .archivist-pc-sheet .pc-inv-weight { display: none; }
+  .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
+  .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
+}
