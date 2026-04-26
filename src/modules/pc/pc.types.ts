@@ -179,6 +179,7 @@ export interface AttackRow {
 export interface ResolvedEquipped {
   index: number;
   entity: ArmorEntity | WeaponEntity | ItemEntity | null;
+  entityType: string | null;
   entry: EquipmentEntry;
 }
 

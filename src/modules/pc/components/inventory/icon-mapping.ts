@@ -16,13 +16,12 @@ export function iconForEntity(
   resolved: ResolvedEquipped,
   _entry: EquipmentEntry,
 ): string {
-  const entity = resolved.entity as { entityType?: string; type?: string } | null;
+  if (!resolved.entity) return "package"; // inline (non-slug) item — no compendium entry
+  if (resolved.entityType === "weapon") return "sword";
+  if (resolved.entityType === "armor")  return "shield";
 
-  if (!entity) return "package"; // inline (non-slug) item — no compendium entry
-  if (entity.entityType === "weapon") return "sword";
-  if (entity.entityType === "armor")  return "shield";
-
-  switch (entity.type?.toLowerCase()) {
+  const type = (resolved.entity as { type?: string } | null)?.type?.toLowerCase();
+  switch (type) {
     case "ring":           return "tabler-ring";
     case "potion":         return "flask-conical";
     case "scroll":         return "scroll";

@@ -209,12 +209,12 @@ function assignSlots(
   for (let i = 0; i < eq.length; i++) {
     const entry = eq[i];
     if (!entry.equipped || !entry.slot) continue;
-    const { entity } = lookupEntity(entry, registry);
+    const { entity, entityType } = lookupEntity(entry, registry);
     if (slots[entry.slot]) {
       warnings.push(`${entry.slot} slot conflict: ${entry.item} ignored (already taken).`);
       continue;
     }
-    const placed: ResolvedEquipped = { index: i, entity, entry };
+    const placed: ResolvedEquipped = { index: i, entity, entityType, entry };
     slots[entry.slot] = placed;
   }
 
@@ -228,7 +228,7 @@ function assignSlots(
     const defaultSlot = defaultSlotForType(entityType, entity, registry);
     if (!defaultSlot) continue;
 
-    const placed: ResolvedEquipped = { index: i, entity, entry };
+    const placed: ResolvedEquipped = { index: i, entity, entityType, entry };
     if (defaultSlot === "mainhand") {
       if (!slots.mainhand) slots.mainhand = placed;
       else if (!slots.offhand) slots.offhand = placed;
