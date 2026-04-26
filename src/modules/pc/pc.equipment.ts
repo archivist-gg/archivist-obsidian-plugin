@@ -38,6 +38,7 @@ export function emptyAppliedBonuses(): AppliedBonuses {
     spell_attack: 0,
     spell_save_dc: 0,
     defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [] },
+    informational: [],
   };
 }
 
@@ -551,6 +552,7 @@ export function computeSlotsAndAttacks(
   return {
     ac,
     acBreakdown: breakdown,
+    acInformational: [],
     attacks,
     equippedSlots,
     carriedWeight: 0,

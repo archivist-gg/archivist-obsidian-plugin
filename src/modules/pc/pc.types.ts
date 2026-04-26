@@ -174,6 +174,7 @@ export interface AttackRow {
   properties: string[];
   proficient: boolean;
   breakdown: { toHit: ACTerm[]; damage: ACTerm[] };
+  informational?: import("../item/item.conditions.types").InformationalBonus[];
 }
 
 export interface ResolvedEquipped {
@@ -198,11 +199,13 @@ export interface AppliedBonuses {
   spell_attack: number;
   spell_save_dc: number;
   defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] };
+  informational: import("../item/item.conditions.types").InformationalBonus[];
 }
 
 export interface DerivedEquipment {
   ac: number;
   acBreakdown: ACTerm[];
+  acInformational: import("../item/item.conditions.types").InformationalBonus[];
   attacks: AttackRow[];
   equippedSlots: EquippedSlots;
   carriedWeight: number;
