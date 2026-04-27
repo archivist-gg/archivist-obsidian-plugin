@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import { makeInlineInput } from "../edit-primitives";
+import { numberField } from "../edit-primitives";
 
 const COIN_KEYS = ["pp", "gp", "ep", "sp", "cp"] as const;
 
@@ -20,15 +20,11 @@ export class CurrencyStrip implements SheetComponent {
       const valEl = cell.createDiv({ cls: "pc-currency-val", text: String(value) });
 
       if (editState) {
-        valEl.classList.add("pc-edit-click");
-        valEl.addEventListener("click", () => {
-          makeInlineInput(valEl, {
-            initial: value,
-            min: 0,
-            max: 999_999,
-            onCommit: (n) => editState.setCurrency(coin, n),
-            onCancel: () => { /* rerender restores valEl */ },
-          });
+        numberField(valEl, {
+          getValue: () => value,
+          onSet: (n) => editState.setCurrency(coin, n),
+          min: 0,
+          max: 999_999,
         });
       }
     }

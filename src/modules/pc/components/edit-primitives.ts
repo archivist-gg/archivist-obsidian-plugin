@@ -151,6 +151,12 @@ export interface CurrencyCellOpts {
   onSet: (n: number) => void;
 }
 
+/**
+ * @deprecated Not used in production after CurrencyStrip V2 redesign.
+ * Renders its own `.pc-currency-cell + .pc-currency-label` markup which
+ * conflicts with the V2 colored-denom strip. Retained for the unit test;
+ * remove during a future cleanup pass if no V3 caller appears.
+ */
 export function currencyCell(parent: HTMLElement, opts: CurrencyCellOpts): HTMLElement {
   const cell = parent.createDiv({ cls: "pc-currency-cell" });
   const valEl = cell.createDiv({ cls: "pc-currency-val", text: String(opts.value) });

@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { CurrencyStrip } from "../src/modules/pc/components/inventory/currency-strip";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -33,5 +33,18 @@ describe("CurrencyStrip — redesigned", () => {
     const root = mountContainer();
     new CurrencyStrip().render(root, makeCtx({}));
     expect(root.textContent?.toLowerCase()).not.toContain("wealth");
+  });
+
+  it("clicking a value cell in edit mode commits via setCurrency", () => {
+    const setCurrency = vi.fn();
+    const root = mountContainer();
+    const editCtx = { ...makeCtx({ gp: 100 }), editState: { setCurrency } } as unknown as ComponentRenderContext;
+    new CurrencyStrip().render(root, editCtx);
+    const gpVal = [...root.querySelectorAll(".pc-currency-val")][1] as HTMLElement;
+    gpVal.click();
+    const input = root.querySelector("input[type='number']") as HTMLInputElement;
+    input.value = "150";
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(setCurrency).toHaveBeenCalledWith("gp", 150);
   });
 });
