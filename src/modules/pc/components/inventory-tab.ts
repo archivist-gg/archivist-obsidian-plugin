@@ -1,19 +1,12 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { FilterState, VisibleEntry } from "./inventory/filter-state";
+import type { FilterState } from "./inventory/filter-state";
 import type { EquipmentEntry, ResolvedEquipped } from "../pc.types";
-import { LoadoutStrip } from "./inventory/loadout-strip";
-import { AttunementStrip } from "./inventory/attunement-strip";
-import { showAttunePopover } from "./inventory/attune-popover";
-import { AttunePickerModal } from "./inventory/attune-picker-modal";
+import { HeaderStrip } from "./inventory/header-strip";
 import { AttuneConflictModal } from "./inventory/attune-conflict-modal";
-import { requiresAttunement } from "./inventory/requires-attunement";
-import { CurrencyStrip } from "./inventory/currency-strip";
-import { ManageCoinMode } from "./inventory/manage-coin-mode";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
 import { InventoryList } from "./inventory/inventory-list";
 import { BrowseMode } from "./inventory/browse-mode";
-import { setIcon } from "obsidian";
 
 export class InventoryTab implements SheetComponent {
   readonly type = "inventory-tab";
@@ -25,38 +18,8 @@ export class InventoryTab implements SheetComponent {
     let mode: ToolbarMode = "list";
     let filters: FilterState = { status: "all", types: new Set(), rarities: new Set(), search: "" };
 
-    const header = root.createDiv({ cls: "pc-inv-header" });
-    const loadoutHost = header.createDiv({ cls: "pc-inv-header-loadout" });
-    new LoadoutStrip().render(loadoutHost, ctx);
-    const attuneHost = header.createDiv({ cls: "pc-inv-header-attune" });
-    new AttunementStrip({
-      onClickFilled: (occupant, anchor) => {
-        if (!ctx.editState) return;
-        const editState = ctx.editState;
-        showAttunePopover({
-          anchor,
-          occupant,
-          onUnattune: (i) => editState.unattuneItem(i),
-          onFindInList: (_i) => { /* deferred — see "Deferred polish" section at end of plan */ },
-        });
-      },
-      onPickEmpty: (slotIdx) => {
-        if (!ctx.editState) return;
-        const editState = ctx.editState;
-        const candidates = collectAttunableCandidates(ctx);
-        new AttunePickerModal(ctx.app, {
-          slotIndex: slotIdx,
-          candidates,
-          onPick: (entryIdx) => {
-            const result = editState.attuneItem(entryIdx);
-            if (result.kind === "rejected") {
-              // Should not happen because picker filtered to non-attuned, but guard anyway.
-              openConflictModal(ctx, entryIdx);
-            }
-          },
-        }).open();
-      },
-    }).render(attuneHost, ctx);
+    const header = root.createDiv({ cls: "pc-inventory-header" });
+    new HeaderStrip().render(header, ctx);
 
     const toolbarHost = root.createDiv({ cls: "pc-inv-toolbar-host" });
     const filtersHost = root.createDiv({ cls: "pc-inv-filters-host" });
@@ -114,41 +77,7 @@ export class InventoryTab implements SheetComponent {
     };
 
     drawAll();
-
-    let coinMode: "strip" | "expanded" = "strip";
-
-    const coinHost = root.createDiv({ cls: "pc-inv-currency-host" });
-    const drawCoin = (): void => {
-      coinHost.empty();
-      const heading = coinHost.createDiv({ cls: "pc-coin-heading-row" });
-      const h4 = heading.createEl("h4", { cls: "pc-tab-heading", text: "Currency" });
-      const toggle = h4.createEl("button", { cls: "pc-coin-mode-toggle", attr: { title: "Manage coin" } });
-      setIcon(toggle, coinMode === "strip" ? "settings" : "x");
-      toggle.addEventListener("click", () => {
-        coinMode = coinMode === "strip" ? "expanded" : "strip";
-        drawCoin();
-      });
-      if (coinMode === "strip") new CurrencyStrip().render(coinHost, ctx);
-      else new ManageCoinMode().render(coinHost, ctx);
-    };
-    drawCoin();
   }
-}
-
-function collectAttunableCandidates(ctx: ComponentRenderContext): VisibleEntry[] {
-  const equipment = ctx.resolved.definition.equipment ?? [];
-  const reg = ctx.core?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null } | undefined;
-  const out: VisibleEntry[] = [];
-  equipment.forEach((entry, index) => {
-    if (entry.attuned) return;
-    const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
-    const found = slug ? reg?.getBySlug?.(slug) : null;
-    const entity = found ? ((found.data ?? {}) as never) : null;
-    const entityType = found ? (found.entityType ?? null) : null;
-    if (!requiresAttunement(entity)) return;
-    out.push({ entry, resolved: { index, entity, entityType, entry } });
-  });
-  return out;
 }
 
 function buildResolved(

@@ -3,88 +3,6 @@
  * in components.css; keep inventory-specific styles isolated here so
  * the redesign can be reverted as a single file if needed. */
 
-/* ---------- Loadout strip (4 worn slots) ---------- */
-.archivist-pc-sheet .pc-loadout-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--pc-space-3);
-}
-.archivist-pc-sheet .pc-loadout-slot {
-  display: flex;
-  align-items: center;
-  gap: var(--pc-space-2);
-  min-width: 0;
-}
-.archivist-pc-sheet .pc-loadout-icon {
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-sm);
-  background: rgba(255, 248, 220, 0.45);
-  flex-shrink: 0;
-}
-.archivist-pc-sheet .pc-loadout-icon svg {
-  width: 16px;
-  height: 16px;
-  color: var(--pc-text-primary);
-  stroke-width: 1.5;
-}
-.archivist-pc-sheet .pc-loadout-info {
-  flex: 1;
-  min-width: 0;
-}
-.archivist-pc-sheet .pc-loadout-lbl {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-micro);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-lg);
-  text-transform: uppercase;
-  color: var(--pc-text-muted);
-  line-height: var(--pc-lh-snug);
-}
-.archivist-pc-sheet .pc-loadout-val {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-body);
-  font-weight: 700;
-  line-height: var(--pc-lh-snug);
-  color: var(--pc-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.archivist-pc-sheet .pc-loadout-val.is-empty {
-  font-weight: 400;
-  font-style: italic;
-  color: var(--pc-text-muted);
-}
-.archivist-pc-sheet .pc-loadout-stat {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-small);
-  color: var(--pc-text-muted);
-  line-height: var(--pc-lh-snug);
-}
-.archivist-pc-sheet .pc-loadout-unequip {
-  padding: 2px 8px;
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-micro);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-sm);
-  text-transform: uppercase;
-  color: var(--pc-crimson);
-  background: transparent;
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-sm);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.archivist-pc-sheet .pc-loadout-unequip:hover {
-  background: var(--pc-crimson);
-  color: var(--pc-parchment-light);
-  border-color: var(--pc-crimson);
-}
-
 /* ---------- Inventory row (collapsed) ---------- */
 .archivist-pc-sheet .pc-inv-row {
   display: grid;
@@ -922,20 +840,14 @@
     border-top: 1px dotted var(--pc-tan-muted);
     padding-top: var(--pc-space-3);
   }
-  .archivist-pc-sheet .pc-loadout-strip {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px 1fr 70px 36px;  /* drop qty/cost column */
   }
   .archivist-pc-sheet .pc-inv-qty-cost { display: none; }
 }
 
-/* xxs: loadout 4×1; rows lose Weight column (kept in a tooltip-like state) */
+/* xxs: rows lose Weight column (kept in a tooltip-like state) */
 @media (max-width: 599px) {
-  .archivist-pc-sheet .pc-loadout-strip {
-    grid-template-columns: 1fr;
-  }
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px 1fr 70px;  /* drop weight column too */
   }

@@ -30,11 +30,14 @@ function ctxWith(c: Character, derivedOverrides: Partial<DerivedStats> = {}): Co
 }
 
 describe("InventoryTab (redesigned)", () => {
-  it("renders the four loadout slots", () => {
+  it("renders the header strip (attune + divider + currency)", () => {
     const root = mountContainer();
     new InventoryTab().render(root, ctxWith(baseChar()));
-    const slots = root.querySelectorAll(".pc-loadout-slot");
-    expect(slots).toHaveLength(4);
+    expect(root.querySelector(".pc-inventory-header .pc-header-strip")).toBeTruthy();
+    expect(root.querySelector(".pc-header-strip > .pc-header-attune")).toBeTruthy();
+    expect(root.querySelector(".pc-header-strip > .pc-header-divider")).toBeTruthy();
+    expect(root.querySelector(".pc-header-strip > .pc-header-currency")).toBeTruthy();
+    expect(root.querySelector(".pc-loadout-slot")).toBeNull();
   });
 
   it("renders toolbar with search and Add Item button", () => {
@@ -164,9 +167,11 @@ describe("InventoryTab — full integration", () => {
     const root = mountContainer();
     new InventoryTab().render(root, ctxWith(c, { ac: 14, carriedWeight: 24, attunementUsed: 1, attunementLimit: 3 }));
 
-    // Header — loadout (4 slots) + attunement (3 medallions)
-    expect(root.querySelectorAll(".pc-loadout-slot")).toHaveLength(4);
+    // Header — attunement (3 medallions) + divider + currency (no loadout slots)
+    expect(root.querySelector(".pc-header-strip")).toBeTruthy();
     expect(root.querySelectorAll(".pc-medallion")).toHaveLength(3);
+    expect(root.querySelector(".pc-header-divider")).toBeTruthy();
+    expect(root.querySelectorAll(".pc-loadout-slot")).toHaveLength(0);
 
     // Toolbar — search input + Add Item button
     expect(root.querySelector(".pc-inv-search input")).toBeTruthy();
