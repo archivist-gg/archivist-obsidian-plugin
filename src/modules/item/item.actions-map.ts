@@ -1,5 +1,7 @@
 // src/modules/item/item.actions-map.ts
 
+import type { EquipmentEntry } from "../pc/pc.types";
+
 export type ActionCost = "action" | "bonus-action" | "reaction" | "free" | "special";
 
 export interface ItemAction {
@@ -55,3 +57,24 @@ export const ITEM_ACTIONS: Record<string, ItemAction> = {
   "holy-water":                  { cost: "action",       range: "20 ft.",  max_charges: 1, recovery: { amount: "0", reset: "special" } },
   "oil-of-sharpness":            { cost: "action",       range: "self",    max_charges: 1, recovery: { amount: "0", reset: "special" } },
 };
+
+/**
+ * Resolve the ItemAction for an equipped entry.
+ * Priority: entry.overrides (action + range) merged onto curated map.
+ * Returns null when neither source supplies an action cost.
+ */
+export function resolveItemAction(slug: string, entry: EquipmentEntry): ItemAction | null {
+  const curated = ITEM_ACTIONS[slug] ?? null;
+  const override = entry.overrides;
+  const overrideCost = override?.action;
+  const overrideRange = override?.range;
+
+  if (!curated && !overrideCost) return null;
+
+  return {
+    cost: overrideCost ?? curated!.cost,
+    range: overrideRange ?? curated?.range,
+    max_charges: curated?.max_charges,
+    recovery: curated?.recovery,
+  };
+}
