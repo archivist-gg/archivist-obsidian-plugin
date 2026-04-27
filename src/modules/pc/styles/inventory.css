@@ -416,6 +416,33 @@
 .archivist-pc-sheet .pc-medallion-name.rarity-legendary { color: var(--pc-rarity-legendary); }
 .archivist-pc-sheet .pc-medallion-name.rarity-artifact  { color: var(--pc-rarity-artifact); }
 
+/* ---------- Header strip (attunement + divider + currency) ---------- */
+.archivist-pc-sheet .pc-header-strip {
+  display: flex;
+  align-items: stretch;
+  gap: var(--pc-space-5);
+  padding: var(--pc-space-3) var(--pc-space-4);
+  border: 1px solid var(--pc-tan-muted);
+  background: rgba(255, 255, 255, 0.32);
+  border-radius: var(--pc-radius-md);
+}
+.archivist-pc-sheet .pc-header-attune {
+  display: flex;
+  align-items: stretch;
+  gap: var(--pc-space-4);
+  flex: 1 1 auto;
+}
+.archivist-pc-sheet .pc-header-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-header-currency {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
 /* ---------- Inventory header (loadout + attunement side by side) ---------- */
 .archivist-pc-sheet .pc-inv-header {
   display: grid;
