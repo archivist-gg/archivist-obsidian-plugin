@@ -109,6 +109,10 @@ const characterStateSchema = z.object({
     gp: z.number().int().nonnegative(),
     pp: z.number().int().nonnegative(),
   }).optional(),
+  feature_uses: z.record(z.string(), z.object({
+    used: z.number().int().nonnegative(),
+    max:  z.number().int().nonnegative(),
+  })).default({}),
   attuned_items: z.array(z.string()).optional(),
 });
 

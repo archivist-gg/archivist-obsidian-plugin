@@ -240,3 +240,39 @@ describe("equipmentEntry overrides — action + range", () => {
     expect(parsed.equipment[0].state?.recovery?.reset).toBe("special");
   });
 });
+
+describe("characterState — feature_uses", () => {
+  it("defaults feature_uses to {} when missing", () => {
+    const parsed = characterSchema.parse({
+      name: "T", edition: "2014", race: null, subrace: null, background: null,
+      class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual",
+      skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] },
+      equipment: [],
+      overrides: {},
+      state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 0, exhaustion: 0 },
+    });
+    expect(parsed.state.feature_uses).toEqual({});
+  });
+
+  it("accepts feature_uses with arbitrary string keys", () => {
+    const parsed = characterSchema.parse({
+      name: "T", edition: "2014", race: null, subrace: null, background: null,
+      class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual",
+      skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] },
+      equipment: [],
+      overrides: {},
+      state: {
+        hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {},
+        concentration: null, conditions: [], inspiration: 0, exhaustion: 0,
+        feature_uses: { "second-wind": { used: 0, max: 1 }, "action-surge": { used: 1, max: 1 } },
+      },
+    });
+    expect(parsed.state.feature_uses["action-surge"]).toEqual({ used: 1, max: 1 });
+  });
+});
