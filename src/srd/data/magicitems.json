@@ -302,7 +302,11 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self"
+    }
   },
   {
     "slug": "boots-of-speed",
@@ -317,7 +321,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "bonus-action",
+      "range": "self",
+      "max_charges": 1,
+      "recovery": {
+        "amount": "1",
+        "reset": "long"
+      }
+    }
   },
   {
     "slug": "boots-of-striding-and-springing",
@@ -332,7 +345,11 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "free",
+      "range": "self"
+    }
   },
   {
     "slug": "boots-of-the-winterlands",
@@ -488,7 +505,11 @@
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "touch"
+    }
   },
   {
     "slug": "candle-of-invocation",
@@ -623,7 +644,11 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "free",
+      "range": "self"
+    }
   },
   {
     "slug": "cloak-of-elvenkind",
@@ -679,7 +704,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 1,
+      "recovery": {
+        "amount": "1",
+        "reset": "long"
+      }
+    }
   },
   {
     "slug": "cloak-of-the-manta-ray",
@@ -783,7 +817,11 @@
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "touch"
+    }
   },
   {
     "slug": "deck-of-illusions",
@@ -1075,7 +1113,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "30 ft.",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "eyes-of-minute-seeing",
@@ -1939,7 +1986,16 @@
       "weapon_attack": 3,
       "weapon_damage": 3
     },
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 1,
+      "recovery": {
+        "amount": "0",
+        "reset": "special"
+      }
+    }
   },
   {
     "slug": "oil-of-slipperiness",
@@ -2244,7 +2300,16 @@
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 1,
+      "recovery": {
+        "amount": "0",
+        "reset": "special"
+      }
+    }
   },
   {
     "slug": "potion-of-heroism",
@@ -2567,7 +2632,16 @@
       "required": true,
       "restriction": "outdoors at night"
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "60 ft.",
+      "max_charges": 6,
+      "recovery": {
+        "amount": "1d6",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "ring-of-spell-storing",
@@ -2582,7 +2656,12 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 5
+    }
   },
   {
     "slug": "ring-of-spell-turning",
@@ -2649,7 +2728,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "60 ft.",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "ring-of-three-wishes",
@@ -2668,7 +2756,16 @@
         ]
       }
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "0",
+        "reset": "special"
+      }
+    }
   },
   {
     "slug": "ring-of-warmth",
@@ -3720,7 +3817,11 @@
       "required": true
     },
     "tier": "major",
-    "base_item": "longsword"
+    "base_item": "longsword",
+    "actions": {
+      "cost": "free",
+      "range": "self"
+    }
   },
   {
     "slug": "sword-of-life-stealing",
@@ -3993,7 +4094,16 @@
         }
       ]
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-enemy-detection",
@@ -4040,7 +4150,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-fireballs",
@@ -4073,7 +4192,16 @@
         }
       ]
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "150 ft.",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-lightning-bolts",
@@ -4106,7 +4234,16 @@
         }
       ]
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "100 ft.",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-magic-detection",
@@ -4154,7 +4291,16 @@
         ]
       }
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "120 ft.",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-paralysis",
@@ -4180,7 +4326,16 @@
         }
       ]
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "60 ft.",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-polymorph",
@@ -4230,7 +4385,16 @@
       "recharge": "dawn",
       "recharge_amount": "1d3"
     },
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "30 ft.",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-the-war-mage-1-2-or-3",
@@ -4274,7 +4438,16 @@
         }
       ]
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "60 ft.",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "wand-of-wonder",
@@ -4316,7 +4489,16 @@
         }
       ]
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "120 ft.",
+      "max_charges": 7,
+      "recovery": {
+        "amount": "1d6+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "weapon-1-2-or-3",

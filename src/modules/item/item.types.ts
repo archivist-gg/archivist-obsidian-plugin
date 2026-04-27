@@ -1,6 +1,7 @@
 import type { Ability, ArmorCategory } from "../armor/armor.types";
 import type { WeaponCategory, WeaponEntity } from "../weapon/weapon.types";
 import type { ConditionalBonus } from "./item.conditions.types";
+import type { ItemAction } from "./item.actions-map";
 
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 export type ItemRarity =
@@ -94,6 +95,13 @@ export interface ItemEntity {
   sentient?: boolean;
   focus?: boolean | "arcane" | "druid" | "holy";
   tier?: "major" | "minor";
+
+  /**
+   * Per-use action info stamped by the augmenter from `ITEM_ACTIONS[slug]`.
+   * Present on curated chargeable / activated items in the SRD bundle; may
+   * also be supplied directly on hand-authored entities.
+   */
+  actions?: ItemAction;
 
   damage?: WeaponEntity["damage"] | string;
   weapon_category?: WeaponCategory;

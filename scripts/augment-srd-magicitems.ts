@@ -20,6 +20,7 @@ import * as path from "path";
 import { CURATED_CONDITIONS_MAP } from "./augment/condition-map";
 import { extractConditionsFromProse } from "./augment/condition-extractor";
 import type { BonusFieldPath } from "../src/modules/item/item.conditions.types";
+import { ITEM_ACTIONS, type ItemAction } from "../src/modules/item/item.actions-map";
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -37,6 +38,7 @@ const REFERENCE_BASE_ITEMS_PATH = path.join(REFERENCE_DATA_DIR, "items-base.json
 
 export interface OpenItemRecord {
   name: string;
+  slug?: string;
   desc?: string;
   rarity?: string;
   type?: string;
@@ -53,6 +55,7 @@ export interface OpenItemRecord {
   charges?: number | Record<string, unknown>;
   tier?: string;
   base_item?: string;
+  actions?: ItemAction;
   [k: string]: unknown;
 }
 
@@ -488,21 +491,38 @@ export function augmentItems(
 
   let augmentedCount = 0;
   const items = openItems.map((item) => {
-    const slug = slugify(item.name);
+    const slug = typeof item.slug === "string" && item.slug.length > 0
+      ? item.slug
+      : slugify(item.name);
     const ref = index.get(slug);
-    if (!ref) return item;
-    const resolved = resolveCopy(ref, index);
-    const overlay = mapReferenceFields(resolved, warnings);
-    if (Object.keys(overlay).length === 0) return item;
-    augmentedCount++;
-    // Preserve every existing field on `item`; only fill in missing keys.
-    const merged: OpenItemRecord = { ...item };
-    for (const [k, v] of Object.entries(overlay)) {
-      if (!(k in merged) || merged[k] === undefined || merged[k] === null || merged[k] === "") {
-        merged[k] = v;
+    const action = ITEM_ACTIONS[slug];
+
+    let merged: OpenItemRecord | null = null;
+    const ensureMerged = (): OpenItemRecord => {
+      if (merged === null) merged = { ...item };
+      return merged;
+    };
+
+    if (ref) {
+      const resolved = resolveCopy(ref, index);
+      const overlay = mapReferenceFields(resolved, warnings);
+      if (Object.keys(overlay).length > 0) {
+        augmentedCount++;
+        const m = ensureMerged();
+        // Preserve every existing field on `item`; only fill in missing keys.
+        for (const [k, v] of Object.entries(overlay)) {
+          if (!(k in m) || m[k] === undefined || m[k] === null || m[k] === "") {
+            m[k] = v;
+          }
+        }
       }
     }
-    return merged;
+
+    if (action && (item.actions === undefined || item.actions === null)) {
+      ensureMerged().actions = action;
+    }
+
+    return merged ?? item;
   });
 
   return { items, augmentedCount, warnings };
