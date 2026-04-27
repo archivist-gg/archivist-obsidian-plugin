@@ -1455,6 +1455,13 @@
 .pc-attack-info { cursor: help; opacity: 0.6; }
 .pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
 
+.pc-attack-row-situational td {
+  font-style: italic;
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-label);
+  padding: 0.1em 0.5em 0.3em 1.5em;
+}
+
 /* AC tooltip — follows the PC sheet's parchment aesthetic so it stays
  * readable inside the Obsidian dark theme. Pulling raw --background-primary
  * here resolves to a near-black surface in dark mode, making the dark
@@ -1476,6 +1483,12 @@
 .pc-ac-tooltip-row.is-greyed { opacity: 0.5; }
 .pc-ac-tooltip-override { font-weight: 600; color: var(--pc-crimson); }
 .pc-ac-tooltip-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
+.pc-ac-tooltip-row--situational { font-style: italic; opacity: 0.85; }
+.pc-ac-tooltip-row--situational .pc-ac-tooltip-condition {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-label);
+  margin-left: var(--pc-space-1);
+}
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }
