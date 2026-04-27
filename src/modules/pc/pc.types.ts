@@ -39,11 +39,13 @@ export interface EquipmentEntryOverrides {
   damage_bonus?: number;
   extra_damage?: string;
   ac_bonus?: number;
+  action?: "action" | "bonus-action" | "reaction" | "free" | "special";
+  range?: string;
 }
 
 export interface EquipmentEntryState {
   charges?: { current: number; max: number };
-  recovery?: { amount: string; reset: "dawn" | "short" | "long" };
+  recovery?: { amount: string; reset: "dawn" | "short" | "long" | "special" };
   depletion_risk?: { trigger: string; roll: string; threshold: number; effect: string };
 }
 
@@ -83,6 +85,7 @@ export interface CharacterState {
   exhaustion: number;
   death_saves?: { successes: number; failures: number };
   inspiration: number;
+  feature_uses: Record<string, { used: number; max: number }>;
   /** @deprecated SP5: moved to Character.currency. Tolerated until Task 4 parser migration strips it. */
   currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
   /** @deprecated SP5: removed; per-entry attuned flag is canonical. Tolerated until Task 4 parser migration strips it. */
