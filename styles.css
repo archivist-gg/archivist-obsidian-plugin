@@ -9136,6 +9136,13 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-rarity-artifact:  var(--pc-crimson);
   --pc-rarity-legacy:    #8a5a2a;
 
+  /* Coin colors — dramatic + harmonized */
+  --pc-coin-pp: #1f3f7a;  /* matches --pc-rarity-rare */
+  --pc-coin-gp: #a3590a;  /* matches --pc-rarity-legendary */
+  --pc-coin-ep: #6b6f2a;
+  --pc-coin-sp: #4a5a66;
+  --pc-coin-cp: #8a3d1f;
+
   /* Attunement medallion sizing (used by attune-medallion.ts) */
   --pc-medallion-size:   50px;
   --pc-medallion-stroke: 1.5px;
