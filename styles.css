@@ -11205,85 +11205,69 @@ body.theme-light .archivist-tag-atk:hover {
   color: currentColor;
 }
 
-/* ---------- Attune medallions ---------- */
+/* ---------- Attune medallions (redesigned: 68px, rarity color, name beneath) ---------- */
 .archivist-pc-sheet .pc-medallion-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: var(--pc-medallion-size);
+  gap: var(--pc-space-2);
+  width: 116px;
+  cursor: pointer;
 }
 .archivist-pc-sheet .pc-medallion {
-  width: var(--pc-medallion-size);
-  height: var(--pc-medallion-size);
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  border: var(--pc-medallion-stroke) solid var(--pc-text-primary);
-  display: grid;
-  place-items: center;
-  background: rgba(255, 248, 220, 0.5);
-  position: relative;
-  cursor: pointer;
+  border: 2px solid var(--pc-crimson);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 8px rgba(146, 38, 16, 0.10);
+  color: var(--pc-crimson);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.archivist-pc-sheet .pc-medallion::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  border: 1px solid var(--pc-text-primary);
-  opacity: 0.3;
-  pointer-events: none;
 }
 .archivist-pc-sheet .pc-medallion:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 8px rgba(146, 38, 16, 0.10);
 }
 .archivist-pc-sheet .pc-medallion-icon svg {
-  width: 18px; height: 18px;
-  color: var(--pc-text-primary);
+  width: 28px; height: 28px;
+  color: currentColor;
   stroke-width: 1.5;
 }
 .archivist-pc-sheet .pc-medallion.empty {
   border-style: dashed;
-  border-color: var(--pc-tan);
+  border-color: var(--pc-text-muted);
   background: transparent;
-  opacity: 0.7;
-}
-.archivist-pc-sheet .pc-medallion.empty::before { display: none; }
-.archivist-pc-sheet .pc-medallion.empty .pc-medallion-icon svg {
-  width: 14px; height: 14px;
+  box-shadow: none;
+  opacity: 0.55;
   color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-medallion.empty .pc-medallion-icon svg {
+  width: 20px; height: 20px;
 }
 .archivist-pc-sheet .pc-medallion.empty:hover {
   border-color: var(--pc-crimson);
   border-style: solid;
+  color: var(--pc-crimson);
   opacity: 1;
 }
-.archivist-pc-sheet .pc-medallion.empty:hover .pc-medallion-icon svg { color: var(--pc-crimson); }
 
-.archivist-pc-sheet .pc-medallion.rarity-uncommon  { border-color: var(--pc-rarity-uncommon); }
-.archivist-pc-sheet .pc-medallion.rarity-rare      { border-color: var(--pc-rarity-rare); }
-.archivist-pc-sheet .pc-medallion.rarity-very-rare { border-color: var(--pc-rarity-very-rare); }
-.archivist-pc-sheet .pc-medallion.rarity-legendary { border-color: var(--pc-rarity-legendary); }
-.archivist-pc-sheet .pc-medallion.rarity-artifact  { border-color: var(--pc-rarity-artifact); }
-.archivist-pc-sheet .pc-medallion.rarity-uncommon::before  { border-color: var(--pc-rarity-uncommon); }
-.archivist-pc-sheet .pc-medallion.rarity-rare::before      { border-color: var(--pc-rarity-rare); }
-.archivist-pc-sheet .pc-medallion.rarity-very-rare::before { border-color: var(--pc-rarity-very-rare); }
-.archivist-pc-sheet .pc-medallion.rarity-legendary::before { border-color: var(--pc-rarity-legendary); }
-.archivist-pc-sheet .pc-medallion.rarity-artifact::before  { border-color: var(--pc-rarity-artifact); }
+.archivist-pc-sheet .pc-medallion.rarity-uncommon  { border-color: var(--pc-rarity-uncommon);  color: var(--pc-rarity-uncommon); }
+.archivist-pc-sheet .pc-medallion.rarity-rare      { border-color: var(--pc-rarity-rare);      color: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-medallion.rarity-very-rare { border-color: var(--pc-rarity-very-rare); color: var(--pc-rarity-very-rare); }
+.archivist-pc-sheet .pc-medallion.rarity-legendary { border-color: var(--pc-rarity-legendary); color: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-medallion.rarity-artifact  { border-color: var(--pc-rarity-artifact);  color: var(--pc-rarity-artifact); }
 
 .archivist-pc-sheet .pc-medallion-name {
   font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-micro);
-  font-weight: 700;
-  font-style: italic;
-  text-align: center;
+  font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
-  line-height: 1.1;
-  max-width: var(--pc-medallion-size);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: center;
+  line-height: var(--pc-lh-snug);
+  max-width: 116px;
+  word-break: break-word;
 }
 .archivist-pc-sheet .pc-medallion-name.rarity-uncommon  { color: var(--pc-rarity-uncommon); }
 .archivist-pc-sheet .pc-medallion-name.rarity-rare      { color: var(--pc-rarity-rare); }
@@ -11316,23 +11300,22 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-attune-head {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 2px;
+  justify-content: center;
 }
 .archivist-pc-sheet .pc-attune-label {
   font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-micro);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-lg);
-  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-crimson);
   text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  font-weight: 700;
 }
 .archivist-pc-sheet .pc-attune-count {
   font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: var(--pc-fs-title);
+  font-size: var(--pc-fs-mid);
   line-height: var(--pc-lh-tight);
   color: var(--pc-text-primary);
-  margin-top: 4px;
 }
 .archivist-pc-sheet .pc-attune-count em {
   font-style: normal;
@@ -11340,9 +11323,10 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-medallion-row {
+.archivist-pc-sheet .pc-attune-meds {
   display: flex;
-  gap: var(--pc-space-2);
+  gap: var(--pc-space-5);
+  align-items: flex-start;
 }
 
 /* ---------- Attune popover ---------- */

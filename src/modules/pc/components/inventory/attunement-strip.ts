@@ -20,7 +20,7 @@ export class AttunementStrip implements SheetComponent {
     count.appendText(String(ctx.derived.attunementUsed ?? 0));
     count.createEl("em", { text: ` / ${ctx.derived.attunementLimit ?? 3}` });
 
-    const slotsRow = root.createDiv({ cls: "pc-medallion-row" });
+    const slotsRow = root.createDiv({ cls: "pc-attune-meds" });
 
     const occupants = collectAttuned(ctx);
     const limit = ctx.derived.attunementLimit ?? 3;
