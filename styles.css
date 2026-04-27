@@ -9467,10 +9467,11 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-item-equipped { background: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-item-attuned { background: #6b3a1a; color: var(--pc-white); }
-.archivist-pc-sheet .pc-currency-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-currency-cell { background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); padding: var(--pc-space-2); text-align: center; }
-.archivist-pc-sheet .pc-currency-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-title); font-weight: 700; line-height: var(--pc-lh-tight); }
-.archivist-pc-sheet .pc-currency-val { cursor: pointer; }
+/* `.pc-currency-row`, `.pc-currency-cell`, `.pc-currency-val`, and the
+ * coin-colored `.pc-currency-denom` rules now live in inventory.css with
+ * the rest of the redesigned inventory header. The `.pc-currency-label`
+ * rule below survives because it's still used by the `currencyCell`
+ * edit-primitive (kept for unit-test parity / potential future reuse). */
 .archivist-pc-sheet .pc-currency-label {
   font-size: var(--pc-fs-label);
   color: var(--pc-crimson);
@@ -11577,6 +11578,40 @@ body.theme-light .archivist-tag-atk:hover {
   border-radius: var(--pc-radius-sm);
   cursor: pointer;
 }
+
+/* ---------- Currency strip (V2 colored denoms) ---------- */
+.archivist-pc-sheet .pc-currency-row {
+  display: flex;
+  gap: var(--pc-space-3);
+  align-items: center;
+}
+.archivist-pc-sheet .pc-currency-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 36px;
+}
+.archivist-pc-sheet .pc-currency-denom {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  letter-spacing: var(--pc-ls-caps-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: var(--pc-lh-tight);
+}
+.archivist-pc-sheet .pc-currency-denom.coin-pp { color: var(--pc-coin-pp); }
+.archivist-pc-sheet .pc-currency-denom.coin-gp { color: var(--pc-coin-gp); }
+.archivist-pc-sheet .pc-currency-denom.coin-ep { color: var(--pc-coin-ep); }
+.archivist-pc-sheet .pc-currency-denom.coin-sp { color: var(--pc-coin-sp); }
+.archivist-pc-sheet .pc-currency-denom.coin-cp { color: var(--pc-coin-cp); }
+.archivist-pc-sheet .pc-currency-val {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-title);
+  color: var(--pc-text-primary);
+  line-height: var(--pc-lh-value);
+}
+.archivist-pc-sheet .pc-currency-val.pc-edit-click { cursor: pointer; }
 
 /* ---------- Manage Coin mode ---------- */
 .archivist-pc-sheet .pc-coin-heading-row {

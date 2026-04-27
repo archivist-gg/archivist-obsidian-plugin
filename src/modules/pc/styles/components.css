@@ -186,10 +186,11 @@
 }
 .archivist-pc-sheet .pc-item-equipped { background: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-item-attuned { background: #6b3a1a; color: var(--pc-white); }
-.archivist-pc-sheet .pc-currency-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-currency-cell { background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); padding: var(--pc-space-2); text-align: center; }
-.archivist-pc-sheet .pc-currency-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-title); font-weight: 700; line-height: var(--pc-lh-tight); }
-.archivist-pc-sheet .pc-currency-val { cursor: pointer; }
+/* `.pc-currency-row`, `.pc-currency-cell`, `.pc-currency-val`, and the
+ * coin-colored `.pc-currency-denom` rules now live in inventory.css with
+ * the rest of the redesigned inventory header. The `.pc-currency-label`
+ * rule below survives because it's still used by the `currencyCell`
+ * edit-primitive (kept for unit-test parity / potential future reuse). */
 .archivist-pc-sheet .pc-currency-label {
   font-size: var(--pc-fs-label);
   color: var(--pc-crimson);

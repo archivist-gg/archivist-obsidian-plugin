@@ -1,8 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import { currencyCell } from "../edit-primitives";
+import { makeInlineInput } from "../edit-primitives";
 
 const COIN_KEYS = ["pp", "gp", "ep", "sp", "cp"] as const;
-type CoinKey = typeof COIN_KEYS[number];
 
 export class CurrencyStrip implements SheetComponent {
   readonly type = "currency-strip";
@@ -14,13 +13,23 @@ export class CurrencyStrip implements SheetComponent {
 
     for (const coin of COIN_KEYS) {
       const value = cur?.[coin] ?? 0;
+      const cell = strip.createDiv({ cls: "pc-currency-cell" });
+
+      cell.createDiv({ cls: `pc-currency-denom coin-${coin}`, text: coin.toUpperCase() });
+
+      const valEl = cell.createDiv({ cls: "pc-currency-val", text: String(value) });
+
       if (editState) {
-        const c: CoinKey = coin;
-        currencyCell(strip, { coin: c.toUpperCase(), value, onSet: (n) => editState.setCurrency(c, n) });
-      } else {
-        const cell = strip.createDiv({ cls: "pc-currency-cell" });
-        cell.createDiv({ cls: "pc-currency-val", text: String(value) });
-        cell.createDiv({ cls: "pc-currency-label", text: coin.toUpperCase() });
+        valEl.classList.add("pc-edit-click");
+        valEl.addEventListener("click", () => {
+          makeInlineInput(valEl, {
+            initial: value,
+            min: 0,
+            max: 999_999,
+            onCommit: (n) => editState.setCurrency(coin, n),
+            onCancel: () => { /* rerender restores valEl */ },
+          });
+        });
       }
     }
   }
