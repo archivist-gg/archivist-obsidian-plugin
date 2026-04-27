@@ -202,3 +202,41 @@ describe("characterSchema — SP5 additions", () => {
     expect(r.success).toBe(true); // tolerated until migration step in Task 4
   });
 });
+
+describe("equipmentEntry overrides — action + range", () => {
+  it("accepts overrides.action and overrides.range", () => {
+    const parsed = characterSchema.parse({
+      name: "T", edition: "2014", race: null, subrace: null, background: null,
+      class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual",
+      skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] },
+      equipment: [{
+        item: "[[wand-of-fireballs]]", equipped: true, attuned: true,
+        overrides: { action: "action", range: "150 ft." },
+        state: { charges: { current: 5, max: 7 }, recovery: { amount: "1d6+1", reset: "dawn" } },
+      }],
+      overrides: {},
+      state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 0, exhaustion: 0 },
+    });
+    expect(parsed.equipment[0].overrides?.action).toBe("action");
+    expect(parsed.equipment[0].overrides?.range).toBe("150 ft.");
+  });
+
+  it("accepts state.recovery.reset = 'special'", () => {
+    const recovery = { amount: "0", reset: "special" as const };
+    const parsed = characterSchema.parse({
+      name: "T", edition: "2014", race: null, subrace: null, background: null,
+      class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual",
+      skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] },
+      equipment: [{ item: "[[ring-of-three-wishes]]", equipped: true, state: { recovery } }],
+      overrides: {},
+      state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 0, exhaustion: 0 },
+    });
+    expect(parsed.equipment[0].state?.recovery?.reset).toBe("special");
+  });
+});

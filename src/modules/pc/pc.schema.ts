@@ -22,6 +22,8 @@ const equipmentEntryOverridesSchema = z.object({
   damage_bonus: z.number().int().optional(),
   extra_damage: z.string().optional(),
   ac_bonus: z.number().int().optional(),
+  action: z.enum(["action", "bonus-action", "reaction", "free", "special"]).optional(),
+  range: z.string().optional(),
 }).strict();
 
 const equipmentEntryStateSchema = z.object({
@@ -31,7 +33,7 @@ const equipmentEntryStateSchema = z.object({
   }).optional(),
   recovery: z.object({
     amount: z.string(),
-    reset: z.enum(["dawn", "short", "long"]),
+    reset: z.enum(["dawn", "short", "long", "special"]),
   }).optional(),
   depletion_risk: z.object({
     trigger: z.string(),
