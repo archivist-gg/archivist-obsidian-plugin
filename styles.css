@@ -6313,6 +6313,10 @@ code .claudian-file-link:hover {
 .archivist-item-block .archivist-item-properties {
   margin: 0.4em 0;
   padding: 0.4em 0;
+}
+
+/* Separator only when a following section (description / charges / curse) exists. */
+.archivist-item-block .archivist-item-properties:has(+ *) {
   border-bottom: 1px solid #d9c484;
 }
 
