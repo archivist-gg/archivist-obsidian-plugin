@@ -1,15 +1,15 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedCharacter } from "../pc.types";
-import { AttackRows } from "./attack-rows";
+import { WeaponsTable } from "./actions/weapons-table";
 
 export class ActionsTab implements SheetComponent {
   readonly type = "actions-tab";
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
-    const root = el.createDiv({ cls: "pc-tab-body pc-actions-body" });
+    const root = el.createDiv({ cls: "pc-tab-body pc-actions-body pc-actions-tab" });
     root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });
 
-    new AttackRows().render(root, ctx);
+    new WeaponsTable().render(root, ctx);
 
     const featureAttacks = collectFeatureAttacks(ctx.resolved);
     if (featureAttacks.length > 0) {

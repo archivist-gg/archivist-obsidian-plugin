@@ -33,13 +33,13 @@ describe("ActionsTab", () => {
   it("uses derived.attacks names (no regex on equipment)", () => {
     const c = mountContainer();
     new ActionsTab().render(c, ctxFactory([sampleAttack({ name: "Flame Tongue Longsword" })]));
-    expect([...c.querySelectorAll(".pc-attack-name")].map((n) => n.textContent)).toContain("Flame Tongue Longsword");
+    expect([...c.querySelectorAll(".pc-action-row-name")].map((n) => n.textContent)).toContain("Flame Tongue Longsword");
   });
 
-  it("falls back to empty-state when derived.attacks empty", () => {
+  it("renders no weapon rows when derived.attacks empty", () => {
     const c = mountContainer();
     new ActionsTab().render(c, ctxFactory([]));
-    expect(c.textContent).toMatch(/no attacks/i);
+    expect(c.querySelectorAll(".pc-action-row").length).toBe(0);
   });
 
   it("renders feature attacks below weapon attacks", () => {

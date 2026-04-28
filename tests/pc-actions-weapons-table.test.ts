@@ -68,4 +68,31 @@ describe("WeaponsTable", () => {
     new WeaponsTable().render(root, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-attack-row-situational")).toBeTruthy();
   });
+
+  it("formats toHit of 0 with explicit + sign", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Club", range: "melee 5 ft.", toHit: 0,
+      damageDice: "1d4", damageType: "bludgeoning",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const hit = root.querySelector(".pc-weapon-hit .archivist-tag-atk");
+    expect(hit?.textContent).toBe("+0");
+  });
+
+  it("renders no situational sub-line when informational is undefined", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
+      damageDice: "1d8 + 3", damageType: "slashing",
+      properties: ["versatile"], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: undefined, slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    expect(root.querySelector(".pc-attack-row-situational")).toBeNull();
+  });
 });

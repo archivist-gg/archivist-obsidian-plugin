@@ -19,7 +19,6 @@ import { SensesPanel } from "./components/senses-panel";
 import { SkillsPanel } from "./components/skills-panel";
 import { ProficienciesPanel } from "./components/proficiencies-panel";
 import { ActionsTab } from "./components/actions-tab";
-import { AttackRows } from "./components/attack-rows";
 import { SpellsTab } from "./components/spells-tab";
 import { InventoryTab } from "./components/inventory-tab";
 import { FeaturesTab } from "./components/features-tab";
@@ -169,7 +168,6 @@ export class PCModule implements ArchivistModule {
     r.register(new FeatBlock());
     // Tabs
     r.register(new ActionsTab());
-    r.register(new AttackRows());
     r.register(new SpellsTab());
     r.register(new InventoryTab());
     r.register(new FeaturesTab(r));
