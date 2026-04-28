@@ -11112,19 +11112,19 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--pc-space-2);
-  width: 116px;
+  gap: var(--pc-space-1);
+  width: 88px;
   cursor: pointer;
 }
 .archivist-pc-sheet .pc-medallion {
-  width: 68px;
-  height: 68px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: 2px solid var(--pc-crimson);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.55);
+  background: transparent;
   box-shadow: inset 0 0 8px rgba(146, 38, 16, 0.10);
   color: var(--pc-crimson);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -11134,7 +11134,7 @@ body.theme-light .archivist-tag-atk:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), inset 0 0 8px rgba(146, 38, 16, 0.10);
 }
 .archivist-pc-sheet .pc-medallion-icon svg {
-  width: 28px; height: 28px;
+  width: 20px; height: 20px;
   color: currentColor;
   stroke-width: 1.5;
 }
@@ -11147,7 +11147,7 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-muted);
 }
 .archivist-pc-sheet .pc-medallion.empty .pc-medallion-icon svg {
-  width: 20px; height: 20px;
+  width: 16px; height: 16px;
 }
 .archivist-pc-sheet .pc-medallion.empty:hover {
   border-color: var(--pc-crimson);
@@ -11168,7 +11168,7 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft);
   text-align: center;
   line-height: var(--pc-lh-snug);
-  max-width: 116px;
+  max-width: 88px;
   word-break: break-word;
 }
 .archivist-pc-sheet .pc-medallion-name.rarity-uncommon  { color: var(--pc-rarity-uncommon); }
@@ -11182,10 +11182,8 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   align-items: stretch;
   gap: var(--pc-space-5);
-  padding: var(--pc-space-3) var(--pc-space-4);
-  border: 1px solid var(--pc-tan-muted);
-  background: rgba(255, 255, 255, 0.32);
-  border-radius: var(--pc-radius-md);
+  padding: var(--pc-space-2) 0;
+  flex-wrap: wrap;
 }
 .archivist-pc-sheet .pc-header-attune {
   display: flex;
@@ -11202,6 +11200,12 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
+}
+
+@media (max-width: 600px) {
+  .archivist-pc-sheet .pc-header-divider { display: none; }
+  .archivist-pc-sheet .pc-header-attune,
+  .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
 }
 
 /* Attunement strip — label + medallion row */
@@ -11238,7 +11242,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-attune-meds {
   display: flex;
-  gap: var(--pc-space-5);
+  gap: var(--pc-space-3);
   align-items: flex-start;
 }
 
@@ -11681,17 +11685,7 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft);
 }
 
-/* ---------- Row-expand caret + expand panel (Weapons/Items/Features) ---------- */
-.archivist-pc-sheet .pc-action-caret {
-  color: var(--pc-text-muted);
-  font-size: var(--pc-fs-small);
-  display: inline-block;
-  transition: transform 0.15s;
-}
-.archivist-pc-sheet .pc-action-row.open .pc-action-caret {
-  transform: rotate(90deg);
-  color: var(--pc-crimson);
-}
+/* ---------- Row-expand panel (Weapons/Items/Features) ---------- */
 .archivist-pc-sheet .pc-action-row { cursor: pointer; }
 .archivist-pc-sheet .pc-action-row:hover { background: rgba(255, 255, 255, 0.18); }
 .archivist-pc-sheet .pc-action-expand-row {
