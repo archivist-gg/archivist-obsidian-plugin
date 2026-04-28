@@ -192,3 +192,30 @@ export function setCurrency(character: Character, coin: "pp" | "gp" | "ep" | "sp
   if (!character.currency) character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
   character.currency[coin] = Math.max(0, Math.floor(value));
 }
+
+export function expendCharge(character: Character, entryIdx: number): void {
+  const e = character.equipment?.[entryIdx];
+  const c = e?.state?.charges;
+  if (!c) return;
+  c.current = Math.max(0, c.current - 1);
+}
+
+export function restoreCharge(character: Character, entryIdx: number): void {
+  const e = character.equipment?.[entryIdx];
+  const c = e?.state?.charges;
+  if (!c) return;
+  c.current = Math.min(c.max, c.current + 1);
+}
+
+export function expendFeatureUse(character: Character, featureKey: string): void {
+  const fu = character.state.feature_uses ?? (character.state.feature_uses = {});
+  const v = fu[featureKey];
+  if (!v) return;
+  v.used = Math.min(v.max, v.used + 1);
+}
+
+export function restoreFeatureUse(character: Character, featureKey: string): void {
+  const v = character.state.feature_uses?.[featureKey];
+  if (!v) return;
+  v.used = Math.max(0, v.used - 1);
+}

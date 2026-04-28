@@ -467,6 +467,26 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  expendCharge(entryIdx: number): void {
+    eq.expendCharge(this.character, entryIdx);
+    this.onChange();
+  }
+
+  restoreCharge(entryIdx: number): void {
+    eq.restoreCharge(this.character, entryIdx);
+    this.onChange();
+  }
+
+  expendFeatureUse(featureKey: string): void {
+    eq.expendFeatureUse(this.character, featureKey);
+    this.onChange();
+  }
+
+  restoreFeatureUse(featureKey: string): void {
+    eq.restoreFeatureUse(this.character, featureKey);
+    this.onChange();
+  }
+
   patchInlineItem(index: number, patch: Partial<EquipmentEntry>): void {
     const entry = this.character.equipment[index];
     if (!entry) return;
