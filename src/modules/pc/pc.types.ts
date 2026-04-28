@@ -178,6 +178,19 @@ export interface AttackRow {
   proficient: boolean;
   breakdown: { toHit: ACTerm[]; damage: ACTerm[] };
   informational?: import("../item/item.conditions.types").InformationalBonus[];
+  /** Hand slot the attack came from. Used by Actions tab to find the
+   *  originating equipment entry for the row-expand panel. */
+  slotKey?: "mainhand" | "offhand";
+  /** Short caption under the weapon name in the Actions tab table.
+   *  e.g. "martial · versatile". Display-only. */
+  subLabel?: string;
+  /** Action-economy cost for the Cost badge. Defaults to "action" at
+   *  render time when absent. Settable via entry.overrides.action. */
+  actionCost?: "action" | "bonus-action" | "reaction" | "free" | "special";
+  /** When set, the weapon is being wielded one-handed but has a versatile
+   *  two-handed option. The Actions tab renders both lines stacked in the
+   *  damage cell instead of emitting a second row. */
+  versatile?: { damageDice: string };
 }
 
 export interface ResolvedEquipped {

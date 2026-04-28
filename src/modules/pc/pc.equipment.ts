@@ -483,6 +483,9 @@ function buildAttackRow(args: {
   proficient: boolean;
   proficiencyBonus: number;
   magic: { atk: number; dmg: number; extra?: string; sourceName?: string; informational: InformationalBonus[] };
+  slotKey?: "mainhand" | "offhand";
+  actionCost?: "action" | "bonus-action" | "reaction" | "free" | "special";
+  versatileDice?: string;
 }): AttackRow {
   const { id, name, weapon, baseDice, ability, mods, proficient, proficiencyBonus, magic } = args;
 
@@ -490,7 +493,9 @@ function buildAttackRow(args: {
   const pb = proficient ? proficiencyBonus : 0;
   const toHit = abilityMod + pb + magic.atk;
   const dmgFlat = abilityMod + magic.dmg;
-  const damageDice = `${baseDice}${dmgFlat >= 0 ? "+" : ""}${dmgFlat}`.replace(/\+0$/, "");
+  const formatDice = (dice: string) =>
+    `${dice}${dmgFlat >= 0 ? "+" : ""}${dmgFlat}`.replace(/\+0$/, "");
+  const damageDice = formatDice(baseDice);
 
   const magicSource = magic.sourceName ? `${magic.sourceName} bonus` : "Magic weapon";
 
@@ -531,7 +536,18 @@ function buildAttackRow(args: {
     proficient,
     breakdown: { toHit: toHitBreakdown, damage: damageBreakdown },
     informational: args.magic.informational.length > 0 ? args.magic.informational : undefined,
+    slotKey: args.slotKey,
+    subLabel: formatWeaponSubLabel(weapon, stringProps),
+    actionCost: args.actionCost,
+    versatile: args.versatileDice ? { damageDice: formatDice(args.versatileDice) } : undefined,
   };
+}
+
+function formatWeaponSubLabel(weapon: WeaponEntity, properties: string[]): string {
+  const parts: string[] = [];
+  if (weapon.category) parts.push(weapon.category);
+  if (properties.length > 0) parts.push(properties.join(", "));
+  return parts.join(" · ");
 }
 
 function computeAttacks(
@@ -587,6 +603,17 @@ function computeAttacks(
     const ovr = entry.overrides ?? {};
     const displayName = ovr.name ?? weapon.name;
 
+    // Versatile inline: when the weapon is versatile with a versatile_dice and
+    // the offhand is free, the wielder could grip two-handed. Instead of a
+    // second row, attach the versatile dice to the single row so the Actions
+    // tab can render both lines stacked in the damage cell.
+    const versatileDice = (
+      key === "mainhand"
+      && hasProperty(weapon, "versatile")
+      && typeof weapon.damage.versatile_dice === "string"
+      && !equippedSlots.offhand
+    ) ? weapon.damage.versatile_dice : undefined;
+
     const baseRow = buildAttackRow({
       id: `${placed.index}:standard`,
       name: displayName,
@@ -597,30 +624,11 @@ function computeAttacks(
       proficient,
       proficiencyBonus,
       magic,
+      slotKey: key,
+      actionCost: ovr.action ?? "action",
+      versatileDice,
     });
     rows.push(baseRow);
-
-    // Versatile second row: only when the weapon is versatile, has a
-    // versatile_dice, AND the offhand is free (so the player could grip
-    // two-handed).
-    if (
-      key === "mainhand"
-      && hasProperty(weapon, "versatile")
-      && typeof weapon.damage.versatile_dice === "string"
-      && !equippedSlots.offhand
-    ) {
-      rows.push(buildAttackRow({
-        id: `${placed.index}:versatile`,
-        name: `${displayName} (versatile, 2h)`,
-        weapon,
-        baseDice: weapon.damage.versatile_dice,
-        ability,
-        mods,
-        proficient,
-        proficiencyBonus,
-        magic,
-      }));
-    }
   }
 
   return rows;

@@ -82,6 +82,77 @@
   margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
 }
 
+/* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
+.archivist-pc-sheet .pc-actions-section { margin-bottom: var(--pc-space-4); }
+.archivist-pc-sheet .pc-actions-section-head {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  margin-bottom: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan-muted);
+  padding-bottom: var(--pc-space-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.archivist-pc-sheet .pc-actions-section-count {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  letter-spacing: var(--pc-ls-caps-md);
+  font-weight: 600;
+}
+
+.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-actions-table th {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  text-align: left;
+  padding: var(--pc-space-1) var(--pc-space-1);
+  border-bottom: 1px solid var(--pc-tan-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  font-weight: 600;
+}
+.archivist-pc-sheet .pc-actions-table td {
+  padding: var(--pc-space-2) var(--pc-space-1);
+  vertical-align: middle;
+  border-bottom: 1px dashed var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-actions-table tr:last-child td { border-bottom: none; }
+.archivist-pc-sheet .pc-action-row-name {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-action-row-sub {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
+/* Inline italic dice tag override inside actions tab */
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-atk,
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-damage,
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-dice {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-weight: 700;
+  border-bottom: 1px dotted transparent;
+  cursor: pointer;
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-damage { color: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-atk:hover    { border-bottom-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-damage:hover { border-bottom-color: var(--pc-rarity-rare); }
+
 /* ---------- Standard combat actions reference block (Actions tab footer) ---------- */
 .archivist-pc-sheet .pc-standard-actions {
   margin-top: var(--pc-space-4);

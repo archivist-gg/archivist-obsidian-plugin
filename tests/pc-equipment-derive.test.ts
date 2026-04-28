@@ -430,17 +430,16 @@ describe("computeSlotsAndAttacks — attack rows", () => {
     expect(d.attacks[0].extraDamage).toBe("1d6 fire");
   });
 
-  it("versatile alone in mainhand → 1h + 2h rows", () => {
+  it("versatile alone in mainhand → single row with inlined versatile dice", () => {
     const c = baseChar(); c.abilities.str = 16;
     c.equipment = [{ item: "[[longsword]]", equipped: true }];
     const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, [], 2);
-    expect(d.attacks).toHaveLength(2);
+    expect(d.attacks).toHaveLength(1);
     expect(d.attacks[0].damageDice).toBe("1d8+3");
-    expect(d.attacks[1].damageDice).toBe("1d10+3");
-    expect(d.attacks[1].name).toMatch(/versatile/i);
+    expect(d.attacks[0].versatile?.damageDice).toBe("1d10+3");
   });
 
-  it("dual-wield two longswords → both rows, NO versatile second-row (offhand occupied)", () => {
+  it("dual-wield two longswords → both rows, NO versatile inlining (offhand occupied)", () => {
     const c = baseChar(); c.abilities.str = 16;
     c.equipment = [
       { item: "[[longsword]]", equipped: true },
@@ -448,7 +447,7 @@ describe("computeSlotsAndAttacks — attack rows", () => {
     ];
     const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, [], 2);
     expect(d.attacks).toHaveLength(2);
-    expect(d.attacks.every((a) => !/versatile/i.test(a.name))).toBe(true);
+    expect(d.attacks.every((a) => a.versatile === undefined)).toBe(true);
   });
 
   it("two-handed weapon (greatsword) renders one row", () => {
@@ -459,13 +458,13 @@ describe("computeSlotsAndAttacks — attack rows", () => {
     expect(d.attacks[0].damageDice).toBe("2d6+3");
   });
 
-  it("versatile second-row name format and range", () => {
+  it("versatile inlined-row name and range", () => {
     const c = baseChar(); c.abilities.str = 16;
     c.equipment = [{ item: "[[longsword]]", equipped: true }];
     const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, [], 2);
     expect(d.attacks[0].range).toBe("melee");
-    expect(d.attacks[1].name).toBe("Longsword (versatile, 2h)");
-    expect(d.attacks[1].range).toBe("melee");
+    expect(d.attacks[0].name).toBe("Longsword");
+    expect(d.attacks[0].versatile?.damageDice).toBe("1d10+3");
   });
 });
 
