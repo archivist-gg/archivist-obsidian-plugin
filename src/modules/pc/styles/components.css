@@ -187,17 +187,8 @@
 .archivist-pc-sheet .pc-item-equipped { background: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-item-attuned { background: #6b3a1a; color: var(--pc-white); }
 /* `.pc-currency-row`, `.pc-currency-cell`, `.pc-currency-val`, and the
- * coin-colored `.pc-currency-denom` rules now live in inventory.css with
- * the rest of the redesigned inventory header. The `.pc-currency-label`
- * rule below survives because it's still used by the `currencyCell`
- * edit-primitive (kept for unit-test parity / potential future reuse). */
-.archivist-pc-sheet .pc-currency-label {
-  font-size: var(--pc-fs-label);
-  color: var(--pc-crimson);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-md);
-  text-transform: uppercase;
-}
+ * coin-colored `.pc-currency-denom` rules live in inventory.css with the
+ * rest of the redesigned inventory header. */
 /* Tabs — styled to match `.archivist-monster-block .archivist-tab` exactly. */
 .archivist-pc-sheet .pc-tabs-bar {
   position: relative;
@@ -1448,13 +1439,6 @@
 
 /* Inventory tab styles moved to inventory.css as part of the redesign.
  * .pc-charges-widget and .pc-ac-tooltip stay below — they're shared. */
-
-.pc-attack-rows .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.pc-attack-table th,
-.pc-attack-table td { padding: 0.3em 0.5em; text-align: left; }
-.pc-attack-table th { background: var(--background-secondary); font-weight: 600; }
-.pc-attack-info { cursor: help; opacity: 0.6; }
-.pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
 
 .pc-attack-row-situational td {
   font-style: italic;

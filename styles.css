@@ -9468,17 +9468,8 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-item-equipped { background: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-item-attuned { background: #6b3a1a; color: var(--pc-white); }
 /* `.pc-currency-row`, `.pc-currency-cell`, `.pc-currency-val`, and the
- * coin-colored `.pc-currency-denom` rules now live in inventory.css with
- * the rest of the redesigned inventory header. The `.pc-currency-label`
- * rule below survives because it's still used by the `currencyCell`
- * edit-primitive (kept for unit-test parity / potential future reuse). */
-.archivist-pc-sheet .pc-currency-label {
-  font-size: var(--pc-fs-label);
-  color: var(--pc-crimson);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-md);
-  text-transform: uppercase;
-}
+ * coin-colored `.pc-currency-denom` rules live in inventory.css with the
+ * rest of the redesigned inventory header. */
 /* Tabs — styled to match `.archivist-monster-block .archivist-tab` exactly. */
 .archivist-pc-sheet .pc-tabs-bar {
   position: relative;
@@ -10730,13 +10721,6 @@ body.theme-light .archivist-tag-atk:hover {
 /* Inventory tab styles moved to inventory.css as part of the redesign.
  * .pc-charges-widget and .pc-ac-tooltip stay below — they're shared. */
 
-.pc-attack-rows .pc-attack-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.pc-attack-table th,
-.pc-attack-table td { padding: 0.3em 0.5em; text-align: left; }
-.pc-attack-table th { background: var(--background-secondary); font-weight: 600; }
-.pc-attack-info { cursor: help; opacity: 0.6; }
-.pc-attack-non-prof { color: var(--color-orange); margin-left: 0.5em; font-style: italic; }
-
 .pc-attack-row-situational td {
   font-style: italic;
   color: var(--pc-text-muted);
@@ -11220,22 +11204,6 @@ body.theme-light .archivist-tag-atk:hover {
   flex: 0 0 auto;
 }
 
-/* ---------- Inventory header (loadout + attunement side by side) ---------- */
-.archivist-pc-sheet .pc-inv-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--pc-space-4);
-  padding-bottom: var(--pc-space-3);
-  border-bottom: 1px dotted var(--pc-tan-muted);
-  margin-bottom: var(--pc-space-3);
-  align-items: center;
-}
-.archivist-pc-sheet .pc-inv-header-loadout { min-width: 0; }
-.archivist-pc-sheet .pc-inv-header-attune {
-  padding-left: var(--pc-space-4);
-  border-left: 1px solid var(--pc-tan);
-}
-
 /* Attunement strip — label + medallion row */
 .archivist-pc-sheet .pc-attune-strip {
   display: flex;
@@ -11542,100 +11510,6 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-currency-val.pc-edit-click { cursor: pointer; }
 
-/* ---------- Manage Coin mode ---------- */
-.archivist-pc-sheet .pc-coin-heading-row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--pc-space-2);
-}
-.archivist-pc-sheet .pc-coin-mode-toggle {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0;
-  line-height: 0;
-}
-.archivist-pc-sheet .pc-coin-mode-toggle svg {
-  width: 12px; height: 12px;
-  color: var(--pc-text-muted);
-  stroke-width: 1.5;
-}
-.archivist-pc-sheet .pc-coin-mode-toggle:hover svg { color: var(--pc-crimson); }
-
-.archivist-pc-sheet .pc-coin-mgr {
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-sm);
-  padding: var(--pc-space-2) var(--pc-space-3);
-  background: rgba(255, 248, 220, 0.45);
-}
-.archivist-pc-sheet .pc-coin-row {
-  display: grid;
-  grid-template-columns: 90px 1fr 80px;
-  gap: var(--pc-space-3);
-  padding: 4px 0;
-  align-items: baseline;
-  border-bottom: 1px dotted var(--pc-tan-muted);
-  font-size: var(--pc-fs-body);
-}
-.archivist-pc-sheet .pc-coin-name {
-  font-family: var(--pc-font-serif);
-  font-weight: 700;
-}
-.archivist-pc-sheet .pc-coin-rate {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-label);
-  font-style: italic;
-  color: var(--pc-text-muted);
-}
-.archivist-pc-sheet .pc-coin-val {
-  font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: var(--pc-fs-heading);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  cursor: default;
-}
-.archivist-pc-sheet .pc-coin-val.editable { cursor: pointer; }
-.archivist-pc-sheet .pc-coin-total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 6px 0;
-  margin-top: 4px;
-  border-top: 1px solid var(--pc-tan);
-}
-.archivist-pc-sheet .pc-coin-total-lbl {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-label);
-  font-weight: 700;
-  letter-spacing: var(--pc-ls-caps-lg);
-  text-transform: uppercase;
-  color: var(--pc-crimson);
-}
-.archivist-pc-sheet .pc-coin-total-val {
-  font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: var(--pc-fs-title);
-}
-.archivist-pc-sheet .pc-coin-actions {
-  display: flex;
-  gap: var(--pc-space-2);
-  margin-top: var(--pc-space-2);
-}
-.archivist-pc-sheet .pc-coin-clear {
-  padding: 3px 10px;
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-small);
-  font-weight: 600;
-  letter-spacing: var(--pc-ls-caps-sm);
-  text-transform: uppercase;
-  color: var(--pc-crimson);
-  background: transparent;
-  border: 1px solid rgba(146, 38, 16, 0.4);
-  border-radius: var(--pc-radius-sm);
-  cursor: pointer;
-}
-
 /* ---------- Inline custom item form ---------- */
 .archivist-pc-sheet .pc-inv-inline-form {
   display: grid;
@@ -11723,18 +11597,8 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Responsive ---------- */
 
-/* xs+: header collapses to single column (loadout above attune, no divider) */
+/* xs+: rows drop the qty/cost column */
 @media (max-width: 759px) {
-  .archivist-pc-sheet .pc-inv-header {
-    grid-template-columns: 1fr;
-    gap: var(--pc-space-3);
-  }
-  .archivist-pc-sheet .pc-inv-header-attune {
-    padding-left: 0;
-    border-left: none;
-    border-top: 1px dotted var(--pc-tan-muted);
-    padding-top: var(--pc-space-3);
-  }
   .archivist-pc-sheet .pc-inv-row {
     grid-template-columns: 18px 18px 1fr 70px 36px;  /* drop qty/cost column */
   }

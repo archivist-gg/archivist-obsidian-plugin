@@ -77,7 +77,7 @@ export class WeaponsTable implements SheetComponent {
         }
       }
 
-      // Situational sub-line preserved from old attack-rows.ts behavior
+      // Situational sub-line — renders informational modifiers (advantage/disadvantage etc.)
       const info = a.informational;
       if (info && info.length > 0) {
         const sub = tbody.createEl("tr", { cls: "pc-attack-row-situational" });
