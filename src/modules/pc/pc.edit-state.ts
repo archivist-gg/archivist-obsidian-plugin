@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import type { Character, DerivedStats, EquipmentEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
@@ -474,6 +474,16 @@ export class CharacterEditState {
 
   restoreCharge(entryIdx: number): void {
     eq.restoreCharge(this.character, entryIdx);
+    this.onChange();
+  }
+
+  setEquipmentOverride(idx: number, patch: Partial<EquipmentEntryOverrides>): void {
+    eq.setEquipmentOverride(this.character, idx, patch);
+    this.onChange();
+  }
+
+  setEquipmentState(idx: number, patch: Parameters<typeof eq.setEquipmentState>[2]): void {
+    eq.setEquipmentState(this.character, idx, patch);
     this.onChange();
   }
 

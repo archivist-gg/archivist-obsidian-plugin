@@ -207,6 +207,48 @@ export function restoreCharge(character: Character, entryIdx: number): void {
   c.current = Math.min(c.max, c.current + 1);
 }
 
+export function setEquipmentOverride(
+  character: Character,
+  idx: number,
+  patch: Partial<NonNullable<EquipmentEntry["overrides"]>>,
+): void {
+  const e = character.equipment?.[idx];
+  if (!e) return;
+  const next = { ...(e.overrides ?? {}), ...patch };
+  // Strip undefined keys so YAML output stays clean when the user clears a field.
+  for (const k of Object.keys(next) as Array<keyof typeof next>) {
+    if (next[k] === undefined) delete next[k];
+  }
+  if (Object.keys(next).length === 0) {
+    delete e.overrides;
+  } else {
+    e.overrides = next;
+  }
+}
+
+export function setEquipmentState(
+  character: Character,
+  idx: number,
+  patch: {
+    charges?: { current?: number; max?: number };
+    recovery?: { amount: string; reset: "dawn" | "short" | "long" | "special" };
+  },
+): void {
+  const e = character.equipment?.[idx];
+  if (!e) return;
+  e.state = e.state ?? {};
+  if (patch.charges) {
+    const cur = e.state.charges ?? { current: 0, max: 0 };
+    const max = patch.charges.max ?? cur.max;
+    const current = patch.charges.current ?? cur.current;
+    e.state.charges = {
+      current: Math.max(0, Math.min(max, Math.floor(current))),
+      max: Math.max(0, Math.floor(max)),
+    };
+  }
+  if (patch.recovery) e.state.recovery = patch.recovery;
+}
+
 export function expendFeatureUse(character: Character, featureKey: string): void {
   const fu = character.state.feature_uses ?? (character.state.feature_uses = {});
   const v = fu[featureKey];

@@ -11685,6 +11685,42 @@ body.theme-light .archivist-tag-atk:hover {
   cursor: pointer;
 }
 
+/* ---------- Override actions panel (per-entry action / range / charges / recovery) ---------- */
+.archivist-pc-sheet .pc-override-actions {
+  margin-top: var(--pc-space-3);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  border: 1px dashed var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm);
+  background: rgba(255, 255, 255, 0.18);
+}
+.archivist-pc-sheet .pc-override-actions-title {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-crimson);
+  margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-override-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--pc-space-2);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+}
+.archivist-pc-sheet .pc-override-actions-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-1);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-override-actions-grid input,
+.archivist-pc-sheet .pc-override-actions-grid select {
+  padding: 2px 4px;
+  border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm);
+  background: rgba(255, 255, 255, 0.7);
+}
+
 /* ---------- Responsive ---------- */
 
 /* xs+: header collapses to single column (loadout above attune, no divider) */
