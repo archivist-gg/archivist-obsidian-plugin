@@ -48,12 +48,12 @@ function renderFeatureBlock(
 }
 
 function renderLegendaryBoxes(parent: HTMLElement, count: number): void {
-  const row = el("div", { cls: "archivist-legendary-box-row", parent });
+  const row = el("div", { cls: "archivist-toggle-box-row", parent });
   const boxes: HTMLElement[] = [];
-  const CHECKED = "archivist-legendary-box-checked";
+  const CHECKED = "archivist-toggle-box-checked";
 
   for (let i = 0; i < count; i++) {
-    const box = el("div", { cls: "archivist-legendary-box", parent: row });
+    const box = el("div", { cls: "archivist-toggle-box", parent: row });
     boxes.push(box);
     box.addEventListener("click", () => {
       const clickedIndex = i;

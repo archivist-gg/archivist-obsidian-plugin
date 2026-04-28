@@ -5698,7 +5698,7 @@ code .claudian-file-link:hover {
 .archivist-monster-two-col-flow .archivist-legendary-intro,
 .archivist-monster-two-col-flow .archivist-monster-section,
 .archivist-monster-two-col-flow .archivist-legendary-resistance,
-.archivist-monster-two-col-flow .archivist-legendary-box-row {
+.archivist-monster-two-col-flow .archivist-toggle-box-row {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
@@ -6688,12 +6688,12 @@ code .claudian-file-link:hover {
   min-height: 100px;
 }
 
-/* 9. Legendary Tracking Boxes (Actions + Resistance)
+/* 9. Toggle Boxes (used by monster Legendary Actions/Resistance + PC charge boxes)
    Unified box style — description text, then row of clickable boxes below.
    Backgrounds use !important to prevent Obsidian editor overrides.
    ========================================================================== */
 
-.archivist-legendary-box-row {
+.archivist-toggle-box-row {
   display: flex;
   gap: 6px;
   margin: 6px 0 12px 0;
@@ -6701,7 +6701,7 @@ code .claudian-file-link:hover {
   flex-wrap: wrap;
 }
 
-.archivist-monster-block .archivist-legendary-box {
+.archivist-toggle-box {
   position: relative;
   width: 18px !important;
   height: 18px !important;
@@ -6718,17 +6718,17 @@ code .claudian-file-link:hover {
   flex-shrink: 0;
 }
 
-.archivist-monster-block .archivist-legendary-box:hover {
+.archivist-toggle-box:hover {
   border-color: var(--d5e-text-accent) !important;
 }
 
-.archivist-monster-block .archivist-legendary-box-checked {
+.archivist-toggle-box-checked {
   border-color: var(--d5e-text-accent) !important;
 }
 
 /* X cross inside a checked box — drawn with two rotated pseudo-element lines */
-.archivist-monster-block .archivist-legendary-box-checked::before,
-.archivist-monster-block .archivist-legendary-box-checked::after {
+.archivist-toggle-box-checked::before,
+.archivist-toggle-box-checked::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -6740,11 +6740,11 @@ code .claudian-file-link:hover {
   pointer-events: none;
 }
 
-.archivist-monster-block .archivist-legendary-box-checked::before {
+.archivist-toggle-box-checked::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.archivist-monster-block .archivist-legendary-box-checked::after {
+.archivist-toggle-box-checked::after {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
@@ -11650,34 +11650,15 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
 
-/* ---------- Charge boxes (toggleable pip strip with recovery suffix) ---------- */
+/* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
+ * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
+ * Here we only own the outer flex wrapper that places the pip row next to the
+ * italic recovery suffix ("/ Dawn 1d6+1"), and the suffix's typography. */
 .archivist-pc-sheet .pc-charge-boxes {
   display: inline-flex;
   align-items: center;
   gap: var(--pc-space-2);
 }
-.archivist-pc-sheet .pc-charge-box-strip {
-  display: inline-flex;
-  gap: 3px;
-  align-items: center;
-}
-.archivist-pc-sheet .pc-charge-box {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--pc-text-soft);
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: 1px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-body);
-  font-weight: 700;
-  color: var(--pc-crimson);
-  line-height: 1;
-}
-.archivist-pc-sheet .pc-charge-box.expended::before { content: "✕"; }
 .archivist-pc-sheet .pc-charge-recovery {
   font-family: var(--pc-font-serif);
   font-style: italic;

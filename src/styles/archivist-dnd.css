@@ -241,7 +241,7 @@
 .archivist-monster-two-col-flow .archivist-legendary-intro,
 .archivist-monster-two-col-flow .archivist-monster-section,
 .archivist-monster-two-col-flow .archivist-legendary-resistance,
-.archivist-monster-two-col-flow .archivist-legendary-box-row {
+.archivist-monster-two-col-flow .archivist-toggle-box-row {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
@@ -1231,12 +1231,12 @@
   min-height: 100px;
 }
 
-/* 9. Legendary Tracking Boxes (Actions + Resistance)
+/* 9. Toggle Boxes (used by monster Legendary Actions/Resistance + PC charge boxes)
    Unified box style — description text, then row of clickable boxes below.
    Backgrounds use !important to prevent Obsidian editor overrides.
    ========================================================================== */
 
-.archivist-legendary-box-row {
+.archivist-toggle-box-row {
   display: flex;
   gap: 6px;
   margin: 6px 0 12px 0;
@@ -1244,7 +1244,7 @@
   flex-wrap: wrap;
 }
 
-.archivist-monster-block .archivist-legendary-box {
+.archivist-toggle-box {
   position: relative;
   width: 18px !important;
   height: 18px !important;
@@ -1261,17 +1261,17 @@
   flex-shrink: 0;
 }
 
-.archivist-monster-block .archivist-legendary-box:hover {
+.archivist-toggle-box:hover {
   border-color: var(--d5e-text-accent) !important;
 }
 
-.archivist-monster-block .archivist-legendary-box-checked {
+.archivist-toggle-box-checked {
   border-color: var(--d5e-text-accent) !important;
 }
 
 /* X cross inside a checked box — drawn with two rotated pseudo-element lines */
-.archivist-monster-block .archivist-legendary-box-checked::before,
-.archivist-monster-block .archivist-legendary-box-checked::after {
+.archivist-toggle-box-checked::before,
+.archivist-toggle-box-checked::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -1283,11 +1283,11 @@
   pointer-events: none;
 }
 
-.archivist-monster-block .archivist-legendary-box-checked::before {
+.archivist-toggle-box-checked::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.archivist-monster-block .archivist-legendary-box-checked::after {
+.archivist-toggle-box-checked::after {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 

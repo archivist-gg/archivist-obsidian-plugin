@@ -77,4 +77,38 @@ describe("CharacterEditState — charge mutations", () => {
     es.restoreCharge(0, 7);
     expect(c.equipment[0].state?.charges).toEqual({ current: 7, max: 7 });
   });
+
+  it("setItemCharges sets current = max - newUsed", () => {
+    const c = baseChar();
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setItemCharges(0, 3, 7);
+    expect(c.equipment[0].state?.charges?.current).toBe(4);
+    es.setItemCharges(0, 0, 7);
+    expect(c.equipment[0].state?.charges?.current).toBe(7);
+  });
+
+  it("setItemCharges seeds state.charges when absent and clamps", () => {
+    const c = baseChar();
+    delete c.equipment[0].state?.charges;
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setItemCharges(0, 2, 7);
+    expect(c.equipment[0].state?.charges).toEqual({ current: 5, max: 7 });
+  });
+
+  it("setItemCharges clamps newUsed into [0, max]", () => {
+    const c = baseChar();
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setItemCharges(0, -5, 7);
+    expect(c.equipment[0].state?.charges?.current).toBe(7);
+    es.setItemCharges(0, 99, 7);
+    expect(c.equipment[0].state?.charges?.current).toBe(0);
+  });
+
+  it("setItemCharges no-ops when state absent and no defaultMax", () => {
+    const c = baseChar();
+    delete c.equipment[0].state?.charges;
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setItemCharges(0, 2);
+    expect(c.equipment[0].state?.charges).toBeUndefined();
+  });
 });

@@ -71,8 +71,7 @@ export class ItemsTable implements SheetComponent {
           used,
           max,
           recovery,
-          onExpend: () => ctx.editState?.expendCharge(r.index, max),
-          onRestore: () => ctx.editState?.restoreCharge(r.index, max),
+          onSet: (newUsed) => ctx.editState?.setItemCharges(r.index, newUsed, max),
         });
       } else {
         chgCell.createSpan({ text: "—" });

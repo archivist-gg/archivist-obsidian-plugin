@@ -215,6 +215,30 @@ export function restoreCharge(character: Character, entryIdx: number, defaultMax
   e.state.charges.current = Math.min(e.state.charges.max, e.state.charges.current + 1);
 }
 
+/**
+ * Atomic charge update. Sets `state.charges.current = clamp(max - newUsed, 0, max)`,
+ * seeding `state.charges = { current: defaultMax, max: defaultMax }` if absent.
+ * Called by the UI's per-click handler when the user clicks a charge pip; lets
+ * a multi-pip jump (e.g. clicking from 3 used → 5 used) emit a single change.
+ */
+export function setItemCharges(
+  character: Character,
+  entryIdx: number,
+  newUsed: number,
+  defaultMax?: number,
+): void {
+  const e = character.equipment?.[entryIdx];
+  if (!e) return;
+  if (!e.state) e.state = {};
+  if (!e.state.charges) {
+    if (!defaultMax || defaultMax <= 0) return;
+    e.state.charges = { current: defaultMax, max: defaultMax };
+  }
+  const max = e.state.charges.max;
+  const used = Math.max(0, Math.min(max, Math.floor(newUsed)));
+  e.state.charges.current = max - used;
+}
+
 export function setEquipmentOverride(
   character: Character,
   idx: number,

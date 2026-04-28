@@ -477,6 +477,11 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  setItemCharges(entryIdx: number, newUsed: number, defaultMax?: number): void {
+    eq.setItemCharges(this.character, entryIdx, newUsed, defaultMax);
+    this.onChange();
+  }
+
   setEquipmentOverride(idx: number, patch: Partial<EquipmentEntryOverrides>): void {
     eq.setEquipmentOverride(this.character, idx, patch);
     this.onChange();

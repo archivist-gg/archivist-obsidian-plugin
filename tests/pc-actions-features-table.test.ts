@@ -41,9 +41,9 @@ describe("FeaturesTable", () => {
       }],
       { "second-wind": { used: 1, max: 1 } },
     ));
-    const boxes = root.querySelectorAll(".pc-charge-box");
+    const boxes = root.querySelectorAll(".archivist-toggle-box");
     expect(boxes.length).toBe(1);
-    expect(root.querySelectorAll(".pc-charge-box.expended").length).toBe(1);
+    expect(root.querySelectorAll(".archivist-toggle-box-checked").length).toBe(1);
   });
 
   it("clicking pip dispatches editState.expendFeatureUse", () => {
@@ -60,7 +60,7 @@ describe("FeaturesTable", () => {
       ),
       editState: { expendFeatureUse, restoreFeatureUse } as never,
     });
-    const empty = root.querySelector(".pc-charge-box:not(.expended)") as HTMLElement;
+    const empty = root.querySelector(".archivist-toggle-box:not(.archivist-toggle-box-checked)") as HTMLElement;
     empty.click();
     expect(expendFeatureUse).toHaveBeenCalledWith("action-surge");
   });
