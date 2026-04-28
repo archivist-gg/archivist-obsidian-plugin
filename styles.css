@@ -11802,3 +11802,21 @@ body.theme-light .archivist-tag-atk:hover {
   border-left: 3px solid var(--pc-crimson);
   margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
 }
+
+/* ---------- Standard combat actions reference block (Actions tab footer) ---------- */
+.archivist-pc-sheet .pc-standard-actions {
+  margin-top: var(--pc-space-4);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-soft);
+  line-height: var(--pc-lh-body);
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm);
+  padding: var(--pc-space-2) var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-standard-actions-title {
+  font-weight: 700;
+  color: var(--pc-text-primary);
+  margin-bottom: var(--pc-space-1);
+}
