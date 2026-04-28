@@ -21,7 +21,8 @@ export function renderChargeBoxes(parent: HTMLElement, opts: ChargeBoxesOpts): H
     const isExpended = i < opts.used;
     const box = boxes.createDiv({ cls: `pc-charge-box${isExpended ? " expended" : ""}` });
     if (isExpended) box.setAttribute("data-state", "expended");
-    box.addEventListener("click", () => {
+    box.addEventListener("click", (e) => {
+      e.stopPropagation();
       if (isExpended) opts.onRestore?.();
       else opts.onExpend?.();
     });

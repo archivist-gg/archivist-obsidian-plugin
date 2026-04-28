@@ -79,8 +79,11 @@ describe("WeaponsTable", () => {
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
     new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    // The atk tag is rolled by the shared inline-tag renderer, which formats
+    // the text as "+N to hit" and exposes the raw modifier via data-dice-notation.
     const hit = root.querySelector(".pc-weapon-hit .archivist-tag-atk");
-    expect(hit?.textContent).toBe("+0");
+    expect(hit?.getAttribute("data-dice-notation")).toBe("+0");
+    expect(hit?.textContent).toContain("+0");
   });
 
   it("appends extraDamage to the damage cell when present", () => {

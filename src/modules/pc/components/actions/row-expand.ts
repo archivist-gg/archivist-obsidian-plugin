@@ -12,10 +12,3 @@ export function createExpandState(initial: string[] = []): ExpandState {
     keys: () => [...set],
   };
 }
-
-/** Adds a caret element and a click handler that fires `onChange(key)`. */
-export function attachExpandToggle(row: HTMLElement, key: string, onChange: (key: string) => void): void {
-  const caret = row.createSpan({ cls: "pc-action-caret", text: "▶" });
-  caret.setAttribute("data-key", key);
-  row.addEventListener("click", () => onChange(key));
-}

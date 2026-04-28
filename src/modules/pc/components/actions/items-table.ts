@@ -2,7 +2,7 @@ import type { SheetComponent, ComponentRenderContext } from "../component.types"
 import type { EquipmentEntry } from "../../pc.types";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
-import { attachExpandToggle, createExpandState } from "./row-expand";
+import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { resolveItemAction } from "../../../item/item.actions-map";
 
@@ -76,9 +76,10 @@ export class ItemsTable implements SheetComponent {
         chgCell.createSpan({ text: "—" });
       }
 
-      // Caret
-      attachExpandToggle(tr.createEl("td"), key, (k) => {
-        this.expand.toggle(k);
+      // Click anywhere on the row toggles the expand panel (matches inventory UX).
+      // Charge boxes call e.stopPropagation() so their clicks don't bubble here.
+      tr.addEventListener("click", () => {
+        this.expand.toggle(key);
         el.empty();
         this.render(el, ctx);
       });
@@ -87,7 +88,7 @@ export class ItemsTable implements SheetComponent {
       if (this.expand.is(key)) {
         const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
         const td = exp.createEl("td");
-        td.setAttribute("colspan", "5");
+        td.setAttribute("colspan", "4");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         renderInventoryRowExpand(inner, {
           entry: r.entry,

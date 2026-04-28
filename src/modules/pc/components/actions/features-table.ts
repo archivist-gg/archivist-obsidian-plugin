@@ -3,7 +3,7 @@ import type { Feature } from "../../../../shared/types/feature";
 import type { FeatureSource } from "../../pc.types";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
-import { attachExpandToggle, createExpandState } from "./row-expand";
+import { createExpandState } from "./row-expand";
 import { renderFeatureExpand } from "./feature-expand";
 
 interface FeatureWithSource { feature: Feature; sourceLabel: string; }
@@ -61,8 +61,10 @@ export class FeaturesTable implements SheetComponent {
         chgCell.createSpan({ text: "—" });
       }
 
-      attachExpandToggle(tr.createEl("td"), key, (k) => {
-        this.expand.toggle(k);
+      // Click anywhere on the row toggles the expand panel (matches inventory UX).
+      // Charge boxes call e.stopPropagation() so their clicks don't bubble here.
+      tr.addEventListener("click", () => {
+        this.expand.toggle(key);
         el.empty();
         this.render(el, ctx);
       });
@@ -70,7 +72,7 @@ export class FeaturesTable implements SheetComponent {
       if (this.expand.is(key)) {
         const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
         const td = exp.createEl("td");
-        td.setAttribute("colspan", "5");
+        td.setAttribute("colspan", "4");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         renderFeatureExpand(inner, feature, sourceLabel);
       }

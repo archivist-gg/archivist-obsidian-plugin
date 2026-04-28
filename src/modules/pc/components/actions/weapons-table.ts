@@ -1,9 +1,10 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
-import { attachExpandToggle, createExpandState } from "./row-expand";
+import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { conditionsToText } from "../../../item/item.conditions";
+import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
 
 export class WeaponsTable implements SheetComponent {
   readonly type = "weapons-table";
@@ -40,33 +41,44 @@ export class WeaponsTable implements SheetComponent {
 
       // Hit (inline italic)
       const hitCell = row.createEl("td", { cls: "pc-weapon-hit" });
-      const hitTag = hitCell.createSpan({ cls: "archivist-tag-atk", text: formatSigned(a.toHit) });
-      hitTag.setAttribute("data-formula", String(a.toHit));
+      renderTextWithInlineTags(`\`atk:${formatSigned(a.toHit)}\``, hitCell, false);
 
       // Damage (inline italic; versatile shows both stacked)
       const dmgCell = row.createEl("td", { cls: "pc-weapon-damage" });
-      dmgCell.createSpan({ cls: "archivist-tag-damage", text: a.damageDice });
-      if (a.damageType) dmgCell.appendText(` ${a.damageType}`);
+      renderTextWithInlineTags(
+        `\`damage:${a.damageDice}${a.damageType ? " " + a.damageType : ""}\``,
+        dmgCell,
+        false,
+      );
       if (a.extraDamage) {
         dmgCell.appendText(" + ");
-        dmgCell.createSpan({ cls: "archivist-tag-damage", text: a.extraDamage });
+        renderTextWithInlineTags(`\`damage:${a.extraDamage}\``, dmgCell, false);
       }
       if (a.versatile?.damageDice) {
         dmgCell.createEl("br");
-        dmgCell.createSpan({ cls: "archivist-tag-damage", text: a.versatile.damageDice });
+        renderTextWithInlineTags(`\`damage:${a.versatile.damageDice}\``, dmgCell, false);
         dmgCell.appendText(" two-handed");
       }
 
-      // Caret
-      const caretCell = row.createEl("td", { cls: "pc-weapon-caret" });
-      attachExpandToggle(caretCell, expandKey, (k) => this.toggleAndRedraw(el, ctx, k));
+      // Click anywhere on the row toggles the expand panel (matches inventory UX).
+      // Inner controls (dice tags, etc.) call e.stopPropagation() on their own
+      // listeners so their clicks don't bubble up here.
+      row.addEventListener("click", () => this.toggleAndRedraw(el, ctx, expandKey));
+
+      // Dice tags rolled inline — prevent bubbling to the row click.
+      hitCell.querySelectorAll(".archivist-tag").forEach((s) =>
+        s.addEventListener("click", (e) => e.stopPropagation()),
+      );
+      dmgCell.querySelectorAll(".archivist-tag").forEach((s) =>
+        s.addEventListener("click", (e) => e.stopPropagation()),
+      );
 
       // Mark open if state is open
       if (this.expand.is(expandKey)) {
         row.classList.add("open");
         const expandTr = tbody.createEl("tr", { cls: "pc-action-expand-row" });
         const td = expandTr.createEl("td");
-        td.setAttribute("colspan", "6");
+        td.setAttribute("colspan", "5");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         const entry = findEntryForAttack(ctx, a);
         const resolved = findResolvedForAttack(ctx, a);
@@ -82,7 +94,7 @@ export class WeaponsTable implements SheetComponent {
       if (info && info.length > 0) {
         const sub = tbody.createEl("tr", { cls: "pc-attack-row-situational" });
         const td = sub.createEl("td");
-        td.setAttribute("colspan", "6");
+        td.setAttribute("colspan", "5");
         for (const i of info) {
           const line = td.createDiv({ cls: "pc-attack-row-situational-line" });
           line.createSpan({

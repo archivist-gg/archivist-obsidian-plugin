@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-import { createExpandState, attachExpandToggle } from "../src/modules/pc/components/actions/row-expand";
-import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { describe, it, expect, beforeAll } from "vitest";
+import { createExpandState } from "../src/modules/pc/components/actions/row-expand";
+import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -15,14 +15,11 @@ describe("row-expand helper", () => {
     expect(s.is("a")).toBe(false);
   });
 
-  it("attachExpandToggle calls onChange when clicked and adds .open class", () => {
-    const root = mountContainer();
-    const row = root.createDiv({ cls: "pc-action-row" });
-    const onChange = vi.fn();
-    attachExpandToggle(row, "row-1", onChange);
-    expect(row.querySelector(".pc-action-caret")).toBeTruthy();
-
-    (row as HTMLElement).click();
-    expect(onChange).toHaveBeenCalledWith("row-1");
+  it("createExpandState seeds from initial values", () => {
+    const s = createExpandState(["x", "y"]);
+    expect(s.is("x")).toBe(true);
+    expect(s.is("y")).toBe(true);
+    expect(s.is("z")).toBe(false);
+    expect(s.keys().sort()).toEqual(["x", "y"]);
   });
 });
