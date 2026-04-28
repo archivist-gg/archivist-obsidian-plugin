@@ -28,6 +28,52 @@ describe("ITEM_ACTIONS curated map", () => {
     const a: ItemAction = { cost: "free", range: undefined, max_charges: undefined, recovery: undefined };
     expect(a.cost).toBe("free");
   });
+
+  it("includes necklace-of-fireballs (action, 60 ft., 9 max charges, no recovery)", () => {
+    const a = ITEM_ACTIONS["necklace-of-fireballs"];
+    expect(a).toBeDefined();
+    expect(a.cost).toBe("action");
+    expect(a.range).toBe("60 ft.");
+    expect(a.max_charges).toBe(9);
+    expect(a.recovery).toBeUndefined();
+  });
+
+  it("includes ring-of-evasion as a reaction (3 charges, dawn 1d3)", () => {
+    const a = ITEM_ACTIONS["ring-of-evasion"];
+    expect(a).toBeDefined();
+    expect(a.cost).toBe("reaction");
+    expect(a.range).toBe("self");
+    expect(a.max_charges).toBe(3);
+    expect(a.recovery).toEqual({ amount: "1d3", reset: "dawn" });
+  });
+
+  it.each([
+    ["cube-of-force",            "action", "self",    36, { amount: "1d20",  reset: "dawn" }],
+    ["gem-of-brightness",        "action", "60 ft.",  50, undefined],
+    ["gem-of-seeing",            "action", "self",     3, { amount: "1d3",   reset: "dawn" }],
+    ["helm-of-teleportation",    "action", "self",     3, { amount: "1d3",   reset: "dawn" }],
+    ["medallion-of-thoughts",    "action", "30 ft.",   3, { amount: "1d3",   reset: "dawn" }],
+    ["pipes-of-haunting",        "action", "30 ft.",   3, { amount: "1d3",   reset: "dawn" }],
+    ["pipes-of-the-sewers",      "action", "self",     3, { amount: "1d3",   reset: "dawn" }],
+    ["ring-of-animal-influence", "action", "self",     3, { amount: "1d3",   reset: "dawn" }],
+    ["ring-of-elemental-command","action", "self",     5, { amount: "1d4+1", reset: "dawn" }],
+    ["chime-of-opening",         "action", "120 ft.", 10, undefined],
+    ["dust-of-disappearance",    "action", "self",     1, { amount: "0",     reset: "special" }],
+  ] as const)(
+    "includes %s with expected cost/range/charges/recovery",
+    (slug, cost, range, maxCharges, recovery) => {
+      const a = ITEM_ACTIONS[slug];
+      expect(a).toBeDefined();
+      expect(a.cost).toBe(cost);
+      expect(a.range).toBe(range);
+      expect(a.max_charges).toBe(maxCharges);
+      if (recovery === undefined) {
+        expect(a.recovery).toBeUndefined();
+      } else {
+        expect(a.recovery).toEqual(recovery);
+      }
+    },
+  );
 });
 
 import { resolveItemAction } from "../src/modules/item/item.actions-map";

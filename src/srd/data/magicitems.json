@@ -585,7 +585,12 @@
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "120 ft.",
+      "max_charges": 10
+    }
   },
   {
     "slug": "circlet-of-blasting",
@@ -760,7 +765,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 36,
+      "recovery": {
+        "amount": "1d20",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "cubic-gate",
@@ -949,7 +963,16 @@
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 1,
+      "recovery": {
+        "amount": "0",
+        "reset": "special"
+      }
+    }
   },
   {
     "slug": "dust-of-dryness",
@@ -1240,7 +1263,12 @@
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
     "charges": 50,
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "60 ft.",
+      "max_charges": 50
+    }
   },
   {
     "slug": "gem-of-seeing",
@@ -1260,7 +1288,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "giant-slayer",
@@ -1511,7 +1548,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "holy-avenger",
@@ -1854,7 +1900,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "30 ft.",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "mirror-of-life-trapping",
@@ -1904,7 +1959,12 @@
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
     "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
-    "tier": "minor"
+    "tier": "minor",
+    "actions": {
+      "cost": "action",
+      "range": "60 ft.",
+      "max_charges": 9
+    }
   },
   {
     "slug": "necklace-of-prayer-beads",
@@ -2138,7 +2198,16 @@
       "recharge": "dawn",
       "recharge_amount": "1d3"
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "30 ft.",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "pipes-of-the-sewers",
@@ -2158,7 +2227,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "plate-armor-of-etherealness",
@@ -2429,7 +2507,16 @@
         ]
       }
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "ring-of-djinni-summoning",
@@ -2455,7 +2542,16 @@
     "requires_attunement": "requires attunement",
     "document__slug": "wotc-srd",
     "document__title": "5e Core Rules",
-    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd"
+    "document__url": "http://dnd.wizards.com/articles/features/systems-reference-document-srd",
+    "actions": {
+      "cost": "action",
+      "range": "self",
+      "max_charges": 5,
+      "recovery": {
+        "amount": "1d4+1",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "ring-of-evasion",
@@ -2475,7 +2571,16 @@
     "attunement": {
       "required": true
     },
-    "tier": "major"
+    "tier": "major",
+    "actions": {
+      "cost": "reaction",
+      "range": "self",
+      "max_charges": 3,
+      "recovery": {
+        "amount": "1d3",
+        "reset": "dawn"
+      }
+    }
   },
   {
     "slug": "ring-of-feather-falling",

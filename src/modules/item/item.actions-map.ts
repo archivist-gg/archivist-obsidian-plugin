@@ -44,6 +44,30 @@ export const ITEM_ACTIONS: Record<string, ItemAction> = {
   "ring-of-shooting-stars":      { cost: "action",       range: "60 ft.",  max_charges: 6, recovery: { amount: "1d6", reset: "dawn" } },
   "ring-of-the-ram":             { cost: "action",       range: "60 ft.",  max_charges: 3, recovery: { amount: "1d3", reset: "dawn" } },
   "ring-of-spell-storing":       { cost: "action",       range: "self",    max_charges: 5 },
+  "ring-of-animal-influence":    { cost: "action",       range: "self",    max_charges: 3, recovery: { amount: "1d3",   reset: "dawn" } },
+  "ring-of-elemental-command":   { cost: "action",       range: "self",    max_charges: 5, recovery: { amount: "1d4+1", reset: "dawn" } },
+  "ring-of-evasion":             { cost: "reaction",     range: "self",    max_charges: 3, recovery: { amount: "1d3",   reset: "dawn" } },
+
+  // Necklaces
+  "necklace-of-fireballs":       { cost: "action",       range: "60 ft.",  max_charges: 9 },
+
+  // Gems
+  "gem-of-brightness":           { cost: "action",       range: "60 ft.",  max_charges: 50 },
+  "gem-of-seeing":               { cost: "action",       range: "self",    max_charges: 3, recovery: { amount: "1d3", reset: "dawn" } },
+
+  // Helms
+  "helm-of-teleportation":       { cost: "action",       range: "self",    max_charges: 3, recovery: { amount: "1d3", reset: "dawn" } },
+
+  // Medallions
+  "medallion-of-thoughts":       { cost: "action",       range: "30 ft.",  max_charges: 3, recovery: { amount: "1d3", reset: "dawn" } },
+
+  // Pipes
+  "pipes-of-haunting":           { cost: "action",       range: "30 ft.",  max_charges: 3, recovery: { amount: "1d3", reset: "dawn" } },
+  "pipes-of-the-sewers":         { cost: "action",       range: "self",    max_charges: 3, recovery: { amount: "1d3", reset: "dawn" } },
+
+  // Cubes / chimes
+  "cube-of-force":               { cost: "action",       range: "self",    max_charges: 36, recovery: { amount: "1d20", reset: "dawn" } },
+  "chime-of-opening":            { cost: "action",       range: "120 ft.", max_charges: 10 },
 
   // Magic weapons with activation actions (surface in items table only via override; weapons table is primary)
   "sun-blade":                   { cost: "free",         range: "self" },
@@ -56,6 +80,7 @@ export const ITEM_ACTIONS: Record<string, ItemAction> = {
   "alchemists-fire":             { cost: "action",       range: "20 ft.",  max_charges: 1, recovery: { amount: "0", reset: "special" } },
   "holy-water":                  { cost: "action",       range: "20 ft.",  max_charges: 1, recovery: { amount: "0", reset: "special" } },
   "oil-of-sharpness":            { cost: "action",       range: "self",    max_charges: 1, recovery: { amount: "0", reset: "special" } },
+  "dust-of-disappearance":       { cost: "action",       range: "self",    max_charges: 1, recovery: { amount: "0", reset: "special" } },
 };
 
 /**
