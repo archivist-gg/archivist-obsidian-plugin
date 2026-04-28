@@ -11745,3 +11745,38 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cost-badge.cost-reaction { background: var(--pc-rarity-rare); }
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
+
+/* ---------- Charge boxes (toggleable pip strip with recovery suffix) ---------- */
+.archivist-pc-sheet .pc-charge-boxes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-charge-box-strip {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+.archivist-pc-sheet .pc-charge-box {
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--pc-text-soft);
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 1px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  font-weight: 700;
+  color: var(--pc-crimson);
+  line-height: 1;
+}
+.archivist-pc-sheet .pc-charge-box.expended::before { content: "✕"; }
+.archivist-pc-sheet .pc-charge-recovery {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
