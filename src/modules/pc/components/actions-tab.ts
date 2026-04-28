@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedCharacter } from "../pc.types";
 import { WeaponsTable } from "./actions/weapons-table";
+import { ItemsTable } from "./actions/items-table";
 
 export class ActionsTab implements SheetComponent {
   readonly type = "actions-tab";
@@ -10,6 +11,7 @@ export class ActionsTab implements SheetComponent {
     root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });
 
     new WeaponsTable().render(root, ctx);
+    new ItemsTable().render(root, ctx);
 
     const featureAttacks = collectFeatureAttacks(ctx.resolved);
     if (featureAttacks.length > 0) {
