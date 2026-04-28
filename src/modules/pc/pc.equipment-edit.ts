@@ -193,18 +193,26 @@ export function setCurrency(character: Character, coin: "pp" | "gp" | "ep" | "sp
   character.currency[coin] = Math.max(0, Math.floor(value));
 }
 
-export function expendCharge(character: Character, entryIdx: number): void {
+export function expendCharge(character: Character, entryIdx: number, defaultMax?: number): void {
   const e = character.equipment?.[entryIdx];
-  const c = e?.state?.charges;
-  if (!c) return;
-  c.current = Math.max(0, c.current - 1);
+  if (!e) return;
+  if (!e.state) e.state = {};
+  if (!e.state.charges) {
+    if (!defaultMax || defaultMax <= 0) return;
+    e.state.charges = { current: defaultMax, max: defaultMax };
+  }
+  e.state.charges.current = Math.max(0, e.state.charges.current - 1);
 }
 
-export function restoreCharge(character: Character, entryIdx: number): void {
+export function restoreCharge(character: Character, entryIdx: number, defaultMax?: number): void {
   const e = character.equipment?.[entryIdx];
-  const c = e?.state?.charges;
-  if (!c) return;
-  c.current = Math.min(c.max, c.current + 1);
+  if (!e) return;
+  if (!e.state) e.state = {};
+  if (!e.state.charges) {
+    if (!defaultMax || defaultMax <= 0) return;
+    e.state.charges = { current: defaultMax, max: defaultMax };
+  }
+  e.state.charges.current = Math.min(e.state.charges.max, e.state.charges.current + 1);
 }
 
 export function setEquipmentOverride(

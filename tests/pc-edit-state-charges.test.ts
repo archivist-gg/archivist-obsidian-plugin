@@ -53,4 +53,28 @@ describe("CharacterEditState — charge mutations", () => {
     es.restoreFeatureUse("second-wind");
     expect(c.state.feature_uses["second-wind"].used).toBe(0);
   });
+
+  it("expendCharge seeds state.charges when absent and defaultMax provided", () => {
+    const c = baseChar();
+    delete c.equipment[0].state?.charges;
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.expendCharge(0, 7);
+    expect(c.equipment[0].state?.charges).toEqual({ current: 6, max: 7 });
+  });
+
+  it("expendCharge no-ops when state absent and no defaultMax", () => {
+    const c = baseChar();
+    delete c.equipment[0].state?.charges;
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.expendCharge(0);
+    expect(c.equipment[0].state?.charges).toBeUndefined();
+  });
+
+  it("restoreCharge seeds state.charges to full on first call when absent", () => {
+    const c = baseChar();
+    delete c.equipment[0].state?.charges;
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.restoreCharge(0, 7);
+    expect(c.equipment[0].state?.charges).toEqual({ current: 7, max: 7 });
+  });
 });

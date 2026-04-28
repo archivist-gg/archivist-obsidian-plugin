@@ -59,6 +59,33 @@ describe("ItemsTable", () => {
     }));
     const firstEmpty = root.querySelector(".pc-charge-box:not(.expended)") as HTMLElement;
     firstEmpty.click();
-    expect(expendCharge).toHaveBeenCalledWith(0);
+    expect(expendCharge).toHaveBeenCalledWith(0, 7);
+  });
+
+  it("renders charge boxes from action.max_charges when entry has no state.charges", () => {
+    const root = mountContainer();
+    new ItemsTable().render(root, ctx({
+      entries: [{ item: "[[wand-of-fireballs]]", equipped: true, attuned: true }],
+      entityForSlug: () => ({
+        name: "Wand of Fireballs", rarity: "rare",
+        actions: { cost: "action", range: "150 ft.", max_charges: 7, recovery: { amount: "1d6+1", reset: "dawn" } },
+      }),
+    }));
+    const boxes = root.querySelectorAll(".pc-charge-box");
+    expect(boxes.length).toBe(7);
+    expect(root.querySelectorAll(".pc-charge-box.expended").length).toBe(0);
+  });
+
+  it("clicking a phantom-full pip seeds entry.state.charges via expendCharge(idx, max)", () => {
+    const root = mountContainer();
+    const expendCharge = vi.fn();
+    new ItemsTable().render(root, ctx({
+      entries: [{ item: "[[wand-of-fireballs]]", equipped: true, attuned: true }],
+      entityForSlug: () => ({ name: "Wand of Fireballs", actions: { cost: "action", range: "150 ft.", max_charges: 7 } }),
+      editState: { expendCharge, restoreCharge: vi.fn() } as unknown as CharacterEditState,
+    }));
+    const firstEmpty = root.querySelector(".pc-charge-box:not(.expended)") as HTMLElement;
+    firstEmpty.click();
+    expect(expendCharge).toHaveBeenCalledWith(0, 7);
   });
 });

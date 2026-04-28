@@ -467,13 +467,13 @@ export class CharacterEditState {
     this.onChange();
   }
 
-  expendCharge(entryIdx: number): void {
-    eq.expendCharge(this.character, entryIdx);
+  expendCharge(entryIdx: number, defaultMax?: number): void {
+    eq.expendCharge(this.character, entryIdx, defaultMax);
     this.onChange();
   }
 
-  restoreCharge(entryIdx: number): void {
-    eq.restoreCharge(this.character, entryIdx);
+  restoreCharge(entryIdx: number, defaultMax?: number): void {
+    eq.restoreCharge(this.character, entryIdx, defaultMax);
     this.onChange();
   }
 

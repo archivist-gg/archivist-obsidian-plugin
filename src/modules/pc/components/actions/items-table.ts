@@ -62,15 +62,17 @@ export class ItemsTable implements SheetComponent {
 
       // Charges
       const chgCell = tr.createEl("td");
-      const charges = r.entry.state?.charges;
+      const stateCharges = r.entry.state?.charges;
+      const max = stateCharges?.max ?? action.max_charges ?? 0;
+      const used = stateCharges ? Math.max(0, stateCharges.max - stateCharges.current) : 0;
       const recovery = r.entry.state?.recovery ?? action.recovery;
-      if (charges) {
+      if (max > 0) {
         renderChargeBoxes(chgCell, {
-          used: charges.max - charges.current,
-          max: charges.max,
+          used,
+          max,
           recovery,
-          onExpend: () => ctx.editState?.expendCharge(r.index),
-          onRestore: () => ctx.editState?.restoreCharge(r.index),
+          onExpend: () => ctx.editState?.expendCharge(r.index, max),
+          onRestore: () => ctx.editState?.restoreCharge(r.index, max),
         });
       } else {
         chgCell.createSpan({ text: "—" });
