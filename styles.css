@@ -11780,3 +11780,25 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
 }
+
+/* ---------- Row-expand caret + expand panel (Weapons/Items/Features) ---------- */
+.archivist-pc-sheet .pc-action-caret {
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-small);
+  display: inline-block;
+  transition: transform 0.15s;
+}
+.archivist-pc-sheet .pc-action-row.open .pc-action-caret {
+  transform: rotate(90deg);
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-action-row { cursor: pointer; }
+.archivist-pc-sheet .pc-action-row:hover { background: rgba(255, 255, 255, 0.18); }
+.archivist-pc-sheet .pc-action-expand-row {
+  background: rgba(255, 255, 255, 0.22);
+}
+.archivist-pc-sheet .pc-action-expand-inner {
+  padding: var(--pc-space-3);
+  border-left: 3px solid var(--pc-crimson);
+  margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
+}
