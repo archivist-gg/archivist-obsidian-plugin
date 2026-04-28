@@ -12,9 +12,9 @@ export class ActionsTab implements SheetComponent {
     const root = el.createDiv({ cls: "pc-tab-body pc-actions-body pc-actions-tab" });
     root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });
 
-    new WeaponsTable().render(root, ctx);
-    new ItemsTable().render(root, ctx);
-    new FeaturesTable().render(root, ctx);
+    new WeaponsTable().render(root.createDiv(), ctx);
+    new ItemsTable().render(root.createDiv(), ctx);
+    new FeaturesTable().render(root.createDiv(), ctx);
 
     const featureAttacks = collectFeatureAttacks(ctx.resolved);
     if (featureAttacks.length > 0) {
