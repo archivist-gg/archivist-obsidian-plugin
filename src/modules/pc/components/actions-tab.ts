@@ -2,6 +2,8 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedCharacter } from "../pc.types";
 import { WeaponsTable } from "./actions/weapons-table";
 import { ItemsTable } from "./actions/items-table";
+import { FeaturesTable } from "./actions/features-table";
+import { renderStandardActionsList } from "./actions/standard-actions-list";
 
 export class ActionsTab implements SheetComponent {
   readonly type = "actions-tab";
@@ -12,6 +14,7 @@ export class ActionsTab implements SheetComponent {
 
     new WeaponsTable().render(root, ctx);
     new ItemsTable().render(root, ctx);
+    new FeaturesTable().render(root, ctx);
 
     const featureAttacks = collectFeatureAttacks(ctx.resolved);
     if (featureAttacks.length > 0) {
@@ -37,6 +40,8 @@ export class ActionsTab implements SheetComponent {
         strip.createDiv({ cls: "pc-resource-badge" }).createSpan({ cls: "pc-resource-name", text: rf.feature.name });
       }
     }
+
+    renderStandardActionsList(root);
   }
 }
 
