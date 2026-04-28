@@ -27,7 +27,7 @@ export class WeaponsTable implements SheetComponent {
 
       // Cost
       const costCell = row.createEl("td", { cls: "pc-weapon-cost" });
-      const cost = (a.actionCost ?? "action") as ActionCost;
+      const cost: ActionCost = a.actionCost ?? "action";
       renderCostBadge(costCell, cost);
 
       // Name + sub

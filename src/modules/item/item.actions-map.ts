@@ -71,8 +71,11 @@ export function resolveItemAction(slug: string, entry: EquipmentEntry): ItemActi
 
   if (!curated && !overrideCost) return null;
 
+  const cost = overrideCost ?? curated?.cost;
+  if (!cost) return null;
+
   return {
-    cost: overrideCost ?? curated!.cost,
+    cost,
     range: overrideRange ?? curated?.range,
     max_charges: curated?.max_charges,
     recovery: curated?.recovery,

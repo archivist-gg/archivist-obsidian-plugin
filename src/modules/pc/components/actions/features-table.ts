@@ -43,7 +43,7 @@ export class FeaturesTable implements SheetComponent {
       nameCell.createDiv({ cls: "pc-action-row-name", text: feature.name });
       if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
 
-      tr.createEl("td", { text: "self" });
+      tr.createEl("td", { text: "Self" });
 
       const chgCell = tr.createEl("td");
       const featureKey = feature.resources?.[0]?.id ?? feature.id;
@@ -95,10 +95,9 @@ function collectFeatures(ctx: ComponentRenderContext): FeatureWithSource[] {
   }).features ?? [];
   return features.map((entry) => {
     if (entry && typeof entry === "object" && "feature" in entry) {
-      const wrapped = entry as { feature: Feature; source?: FeatureSource };
-      return { feature: wrapped.feature, sourceLabel: formatSourceLabel(wrapped.source) };
+      return { feature: entry.feature, sourceLabel: formatSourceLabel(entry.source) };
     }
-    return { feature: entry as Feature, sourceLabel: "" };
+    return { feature: entry, sourceLabel: "" };
   });
 }
 
