@@ -47,6 +47,10 @@ export class WeaponsTable implements SheetComponent {
       const dmgCell = row.createEl("td", { cls: "pc-weapon-damage" });
       dmgCell.createSpan({ cls: "archivist-tag-damage", text: a.damageDice });
       if (a.damageType) dmgCell.appendText(` ${a.damageType}`);
+      if (a.extraDamage) {
+        dmgCell.appendText(" + ");
+        dmgCell.createSpan({ cls: "archivist-tag-damage", text: a.extraDamage });
+      }
       if (a.versatile?.damageDice) {
         dmgCell.createEl("br");
         dmgCell.createSpan({ cls: "archivist-tag-damage", text: a.versatile.damageDice });

@@ -83,6 +83,27 @@ describe("WeaponsTable", () => {
     expect(hit?.textContent).toBe("+0");
   });
 
+  it("appends extraDamage to the damage cell when present", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "mainhand", name: "Flame Tongue Longsword",
+      range: "melee 5 ft.", toHit: 6, damageDice: "1d8 + 4", damageType: "slashing",
+      extraDamage: "2d6 fire",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const dmgCell = root.querySelector(".pc-weapon-damage")?.textContent ?? "";
+    expect(dmgCell).toContain("1d8 + 4");
+    expect(dmgCell).toContain("slashing");
+    expect(dmgCell).toContain("2d6 fire");
+    // The extraDamage gets its own click-to-roll tag so it's rollable.
+    const tags = root.querySelectorAll(".pc-weapon-damage .archivist-tag-damage");
+    expect(tags.length).toBe(2);
+    expect(tags[1]?.textContent).toBe("2d6 fire");
+  });
+
   it("renders no situational sub-line when informational is undefined", () => {
     const root = mountContainer();
     const attacks = [{
