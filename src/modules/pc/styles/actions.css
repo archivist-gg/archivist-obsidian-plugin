@@ -1,0 +1,26 @@
+/* PC Actions tab — all rules scoped under .archivist-pc-sheet.
+ * Filled in incrementally by the actions tasks. Keep actions-specific
+ * styles isolated here so the redesign can be reverted as a single
+ * file if needed. */
+
+/* ---------- Cost badge (pill rendered next to action rows) ---------- */
+.archivist-pc-sheet .pc-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: var(--pc-fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: #fff;
+  line-height: var(--pc-lh-tight);
+}
+.archivist-pc-sheet .pc-cost-badge.cost-action   { background: var(--pc-crimson); }
+.archivist-pc-sheet .pc-cost-badge.cost-bonus    { background: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-cost-badge.cost-reaction { background: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
