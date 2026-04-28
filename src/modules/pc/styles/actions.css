@@ -170,3 +170,34 @@
   color: var(--pc-text-primary);
   margin-bottom: var(--pc-space-1);
 }
+
+/* ---------- Feature expand panel (FeaturesTable expanded row body) ---------- */
+.archivist-pc-sheet .pc-feature-expand-title {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  margin-bottom: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-feature-expand-meta {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+  margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-feature-expand-body {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  line-height: var(--pc-lh-body);
+}
+.archivist-pc-sheet .pc-feature-expand-body p { margin: 0 0 var(--pc-space-2); }
+.archivist-pc-sheet .pc-feature-expand-attacks {
+  margin-top: var(--pc-space-2);
+  padding-left: var(--pc-space-2);
+  border-left: 2px solid var(--pc-tan);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
