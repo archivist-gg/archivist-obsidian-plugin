@@ -10,6 +10,7 @@ import type { Item } from "../../../item/item.types";
 import { requiresAttunement } from "./requires-attunement";
 import { renderInlineItemForm } from "./inline-item-form";
 import { unequipWithAttunementCheck } from "./unequip-flow";
+import { renderOverrideActionsPanel } from "./override-actions-panel";
 
 export interface RowExpandCtx {
   entry: EquipmentEntry;
@@ -44,6 +45,17 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
 
   // PC-actions strip — sits below the block, separate concern.
   if (ctx.editState) renderActionsStrip(expand, ctx, ctx.editState);
+
+  // Action overrides panel — collapsible, edit-mode only.
+  if (ctx.editState) {
+    const details = expand.createEl("details", { cls: "pc-override-actions-details" });
+    details.createEl("summary", { text: "Action overrides" });
+    renderOverrideActionsPanel(details, {
+      entry: ctx.entry,
+      entryIndex: ctx.resolved.index,
+      editState: ctx.editState,
+    });
+  }
   return expand;
 }
 
