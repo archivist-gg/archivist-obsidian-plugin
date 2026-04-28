@@ -1,8 +1,11 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { FilterState } from "./inventory/filter-state";
+import type { FilterState, VisibleEntry } from "./inventory/filter-state";
 import type { EquipmentEntry, ResolvedEquipped } from "../pc.types";
 import { HeaderStrip } from "./inventory/header-strip";
 import { AttuneConflictModal } from "./inventory/attune-conflict-modal";
+import { AttunePickerModal } from "./inventory/attune-picker-modal";
+import { showAttunePopover } from "./inventory/attune-popover";
+import { requiresAttunement } from "./inventory/requires-attunement";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
 import { InventoryList } from "./inventory/inventory-list";
@@ -19,7 +22,34 @@ export class InventoryTab implements SheetComponent {
     let filters: FilterState = { status: "all", types: new Set(), rarities: new Set(), search: "" };
 
     const header = root.createDiv({ cls: "pc-inventory-header" });
-    new HeaderStrip().render(header, ctx);
+    new HeaderStrip().render(header, ctx, {
+      onClickFilled: (occupant, anchor) => {
+        if (!ctx.editState) return;
+        const editState = ctx.editState;
+        showAttunePopover({
+          anchor,
+          occupant,
+          onUnattune: (i) => editState.unattuneItem(i),
+          onFindInList: (_i) => { /* deferred — see "Deferred polish" section at end of plan */ },
+        });
+      },
+      onPickEmpty: (slotIdx) => {
+        if (!ctx.editState) return;
+        const editState = ctx.editState;
+        const candidates = collectAttunableCandidates(ctx);
+        new AttunePickerModal(ctx.app, {
+          slotIndex: slotIdx,
+          candidates,
+          onPick: (entryIdx) => {
+            const result = editState.attuneItem(entryIdx);
+            if (result.kind === "rejected") {
+              // Should not happen because picker filtered to non-attuned, but guard anyway.
+              openConflictModal(ctx, entryIdx);
+            }
+          },
+        }).open();
+      },
+    });
 
     const toolbarHost = root.createDiv({ cls: "pc-inv-toolbar-host" });
     const filtersHost = root.createDiv({ cls: "pc-inv-filters-host" });
@@ -78,6 +108,22 @@ export class InventoryTab implements SheetComponent {
 
     drawAll();
   }
+}
+
+function collectAttunableCandidates(ctx: ComponentRenderContext): VisibleEntry[] {
+  const equipment = ctx.resolved.definition.equipment ?? [];
+  const reg = ctx.core?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null } | undefined;
+  const out: VisibleEntry[] = [];
+  equipment.forEach((entry, index) => {
+    if (entry.attuned) return;
+    const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
+    const found = slug ? reg?.getBySlug?.(slug) : null;
+    const entity = found ? ((found.data ?? {}) as never) : null;
+    const entityType = found ? (found.entityType ?? null) : null;
+    if (!requiresAttunement(entity)) return;
+    out.push({ entry, resolved: { index, entity, entityType, entry } });
+  });
+  return out;
 }
 
 function buildResolved(

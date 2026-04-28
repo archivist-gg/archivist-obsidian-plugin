@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { HeaderStrip } from "../src/modules/pc/components/inventory/header-strip";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -24,5 +24,16 @@ describe("HeaderStrip", () => {
     expect(root.querySelector(".pc-header-strip > .pc-header-attune")).toBeTruthy();
     expect(root.querySelector(".pc-header-strip > .pc-header-divider")).toBeTruthy();
     expect(root.querySelector(".pc-header-strip > .pc-header-currency")).toBeTruthy();
+  });
+
+  it("forwards onPickEmpty to AttunementStrip so empty medallions are clickable", () => {
+    const root = mountContainer();
+    const onPickEmpty = vi.fn();
+    new HeaderStrip().render(root, makeCtx(), { onPickEmpty });
+    const emptyMedallion = root.querySelector(".pc-medallion.empty") as HTMLElement | null;
+    expect(emptyMedallion).toBeTruthy();
+    emptyMedallion!.click();
+    expect(onPickEmpty).toHaveBeenCalledTimes(1);
+    expect(onPickEmpty).toHaveBeenCalledWith(0);
   });
 });
