@@ -10,5 +10,5 @@ export function parseOptionalFeature(source: string): ParseResult<OptionalFeatur
   if (!result.success) {
     return { success: false, error: `optional-feature schema validation failed: ${result.error.message}` };
   }
-  return { success: true, data: result.data as OptionalFeatureEntity };
+  return { success: true, data: result.data };
 }
