@@ -12,14 +12,15 @@ const FEATURE_TYPE_TAG_MAP: Record<string, OptionalFeatureKind> = {
   "AI": "infusion",
 };
 
-const CLASS_TAG_TO_WIKILINK: Record<string, string> = {
-  "I": "[[SRD 5e/warlock]]",
-  "MM": "[[SRD 5e/sorcerer]]",
-  "FS:F": "[[SRD 5e/fighter]]",
-  "FS:P": "[[SRD 5e/paladin]]",
-  "FS:R": "[[SRD 5e/ranger]]",
-  "MV:B": "[[SRD 5e/fighter]]",
-  "AI": "[[SRD 5e/artificer]]",
+const CLASS_TAG_TO_SLUG: Record<string, string> = {
+  "I": "warlock",
+  "MM": "sorcerer",
+  "FS:F": "fighter",
+  "FS:P": "paladin",
+  "FS:R": "ranger",
+  "FS:B": "ranger",
+  "MV:B": "fighter",
+  "AI": "artificer",
 };
 
 export interface StructuredOptionalFeatureInput {
@@ -38,21 +39,22 @@ function pickFeatureType(tags: string[]): OptionalFeatureKind {
   for (const t of tags) {
     if (FEATURE_TYPE_TAG_MAP[t]) return FEATURE_TYPE_TAG_MAP[t];
   }
-  return "invocation"; // safest default for unknown invocation-shaped entries
+  console.warn(`[optional-feature] unknown feature_type tag(s): ${tags.join(", ")}; defaulting to "invocation"`);
+  return "invocation";
 }
 
-function tagsToAvailableTo(tags: string[], edition: "2014" | "2024"): string[] {
-  const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
-  const links = new Set<string>();
+function tagsToAvailableTo(tags: string[], compendium: string): string[] {
+  const slugs = new Set<string>();
   for (const t of tags) {
-    const link = CLASS_TAG_TO_WIKILINK[t];
-    if (link) links.add(link.replace("SRD 5e", compendium));
+    const slug = CLASS_TAG_TO_SLUG[t];
+    if (slug) slugs.add(slug);
   }
-  return Array.from(links).sort();
+  return Array.from(slugs).sort().map(slug => `[[${compendium}/${slug}]]`);
 }
 
-const PACT_VALUES = new Set(["tome", "blade", "chain", "talisman"] as const);
-type PactBoon = "tome" | "blade" | "chain" | "talisman";
+const PACT_VALUES = ["tome", "blade", "chain", "talisman"] as const;
+type PactBoon = typeof PACT_VALUES[number];
+const PACT_SET: ReadonlySet<string> = new Set(PACT_VALUES);
 
 function normalizePrerequisites(
   input: StructuredOptionalFeatureInput,
@@ -70,7 +72,7 @@ function normalizePrerequisites(
     if (typeof p.level === "number") out.push({ kind: "level", min: p.level });
     if (Array.isArray(p.pact)) {
       for (const pact of p.pact as string[]) {
-        if (PACT_VALUES.has(pact as PactBoon)) {
+        if (PACT_SET.has(pact)) {
           out.push({ kind: "pact", pact: pact as PactBoon });
         }
       }
@@ -95,11 +97,12 @@ export function normalizeOptionalFeature(input: StructuredOptionalFeatureInput):
     slug,
     name: input.name,
     edition: input.edition,
+    // Canonical SRD label; input.source (e.g. "PHB") is intentionally discarded.
     source: input.edition === "2014" ? "SRD 5.1" : "SRD 5.2",
     feature_type: featureType,
     description: entriesToDescription(input.entries),
     prerequisites: normalizePrerequisites(input, compendium),
-    available_to: tagsToAvailableTo(input.featureType, input.edition),
+    available_to: tagsToAvailableTo(input.featureType, compendium),
     effects: [],
   };
   return {
