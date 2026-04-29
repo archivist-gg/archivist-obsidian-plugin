@@ -45,4 +45,5 @@ export interface RaceEntity {
   variant_label: string;
   variants: RaceVariant[];
   traits: Feature[];
+  subspecies_of?: string;
 }

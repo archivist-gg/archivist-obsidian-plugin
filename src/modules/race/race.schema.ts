@@ -4,6 +4,7 @@ import { featureSchema } from "../../shared/schemas/feature-schema";
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const editionEnum = z.enum(["2014", "2024"]);
 const sizeEnum = z.enum(["tiny", "small", "medium", "large", "huge"]);
+const wikilinkRegex = /^\[\[[^[\]]+\]\]$/;
 
 const speedSchema = z.object({
   walk: z.number().int().nonnegative().optional(),
@@ -65,4 +66,5 @@ export const raceEntitySchema = z.object({
   variant_label: z.string().min(1),
   variants: z.array(variantSchema),
   traits: z.array(featureSchema),
+  subspecies_of: z.string().regex(wikilinkRegex).optional(),
 });

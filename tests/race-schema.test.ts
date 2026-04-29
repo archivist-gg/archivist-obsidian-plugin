@@ -48,3 +48,20 @@ describe("raceEntitySchema", () => {
     expect(raceEntitySchema.safeParse({ ...minimalRace, size: "gargantuan" }).success).toBe(false);
   });
 });
+
+describe("subspecies_of", () => {
+  it("accepts absent subspecies_of (parent races)", () => {
+    const parent = { ...minimalRace, subspecies_of: undefined };
+    expect(raceEntitySchema.safeParse(parent).success).toBe(true);
+  });
+
+  it("accepts wikilink-shaped subspecies_of (subspecies)", () => {
+    const child = { ...minimalRace, slug: "hill-dwarf", name: "Hill Dwarf", subspecies_of: "[[SRD 5e/dwarf]]" };
+    expect(raceEntitySchema.safeParse(child).success).toBe(true);
+  });
+
+  it("rejects non-wikilink subspecies_of", () => {
+    const bad = { ...minimalRace, subspecies_of: "dwarf" };
+    expect(raceEntitySchema.safeParse(bad).success).toBe(false);
+  });
+});
