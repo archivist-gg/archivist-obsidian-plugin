@@ -1,0 +1,92 @@
+# SRD 5.1 overlay -- minimal seed
+# Class-feature action economy + race-trait gaps + OptionalFeature SRD slugs.
+# Source: WotC SRD 5.1 PDF.
+# This is a SEED -- full authorship is deferred to a follow-up pass.
+
+class_features:
+  # Fighter
+  action-surge:
+    action_cost: special
+    uses:
+      max: 1
+      recharge: short-rest
+      scales_at:
+        - level: 17
+          value: 2
+  second-wind:
+    action_cost: bonus-action
+    uses:
+      max: 1
+      recharge: short-rest
+    healing:
+      dice: "1d10"
+      bonus: "{level}"
+  # Barbarian
+  rage:
+    action_cost: bonus-action
+    uses:
+      max: 2
+      recharge: long-rest
+      scales_at:
+        - level: 3
+          max: 3
+        - level: 6
+          max: 4
+        - level: 12
+          max: 5
+        - level: 17
+          max: 6
+        - level: 20
+          max: 999  # unlimited
+  # Bard
+  bardic-inspiration:
+    action_cost: bonus-action
+    uses:
+      max: "{cha_mod}"
+      recharge: short-rest  # at 5+, recharge: short-rest; below 5, long-rest. Simplified to short-rest baseline.
+  # Cleric
+  channel-divinity:
+    action_cost: action
+    uses:
+      max: 1
+      recharge: short-rest
+      scales_at:
+        - level: 6
+          max: 2
+        - level: 18
+          max: 3
+  # Wizard
+  arcane-recovery:
+    action_cost: special
+    uses:
+      max: 1
+      recharge: long-rest
+
+race_traits:
+  # Dragonborn
+  breath-weapon:
+    action_cost: action
+    uses:
+      max: 1
+      recharge: short-rest
+    save:
+      ability: dex   # default; ancestry varies
+      dc_formula: "8 + {con_mod} + {prof_bonus}"
+  # Half-Orc
+  relentless-endurance:
+    action_cost: special   # automatic on hit
+    uses:
+      max: 1
+      recharge: long-rest
+    trigger: "reduced to 0 HP but not killed outright"
+
+optional_feature_slugs:
+  invocation:
+    - agonizing-blast
+    - devil-sight
+    - eldritch-sight
+  fighting_style:
+    - defense
+    - dueling
+    - great-weapon-fighting
+    - protection
