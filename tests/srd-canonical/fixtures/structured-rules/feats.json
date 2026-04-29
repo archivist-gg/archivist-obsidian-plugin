@@ -1,0 +1,7 @@
+{
+  "feat": [
+    { "name": "Alert", "source": "PHB", "edition": "2014" },
+    { "name": "Polearm Master", "source": "PHB", "edition": "2014" },
+    { "name": "Tough", "source": "PHB", "edition": "2014" }
+  ]
+}
