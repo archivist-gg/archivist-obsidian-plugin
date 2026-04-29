@@ -66,11 +66,14 @@ describe("renderRowExpand", () => {
     expect(root.textContent).toContain("Plate");
   });
 
-  it("renders inline-edit form for null entity (inline custom items)", () => {
+  it("renders an orphan placeholder for null entity (no compendium entry)", () => {
     const { entry, resolved } = make("50 ft of hempen rope", null);
     const root = mountContainer();
     renderRowExpand(root, { entry, resolved, app: {} as App, editState: null });
-    expect(root.querySelector(".pc-inv-inline-form")).toBeTruthy();
+    const orphan = root.querySelector(".pc-inv-orphan");
+    expect(orphan).toBeTruthy();
+    expect(orphan?.textContent).toContain("50 ft of hempen rope");
+    expect(orphan?.textContent?.toLowerCase()).toContain("no compendium entry");
   });
 
   it("renders PC-actions strip with Equip / Remove (no Attune for non-attune items)", () => {

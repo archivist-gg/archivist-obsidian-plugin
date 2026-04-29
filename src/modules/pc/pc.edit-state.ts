@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { Character, DerivedStats, EquipmentEntryOverrides, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
@@ -499,13 +499,6 @@ export class CharacterEditState {
 
   restoreFeatureUse(featureKey: string): void {
     eq.restoreFeatureUse(this.character, featureKey);
-    this.onChange();
-  }
-
-  patchInlineItem(index: number, patch: Partial<EquipmentEntry>): void {
-    const entry = this.character.equipment[index];
-    if (!entry) return;
-    Object.assign(entry, patch);
     this.onChange();
   }
 

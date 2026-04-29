@@ -74,13 +74,6 @@ describe("BrowseMode", () => {
     expect(addItem).toHaveBeenCalledWith("longsword");
   });
 
-  it("renders the custom-item input strip", () => {
-    const root = mountContainer();
-    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
-      .render(root, ctxWithRegistry(new Map(), { addItem: vi.fn() }));
-    expect(root.querySelector(".pc-inv-custom-input")).toBeTruthy();
-  });
-
   it("clicking a row expands it inline (sibling .pc-inv-expand appears)", () => {
     const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
       ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],

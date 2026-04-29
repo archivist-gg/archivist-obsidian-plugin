@@ -6,8 +6,8 @@ const eq = (entity: object | null, entityType: string | null = null): ResolvedEq
   ({ index: 0, entity: entity as never, entityType, entry: {} as never } as ResolvedEquipped);
 
 describe("iconForEntity — fallthroughs", () => {
-  it("returns 'package' for inline (null entity)", () => {
-    expect(iconForEntity(eq(null), { item: "rope" } as never)).toBe("package");
+  it("returns 'alert-triangle' for orphan rows (null entity)", () => {
+    expect(iconForEntity(eq(null), { item: "rope" } as never)).toBe("alert-triangle");
   });
 
   it("falls back to 'sword' for a weapon with no slug", () => {

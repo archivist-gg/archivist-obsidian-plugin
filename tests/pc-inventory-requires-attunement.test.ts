@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { requiresAttunement } from "../src/modules/pc/components/inventory/requires-attunement";
 
 describe("requiresAttunement", () => {
-  it("returns false for null entity (inline items)", () => {
+  it("returns false for null entity (orphan rows)", () => {
     expect(requiresAttunement(null)).toBe(false);
   });
   it("returns false when attunement is undefined", () => {

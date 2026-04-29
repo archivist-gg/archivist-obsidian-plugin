@@ -5,7 +5,6 @@ import type { CharacterEditState } from "../../pc.edit-state";
 import { visibleItems, type FilterState, type VisibleEntry } from "./filter-state";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
-import { renderCustomItemInput } from "./custom-item-input";
 import { renderRowExpand } from "./inventory-row-expand";
 
 const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
@@ -40,7 +39,7 @@ export class BrowseMode implements SheetComponent {
     if (filtered.length === 0) {
       root.createDiv({
         cls: "pc-inv-empty",
-        text: "No compendium items match. Adjust filters or add a custom item below.",
+        text: "No compendium items match. Adjust filters.",
       });
     } else {
       const list = root.createDiv({ cls: "pc-inv-list" });
@@ -51,12 +50,6 @@ export class BrowseMode implements SheetComponent {
         const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
         drawBrowseRow(rowHost, v, editState, ctx.app, expanded);
       }
-    }
-
-    if (editState) {
-      renderCustomItemInput(root, {
-        onAdd: (text) => editState.addItem(text),
-      });
     }
   }
 }

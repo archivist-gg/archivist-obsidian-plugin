@@ -26,7 +26,7 @@ export function iconForEntity(
   resolved: ResolvedEquipped,
   _entry: EquipmentEntry,
 ): string {
-  if (!resolved.entity) return "package"; // inline (non-slug) item — no compendium entry
+  if (!resolved.entity) return "alert-triangle"; // orphan row — entry has no compendium entity
 
   if (resolved.entityType === "weapon") return iconForWeapon(resolved.entity);
   if (resolved.entityType === "armor")  return iconForArmor(resolved.entity);

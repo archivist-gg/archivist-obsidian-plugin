@@ -8,7 +8,6 @@ import type { WeaponEntity } from "../../../weapon/weapon.types";
 import type { ArmorEntity } from "../../../armor/armor.types";
 import type { Item } from "../../../item/item.types";
 import { requiresAttunement } from "./requires-attunement";
-import { renderInlineItemForm } from "./inline-item-form";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
 
@@ -24,17 +23,12 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
   const expand = parent.createDiv({ cls: "pc-inv-expand" });
 
   if (!ctx.resolved.entity) {
-    if (ctx.editState) {
-      const editState = ctx.editState;
-      renderInlineItemForm(expand, {
-        entry: ctx.entry,
-        index: ctx.resolved.index,
-        onChange: (patch) => editState.patchInlineItem(ctx.resolved.index, patch),
-      });
-    } else {
-      expand.createDiv({ cls: "pc-inv-inline-form" })
-        .createSpan({ text: ctx.entry.item, cls: "pc-inv-inline-name" });
-    }
+    const orphan = expand.createDiv({ cls: "pc-inv-orphan" });
+    orphan.createSpan({ cls: "pc-inv-orphan-icon", text: "⚠" });
+    orphan.createSpan({
+      cls: "pc-inv-orphan-msg",
+      text: `No compendium entry for "${ctx.entry.item}". Link it as [[slug]] in YAML or remove the row.`,
+    });
   } else if (ctx.resolved.entityType === "weapon") {
     expand.appendChild(renderWeaponBlock(ctx.resolved.entity as WeaponEntity));
   } else if (ctx.resolved.entityType === "armor") {
