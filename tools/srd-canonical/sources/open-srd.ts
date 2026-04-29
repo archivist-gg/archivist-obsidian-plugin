@@ -2,10 +2,10 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 export type Open5eKind =
-  | "classes" | "races" | "species"
+  | "classes" | "species"
   | "feats" | "backgrounds"
   | "spells" | "magicitems" | "weapons" | "armor"
-  | "monsters" | "conditions";
+  | "creatures" | "conditions";
 
 export interface Open5eEntry {
   key: string;
@@ -24,7 +24,6 @@ export interface ReadOpen5eOptions {
 
 const KIND_PATH: Record<Open5eKind, string> = {
   classes: "classes",
-  races: "races",
   species: "species",
   feats: "feats",
   backgrounds: "backgrounds",
@@ -32,7 +31,7 @@ const KIND_PATH: Record<Open5eKind, string> = {
   magicitems: "magicitems",
   weapons: "weapons",
   armor: "armor",
-  monsters: "monsters",
+  creatures: "creatures",
   conditions: "conditions",
 };
 

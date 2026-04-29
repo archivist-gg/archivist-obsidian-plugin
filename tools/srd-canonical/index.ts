@@ -3,9 +3,9 @@ import { loadConfig } from "./config";
 import { readOpen5eKind, deriveSlugSet, type Open5eKind } from "./sources/open-srd";
 
 const ALL_KINDS: Open5eKind[] = [
-  "classes", "races", "feats", "backgrounds",
+  "classes", "species", "feats", "backgrounds",
   "spells", "magicitems", "weapons", "armor",
-  "monsters", "conditions",
+  "creatures", "conditions",
 ];
 
 async function main() {
