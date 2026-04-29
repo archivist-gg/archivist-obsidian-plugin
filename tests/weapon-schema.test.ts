@@ -64,15 +64,15 @@ describe("weaponEntitySchema", () => {
   });
 });
 
-const minimalWeapon = {
-  name: "Longsword",
-  slug: "longsword",
-  category: "martial-melee",
-  damage: { dice: "1d8", type: "slashing" },
-  properties: ["versatile"],
-};
-
 describe("weaponEntitySchema edition", () => {
+  const minimalWeapon = {
+    name: "Longsword",
+    slug: "longsword",
+    category: "martial-melee",
+    damage: { dice: "1d8", type: "slashing" },
+    properties: ["versatile"],
+  };
+
   it("requires edition field", () => {
     const noEdition = { ...minimalWeapon };
     expect(weaponEntitySchema.safeParse(noEdition).success).toBe(false);

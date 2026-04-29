@@ -1,3 +1,5 @@
+import type { Edition } from "../class/class.types";
+
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 export type WeaponCategory =
   | "simple-melee"
@@ -59,8 +61,6 @@ export type WeaponTypeTag =
   | string;
 /* eslint-enable @typescript-eslint/no-redundant-type-constituents */
 
-export type WeaponEdition = "2014" | "2024";
-
 export interface WeaponEntity {
   name: string;
   slug: string;
@@ -81,7 +81,7 @@ export interface WeaponEntity {
   cost?: string;
   source?: string;
   page?: number;
-  edition: WeaponEdition;
+  edition: Edition;
   entries?: unknown[];
   raw?: Record<string, unknown>;
 }
