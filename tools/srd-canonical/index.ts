@@ -7,6 +7,8 @@ import { readStructuredRules, type StructuredRulesKind, type StructuredEntry } f
 import { readActivationData } from "./sources/activation";
 import { loadOverlay } from "./sources/overlay";
 import { mergeKind, type MergeRule, type CanonicalEntry } from "./merger";
+import { projectToRuntime } from "./to-runtime";
+import { writeMd, writeCompendiumIndex } from "./to-md";
 
 import { raceMergeRule, toRaceCanonical } from "./merger-rules/race-merge";
 import { classMergeRule, toClassCanonical } from "./merger-rules/class-merge";
@@ -20,6 +22,25 @@ import { spellMergeRule, toSpellCanonical } from "./merger-rules/spell-merge";
 import { creatureMergeRule, toCreatureCanonical } from "./merger-rules/creature-merge";
 import { conditionMergeRule, toConditionCanonical } from "./merger-rules/condition-merge";
 import { mergeOptionalFeatures } from "./merger-rules/optional-feature-merge";
+
+/**
+ * Map an Open5e kind name to the runtime/MD kind name. Open5e uses plural
+ * collection names; the runtime projector and MD writer use singular entity
+ * names. Subclasses are routed off "classes" via subclass_of, so they don't
+ * appear in the main loop here.
+ */
+const OPEN5E_KIND_TO_ENTITY: Record<Open5eKind, string> = {
+  classes: "class",
+  species: "race",
+  feats: "feat",
+  backgrounds: "background",
+  spells: "spell",
+  magicitems: "item",
+  weapons: "weapon",
+  armor: "armor",
+  creatures: "monster",
+  conditions: "condition",
+};
 
 const ALL_KINDS: Open5eKind[] = [
   "classes", "species", "feats", "backgrounds",
@@ -115,15 +136,83 @@ async function main() {
       const merged = mergeKind(ruleEntry.rule, { edition, kind, open5e, structured, activation, overlay });
       const canonical = merged.map(ruleEntry.toCanonical);
       console.log(`[canonical]   merged: ${canonical.length} canonical entries`);
+
+      const entityKind = OPEN5E_KIND_TO_ENTITY[kind];
+      emitForKind({
+        canonical: canonical as Array<Record<string, unknown> & { name: string; slug: string }>,
+        entityKind,
+        kind,
+        edition,
+        canonicalOutDir: cfg.canonicalOutDir,
+        runtimeOutDir: cfg.runtimeOutDir,
+        bundleOutDir: cfg.bundleOutDir,
+      });
     }
 
     // Optional-feature kind is overlay-driven (no Open5e endpoint exists).
     const optionalStructured = readOptionalFeaturesRaw(cfg.structuredRulesPath, edition);
     const optionalCanonical = mergeOptionalFeatures({ edition, structured: optionalStructured, overlay });
     console.log(`[canonical] ${edition} optional-features: ${optionalCanonical.length} canonical entries`);
+
+    emitForKind({
+      canonical: optionalCanonical as unknown as Array<Record<string, unknown> & { name: string; slug: string }>,
+      entityKind: "optional-feature",
+      kind: "optional-features",
+      edition,
+      canonicalOutDir: cfg.canonicalOutDir,
+      runtimeOutDir: cfg.runtimeOutDir,
+      bundleOutDir: cfg.bundleOutDir,
+    });
+
+    // Compendium index per edition (single _compendium.md at the bundle root).
+    const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
+    writeCompendiumIndex(path.join(cfg.bundleOutDir, compendium), compendium, edition);
+    console.log(`[canonical] ${edition} wrote _compendium.md`);
   }
 
-  console.log("[canonical] (md/runtime emitters populated by subsequent phases)");
+  console.log("[canonical] done");
+}
+
+/**
+ * Emit per-kind outputs:
+ *  1. Full canonical JSON (committed for reproducibility).
+ *  2. Slim runtime JSON (committed, embedded in plugin).
+ *  3. One MD file per entry under .compendium-bundle/{compendium}/{folder}/.
+ */
+function emitForKind(opts: {
+  canonical: Array<Record<string, unknown> & { name: string; slug: string }>;
+  entityKind: string;
+  kind: string;
+  edition: "2014" | "2024";
+  canonicalOutDir: string;
+  runtimeOutDir: string;
+  bundleOutDir: string;
+}): void {
+  const { canonical, entityKind, kind, edition, canonicalOutDir, runtimeOutDir, bundleOutDir } = opts;
+  const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
+
+  // 1. Full canonical JSON.
+  fs.mkdirSync(canonicalOutDir, { recursive: true });
+  const canonicalFile = path.join(canonicalOutDir, `${kind}.${edition}.json`);
+  fs.writeFileSync(canonicalFile, JSON.stringify(canonical, null, 2));
+
+  // 2. Slim runtime JSON.
+  fs.mkdirSync(runtimeOutDir, { recursive: true });
+  const runtimeEntries = canonical.map(c => projectToRuntime(entityKind, c));
+  const runtimeFile = path.join(runtimeOutDir, `${entityKind}.${edition}.json`);
+  fs.writeFileSync(runtimeFile, JSON.stringify(runtimeEntries, null, 2));
+
+  // 3. Vault MD per entry.
+  const bundleDir = path.join(bundleOutDir, compendium);
+  for (const entry of canonical) {
+    writeMd(bundleDir, {
+      kind: entityKind,
+      edition,
+      compendium,
+      data: entry,
+    });
+  }
+  console.log(`[canonical]   emit: canonical(${canonicalFile}) runtime(${runtimeFile}) md(${canonical.length} files)`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
