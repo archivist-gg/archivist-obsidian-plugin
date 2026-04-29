@@ -19,6 +19,7 @@ import { raceModule } from "./modules/race/race.module";
 import { subclassModule } from "./modules/subclass/subclass.module";
 import { backgroundModule } from "./modules/background/background.module";
 import { featModule } from "./modules/feat/feat.module";
+import { optionalFeatureModule } from "./modules/optional-feature/optional-feature.module";
 import { pcModule } from "./modules/pc/pc.module";
 import { armorModule } from "./modules/armor/armor.module";
 import { weaponModule } from "./modules/weapon/weapon.module";
@@ -156,6 +157,7 @@ export default class ArchivistPlugin extends Plugin {
       subclassModule,
       backgroundModule,
       featModule,
+      optionalFeatureModule,
       armorModule,
       weaponModule,
       pcModule,
