@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { writeMd } from "../../tools/srd-canonical/to-md";
+import { writeMd, writeCompendiumIndex } from "../../tools/srd-canonical/to-md";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
@@ -63,5 +63,15 @@ describe("writeMd", () => {
       data: { slug: "weird", name: "A/B?" },
     });
     expect(fs.existsSync(path.join(tmpdir, "Magic Items", "A_B_.md"))).toBe(true);
+  });
+
+  it("writeCompendiumIndex emits a valid index file", () => {
+    tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), "compendium-index-"));
+    writeCompendiumIndex(tmpdir, "SRD 5e", "2014", "1.2.3");
+    const content = fs.readFileSync(path.join(tmpdir, "_compendium.md"), "utf8");
+    expect(content).toContain("name: SRD 5e");
+    expect(content).toContain("edition: '2014'");
+    expect(content).toContain("archivist_compendium_version: 1.2.3");
+    expect(content).toContain("# SRD 5e");
   });
 });

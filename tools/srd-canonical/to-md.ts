@@ -88,3 +88,20 @@ function rewriteAllStringFields(obj: unknown, edition: "2014" | "2024"): unknown
   }
   return obj;
 }
+
+export function writeCompendiumIndex(rootDir: string, compendium: string, edition: "2014" | "2024", version: string = "0.0.0"): void {
+  const indexPath = path.join(rootDir, "_compendium.md");
+  const fm = {
+    archivist_compendium: true,
+    name: compendium,
+    description: `D&D 5e ${edition === "2014" ? "System Reference Document 5.1" : "System Reference Document 5.2"}`,
+    edition,
+    readonly: true,
+    homebrew: false,
+    archivist_compendium_version: version,
+    archivist_compendium_imported_at: new Date().toISOString(),
+  };
+  fs.mkdirSync(rootDir, { recursive: true });
+  const md = `---\n${yaml.dump(fm, { lineWidth: -1 }).trimEnd()}\n---\n\n# ${compendium}\n`;
+  fs.writeFileSync(indexPath, md, "utf8");
+}
