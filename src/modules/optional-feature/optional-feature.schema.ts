@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { featureEffectSchema } from "../../shared/schemas/feature-effect-schema";
+import { resetTriggerEnum, actionCostEnum } from "../../shared/schemas/resource-schema";
 
 const editionEnum = z.enum(["2014", "2024"]);
 const featureTypeEnum = z.enum([
@@ -21,16 +23,10 @@ const prerequisiteSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("other"), detail: z.string() }),
 ]);
 
-const featureEffectSchema = z.record(z.string(), z.unknown());
-
-// Mirrors ResetTrigger from shared/types/resource.ts (kebab-case).
 const usesSchema = z.object({
   max: z.union([z.number(), z.string()]),
-  recharge: z.enum(["short-rest", "long-rest", "dawn", "dusk", "turn", "round", "custom"]),
+  recharge: resetTriggerEnum,
 });
-
-// Mirrors ActionCost from shared/types/resource.ts (kebab-case "bonus-action").
-const actionCostEnum = z.enum(["action", "bonus-action", "reaction", "free", "special"]);
 
 export const optionalFeatureEntitySchema = z.object({
   slug: z.string().min(1),

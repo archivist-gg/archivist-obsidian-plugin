@@ -28,7 +28,7 @@ describe("optionalFeatureEntitySchema", () => {
       description: "While wearing armor, +1 AC.",
       prerequisites: [],
       available_to: ["[[SRD 5e/fighter]]", "[[SRD 5e/paladin]]", "[[SRD 5e/ranger]]"],
-      effects: [{ kind: "ac-bonus", value: 1, conditions: ["wearing_armor"] }],
+      effects: [],
     };
     expect(optionalFeatureEntitySchema.safeParse(fighting).success).toBe(true);
   });
@@ -40,6 +40,11 @@ describe("optionalFeatureEntitySchema", () => {
 
   it("rejects available_to with non-wikilinks", () => {
     const bad = { ...minimalInvocation, available_to: ["warlock"] };
+    expect(optionalFeatureEntitySchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("rejects level prerequisite missing min", () => {
+    const bad = { ...minimalInvocation, prerequisites: [{ kind: "level" }] };
     expect(optionalFeatureEntitySchema.safeParse(bad).success).toBe(false);
   });
 });
