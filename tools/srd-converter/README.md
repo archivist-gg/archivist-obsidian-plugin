@@ -1,3 +1,23 @@
+# DEPRECATED — superseded by `tools/srd-canonical/`
+
+This converter is deprecated as of the SRD Canonical Pipeline initiative
+(see `docs/superpowers/plans/2026-04-29-srd-canonical-pipeline.md`).
+
+The new pipeline at `tools/srd-canonical/` produces the canonical SRD
+dataset by merging Open5e v2, the local structured-rules data dump,
+foundry-*.json activation data, and a hand-curated overlay. Use:
+
+```bash
+export STRUCTURED_RULES_PATH=/path/to/structured-rules/data
+npm run build:srd-canonical
+```
+
+This directory is retained for one release cycle as a fallback in case
+the new pipeline surfaces unexpected regressions. After 2+ stable
+release cycles confirm no regression, this directory will be deleted.
+
+---
+
 # SRD Converter
 
 Offline tool that converts open5e-formatted JSON into Archivist's Markdown
