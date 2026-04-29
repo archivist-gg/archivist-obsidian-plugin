@@ -38,18 +38,6 @@ const languagesSchema = z.object({
   }).optional(),
 });
 
-const variantSchema: z.ZodType<unknown> = z.lazy(() =>
-  z.object({
-    slug: z.string().min(1),
-    name: z.string().min(1),
-    description: z.string(),
-    ability_score_increases: z.array(asiSchema).optional(),
-    speed_delta: speedSchema.partial().optional(),
-    traits: z.array(featureSchema).optional(),
-    vision: visionSchema.optional(),
-  }),
-);
-
 export const raceEntitySchema = z.object({
   slug: z.string().min(1),
   name: z.string().min(1),
@@ -64,7 +52,6 @@ export const raceEntitySchema = z.object({
   vision: visionSchema,
   languages: languagesSchema,
   variant_label: z.string().min(1),
-  variants: z.array(variantSchema),
   traits: z.array(featureSchema),
   subspecies_of: z.string().regex(wikilinkRegex).optional(),
 });

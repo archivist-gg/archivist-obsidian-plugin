@@ -106,7 +106,6 @@ export function normalizeSrdRace(
     vision: { darkvision: parseDarkvision(input.vision) || undefined },
     languages: parseLanguages(input.languages),
     variant_label: "Subrace",
-    variants: [],
     traits: parseTraits(input.traits),
   };
 

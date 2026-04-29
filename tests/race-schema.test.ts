@@ -49,6 +49,23 @@ describe("raceEntitySchema", () => {
   });
 });
 
+describe("variants removal", () => {
+  it("ignores legacy variants field if present (passthrough drops it)", () => {
+    const legacy = { ...minimalRace, variants: [] };
+    const parsed = raceEntitySchema.safeParse(legacy);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect("variants" in parsed.data).toBe(false);
+    }
+  });
+
+  it("does not require variants", () => {
+    const noVariants = { ...minimalRace };
+    delete (noVariants as Record<string, unknown>).variants;
+    expect(raceEntitySchema.safeParse(noVariants).success).toBe(true);
+  });
+});
+
 describe("subspecies_of", () => {
   it("accepts absent subspecies_of (parent races)", () => {
     const parent = { ...minimalRace, subspecies_of: undefined };

@@ -19,16 +19,6 @@ export interface LanguageProficiencies {
   choice?: { count: number; from: string | string[] };
 }
 
-export interface RaceVariant {
-  slug: string;
-  name: string;
-  description: string;
-  ability_score_increases?: AbilityScoreIncrease[];
-  speed_delta?: Partial<Speed>;
-  traits?: Feature[];
-  vision?: Vision;
-}
-
 export interface RaceEntity {
   slug: string;
   name: string;
@@ -43,7 +33,6 @@ export interface RaceEntity {
   vision: Vision;
   languages: LanguageProficiencies;
   variant_label: string;
-  variants: RaceVariant[];
   traits: Feature[];
   subspecies_of?: string;
 }
