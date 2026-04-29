@@ -8,6 +8,8 @@ const conditionalPropertySchema = z.object({
 
 const propertySchema = z.union([z.string(), conditionalPropertySchema]);
 
+const editionEnum = z.enum(["2014", "2024"]);
+
 export const weaponEntitySchema = z.object({
   name: z.string().min(1),
   slug: z.string().min(1),
@@ -30,7 +32,7 @@ export const weaponEntitySchema = z.object({
   cost: z.string().optional(),
   source: z.string().optional(),
   page: z.number().int().optional(),
-  edition: z.string().optional(),
+  edition: editionEnum,
   entries: z.array(z.unknown()).optional(),
   raw: z.record(z.string(), z.unknown()).optional(),
 }).loose();

@@ -63,3 +63,30 @@ describe("weaponEntitySchema", () => {
     expect(parse(`name: x\nslug: x\ncategory: simple-melee`).success).toBe(false);
   });
 });
+
+const minimalWeapon = {
+  name: "Longsword",
+  slug: "longsword",
+  category: "martial-melee",
+  damage: { dice: "1d8", type: "slashing" },
+  properties: ["versatile"],
+};
+
+describe("weaponEntitySchema edition", () => {
+  it("requires edition field", () => {
+    const noEdition = { ...minimalWeapon };
+    expect(weaponEntitySchema.safeParse(noEdition).success).toBe(false);
+  });
+
+  it("accepts edition '2014'", () => {
+    expect(weaponEntitySchema.safeParse({ ...minimalWeapon, edition: "2014" }).success).toBe(true);
+  });
+
+  it("accepts edition '2024'", () => {
+    expect(weaponEntitySchema.safeParse({ ...minimalWeapon, edition: "2024" }).success).toBe(true);
+  });
+
+  it("rejects edition values outside the enum", () => {
+    expect(weaponEntitySchema.safeParse({ ...minimalWeapon, edition: "5e" }).success).toBe(false);
+  });
+});

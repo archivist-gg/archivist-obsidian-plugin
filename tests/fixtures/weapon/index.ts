@@ -11,6 +11,7 @@ type_tags: [sword]
 weight: 3
 cost: "15 gp"
 source: PHB
+edition: "2014"
 `;
 
 export const DAGGER = `
@@ -26,6 +27,7 @@ type_tags: [dagger]
 weight: 1
 cost: "2 gp"
 source: PHB
+edition: "2014"
 `;
 
 export const LONGBOW = `
@@ -42,6 +44,7 @@ ammo_type: arrow
 weight: 2
 cost: "50 gp"
 source: PHB
+edition: "2014"
 `;
 
 export const NET = `
@@ -57,6 +60,7 @@ type_tags: [net]
 weight: 3
 cost: "1 gp"
 source: PHB
+edition: "2014"
 `;
 
 export const LANCE = `
@@ -74,4 +78,5 @@ type_tags: [lance]
 weight: 6
 cost: "10 gp"
 source: PHB
+edition: "2014"
 `;

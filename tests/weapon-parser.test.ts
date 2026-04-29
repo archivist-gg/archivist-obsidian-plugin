@@ -35,6 +35,7 @@ slug: longsword
 category: martial-melee
 damage: { dice: 1d8, type: slashing }
 properties: ["versatile (1d10)"]
+edition: "2014"
 `;
     const r = parseWeapon(src);
     expect(r.success).toBe(true);
@@ -51,6 +52,7 @@ slug: dagger
 category: simple-melee
 damage: { dice: 1d4, type: piercing }
 properties: [finesse, light, "thrown (range 20/60)"]
+edition: "2014"
 `;
     const r = parseWeapon(src);
     expect(r.success).toBe(true);
@@ -67,6 +69,7 @@ slug: longbow
 category: martial-ranged
 damage: { dice: 1d8, type: piercing }
 properties: ["ammunition (range 150/600)", "heavy", "two_handed"]
+edition: "2014"
 `;
     const r = parseWeapon(src);
     expect(r.success).toBe(true);
@@ -83,6 +86,7 @@ slug: weird-weapon
 category: martial-melee
 damage: { dice: 1d6, type: slashing }
 properties: [light, "weird homebrew (foo bar)"]
+edition: "2014"
 `;
     const r = parseWeapon(src);
     expect(r.success).toBe(true);

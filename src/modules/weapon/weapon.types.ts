@@ -59,6 +59,8 @@ export type WeaponTypeTag =
   | string;
 /* eslint-enable @typescript-eslint/no-redundant-type-constituents */
 
+export type WeaponEdition = "2014" | "2024";
+
 export interface WeaponEntity {
   name: string;
   slug: string;
@@ -79,8 +81,7 @@ export interface WeaponEntity {
   cost?: string;
   source?: string;
   page?: number;
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  edition?: "2014" | "2024" | string;
+  edition: WeaponEdition;
   entries?: unknown[];
   raw?: Record<string, unknown>;
 }
