@@ -37,6 +37,7 @@ export const SHIELD: ArmorEntity = {
 export const LONGSWORD: WeaponEntity = {
   name: "Longsword",
   slug: "longsword",
+  edition: "2014",
   category: "martial-melee",
   damage: { dice: "1d8", type: "slashing", versatile_dice: "1d10" },
   properties: ["versatile"],
@@ -45,6 +46,7 @@ export const LONGSWORD: WeaponEntity = {
 export const SHORTSWORD: WeaponEntity = {
   name: "Shortsword",
   slug: "shortsword",
+  edition: "2014",
   category: "martial-melee",
   damage: { dice: "1d6", type: "piercing" },
   properties: ["finesse", "light"],
@@ -53,6 +55,7 @@ export const SHORTSWORD: WeaponEntity = {
 export const RAPIER: WeaponEntity = {
   name: "Rapier",
   slug: "rapier",
+  edition: "2014",
   category: "martial-melee",
   damage: { dice: "1d8", type: "piercing" },
   properties: ["finesse"],
@@ -61,6 +64,7 @@ export const RAPIER: WeaponEntity = {
 export const SHORTBOW: WeaponEntity = {
   name: "Shortbow",
   slug: "shortbow",
+  edition: "2014",
   category: "simple-ranged",
   damage: { dice: "1d6", type: "piercing" },
   properties: ["ammunition", "two_handed"],
@@ -70,6 +74,7 @@ export const SHORTBOW: WeaponEntity = {
 export const GREATSWORD: WeaponEntity = {
   name: "Greatsword",
   slug: "greatsword",
+  edition: "2014",
   category: "martial-melee",
   damage: { dice: "2d6", type: "slashing" },
   properties: ["heavy", "two_handed"],

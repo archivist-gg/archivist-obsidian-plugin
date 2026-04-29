@@ -6,11 +6,11 @@ import type { ArmorEntity } from "../src/modules/armor/armor.types";
 import type { WeaponEntity } from "../src/modules/weapon/weapon.types";
 
 const longsword: WeaponEntity = {
-  name: "Longsword", slug: "longsword", category: "martial-melee",
+  name: "Longsword", slug: "longsword", edition: "2014", category: "martial-melee",
   damage: { dice: "1d8", type: "slashing" }, properties: [],
 };
 const shortsword: WeaponEntity = {
-  name: "Shortsword", slug: "shortsword", category: "martial-melee",
+  name: "Shortsword", slug: "shortsword", edition: "2014", category: "martial-melee",
   damage: { dice: "1d6", type: "piercing" }, properties: ["finesse", "light"],
 };
 
