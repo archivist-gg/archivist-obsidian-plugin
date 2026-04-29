@@ -170,6 +170,23 @@ async function main() {
     console.log(`[canonical] ${edition} wrote _compendium.md`);
   }
 
+  // Aggregate the entire bundle directory into a single path → content map and
+  // write it to .compendium-bundle/index.json. The plugin's compendium-init
+  // module imports this JSON at build time and copies it into the user's vault
+  // on first install / version upgrade.
+  const bundleIndex: Record<string, string> = {};
+  function walkAndIndex(dir: string, prefix = ""): void {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const sub = path.join(dir, entry.name);
+      const rel = prefix + entry.name;
+      if (entry.isDirectory()) walkAndIndex(sub, rel + "/");
+      else if (entry.name.endsWith(".md")) bundleIndex[rel] = fs.readFileSync(sub, "utf8");
+    }
+  }
+  walkAndIndex(cfg.bundleOutDir);
+  fs.writeFileSync(path.join(cfg.bundleOutDir, "index.json"), JSON.stringify(bundleIndex));
+  console.log(`[canonical] wrote bundle index: ${Object.keys(bundleIndex).length} files`);
+
   console.log("[canonical] done");
 }
 
