@@ -43,3 +43,11 @@ describe("backgroundEntitySchema", () => {
     expect(backgroundEntitySchema.safeParse(input).success).toBe(false);
   });
 });
+
+describe("variants removal", () => {
+  it("does not require variants field", () => {
+    const noVariants = { ...minimalBackground };
+    delete (noVariants as Record<string, unknown>).variants;
+    expect(backgroundEntitySchema.safeParse(noVariants).success).toBe(true);
+  });
+});

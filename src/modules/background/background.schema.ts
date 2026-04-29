@@ -40,13 +40,6 @@ const equipmentEntrySchema = z.union([
   }),
 ]);
 
-const variantSchema = z.object({
-  slug: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string(),
-  feature: z.object({ name: z.string().min(1), description: z.string() }).optional(),
-});
-
 const suggestedCharSchema = z.object({
   personality_traits: z.record(z.string(), z.string()).optional(),
   ideals: z.record(z.string(), z.object({
@@ -77,5 +70,4 @@ export const backgroundEntitySchema = z.object({
   }).nullable(),
   origin_feat: z.string().regex(wikilinkRegex).nullable(),
   suggested_characteristics: suggestedCharSchema.nullable(),
-  variants: z.array(variantSchema),
 });

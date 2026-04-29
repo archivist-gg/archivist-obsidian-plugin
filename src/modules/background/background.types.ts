@@ -20,13 +20,6 @@ export interface SuggestedCharacteristics {
   flaws?: Record<string, string>;
 }
 
-export interface BackgroundVariant {
-  slug: string;
-  name: string;
-  description: string;
-  feature?: { name: string; description: string };
-}
-
 export interface BackgroundEntity {
   slug: string;
   name: string;
@@ -41,5 +34,4 @@ export interface BackgroundEntity {
   ability_score_increases: { pool: Ability[] } | null;
   origin_feat: string | null;
   suggested_characteristics: SuggestedCharacteristics | null;
-  variants: BackgroundVariant[];
 }

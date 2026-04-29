@@ -127,7 +127,6 @@ export function normalizeSrdBackground(
     ability_score_increases: null,
     origin_feat: null,
     suggested_characteristics: null,
-    variants: [],
   };
 
   return {
