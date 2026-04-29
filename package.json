@@ -9,6 +9,8 @@
     "prebuild": "node scripts/generate-srd-md-index.mjs",
     "build": "npm run build:css && node esbuild.config.mjs production",
     "build:css": "node scripts/build-css.mjs",
+    "build:srd-canonical": "tsx tools/srd-canonical/index.ts",
+    "build:srd-canonical:refresh": "tsx tools/srd-canonical/index.ts --refresh-open5e",
     "lint": "eslint 'src/**/*.ts' 'tools/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' 'tools/**/*.ts' --fix",
     "test": "vitest run --exclude 'tests/inquiry/**'",
