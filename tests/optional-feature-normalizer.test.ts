@@ -91,4 +91,50 @@ describe("normalizeOptionalFeature", () => {
     expect(result.data.feature_type).toBe("fighting_style");
     expect(result.data.available_to).toEqual(["[[SRD 5e/ranger]]"]);
   });
+
+  it("flattens nested entry objects to description string", () => {
+    const result = normalizeOptionalFeature({
+      name: "Test Invocation",
+      source: "PHB",
+      featureType: ["I"],
+      entries: [
+        "Plain string entry.",
+        { type: "list", items: ["Item one", "Item two"] },
+        { type: "entries", entries: ["Nested string entry."] },
+      ],
+      edition: "2014",
+    });
+    expect(result.data.description.length).toBeGreaterThan(0);
+    expect(result.data.description).toContain("Plain string entry");
+    expect(result.data.description).toContain("Item one");
+    expect(result.data.description).toContain("Item two");
+    expect(result.data.description).toContain("Nested string entry");
+  });
+
+  it("handles ability/class prerequisite kinds (race/feat dropped — not in runtime union)", () => {
+    const result = normalizeOptionalFeature({
+      name: "Test Feature",
+      source: "PHB",
+      featureType: ["I"],
+      entries: [],
+      edition: "2014",
+      prerequisite: [
+        { ability: { str: 13 } },
+        { class: { warlock: true } },
+        { race: { tiefling: true } },
+        { feat: ["alert"] },
+      ],
+    });
+    const kinds = result.data.prerequisites.map((p) => p.kind);
+    expect(kinds).toContain("ability");
+    expect(kinds).toContain("class");
+    // race / feat are NOT in OptionalFeaturePrerequisite union, so they must be dropped.
+    expect(kinds).not.toContain("race");
+    expect(kinds).not.toContain("feat");
+    expect(result.data.prerequisites).toContainEqual({ kind: "ability", ability: "str", min: 13 });
+    expect(result.data.prerequisites).toContainEqual({
+      kind: "class",
+      class: "[[SRD 5e/warlock]]",
+    });
+  });
 });

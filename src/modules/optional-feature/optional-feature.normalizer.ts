@@ -56,6 +56,10 @@ const PACT_VALUES = ["tome", "blade", "chain", "talisman"] as const;
 type PactBoon = typeof PACT_VALUES[number];
 const PACT_SET: ReadonlySet<string> = new Set(PACT_VALUES);
 
+const ABILITY_VALUES = ["str", "dex", "con", "int", "wis", "cha"] as const;
+type Ability = typeof ABILITY_VALUES[number];
+const ABILITY_SET: ReadonlySet<string> = new Set(ABILITY_VALUES);
+
 function normalizePrerequisites(
   input: StructuredOptionalFeatureInput,
   compendium: string,
@@ -77,16 +81,57 @@ function normalizePrerequisites(
         }
       }
     }
-    // ability score, class, other prereq kinds: extend as needed.
-    // Each push must satisfy the discriminated union's full required-field set
-    // for that `kind` (e.g. `{ kind: "ability", ability, min }`,
-    // `{ kind: "class", class }`, `{ kind: "other", detail }`).
+    if (p.ability && typeof p.ability === "object" && !Array.isArray(p.ability)) {
+      for (const [ability, min] of Object.entries(p.ability as Record<string, unknown>)) {
+        if (typeof min !== "number") continue;
+        if (!ABILITY_SET.has(ability)) continue;
+        out.push({ kind: "ability", ability: ability as Ability, min });
+      }
+    }
+    if (p.class && typeof p.class === "object" && !Array.isArray(p.class)) {
+      for (const [slug, flag] of Object.entries(p.class as Record<string, unknown>)) {
+        if (!flag) continue;
+        const cleanSlug = slug.replace(/\s+/g, "-").toLowerCase();
+        out.push({ kind: "class", class: `[[${compendium}/${cleanSlug}]]` });
+      }
+    }
+    // race and feat prereqs intentionally dropped: OptionalFeaturePrerequisite
+    // union does not accept those kinds (see optional-feature.types.ts).
+  }
+  return out;
+}
+
+function flattenEntries(entries: unknown[]): string[] {
+  const out: string[] = [];
+  for (const e of entries) {
+    if (typeof e === "string") {
+      out.push(e);
+      continue;
+    }
+    if (e && typeof e === "object") {
+      const obj = e as Record<string, unknown>;
+      if (Array.isArray(obj.items)) {
+        for (const item of obj.items) {
+          if (typeof item === "string") out.push(item);
+          else if (item && typeof item === "object") {
+            // list items can themselves be entry objects (e.g. {type: "item", entries: [...]})
+            const itemObj = item as Record<string, unknown>;
+            if (Array.isArray(itemObj.entries)) {
+              out.push(...flattenEntries(itemObj.entries));
+            }
+          }
+        }
+      }
+      if (Array.isArray(obj.entries)) {
+        out.push(...flattenEntries(obj.entries));
+      }
+    }
   }
   return out;
 }
 
 function entriesToDescription(entries: unknown[]): string {
-  return entries.map(e => typeof e === "string" ? e : "").filter(Boolean).join("\n\n");
+  return flattenEntries(entries).filter(Boolean).join("\n\n");
 }
 
 export function normalizeOptionalFeature(input: StructuredOptionalFeatureInput): NormalizedEntity<OptionalFeatureEntity> {
