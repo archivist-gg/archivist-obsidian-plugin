@@ -77,8 +77,9 @@ export function buildConditionsFromStructured(
  *   - bare strings
  *   - `{ type: "list", items: [...] }`
  *   - `{ type: "entries", name?, entries: [...] }` (recursive; XPHB sub-headings)
- * Tables and other unknown types are skipped. Output uses double-newline
- * paragraphs and "- " bullets.
+ *   - `{ type: "table", caption?, colLabels, rows }` (e.g. Exhaustion levels)
+ * Other unknown types are skipped. Output uses double-newline paragraphs,
+ * "- " bullets, and pipe-tables.
  */
 function structuredToDescription(structured: CanonicalEntry["structured"]): string {
   if (!structured) return "";
@@ -87,7 +88,7 @@ function structuredToDescription(structured: CanonicalEntry["structured"]): stri
   return flattenEntries(entries).trim();
 }
 
-function flattenEntries(entries: unknown[]): string {
+export function flattenEntries(entries: unknown[]): string {
   const parts: string[] = [];
   for (const e of entries) {
     if (typeof e === "string") {
@@ -95,7 +96,15 @@ function flattenEntries(entries: unknown[]): string {
       continue;
     }
     if (!e || typeof e !== "object") continue;
-    const obj = e as { type?: string; name?: string; items?: unknown[]; entries?: unknown[] };
+    const obj = e as {
+      type?: string;
+      name?: string;
+      caption?: string;
+      items?: unknown[];
+      entries?: unknown[];
+      colLabels?: unknown[];
+      rows?: unknown[];
+    };
     if (obj.type === "list" && Array.isArray(obj.items)) {
       const bullets = obj.items
         .map(it => typeof it === "string" ? `- ${it}` : "")
@@ -111,9 +120,68 @@ function flattenEntries(entries: unknown[]): string {
       else if (inner) parts.push(inner);
       continue;
     }
-    // Unknown nested shapes (tables, etc.) are intentionally skipped — the
-    // condition description focuses on prose; tables (e.g. exhaustion levels)
-    // can be wired in a later refinement.
+    if (obj.type === "table" && Array.isArray(obj.colLabels) && Array.isArray(obj.rows)) {
+      const rendered = renderTable(obj.colLabels, obj.rows, obj.caption);
+      if (rendered) parts.push(rendered);
+      continue;
+    }
+    // Unknown nested shapes are intentionally skipped.
   }
   return parts.join("\n\n");
+}
+
+/**
+ * Render a 5etools `{type: "table"}` block as a markdown pipe-table.
+ *
+ * Cells may be plain strings or nested objects (e.g. `{type: "cell", entry}`
+ * or `{type: "cell", roll: {...}}`). For non-string cells, attempt to flatten
+ * via {@link flattenEntries}; if that yields nothing, fall back to JSON. Any
+ * pipe characters inside cells are escaped so they don't break the table.
+ *
+ * 5etools cross-ref tags (`{@dice ...}`, `{@condition ...}`, etc.) are passed
+ * through unchanged — `rewriteCrossRefs` runs on the assembled description
+ * later and handles them uniformly.
+ */
+function renderTable(colLabels: unknown[], rows: unknown[], caption?: string): string {
+  const headers = colLabels.map(cellToText);
+  const lines: string[] = [];
+  if (caption && typeof caption === "string" && caption.trim().length > 0) {
+    lines.push(`**${caption.trim()}**`);
+  }
+  lines.push(`| ${headers.join(" | ")} |`);
+  lines.push(`| ${headers.map(() => "---").join(" | ")} |`);
+  for (const row of rows) {
+    if (!Array.isArray(row)) continue;
+    const cells = row.map(cellToText);
+    lines.push(`| ${cells.join(" | ")} |`);
+  }
+  return lines.join("\n");
+}
+
+function cellToText(cell: unknown): string {
+  let text: string;
+  if (typeof cell === "string") {
+    text = cell;
+  } else if (cell && typeof cell === "object") {
+    const obj = cell as { type?: string; entry?: unknown; entries?: unknown[]; roll?: unknown };
+    if (typeof obj.entry === "string") {
+      text = obj.entry;
+    } else if (Array.isArray(obj.entries)) {
+      text = flattenEntries(obj.entries).replace(/\n+/g, " ").trim();
+    } else {
+      // Exotic shape (e.g. {type:"cell", roll:{exact:5}}): preserve as JSON
+      // rather than crashing.
+      try {
+        text = JSON.stringify(cell);
+      } catch {
+        text = "";
+      }
+    }
+  } else if (typeof cell === "number" || typeof cell === "boolean") {
+    text = String(cell);
+  } else {
+    text = "";
+  }
+  // Escape pipes inside cells so they don't terminate the markdown column.
+  return text.replace(/\|/g, "\\|");
 }

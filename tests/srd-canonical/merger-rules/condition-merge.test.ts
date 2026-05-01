@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   toConditionCanonical,
   buildConditionsFromStructured,
+  flattenEntries,
 } from "../../../tools/srd-canonical/merger-rules/condition-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 import { readStructuredRules } from "../../../tools/srd-canonical/sources/structured-rules";
@@ -52,6 +53,51 @@ describe("conditionMergeRule", () => {
     expect(out.description).toContain("incapacitated");
     expect(out.description).toContain("automatically fails Strength and Dexterity saving throws");
     expect(out.description).toContain("critical hit");
+  });
+
+  it("uses Open5e description when both Open5e and structured are populated", () => {
+    // Regression guard: structured.entries must not override a populated
+    // Open5e desc. Open5e wins; structured is fallback-only.
+    const canonical: CanonicalEntry = {
+      slug: "srd-5e_prone",
+      edition: "2014",
+      kind: "condition",
+      base: {
+        key: "srd-5e_prone",
+        name: "Prone",
+        desc: "Open5e prose for Prone.",
+      },
+      structured: {
+        name: "Prone",
+        source: "PHB",
+        srd: true,
+        entries: ["Structured fallback prose."],
+      },
+      activation: null,
+      overlay: null,
+    };
+    const out = toConditionCanonical(canonical);
+    expect(out.description).toContain("Open5e prose");
+    expect(out.description).not.toContain("Structured fallback");
+  });
+
+  it("renders 5etools {type:'table'} entries as a markdown pipe-table (Exhaustion)", () => {
+    // I-1 regression: tables in `entries` were previously dropped, so
+    // Exhaustion's level table never made it into the description.
+    const desc = flattenEntries([
+      {
+        type: "table",
+        colLabels: ["Level", "Effect"],
+        rows: [
+          ["1", "X"],
+          ["2", "Y"],
+        ],
+      },
+    ]);
+    expect(desc).toContain("| Level | Effect |");
+    expect(desc).toContain("| --- | --- |");
+    expect(desc).toContain("| 1 | X |");
+    expect(desc).toContain("| 2 | Y |");
   });
 
   it("falls back to structured.entries when Open5e base has no desc", () => {
