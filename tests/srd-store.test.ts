@@ -291,7 +291,7 @@ describe("SrdStore", () => {
   // loadFromBundledJson
   // -------------------------------------------------------------------------
   describe("loadFromBundledJson", () => {
-    it("loads all 9 entity types from bundled JSON", () => {
+    it("loads all canonical entity types from bundled JSON", () => {
       const s = new SrdStore();
       s.loadFromBundledJson();
       expect(s.getTypes().sort()).toEqual([
@@ -302,28 +302,88 @@ describe("SrdStore", () => {
         "feat",
         "item",
         "monster",
+        "optional-feature",
+        "race",
         "spell",
+        "subclass",
         "weapon",
       ]);
       // Should have many more entities than our test fixtures
       expect(s.count()).toBeGreaterThan(100);
     });
 
-    it("can look up a well-known monster by slug", () => {
+    it("can look up a well-known monster by canonical slug", () => {
       const s = new SrdStore();
       s.loadFromBundledJson();
-      const goblin = s.getBySlug("goblin");
+      const goblin =
+        s.getBySlug("srd-2024_goblin") ?? s.getBySlug("srd-5e_goblin");
       expect(goblin).toBeDefined();
       expect(goblin!.name).toBe("Goblin");
       expect(goblin!.entityType).toBe("monster");
     });
 
-    it("can look up a well-known spell by slug", () => {
+    it("can look up a well-known spell by canonical slug", () => {
       const s = new SrdStore();
       s.loadFromBundledJson();
-      const fireball = s.getBySlug("fireball");
+      const fireball =
+        s.getBySlug("srd-2024_fireball") ?? s.getBySlug("srd-5e_fireball");
       expect(fireball).toBeDefined();
       expect(fireball!.name).toBe("Fireball");
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Canonical pipeline runtime JSON (Task 7.2)
+  // -------------------------------------------------------------------------
+  describe("SrdStore loads from canonical pipeline runtime JSON", () => {
+    it("loadFromBundledJson reads from runtime/, not legacy flat fixtures", () => {
+      const s = new SrdStore();
+      s.loadFromBundledJson();
+
+      // After Phase 6, Aboleth's mechanics should be rich (ac=17), not the
+      // legacy zero-data shape.
+      const aboleth =
+        s.getBySlug("srd-2024_aboleth") ??
+        s.getBySlug("srd-5e_aboleth") ??
+        s.getBySlug("aboleth");
+      expect(aboleth).toBeDefined();
+      if (aboleth) {
+        const ac = (aboleth.data as { ac?: unknown }).ac;
+        const acNum = Array.isArray(ac)
+          ? (ac[0] as { ac?: number })?.ac ?? 0
+          : typeof ac === "number"
+            ? ac
+            : 0;
+        expect(acNum).toBeGreaterThan(0);
+      }
+    });
+
+    it("registers the full canonical entity-type set", () => {
+      const s = new SrdStore();
+      s.loadFromBundledJson();
+      const types = s.getTypes().sort();
+      expect(types).toEqual([
+        "armor",
+        "background",
+        "class",
+        "condition",
+        "feat",
+        "item",
+        "monster",
+        "optional-feature",
+        "race",
+        "spell",
+        "subclass",
+        "weapon",
+      ]);
+    });
+
+    it("merges both 2014 and 2024 editions for monsters", () => {
+      const s = new SrdStore();
+      s.loadFromBundledJson();
+      const monsters = s.getAllOfType("monster");
+      // 325 (2014) + 330 (2024) = 655
+      expect(monsters.length).toBeGreaterThan(600);
     });
   });
 });
