@@ -1,5 +1,6 @@
 import { Monster } from "./monster.types";
 import type { Feature } from "../../shared/types";
+import type { Attack } from "../../shared/types/attack";
 import { abilityModifier, formatModifier } from "../../shared/dnd/math";
 import {
   el,
@@ -32,6 +33,49 @@ function formatAC(monster: Monster): string {
   return result;
 }
 
+function renderAttackLine(
+  parent: HTMLElement,
+  attack: Attack,
+): void {
+  const line = el("div", { cls: "archivist-monster-attack", parent });
+  const doc = line.ownerDocument ?? activeDocument;
+
+  const bonus = attack.bonus ?? 0;
+  const bonusStr = bonus >= 0 ? `+${bonus}` : `${bonus}`;
+  el("span", {
+    cls: "archivist-monster-attack-bonus",
+    text: `${bonusStr} to hit`,
+    parent: line,
+  });
+
+  // Range / reach
+  if (attack.range?.reach != null) {
+    line.appendChild(doc.createTextNode(`, reach ${attack.range.reach} ft. `));
+  } else if (attack.range?.normal != null) {
+    const long = attack.range.long ?? attack.range.normal;
+    line.appendChild(doc.createTextNode(`, range ${attack.range.normal}/${long} ft. `));
+  } else {
+    line.appendChild(doc.createTextNode(", "));
+  }
+
+  // Hit damage
+  const damageStr = attack.damage ?? "";
+  const damageType = attack.damage_type ?? "";
+  el("span", {
+    cls: "archivist-monster-attack-damage",
+    text: `Hit: ${damageStr}${damageType ? ` ${damageType}` : ""} damage`,
+    parent: line,
+  });
+
+  // Extra damage
+  if (attack.extra_damage) {
+    const extra = attack.extra_damage;
+    line.appendChild(
+      doc.createTextNode(` plus ${extra.dice} ${extra.type} damage`),
+    );
+  }
+}
+
 function renderFeatureBlock(
   parent: HTMLElement,
   features: Feature[],
@@ -41,9 +85,20 @@ function renderFeatureBlock(
     const featureDiv = el("div", { cls: "archivist-feature", parent });
     const nameSpan = el("span", { cls: "archivist-feature-name", parent: featureDiv });
     nameSpan.textContent = feature.name + ".";
-    const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });
-    const entryText = feature.entries.join(" ");
-    renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
+
+    if (feature.attacks && feature.attacks.length > 0) {
+      const attacksWrap = el("span", {
+        cls: "archivist-feature-attacks",
+        parent: featureDiv,
+      });
+      for (const attack of feature.attacks) {
+        renderAttackLine(attacksWrap, attack);
+      }
+    } else if (feature.entries && feature.entries.length > 0) {
+      const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });
+      const entryText = feature.entries.join(" ");
+      renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
+    }
   }
 }
 
