@@ -276,4 +276,69 @@ describe("spell-merge shape correctness (Open5e v2 normalization)", () => {
     expect(result.damage?.types).toEqual(["fire"]);
     expect(result.saving_throw?.ability).toBe("dexterity");
   });
+
+  it("emits casting_options[] from Open5e source, folding 2014 default row into top-level", () => {
+    const entry = baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 150, range_text: "150 feet",
+      verbal: true, somatic: true, material: true,
+      material_specified: "...",
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+      casting_options: [
+        { type: "default", damage_roll: null, target_count: null, duration: null, range: null, concentration: null, shape_size: null, desc: null },
+        { type: "slot_level_4", damage_roll: "9d6" },
+        { type: "slot_level_5", damage_roll: "10d6" },
+      ],
+    });
+    const result = toSpellCanonical(entry);
+    expect(result.casting_options).toBeDefined();
+    expect(result.casting_options!.find(o => o.type === "default")).toBeUndefined();
+    expect(result.casting_options!.find(o => o.type === "slot_level_4")).toBeDefined();
+    expect(result.casting_options!.find(o => o.type === "slot_level_4")!.damage_roll).toBe("9d6");
+    expect(result.casting_options!.find(o => o.type === "slot_level_5")!.damage_roll).toBe("10d6");
+  });
+
+  it("retains 2014 default row if it carries actual scaling info", () => {
+    // Edge case: a default row with non-null damage_roll IS scaling info.
+    const entry = baseEntry({
+      name: "Eldritch Blast",
+      level: 0,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 120, range_text: "120 feet",
+      verbal: true, somatic: true, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+      casting_options: [
+        { type: "default", damage_roll: "1d10", target_count: 1 },
+        { type: "player_level_5", damage_roll: "2d10", target_count: 2 },
+      ],
+    });
+    const result = toSpellCanonical(entry);
+    // The default row HAS scaling (damage_roll, target_count) — should be kept
+    expect(result.casting_options!.find(o => o.type === "default")).toBeDefined();
+    expect(result.casting_options!.find(o => o.type === "default")!.damage_roll).toBe("1d10");
+  });
+
+  it("does not emit casting_options when source array is missing", () => {
+    const entry = baseEntry({
+      name: "Wish",
+      level: 9,
+      school: { name: "Conjuration", key: "conjuration" },
+      desc: "...",
+      casting_time: "action",
+      range: 0, range_text: "Self",
+      verbal: true, somatic: false, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+    });
+    const result = toSpellCanonical(entry);
+    expect(result.casting_options).toBeUndefined();
+  });
 });

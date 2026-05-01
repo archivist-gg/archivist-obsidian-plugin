@@ -1,5 +1,6 @@
 import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
+import type { CastingOption } from "../../../src/modules/spell/spell.types";
 import { rewriteCrossRefs } from "../cross-ref-map";
 
 export interface SpellCanonical {
@@ -20,6 +21,7 @@ export interface SpellCanonical {
   at_higher_levels?: string[];
   damage?: { types: string[] };
   saving_throw?: { ability: string };
+  casting_options?: CastingOption[];
 }
 
 export const spellMergeRule: MergeRule = {
@@ -92,7 +94,37 @@ export function toSpellCanonical(entry: CanonicalEntry): SpellCanonical {
     out.saving_throw = { ability: (structured.savingThrow as string[])[0] };
   }
 
+  // casting_options: pass through Open5e v2's per-slot scaling rows.
+  // The 2014 dataset includes a "default" row that just mirrors baseline (all-null
+  // scaling fields) — fold it out, keeping only rows with actual scaling info.
+  if (Array.isArray(base.casting_options)) {
+    const all = base.casting_options as Array<Record<string, unknown>>;
+    const filtered = all
+      .filter(opt => opt.type !== "default" || hasScalingFields(opt))
+      .map(opt => normalizeCastingOption(opt));
+    if (filtered.length > 0) {
+      out.casting_options = filtered;
+    }
+  }
+
   return out;
+}
+
+function hasScalingFields(opt: Record<string, unknown>): boolean {
+  return ["damage_roll", "target_count", "duration", "range", "concentration", "shape_size"]
+    .some(k => opt[k] != null);
+}
+
+function normalizeCastingOption(opt: Record<string, unknown>): CastingOption {
+  const co: CastingOption = { type: typeof opt.type === "string" ? opt.type : "" };
+  if (typeof opt.damage_roll === "string") co.damage_roll = opt.damage_roll;
+  if (typeof opt.target_count === "number") co.target_count = opt.target_count;
+  if (typeof opt.duration === "string") co.duration = opt.duration;
+  if (typeof opt.range === "number") co.range = opt.range;
+  if (typeof opt.concentration === "boolean") co.concentration = opt.concentration;
+  if (typeof opt.shape_size === "number") co.shape_size = opt.shape_size;
+  if (typeof opt.desc === "string") co.desc = opt.desc;
+  return co;
 }
 
 /**
