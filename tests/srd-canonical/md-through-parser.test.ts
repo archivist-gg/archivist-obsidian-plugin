@@ -49,6 +49,15 @@ const PARSER_MAP: Record<string, ParseFn> = {
 
 const SKIPPED_LANGS = new Set<string>(["condition"]);
 
+// Sanity: PARSER_MAP and SKIPPED_LANGS must not overlap.
+for (const lang of SKIPPED_LANGS) {
+  if (PARSER_MAP[lang]) {
+    throw new Error(
+      `Lang "${lang}" is in both PARSER_MAP and SKIPPED_LANGS — remove from SKIPPED_LANGS once a parser exists.`,
+    );
+  }
+}
+
 interface BundleMd {
   filePath: string;
   codeblockLang: string;
@@ -88,8 +97,8 @@ describe("MD-through-parser: every emitted bundle MD parses with its runtime par
 
   const entries = walkBundle();
 
-  it("bundle has at least 100 MD files (sanity check)", () => {
-    expect(entries.length).toBeGreaterThan(100);
+  it("bundle has at least 2500 MD files (sanity check)", () => {
+    expect(entries.length).toBeGreaterThan(2500);
   });
 
   for (const entry of entries) {
