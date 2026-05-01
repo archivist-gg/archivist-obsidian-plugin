@@ -10,8 +10,10 @@ export interface Attack {
   name: string;
   type: "melee" | "ranged" | "spell";
   ability?: Ability[] | Ability;
+  bonus?: number;
   damage?: string;
   damage_type?: string;
+  extra_damage?: { dice: string; type: string };
   action?: "action" | "bonus-action" | "reaction";
   properties?: string[];
   range?: AttackRange;
