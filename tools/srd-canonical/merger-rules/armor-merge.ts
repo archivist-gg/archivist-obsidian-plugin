@@ -8,11 +8,9 @@ export interface ArmorCanonical {
   source: string;
   /** Typically "light" | "medium" | "heavy" | "shield" — kept as string for upstream resilience. */
   category: string;
-  ac: { base: number; dex_max?: number };
+  ac: { base: number; add_dex: boolean; dex_max?: number };
   strength_required?: number;
   stealth_disadvantage: boolean;
-  weight?: number | string;
-  cost?: string;
 }
 
 export const armorMergeRule: MergeRule = {
@@ -26,19 +24,15 @@ export const armorMergeRule: MergeRule = {
 export function toArmorCanonical(entry: CanonicalEntry): ArmorCanonical {
   const base = entry.base as Record<string, unknown>;
 
-  const acRaw = base.ac;
-  let ac: ArmorCanonical["ac"];
-  if (acRaw && typeof acRaw === "object") {
-    const obj = acRaw as { base?: number; dex_max?: number };
-    ac = { base: typeof obj.base === "number" ? obj.base : 0 };
-    if (typeof obj.dex_max === "number") ac.dex_max = obj.dex_max;
-  } else {
-    // Fallback to flat fields if Open5e returns unstructured shape.
-    const flatBase = (base.ac_base as number | undefined) ?? 0;
-    ac = { base: flatBase };
-    const flatDex = base.ac_add_dexmod as number | undefined;
-    if (typeof flatDex === "number") ac.dex_max = flatDex;
-  }
+  const acBase = typeof base.ac_base === "number" ? base.ac_base : 0;
+  const acAddDex = base.ac_add_dexmod === true;
+  const acCapDex = typeof base.ac_cap_dexmod === "number" ? base.ac_cap_dexmod : undefined;
+
+  const ac: ArmorCanonical["ac"] = {
+    base: acBase,
+    add_dex: acAddDex,
+    ...(acCapDex !== undefined ? { dex_max: acCapDex } : {}),
+  };
 
   const out: ArmorCanonical = {
     slug: entry.slug,
@@ -47,14 +41,12 @@ export function toArmorCanonical(entry: CanonicalEntry): ArmorCanonical {
     source: entry.edition === "2014" ? "SRD 5.1" : "SRD 5.2",
     category: (base.category as string | undefined) ?? "",
     ac,
-    stealth_disadvantage: base.stealth_disadvantage === true,
+    stealth_disadvantage: base.grants_stealth_disadvantage === true,
   };
 
-  if (typeof base.strength_required === "number") out.strength_required = base.strength_required;
-  if (typeof base.weight === "number" || typeof base.weight === "string") {
-    out.weight = base.weight;
+  if (typeof base.strength_score_required === "number") {
+    out.strength_required = base.strength_score_required;
   }
-  if (typeof base.cost === "string") out.cost = base.cost;
 
   return out;
 }
