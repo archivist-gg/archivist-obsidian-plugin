@@ -16,7 +16,8 @@ export interface SpellCanonical {
   concentration: boolean;
   ritual: boolean;
   description: string;
-  at_higher_levels?: string;
+  classes?: string[];
+  at_higher_levels?: string[];
   damage?: { types: string[] };
   saving_throw?: { ability: string };
 }
@@ -39,30 +40,111 @@ export function toSpellCanonical(entry: CanonicalEntry): SpellCanonical {
     edition: entry.edition,
     source: entry.edition === "2014" ? "SRD 5.1" : "SRD 5.2",
     level: typeof base.level === "number" ? base.level : 0,
-    school: (base.school as string | undefined) ?? "",
+    school: normalizeSchool(base.school),
     casting_time: (base.casting_time as string | undefined) ?? "",
-    range: (base.range as string | undefined) ?? "",
-    components: (base.components as string | undefined) ?? "",
+    range: normalizeRange(base),
+    components: composeComponents(base),
     duration: (base.duration as string | undefined) ?? "",
     concentration: base.concentration === true,
     ritual: base.ritual === true,
     description: rewriteCrossRefs((base.desc as string) ?? "", entry.edition),
   };
 
-  if (structured) {
-    if (Array.isArray(structured.entriesHigherLevel)) {
-      const text = entriesToText(structured.entriesHigherLevel);
-      if (text) out.at_higher_levels = rewriteCrossRefs(text, entry.edition);
-    }
-    if (Array.isArray(structured.damageInflict) && structured.damageInflict.length > 0) {
-      out.damage = { types: structured.damageInflict as string[] };
-    }
-    if (Array.isArray(structured.savingThrow) && structured.savingThrow.length > 0) {
-      out.saving_throw = { ability: (structured.savingThrow as string[])[0] };
-    }
+  // classes: Open5e v2 emits objects { name, key }; surface as lowercased name array.
+  if (Array.isArray(base.classes)) {
+    const classes = (base.classes as Array<unknown>)
+      .map(c => {
+        if (typeof c === "string") return c;
+        if (c && typeof c === "object") {
+          const obj = c as { name?: unknown; key?: unknown };
+          if (typeof obj.name === "string") return obj.name;
+          if (typeof obj.key === "string") return obj.key;
+        }
+        return "";
+      })
+      .map(s => s.toLowerCase())
+      // Open5e class keys carry a "srd_" prefix (e.g. "srd_wizard"); strip it for runtime parity.
+      .map(s => s.replace(/^srd_/, ""))
+      .filter(Boolean);
+    if (classes.length > 0) out.classes = classes;
+  }
+
+  // at_higher_levels: prefer Open5e v2's `higher_level` prose; fall back to structured-rules.
+  // Parser expects string[] — wrap accordingly.
+  if (typeof base.higher_level === "string" && base.higher_level.length > 0) {
+    out.at_higher_levels = [rewriteCrossRefs(base.higher_level, entry.edition)];
+  } else if (structured && Array.isArray(structured.entriesHigherLevel)) {
+    const text = entriesToText(structured.entriesHigherLevel);
+    if (text) out.at_higher_levels = [rewriteCrossRefs(text, entry.edition)];
+  }
+
+  // damage: prefer Open5e v2's structured `damage_types`; fall back to structured-rules.
+  if (Array.isArray(base.damage_types) && base.damage_types.length > 0) {
+    out.damage = { types: (base.damage_types as unknown[]).map(String) };
+  } else if (structured && Array.isArray(structured.damageInflict) && structured.damageInflict.length > 0) {
+    out.damage = { types: structured.damageInflict as string[] };
+  }
+
+  // saving_throw: prefer Open5e v2's `saving_throw_ability`; fall back to structured-rules.
+  if (typeof base.saving_throw_ability === "string" && base.saving_throw_ability.length > 0) {
+    out.saving_throw = { ability: base.saving_throw_ability.toLowerCase() };
+  } else if (structured && Array.isArray(structured.savingThrow) && structured.savingThrow.length > 0) {
+    out.saving_throw = { ability: (structured.savingThrow as string[])[0] };
   }
 
   return out;
+}
+
+/**
+ * Open5e v2 spells expose `school` as `{ name: string; key: string }`. Older
+ * fixtures may pass a plain string. Normalize to a lowercase string keyed off
+ * `key` (preferred) or `name`.
+ */
+function normalizeSchool(raw: unknown): string {
+  if (raw && typeof raw === "object") {
+    const obj = raw as { key?: unknown; name?: unknown };
+    if (typeof obj.key === "string") return obj.key.toLowerCase();
+    if (typeof obj.name === "string") return obj.name.toLowerCase();
+    return "";
+  }
+  if (typeof raw === "string") return raw.toLowerCase();
+  return "";
+}
+
+/**
+ * Open5e v2 spells expose `range` as a number (e.g. 150) and a parallel
+ * `range_text` (e.g. "150 feet" / "Self" / "Touch"). Use the human-readable
+ * form, falling back to a synthesized "{n} feet" if only the number is set.
+ */
+function normalizeRange(base: Record<string, unknown>): string {
+  if (typeof base.range_text === "string" && base.range_text.length > 0) return base.range_text;
+  if (typeof base.range === "string" && base.range.length > 0) return base.range;
+  if (typeof base.range === "number") return `${base.range} feet`;
+  return "";
+}
+
+/**
+ * Open5e v2 spells expose components as separate booleans (`verbal`,
+ * `somatic`, `material`) plus an optional `material_specified` string.
+ * Compose into the canonical "V, S, M (...)" string.
+ */
+function composeComponents(base: Record<string, unknown>): string {
+  // If the entry already provides a composed string (older fixtures or
+  // hand-written test data), pass it through unchanged.
+  if (typeof base.components === "string" && base.components.length > 0) return base.components;
+
+  const parts: string[] = [];
+  if (base.verbal === true) parts.push("V");
+  if (base.somatic === true) parts.push("S");
+  if (base.material === true) {
+    const spec = base.material_specified;
+    if (typeof spec === "string" && spec.length > 0) {
+      parts.push(`M (${spec})`);
+    } else {
+      parts.push("M");
+    }
+  }
+  return parts.join(", ");
 }
 
 /**

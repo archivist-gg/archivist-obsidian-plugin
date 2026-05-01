@@ -13,10 +13,14 @@ describe("spellMergeRule", () => {
         name: "Fireball",
         document: { key: "srd-2014", name: "SRD 5.1" },
         level: 3,
-        school: "Evocation",
+        school: { name: "Evocation", key: "evocation" },
         casting_time: "1 action",
-        range: "150 feet",
-        components: "V, S, M (a tiny ball of bat guano and sulfur)",
+        range: 150,
+        range_text: "150 feet",
+        verbal: true,
+        somatic: true,
+        material: true,
+        material_specified: "a tiny ball of bat guano and sulfur",
         duration: "Instantaneous",
         concentration: false,
         ritual: false,
@@ -44,7 +48,7 @@ describe("spellMergeRule", () => {
     expect(out.edition).toBe("2014");
     expect(out.source).toBe("SRD 5.1");
     expect(out.level).toBe(3);
-    expect(out.school).toBe("Evocation");
+    expect(out.school).toBe("evocation");
     expect(out.casting_time).toBe("1 action");
     expect(out.range).toBe("150 feet");
     expect(out.components).toContain("V, S, M");
@@ -54,7 +58,7 @@ describe("spellMergeRule", () => {
     expect(out.description).toContain("bright streak");
     expect(out.damage?.types).toEqual(["fire"]);
     expect(out.saving_throw?.ability).toBe("dexterity");
-    expect(out.at_higher_levels).toContain("4th level or higher");
+    expect(out.at_higher_levels?.[0]).toContain("4th level or higher");
   });
 
   it("produces canonical Spell for Wish (high-level, no damage, complex)", () => {
@@ -67,10 +71,13 @@ describe("spellMergeRule", () => {
         name: "Wish",
         document: { key: "srd-2014", name: "SRD 5.1" },
         level: 9,
-        school: "Conjuration",
+        school: { name: "Conjuration", key: "conjuration" },
         casting_time: "1 action",
-        range: "Self",
-        components: "V",
+        range: 0,
+        range_text: "Self",
+        verbal: true,
+        somatic: false,
+        material: false,
         duration: "Instantaneous",
         concentration: false,
         ritual: false,
@@ -82,7 +89,7 @@ describe("spellMergeRule", () => {
     };
     const out = toSpellCanonical(canonical);
     expect(out.level).toBe(9);
-    expect(out.school).toBe("Conjuration");
+    expect(out.school).toBe("conjuration");
     expect(out.range).toBe("Self");
     expect(out.damage).toBeUndefined();
     expect(out.saving_throw).toBeUndefined();
@@ -100,10 +107,13 @@ describe("spellMergeRule", () => {
         name: "Dispel Magic",
         document: { key: "srd-2014", name: "SRD 5.1" },
         level: 3,
-        school: "Abjuration",
+        school: { name: "Abjuration", key: "abjuration" },
         casting_time: "1 action",
-        range: "120 feet",
-        components: "V, S",
+        range: 120,
+        range_text: "120 feet",
+        verbal: true,
+        somatic: true,
+        material: false,
         duration: "Instantaneous",
         concentration: false,
         ritual: false,
@@ -116,9 +126,154 @@ describe("spellMergeRule", () => {
     const out = toSpellCanonical(canonical);
     expect(out.slug).toBe("dispel-magic");
     expect(out.level).toBe(3);
-    expect(out.school).toBe("Abjuration");
+    expect(out.school).toBe("abjuration");
     expect(out.concentration).toBe(false);
     expect(out.ritual).toBe(false);
     expect(out.description).toContain("Choose any creature");
+  });
+});
+
+describe("spell-merge shape correctness (Open5e v2 normalization)", () => {
+  const baseEntry = (base: Record<string, unknown>): CanonicalEntry => ({
+    slug: "srd-5e_fireball",
+    edition: "2014",
+    kind: "spell",
+    base,
+    structured: null,
+    activation: null,
+    overlay: null,
+  });
+
+  it("normalizes school object to lowercase string", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 150,
+      range_text: "150 feet",
+      verbal: true, somatic: true, material: true,
+      material_specified: "tiny ball of bat guano",
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+    }));
+    expect(result.school).toBe("evocation");
+  });
+
+  it("uses range_text for the parser-compatible range string", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      range: 150,
+      range_text: "150 feet",
+      casting_time: "action",
+      verbal: true, somatic: true, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+    }));
+    expect(result.range).toBe("150 feet");
+  });
+
+  it("composes components from booleans + material_specified", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 150, range_text: "150 feet",
+      verbal: true, somatic: true, material: true,
+      material_specified: "tiny ball of bat guano and sulfur",
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+    }));
+    expect(result.components).toBe("V, S, M (tiny ball of bat guano and sulfur)");
+  });
+
+  it("falls back to `${range} feet` if range_text missing", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Foo",
+      level: 1,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 60,
+      verbal: true, somatic: false, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+    }));
+    expect(result.range).toBe("60 feet");
+  });
+
+  it("composes components without material_specified as plain M", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Foo",
+      level: 1,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 60, range_text: "60 feet",
+      verbal: true, somatic: true, material: true,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+    }));
+    expect(result.components).toBe("V, S, M");
+  });
+
+  it("surfaces classes (lowercased name) from Open5e v2 class objects", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 150, range_text: "150 feet",
+      verbal: true, somatic: true, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+      classes: [
+        { name: "Sorcerer", key: "srd_sorcerer" },
+        { name: "Wizard", key: "srd_wizard" },
+      ],
+    }));
+    expect(result.classes).toEqual(["sorcerer", "wizard"]);
+  });
+
+  it("surfaces at_higher_levels as string[] from base.higher_level", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 150, range_text: "150 feet",
+      verbal: true, somatic: true, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+      higher_level: "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.",
+    }));
+    expect(Array.isArray(result.at_higher_levels)).toBe(true);
+    expect(result.at_higher_levels?.[0]).toContain("4th level or higher");
+  });
+
+  it("surfaces damage and saving_throw from Open5e v2 fields", () => {
+    const result = toSpellCanonical(baseEntry({
+      name: "Fireball",
+      level: 3,
+      school: { name: "Evocation", key: "evocation" },
+      desc: "...",
+      casting_time: "action",
+      range: 150, range_text: "150 feet",
+      verbal: true, somatic: true, material: false,
+      duration: "Instantaneous",
+      concentration: false, ritual: false,
+      damage_types: ["fire"],
+      saving_throw_ability: "dexterity",
+    }));
+    expect(result.damage?.types).toEqual(["fire"]);
+    expect(result.saving_throw?.ability).toBe("dexterity");
   });
 });
