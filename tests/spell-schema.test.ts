@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { spellInputSchema } from "../src/modules/spell/spell.ai-schema";
+import type { Spell } from "../src/modules/spell/spell.types";
 
 describe("spellInputSchema", () => {
   it("validates a valid spell", () => {
@@ -48,5 +49,19 @@ describe("spellInputSchema", () => {
       ],
     });
     expect(result.success).toBe(true);
+  });
+});
+
+describe("Spell.casting_options runtime field", () => {
+  it("Spell type accepts casting_options array", () => {
+    const spell: Spell = {
+      name: "Fireball",
+      casting_options: [
+        { type: "slot_level_4", damage_roll: "9d6" },
+        { type: "slot_level_5", damage_roll: "10d6" },
+      ],
+    };
+    expect(spell.casting_options).toBeDefined();
+    expect(spell.casting_options!.length).toBe(2);
   });
 });
