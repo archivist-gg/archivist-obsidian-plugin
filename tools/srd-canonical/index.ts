@@ -22,6 +22,8 @@ import { spellMergeRule, toSpellCanonical } from "./merger-rules/spell-merge";
 import { creatureMergeRule, toCreatureCanonical } from "./merger-rules/creature-merge";
 import { conditionMergeRule, toConditionCanonical, buildConditionsFromStructured } from "./merger-rules/condition-merge";
 import { mergeOptionalFeatures } from "./merger-rules/optional-feature-merge";
+import { expandVariants, type BaseItem, type VariantRule } from "./expand-variants";
+import { slugifyName } from "./sources/slug-normalize";
 
 /**
  * Map an Open5e kind name to the runtime/MD kind name. Open5e uses plural
@@ -96,6 +98,75 @@ function readOptionalFeaturesRaw(rootPath: string, edition: "2014" | "2024"): St
     const isXSource = e.source.startsWith("X");
     return edition === "2024" ? isXSource : !isXSource;
   });
+}
+
+/**
+ * Read SRD-flagged base items (weapons / armor / shields) directly from
+ * `items-base.json`. Variants in `magicvariants.json` target bases via
+ * a mix of flag fields, type codes, and explicit name+source pairs;
+ * this loader passes through the rich shape so {@link expandVariants}
+ * can reconcile.
+ */
+function readBaseItemsRaw(rootPath: string, edition: "2014" | "2024"): BaseItem[] {
+  const filePath = path.join(rootPath, "items-base.json");
+  if (!fs.existsSync(filePath)) return [];
+  const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as { baseitem?: Array<Record<string, unknown>> };
+  const all = raw.baseitem ?? [];
+  const flagKey = edition === "2014" ? "srd" : "srd52";
+  const out: BaseItem[] = [];
+  for (const e of all) {
+    if (e[flagKey] !== true) continue;
+    const name = e.name as string;
+    const source = e.source as string | undefined;
+    let kind: "weapon" | "armor" | "shield" | null = null;
+    if (e.weapon === true) kind = "weapon";
+    else if (e.armor === true) kind = "armor";
+    else if ((typeof e.type === "string") && (e.type === "S" || e.type.startsWith("S|"))) kind = "shield";
+    if (!kind) continue;
+    out.push({
+      name,
+      slug: slugifyName(name),
+      base_item_type: kind,
+      type: typeof e.type === "string" ? e.type : undefined,
+      source,
+      weaponCategory: typeof e.weaponCategory === "string" ? e.weaponCategory : undefined,
+      weapon: e.weapon === true,
+      armor: e.armor === true,
+      shield: kind === "shield",
+      sword: e.sword === true,
+      axe: e.axe === true,
+      arrow: e.arrow === true,
+      bolt: e.bolt === true,
+      dmgType: typeof e.dmgType === "string" ? e.dmgType : undefined,
+    });
+  }
+  return out;
+}
+
+/**
+ * Read SRD-flagged variant rules from `magicvariants.json`. The standard
+ * structured-rules reader filters by `e.source`, but variant entries
+ * carry their source under `inherits.source`. Gate on the per-entry SRD
+ * flag stored under `inherits.srd` (2014) or `inherits.srd52` (2024).
+ */
+function readMagicVariantsRaw(rootPath: string, edition: "2014" | "2024"): VariantRule[] {
+  const filePath = path.join(rootPath, "magicvariants.json");
+  if (!fs.existsSync(filePath)) return [];
+  const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as { magicvariant?: Array<Record<string, unknown>> };
+  const all = raw.magicvariant ?? [];
+  const flagKey = edition === "2014" ? "srd" : "srd52";
+  const out: VariantRule[] = [];
+  for (const e of all) {
+    const inherits = e.inherits as Record<string, unknown> | undefined;
+    if (!inherits || inherits[flagKey] !== true) continue;
+    out.push({
+      name: e.name as string,
+      type: typeof e.type === "string" ? e.type : undefined,
+      requires: Array.isArray(e.requires) ? (e.requires as Array<Record<string, unknown>>) : undefined,
+      inherits,
+    });
+  }
+  return out;
 }
 
 async function main() {
@@ -209,6 +280,48 @@ async function main() {
       runtimeOutDir: cfg.runtimeOutDir,
       bundleOutDir: cfg.bundleOutDir,
     });
+
+    // Magic-variant expansion: cross every SRD-flagged variant rule with
+    // every eligible SRD base item to emit the full grid of "+1 Weapon",
+    // "Frost Brand Longsword", etc. Variants are 5etools-only metadata
+    // (Open5e exposes a few rolled-out variants but no rule-level dump),
+    // so this step runs from raw structured-rules without an Open5e join.
+    // The runtime file `item.{edition}.json` is shared with the magicitems
+    // pass — the expanded entries are appended onto it rather than via
+    // {@link emitForKind} (which would overwrite the file).
+    const baseItems = readBaseItemsRaw(cfg.structuredRulesPath, edition);
+    const variantRules = readMagicVariantsRaw(cfg.structuredRulesPath, edition);
+    const expanded = expandVariants(baseItems, variantRules, edition);
+    console.log(`[canonical] ${edition} magic-variants: ${variantRules.length} rules × ${baseItems.length} bases → ${expanded.length} expanded items`);
+    if (expanded.length > 0) {
+      const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
+
+      // 1. Full canonical JSON — separate file from magicitems for traceability.
+      fs.mkdirSync(cfg.canonicalOutDir, { recursive: true });
+      const variantCanonicalFile = path.join(cfg.canonicalOutDir, `magicitems-variants.${edition}.json`);
+      fs.writeFileSync(variantCanonicalFile, JSON.stringify(expanded, null, 2));
+
+      // 2. Runtime — append to the existing item.{edition}.json instead of overwriting.
+      fs.mkdirSync(cfg.runtimeOutDir, { recursive: true });
+      const itemRuntimeFile = path.join(cfg.runtimeOutDir, `item.${edition}.json`);
+      const existingRuntime = fs.existsSync(itemRuntimeFile)
+        ? (JSON.parse(fs.readFileSync(itemRuntimeFile, "utf8")) as unknown[])
+        : [];
+      const variantRuntime = expanded.map(e => projectToRuntime("item", e as unknown as Record<string, unknown>));
+      fs.writeFileSync(itemRuntimeFile, JSON.stringify([...existingRuntime, ...variantRuntime], null, 2));
+
+      // 3. Vault MD per entry — kind=item routes to Magic Items folder.
+      const variantBundleDir = path.join(cfg.bundleOutDir, compendium);
+      for (const entry of expanded) {
+        writeMd(variantBundleDir, {
+          kind: "item",
+          edition,
+          compendium,
+          data: entry as unknown as Record<string, unknown> & { name: string; slug: string },
+        });
+      }
+      console.log(`[canonical]   variant emit: canonical(${variantCanonicalFile}) runtime(append +${variantRuntime.length}) md(${expanded.length} files)`);
+    }
 
     // Compendium index per edition (single _compendium.md at the bundle root).
     const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";

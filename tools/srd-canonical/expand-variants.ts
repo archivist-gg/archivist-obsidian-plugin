@@ -1,28 +1,52 @@
 import { slugifyName } from "./sources/slug-normalize";
 
+/**
+ * A base item eligible for variant expansion. The 5etools `magicvariants`
+ * data targets bases by a mix of flag fields (`weapon`, `sword`, `axe`,
+ * `armor`, `shield`, `arrow`, `bolt`), the short type code (`M`, `R`,
+ * `HA`, `MA`, `LA`, `S`, `A`, `AF`), the `weaponCategory` (`simple` /
+ * `martial`), and explicit `name`+`source` pairs. The optional fields
+ * here mirror those columns from `items-base.json`.
+ */
 export interface BaseItem {
   name: string;
   slug: string;
   base_item_type: "weapon" | "armor" | "shield";
+  /** 5etools short type code (e.g. "M", "R", "HA", "MA", "LA", "S", "A"). */
+  type?: string;
+  /** 5etools source code (e.g. "PHB", "XPHB"). */
+  source?: string;
+  weaponCategory?: string;
+  weapon?: boolean;
+  armor?: boolean;
+  shield?: boolean;
+  sword?: boolean;
+  axe?: boolean;
+  arrow?: boolean;
+  bolt?: boolean;
+  dmgType?: string;
   [key: string]: unknown;
 }
 
 export interface VariantRule {
   name: string;
   type?: string;
-  requires?: Array<Record<string, string>>;
+  requires?: Array<Record<string, unknown>>;
   inherits?: Record<string, unknown>;
 }
 
 export interface ExpandedItem {
-  name: string;
   slug: string;
+  name: string;
   edition: "2014" | "2024";
+  source: string;
+  type: string;
+  rarity?: string;
+  tier?: number | string;
   base_item: string;
   bonuses: { attack?: number; damage?: number; ac?: number };
-  rarity?: string;
-  tier?: number;
   attunement: { required: boolean };
+  requires_attunement: boolean;
   description: string;
 }
 
@@ -41,44 +65,171 @@ export function expandVariants(
   return out;
 }
 
+/**
+ * Test whether a single `requires` clause matches a base item. A clause is
+ * an object with one or more flag/value entries; ALL entries must match
+ * (logical AND within a clause). The list of clauses is OR'd by the caller.
+ */
+function clauseMatches(req: Record<string, unknown>, b: BaseItem): boolean {
+  for (const [k, v] of Object.entries(req)) {
+    switch (k) {
+      case "baseItem": {
+        if (typeof v !== "string") return false;
+        const reqSlug = v.split("|")[0];
+        if (b.slug !== reqSlug) return false;
+        break;
+      }
+      case "name": {
+        if (typeof v !== "string" || b.name !== v) return false;
+        break;
+      }
+      case "source": {
+        if (typeof v !== "string" || (b.source !== undefined && b.source !== v)) return false;
+        break;
+      }
+      case "type": {
+        // 5etools type codes can carry a source suffix ("M|XPHB"); strip it.
+        if (typeof v !== "string") return false;
+        const reqType = v.split("|")[0];
+        const baseType = (b.type ?? "").split("|")[0];
+        if (baseType !== reqType) return false;
+        break;
+      }
+      case "weaponCategory": {
+        if (typeof v !== "string" || b.weaponCategory !== v) return false;
+        break;
+      }
+      case "weapon":
+        if (!truthy(v) || b.base_item_type !== "weapon") return false;
+        break;
+      case "armor":
+        if (!truthy(v) || b.base_item_type !== "armor") return false;
+        break;
+      case "shield":
+        if (!truthy(v) || b.base_item_type !== "shield") return false;
+        break;
+      case "sword":
+      case "axe":
+      case "arrow":
+      case "bolt":
+        if (!truthy(v) || b[k] !== true) return false;
+        break;
+      case "dmgType":
+        if (typeof v !== "string" || b.dmgType !== v) return false;
+        break;
+      default:
+        // Unknown key — treat as no-match to avoid over-expanding into
+        // requirements we don't yet model (e.g. firearm, tattoo).
+        return false;
+    }
+  }
+  return true;
+}
+
+function truthy(v: unknown): boolean {
+  return v === true || v === "true";
+}
+
 function pickMatchingBases(baseItems: BaseItem[], variant: VariantRule): BaseItem[] {
   if (!variant.requires || variant.requires.length === 0) return baseItems;
-  return baseItems.filter(b => {
-    for (const req of variant.requires!) {
-      if (req.baseItem) {
-        const reqSlug = req.baseItem.split("|")[0];
-        if (b.slug !== reqSlug) return false;
-      }
-      if (req.weapon === "true" && b.base_item_type !== "weapon") return false;
-      if (req.armor === "true" && b.base_item_type !== "armor") return false;
-      if (req.shield === "true" && b.base_item_type !== "shield") return false;
+  // Each entry in `requires` is an OR'd alternative; a base matches if any clause matches.
+  return baseItems.filter(b => variant.requires!.some(req => clauseMatches(req, b)));
+}
+
+function bonusNumber(field: unknown): number {
+  if (typeof field === "number") return field;
+  if (typeof field === "string") return Number(field.replace("+", "")) || 0;
+  return 0;
+}
+
+function compendiumLabel(edition: "2014" | "2024"): string {
+  return edition === "2014" ? "SRD 5e" : "SRD 2024";
+}
+
+function baseSubfolder(b: BaseItem): "Weapons" | "Armor" {
+  // Shields use the Armor folder in our bundle.
+  return b.base_item_type === "weapon" ? "Weapons" : "Armor";
+}
+
+/**
+ * Build the expanded entry's `name`. Prefer the variant's explicit
+ * `inherits.namePrefix` (e.g. "+1 ", "Frost Brand "); otherwise fall
+ * back to a "+N" suffix derived from `bonusWeapon`/`bonusAc`.
+ */
+function expandedName(variant: VariantRule, base: BaseItem): string {
+  const inherits = variant.inherits ?? {};
+  const namePrefix = inherits.namePrefix;
+  if (typeof namePrefix === "string" && namePrefix.length > 0) {
+    // `namePrefix` strings already end with a trailing space ("+1 ", "Frost Brand ").
+    if (namePrefix.startsWith("+")) {
+      // "+N " patterns are written as suffix in our naming convention:
+      // "Longsword +1" rather than "+1 Longsword".
+      return `${base.name} ${namePrefix.trim()}`;
     }
-    return true;
-  });
+    return `${namePrefix}${base.name}`;
+  }
+  const bWeapon = bonusNumber(inherits.bonusWeapon);
+  const bAc = bonusNumber(inherits.bonusAc);
+  const bonus = bWeapon || bAc;
+  if (bonus > 0) return `${base.name} +${bonus}`;
+  // No prefix/bonus signal — fall back to comma-suffix using variant name.
+  return `${base.name}, ${variant.name}`;
 }
 
 function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014" | "2024"): ExpandedItem {
   const inherits = variant.inherits ?? {};
-  const bonusStr = (inherits.bonusWeapon ?? inherits.bonusAc ?? "+0") as string;
-  const bonusNum = Number(bonusStr.replace("+", ""));
-  const variantSuffix = bonusNum > 0
-    ? ` +${bonusNum}`
-    : `, ${variant.name.replace(/[+0-9]/g, "").trim()}`;
-  const expandedName = `${base.name}${variantSuffix}`;
-  const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
+  const compendium = compendiumLabel(edition);
+  const subfolder = baseSubfolder(base);
+  const name = expandedName(variant, base);
+
+  const bWeapon = bonusNumber(inherits.bonusWeapon);
+  const bAc = bonusNumber(inherits.bonusAc);
+  const bonuses: ExpandedItem["bonuses"] = {};
+  if (bWeapon > 0) {
+    bonuses.attack = bWeapon;
+    bonuses.damage = bWeapon;
+  }
+  if (bAc > 0) {
+    bonuses.ac = bAc;
+  }
+
+  const reqAttune = inherits.reqAttune === true || typeof inherits.reqAttune === "string";
+  const rarity = typeof inherits.rarity === "string" ? inherits.rarity : undefined;
+  const tier = (() => {
+    if (typeof inherits.tier === "number") return inherits.tier;
+    if (typeof inherits.tier === "string") {
+      if (inherits.tier === "major" || inherits.tier === "minor") return inherits.tier;
+      const n = Number.parseInt(inherits.tier, 10);
+      return Number.isNaN(n) ? undefined : n;
+    }
+    return undefined;
+  })();
+
   return {
-    name: expandedName,
-    slug: slugifyName(expandedName),
+    slug: slugifyName(name),
+    name,
     edition,
-    base_item: `[[${compendium}/${base.name}]]`,
-    bonuses: {
-      attack: inherits.bonusWeapon ? bonusNum : undefined,
-      damage: inherits.bonusWeapon ? bonusNum : undefined,
-      ac: inherits.bonusAc ? bonusNum : undefined,
-    },
-    rarity: inherits.rarity as string | undefined,
-    tier: inherits.tier ? Number(inherits.tier) : undefined,
-    attunement: { required: false },
-    description: `A magical version of the ${base.name.toLowerCase()} that grants its wielder a ${bonusStr} bonus.`,
+    source: edition === "2014" ? "SRD 5.1" : "SRD 5.2",
+    type: base.base_item_type,
+    rarity,
+    tier,
+    base_item: `[[${compendium}/${subfolder}/${base.name}]]`,
+    bonuses,
+    attunement: { required: reqAttune },
+    requires_attunement: reqAttune,
+    description: buildDescription(variant, base, inherits),
   };
+}
+
+function buildDescription(variant: VariantRule, base: BaseItem, inherits: Record<string, unknown>): string {
+  const entries = inherits.entries;
+  if (Array.isArray(entries)) {
+    const text = (entries as unknown[]).filter((e): e is string => typeof e === "string").join("\n\n");
+    if (text.length > 0) return text;
+  }
+  const bonusStr = (inherits.bonusWeapon ?? inherits.bonusAc ?? "") as string;
+  if (bonusStr) {
+    return `A magical version of the ${base.name.toLowerCase()} that grants its wielder a ${bonusStr} bonus.`;
+  }
+  return `A magical version of the ${base.name.toLowerCase()}: ${variant.name}.`;
 }
