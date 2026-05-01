@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { slugifyName } from "./slug-normalize";
+import { slugifyName, editionPrefix } from "./slug-normalize";
 
 const FOUNDRY_FILE: Record<string, string> = {
   feats: "foundry-feats.json",
@@ -43,9 +43,10 @@ export function readActivationData(opts: ReadActivationOptions): Promise<Map<str
   const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown>;
   const list = (raw[rootKey] ?? []) as Array<{ name: string; source: string; system?: Record<string, unknown> }>;
 
+  const prefix = editionPrefix(opts.edition);
   const out = new Map<string, ActivationEntry>();
   for (const e of list) {
-    const slug = slugifyName(e.name);
+    const slug = prefix + slugifyName(e.name);
     if (!opts.slugSet.has(slug)) continue;
     if (!e.system) continue;
     const activities = (e.system.activities ?? {}) as Record<string, ActivationEntry>;

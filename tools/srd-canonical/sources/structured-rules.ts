@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { slugifyName } from "./slug-normalize";
+import { slugifyName, editionPrefix } from "./slug-normalize";
 
 export type StructuredRulesKind =
   | "feats" | "backgrounds" | "races" | "classes"
@@ -51,10 +51,6 @@ function isSourceForEdition(source: string, edition: "2014" | "2024"): boolean {
   // Source-tag convention: PHB/MM/etc → 2014; XPHB/XMM/etc → 2024.
   if (edition === "2024") return source.startsWith("X");
   return !source.startsWith("X");
-}
-
-function editionPrefix(edition: "2014" | "2024"): string {
-  return edition === "2014" ? "srd_" : "srd-2024_";
 }
 
 export function readStructuredRules(opts: StructuredRulesOptions): Promise<StructuredEntry[]> {
