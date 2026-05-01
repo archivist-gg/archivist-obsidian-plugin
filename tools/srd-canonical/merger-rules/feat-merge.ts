@@ -45,8 +45,11 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
   const benefitArr = (base.benefits ?? []) as Array<{ desc?: string }>;
   const benefits = benefitArr.map(b => rewriteCrossRefs(b.desc ?? "", entry.edition)).filter(Boolean);
 
-  const prerequisites = translatePrerequisites(structured?.prerequisite);
-  const repeatable = structured?._isRepeatable === true;
+  let prerequisites = translatePrerequisites(structured?.prerequisite);
+  if (prerequisites.length === 0 && typeof base.prerequisite === "string") {
+    prerequisites = parseOpen5ePrerequisiteString(base.prerequisite);
+  }
+  const repeatable = structured?.repeatable === true || structured?.repeatableHidden === true;
 
   const out: FeatCanonical = {
     slug: entry.slug,
@@ -98,6 +101,45 @@ function translatePrerequisites(raw: unknown): FeatPrerequisite[] {
       }
     }
   }
+  return out;
+}
+
+/**
+ * Parse Open5e's free-text `prerequisite` string when the structured-rules
+ * dump has no entry for this feat (Open5e ships SRD entries that 5etools omits,
+ * e.g. Grappler 2014 with `"Strength 13 or higher"`). Handles the common
+ * SRD shapes: ability-score thresholds and minimum levels. Other free-text
+ * forms (fighting-style features, narrative gates) are intentionally not
+ * extracted to avoid speculative parsing.
+ */
+function parseOpen5ePrerequisiteString(s: string | undefined): FeatPrerequisite[] {
+  if (!s) return [];
+  const out: FeatPrerequisite[] = [];
+
+  // "Level 4+" / "level 4 or higher" → {kind:"level", min:4}
+  const levelMatch = s.match(/level\s+(\d+)/i);
+  if (levelMatch) {
+    out.push({ kind: "level", min: parseInt(levelMatch[1], 10) });
+  }
+
+  // "Strength 13 or higher" / "Strength 13+" → {kind:"ability", ability:"str", min:13}
+  // Also handles "Strength or Dexterity 13+" (multiple abilities, single threshold).
+  const abilityMap: Record<string, "str" | "dex" | "con" | "int" | "wis" | "cha"> = {
+    strength: "str", dexterity: "dex", constitution: "con",
+    intelligence: "int", wisdom: "wis", charisma: "cha",
+  };
+  const abilityNames = Array.from(s.matchAll(/(strength|dexterity|constitution|intelligence|wisdom|charisma)/gi))
+    .map(match => match[1].toLowerCase());
+  if (abilityNames.length > 0) {
+    const trailingNum = s.match(/(strength|dexterity|constitution|intelligence|wisdom|charisma)[^\d]*?(\d+)/i);
+    if (trailingNum) {
+      const min = parseInt(trailingNum[2], 10);
+      for (const name of abilityNames) {
+        out.push({ kind: "ability", ability: abilityMap[name], min });
+      }
+    }
+  }
+
   return out;
 }
 
