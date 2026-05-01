@@ -41,16 +41,16 @@ export function readActivationData(opts: ReadActivationOptions): Promise<Map<str
   if (!fs.existsSync(filePath)) return Promise.resolve(new Map<string, ActivationEntry>());
 
   const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown>;
-  const list = (raw[rootKey] ?? []) as Array<{ name: string; source: string; system?: Record<string, unknown> }>;
+  const list = (raw[rootKey] ?? []) as Array<{ name: string; source: string; activities?: unknown }>;
 
   const prefix = editionPrefix(opts.edition);
   const out = new Map<string, ActivationEntry>();
   for (const e of list) {
     const slug = prefix + slugifyName(e.name);
     if (!opts.slugSet.has(slug)) continue;
-    if (!e.system) continue;
-    const activities = (e.system.activities ?? {}) as Record<string, ActivationEntry>;
-    const first = Object.values(activities)[0];
+    // foundry-*.json entries expose activities as a top-level array (not under `system`).
+    const activities = Array.isArray(e.activities) ? (e.activities as ActivationEntry[]) : [];
+    const first = activities[0];
     if (first) out.set(slug, first);
   }
   return Promise.resolve(out);

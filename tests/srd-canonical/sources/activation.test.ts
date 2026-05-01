@@ -50,4 +50,30 @@ describe("activation reader", () => {
     });
     expect(result.size).toBe(0);
   });
+
+  it("reads activities from top-level e.activities (not e.system.activities) against the real 5etools dump", async () => {
+    const realRoot = process.env.STRUCTURED_RULES_PATH;
+    if (!realRoot) throw new Error("STRUCTURED_RULES_PATH must be set for this test");
+    // 2024 feats whose foundry-feats.json entries have non-empty activation.type at top level.
+    const slugSet = new Set([
+      "srd-2024_polearm-master",
+      "srd-2024_healer",
+      "srd-2024_defensive-duelist",
+      "srd-2024_tavern-brawler",
+    ]);
+    const result = await readActivationData({
+      kind: "feats",
+      edition: "2024",
+      rootPath: realRoot,
+      slugSet,
+    });
+    let foundOne = false;
+    for (const entry of result.values()) {
+      if (entry?.activation?.type) {
+        foundOne = true;
+        expect(typeof entry.activation.type).toBe("string");
+      }
+    }
+    expect(foundOne).toBe(true);
+  });
 });
