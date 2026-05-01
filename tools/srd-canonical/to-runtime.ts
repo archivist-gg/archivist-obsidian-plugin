@@ -1,19 +1,99 @@
 const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
-  feat: new Set(["slug", "name", "edition", "source", "category", "prerequisites", "effects", "grants_asi", "repeatable", "choices"]),
-  race: new Set(["slug", "name", "edition", "source", "size", "speed", "vision", "abilities", "languages", "subspecies_of", "traits"]),
-  species: new Set(["slug", "name", "edition", "source", "size", "speed", "vision", "abilities", "languages", "subspecies_of", "traits"]),
-  class: new Set(["slug", "name", "edition", "source", "hit_dice", "primary_abilities", "saving_throws", "spellcasting", "resources", "weapon_mastery", "data_for_class_table", "features"]),
-  subclass: new Set(["slug", "name", "edition", "source", "description", "parent_class", "features_by_level", "resources"]),
-  background: new Set(["slug", "name", "edition", "source", "skill_proficiencies", "tool_proficiencies", "language_proficiencies", "equipment", "feature", "ability_score_increases", "origin_feat"]),
-  weapon: new Set(["slug", "name", "edition", "source", "category", "damage", "properties", "range", "reload", "mastery", "type_tags", "weight", "cost"]),
-  armor: new Set(["slug", "name", "edition", "source", "category", "ac", "strength_required", "stealth_disadvantage", "weight", "cost"]),
-  item: new Set(["slug", "name", "edition", "source", "rarity", "tier", "attunement", "bonuses", "charges", "attached_spells", "consumes", "grants", "base_item"]),
-  magicitem: new Set(["slug", "name", "edition", "source", "rarity", "tier", "attunement", "bonuses", "charges", "attached_spells", "consumes", "grants", "base_item"]),
-  spell: new Set(["slug", "name", "edition", "source", "level", "school", "casting_time", "range", "components", "duration", "ritual", "concentration", "saving_throw", "damage"]),
-  monster: new Set(["slug", "name", "edition", "source", "size", "type", "alignment", "ac", "hp", "speed", "abilities", "saves", "skills", "senses", "languages", "cr"]),
-  creature: new Set(["slug", "name", "edition", "source", "size", "type", "alignment", "ac", "hp", "speed", "abilities", "saves", "skills", "senses", "languages", "cr"]),
-  condition: new Set(["slug", "name", "edition", "source", "effects"]),
-  "optional-feature": new Set(["slug", "name", "edition", "source", "feature_type", "prerequisites", "available_to", "effects", "action_cost", "uses"]),
+  feat: new Set([
+    "slug", "name", "edition", "source", "description", "category",
+    "prerequisites", "benefits", "repeatable", "action_cost",
+    // Reserved for future structured fields the merger may add.
+    "effects", "grants_asi", "choices",
+  ]),
+  race: new Set([
+    "slug", "name", "edition", "source", "description", "size", "speed",
+    "vision", "subspecies_of", "traits", "additional_spells",
+    // Reserved (merger may add later).
+    "abilities", "languages",
+  ]),
+  species: new Set([
+    "slug", "name", "edition", "source", "description", "size", "speed",
+    "vision", "subspecies_of", "traits", "additional_spells",
+    "abilities", "languages",
+  ]),
+  class: new Set([
+    "slug", "name", "edition", "source", "description", "hit_die",
+    "primary_abilities", "saving_throws", "proficiencies", "skill_choices",
+    "starting_equipment", "spellcasting", "subclass_level",
+    "subclass_feature_name", "weapon_mastery", "epic_boon_level", "table",
+    "features_by_level", "resources",
+    // Backwards-compat / future fields.
+    "hit_dice", "weapon_mastery_count", "data_for_class_table", "features",
+    "multiclassing",
+  ]),
+  subclass: new Set([
+    "slug", "name", "edition", "source", "description", "parent_class",
+    "features_by_level", "resources",
+    // Backwards-compat / future fields.
+    "features",
+  ]),
+  background: new Set([
+    "slug", "name", "edition", "source", "description", "skill_proficiencies",
+    "tool_proficiencies", "language_proficiencies", "equipment", "feature",
+    "ability_score_increases", "origin_feat", "suggested_characteristics",
+    // Backwards-compat alias.
+    "languages",
+  ]),
+  weapon: new Set([
+    "slug", "name", "edition", "source", "category", "damage", "properties",
+    "range", "reload", "mastery", "type_tags", "weight", "cost",
+  ]),
+  armor: new Set([
+    "slug", "name", "edition", "source", "category", "ac", "strength_required",
+    "stealth_disadvantage", "weight", "cost",
+  ]),
+  item: new Set([
+    "slug", "name", "edition", "source", "rarity", "type", "tier",
+    "description", "requires_attunement", "attunement", "base_item",
+    "weight", "cost", "bonuses", "attached_spells", "charges", "effects",
+    // Reserved for future / overlay-supplied structured fields.
+    "consumes", "grants",
+  ]),
+  magicitem: new Set([
+    "slug", "name", "edition", "source", "rarity", "type", "tier",
+    "description", "requires_attunement", "attunement", "base_item",
+    "weight", "cost", "bonuses", "attached_spells", "charges", "effects",
+    "consumes", "grants",
+  ]),
+  spell: new Set([
+    "slug", "name", "edition", "source", "level", "school", "casting_time",
+    "range", "components", "duration", "concentration", "ritual",
+    "description", "classes", "at_higher_levels", "casting_options",
+    "damage", "saving_throw",
+    // Backwards-compat / future fields.
+    "damage_roll", "damage_types", "saving_throw_ability", "attack_roll",
+  ]),
+  monster: new Set([
+    "slug", "name", "edition", "source", "size", "type", "subtype",
+    "alignment", "description", "ac", "hp", "speed", "abilities", "saves",
+    "skills", "senses", "passive_perception", "languages", "cr",
+    "damage_vulnerabilities", "damage_resistances", "damage_immunities",
+    "condition_immunities", "traits", "actions", "reactions",
+    "legendary_actions", "legendary_resistance",
+    // Backwards-compat alias.
+    "legendary",
+  ]),
+  creature: new Set([
+    "slug", "name", "edition", "source", "size", "type", "subtype",
+    "alignment", "description", "ac", "hp", "speed", "abilities", "saves",
+    "skills", "senses", "passive_perception", "languages", "cr",
+    "damage_vulnerabilities", "damage_resistances", "damage_immunities",
+    "condition_immunities", "traits", "actions", "reactions",
+    "legendary_actions", "legendary_resistance",
+    "legendary",
+  ]),
+  condition: new Set([
+    "slug", "name", "edition", "source", "description", "effects",
+  ]),
+  "optional-feature": new Set([
+    "slug", "name", "edition", "source", "feature_type", "description",
+    "prerequisites", "available_to", "effects", "action_cost", "uses",
+  ]),
 };
 
 export function projectToRuntime(kind: string, entry: Record<string, unknown>): Record<string, unknown> {
