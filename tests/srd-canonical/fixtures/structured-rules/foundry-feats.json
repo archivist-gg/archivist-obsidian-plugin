@@ -4,7 +4,7 @@
       "name": "Polearm Master",
       "source": "PHB",
       "activities": [
-        { "type": "utility", "activation": { "type": "bonusaction", "value": 1 } }
+        { "type": "utility", "activation": { "type": "bonus", "value": 1 } }
       ]
     }
   ]
