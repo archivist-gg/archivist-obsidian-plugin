@@ -87,3 +87,71 @@ actions:
     }
   });
 });
+
+describe("Monster parser reads shared Feature shape (β+)", () => {
+  it("parses YAML with structured attacks[] on an action", () => {
+    const yamlBody = `
+name: Aboleth
+actions:
+  - name: Tail
+    entries:
+      - "Melee Weapon Attack: +9 to hit, reach 10 ft."
+    attacks:
+      - name: "Tail attack"
+        type: melee
+        bonus: 9
+        damage: "3d6+5"
+        damage_type: bludgeoning
+        range:
+          reach: 10
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].attacks).toBeDefined();
+      expect(result.data.actions![0].attacks![0].bonus).toBe(9);
+      expect(result.data.actions![0].attacks![0].damage).toBe("3d6+5");
+      expect(result.data.actions![0].attacks![0].damage_type).toBe("bludgeoning");
+      expect(result.data.actions![0].attacks![0].range?.reach).toBe(10);
+    }
+  });
+
+  it("parses YAML with extra_damage on an attack", () => {
+    const yamlBody = `
+name: Adult Red Dragon
+actions:
+  - name: Bite
+    entries: ["..."]
+    attacks:
+      - name: Bite attack
+        type: melee
+        bonus: 14
+        damage: "2d10+8"
+        damage_type: piercing
+        extra_damage:
+          dice: 4d6
+          type: fire
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].attacks![0].extra_damage).toEqual({ dice: "4d6", type: "fire" });
+    }
+  });
+
+  it("parses YAML with action and description on a feature", () => {
+    const yamlBody = `
+name: Test Monster
+reactions:
+  - name: Parry
+    description: "The creature adds 2 to its AC against one melee attack."
+    action: reaction
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.reactions![0].description).toBe("The creature adds 2 to its AC against one melee attack.");
+      expect(result.data.reactions![0].action).toBe("reaction");
+    }
+  });
+});

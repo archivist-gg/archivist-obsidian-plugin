@@ -1,4 +1,5 @@
 import { Monster } from "./monster.types";
+import type { Attack, Feature } from "../../shared/types";
 import { ParseResult, parseYaml, toStringSafe } from "../../shared/parsers/yaml-utils";
 
 export function parseMonster(source: string): ParseResult<Monster> {
@@ -76,12 +77,49 @@ export function parseMonster(source: string): ParseResult<Monster> {
   if (Array.isArray(raw.damage_immunities)) monster.damage_immunities = raw.damage_immunities.map(String);
   if (Array.isArray(raw.condition_immunities)) monster.condition_immunities = raw.condition_immunities.map(String);
 
-  const parseFeatures = (arr: unknown): { name: string; entries: string[] }[] | undefined => {
+  const parseAttack = (raw: Record<string, unknown>): Attack => {
+    const a: Attack = {
+      name: toStringSafe(raw.name),
+      type: toStringSafe(raw.type) as Attack["type"],
+    };
+    if (typeof raw.bonus === "number") a.bonus = raw.bonus;
+    if (typeof raw.damage === "string") a.damage = raw.damage;
+    if (typeof raw.damage_type === "string") a.damage_type = raw.damage_type;
+    if (typeof raw.action === "string") a.action = raw.action as Attack["action"];
+    if (Array.isArray(raw.properties)) a.properties = (raw.properties as unknown[]).map(String);
+    if (raw.range && typeof raw.range === "object") {
+      const r = raw.range as Record<string, unknown>;
+      a.range = {};
+      if (typeof r.normal === "number") a.range.normal = r.normal;
+      if (typeof r.long === "number") a.range.long = r.long;
+      if (typeof r.reach === "number") a.range.reach = r.reach;
+    }
+    if (raw.extra_damage && typeof raw.extra_damage === "object") {
+      const ed = raw.extra_damage as { dice?: unknown; type?: unknown };
+      if (typeof ed.dice === "string" && typeof ed.type === "string") {
+        a.extra_damage = { dice: ed.dice, type: ed.type };
+      }
+    }
+    if (typeof raw.condition === "string") a.condition = raw.condition;
+    return a;
+  };
+
+  const parseFeatures = (arr: unknown): Feature[] | undefined => {
     if (!Array.isArray(arr)) return undefined;
-    return arr.map((f: Record<string, unknown>) => ({
-      name: toStringSafe(f.name),
-      entries: Array.isArray(f.entries) ? f.entries.map(String) : [],
-    }));
+    return arr.map((f: Record<string, unknown>) => {
+      const feature: Feature = {
+        name: toStringSafe(f.name),
+        // Always set entries to an array so downstream renderers/editors
+        // (which call .join/.map directly) keep working.
+        entries: Array.isArray(f.entries) ? f.entries.map(String) : [],
+      };
+      if (typeof f.description === "string") feature.description = f.description;
+      if (Array.isArray(f.attacks)) {
+        feature.attacks = (f.attacks as Array<Record<string, unknown>>).map(parseAttack);
+      }
+      if (typeof f.action === "string") feature.action = f.action as Feature["action"];
+      return feature;
+    });
   };
 
   monster.traits = parseFeatures(raw.traits);
