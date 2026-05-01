@@ -10,9 +10,9 @@ export interface WeaponCanonical {
   damage: { dice: string; type: string; versatile_dice?: string };
   properties: string[];
   range?: { normal: number; long: number };
-  cost?: string;
-  weight?: number | string;
-  /** 2024-only — mastery property from structured-rules. */
+  /** Mastery property names (kebab-case), surfaced from
+   *  Open5e `properties[].property.type === "Mastery"`.
+   */
   mastery?: string[];
 }
 
@@ -24,42 +24,78 @@ export const weaponMergeRule: MergeRule = {
   },
 };
 
-export function toWeaponCanonical(entry: CanonicalEntry): WeaponCanonical {
-  const base = entry.base as Record<string, unknown>;
-  const structured = entry.structured as Record<string, unknown> | null;
+interface Open5eProperty {
+  property: { name: string; type: string | null; desc?: string };
+  detail: string | null;
+}
 
-  const damageRaw = (base.damage ?? {}) as { dice?: string; type?: string; versatile_dice?: string };
+interface Open5eWeapon {
+  name: string;
+  damage_dice?: string;
+  damage_type?: { name?: string; key?: string };
+  range?: number;
+  long_range?: number;
+  is_simple?: boolean;
+  is_improvised?: boolean;
+  properties?: Open5eProperty[];
+}
+
+function kebab(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, "-");
+}
+
+function computeCategory(base: Open5eWeapon): string {
+  if (base.is_improvised === true) return "improvised";
+  const range = typeof base.range === "number" ? base.range : 0;
+  const isRanged = range > 0;
+  if (base.is_simple === true) return isRanged ? "simple-ranged" : "simple-melee";
+  return isRanged ? "martial-ranged" : "martial-melee";
+}
+
+export function toWeaponCanonical(entry: CanonicalEntry): WeaponCanonical {
+  const base = entry.base as unknown as Open5eWeapon;
+  const properties = Array.isArray(base.properties) ? base.properties : [];
+
+  // Damage composition
+  const versatileEntry = properties.find(p => p.property?.name === "Versatile");
   const damage: WeaponCanonical["damage"] = {
-    dice: damageRaw.dice ?? "",
-    type: damageRaw.type ?? "",
+    dice: base.damage_dice ?? "",
+    type: base.damage_type?.key ?? "",
   };
-  if (damageRaw.versatile_dice) damage.versatile_dice = damageRaw.versatile_dice;
+  if (versatileEntry?.detail) damage.versatile_dice = versatileEntry.detail;
+
+  // Properties: non-Mastery → string[] (kebab-case names).
+  // Mastery: separate field.
+  const propNames: string[] = [];
+  const masteryNames: string[] = [];
+  for (const p of properties) {
+    const name = p.property?.name;
+    if (!name) continue;
+    if (p.property.type === "Mastery") {
+      masteryNames.push(kebab(name));
+    } else {
+      propNames.push(kebab(name));
+    }
+  }
 
   const out: WeaponCanonical = {
     slug: entry.slug,
-    name: base.name as string,
+    name: base.name,
     edition: entry.edition,
     source: entry.edition === "2014" ? "SRD 5.1" : "SRD 5.2",
-    category: (base.category as string | undefined) ?? "",
+    category: computeCategory(base),
     damage,
-    properties: (base.properties as string[] | undefined) ?? [],
+    properties: propNames,
   };
 
-  if (base.range && typeof base.range === "object") {
-    const r = base.range as { normal?: number; long?: number };
-    if (typeof r.normal === "number" && typeof r.long === "number") {
-      out.range = { normal: r.normal, long: r.long };
-    }
-  }
-  if (typeof base.cost === "string") out.cost = base.cost;
-  if (typeof base.weight === "number" || typeof base.weight === "string") {
-    out.weight = base.weight;
+  if (typeof base.range === "number" && base.range > 0) {
+    out.range = {
+      normal: base.range,
+      long: typeof base.long_range === "number" ? base.long_range : 0,
+    };
   }
 
-  // Structured-rules enrichment (2024): mastery property
-  if (Array.isArray(structured?.mastery)) {
-    out.mastery = structured.mastery as string[];
-  }
+  if (masteryNames.length > 0) out.mastery = masteryNames;
 
   return out;
 }

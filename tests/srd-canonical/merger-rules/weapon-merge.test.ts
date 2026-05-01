@@ -2,74 +2,191 @@ import { describe, it, expect } from "vitest";
 import { toWeaponCanonical } from "../../../tools/srd-canonical/merger-rules/weapon-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
-const baseLongsword2014 = {
-  key: "longsword",
+// Open5e v2 weapon raw shape (subset that the merger reads).
+const longsword2014 = {
+  key: "srd_longsword",
   name: "Longsword",
-  document: { key: "srd-2014", name: "SRD 5.1" },
-  category: "martial-melee",
-  damage: { dice: "1d8", type: "slashing", versatile_dice: "1d10" },
-  properties: ["versatile"],
-  cost: "15 gp",
-  weight: 3,
+  damage_dice: "1d8",
+  damage_type: { name: "Slashing", key: "slashing" },
+  range: 0,
+  long_range: 0,
+  is_simple: false,
+  is_improvised: false,
+  properties: [
+    {
+      property: { name: "Versatile", type: null, desc: "..." },
+      detail: "1d10",
+    },
+  ],
 };
 
+const club2014 = {
+  key: "srd_club",
+  name: "Club",
+  damage_dice: "1d4",
+  damage_type: { name: "Bludgeoning", key: "bludgeoning" },
+  range: 0,
+  long_range: 0,
+  is_simple: true,
+  is_improvised: false,
+  properties: [
+    { property: { name: "Light", type: null, desc: "..." }, detail: null },
+  ],
+};
+
+const longbow2014 = {
+  key: "srd_longbow",
+  name: "Longbow",
+  damage_dice: "1d8",
+  damage_type: { name: "Piercing", key: "piercing" },
+  range: 150,
+  long_range: 600,
+  is_simple: false,
+  is_improvised: false,
+  properties: [
+    {
+      property: { name: "Ammunition", type: null, desc: "..." },
+      detail: "range 150/600",
+    },
+    {
+      property: { name: "Two-Handed", type: null, desc: "..." },
+      detail: null,
+    },
+  ],
+};
+
+const sling2014 = {
+  key: "srd_sling",
+  name: "Sling",
+  damage_dice: "1d4",
+  damage_type: { name: "Bludgeoning", key: "bludgeoning" },
+  range: 30,
+  long_range: 120,
+  is_simple: true,
+  is_improvised: false,
+  properties: [
+    {
+      property: { name: "Ammunition", type: null, desc: "..." },
+      detail: "range 30/120",
+    },
+  ],
+};
+
+const greataxe2024 = {
+  key: "srd-2024_greataxe",
+  name: "Greataxe",
+  damage_dice: "1d12",
+  damage_type: { name: "Slashing", key: "slashing" },
+  range: 0,
+  long_range: 0,
+  is_simple: false,
+  is_improvised: false,
+  properties: [
+    {
+      property: { name: "Cleave", type: "Mastery", desc: "..." },
+      detail: null,
+    },
+    { property: { name: "Heavy", type: null, desc: "..." }, detail: null },
+    { property: { name: "Two-Handed", type: null, desc: "..." }, detail: null },
+  ],
+};
+
+function entry(
+  base: object,
+  edition: "2014" | "2024" = "2014",
+  slug = "test_slug",
+): CanonicalEntry {
+  return {
+    slug,
+    edition,
+    kind: "weapon",
+    base: base as never,
+    structured: null,
+    activation: null,
+    overlay: null,
+  };
+}
+
 describe("weaponMergeRule", () => {
-  it("produces canonical Weapon from Open5e-only entry (Longsword 2014, no mastery)", () => {
-    const canonical: CanonicalEntry = {
-      slug: "longsword",
-      edition: "2014",
-      kind: "weapon",
-      base: baseLongsword2014,
-      structured: null,
-      activation: null,
-      overlay: null,
-    };
-    const out = toWeaponCanonical(canonical);
-    expect(out.slug).toBe("longsword");
-    expect(out.name).toBe("Longsword");
-    expect(out.edition).toBe("2014");
-    expect(out.source).toBe("SRD 5.1");
-    expect(out.category).toBe("martial-melee");
+  it("composes damage from damage_dice + damage_type.key with versatile_dice from properties", () => {
+    const out = toWeaponCanonical(entry(longsword2014));
     expect(out.damage.dice).toBe("1d8");
     expect(out.damage.type).toBe("slashing");
+    expect(out.damage.versatile_dice).toBe("1d10");
+  });
+
+  it("emits properties as kebab-case string array; excludes Mastery entries", () => {
+    const out = toWeaponCanonical(entry(longsword2014));
     expect(out.properties).toEqual(["versatile"]);
-    expect(out.cost).toBe("15 gp");
-    expect(out.weight).toBe(3);
+
+    const greataxe = toWeaponCanonical(entry(greataxe2024, "2024"));
+    expect(greataxe.properties).toEqual(["heavy", "two-handed"]);
+    expect(greataxe.properties).not.toContain("cleave");
+  });
+
+  it("surfaces Mastery properties as a separate mastery field", () => {
+    const out = toWeaponCanonical(entry(greataxe2024, "2024"));
+    expect(out.mastery).toEqual(["cleave"]);
+  });
+
+  it("omits mastery on weapons with no Mastery-typed properties", () => {
+    const out = toWeaponCanonical(entry(longsword2014));
     expect(out.mastery).toBeUndefined();
   });
 
-  it("populates mastery from structured-rules (Longsword 2024)", () => {
-    const canonical: CanonicalEntry = {
-      slug: "longsword",
-      edition: "2024",
-      kind: "weapon",
-      base: { ...baseLongsword2014, document: { key: "srd-2024", name: "SRD 5.2" } },
-      structured: {
-        name: "Longsword",
-        source: "XPHB",
-        mastery: ["sap"],
-      } as never,
-      activation: null,
-      overlay: null,
-    };
-    const out = toWeaponCanonical(canonical);
-    expect(out.edition).toBe("2024");
-    expect(out.source).toBe("SRD 5.2");
-    expect(out.mastery).toEqual(["sap"]);
+  it("computes simple-melee category from is_simple=true + range=0", () => {
+    const out = toWeaponCanonical(entry(club2014));
+    expect(out.category).toBe("simple-melee");
   });
 
-  it("preserves versatile_dice from Open5e damage", () => {
-    const canonical: CanonicalEntry = {
-      slug: "longsword",
-      edition: "2014",
-      kind: "weapon",
-      base: baseLongsword2014,
-      structured: null,
-      activation: null,
-      overlay: null,
+  it("computes simple-ranged category from is_simple=true + range>0", () => {
+    const out = toWeaponCanonical(entry(sling2014));
+    expect(out.category).toBe("simple-ranged");
+  });
+
+  it("computes martial-melee category from is_simple=false + range=0", () => {
+    const out = toWeaponCanonical(entry(longsword2014));
+    expect(out.category).toBe("martial-melee");
+  });
+
+  it("computes martial-ranged category from is_simple=false + range>0", () => {
+    const out = toWeaponCanonical(entry(longbow2014));
+    expect(out.category).toBe("martial-ranged");
+  });
+
+  it("computes improvised category when is_improvised=true", () => {
+    const improvised = {
+      ...club2014,
+      key: "srd_improvised",
+      name: "Improvised Weapon",
+      is_simple: false,
+      is_improvised: true,
     };
-    const out = toWeaponCanonical(canonical);
-    expect(out.damage.versatile_dice).toBe("1d10");
-    expect(out.properties).toContain("versatile");
+    const out = toWeaponCanonical(entry(improvised));
+    expect(out.category).toBe("improvised");
+  });
+
+  it("emits range only when range>0 (skipped for melee weapons)", () => {
+    const melee = toWeaponCanonical(entry(longsword2014));
+    expect(melee.range).toBeUndefined();
+
+    const ranged = toWeaponCanonical(entry(longbow2014));
+    expect(ranged.range).toEqual({ normal: 150, long: 600 });
+  });
+
+  it("sets edition + source from CanonicalEntry edition", () => {
+    const out2014 = toWeaponCanonical(entry(longsword2014, "2014"));
+    expect(out2014.edition).toBe("2014");
+    expect(out2014.source).toBe("SRD 5.1");
+
+    const out2024 = toWeaponCanonical(entry(greataxe2024, "2024"));
+    expect(out2024.edition).toBe("2024");
+    expect(out2024.source).toBe("SRD 5.2");
+  });
+
+  it("preserves slug + name", () => {
+    const out = toWeaponCanonical(entry(longsword2014, "2014", "srd-5e_longsword"));
+    expect(out.slug).toBe("srd-5e_longsword");
+    expect(out.name).toBe("Longsword");
   });
 });
