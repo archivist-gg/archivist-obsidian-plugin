@@ -22,6 +22,14 @@ export interface FeatCanonical {
   benefits: string[];
   repeatable: boolean;
   action_cost?: "action" | "bonus-action" | "reaction" | "free" | "special";
+  /**
+   * Schema-required fields. Phase 9 emits minimal safe defaults so the runtime
+   * parser accepts the bundle MD; future enrichment may populate these from
+   * structured-rules data.
+   */
+  effects: unknown[];
+  grants_asi: { amount: number; pool?: string[] } | null;
+  choices: unknown[];
 }
 
 export const featMergeRule: MergeRule = {
@@ -61,6 +69,11 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
     prerequisites,
     benefits,
     repeatable,
+    // Schema-required defaults (Phase 9). Populated minimally so the runtime
+    // parser accepts these MDs; structured-rules enrichment is a future phase.
+    effects: [],
+    grants_asi: null,
+    choices: [],
   };
 
   // Activation companion → action_cost

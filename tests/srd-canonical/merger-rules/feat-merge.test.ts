@@ -147,6 +147,30 @@ describe("featMergeRule", () => {
     expect(out.repeatable).toBe(true);
   });
 
+  it("emits minimum schema-required defaults for harness compatibility", () => {
+    const canonical: CanonicalEntry = {
+      slug: "alert",
+      edition: "2014",
+      kind: "feat",
+      base: {
+        key: "alert",
+        name: "Alert",
+        desc: "...",
+        document: { key: "srd-2014", name: "SRD 5.1" },
+        type: "Origin",
+        has_prerequisite: false,
+        benefits: [],
+      },
+      structured: null,
+      activation: null,
+      overlay: null,
+    };
+    const out = toFeatCanonical(canonical);
+    expect(out.effects).toEqual([]);
+    expect(out.grants_asi).toBeNull();
+    expect(out.choices).toEqual([]);
+  });
+
   it("reads structured-rules repeatableHidden field as repeatable", () => {
     const canonical: CanonicalEntry = {
       slug: "srd-2024_skilled",

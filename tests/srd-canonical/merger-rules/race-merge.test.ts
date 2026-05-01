@@ -174,6 +174,67 @@ describe("raceMergeRule (legacy/structural cases)", () => {
     expect(breathWeapon?.damage?.dice).toBe("2d6");
   });
 
+  it("emits minimum schema-required defaults for harness compatibility", () => {
+    const result = toRaceCanonical(baseEntry({
+      slug: "srd-5e_human",
+      edition: "2014",
+      base: {
+        key: "srd_human",
+        name: "Human",
+        is_subspecies: false,
+        subspecies_of: null,
+        desc: "...",
+        traits: [],
+      },
+    }));
+    expect(result.ability_score_increases).toEqual([]);
+    expect(typeof result.age).toBe("string");
+    expect(typeof result.alignment).toBe("string");
+    expect(result.vision).toBeDefined();
+    expect(typeof result.vision).toBe("object");
+    expect(result.languages).toBeDefined();
+    expect(Array.isArray(result.languages.fixed)).toBe(true);
+    expect(typeof result.variant_label).toBe("string");
+    expect(result.variant_label.length).toBeGreaterThan(0);
+  });
+
+  it("renames trait field from `desc` to `description` to match feature schema", () => {
+    const result = toRaceCanonical(baseEntry({
+      slug: "srd-5e_dwarf",
+      edition: "2014",
+      base: {
+        key: "srd_dwarf",
+        name: "Dwarf",
+        is_subspecies: false,
+        subspecies_of: null,
+        desc: "...",
+        traits: [
+          { name: "Stonecunning", desc: "Whenever you make...", type: null, order: null },
+        ],
+      },
+    }));
+    expect(result.traits[0].description).toContain("Whenever you make");
+    expect((result.traits[0] as Record<string, unknown>).desc).toBeUndefined();
+  });
+
+  it("auto-extracts darkvision range from a Darkvision trait", () => {
+    const result = toRaceCanonical(baseEntry({
+      slug: "srd-5e_dwarf",
+      edition: "2014",
+      base: {
+        key: "srd_dwarf",
+        name: "Dwarf",
+        is_subspecies: false,
+        subspecies_of: null,
+        desc: "...",
+        traits: [
+          { name: "Darkvision", desc: "60 feet", type: null, order: null },
+        ],
+      },
+    }));
+    expect(result.vision.darkvision).toBe(60);
+  });
+
   it("activation companion fills gaps but loses to overlay", () => {
     const canonical: CanonicalEntry = baseEntry({
       slug: "srd-5e_dragonborn",

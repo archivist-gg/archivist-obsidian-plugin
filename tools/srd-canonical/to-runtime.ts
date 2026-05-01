@@ -2,19 +2,22 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
   feat: new Set([
     "slug", "name", "edition", "source", "description", "category",
     "prerequisites", "benefits", "repeatable", "action_cost",
-    // Reserved for future structured fields the merger may add.
+    // Schema-required minimal defaults emitted by feat-merge (Phase 9).
     "effects", "grants_asi", "choices",
   ]),
   race: new Set([
     "slug", "name", "edition", "source", "description", "size", "speed",
     "vision", "subspecies_of", "traits", "additional_spells",
-    // Reserved (merger may add later).
-    "abilities", "languages",
+    // Schema-required minimal defaults emitted by race-merge (Phase 9).
+    "ability_score_increases", "age", "alignment", "languages", "variant_label",
+    // Backwards-compat alias.
+    "abilities",
   ]),
   species: new Set([
     "slug", "name", "edition", "source", "description", "size", "speed",
     "vision", "subspecies_of", "traits", "additional_spells",
-    "abilities", "languages",
+    "ability_score_increases", "age", "alignment", "languages", "variant_label",
+    "abilities",
   ]),
   class: new Set([
     "slug", "name", "edition", "source", "description", "hit_die",
