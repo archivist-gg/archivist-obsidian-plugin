@@ -5,7 +5,7 @@ import { slugifyName, editionPrefix } from "./slug-normalize";
 export type StructuredRulesKind =
   | "feats" | "backgrounds" | "races" | "classes"
   | "items" | "spells" | "magicitems" | "weapons" | "armor"
-  | "optionalfeatures" | "magicvariants";
+  | "optionalfeatures" | "magicvariants" | "conditions";
 
 const KIND_TO_FILE: Record<StructuredRulesKind, string> = {
   feats: "feats.json",
@@ -19,6 +19,7 @@ const KIND_TO_FILE: Record<StructuredRulesKind, string> = {
   armor: "items-base.json",
   optionalfeatures: "optionalfeatures.json",
   magicvariants: "magicvariants.json",
+  conditions: "conditionsdiseases.json",
 };
 
 const KIND_TO_ROOT_KEY: Partial<Record<StructuredRulesKind, string>> = {
@@ -31,6 +32,7 @@ const KIND_TO_ROOT_KEY: Partial<Record<StructuredRulesKind, string>> = {
   armor: "baseitem",
   optionalfeatures: "optionalfeature",
   magicvariants: "magicvariant",
+  conditions: "condition",
 };
 
 export interface StructuredRulesOptions {
@@ -64,8 +66,19 @@ export function readStructuredRules(opts: StructuredRulesOptions): Promise<Struc
   const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown>;
   const all = (raw[rootKey] ?? []) as StructuredEntry[];
   const prefix = editionPrefix(opts.edition);
+  // Conditions have no Open5e-derived slug filter (Open5e exposes 0 for SRD
+  // documents). Treat the structured-rules dump as source-of-truth and gate
+  // by the per-entry SRD flag instead. 2014 entries carry `srd:true`; 2024
+  // entries carry `srd52:true`.
+  const useStructuredSrdFlag = opts.kind === "conditions";
   const filtered = all.filter(e => {
     if (!isSourceForEdition(e.source, opts.edition)) return false;
+    if (useStructuredSrdFlag) {
+      const flag = opts.edition === "2014"
+        ? (e as { srd?: boolean }).srd
+        : (e as { srd52?: boolean }).srd52;
+      return flag === true;
+    }
     const slug = prefix + slugifyName(e.name);
     return opts.slugSet.has(slug);
   });

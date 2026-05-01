@@ -20,7 +20,7 @@ import { armorMergeRule, toArmorCanonical } from "./merger-rules/armor-merge";
 import { itemMergeRule, toItemCanonical } from "./merger-rules/item-merge";
 import { spellMergeRule, toSpellCanonical } from "./merger-rules/spell-merge";
 import { creatureMergeRule, toCreatureCanonical } from "./merger-rules/creature-merge";
-import { conditionMergeRule, toConditionCanonical } from "./merger-rules/condition-merge";
+import { conditionMergeRule, toConditionCanonical, buildConditionsFromStructured } from "./merger-rules/condition-merge";
 import { mergeOptionalFeatures } from "./merger-rules/optional-feature-merge";
 
 /**
@@ -57,6 +57,7 @@ const KIND_MAP: Partial<Record<Open5eKind, StructuredRulesKind>> = {
   magicitems: "magicitems",
   weapons: "weapons",
   armor: "armor",
+  conditions: "conditions",
 };
 
 // Per-kind merge rule + canonical mapper. The mapper is invoked on each
@@ -130,6 +131,28 @@ async function main() {
       const ruleEntry = RULES_BY_KIND[kind];
       if (!ruleEntry) {
         console.log(`[canonical]   no merge rule for ${kind} (skipped)`);
+        continue;
+      }
+
+      // Conditions: Open5e exposes 0 entries for SRD documents, so the
+      // standard mergeKind path (which iterates over open5e) emits nothing.
+      // Build CanonicalEntries directly from the structured-rules dump and
+      // run them through toConditionCanonical. The Open5e-fed mergeKind path
+      // remains the primary read for every other kind.
+      if (kind === "conditions") {
+        const merged = buildConditionsFromStructured(structured, edition);
+        const canonical = merged.map(toConditionCanonical);
+        console.log(`[canonical]   merged: ${canonical.length} canonical entries`);
+
+        emitForKind({
+          canonical: canonical as unknown as Array<Record<string, unknown> & { name: string; slug: string }>,
+          entityKind: OPEN5E_KIND_TO_ENTITY[kind],
+          kind,
+          edition,
+          canonicalOutDir: cfg.canonicalOutDir,
+          runtimeOutDir: cfg.runtimeOutDir,
+          bundleOutDir: cfg.bundleOutDir,
+        });
         continue;
       }
 
