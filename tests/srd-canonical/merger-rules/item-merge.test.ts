@@ -101,3 +101,99 @@ describe("itemMergeRule", () => {
     expect(out.requires_attunement).toBe(false);
   });
 });
+
+describe("item-merge Open5e shape normalization", () => {
+  const makeEntry = (overrides: Partial<CanonicalEntry> & { base: Record<string, unknown> }): CanonicalEntry => ({
+    slug: overrides.slug ?? "srd-5e_bag-of-holding",
+    edition: overrides.edition ?? "2014",
+    kind: overrides.kind ?? "item",
+    base: overrides.base as never,
+    structured: overrides.structured ?? null,
+    activation: overrides.activation ?? null,
+    overlay: null,
+  });
+
+  it("normalizes rarity object to lowercase string", () => {
+    const result = toItemCanonical(makeEntry({
+      base: {
+        name: "Bag of Holding",
+        rarity: { name: "Uncommon", key: "uncommon", rank: 2 },
+        category: { name: "Wondrous Item", key: "wondrous-item" },
+        desc: "...",
+        requires_attunement: false,
+      },
+    }));
+    expect(result.rarity).toBe("uncommon");
+  });
+
+  it("maps category.key to runtime type ('wondrous-item' -> 'wondrous item')", () => {
+    const result = toItemCanonical(makeEntry({
+      base: {
+        name: "Bag of Holding",
+        rarity: { name: "Uncommon", key: "uncommon", rank: 2 },
+        category: { name: "Wondrous Item", key: "wondrous-item" },
+        desc: "...",
+        requires_attunement: false,
+      },
+    }));
+    expect(result.type).toBe("wondrous item");
+  });
+
+  it("emits base_item wikilink for magical weapons", () => {
+    const result = toItemCanonical(makeEntry({
+      slug: "srd-5e_battleaxe-1",
+      base: {
+        name: "Battleaxe (+1)",
+        rarity: { name: "Uncommon", key: "uncommon", rank: 2 },
+        category: { name: "Weapon", key: "weapon" },
+        weapon: {
+          name: "Battleaxe",
+          key: "srd_battleaxe",
+          damage_type: { name: "Slashing", key: "slashing" },
+          damage_dice: "1d8",
+          properties: [],
+          is_simple: false,
+          is_martial: true,
+          is_improvised: false,
+          distance_unit: "feet",
+        },
+        armor: null,
+        desc: "...",
+        requires_attunement: false,
+      },
+    }));
+    expect(result.base_item).toBe("[[SRD 5e/Weapons/Battleaxe]]");
+  });
+
+  it("reads attunement_detail to attunement.restriction", () => {
+    const result = toItemCanonical(makeEntry({
+      slug: "srd-5e_holy-avenger",
+      base: {
+        name: "Holy Avenger",
+        rarity: { name: "Legendary", key: "legendary", rank: 5 },
+        category: { name: "Weapon", key: "weapon" },
+        desc: "...",
+        requires_attunement: true,
+        attunement_detail: "by a paladin",
+      },
+    }));
+    expect(result.attunement).toBeDefined();
+    expect(result.attunement?.required).toBe(true);
+    expect(result.attunement?.restriction).toBe("by a paladin");
+  });
+
+  it("surfaces structured-rules bonusWeapon to bonuses.attack", () => {
+    const result = toItemCanonical(makeEntry({
+      slug: "srd-5e_battleaxe-1",
+      base: {
+        name: "Battleaxe (+1)",
+        rarity: { name: "Uncommon", key: "uncommon", rank: 2 },
+        category: { name: "Weapon", key: "weapon" },
+        desc: "...",
+        requires_attunement: false,
+      },
+      structured: { name: "Battleaxe (+1)", bonusWeapon: "+1" } as never,
+    }));
+    expect(result.bonuses?.attack).toBe("+1");
+  });
+});
