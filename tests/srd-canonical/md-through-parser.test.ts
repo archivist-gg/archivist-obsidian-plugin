@@ -22,6 +22,7 @@ import { parseMonster } from "../../src/modules/monster/monster.parser";
 import { parseOptionalFeature } from "../../src/modules/optional-feature/optional-feature.parser";
 import { parseRace } from "../../src/modules/race/race.parser";
 import { parseSpell } from "../../src/modules/spell/spell.parser";
+import { parseSubclass } from "../../src/modules/subclass/subclass.parser";
 import { parseWeapon } from "../../src/modules/weapon/weapon.parser";
 
 const BUNDLE_ROOT = path.resolve(__dirname, "../../.compendium-bundle");
@@ -30,9 +31,8 @@ type ParseFn = (
   source: string,
 ) => { success: true; data: unknown } | { success: false; error: unknown };
 
-// Codeblock languages encountered in the bundle. Subclass MDs (e.g. Life
-// Domain, Champion) emit a `class` codeblock — there is no `subclass` lang —
-// so parseClass covers them.
+// Codeblock languages encountered in the bundle. Subclass MDs (e.g. Champion,
+// Life Domain) emit a `subclass` codeblock and route through parseSubclass.
 const PARSER_MAP: Record<string, ParseFn> = {
   armor: parseArmor,
   background: parseBackground,
@@ -43,6 +43,7 @@ const PARSER_MAP: Record<string, ParseFn> = {
   "optional-feature": parseOptionalFeature,
   race: parseRace,
   spell: parseSpell,
+  subclass: parseSubclass,
   weapon: parseWeapon,
   // condition: no runtime parser exists yet — skipped via SKIPPED_LANGS.
 };

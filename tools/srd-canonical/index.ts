@@ -77,10 +77,8 @@ const RULES_BY_KIND: Record<Open5eKind, { rule: MergeRule; toCanonical: (entry: 
 };
 
 // Subclasses are routed off the "classes" Open5e kind via subclass_of.
-// Phase 9+ will fan them out; for now keep the imports live so the rule
-// stays in the dependency graph and ready for that wiring.
-void subclassMergeRule;
-void toSubclassCanonical;
+// Entries with `subclass_of !== null` are split off the classes pass and
+// run through subclassMergeRule + toSubclassCanonical.
 
 /**
  * Read the structured-rules optionalfeatures.json directly. The standard
@@ -156,7 +154,17 @@ async function main() {
         continue;
       }
 
-      const merged = mergeKind(ruleEntry.rule, { edition, kind, open5e, structured, activation, overlay });
+      // Classes endpoint also serves subclass entries (subclass_of !== null).
+      // Split the two so each goes through its own merge rule.
+      let classOpen5e = open5e;
+      let subclassOpen5e: typeof open5e = [];
+      if (kind === "classes") {
+        classOpen5e = open5e.filter(e => !(e as { subclass_of?: unknown }).subclass_of);
+        subclassOpen5e = open5e.filter(e => Boolean((e as { subclass_of?: unknown }).subclass_of));
+        console.log(`[canonical]   split: ${classOpen5e.length} classes, ${subclassOpen5e.length} subclasses`);
+      }
+
+      const merged = mergeKind(ruleEntry.rule, { edition, kind, open5e: classOpen5e, structured, activation, overlay });
       const canonical = merged.map(ruleEntry.toCanonical);
       console.log(`[canonical]   merged: ${canonical.length} canonical entries`);
 
@@ -170,6 +178,21 @@ async function main() {
         runtimeOutDir: cfg.runtimeOutDir,
         bundleOutDir: cfg.bundleOutDir,
       });
+
+      if (kind === "classes" && subclassOpen5e.length > 0) {
+        const subMerged = mergeKind(subclassMergeRule, { edition, kind: "subclass", open5e: subclassOpen5e, structured: [], activation: new Map(), overlay });
+        const subCanonical = subMerged.map(toSubclassCanonical);
+        console.log(`[canonical]   subclass merged: ${subCanonical.length} canonical entries`);
+        emitForKind({
+          canonical: subCanonical as unknown as Array<Record<string, unknown> & { name: string; slug: string }>,
+          entityKind: "subclass",
+          kind: "subclasses",
+          edition,
+          canonicalOutDir: cfg.canonicalOutDir,
+          runtimeOutDir: cfg.runtimeOutDir,
+          bundleOutDir: cfg.bundleOutDir,
+        });
+      }
     }
 
     // Optional-feature kind is overlay-driven (no Open5e endpoint exists).

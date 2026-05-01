@@ -3,7 +3,7 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
   race: new Set(["slug", "name", "edition", "source", "size", "speed", "vision", "abilities", "languages", "subspecies_of", "traits"]),
   species: new Set(["slug", "name", "edition", "source", "size", "speed", "vision", "abilities", "languages", "subspecies_of", "traits"]),
   class: new Set(["slug", "name", "edition", "source", "hit_dice", "primary_abilities", "saving_throws", "spellcasting", "resources", "weapon_mastery", "data_for_class_table", "features"]),
-  subclass: new Set(["slug", "name", "edition", "source", "parent_class", "features"]),
+  subclass: new Set(["slug", "name", "edition", "source", "description", "parent_class", "features_by_level", "resources"]),
   background: new Set(["slug", "name", "edition", "source", "skill_proficiencies", "tool_proficiencies", "language_proficiencies", "equipment", "feature", "ability_score_increases", "origin_feat"]),
   weapon: new Set(["slug", "name", "edition", "source", "category", "damage", "properties", "range", "reload", "mastery", "type_tags", "weight", "cost"]),
   armor: new Set(["slug", "name", "edition", "source", "category", "ac", "strength_required", "stealth_disadvantage", "weight", "cost"]),
