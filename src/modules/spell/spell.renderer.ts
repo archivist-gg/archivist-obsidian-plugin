@@ -6,21 +6,72 @@ import {
   renderTextWithInlineTags,
 } from "../../shared/rendering/renderer-utils";
 
+function ordinal(n: number): string {
+  if (n === 1) return "1st";
+  if (n === 2) return "2nd";
+  if (n === 3) return "3rd";
+  return `${n}th`;
+}
+
 function getSpellHeader(spell: Spell): string {
   const level = spell.level ?? 0;
   const school = spell.school ?? "Unknown";
   if (level === 0) {
     return `${school} cantrip`;
   }
-  const ordinal =
-    level === 1
-      ? "1st"
-      : level === 2
-        ? "2nd"
-        : level === 3
-          ? "3rd"
-          : `${level}th`;
-  return `${ordinal}-level ${school.toLowerCase()}`;
+  return `${ordinal(level)}-level ${school.toLowerCase()}`;
+}
+
+/**
+ * Render the slot-scaling table from casting_options if present, else fall
+ * back to the prose at_higher_levels block. Returns true when something was
+ * rendered.
+ */
+function renderSlotScalingOrHigherLevels(parent: HTMLElement, spell: Spell): boolean {
+  const slotOpts = (spell.casting_options ?? []).filter((o) =>
+    o.type.startsWith("slot_level_"),
+  );
+  if (slotOpts.length > 0) {
+    const wrap = el("div", { cls: "spell-higher-levels", parent });
+    el("div", {
+      cls: "higher-levels-header",
+      text: "At Higher Levels.",
+      parent: wrap,
+    });
+    const table = el("table", { cls: "spell-slot-scaling-table", parent: wrap });
+    const thead = el("thead", { parent: table });
+    const headerRow = el("tr", { parent: thead });
+    el("th", { text: "Slot", parent: headerRow });
+    el("th", { text: "Damage", parent: headerRow });
+    const tbody = el("tbody", { parent: table });
+    for (const opt of slotOpts) {
+      const lvlMatch = opt.type.match(/slot_level_(\d+)/);
+      const lvl = lvlMatch ? parseInt(lvlMatch[1], 10) : 0;
+      const row = el("tr", { parent: tbody });
+      el("td", { text: ordinal(lvl), parent: row });
+      el("td", {
+        text: opt.damage_roll && opt.damage_roll.length > 0 ? opt.damage_roll : "—",
+        parent: row,
+      });
+    }
+    return true;
+  }
+
+  if (spell.at_higher_levels && spell.at_higher_levels.length > 0) {
+    const higherDiv = el("div", { cls: "spell-higher-levels", parent });
+    el("div", {
+      cls: "higher-levels-header",
+      text: "At Higher Levels.",
+      parent: higherDiv,
+    });
+    for (const text of spell.at_higher_levels) {
+      const p = el("div", { cls: "description-paragraph", parent: higherDiv });
+      renderTextWithInlineTags(text, p);
+    }
+    return true;
+  }
+
+  return false;
 }
 
 export function renderSpellBlock(spell: Spell): HTMLElement {
@@ -60,22 +111,8 @@ export function renderSpellBlock(spell: Spell): HTMLElement {
     }
   }
 
-  // 4. At Higher Levels
-  if (spell.at_higher_levels && spell.at_higher_levels.length > 0) {
-    const higherDiv = el("div", {
-      cls: "spell-higher-levels",
-      parent: block,
-    });
-    el("div", {
-      cls: "higher-levels-header",
-      text: "At Higher Levels.",
-      parent: higherDiv,
-    });
-    for (const text of spell.at_higher_levels) {
-      const p = el("div", { cls: "description-paragraph", parent: higherDiv });
-      renderTextWithInlineTags(text, p);
-    }
-  }
+  // 4. At Higher Levels — table from casting_options[] if present, else prose
+  renderSlotScalingOrHigherLevels(block, spell);
 
   // 5. Classes
   if (spell.classes && spell.classes.length > 0) {
