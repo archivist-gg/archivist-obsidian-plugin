@@ -53,6 +53,10 @@ function isSourceForEdition(source: string, edition: "2014" | "2024"): boolean {
   return !source.startsWith("X");
 }
 
+function editionPrefix(edition: "2014" | "2024"): string {
+  return edition === "2014" ? "srd_" : "srd-2024_";
+}
+
 export function readStructuredRules(opts: StructuredRulesOptions): Promise<StructuredEntry[]> {
   const file = KIND_TO_FILE[opts.kind];
   const rootKey = KIND_TO_ROOT_KEY[opts.kind];
@@ -63,10 +67,10 @@ export function readStructuredRules(opts: StructuredRulesOptions): Promise<Struc
   if (!fs.existsSync(filePath)) return Promise.resolve([]);
   const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown>;
   const all = (raw[rootKey] ?? []) as StructuredEntry[];
-  const editionPrefix = opts.edition === "2014" ? "srd_" : "srd-2024_";
+  const prefix = editionPrefix(opts.edition);
   const filtered = all.filter(e => {
     if (!isSourceForEdition(e.source, opts.edition)) return false;
-    const slug = editionPrefix + slugifyName(e.name);
+    const slug = prefix + slugifyName(e.name);
     return opts.slugSet.has(slug);
   });
   return Promise.resolve(filtered);
@@ -79,13 +83,13 @@ function readKindFromIndex(opts: StructuredRulesOptions): Promise<StructuredEntr
   const files = fs.readdirSync(dir).filter(f => f.endsWith(".json") && !f.startsWith("foundry-") && !f.startsWith("index"));
   const all: StructuredEntry[] = [];
   const rootKey = opts.kind === "classes" ? "class" : "spell";
-  const editionPrefix = opts.edition === "2014" ? "srd_" : "srd-2024_";
+  const prefix = editionPrefix(opts.edition);
   for (const f of files) {
     const json = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")) as Record<string, unknown>;
     const list = (json[rootKey] ?? []) as StructuredEntry[];
     for (const e of list) {
       if (!isSourceForEdition(e.source, opts.edition)) continue;
-      if (opts.slugSet.has(editionPrefix + slugifyName(e.name))) all.push(e);
+      if (opts.slugSet.has(prefix + slugifyName(e.name))) all.push(e);
     }
   }
   return Promise.resolve(all);

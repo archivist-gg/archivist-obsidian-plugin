@@ -40,4 +40,17 @@ describe("readStructuredRules slug matching", () => {
     });
     expect(result).toEqual([]);
   });
+
+  it("applies the edition prefix in readKindFromIndex (spells per-source dir)", async () => {
+    const slugSet = new Set(["srd_fireball"]);
+    const result = await readStructuredRules({
+      kind: "spells",
+      edition: "2014",
+      rootPath: fixtureRoot,
+      slugSet,
+    });
+    expect(result.length).toBe(1);
+    expect(result[0].name).toBe("Fireball");
+    expect(result[0].source).toBe("PHB");
+  });
 });

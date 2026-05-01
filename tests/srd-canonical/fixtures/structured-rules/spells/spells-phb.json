@@ -1,0 +1,6 @@
+{
+  "spell": [
+    { "name": "Fireball", "source": "PHB", "edition": "2014" },
+    { "name": "Magic Missile", "source": "PHB", "edition": "2014" }
+  ]
+}
