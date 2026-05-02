@@ -27,8 +27,7 @@ duration: Instantaneous
 concentration: false
 ritual: false
 classes: [Sorcerer, Wizard]
-description:
-  - "A bright streak flashes from your pointing finger."
+description: "A bright streak flashes from your pointing finger."
 at_higher_levels:
   - "Damage increases by 1d6 for each slot level above 3rd."
 `;
@@ -42,7 +41,7 @@ at_higher_levels:
       expect(s.concentration).toBe(false);
       expect(s.ritual).toBe(false);
       expect(s.classes).toEqual(["Sorcerer", "Wizard"]);
-      expect(s.description?.length).toBe(1);
+      expect(s.description).toBe("A bright streak flashes from your pointing finger.");
       expect(s.at_higher_levels?.length).toBe(1);
     }
   });
@@ -53,6 +52,52 @@ at_higher_levels:
     if (result.success) {
       expect(result.data.level).toBe(0);
     }
+  });
+});
+
+const fireballYaml = `
+name: Fireball
+level: 3
+school: evocation
+casting_time: action
+range: 150 feet
+components: V, S, M (a tiny ball of bat guano and sulfur.)
+duration: instantaneous
+concentration: false
+ritual: false
+description: A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame.
+classes:
+  - sorcerer
+  - wizard
+at_higher_levels:
+  - When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd.
+damage:
+  types:
+    - fire
+saving_throw:
+  ability: dexterity
+casting_options:
+  - type: slot_level_4
+    damage_roll: 9d6
+`;
+
+describe("parseSpell new shape", () => {
+  it("parses Fireball end-to-end with new shape", () => {
+    const r = parseSpell(fireballYaml);
+    expect(r.success).toBe(true);
+    if (!r.success) return;
+    expect(r.data.name).toBe("Fireball");
+    expect(r.data.description).toBe(
+      "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame."
+    );
+    expect(r.data.damage).toEqual({ types: ["fire"] });
+    expect(r.data.saving_throw).toEqual({ ability: "dexterity" });
+    expect(r.data.casting_options?.[0]).toMatchObject({ type: "slot_level_4", damage_roll: "9d6" });
+  });
+
+  it("rejects unknown top-level fields", () => {
+    const r = parseSpell("name: Foo\nbogus: 1\n");
+    expect(r.success).toBe(false);
   });
 });
 

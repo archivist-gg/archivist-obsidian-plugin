@@ -20,7 +20,9 @@ export interface Spell {
   concentration?: boolean;
   ritual?: boolean;
   classes?: string[];
-  description?: string[];
+  description?: string;
   at_higher_levels?: string[];
+  damage?: { types: string[] };
+  saving_throw?: { ability: string };
   casting_options?: CastingOption[];
 }
