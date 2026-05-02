@@ -283,7 +283,7 @@ export class MonsterModal extends Modal {
 
     // Legendary
     if (this.form.legendaryActions) {
-      obj.legendary_actions = Number(this.form.legendaryActions);
+      obj.legendary_action_uses = Number(this.form.legendaryActions);
     }
     if (this.form.legendaryResistance) {
       obj.legendary_resistance = Number(this.form.legendaryResistance);
@@ -305,7 +305,7 @@ export class MonsterModal extends Modal {
     if (reactions.length > 0) obj.reactions = reactions;
 
     const legendary = formatFeatures(this.form.legendary);
-    if (legendary.length > 0) obj.legendary = legendary;
+    if (legendary.length > 0) obj.legendary_actions = legendary;
 
     const yamlStr = toYamlString(obj);
     const block = "```monster\n" + yamlStr + "\n```\n";

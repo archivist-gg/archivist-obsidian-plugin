@@ -23,8 +23,8 @@ export interface Monster {
   traits?: Feature[];
   actions?: Feature[];
   reactions?: Feature[];
-  legendary?: Feature[];
-  legendary_actions?: number;
+  legendary_actions?: Feature[];
+  legendary_action_uses?: number;
   legendary_resistance?: number;
   columns?: number;
 }

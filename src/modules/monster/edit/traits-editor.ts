@@ -62,7 +62,7 @@ export function getFeatures(m: EditableMonster, key: string): Feature[] | undefi
     traits: m.traits,
     actions: m.actions,
     reactions: m.reactions,
-    legendary: m.legendary,
+    legendary_actions: m.legendary_actions,
   };
   const result = featureMap[key] ?? (m as unknown as Record<string, unknown>)[key] as Feature[] | undefined;
   // If the section is active but has no features array yet, return empty array

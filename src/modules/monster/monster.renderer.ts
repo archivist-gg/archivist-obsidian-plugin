@@ -148,7 +148,7 @@ function renderLegendarySection(
   parent: HTMLElement,
   monster: Monster,
 ): void {
-  const legendaryCount = monster.legendary_actions ?? 3;
+  const legendaryCount = monster.legendary_action_uses ?? 3;
   const monsterName = monster.name.toLowerCase();
 
   const introText = `The ${monsterName} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monsterName} regains spent legendary actions at the start of its turn.`;
@@ -375,7 +375,7 @@ export function renderMonsterBlock(monster: Monster, columns: number = 1): HTMLE
     { id: "traits", label: "Traits", features: monster.traits },
     { id: "actions", label: "Actions", features: monster.actions },
     { id: "reactions", label: "Reactions", features: monster.reactions },
-    { id: "legendary", label: "Legendary Actions", features: monster.legendary },
+    { id: "legendary", label: "Legendary Actions", features: monster.legendary_actions },
   ];
 
   const activeSections = sectionDefs.filter(

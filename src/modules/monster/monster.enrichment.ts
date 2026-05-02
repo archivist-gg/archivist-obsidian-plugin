@@ -84,7 +84,7 @@ const MONSTER_SECTIONS: [keyof Monster, ActionCategory][] = [
   ["traits", "trait"],
   ["actions", "action"],
   ["reactions", "reaction"],
-  ["legendary", "legendary"],
+  ["legendary_actions", "legendary"],
 ];
 
 export function convertMonsterEntries(

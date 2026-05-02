@@ -111,7 +111,7 @@ export function monsterToEditable(monster: Monster): EditableMonster {
   if (monster.traits && monster.traits.length > 0) activeSections.push("traits");
   if (monster.actions && monster.actions.length > 0) activeSections.push("actions");
   if (monster.reactions && monster.reactions.length > 0) activeSections.push("reactions");
-  if (monster.legendary && monster.legendary.length > 0) activeSections.push("legendary");
+  if (monster.legendary_actions && monster.legendary_actions.length > 0) activeSections.push("legendary_actions");
 
   // Detect overrides: compare parsed values against auto-calculated values
   const overrides = new Set<string>();
@@ -269,8 +269,8 @@ export function editableToMonster(editable: EditableMonster): Monster {
   if (sections.includes("traits") && editable.traits && editable.traits.length > 0) monster.traits = editable.traits;
   if (sections.includes("actions") && editable.actions && editable.actions.length > 0) monster.actions = editable.actions;
   if (sections.includes("reactions") && editable.reactions && editable.reactions.length > 0) monster.reactions = editable.reactions;
-  if (sections.includes("legendary") && editable.legendary && editable.legendary.length > 0) monster.legendary = editable.legendary;
-  if (editable.legendary_actions !== undefined) monster.legendary_actions = editable.legendary_actions;
+  if (sections.includes("legendary_actions") && editable.legendary_actions && editable.legendary_actions.length > 0) monster.legendary_actions = editable.legendary_actions;
+  if (editable.legendary_action_uses !== undefined) monster.legendary_action_uses = editable.legendary_action_uses;
   if (editable.legendary_resistance !== undefined) monster.legendary_resistance = editable.legendary_resistance;
   if (editable.columns !== undefined) monster.columns = editable.columns;
 
@@ -469,8 +469,8 @@ export class MonsterEditState {
 function sectionToMonsterKey(section: string): string | null {
   const map: Record<string, string> = {
     traits: "traits", actions: "actions", reactions: "reactions",
-    legendary: "legendary", "bonus actions": "bonus_actions",
-    "legendary actions": "legendary", "lair actions": "lair_actions",
+    legendary: "legendary_actions", "bonus actions": "bonus_actions",
+    "legendary actions": "legendary_actions", "lair actions": "lair_actions",
     "mythic actions": "mythic_actions",
   };
   return map[section.toLowerCase()] ?? null;

@@ -222,4 +222,40 @@ actions:
       expect(result.data.actions![0].recharge).toBeUndefined();
     }
   });
+
+  it("parses YAML with legendary_actions array (renamed from legendary)", () => {
+    const yamlBody = `
+name: Adult Black Dragon
+legendary_actions:
+  - name: Cloud of Insects
+    entries: ["..."]
+  - name: Pounce
+    entries: ["..."]
+legendary_action_uses: 3
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.legendary_actions?.length).toBe(2);
+      expect(result.data.legendary_actions?.[0].name).toBe("Cloud of Insects");
+      expect(result.data.legendary_action_uses).toBe(3);
+    }
+  });
+
+  it("backwards-compat: still parses legacy legendary array + numeric legendary_actions", () => {
+    const yamlBody = `
+name: Old Format Dragon
+legendary:
+  - name: Tail Swipe
+    entries: ["..."]
+legendary_actions: 4
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.legendary_actions?.length).toBe(1);
+      expect(result.data.legendary_actions?.[0].name).toBe("Tail Swipe");
+      expect(result.data.legendary_action_uses).toBe(4);
+    }
+  });
 });

@@ -122,7 +122,7 @@ export function renderTabContent(
   }
 
   // Legendary checkboxes at top of legendary tab
-  if (activeKey === "legendary") {
+  if (activeKey === "legendary_actions") {
     renderLegendaryCheckboxes(container, state);
   }
 
@@ -207,9 +207,9 @@ function renderLegendaryCheckboxes(container: HTMLElement, state: MonsterEditSta
   const actionsWrap = actionsField.createDiv({ cls: "archivist-num-wrap" });
   const actionsInput = actionsWrap.createEl("input", { cls: "archivist-num-in" });
   actionsInput.type = "number";
-  actionsInput.value = String(state.current.legendary_actions ?? 3);
+  actionsInput.value = String(state.current.legendary_action_uses ?? 3);
   actionsInput.addEventListener("input", () => {
-    state.updateField("legendary_actions", parseInt(actionsInput.value) || 0);
+    state.updateField("legendary_action_uses", parseInt(actionsInput.value) || 0);
   });
   createSpinButtons(actionsWrap, actionsInput);
 

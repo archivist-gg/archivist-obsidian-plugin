@@ -63,8 +63,8 @@ export const monsterInputSchema = z.object({
   traits: z.array(featureSchema).optional(),
   actions: z.array(featureSchema).optional(),
   reactions: z.array(featureSchema).optional(),
-  legendary: z.array(featureSchema).optional(),
-  legendary_actions: z.number().optional(),
+  legendary_actions: z.array(featureSchema).optional(),
+  legendary_action_uses: z.number().optional(),
   legendary_resistance: z.number().optional(),
 });
 

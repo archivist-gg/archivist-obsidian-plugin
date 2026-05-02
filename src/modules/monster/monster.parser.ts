@@ -145,9 +145,27 @@ export function parseMonster(source: string): ParseResult<Monster> {
   monster.traits = parseFeatures(raw.traits);
   monster.actions = parseFeatures(raw.actions);
   monster.reactions = parseFeatures(raw.reactions);
-  monster.legendary = parseFeatures(raw.legendary);
+  // `legendary_actions` is the array of legendary actions (current/canonical name).
+  // `legendary` is a backwards-compat alias for older user YAML where the array
+  // was misnamed `legendary` and the per-round count lived under `legendary_actions`.
+  const legendaryArrayRaw = Array.isArray(raw.legendary_actions)
+    ? raw.legendary_actions
+    : raw.legendary;
+  monster.legendary_actions = parseFeatures(legendaryArrayRaw);
 
-  if (raw.legendary_actions != null) monster.legendary_actions = Number(raw.legendary_actions);
+  // `legendary_action_uses` is the per-round count budget. The merger does not
+  // emit this — it defaults to 3 in the renderer. We accept it under its new
+  // name, and fall back to the legacy numeric `legendary_actions` value when
+  // that field encoded the count rather than the array.
+  if (raw.legendary_action_uses != null) {
+    monster.legendary_action_uses = Number(raw.legendary_action_uses);
+  } else if (
+    raw.legendary_actions != null &&
+    !Array.isArray(raw.legendary_actions) &&
+    typeof raw.legendary_actions !== "object"
+  ) {
+    monster.legendary_action_uses = Number(raw.legendary_actions);
+  }
   if (raw.legendary_resistance != null) monster.legendary_resistance = Number(raw.legendary_resistance);
   if (raw.columns != null) monster.columns = Number(raw.columns);
 

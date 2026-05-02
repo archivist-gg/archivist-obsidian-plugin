@@ -48,7 +48,7 @@ describe("monsterToEditable", () => {
     const editable = monsterToEditable(GOBLIN);
     expect(editable.activeSections).toContain("traits");
     expect(editable.activeSections).toContain("actions");
-    expect(editable.activeSections).not.toContain("legendary");
+    expect(editable.activeSections).not.toContain("legendary_actions");
   });
   it("calculates proficiency bonus from CR", () => {
     const editable = monsterToEditable(GOBLIN);
@@ -88,7 +88,7 @@ describe("editableToMonster", () => {
   it("omits empty sections", () => {
     const editable = monsterToEditable(GOBLIN);
     const monster = editableToMonster(editable);
-    expect(monster.legendary).toBeUndefined();
+    expect(monster.legendary_actions).toBeUndefined();
     expect(monster.reactions).toBeUndefined();
   });
 });

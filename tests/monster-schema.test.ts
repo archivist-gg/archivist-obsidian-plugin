@@ -42,8 +42,8 @@ describe("monsterInputSchema", () => {
       passive_perception: 23, languages: ["Common", "Draconic"],
       traits: [{ name: "Legendary Resistance (3/Day)", entries: ["If the dragon fails a saving throw, it can choose to succeed instead."] }],
       actions: [{ name: "Multiattack", entries: ["The dragon makes three attacks."] }],
-      legendary: [{ name: "Detect", entries: ["The dragon makes a Wisdom (Perception) check."] }],
-      legendary_actions: 3, legendary_resistance: 3,
+      legendary_actions: [{ name: "Detect", entries: ["The dragon makes a Wisdom (Perception) check."] }],
+      legendary_action_uses: 3, legendary_resistance: 3,
     });
     expect(result.success).toBe(true);
   });
