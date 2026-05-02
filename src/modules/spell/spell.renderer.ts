@@ -1,10 +1,11 @@
-import { setIcon } from "obsidian";
+import { setIcon, type App, Component } from "obsidian";
 import { Spell } from "./spell.types";
 import {
   el,
   createIconProperty,
   renderTextWithInlineTags,
 } from "../../shared/rendering/renderer-utils";
+import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
 function ordinal(n: number): string {
   if (n === 1) return "1st";
@@ -13,52 +14,53 @@ function ordinal(n: number): string {
   return `${n}th`;
 }
 
-function getSpellHeader(spell: Spell): string {
-  const level = spell.level ?? 0;
-  const school = spell.school ?? "Unknown";
-  if (level === 0) {
-    return `${school} cantrip`;
-  }
-  return `${ordinal(level)}-level ${school.toLowerCase()}`;
+function titleCase(s: string): string {
+  return s.replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/**
- * Render the slot-scaling table from casting_options if present, else fall
- * back to the prose at_higher_levels block. Returns true when something was
- * rendered.
- */
-function renderSlotScalingOrHigherLevels(parent: HTMLElement, spell: Spell): boolean {
-  const slotOpts = (spell.casting_options ?? []).filter((o) =>
-    o.type.startsWith("slot_level_"),
-  );
-  if (slotOpts.length > 0) {
-    const wrap = el("div", { cls: "spell-higher-levels", parent });
-    el("div", {
-      cls: "higher-levels-header",
-      text: "At Higher Levels.",
-      parent: wrap,
-    });
-    const table = el("table", { cls: "spell-slot-scaling-table", parent: wrap });
-    const thead = el("thead", { parent: table });
-    const headerRow = el("tr", { parent: thead });
-    el("th", { text: "Slot", parent: headerRow });
-    el("th", { text: "Damage", parent: headerRow });
-    const tbody = el("tbody", { parent: table });
-    for (const opt of slotOpts) {
-      const lvlMatch = opt.type.match(/slot_level_(\d+)/);
-      const lvl = lvlMatch ? parseInt(lvlMatch[1], 10) : 0;
-      const row = el("tr", { parent: tbody });
-      el("td", { text: ordinal(lvl), parent: row });
-      el("td", {
-        text: opt.damage_roll && opt.damage_roll.length > 0 ? opt.damage_roll : "—",
-        parent: row,
-      });
-    }
-    return true;
+function getSpellHeader(spell: Spell): string {
+  const level = spell.level ?? 0;
+  const school = titleCase(spell.school ?? "Unknown");
+  if (level === 0) return `${school} cantrip`;
+  return `${ordinal(level)}-level ${school}`;
+}
+
+export async function renderSpellBlock(
+  spell: Spell,
+  app?: App,
+  component?: Component,
+): Promise<HTMLElement> {
+  const wrapper = el("div", { cls: "archivist-spell-block-wrapper" });
+  const block = el("div", { cls: "archivist-spell-block", parent: wrapper });
+
+  // Header
+  const header = el("div", { cls: "spell-block-header", parent: block });
+  el("h3", { cls: "spell-name", text: spell.name, parent: header });
+  el("div", { cls: "spell-school", text: getSpellHeader(spell), parent: header });
+
+  // Properties (icon-prefixed)
+  const props = el("div", { cls: "spell-properties", parent: block });
+  if (spell.casting_time) createIconProperty(props, "clock", "Casting Time:", spell.casting_time);
+  if (spell.range) createIconProperty(props, "target", "Range:", spell.range);
+  if (spell.components) createIconProperty(props, "box", "Components:", spell.components);
+  if (spell.duration) createIconProperty(props, "sparkles", "Duration:", spell.duration);
+  if (spell.damage?.types && spell.damage.types.length > 0) {
+    createIconProperty(props, "flame", "Damage Type:", spell.damage.types.map(titleCase).join(", "));
+  }
+  if (spell.saving_throw?.ability) {
+    createIconProperty(props, "shield-alert", "Save:", titleCase(spell.saving_throw.ability));
   }
 
+  // Description (markdown)
+  if (spell.description && spell.description.length > 0) {
+    const descDiv = el("div", { cls: "spell-description", parent: block });
+    await renderMarkdownDescription(descDiv, spell.description, app, component);
+  }
+
+  // At Higher Levels — always prose; casting_options stays in the data model
+  // but is NOT displayed in the spell card (consumed later by PC spellcasting).
   if (spell.at_higher_levels && spell.at_higher_levels.length > 0) {
-    const higherDiv = el("div", { cls: "spell-higher-levels", parent });
+    const higherDiv = el("div", { cls: "spell-higher-levels", parent: block });
     el("div", {
       cls: "higher-levels-header",
       text: "At Higher Levels.",
@@ -68,81 +70,27 @@ function renderSlotScalingOrHigherLevels(parent: HTMLElement, spell: Spell): boo
       const p = el("div", { cls: "description-paragraph", parent: higherDiv });
       renderTextWithInlineTags(text, p);
     }
-    return true;
   }
 
-  return false;
-}
-
-export function renderSpellBlock(spell: Spell): HTMLElement {
-  const wrapper = el("div", { cls: "archivist-spell-block-wrapper" });
-  const block = el("div", { cls: "archivist-spell-block", parent: wrapper });
-
-  // 1. Header
-  const header = el("div", { cls: "spell-block-header", parent: block });
-  el("h3", { cls: "spell-name", text: spell.name, parent: header });
-  el("div", {
-    cls: "spell-school",
-    text: getSpellHeader(spell),
-    parent: header,
-  });
-
-  // 2. Properties with icons
-  const props = el("div", { cls: "spell-properties", parent: block });
-  if (spell.casting_time) {
-    createIconProperty(props, "clock", "Casting Time:", spell.casting_time);
-  }
-  if (spell.range) {
-    createIconProperty(props, "target", "Range:", spell.range);
-  }
-  if (spell.components) {
-    createIconProperty(props, "box", "Components:", spell.components);
-  }
-  if (spell.duration) {
-    createIconProperty(props, "sparkles", "Duration:", spell.duration);
-  }
-
-  // 3. Description
-  if (spell.description && spell.description.length > 0) {
-    const descDiv = el("div", { cls: "spell-description", parent: block });
-    for (const paragraph of spell.description) {
-      const p = el("div", { cls: "description-paragraph", parent: descDiv });
-      renderTextWithInlineTags(paragraph, p);
-    }
-  }
-
-  // 4. At Higher Levels — table from casting_options[] if present, else prose
-  renderSlotScalingOrHigherLevels(block, spell);
-
-  // 5. Classes
+  // Classes (wikilinked via inline-tags)
   if (spell.classes && spell.classes.length > 0) {
     const classesDiv = el("div", { cls: "spell-classes", parent: block });
     const iconSpan = el("span", { cls: "archivist-property-icon", parent: classesDiv });
     setIcon(iconSpan, "book-open");
-    el("span", {
-      cls: "classes-list",
-      text: spell.classes
-        .map((c) => c.charAt(0).toUpperCase() + c.slice(1).toLowerCase())
-        .join(", "),
-      parent: classesDiv,
-    });
+    const list = el("span", { cls: "classes-list", parent: classesDiv });
+    const wikilinkText = spell.classes
+      .map(c => `[[${c.toLowerCase()}|${titleCase(c)}]]`)
+      .join(", ");
+    renderTextWithInlineTags(wikilinkText, list);
   }
 
-  // 6. Tags
+  // Tags
   const tagsDiv = el("div", { cls: "spell-tags", parent: block });
   if (spell.concentration) {
-    el("span", {
-      cls: ["spell-tag", "concentration"],
-      text: "Concentration",
-      parent: tagsDiv,
-    });
+    el("span", { cls: ["spell-tag", "concentration"], text: "Concentration", parent: tagsDiv });
   }
   if (spell.ritual) {
-    el("span", {
-      cls: ["spell-tag", "ritual"],
-      text: "Ritual",
-      parent: tagsDiv,
-    });
+    el("span", { cls: ["spell-tag", "ritual"], text: "Ritual", parent: tagsDiv });
   }
 
   return wrapper;

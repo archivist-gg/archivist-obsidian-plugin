@@ -45,9 +45,14 @@ class SpellModule implements ArchivistModule {
 
   render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
     const spell = data as Spell;
-    const block = renderSpellBlock(spell);
-    el.appendChild(block);
-    return block;
+    // Async renderer is fire-and-forget here: the placeholder is appended sync
+    // so the host can return it; markdown content streams in asynchronously.
+    const placeholder = el.doc.createElement("div");
+    el.appendChild(placeholder);
+    void renderSpellBlock(spell).then((block) => {
+      placeholder.replaceWith(block);
+    });
+    return placeholder;
   }
 
   renderEditMode(el: HTMLElement, data: unknown, ctx: EditContext): void {

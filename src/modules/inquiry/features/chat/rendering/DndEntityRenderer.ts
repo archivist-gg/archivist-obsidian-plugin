@@ -40,8 +40,12 @@ export function renderDndEntityBlock(
   const badge = wrapper.createDiv({ cls: "claudian-dnd-source-badge" });
   badge.setText(result.entityType);
 
-  // Render the stat block using the appropriate parser and renderer
+  // Render the stat block using the appropriate parser and renderer.
+  // Spell renderer is async (markdown description); we append a placeholder
+  // synchronously and swap it in once the async render resolves so the action
+  // buttons below render in their expected position immediately.
   let statBlockEl: HTMLElement | null = null;
+  let asyncTarget: HTMLElement | null = null;
 
   switch (result.entityType) {
     case "monster": {
@@ -54,7 +58,11 @@ export function renderDndEntityBlock(
     case "spell": {
       const parsed = parseSpell(result.yamlSource);
       if (parsed.success) {
-        statBlockEl = renderSpellBlock(parsed.data);
+        asyncTarget = wrapper.doc.createElement("div");
+        const spellData = parsed.data;
+        void renderSpellBlock(spellData, app ?? undefined).then((block) => {
+          asyncTarget?.replaceWith(block);
+        });
       }
       break;
     }
@@ -69,6 +77,8 @@ export function renderDndEntityBlock(
 
   if (statBlockEl) {
     wrapper.appendChild(statBlockEl);
+  } else if (asyncTarget) {
+    wrapper.appendChild(asyncTarget);
   } else {
     // Fallback: show raw YAML in a pre block
     const fallback = wrapper.createEl("pre", { cls: "claudian-dnd-fallback" });
