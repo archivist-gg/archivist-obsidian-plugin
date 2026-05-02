@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { renderRowExpand } from "../src/modules/pc/components/inventory/inventory-row-expand";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
 
@@ -221,5 +222,37 @@ describe("renderRowExpand", () => {
       expect(unattuneItem).not.toHaveBeenCalled();
       expect(unequipItem).not.toHaveBeenCalled();
     });
+  });
+
+  it("magic weapon (entityType='item' with base_item) shows weapon block + item card", async () => {
+    const longsword = {
+      slug: "longsword",
+      name: "Longsword",
+      category: "martial-melee",
+      damage: { dice: "1d8", type: "slashing" },
+      properties: ["versatile"],
+    };
+    const flameTongue = {
+      name: "Flame Tongue Longsword",
+      type: "weapon",
+      rarity: "rare",
+      base_item: "[[SRD 5e/Weapons/Longsword|Longsword]]",
+      description: "Flames erupt from the blade.",
+    };
+    const registry = buildMockRegistry([
+      { slug: "longsword", entityType: "weapon", data: longsword, name: "Longsword" },
+    ]);
+    const { entry, resolved } = make(
+      "[[flame-tongue-longsword]]",
+      flameTongue,
+      { entityType: "item", entry: { equipped: true } },
+    );
+    const root = mountContainer();
+    renderRowExpand(root, { entry, resolved, app: {} as App, editState: null, registry });
+    // Flush microtasks so the async item renderer fills its wrapper.
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(root.querySelector(".archivist-weapon-block-wrapper, .archivist-weapon-block")).toBeTruthy();
+    expect(root.querySelector(".archivist-item-block")).toBeTruthy();
   });
 });

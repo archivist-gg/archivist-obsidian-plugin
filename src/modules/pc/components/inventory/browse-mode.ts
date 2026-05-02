@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
+import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
 import { visibleItems, type FilterState, type VisibleEntry } from "./filter-state";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
@@ -46,9 +47,10 @@ export class BrowseMode implements SheetComponent {
       // Expand state is per-render (closure scoped), keyed by slug since
       // browse-mode rows all share `index: -1` from the registry sweep.
       const expanded = new Set<string>();
+      const registry = (ctx.core?.entities as EntityRegistry | undefined) ?? null;
       for (const v of filtered) {
         const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
-        drawBrowseRow(rowHost, v, editState, ctx.app, expanded);
+        drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry);
       }
     }
   }
@@ -64,6 +66,7 @@ function drawBrowseRow(
   editState: CharacterEditState | null,
   app: App,
   expanded: Set<string>,
+  registry: EntityRegistry | null,
 ): void {
   host.empty();
   const key = browseKey(v);
@@ -71,7 +74,7 @@ function drawBrowseRow(
   renderBrowseRow(host, v, editState, app, isExpanded, () => {
     if (expanded.has(key)) expanded.delete(key);
     else expanded.add(key);
-    drawBrowseRow(host, v, editState, app, expanded);
+    drawBrowseRow(host, v, editState, app, expanded, registry);
   });
   if (isExpanded) {
     // Pass editState: null so renderRowExpand skips the PC-actions strip
@@ -81,6 +84,7 @@ function drawBrowseRow(
       resolved: v.resolved,
       app,
       editState: null,
+      registry,
     });
   }
 }

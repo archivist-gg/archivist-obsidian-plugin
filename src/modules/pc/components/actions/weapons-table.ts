@@ -83,7 +83,10 @@ export class WeaponsTable implements SheetComponent {
         const entry = findEntryForAttack(ctx, a);
         const resolved = findResolvedForAttack(ctx, a);
         if (entry && resolved) {
-          renderInventoryRowExpand(inner, { entry, resolved, app: ctx.app, editState: ctx.editState });
+          renderInventoryRowExpand(inner, {
+            entry, resolved, app: ctx.app, editState: ctx.editState,
+            registry: ctx.core?.entities ?? null,
+          });
         } else {
           inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
         }

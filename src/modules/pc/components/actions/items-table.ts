@@ -95,6 +95,7 @@ export class ItemsTable implements SheetComponent {
           entry: r.entry,
           resolved: { index: r.index, entity: r.entity as never, entityType: r.entityType, entry: r.entry },
           app: ctx.app, editState: ctx.editState,
+          registry: ctx.core?.entities ?? null,
         });
       }
     }
