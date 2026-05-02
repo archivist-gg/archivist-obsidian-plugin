@@ -224,9 +224,10 @@ function composeSenses(base: Record<string, unknown>): string[] {
       senses.push(`${label} ${v} ft.`);
     }
   }
-  if (typeof base.passive_perception === "number") {
-    senses.push(`passive Perception ${base.passive_perception}`);
-  }
+  // passive Perception is a derived skill stat, not a spatial sense.
+  // It is emitted as a top-level `passive_perception` field; the renderer
+  // appends it to the senses line at render time. Keeping it out of this
+  // array avoids double-emission.
   return senses;
 }
 

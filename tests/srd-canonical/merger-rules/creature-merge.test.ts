@@ -115,10 +115,15 @@ describe("creature-merge field paths and structured attacks (β+)", () => {
     expect(result.cr).toBe("10");
   });
 
-  it("composes senses string array from numeric range fields + passive_perception", () => {
+  it("composes senses string array from numeric range fields (spatial senses only)", () => {
     const result = toCreatureCanonical(buildEntry(aboleth2024));
     expect(result.senses).toContain("darkvision 120 ft.");
-    expect(result.senses).toContain("passive Perception 20");
+  });
+
+  it("excludes passive Perception from senses array (top-level field is the source of truth)", () => {
+    const result = toCreatureCanonical(buildEntry(aboleth2024));
+    expect(result.senses).not.toContain(expect.stringMatching(/passive perception/i));
+    expect(result.passive_perception).toBe(20);
   });
 
   it("normalizes size/type from object {name,key} to string", () => {
