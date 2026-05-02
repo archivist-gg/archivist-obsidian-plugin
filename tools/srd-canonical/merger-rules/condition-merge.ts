@@ -144,18 +144,22 @@ export function flattenEntries(entries: unknown[]): string {
  */
 function renderTable(colLabels: unknown[], rows: unknown[], caption?: string): string {
   const headers = colLabels.map(cellToText);
-  const lines: string[] = [];
-  if (caption && typeof caption === "string" && caption.trim().length > 0) {
-    lines.push(`**${caption.trim()}**`);
-  }
-  lines.push(`| ${headers.join(" | ")} |`);
-  lines.push(`| ${headers.map(() => "---").join(" | ")} |`);
+  const tableLines: string[] = [];
+  tableLines.push(`| ${headers.join(" | ")} |`);
+  tableLines.push(`| ${headers.map(() => "---").join(" | ")} |`);
   for (const row of rows) {
     if (!Array.isArray(row)) continue;
     const cells = row.map(cellToText);
-    lines.push(`| ${cells.join(" | ")} |`);
+    tableLines.push(`| ${cells.join(" | ")} |`);
   }
-  return lines.join("\n");
+  const tableMd = tableLines.join("\n");
+  // GFM tables require a blank line between the caption (a paragraph) and
+  // the table header. Without it the caption-header become one paragraph
+  // and Obsidian's renderer never recognises the table.
+  if (caption && typeof caption === "string" && caption.trim().length > 0) {
+    return `**${caption.trim()}**\n\n${tableMd}`;
+  }
+  return tableMd;
 }
 
 function cellToText(cell: unknown): string {

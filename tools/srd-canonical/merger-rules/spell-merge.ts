@@ -53,19 +53,44 @@ export function toSpellCanonical(entry: CanonicalEntry): SpellCanonical {
     description: "",  // filled below — see "description" comment
   };
 
-  // description: prefer structured-rules `entries[]` over Open5e's flat
-  // `desc` because the structured shape preserves tables / lists / nested
-  // sections with proper line breaks. Open5e's 2024 dataset flattens table
-  // pipes onto a single line for some spells (Control Weather), which
-  // breaks downstream markdown table parsing. structured.entries is also
-  // strictly richer for 5e — Open5e's 2014 desc for Control Weather omits
-  // the precipitation/temperature/wind tables entirely.
-  let descText = "";
-  if (structured && Array.isArray(structured.entries) && structured.entries.length > 0) {
+  // description sourcing:
+  //
+  // Open5e's `desc` is the preferred source — it's pre-rendered prose with
+  // plain-text cells, so wikilinks and dice tags don't end up inside table
+  // cells (which would break GFM table parsing because `|` is the column
+  // separator).
+  //
+  // Two failure modes force a switch to structured-rules entries:
+  //   1. Open5e flattened a table onto a single line ("...direction. Table:
+  //      Precipitation | Stage | Condition | |---|---| | 1 | Clear | …").
+  //      Some 2024 spells (Control Weather) ship like this. The pipes are
+  //      intact but no line breaks → markdown can't recognise the table.
+  //   2. Open5e omits tables that the rules text needs (Control Weather
+  //      2014 ships prose-only, no precipitation/temperature/wind tables).
+  //
+  // For (1) we replace the description entirely with the structured-rules
+  // rendering; for (2) we keep the prose and append the structured tables.
+  // We never use structured-rules when Open5e has properly-formatted tables
+  // — that's where the wikilink-in-cell breakage lives, e.g. Animate
+  // Objects's Animated Object Statistics table whose cells reference
+  // `{@creature animated object (tiny)|MM}` and become `[[X|alias]]` with
+  // pipes that collide with the column separator.
+  const open5eDesc = (base.desc as string) ?? "";
+  const hasProperTable = /\n\s*\|[^\n|]*\|/.test(open5eDesc);
+  const hasFlattenedTable = !hasProperTable && /Table:.*\|.*\|.*\|/i.test(open5eDesc);
+
+  let descText = open5eDesc;
+  if (hasFlattenedTable && structured && Array.isArray(structured.entries) && structured.entries.length > 0) {
+    // Replace entirely — Open5e's broken table can't be salvaged.
     descText = flattenEntries(structured.entries);
-  }
-  if (!descText && typeof base.desc === "string") {
-    descText = base.desc;
+  } else if (!hasProperTable && structured && Array.isArray(structured.entries)) {
+    // Augment — append any structured tables the prose doesn't have.
+    const tables = (structured.entries as unknown[]).filter(
+      e => e !== null && typeof e === "object" && (e as { type?: unknown }).type === "table",
+    );
+    if (tables.length > 0) {
+      descText = `${descText}\n\n${flattenEntries(tables)}`.trim();
+    }
   }
   out.description = rewriteCrossRefs(descText, entry.edition);
 
