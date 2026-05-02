@@ -53,9 +53,12 @@ const conditionalBonusSchema = z.object({
   when: z.array(conditionSchema),
 });
 
-const numberOrConditional = z.union([z.number().int(), conditionalBonusSchema]);
-
-const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
+// Bonuses can arrive as a number (variant pipeline emits +1 weapon → 1),
+// a signed-integer string ("+3" / "-1" from structured-rules), or a
+// conditional object. Schema accepts all three; pattern-guarded string
+// keeps it from being a free-form passthrough.
+const signedIntString = z.string().regex(/^[+-]?\d+$/);
+const numberOrConditional = z.union([z.number().int(), signedIntString, conditionalBonusSchema]);
 
 const bonusesSchema = z.object({
   ac: numberOrConditional.optional(),
@@ -65,8 +68,25 @@ const bonusesSchema = z.object({
   spell_save_dc: numberOrConditional.optional(),
   saving_throws: numberOrConditional.optional(),
   ability_scores: z.object({
-    static: z.record(abilityEnum, z.number().int()).optional(),
-    bonus: z.record(abilityEnum, numberOrConditional).optional(),
+    // partial: each ability is independently optional. z.record(enum, …) in
+    // Zod v4 treats every enum key as required, which doesn't match the
+    // data (e.g. Amulet of Health only sets `con: 19`).
+    static: z.object({
+      str: z.number().int().optional(),
+      dex: z.number().int().optional(),
+      con: z.number().int().optional(),
+      int: z.number().int().optional(),
+      wis: z.number().int().optional(),
+      cha: z.number().int().optional(),
+    }).optional(),
+    bonus: z.object({
+      str: numberOrConditional.optional(),
+      dex: numberOrConditional.optional(),
+      con: numberOrConditional.optional(),
+      int: numberOrConditional.optional(),
+      wis: numberOrConditional.optional(),
+      cha: numberOrConditional.optional(),
+    }).optional(),
   }).optional(),
   speed: z.object({
     walk: numberOrConditional.optional(),
@@ -96,9 +116,12 @@ const attachedSpellsSchema = z.object({
 
 const attunementTagSchema = z.union([
   z.object({ class: z.string(), subclass: z.string().optional() }),
-  z.object({ alignment: z.string() }),
+  // alignment can be a single string OR an array of alignment-letter codes
+  // (e.g. ["G"] for good, ["L", "G"] for lawful good).
+  z.object({ alignment: z.union([z.string(), z.array(z.string())]) }),
   z.object({ race: z.string() }),
   z.object({ creature_type: z.string() }),
+  z.object({ spellcasting: z.boolean() }),
 ]);
 
 const attunementCanonicalSchema = z.object({
