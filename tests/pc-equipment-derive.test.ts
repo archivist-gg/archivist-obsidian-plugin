@@ -3,6 +3,7 @@ import { computeAppliedBonuses, computeSlotsAndAttacks } from "../src/modules/pc
 import { recalc } from "../src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { ItemEntity } from "../src/modules/item/item.types";
+import type { WeaponEntity } from "../src/modules/weapon/weapon.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
@@ -421,6 +422,48 @@ describe("computeSlotsAndAttacks — attack rows", () => {
     const d = computeSlotsAndAttacks(mkResolved(c), { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, fullProfs, registry, [], 2);
     expect(d.attacks[0].toHit).toBe(7);
     expect(d.attacks[0].damageDice).toBe("1d8+5");
+  });
+
+  it("magic weapon with a vault-path base_item resolves through the shared resolver", () => {
+    // Mirrors how SRD canonical bundles serialize base_item:
+    //   base_item: "[[SRD 5e/Weapons/Longsword]]"
+    // and how the registry stores the underlying weapon under a prefixed slug:
+    //   slug: "srd-5e_longsword"
+    const longsword: WeaponEntity = {
+      name: "Longsword",
+      slug: "srd-5e_longsword",
+      edition: "2014",
+      category: "martial-melee",
+      damage: { dice: "1d8", type: "slashing", versatile_dice: "1d10" },
+      properties: ["versatile"],
+    };
+    const defender: ItemEntity = {
+      name: "Defender",
+      slug: "srd-5e_defender-longsword",
+      type: "weapon",
+      rarity: "legendary",
+      base_item: "[[SRD 5e/Weapons/Longsword]]",
+      bonuses: { weapon_attack: 3, weapon_damage: 3 },
+      attunement: { required: true },
+    };
+    const reg = buildMockRegistry([
+      { slug: "srd-5e_longsword", entityType: "weapon", name: "Longsword", data: longsword },
+      { slug: "srd-5e_defender-longsword", entityType: "item", name: "Defender", data: defender },
+    ]);
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{ item: "[[srd-5e_defender-longsword]]", equipped: true, attuned: true }];
+    const d = computeSlotsAndAttacks(
+      mkResolved(c),
+      { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+      fullProfs,
+      reg,
+      [],
+      2,
+    );
+    // PB 2 + STR 3 + magic +3 = +8 to hit; 1d8 base + STR 3 + magic +3 = 1d8+6
+    expect(d.attacks).toHaveLength(1);
+    expect(d.attacks[0].toHit).toBe(8);
+    expect(d.attacks[0].damageDice).toBe("1d8+6");
   });
 
   it("entry overrides.extra_damage appended", () => {

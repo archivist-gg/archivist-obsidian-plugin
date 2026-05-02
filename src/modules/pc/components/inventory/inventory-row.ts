@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
+import { resolveBaseItem } from "../../../../shared/entities/base-item-resolver";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 import { requiresAttunement } from "./requires-attunement";
@@ -135,19 +136,16 @@ function keyStat(ctx: InventoryRowCtx): string {
   // resolves to a known weapon should show the underlying weapon's damage so
   // the stat column doesn't appear empty for items like Flame Tongue.
   if (ctx.resolved.entityType === "item" && ctx.registry && typeof e?.base_item === "string") {
-    const baseSlug = extractBaseItemSlug(e.base_item);
-    if (baseSlug) {
-      const found = ctx.registry.getBySlug(baseSlug);
-      if (found?.entityType === "weapon") {
-        const weaponDamage = (found.data as { damage?: { dice?: string; type?: string } }).damage;
-        if (weaponDamage) return formatWeaponDamage(weaponDamage);
-      }
-      if (found?.entityType === "armor") {
-        const armorAc = (found.data as { ac?: { base?: number; flat?: number; add_dex?: boolean } }).ac;
-        if (armorAc) {
-          const flat = armorAc.flat ? `+${armorAc.flat}` : "";
-          return `AC ${armorAc.base ?? 0}${flat}${armorAc.add_dex ? " + Dex" : ""}`;
-        }
+    const found = resolveBaseItem(e.base_item, ctx.registry);
+    if (found?.entityType === "weapon") {
+      const weaponDamage = (found.data as { damage?: { dice?: string; type?: string } }).damage;
+      if (weaponDamage) return formatWeaponDamage(weaponDamage);
+    }
+    if (found?.entityType === "armor") {
+      const armorAc = (found.data as { ac?: { base?: number; flat?: number; add_dex?: boolean } }).ac;
+      if (armorAc) {
+        const flat = armorAc.flat ? `+${armorAc.flat}` : "";
+        return `AC ${armorAc.base ?? 0}${flat}${armorAc.add_dex ? " + Dex" : ""}`;
       }
     }
   }
@@ -157,21 +155,6 @@ function keyStat(ctx: InventoryRowCtx): string {
 function formatWeaponDamage(damage: { dice?: string; type?: string }): string {
   const t = damage.type ? ` ${damage.type[0].toUpperCase()}` : "";
   return `${damage.dice ?? ""}${t}`;
-}
-
-/**
- * Extract the slug from a `base_item` wikilink such as
- *   "[[SRD 5e/Weapons/Longsword]]"
- *   "[[SRD 5e/Weapons/Longsword|Longsword]]"
- *   "[[longsword]]"
- * Returns null if no wikilink is found.
- */
-function extractBaseItemSlug(baseItem: string): string | null {
-  const m = /^\[\[([^|\]]+)(?:\|[^\]]*)?\]\]$/.exec(baseItem);
-  if (!m) return null;
-  const target = m[1];
-  const lastSegment = target.split("/").pop() ?? target;
-  return lastSegment.toLowerCase().replace(/\s+/g, "-");
 }
 
 function formatWeight(ctx: InventoryRowCtx): string {

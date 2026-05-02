@@ -182,7 +182,7 @@ describe("InventoryRow", () => {
 
   it("renders magic weapon damage by joining base_item to weapon entity", () => {
     const longsword = {
-      slug: "longsword",
+      slug: "srd-5e_longsword",
       name: "Longsword",
       category: "martial-melee",
       damage: { dice: "1d8", type: "slashing" },
@@ -195,7 +195,7 @@ describe("InventoryRow", () => {
     };
     const it = make("[[flame-tongue-longsword]]", { entity: flameTongue, entityType: "item" });
     const registry = buildMockRegistry([
-      { slug: "longsword", entityType: "weapon", data: longsword, name: "Longsword" },
+      { slug: "srd-5e_longsword", entityType: "weapon", data: longsword, name: "Longsword" },
     ]);
     const root = mountContainer();
     new InventoryRow().render(root, { ...it, app: {} as never, editState: null, registry });

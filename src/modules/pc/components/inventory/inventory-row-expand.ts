@@ -8,6 +8,7 @@ import type { WeaponEntity } from "../../../weapon/weapon.types";
 import type { ArmorEntity } from "../../../armor/armor.types";
 import type { Item } from "../../../item/item.types";
 import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
+import { resolveBaseItem } from "../../../../shared/entities/base-item-resolver";
 import { requiresAttunement } from "./requires-attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
@@ -22,22 +23,6 @@ export interface RowExpandCtx {
    *  render falls back to item-only display. */
   registry?: EntityRegistry | null;
   onAttuneConflict?: (incomingIndex: number) => void;
-}
-
-/**
- * Extract the slug from a `base_item` wikilink such as
- *   "[[SRD 5e/Weapons/Longsword]]"
- *   "[[SRD 5e/Weapons/Longsword|Longsword]]"
- *   "[[longsword]]"
- * The slug is the file-name portion (last `/` segment), lowercased and
- * hyphen-joined. Returns null if no wikilink is found.
- */
-function extractBaseItemSlug(baseItem: string): string | null {
-  const m = /^\[\[([^|\]]+)(?:\|[^\]]*)?\]\]$/.exec(baseItem);
-  if (!m) return null;
-  const target = m[1];
-  const lastSegment = target.split("/").pop() ?? target;
-  return lastSegment.toLowerCase().replace(/\s+/g, "-");
 }
 
 export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLElement {
@@ -61,14 +46,11 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
     // render the underlying weapon/armor block above the item card so the
     // user sees damage/AC stats alongside the magical description.
     if (ctx.registry && typeof item.base_item === "string" && item.base_item.length > 0) {
-      const baseSlug = extractBaseItemSlug(item.base_item);
-      if (baseSlug) {
-        const found = ctx.registry.getBySlug(baseSlug);
-        if (found?.entityType === "weapon") {
-          expand.appendChild(renderWeaponBlock(found.data as unknown as WeaponEntity));
-        } else if (found?.entityType === "armor") {
-          expand.appendChild(renderArmorBlock(found.data as unknown as ArmorEntity));
-        }
+      const found = resolveBaseItem(item.base_item, ctx.registry);
+      if (found?.entityType === "weapon") {
+        expand.appendChild(renderWeaponBlock(found.data as unknown as WeaponEntity));
+      } else if (found?.entityType === "armor") {
+        expand.appendChild(renderArmorBlock(found.data as unknown as ArmorEntity));
       }
     }
     // Async item renderer (markdown description); use a stable wrapper so the

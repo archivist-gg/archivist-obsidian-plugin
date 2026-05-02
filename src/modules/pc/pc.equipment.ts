@@ -1,4 +1,5 @@
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import { resolveBaseItem } from "../../shared/entities/base-item-resolver";
 import type { Ability } from "../../shared/types";
 import type { ItemEntity } from "../item/item.types";
 import type { ArmorEntity } from "../armor/armor.types";
@@ -248,11 +249,10 @@ function defaultSlotForType(
   // Magic items with a base_item pointing to a known weapon/armor route to
   // the matching slot so they participate in attack rows / AC.
   if (entityType === "item" && isItemEntity(entity) && typeof entity.base_item === "string") {
-    const base = registry.getByTypeAndSlug("weapon", entity.base_item);
-    if (base) return "mainhand";
-    const baseArmor = registry.getByTypeAndSlug("armor", entity.base_item);
-    if (baseArmor) {
-      const armorData = baseArmor.data as unknown as ArmorEntity;
+    const base = resolveBaseItem(entity.base_item, registry);
+    if (base?.entityType === "weapon") return "mainhand";
+    if (base?.entityType === "armor") {
+      const armorData = base.data as unknown as ArmorEntity;
       return armorData.category === "shield" ? "shield" : "armor";
     }
   }
@@ -571,14 +571,15 @@ function computeAttacks(
     if (!entity) continue;
 
     // Resolve the underlying WeaponEntity. Direct weapon entries use entity
-    // as-is; ItemEntity entries with base_item resolve through the registry.
+    // as-is; ItemEntity entries with base_item resolve through the shared
+    // base-item resolver (handles vault-path wikilinks + bare slugs).
     let weapon: WeaponEntity | null = null;
     if (isWeaponEntity(entity)) {
       weapon = entity;
     } else if (isItemEntity(entity) && typeof entity.base_item === "string") {
       const baseSlug = entity.base_item;
-      const found = registry.getByTypeAndSlug("weapon", baseSlug);
-      if (found && isWeaponEntity(found.data)) {
+      const found = resolveBaseItem(baseSlug, registry);
+      if (found && found.entityType === "weapon" && isWeaponEntity(found.data)) {
         weapon = found.data;
       } else {
         warnings.push(`Magic weapon ${entity.name} references missing base_item [[${baseSlug}]].`);
