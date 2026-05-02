@@ -52,10 +52,28 @@ function rowProficiency(row: DisplayRow): string {
   return "—";
 }
 
-function rowFeatures(row: DisplayRow): string {
-  const list = row.features ?? row.feature_ids ?? [];
-  const names = list.map((f) => (typeof f === "string" ? f : f.name));
-  return names.join(", ") || "—";
+function rowFeatures(row: DisplayRow, featureNameById: Map<string, string>): string {
+  // Prefer pre-formatted names if the row carries them.
+  if (row.features) {
+    const names = row.features.map((f) => (typeof f === "string" ? f : f.name));
+    return names.join(", ") || "—";
+  }
+  // Otherwise resolve canonical feature_ids (slugs) via features_by_level.
+  if (row.feature_ids) {
+    const names = row.feature_ids.map((id) => featureNameById.get(id) ?? id);
+    return names.join(", ") || "—";
+  }
+  return "—";
+}
+
+function buildFeatureNameMap(featuresByLevel: ClassEntity["features_by_level"]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const feats of Object.values(featuresByLevel ?? {})) {
+    for (const f of feats ?? []) {
+      if (f.id && f.name) map.set(f.id, f.name);
+    }
+  }
+  return map;
 }
 
 function deriveColumns(table: ClassEntity["table"]): string[] {
@@ -96,6 +114,9 @@ export function renderClassStub(parent: HTMLElement, data: ClassEntity, _ctx: Re
   metaRow("Saving Throws", data.saving_throws.map((a) => a.toUpperCase()).join(", "));
   metaRow("Subclass Level", String(data.subclass_level));
 
+  // Resolve canonical feature_ids (slugs) to display names via features_by_level.
+  const featureNameById = buildFeatureNameMap(data.features_by_level);
+
   // Progression table
   const levels = Object.keys(data.table)
     .map((k) => Number(k))
@@ -118,7 +139,7 @@ export function renderClassStub(parent: HTMLElement, data: ClassEntity, _ctx: Re
       el("td", { text: String(lvl), parent: tr });
       el("td", { text: rowProficiency(row), parent: tr });
       const featCell = el("td", { parent: tr });
-      renderTextWithInlineTags(rowFeatures(row), featCell);
+      renderTextWithInlineTags(rowFeatures(row, featureNameById), featCell);
       for (const c of dynCols) {
         const cell = el("td", { parent: tr });
         const v = row.columns?.[c] ?? "—";
