@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { spellInputSchema } from "../src/modules/spell/spell.ai-schema";
+import { spellEntitySchema } from "../src/modules/spell/spell.schema";
 import type { Spell } from "../src/modules/spell/spell.types";
 
 describe("spellInputSchema", () => {
@@ -63,5 +64,43 @@ describe("Spell.casting_options runtime field", () => {
     };
     expect(spell.casting_options).toBeDefined();
     expect(spell.casting_options!.length).toBe(2);
+  });
+});
+
+describe("spellEntitySchema", () => {
+  it("accepts a minimal spell", () => {
+    const result = spellEntitySchema.safeParse({ name: "Fireball" });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a fully-populated spell", () => {
+    const result = spellEntitySchema.safeParse({
+      name: "Fireball",
+      level: 3,
+      school: "evocation",
+      casting_time: "action",
+      range: "150 feet",
+      components: "V, S, M (a tiny ball of bat guano)",
+      duration: "instantaneous",
+      concentration: false,
+      ritual: false,
+      classes: ["sorcerer", "wizard"],
+      description: "A bright streak…",
+      at_higher_levels: ["When you cast this spell using a spell slot of 4th…"],
+      damage: { types: ["fire"] },
+      saving_throw: { ability: "dexterity" },
+      casting_options: [{ type: "slot_level_4", damage_roll: "9d6" }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects unknown top-level fields", () => {
+    const result = spellEntitySchema.safeParse({ name: "Fireball", unknown: "drop me" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects description as array (legacy shape)", () => {
+    const result = spellEntitySchema.safeParse({ name: "Fireball", description: ["a", "b"] });
+    expect(result.success).toBe(false);
   });
 });
