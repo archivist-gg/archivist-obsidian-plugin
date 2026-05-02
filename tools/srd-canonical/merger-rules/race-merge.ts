@@ -181,17 +181,31 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
     out.subspecies_of = `[[${compendium}/Races/${parentName}]]`;
   }
 
-  // Structured-rules enrichment: additionalSpells (now unblocked by Phase 1).
+  // Structured-rules enrichment: additionalSpells.
+  //
+  // Each block's `innate`/`known` sub-fields are keyed by character level and
+  // can take two shapes:
+  //   1. flat:  `{ "3": ["gust of wind"] }` (e.g. Aarakocra)
+  //   2. nested: `{ "3": { "daily": { "1": [...] } } }` (e.g. Aasimar — slot-bound)
+  // Only the flat shape is mapped here; nested slot-binding shapes are
+  // deferred until the runtime data model can express daily/long-rest slots.
+  // Spell name suffixes like `light#c` (concentration tag) are stripped.
   if (structured?.additionalSpells) {
-    const addSpells = structured.additionalSpells as Array<Record<string, Record<string, string[]>>>;
+    const addSpells = structured.additionalSpells as Array<Record<string, Record<string, unknown>>>;
     const innate: Record<string, string[]> = {};
     const known: Record<string, string[]> = {};
+    const toLink = (s: string): string => {
+      const clean = s.split("#")[0];
+      return `[[${compendium}/Spells/${titleCase(clean)}|${clean}]]`;
+    };
     for (const block of addSpells) {
       for (const [level, spells] of Object.entries(block.innate ?? {})) {
-        innate[level] = spells.map(s => `[[${compendium}/Spells/${titleCase(s)}|${s}]]`);
+        if (!Array.isArray(spells)) continue;
+        innate[level] = spells.map(toLink);
       }
       for (const [level, spells] of Object.entries(block.known ?? {})) {
-        known[level] = spells.map(s => `[[${compendium}/Spells/${titleCase(s)}|${s}]]`);
+        if (!Array.isArray(spells)) continue;
+        known[level] = spells.map(toLink);
       }
     }
     out.additional_spells = {};
