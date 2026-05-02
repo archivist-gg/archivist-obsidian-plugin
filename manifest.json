@@ -1,7 +1,7 @@
 {
   "id": "archivist-gg",
   "name": "Archivist",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "minAppVersion": "1.7.2",
   "description": "D&D 5e toolkit: AI agent for monsters, spells, items, and NPCs; parchment stat blocks; inline dice tags; full SRD compendium.",
   "author": "Shinoobi",
