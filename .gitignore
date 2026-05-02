@@ -12,3 +12,9 @@ CLAUDE.md
 AGENTS.md
 test-vault/
 tools/srd-canonical/.cache/
+
+# Loose MD files under .compendium-bundle/ are regenerable from index.json,
+# which IS committed because esbuild inlines it into main.js. Keeping the
+# loose files would add ~15MB of duplicated content to the repo.
+.compendium-bundle/*/
+

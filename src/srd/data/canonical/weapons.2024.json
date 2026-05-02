@@ -1,0 +1,748 @@
+[
+  {
+    "slug": "srd-2024_battleaxe",
+    "name": "Battleaxe",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": [
+      "topple"
+    ]
+  },
+  {
+    "slug": "srd-2024_blowgun",
+    "name": "Blowgun",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading"
+    ],
+    "range": {
+      "normal": 25,
+      "long": 100
+    },
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_club",
+    "name": "Club",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light"
+    ],
+    "mastery": [
+      "slow"
+    ]
+  },
+  {
+    "slug": "srd-2024_dagger",
+    "name": "Dagger",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    },
+    "mastery": [
+      "nick"
+    ]
+  },
+  {
+    "slug": "srd-2024_dart",
+    "name": "Dart",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    },
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_flail",
+    "name": "Flail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [],
+    "mastery": [
+      "sap"
+    ]
+  },
+  {
+    "slug": "srd-2024_glaive",
+    "name": "Glaive",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": [
+      "graze"
+    ]
+  },
+  {
+    "slug": "srd-2024_greataxe",
+    "name": "Greataxe",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d12",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
+    "mastery": [
+      "cleave"
+    ]
+  },
+  {
+    "slug": "srd-2024_greatclub",
+    "name": "Greatclub",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "two-handed"
+    ],
+    "mastery": [
+      "push"
+    ]
+  },
+  {
+    "slug": "srd-2024_greatsword",
+    "name": "Greatsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "2d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
+    "mastery": [
+      "graze"
+    ]
+  },
+  {
+    "slug": "srd-2024_halberd",
+    "name": "Halberd",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": [
+      "cleave"
+    ]
+  },
+  {
+    "slug": "srd-2024_hand-crossbow",
+    "name": "Hand Crossbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "light",
+      "loading"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    },
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_handaxe",
+    "name": "Handaxe",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    },
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_heavy-crossbow",
+    "name": "Heavy Crossbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "heavy",
+      "loading",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 100,
+      "long": 400
+    },
+    "mastery": [
+      "push"
+    ]
+  },
+  {
+    "slug": "srd-2024_javelin",
+    "name": "Javelin",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    },
+    "mastery": [
+      "slow"
+    ]
+  },
+  {
+    "slug": "srd-2024_lance",
+    "name": "Lance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": [
+      "topple"
+    ]
+  },
+  {
+    "slug": "srd-2024_light-crossbow",
+    "name": "Light Crossbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 80,
+      "long": 320
+    },
+    "mastery": [
+      "slow"
+    ]
+  },
+  {
+    "slug": "srd-2024_light-hammer",
+    "name": "Light Hammer",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    },
+    "mastery": [
+      "nick"
+    ]
+  },
+  {
+    "slug": "srd-2024_longbow",
+    "name": "Longbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "heavy",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 150,
+      "long": 600
+    },
+    "mastery": [
+      "slow"
+    ]
+  },
+  {
+    "slug": "srd-2024_longsword",
+    "name": "Longsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": [
+      "sap"
+    ]
+  },
+  {
+    "slug": "srd-2024_mace",
+    "name": "Mace",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "properties": [],
+    "mastery": [
+      "sap"
+    ]
+  },
+  {
+    "slug": "srd-2024_maul",
+    "name": "Maul",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "2d6",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
+    "mastery": [
+      "topple"
+    ]
+  },
+  {
+    "slug": "srd-2024_morningstar",
+    "name": "Morningstar",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [],
+    "mastery": [
+      "sap"
+    ]
+  },
+  {
+    "slug": "srd-2024_musket",
+    "name": "Musket",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d12",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 40,
+      "long": 120
+    },
+    "mastery": [
+      "slow"
+    ]
+  },
+  {
+    "slug": "srd-2024_pike",
+    "name": "Pike",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "heavy",
+      "reach",
+      "two-handed"
+    ],
+    "mastery": [
+      "push"
+    ]
+  },
+  {
+    "slug": "srd-2024_pistol",
+    "name": "Pistol",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 90
+    },
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_quarterstaff",
+    "name": "Quarterstaff",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning",
+      "versatile_dice": "1d8"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": [
+      "topple"
+    ]
+  },
+  {
+    "slug": "srd-2024_rapier",
+    "name": "Rapier",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse"
+    ],
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_scimitar",
+    "name": "Scimitar",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery": [
+      "nick"
+    ]
+  },
+  {
+    "slug": "srd-2024_shortbow",
+    "name": "Shortbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 80,
+      "long": 320
+    },
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_shortsword",
+    "name": "Shortsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ],
+    "mastery": [
+      "vex"
+    ]
+  },
+  {
+    "slug": "srd-2024_sickle",
+    "name": "Sickle",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "light"
+    ],
+    "mastery": [
+      "nick"
+    ]
+  },
+  {
+    "slug": "srd-2024_sling",
+    "name": "Sling",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "ammunition"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    },
+    "mastery": [
+      "slow"
+    ]
+  },
+  {
+    "slug": "srd-2024_spear",
+    "name": "Spear",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "versatile_dice": "1d8"
+    },
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    },
+    "mastery": [
+      "sap"
+    ]
+  },
+  {
+    "slug": "srd-2024_trident",
+    "name": "Trident",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    },
+    "mastery": [
+      "topple"
+    ]
+  },
+  {
+    "slug": "srd-2024_war-pick",
+    "name": "War Pick",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": [
+      "sap"
+    ]
+  },
+  {
+    "slug": "srd-2024_warhammer",
+    "name": "Warhammer",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ],
+    "mastery": [
+      "push"
+    ]
+  },
+  {
+    "slug": "srd-2024_whip",
+    "name": "Whip",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "reach"
+    ],
+    "mastery": [
+      "slow"
+    ]
+  }
+]

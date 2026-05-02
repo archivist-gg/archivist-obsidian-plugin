@@ -1,0 +1,107 @@
+[
+  {
+    "slug": "srd-2024_blinded",
+    "name": "Blinded",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Blinded condition, you experience the following effects.\n\n**Can't See.** You can't see and automatically fail any ability check that requires sight.\n\n**Attacks Affected.** Attack rolls against you have Advantage, and your attack rolls have Disadvantage."
+  },
+  {
+    "slug": "srd-2024_charmed",
+    "name": "Charmed",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Charmed condition, you experience the following effects.\n\n**Can't Harm the Charmer.** You can't attack the charmer or target the charmer with damaging abilities or Magical Effect.\n\n**Social Advantage.** The charmer has Advantage on any ability check to interact with you socially."
+  },
+  {
+    "slug": "srd-2024_deafened",
+    "name": "Deafened",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Deafened condition, you experience the following effect.\n\n**Can't Hear.** You can't hear and automatically fail any ability check that requires hearing."
+  },
+  {
+    "slug": "srd-2024_exhaustion",
+    "name": "Exhaustion",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Exhaustion condition, you experience the following effects.\n\n**Exhaustion Levels.** This condition is cumulative. Each time you receive it, you gain 1 Exhaustion level. You die if your Exhaustion level is 6.\n\n**D20 Tests Affected.** When you make a D20 Test the roll is reduced by 2 times your Exhaustion level.\n\n**Speed Reduced.** Your Speed is reduced by a number of feet equal to 5 times your Exhaustion level.\n\n**Removing Exhaustion Levels.** Finishing a Long Rest removes 1 of your Exhaustion levels. When your Exhaustion level reaches 0, the condition ends."
+  },
+  {
+    "slug": "srd-2024_frightened",
+    "name": "Frightened",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Frightened condition, you experience the following effects.\n\n**Ability Checks and Attacks Affected.** You have Disadvantage on ability checks and attack rolls while the source of fear is within line of sight.\n\n**Can't Approach.** You can't willingly move closer to the source of fear."
+  },
+  {
+    "slug": "srd-2024_grappled",
+    "name": "Grappled",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Grappled condition, you experience the following effects.\n\n**Speed 0.** Your Speed is 0 and can't increase.\n\n**Attacks Affected.** You have Disadvantage on attack rolls against any target other than the grappler.\n\n**Movable.** The grappler can drag or carry you when it moves, but every foot of movement costs it 1 extra foot unless you are Tiny or two or more sizes smaller than it."
+  },
+  {
+    "slug": "srd-2024_incapacitated",
+    "name": "Incapacitated",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Incapacitated condition, you experience the following effects.\n\n**Inactive.** You can't take any Action, Bonus Action, or Reaction.\n\n**No Concentration.** Your *Concentration|XPHB* is broken.\n\n**Speechless.** You can't speak.\n\n**Surprised.** If you're Incapacitated when you roll Initiative, you have Disadvantage on the roll."
+  },
+  {
+    "slug": "srd-2024_invisible",
+    "name": "Invisible",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Invisible condition, you experience the following effects.\n\n**Surprise.** If you're Invisible when you roll Initiative, you have Advantage on the roll.\n\n**Concealed.** You aren't affected by any effect that requires its target to be seen unless the effect's creator can somehow see you. Any equipment you are wearing or carrying is also concealed.\n\n**Attacks Affected.** Attack rolls against you have Disadvantage, and your attack rolls have Advantage. If a creature can somehow see you, you don't gain this benefit against that creature."
+  },
+  {
+    "slug": "srd-2024_paralyzed",
+    "name": "Paralyzed",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Paralyzed condition, you experience the following effects.\n\n**Incapacitated.** You have the [[SRD 2024/Conditions/Incapacitated|Incapacitated]] condition.\n\n**Speed 0.** Your Speed is 0 and can't increase.\n\n**Saving Throws Affected.** You automatically fail Strength and Dexterity Saving Throw.\n\n**Attacks Affected.** Attack rolls against you have Advantage.\n\n**Automatic Critical Hits.** Any attack roll that hits you is a Critical Hit if the attacker is within 5 feet of you."
+  },
+  {
+    "slug": "srd-2024_petrified",
+    "name": "Petrified",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Petrified condition, you experience the following effects.\n\n**Turned to Inanimate Substance.** You are transformed, along with any nonmagical objects you are wearing and carrying, into a solid inanimate substance (usually stone). Your weight increases by a factor of ten, and you cease aging.\n\n**Incapacitated.** You have the [[SRD 2024/Conditions/Incapacitated|Incapacitated]] condition.\n\n**Speed 0.** Your Speed is 0 and can't increase.\n\n**Attacks Affected.** Attack rolls against you have Advantage.\n\n**Saving Throws Affected.** You automatically fail Strength and Dexterity Saving Throw.\n\n**Resist Damage.** You have Resistance to all damage.\n\n**Poison Immunity.** You have Immunity to the [[SRD 2024/Conditions/Poisoned|Poisoned]] condition."
+  },
+  {
+    "slug": "srd-2024_poisoned",
+    "name": "Poisoned",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Poisoned condition, you experience the following effect.\n\n**Ability Checks and Attacks Affected.** You have Disadvantage on attack rolls and ability checks."
+  },
+  {
+    "slug": "srd-2024_prone",
+    "name": "Prone",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Prone condition, you experience the following effects.\n\n**Restricted Movement.** Your only movement options are to Crawling or to spend an amount of movement equal to half your Speed (round down) to right yourself and thereby end the condition. If your Speed is 0, you can't right yourself.\n\n**Attacks Affected.** You have Disadvantage on attack rolls. An attack roll against you has Advantage if the attacker is within 5 feet of you. Otherwise, that attack roll has Disadvantage."
+  },
+  {
+    "slug": "srd-2024_restrained",
+    "name": "Restrained",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Restrained condition, you experience the following effects.\n\n**Speed 0.** Your Speed is 0 and can't increase.\n\n**Attacks Affected.** Attack rolls against you have Advantage, and your attack rolls have Disadvantage.\n\n**Saving Throws Affected.** You have Disadvantage on Dexterity Saving Throw."
+  },
+  {
+    "slug": "srd-2024_stunned",
+    "name": "Stunned",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Stunned condition, you experience the following effects.\n\n**Incapacitated.** You have the [[SRD 2024/Conditions/Incapacitated|Incapacitated]] condition.\n\n**Saving Throws Affected.** You automatically fail Strength and Dexterity Saving Throw.\n\n**Attacks Affected.** Attack rolls against you have Advantage."
+  },
+  {
+    "slug": "srd-2024_unconscious",
+    "name": "Unconscious",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "While you have the Unconscious condition, you experience the following effects.\n\n**Inert.** You have the [[SRD 2024/Conditions/Incapacitated|Incapacitated]] and [[SRD 2024/Conditions/Prone|Prone]] conditions, and you drop whatever you're holding. When this condition ends, you remain [[SRD 2024/Conditions/Prone|Prone]].\n\n**Speed 0.** Your Speed is 0 and can't increase.\n\n**Attacks Affected.** Attack rolls against you have Advantage.\n\n**Saving Throws Affected.** You automatically fail Strength and Dexterity Saving Throw.\n\n**Automatic Critical Hits.** Any attack roll that hits you is a Critical Hit if the attacker is within 5 feet of you.\n\n**Unaware.** You're unaware of your surroundings."
+  }
+]

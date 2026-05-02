@@ -1,0 +1,599 @@
+[
+  {
+    "slug": "srd-5e_battleaxe",
+    "name": "Battleaxe",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ]
+  },
+  {
+    "slug": "srd-5e_blowgun",
+    "name": "Blowgun",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading"
+    ],
+    "range": {
+      "normal": 25,
+      "long": 100
+    }
+  },
+  {
+    "slug": "srd-5e_club",
+    "name": "Club",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light"
+    ]
+  },
+  {
+    "slug": "srd-5e_crossbow-hand",
+    "name": "Crossbow, hand",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "light",
+      "loading"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    }
+  },
+  {
+    "slug": "srd-5e_crossbow-heavy",
+    "name": "Crossbow, heavy",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "loading",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 100,
+      "long": 400
+    }
+  },
+  {
+    "slug": "srd-5e_crossbow-light",
+    "name": "Crossbow, light",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "loading"
+    ],
+    "range": {
+      "normal": 80,
+      "long": 320
+    }
+  },
+  {
+    "slug": "srd-5e_dagger",
+    "name": "Dagger",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "slug": "srd-5e_dart",
+    "name": "Dart",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "slug": "srd-5e_flail",
+    "name": "Flail",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": []
+  },
+  {
+    "slug": "srd-5e_glaive",
+    "name": "Glaive",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "reach",
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_greataxe",
+    "name": "Greataxe",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d12",
+      "type": "slashing"
+    },
+    "properties": [
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_greatclub",
+    "name": "Greatclub",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_greatsword",
+    "name": "Greatsword",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "2d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_halberd",
+    "name": "Halberd",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing"
+    },
+    "properties": [
+      "reach",
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_handaxe",
+    "name": "Handaxe",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "light"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "slug": "srd-5e_javelin",
+    "name": "Javelin",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "thrown"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    }
+  },
+  {
+    "slug": "srd-5e_lance",
+    "name": "Lance",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d12",
+      "type": "piercing"
+    },
+    "properties": [
+      "special-(lance)",
+      "reach"
+    ]
+  },
+  {
+    "slug": "srd-5e_light-hammer",
+    "name": "Light hammer",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "light",
+      "thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "slug": "srd-5e_longbow",
+    "name": "Longbow",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 150,
+      "long": 600
+    }
+  },
+  {
+    "slug": "srd-5e_longsword",
+    "name": "Longsword",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ]
+  },
+  {
+    "slug": "srd-5e_mace",
+    "name": "Mace",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning"
+    },
+    "properties": []
+  },
+  {
+    "slug": "srd-5e_maul",
+    "name": "Maul",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "2d6",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_morningstar",
+    "name": "Morningstar",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": []
+  },
+  {
+    "slug": "srd-5e_net",
+    "name": "Net",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "0",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "special-(net)",
+      "thrown"
+    ],
+    "range": {
+      "normal": 5,
+      "long": 15
+    }
+  },
+  {
+    "slug": "srd-5e_pike",
+    "name": "Pike",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing"
+    },
+    "properties": [
+      "reach",
+      "two-handed"
+    ]
+  },
+  {
+    "slug": "srd-5e_quarterstaff",
+    "name": "Quarterstaff",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning",
+      "versatile_dice": "1d8"
+    },
+    "properties": [
+      "versatile"
+    ]
+  },
+  {
+    "slug": "srd-5e_rapier",
+    "name": "Rapier",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": [
+      "finesse"
+    ]
+  },
+  {
+    "slug": "srd-5e_scimitar",
+    "name": "Scimitar",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ]
+  },
+  {
+    "slug": "srd-5e_shortbow",
+    "name": "Shortbow",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing"
+    },
+    "properties": [
+      "ammunition",
+      "two-handed"
+    ],
+    "range": {
+      "normal": 80,
+      "long": 320
+    }
+  },
+  {
+    "slug": "srd-5e_shortsword",
+    "name": "Shortsword",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing"
+    },
+    "properties": [
+      "finesse",
+      "light"
+    ]
+  },
+  {
+    "slug": "srd-5e_sickle",
+    "name": "Sickle",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "light"
+    ]
+  },
+  {
+    "slug": "srd-5e_sling",
+    "name": "Sling",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning"
+    },
+    "properties": [
+      "ammunition"
+    ],
+    "range": {
+      "normal": 30,
+      "long": 120
+    }
+  },
+  {
+    "slug": "srd-5e_spear",
+    "name": "Spear",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "simple-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "versatile_dice": "1d8"
+    },
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "slug": "srd-5e_trident",
+    "name": "Trident",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-ranged",
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "versatile_dice": "1d8"
+    },
+    "properties": [
+      "two-handed",
+      "thrown",
+      "versatile"
+    ],
+    "range": {
+      "normal": 20,
+      "long": 60
+    }
+  },
+  {
+    "slug": "srd-5e_war-pick",
+    "name": "War Pick",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing"
+    },
+    "properties": []
+  },
+  {
+    "slug": "srd-5e_warhammer",
+    "name": "Warhammer",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning",
+      "versatile_dice": "1d10"
+    },
+    "properties": [
+      "versatile"
+    ]
+  },
+  {
+    "slug": "srd-5e_whip",
+    "name": "Whip",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "category": "martial-melee",
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing"
+    },
+    "properties": [
+      "reach"
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "slug": "srd-2024_agonizing-blast",
+    "name": "Agonizing Blast",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "feature_type": "invocation",
+    "description": "Choose one of your known {@filter Warlock cantrips|spells|level=0|class=Warlock|damage type=acid;bludgeoning;cold;fire;force;lightning;necrotic;piercing;poison;psychic;radiant;slashing;thunder} that deals damage. You can add your Charisma modifier to that spell's damage rolls.\n\nYou can gain this invocation more than once. Each time you do so, choose a different eligible cantrip.",
+    "prerequisites": [],
+    "available_to": [],
+    "effects": []
+  }
+]

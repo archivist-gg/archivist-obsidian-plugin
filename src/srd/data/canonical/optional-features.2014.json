@@ -1,0 +1,87 @@
+[
+  {
+    "slug": "srd-5e_agonizing-blast",
+    "name": "Agonizing Blast",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "feature_type": "invocation",
+    "description": "When you cast {@spell eldritch blast}, add your Charisma modifier to the damage it deals on a hit.",
+    "prerequisites": [
+      {
+        "kind": "spell-known",
+        "spell": "[[SRD 5e/eldritch-blast]]"
+      }
+    ],
+    "available_to": [],
+    "effects": []
+  },
+  {
+    "slug": "srd-5e_defense",
+    "name": "Defense",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "feature_type": "fighting_style",
+    "description": "While you are wearing armor, you gain a +1 bonus to AC.",
+    "prerequisites": [],
+    "available_to": [
+      "[[SRD 5e/fighter]]",
+      "[[SRD 5e/paladin]]",
+      "[[SRD 5e/ranger]]"
+    ],
+    "effects": []
+  },
+  {
+    "slug": "srd-5e_dueling",
+    "name": "Dueling",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "feature_type": "fighting_style",
+    "description": "When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.",
+    "prerequisites": [],
+    "available_to": [
+      "[[SRD 5e/fighter]]",
+      "[[SRD 5e/paladin]]",
+      "[[SRD 5e/ranger]]"
+    ],
+    "effects": []
+  },
+  {
+    "slug": "srd-5e_eldritch-sight",
+    "name": "Eldritch Sight",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "feature_type": "invocation",
+    "description": "You can cast {@spell detect magic} at will, without expending a spell slot.",
+    "prerequisites": [],
+    "available_to": [],
+    "effects": []
+  },
+  {
+    "slug": "srd-5e_great-weapon-fighting",
+    "name": "Great Weapon Fighting",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "feature_type": "fighting_style",
+    "description": "When you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll, even if the new roll is a 1 or a 2. The weapon must have the two-handed or versatile property for you to gain this benefit.",
+    "prerequisites": [],
+    "available_to": [
+      "[[SRD 5e/fighter]]",
+      "[[SRD 5e/paladin]]"
+    ],
+    "effects": []
+  },
+  {
+    "slug": "srd-5e_protection",
+    "name": "Protection",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "feature_type": "fighting_style",
+    "description": "When a creature you can see attacks a target other than you that is within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield.",
+    "prerequisites": [],
+    "available_to": [
+      "[[SRD 5e/fighter]]",
+      "[[SRD 5e/paladin]]"
+    ],
+    "effects": []
+  }
+]

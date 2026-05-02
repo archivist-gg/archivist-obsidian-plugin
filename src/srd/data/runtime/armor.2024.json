@@ -1,0 +1,166 @@
+[
+  {
+    "slug": "srd-2024_breastplate",
+    "name": "Breastplate",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "medium",
+    "ac": {
+      "base": 14,
+      "add_dex": true,
+      "dex_max": 2
+    },
+    "stealth_disadvantage": false
+  },
+  {
+    "slug": "srd-2024_chain-mail",
+    "name": "Chain Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "heavy",
+    "ac": {
+      "base": 16,
+      "add_dex": false
+    },
+    "stealth_disadvantage": true,
+    "strength_required": 13
+  },
+  {
+    "slug": "srd-2024_chain-shirt",
+    "name": "Chain Shirt",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "medium",
+    "ac": {
+      "base": 13,
+      "add_dex": true,
+      "dex_max": 2
+    },
+    "stealth_disadvantage": false
+  },
+  {
+    "slug": "srd-2024_half-plate-armor",
+    "name": "Half Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "medium",
+    "ac": {
+      "base": 15,
+      "add_dex": true,
+      "dex_max": 2
+    },
+    "stealth_disadvantage": true
+  },
+  {
+    "slug": "srd-2024_hide-armor",
+    "name": "Hide Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "medium",
+    "ac": {
+      "base": 12,
+      "add_dex": true,
+      "dex_max": 2
+    },
+    "stealth_disadvantage": false
+  },
+  {
+    "slug": "srd-2024_leather-armor",
+    "name": "Leather Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "light",
+    "ac": {
+      "base": 11,
+      "add_dex": true
+    },
+    "stealth_disadvantage": false
+  },
+  {
+    "slug": "srd-2024_padded-armor",
+    "name": "Padded Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "light",
+    "ac": {
+      "base": 11,
+      "add_dex": true
+    },
+    "stealth_disadvantage": true
+  },
+  {
+    "slug": "srd-2024_plate-armor",
+    "name": "Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "heavy",
+    "ac": {
+      "base": 18,
+      "add_dex": false
+    },
+    "stealth_disadvantage": true,
+    "strength_required": 15
+  },
+  {
+    "slug": "srd-2024_ring-mail",
+    "name": "Ring Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "heavy",
+    "ac": {
+      "base": 14,
+      "add_dex": false
+    },
+    "stealth_disadvantage": true
+  },
+  {
+    "slug": "srd-2024_scale-mail",
+    "name": "Scale Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "medium",
+    "ac": {
+      "base": 14,
+      "add_dex": true,
+      "dex_max": 2
+    },
+    "stealth_disadvantage": true
+  },
+  {
+    "slug": "srd-2024_shield",
+    "name": "Shield",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "heavy",
+    "ac": {
+      "base": 2,
+      "add_dex": false
+    },
+    "stealth_disadvantage": false
+  },
+  {
+    "slug": "srd-2024_splint-armor",
+    "name": "Splint Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "heavy",
+    "ac": {
+      "base": 17,
+      "add_dex": false
+    },
+    "stealth_disadvantage": true,
+    "strength_required": 15
+  },
+  {
+    "slug": "srd-2024_studded-leather-armor",
+    "name": "Studded Leather Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "category": "light",
+    "ac": {
+      "base": 12,
+      "add_dex": true
+    },
+    "stealth_disadvantage": false
+  }
+]
