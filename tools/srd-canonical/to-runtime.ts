@@ -54,14 +54,25 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
     "slug", "name", "edition", "source", "rarity", "type", "tier",
     "description", "requires_attunement", "attunement", "base_item",
     "weight", "cost", "bonuses", "attached_spells", "charges", "effects",
-    // Reserved for future / overlay-supplied structured fields.
-    "consumes", "grants",
+    "entries",
+    "resist", "immune", "vulnerable", "condition_immune",
+    "grants", "container", "light",
+    "cursed", "sentient", "focus",
+    "damage", "weapon_category", "armor_category",
+    // Reserved.
+    "consumes",
   ]),
   magicitem: new Set([
+    // Mirror item exactly.
     "slug", "name", "edition", "source", "rarity", "type", "tier",
     "description", "requires_attunement", "attunement", "base_item",
     "weight", "cost", "bonuses", "attached_spells", "charges", "effects",
-    "consumes", "grants",
+    "entries",
+    "resist", "immune", "vulnerable", "condition_immune",
+    "grants", "container", "light",
+    "cursed", "sentient", "focus",
+    "damage", "weapon_category", "armor_category",
+    "consumes",
   ]),
   spell: new Set([
     "slug", "name", "edition", "source", "level", "school", "casting_time",

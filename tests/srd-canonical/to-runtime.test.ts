@@ -3,10 +3,12 @@ import { projectToRuntime } from "../../tools/srd-canonical/to-runtime";
 
 describe("projectToRuntime", () => {
   it("drops unknown fields for items but preserves description (AI consumption)", () => {
-    const item = { slug: "shield-+1", name: "Shield +1", bonuses: { ac: 1 }, description: "A magical shield…", entries: ["…"], rarity: "uncommon" };
+    const item = { slug: "shield-+1", name: "Shield +1", bonuses: { ac: 1 }, description: "A magical shield…", entries: ["…"], rarity: "uncommon", bogus_field: "drop me" } as Record<string, unknown>;
     const out = projectToRuntime("magicitem", item);
-    // description is kept now (AI consumption); only truly unknown fields like `entries` are dropped.
-    expect(out.entries).toBeUndefined();
+    // description and entries are both kept now (AI consumption + legacy compat);
+    // truly unknown fields like `bogus_field` are dropped.
+    expect(out.bogus_field).toBeUndefined();
+    expect(out.entries).toEqual(["…"]);
     expect(out.description).toBe("A magical shield…");
     expect(out.bonuses).toEqual({ ac: 1 });
     expect(out.slug).toBe("shield-+1");
@@ -262,5 +264,35 @@ describe("to-runtime keep-list includes structured fields", () => {
     expect(runtime.description).toBe("A martial archetype.");
     expect(runtime.parent_class).toBe("[[SRD 5e/Classes/Fighter]]");
     expect(runtime.features_by_level).toBeDefined();
+  });
+});
+
+describe("item keep-list — Slice 3 additions", () => {
+  it("keeps description, entries, resist, immune, vulnerable, condition_immune, grants, damage, weapon_category, armor_category", () => {
+    const entry = {
+      name: "Test", slug: "test", description: "body",
+      entries: ["legacy"], resist: ["fire"], immune: ["cold"], vulnerable: ["acid"],
+      condition_immune: ["charmed"], grants: { proficiency: true },
+      damage: { dice: "1d8", type: "slashing" },
+      weapon_category: "martial-melee", armor_category: "heavy",
+    };
+    const out = projectToRuntime("item", entry);
+    expect(out.description).toBe("body");
+    expect(out.resist).toEqual(["fire"]);
+    expect(out.immune).toEqual(["cold"]);
+    expect(out.vulnerable).toEqual(["acid"]);
+    expect(out.condition_immune).toEqual(["charmed"]);
+    expect(out.grants).toEqual({ proficiency: true });
+    expect(out.damage).toEqual({ dice: "1d8", type: "slashing" });
+    expect(out.weapon_category).toBe("martial-melee");
+    expect(out.armor_category).toBe("heavy");
+    expect(out.entries).toEqual(["legacy"]);
+  });
+
+  it("magicitem keep-list mirrors item", () => {
+    const entry = { name: "Test", slug: "test", resist: ["fire"], grants: { proficiency: true } };
+    const out = projectToRuntime("magicitem", entry);
+    expect(out.resist).toEqual(["fire"]);
+    expect(out.grants).toEqual({ proficiency: true });
   });
 });
