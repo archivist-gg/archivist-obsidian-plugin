@@ -7,14 +7,14 @@ const KNOWN_KEYS = new Set([
   "base_item",
   "bonuses",
   "resist", "immune", "vulnerable", "condition_immune",
-  "charges", "attached_spells", "attunement",
+  "charges", "attached_spells", "attunement", "requires_attunement",
   "grants", "container", "light",
   "cursed", "sentient", "focus", "tier",
   "damage", "weapon_category", "armor_category",
   "weight", "cost",
   "source", "page", "edition",
-  "entries", "raw",
-  // Legacy fields kept
+  "description", "entries", "effects", "raw",
+  // Legacy fields kept (removed in Slice 7 after grep verifies no consumer)
   "damage_dice", "damage_type", "properties", "recharge", "curse",
 ]);
 

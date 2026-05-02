@@ -113,7 +113,9 @@ export interface ItemEntity {
   page?: number;
   /* eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents */
   edition?: "2014" | "2024" | string;
+  description?: string;
   entries?: unknown[];
+  effects?: unknown[];
   raw?: Record<string, unknown>;
 
   // Legacy fields preserved for downstream callers (ai-tools, modal, edit-render)
