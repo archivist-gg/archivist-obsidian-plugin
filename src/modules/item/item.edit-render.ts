@@ -6,7 +6,6 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 import type ArchivistPlugin from "../../main";
 import type { Item } from "./item.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
-import { createSvgBar } from "../../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../shared/edit/compendium-picker";
 
@@ -65,7 +64,7 @@ export function renderItemEditMode(
     if (draft.charges != null) clean.charges = draft.charges;
     if (draft.recharge) clean.recharge = draft.recharge;
     if (draft.curse) clean.curse = true;
-    if (draft.entries && draft.entries.length > 0) clean.entries = draft.entries;
+    if (draft.description && draft.description.length > 0) clean.description = draft.description;
     return clean;
   }
 
@@ -189,12 +188,9 @@ export function renderItemEditMode(
   raritySelect.addEventListener("change", () => { draft.rarity = raritySelect.value || undefined; markDirty(); });
 
   // =========================================================================
-  // 2. SVG Bar
-  // =========================================================================
-  createSvgBar(block);
-
-  // =========================================================================
-  // 3. Properties
+  // 2. Properties
+  // (Header's border-bottom is the divider; no SVG bar — view mode doesn't
+  //  use one either, and stacking both produced a duplicate horizontal line.)
   // =========================================================================
 
   const props = block.createDiv({ cls: "archivist-item-properties" });
@@ -295,46 +291,21 @@ export function renderItemEditMode(
   });
 
   // =========================================================================
-  // 4. Description (entries)
+  // 4. Description
+  // (Single textarea backed by `draft.description: string`. Newlines separate
+  //  paragraphs as standard markdown — same convention as spell.edit-render.)
   // =========================================================================
 
   const descSection = block.createDiv({ cls: "archivist-item-description" });
   const descHeader = descSection.createDiv({ cls: "higher-levels-header" });
   descHeader.textContent = "Description";
 
-  const descEntries: string[] = (draft.entries ?? [""]).map((e) =>
-    typeof e === "string" ? e : String(e),
-  );
-  if (descEntries.length === 0) descEntries.push("");
-
-  for (let i = 0; i < descEntries.length; i++) {
-    const ta = descSection.createEl("textarea", { cls: "archivist-feat-text-input" });
-    ta.value = descEntries[i];
-    ta.rows = 3;
-    const idx = i;
-    ta.addEventListener("input", () => {
-      descEntries[idx] = ta.value;
-      draft.entries = descEntries.filter((e) => e.trim().length > 0);
-      markDirty();
-    });
-  }
-
-  // Add entry button
-  const addDescBtn = descSection.createDiv({ cls: "archivist-side-btn archivist-edit-add-btn" });
-  setIcon(addDescBtn, "plus");
-  addDescBtn.setAttribute("aria-label", "Add entry");
-  addDescBtn.addEventListener("click", () => {
-    descEntries.push("");
-    const ta = descSection.createEl("textarea", { cls: "archivist-feat-text-input" });
-    ta.rows = 3;
-    descSection.insertBefore(ta, addDescBtn);
-    const idx = descEntries.length - 1;
-    ta.addEventListener("input", () => {
-      descEntries[idx] = ta.value;
-      draft.entries = descEntries.filter((e) => e.trim().length > 0);
-      markDirty();
-    });
-    ta.focus();
+  const descTa = descSection.createEl("textarea", { cls: "archivist-feat-text-input" });
+  descTa.value = draft.description ?? "";
+  descTa.rows = 6;
+  descTa.addEventListener("input", () => {
+    draft.description = descTa.value.length > 0 ? descTa.value : undefined;
+    markDirty();
   });
 
   // =========================================================================
@@ -355,7 +326,7 @@ export function renderItemEditMode(
     if (draft.charges != null) clean.charges = draft.charges;
     if (draft.recharge) clean.recharge = draft.recharge;
     if (draft.curse) clean.curse = true;
-    if (draft.entries && draft.entries.length > 0) clean.entries = draft.entries;
+    if (draft.description && draft.description.length > 0) clean.description = draft.description;
 
     const yamlStr = yaml.dump(clean, {
       lineWidth: -1,
