@@ -180,6 +180,12 @@ async function main() {
     const classFeatureCount = Object.keys(overlay.class_features ?? {}).length;
     console.log(`[canonical] ${edition} overlay: loaded ${classFeatureCount} class-feature entries`);
 
+    // Captured during the magicitems kind pass; consumed below by the variant
+    // expansion to drop duplicates of Open5e canonical items (I5). Open5e
+    // already exposes per-base magic items like "Flame Tongue (Longsword)";
+    // the variant pipeline emits the parallel "Flame Tongue Longsword".
+    let openMagicItemNameSlugs = new Set<string>();
+
     for (const kind of ALL_KINDS) {
       const open5e = await readOpen5eKind({
         kind,
@@ -240,6 +246,10 @@ async function main() {
       const canonical = merged.map(ruleEntry.toCanonical);
       console.log(`[canonical]   merged: ${canonical.length} canonical entries`);
 
+      if (kind === "magicitems") {
+        openMagicItemNameSlugs = new Set(canonical.map(c => slugifyName((c as { name: string }).name)));
+      }
+
       const entityKind = OPEN5E_KIND_TO_ENTITY[kind];
       emitForKind({
         canonical: canonical as Array<Record<string, unknown> & { name: string; slug: string }>,
@@ -284,8 +294,8 @@ async function main() {
 
     // Magic-variant expansion: cross every SRD-flagged variant rule with
     // every eligible SRD base item to emit the full grid of "+1 Weapon",
-    // "Frost Brand Longsword", etc. Variants are 5etools-only metadata
-    // (Open5e exposes a few rolled-out variants but no rule-level dump),
+    // "Frost Brand Longsword", etc. Variants come from the structured-rules
+    // dump (Open5e exposes a few rolled-out variants but no rule-level dump),
     // so this step runs from raw structured-rules without an Open5e join.
     // The runtime file `item.{edition}.json` is shared with the magicitems
     // pass — the expanded entries are appended onto it rather than via
@@ -294,13 +304,22 @@ async function main() {
     const variantRules = readMagicVariantsRaw(cfg.structuredRulesPath, edition);
     const expanded = expandVariants(baseItems, variantRules, edition);
     console.log(`[canonical] ${edition} magic-variants: ${variantRules.length} rules × ${baseItems.length} bases → ${expanded.length} expanded items`);
-    if (expanded.length > 0) {
+
+    // Dedup against Open5e canonical-name slugs (I5). When a variant-expanded
+    // entry slugifies to the same key as an Open5e magic item (e.g.
+    // "Flame Tongue Longsword" vs "Flame Tongue (Longsword)"), the Open5e
+    // form wins and the variant is dropped.
+    const filtered = expanded.filter(e => !openMagicItemNameSlugs.has(slugifyName(e.name)));
+    const dropped = expanded.length - filtered.length;
+    console.log(`[canonical] ${edition} variant dedup: kept ${filtered.length}, dropped ${dropped} duplicates of Open5e items`);
+
+    if (filtered.length > 0) {
       const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
 
       // 1. Full canonical JSON — separate file from magicitems for traceability.
       fs.mkdirSync(cfg.canonicalOutDir, { recursive: true });
       const variantCanonicalFile = path.join(cfg.canonicalOutDir, `magicitems-variants.${edition}.json`);
-      fs.writeFileSync(variantCanonicalFile, JSON.stringify(expanded, null, 2));
+      fs.writeFileSync(variantCanonicalFile, JSON.stringify(filtered, null, 2));
 
       // 2. Runtime — append to the existing item.{edition}.json instead of overwriting.
       fs.mkdirSync(cfg.runtimeOutDir, { recursive: true });
@@ -308,12 +327,12 @@ async function main() {
       const existingRuntime = fs.existsSync(itemRuntimeFile)
         ? (JSON.parse(fs.readFileSync(itemRuntimeFile, "utf8")) as unknown[])
         : [];
-      const variantRuntime = expanded.map(e => projectToRuntime("item", e as unknown as Record<string, unknown>));
+      const variantRuntime = filtered.map(e => projectToRuntime("item", e as unknown as Record<string, unknown>));
       fs.writeFileSync(itemRuntimeFile, JSON.stringify([...existingRuntime, ...variantRuntime], null, 2));
 
       // 3. Vault MD per entry — kind=item routes to Magic Items folder.
       const variantBundleDir = path.join(cfg.bundleOutDir, compendium);
-      for (const entry of expanded) {
+      for (const entry of filtered) {
         writeMd(variantBundleDir, {
           kind: "item",
           edition,
@@ -321,7 +340,7 @@ async function main() {
           data: entry as unknown as Record<string, unknown> & { name: string; slug: string },
         });
       }
-      console.log(`[canonical]   variant emit: canonical(${variantCanonicalFile}) runtime(append +${variantRuntime.length}) md(${expanded.length} files)`);
+      console.log(`[canonical]   variant emit: canonical(${variantCanonicalFile}) runtime(append +${variantRuntime.length}) md(${filtered.length} files)`);
     }
 
     // Compendium index per edition (single _compendium.md at the bundle root).
