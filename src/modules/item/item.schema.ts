@@ -196,7 +196,6 @@ export const itemEntitySchema = z.object({
   description: z.string().optional(),
   entries: z.array(z.unknown()).optional(),
   effects: z.array(z.unknown()).optional(),
-  requires_attunement: z.boolean().optional(),
   raw: z.record(z.string(), z.unknown()).optional(),
 
   // Legacy fields preserved

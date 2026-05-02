@@ -44,7 +44,7 @@ describe("itemMergeRule", () => {
     expect(out.edition).toBe("2014");
     expect(out.source).toBe("SRD 5.1");
     expect(out.rarity).toBe("uncommon");
-    expect(out.requires_attunement).toBe(true);
+    expect(out.attunement?.required).toBe(true);
     expect(out.description).toContain("+1 bonus to AC");
     expect(out.bonuses?.ac).toBe(1);
     expect(out.bonuses?.saving_throws).toBe(1);
@@ -111,7 +111,7 @@ describe("itemMergeRule", () => {
     expect(out.charges).toEqual({ max: 9, recharge: "dawn", recharge_amount: "1d6+3" });
     expect(out.tier).toBe(2);
     expect(out.attached_spells?.charges).toEqual({ "1": ["fireball"] });
-    expect(out.requires_attunement).toBe(false);
+    expect(out.attunement).toBeUndefined();
   });
 });
 

@@ -111,6 +111,8 @@ describe("to-runtime keep-list includes structured fields", () => {
       charges: { max: 3, recharge: "dawn" },
       effects: [{ kind: "passive" }],
       description: "A magic battleaxe.",
+      // Top-level requires_attunement is not part of the runtime keep-list (I10);
+      // canonical attunement lives at attunement.required.
       requires_attunement: false,
     };
     const runtime = projectToRuntime("item", canonical);
@@ -122,7 +124,7 @@ describe("to-runtime keep-list includes structured fields", () => {
     expect(runtime.effects).toBeDefined();
     expect(runtime.type).toBe("weapon");
     expect(runtime.description).toBe("A magic battleaxe.");
-    expect(runtime.requires_attunement).toBe(false);
+    expect(runtime.requires_attunement).toBeUndefined();
   });
 
   it("class runtime preserves features_by_level, table, hit_die, proficiencies, etc.", () => {

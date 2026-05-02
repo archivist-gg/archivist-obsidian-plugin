@@ -46,7 +46,6 @@ export interface ExpandedItem {
   base_item: string;
   bonuses?: { weapon_attack?: number; weapon_damage?: number; ac?: number };
   attunement: { required: boolean };
-  requires_attunement: boolean;
   description: string;
   weight?: number;
 }
@@ -222,7 +221,6 @@ function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014
     base_item: `[[${compendium}/${subfolder}/${base.name}]]`,
     ...(bonuses ? { bonuses } : {}),
     attunement: { required: reqAttune },
-    requires_attunement: reqAttune,
     description: buildDescription(variant, base, inherits),
     ...(weight !== undefined ? { weight } : {}),
   };

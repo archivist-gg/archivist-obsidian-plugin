@@ -49,7 +49,6 @@ export interface ItemCanonical {
   rarity: string;
   type?: string;
   description: string;
-  requires_attunement: boolean;
   attunement?: ItemAttunement;
   base_item?: string;
   weight?: number;
@@ -137,6 +136,8 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
   const structured = entry.structured as Record<string, unknown> | null;
   const activation = entry.activation as Record<string, unknown> | null;
 
+  const requiresAttunement = base.requires_attunement === true;
+
   const out: ItemCanonical = {
     slug: entry.slug,
     name: base.name as string,
@@ -144,7 +145,6 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
     source: entry.edition === "2014" ? "SRD 5.1" : "SRD 5.2",
     rarity: normalizeRarity(base.rarity),
     description: rewriteCrossRefs((base.desc as string) ?? "", entry.edition),
-    requires_attunement: base.requires_attunement === true,
   };
 
   // category → type (string)
@@ -183,8 +183,8 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
 
   // Attunement: canonical { required, restriction?, tags? } shape.
   const attunementDetail = base.attunement_detail;
-  if (out.requires_attunement || (typeof attunementDetail === "string" && attunementDetail.length > 0)) {
-    out.attunement = { required: out.requires_attunement };
+  if (requiresAttunement || (typeof attunementDetail === "string" && attunementDetail.length > 0)) {
+    out.attunement = { required: requiresAttunement };
     if (typeof attunementDetail === "string" && attunementDetail.length > 0) {
       out.attunement.restriction = attunementDetail;
     }
@@ -256,7 +256,7 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
     }
 
     if (Array.isArray(structured.reqAttuneTags) && structured.reqAttuneTags.length > 0) {
-      out.attunement = out.attunement ?? { required: out.requires_attunement };
+      out.attunement = out.attunement ?? { required: requiresAttunement };
       out.attunement.tags = structured.reqAttuneTags as Array<Record<string, unknown>>;
     }
 

@@ -52,7 +52,7 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
   ]),
   item: new Set([
     "slug", "name", "edition", "source", "rarity", "type", "tier",
-    "description", "requires_attunement", "attunement", "base_item",
+    "description", "attunement", "base_item",
     "weight", "cost", "bonuses", "attached_spells", "charges", "effects",
     "entries",
     "resist", "immune", "vulnerable", "condition_immune",
@@ -65,7 +65,7 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
   magicitem: new Set([
     // Mirror item exactly.
     "slug", "name", "edition", "source", "rarity", "type", "tier",
-    "description", "requires_attunement", "attunement", "base_item",
+    "description", "attunement", "base_item",
     "weight", "cost", "bonuses", "attached_spells", "charges", "effects",
     "entries",
     "resist", "immune", "vulnerable", "condition_immune",
