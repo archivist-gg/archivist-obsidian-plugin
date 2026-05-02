@@ -153,12 +153,17 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
     out.type = CATEGORY_TO_TYPE[catKey] ?? catKey.replace(/-/g, " ");
   }
 
-  // Open5e weight is a string like "0.000"; only emit when > 0.
+  // Weight: prefer Open5e (base) when non-zero; fall back to the
+  // structured-rules dump (which has weight as a number for items Open5e
+  // emits as "0.000" or omits entirely — e.g. Necklace of Fireballs).
   if (typeof base.weight === "string") {
     const w = parseFloat(base.weight);
     if (!Number.isNaN(w) && w > 0) out.weight = w;
   } else if (typeof base.weight === "number" && base.weight > 0) {
     out.weight = base.weight;
+  }
+  if (out.weight === undefined && structured && typeof structured.weight === "number" && structured.weight > 0) {
+    out.weight = structured.weight;
   }
 
   // Open5e cost is a string like "0.00" (or null); skip empties / zeros.
