@@ -7464,6 +7464,23 @@ body.theme-light .archivist-tag-atk:hover {
   color: #7a200d;
   min-width: 7em;
 }
+.archivist-item-tags {
+  display: flex;
+  gap: 0.4em;
+  margin: 0.4em 0;
+  flex-wrap: wrap;
+}
+.archivist-item-tag {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 3px;
+}
+.archivist-item-tag.cursed { background: #6b0a0a; color: white; }
+.archivist-item-tag.sentient { background: #4a0a6b; color: white; }
 
 
 /* ================================================================

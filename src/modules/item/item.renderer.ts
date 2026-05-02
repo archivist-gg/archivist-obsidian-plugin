@@ -126,6 +126,22 @@ export async function renderItemBlock(
     }
   }
 
+  if (item.focus) {
+    const focusKind = typeof item.focus === "string" ? item.focus : "spellcasting";
+    createIconProperty(props, "wand", "Focus:", `${capitalizeWords(focusKind)} focus`);
+  }
+  if (item.container?.capacity_weight) {
+    createIconProperty(props, "package", "Capacity:", ` ${item.container.capacity_weight} lb`);
+  }
+  if (item.light) {
+    createIconProperty(props, "lamp", "Light:", `Bright ${item.light.bright_radius} ft / Dim ${item.light.dim_radius} ft`);
+  }
+
+  // Tag chips
+  const tagsDiv = el("div", { cls: "archivist-item-tags", parent: block });
+  if (item.cursed) el("span", { cls: ["archivist-item-tag", "cursed"], text: "Cursed", parent: tagsDiv });
+  if (item.sentient) el("span", { cls: ["archivist-item-tag", "sentient"], text: "Sentient", parent: tagsDiv });
+
   // 3. Description (markdown)
   if (item.description && item.description.length > 0) {
     const descDiv = el("div", {
@@ -140,15 +156,6 @@ export async function renderItemBlock(
     el("div", {
       cls: "archivist-item-charges",
       text: `${item.charges} charges`,
-      parent: block,
-    });
-  }
-
-  // 5. Cursed
-  if (item.cursed) {
-    el("div", {
-      cls: "archivist-item-curse",
-      text: "Cursed",
       parent: block,
     });
   }

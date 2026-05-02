@@ -168,4 +168,34 @@ describe("renderItemBlock — markdown description, base_item, cost", () => {
     expect(t).not.toBeNull();
     expect(t?.classList.contains("archivist-table")).toBe(true);
   });
+
+  it("renders cursed chip", async () => {
+    const item: ItemEntity = { name: "T", cursed: true };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-tag.cursed")?.textContent).toBe("Cursed");
+  });
+
+  it("renders sentient chip", async () => {
+    const item: ItemEntity = { name: "T", sentient: true };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-tag.sentient")?.textContent).toBe("Sentient");
+  });
+
+  it("renders focus property line", async () => {
+    const item: ItemEntity = { name: "T", focus: "arcane" };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("Arcane focus");
+  });
+
+  it("renders container capacity_weight", async () => {
+    const item: ItemEntity = { name: "T", container: { capacity_weight: 500 } };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("Capacity: 500 lb");
+  });
+
+  it("renders light radii", async () => {
+    const item: ItemEntity = { name: "T", light: { bright_radius: 20, dim_radius: 40 } };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("Bright 20 ft / Dim 40 ft");
+  });
 });
