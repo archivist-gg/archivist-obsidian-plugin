@@ -1,6 +1,7 @@
 import { MarkdownRenderer, Component, type App } from "obsidian";
 import { parseInlineTag } from "./inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
+import { convert5eToolsTags } from "./renderer-utils";
 
 /**
  * Render a markdown string into `parent` using Obsidian's native renderer,
@@ -27,9 +28,12 @@ export async function renderMarkdownDescription(
     // rendered text. Falls through to the walker below.
   } else {
     const comp = component ?? new Component();
-    // App is optional in tests; in production it must be passed. The test mock
-    // ignores the argument anyway.
-    await MarkdownRenderer.render(app as App, markdown, parent, "", comp);
+    // Run prose-to-tag decoration first: convert {@damage 8d6} → `damage:8d6`
+    // and bare prose dice (8d6, 1d6+1) → backtick-wrapped dice tags. The
+    // markdown renderer then turns those into <code> elements which the
+    // walker below replaces with widgets.
+    const decorated = convert5eToolsTags(markdown);
+    await MarkdownRenderer.render(app as App, decorated, parent, "", comp);
   }
 
   // Tag every rendered table for the brick CSS rules.
