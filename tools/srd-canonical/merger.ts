@@ -48,10 +48,16 @@ export interface MergeRule {
 }
 
 export function mergeKind(rule: MergeRule, inputs: MergeInputs): CanonicalEntry[] {
+  // Structured-rules entries are name-keyed (no Open5e document prefix), so we
+  // index them by the bare slug derived from the entry name and look them up
+  // by the bare slug derived from the Open5e entry name. This decouples the
+  // structured join from the Open5e key shape (which carries an `srd_` /
+  // `srd-2024_` document prefix) and makes the join work whether the upstream
+  // key is bare or prefixed.
   const structuredBySlug = new Map<string, StructuredEntry>();
   for (const e of inputs.structured) {
     const slug = (e as { slug?: string; name: string }).slug
-      ?? e.name.toLowerCase().replace(/\s+/g, "-");
+      ?? slugifyName(e.name);
     structuredBySlug.set(slug, e);
   }
   return inputs.open5e.map((base): CanonicalEntry => ({
@@ -59,7 +65,7 @@ export function mergeKind(rule: MergeRule, inputs: MergeInputs): CanonicalEntry[
     edition: inputs.edition,
     kind: inputs.kind,
     base,
-    structured: structuredBySlug.get(base.key) ?? null,
+    structured: structuredBySlug.get(slugifyName(base.name)) ?? null,
     activation: inputs.activation.get(base.key) ?? null,
     overlay: rule.pickOverlay(inputs.overlay, base.key),
   }));
