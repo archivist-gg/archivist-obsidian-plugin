@@ -1,4 +1,4 @@
-import type { Vault, TFolder } from "obsidian";
+import { type Vault, TFolder } from "obsidian";
 import { initializeCompendium } from "./init";
 import { embeddedBundle, splitBundleByCompendium } from "./embedded-bundle";
 
@@ -30,8 +30,8 @@ export async function bootstrapCompendiums(opts: CompendiumWiringOptions): Promi
   if (opts.removeLegacySrdFolder) {
     const legacyPath = `${opts.rootFolder}/SRD`;
     const legacy = opts.vault.getAbstractFileByPath(legacyPath);
-    if (legacy) {
-      await opts.vault.delete(legacy as TFolder, true);
+    if (legacy instanceof TFolder) {
+      await opts.vault.delete(legacy, true);
       legacySrdRemoved = true;
     }
   }

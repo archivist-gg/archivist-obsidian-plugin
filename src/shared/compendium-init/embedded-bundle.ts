@@ -7,7 +7,7 @@ import bundleJson from "../../../.compendium-bundle/index.json";
  * Keys are paths like `"SRD 5e/Spells/Fireball.md"` — they include the
  * compendium folder prefix.
  */
-export const embeddedBundle: Record<string, string> = bundleJson as Record<string, string>;
+export const embeddedBundle: Record<string, string> = bundleJson;
 
 /**
  * Split the flat bundle into one sub-bundle per top-level compendium folder.
