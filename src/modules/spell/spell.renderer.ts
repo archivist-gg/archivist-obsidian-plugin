@@ -78,10 +78,18 @@ export async function renderSpellBlock(
     const iconSpan = el("span", { cls: "archivist-property-icon", parent: classesDiv });
     setIcon(iconSpan, "book-open");
     const list = el("span", { cls: "classes-list", parent: classesDiv });
-    const wikilinkText = spell.classes
-      .map(c => `[[${c.toLowerCase()}|${titleCase(c)}]]`)
-      .join(", ");
-    renderTextWithInlineTags(wikilinkText, list);
+    const doc = list.ownerDocument ?? activeDocument;
+    spell.classes.forEach((c, i) => {
+      if (i > 0) list.appendChild(doc.createTextNode(", "));
+      const a = doc.createElement("a");
+      a.classList.add("internal-link");
+      a.setAttribute("data-href", c.toLowerCase());
+      a.setAttribute("href", c.toLowerCase());
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener nofollow");
+      a.textContent = titleCase(c);
+      list.appendChild(a);
+    });
   }
 
   // Tags
