@@ -69,7 +69,11 @@ export function renderDndEntityBlock(
     case "item": {
       const parsed = parseItem(result.yamlSource);
       if (parsed.success) {
-        statBlockEl = renderItemBlock(parsed.data);
+        asyncTarget = wrapper.doc.createElement("div");
+        const itemData = parsed.data;
+        void renderItemBlock(itemData, app ?? undefined).then((block) => {
+          asyncTarget?.replaceWith(block);
+        });
       }
       break;
     }

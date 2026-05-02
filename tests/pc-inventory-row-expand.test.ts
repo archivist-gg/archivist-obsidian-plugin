@@ -11,6 +11,19 @@ vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
   confirmDelete: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("obsidian", () => ({
+  MarkdownRenderer: {
+    render: async (_app: unknown, md: string, parent: HTMLElement) => {
+      const doc = parent.ownerDocument;
+      const p = doc.createElement("p");
+      p.textContent = md;
+      parent.appendChild(p);
+    },
+  },
+  setIcon: vi.fn(),
+  Component: class {},
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const make = (
@@ -30,7 +43,7 @@ const make = (
 };
 
 describe("renderRowExpand", () => {
-  it("dispatches to renderItemBlock for plain items", () => {
+  it("dispatches to renderItemBlock for plain items", async () => {
     const { entry, resolved } = make(
       "[[ring]]",
       { name: "Ring of X", type: "ring", entries: ["A magical ring."] },
@@ -38,6 +51,9 @@ describe("renderRowExpand", () => {
     );
     const root = mountContainer();
     renderRowExpand(root, { entry, resolved, app: {} as App, editState: null });
+    // Async item renderer — flush microtasks so the wrapper is filled.
+    await Promise.resolve();
+    await Promise.resolve();
     expect(root.querySelector(".archivist-item-block")).toBeTruthy();
     expect(root.querySelector(".archivist-item-name")?.textContent).toBe("Ring of X");
   });

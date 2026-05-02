@@ -1,8 +1,28 @@
 /** @vitest-environment jsdom */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
+import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
+
+beforeAll(() => installObsidianDomHelpers());
+
+vi.mock("obsidian", () => ({
+  MarkdownRenderer: {
+    render: async (_app: unknown, md: string, parent: HTMLElement) => {
+      const doc = parent.ownerDocument;
+      for (const para of md.split("\n\n")) {
+        const p = doc.createElement("p");
+        p.textContent = para;
+        parent.appendChild(p);
+      }
+    },
+  },
+  setIcon: vi.fn(),
+  Component: class {},
+}));
+
 import { parseItem } from "../src/modules/item/item.parser";
-import { renderItemMechanicalSummary } from "../src/modules/item/item.renderer";
+import { renderItemBlock, renderItemMechanicalSummary } from "../src/modules/item/item.renderer";
+import type { ItemEntity } from "../src/modules/item/item.types";
 
 beforeEach(() => {
   document.body.replaceChildren();
@@ -80,5 +100,32 @@ attached_spells:
     expect(idx1).toBeGreaterThan(-1);
     expect(idx3).toBeGreaterThan(idx1);
     expect(idx4).toBeGreaterThan(idx3);
+  });
+
+  it("renders condition_immune in mechanical summary", () => {
+    const item: ItemEntity = { name: "T", condition_immune: ["charmed", "frightened"] };
+    const summary = renderItemMechanicalSummary(item);
+    expect(summary?.textContent ?? "").toContain("Cond. Immune");
+    expect(summary?.textContent ?? "").toContain("charmed");
+  });
+});
+
+describe("renderItemBlock — markdown description, base_item, cost", () => {
+  it("displays description body via markdown renderer", async () => {
+    const item: ItemEntity = { name: "T", description: "Body of the item." };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-description")?.textContent ?? "").toContain("Body of the item.");
+  });
+
+  it("displays base_item as wikilink in subtitle area", async () => {
+    const item: ItemEntity = { name: "Magic Sword", type: "weapon", base_item: "[[SRD 5e/Weapons/Longsword]]" };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-base-item")?.textContent ?? "").toContain("Longsword");
+  });
+
+  it("displays cost (not legacy value)", async () => {
+    const item: ItemEntity = { name: "T", cost: "50 gp" };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("50 gp");
   });
 });

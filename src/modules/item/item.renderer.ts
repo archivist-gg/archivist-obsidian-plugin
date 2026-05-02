@@ -1,11 +1,11 @@
-import { Item } from "./item.types";
-import type { ItemEntity } from "./item.types";
+import { Item, ItemEntity } from "./item.types";
 import type { ConditionalBonus } from "./item.conditions.types";
 import {
   el,
   createIconProperty,
-  renderTextWithInlineTags,
 } from "../../shared/rendering/renderer-utils";
+import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
+import type { App, Component } from "obsidian";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -45,7 +45,11 @@ function buildSubtitle(item: Item): string {
   return parts.join(", ");
 }
 
-export function renderItemBlock(item: Item): HTMLElement {
+export async function renderItemBlock(
+  item: Item,
+  app?: App,
+  component?: Component,
+): Promise<HTMLElement> {
   const wrapper = el("div", { cls: "archivist-item-block-wrapper" });
   const block = el("div", { cls: "archivist-item-block", parent: wrapper });
 
@@ -68,6 +72,30 @@ export function renderItemBlock(item: Item): HTMLElement {
     });
   }
 
+  // Base item wikilink — base_item is supplied as "[[SRD 5e/Weapons/Longsword]]";
+  // build a real internal-link anchor so Obsidian renders a clickable link
+  // (not raw bracket text).
+  if (typeof item.base_item === "string" && item.base_item.length > 0) {
+    const baseDiv = el("div", { cls: "archivist-item-base-item", parent: header });
+    const doc = baseDiv.ownerDocument ?? activeDocument;
+    baseDiv.appendChild(doc.createTextNode("Base: "));
+    const wikilinkMatch = /^\[\[(.+?)(?:\|(.+?))?\]\]$/.exec(item.base_item);
+    if (wikilinkMatch) {
+      const target = wikilinkMatch[1];
+      const display = wikilinkMatch[2] ?? target.split("/").pop() ?? target;
+      const a = doc.createElement("a");
+      a.classList.add("internal-link");
+      a.setAttribute("data-href", target);
+      a.setAttribute("href", target);
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener nofollow");
+      a.textContent = display;
+      baseDiv.appendChild(a);
+    } else {
+      baseDiv.appendChild(doc.createTextNode(item.base_item));
+    }
+  }
+
   // 2. Properties with icons
   const props = el("div", { cls: "archivist-item-properties", parent: block });
 
@@ -84,55 +112,40 @@ export function renderItemBlock(item: Item): HTMLElement {
     createIconProperty(props, "scale", "Weight:", `${item.weight} lb.`);
   }
 
-  if (item.value) {
-    createIconProperty(props, "coins", "Value:", `${item.value} gp`);
+  if (item.cost) {
+    createIconProperty(props, "coins", "Cost:", item.cost);
   }
 
   if (typeof item.damage === "string") {
-    const damageStr = item.damage_type
-      ? `${item.damage} ${item.damage_type}`
-      : item.damage;
-    createIconProperty(props, "swords", "Damage:", damageStr);
-  }
-  // TODO(SP5/Task 11): render structured damage (object form)
-
-  if (item.properties && item.properties.length > 0) {
-    createIconProperty(
-      props,
-      "shield",
-      "Properties:",
-      item.properties.map(capitalizeWords).join(", "),
-    );
+    createIconProperty(props, "swords", "Damage:", item.damage);
+  } else if (item.damage && typeof item.damage === "object") {
+    const d = item.damage as { dice?: string; type?: string };
+    if (d.dice) {
+      const txt = d.type ? `${d.dice} ${d.type}` : d.dice;
+      createIconProperty(props, "swords", "Damage:", txt);
+    }
   }
 
-  // 3. Description
-  if (item.entries && item.entries.length > 0) {
+  // 3. Description (markdown)
+  if (item.description && item.description.length > 0) {
     const descDiv = el("div", {
       cls: "archivist-item-description",
       parent: block,
     });
-    for (const entry of item.entries) {
-      const p = el("div", { cls: "description-paragraph", parent: descDiv });
-      renderTextWithInlineTags(typeof entry === "string" ? entry : String(entry), p);
-    }
+    await renderMarkdownDescription(descDiv, item.description, app, component);
   }
 
-  // 4. Charges
+  // 4. Charges fallback (object-form preferred; renderItemMechanicalSummary handles structured)
   if (typeof item.charges === "number") {
-    let chargesText = `${item.charges} charges`;
-    if (item.recharge) {
-      chargesText += `. Recharge: ${item.recharge}`;
-    }
     el("div", {
       cls: "archivist-item-charges",
-      text: chargesText,
+      text: `${item.charges} charges`,
       parent: block,
     });
   }
-  // TODO(SP5/Task 11): render structured charges (object form)
 
-  // 5. Curse
-  if (item.curse) {
+  // 5. Cursed
+  if (item.cursed) {
     el("div", {
       cls: "archivist-item-curse",
       text: "Cursed",
@@ -243,6 +256,7 @@ function hasMechanicalSummary(item: ItemEntity): boolean {
   if (item.resist && item.resist.length > 0) return true;
   if (item.immune && item.immune.length > 0) return true;
   if (item.vulnerable && item.vulnerable.length > 0) return true;
+  if (item.condition_immune && item.condition_immune.length > 0) return true;
   return false;
 }
 
@@ -267,6 +281,8 @@ export function renderItemMechanicalSummary(item: ItemEntity): HTMLElement | nul
   if (item.immune?.length) appendSummaryRow(summary, "Immune", item.immune.join(", "));
   if (item.vulnerable?.length)
     appendSummaryRow(summary, "Vulnerable", item.vulnerable.join(", "));
+  if (item.condition_immune?.length)
+    appendSummaryRow(summary, "Cond. Immune", item.condition_immune.join(", "));
   if (item.grants) {
     const parts: string[] = [];
     if (item.grants.proficiency) parts.push("Proficiency");

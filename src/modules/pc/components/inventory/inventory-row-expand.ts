@@ -34,7 +34,12 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
   } else if (ctx.resolved.entityType === "armor") {
     expand.appendChild(renderArmorBlock(ctx.resolved.entity as ArmorEntity));
   } else {
-    expand.appendChild(renderItemBlock(ctx.resolved.entity as Item));
+    // Async item renderer (markdown description); use a stable wrapper so the
+    // returned `expand` reference stays valid for callers.
+    const itemWrapper = expand.createDiv();
+    void renderItemBlock(ctx.resolved.entity as Item, ctx.app).then((block) => {
+      itemWrapper.appendChild(block);
+    });
   }
 
   // PC-actions strip — sits below the block, separate concern.
