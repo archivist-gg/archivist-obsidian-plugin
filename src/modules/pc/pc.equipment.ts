@@ -54,17 +54,22 @@ function unwrapSlug(item: string): string | null {
   return m ? m[1] : null;
 }
 
-function lookupEntity(
+// Resolve an equipment entry's `item` wikilink (or bare slug) through the
+// shared `resolveBaseItem` helper so vault-path wikilinks
+// (e.g. `[[SRD 5e/Magic Items/Defender (Longsword)]]`), alias wikilinks, AND
+// compendium-prefixed slugs all resolve consistently — matching the behavior
+// of `computeCarriedWeight` and the inventory row helpers. Returns the same
+// `{ entity, entityType }` shape the rest of this module expects.
+//
+// Registry stores data as Record<string, unknown>; the entityType
+// discriminator narrows the runtime type, but TS can't follow it. Cleaner
+// registry typing is an SP6+ refactor.
+function resolveEquipmentEntity(
   entry: EquipmentEntry,
   registry: EntityRegistry,
 ): { entity: ArmorEntity | WeaponEntity | ItemEntity | null; entityType: string | null } {
-  const slug = unwrapSlug(entry.item);
-  if (!slug) return { entity: null, entityType: null };
-  const found = registry.getBySlug(slug);
+  const found = resolveBaseItem(entry.item, registry);
   if (!found) return { entity: null, entityType: null };
-  // Registry stores data as Record<string, unknown>; the entityType discriminator
-  // returned alongside narrows the runtime type, but TS can't follow it.
-  // Cleaner registry typing is an SP6+ refactor.
   return {
     entity: found.data as unknown as ArmorEntity | WeaponEntity | ItemEntity,
     entityType: found.entityType,
@@ -140,7 +145,7 @@ export function computeAppliedBonuses(
   const ctx = buildConditionContext(resolved, {});
 
   for (const entry of equipment) {
-    const { entity, entityType } = lookupEntity(entry, registry);
+    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
 
     if (!entity) {
       const slug = unwrapSlug(entry.item);
@@ -271,7 +276,7 @@ function assignSlots(
   for (let i = 0; i < eq.length; i++) {
     const entry = eq[i];
     if (!entry.equipped || !entry.slot) continue;
-    const { entity, entityType } = lookupEntity(entry, registry);
+    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
     if (slots[entry.slot]) {
       warnings.push(`${entry.slot} slot conflict: ${entry.item} ignored (already taken).`);
       continue;
@@ -284,7 +289,7 @@ function assignSlots(
   for (let i = 0; i < eq.length; i++) {
     const entry = eq[i];
     if (!entry.equipped || entry.slot) continue;
-    const { entity, entityType } = lookupEntity(entry, registry);
+    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
     if (!entity || !entityType) continue;
 
     const defaultSlot = defaultSlotForType(entityType, entity, registry);
@@ -363,7 +368,7 @@ function computeAC(
   const acInformational: InformationalBonus[] = [];
   const acCtx = buildConditionContext(resolved, equippedSlots);
   for (const entry of resolved.definition.equipment ?? []) {
-    const { entity, entityType } = lookupEntity(entry, registry);
+    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
     if (!entity || entityType !== "item") continue;
     if (!isAttunedActive(entry, entity)) continue;
     const item = entity as ItemEntity;
@@ -440,7 +445,7 @@ function magicBonusesForWeaponEntry(
   sourceName?: string;
   informational: InformationalBonus[];
 } {
-  const { entity } = lookupEntity(entry, registry);
+  const { entity } = resolveEquipmentEntity(entry, registry);
   const ovr = entry.overrides ?? {};
   const entryAttack = typeof ovr.bonus === "number" ? ovr.bonus : 0;
   const entryDamage = typeof ovr.damage_bonus === "number" ? ovr.damage_bonus : 0;
@@ -676,9 +681,10 @@ function computeCarriedWeight(
     if (!found) continue;
     // Registry stores `data` as Record<string, unknown>; the entityType
     // discriminator on the registered entity narrows the runtime type, but
-    // TS can't follow it. Same pattern as `lookupEntity` above. All three
-    // entity types declare `weight?: number | string`, so direct field access
-    // is type-safe (no inline `unknown` cast needed) once narrowed.
+    // TS can't follow it. Same pattern as `resolveEquipmentEntity` above.
+    // All three entity types declare `weight?: number | string`, so direct
+    // field access is type-safe (no inline `unknown` cast needed) once
+    // narrowed.
     const entity = found.data as unknown as ItemEntity | WeaponEntity | ArmorEntity;
     const w = coerceWeight(entity.weight);
     if (w === 0) continue;

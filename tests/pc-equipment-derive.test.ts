@@ -142,6 +142,28 @@ describe("computeAppliedBonuses", () => {
     const b = computeAppliedBonuses(mkResolved(c), profs, reg, []);
     expect(b.defenses.resistances).toContain("fire");
   });
+
+  it("vault-path wikilink for an equipped+attuned item resolves bonuses (PC-7)", () => {
+    // Regression: pre-PC-7 the bonus pass relied on a local slug-only lookup
+    // that couldn't handle vault-path wikilinks. With the shared resolver,
+    // PCs that store their equipment as `[[SRD 5e/Magic Items/Cloak of Protection]]`
+    // (the canonical-bundle form) now flow saving-throw bonuses correctly.
+    const cloak: ItemEntity = {
+      name: "Cloak of Protection",
+      slug: "srd-5e_cloak-of-protection",
+      type: "wondrous",
+      rarity: "uncommon",
+      bonuses: { saving_throws: 1 },
+      attunement: { required: true },
+    };
+    const reg = buildMockRegistry([
+      { slug: "srd-5e_cloak-of-protection", entityType: "item", name: "Cloak of Protection", data: cloak },
+    ]);
+    const c = baseChar();
+    c.equipment = [{ item: "[[SRD 5e/Magic Items/Cloak of Protection]]", equipped: true, attuned: true }];
+    const b = computeAppliedBonuses(mkResolved(c), profs, reg, []);
+    expect(b.save_bonus).toBe(1);
+  });
 });
 
 describe("recalc + Pass A", () => {
@@ -453,6 +475,55 @@ describe("computeSlotsAndAttacks — attack rows", () => {
     ]);
     const c = baseChar(); c.abilities.str = 16;
     c.equipment = [{ item: "[[srd-5e_defender-longsword]]", equipped: true, attuned: true }];
+    const d = computeSlotsAndAttacks(
+      mkResolved(c),
+      { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+      fullProfs,
+      reg,
+      [],
+      2,
+    );
+    // PB 2 + STR 3 + magic +3 = +8 to hit; 1d8 base + STR 3 + magic +3 = 1d8+6
+    expect(d.attacks).toHaveLength(1);
+    expect(d.attacks[0].toHit).toBe(8);
+    expect(d.attacks[0].damageDice).toBe("1d8+6");
+  });
+
+  it("PC equipment with a vault-path wikilink for a magic weapon flows magic bonuses (PC-7)", () => {
+    // Regression: pre-PC-7 the slot-assignment + attack-row passes in
+    // pc.equipment used a slug-only lookup that silently missed
+    // `[[SRD 5e/Magic Items/Defender (Longsword)]]`-style vault-path
+    // wikilinks. After migration to the shared resolver, the equipped
+    // entry resolves, the magic bonuses on the ItemEntity are read, AND
+    // the underlying weapon (also a vault-path wikilink) is resolved
+    // through `resolveBaseItem` so the attack row materializes correctly.
+    const longsword: WeaponEntity = {
+      name: "Longsword",
+      slug: "srd-5e_longsword",
+      edition: "2014",
+      category: "martial-melee",
+      damage: { dice: "1d8", type: "slashing", versatile_dice: "1d10" },
+      properties: ["versatile"],
+    };
+    const defender: ItemEntity = {
+      name: "Defender",
+      slug: "srd-5e_defender-longsword",
+      type: "weapon",
+      rarity: "legendary",
+      base_item: "[[SRD 5e/Weapons/Longsword]]",
+      bonuses: { weapon_attack: 3, weapon_damage: 3 },
+      attunement: { required: true },
+    };
+    const reg = buildMockRegistry([
+      { slug: "srd-5e_longsword", entityType: "weapon", name: "Longsword", data: longsword },
+      { slug: "srd-5e_defender-longsword", entityType: "item", name: "Defender", data: defender },
+    ]);
+    const c = baseChar(); c.abilities.str = 16;
+    c.equipment = [{
+      item: "[[SRD 5e/Magic Items/Defender (Longsword)]]",
+      equipped: true,
+      attuned: true,
+    }];
     const d = computeSlotsAndAttacks(
       mkResolved(c),
       { str: 3, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
