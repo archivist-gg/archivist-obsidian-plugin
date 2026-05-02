@@ -118,4 +118,32 @@ describe("Monster renderer with structured attacks", () => {
     const text = root.textContent ?? "";
     expect(text).toContain("Melee Weapon Attack");
   });
+
+  it("prefers entries prose over structured attacks when both present", () => {
+    const root = mountContainer();
+    const monster: Monster = {
+      name: "Adult Black Dragon",
+      actions: [
+        {
+          name: "Rend",
+          entries: ["Custom prose."],
+          attacks: [
+            {
+              name: "Rend attack",
+              type: "melee",
+              bonus: 9,
+              damage: "2d6+5",
+              damage_type: "slashing",
+              range: { reach: 10 },
+            },
+          ],
+        },
+      ],
+    };
+    const wrapper = renderMonsterBlock(monster);
+    root.appendChild(wrapper);
+    const text = root.textContent ?? "";
+    expect(text).toContain("Custom prose");
+    expect(text).not.toContain("+9 to hit");
+  });
 });

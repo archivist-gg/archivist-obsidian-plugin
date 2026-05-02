@@ -86,7 +86,11 @@ function renderFeatureBlock(
     const nameSpan = el("span", { cls: "archivist-feature-name", parent: featureDiv });
     nameSpan.textContent = feature.name + ".";
 
-    if (feature.attacks && feature.attacks.length > 0) {
+    if (feature.entries && feature.entries.length > 0) {
+      const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });
+      const entryText = feature.entries.join(" ");
+      renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
+    } else if (feature.attacks && feature.attacks.length > 0) {
       const attacksWrap = el("span", {
         cls: "archivist-feature-attacks",
         parent: featureDiv,
@@ -94,10 +98,6 @@ function renderFeatureBlock(
       for (const attack of feature.attacks) {
         renderAttackLine(attacksWrap, attack);
       }
-    } else if (feature.entries && feature.entries.length > 0) {
-      const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });
-      const entryText = feature.entries.join(" ");
-      renderTextWithInlineTags(entryText, entrySpan, true, monsterCtx);
     }
   }
 }
