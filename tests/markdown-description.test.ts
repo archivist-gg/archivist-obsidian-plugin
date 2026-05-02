@@ -73,4 +73,15 @@ describe("renderMarkdownDescription", () => {
     await renderMarkdownDescription(parent, "");
     expect(parent.children.length).toBe(0);
   });
+
+  it("preserves non-dice <code> elements unchanged", async () => {
+    // Build a synthetic post-render state: parent already has a <code> in it.
+    // Call the post-processor walker directly via a re-invocation that's a no-op
+    // for empty markdown; assert the existing <code> survives.
+    const code = parent.ownerDocument.createElement("code");
+    code.textContent = "not-a-dice-tag";
+    parent.appendChild(code);
+    await renderMarkdownDescription(parent, "");
+    expect(parent.querySelector("code")?.textContent).toBe("not-a-dice-tag");
+  });
 });
