@@ -1988,3 +1988,49 @@ body.theme-light .archivist-tag-atk:hover {
   background: var(--background-modifier-hover);
 }
 
+
+/* Class block — parchment palette mirrors spell/item */
+.archivist-class-block {
+  background: #f0ddbd;
+  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #191813;
+  box-shadow: 0 4px 24px rgba(134,116,83,0.3), 0 2px 8px rgba(134,116,83,0.2);
+  padding: 0.6em;
+  border-radius: 4px;
+  margin: 1.5em 0;
+}
+.archivist-class-block-header {
+  border-bottom: 2px solid #7a200d;
+  padding-bottom: 0.3em;
+  margin-bottom: 0.4em;
+}
+.archivist-class-name {
+  font-family: 'Libre Baskerville', 'Lora', Garamond, serif;
+  color: #7a200d;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+.archivist-class-description {
+  font-style: italic;
+  margin: 0 0 0.4em 0;
+}
+.archivist-class-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  font-size: 12px;
+  margin-bottom: 0.6em;
+}
+.archivist-class-meta-row {
+  display: flex;
+  gap: 0.5em;
+}
+.archivist-class-meta-label {
+  font-weight: 700;
+  color: #7a200d;
+  min-width: 7em;
+}
