@@ -22,6 +22,21 @@ function migrateAttunement(raw: Record<string, unknown>): void {
   // The new canonical attunement shape is { required, restriction?, tags? }.
   // Legacy YAML uses boolean | string. Auto-promote so downstream sees
   // the canonical shape consistently.
+  //
+  // Also handle the older top-level `requires_attunement: true` field, which
+  // some pre-canonical-pipeline vaults still ship: if the canonical
+  // `attunement` field is absent, synthesize it from the boolean. If both
+  // exist, the structured `attunement` wins (don't override). The legacy
+  // field is dropped from `raw` either way so it doesn't fall through into
+  // the parsed entity's `raw` extras as untyped noise.
+  const legacy = raw.requires_attunement;
+  if (raw.attunement === undefined && typeof legacy === "boolean") {
+    raw.attunement = { required: legacy };
+  }
+  if (legacy !== undefined) {
+    delete raw.requires_attunement;
+  }
+
   const v = raw.attunement;
   if (v === undefined || v === null) return;
   if (typeof v === "object" && !Array.isArray(v)) return; // already canonical

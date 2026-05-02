@@ -39,6 +39,51 @@ attunement: "by a wizard"
       expect(r.data.attunement).toEqual({ required: true });
     }
   });
+
+  it("migrates top-level `requires_attunement: true` to canonical shape (PC-7 LI-2)", () => {
+    // Pre-canonical-pipeline vaults shipped a top-level boolean
+    // `requires_attunement` field instead of the structured `attunement`
+    // block. Without migration, the legacy field would land in
+    // `entity.raw` and `requiresAttunement()` (which only consults
+    // `entity.attunement`) would silently treat the item as not requiring
+    // attunement.
+    const src = `name: Old Cloak\nrequires_attunement: true`;
+    const r = parseItem(src);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.attunement).toEqual({ required: true });
+      // legacy field should not pollute extras
+      expect(r.data.raw?.requires_attunement).toBeUndefined();
+    }
+  });
+
+  it("structured `attunement` wins over legacy `requires_attunement` (PC-7 LI-2)", () => {
+    // If both the canonical and legacy fields are present, the structured
+    // attunement is the source of truth. The legacy field is still
+    // discarded so it doesn't leak into extras.
+    const src = `
+name: Mixed Cloak
+attunement:
+  required: true
+  restriction: "by a wizard"
+requires_attunement: true
+`;
+    const r = parseItem(src);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.attunement).toEqual({ required: true, restriction: "by a wizard" });
+      expect(r.data.raw?.requires_attunement).toBeUndefined();
+    }
+  });
+
+  it("item with neither `attunement` nor `requires_attunement` stays as-is (PC-7 LI-2)", () => {
+    const src = `name: Plain Item\nrarity: common`;
+    const r = parseItem(src);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.attunement).toBeUndefined();
+    }
+  });
 });
 
 describe("parseItem — new structured fields", () => {
