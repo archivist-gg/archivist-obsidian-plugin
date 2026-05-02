@@ -236,11 +236,11 @@ function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014
  * still visible.
  */
 function substituteTemplateVars(text: string, inherits: Record<string, unknown>): string {
-  return text.replace(/\{=([^}\/]+)(?:\/[^}]+)?\}/g, (match, rawKey: string) => {
+  return text.replace(/\{=([^}/]+)(?:\/[^}]+)?\}/g, (match, rawKey: string) => {
     const key = rawKey.trim();
     const value = inherits[key];
-    if (value === undefined || value === null) return match;
-    return String(value);
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    return match;
   });
 }
 
