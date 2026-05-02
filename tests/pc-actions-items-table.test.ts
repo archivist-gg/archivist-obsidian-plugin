@@ -101,4 +101,28 @@ describe("ItemsTable", () => {
     firstEmpty.click();
     expect(setItemCharges).toHaveBeenCalledWith(0, 1, 7);
   });
+
+  it("renders an action row for a PC equipping a compendium-prefixed wand wikilink", () => {
+    // Regression for CB-4: PC sheets ship `[[srd-5e_wand-of-fireballs]]` but the
+    // curated map keys by bare name; without prefix-stripping the row was missing.
+    const root = mountContainer();
+    new ItemsTable().render(root, ctx({
+      entries: [
+        { item: "[[srd-5e_wand-of-fireballs]]", equipped: true, attuned: true },
+        { item: "[[srd-5e_necklace-of-fireballs]]", equipped: true },
+      ],
+      entityForSlug: (slug) => {
+        if (slug === "srd-5e_wand-of-fireballs") return { name: "Wand of Fireballs", rarity: "very rare" };
+        if (slug === "srd-5e_necklace-of-fireballs") return { name: "Necklace of Fireballs", rarity: "rare" };
+        return null;
+      },
+    }));
+    const rows = root.querySelectorAll(".pc-action-row");
+    expect(rows.length).toBe(2);
+    expect(rows[0].textContent).toContain("Wand of Fireballs");
+    expect(rows[1].textContent).toContain("Necklace of Fireballs");
+    // Wand has 7 charges from the curated map even though entry has no state.charges.
+    const boxes = rows[0].querySelectorAll(".archivist-toggle-box");
+    expect(boxes.length).toBe(7);
+  });
 });

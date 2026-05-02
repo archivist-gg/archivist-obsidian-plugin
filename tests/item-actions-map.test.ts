@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ITEM_ACTIONS, type ItemAction } from "../src/modules/item/item.actions-map";
+import { ITEM_ACTIONS, findItemAction, type ItemAction } from "../src/modules/item/item.actions-map";
 
 describe("ITEM_ACTIONS curated map", () => {
   it("includes wand-of-fireballs with 7 charges and dawn 1d6+1 recovery", () => {
@@ -112,5 +112,65 @@ describe("resolveItemAction priority", () => {
     expect(a?.cost).toBe("reaction");
     expect(a?.range).toBe("30 ft.");
     expect(a?.max_charges).toBeUndefined();
+  });
+
+  it("resolves compendium-prefixed slug (srd-5e_) to the curated map entry", () => {
+    const entry = { item: "[[srd-5e_wand-of-fireballs]]" } as EquipmentEntry;
+    const a = resolveItemAction("srd-5e_wand-of-fireballs", entry);
+    expect(a?.cost).toBe("action");
+    expect(a?.range).toBe("150 ft.");
+    expect(a?.max_charges).toBe(7);
+  });
+
+  it("resolves compendium-prefixed slug (srd-2024_) to the curated map entry", () => {
+    const entry = { item: "[[srd-2024_necklace-of-fireballs]]" } as EquipmentEntry;
+    const a = resolveItemAction("srd-2024_necklace-of-fireballs", entry);
+    expect(a?.cost).toBe("action");
+    expect(a?.range).toBe("60 ft.");
+    expect(a?.max_charges).toBe(9);
+  });
+});
+
+describe("findItemAction", () => {
+  it("returns the curated entry for a bare slug (legacy back-compat)", () => {
+    const a = findItemAction("wand-of-fireballs");
+    expect(a).toBeDefined();
+    expect(a?.cost).toBe("action");
+    expect(a?.range).toBe("150 ft.");
+    expect(a?.max_charges).toBe(7);
+  });
+
+  it("strips srd-5e_ prefix and returns the wand-of-fireballs action", () => {
+    const a = findItemAction("srd-5e_wand-of-fireballs");
+    expect(a).toBeDefined();
+    expect(a?.cost).toBe("action");
+    expect(a?.max_charges).toBe(7);
+    expect(a).toEqual(findItemAction("wand-of-fireballs"));
+  });
+
+  it("strips srd-2024_ prefix and returns the wand-of-fireballs action", () => {
+    const a = findItemAction("srd-2024_wand-of-fireballs");
+    expect(a).toBeDefined();
+    expect(a?.cost).toBe("action");
+    expect(a).toEqual(findItemAction("wand-of-fireballs"));
+  });
+
+  it("strips homebrew_ prefix when name matches a curated entry", () => {
+    const a = findItemAction("homebrew_necklace-of-fireballs");
+    expect(a).toBeDefined();
+    expect(a?.max_charges).toBe(9);
+  });
+
+  it("returns undefined for a homebrew slug that has no curated entry (no crash)", () => {
+    expect(findItemAction("homebrew_custom-thing")).toBeUndefined();
+  });
+
+  it("returns undefined for an unknown bare slug", () => {
+    expect(findItemAction("mundane-rope")).toBeUndefined();
+  });
+
+  it("does not strip when the bare slug already matches", () => {
+    // wand-of-fireballs has no underscore; lookup hits ITEM_ACTIONS directly.
+    expect(findItemAction("wand-of-fireballs")).toBe(ITEM_ACTIONS["wand-of-fireballs"]);
   });
 });

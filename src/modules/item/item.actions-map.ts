@@ -84,12 +84,37 @@ export const ITEM_ACTIONS: Record<string, ItemAction> = {
 };
 
 /**
+ * Look up an ItemAction by slug, accepting either a bare name slug
+ * (`wand-of-fireballs`) or a compendium-prefixed slug
+ * (`srd-5e_wand-of-fireballs`, `srd-2024_wand-of-fireballs`,
+ * `homebrew_wand-of-fireballs`).
+ *
+ * Compendium-prefixed slugs follow the shape `<prefix>_<name-slug>` where
+ * both prefix and name-slug are kebab-case (slugify strips underscores).
+ * The first underscore is therefore the unambiguous prefix separator: we
+ * try the bare slug after the first underscore first, then fall back to
+ * the original slug for legacy bare-slug callers.
+ *
+ * Returns `undefined` if no map entry matches either form. Does not crash
+ * on slugs without an underscore — those are treated as already-bare.
+ */
+export function findItemAction(slug: string): ItemAction | undefined {
+  if (slug in ITEM_ACTIONS) return ITEM_ACTIONS[slug];
+  const underscore = slug.indexOf("_");
+  if (underscore < 0) return undefined;
+  const bare = slug.slice(underscore + 1);
+  return ITEM_ACTIONS[bare];
+}
+
+/**
  * Resolve the ItemAction for an equipped entry.
  * Priority: entry.overrides (action + range) merged onto curated map.
  * Returns null when neither source supplies an action cost.
+ *
+ * Accepts both bare and compendium-prefixed slugs (see `findItemAction`).
  */
 export function resolveItemAction(slug: string, entry: EquipmentEntry): ItemAction | null {
-  const curated = ITEM_ACTIONS[slug] ?? null;
+  const curated = findItemAction(slug) ?? null;
   const override = entry.overrides;
   const overrideCost = override?.action;
   const overrideRange = override?.range;
