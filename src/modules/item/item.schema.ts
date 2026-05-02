@@ -205,4 +205,4 @@ export const itemEntitySchema = z.object({
   properties: z.array(z.string()).optional(),
   recharge: z.string().optional(),
   curse: z.boolean().optional(),
-}).loose();
+});
