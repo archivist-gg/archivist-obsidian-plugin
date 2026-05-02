@@ -65,6 +65,7 @@ function drawRow(
     resolved: item.resolved,
     app: ctx.app,
     editState: ctx.editState,
+    registry: ctx.core?.entities ?? null,
     onToggle,
     expanded: isExpanded,
   });

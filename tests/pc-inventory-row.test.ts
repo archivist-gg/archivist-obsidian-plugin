@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { InventoryRow } from "../src/modules/pc/components/inventory/inventory-row";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
@@ -177,5 +178,28 @@ describe("InventoryRow", () => {
       expect(unattuneItem).not.toHaveBeenCalled();
       expect(unequipItem).not.toHaveBeenCalled();
     });
+  });
+
+  it("renders magic weapon damage by joining base_item to weapon entity", () => {
+    const longsword = {
+      slug: "longsword",
+      name: "Longsword",
+      category: "martial-melee",
+      damage: { dice: "1d8", type: "slashing" },
+      properties: ["versatile"],
+    };
+    const flameTongue = {
+      name: "Flame Tongue Longsword",
+      type: "weapon",
+      base_item: "[[SRD 5e/Weapons/Longsword|Longsword]]",
+    };
+    const it = make("[[flame-tongue-longsword]]", { entity: flameTongue, entityType: "item" });
+    const registry = buildMockRegistry([
+      { slug: "longsword", entityType: "weapon", data: longsword, name: "Longsword" },
+    ]);
+    const root = mountContainer();
+    new InventoryRow().render(root, { ...it, app: {} as never, editState: null, registry });
+    const stat = root.querySelector(".pc-inv-row .pc-inv-stat");
+    expect(stat?.textContent ?? "").toContain("1d8");
   });
 });

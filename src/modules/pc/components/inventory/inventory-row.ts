@@ -1,6 +1,7 @@
 import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
+import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 import { requiresAttunement } from "./requires-attunement";
@@ -12,6 +13,10 @@ export interface InventoryRowCtx {
   resolved: ResolvedEquipped;
   app: App;
   editState: CharacterEditState | null;
+  /** Optional registry handle. When supplied, magic weapons (entityType="item"
+   *  with a `base_item` wikilink) fall back to the underlying weapon entity's
+   *  damage in the stat column. */
+  registry?: EntityRegistry | null;
   onToggle?: (index: number) => void;
   expanded?: boolean;
 }
@@ -110,18 +115,63 @@ function fillSubtitle(sub: HTMLElement, ctx: InventoryRowCtx): void {
 }
 
 function keyStat(ctx: InventoryRowCtx): string {
-  const e = ctx.resolved.entity as { ac?: { base?: number; flat?: number; add_dex?: boolean }; damage?: { dice?: string; type?: string } } | null;
+  const e = ctx.resolved.entity as
+    | {
+        ac?: { base?: number; flat?: number; add_dex?: boolean };
+        damage?: { dice?: string; type?: string };
+        base_item?: string;
+      }
+    | null;
   const charges = ctx.entry.state?.charges;
   if (charges) return `${charges.current}/${charges.max} ch.`;
   if (ctx.resolved.entityType === "weapon" && e?.damage) {
-    const t = e.damage.type ? ` ${e.damage.type[0].toUpperCase()}` : "";
-    return `${e.damage.dice}${t}`;
+    return formatWeaponDamage(e.damage);
   }
   if (ctx.resolved.entityType === "armor" && e?.ac) {
     const flat = e.ac.flat ? `+${e.ac.flat}` : "";
     return `AC ${e.ac.base ?? 0}${flat}${e.ac.add_dex ? " + Dex" : ""}`;
   }
+  // Magic-weapon fallback: an Item entity with a `base_item` wikilink that
+  // resolves to a known weapon should show the underlying weapon's damage so
+  // the stat column doesn't appear empty for items like Flame Tongue.
+  if (ctx.resolved.entityType === "item" && ctx.registry && typeof e?.base_item === "string") {
+    const baseSlug = extractBaseItemSlug(e.base_item);
+    if (baseSlug) {
+      const found = ctx.registry.getBySlug(baseSlug);
+      if (found?.entityType === "weapon") {
+        const weaponDamage = (found.data as { damage?: { dice?: string; type?: string } }).damage;
+        if (weaponDamage) return formatWeaponDamage(weaponDamage);
+      }
+      if (found?.entityType === "armor") {
+        const armorAc = (found.data as { ac?: { base?: number; flat?: number; add_dex?: boolean } }).ac;
+        if (armorAc) {
+          const flat = armorAc.flat ? `+${armorAc.flat}` : "";
+          return `AC ${armorAc.base ?? 0}${flat}${armorAc.add_dex ? " + Dex" : ""}`;
+        }
+      }
+    }
+  }
   return "";
+}
+
+function formatWeaponDamage(damage: { dice?: string; type?: string }): string {
+  const t = damage.type ? ` ${damage.type[0].toUpperCase()}` : "";
+  return `${damage.dice ?? ""}${t}`;
+}
+
+/**
+ * Extract the slug from a `base_item` wikilink such as
+ *   "[[SRD 5e/Weapons/Longsword]]"
+ *   "[[SRD 5e/Weapons/Longsword|Longsword]]"
+ *   "[[longsword]]"
+ * Returns null if no wikilink is found.
+ */
+function extractBaseItemSlug(baseItem: string): string | null {
+  const m = /^\[\[([^|\]]+)(?:\|[^\]]*)?\]\]$/.exec(baseItem);
+  if (!m) return null;
+  const target = m[1];
+  const lastSegment = target.split("/").pop() ?? target;
+  return lastSegment.toLowerCase().replace(/\s+/g, "-");
 }
 
 function formatWeight(ctx: InventoryRowCtx): string {
