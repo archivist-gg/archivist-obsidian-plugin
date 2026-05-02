@@ -341,7 +341,11 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
     }
   }
 
-  // Traits: detect Legendary Resistance count and emit as separate field.
+  // Traits: detect Legendary Resistance count and ALSO keep the trait itself so
+  // its prose (and any 2024 lair-variant detail) renders in the TRAITS tab
+  // alongside other special traits. The numeric `legendary_resistance` field
+  // remains available on the runtime Monster type for game-mechanical use
+  // (e.g., a future tracker UI), but it no longer drives display.
   const baseTraits = (Array.isArray(base.traits) ? (base.traits as Open5eTrait[]) : []);
   const traits: Feature[] = [];
   let legendaryResistance: number | undefined;
@@ -349,8 +353,6 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
     const lrMatch = (t.name ?? "").match(/^Legendary Resistance\s*\((\d+)\s*\/\s*Day/i);
     if (lrMatch) {
       legendaryResistance = parseInt(lrMatch[1], 10);
-      // Drop this trait from traits[]; structured field carries the count.
-      continue;
     }
     traits.push({
       name: t.name,

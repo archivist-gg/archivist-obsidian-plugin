@@ -175,11 +175,36 @@ describe("creature-merge field paths and structured attacks (β+)", () => {
     expect(tail.attacks![0].type).toBe("melee");
   });
 
-  it("extracts Legendary Resistance (N/Day) trait → legendary_resistance number", () => {
+  it("extracts Legendary Resistance (N/Day) numeric count AND keeps the trait in traits[]", () => {
     const result = toCreatureCanonical(buildEntry(aboleth2024));
     expect(result.legendary_resistance).toBe(3);
-    expect(result.traits!.find(t => /Legendary Resistance/i.test(t.name))).toBeUndefined();
+    // The trait is preserved (with its prose) so it renders in the TRAITS tab
+    // alongside other special traits; the numeric field is additive.
+    const lrTrait = result.traits!.find(t => /Legendary Resistance/i.test(t.name));
+    expect(lrTrait).toBeDefined();
+    expect(lrTrait!.entries?.[0]).toContain("succeed instead");
     expect(result.traits!.find(t => t.name === "Amphibious")).toBeDefined();
+  });
+
+  it("preserves 2024 'Legendary Resistance (3/Day, or 4/Day in Lair)' trait with full prose", () => {
+    const baseDragon: Record<string, unknown> = {
+      ...aboleth2024,
+      name: "Adult Black Dragon",
+      traits: [
+        {
+          name: "Legendary Resistance (3/Day, or 4/Day in Lair)",
+          desc: "If the dragon fails a saving throw, it can choose to succeed instead.",
+        },
+        { name: "Amphibious", desc: "The dragon can breathe air and water." },
+      ],
+    };
+    const result = toCreatureCanonical(buildEntry(baseDragon, "2024"));
+    const traitNames = result.traits!.map(t => t.name);
+    expect(traitNames).toContain("Legendary Resistance (3/Day, or 4/Day in Lair)");
+    expect(traitNames).toContain("Amphibious");
+    expect(result.legendary_resistance).toBe(3); // numeric still extracted
+    const lrTrait = result.traits!.find(t => t.name.startsWith("Legendary Resistance"));
+    expect(lrTrait?.entries?.[0]).toContain("succeed instead"); // prose preserved
   });
 
   it("emits resistance/immunity/condition arrays as flat string keys", () => {

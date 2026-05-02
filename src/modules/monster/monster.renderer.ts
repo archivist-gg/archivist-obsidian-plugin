@@ -139,20 +139,6 @@ function renderLegendarySection(
   const introText = `The ${monsterName} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monsterName} regains spent legendary actions at the start of its turn.`;
   el("p", { cls: "archivist-legendary-intro", text: introText, parent });
   renderLegendaryBoxes(parent, legendaryCount);
-
-  if (monster.legendary_resistance && monster.legendary_resistance > 0) {
-    const resCount = monster.legendary_resistance;
-    const resBlock = el("div", { cls: "archivist-legendary-resistance", parent });
-    const resP = el("p", { cls: "archivist-legendary-resistance-text", parent: resBlock });
-    const doc = resP.ownerDocument ?? activeDocument;
-    const nameStrong = doc.createElement("strong");
-    nameStrong.textContent = `Legendary Resistance (${resCount}/Day). `;
-    resP.appendChild(nameStrong);
-    resP.appendChild(doc.createTextNode(
-      `If the ${monsterName} fails a saving throw, it can choose to succeed instead.`
-    ));
-    renderLegendaryBoxes(resBlock, resCount);
-  }
 }
 
 function createRichPropertyLine(
