@@ -84,6 +84,21 @@ function parseDamageBonusFromHitText(desc: string, attackPos: number): number | 
 }
 
 /**
+ * 2024 prose lacks the "Hit:" preamble — damage follows the attack-roll
+ * sentence directly: "Melee Attack Roll: +11, reach 10 ft. 13 (2d6 + 6)
+ * Slashing damage." Scan forward from the attack position for the first
+ * "<avg> (NdM + B) <type> damage" clause within a generous window.
+ */
+function parseDamageBonusFor2024(desc: string, attackPos: number): number | null {
+  const window = desc.slice(attackPos, attackPos + 250);
+  const damageRe = /(?:\d+\s*\()?\d+d\d+(?:\s*([+-])\s*(\d+))?\s*\)?\s*\w*\s+damage/i;
+  const m = window.match(damageRe);
+  if (!m) return null;
+  if (m[1] === undefined || m[2] === undefined) return 0;
+  return m[1] === "-" ? -Number(m[2]) : Number(m[2]);
+}
+
+/**
  * Convert SRD plain-English descriptions (e.g. "Melee Weapon Attack: +14 to hit,
  * Hit: 21 (3d8 + 8) slashing damage") into backtick formula tags
  * (e.g. "Melee Weapon Attack: `atk:STR+PB`, Hit: `dmg:3d8+STR` slashing damage")
@@ -101,6 +116,23 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
 
     let result = desc;
 
+    // Pass 0 — 2024 form: "<Ability> Saving Throw: DC N".
+    // The ability word PRECEDES "DC N" (in 2014 it follows). Trust the
+    // explicit ability word: emit `dc:ABIL` when the computed target matches,
+    // otherwise emit `dc:N` literal. Either way the literal "DC N" is consumed
+    // here so Pass 1b cannot fire on it and produce a wrong-ability tag.
+    result = result.replace(
+      /(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+Saving\s+Throw:\s+DC\s+(\d+)/gi,
+      (_match: string, abilityWord: string, n: string) => {
+        const dc = Number(n);
+        const abil = abilityWordToKey(abilityWord);
+        if (abil && dcTargets[abil] === dc) {
+          return `${abilityWord} Saving Throw: \`dc:${abil.toUpperCase()}\``;
+        }
+        return `${abilityWord} Saving Throw: \`dc:${dc}\``;
+      },
+    );
+
     // Pass 1 — DC with explicit ability word
     result = result.replace(
       /DC (\d+)\s+(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)/gi,
@@ -111,6 +143,41 @@ export function convertDescToTags(desc: string, ctx: ConversionContext): string 
           return `\`dc:${abil.toUpperCase()}\` ${abilityWord}`;
         }
         return `\`dc:${dc}\` ${abilityWord}`;
+      },
+    );
+
+    // Pass 2a — 2024 form: "(Melee|Ranged|Spell) Attack Roll: +N,"
+    // No "to hit" suffix. Same ability+PB inference as Pass 2 below, but the
+    // damage clause has no "Hit:" preamble — use parseDamageBonusFor2024.
+    // The lookback into `desc` is safe because the attack-roll prose hasn't
+    // been mutated yet at this point in the pipeline (Pass 0 only consumes
+    // "<Ability> Saving Throw: DC N" spans, which never overlap attack rolls).
+    result = result.replace(
+      /(Melee|Ranged|Spell)\s+Attack\s+Roll:\s+([+-])(\d+),/g,
+      (match: string, kind: string, sign: string, n: string, offset: number) => {
+        const attackBonus = sign === "-" ? -Number(n) : Number(n);
+        const before = desc.slice(Math.max(0, offset - 200), offset);
+        const actionMatch = before.match(/(?:^|\.\s+)([A-Z][\w\s,'-]{1,40})\./);
+        const actionName = actionMatch ? actionMatch[1] : ctx.actionName;
+
+        // Damage scan starts AFTER the attack-roll clause in `desc`.
+        const damageBonus = parseDamageBonusFor2024(desc, offset + match.length);
+        const preferred = kind.toLowerCase() === "spell" && ctx.spellAbility
+          ? [ctx.spellAbility]
+          : preferredAbilitiesForAttack(actionName, desc, ctx.spellAbility);
+        const ability = identifyAbility(damageBonus, preferred, mods);
+
+        const literal = attackBonus >= 0 ? `+${attackBonus}` : `${attackBonus}`;
+        if (ability === null) {
+          return `${kind} Attack Roll: \`atk:${literal}\`,`;
+        }
+        if (attackBonus === mods[ability] + ctx.profBonus) {
+          return `${kind} Attack Roll: \`atk:${ability.toUpperCase()}+PB\`,`;
+        }
+        if (attackBonus === mods[ability]) {
+          return `${kind} Attack Roll: \`atk:${ability.toUpperCase()}\`,`;
+        }
+        return `${kind} Attack Roll: \`atk:${literal}\`,`;
       },
     );
 

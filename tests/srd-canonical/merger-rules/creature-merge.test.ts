@@ -483,3 +483,178 @@ describe("creature-merge usage_limits → Feature.recharge", () => {
     warnSpy.mockRestore();
   });
 });
+
+describe("creature-merge prose-to-formula-tag conversion", () => {
+  it("converts 2014 action prose to formula tags", () => {
+    const result = toCreatureCanonical({
+      slug: "test_aboleth",
+      edition: "2014",
+      kind: "creature",
+      base: {
+        name: "Aboleth",
+        size: { key: "large" },
+        type: { key: "aberration" },
+        armor_class: 17,
+        hit_points: 135,
+        hit_dice: "18d10+36",
+        challenge_rating: 10,
+        ability_scores: {
+          strength: 21, dexterity: 9, constitution: 15,
+          intelligence: 18, wisdom: 15, charisma: 18,
+        },
+        actions: [
+          {
+            name: "Tail",
+            desc: "Melee Weapon Attack: +9 to hit, reach 10 ft., one target. Hit: 15 (3d6 + 5) bludgeoning damage.",
+            action_type: "ACTION",
+            attacks: [],
+          },
+        ],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    });
+    const tail = result.actions!.find(a => a.name === "Tail")!;
+    expect(tail.entries![0]).toContain("`atk:STR+PB`");
+    expect(tail.entries![0]).toContain("`dmg:3d6+STR`");
+  });
+
+  it("converts 2024 action prose to formula tags (Melee Attack Roll form)", () => {
+    // 2024 Adult Black Dragon: STR 23 (mod +6), PB 5 → STR+PB = 11
+    const result = toCreatureCanonical({
+      slug: "test_dragon",
+      edition: "2024",
+      kind: "creature",
+      base: {
+        name: "Adult Black Dragon",
+        size: { key: "huge" },
+        type: { key: "dragon" },
+        armor_class: 19,
+        hit_points: 195,
+        hit_dice: "17d12+85",
+        challenge_rating: 14,
+        ability_scores: {
+          strength: 23, dexterity: 14, constitution: 21,
+          intelligence: 14, wisdom: 13, charisma: 19,
+        },
+        actions: [
+          {
+            name: "Rend",
+            desc: "Melee Attack Roll: +11, reach 10 ft. 13 (2d6 + 6) Slashing damage plus 4 (1d8) Acid damage.",
+            action_type: "ACTION",
+            attacks: [],
+          },
+        ],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    });
+    const rend = result.actions!.find(a => a.name === "Rend")!;
+    expect(rend.entries![0]).toContain("`atk:STR+PB`");
+  });
+
+  it("does not produce wrong-ability tags for 2024 explicit-ability saves", () => {
+    // Adult Black Dragon: CON mod 5 + PB 5 + 8 = 18 (Pass 1b would mistakenly
+    // pick CON). Prose says "Dexterity" — must NOT emit dc:CON.
+    const result = toCreatureCanonical({
+      slug: "test_dragon",
+      edition: "2024",
+      kind: "creature",
+      base: {
+        name: "Adult Black Dragon",
+        size: { key: "huge" },
+        type: { key: "dragon" },
+        armor_class: 19,
+        hit_points: 195,
+        hit_dice: "17d12+85",
+        challenge_rating: 14,
+        ability_scores: {
+          strength: 23, dexterity: 14, constitution: 21,
+          intelligence: 14, wisdom: 13, charisma: 19,
+        },
+        actions: [
+          {
+            name: "Acid Breath",
+            desc: "Dexterity Saving Throw: DC 18, each creature in a 60-foot-long, 5-foot-wide Line. Failure: 54 (12d8) Acid damage. Success: Half damage.",
+            action_type: "ACTION",
+            attacks: [],
+          },
+        ],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    });
+    const breath = result.actions!.find(a => a.name === "Acid Breath")!;
+    expect(breath.entries![0]).not.toContain("`dc:CON`");
+  });
+
+  it("converts trait prose to formula tags", () => {
+    const result = toCreatureCanonical({
+      slug: "test_trait",
+      edition: "2014",
+      kind: "creature",
+      base: {
+        name: "Wolf",
+        size: { key: "medium" },
+        type: { key: "beast" },
+        armor_class: 13,
+        hit_points: 11,
+        challenge_rating: "1/4",
+        ability_scores: {
+          strength: 12, dexterity: 15, constitution: 12,
+          intelligence: 3, wisdom: 12, charisma: 6,
+        },
+        actions: [
+          {
+            name: "Bite",
+            desc: "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 7 (2d4 + 2) piercing damage. If the target is a creature, it must succeed on a DC 11 Strength saving throw or be knocked prone.",
+            action_type: "ACTION",
+            attacks: [],
+          },
+        ],
+        traits: [
+          { name: "Pack Tactics", desc: "The wolf has advantage on an attack roll." },
+        ],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    });
+    const bite = result.actions!.find(a => a.name === "Bite")!;
+    expect(bite.entries![0]).toContain("`atk:DEX+PB`");
+    expect(bite.entries![0]).toContain("`dc:STR`");
+  });
+
+  it("uses CR-derived prof bonus when base.proficiency_bonus is null", () => {
+    // CR 14 → PB 5; STR 23 (+6); STR+PB = 11
+    const result = toCreatureCanonical({
+      slug: "test_pb",
+      edition: "2024",
+      kind: "creature",
+      base: {
+        name: "Test",
+        size: { key: "huge" },
+        type: { key: "dragon" },
+        armor_class: 19,
+        hit_points: 195,
+        challenge_rating: 14,
+        proficiency_bonus: null, // confirmed null in real data
+        ability_scores: {
+          strength: 23, dexterity: 14, constitution: 21,
+          intelligence: 14, wisdom: 13, charisma: 19,
+        },
+        actions: [
+          { name: "Slam", desc: "Melee Attack Roll: +11, reach 10 ft. 8 (1d8 + 6) Bludgeoning damage.", action_type: "ACTION", attacks: [] },
+        ],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    });
+    const slam = result.actions!.find(a => a.name === "Slam")!;
+    expect(slam.entries![0]).toContain("`atk:STR+PB`");
+  });
+});

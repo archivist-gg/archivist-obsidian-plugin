@@ -364,3 +364,77 @@ describe("convertDescToTags — damage-driven attribution (Phase 0.5)", () => {
     expect(twice).toBe(once);
   });
 });
+
+describe("convertDescToTags — 2024 prose forms", () => {
+  // Adult Black Dragon (2024): STR 23 (+6), DEX 14 (+2), CON 21 (+5), INT 14 (+2), WIS 13 (+1), CHA 19 (+4); CR 14 → PB 5.
+  // atkTargets: str=+11, dex=+7
+  // dcTargets:  str=8+5+6=19, dex=8+5+2=15, con=8+5+5=18, int=15, wis=14, cha=17
+  const DRAGON_2024: ConversionContext = {
+    abilities: { str: 23, dex: 14, con: 21, int: 14, wis: 13, cha: 19 },
+    profBonus: 5,
+    actionName: "Rend",
+    actionCategory: "action",
+  };
+
+  it("converts 2024 'Melee Attack Roll: +N' to atk:STR+PB when STR matches", () => {
+    // STR mod +6 + PB 5 = +11 → atk:STR+PB
+    const result = convertDescToTags(
+      "Melee Attack Roll: +11, reach 10 ft. 13 (2d6 + 6) Slashing damage.",
+      { ...DRAGON_2024, actionName: "Rend" },
+    );
+    expect(result).toContain("`atk:STR+PB`");
+    expect(result).toContain("`dmg:2d6+STR`");
+  });
+
+  it("converts 2024 'Ranged Attack Roll: +N'", () => {
+    // For a ranged shot — DEX mod +2 + PB 5 = +7 → atk:DEX+PB
+    const result = convertDescToTags(
+      "Ranged Attack Roll: +7, range 80/320 ft. 7 (1d8 + 2) Piercing damage.",
+      { ...DRAGON_2024, actionName: "Longbow" },
+    );
+    expect(result).toContain("`atk:DEX+PB`");
+    expect(result).toContain("`dmg:1d8+DEX`");
+  });
+
+  it("respects explicit ability word in 2024 'Dexterity Saving Throw: DC N'", () => {
+    // DC 18: matches CON (8+5+5=18). Pass 1b would mistakenly pick CON.
+    // Pass 0 must see "Dexterity" and emit dc:N literal (DEX target is 15, not 18).
+    const result = convertDescToTags(
+      "Dexterity Saving Throw: DC 18, each creature in a 60-foot-long, 5-foot-wide Line. Failure: 54 (12d8) Acid damage.",
+      { ...DRAGON_2024, actionName: "Acid Breath" },
+    );
+    expect(result).not.toContain("`dc:CON`");
+    const hasDcDex = result.includes("`dc:DEX`");
+    const hasDcLiteral = result.includes("`dc:18`");
+    expect(hasDcDex || hasDcLiteral).toBe(true);
+  });
+
+  it("emits dc:ABIL when 2024 explicit ability matches its computed target", () => {
+    // STR target = 19, prose says "Strength" with DC 19 → emit dc:STR
+    const result = convertDescToTags(
+      "Strength Saving Throw: DC 19, each creature in a 15-foot Cone.",
+      DRAGON_2024,
+    );
+    expect(result).toContain("`dc:STR`");
+  });
+
+  it("idempotent on 2024 prose", () => {
+    const desc = "Melee Attack Roll: +11, reach 10 ft. 13 (2d6 + 6) Slashing damage. Dexterity Saving Throw: DC 18.";
+    const once = convertDescToTags(desc, DRAGON_2024);
+    const twice = convertDescToTags(once, DRAGON_2024);
+    expect(twice).toBe(once);
+  });
+
+  it("idempotent: running twice produces same output as once (2014 form)", () => {
+    const ctx: ConversionContext = {
+      abilities: { str: 21, dex: 9, con: 15, int: 18, wis: 15, cha: 18 },
+      profBonus: 4,
+      actionName: "Tail",
+      actionCategory: "action",
+    };
+    const desc = "Melee Weapon Attack: +9 to hit, reach 10 ft., one target. Hit: 15 (3d6 + 5) bludgeoning damage.";
+    const once = convertDescToTags(desc, ctx);
+    const twice = convertDescToTags(once, ctx);
+    expect(twice).toBe(once);
+  });
+});

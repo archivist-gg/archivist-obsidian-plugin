@@ -3,6 +3,11 @@ import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import type { Attack } from "../../../src/shared/types/attack";
 import type { Feature, FeatureRecharge } from "../../../src/shared/types/feature";
+import {
+  convertDescToTags,
+  type ConversionContext,
+  type ConverterAbilities,
+} from "../../../src/shared/dnd/srd-tag-converter";
 
 interface Open5eDamageType {
   key: string;
@@ -210,10 +215,56 @@ const USAGE_TYPE_MAP: Record<string, FeatureRecharge["type"]> = {
   PER_SHORT_REST: "per_short_rest",
 };
 
-function actionToFeature(action: Open5eAction, edition: "2014" | "2024"): Feature {
+/**
+ * D&D 5e proficiency-bonus formula by Challenge Rating.
+ * Mirrors scripts/migrate-formula-tags.ts:profBonusFromCR.
+ */
+function profBonusFromCR(cr: string | number | undefined): number {
+  if (cr == null) return 2;
+  const num = typeof cr === "string"
+    ? cr.includes("/") ? Number(cr.split("/")[0]) / Number(cr.split("/")[1]) : Number(cr)
+    : cr;
+  if (!Number.isFinite(num)) return 2;
+  if (num <= 4) return 2;
+  if (num <= 8) return 3;
+  if (num <= 12) return 4;
+  if (num <= 16) return 5;
+  if (num <= 20) return 6;
+  if (num <= 24) return 7;
+  if (num <= 28) return 8;
+  return 9;
+}
+
+const ACTION_TYPE_TO_CATEGORY: Record<string, ConversionContext["actionCategory"]> = {
+  ACTION: "action",
+  REACTION: "reaction",
+  LEGENDARY_ACTION: "legendary",
+  BONUS_ACTION: "bonus",
+};
+
+interface MergerConvCtx {
+  abilities: ConverterAbilities;
+  profBonus: number;
+  spellAbility?: ConversionContext["spellAbility"];
+}
+
+function actionToFeature(
+  action: Open5eAction,
+  edition: "2014" | "2024",
+  ctx: MergerConvCtx,
+): Feature {
+  const rewritten = rewriteCrossRefs(action.desc ?? "", edition);
+  const actionCategory = ACTION_TYPE_TO_CATEGORY[action.action_type] ?? "action";
+  const converted = convertDescToTags(rewritten, {
+    abilities: ctx.abilities,
+    profBonus: ctx.profBonus,
+    actionName: action.name,
+    actionCategory,
+    spellAbility: ctx.spellAbility,
+  });
   const f: Feature = {
     name: action.name,
-    entries: [rewriteCrossRefs(action.desc ?? "", edition)],
+    entries: [converted],
   };
   if (action.attacks && action.attacks.length > 0) {
     f.attacks = action.attacks.map(open5eAttackToAttack);
@@ -232,6 +283,38 @@ function actionToFeature(action: Open5eAction, edition: "2014" | "2024"): Featur
     }
   }
   return f;
+}
+
+const SPELLCASTING_ABILITY_RE = /using\s+(Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)\s+as\s+(?:the\s+|its?\s+)?spellcasting\s+ability/i;
+const SPELLCASTING_ABILITY_RE_2 = /spellcasting\s+ability\s+is\s+(intelligence|wisdom|charisma)/i;
+
+function detectActionsSpellAbility(
+  actions: Open5eAction[],
+  traits: Open5eTrait[],
+): ConversionContext["spellAbility"] {
+  // Search trait + action prose for "using <Ability> as the spellcasting ability"
+  // (2024 phrasing) or "spellcasting ability is <Ability>" (2014 phrasing).
+  const sources: string[] = [];
+  for (const t of traits) sources.push(t.desc ?? "");
+  for (const a of actions) sources.push(a.desc ?? "");
+  for (const s of sources) {
+    let m = s.match(SPELLCASTING_ABILITY_RE);
+    if (m) {
+      const word = m[1].toLowerCase();
+      if (word === "intelligence") return "int";
+      if (word === "wisdom") return "wis";
+      if (word === "charisma") return "cha";
+      // STR/DEX/CON spellcasting is non-canonical; ignore.
+    }
+    m = s.match(SPELLCASTING_ABILITY_RE_2);
+    if (m) {
+      const word = m[1].toLowerCase();
+      if (word === "intelligence") return "int";
+      if (word === "wisdom") return "wis";
+      if (word === "charisma") return "cha";
+    }
+  }
+  return undefined;
 }
 
 const SENSE_FIELD_LABELS: Array<[string, string]> = [
@@ -350,6 +433,12 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
   const damage_vulnerabilities = flatKeys(ri.damage_vulnerabilities);
   const condition_immunities = flatKeys(ri.condition_immunities);
 
+  // Compute proficiency bonus once for the whole creature. base.proficiency_bonus
+  // is null for all real Open5e v2 entries — derive from CR via the standard
+  // 5e formula. Used by the prose-to-formula-tag converter below.
+  const profBonus = profBonusFromCR(cr);
+  const converterAbilities: ConverterAbilities = abilities;
+
   // Actions split by action_type. Open5e returns `actions` alphabetically;
   // each action carries an `order_in_statblock` ordinal giving the canonical
   // position WITHIN its action_type bucket. Sort the whole list once by that
@@ -365,13 +454,20 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
   const reactions: Feature[] = [];
   const legendary: Feature[] = [];
 
+  // Heuristically detect the creature's spellcasting ability from prose so the
+  // converter can resolve "spell save DC N" / "+N to hit with spell attacks"
+  // to the correct ability tag for casters that use INT/WIS/CHA.
+  const baseTraits = (Array.isArray(base.traits) ? (base.traits as Open5eTrait[]) : []);
+  const spellAbility = detectActionsSpellAbility(allActions, baseTraits);
+  const convCtx: MergerConvCtx = { abilities: converterAbilities, profBonus, spellAbility };
+
   for (const a of allActions) {
     if (a.action_type === "REACTION") {
-      reactions.push(actionToFeature(a, entry.edition));
+      reactions.push(actionToFeature(a, entry.edition, convCtx));
     } else if (a.action_type === "LEGENDARY_ACTION") {
-      legendary.push(actionToFeature(a, entry.edition));
+      legendary.push(actionToFeature(a, entry.edition, convCtx));
     } else {
-      actions.push(actionToFeature(a, entry.edition));
+      actions.push(actionToFeature(a, entry.edition, convCtx));
     }
   }
 
@@ -380,7 +476,6 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
   // alongside other special traits. The numeric `legendary_resistance` field
   // remains available on the runtime Monster type for game-mechanical use
   // (e.g., a future tracker UI), but it no longer drives display.
-  const baseTraits = (Array.isArray(base.traits) ? (base.traits as Open5eTrait[]) : []);
   const traits: Feature[] = [];
   let legendaryResistance: number | undefined;
   for (const t of baseTraits) {
@@ -388,10 +483,15 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
     if (lrMatch) {
       legendaryResistance = parseInt(lrMatch[1], 10);
     }
-    traits.push({
-      name: t.name,
-      entries: [rewriteCrossRefs(t.desc ?? "", entry.edition)],
+    const rewritten = rewriteCrossRefs(t.desc ?? "", entry.edition);
+    const converted = convertDescToTags(rewritten, {
+      abilities: converterAbilities,
+      profBonus,
+      actionName: t.name,
+      actionCategory: "trait",
+      spellAbility,
     });
+    traits.push({ name: t.name, entries: [converted] });
   }
 
   const out: CreatureCanonical = {
