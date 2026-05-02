@@ -25,6 +25,20 @@ function getSpellHeader(spell: Spell): string {
   return `${ordinal(level)}-level ${school}`;
 }
 
+/**
+ * Map the body-only `edition` (or `source`) field to a user-friendly badge
+ * label. The canonical pipeline writes "SRD 5.1" / "SRD 5.2" to source and
+ * "2014" / "2024" to edition; users see "SRD 5e" / "SRD 2024" everywhere
+ * else, so we surface that.
+ */
+function sourceBadgeText(spell: { source?: string; edition?: string }): string | null {
+  if (spell.edition === "2014") return "SRD 5e";
+  if (spell.edition === "2024") return "SRD 2024";
+  if (spell.source === "SRD 5.1") return "SRD 5e";
+  if (spell.source === "SRD 5.2") return "SRD 2024";
+  return spell.source ?? null;
+}
+
 export async function renderSpellBlock(
   spell: Spell,
   app?: App,
@@ -32,6 +46,13 @@ export async function renderSpellBlock(
 ): Promise<HTMLElement> {
   const wrapper = el("div", { cls: "archivist-spell-block-wrapper" });
   const block = el("div", { cls: "archivist-spell-block", parent: wrapper });
+
+  // Source badge (top-right; pre-existing CSS targets `.source-badge` inside
+  // the block). Only rendered when source/edition is known.
+  const badgeText = sourceBadgeText(spell);
+  if (badgeText) {
+    el("span", { cls: "source-badge", text: badgeText, parent: block });
+  }
 
   // Header
   const header = el("div", { cls: "spell-block-header", parent: block });

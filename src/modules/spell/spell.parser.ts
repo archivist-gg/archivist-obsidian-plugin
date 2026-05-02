@@ -14,7 +14,12 @@ export function parseSpell(source: string): ParseResult<Spell> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);
   if (!result.success) return result;
 
-  // Strip body-only metadata before schema validation.
+  // Strip body-only metadata before schema validation. `source` and `edition`
+  // are preserved on the output for renderers (e.g. source-badge); `slug` is
+  // discarded — it's a build-time identifier the runtime doesn't need.
+  const meta: { source?: string; edition?: string } = {};
+  if (typeof result.data.source === "string") meta.source = result.data.source;
+  if (typeof result.data.edition === "string") meta.edition = result.data.edition;
   const filtered: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(result.data)) {
     if (k === "slug" || k === "edition" || k === "source") continue;
@@ -58,5 +63,7 @@ export function parseSpell(source: string): ParseResult<Spell> {
       return co;
     });
   }
+  if (meta.source) spell.source = meta.source;
+  if (meta.edition) spell.edition = meta.edition;
   return { success: true, data: spell };
 }

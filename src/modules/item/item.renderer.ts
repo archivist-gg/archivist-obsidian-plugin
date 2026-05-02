@@ -45,6 +45,15 @@ function buildSubtitle(item: Item): string {
   return parts.join(", ");
 }
 
+/** See spell.renderer.ts:sourceBadgeText for the rationale. */
+function sourceBadgeText(item: { source?: string; edition?: string }): string | null {
+  if (item.edition === "2014") return "SRD 5e";
+  if (item.edition === "2024") return "SRD 2024";
+  if (item.source === "SRD 5.1") return "SRD 5e";
+  if (item.source === "SRD 5.2") return "SRD 2024";
+  return item.source ?? null;
+}
+
 export async function renderItemBlock(
   item: Item,
   app?: App,
@@ -52,6 +61,13 @@ export async function renderItemBlock(
 ): Promise<HTMLElement> {
   const wrapper = el("div", { cls: "archivist-item-block-wrapper" });
   const block = el("div", { cls: "archivist-item-block", parent: wrapper });
+
+  // Source badge (top-right; pre-existing CSS targets `.source-badge` inside
+  // the block). Only rendered when source/edition is known.
+  const badgeText = sourceBadgeText(item);
+  if (badgeText) {
+    el("span", { cls: "source-badge", text: badgeText, parent: block });
+  }
 
   // 1. Header
   const header = el("div", {

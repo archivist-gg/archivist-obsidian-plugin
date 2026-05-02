@@ -25,4 +25,9 @@ export interface Spell {
   damage?: { types: string[] };
   saving_throw?: { ability: string };
   casting_options?: CastingOption[];
+  // Body-only metadata: passed through from canonical YAML so the renderer
+  // can show a source badge ("SRD 5e", "SRD 2024", or a custom compendium).
+  source?: string;
+  /* eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents */
+  edition?: "2014" | "2024" | string;
 }
