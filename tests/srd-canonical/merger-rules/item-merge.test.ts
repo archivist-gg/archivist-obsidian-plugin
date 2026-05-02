@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toItemCanonical } from "../../../tools/srd-canonical/merger-rules/item-merge";
+import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
@@ -288,5 +288,109 @@ describe("speed extraction (I16)", () => {
     const entry = makeEntry({ structured: { modifySpeed: { static: { fly: "walk" } } } });
     const out = toItemCanonical(entry);
     expect(out.bonuses?.speed?.fly).toBe("walk");
+  });
+});
+
+describe("enrichItemsWithVariantBonuses (CB-2 backfill)", () => {
+  // Open5e pre-expands rule-shaped variants like "Defender" into per-base
+  // entries ("Defender (Longsword)") whose narrative description carries the
+  // "+N" verbiage but whose structured payload has no `bonusWeapon` /
+  // `bonusAc`. The variant-expansion pass DOES compute structured bonuses
+  // from the underlying rule's `inherits`. The enrichment pass lifts those
+  // values onto the matching Open5e entry before the dedup pass drops the
+  // variant copy.
+  function makeOpen5eDefenderLongsword(): ReturnType<typeof toItemCanonical> {
+    const entry: CanonicalEntry = {
+      slug: "srd-2024_defender-longsword",
+      edition: "2024",
+      kind: "item",
+      base: {
+        key: "srd-2024_defender-longsword",
+        name: "Defender (Longsword)",
+        document: { key: "srd-2024", name: "SRD 5.2" },
+        rarity: "legendary",
+        requires_attunement: true,
+        desc: "You gain a +3 bonus to attack rolls and damage rolls made with this magic weapon.",
+        category: { key: "weapon" },
+        weapon: { name: "Longsword" },
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    };
+    return toItemCanonical(entry);
+  }
+
+  it("backfills bonuses + tier from a name-slug-matching variant entry", () => {
+    const item = makeOpen5eDefenderLongsword();
+    expect(item.bonuses).toBeUndefined();
+    const variants = [
+      {
+        name: "Defender Longsword",
+        bonuses: { weapon_attack: 3, weapon_damage: 3, ac: 1 },
+        tier: "major" as const,
+        attunement: { required: true },
+      },
+    ];
+    const enriched = enrichItemsWithVariantBonuses([item], variants);
+    expect(enriched).toBe(1);
+    expect(item.bonuses?.weapon_attack).toBe(3);
+    expect(item.bonuses?.weapon_damage).toBe(3);
+    expect(item.bonuses?.ac).toBe(1);
+    expect(item.tier).toBe("major");
+    expect(item.attunement?.required).toBe(true);
+  });
+
+  it("matches across paren / space punctuation differences", () => {
+    // "Defender (Longsword)" → defender-longsword
+    // "Defender Longsword"   → defender-longsword
+    const item = makeOpen5eDefenderLongsword();
+    const variants = [
+      { name: "Defender Longsword", bonuses: { weapon_attack: 3, weapon_damage: 3, ac: 1 } },
+    ];
+    const enriched = enrichItemsWithVariantBonuses([item], variants);
+    expect(enriched).toBe(1);
+    expect(item.bonuses?.weapon_attack).toBe(3);
+  });
+
+  it("preserves an existing bonuses block (does NOT overwrite)", () => {
+    const item = makeOpen5eDefenderLongsword();
+    item.bonuses = { weapon_attack: 1 };
+    const variants = [
+      { name: "Defender Longsword", bonuses: { weapon_attack: 3, weapon_damage: 3, ac: 1 } },
+    ];
+    enrichItemsWithVariantBonuses([item], variants);
+    expect(item.bonuses?.weapon_attack).toBe(1);
+    expect(item.bonuses?.ac).toBeUndefined();
+  });
+
+  it("returns 0 when no variant matches", () => {
+    const item = makeOpen5eDefenderLongsword();
+    const variants = [
+      { name: "Vorpal Sword", bonuses: { weapon_attack: 3 } },
+    ];
+    const enriched = enrichItemsWithVariantBonuses([item], variants);
+    expect(enriched).toBe(0);
+    expect(item.bonuses).toBeUndefined();
+  });
+
+  it("ignores variants that carry no bonus / tier / attunement signal", () => {
+    const item = makeOpen5eDefenderLongsword();
+    const variants = [
+      { name: "Defender Longsword" }, // empty
+    ];
+    const enriched = enrichItemsWithVariantBonuses([item], variants);
+    expect(enriched).toBe(0);
+    expect(item.bonuses).toBeUndefined();
+  });
+
+  it("backfills attunement.required when target has no attunement object", () => {
+    const item = makeOpen5eDefenderLongsword();
+    item.attunement = undefined;
+    const variants = [
+      { name: "Defender Longsword", bonuses: { ac: 1 }, attunement: { required: true } },
+    ];
+    enrichItemsWithVariantBonuses([item], variants);
+    expect(item.attunement?.required).toBe(true);
   });
 });

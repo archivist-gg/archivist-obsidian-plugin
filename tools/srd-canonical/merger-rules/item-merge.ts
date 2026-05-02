@@ -1,6 +1,7 @@
 import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
+import { slugifyName } from "../sources/slug-normalize";
 
 export interface ItemBonuses {
   weapon_attack?: number | string;
@@ -284,4 +285,71 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
   }
 
   return out;
+}
+
+/**
+ * Minimal shape consumed by {@link enrichItemsWithVariantBonuses}. Variant
+ * pipeline outputs implement this shape (a strict superset). Decoupling here
+ * keeps the call site free of an `expand-variants` import cycle.
+ */
+export interface VariantBonusSource {
+  name: string;
+  bonuses?: ItemBonuses;
+  tier?: "major" | "minor";
+  attunement?: { required: boolean };
+}
+
+/**
+ * Backfill bonuses / tier / attunement-required onto magic-item canonical
+ * entries from variant-pipeline outputs that share the same name-slug. The
+ * Open5e magic-items endpoint pre-expands rule-shaped variants like
+ * "Defender" into per-base entries ("Defender (Longsword)", "Defender
+ * (Battleaxe)") but ships them WITHOUT the bonus block — its description
+ * narrates a "+3 bonus" but no structured field carries the number. The
+ * variant-expansion pass DOES compute the structured bonuses from the
+ * underlying rule's `bonusWeapon` / `bonusAc` `inherits`, so we lift those
+ * values onto the matching Open5e entry before the dedup pass drops the
+ * variant copy.
+ *
+ * Match key: `slugifyName(name)` on both sides. Open5e uses parens
+ * ("Defender (Longsword)"); the variant pipeline uses spaces ("Defender
+ * Longsword"). Both slugify to the same bare key (`defender-longsword`).
+ *
+ * Existing fields on the target are preserved; this function only fills in
+ * gaps. Mutates `items` in place and returns the count of enriched entries.
+ */
+export function enrichItemsWithVariantBonuses(
+  items: ItemCanonical[],
+  variants: VariantBonusSource[],
+): number {
+  const variantBySlug = new Map<string, VariantBonusSource>();
+  for (const v of variants) {
+    if (!v.bonuses && v.tier === undefined && v.attunement === undefined) continue;
+    variantBySlug.set(slugifyName(v.name), v);
+  }
+  let enriched = 0;
+  for (const item of items) {
+    const variant = variantBySlug.get(slugifyName(item.name));
+    if (!variant) continue;
+    let touched = false;
+    if (!item.bonuses && variant.bonuses) {
+      item.bonuses = { ...variant.bonuses };
+      touched = true;
+    }
+    if (item.tier === undefined && variant.tier !== undefined) {
+      item.tier = variant.tier;
+      touched = true;
+    }
+    if (variant.attunement?.required === true) {
+      if (!item.attunement) {
+        item.attunement = { required: true };
+        touched = true;
+      } else if (item.attunement.required !== true) {
+        item.attunement.required = true;
+        touched = true;
+      }
+    }
+    if (touched) enriched += 1;
+  }
+  return enriched;
 }

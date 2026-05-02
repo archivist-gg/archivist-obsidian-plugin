@@ -442,7 +442,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_battleaxe-2",
@@ -452,7 +457,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_battleaxe-3",
@@ -462,7 +472,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_bead-of-force",
@@ -616,7 +631,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Blowgun]]"
+    "base_item": "[[SRD 5e/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_blowgun-2",
@@ -626,7 +646,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Blowgun]]"
+    "base_item": "[[SRD 5e/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_blowgun-3",
@@ -636,7 +661,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Blowgun]]"
+    "base_item": "[[SRD 5e/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_boots-of-elvenkind",
@@ -1023,7 +1053,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Club]]"
+    "base_item": "[[SRD 5e/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_club-2",
@@ -1033,7 +1068,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Club]]"
+    "base_item": "[[SRD 5e/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_club-3",
@@ -1043,7 +1083,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Club]]"
+    "base_item": "[[SRD 5e/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_crossbow-hand-1",
@@ -1242,7 +1287,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Dagger]]"
+    "base_item": "[[SRD 5e/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dagger-2",
@@ -1252,7 +1302,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Dagger]]"
+    "base_item": "[[SRD 5e/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dagger-3",
@@ -1262,7 +1317,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Dagger]]"
+    "base_item": "[[SRD 5e/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dagger-of-venom",
@@ -1342,7 +1402,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Dart]]"
+    "base_item": "[[SRD 5e/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dart-2",
@@ -1352,7 +1417,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Dart]]"
+    "base_item": "[[SRD 5e/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dart-3",
@@ -1362,7 +1432,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Dart]]"
+    "base_item": "[[SRD 5e/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_decanter-of-endless-water",
@@ -1406,7 +1481,13 @@
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_defender-longsword",
@@ -1420,7 +1501,13 @@
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_defender-rapier",
@@ -1434,7 +1521,13 @@
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_defender-shortsword",
@@ -1448,7 +1541,13 @@
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_demon-armor",
@@ -1506,7 +1605,12 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a dragon with this weapon, the dragon takes an extra 3d6 damage of the weapon's type. For the purpose of this weapon, \"dragon\" refers to any creature with the dragon type, including dragon turtles and wyverns.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatsword]]"
+    "base_item": "[[SRD 5e/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dragon-slayer-longsword",
@@ -1517,7 +1621,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a dragon with this weapon, the dragon takes an extra 3d6 damage of the weapon's type. For the purpose of this weapon, \"dragon\" refers to any creature with the dragon type, including dragon turtles and wyverns.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 5e/Weapons/Longsword]]"
+    "base_item": "[[SRD 5e/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dragon-slayer-rapier",
@@ -1528,7 +1637,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a dragon with this weapon, the dragon takes an extra 3d6 damage of the weapon's type. For the purpose of this weapon, \"dragon\" refers to any creature with the dragon type, including dragon turtles and wyverns.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 5e/Weapons/Rapier]]"
+    "base_item": "[[SRD 5e/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dragon-slayer-shortsword",
@@ -1539,7 +1653,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a dragon with this weapon, the dragon takes an extra 3d6 damage of the weapon's type. For the purpose of this weapon, \"dragon\" refers to any creature with the dragon type, including dragon turtles and wyverns.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 5e/Weapons/Shortsword]]"
+    "base_item": "[[SRD 5e/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dust-of-disappearance",
@@ -1847,7 +1966,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Flail]]"
+    "base_item": "[[SRD 5e/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flail-2",
@@ -1857,7 +1981,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Flail]]"
+    "base_item": "[[SRD 5e/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flail-3",
@@ -1867,7 +1996,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Flail]]"
+    "base_item": "[[SRD 5e/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flame-tongue-greatsword",
@@ -1880,7 +2014,8 @@
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flame-tongue-longsword",
@@ -1894,7 +2029,8 @@
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flame-tongue-rapier",
@@ -1908,7 +2044,8 @@
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flame-tongue-shortsword",
@@ -1922,7 +2059,8 @@
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_folding-boat",
@@ -1946,7 +2084,8 @@
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_frost-brand-longsword",
@@ -1960,7 +2099,8 @@
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_frost-brand-rapier",
@@ -1974,7 +2114,8 @@
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_frost-brand-shortsword",
@@ -1988,7 +2129,8 @@
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_gauntlets-of-ogre-power",
@@ -2057,7 +2199,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 5e/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_giant-slayer-greataxe",
@@ -2068,7 +2215,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
     "weight": 7,
-    "base_item": "[[SRD 5e/Weapons/Greataxe]]"
+    "base_item": "[[SRD 5e/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_giant-slayer-greatsword",
@@ -2078,7 +2230,12 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatsword]]"
+    "base_item": "[[SRD 5e/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_giant-slayer-handaxe",
@@ -2089,7 +2246,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 5e/Weapons/Handaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_giant-slayer-longsword",
@@ -2100,7 +2262,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 5e/Weapons/Longsword]]"
+    "base_item": "[[SRD 5e/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_giant-slayer-rapier",
@@ -2111,7 +2278,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 5e/Weapons/Rapier]]"
+    "base_item": "[[SRD 5e/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_giant-slayer-shortsword",
@@ -2122,7 +2294,12 @@
     "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon.\n\nWhen you hit a giant with it, the giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or fall prone. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 5e/Weapons/Shortsword]]"
+    "base_item": "[[SRD 5e/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_glaive-1",
@@ -2132,7 +2309,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Glaive]]"
+    "base_item": "[[SRD 5e/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_glaive-2",
@@ -2142,7 +2324,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Glaive]]"
+    "base_item": "[[SRD 5e/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_glaive-3",
@@ -2152,7 +2339,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Glaive]]"
+    "base_item": "[[SRD 5e/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_glamoured-studded-leather",
@@ -2213,7 +2405,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greataxe]]"
+    "base_item": "[[SRD 5e/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greataxe-2",
@@ -2223,7 +2420,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greataxe]]"
+    "base_item": "[[SRD 5e/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greataxe-3",
@@ -2233,7 +2435,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greataxe]]"
+    "base_item": "[[SRD 5e/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greatclub-1",
@@ -2243,7 +2450,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatclub]]"
+    "base_item": "[[SRD 5e/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greatclub-2",
@@ -2253,7 +2465,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatclub]]"
+    "base_item": "[[SRD 5e/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greatclub-3",
@@ -2263,7 +2480,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatclub]]"
+    "base_item": "[[SRD 5e/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greatsword-1",
@@ -2273,7 +2495,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatsword]]"
+    "base_item": "[[SRD 5e/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greatsword-2",
@@ -2283,7 +2510,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatsword]]"
+    "base_item": "[[SRD 5e/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_greatsword-3",
@@ -2293,7 +2525,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Greatsword]]"
+    "base_item": "[[SRD 5e/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_halberd-1",
@@ -2303,7 +2540,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Halberd]]"
+    "base_item": "[[SRD 5e/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_halberd-2",
@@ -2313,7 +2555,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Halberd]]"
+    "base_item": "[[SRD 5e/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_halberd-3",
@@ -2323,7 +2570,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Halberd]]"
+    "base_item": "[[SRD 5e/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_hammer-of-thunderbolts",
@@ -2353,7 +2605,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Handaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_handaxe-2",
@@ -2363,7 +2620,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Handaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_handaxe-3",
@@ -2373,7 +2635,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Handaxe]]"
+    "base_item": "[[SRD 5e/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_handy-haversack",
@@ -2526,7 +2793,12 @@
     "attunement": {
       "required": true,
       "restriction": "Requires Attunement by a Paladin"
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_holy-avenger-longsword",
@@ -2541,7 +2813,12 @@
     "attunement": {
       "required": true,
       "restriction": "Requires Attunement by a Paladin"
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_holy-avenger-rapier",
@@ -2556,7 +2833,12 @@
     "attunement": {
       "required": true,
       "restriction": "Requires Attunement by a Paladin"
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_holy-avenger-shortsword",
@@ -2571,7 +2853,12 @@
     "attunement": {
       "required": true,
       "restriction": "Requires Attunement by a Paladin"
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_horn-of-blasting",
@@ -2901,7 +3188,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Javelin]]"
+    "base_item": "[[SRD 5e/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_javelin-2",
@@ -2911,7 +3203,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Javelin]]"
+    "base_item": "[[SRD 5e/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_javelin-3",
@@ -2921,7 +3218,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Javelin]]"
+    "base_item": "[[SRD 5e/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_javelin-of-lightning",
@@ -2943,7 +3245,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Lance]]"
+    "base_item": "[[SRD 5e/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_lance-2",
@@ -2953,7 +3260,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Lance]]"
+    "base_item": "[[SRD 5e/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_lance-3",
@@ -2963,7 +3275,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Lance]]"
+    "base_item": "[[SRD 5e/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_lantern-of-revealing",
@@ -2984,7 +3301,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Light hammer]]"
+    "base_item": "[[SRD 5e/Weapons/Light hammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_light-hammer-2",
@@ -2994,7 +3316,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Light hammer]]"
+    "base_item": "[[SRD 5e/Weapons/Light hammer]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_light-hammer-3",
@@ -3004,7 +3331,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Light hammer]]"
+    "base_item": "[[SRD 5e/Weapons/Light hammer]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_longbow-1",
@@ -3014,7 +3346,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Longbow]]"
+    "base_item": "[[SRD 5e/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_longbow-2",
@@ -3024,7 +3361,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Longbow]]"
+    "base_item": "[[SRD 5e/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_longbow-3",
@@ -3034,7 +3376,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Longbow]]"
+    "base_item": "[[SRD 5e/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_longsword-1",
@@ -3044,7 +3391,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Longsword]]"
+    "base_item": "[[SRD 5e/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_longsword-2",
@@ -3054,7 +3406,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Longsword]]"
+    "base_item": "[[SRD 5e/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_longsword-3",
@@ -3064,7 +3421,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Longsword]]"
+    "base_item": "[[SRD 5e/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_luck-blade-greatsword",
@@ -3077,7 +3439,12 @@
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_luck-blade-longsword",
@@ -3091,7 +3458,12 @@
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_luck-blade-rapier",
@@ -3105,7 +3477,12 @@
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_luck-blade-shortsword",
@@ -3119,7 +3496,12 @@
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mace-1",
@@ -3129,7 +3511,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Mace]]"
+    "base_item": "[[SRD 5e/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mace-2",
@@ -3139,7 +3526,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Mace]]"
+    "base_item": "[[SRD 5e/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mace-3",
@@ -3149,7 +3541,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Mace]]"
+    "base_item": "[[SRD 5e/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mace-of-disruption",
@@ -3288,7 +3685,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Maul]]"
+    "base_item": "[[SRD 5e/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_maul-2",
@@ -3298,7 +3700,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Maul]]"
+    "base_item": "[[SRD 5e/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_maul-3",
@@ -3308,7 +3715,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Maul]]"
+    "base_item": "[[SRD 5e/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_medallion-of-thoughts",
@@ -3443,7 +3855,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Morningstar]]"
+    "base_item": "[[SRD 5e/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_morningstar-2",
@@ -3453,7 +3870,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Morningstar]]"
+    "base_item": "[[SRD 5e/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_morningstar-3",
@@ -3463,7 +3885,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Morningstar]]"
+    "base_item": "[[SRD 5e/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_necklace-of-adaptation",
@@ -3531,7 +3958,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Net]]"
+    "base_item": "[[SRD 5e/Weapons/Net]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_net-2",
@@ -3541,7 +3973,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Net]]"
+    "base_item": "[[SRD 5e/Weapons/Net]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_net-3",
@@ -3551,7 +3988,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Net]]"
+    "base_item": "[[SRD 5e/Weapons/Net]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_nine-lives-stealer-greatsword",
@@ -3564,7 +4006,12 @@
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_nine-lives-stealer-longsword",
@@ -3578,7 +4025,12 @@
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_nine-lives-stealer-rapier",
@@ -3592,7 +4044,12 @@
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_nine-lives-stealer-shortsword",
@@ -3606,7 +4063,12 @@
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_oathbow",
@@ -3784,7 +4246,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Pike]]"
+    "base_item": "[[SRD 5e/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_pike-2",
@@ -3794,7 +4261,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Pike]]"
+    "base_item": "[[SRD 5e/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_pike-3",
@@ -3804,7 +4276,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Pike]]"
+    "base_item": "[[SRD 5e/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_pipes-of-haunting",
@@ -4224,7 +4701,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_quarterstaff-2",
@@ -4234,7 +4716,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_quarterstaff-3",
@@ -4244,7 +4731,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rapier-1",
@@ -4254,7 +4746,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Rapier]]"
+    "base_item": "[[SRD 5e/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rapier-2",
@@ -4264,7 +4761,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Rapier]]"
+    "base_item": "[[SRD 5e/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rapier-3",
@@ -4274,7 +4776,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Rapier]]"
+    "base_item": "[[SRD 5e/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_restorative-ointment",
@@ -4869,7 +5376,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Scimitar]]"
+    "base_item": "[[SRD 5e/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_scimitar-2",
@@ -4879,7 +5391,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Scimitar]]"
+    "base_item": "[[SRD 5e/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_scimitar-3",
@@ -4889,7 +5406,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Scimitar]]"
+    "base_item": "[[SRD 5e/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_scimitar-of-speed",
@@ -4931,7 +5453,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Shortbow]]"
+    "base_item": "[[SRD 5e/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shortbow-2",
@@ -4941,7 +5468,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Shortbow]]"
+    "base_item": "[[SRD 5e/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shortbow-3",
@@ -4951,7 +5483,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Shortbow]]"
+    "base_item": "[[SRD 5e/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shortsword-1",
@@ -4961,7 +5498,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Shortsword]]"
+    "base_item": "[[SRD 5e/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shortsword-2",
@@ -4971,7 +5513,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Shortsword]]"
+    "base_item": "[[SRD 5e/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shortsword-3",
@@ -4981,7 +5528,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Shortsword]]"
+    "base_item": "[[SRD 5e/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sickle-1",
@@ -4991,7 +5543,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Sickle]]"
+    "base_item": "[[SRD 5e/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sickle-2",
@@ -5001,7 +5558,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Sickle]]"
+    "base_item": "[[SRD 5e/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sickle-3",
@@ -5011,7 +5573,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Sickle]]"
+    "base_item": "[[SRD 5e/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sling-1",
@@ -5021,7 +5588,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Sling]]"
+    "base_item": "[[SRD 5e/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sling-2",
@@ -5031,7 +5603,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Sling]]"
+    "base_item": "[[SRD 5e/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sling-3",
@@ -5041,7 +5618,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Sling]]"
+    "base_item": "[[SRD 5e/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_slippers-of-spider-climbing",
@@ -5074,7 +5656,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Spear]]"
+    "base_item": "[[SRD 5e/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_spear-2",
@@ -5084,7 +5671,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Spear]]"
+    "base_item": "[[SRD 5e/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_spear-3",
@@ -5094,7 +5686,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Spear]]"
+    "base_item": "[[SRD 5e/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_spell-scroll-1st-level",
@@ -6069,7 +6666,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Trident]]"
+    "base_item": "[[SRD 5e/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_trident-2",
@@ -6079,7 +6681,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Trident]]"
+    "base_item": "[[SRD 5e/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_trident-3",
@@ -6089,7 +6696,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Trident]]"
+    "base_item": "[[SRD 5e/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_trident-of-fish-command",
@@ -6976,7 +7588,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/War Pick]]"
+    "base_item": "[[SRD 5e/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_war-pick-2",
@@ -6986,7 +7603,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/War Pick]]"
+    "base_item": "[[SRD 5e/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_war-pick-3",
@@ -6996,7 +7618,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/War Pick]]"
+    "base_item": "[[SRD 5e/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_warhammer-1",
@@ -7006,7 +7633,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Warhammer]]"
+    "base_item": "[[SRD 5e/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_warhammer-2",
@@ -7016,7 +7648,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Warhammer]]"
+    "base_item": "[[SRD 5e/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_warhammer-3",
@@ -7026,7 +7663,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Warhammer]]"
+    "base_item": "[[SRD 5e/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_well-of-many-worlds",
@@ -7046,7 +7688,12 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Whip]]"
+    "base_item": "[[SRD 5e/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_whip-2",
@@ -7056,7 +7703,12 @@
     "rarity": "rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Whip]]"
+    "base_item": "[[SRD 5e/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_whip-3",
@@ -7066,7 +7718,12 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 5e/Weapons/Whip]]"
+    "base_item": "[[SRD 5e/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wind-fan",

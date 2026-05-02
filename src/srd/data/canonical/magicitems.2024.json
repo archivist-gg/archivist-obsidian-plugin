@@ -657,7 +657,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_battleaxe-2",
@@ -668,7 +672,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_battleaxe-3",
@@ -679,7 +687,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_bead-of-force",
@@ -762,6 +774,10 @@
     "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
     }
   },
   {
@@ -775,6 +791,10 @@
     "base_item": "[[SRD 2024/Weapons/Greataxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
     }
   },
   {
@@ -788,6 +808,10 @@
     "base_item": "[[SRD 2024/Weapons/Halberd]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
     }
   },
   {
@@ -799,7 +823,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Blowgun]]"
+    "base_item": "[[SRD 2024/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_blowgun-2",
@@ -810,7 +838,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Blowgun]]"
+    "base_item": "[[SRD 2024/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_blowgun-3",
@@ -821,7 +853,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Blowgun]]"
+    "base_item": "[[SRD 2024/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_boots-of-elvenkind",
@@ -952,7 +988,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 2024/Armor/Breastplate]]"
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_breastplate-2",
@@ -963,7 +1002,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 2024/Armor/Breastplate]]"
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_breastplate-3",
@@ -974,7 +1016,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 2024/Armor/Breastplate]]"
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_brooch-of-shielding",
@@ -1075,7 +1120,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 55,
-    "base_item": "[[SRD 2024/Armor/Chain Mail]]"
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_chain-mail-2",
@@ -1086,7 +1134,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 55,
-    "base_item": "[[SRD 2024/Armor/Chain Mail]]"
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_chain-mail-3",
@@ -1097,7 +1148,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 55,
-    "base_item": "[[SRD 2024/Armor/Chain Mail]]"
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_chain-shirt-1",
@@ -1108,7 +1162,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 2024/Armor/Chain Shirt]]"
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_chain-shirt-2",
@@ -1119,7 +1176,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 2024/Armor/Chain Shirt]]"
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_chain-shirt-3",
@@ -1130,7 +1190,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 2024/Armor/Chain Shirt]]"
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_chime-of-opening",
@@ -1267,7 +1330,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Club]]"
+    "base_item": "[[SRD 2024/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_club-2",
@@ -1278,7 +1345,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Club]]"
+    "base_item": "[[SRD 2024/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_club-3",
@@ -1289,7 +1360,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Club]]"
+    "base_item": "[[SRD 2024/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_crystal-ball",
@@ -1424,7 +1499,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dagger]]"
+    "base_item": "[[SRD 2024/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_dagger-2",
@@ -1435,7 +1514,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dagger]]"
+    "base_item": "[[SRD 2024/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_dagger-3",
@@ -1446,7 +1529,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dagger]]"
+    "base_item": "[[SRD 2024/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_dancing-greatsword",
@@ -1522,7 +1609,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dart]]"
+    "base_item": "[[SRD 2024/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_dart-2",
@@ -1533,7 +1624,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dart]]"
+    "base_item": "[[SRD 2024/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_dart-3",
@@ -1544,7 +1639,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dart]]"
+    "base_item": "[[SRD 2024/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_decanter-of-endless-water",
@@ -1589,6 +1688,11 @@
     "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1617,6 +1721,11 @@
     "base_item": "[[SRD 2024/Weapons/Club]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1631,6 +1740,11 @@
     "base_item": "[[SRD 2024/Weapons/Dagger]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1659,6 +1773,11 @@
     "base_item": "[[SRD 2024/Weapons/Flail]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1673,6 +1792,11 @@
     "base_item": "[[SRD 2024/Weapons/Glaive]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1687,6 +1811,11 @@
     "base_item": "[[SRD 2024/Weapons/Greataxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1701,6 +1830,11 @@
     "base_item": "[[SRD 2024/Weapons/Greatclub]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1715,6 +1849,11 @@
     "base_item": "[[SRD 2024/Weapons/Greatsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1729,6 +1868,11 @@
     "base_item": "[[SRD 2024/Weapons/Halberd]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1757,6 +1901,11 @@
     "base_item": "[[SRD 2024/Weapons/Handaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1785,6 +1934,11 @@
     "base_item": "[[SRD 2024/Weapons/Javelin]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1799,6 +1953,11 @@
     "base_item": "[[SRD 2024/Weapons/Lance]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1827,6 +1986,11 @@
     "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1855,6 +2019,11 @@
     "base_item": "[[SRD 2024/Weapons/Longsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1869,6 +2038,11 @@
     "base_item": "[[SRD 2024/Weapons/Mace]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1883,6 +2057,11 @@
     "base_item": "[[SRD 2024/Weapons/Maul]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1897,6 +2076,11 @@
     "base_item": "[[SRD 2024/Weapons/Morningstar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1925,6 +2109,11 @@
     "base_item": "[[SRD 2024/Weapons/Pike]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1953,6 +2142,11 @@
     "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1967,6 +2161,11 @@
     "base_item": "[[SRD 2024/Weapons/Rapier]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -1981,6 +2180,11 @@
     "base_item": "[[SRD 2024/Weapons/Scimitar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2009,6 +2213,11 @@
     "base_item": "[[SRD 2024/Weapons/Shortsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2023,6 +2232,11 @@
     "base_item": "[[SRD 2024/Weapons/Sickle]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2050,6 +2264,11 @@
     "base_item": "[[SRD 2024/Weapons/Spear]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2064,6 +2283,11 @@
     "base_item": "[[SRD 2024/Weapons/Trident]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2078,6 +2302,11 @@
     "base_item": "[[SRD 2024/Weapons/War Pick]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2092,6 +2321,11 @@
     "base_item": "[[SRD 2024/Weapons/Warhammer]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2106,6 +2340,11 @@
     "base_item": "[[SRD 2024/Weapons/Whip]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3,
+      "ac": 1
     }
   },
   {
@@ -2120,6 +2359,11 @@
     "base_item": "[[SRD 2024/Armor/Breastplate]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2134,6 +2378,11 @@
     "base_item": "[[SRD 2024/Armor/Chain Mail]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2148,6 +2397,11 @@
     "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2162,6 +2416,11 @@
     "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2176,6 +2435,11 @@
     "base_item": "[[SRD 2024/Armor/Hide Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2190,6 +2454,11 @@
     "base_item": "[[SRD 2024/Armor/Leather Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2204,6 +2473,11 @@
     "base_item": "[[SRD 2024/Armor/Padded Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2218,6 +2492,11 @@
     "base_item": "[[SRD 2024/Armor/Plate Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2232,6 +2511,11 @@
     "base_item": "[[SRD 2024/Armor/Ring Mail]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2246,6 +2530,11 @@
     "base_item": "[[SRD 2024/Armor/Scale Mail]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2260,6 +2549,11 @@
     "base_item": "[[SRD 2024/Armor/Splint Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2274,6 +2568,11 @@
     "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1,
+      "ac": 1
     }
   },
   {
@@ -2444,7 +2743,10 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to Armor Class while you wear this armor. You are considered trained with this armor even if you lack training with Heavy armor.",
     "type": "armor",
-    "base_item": "[[SRD 2024/Armor/Chain Mail]]"
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_elven-chain-shirt",
@@ -2454,7 +2756,10 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to Armor Class while you wear this armor. You are considered trained with this armor even if you lack training with Medium armor.",
     "type": "armor",
-    "base_item": "[[SRD 2024/Armor/Chain Shirt]]"
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_eversmoking-bottle",
@@ -2658,7 +2963,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Flail]]"
+    "base_item": "[[SRD 2024/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_flail-2",
@@ -2669,7 +2978,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Flail]]"
+    "base_item": "[[SRD 2024/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_flail-3",
@@ -2680,7 +2993,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Flail]]"
+    "base_item": "[[SRD 2024/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_flame-tongue-battleaxe",
@@ -3238,7 +3555,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Battleaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-blowgun",
@@ -3249,7 +3570,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Blowgun]]"
+    "base_item": "[[SRD 2024/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-club",
@@ -3260,7 +3585,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Club]]"
+    "base_item": "[[SRD 2024/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-dagger",
@@ -3271,7 +3600,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dagger]]"
+    "base_item": "[[SRD 2024/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-dart",
@@ -3282,7 +3615,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 2024/Weapons/Dart]]"
+    "base_item": "[[SRD 2024/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-flail",
@@ -3293,7 +3630,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Flail]]"
+    "base_item": "[[SRD 2024/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-glaive",
@@ -3304,7 +3645,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Glaive]]"
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-greataxe",
@@ -3315,7 +3660,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 7,
-    "base_item": "[[SRD 2024/Weapons/Greataxe]]"
+    "base_item": "[[SRD 2024/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-greatclub",
@@ -3326,7 +3675,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Greatclub]]"
+    "base_item": "[[SRD 2024/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-greatsword",
@@ -3337,7 +3690,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Greatsword]]"
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-halberd",
@@ -3348,7 +3705,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Halberd]]"
+    "base_item": "[[SRD 2024/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-hand-crossbow",
@@ -3359,7 +3720,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-handaxe",
@@ -3370,7 +3735,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Handaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-heavy-crossbow",
@@ -3381,7 +3750,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-javelin",
@@ -3392,7 +3765,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Javelin]]"
+    "base_item": "[[SRD 2024/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-lance",
@@ -3403,7 +3780,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Lance]]"
+    "base_item": "[[SRD 2024/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-light-crossbow",
@@ -3414,7 +3795,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-light-hammer",
@@ -3425,7 +3810,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Light Hammer]]"
+    "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-longbow",
@@ -3436,7 +3825,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Longbow]]"
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-longsword",
@@ -3447,7 +3840,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Longsword]]"
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-mace",
@@ -3458,7 +3855,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Mace]]"
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-maul",
@@ -3469,7 +3870,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Maul]]"
+    "base_item": "[[SRD 2024/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-morningstar",
@@ -3480,7 +3885,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Morningstar]]"
+    "base_item": "[[SRD 2024/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-musket",
@@ -3491,7 +3900,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Musket]]"
+    "base_item": "[[SRD 2024/Weapons/Musket]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-pike",
@@ -3502,7 +3915,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Pike]]"
+    "base_item": "[[SRD 2024/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-pistol",
@@ -3513,7 +3930,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Pistol]]"
+    "base_item": "[[SRD 2024/Weapons/Pistol]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-quarterstaff",
@@ -3524,7 +3945,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-rapier",
@@ -3535,7 +3960,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Rapier]]"
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-scimitar",
@@ -3546,7 +3975,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Scimitar]]"
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-shortbow",
@@ -3557,7 +3990,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortbow]]"
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-shortsword",
@@ -3568,7 +4005,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortsword]]"
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-sickle",
@@ -3579,7 +4020,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Sickle]]"
+    "base_item": "[[SRD 2024/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-sling",
@@ -3589,7 +4034,11 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
-    "base_item": "[[SRD 2024/Weapons/Sling]]"
+    "base_item": "[[SRD 2024/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-spear",
@@ -3600,7 +4049,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Spear]]"
+    "base_item": "[[SRD 2024/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-trident",
@@ -3611,7 +4064,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Trident]]"
+    "base_item": "[[SRD 2024/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-war-pick",
@@ -3622,7 +4079,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/War Pick]]"
+    "base_item": "[[SRD 2024/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-warhammer",
@@ -3633,7 +4094,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Warhammer]]"
+    "base_item": "[[SRD 2024/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_giant-slayer-whip",
@@ -3644,7 +4109,11 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon's type and must succeed on a DC 15 Strength saving throw or have the Prone condition.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Whip]]"
+    "base_item": "[[SRD 2024/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_glaive-of-life-stealing",
@@ -3697,7 +4166,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Glaive]]"
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_glaive-2",
@@ -3708,7 +4181,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Glaive]]"
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_glaive-3",
@@ -3719,7 +4196,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Glaive]]"
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_glamoured-studded-leather",
@@ -3776,7 +4257,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 7,
-    "base_item": "[[SRD 2024/Weapons/Greataxe]]"
+    "base_item": "[[SRD 2024/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_greataxe-2",
@@ -3787,7 +4272,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 7,
-    "base_item": "[[SRD 2024/Weapons/Greataxe]]"
+    "base_item": "[[SRD 2024/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_greataxe-3",
@@ -3798,7 +4287,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 7,
-    "base_item": "[[SRD 2024/Weapons/Greataxe]]"
+    "base_item": "[[SRD 2024/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_greatclub-1",
@@ -3809,7 +4302,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Greatclub]]"
+    "base_item": "[[SRD 2024/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_greatclub-2",
@@ -3820,7 +4317,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Greatclub]]"
+    "base_item": "[[SRD 2024/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_greatclub-3",
@@ -3831,7 +4332,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Greatclub]]"
+    "base_item": "[[SRD 2024/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_greatsword-of-life-stealing",
@@ -3884,7 +4389,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Greatsword]]"
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_greatsword-2",
@@ -3895,7 +4404,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Greatsword]]"
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_greatsword-3",
@@ -3906,7 +4419,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Greatsword]]"
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_halberd-1",
@@ -3917,7 +4434,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Halberd]]"
+    "base_item": "[[SRD 2024/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_halberd-2",
@@ -3928,7 +4449,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Halberd]]"
+    "base_item": "[[SRD 2024/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_halberd-3",
@@ -3939,7 +4464,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Halberd]]"
+    "base_item": "[[SRD 2024/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_half-plate-armor-of-etherealness",
@@ -3963,7 +4492,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 40,
-    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]"
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_half-plate-armor-2",
@@ -3974,7 +4506,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 40,
-    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]"
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_half-plate-armor-3",
@@ -3985,7 +4520,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 40,
-    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]"
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_hammer-of-thunderbolts-maul",
@@ -4022,7 +4560,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_hand-crossbow-2",
@@ -4033,7 +4575,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_hand-crossbow-3",
@@ -4044,7 +4590,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_handaxe-1",
@@ -4055,7 +4605,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Handaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_handaxe-2",
@@ -4066,7 +4620,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Handaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_handaxe-3",
@@ -4077,7 +4635,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Handaxe]]"
+    "base_item": "[[SRD 2024/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_handy-haversack",
@@ -4133,7 +4695,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_heavy-crossbow-2",
@@ -4144,7 +4710,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_heavy-crossbow-3",
@@ -4155,7 +4725,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_helm-of-brilliance",
@@ -4254,7 +4828,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 12,
-    "base_item": "[[SRD 2024/Armor/Hide Armor]]"
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_hide-armor-2",
@@ -4265,7 +4842,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 12,
-    "base_item": "[[SRD 2024/Armor/Hide Armor]]"
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_hide-armor-3",
@@ -4276,7 +4856,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 12,
-    "base_item": "[[SRD 2024/Armor/Hide Armor]]"
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_holy-avenger",
@@ -4303,6 +4886,10 @@
     "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4317,6 +4904,10 @@
     "base_item": "[[SRD 2024/Weapons/Blowgun]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4331,6 +4922,10 @@
     "base_item": "[[SRD 2024/Weapons/Club]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4345,6 +4940,10 @@
     "base_item": "[[SRD 2024/Weapons/Dagger]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4359,6 +4958,10 @@
     "base_item": "[[SRD 2024/Weapons/Dart]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4373,6 +4976,10 @@
     "base_item": "[[SRD 2024/Weapons/Flail]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4387,6 +4994,10 @@
     "base_item": "[[SRD 2024/Weapons/Glaive]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4401,6 +5012,10 @@
     "base_item": "[[SRD 2024/Weapons/Greataxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4415,6 +5030,10 @@
     "base_item": "[[SRD 2024/Weapons/Greatclub]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4429,6 +5048,10 @@
     "base_item": "[[SRD 2024/Weapons/Greatsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4443,6 +5066,10 @@
     "base_item": "[[SRD 2024/Weapons/Halberd]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4457,6 +5084,10 @@
     "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4471,6 +5102,10 @@
     "base_item": "[[SRD 2024/Weapons/Handaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4485,6 +5120,10 @@
     "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4499,6 +5138,10 @@
     "base_item": "[[SRD 2024/Weapons/Javelin]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4513,6 +5156,10 @@
     "base_item": "[[SRD 2024/Weapons/Lance]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4527,6 +5174,10 @@
     "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4541,6 +5192,10 @@
     "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4555,6 +5210,10 @@
     "base_item": "[[SRD 2024/Weapons/Longbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4569,6 +5228,10 @@
     "base_item": "[[SRD 2024/Weapons/Longsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4583,6 +5246,10 @@
     "base_item": "[[SRD 2024/Weapons/Mace]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4597,6 +5264,10 @@
     "base_item": "[[SRD 2024/Weapons/Maul]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4611,6 +5282,10 @@
     "base_item": "[[SRD 2024/Weapons/Morningstar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4625,6 +5300,10 @@
     "base_item": "[[SRD 2024/Weapons/Musket]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4639,6 +5318,10 @@
     "base_item": "[[SRD 2024/Weapons/Pike]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4653,6 +5336,10 @@
     "base_item": "[[SRD 2024/Weapons/Pistol]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4667,6 +5354,10 @@
     "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4681,6 +5372,10 @@
     "base_item": "[[SRD 2024/Weapons/Rapier]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4695,6 +5390,10 @@
     "base_item": "[[SRD 2024/Weapons/Scimitar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4709,6 +5408,10 @@
     "base_item": "[[SRD 2024/Weapons/Shortbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4723,6 +5426,10 @@
     "base_item": "[[SRD 2024/Weapons/Shortsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4737,6 +5444,10 @@
     "base_item": "[[SRD 2024/Weapons/Sickle]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4750,6 +5461,10 @@
     "base_item": "[[SRD 2024/Weapons/Sling]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4764,6 +5479,10 @@
     "base_item": "[[SRD 2024/Weapons/Spear]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4778,6 +5497,10 @@
     "base_item": "[[SRD 2024/Weapons/Trident]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4792,6 +5515,10 @@
     "base_item": "[[SRD 2024/Weapons/War Pick]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4806,6 +5533,10 @@
     "base_item": "[[SRD 2024/Weapons/Warhammer]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4820,6 +5551,10 @@
     "base_item": "[[SRD 2024/Weapons/Whip]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -4927,7 +5662,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Javelin]]"
+    "base_item": "[[SRD 2024/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_javelin-2",
@@ -4938,7 +5677,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Javelin]]"
+    "base_item": "[[SRD 2024/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_javelin-3",
@@ -4949,7 +5692,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Javelin]]"
+    "base_item": "[[SRD 2024/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_lance-1",
@@ -4960,7 +5707,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Lance]]"
+    "base_item": "[[SRD 2024/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_lance-2",
@@ -4971,7 +5722,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Lance]]"
+    "base_item": "[[SRD 2024/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_lance-3",
@@ -4982,7 +5737,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 6,
-    "base_item": "[[SRD 2024/Weapons/Lance]]"
+    "base_item": "[[SRD 2024/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_lantern-of-revealing",
@@ -5002,7 +5761,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 10,
-    "base_item": "[[SRD 2024/Armor/Leather Armor]]"
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_leather-armor-2",
@@ -5013,7 +5775,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 10,
-    "base_item": "[[SRD 2024/Armor/Leather Armor]]"
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_leather-armor-3",
@@ -5024,7 +5789,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 10,
-    "base_item": "[[SRD 2024/Armor/Leather Armor]]"
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_light-crossbow-1",
@@ -5035,7 +5803,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_light-crossbow-2",
@@ -5046,7 +5818,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_light-crossbow-3",
@@ -5057,7 +5833,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]"
+    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_light-hammer-1",
@@ -5068,7 +5848,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Light Hammer]]"
+    "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_light-hammer-2",
@@ -5079,7 +5863,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Light Hammer]]"
+    "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_light-hammer-3",
@@ -5090,7 +5878,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Light Hammer]]"
+    "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_longbow-1",
@@ -5101,7 +5893,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Longbow]]"
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_longbow-2",
@@ -5112,7 +5908,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Longbow]]"
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_longbow-3",
@@ -5123,7 +5923,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Longbow]]"
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_longsword-of-life-stealing",
@@ -5176,7 +5980,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Longsword]]"
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_longsword-2",
@@ -5187,7 +5995,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Longsword]]"
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_longsword-3",
@@ -5198,7 +6010,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Longsword]]"
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_luck-blade-glaive",
@@ -5344,7 +6160,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Mace]]"
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_mace-2",
@@ -5355,7 +6175,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Mace]]"
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_mace-3",
@@ -5366,7 +6190,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Mace]]"
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_mantle-of-spell-resistance",
@@ -5452,7 +6280,14 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Maul]]"
+    "base_item": "[[SRD 2024/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    }
   },
   {
     "slug": "srd-2024_maul-2",
@@ -5463,7 +6298,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Maul]]"
+    "base_item": "[[SRD 2024/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_maul-3",
@@ -5474,7 +6313,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Maul]]"
+    "base_item": "[[SRD 2024/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_medallion-of-thoughts",
@@ -5608,7 +6451,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Morningstar]]"
+    "base_item": "[[SRD 2024/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_morningstar-2",
@@ -5619,7 +6466,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Morningstar]]"
+    "base_item": "[[SRD 2024/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_morningstar-3",
@@ -5630,7 +6481,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Morningstar]]"
+    "base_item": "[[SRD 2024/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_musket-1",
@@ -5641,7 +6496,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Musket]]"
+    "base_item": "[[SRD 2024/Weapons/Musket]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_musket-2",
@@ -5652,7 +6511,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Musket]]"
+    "base_item": "[[SRD 2024/Weapons/Musket]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_musket-3",
@@ -5663,7 +6526,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 2024/Weapons/Musket]]"
+    "base_item": "[[SRD 2024/Weapons/Musket]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_mysterious-deck",
@@ -5741,6 +6608,10 @@
     "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5755,6 +6626,10 @@
     "base_item": "[[SRD 2024/Weapons/Blowgun]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5769,6 +6644,10 @@
     "base_item": "[[SRD 2024/Weapons/Club]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5783,6 +6662,10 @@
     "base_item": "[[SRD 2024/Weapons/Dagger]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5797,6 +6680,10 @@
     "base_item": "[[SRD 2024/Weapons/Dart]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5811,6 +6698,10 @@
     "base_item": "[[SRD 2024/Weapons/Flail]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5825,6 +6716,10 @@
     "base_item": "[[SRD 2024/Weapons/Glaive]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5839,6 +6734,10 @@
     "base_item": "[[SRD 2024/Weapons/Greataxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5853,6 +6752,10 @@
     "base_item": "[[SRD 2024/Weapons/Greatclub]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5867,6 +6770,10 @@
     "base_item": "[[SRD 2024/Weapons/Greatsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5881,6 +6788,10 @@
     "base_item": "[[SRD 2024/Weapons/Halberd]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5895,6 +6806,10 @@
     "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5909,6 +6824,10 @@
     "base_item": "[[SRD 2024/Weapons/Handaxe]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5923,6 +6842,10 @@
     "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5937,6 +6860,10 @@
     "base_item": "[[SRD 2024/Weapons/Javelin]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5951,6 +6878,10 @@
     "base_item": "[[SRD 2024/Weapons/Lance]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5965,6 +6896,10 @@
     "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5979,6 +6914,10 @@
     "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -5993,6 +6932,10 @@
     "base_item": "[[SRD 2024/Weapons/Longbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6007,6 +6950,10 @@
     "base_item": "[[SRD 2024/Weapons/Longsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6021,6 +6968,10 @@
     "base_item": "[[SRD 2024/Weapons/Mace]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6035,6 +6986,10 @@
     "base_item": "[[SRD 2024/Weapons/Maul]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6049,6 +7004,10 @@
     "base_item": "[[SRD 2024/Weapons/Morningstar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6063,6 +7022,10 @@
     "base_item": "[[SRD 2024/Weapons/Musket]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6077,6 +7040,10 @@
     "base_item": "[[SRD 2024/Weapons/Pike]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6091,6 +7058,10 @@
     "base_item": "[[SRD 2024/Weapons/Pistol]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6105,6 +7076,10 @@
     "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6119,6 +7094,10 @@
     "base_item": "[[SRD 2024/Weapons/Rapier]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6133,6 +7112,10 @@
     "base_item": "[[SRD 2024/Weapons/Scimitar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6147,6 +7130,10 @@
     "base_item": "[[SRD 2024/Weapons/Shortbow]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6161,6 +7148,10 @@
     "base_item": "[[SRD 2024/Weapons/Shortsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6175,6 +7166,10 @@
     "base_item": "[[SRD 2024/Weapons/Sickle]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6188,6 +7183,10 @@
     "base_item": "[[SRD 2024/Weapons/Sling]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6202,6 +7201,10 @@
     "base_item": "[[SRD 2024/Weapons/Spear]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6216,6 +7219,10 @@
     "base_item": "[[SRD 2024/Weapons/Trident]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6230,6 +7237,10 @@
     "base_item": "[[SRD 2024/Weapons/War Pick]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6244,6 +7255,10 @@
     "base_item": "[[SRD 2024/Weapons/Warhammer]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6258,6 +7273,10 @@
     "base_item": "[[SRD 2024/Weapons/Whip]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -6338,7 +7357,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 8,
-    "base_item": "[[SRD 2024/Armor/Padded Armor]]"
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_padded-armor-2",
@@ -6349,7 +7371,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 8,
-    "base_item": "[[SRD 2024/Armor/Padded Armor]]"
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_padded-armor-3",
@@ -6360,7 +7385,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 8,
-    "base_item": "[[SRD 2024/Armor/Padded Armor]]"
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_pearl-of-power",
@@ -6443,7 +7471,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Pike]]"
+    "base_item": "[[SRD 2024/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_pike-2",
@@ -6454,7 +7486,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Pike]]"
+    "base_item": "[[SRD 2024/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_pike-3",
@@ -6465,7 +7501,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 18,
-    "base_item": "[[SRD 2024/Weapons/Pike]]"
+    "base_item": "[[SRD 2024/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_pipes-of-haunting",
@@ -6512,7 +7552,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Pistol]]"
+    "base_item": "[[SRD 2024/Weapons/Pistol]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_pistol-2",
@@ -6523,7 +7567,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Pistol]]"
+    "base_item": "[[SRD 2024/Weapons/Pistol]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_pistol-3",
@@ -6534,7 +7582,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Pistol]]"
+    "base_item": "[[SRD 2024/Weapons/Pistol]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_plate-armor-of-etherealness",
@@ -6558,7 +7610,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 65,
-    "base_item": "[[SRD 2024/Armor/Plate Armor]]"
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_plate-armor-2",
@@ -6569,7 +7624,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 65,
-    "base_item": "[[SRD 2024/Armor/Plate Armor]]"
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_plate-armor-3",
@@ -6580,7 +7638,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 65,
-    "base_item": "[[SRD 2024/Armor/Plate Armor]]"
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_portable-hole",
@@ -6764,7 +7825,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_quarterstaff-2",
@@ -6775,7 +7840,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_quarterstaff-3",
@@ -6786,7 +7855,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]"
+    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_rapier-of-life-stealing",
@@ -6825,7 +7898,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Rapier]]"
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_rapier-2",
@@ -6836,7 +7913,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Rapier]]"
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_rapier-3",
@@ -6847,7 +7928,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Rapier]]"
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_ring-mail-1",
@@ -6858,7 +7943,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 40,
-    "base_item": "[[SRD 2024/Armor/Ring Mail]]"
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_ring-mail-2",
@@ -6869,7 +7957,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 40,
-    "base_item": "[[SRD 2024/Armor/Ring Mail]]"
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_ring-mail-3",
@@ -6880,7 +7971,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 40,
-    "base_item": "[[SRD 2024/Armor/Ring Mail]]"
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_ring-of-animal-influence",
@@ -7401,7 +8495,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 45,
-    "base_item": "[[SRD 2024/Armor/Scale Mail]]"
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_scale-mail-2",
@@ -7412,7 +8509,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 45,
-    "base_item": "[[SRD 2024/Armor/Scale Mail]]"
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_scale-mail-3",
@@ -7423,7 +8523,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 45,
-    "base_item": "[[SRD 2024/Armor/Scale Mail]]"
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_scarab-of-protection",
@@ -7511,7 +8614,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Scimitar]]"
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_scimitar-2",
@@ -7522,7 +8629,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Scimitar]]"
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_scimitar-3",
@@ -7533,7 +8644,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Scimitar]]"
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_shield-of-missile-attraction",
@@ -7557,7 +8672,10 @@
     "description": "While holding this Shield, you have a bonus to Armor Class determined by the Shield's rarity, in addition to the Shield's normal bonus to AC.",
     "type": "armor",
     "weight": 6,
-    "base_item": "[[SRD 2024/Armor/Shield]]"
+    "base_item": "[[SRD 2024/Armor/Shield]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_shield-2",
@@ -7568,7 +8686,10 @@
     "description": "While holding this Shield, you have a bonus to Armor Class determined by the Shield's rarity, in addition to the Shield's normal bonus to AC.",
     "type": "armor",
     "weight": 6,
-    "base_item": "[[SRD 2024/Armor/Shield]]"
+    "base_item": "[[SRD 2024/Armor/Shield]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_shield-3",
@@ -7579,7 +8700,10 @@
     "description": "While holding this Shield, you have a bonus to Armor Class determined by the Shield's rarity, in addition to the Shield's normal bonus to AC.",
     "type": "armor",
     "weight": 6,
-    "base_item": "[[SRD 2024/Armor/Shield]]"
+    "base_item": "[[SRD 2024/Armor/Shield]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_shortbow-1",
@@ -7590,7 +8714,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortbow]]"
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_shortbow-2",
@@ -7601,7 +8729,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortbow]]"
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_shortbow-3",
@@ -7612,7 +8744,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortbow]]"
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_shortsword-of-life-stealing",
@@ -7651,7 +8787,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortsword]]"
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_shortsword-2",
@@ -7662,7 +8802,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortsword]]"
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_shortsword-3",
@@ -7673,7 +8817,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Shortsword]]"
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_sickle-1",
@@ -7684,7 +8832,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Sickle]]"
+    "base_item": "[[SRD 2024/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_sickle-2",
@@ -7695,7 +8847,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Sickle]]"
+    "base_item": "[[SRD 2024/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_sickle-3",
@@ -7706,7 +8862,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Sickle]]"
+    "base_item": "[[SRD 2024/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_sling-1",
@@ -7716,7 +8876,11 @@
     "rarity": "uncommon",
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 2024/Weapons/Sling]]"
+    "base_item": "[[SRD 2024/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_sling-2",
@@ -7726,7 +8890,11 @@
     "rarity": "rare",
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 2024/Weapons/Sling]]"
+    "base_item": "[[SRD 2024/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_sling-3",
@@ -7736,7 +8904,11 @@
     "rarity": "very rare",
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
-    "base_item": "[[SRD 2024/Weapons/Sling]]"
+    "base_item": "[[SRD 2024/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_slippers-of-spider-climbing",
@@ -7768,7 +8940,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Spear]]"
+    "base_item": "[[SRD 2024/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_spear-2",
@@ -7779,7 +8955,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Spear]]"
+    "base_item": "[[SRD 2024/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_spear-3",
@@ -7790,7 +8970,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Spear]]"
+    "base_item": "[[SRD 2024/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_spellguard-shield",
@@ -7823,7 +9007,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 60,
-    "base_item": "[[SRD 2024/Armor/Splint Armor]]"
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_splint-armor-2",
@@ -7834,7 +9021,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 60,
-    "base_item": "[[SRD 2024/Armor/Splint Armor]]"
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_splint-armor-3",
@@ -7845,7 +9035,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 60,
-    "base_item": "[[SRD 2024/Armor/Splint Armor]]"
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_staff-of-charming",
@@ -8365,7 +9558,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 13,
-    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]"
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "bonuses": {
+      "ac": 1
+    }
   },
   {
     "slug": "srd-2024_studded-leather-armor-2",
@@ -8376,7 +9572,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 13,
-    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]"
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "bonuses": {
+      "ac": 2
+    }
   },
   {
     "slug": "srd-2024_studded-leather-armor-3",
@@ -8387,7 +9586,10 @@
     "description": "You have a bonus to Armor Class while wearing this armor. The bonus is determined by its rarity.",
     "type": "armor",
     "weight": 13,
-    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]"
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "bonuses": {
+      "ac": 3
+    }
   },
   {
     "slug": "srd-2024_sun-blade",
@@ -8544,7 +9746,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Trident]]"
+    "base_item": "[[SRD 2024/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_trident-2",
@@ -8555,7 +9761,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Trident]]"
+    "base_item": "[[SRD 2024/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_trident-3",
@@ -8566,7 +9776,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 2024/Weapons/Trident]]"
+    "base_item": "[[SRD 2024/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_universal-solvent",
@@ -9006,6 +10220,10 @@
     "base_item": "[[SRD 2024/Weapons/Glaive]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -9020,6 +10238,10 @@
     "base_item": "[[SRD 2024/Weapons/Greatsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -9034,6 +10256,10 @@
     "base_item": "[[SRD 2024/Weapons/Longsword]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -9048,6 +10274,10 @@
     "base_item": "[[SRD 2024/Weapons/Scimitar]]",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -9388,7 +10618,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/War Pick]]"
+    "base_item": "[[SRD 2024/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_war-pick-2",
@@ -9399,7 +10633,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/War Pick]]"
+    "base_item": "[[SRD 2024/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_war-pick-3",
@@ -9410,7 +10648,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/War Pick]]"
+    "base_item": "[[SRD 2024/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_warhammer-1",
@@ -9421,7 +10663,14 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Warhammer]]"
+    "base_item": "[[SRD 2024/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    }
   },
   {
     "slug": "srd-2024_warhammer-2",
@@ -9432,7 +10681,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Warhammer]]"
+    "base_item": "[[SRD 2024/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_warhammer-3",
@@ -9443,7 +10696,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 5,
-    "base_item": "[[SRD 2024/Weapons/Warhammer]]"
+    "base_item": "[[SRD 2024/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_weapon-of-warning-battleaxe",
@@ -9880,7 +11137,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Whip]]"
+    "base_item": "[[SRD 2024/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    }
   },
   {
     "slug": "srd-2024_whip-2",
@@ -9891,7 +11152,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Whip]]"
+    "base_item": "[[SRD 2024/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 2,
+      "weapon_damage": 2
+    }
   },
   {
     "slug": "srd-2024_whip-3",
@@ -9902,7 +11167,11 @@
     "description": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity.",
     "type": "weapon",
     "weight": 3,
-    "base_item": "[[SRD 2024/Weapons/Whip]]"
+    "base_item": "[[SRD 2024/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 3,
+      "weapon_damage": 3
+    }
   },
   {
     "slug": "srd-2024_wind-fan",

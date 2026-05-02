@@ -17,7 +17,7 @@ import { featMergeRule, toFeatCanonical } from "./merger-rules/feat-merge";
 import { backgroundMergeRule, toBackgroundCanonical } from "./merger-rules/background-merge";
 import { weaponMergeRule, toWeaponCanonical } from "./merger-rules/weapon-merge";
 import { armorMergeRule, toArmorCanonical } from "./merger-rules/armor-merge";
-import { itemMergeRule, toItemCanonical } from "./merger-rules/item-merge";
+import { itemMergeRule, toItemCanonical, enrichItemsWithVariantBonuses } from "./merger-rules/item-merge";
 import { spellMergeRule, toSpellCanonical } from "./merger-rules/spell-merge";
 import { creatureMergeRule, toCreatureCanonical } from "./merger-rules/creature-merge";
 import { conditionMergeRule, toConditionCanonical, buildConditionsFromStructured } from "./merger-rules/condition-merge";
@@ -186,6 +186,14 @@ async function main() {
     // the variant pipeline emits the parallel "Flame Tongue Longsword".
     let openMagicItemNameSlugs = new Set<string>();
 
+    // Pre-compute the variant-expansion grid early so the magicitems pass can
+    // backfill structured bonuses onto Open5e entries that ship a narrative
+    // "+N" description but no `bonusWeapon`/`bonusAc` (CB-2). The same
+    // `expanded` list is reused below for the dedup + emit pass.
+    const baseItemsForExpansion = readBaseItemsRaw(cfg.structuredRulesPath, edition);
+    const variantRulesForExpansion = readMagicVariantsRaw(cfg.structuredRulesPath, edition);
+    const expandedVariants = expandVariants(baseItemsForExpansion, variantRulesForExpansion, edition);
+
     for (const kind of ALL_KINDS) {
       const open5e = await readOpen5eKind({
         kind,
@@ -248,6 +256,19 @@ async function main() {
 
       if (kind === "magicitems") {
         openMagicItemNameSlugs = new Set(canonical.map(c => slugifyName((c as { name: string }).name)));
+        // Backfill bonus/tier/attunement-required onto Open5e magic-items
+        // whose variant-pipeline counterpart slugify-matches by name. Open5e
+        // pre-expands rule-shaped variants like "Defender" into per-base
+        // entries ("Defender (Longsword)") whose narrative description carries
+        // the "+N" verbiage but whose structured payload has no `bonusWeapon`
+        // / `bonusAc` (CB-2). The variant pipeline computes those bonuses
+        // from the underlying rule's `inherits`; lift them onto the matching
+        // Open5e entry before the dedup pass drops the variant copy.
+        const enrichedCount = enrichItemsWithVariantBonuses(
+          canonical as Parameters<typeof enrichItemsWithVariantBonuses>[0],
+          expandedVariants,
+        );
+        console.log(`[canonical]   enriched: ${enrichedCount} magic-items with variant-derived bonuses`);
       }
 
       const entityKind = OPEN5E_KIND_TO_ENTITY[kind];
@@ -300,10 +321,12 @@ async function main() {
     // The runtime file `item.{edition}.json` is shared with the magicitems
     // pass — the expanded entries are appended onto it rather than via
     // {@link emitForKind} (which would overwrite the file).
-    const baseItems = readBaseItemsRaw(cfg.structuredRulesPath, edition);
-    const variantRules = readMagicVariantsRaw(cfg.structuredRulesPath, edition);
-    const expanded = expandVariants(baseItems, variantRules, edition);
-    console.log(`[canonical] ${edition} magic-variants: ${variantRules.length} rules × ${baseItems.length} bases → ${expanded.length} expanded items`);
+    //
+    // The expanded grid was pre-computed above (see `expandedVariants`) so
+    // the magicitems pass could backfill structured bonuses onto Open5e
+    // pre-expanded entries; reuse it here.
+    const expanded = expandedVariants;
+    console.log(`[canonical] ${edition} magic-variants: ${variantRulesForExpansion.length} rules × ${baseItemsForExpansion.length} bases → ${expanded.length} expanded items`);
 
     // Dedup against Open5e canonical-name slugs (I5). When a variant-expanded
     // entry slugifies to the same key as an Open5e magic item (e.g.
