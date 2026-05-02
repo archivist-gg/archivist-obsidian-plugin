@@ -207,7 +207,9 @@ describe("item-merge Open5e shape normalization", () => {
       },
       structured: { name: "Battleaxe (+1)", bonusWeapon: "+1" } as never,
     }));
-    expect(result.bonuses?.weapon_attack).toBe("+1");
+    // Coerced from "+1" string at the merger boundary so the runtime
+    // accessor (readNumericBonus) sees a number.
+    expect(result.bonuses?.weapon_attack).toBe(1);
   });
 });
 
@@ -215,20 +217,20 @@ describe("STRUCTURED_BONUS_KEYS rename to runtime keys", () => {
   it("emits weapon_attack (not attack) from bonusWeapon", () => {
     const entry = makeEntry({ structured: { bonusWeapon: "+3" } });
     const out = toItemCanonical(entry);
-    expect(out.bonuses?.weapon_attack).toBe("+3");
+    expect(out.bonuses?.weapon_attack).toBe(3);
     expect((out.bonuses as Record<string, unknown>).attack).toBeUndefined();
   });
 
   it("emits weapon_damage from bonusWeaponDamage", () => {
     const entry = makeEntry({ structured: { bonusWeaponDamage: "+2" } });
     const out = toItemCanonical(entry);
-    expect(out.bonuses?.weapon_damage).toBe("+2");
+    expect(out.bonuses?.weapon_damage).toBe(2);
   });
 
   it("emits saving_throws (plural) from bonusSavingThrow", () => {
     const entry = makeEntry({ structured: { bonusSavingThrow: "+1" } });
     const out = toItemCanonical(entry);
-    expect(out.bonuses?.saving_throws).toBe("+1");
+    expect(out.bonuses?.saving_throws).toBe(1);
     expect((out.bonuses as Record<string, unknown>).saving_throw).toBeUndefined();
   });
 
@@ -244,7 +246,41 @@ describe("STRUCTURED_BONUS_KEYS rename to runtime keys", () => {
       structured: { bonusWeapon: "+3", bonusWeaponDamage: "+3", bonusAc: "+1" },
     });
     const out = toItemCanonical(entry);
-    expect(out.bonuses).toMatchObject({ weapon_attack: "+3", weapon_damage: "+3", ac: "+1" });
+    expect(out.bonuses).toMatchObject({ weapon_attack: 3, weapon_damage: 3, ac: 1 });
+  });
+});
+
+describe("structured-bonus coercion (CB-1 / LI-1)", () => {
+  it("coerces +N string to a positive number", () => {
+    const entry = makeEntry({ structured: { bonusAc: "+1", bonusSavingThrow: "+1" } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.ac).toBe(1);
+    expect(out.bonuses?.saving_throws).toBe(1);
+  });
+
+  it("coerces -N string to a negative number", () => {
+    const entry = makeEntry({ structured: { bonusAc: "-2" } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.ac).toBe(-2);
+  });
+
+  it("passes through numeric bonuses unchanged", () => {
+    const entry = makeEntry({ structured: { bonusAc: 3, bonusWeapon: 2 } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.ac).toBe(3);
+    expect(out.bonuses?.weapon_attack).toBe(2);
+  });
+
+  it("skips invalid string values (non-numeric)", () => {
+    const entry = makeEntry({ structured: { bonusAc: "invalid", bonusWeapon: "+abc" } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses).toBeUndefined();
+  });
+
+  it("trims whitespace around signed-int strings", () => {
+    const entry = makeEntry({ structured: { bonusAc: "  +1  " } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.ac).toBe(1);
   });
 });
 

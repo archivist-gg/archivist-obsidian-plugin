@@ -4,12 +4,12 @@ import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 
 export interface ItemBonuses {
-  weapon_attack?: number | string;
-  weapon_damage?: number | string;
-  ac?: number | string;
-  spell_attack?: number | string;
-  spell_save_dc?: number | string;
-  saving_throws?: number | string;
+  weapon_attack?: number;
+  weapon_damage?: number;
+  ac?: number;
+  spell_attack?: number;
+  spell_save_dc?: number;
+  saving_throws?: number;
   ability_scores?: {
     static?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", number>>;
     bonus?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", number>>;
@@ -90,6 +90,48 @@ const STRUCTURED_BONUS_KEYS: Array<[string, ScalarBonusKey]> = [
   ["bonusSavingThrow", "saving_throws"],
   // bonusAbilityCheck intentionally omitted — no runtime consumer (I13).
 ];
+
+/**
+ * Coerce a structured-rules bonus value (which may be a number or a
+ * signed-integer string like "+3" / "-1") to a number. Returns undefined
+ * for anything else so the caller can skip the field.
+ *
+ * Normalizing here, at the merger boundary, keeps the canonical/runtime
+ * data shape uniform: the runtime accessor only ever sees numbers.
+ */
+function coerceBonusNumber(value: unknown): number | undefined {
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^[+-]?\d+$/.test(trimmed)) return Number(trimmed);
+  }
+  return undefined;
+}
+
+/**
+ * Defensive normalize pass for an upstream {@link ItemBonuses}-shaped object.
+ * Used when copying a foreign bonuses block (e.g. from the variant pipeline)
+ * onto a canonical item — guarantees scalar bonus fields are numbers and
+ * silently drops malformed entries. Pass-through for already-numeric input.
+ */
+function normalizeBonuses(src: ItemBonuses): ItemBonuses {
+  const out: ItemBonuses = {};
+  const scalarKeys: ScalarBonusKey[] = [
+    "weapon_attack",
+    "weapon_damage",
+    "ac",
+    "spell_attack",
+    "spell_save_dc",
+    "saving_throws",
+  ];
+  for (const k of scalarKeys) {
+    const n = coerceBonusNumber(src[k]);
+    if (n !== undefined) out[k] = n;
+  }
+  if (src.ability_scores) out.ability_scores = src.ability_scores;
+  if (src.speed) out.speed = src.speed;
+  return out;
+}
 
 /**
  * Map Open5e v2 `category.key` values onto the runtime-friendly `type`
@@ -195,12 +237,11 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
   if (structured) {
     const bonuses: ItemBonuses = {};
     for (const [src, dst] of STRUCTURED_BONUS_KEYS) {
-      const v = structured[src];
-      if (typeof v === "number" || typeof v === "string") {
-        // Avoid overwriting an earlier bonus key with a later alias (e.g.
-        // bonusWeapon → weapon_attack should win over bonusWeaponAttack → weapon_attack).
-        if (bonuses[dst] === undefined) bonuses[dst] = v;
-      }
+      const n = coerceBonusNumber(structured[src]);
+      if (n === undefined) continue;
+      // Avoid overwriting an earlier bonus key with a later alias (e.g.
+      // bonusWeapon → weapon_attack should win over bonusWeaponAttack → weapon_attack).
+      if (bonuses[dst] === undefined) bonuses[dst] = n;
     }
     if (Object.keys(bonuses).length > 0) out.bonuses = bonuses;
 
@@ -333,7 +374,10 @@ export function enrichItemsWithVariantBonuses(
     if (!variant) continue;
     let touched = false;
     if (!item.bonuses && variant.bonuses) {
-      item.bonuses = { ...variant.bonuses };
+      // Defensive coerce: variant pipeline emits numbers already, but if a
+      // future contributor wires in a string-shaped source we still produce
+      // a numeric canonical block.
+      item.bonuses = normalizeBonuses(variant.bonuses);
       touched = true;
     }
     if (item.tier === undefined && variant.tier !== undefined) {

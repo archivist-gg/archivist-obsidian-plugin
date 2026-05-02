@@ -53,12 +53,11 @@ const conditionalBonusSchema = z.object({
   when: z.array(conditionSchema),
 });
 
-// Bonuses can arrive as a number (variant pipeline emits +1 weapon → 1),
-// a signed-integer string ("+3" / "-1" from structured-rules), or a
-// conditional object. Schema accepts all three; pattern-guarded string
-// keeps it from being a free-form passthrough.
-const signedIntString = z.string().regex(/^[+-]?\d+$/);
-const numberOrConditional = z.union([z.number().int(), signedIntString, conditionalBonusSchema]);
+// Bonuses arrive as a plain number or a conditional object. The merger
+// boundary (item-merge.ts:coerceBonusNumber) coerces upstream signed-int
+// strings (e.g. structured-rules "+3") to numbers before they reach the
+// canonical bundle, so the runtime accessor only ever sees numbers.
+const numberOrConditional = z.union([z.number().int(), conditionalBonusSchema]);
 
 const bonusesSchema = z.object({
   ac: numberOrConditional.optional(),

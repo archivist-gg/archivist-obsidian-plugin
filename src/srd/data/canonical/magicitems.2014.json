@@ -379,7 +379,7 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+2"
+      "ac": 2
     },
     "tier": "major"
   },
@@ -775,7 +775,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_damage": "+2"
+      "weapon_damage": 2
     },
     "tier": "major"
   },
@@ -791,7 +791,7 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+2"
+      "ac": 2
     },
     "tier": "major"
   },
@@ -1000,8 +1000,8 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1",
-      "saving_throws": "+1"
+      "ac": 1,
+      "saving_throws": 1
     },
     "tier": "major"
   },
@@ -1335,7 +1335,7 @@
     "weight": 1,
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
     "bonuses": {
-      "weapon_attack": "+1"
+      "weapon_attack": 1
     },
     "tier": "major"
   },
@@ -1563,8 +1563,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+1",
-      "ac": "+1"
+      "weapon_attack": 1,
+      "ac": 1
     },
     "tier": "major"
   },
@@ -1711,7 +1711,7 @@
     "weight": 65,
     "base_item": "[[SRD 5e/Armor/Plate]]",
     "bonuses": {
-      "ac": "+2"
+      "ac": 2
     },
     "tier": "major"
   },
@@ -1735,7 +1735,7 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     },
     "tier": "major"
   },
@@ -1786,7 +1786,7 @@
     "weight": 20,
     "base_item": "[[SRD 5e/Armor/Chain shirt]]",
     "bonuses": {
-      "ac": "+1"
+      "ac": 1
     },
     "tier": "major"
   },
@@ -2357,7 +2357,7 @@
     "weight": 13,
     "base_item": "[[SRD 5e/Armor/Studded leather]]",
     "bonuses": {
-      "ac": "+1"
+      "ac": 1
     },
     "tier": "major"
   },
@@ -2588,7 +2588,7 @@
     "weight": 10,
     "base_item": "[[SRD 5e/Weapons/Maul]]",
     "bonuses": {
-      "weapon_attack": "+1"
+      "weapon_attack": 1
     },
     "charges": {
       "max": 5,
@@ -3104,7 +3104,7 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1"
+      "ac": 1
     },
     "tier": "major"
   },
@@ -3574,7 +3574,7 @@
     "weight": 4,
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "bonuses": {
-      "weapon_attack": "+1"
+      "weapon_attack": 1
     },
     "tier": "major"
   },
@@ -4109,7 +4109,7 @@
     "description": "This clear, gelatinous oil sparkles with tiny, ultrathin silver shards. The oil can coat one slashing or piercing weapon or up to 5 pieces of slashing or piercing ammunition. Applying the oil takes 1 minute. For 1 hour, the coated item is magical and has a +3 bonus to attack and damage rolls.",
     "type": "potion",
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     },
     "tier": "minor",
     "effects": [
@@ -4941,8 +4941,8 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1",
-      "saving_throws": "+1"
+      "ac": 1,
+      "saving_throws": 1
     },
     "tier": "major"
   },
@@ -5184,7 +5184,7 @@
       "required": true
     },
     "bonuses": {
-      "saving_throws": "+1"
+      "saving_throws": 1
     },
     "attached_spells": {
       "charges": {
@@ -5223,8 +5223,8 @@
       ]
     },
     "bonuses": {
-      "spell_attack": "+2",
-      "spell_save_dc": "+2"
+      "spell_attack": 2,
+      "spell_save_dc": 2
     },
     "tier": "major"
   },
@@ -5265,8 +5265,8 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1",
-      "saving_throws": "+1"
+      "ac": 1,
+      "saving_throws": 1
     },
     "attached_spells": {
       "will": [
@@ -5291,7 +5291,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     },
     "tier": "major"
   },
@@ -5427,7 +5427,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+2"
+      "weapon_attack": 2
     },
     "tier": "major"
   },
@@ -6025,10 +6025,10 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+2",
-      "ac": "+2",
-      "spell_attack": "+2",
-      "saving_throws": "+2"
+      "weapon_attack": 2,
+      "ac": 2,
+      "spell_attack": 2,
+      "saving_throws": 2
     },
     "attached_spells": {
       "charges": {
@@ -6071,7 +6071,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     },
     "charges": {
       "max": 10,
@@ -6155,8 +6155,8 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+2",
-      "spell_attack": "+2"
+      "weapon_attack": 2,
+      "spell_attack": 2
     },
     "attached_spells": {
       "will": [
@@ -6245,8 +6245,8 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+2",
-      "spell_attack": "+2"
+      "weapon_attack": 2,
+      "spell_attack": 2
     },
     "attached_spells": {
       "will": [
@@ -6292,7 +6292,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+2"
+      "weapon_attack": 2
     },
     "tier": "major"
   },
@@ -6371,7 +6371,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+2"
+      "weapon_attack": 2
     },
     "tier": "major"
   },
@@ -6561,7 +6561,7 @@
       ]
     },
     "bonuses": {
-      "spell_attack": "+2"
+      "spell_attack": 2
     },
     "charges": {
       "max": 7
@@ -6603,7 +6603,7 @@
       ]
     },
     "bonuses": {
-      "spell_attack": "+2"
+      "spell_attack": 2
     },
     "charges": {
       "max": 6

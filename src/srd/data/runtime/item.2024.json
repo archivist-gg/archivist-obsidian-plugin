@@ -608,7 +608,7 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+2"
+      "ac": 2
     }
   },
   {
@@ -952,7 +952,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_damage": "+2"
+      "weapon_damage": 2
     }
   },
   {
@@ -967,7 +967,7 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+2"
+      "ac": 2
     }
   },
   {
@@ -1276,8 +1276,8 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1",
-      "saving_throws": "+1"
+      "ac": 1,
+      "saving_throws": 1
     }
   },
   {
@@ -1487,7 +1487,7 @@
     "type": "weapon",
     "weight": 1,
     "bonuses": {
-      "weapon_attack": "+1"
+      "weapon_attack": 1
     }
   },
   {
@@ -2698,7 +2698,7 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     }
   },
   {
@@ -4212,7 +4212,7 @@
     "type": "armor",
     "weight": 13,
     "bonuses": {
-      "ac": "+1"
+      "ac": 1
     }
   },
   {
@@ -6130,7 +6130,7 @@
     "type": "weapon",
     "weight": 4,
     "bonuses": {
-      "weapon_attack": "+1"
+      "weapon_attack": 1
     }
   },
   {
@@ -7330,7 +7330,7 @@
     "type": "potion",
     "weight": 0.5,
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     },
     "effects": [
       {
@@ -8117,8 +8117,8 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1",
-      "saving_throws": "+1"
+      "ac": 1,
+      "saving_throws": 1
     }
   },
   {
@@ -8330,7 +8330,7 @@
       "required": true
     },
     "bonuses": {
-      "saving_throws": "+1"
+      "saving_throws": 1
     },
     "attached_spells": {
       "charges": {
@@ -8368,8 +8368,8 @@
       ]
     },
     "bonuses": {
-      "spell_attack": "+2",
-      "spell_save_dc": "+2"
+      "spell_attack": 2,
+      "spell_save_dc": 2
     }
   },
   {
@@ -8407,8 +8407,8 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1",
-      "saving_throws": "+1"
+      "ac": 1,
+      "saving_throws": 1
     },
     "attached_spells": {
       "will": [
@@ -8432,7 +8432,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     }
   },
   {
@@ -8541,7 +8541,7 @@
       "required": true
     },
     "bonuses": {
-      "ac": "+1"
+      "ac": 1
     },
     "charges": {
       "max": 12
@@ -8588,7 +8588,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+2"
+      "weapon_attack": 2
     }
   },
   {
@@ -9249,10 +9249,10 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+2",
-      "ac": "+2",
-      "spell_attack": "+2",
-      "saving_throws": "+2"
+      "weapon_attack": 2,
+      "ac": 2,
+      "spell_attack": 2,
+      "saving_throws": 2
     },
     "attached_spells": {
       "charges": {
@@ -9294,7 +9294,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+3"
+      "weapon_attack": 3
     },
     "charges": {
       "max": 10,
@@ -9376,8 +9376,8 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+2",
-      "spell_attack": "+2"
+      "weapon_attack": 2,
+      "spell_attack": 2
     },
     "attached_spells": {
       "charges": {
@@ -9452,8 +9452,8 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": "+2",
-      "spell_attack": "+2"
+      "weapon_attack": 2,
+      "spell_attack": 2
     },
     "attached_spells": {
       "charges": {
@@ -9496,7 +9496,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+2"
+      "weapon_attack": 2
     }
   },
   {
@@ -9604,7 +9604,7 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": "+2"
+      "weapon_attack": 2
     }
   },
   {
@@ -9629,7 +9629,7 @@
       ]
     },
     "bonuses": {
-      "spell_attack": "+2"
+      "spell_attack": 2
     },
     "charges": {
       "max": 7
@@ -9661,7 +9661,7 @@
       "required": true
     },
     "bonuses": {
-      "spell_attack": "+2"
+      "spell_attack": 2
     },
     "charges": {
       "max": 6
