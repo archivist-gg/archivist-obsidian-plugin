@@ -190,7 +190,14 @@
     "classes": [
       "sorcerer",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "bludgeoning",
+        "piercing",
+        "slashing"
+      ]
+    }
   },
   {
     "slug": "srd-2024_animal-friendship",
@@ -402,6 +409,13 @@
     "at_higher_levels": [
       "The creature's Slam damage increases by 1d4 (Medium or smaller), 1d6 (Large), or 1d12 (Huge) for each spell slot level above 5."
     ],
+    "damage": {
+      "types": [
+        "bludgeoning",
+        "piercing",
+        "slashing"
+      ]
+    },
     "casting_options": [
       {
         "type": "slot_level_6",
@@ -1341,6 +1355,9 @@
       "sorcerer",
       "wizard"
     ],
+    "at_higher_levels": [
+      "One additional bolt leaps from the first target to another target for each spell slot level above 6."
+    ],
     "damage": {
       "types": [
         "lightning"
@@ -1525,6 +1542,16 @@
     "at_higher_levels": [
       "The damage increases by 1d8 for each spell slot level above 1. The orb can leap a maximum number of times equal to the level of the slot expended, and a creature can be targeted only once by each casting of this spell."
     ],
+    "damage": {
+      "types": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning",
+        "poison",
+        "thunder"
+      ]
+    },
     "casting_options": [
       {
         "type": "slot_level_2",
@@ -2028,6 +2055,14 @@
     "at_higher_levels": [
       "The healing and damage increase by 1d12 for each spell slot level above 7."
     ],
+    "damage": {
+      "types": [
+        "radiant"
+      ]
+    },
+    "saving_throw": {
+      "ability": "dexterity"
+    },
     "casting_options": [
       {
         "type": "slot_level_8",
@@ -2062,6 +2097,14 @@
     "at_higher_levels": [
       "The damage increases by 1d8 for each spell slot level above 5."
     ],
+    "damage": {
+      "types": [
+        "lightning",
+        "thunder",
+        "fire",
+        "cold"
+      ]
+    },
     "saving_throw": {
       "ability": "dexterity"
     },
@@ -2145,6 +2188,14 @@
     "at_higher_levels": [
       "The damage increases by 1d8 for each spell slot level above 4."
     ],
+    "damage": {
+      "types": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning"
+      ]
+    },
     "casting_options": [
       {
         "type": "slot_level_5",
@@ -2330,7 +2381,15 @@
       "cleric",
       "druid",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "bludgeoning"
+      ]
+    },
+    "saving_throw": {
+      "ability": "strength"
+    }
   },
   {
     "slug": "srd-2024_control-weather",
@@ -2951,7 +3010,10 @@
     "classes": [
       "cleric",
       "paladin"
-    ]
+    ],
+    "saving_throw": {
+      "ability": "charisma"
+    }
   },
   {
     "slug": "srd-2024_dispel-magic",
@@ -3027,6 +3089,9 @@
     "description": "One creature of your choice that you can see within range hears a discordant melody in its mind. The target makes a Wisdom saving throw. On a failed save, it takes 3d6 Psychic damage and must immediately use its Reaction, if available, to move as far away from you as it can, using the safest route. On a successful save, the target takes half as much damage only.",
     "classes": [
       "bard"
+    ],
+    "at_higher_levels": [
+      "The damage increases by 3d6 for each spell slot level above 1."
     ],
     "damage": {
       "types": [
@@ -3310,6 +3375,15 @@
     "at_higher_levels": [
       "The damage increases by 1d6 for each spell slot level above 2."
     ],
+    "damage": {
+      "types": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning",
+        "poison"
+      ]
+    },
     "saving_throw": {
       "ability": "dexterity"
     },
@@ -4558,7 +4632,10 @@
       "bard",
       "warlock",
       "wizard"
-    ]
+    ],
+    "saving_throw": {
+      "ability": "charisma"
+    }
   },
   {
     "slug": "srd-2024_foresight",
@@ -4943,6 +5020,18 @@
     "at_higher_levels": [
       "The damage of an explosive rune increases by 1d8 for each spell slot level above 3. If you create a spell glyph, you can store any spell of up to the same level as the spell slot you use for the Glyph of Warding."
     ],
+    "damage": {
+      "types": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning",
+        "thunder"
+      ]
+    },
+    "saving_throw": {
+      "ability": "dexterity"
+    },
     "casting_options": [
       {
         "type": "slot_level_4",
@@ -5832,7 +5921,10 @@
     "description": "For the duration, you emit an aura in a 30-foot Emanation. While in the aura, creatures of your choice have Advantage on all saving throws, and other creatures have Disadvantage on attack rolls against them. In addition, when a Fiend or an Undead hits an affected creature with a melee attack roll, the attacker must succeed on a Constitution saving throw or have the Blinded condition until the end of its next turn.",
     "classes": [
       "cleric"
-    ]
+    ],
+    "saving_throw": {
+      "ability": "constitution"
+    }
   },
   {
     "slug": "srd-2024_hunters-mark",
@@ -9356,6 +9448,17 @@
     "at_higher_levels": [
       "The damage increases by 1d8 when you reach levels 5 (2d8), 11 (3d8), and 17 (4d8)."
     ],
+    "damage": {
+      "types": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning",
+        "poison",
+        "psychic",
+        "thunder"
+      ]
+    },
     "casting_options": [
       {
         "type": "player_level_5",
@@ -9930,7 +10033,15 @@
       "cleric",
       "druid",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "necrotic"
+      ]
+    },
+    "saving_throw": {
+      "ability": "constitution"
+    }
   },
   {
     "slug": "srd-2024_telekinesis",
@@ -9991,7 +10102,12 @@
       "bard",
       "sorcerer",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "force"
+      ]
+    }
   },
   {
     "slug": "srd-2024_teleportation-circle",

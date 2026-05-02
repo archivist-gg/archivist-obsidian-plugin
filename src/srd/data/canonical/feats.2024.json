@@ -16,7 +16,7 @@
       "Increase one ability score of your choice by 2, or increase two ability scores of your choice by 1. This feat can't increase an ability score above 20.",
       "You can take this feat more than once."
     ],
-    "repeatable": false,
+    "repeatable": true,
     "effects": [],
     "grants_asi": null,
     "choices": []
@@ -240,14 +240,8 @@
         "min": 4
       },
       {
-        "kind": "ability",
-        "ability": "str",
-        "min": 13
-      },
-      {
-        "kind": "ability",
-        "ability": "dex",
-        "min": 13
+        "kind": "level",
+        "min": 4
       }
     ],
     "benefits": [
@@ -291,7 +285,7 @@
       "Whenever you gain a new level, you can replace one of the spells you chose for this feat with a different spell of the same level from the chosen spell list.",
       "You can take this feat more than once, but you must choose a different spell list each time."
     ],
-    "repeatable": false,
+    "repeatable": true,
     "effects": [],
     "grants_asi": null,
     "choices": []
@@ -324,7 +318,7 @@
       "You gain proficiency in any combination of three skills or tools of your choice.",
       "You can take this feat more than once."
     ],
-    "repeatable": false,
+    "repeatable": true,
     "effects": [],
     "grants_asi": null,
     "choices": []

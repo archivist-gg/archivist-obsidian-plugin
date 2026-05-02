@@ -151,7 +151,14 @@
         "name": "Trance",
         "description": "You don't need to sleep, and magic can't put you to sleep. You can finish a Long Rest in 4 hours if you spend those hours in a trancelike meditation, during which you retain consciousness."
       }
-    ]
+    ],
+    "additional_spells": {
+      "known": {
+        "1": [
+          "[[SRD 2024/Spells/Druidcraft|xphb|druidcraft|xphb]]"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_gnome",
@@ -407,6 +414,14 @@
         "name": "Otherworldly Presence",
         "description": "You know the *Thaumaturgy* cantrip. When you cast it with this trait, the spell uses the same spellcasting ability you use for your Fiendish Legacy trait."
       }
-    ]
+    ],
+    "additional_spells": {
+      "known": {
+        "1": [
+          "[[SRD 2024/Spells/Thaumaturgy|xphb|thaumaturgy|xphb]]",
+          "[[SRD 2024/Spells/Fire Bolt|xphb|fire bolt|xphb]]"
+        ]
+      }
+    }
   }
 ]

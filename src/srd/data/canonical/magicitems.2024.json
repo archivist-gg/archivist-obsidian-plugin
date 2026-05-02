@@ -276,6 +276,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "con": 19
+        }
+      }
     }
   },
   {
@@ -649,6 +656,9 @@
     "type": "armor",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ac": "+2"
     }
   },
   {
@@ -901,6 +911,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "levitate|xphb"
+      ]
     }
   },
   {
@@ -932,6 +947,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "speed": {
+        "walk": 30
+      }
     }
   },
   {
@@ -968,6 +988,9 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_damage": "+2"
     }
   },
   {
@@ -981,6 +1004,9 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ac": "+2"
     }
   },
   {
@@ -1075,6 +1101,13 @@
     "attunement": {
       "required": true
     },
+    "attached_spells": {
+      "limited": {
+        "1": [
+          "gate|xphb"
+        ]
+      }
+    },
     "effects": [
       {
         "foundryId": "candleOfInvocati"
@@ -1089,7 +1122,14 @@
     "rarity": "rare",
     "description": "This cape smells faintly of brimstone. While wearing it, you can use it to cast Dimension Door as a Magic action. This property can't be used again until the next dawn. When you teleport with that spell, you leave behind a cloud of smoke. The space you left is Lightly Obscured by that smoke until the end of your next turn.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "dimension door|xphb"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_carpet-of-flying",
@@ -1201,7 +1241,14 @@
     "rarity": "uncommon",
     "description": "While wearing this circlet, you can cast Scorching Ray with it (+5 to hit). The circlet can't cast this spell again until the next dawn.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "scorching ray|xphb"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_cloak-of-arachnida",
@@ -1214,6 +1261,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "web|xphb"
+        ]
+      }
     }
   },
   {
@@ -1253,6 +1307,10 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ac": "+1",
+      "saving_throws": "+1"
     }
   },
   {
@@ -1266,6 +1324,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "polymorph|xphb"
+        ]
+      }
     },
     "effects": [
       {
@@ -1284,6 +1349,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "speed": {
+        "swim": 60
+      }
     }
   },
   {
@@ -1359,6 +1429,16 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "scrying|xphb"
+      ],
+      "daily": {
+        "1e": [
+          "suggestion|xphb"
+        ]
+      }
     }
   },
   {
@@ -1385,6 +1465,29 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "mage armor|xphb",
+          "shield|xphb"
+        ],
+        "3": [
+          "leomund's tiny hut|xphb"
+        ],
+        "4": [
+          "mordenkainen's private sanctum|xphb",
+          "otiluke's resilient sphere|xphb"
+        ],
+        "5": [
+          "wall of force|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6}"
     }
   },
   {
@@ -1395,7 +1498,12 @@
     "rarity": "legendary",
     "description": "This cube is 3 inches across and radiates palpable magical energy. The six sides of the cube are each keyed to a different plane of existence, one of which is the Material Plane. The other sides are linked to planes determined by the GM. The cube has 3 charges and regains 1d3 expended charges daily at dawn. As a Magic action, you can expend 1 of the cube's charges to cast one of the following spells using the cube. Gate. Pressing one side of the cube, you cast Gate, opening a portal to the plane of existence keyed to that side. Plane Shift. Pressing one side of the cube twice, you cast Plane Shift, transporting the targets to the plane of existence keyed to that side.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    }
   },
   {
     "slug": "srd-2024_dagger-of-venom",
@@ -1405,7 +1513,10 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. You can take a Bonus Action to magically coat the blade with poison. The poison remains for 1 minute or until an attack using this weapon hits a creature. That creature must succeed on a DC 15 Constitution saving throw or take 2d10 Poison damage and have the Poisoned condition for 1 minute. The weapon can't be used this way again until the next dawn.",
     "requires_attunement": false,
-    "type": "weapon"
+    "type": "weapon",
+    "bonuses": {
+      "weapon_attack": "+1"
+    }
   },
   {
     "slug": "srd-2024_dagger-1",
@@ -2455,7 +2566,15 @@
     "type": "weapon",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Dwarf or a Creature Attuned to a Belt of Dwarvenkind"
+      "restriction": "Requires Attunement by a Dwarf or a Creature Attuned to a Belt of Dwarvenkind",
+      "tags": [
+        {
+          "race": "dwarf"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+3"
     }
   },
   {
@@ -2476,7 +2595,14 @@
     "rarity": "very rare",
     "description": "When you take a Magic action to remove the stopper of this painted brass bottle, a cloud of thick smoke flows out of it. At the end of your turn, the smoke disappears with a flash of harmless fire, and an **Efreeti** appears in an unoccupied space within 30 feet of you.\n\nThe first time the bottle is opened, the GM rolls on the following table to determine what happens.\n\n| 1d10 | Effect                       |\n|------|------------------------------|\n| 1    | The efreeti attacks you. After fighting for 5 rounds, the efreeti disappears, and the bottle loses its magic. |\n| 2–9  | The efreeti understands your languages and obeys your commands for 1 hour, after which it returns to the bottle, and a new stopper contains it. The stopper can't be removed for 24 hours. The next two times the bottle is opened, the same effect occurs. If the bottle is opened a fourth time, the efreeti escapes and disappears, and the bottle loses its magic. |\n| 10   | The efreeti understands your languages and can cast *Wish* once for you. It disappears when it grants the wish or after 1 hour, and the bottle loses its magic. |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "limited": {
+        "3": [
+          "wish|xphb"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_elemental-gem",
@@ -2531,6 +2657,17 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "charm person|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn"
     }
   },
   {
@@ -2651,7 +2788,10 @@
     "rarity": "rare",
     "description": "A *Figurine of Wondrous Power* is a statuette small enough to fit in a pocket. If you take a Magic action to throw the figurine to a point on the ground within 60 feet of yourself, the figurine becomes a living creature specified in the figurine's description below. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\n\nThe creature is Friendly to you and your allies. It understands your languages, obeys your commands, and takes its turn immediately after you on your Initiative count. If you issue no commands, the creature defends itself but takes no other actions.\n\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if its creature form drops to 0 Hit Points or if you take a Magic action while touching the creature to make it revert to figurine form. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\n\n**_Golden Lions (Rare)._** These gold statuettes of lions are always created in pairs. You can use one figurine or both simultaneously. Each can become a **Lion** for up to 1 hour. Once a lion has been used, it can't be used again until 7 days have passed.\n\n**Goat of Terror.** This figurine can become a **Giant Goat** for up to 3 hours. The goat can't attack, but you can (harmlessly) remove its horns and use them as weapons. One horn becomes a *+1 Lance*, and the other becomes a *+2 Longsword*. Removing a horn requires a Magic action, and the weapons disappear and the horns return when the goat reverts to figurine form. While you ride the goat, any Hostile creature that starts its turn within a 30-foot Emanation originating from the goat must succeed on a DC 15 Wisdom saving throw or have the Frightened condition for 1 minute, until you are no longer riding the goat, or until the goat reverts to figurine form. The Frightened creature repeats the save at the end of each of its turns, ending the effect on itself on a success. Once it succeeds on the save, a creature is immune to this effect for the next 24 hours. Once the figurine has been used, it can't be used again until 15 days have passed.\n\n**_Goat of Traveling._** This figurine can become a Large goat with the same statistics as a **Riding Horse**. It has 24 charges, and each hour or portion thereof it spends in goat form costs 1 charge. While it has charges, you can use it as often as you wish. When it runs out of charges, it reverts to a figurine and can't be used again until 7 days have passed, when it regains all expended charges.\n\n**_Goat of Travail._** This figurine can become a **Giant Goat** for up to 3 hours. Once it has been used, it can't be used again until 30 days have passed.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "charges": {
+      "max": 24
+    }
   },
   {
     "slug": "srd-2024_figurine-of-wondrous-power-marble-elephant",
@@ -3284,6 +3424,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 19
+        }
+      }
     }
   },
   {
@@ -3294,7 +3441,10 @@
     "rarity": "uncommon",
     "description": "This prism has 50 charges. While you are holding it, you can take a Magic action and use one of three command words to cause one of the following effects: First Command Word. The gem sheds Bright Light in a 30-foot radius and Dim Light for an additional 30 feet. This effect doesn't expend a charge. It lasts until you take a Bonus Action to repeat the command word or until you use another function of the gem. Second Command Word. You expend 1 charge and cause the gem to fire a brilliant beam of light at one creature you can see within 60 feet of yourself. The creature must succeed on a DC 15 Constitution saving throw or have the Blinded condition for 1 minute. The creature repeats the save at the end of each of its turns, ending the effect on itself on a success. Third Command Word. You expend 5 charges and cause the gem to flare with intense light in a 30 foot Cone. Each creature in the Cone makes a saving throw as if struck by the beam created with the second command word. When all of the gem's charges are expended, the gem becomes a nonmagical jewel worth 50 GP.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "charges": {
+      "max": 50
+    }
   },
   {
     "slug": "srd-2024_gem-of-seeing",
@@ -3307,6 +3457,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     },
     "effects": [
       {
@@ -3858,7 +4013,10 @@
     "rarity": "rare",
     "description": "While wearing this armor, you gain a +1 bonus to Armor Class. You can also take a Bonus Action to cause the armor to assume the appearance of a normal set of clothing or some other kind of armor. You decide what it looks like—including color, style, and accessories—but the armor retains its normal bulk and weight. The illusory appearance lasts until you use this property again or doff the armor.",
     "requires_attunement": false,
-    "type": "armor"
+    "type": "armor",
+    "bonuses": {
+      "ac": "+1"
+    }
   },
   {
     "slug": "srd-2024_gloves-of-missile-snaring",
@@ -4256,6 +4414,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "disguise self|xphb"
+      ]
     }
   },
   {
@@ -4269,6 +4432,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "int": 19
+        }
+      }
     }
   },
   {
@@ -4318,6 +4488,22 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "limited": {
+        "10": [
+          "prismatic spray|xphb"
+        ],
+        "20": [
+          "wall of fire|xphb"
+        ],
+        "30": [
+          "fireball|xphb"
+        ],
+        "40": [
+          "daylight|xphb"
+        ]
+      }
     }
   },
   {
@@ -4328,7 +4514,12 @@
     "rarity": "uncommon",
     "description": "While wearing this helm, you can cast Comprehend Languages from it.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "will": [
+        "comprehend languages|xphb"
+      ]
+    }
   },
   {
     "slug": "srd-2024_helm-of-telepathy",
@@ -4341,6 +4532,16 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "detect thoughts|xphb"
+      ],
+      "daily": {
+        "1e": [
+          "suggestion|xphb"
+        ]
+      }
     }
   },
   {
@@ -4354,6 +4555,18 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "teleport|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -5504,7 +5717,10 @@
     "rarity": "rare",
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. The bonus increases to +3 when you use the weapon to attack a Construct. When you roll a 20 on an attack roll made with this weapon, the target takes an extra 7 Bludgeoning damage, or 14 Bludgeoning damage if it's a Construct. If a Construct has 25 Hit Points or fewer after taking this damage, it is destroyed.",
     "requires_attunement": false,
-    "type": "weapon"
+    "type": "weapon",
+    "bonuses": {
+      "weapon_attack": "+1"
+    }
   },
   {
     "slug": "srd-2024_mace-of-terror",
@@ -5517,6 +5733,11 @@
     "type": "weapon",
     "attunement": {
       "required": true
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -5680,6 +5901,18 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "detect thoughts|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 5,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d4}"
     }
   },
   {
@@ -5891,7 +6124,14 @@
     "rarity": "rare",
     "description": "This necklace has 1d6 + 3 beads hanging from it. You can take a Magic action to detach a bead and throw it up to 60 feet away. When it reaches the end of its trajectory, the bead detonates as a level 3 Fireball (save DC 15). You can hurl multiple beads, or even the whole necklace, at one time. When you do so, increase the damage of the Fireball by 1d6 for each bead after the first (maximum 12d6).",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "limited": {
+        "9": [
+          "fireball|xphb"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_necklace-of-prayer-beads",
@@ -5904,7 +6144,18 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Cleric, Druid, or Paladin"
+      "restriction": "Requires Attunement by a Cleric, Druid, or Paladin",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "paladin"
+        }
+      ]
     }
   },
   {
@@ -6528,6 +6779,9 @@
     "description": "One vial of this oil can coat one Melee weapon or twenty pieces of ammunition, but only ammunition and Melee weapons that are nonmagical and deal Slashing or Piercing damage are affected. Applying the oil takes 1 minute, after which the oil magically seeps into whatever it coats, turning the coated weapon into a +3 Weapon or the coated ammunition into +3 Ammunition. This clear, gelatinous oil sparkles with tiny, ultrathin silver shards.",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "weapon_attack": "+3"
+    },
     "effects": [
       {
         "foundryId": "oilOfSharpness"
@@ -6591,7 +6845,12 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Spellcaster"
+      "restriction": "Requires Attunement by a Spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
     }
   },
   {
@@ -6693,6 +6952,11 @@
     "description": "These pipes have 3 charges and regain 1d3 expended charges daily at dawn. You can take a Magic action to play them and expend 1 charge to create an eerie, spellbinding tune. Each creature of your choice within 30 feet of you must succeed on a DC 15 Wisdom saving throw or have the Frightened condition for 1 minute. A creature that fails the save repeats it at the end of each of its turns, ending the effect on itself on a success. A creature that succeeds on its save is immune to the effect of these pipes for 24 hours.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
     "effects": [
       {
         "foundryId": "pipesOfHaunting"
@@ -6710,6 +6974,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -7119,7 +7388,21 @@
     "rarity": "rare",
     "description": "This ring has 3 charges, and it regains 1d3 expended charges daily at dawn. While wearing the ring, you can expend 1 charge to cast one of the following spells (save DC 13) from it: - Animal Friendship - Fear (affects Beasts only) - Speak with Animals",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "animal friendship|xphb",
+          "fear|xphb",
+          "speak with animals|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    }
   },
   {
     "slug": "srd-2024_ring-of-djinni-summoning",
@@ -7158,6 +7441,11 @@
     "type": "ring",
     "attunement": {
       "required": true
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -7210,6 +7498,11 @@
     "type": "ring",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "jump|xphb"
+      ]
     }
   },
   {
@@ -7236,6 +7529,10 @@
     "type": "ring",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ac": "+1",
+      "saving_throws": "+1"
     }
   },
   {
@@ -7272,6 +7569,22 @@
     "type": "ring",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "dancing lights|xphb",
+        "light|xphb"
+      ],
+      "charges": {
+        "1": [
+          "faerie fire|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 6,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6}"
     }
   },
   {
@@ -7308,7 +7621,12 @@
     "rarity": "uncommon",
     "description": "You have a Swim Speed of 40 feet while wearing this ring.",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "bonuses": {
+      "speed": {
+        "swim": 40
+      }
+    }
   },
   {
     "slug": "srd-2024_ring-of-the-ram",
@@ -7321,6 +7639,11 @@
     "type": "ring",
     "attunement": {
       "required": true
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -7331,7 +7654,14 @@
     "rarity": "legendary",
     "description": "While wearing this ring, you can expend 1 of its 3 charges to cast Wish from it. The ring becomes nonmagical when you use the last charge.",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "wish|xphb"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_ring-of-warmth",
@@ -7354,7 +7684,12 @@
     "rarity": "uncommon",
     "description": "While wearing this ring, you cast Water Walk from it, targeting only yourself.",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "attached_spells": {
+      "will": [
+        "water walk|xphb"
+      ]
+    }
   },
   {
     "slug": "srd-2024_ring-of-x-ray-vision",
@@ -7399,6 +7734,11 @@
     "attunement": {
       "required": true
     },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
     "effects": [
       {
         "foundryId": "robeOfScintillat"
@@ -7416,6 +7756,20 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "saving_throws": "+1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile|xphb#5"
+        ]
+      }
+    },
+    "charges": {
+      "max": 6,
+      "recharge_amount": "{@dice 1d6}"
     }
   },
   {
@@ -7429,7 +7783,22 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "bonuses": {
+      "spell_attack": "+2",
+      "spell_save_dc": "+2"
     }
   },
   {
@@ -7466,6 +7835,18 @@
     "type": "rod",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ac": "+1",
+      "saving_throws": "+1"
+    },
+    "attached_spells": {
+      "will": [
+        "detect evil and good|xphb",
+        "detect magic|xphb",
+        "detect poison and disease|xphb",
+        "see invisibility|xphb"
+      ]
     }
   },
   {
@@ -7479,6 +7860,9 @@
     "type": "rod",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": "+3"
     }
   },
   {
@@ -7581,6 +7965,12 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "ac": "+1"
+    },
+    "charges": {
+      "max": 12
     }
   },
   {
@@ -7624,6 +8014,9 @@
     "type": "weapon",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": "+2"
     }
   },
   {
@@ -8026,7 +8419,41 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Bard, Cleric, Druid, Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Bard, Cleric, Druid, Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "charm person|xphb",
+          "command|xphb",
+          "comprehend languages|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d8 + 2}"
     }
   },
   {
@@ -8040,7 +8467,39 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Druid, Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Druid, Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "burning hands|xphb"
+        ],
+        "3": [
+          "fireball|xphb"
+        ],
+        "4": [
+          "wall of fire|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
     }
   },
   {
@@ -8054,7 +8513,40 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Druid, Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Druid, Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "fog cloud|xphb"
+        ],
+        "4": [
+          "ice storm|xphb",
+          "wall of ice|xphb"
+        ],
+        "5": [
+          "cone of cold|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
     }
   },
   {
@@ -8068,7 +8560,36 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Bard, Cleric, or Druid"
+      "restriction": "Requires Attunement by a Bard, Cleric, or Druid",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        }
+      ]
+    },
+    "attached_spells": {
+      "will": [
+        "cure wounds|xphb"
+      ],
+      "charges": {
+        "2": [
+          "lesser restoration|xphb"
+        ],
+        "5": [
+          "mass cure wounds|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
     }
   },
   {
@@ -8082,7 +8603,50 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+2",
+      "ac": "+2",
+      "spell_attack": "+2",
+      "saving_throws": "+2"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile|xphb",
+          "ray of enfeeblement|xphb"
+        ],
+        "2": [
+          "levitate|xphb"
+        ],
+        "5": [
+          "cone of cold|xphb",
+          "fireball|xphb",
+          "hold monster|xphb",
+          "lightning bolt|xphb",
+          "wall of force|xphb"
+        ],
+        "6": [
+          "globe of invulnerability|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 20,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 2d8 + 4}"
     }
   },
   {
@@ -8096,6 +8660,14 @@
     "type": "staff",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": "+3"
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
     }
   },
   {
@@ -8109,7 +8681,42 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Bard, Cleric, Druid, Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Bard, Cleric, Druid, Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "4": [
+          "giant insect|xphb"
+        ],
+        "5": [
+          "insect plague|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
     }
   },
   {
@@ -8123,7 +8730,62 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Sorcerer, Warlock, or Wizard"
+      "restriction": "Requires Attunement by a Sorcerer, Warlock, or Wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+2",
+      "spell_attack": "+2"
+    },
+    "attached_spells": {
+      "charges": {
+        "0": [
+          "arcane lock|xphb",
+          "detect magic|xphb",
+          "enlarge/reduce|xphb",
+          "light|xphb",
+          "mage hand|xphb",
+          "protection from evil and good|xphb"
+        ],
+        "2": [
+          "flaming sphere|xphb",
+          "invisibility|xphb",
+          "knock|xphb",
+          "web|xphb"
+        ],
+        "3": [
+          "dispel magic|xphb"
+        ],
+        "4": [
+          "ice storm|xphb",
+          "wall of fire|xphb"
+        ],
+        "5": [
+          "passwall|xphb",
+          "telekinesis|xphb"
+        ],
+        "7": [
+          "conjure elemental|xphb",
+          "fireball|xphb",
+          "lightning bolt|xphb",
+          "plane shift|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 50,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 4d6 + 2}"
     }
   },
   {
@@ -8150,7 +8812,43 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Druid"
+      "restriction": "Requires Attunement by a Druid",
+      "tags": [
+        {
+          "class": "druid"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+2",
+      "spell_attack": "+2"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "animal friendship|xphb",
+          "speak with animals|xphb"
+        ],
+        "2": [
+          "barkskin|xphb",
+          "locate animals or plants|xphb",
+          "pass without trace|xphb"
+        ],
+        "3": [
+          "speak with plants|xphb"
+        ],
+        "5": [
+          "awaken|xphb"
+        ],
+        "6": [
+          "wall of thorns|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 6,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6}"
     }
   },
   {
@@ -8164,6 +8862,9 @@
     "type": "staff",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": "+2"
     }
   },
   {
@@ -8176,7 +8877,23 @@
     "requires_attunement": true,
     "type": "staff",
     "attunement": {
-      "required": true
+      "required": true,
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "warlock"
+        }
+      ]
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -8249,6 +8966,9 @@
     "type": "weapon",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "weapon_attack": "+2"
     }
   },
   {
@@ -8262,7 +8982,21 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Cleric or Paladin"
+      "restriction": "Requires Attunement by a Cleric or Paladin",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "paladin"
+        }
+      ]
+    },
+    "bonuses": {
+      "spell_attack": "+2"
+    },
+    "charges": {
+      "max": 7
     }
   },
   {
@@ -8289,6 +9023,12 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "spell_attack": "+2"
+    },
+    "charges": {
+      "max": 6
     }
   },
   {
@@ -8347,6 +9087,18 @@
     "type": "weapon",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "dominate beast|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
     }
   },
   {
@@ -8921,6 +9673,21 @@
     "type": "wand",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "2": [
+          "hold person|xphb"
+        ],
+        "5": [
+          "hold monster|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -8934,6 +9701,11 @@
     "type": "wand",
     "attunement": {
       "required": true
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -8947,7 +9719,24 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Spellcaster"
+      "restriction": "Requires Attunement by a Spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "fireball|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -8961,7 +9750,24 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Spellcaster"
+      "restriction": "Requires Attunement by a Spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "lightning bolt|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -8972,7 +9778,19 @@
     "rarity": "uncommon",
     "description": "This wand has 3 charges. While holding it, you can expend 1 charge to cast Detect Magic from it. The wand regains 1d3 expended charges daily at dawn.",
     "requires_attunement": false,
-    "type": "wand"
+    "type": "wand",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "detect magic|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    }
   },
   {
     "slug": "srd-2024_wand-of-magic-missiles",
@@ -8982,7 +9800,19 @@
     "rarity": "uncommon",
     "description": "This wand has 7 charges. While holding it, you can expend no more than 3 charges to cast Magic Missile from it. For 1 charge, you cast the level 1 version of the spell. You can increase the spell's level by 1 for each additional charge you expend. Regaining Charges. The wand regains 1d6 + 1 expended charges daily at dawn. If you expend the wand's last charge, roll 1d20. On a 1, the wand crumbles into ashes and is destroyed.",
     "requires_attunement": false,
-    "type": "wand"
+    "type": "wand",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    }
   },
   {
     "slug": "srd-2024_wand-of-paralysis",
@@ -8995,7 +9825,17 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Spellcaster"
+      "restriction": "Requires Attunement by a Spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     },
     "effects": [
       {
@@ -9014,7 +9854,24 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Spellcaster"
+      "restriction": "Requires Attunement by a Spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "polymorph|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -9025,7 +9882,12 @@
     "rarity": "uncommon",
     "description": "This wand has 3 charges and regains 1d3 expended charges daily at dawn. While holding it, you can take a Magic action to expend 1 charge, and if a secret door or trap is within 60 feet of you, the wand pulses and points at the one nearest to you.",
     "requires_attunement": false,
-    "type": "wand"
+    "type": "wand",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    }
   },
   {
     "slug": "srd-2024_wand-of-the-war-mage-1",
@@ -9077,7 +9939,24 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "Requires Attunement by a Spellcaster"
+      "restriction": "Requires Attunement by a Spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "web|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -9091,6 +9970,28 @@
     "type": "wand",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "darkness|xphb",
+          "enlarge/reduce|xphb",
+          "faerie fire|xphb",
+          "fireball|xphb",
+          "greater restoration|xphb",
+          "gust of wind|xphb",
+          "invisibility|xphb",
+          "lightning bolt|xphb",
+          "polymorph|xphb",
+          "slow|xphb",
+          "stinking cloud|xphb"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
     }
   },
   {
@@ -9674,7 +10575,14 @@
     "rarity": "uncommon",
     "description": "While holding this fan, you can cast Gust of Wind (save DC 13) from it. Each subsequent time the fan is used before the next dawn, it has a cumulative 20 percent chance of not working; if the fan fails to work, it tears into useless, nonmagical tatters.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "gust of wind|xphb"
+        ]
+      }
+    }
   },
   {
     "slug": "srd-2024_winged-boots",
@@ -9687,6 +10595,16 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "speed": {
+        "fly": 30
+      }
+    },
+    "charges": {
+      "max": 4,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d4}"
     },
     "effects": [
       {
@@ -9705,6 +10623,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "bonuses": {
+      "speed": {
+        "fly": 60
+      }
     },
     "effects": [
       {

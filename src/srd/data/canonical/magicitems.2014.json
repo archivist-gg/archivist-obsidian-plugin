@@ -106,7 +106,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "con": 19
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_amulet-of-proof-against-detection-and-location",
@@ -119,7 +127,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_amulet-of-the-planes",
@@ -132,7 +141,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_animated-shield",
@@ -146,6 +156,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "animatedShield"
@@ -176,6 +187,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "armorOfInvulnera"
@@ -388,7 +400,11 @@
     "type": "shield",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ac": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_arrow-of-slaying",
@@ -408,7 +424,8 @@
     "rarity": "rare",
     "description": "Inside this heavy cloth bag are 3d4 dry beans. The bag weighs 1/2 pound plus 1/4 pound for each bean it contains.\r\n\r\nIf you dump the bag's contents out on the ground, they explode in a 10-foot radius, extending from the beans. Each creature in the area, including you, must make a DC 15 Dexterity saving throw, taking 5d4 fire damage on a failed save, or half as much damage on a successful one. The fire ignites flammable objects in the area that aren't being worn or carried.\r\n\r\nIf you remove a bean from the bag, plant it in dirt or sand, and then water it, the bean produces an effect 1 minute later from the ground where it was planted. The GM can choose an effect from the following table, determine it randomly, or create an effect.\r\n\r\n| d100  | Effect                                                                                                                                                                                                                                                                                                                                                                |\r\n|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\r\n| 01    | 5d4 toadstools sprout. If a creature eats a toadstool, roll any die. On an odd roll, the eater must succeed on a DC 15 Constitution saving throw or take 5d6 poison damage and become poisoned for 1 hour. On an even roll, the eater gains 5d6 temporary hit points for 1 hour.                                                                                      |\r\n| 02-10 | A geyser erupts and spouts water, beer, berry juice, tea, vinegar, wine, or oil (GM's choice) 30 feet into the air for 1d12 rounds.                                                                                                                                                                                                                                   |\r\n| 11-20 | A treant sprouts. There's a 50 percent chance that the treant is chaotic evil and attacks.                                                                                                                                                                                                                                                                            |\r\n| 21-30 | An animate, immobile stone statue in your likeness rises. It makes verbal threats against you. If you leave it and others come near, it describes you as the most heinous of villains and directs the newcomers to find and attack you. If you are on the same plane of existence as the statue, it knows where you are. The statue becomes inanimate after 24 hours. |\r\n| 31-40 | A campfire with blue flames springs forth and burns for 24 hours (or until it is extinguished).                                                                                                                                                                                                                                                                       |\r\n| 41-50 | 1d6 + 6 shriekers sprout                                                                                                                                                                                                                                                                                                                                              |\r\n| 51-60 | 1d4 + 8 bright pink toads crawl forth. Whenever a toad is touched, it transforms into a Large or smaller monster of the GM's choice. The monster remains for 1 minute, then disappears in a puff of bright pink smoke.                                                                                                                                                |\r\n| 61-70 | A hungry bulette burrows up and attacks. 71-80 A fruit tree grows. It has 1d10 + 20 fruit, 1d8 of which act as randomly determined magic potions, while one acts as an ingested poison of the GM's choice. The tree vanishes after 1 hour. Picked fruit remains, retaining any magic for 30 days.                                                                     |\r\n| 81-90 | A nest of 1d4 + 3 eggs springs up. Any creature that eats an egg must make a DC 20 Constitution saving throw. On a successful save, a creature permanently increases its lowest ability score by 1, randomly choosing among equally low scores. On a failed save, the creature takes 10d6 force damage from an internal magical explosion.                            |\r\n| 91-99 | A pyramid with a 60-foot-square base bursts upward. Inside is a sarcophagus containing a mummy lord. The pyramid is treated as the mummy lord's lair, and its sarcophagus contains treasure of the GM's choice.                                                                                                                                                       |\r\n| 100   | A giant beanstalk sprouts, growing to a height of the GM's choice. The top leads where the GM chooses, such as to a great view, a cloud giant's castle, or a different plane of existence.                                                                                                                                                                            |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_bag-of-devouring",
@@ -418,7 +435,8 @@
     "rarity": "very rare",
     "description": "This bag superficially resembles a _bag of holding_ but is a feeding orifice for a gigantic extradimensional creature. Turning the bag inside out closes the orifice.\r\n\r\nThe extradimensional creature attached to the bag can sense whatever is placed inside the bag. Animal or vegetable matter placed wholly in the bag is devoured and lost forever. When part of a living creature is placed in the bag, as happens when someone reaches inside it, there is a 50 percent chance that the creature is pulled inside the bag. A creature inside the bag can use its action to try to escape with a successful DC 15 Strength check. Another creature can use its action to reach into the bag to pull a creature out, doing so with a successful DC 20 Strength check (provided it isn't pulled inside the bag first). Any creature that starts its turn inside the bag is devoured, its body destroyed.\r\n\r\nInanimate objects can be stored in the bag, which can hold a cubic foot of such material. However, once each day, the bag swallows any objects inside it and spits them out into another plane of existence. The GM determines the time and plane.\r\n\r\nIf the bag is pierced or torn, it is destroyed, and anything contained within it is transported to a random location on the Astral Plane.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_bag-of-holding",
@@ -428,7 +446,8 @@
     "rarity": "uncommon",
     "description": "This bag has an interior space considerably larger than its outside dimensions, roughly 2 feet in diameter at the mouth and 4 feet deep. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. The bag weighs 15 pounds, regardless of its contents. Retrieving an item from the bag requires an action.\r\n\r\nIf the bag is overloaded, pierced, or torn, it ruptures and is destroyed, and its contents are scattered in the Astral Plane. If the bag is turned inside out, its contents spill forth, unharmed, but the bag must be put right before it can be used again. Breathing creatures inside the bag can survive up to a number of minutes equal to 10 divided by the number of creatures (minimum 1 minute), after which time they begin to suffocate.\r\n\r\nPlacing a _bag of holding_ inside an extradimensional space created by a _handy haversack_, _portable hole_, or similar item instantly destroys both items and opens a gate to the Astral Plane. The gate originates where the one item was placed inside the other. Any creature within 10 feet of the gate is sucked through it to a random location on the Astral Plane. The gate then closes. The gate is one-way only and can't be reopened.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_bag-of-tricks",
@@ -481,7 +500,8 @@
     "rarity": "rare",
     "description": "This small black sphere measures 3/4 of an inch in diameter and weighs an ounce. Typically, 1d4 + 4 _beads of force_ are found together.\r\n\r\nYou can use an action to throw the bead up to 60 feet. The bead explodes on impact and is destroyed. Each creature within a 10-foot radius of where the bead landed must succeed on a DC 15 Dexterity saving throw or take 5d4 force damage. A sphere of transparent force then encloses the area for 1 minute. Any creature that failed the save and is completely within the area is trapped inside this sphere. Creatures that succeeded on the save, or are partially within the area, are pushed away from the center of the sphere until they are no longer inside it. Only breathable air can pass through the sphere's wall. No attack or other effect can.\r\n\r\nAn enclosed creature can use its action to push against the sphere's wall, moving the sphere up to half the creature's walking speed. The sphere can be picked up, and its magic causes it to weigh only 1 pound, regardless of the weight of creatures inside.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_belt-of-cloud-giant-strength",
@@ -494,7 +514,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 27
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_belt-of-dwarvenkind",
@@ -507,7 +535,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_belt-of-fire-giant-strength",
@@ -520,7 +549,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 25
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_belt-of-frost-giant-strength",
@@ -533,7 +570,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 23
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_belt-of-hill-giant-strength",
@@ -546,7 +591,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 21
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_belt-of-stone-giant-strength",
@@ -559,7 +612,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 23
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_belt-of-storm-giant-strength",
@@ -572,7 +633,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 29
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_blowgun-1",
@@ -615,7 +684,8 @@
     "rarity": "uncommon",
     "description": "While you wear these boots, your steps make no sound, regardless of the surface you are moving across. You also have advantage on Dexterity (Stealth) checks that rely on moving silently.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_boots-of-levitation",
@@ -628,7 +698,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "levitate"
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_boots-of-speed",
@@ -642,6 +718,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "bootsOfSpeed"
@@ -659,7 +736,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "speed": {
+        "walk": 30
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_boots-of-the-winterlands",
@@ -672,7 +755,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_bowl-of-commanding-water-elementals",
@@ -682,7 +766,15 @@
     "rarity": "rare",
     "description": "While this bowl is filled with water, you can use an action to speak the bowl's command word and summon a water elemental, as if you had cast the _conjure elemental_ spell. The bowl can't be used this way again until the next dawn.\r\n\r\nThe bowl is about 1 foot in diameter and half as deep. It weighs 3 pounds and holds about 3 gallons.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_bracers-of-archery",
@@ -695,7 +787,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_damage": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_bracers-of-defense",
@@ -708,7 +804,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ac": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_brazier-of-commanding-fire-elementals",
@@ -718,7 +818,15 @@
     "rarity": "rare",
     "description": "While a fire burns in this brass brazier, you can use an action to speak the brazier's command word and summon a fire elemental, as if you had cast the _conjure elemental_ spell. The brazier can't be used this way again until the next dawn.\r\n\r\nThe brazier weighs 5 pounds.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_brooch-of-shielding",
@@ -731,7 +839,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_broom-of-flying",
@@ -742,6 +851,7 @@
     "description": "This wooden broom, which weighs 3 pounds, functions like a mundane broom until you stand astride it and speak its command word. It then hovers beneath you and can be ridden in the air. It has a flying speed of 50 feet. It can carry up to 400 pounds, but its flying speed becomes 30 feet while carrying over 200 pounds. The broom stops hovering when you land.\r\n\r\nYou can send the broom to travel alone to a destination within 1 mile of you if you speak the command word, name the location, and are familiar with that place. The broom comes back to you when you speak another command word, provided that the broom is still within 1 mile of you.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "broomOfFlying"
@@ -763,6 +873,14 @@
     "attunement": {
       "required": true
     },
+    "attached_spells": {
+      "limited": {
+        "1": [
+          "gate"
+        ]
+      }
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "candleOfInvocati"
@@ -777,7 +895,15 @@
     "rarity": "rare",
     "description": "This cape smells faintly of brimstone. While wearing it, you can use it to cast the _dimension door_ spell as an action. This property of the cape can't be used again until the next dawn.\r\n\r\nWhen you disappear, you leave behind a cloud of smoke, and you appear in a similar cloud of smoke at your destination. The smoke lightly obscures the space you left and the space you appear in, and it dissipates at the end of your next turn. A light or stronger wind disperses the smoke.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1": [
+          "dimension door"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_carpet-of-flying",
@@ -797,7 +923,15 @@
     "rarity": "rare",
     "description": "While incense is burning in this censer, you can use an action to speak the censer's command word and summon an air elemental, as if you had cast the _conjure elemental_ spell. The censer can't be used this way again until the next dawn.\r\n\r\nThis 6-inch-wide, 1-foot-high vessel resembles a chalice with a decorated lid. It weighs 1 pound.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_chime-of-opening",
@@ -807,7 +941,8 @@
     "rarity": "rare",
     "description": "This hollow metal tube measures about 1 foot long and weighs 1 pound. You can strike it as an action, pointing it at an object within 120 feet of you that can be opened, such as a door, lid, or lock. The chime issues a clear tone, and one lock or latch on the object opens unless the sound can't reach the object. If no locks or latches remain, the object itself opens.\r\n\r\nThe chime can be used ten times. After the tenth time, it cracks and becomes useless.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_circlet-of-blasting",
@@ -817,7 +952,15 @@
     "rarity": "uncommon",
     "description": "While wearing this circlet, you can use an action to cast the _scorching ray_ spell with it. When you make the spell's attacks, you do so with an attack bonus of +5. The circlet can't be used this way again until the next dawn.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "scorching ray"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cloak-of-arachnida",
@@ -830,7 +973,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "web"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cloak-of-displacement",
@@ -843,7 +994,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cloak-of-elvenkind",
@@ -856,7 +1008,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cloak-of-protection",
@@ -869,7 +1022,12 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ac": "+1",
+      "saving_throws": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cloak-of-the-bat",
@@ -883,6 +1041,14 @@
     "attunement": {
       "required": true
     },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "polymorph"
+        ]
+      }
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "cloakOfTheBat"
@@ -897,7 +1063,13 @@
     "rarity": "uncommon",
     "description": "While wearing this cloak with its hood up, you can breathe underwater, and you have a swimming speed of 60 feet. Pulling the hood up or down requires an action.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "bonuses": {
+      "speed": {
+        "swim": 60
+      }
+    },
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_club-1",
@@ -1042,7 +1214,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_crystal-ball-of-mind-reading",
@@ -1055,7 +1228,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_crystal-ball-of-telepathy",
@@ -1068,7 +1242,18 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "scrying"
+      ],
+      "daily": {
+        "1e": [
+          "suggestion"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_crystal-ball-of-true-seeing",
@@ -1081,7 +1266,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cube-of-force",
@@ -1094,7 +1280,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 36,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d20}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_cubic-gate",
@@ -1104,7 +1296,13 @@
     "rarity": "legendary",
     "description": "This cube is 3 inches across and radiates palpable magical energy. The six sides of the cube are each keyed to a different plane of existence, one of which is the Material Plane. The other sides are linked to planes determined by the GM.\r\n\r\nYou can use an action to press one side of the cube to cast the _gate_ spell with it, opening a portal to the plane keyed to that side. Alternatively, if you use an action to press one side twice, you can cast the _plane shift_ spell (save DC 17) with the cube and transport the targets to the plane keyed to that side.\r\n\r\nThe cube has 3 charges. Each use of the cube expends 1 charge. The cube regains 1d3 expended charges daily at dawn.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dagger-1",
@@ -1149,7 +1347,11 @@
     "requires_attunement": false,
     "type": "weapon",
     "weight": 1,
-    "base_item": "[[SRD 5e/Weapons/Dagger]]"
+    "base_item": "[[SRD 5e/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dancing-sword-greatsword",
@@ -1251,7 +1453,8 @@
     "rarity": "uncommon",
     "description": "This stoppered flask sloshes when shaken, as if it contains water. The decanter weighs 2 pounds.\r\n\r\nYou can use an action to remove the stopper and speak one of three command words, whereupon an amount of fresh water or salt water (your choice) pours out of the flask. The water stops pouring out at the start of your next turn. Choose from the following options:\r\n\r\n* \"Stream\" produces 1 gallon of water.\r\n* \"Fountain\" produces 5 gallons of water.\r\n* \"Geyser\" produces 30 gallons of water that gushes forth in a geyser 30 feet long and 1 foot wide. As a bonus action while holding the decanter, you can aim the geyser at a creature you can see within 30 feet of you. The target must succeed on a DC 13 Strength saving throw or take 1d4 bludgeoning damage and fall prone. Instead of a creature, you can target an object that isn't being worn or carried and that weighs no more than 200 pounds. The object is either knocked over or pushed up to 15 feet away from you.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_deck-of-illusions",
@@ -1261,7 +1464,8 @@
     "rarity": "uncommon",
     "description": "This box contains a set of parchment cards. A full deck has 34 cards. A deck found as treasure is usually missing 1d20 - 1 cards.\r\n\r\nThe magic of the deck functions only if cards are drawn at random (you can use an altered deck of playing cards to simulate the deck). You can use an action to draw a card at random from the deck and throw it to the ground at a point within 30 feet of you.\r\n\r\nAn illusion of one or more creatures forms over the thrown card and remains until dispelled. An illusory creature appears real, of the appropriate size, and behaves as if it were a real creature except that it can do no harm. While you are within 120 feet of the illusory creature and can see it, you can use an action to move it magically anywhere within 30 feet of its card. Any physical interaction with the illusory creature reveals it to be an illusion, because objects pass through it. Someone who uses an action to visually inspect the creature identifies it as illusory with a successful DC 15 Intelligence (Investigation) check. The creature then appears translucent.\r\n\r\nThe illusion lasts until its card is moved or the illusion is dispelled. When the illusion ends, the image on its card disappears, and that card can't be used again.\r\n\r\n| Playing Card      | Illusion                         |\r\n|-------------------|----------------------------------|\r\n| Ace of hearts     | Red dragon                       |\r\n| King of hearts    | Knight and four guards           |\r\n| Queen of hearts   | Succubus or incubus              |\r\n| Jack of hearts    | Druid                            |\r\n| Ten of hearts     | Cloud giant                      |\r\n| Nine of hearts    | Ettin                            |\r\n| Eight of hearts   | Bugbear                          |\r\n| Two of hearts     | Goblin                           |\r\n| Ace of diamonds   | Beholder                         |\r\n| King of diamonds  | Archmage and mage apprentice     |\r\n| Queen of diamonds | Night hag                        |\r\n| Jack of diamonds  | Assassin                         |\r\n| Ten of diamonds   | Fire giant                       |\r\n| Nine of diamonds  | Ogre mage                        |\r\n| Eight of diamonds | Gnoll                            |\r\n| Two of diamonds   | Kobold                           |\r\n| Ace of spades     | Lich                             |\r\n| King of spades    | Priest and two acolytes          |\r\n| Queen of spades   | Medusa                           |\r\n| Jack of spades    | Veteran                          |\r\n| Ten of spades     | Frost giant                      |\r\n| Nine of spades    | Troll                            |\r\n| Eight of spades   | Hobgoblin                        |\r\n| Two of spades     | Goblin                           |\r\n| Ace of clubs      | Iron golem                       |\r\n| King of clubs     | Bandit captain and three bandits |\r\n| Queen of clubs    | Erinyes                          |\r\n| Jack of clubs     | Berserker                        |\r\n| Ten of clubs      | Hill giant                       |\r\n| Nine of clubs     | Ogre                             |\r\n| Eight of clubs    | Orc                              |\r\n| Two of clubs      | Kobold                           |\r\n| Jokers (2)        | You (the deck's owner)           |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_deck-of-many-things",
@@ -1271,7 +1475,8 @@
     "rarity": "legendary",
     "description": "Usually found in a box or pouch, this deck contains a number of cards made of ivory or vellum. Most (75 percent) of these decks have only thirteen cards, but the rest have twenty-two.\r\n\r\nBefore you draw a card, you must declare how many cards you intend to draw and then draw them randomly (you can use an altered deck of playing cards to simulate the deck). Any cards drawn in excess of this number have no effect. Otherwise, as soon as you draw a card from the deck, its magic takes effect. You must draw each card no more than 1 hour after the previous draw. If you fail to draw the chosen number, the remaining number of cards fly from the deck on their own and take effect all at once.\r\n\r\nOnce a card is drawn, it fades from existence. Unless the card is the Fool or the Jester, the card reappears in the deck, making it possible to draw the same card twice.\r\n\r\n| Playing Card       | Card        |\r\n|--------------------|-------------|\r\n| Ace of diamonds    | Vizier\\*    |\r\n| King of diamonds   | Sun         |\r\n| Queen of diamonds  | Moon        |\r\n| Jack of diamonds   | Star        |\r\n| Two of diamonds    | Comet\\*     |\r\n| Ace of hearts      | The Fates\\* |\r\n| King of hearts     | Throne      |\r\n| Queen of hearts    | Key         |\r\n| Jack of hearts     | Knight      |\r\n| Two of hearts      | Gem\\*       |\r\n| Ace of clubs       | Talons\\*    |\r\n| King of clubs      | The Void    |\r\n| Queen of clubs     | Flames      |\r\n| Jack of clubs      | Skull       |\r\n| Two of clubs       | Idiot\\*     |\r\n| Ace of spades      | Donjon\\*    |\r\n| King of spades     | Ruin        |\r\n| Queen of spades    | Euryale     |\r\n| Jack of spades     | Rogue       |\r\n| Two of spades      | Balance\\*   |\r\n| Joker (with TM)    | Fool\\*      |\r\n| Joker (without TM) | Jester      |\r\n\r\n\\*Found only in a deck with twenty-two cards\r\n\r\n**_Balance_**. Your mind suffers a wrenching alteration, causing your alignment to change. Lawful becomes chaotic, good becomes evil, and vice versa. If you are true neutral or unaligned, this card has no effect on you.\r\n\r\n**_Comet_**. If you single-handedly defeat the next hostile monster or group of monsters you encounter, you gain experience points enough to gain one level. Otherwise, this card has no effect.\r\n\r\n**_Donjon_**. You disappear and become entombed in a state of suspended animation in an extradimensional sphere. Everything you were wearing and carrying stays behind in the space you occupied when you disappeared. You remain imprisoned until you are found and removed from the sphere. You can't be located by any divination magic, but a _wish_ spell can reveal the location of your prison. You draw no more cards.\r\n\r\n**_Euryale_**. The card's medusa-like visage curses you. You take a -2 penalty on saving throws while cursed in this way. Only a god or the magic of The Fates card can end this curse.\r\n\r\n**_The Fates_**. Reality's fabric unravels and spins anew, allowing you to avoid or erase one event as if it never happened. You can use the card's magic as soon as you draw the card or at any other time before you die.\r\n\r\n**_Flames_**. A powerful devil becomes your enemy. The devil seeks your ruin and plagues your life, savoring your suffering before attempting to slay you. This enmity lasts until either you or the devil dies.\r\n\r\n**_Fool_**. You lose 10,000 XP, discard this card, and draw from the deck again, counting both draws as one of your declared draws. If losing that much XP would cause you to lose a level, you instead lose an amount that leaves you with just enough XP to keep your level.\r\n\r\n**_Gem_**. Twenty-five pieces of jewelry worth 2,000 gp each or fifty gems worth 1,000 gp each appear at your feet.\r\n\r\n**_Idiot_**. Permanently reduce your Intelligence by 1d4 + 1 (to a minimum score of 1). You can draw one additional card beyond your declared draws.\r\n\r\n**_Jester_**. You gain 10,000 XP, or you can draw two additional cards beyond your declared draws.\r\n\r\n**_Key_**. A rare or rarer magic weapon with which you are proficient appears in your hands. The GM chooses the weapon.\r\n\r\n**_Knight_**. You gain the service of a 4th-level fighter who appears in a space you choose within 30 feet of you. The fighter is of the same race as you and serves you loyally until death, believing the fates have drawn him or her to you. You control this character.\r\n\r\n**_Moon_**. You are granted the ability to cast the _wish_ spell 1d3 times.\r\n\r\n**_Rogue_**. A nonplayer character of the GM's choice becomes hostile toward you. The identity of your new enemy isn't known until the NPC or someone else reveals it. Nothing less than a _wish_ spell or divine intervention can end the NPC's hostility toward you.\r\n\r\n**_Ruin_**. All forms of wealth that you carry or own, other than magic items, are lost to you. Portable property vanishes. Businesses, buildings, and land you own are lost in a way that alters reality the least. Any documentation that proves you should own something lost to this card also disappears.\r\n\r\n**_Skull_**. You summon an avatar of death-a ghostly humanoid skeleton clad in a tattered black robe and carrying a spectral scythe. It appears in a space of the GM's choice within 10 feet of you and attacks you, warning all others that you must win the battle alone. The avatar fights until you die or it drops to 0 hit points, whereupon it disappears. If anyone tries to help you, the helper summons its own avatar of death. A creature slain by an avatar of death can't be restored to life.\r\n\r\n#",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_defender-greatsword",
@@ -1345,7 +1550,12 @@
     "base_item": "[[SRD 5e/Armor/Plate]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": "+1",
+      "ac": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dimensional-shackles",
@@ -1356,6 +1566,7 @@
     "description": "You can use an action to place these shackles on an incapacitated creature. The shackles adjust to fit a creature of Small to Large size. In addition to serving as mundane manacles, the shackles prevent a creature bound by them from using any method of extradimensional movement, including teleportation or travel to a different plane of existence. They don't prevent the creature from passing through an interdimensional portal.\r\n\r\nYou and any creature you designate when you use the shackles can use an action to remove them. Once every 30 days, the bound creature can make a DC 30 Strength (Athletics) check. On a success, the creature breaks free and destroys the shackles.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "dimensionalShack"
@@ -1433,6 +1644,7 @@
     "description": "Found in a small packet, this powder resembles very fine sand. There is enough of it for one use. When you use an action to throw the dust into the air, you and each creature and object within 10 feet of you become invisible for 2d4 minutes. The duration is the same for all subjects, and the dust is consumed when its magic takes effect. If a creature affected by the dust attacks or casts a spell, the invisibility ends for that creature.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "dustOfDisappeara"
@@ -1447,7 +1659,8 @@
     "rarity": "uncommon",
     "description": "This small packet contains 1d6 + 4 pinches of dust. You can use an action to sprinkle a pinch of it over water. The dust turns a cube of water 15 feet on a side into one marble-sized pellet, which floats or rests near where the dust was sprinkled. The pellet's weight is negligible.\r\n\r\nSomeone can use an action to smash the pellet against a hard surface, causing the pellet to shatter and release the water the dust absorbed. Doing so ends that pellet's magic.\r\n\r\nAn elemental composed mostly of water that is exposed to a pinch of the dust must make a DC 13 Constitution saving throw, taking 10d6 necrotic damage on a failed save, or half as much damage on a successful one.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_dust-of-sneezing-and-choking",
@@ -1458,6 +1671,7 @@
     "description": "Found in a small container, this powder resembles very fine sand. It appears to be _dust of disappearance_, and an _identify_ spell reveals it to be such. There is enough of it for one use.\r\n\r\nWhen you use an action to throw a handful of the dust into the air, you and each creature that needs to breathe within 30 feet of you must succeed on a DC 15 Constitution saving throw or become unable to breathe, while sneezing uncontrollably. A creature affected in this way is incapacitated and suffocating. As long as it is conscious, a creature can repeat the saving throw at the end of each of its turns, ending the effect on it on a success. The _lesser restoration_ spell can also end the effect on a creature.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "dustOfSneezingAn"
@@ -1474,7 +1688,11 @@
     "requires_attunement": false,
     "type": "armor",
     "weight": 65,
-    "base_item": "[[SRD 5e/Armor/Plate]]"
+    "base_item": "[[SRD 5e/Armor/Plate]]",
+    "bonuses": {
+      "ac": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_dwarven-thrower",
@@ -1489,8 +1707,17 @@
     "base_item": "[[SRD 5e/Weapons/Warhammer]]",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a dwarf"
-    }
+      "restriction": "requires attunement by a dwarf",
+      "tags": [
+        {
+          "race": "dwarf"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+3"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_efficient-quiver",
@@ -1510,7 +1737,15 @@
     "rarity": "very rare",
     "description": "This painted brass bottle weighs 1 pound. When you use an action to remove the stopper, a cloud of thick smoke flows out of the bottle. At the end of your turn, the smoke disappears with a flash of harmless fire, and an efreeti appears in an unoccupied space within 30 feet of you.\r\n\r\nThe first time the bottle is opened, the GM rolls to determine what happens.\r\n\r\n| d100   | Effect                                                                                                                                                                                                                                                                                                                                                 |\r\n|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\r\n| 01-10  | The efreeti attacks you. After fighting for 5 rounds, the efreeti disappears, and the bottle loses its magic.                                                                                                                                                                                                                                          |\r\n| 11-90  | The efreeti serves you for 1 hour, doing as you command. Then the efreeti returns to the bottle, and a new stopper contains it. The stopper can't be removed for 24 hours. The next two times the bottle is opened, the same effect occurs. If the bottle is opened a fourth time, the efreeti escapes and disappears, and the bottle loses its magic. |\r\n| 91-100 | The efreeti can cast the wish spell three times for you. It disappears when it grants the final wish or after 1 hour, and the bottle loses its magic.                                                                                                                                                                                                  |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "limited": {
+        "3": [
+          "wish"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_elemental-gem",
@@ -1532,7 +1767,11 @@
     "requires_attunement": false,
     "type": "armor",
     "weight": 20,
-    "base_item": "[[SRD 5e/Armor/Chain shirt]]"
+    "base_item": "[[SRD 5e/Armor/Chain shirt]]",
+    "bonuses": {
+      "ac": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_eversmoking-bottle",
@@ -1542,7 +1781,8 @@
     "rarity": "uncommon",
     "description": "Smoke leaks from the lead-stoppered mouth of this brass bottle, which weighs 1 pound. When you use an action to remove the stopper, a cloud of thick smoke pours out in a 60-foot radius from the bottle. The cloud's area is heavily obscured. Each minute the bottle remains open and within the cloud, the radius increases by 10 feet until it reaches its maximum radius of 120 feet.\r\n\r\nThe cloud persists as long as the bottle is open. Closing the bottle requires you to speak its command word as an action. Once the bottle is closed, the cloud disperses after 10 minutes. A moderate wind (11 to 20 miles per hour) can also disperse the smoke after 1 minute, and a strong wind (21 or more miles per hour) can do so after 1 round.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_eyes-of-charming",
@@ -1555,7 +1795,19 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "charm person"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_eyes-of-minute-seeing",
@@ -1565,7 +1817,8 @@
     "rarity": "uncommon",
     "description": "These crystal lenses fit over the eyes. While wearing them, you can see much better than normal out to a range of 1 foot. You have advantage on Intelligence (Investigation) checks that rely on sight while searching an area or studying an object within that range.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_eyes-of-the-eagle",
@@ -1578,7 +1831,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_feather-token",
@@ -1598,7 +1852,8 @@
     "rarity": "rare",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Bronze Griffon (Rare)_**. This bronze statuette is of a griffon rampant. It can become a griffon for up to 6 hours. Once it has been used, it can't be used again until 5 days have passed.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-ebony-fly",
@@ -1611,7 +1866,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-golden-lions",
@@ -1621,7 +1877,8 @@
     "rarity": "rare",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Golden Lions (Rare)_**. These gold statuettes of lions are always created in pairs. You can use one figurine or both simultaneously. Each can become a lion for up to 1 hour. Once a lion has been used, it can’t be used again until 7 days have passed.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-ivory-goats",
@@ -1631,7 +1888,11 @@
     "rarity": "rare",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Ivory Goats (Rare_**.These ivory statuettes of goats are always created in sets of three. Each goat looks unique and functions differently from the others. Their properties are as follows:\\n\\n* The _goat of traveling_ can become a Large goat with the same statistics as a riding horse. It has 24 charges, and each hour or portion thereof it spends in beast form costs 1 charge. While it has charges, you can use it as often as you wish. When it runs out of charges, it reverts to a figurine and can't be used again until 7 days have passed, when it regains all its charges.\\n* The _goat of travail_ becomes a giant goat for up to 3 hours. Once it has been used, it can't be used again until 30 days have passed.\\n* The _goat of terror_ becomes a giant goat for up to 3 hours. The goat can't attack, but you can remove its horns and use them as weapons. One horn becomes a _+1 lance_, and the other becomes a _+2 longsword_. Removing a horn requires an action, and the weapons disappear and the horns return when the goat reverts to figurine form. In addition, the goat radiates a 30-foot-radius aura of terror while you are riding it. Any creature hostile to you that starts its turn in the aura must succeed on a DC 15 Wisdom saving throw or be frightened of the goat for 1 minute, or until the goat reverts to figurine form. The frightened creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success. Once it successfully saves against the effect, a creature is immune to the goat's aura for the next 24 hours. Once the figurine has been used, it can't be used again until 15 days have passed.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "charges": {
+      "max": 24
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-marble-elephant",
@@ -1641,7 +1902,8 @@
     "rarity": "rare",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Marble Elephant (Rare)_**. This marble statuette is about 4 inches high and long. It can become an elephant for up to 24 hours. Once it has been used, it can’t be used again until 7 days have passed.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-obsidian-steed",
@@ -1651,7 +1913,8 @@
     "rarity": "very rare",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Obsidian Steed (Very Rare)_**. This polished obsidian horse can become a nightmare for up to 24 hours. The nightmare fights only to defend itself. Once it has been used, it can't be used again until 5 days have passed.\\n\\nIf you have a good alignment, the figurine has a 10 percent chance each time you use it to ignore your orders, including a command to revert to figurine form. If you mount the nightmare while it is ignoring your orders, you and the nightmare are instantly transported to a random location on the plane of Hades, where the nightmare reverts to figurine form.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-onyx-dog",
@@ -1662,6 +1925,7 @@
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Onyx Dog (Rare)_**. This onyx statuette of a dog can become a mastiff for up to 6 hours. The mastiff has an Intelligence of 8 and can speak Common. It also has darkvision out to a range  of 60 feet and can see invisible creatures and objects within that range. Once it has been used, it can’t be used again until 7 days have passed.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "onyxDog"
@@ -1676,7 +1940,8 @@
     "rarity": "rare",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Serpentine Owl (Rare)_**. This serpentine statuette of an owl can become a giant owl for up to 8 hours. Once it has been used, it can’t be used again until 2 days have passed. The owl can telepathically communicate with you at any range if you and it are on the same plane of existence.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_figurine-of-wondrous-power-silver-raven",
@@ -1686,7 +1951,8 @@
     "rarity": "uncommon",
     "description": "A _figurine of wondrous power_ is a statuette of a beast small enough to fit in a pocket. If you use an action to speak the command word and throw the figurine to a point on the ground within 60 feet of you, the figurine becomes a living creature. If the space where the creature would appear is occupied by other creatures or objects, or if there isn't enough space for the creature, the figurine doesn't become a creature.\\n\\nThe creature is friendly to you and your companions. It understands your languages and obeys your spoken commands. If you issue no commands, the creature defends itself but takes no other actions.\\n\\nThe creature exists for a duration specific to each figurine. At the end of the duration, the creature reverts to its figurine form. It reverts to a figurine early if it drops to 0 hit points or if you use an action to speak the command word again while touching it. When the creature becomes a figurine again, its property can't be used again until a certain amount of time has passed, as specified in the figurine's description.\\n\\n**_Silver Raven (Uncommon)_**. This silver statuette of a raven can become a raven for up to 12 hours. Once it has been used, it can’t be used again until 2 days have passed. While in raven form, the figurine allows you to cast the animal messenger spell on it at will.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_flail-1",
@@ -1788,7 +2054,8 @@
     "rarity": "rare",
     "description": "This object appears as a wooden box that measures 12 inches long, 6 inches wide, and 6 inches deep. It weighs 4 pounds and floats. It can be opened to store items inside. This item also has three command words, each requiring you to use an action to speak it.\r\n\r\nOne command word causes the box to unfold into a boat 10 feet long, 4 feet wide, and 2 feet deep. The boat has one pair of oars, an anchor, a mast, and a lateen sail. The boat can hold up to four Medium creatures comfortably.\r\n\r\nThe second command word causes the box to unfold into a ship 24 feet long, 8 feet wide, and 6 feet deep. The ship has a deck, rowing seats, five sets of oars, a steering oar, an anchor, a deck cabin, and a mast with a square sail. The ship can hold fifteen Medium creatures comfortably.\r\n\r\nWhen the box becomes a vessel, its weight becomes that of a normal vessel its size, and anything that was stored in the box remains in the boat.\r\n\r\nThe third command word causes the _folding boat_ to fold back into a box, provided that no creatures are aboard. Any objects in the vessel that can't fit inside the box remain outside the box as it folds. Any objects in the vessel that can fit inside the box do so.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_frost-brand-greatsword",
@@ -1860,7 +2127,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 19
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_gem-of-brightness",
@@ -1870,7 +2145,11 @@
     "rarity": "uncommon",
     "description": "This prism has 50 charges. While you are holding it, you can use an action to speak one of three command words to cause one of the following effects:\r\n\r\n* The first command word causes the gem to shed bright light in a 30-foot radius and dim light for an additional 30 feet. This effect doesn't expend a charge. It lasts until you use a bonus action to repeat the command word or until you use another function of the gem.\r\n* The second command word expends 1 charge and causes the gem to fire a brilliant beam of light at one creature you can see within 60 feet of you. The creature must succeed on a DC 15 Constitution saving throw or become blinded for 1 minute. The creature can repeat the saving throw at the end of each of its turns, ending the effect on itself on a success.\r\n* The third command word expends 5 charges and causes the gem to flare with blinding light in a 30* foot cone originating from it. Each creature in the cone must make a saving throw as if struck by the beam created with the second command word.\r\n\r\nWhen all of the gem's charges are expended, the gem becomes a nonmagical jewel worth 50 gp.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "charges": {
+      "max": 50
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_gem-of-seeing",
@@ -1884,6 +2163,12 @@
     "attunement": {
       "required": true
     },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "gemOfSeeing"
@@ -2016,7 +2301,11 @@
     "requires_attunement": false,
     "type": "armor",
     "weight": 13,
-    "base_item": "[[SRD 5e/Armor/Studded leather]]"
+    "base_item": "[[SRD 5e/Armor/Studded leather]]",
+    "bonuses": {
+      "ac": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_gloves-of-missile-snaring",
@@ -2029,7 +2318,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_gloves-of-swimming-and-climbing",
@@ -2042,7 +2332,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_goggles-of-night",
@@ -2052,7 +2343,8 @@
     "rarity": "uncommon",
     "description": "While wearing these dark lenses, you have darkvision out to a range of 60 feet. If you already have darkvision, wearing the goggles increases its range by 60 feet.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_greataxe-1",
@@ -2196,7 +2488,16 @@
     "requires_attunement": false,
     "type": "weapon",
     "weight": 10,
-    "base_item": "[[SRD 5e/Weapons/Maul]]"
+    "base_item": "[[SRD 5e/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": "+1"
+    },
+    "charges": {
+      "max": 5,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d4 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_handaxe-1",
@@ -2252,7 +2553,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "disguise self"
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_headband-of-intellect",
@@ -2265,7 +2572,15 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "int": 19
+        }
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_helm-of-brilliance",
@@ -2278,7 +2593,24 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "limited": {
+        "10": [
+          "prismatic spray"
+        ],
+        "20": [
+          "wall of fire"
+        ],
+        "30": [
+          "fireball"
+        ],
+        "40": [
+          "daylight"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_helm-of-comprehending-languages",
@@ -2288,7 +2620,13 @@
     "rarity": "uncommon",
     "description": "While wearing this helm, you can use an action to cast the _comprehend languages_ spell from it at will.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "will": [
+        "comprehend languages"
+      ]
+    },
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_helm-of-telepathy",
@@ -2301,7 +2639,18 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "detect thoughts"
+      ],
+      "daily": {
+        "1e": [
+          "suggestion"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_helm-of-teleportation",
@@ -2314,7 +2663,20 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "teleport"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_holy-avenger-greatsword",
@@ -2388,6 +2750,7 @@
     "description": "You can use an action to speak the horn's command word and then blow the horn, which emits a thunderous blast in a 30-foot cone that is audible 600 feet away. Each creature in the cone must make a DC 15 Constitution saving throw. On a failed save, a creature takes 5d6 thunder damage and is deafened for 1 minute. On a successful save, a creature takes half as much damage and isn't deafened. Creatures and objects made of glass or crystal have disadvantage on the saving throw and take 10d6 thunder damage instead of 5d6.\r\n\r\nEach use of the horn's magic has a 20 percent chance of causing the horn to explode. The explosion deals 10d6 fire damage to the blower and destroys the horn.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "hornOfBlasting"
@@ -2403,6 +2766,7 @@
     "description": "You can use an action to blow this horn. In response, warrior spirits from the Valhalla appear within 60 feet of you. They use the statistics of a berserker. They return to Valhalla after 1 hour or when they drop to 0 hit points. Once you use the horn, it can't be used again until 7 days have passed.\\n\\nFour types of _horn of Valhalla_ are known to exist, each made of a different metal. The horn's type determines how many berserkers answer its summons, as well as the requirement for its use. The GM chooses the horn's type or determines it randomly.\\n\\n| d100   | Horn Type | Berserkers Summoned | Requirement                          |\\n|--------|-----------|---------------------|--------------------------------------|\\n| 01-40  | Silver    | 2d4 + 2             | None                                 |\\n| 41-75  | Brass     | 3d4 + 3             | Proficiency with all simple weapons  |\\n| 76-90  | Bronze    | 4d4 + 4             | Proficiency with all medium armor    |\\n| 91-00  | Iron      | 5d4 + 5             | Proficiency with all martial weapons |\\n\\nIf you blow the horn without meeting its requirement, the summoned berserkers attack you. If you meet the requirement, they are friendly to you and your companions and follow your commands.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "brassHornOfValha"
@@ -2418,6 +2782,7 @@
     "description": "You can use an action to blow this horn. In response, warrior spirits from the Valhalla appear within 60 feet of you. They use the statistics of a berserker. They return to Valhalla after 1 hour or when they drop to 0 hit points. Once you use the horn, it can't be used again until 7 days have passed.\\n\\nFour types of _horn of Valhalla_ are known to exist, each made of a different metal. The horn's type determines how many berserkers answer its summons, as well as the requirement for its use. The GM chooses the horn's type or determines it randomly.\\n\\n| d100   | Horn Type | Berserkers Summoned | Requirement                          |\\n|--------|-----------|---------------------|--------------------------------------|\\n| 01-40  | Silver    | 2d4 + 2             | None                                 |\\n| 41-75  | Brass     | 3d4 + 3             | Proficiency with all simple weapons  |\\n| 76-90  | Bronze    | 4d4 + 4             | Proficiency with all medium armor    |\\n| 91-00  | Iron      | 5d4 + 5             | Proficiency with all martial weapons |\\n\\nIf you blow the horn without meeting its requirement, the summoned berserkers attack you. If you meet the requirement, they are friendly to you and your companions and follow your commands.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "bronzeHornOfValh"
@@ -2433,6 +2798,7 @@
     "description": "You can use an action to blow this horn. In response, warrior spirits from the Valhalla appear within 60 feet of you. They use the statistics of a berserker. They return to Valhalla after 1 hour or when they drop to 0 hit points. Once you use the horn, it can't be used again until 7 days have passed.\\n\\nFour types of _horn of Valhalla_ are known to exist, each made of a different metal. The horn's type determines how many berserkers answer its summons, as well as the requirement for its use. The GM chooses the horn's type or determines it randomly.\\n\\n| d100   | Horn Type | Berserkers Summoned | Requirement                          |\\n|--------|-----------|---------------------|--------------------------------------|\\n| 01-40  | Silver    | 2d4 + 2             | None                                 |\\n| 41-75  | Brass     | 3d4 + 3             | Proficiency with all simple weapons  |\\n| 76-90  | Bronze    | 4d4 + 4             | Proficiency with all medium armor    |\\n| 91-00  | Iron      | 5d4 + 5             | Proficiency with all martial weapons |\\n\\nIf you blow the horn without meeting its requirement, the summoned berserkers attack you. If you meet the requirement, they are friendly to you and your companions and follow your commands.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "ironHornOfValhal"
@@ -2451,6 +2817,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "silverHornOfValh"
@@ -2465,7 +2832,8 @@
     "rarity": "very rare",
     "description": "These iron horseshoes come in a set of four. While all four shoes are affixed to the hooves of a horse or similar creature, they allow the creature to move normally while floating 4 inches above the ground. This effect means the creature can cross or stand above nonsolid or unstable surfaces, such as water or lava. The creature leaves no tracks and ignores difficult terrain. In addition, the creature can move at normal speed for up to 12 hours a day without suffering exhaustion from a forced march.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_horseshoes-of-speed",
@@ -2476,6 +2844,7 @@
     "description": "These iron horseshoes come in a set of four. While all four shoes are affixed to the hooves of a horse or similar creature, they increase the creature's walking speed by 30 feet.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "horseshoesOfSpee"
@@ -2490,7 +2859,8 @@
     "rarity": "uncommon",
     "description": "This flat iron rod has a button on one end. You can use an action to press the button, which causes the rod to become magically fixed in place. Until you or another creature uses an action to push the button again, the rod doesn't move, even if it is defying gravity. The rod can hold up to 8,000 pounds of weight. More weight causes the rod to deactivate and fall. A creature can use an action to make a DC 30 Strength check, moving the fixed rod up to 10 feet on a success.",
     "requires_attunement": false,
-    "type": "rod"
+    "type": "rod",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_instant-fortress",
@@ -2513,7 +2883,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-agility",
@@ -2526,7 +2897,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-awareness",
@@ -2539,7 +2911,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-greater-absorption",
@@ -2552,7 +2925,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-insight",
@@ -2565,7 +2939,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-intellect",
@@ -2578,7 +2953,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-leadership",
@@ -2591,7 +2967,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-mastery",
@@ -2604,7 +2981,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-protection",
@@ -2617,7 +2995,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ac": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-regeneration",
@@ -2630,7 +3012,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-reserve",
@@ -2643,7 +3026,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-strength",
@@ -2656,7 +3040,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ioun-stone-sustenance",
@@ -2669,7 +3054,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_iron-bands-of-binding",
@@ -2689,7 +3075,8 @@
     "rarity": "legendary",
     "description": "This iron bottle has a brass stopper. You can use an action to speak the flask's command word, targeting a creature that you can see within 60 feet of you. If the target is native to a plane of existence other than the one you're on, the target must succeed on a DC 17 Wisdom saving throw or be trapped in the flask. If the target has been trapped by the flask before, it has advantage on the saving throw. Once trapped, a creature remains in the flask until released. The flask can hold only one creature at a time. A creature trapped in the flask doesn't need to breathe, eat, or drink and doesn't age.\r\n\r\nYou can use an action to remove the flask's stopper and release the creature the flask contains. The creature is friendly to you and your companions for 1 hour and obeys your commands for that duration. If you give no commands or give it a command that is likely to result in its death, it defends itself but otherwise takes no actions. At the end of the duration, the creature acts in accordance with its normal disposition and alignment.\r\n\r\nAn _identify_ spell reveals that a creature is inside the flask, but the only way to determine the type of creature is to open the flask. A newly discovered bottle might already contain a creature chosen by the GM or determined randomly.\r\n\r\n| d100  | Contents          |\r\n|-------|-------------------|\r\n| 1-50  | Empty             |\r\n| 51-54 | Demon (type 1)    |\r\n| 55-58 | Demon (type 2)    |\r\n| 59-62 | Demon (type 3)    |\r\n| 63-64 | Demon (type 4)    |\r\n| 65    | Demon (type 5)    |\r\n| 66    | Demon (type 6)    |\r\n| 67    | Deva              |\r\n| 68-69 | Devil (greater)   |\r\n| 70-73 | Devil (lesser)    |\r\n| 74-75 | Djinni            |\r\n| 76-77 | Efreeti           |\r\n| 78-83 | Elemental (any)   |\r\n| 84-86 | Invisible stalker |\r\n| 87-90 | Night hag         |\r\n| 91    | Planetar          |\r\n| 92-95 | Salamander        |\r\n| 96    | Solar             |\r\n| 97-99 | Succubus/incubus  |\r\n| 100   | Xorn              |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_javelin-1",
@@ -2734,7 +3121,8 @@
     "requires_attunement": false,
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 5e/Weapons/Javelin]]"
+    "base_item": "[[SRD 5e/Weapons/Javelin]]",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_lance-1",
@@ -2777,7 +3165,8 @@
     "rarity": "uncommon",
     "description": "While lit, this hooded lantern burns for 6 hours on 1 pint of oil, shedding bright light in a 30-foot radius and dim light for an additional 30 feet. Invisible creatures and objects are visible as long as they are in the lantern's bright light. You can use an action to lower the hood, reducing the light to dim light in a 5* foot radius.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_light-hammer-1",
@@ -2983,7 +3372,8 @@
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mace-of-smiting",
@@ -2995,7 +3385,11 @@
     "requires_attunement": false,
     "type": "weapon",
     "weight": 4,
-    "base_item": "[[SRD 5e/Weapons/Mace]]"
+    "base_item": "[[SRD 5e/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mace-of-terror",
@@ -3010,7 +3404,13 @@
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mantle-of-spell-resistance",
@@ -3023,7 +3423,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_manual-of-bodily-health",
@@ -3034,6 +3435,7 @@
     "description": "This book contains health and diet tips, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Constitution score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "manualOfBodilyHe"
@@ -3049,6 +3451,7 @@
     "description": "This book describes fitness exercises, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Strength score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "manualOfGainfulE"
@@ -3074,6 +3477,7 @@
     "description": "This book contains coordination and balance exercises, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Dexterity score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "manualOfQuicknes"
@@ -3134,7 +3538,20 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "detect thoughts"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mirror-of-life-trapping",
@@ -3144,7 +3561,8 @@
     "rarity": "very rare",
     "description": "When this 4-foot-tall mirror is viewed indirectly, its surface shows faint images of creatures. The mirror weighs 50 pounds, and it has AC 11, 10 hit points, and vulnerability to bludgeoning damage. It shatters and is destroyed when reduced to 0 hit points.\r\n\r\nIf the mirror is hanging on a vertical surface and you are within 5 feet of it, you can use an action to speak its command word and activate it. It remains activated until you use an action to speak the command word again.\r\n\r\nAny creature other than you that sees its reflection in the activated mirror while within 30 feet of it must succeed on a DC 15 Charisma saving throw or be trapped, along with anything it is wearing or carrying, in one of the mirror's twelve extradimensional cells. This saving throw is made with advantage if the creature knows the mirror's nature, and constructs succeed on the saving throw automatically.\r\n\r\nAn extradimensional cell is an infinite expanse filled with thick fog that reduces visibility to 10 feet. Creatures trapped in the mirror's cells don't age, and they don't need to eat, drink, or sleep. A creature trapped within a cell can escape using magic that permits planar travel. Otherwise, the creature is confined to the cell until freed.\r\n\r\nIf the mirror traps a creature but its twelve extradimensional cells are already occupied, the mirror frees one trapped creature at random to accommodate the new prisoner. A freed creature appears in an unoccupied space within sight of the mirror but facing away from it. If the mirror is shattered, all creatures it contains are freed and appear in unoccupied spaces near it.\r\n\r\nWhile within 5 feet of the mirror, you can use an action to speak the name of one creature trapped in it or call out a particular cell by number. The creature named or contained in the named cell appears as an image on the mirror's surface. You and the creature can then communicate normally.\r\n\r\nIn a similar way, you can use an action to speak a second command word and free one creature trapped in the mirror. The freed creature appears, along with its possessions, in the unoccupied space nearest to the mirror and facing away from it.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_mithral-armor-breastplate",
@@ -3286,7 +3704,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_necklace-of-fireballs",
@@ -3296,7 +3715,15 @@
     "rarity": "rare",
     "description": "This necklace has 1d6 + 3 beads hanging from it. You can use an action to detach a bead and throw it up to 60 feet away. When it reaches the end of its trajectory, the bead detonates as a 3rd-level _fireball_ spell (save DC 15).\r\n\r\nYou can hurl multiple beads, or even the whole necklace, as one action. When you do so, increase the level of the _fireball_ by 1 for each bead beyond the first.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "limited": {
+        "9": [
+          "fireball"
+        ]
+      }
+    },
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_necklace-of-prayer-beads",
@@ -3309,8 +3736,20 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a cleric, druid, or paladin"
-    }
+      "restriction": "requires attunement by a cleric, druid, or paladin",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "paladin"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_net-1",
@@ -3417,7 +3856,8 @@
     "base_item": "[[SRD 5e/Weapons/Longbow]]",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_oil-of-etherealness",
@@ -3428,6 +3868,7 @@
     "description": "Beads of this cloudy gray oil form on the outside of its container and quickly evaporate. The oil can cover a Medium or smaller creature, along with the equipment it's wearing and carrying (one additional vial is required for each size category above Medium). Applying the oil takes 10 minutes. The affected creature then gains the effect of the _etherealness_ spell for 1 hour.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "oilOfEtherealnes"
@@ -3443,6 +3884,10 @@
     "description": "This clear, gelatinous oil sparkles with tiny, ultrathin silver shards. The oil can coat one slashing or piercing weapon or up to 5 pieces of slashing or piercing ammunition. Applying the oil takes 1 minute. For 1 hour, the coated item is magical and has a +3 bonus to attack and damage rolls.",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "weapon_attack": "+3"
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "oilOfSharpness"
@@ -3457,7 +3902,8 @@
     "rarity": "uncommon",
     "description": "This sticky black unguent is thick and heavy in the container, but it flows quickly when poured. The oil can cover a Medium or smaller creature, along with the equipment it's wearing and carrying (one additional vial is required for each size category above Medium). Applying the oil takes 10 minutes. The affected creature then gains the effect of a _freedom of movement_ spell for 8 hours.\n\nAlternatively, the oil can be poured on the ground as an action, where it covers a 10-foot square, duplicating the effect of the _grease_ spell in that area for 8 hours.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_orb-of-dragonkind",
@@ -3470,6 +3916,28 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
+    },
+    "attached_spells": {
+      "will": [
+        "detect magic"
+      ],
+      "charges": {
+        "1": [
+          "daylight"
+        ],
+        "2": [
+          "death ward"
+        ],
+        "3": [
+          "cure wounds#5",
+          "scrying"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d4 + 3}"
     },
     "effects": [
       {
@@ -3488,8 +3956,14 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_periapt-of-health",
@@ -3499,7 +3973,8 @@
     "rarity": "uncommon",
     "description": "You are immune to contracting any disease while you wear this pendant. If you are already infected with a disease, the effects of the disease are suppressed you while you wear the pendant.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_periapt-of-proof-against-poison",
@@ -3509,7 +3984,8 @@
     "rarity": "rare",
     "description": "This delicate silver chain has a brilliant-cut black gem pendant. While you wear it, poisons have no effect on you. You are immune to the poisoned condition and have immunity to poison damage.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_periapt-of-wound-closure",
@@ -3522,7 +3998,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_philter-of-love",
@@ -3533,6 +4010,7 @@
     "description": "The next time you see a creature within 10 minutes after drinking this philter, you become charmed by that creature for 1 hour. If the creature is of a species and gender you are normally attracted to, you regard it as your true love while you are charmed. This potion's rose-hued, effervescent liquid contains one easy-to-miss bubble shaped like a heart.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "philterOfLove"
@@ -3581,6 +4059,12 @@
     "description": "You must be proficient with wind instruments to use these pipes. They have 3 charges. You can use an action to play them and expend 1 charge to create an eerie, spellbinding tune. Each creature within 30 feet of you that hears you play must succeed on a DC 15 Wisdom saving throw or become frightened of you for 1 minute. If you wish, all creatures in the area that aren't hostile toward you automatically succeed on the saving throw. A creature that fails the saving throw can repeat it at the end of each of its turns, ending the effect on itself on a success. A creature that succeeds on its saving throw is immune to the effect of these pipes for 24 hours. The pipes regain 1d3 expended charges daily at dawn.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "pipesOfHaunting"
@@ -3598,7 +4082,13 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_plate-armor-of-etherealness",
@@ -3613,7 +4103,15 @@
     "base_item": "[[SRD 5e/Armor/Plate]]",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "etherealness"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_portable-hole",
@@ -3623,7 +4121,8 @@
     "rarity": "rare",
     "description": "This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter.\r\n\r\nYou can use an action to unfold a _portable hole_ and place it on or against a solid surface, whereupon the _portable hole_ creates an extradimensional hole 10 feet deep. The cylindrical space within the hole exists on a different plane, so it can't be used to create open passages. Any creature inside an open _portable hole_ can exit the hole by climbing out of it.\r\n\r\nYou can use an action to close a _portable hole_ by taking hold of the edges of the cloth and folding it up. Folding the cloth closes the hole, and any creatures or objects within remain in the extradimensional space. No matter what's in it, the hole weighs next to nothing.\r\n\r\nIf the hole is folded up, a creature within the hole's extradimensional space can use an action to make a DC 10 Strength check. On a successful check, the creature forces its way out and appears within 5 feet of the _portable hole_ or the creature carrying it. A breathing creature within a closed _portable hole_ can survive for up to 10 minutes, after which time it begins to suffocate.\r\n\r\nPlacing a _portable hole_ inside an extradimensional space created by a _bag of holding_, _handy haversack_, or similar item instantly destroys both items and opens a gate to the Astral Plane. The gate originates where the one item was placed inside the other. Any creature within 10 feet of the gate is sucked through it and deposited in a random location on the Astral Plane. The gate then closes. The gate is one-way only and can't be reopened.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-animal-friendship",
@@ -3633,7 +4132,8 @@
     "rarity": "uncommon",
     "description": "When you drink this potion, you can cast the _animal friendship_ spell (save DC 13) for 1 hour at will. Agitating this muddy liquid brings little bits into view: a fish scale, a hummingbird tongue, a cat claw, or a squirrel hair.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-clairvoyance",
@@ -3643,7 +4143,8 @@
     "rarity": "rare",
     "description": "When you drink this potion, you gain the effect of the _clairvoyance_ spell. An eyeball bobs in this yellowish liquid but vanishes when the potion is opened.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-climbing",
@@ -3654,6 +4155,7 @@
     "description": "When you drink this potion, you gain a climbing speed equal to your walking speed for 1 hour. During this time, you have advantage on Strength (Athletics) checks you make to climb. The potion is separated into brown, silver, and gray layers resembling bands of stone. Shaking the bottle fails to mix the colors.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfClimbing"
@@ -3669,6 +4171,14 @@
     "description": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\\n\\nThis potion's transparent liquid has floating in it a sliver of fingernail from a giant of the appropriate type. The _potion of frost giant strength_ and the _potion of stone giant strength_ have the same effect.\\n\\n| Type of Giant     | Strength | Rarity    |\\n|-------------------|----------|-----------|\\n| Hill giant        | 21       | Uncommon  |\\n| Frost/stone giant | 23       | Rare      |\\n| Fire giant        | 25       | Rare      |\\n| Cloud giant       | 27       | Very rare |\\n| Storm giant       | 29       | Legendary |",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 27
+        }
+      }
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfGiantStr"
@@ -3683,7 +4193,8 @@
     "rarity": "rare",
     "description": "When you drink this potion, you gain the \"reduce\" effect of the _enlarge/reduce_ spell for 1d4 hours (no concentration required). The red in the potion's liquid continuously contracts to a tiny bead and then expands to color the clear liquid around it. Shaking the bottle fails to interrupt this process.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-fire-giant-strength",
@@ -3694,6 +4205,14 @@
     "description": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\\n\\nThis potion's transparent liquid has floating in it a sliver of fingernail from a giant of the appropriate type. The _potion of frost giant strength_ and the _potion of stone giant strength_ have the same effect.\\n\\n| Type of Giant     | Strength | Rarity    |\\n|-------------------|----------|-----------|\\n| Hill giant        | 21       | Uncommon  |\\n| Frost/stone giant | 23       | Rare      |\\n| Fire giant        | 25       | Rare      |\\n| Cloud giant       | 27       | Very rare |\\n| Storm giant       | 29       | Legendary |",
     "requires_attunement": false,
     "type": "wondrous item",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 25
+        }
+      }
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfGiantStr"
@@ -3709,6 +4228,7 @@
     "description": "When you drink this potion, you gain a flying speed equal to your walking speed for 1 hour and can hover. If you're in the air when the potion wears off, you fall unless you have some other means of staying aloft. This potion's clear liquid floats at the top of its container and has cloudy white impurities drifting in it.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfFlying"
@@ -3724,6 +4244,14 @@
     "description": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\\n\\nThis potion's transparent liquid has floating in it a sliver of fingernail from a giant of the appropriate type. The _potion of frost giant strength_ and the _potion of stone giant strength_ have the same effect.\\n\\n| Type of Giant     | Strength | Rarity    |\\n|-------------------|----------|-----------|\\n| Hill giant        | 21       | Uncommon  |\\n| Frost/stone giant | 23       | Rare      |\\n| Fire giant        | 25       | Rare      |\\n| Cloud giant       | 27       | Very rare |\\n| Storm giant       | 29       | Legendary |",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 23
+        }
+      }
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfGiantStr"
@@ -3738,7 +4266,8 @@
     "rarity": "rare",
     "description": "When you drink this potion, you gain the effect of the _gaseous form_ spell for 1 hour (no concentration required) or until you end the effect as a bonus action. This potion's container seems to hold fog that moves and pours like water.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-greater-healing",
@@ -3748,7 +4277,8 @@
     "rarity": "uncommon",
     "description": "You regain hit points when you drink this potion. The number of hit points depends on the potion's rarity, as shown in the Potions of Healing table. Whatever its potency, the potion's red liquid glimmers when agitated.\\n\\n**Potions of Healing (table)**\\n\\n| Potion of ...    | Rarity    | HP Regained |\\n|------------------|-----------|-------------|\\n| Healing          | Common    | 2d4 + 2     |\\n| Greater healing  | Uncommon  | 4d4 + 4     |\\n| Superior healing | Rare      | 8d4 + 8     |\\n| Supreme healing  | Very rare | 10d4 + 20   |",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-growth",
@@ -3758,7 +4288,8 @@
     "rarity": "uncommon",
     "description": "When you drink this potion, you gain the \"enlarge\" effect of the _enlarge/reduce_ spell for 1d4 hours (no concentration required). The red in the potion's liquid continuously expands from a tiny bead to color the clear liquid around it and then contracts. Shaking the bottle fails to interrupt this process.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-healing",
@@ -3770,7 +4301,8 @@
     "requires_attunement": false,
     "type": "potion",
     "weight": 0.5,
-    "cost": "50.00"
+    "cost": "50.00",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-heroism",
@@ -3780,7 +4312,8 @@
     "rarity": "rare",
     "description": "For 1 hour after drinking it, you gain 10 temporary hit points that last for 1 hour. For the same duration, you are under the effect of the _bless_ spell (no concentration required). This blue potion bubbles and steams as if boiling.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-hill-giant-strength",
@@ -3791,6 +4324,14 @@
     "description": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\\n\\nThis potion's transparent liquid has floating in it a sliver of fingernail from a giant of the appropriate type. The _potion of frost giant strength_ and the _potion of stone giant strength_ have the same effect.\\n\\n| Type of Giant     | Strength | Rarity    |\\n|-------------------|----------|-----------|\\n| Hill giant        | 21       | Uncommon  |\\n| Frost/stone giant | 23       | Rare      |\\n| Fire giant        | 25       | Rare      |\\n| Cloud giant       | 27       | Very rare |\\n| Storm giant       | 29       | Legendary |",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 21
+        }
+      }
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfGiantStr"
@@ -3806,6 +4347,7 @@
     "description": "This potion's container looks empty but feels as though it holds liquid. When you drink it, you become invisible for 1 hour. Anything you wear or carry is invisible with you. The effect ends early if you attack or cast a spell.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfInvisibi"
@@ -3820,7 +4362,8 @@
     "rarity": "rare",
     "description": "When you drink this potion, you gain the effect of the _detect thoughts_ spell (save DC 13). The potion's dense, purple liquid has an ovoid cloud of pink floating in it.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-poison",
@@ -3831,6 +4374,7 @@
     "description": "This concoction looks, smells, and tastes like a _potion of healing_ or other beneficial potion. However, it is actually poison masked by illusion magic. An _identify_ spell reveals its true nature.\n\nIf you drink it, you take 3d6 poison damage, and you must succeed on a DC 13 Constitution saving throw or be poisoned. At the start of each of your turns while you are poisoned in this way, you take 3d6 poison damage. At the end of each of your turns, you can repeat the saving throw. On a successful save, the poison damage you take on your subsequent turns decreases by 1d6. The poison ends when the damage decreases to 0.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfPoison"
@@ -3855,7 +4399,8 @@
     "rarity": "very rare",
     "description": "When you drink this potion, you gain the effect of the _haste_ spell for 1 minute (no concentration required). The potion's yellow fluid is streaked with black and swirls on its own.",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-stone-giant-strength",
@@ -3866,6 +4411,14 @@
     "description": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\\n\\nThis potion's transparent liquid has floating in it a sliver of fingernail from a giant of the appropriate type. The _potion of frost giant strength_ and the _potion of stone giant strength_ have the same effect.\\n\\n| Type of Giant     | Strength | Rarity    |\\n|-------------------|----------|-----------|\\n| Hill giant        | 21       | Uncommon  |\\n| Frost/stone giant | 23       | Rare      |\\n| Fire giant        | 25       | Rare      |\\n| Cloud giant       | 27       | Very rare |\\n| Storm giant       | 29       | Legendary |",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 23
+        }
+      }
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfGiantStr"
@@ -3881,6 +4434,14 @@
     "description": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\\n\\nThis potion's transparent liquid has floating in it a sliver of fingernail from a giant of the appropriate type. The _potion of frost giant strength_ and the _potion of stone giant strength_ have the same effect.\\n\\n| Type of Giant     | Strength | Rarity    |\\n|-------------------|----------|-----------|\\n| Hill giant        | 21       | Uncommon  |\\n| Frost/stone giant | 23       | Rare      |\\n| Fire giant        | 25       | Rare      |\\n| Cloud giant       | 27       | Very rare |\\n| Storm giant       | 29       | Legendary |",
     "requires_attunement": false,
     "type": "potion",
+    "bonuses": {
+      "ability_scores": {
+        "static": {
+          "str": 29
+        }
+      }
+    },
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfGiantStr"
@@ -3895,7 +4456,8 @@
     "rarity": "rare",
     "description": "You regain hit points when you drink this potion. The number of hit points depends on the potion's rarity, as shown in the Potions of Healing table. Whatever its potency, the potion's red liquid glimmers when agitated.\\n\\n**Potions of Healing (table)**\\n\\n| Potion of ...    | Rarity    | HP Regained |\\n|------------------|-----------|-------------|\\n| Healing          | Common    | 2d4 + 2     |\\n| Greater healing  | Uncommon  | 4d4 + 4     |\\n| Superior healing | Rare      | 8d4 + 8     |\\n| Supreme healing  | Very rare | 10d4 + 20   |",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-supreme-healing",
@@ -3905,7 +4467,8 @@
     "rarity": "very rare",
     "description": "You regain hit points when you drink this potion. The number of hit points depends on the potion's rarity, as shown in the Potions of Healing table. Whatever its potency, the potion's red liquid glimmers when agitated.\\n\\n**Potions of Healing (table)**\\n\\n| Potion of ...    | Rarity    | HP Regained |\\n|------------------|-----------|-------------|\\n| Healing          | Common    | 2d4 + 2     |\\n| Greater healing  | Uncommon  | 4d4 + 4     |\\n| Superior healing | Rare      | 8d4 + 8     |\\n| Supreme healing  | Very rare | 10d4 + 20   |",
     "requires_attunement": false,
-    "type": "potion"
+    "type": "potion",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_potion-of-water-breathing",
@@ -3916,6 +4479,7 @@
     "description": "You can breathe underwater for 1 hour after drinking this potion. Its cloudy green fluid smells of the sea and has a jellyfish-like bubble floating in it.",
     "requires_attunement": false,
     "type": "potion",
+    "tier": "minor",
     "effects": [
       {
         "foundryId": "potionOfWaterBre"
@@ -4006,7 +4570,22 @@
     "rarity": "rare",
     "description": "This ring has 3 charges, and it regains 1d3 expended charges daily at dawn. While wearing the ring, you can use an action to expend 1 of its charges to cast one of the following spells:\n\n* _Animal friendship_ (save DC 13)\n* _Fear_ (save DC 13), targeting only beasts that have an Intelligence of 3 or lower\n* _Speak with animals_",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "animal friendship",
+          "fear",
+          "speak with animals"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-djinni-summoning",
@@ -4019,7 +4598,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-elemental-command",
@@ -4045,7 +4625,13 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-feather-falling",
@@ -4058,7 +4644,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-free-action",
@@ -4071,7 +4658,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-invisibility",
@@ -4084,7 +4672,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-jumping",
@@ -4097,7 +4686,13 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "jump"
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-mind-shielding",
@@ -4110,7 +4705,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-protection",
@@ -4123,7 +4719,12 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ac": "+1",
+      "saving_throws": "+1"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-regeneration",
@@ -4136,7 +4737,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-resistance",
@@ -4163,7 +4765,24 @@
     "attunement": {
       "required": true,
       "restriction": "requires attunement outdoors at night"
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "dancing lights",
+        "light"
+      ],
+      "charges": {
+        "1": [
+          "faerie fire"
+        ]
+      }
+    },
+    "charges": {
+      "max": 6,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-spell-storing",
@@ -4176,7 +4795,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-spell-turning",
@@ -4189,7 +4809,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-swimming",
@@ -4199,7 +4820,13 @@
     "rarity": "uncommon",
     "description": "You have a swimming speed of 40 feet while wearing this ring.",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "bonuses": {
+      "speed": {
+        "swim": 40
+      }
+    },
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_ring-of-telekinesis",
@@ -4212,7 +4839,13 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "will": [
+        "telekinesis"
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-the-ram",
@@ -4225,7 +4858,13 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-three-wishes",
@@ -4235,7 +4874,15 @@
     "rarity": "legendary",
     "description": "While wearing this ring, you can use an action to expend 1 of its 3 charges to cast the _wish_ spell from it. The ring becomes nonmagical when you use the last charge.",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "wish"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-warmth",
@@ -4248,7 +4895,8 @@
     "type": "ring",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-water-walking",
@@ -4258,7 +4906,8 @@
     "rarity": "uncommon",
     "description": "While wearing this ring, you can stand on and move across any liquid surface as if it were solid ground.",
     "requires_attunement": false,
-    "type": "ring"
+    "type": "ring",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_ring-of-x-ray-vision",
@@ -4272,6 +4921,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "ringOfXRayVision"
@@ -4289,7 +4939,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_robe-of-scintillating-colors",
@@ -4303,6 +4954,12 @@
     "attunement": {
       "required": true
     },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "robeOfScintillat"
@@ -4320,7 +4977,22 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "saving_throws": "+1"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile#5"
+        ]
+      }
+    },
+    "charges": {
+      "max": 6,
+      "recharge_amount": "{@dice 1d6}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_robe-of-the-archmagi",
@@ -4333,8 +5005,24 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "bonuses": {
+      "spell_attack": "+2",
+      "spell_save_dc": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_robe-of-useful-items",
@@ -4344,7 +5032,8 @@
     "rarity": "uncommon",
     "description": "This robe has cloth patches of various shapes and colors covering it. While wearing the robe, you can use an action to detach one of the patches, causing it to become the object or creature it represents. Once the last patch is removed, the robe becomes an ordinary garment.\r\n\r\nThe robe has two of each of the following patches:\r\n\r\n* Dagger\r\n* Bullseye lantern (filled and lit)\r\n* Steel mirror\r\n* 10-foot pole\r\n* Hempen rope (50 feet, coiled)\r\n* Sack\r\n\r\nIn addition, the robe has 4d4 other patches. The GM chooses the patches or determines them randomly.\r\n\r\n| d100   | Patch                                                                                                                                                                                             |\r\n|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|\r\n| 01-08  | Bag of 100 gp                                                                                                                                                                                     |\r\n| 09-15  | Silver coffer (1 foot long, 6 inches wide and deep) worth 500 gp                                                                                                                                  |\r\n| 16-22  | Iron door (up to 10 feet wide and 10 feet high, barred on one side of your choice), which you can place in an opening you can reach; it conforms to fit the opening, attaching and hinging itself |\r\n| 23-30  | 10 gems worth 100 gp each                                                                                                                                                                         |\r\n| 31-44  | Wooden ladder (24 feet long) |\r\n| 45-51 | A riding horse with saddle bags                                                                                                                                |\r\n| 52-59  | Pit (a cube 10 feet on a side), which you can place on the ground within 10 feet of you                                                                                                           |\r\n| 60-68  | 4 potions of healing                                                                                                                                                                              |\r\n| 69-75  | Rowboat (12 feet long)                                                                                                                                                                            |\r\n| 76-83  | Spell scroll containing one spell of 1st to 3rd level                                                                                                                                             |\r\n| 84-90  | 2 mastiffs                                                                                                                                                                                        |\r\n| 91-96  | Window (2 feet by 4 feet, up to 2 feet deep), which you can place on a vertical surface you can reach                                                                                             |\r\n| 97-100 | Portable ram                                                                                                                                                                                      |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_rod-of-absorption",
@@ -4357,7 +5046,8 @@
     "type": "rod",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rod-of-alertness",
@@ -4370,7 +5060,20 @@
     "type": "rod",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "ac": "+1",
+      "saving_throws": "+1"
+    },
+    "attached_spells": {
+      "will": [
+        "detect evil and good",
+        "detect magic",
+        "detect poison and disease",
+        "see invisibility"
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rod-of-lordly-might",
@@ -4383,7 +5086,11 @@
     "type": "rod",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": "+3"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rod-of-rulership",
@@ -4397,6 +5104,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "rodOfRulership"
@@ -4411,7 +5119,8 @@
     "rarity": "very rare",
     "description": "While holding this rod, you can use an action to activate it. The rod then instantly transports you and up to 199 other willing creatures you can see to a paradise that exists in an extraplanar space. You choose the form that the paradise takes. It could be a tranquil garden, lovely glade, cheery tavern, immense palace, tropical island, fantastic carnival, or whatever else you can imagine. Regardless of its nature, the paradise contains enough water and food to sustain its visitors. Everything else that can be interacted with inside the extraplanar space can exist only there. For example, a flower picked from a garden in the paradise disappears if it is taken outside the extraplanar space.\n\nFor each hour spent in the paradise, a visitor regains hit points as if it had spent 1 Hit Die. Also, creatures don't age while in the paradise, although time passes normally. Visitors can remain in the paradise for up to 200 days divided by the number of creatures present (round down).\n\nWhen the time runs out or you use an action to end it, all visitors reappear in the location they occupied when you activated the rod, or an unoccupied space nearest that location. The rod can't be used again until ten days have passed.",
     "requires_attunement": false,
-    "type": "rod"
+    "type": "rod",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_rope-of-climbing",
@@ -4421,7 +5130,8 @@
     "rarity": "uncommon",
     "description": "This 60-foot length of silk rope weighs 3 pounds and can hold up to 3,000 pounds. If you hold one end of the rope and use an action to speak the command word, the rope animates. As a bonus action, you can command the other end to move toward a destination you choose. That end moves 10 feet on your turn when you first command it and 10 feet on each of your turns until reaching its destination, up to its maximum length away, or until you tell it to stop. You can also tell the rope to fasten itself securely to an object or to unfasten itself, to knot or unknot itself, or to coil itself for carrying.\r\n\r\nIf you tell the rope to knot, large knots appear at 1* foot intervals along the rope. While knotted, the rope shortens to a 50-foot length and grants advantage on checks made to climb it.\r\n\r\nThe rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as long as it has at least 1 hit point. If the rope drops to 0 hit points, it is destroyed.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_rope-of-entanglement",
@@ -4432,6 +5142,7 @@
     "description": "This rope is 30 feet long and weighs 3 pounds. If you hold one end of the rope and use an action to speak its command word, the other end darts forward to entangle a creature you can see within 20 feet of you. The target must succeed on a DC 15 Dexterity saving throw or become restrained.\r\n\r\nYou can release the creature by using a bonus action to speak a second command word. A target restrained by the rope can use an action to make a DC 15 Strength or Dexterity check (target's choice). On a success, the creature is no longer restrained by the rope.\r\n\r\nThe rope has AC 20 and 20 hit points. It regains 1 hit point every 5 minutes as long as it has at least 1 hit point. If the rope drops to 0 hit points, it is destroyed.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "ropeOfEntangleme"
@@ -4449,7 +5160,11 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 12
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_scimitar-1",
@@ -4497,7 +5212,11 @@
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shield-of-missile-attraction",
@@ -4510,7 +5229,8 @@
     "type": "shield",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_shortbow-1",
@@ -4655,7 +5375,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sovereign-glue",
@@ -4665,7 +5386,8 @@
     "rarity": "legendary",
     "description": "This viscous, milky-white substance can form a permanent adhesive bond between any two objects. It must be stored in a jar or flask that has been coated inside with _oil of slipperiness._ When found, a container contains 1d6 + 1 ounces.\r\n\r\nOne ounce of the glue can cover a 1-foot square surface. The glue takes 1 minute to set. Once it has done so, the bond it creates can be broken only by the application of _universal solvent_ or _oil of etherealness_, or with a _wish_ spell.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spear-1",
@@ -4708,7 +5430,8 @@
     "rarity": "common",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-2nd-level",
@@ -4718,7 +5441,8 @@
     "rarity": "uncommon",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-3rd-level",
@@ -4728,7 +5452,8 @@
     "rarity": "uncommon",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-4th-level",
@@ -4738,7 +5463,8 @@
     "rarity": "rare",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-5th-level",
@@ -4748,7 +5474,8 @@
     "rarity": "rare",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-6th-level",
@@ -4758,7 +5485,8 @@
     "rarity": "very rare",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-7th-level",
@@ -4768,7 +5496,8 @@
     "rarity": "very rare",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-8th-level",
@@ -4778,7 +5507,8 @@
     "rarity": "very rare",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-9th-level",
@@ -4788,7 +5518,8 @@
     "rarity": "legendary",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spell-scroll-cantrip",
@@ -4798,7 +5529,8 @@
     "rarity": "common",
     "description": "A _spell scroll_ bears the words of a single spell, written in a mystical cipher. If the spell is on your class's spell list, you can use an action to read the scroll and cast its spell without having to provide any of the spell's components. Otherwise, the scroll is unintelligible.\\n\\nIf the spell is on your class's spell list but of a higher level than you can normally cast, you must make an ability check using your spellcasting ability to determine whether you cast it successfully. The DC equals 10 + the spell's level. On a failed check, the spell disappears from the scroll with no other effect. Once the spell is cast, the words on the scroll fade, and the scroll itself crumbles to dust.\\n\\nThe level of the spell on the scroll determines the spell's saving throw DC and attack bonus, as well as the scroll's rarity, as shown in the Spell Scroll table.\\n\\n**Spell Scroll (table)**\\n\\n| Spell Level | Rarity    | Save DC | Attack Bonus |\\n|-------------|-----------|---------|--------------|\\n| Cantrip     | Common    | 13      | +5           |\\n| 1st         | Common    | 13      | +5           |\\n| 2nd         | Uncommon  | 13      | +5           |\\n| 3rd         | Uncommon  | 15      | +7           |\\n| 4th         | Rare      | 15      | +7           |\\n| 5th         | Rare      | 17      | +9           |\\n| 6th         | Very rare | 17      | +9           |\\n| 7th         | Very rare | 18      | +10          |\\n| 8th         | Very rare | 18      | +10          |\\n| 9th         | Legendary | 19      | +11          |\\n\\nA wizard spell on a _spell scroll_ can be copied just as spells in spellbooks can be copied. When a spell is copied from a the copier must succeed on an Intelligence (Arcana) check with a DC equal to 10 + the spell's level. If the check succeeds, the spell is successfully copied. Whether the check succeeds or fails, the _spell scroll_ is destroyed.",
     "requires_attunement": false,
-    "type": "scroll"
+    "type": "scroll",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_spellguard-shield",
@@ -4811,7 +5543,8 @@
     "type": "shield",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sphere-of-annihilation",
@@ -4821,7 +5554,8 @@
     "rarity": "legendary",
     "description": "This 2-foot-diameter black sphere is a hole in the multiverse, hovering in space and stabilized by a magical field surrounding it.\r\n\r\nThe sphere obliterates all matter it passes through and all matter that passes through it. Artifacts are the exception. Unless an artifact is susceptible to damage from a _sphere of annihilation_, it passes through the sphere unscathed. Anything else that touches the sphere but isn't wholly engulfed and obliterated by it takes 4d10 force damage.\r\n\r\nThe sphere is stationary until someone controls it. If you are within 60 feet of an uncontrolled sphere, you can use an action to make a DC 25 Intelligence (Arcana) check. On a success, the sphere levitates in one direction of your choice, up to a number of feet equal to 5 × your Intelligence modifier (minimum 5 feet). On a failure, the sphere moves 10 feet toward you. A creature whose space the sphere enters must succeed on a DC 13 Dexterity saving throw or be touched by it, taking 4d10 force damage.\r\n\r\nIf you attempt to control a sphere that is under another creature's control, you make an Intelligence (Arcana) check contested by the other creature's Intelligence (Arcana) check. The winner of the contest gains control of the sphere and can levitate it as normal.\r\n\r\nIf the sphere comes into contact with a planar portal, such as that created by the _gate_ spell, or an extradimensional space, such as that within a _portable hole_, the GM determines randomly what happens, using the following table.\r\n\r\n| d100   | Result                                                                                                                             |\r\n|--------|------------------------------------------------------------------------------------------------------------------------------------|\r\n| 01-50  | The sphere is destroyed.                                                                                                           |\r\n| 51-85  | The sphere moves through the portal or into the extradimensional space.                                                            |\r\n| 86-00  | A spatial rift sends each creature and object within 180 feet of the sphere, including the sphere, to a random plane of existence. |",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-charming",
@@ -4834,8 +5568,38 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a bard, cleric, druid, sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a bard, cleric, druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "charm person",
+          "command",
+          "comprehend languages"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-fire",
@@ -4848,8 +5612,41 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a druid, sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "burning hands"
+        ],
+        "3": [
+          "fireball"
+        ],
+        "4": [
+          "wall of fire"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-frost",
@@ -4862,8 +5659,42 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a druid, sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "fog cloud"
+        ],
+        "4": [
+          "ice storm",
+          "wall of ice"
+        ],
+        "5": [
+          "cone of cold"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-healing",
@@ -4876,8 +5707,38 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a bard, cleric, or druid"
-    }
+      "restriction": "requires attunement by a bard, cleric, or druid",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "cure wounds"
+        ],
+        "2": [
+          "lesser restoration"
+        ],
+        "5": [
+          "mass cure wounds"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-power",
@@ -4890,8 +5751,52 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+2",
+      "ac": "+2",
+      "spell_attack": "+2",
+      "saving_throws": "+2"
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile",
+          "ray of enfeeblement"
+        ],
+        "2": [
+          "levitate"
+        ],
+        "5": [
+          "cone of cold",
+          "fireball#5",
+          "hold monster",
+          "lightning bolt#5",
+          "wall of force"
+        ],
+        "6": [
+          "globe of invulnerability"
+        ]
+      }
+    },
+    "charges": {
+      "max": 20,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 2d8 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-striking",
@@ -4904,7 +5809,16 @@
     "type": "staff",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": "+3"
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-swarming-insects",
@@ -4917,8 +5831,44 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a bard, cleric, druid, sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a bard, cleric, druid, sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "bard"
+        },
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "4": [
+          "giant insect"
+        ],
+        "5": [
+          "insect plague"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-the-magi",
@@ -4931,8 +5881,64 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a sorcerer, warlock, or wizard"
-    }
+      "restriction": "requires attunement by a sorcerer, warlock, or wizard",
+      "tags": [
+        {
+          "class": "sorcerer"
+        },
+        {
+          "class": "warlock"
+        },
+        {
+          "class": "wizard"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+2",
+      "spell_attack": "+2"
+    },
+    "attached_spells": {
+      "will": [
+        "arcane lock",
+        "detect magic",
+        "enlarge/reduce",
+        "light",
+        "mage hand",
+        "protection from evil and good"
+      ],
+      "charges": {
+        "2": [
+          "flaming sphere",
+          "invisibility",
+          "knock",
+          "web"
+        ],
+        "3": [
+          "dispel magic"
+        ],
+        "4": [
+          "ice storm",
+          "wall of fire"
+        ],
+        "5": [
+          "passwall",
+          "telekinesis"
+        ],
+        "7": [
+          "conjure elemental",
+          "fireball#7",
+          "lightning bolt#7",
+          "plane shift"
+        ]
+      }
+    },
+    "charges": {
+      "max": 50,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 4d6 + 2}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-the-python",
@@ -4945,8 +5951,20 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a cleric, druid, or warlock"
-    }
+      "restriction": "requires attunement by a cleric, druid, or warlock",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "warlock"
+        }
+      ]
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-the-woodlands",
@@ -4959,8 +5977,47 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a druid"
-    }
+      "restriction": "requires attunement by a druid",
+      "tags": [
+        {
+          "class": "druid"
+        }
+      ]
+    },
+    "bonuses": {
+      "weapon_attack": "+2",
+      "spell_attack": "+2"
+    },
+    "attached_spells": {
+      "will": [
+        "pass without trace"
+      ],
+      "charges": {
+        "1": [
+          "animal friendship",
+          "speak with animals"
+        ],
+        "2": [
+          "barkskin",
+          "locate animals or plants"
+        ],
+        "3": [
+          "speak with plants"
+        ],
+        "5": [
+          "awaken"
+        ],
+        "6": [
+          "wall of thorns"
+        ]
+      }
+    },
+    "charges": {
+      "max": 10,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 4}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-thunder-and-lightning",
@@ -4973,7 +6030,11 @@
     "type": "staff",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_staff-of-withering",
@@ -4986,8 +6047,25 @@
     "type": "staff",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a cleric, druid, or warlock"
-    }
+      "restriction": "requires attunement by a cleric, druid, or warlock",
+      "tags": [
+        {
+          "class": "cleric"
+        },
+        {
+          "class": "druid"
+        },
+        {
+          "class": "warlock"
+        }
+      ]
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_stone-of-controlling-earth-elementals",
@@ -4997,7 +6075,15 @@
     "rarity": "rare",
     "description": "If the stone is touching the ground, you can use an action to speak its command word and summon an earth elemental, as if you had cast the _conjure elemental_ spell. The stone can't be used this way again until the next dawn. The stone weighs 5 pounds.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "conjure elemental"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_stone-of-good-luck-luckstone",
@@ -5025,7 +6111,11 @@
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "attunement": {
       "required": true
-    }
+    },
+    "bonuses": {
+      "weapon_attack": "+2"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_sword-of-life-stealing-greatsword",
@@ -5215,8 +6305,22 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a creature of good alignment"
-    }
+      "restriction": "requires attunement by a creature of good alignment",
+      "tags": [
+        {
+          "alignment": [
+            "G"
+          ]
+        }
+      ]
+    },
+    "bonuses": {
+      "spell_attack": "+2"
+    },
+    "charges": {
+      "max": 7
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_talisman-of-the-sphere",
@@ -5229,7 +6333,8 @@
     "type": "wondrous item",
     "attunement": {
       "required": true
-    }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_talisman-of-ultimate-evil",
@@ -5242,8 +6347,22 @@
     "type": "wondrous item",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a creature of evil alignment"
-    }
+      "restriction": "requires attunement by a creature of evil alignment",
+      "tags": [
+        {
+          "alignment": [
+            "E"
+          ]
+        }
+      ]
+    },
+    "bonuses": {
+      "spell_attack": "+2"
+    },
+    "charges": {
+      "max": 6
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_tome-of-clear-thought",
@@ -5254,6 +6373,7 @@
     "description": "This book contains memory and logic exercises, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Intelligence score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "tomeOfClearThoug"
@@ -5269,6 +6389,7 @@
     "description": "This book contains guidelines for influencing and charming others, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Charisma score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "tomeOfLeadership"
@@ -5284,6 +6405,7 @@
     "description": "This book contains intuition and insight exercises, and its words are charged with magic. If you spend 48 hours over a period of 6 days or fewer studying the book's contents and practicing its guidelines, your Wisdom score increases by 2, as does your maximum for that score. The manual then loses its magic, but regains it in a century.",
     "requires_attunement": false,
     "type": "wondrous item",
+    "tier": "major",
     "effects": [
       {
         "foundryId": "tomeOfUnderstand"
@@ -5336,7 +6458,20 @@
     "base_item": "[[SRD 5e/Weapons/Trident]]",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "dominate beast"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_universal-solvent",
@@ -5346,7 +6481,8 @@
     "rarity": "legendary",
     "description": "This tube holds milky liquid with a strong alcohol smell. You can use an action to pour the contents of the tube onto a surface within reach. The liquid instantly dissolves up to 1 square foot of adhesive it touches, including _sovereign glue._",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_vicious-weapon-battleaxe",
@@ -5860,8 +6996,29 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "2": [
+          "hold person"
+        ],
+        "5": [
+          "hold monster"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-enemy-detection",
@@ -5874,7 +7031,13 @@
     "type": "wand",
     "attunement": {
       "required": true
-    }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-fear",
@@ -5887,7 +7050,20 @@
     "type": "wand",
     "attunement": {
       "required": true
-    }
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "command"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-fireballs",
@@ -5900,8 +7076,26 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "fireball"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-lightning-bolts",
@@ -5914,8 +7108,26 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "lightning bolt"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-magic-detection",
@@ -5925,7 +7137,20 @@
     "rarity": "uncommon",
     "description": "This wand has 3 charges. While holding it, you can expend 1 charge as an action to cast the _detect magic_ spell from it. The wand regains 1d3 expended charges daily at dawn.",
     "requires_attunement": false,
-    "type": "wand"
+    "type": "wand",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "detect magic"
+        ]
+      }
+    },
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_wand-of-magic-missiles",
@@ -5935,7 +7160,20 @@
     "rarity": "uncommon",
     "description": "This wand has 7 charges. While holding it, you can use an action to expend 1 or more of its charges to cast the _magic missile_ spell from it. For 1 charge, you cast the 1st-level version of the spell. You can increase the spell slot level by one for each additional charge you expend.\n\nThe wand regains 1d6 + 1 expended charges daily at dawn. If you expend the wand's last charge, roll a d20. On a 1, the wand crumbles into ashes and is destroyed.",
     "requires_attunement": false,
-    "type": "wand"
+    "type": "wand",
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "magic missile"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-paralysis",
@@ -5948,8 +7186,19 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
     },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "wandOfParalysis"
@@ -5967,8 +7216,26 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "polymorph"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-secrets",
@@ -5978,7 +7245,13 @@
     "rarity": "uncommon",
     "description": "The wand has 3 charges. While holding it, you can use an action to expend 1 of its charges, and if a secret door or trap is within 30 feet of you, the wand pulses and points at the one nearest to you. The wand regains 1d3 expended charges daily at dawn.",
     "requires_attunement": false,
-    "type": "wand"
+    "type": "wand",
+    "charges": {
+      "max": 3,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d3}"
+    },
+    "tier": "minor"
   },
   {
     "slug": "srd-5e_wand-of-the-war-mage-1",
@@ -6033,8 +7306,26 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "web"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_wand-of-wonder",
@@ -6047,8 +7338,35 @@
     "type": "wand",
     "attunement": {
       "required": true,
-      "restriction": "requires attunement by a spellcaster"
-    }
+      "restriction": "requires attunement by a spellcaster",
+      "tags": [
+        {
+          "spellcasting": true
+        }
+      ]
+    },
+    "attached_spells": {
+      "charges": {
+        "1": [
+          "darkness",
+          "detect thoughts",
+          "enlarge/reduce",
+          "faerie fire",
+          "fireball",
+          "gust of wind",
+          "invisibility",
+          "lightning bolt",
+          "slow",
+          "stinking cloud"
+        ]
+      }
+    },
+    "charges": {
+      "max": 7,
+      "recharge": "dawn",
+      "recharge_amount": "{@dice 1d6 + 1}"
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_war-pick-1",
@@ -6124,7 +7442,8 @@
     "rarity": "legendary",
     "description": "This fine black cloth, soft as silk, is folded up to the dimensions of a handkerchief. It unfolds into a circular sheet 6 feet in diameter.\r\n\r\nYou can use an action to unfold and place the _well of many worlds_ on a solid surface, whereupon it creates a two-way portal to another world or plane of existence. Each time the item opens a portal, the GM decides where it leads. You can use an action to close an open portal by taking hold of the edges of the cloth and folding it up. Once _well of many worlds_ has opened a portal, it can't do so again for 1d8 hours.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "tier": "major"
   },
   {
     "slug": "srd-5e_whip-1",
@@ -6167,7 +7486,15 @@
     "rarity": "uncommon",
     "description": "While holding this fan, you can use an action to cast the _gust of wind_ spell (save DC 13) from it. Once used, the fan shouldn't be used again until the next dawn. Each time it is used again before then, it has a cumulative 20 percent chance of not working and tearing into useless, nonmagical tatters.",
     "requires_attunement": false,
-    "type": "wondrous item"
+    "type": "wondrous item",
+    "attached_spells": {
+      "daily": {
+        "1e": [
+          "gust of wind"
+        ]
+      }
+    },
+    "tier": "major"
   },
   {
     "slug": "srd-5e_winged-boots",
@@ -6181,6 +7508,7 @@
     "attunement": {
       "required": true
     },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "wingedBoots"
@@ -6199,6 +7527,12 @@
     "attunement": {
       "required": true
     },
+    "bonuses": {
+      "speed": {
+        "fly": 60
+      }
+    },
+    "tier": "major",
     "effects": [
       {
         "foundryId": "wingsOfFlying"

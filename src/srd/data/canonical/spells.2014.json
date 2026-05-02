@@ -47,6 +47,11 @@
     "at_higher_levels": [
       "This spell's damage increases by 1d6 when you reach 5th level (2d6), 11th level (3d6), and 17th level (4d6)."
     ],
+    "damage": {
+      "types": [
+        "acid"
+      ]
+    },
     "saving_throw": {
       "ability": "dexterity"
     },
@@ -191,7 +196,14 @@
     "classes": [
       "sorcerer",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "bludgeoning",
+        "piercing",
+        "slashing"
+      ]
+    }
   },
   {
     "slug": "srd-5e_animal-friendship",
@@ -370,7 +382,14 @@
     ],
     "at_higher_levels": [
       "If you cast this spell using a spell slot of 6th level or higher, you can animate two additional objects for each slot level above 5th."
-    ]
+    ],
+    "damage": {
+      "types": [
+        "bludgeoning",
+        "piercing",
+        "slashing"
+      ]
+    }
   },
   {
     "slug": "srd-5e_antilife-shell",
@@ -769,6 +788,11 @@
     "at_higher_levels": [
       "If you cast this spell using a spell slot of 4th level or higher, the duration is concentration, up to 10 minutes. If you use a spell slot of 5th level or higher, the duration is 8 hours. If you use a spell slot of 7th level or higher, the duration is 24 hours. If you use a 9th level spell slot, the spell lasts until it is dispelled. Using a spell slot of 5th level or higher grants a duration that doesn't require concentration."
     ],
+    "damage": {
+      "types": [
+        "necrotic"
+      ]
+    },
     "saving_throw": {
       "ability": "wisdom"
     },
@@ -1076,7 +1100,12 @@
     "description": "The next time you hit a creature with a weapon attack before this spell ends, the weapon gleams with astral radiance as you strike. The attack deals an extra 2d6 radiant damage to the target, which becomes visible if it's invisible, and the target sheds dim light in a 5-­--foot radius and can't become invisible until the spell ends.",
     "at_higher_levels": [
       "When you cast this spell using a spell slot of 3rd level or higher, the extra damage increases by 1d6 for each slot level above 2nd."
-    ]
+    ],
+    "damage": {
+      "types": [
+        "radiant"
+      ]
+    }
   },
   {
     "slug": "srd-5e_burning-hands",
@@ -1945,6 +1974,11 @@
       "warlock",
       "wizard"
     ],
+    "damage": {
+      "types": [
+        "psychic"
+      ]
+    },
     "saving_throw": {
       "ability": "intelligence"
     },
@@ -2316,6 +2350,11 @@
     "at_higher_levels": [
       "When you cast this spell using a spell slot of 8th level or higher, the base damage increases by 1d6 for each slot level above 7th."
     ],
+    "damage": {
+      "types": [
+        "fire"
+      ]
+    },
     "saving_throw": {
       "ability": "dexterity"
     }
@@ -2454,7 +2493,12 @@
       "sorcerer",
       "warlock",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "force"
+      ]
+    }
   },
   {
     "slug": "srd-5e_disguise-self",
@@ -2608,7 +2652,12 @@
     "description": "Your prayer empowers you with divine radiance. Until the spell ends, your weapon attacks deal an extra 1d4 radiant damage on a hit.",
     "classes": [
       "cleric"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "radiant"
+      ]
+    }
   },
   {
     "slug": "srd-5e_divine-word",
@@ -2999,7 +3048,12 @@
     ],
     "at_higher_levels": [
       "When you cast this spell using a spell slot of 8th level or higher, you can target up to three willing creatures (including you) for each slot level above 7th. The creatures must be within 10 feet of you when you cast the spell."
-    ]
+    ],
+    "damage": {
+      "types": [
+        "force"
+      ]
+    }
   },
   {
     "slug": "srd-5e_expeditious-retreat",
@@ -3416,7 +3470,13 @@
     "classes": [
       "warlock",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "cold",
+        "fire"
+      ]
+    }
   },
   {
     "slug": "srd-5e_fire-storm",
@@ -4659,6 +4719,9 @@
     "description": "A willing creature you touch is imbued with bravery. Until the spell ends, the creature is immune to being frightened and gains temporary hit points equal to your spellcasting ability modifier at the start of each of its turns. When the spell ends, the target loses any remaining temporary hit points from this spell.",
     "classes": [
       "bard"
+    ],
+    "at_higher_levels": [
+      "When you cast this spell using a spell slot of 2nd level or higher, you can target one additional creature for each slot level above 1st."
     ]
   },
   {
@@ -5645,6 +5708,11 @@
     "at_higher_levels": [
       "When you cast this spell using a spell slot of 2nd level or higher, the spell creates one more dart for each slot level above 1st."
     ],
+    "damage": {
+      "types": [
+        "force"
+      ]
+    },
     "casting_options": [
       {
         "type": "slot_level_2",
@@ -5908,6 +5976,11 @@
       "cleric",
       "druid"
     ],
+    "damage": {
+      "types": [
+        "bludgeoning"
+      ]
+    },
     "casting_options": [
       {
         "type": "ritual"
@@ -6290,6 +6363,11 @@
     "at_higher_levels": [
       "When you cast this spell using a spell slot of 5th level or higher, the damage increases by 1d10 for each slot level above 4th."
     ],
+    "damage": {
+      "types": [
+        "psychic"
+      ]
+    },
     "saving_throw": {
       "ability": "wisdom"
     }
@@ -6449,6 +6527,11 @@
     "at_higher_levels": [
       "This spell's damage increases by 1d12 when you reach 5th level (2d12), 11th level (3d12), and 17th level (4d12)."
     ],
+    "damage": {
+      "types": [
+        "poison"
+      ]
+    },
     "saving_throw": {
       "ability": "constitution"
     },
@@ -7263,6 +7346,11 @@
     "at_higher_levels": [
       "The spell's damage increases by 1d8 when you reach 5th level (2d8), 11th level (3d8), and 17th level (4d8)."
     ],
+    "damage": {
+      "types": [
+        "radiant"
+      ]
+    },
     "saving_throw": {
       "ability": "dexterity"
     },
@@ -8110,7 +8198,12 @@
     ],
     "at_higher_levels": [
       "When you cast this spell using a spell slot of 3rd level or higher, the damage increases by 1d8 for every two slot levels above the 2nd."
-    ]
+    ],
+    "damage": {
+      "types": [
+        "force"
+      ]
+    }
   },
   {
     "slug": "srd-5e_stinking-cloud",
@@ -8305,6 +8398,11 @@
       "cleric",
       "wizard"
     ],
+    "damage": {
+      "types": [
+        "necrotic"
+      ]
+    },
     "saving_throw": {
       "ability": "intelligence"
     }
@@ -8768,6 +8866,11 @@
     "at_higher_levels": [
       "This spell's damage increases by 1d4 when you reach 5th level (2d4), 11th level (3d4), and 17th level (4d4)."
     ],
+    "damage": {
+      "types": [
+        "psychic"
+      ]
+    },
     "saving_throw": {
       "ability": "wisdom"
     },
@@ -9063,6 +9166,11 @@
       "sorcerer",
       "wizard"
     ],
+    "damage": {
+      "types": [
+        "fire"
+      ]
+    },
     "saving_throw": {
       "ability": "dexterity"
     }
@@ -9084,6 +9192,11 @@
     "classes": [
       "wizard"
     ],
+    "damage": {
+      "types": [
+        "psychic"
+      ]
+    },
     "saving_throw": {
       "ability": "wisdom"
     }
@@ -9151,7 +9264,12 @@
     "classes": [
       "sorcerer",
       "wizard"
-    ]
+    ],
+    "damage": {
+      "types": [
+        "necrotic"
+      ]
+    }
   },
   {
     "slug": "srd-5e_word-of-recall",

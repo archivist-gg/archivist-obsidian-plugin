@@ -243,8 +243,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -262,8 +262,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Blowgun]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -281,8 +281,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Club]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -300,8 +300,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -319,8 +319,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dart]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -338,8 +338,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Flail]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -357,8 +357,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Glaive]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -376,8 +376,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greataxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -395,8 +395,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatclub]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -414,8 +414,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -433,8 +433,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Halberd]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -452,8 +452,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Hand Crossbow]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -471,8 +471,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Handaxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -490,8 +490,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Heavy Crossbow]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -509,8 +509,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Javelin]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -528,8 +528,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Lance]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -547,8 +547,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Crossbow]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -566,8 +566,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Hammer]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -585,8 +585,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longbow]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -604,8 +604,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -623,8 +623,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -642,8 +642,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Maul]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -661,8 +661,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Morningstar]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -680,8 +680,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Net]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -699,8 +699,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Pike]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -718,8 +718,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -737,8 +737,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -756,8 +756,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -775,8 +775,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortbow]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -794,8 +794,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -813,8 +813,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sickle]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -832,8 +832,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sling]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -851,8 +851,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Spear]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -870,8 +870,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Trident]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -889,8 +889,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/War Pick]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -908,8 +908,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Warhammer]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -927,8 +927,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Whip]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -1180,8 +1180,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1199,8 +1199,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Blowgun]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1218,8 +1218,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Club]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1237,8 +1237,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1256,8 +1256,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dart]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1275,8 +1275,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Flail]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1294,8 +1294,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Glaive]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1313,8 +1313,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greataxe]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1332,8 +1332,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatclub]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1351,8 +1351,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1370,8 +1370,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Halberd]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1389,8 +1389,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Hand Crossbow]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1408,8 +1408,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Handaxe]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1427,8 +1427,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Heavy Crossbow]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1446,8 +1446,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Javelin]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1465,8 +1465,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Lance]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1484,8 +1484,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Crossbow]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1503,8 +1503,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Hammer]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1522,8 +1522,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longbow]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1541,8 +1541,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1560,8 +1560,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1579,8 +1579,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Maul]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1598,8 +1598,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Morningstar]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1617,8 +1617,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Net]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1636,8 +1636,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Pike]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1655,8 +1655,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1674,8 +1674,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1693,8 +1693,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1712,8 +1712,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortbow]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1731,8 +1731,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1750,8 +1750,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sickle]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1769,8 +1769,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sling]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1788,8 +1788,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Spear]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1807,8 +1807,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Trident]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1826,8 +1826,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/War Pick]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1845,8 +1845,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Warhammer]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -1864,8 +1864,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Whip]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": false
@@ -2117,8 +2117,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2136,8 +2136,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Blowgun]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2155,8 +2155,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Club]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2174,8 +2174,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2193,8 +2193,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dart]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2212,8 +2212,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Flail]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2231,8 +2231,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Glaive]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2250,8 +2250,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greataxe]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2269,8 +2269,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatclub]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2288,8 +2288,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2307,8 +2307,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Halberd]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2326,8 +2326,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Hand Crossbow]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2345,8 +2345,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Handaxe]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2364,8 +2364,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Heavy Crossbow]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2383,8 +2383,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Javelin]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2402,8 +2402,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Lance]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2421,8 +2421,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Crossbow]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2440,8 +2440,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Hammer]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2459,8 +2459,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longbow]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2478,8 +2478,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2497,8 +2497,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2516,8 +2516,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Maul]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2535,8 +2535,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Morningstar]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2554,8 +2554,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Net]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2573,8 +2573,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Pike]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2592,8 +2592,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2611,8 +2611,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2630,8 +2630,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2649,8 +2649,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortbow]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2668,8 +2668,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2687,8 +2687,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sickle]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2706,8 +2706,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sling]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2725,8 +2725,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Spear]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2744,8 +2744,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Trident]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2763,8 +2763,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/War Pick]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2782,8 +2782,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Warhammer]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2801,8 +2801,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Whip]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": false
@@ -2819,7 +2819,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2835,7 +2834,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2851,7 +2849,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2867,7 +2864,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2883,7 +2879,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2899,7 +2894,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2915,7 +2909,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2931,7 +2924,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2947,7 +2939,6 @@
     "rarity": "uncommon",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -2963,7 +2954,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -2979,7 +2969,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -2995,7 +2984,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3011,7 +2999,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3027,7 +3014,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3043,7 +3029,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3059,7 +3044,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3075,7 +3059,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3091,7 +3074,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3107,7 +3089,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3123,7 +3104,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3139,7 +3119,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3155,7 +3134,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3171,7 +3149,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3187,7 +3164,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3203,7 +3179,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3219,7 +3194,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3235,7 +3209,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3251,7 +3224,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3267,7 +3239,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3283,7 +3254,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3299,7 +3269,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3315,7 +3284,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3331,7 +3299,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3347,7 +3314,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3363,7 +3329,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3379,7 +3344,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3395,7 +3359,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3411,7 +3374,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3427,7 +3389,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3443,7 +3404,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3459,7 +3419,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3475,7 +3434,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3491,7 +3449,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3507,7 +3464,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3523,7 +3479,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3539,7 +3494,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3555,7 +3509,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3571,7 +3524,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3587,7 +3539,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3603,7 +3554,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3619,7 +3569,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3635,7 +3584,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3651,7 +3599,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3667,7 +3614,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3683,7 +3629,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3699,7 +3644,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3715,7 +3659,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3731,7 +3674,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3747,7 +3689,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3763,7 +3704,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3779,7 +3719,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3795,7 +3734,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3811,7 +3749,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3827,7 +3764,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3843,7 +3779,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3859,7 +3794,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3875,7 +3809,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3891,7 +3824,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3907,7 +3839,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3923,7 +3854,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3939,7 +3869,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3955,7 +3884,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3971,7 +3899,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -3987,7 +3914,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4003,7 +3929,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4019,7 +3944,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4035,7 +3959,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4051,7 +3974,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4067,7 +3989,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4083,7 +4004,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4099,7 +4019,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4115,7 +4034,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4131,7 +4049,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4147,7 +4064,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4163,7 +4079,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4179,7 +4094,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4195,7 +4109,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4211,7 +4124,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4227,7 +4139,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4243,7 +4154,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4259,7 +4169,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4275,7 +4184,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4291,7 +4199,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4307,7 +4214,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4323,7 +4229,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4339,7 +4244,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4355,7 +4259,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4371,7 +4274,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4387,7 +4289,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4403,7 +4304,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4419,7 +4319,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4435,7 +4334,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4451,7 +4349,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4467,7 +4364,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4483,7 +4379,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4499,7 +4394,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4515,7 +4409,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4531,7 +4424,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4547,7 +4439,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4563,7 +4454,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4579,7 +4469,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4595,7 +4484,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4611,7 +4499,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4627,7 +4514,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4643,7 +4529,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4659,7 +4544,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4675,7 +4559,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4691,7 +4574,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4707,7 +4589,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4723,7 +4604,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4739,7 +4619,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4755,7 +4634,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4771,7 +4649,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4787,7 +4664,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4803,7 +4679,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4819,7 +4694,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4835,7 +4709,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4851,7 +4724,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4867,7 +4739,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -4882,7 +4753,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4897,7 +4767,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4912,7 +4781,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4927,7 +4795,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4942,7 +4809,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4957,7 +4823,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4972,7 +4837,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Padded Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -4987,7 +4851,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5002,7 +4865,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5017,7 +4879,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5032,7 +4893,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5047,7 +4907,6 @@
     "type": "armor",
     "rarity": "none",
     "base_item": "[[SRD 5e/Armor/Studded Leather Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5064,8 +4923,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5083,8 +4942,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greataxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5102,8 +4961,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Handaxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5120,7 +4979,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5136,7 +4994,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5152,7 +5009,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5168,7 +5024,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5184,7 +5039,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5201,8 +5055,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3,
+      "weapon_attack": 3,
+      "weapon_damage": 3,
       "ac": 1
     },
     "attunement": {
@@ -5221,8 +5075,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3,
+      "weapon_attack": 3,
+      "weapon_damage": 3,
       "ac": 1
     },
     "attunement": {
@@ -5241,8 +5095,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3,
+      "weapon_attack": 3,
+      "weapon_damage": 3,
       "ac": 1
     },
     "attunement": {
@@ -5261,8 +5115,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3,
+      "weapon_attack": 3,
+      "weapon_damage": 3,
       "ac": 1
     },
     "attunement": {
@@ -5281,8 +5135,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3,
+      "weapon_attack": 3,
+      "weapon_damage": 3,
       "ac": 1
     },
     "attunement": {
@@ -5301,8 +5155,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5320,8 +5174,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5339,8 +5193,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5358,8 +5212,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5377,8 +5231,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5395,7 +5249,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5411,7 +5264,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5427,7 +5279,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5443,7 +5294,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5459,7 +5309,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5475,7 +5324,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5491,7 +5339,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5507,7 +5354,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5523,7 +5369,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5539,7 +5384,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -5556,8 +5400,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5575,8 +5419,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greataxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5594,8 +5438,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5613,8 +5457,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Handaxe]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5632,8 +5476,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5651,8 +5495,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5670,8 +5514,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5689,8 +5533,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": false
@@ -5708,8 +5552,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -5727,8 +5571,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -5746,8 +5590,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -5765,8 +5609,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -5784,8 +5628,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -5803,8 +5647,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5822,8 +5666,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5841,8 +5685,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5860,8 +5704,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5879,8 +5723,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 1,
-      "damage": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "attunement": {
       "required": true
@@ -5897,7 +5741,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Breastplate]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5913,7 +5756,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Chain Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5929,7 +5771,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Chain Shirt]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5945,7 +5786,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Half Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5961,7 +5801,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Hide Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5977,7 +5816,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Plate Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -5993,7 +5831,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Ring Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6009,7 +5846,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Scale Mail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6025,7 +5861,6 @@
     "rarity": "uncommon",
     "tier": "minor",
     "base_item": "[[SRD 5e/Armor/Splint Armor]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6042,8 +5877,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": true
@@ -6061,8 +5896,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": true
@@ -6080,8 +5915,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": true
@@ -6099,8 +5934,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": true
@@ -6118,8 +5953,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
     "bonuses": {
-      "attack": 2,
-      "damage": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "attunement": {
       "required": true
@@ -6136,7 +5971,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6152,7 +5986,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6168,7 +6001,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6184,7 +6016,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6200,7 +6031,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6216,7 +6046,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6232,7 +6061,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6248,7 +6076,6 @@
     "rarity": "very rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6264,7 +6091,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6280,7 +6106,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6296,7 +6121,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6312,7 +6136,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6328,7 +6151,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
-    "bonuses": {},
     "attunement": {
       "required": true
     },
@@ -6344,7 +6166,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Battleaxe]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6360,7 +6181,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Blowgun]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6376,7 +6196,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Club]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6392,7 +6211,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6408,7 +6226,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Dart]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6424,7 +6241,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Flail]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6440,7 +6256,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Glaive]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6456,7 +6271,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greataxe]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6472,7 +6286,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatclub]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6488,7 +6301,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6504,7 +6316,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Halberd]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6520,7 +6331,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Hand Crossbow]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6536,7 +6346,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Handaxe]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6552,7 +6361,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Heavy Crossbow]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6568,7 +6376,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Javelin]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6584,7 +6391,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Lance]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6600,7 +6406,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Crossbow]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6616,7 +6421,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Light Hammer]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6632,7 +6436,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longbow]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6648,7 +6451,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6664,7 +6466,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Mace]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6680,7 +6481,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Maul]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6696,7 +6496,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Morningstar]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6712,7 +6511,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Net]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6728,7 +6526,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Pike]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6744,7 +6541,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Quarterstaff]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6760,7 +6556,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Rapier]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6776,7 +6571,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6792,7 +6586,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortbow]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6808,7 +6601,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Shortsword]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6824,7 +6616,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sickle]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6840,7 +6631,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Sling]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6856,7 +6646,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Spear]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6872,7 +6661,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Trident]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6888,7 +6676,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/War Pick]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6904,7 +6691,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Warhammer]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6920,7 +6706,6 @@
     "rarity": "rare",
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Whip]]",
-    "bonuses": {},
     "attunement": {
       "required": false
     },
@@ -6937,8 +6722,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Greatsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -6956,8 +6741,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Longsword]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
@@ -6975,8 +6760,8 @@
     "tier": "major",
     "base_item": "[[SRD 5e/Weapons/Scimitar]]",
     "bonuses": {
-      "attack": 3,
-      "damage": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "attunement": {
       "required": true
