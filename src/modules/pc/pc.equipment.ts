@@ -635,6 +635,45 @@ function computeAttacks(
   return rows;
 }
 
+// Coerces a weight field (number | string | undefined) to a non-negative number.
+// Strings like "3" are parsed; non-numeric strings (e.g. "—", "varies") return 0.
+function coerceWeight(raw: unknown): number {
+  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) return raw;
+  if (typeof raw === "string") {
+    const n = Number.parseFloat(raw);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return 0;
+}
+
+// Sum total carried weight across the PC's full inventory (equipped or not).
+//
+// Rules:
+//   - Every entry contributes `entity.weight × max(qty, 1)` lb.
+//   - Containers with `container.weightless: true` (e.g. Bag of Holding) still
+//     contribute their OWN weight; SRD says only the contents are weightless.
+//     EquipmentEntry has no parent linkage today, so contents aren't tracked
+//     under their container — this is a pragmatic limitation, not a bug.
+//   - Currency weight (50 coins = 1 lb in 5e) is NOT summed; the PC sheet
+//     doesn't surface coin weight elsewhere either.
+//   - Missing entities (e.g. dangling wikilinks) contribute 0 silently; the
+//     equipped-item warning path already covers compendium misses.
+function computeCarriedWeight(
+  resolved: ResolvedCharacter,
+  registry: EntityRegistry,
+): number {
+  let total = 0;
+  for (const entry of resolved.definition.equipment ?? []) {
+    const { entity } = lookupEntity(entry, registry);
+    if (!entity) continue;
+    const w = coerceWeight((entity as { weight?: unknown }).weight);
+    if (w === 0) continue;
+    const qty = typeof entry.qty === "number" && entry.qty > 0 ? entry.qty : 1;
+    total += w * qty;
+  }
+  return total;
+}
+
 export function computeSlotsAndAttacks(
   resolved: ResolvedCharacter,
   mods: Record<Ability, number>,
@@ -655,7 +694,7 @@ export function computeSlotsAndAttacks(
     acInformational: acOut.informational,
     attacks,
     equippedSlots,
-    carriedWeight: 0,
+    carriedWeight: computeCarriedWeight(resolved, registry),
     // Attunement is persistent: an attuned item still occupies a slot even when unequipped (SRD).
     attunementUsed: (resolved.definition.equipment ?? []).filter((e) => e.attuned).length,
     attunementLimit: overrides.attunement_limit ?? 3,

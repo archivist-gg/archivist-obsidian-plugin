@@ -4,6 +4,7 @@ import { recalc } from "../src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { ItemEntity } from "../src/modules/item/item.types";
 import type { WeaponEntity } from "../src/modules/weapon/weapon.types";
+import type { ArmorEntity } from "../src/modules/armor/armor.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
@@ -536,5 +537,191 @@ describe("recalc + Pass B", () => {
     c.overrides = { ac: 25 };
     const d = recalc(mkResolved(c), registry);
     expect(d.ac).toBe(25);
+  });
+});
+
+describe("computeSlotsAndAttacks — carriedWeight", () => {
+  const profs = { armor: { categories: [], specific: [] }, weapons: { categories: [], specific: [] }, tools: { categories: [], specific: [] } };
+  const mods = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+
+  const buildWeightRegistry = () => buildMockRegistry([
+    { slug: "ls-3", entityType: "weapon", name: "Longsword", data: {
+      name: "Longsword", slug: "ls-3", edition: "2014",
+      category: "martial-melee",
+      damage: { dice: "1d8", type: "slashing" },
+      properties: [], weight: 3,
+    } as WeaponEntity },
+    { slug: "chain-mail-55", entityType: "armor", name: "Chain Mail", data: {
+      name: "Chain Mail", slug: "chain-mail-55", category: "heavy",
+      ac: { base: 16, flat: 0, add_dex: false, add_con: false, add_wis: false },
+      weight: 55,
+    } as ArmorEntity },
+    { slug: "bag-of-holding", entityType: "item", name: "Bag of Holding", data: {
+      name: "Bag of Holding", slug: "bag-of-holding", type: "wondrous",
+      rarity: "uncommon",
+      container: { capacity_weight: 500, weightless: true },
+      weight: 15,
+    } as ItemEntity },
+    { slug: "amulet-1", entityType: "item", name: "Amulet of Health", data: {
+      name: "Amulet of Health", slug: "amulet-1", type: "wondrous",
+      rarity: "rare", weight: 1,
+    } as ItemEntity },
+    { slug: "no-weight", entityType: "item", name: "Mystery Token", data: {
+      name: "Mystery Token", slug: "no-weight", type: "wondrous", rarity: "uncommon",
+    } as ItemEntity },
+    { slug: "weight-as-string", entityType: "item", name: "Old Tome", data: {
+      name: "Old Tome", slug: "weight-as-string", type: "wondrous", rarity: "uncommon",
+      weight: "2.5",
+    } as ItemEntity },
+    { slug: "shield-2", entityType: "armor", name: "Shield of Holding", data: {
+      name: "Shield of Holding", slug: "shield-2", category: "shield",
+      ac: { base: 0, flat: 2, add_dex: false, add_con: false, add_wis: false },
+      weight: 6,
+    } as ArmorEntity },
+  ]);
+
+  it("PC with no equipment → carriedWeight = 0", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(0);
+  });
+
+  it("single equipped item with weight 3 → carriedWeight = 3", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [{ item: "[[ls-3]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(3);
+  });
+
+  it("multiple items sum together", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[ls-3]]", equipped: true },        // 3
+      { item: "[[chain-mail-55]]", equipped: true }, // 55
+      { item: "[[amulet-1]]", equipped: true, attuned: true }, // 1
+      { item: "[[shield-2]]", equipped: true },     // 6
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(65);
+  });
+
+  it("weightless container (Bag of Holding) still contributes its OWN weight", () => {
+    // SRD: only the contents of a bag of holding are weightless; the bag
+    // itself weighs 15 lb. Contents aren't linked to containers via
+    // EquipmentEntry today, so this is the pragmatic answer.
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [{ item: "[[bag-of-holding]]", equipped: false, attuned: false }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(15);
+  });
+
+  it("item with no weight field contributes 0", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[no-weight]]", equipped: true },
+      { item: "[[ls-3]]", equipped: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(3);
+  });
+
+  it("attuned-but-not-equipped item still counts (it's in the inventory)", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [{ item: "[[amulet-1]]", equipped: false, attuned: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(1);
+  });
+
+  it("unequipped, unattuned items still count", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [{ item: "[[ls-3]]", equipped: false, attuned: false }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(3);
+  });
+
+  it("qty multiplies weight", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [{ item: "[[ls-3]]", equipped: false, qty: 4 }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(12);
+  });
+
+  it("missing entity (dangling wikilink) contributes 0", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[ghost-item]]", equipped: false },
+      { item: "[[ls-3]]", equipped: false },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(3);
+  });
+
+  it("string-typed weight is coerced to number", () => {
+    const reg = buildWeightRegistry();
+    const c = baseChar();
+    c.equipment = [{ item: "[[weight-as-string]]", equipped: false }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(2.5);
+  });
+
+  it("Grendal-like loadout sums to expected total", () => {
+    // Mirrors the Grendal spot-check in the task spec:
+    // Longsword 3 + Amulet of Health 1 + Bracers of Defense 1 + Chain Mail 55
+    // + Shield of Missile Attraction 6 + Arrow-Catching Shield 6
+    // + Necklace of Fireballs 1 + Wand of Fireballs 1 = 74 lb
+    const reg = buildMockRegistry([
+      { slug: "g-ls", entityType: "weapon", name: "Longsword", data: {
+        name: "Longsword", slug: "g-ls", edition: "2014",
+        category: "martial-melee",
+        damage: { dice: "1d8", type: "slashing" },
+        properties: [], weight: 3,
+      } as WeaponEntity },
+      { slug: "g-amulet", entityType: "item", name: "Amulet of Health", data: {
+        name: "Amulet of Health", slug: "g-amulet", type: "wondrous", rarity: "rare", weight: 1,
+      } as ItemEntity },
+      { slug: "g-bracers", entityType: "item", name: "Bracers of Defense", data: {
+        name: "Bracers of Defense", slug: "g-bracers", type: "wondrous", rarity: "rare", weight: 1,
+      } as ItemEntity },
+      { slug: "g-chain", entityType: "armor", name: "Chain Mail", data: {
+        name: "Chain Mail", slug: "g-chain", category: "heavy",
+        ac: { base: 16, flat: 0, add_dex: false, add_con: false, add_wis: false }, weight: 55,
+      } as ArmorEntity },
+      { slug: "g-shield-missile", entityType: "armor", name: "Shield of Missile Attraction", data: {
+        name: "Shield of Missile Attraction", slug: "g-shield-missile", category: "shield",
+        ac: { base: 0, flat: 2, add_dex: false, add_con: false, add_wis: false }, weight: 6,
+      } as ArmorEntity },
+      { slug: "g-shield-arrow", entityType: "armor", name: "Arrow-Catching Shield", data: {
+        name: "Arrow-Catching Shield", slug: "g-shield-arrow", category: "shield",
+        ac: { base: 0, flat: 2, add_dex: false, add_con: false, add_wis: false }, weight: 6,
+      } as ArmorEntity },
+      { slug: "g-necklace", entityType: "item", name: "Necklace of Fireballs", data: {
+        name: "Necklace of Fireballs", slug: "g-necklace", type: "wondrous", rarity: "rare", weight: 1,
+      } as ItemEntity },
+      { slug: "g-wand", entityType: "item", name: "Wand of Fireballs", data: {
+        name: "Wand of Fireballs", slug: "g-wand", type: "wand", rarity: "rare", weight: 1,
+      } as ItemEntity },
+    ]);
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[g-ls]]", equipped: true },
+      { item: "[[g-amulet]]", equipped: true, attuned: true },
+      { item: "[[g-bracers]]", equipped: true, attuned: true },
+      { item: "[[g-chain]]", equipped: true },
+      { item: "[[g-shield-missile]]", equipped: true },
+      { item: "[[g-shield-arrow]]", equipped: false },
+      { item: "[[g-necklace]]", equipped: true },
+      { item: "[[g-wand]]", equipped: true, attuned: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(74);
   });
 });
