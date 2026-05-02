@@ -52,6 +52,8 @@ export function mergeOptionalFeatures(opts: MergeOptionalFeatureOptions): Option
     };
 
     const normalized = normalizeOptionalFeature(input);
+    // Apply compendium-prefixed slug (mirrors mergeKind's buildCanonicalSlug).
+    normalized.data.slug = `${opts.edition === "2014" ? "srd-5e" : "srd-2024"}_${normalized.data.slug}`;
     out.push(normalized.data);
   }
 

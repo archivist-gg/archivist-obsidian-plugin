@@ -325,7 +325,8 @@ async function main() {
 
     // Compendium index per edition (single _compendium.md at the bundle root).
     const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
-    writeCompendiumIndex(path.join(cfg.bundleOutDir, compendium), compendium, edition);
+    const manifest = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "..", "manifest.json"), "utf8")) as { version: string };
+    writeCompendiumIndex(path.join(cfg.bundleOutDir, compendium), compendium, edition, manifest.version);
     console.log(`[canonical] ${edition} wrote _compendium.md`);
   }
 

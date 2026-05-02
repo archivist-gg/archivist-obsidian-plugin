@@ -49,8 +49,7 @@ import { confirm as confirmModal } from "./modules/inquiry/shared/modals/Confirm
 // SRD & entities
 import { SrdStore } from "./shared/ai/srd-store";
 import { EntityRegistry } from "./shared/entities/entity-registry";
-import { importSrdToVault } from "./shared/entities/entity-importer";
-import { importSrdBundledMdToVault } from "./shared/entities/entity-md-importer";
+import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
 
@@ -351,41 +350,29 @@ export default class ArchivistPlugin extends Plugin {
   private async initializeCompendiumsInner(): Promise<void> {
     if (!this.compendiumManager || !this.srdStore) return;
 
-    // Check if SRD folder exists, reset srdImported if missing
-    const srdPath = `${this.settings.compendiumRoot}/SRD`;
-    const srdFolder = this.app.vault.getAbstractFileByPath(srdPath);
-    if (this.settings.srdImported && !srdFolder) {
-      this.settings.srdImported = false;
-      await this.saveSettings();
-    }
-
-    // SRD import if needed, wrapped so a failure still allows discover()
-    if (!this.settings.srdImported) {
-      const n = new Notice("Importing SRD...", 0);
-      try {
-        const count = await importSrdToVault(
-          this.app.vault, this.srdStore, this.settings.compendiumRoot,
-          (current, total) => { n.setMessage(`Importing SRD... ${current}/${total}`); },
-        );
-        n.setMessage(`SRD import complete: ${count} entities`);
-        activeWindow.setTimeout(() => n.hide(), 3000);
-        this.settings.srdImported = true;
-        await this.saveSettings();
-      } catch (err) {
-        n.hide();
-        console.error("Archivist: SRD import failed", err);
-        new Notice("SRD import failed, existing compendiums will still load.");
-      }
-    }
-
-    // SRD MD bundle import — idempotent, runs every activation. Fills in
-    // classes/races/subclasses/backgrounds/feats on existing vaults that
-    // predate the bundled-MD pipeline without disturbing already-imported files.
+    // Canonical pipeline bootstrap: delete the legacy `Compendium/SRD/` folder,
+    // then copy the embedded `SRD 5e/` and `SRD 2024/` bundles into the vault.
+    const n = new Notice("Archivist: setting up SRD compendiums...", 0);
     try {
-      const created = await importSrdBundledMdToVault(this.app.vault, this.settings.compendiumRoot);
-      if (created > 0) new Notice(`Archivist: imported ${created} bundled SRD files`);
+      const result = await bootstrapCompendiums({
+        vault: this.app.vault,
+        rootFolder: this.settings.compendiumRoot,
+        pluginVersion: this.manifest.version,
+        removeLegacySrdFolder: true,
+      });
+      const copied = result.perCompendium.filter(c => c.action === "copied").map(c => c.compendium);
+      const summary = copied.length > 0
+        ? `installed ${copied.join(" + ")}`
+        : "compendiums up-to-date";
+      const legacy = result.legacySrdRemoved ? " (legacy SRD removed)" : "";
+      n.setMessage(`Archivist: ${summary}${legacy}`);
+      activeWindow.setTimeout(() => n.hide(), 3000);
+      this.settings.srdImported = true;
+      await this.saveSettings();
     } catch (err) {
-      console.error("Archivist: bundled SRD MD import failed", err);
+      n.hide();
+      console.error("Archivist: compendium bootstrap failed", err);
+      new Notice("Archivist: compendium bootstrap failed; existing compendiums will still load.");
     }
 
     // Discover all compendiums and load entities

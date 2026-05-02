@@ -27,12 +27,12 @@ describe("pipeline integration", () => {
     expect(merged.length).toBe(1);
 
     const canonical = toRaceCanonical(merged[0]);
-    expect(canonical.slug).toBe("dwarf");
+    expect(canonical.slug).toBe("srd-5e_dwarf");
     expect(canonical.size).toBe("medium");
     expect(canonical.traits[0].name).toBe("Darkvision");
 
     const runtime = projectToRuntime("race", canonical as unknown as Record<string, unknown>);
-    expect(runtime.slug).toBe("dwarf");
+    expect(runtime.slug).toBe("srd-5e_dwarf");
     expect(runtime.traits).toBeDefined();
   });
 
@@ -53,7 +53,7 @@ describe("pipeline integration", () => {
       overlay: {},
     });
     const canonical = toFeatCanonical(merged[0]);
-    expect(canonical.slug).toBe("alert");
+    expect(canonical.slug).toBe("srd-5e_alert");
     expect(canonical.benefits).toContain("+5 to initiative");
   });
 
@@ -67,7 +67,7 @@ describe("pipeline integration", () => {
       overlay: { optional_feature_slugs: { invocation: ["agonizing-blast"] } },
     });
     expect(merged.length).toBe(1);
-    expect(merged[0].slug).toBe("agonizing-blast");
+    expect(merged[0].slug).toBe("srd-5e_agonizing-blast");
     expect(merged[0].feature_type).toBe("invocation");
     expect(merged[0].available_to).toContain("[[SRD 5e/warlock]]");
   });

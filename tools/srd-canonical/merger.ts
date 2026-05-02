@@ -2,6 +2,21 @@ import type { Open5eEntry } from "./sources/open-srd";
 import type { StructuredEntry } from "./sources/structured-rules";
 import type { ActivationEntry } from "./sources/activation";
 import type { Overlay } from "./overlay.schema";
+import { slugifyName } from "./sources/slug-normalize";
+
+/**
+ * Compendium-name prefix for the canonical slug. Slugs are
+ * `<prefix>_<slugifyName(entity.name)>` so they are globally unique across
+ * compendiums (registry treats slug as a global key).
+ */
+export const COMPENDIUM_PREFIX_BY_EDITION: Record<"2014" | "2024", string> = {
+  "2014": "srd-5e",
+  "2024": "srd-2024",
+};
+
+export function buildCanonicalSlug(edition: "2014" | "2024", name: string): string {
+  return `${COMPENDIUM_PREFIX_BY_EDITION[edition]}_${slugifyName(name)}`;
+}
 
 export interface CanonicalEntry {
   slug: string;
@@ -40,7 +55,7 @@ export function mergeKind(rule: MergeRule, inputs: MergeInputs): CanonicalEntry[
     structuredBySlug.set(slug, e);
   }
   return inputs.open5e.map((base): CanonicalEntry => ({
-    slug: base.key,
+    slug: buildCanonicalSlug(inputs.edition, base.name),
     edition: inputs.edition,
     kind: inputs.kind,
     base,

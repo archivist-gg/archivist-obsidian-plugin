@@ -304,7 +304,12 @@ export class CompendiumManager {
       throw new Error("Entity data must include a 'name' field");
     }
 
-    const baseSlug = slugify(name);
+    // Compendium-prefixed slug: `<compendium-id>_<name-slug>`. The compendium
+    // prefix makes slugs globally unique across compendiums; ensureUniqueSlug
+    // still handles in-compendium duplicates ("Dwarf" + "Dwarf" → "..._dwarf"
+    // and "..._dwarf-custom").
+    const compendiumPrefix = slugify(comp.name);
+    const baseSlug = `${compendiumPrefix}_${slugify(name)}`;
     const slug = ensureUniqueSlug(baseSlug, this.registry.getAllSlugs());
 
     const typeFolder = TYPE_FOLDER_MAP[entityType] || entityType;

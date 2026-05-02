@@ -68,7 +68,8 @@ function normalizePrerequisites(
   const out: OptionalFeaturePrerequisite[] = [];
   for (const p of input.prerequisite) {
     if (Array.isArray(p.spell)) {
-      for (const s of p.spell as string[]) {
+      for (const s of p.spell as unknown[]) {
+        if (typeof s !== "string") continue;
         const slug = s.split("#")[0].replace(/\s+/g, "-").toLowerCase();
         out.push({ kind: "spell-known", spell: `[[${compendium}/${slug}]]` });
       }

@@ -17,8 +17,9 @@ describe("mergeKind", () => {
       overlay: {},
     });
     expect(result.length).toBe(2);
-    expect(result.find(e => e.slug === "alert")?.activation).toBeDefined();
-    expect(result.find(e => e.slug === "tough")?.activation).toBeNull();
+    // Slugs are now `<compendium-prefix>_<name-slug>`; activation map key still uses Open5e key.
+    expect(result.find(e => e.slug === "srd-5e_alert")?.activation).toBeDefined();
+    expect(result.find(e => e.slug === "srd-5e_tough")?.activation).toBeNull();
   });
 
   it("matches structured by slug-from-name when no slug field", () => {
