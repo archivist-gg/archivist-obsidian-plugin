@@ -2,6 +2,19 @@ import { describe, it, expect } from "vitest";
 import { toItemCanonical } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
+function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
+  return {
+    slug: typeof overrides.base?.name === "string"
+      ? (overrides.base.name as string).toLowerCase().replace(/\s+/g, "-")
+      : "test",
+    edition: "2014",
+    base: { name: "Test", rarity: "rare", ...overrides.base } as never,
+    structured: (overrides.structured ?? null) as never,
+    activation: null,
+    overlay: null,
+  } as CanonicalEntry;
+}
+
 describe("itemMergeRule", () => {
   it("produces canonical Item for Cloak of Protection (simple bonuses)", () => {
     const canonical: CanonicalEntry = {
@@ -34,8 +47,8 @@ describe("itemMergeRule", () => {
     expect(out.requires_attunement).toBe(true);
     expect(out.description).toContain("+1 bonus to AC");
     expect(out.bonuses?.ac).toBe(1);
-    expect(out.bonuses?.saving_throw).toBe(1);
-    expect(out.bonuses?.attack).toBeUndefined();
+    expect(out.bonuses?.saving_throws).toBe(1);
+    expect(out.bonuses?.weapon_attack).toBeUndefined();
     expect(out.charges).toBeUndefined();
   });
 
@@ -182,7 +195,7 @@ describe("item-merge Open5e shape normalization", () => {
     expect(result.attunement?.restriction).toBe("by a paladin");
   });
 
-  it("surfaces structured-rules bonusWeapon to bonuses.attack", () => {
+  it("surfaces structured-rules bonusWeapon to bonuses.weapon_attack", () => {
     const result = toItemCanonical(makeEntry({
       slug: "srd-5e_battleaxe-1",
       base: {
@@ -194,6 +207,86 @@ describe("item-merge Open5e shape normalization", () => {
       },
       structured: { name: "Battleaxe (+1)", bonusWeapon: "+1" } as never,
     }));
-    expect(result.bonuses?.attack).toBe("+1");
+    expect(result.bonuses?.weapon_attack).toBe("+1");
+  });
+});
+
+describe("STRUCTURED_BONUS_KEYS rename to runtime keys", () => {
+  it("emits weapon_attack (not attack) from bonusWeapon", () => {
+    const entry = makeEntry({ structured: { bonusWeapon: "+3" } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.weapon_attack).toBe("+3");
+    expect((out.bonuses as Record<string, unknown>).attack).toBeUndefined();
+  });
+
+  it("emits weapon_damage from bonusWeaponDamage", () => {
+    const entry = makeEntry({ structured: { bonusWeaponDamage: "+2" } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.weapon_damage).toBe("+2");
+  });
+
+  it("emits saving_throws (plural) from bonusSavingThrow", () => {
+    const entry = makeEntry({ structured: { bonusSavingThrow: "+1" } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.saving_throws).toBe("+1");
+    expect((out.bonuses as Record<string, unknown>).saving_throw).toBeUndefined();
+  });
+
+  it("does NOT emit ability_check (no consumer)", () => {
+    const entry = makeEntry({ structured: { bonusAbilityCheck: "+2" } });
+    const out = toItemCanonical(entry);
+    expect((out.bonuses as Record<string, unknown> | undefined)?.ability_check).toBeUndefined();
+  });
+
+  it("Defender Longsword shape: weapon_attack: 3, weapon_damage: 3, ac: 1", () => {
+    const entry = makeEntry({
+      base: { name: "Defender Longsword", rarity: "legendary" },
+      structured: { bonusWeapon: "+3", bonusWeaponDamage: "+3", bonusAc: "+1" },
+    });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses).toMatchObject({ weapon_attack: "+3", weapon_damage: "+3", ac: "+1" });
+  });
+});
+
+describe("ability_scores extraction (I15)", () => {
+  it("extracts ability.static into bonuses.ability_scores.static", () => {
+    const entry = makeEntry({
+      base: { name: "Amulet of Health" },
+      structured: { ability: { static: { con: 19 } } },
+    });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.ability_scores?.static).toEqual({ con: 19 });
+  });
+
+  it("extracts ability.bonus into bonuses.ability_scores.bonus", () => {
+    const entry = makeEntry({ structured: { ability: { bonus: { str: 2 } } } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.ability_scores?.bonus).toEqual({ str: 2 });
+  });
+});
+
+describe("speed extraction (I16)", () => {
+  it("extracts modifySpeed.static.walk into bonuses.speed.walk", () => {
+    const entry = makeEntry({ structured: { modifySpeed: { static: { walk: 30 } } } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.speed?.walk).toBe(30);
+  });
+
+  it("extracts modifySpeed.bonus.fly as numeric bonus", () => {
+    const entry = makeEntry({ structured: { modifySpeed: { bonus: { fly: 10 } } } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.speed?.fly).toBe(10);
+  });
+
+  it("SKIPS modifySpeed.multiply (deferred)", () => {
+    const entry = makeEntry({ structured: { modifySpeed: { multiply: { walk: 2 } } } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.speed).toBeUndefined();
+  });
+
+  it("supports the fly: 'walk' sentinel from static.fly: 'walk'", () => {
+    const entry = makeEntry({ structured: { modifySpeed: { static: { fly: "walk" } } } });
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.speed?.fly).toBe("walk");
   });
 });

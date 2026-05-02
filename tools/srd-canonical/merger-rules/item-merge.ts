@@ -3,12 +3,22 @@ import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 
 export interface ItemBonuses {
-  attack?: number | string;
+  weapon_attack?: number | string;
+  weapon_damage?: number | string;
   ac?: number | string;
   spell_attack?: number | string;
   spell_save_dc?: number | string;
-  saving_throw?: number | string;
-  ability_check?: number | string;
+  saving_throws?: number | string;
+  ability_scores?: {
+    static?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", number>>;
+    bonus?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", number>>;
+  };
+  speed?: {
+    walk?: number;
+    fly?: number | "walk";
+    swim?: number;
+    climb?: number;
+  };
 }
 
 export interface ItemAttachedSpells {
@@ -62,14 +72,23 @@ export const itemMergeRule: MergeRule = {
   },
 };
 
-const STRUCTURED_BONUS_KEYS: Array<[string, keyof ItemBonuses]> = [
-  ["bonusWeapon", "attack"],
-  ["bonusWeaponAttack", "attack"],
+type ScalarBonusKey =
+  | "weapon_attack"
+  | "weapon_damage"
+  | "ac"
+  | "spell_attack"
+  | "spell_save_dc"
+  | "saving_throws";
+
+const STRUCTURED_BONUS_KEYS: Array<[string, ScalarBonusKey]> = [
+  ["bonusWeapon", "weapon_attack"],
+  ["bonusWeaponAttack", "weapon_attack"],
+  ["bonusWeaponDamage", "weapon_damage"],
   ["bonusAc", "ac"],
   ["bonusSpellAttack", "spell_attack"],
   ["bonusSpellSaveDc", "spell_save_dc"],
-  ["bonusSavingThrow", "saving_throw"],
-  ["bonusAbilityCheck", "ability_check"],
+  ["bonusSavingThrow", "saving_throws"],
+  // bonusAbilityCheck intentionally omitted — no runtime consumer (I13).
 ];
 
 /**
@@ -173,11 +192,52 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
       const v = structured[src];
       if (typeof v === "number" || typeof v === "string") {
         // Avoid overwriting an earlier bonus key with a later alias (e.g.
-        // bonusWeapon → attack should win over bonusWeaponAttack → attack).
+        // bonusWeapon → weapon_attack should win over bonusWeaponAttack → weapon_attack).
         if (bonuses[dst] === undefined) bonuses[dst] = v;
       }
     }
     if (Object.keys(bonuses).length > 0) out.bonuses = bonuses;
+
+    // ability_scores from structured-rules `ability: { static, bonus }`.
+    if (structured.ability && typeof structured.ability === "object") {
+      const src = structured.ability as Record<string, unknown>;
+      const abilityScores: NonNullable<ItemBonuses["ability_scores"]> = {};
+      if (src.static && typeof src.static === "object") {
+        abilityScores.static = src.static;
+      }
+      if (src.bonus && typeof src.bonus === "object") {
+        abilityScores.bonus = src.bonus;
+      }
+      if (Object.keys(abilityScores).length > 0) {
+        out.bonuses = out.bonuses ?? {};
+        out.bonuses.ability_scores = abilityScores;
+      }
+    }
+
+    // Speed from structured-rules `modifySpeed: { static, bonus, multiply }`.
+    // Multiplicative speed (e.g. boots that double walk speed) is NOT supported
+    // by the existing `bonuses.speed` schema; deferred to a follow-up. Static
+    // and bonus shapes are mapped 1:1.
+    if (structured.modifySpeed && typeof structured.modifySpeed === "object") {
+      const src = structured.modifySpeed as Record<string, unknown>;
+      const speed: NonNullable<ItemBonuses["speed"]> = {};
+      const apply = (block: unknown): void => {
+        if (!block || typeof block !== "object") return;
+        const obj = block as Record<string, unknown>;
+        for (const k of ["walk", "fly", "swim", "climb"] as const) {
+          const v = obj[k];
+          if (typeof v === "number") speed[k] = v;
+          else if (k === "fly" && v === "walk") speed.fly = "walk";
+        }
+      };
+      apply(src.static);
+      apply(src.bonus);
+      // Intentional: src.multiply is dropped.
+      if (Object.keys(speed).length > 0) {
+        out.bonuses = out.bonuses ?? {};
+        out.bonuses.speed = speed;
+      }
+    }
 
     if (structured.attachedSpells && typeof structured.attachedSpells === "object") {
       const src = structured.attachedSpells as Record<string, unknown>;
