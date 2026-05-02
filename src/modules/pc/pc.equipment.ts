@@ -637,11 +637,15 @@ function computeAttacks(
 
 // Coerces a weight field (number | string | undefined) to a non-negative number.
 // Strings like "3" are parsed; non-numeric strings (e.g. "—", "varies") return 0.
-function coerceWeight(raw: unknown): number {
-  if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) return raw;
+// Negative values are treated as 0 (weight has no physical meaning < 0).
+// Note: 0 is a legitimate weight (SRD lists weightless trinkets / spell focuses)
+// and contributes 0 to the sum — distinct from "missing" which also returns 0
+// here but still flows through the same arithmetic.
+function coerceWeight(raw: number | string | undefined | null): number {
+  if (typeof raw === "number" && Number.isFinite(raw) && raw >= 0) return raw;
   if (typeof raw === "string") {
     const n = Number.parseFloat(raw);
-    if (Number.isFinite(n) && n > 0) return n;
+    if (Number.isFinite(n) && n >= 0) return n;
   }
   return 0;
 }
@@ -658,17 +662,32 @@ function coerceWeight(raw: unknown): number {
 //     doesn't surface coin weight elsewhere either.
 //   - Missing entities (e.g. dangling wikilinks) contribute 0 silently; the
 //     equipped-item warning path already covers compendium misses.
+//   - Resolves `entry.item` via the shared `resolveBaseItem` helper so that
+//     vault-path wikilinks (`[[SRD 5e/Items/X]]`) and compendium-prefixed
+//     slugs also lookup correctly — bare-slug `[[X]]` is just one of the
+//     forms it handles.
 function computeCarriedWeight(
   resolved: ResolvedCharacter,
   registry: EntityRegistry,
 ): number {
   let total = 0;
   for (const entry of resolved.definition.equipment ?? []) {
-    const { entity } = lookupEntity(entry, registry);
-    if (!entity) continue;
-    const w = coerceWeight((entity as { weight?: unknown }).weight);
+    const found = resolveBaseItem(entry.item, registry);
+    if (!found) continue;
+    // Registry stores `data` as Record<string, unknown>; the entityType
+    // discriminator on the registered entity narrows the runtime type, but
+    // TS can't follow it. Same pattern as `lookupEntity` above. All three
+    // entity types declare `weight?: number | string`, so direct field access
+    // is type-safe (no inline `unknown` cast needed) once narrowed.
+    const entity = found.data as unknown as ItemEntity | WeaponEntity | ArmorEntity;
+    const w = coerceWeight(entity.weight);
     if (w === 0) continue;
-    const qty = typeof entry.qty === "number" && entry.qty > 0 ? entry.qty : 1;
+    // Explicit qty: 0 means zero copies → contributes 0; missing/undefined
+    // defaults to 1 (the natural single-item case). Negative qty is treated
+    // as missing.
+    const qty = typeof entry.qty === "number" && entry.qty >= 0
+      ? entry.qty
+      : 1;
     total += w * qty;
   }
   return total;

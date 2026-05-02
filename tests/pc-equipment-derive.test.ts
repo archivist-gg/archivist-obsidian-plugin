@@ -724,4 +724,94 @@ describe("computeSlotsAndAttacks — carriedWeight", () => {
     const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
     expect(d.carriedWeight).toBe(74);
   });
+
+  it("explicit weight: 0 contributes 0 (legitimate weightless trinket)", () => {
+    // SRD lists trinkets, spell focuses, and similar items with weight: 0.
+    // Must be distinguishable from "missing" by virtue of summing to 0
+    // alongside other weighted items rather than being treated as broken.
+    const reg = buildMockRegistry([
+      { slug: "trinket-zero", entityType: "item", name: "Tiny Trinket", data: {
+        name: "Tiny Trinket", slug: "trinket-zero", type: "wondrous",
+        rarity: "common", weight: 0,
+      } as ItemEntity },
+      { slug: "ls-mix", entityType: "weapon", name: "Longsword", data: {
+        name: "Longsword", slug: "ls-mix", edition: "2014",
+        category: "martial-melee",
+        damage: { dice: "1d8", type: "slashing" },
+        properties: [], weight: 3,
+      } as WeaponEntity },
+    ]);
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[trinket-zero]]", equipped: true, qty: 5 },
+      { item: "[[ls-mix]]", equipped: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    // 5 × 0 trinkets (qty multiplied) + 1 × 3 longsword = 3
+    expect(d.carriedWeight).toBe(3);
+  });
+
+  it("negative weight is treated as 0 (not added or subtracted)", () => {
+    const reg = buildMockRegistry([
+      { slug: "broken-neg", entityType: "item", name: "Broken Data Item", data: {
+        name: "Broken Data Item", slug: "broken-neg", type: "wondrous",
+        rarity: "common", weight: -1,
+      } as ItemEntity },
+      { slug: "ls-neg", entityType: "weapon", name: "Longsword", data: {
+        name: "Longsword", slug: "ls-neg", edition: "2014",
+        category: "martial-melee",
+        damage: { dice: "1d8", type: "slashing" },
+        properties: [], weight: 3,
+      } as WeaponEntity },
+    ]);
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[broken-neg]]", equipped: true },
+      { item: "[[ls-neg]]", equipped: true },
+    ];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(3);
+  });
+
+  it("vault-path wikilink resolves through resolveBaseItem and contributes weight", () => {
+    // Mirrors how SRD canonical bundles serialize equipment references when
+    // PCs link by vault path:
+    //   item: "[[SRD 5e/Items/Necklace of Fireballs]]"
+    // and how the registry stores the entity under a prefixed slug:
+    //   slug: "srd-5e_necklace-of-fireballs"
+    const necklace: ItemEntity = {
+      name: "Necklace of Fireballs",
+      slug: "srd-5e_necklace-of-fireballs",
+      type: "wondrous",
+      rarity: "rare",
+      weight: 1,
+    };
+    const reg = buildMockRegistry([
+      {
+        slug: "srd-5e_necklace-of-fireballs",
+        entityType: "item",
+        name: "Necklace of Fireballs",
+        data: necklace,
+      },
+    ]);
+    const c = baseChar();
+    c.equipment = [{ item: "[[SRD 5e/Items/Necklace of Fireballs]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(1);
+  });
+
+  it("explicit qty: 0 contributes 0 (means zero copies, not default 1)", () => {
+    const reg = buildMockRegistry([
+      { slug: "q0-ls", entityType: "weapon", name: "Longsword", data: {
+        name: "Longsword", slug: "q0-ls", edition: "2014",
+        category: "martial-melee",
+        damage: { dice: "1d8", type: "slashing" },
+        properties: [], weight: 3,
+      } as WeaponEntity },
+    ]);
+    const c = baseChar();
+    c.equipment = [{ item: "[[q0-ls]]", equipped: false, qty: 0 }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, reg, [], 2);
+    expect(d.carriedWeight).toBe(0);
+  });
 });
