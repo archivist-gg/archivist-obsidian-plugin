@@ -40,16 +40,40 @@ export async function renderMarkdownDescription(
     t.classList.add("archivist-table");
   });
 
-  // Dice-tag swap. MarkdownRenderer renders backtick-wrapped tokens as <code>;
-  // walk and replace recognized tags (d:2d6, dc:15, atk:STR, …) with widgets.
-  // Uses renderStatBlockTag (the same renderer at_higher_levels uses) so
-  // dice in description match dice in at_higher_levels visually.
-  const codes = Array.from(parent.querySelectorAll("code"));
-  for (const code of codes) {
-    const text = code.textContent ?? "";
-    const parsed = parseInlineTag(text);
-    if (!parsed) continue;
-    const widget = renderStatBlockTag(parsed, undefined, parent.ownerDocument ?? activeDocument);
+  // Dice-tag swap. Two cases must be handled:
+  //
+  // 1. The global markdown post-processor in main.ts already replaced
+  //    <code>tag</code> elements with .archivist-tag widgets via
+  //    renderInlineTag — those use the lighter `.archivist-tag-*` classes,
+  //    which clash visually with the .archivist-stat-tag-* widgets used
+  //    elsewhere in our blocks (e.g. at_higher_levels). Upgrade them.
+  //
+  // 2. If the global post-processor was bypassed (e.g. the caller staged
+  //    pre-rendered <code> manually), handle bare <code> too.
+  //
+  // Both branches use renderStatBlockTag so widgets match at_higher_levels.
+  const doc = parent.ownerDocument ?? activeDocument;
+  parent.querySelectorAll("span.archivist-tag").forEach((oldWidget) => {
+    const tagType = oldWidget.getAttribute("data-dice-type");
+    const tagContent = oldWidget.getAttribute("data-dice-notation");
+    let parsed = null;
+    if (tagType && tagContent) {
+      parsed = parseInlineTag(`${tagType}:${tagContent}`);
+    } else {
+      // Non-rollable widgets (dc/check) don't carry data attrs; fall back to
+      // re-parsing the text content. The widget format is "<icon><text>" so
+      // textContent will be just the rendered text — only useful if the text
+      // matches a parseable tag, which dc/check don't (they're already formatted).
+      parsed = parseInlineTag(oldWidget.textContent ?? "");
+    }
+    if (!parsed) return;
+    const widget = renderStatBlockTag(parsed, undefined, doc);
+    oldWidget.replaceWith(widget);
+  });
+  parent.querySelectorAll("code").forEach((code) => {
+    const parsed = parseInlineTag(code.textContent ?? "");
+    if (!parsed) return;
+    const widget = renderStatBlockTag(parsed, undefined, doc);
     code.replaceWith(widget);
-  }
+  });
 }
