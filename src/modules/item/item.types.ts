@@ -64,6 +64,8 @@ export interface ItemEntity {
     daily?: Record<string, string[]>;
     will?: string[];
     rest?: Record<string, string[]>;
+    /** Total uses with no recharge — item often consumed when empty. */
+    limited?: Record<string, string[]>;
   };
 
   attunement?:

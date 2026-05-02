@@ -82,6 +82,21 @@ attached_spells:
     }
   });
 
+  it("parses attached_spells.limited (Necklace of Fireballs-style)", () => {
+    const src = `
+name: Necklace of Fireballs
+rarity: rare
+attached_spells:
+  limited:
+    "9": [fireball]
+`;
+    const r = parseItem(src);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.attached_spells?.limited?.["9"]).toEqual(["fireball"]);
+    }
+  });
+
   it("parses attunement with class restriction tags", () => {
     const src = `
 name: Holy Avenger

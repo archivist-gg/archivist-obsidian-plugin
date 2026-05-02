@@ -268,6 +268,13 @@ function describeSpells(s: NonNullable<ItemEntity["attached_spells"]>): string {
       parts.push(`${k}/rest: ${names.join(", ")}`);
     }
   }
+  if (s.limited) {
+    for (const [k, names] of Object.entries(s.limited).sort(
+      ([a], [b]) => Number(a) - Number(b),
+    )) {
+      parts.push(`${k} uses: ${names.join(", ")}`);
+    }
+  }
   return parts.join(" • ");
 }
 

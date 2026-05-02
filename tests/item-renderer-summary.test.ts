@@ -131,6 +131,41 @@ attached_spells:
     expect(idx4).toBeGreaterThan(idx3);
   });
 
+  it("renders Necklace of Fireballs limited spells", () => {
+    const r = parseItem(`
+name: Necklace of Fireballs
+attached_spells:
+  limited:
+    "9": [fireball]
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    expect(el.textContent).toContain("9 uses: fireball");
+  });
+
+  it("renders Helm of Brilliance limited spells with multiple keys sorted", () => {
+    const r = parseItem(`
+name: Helm of Brilliance
+attached_spells:
+  limited:
+    "30": [fireball]
+    "10": [prismatic-spray]
+    "40": [daylight]
+    "20": [wall-of-fire]
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    const text = el.textContent ?? "";
+    const idx10 = text.indexOf("10 uses:");
+    const idx20 = text.indexOf("20 uses:");
+    const idx30 = text.indexOf("30 uses:");
+    const idx40 = text.indexOf("40 uses:");
+    expect(idx10).toBeGreaterThan(-1);
+    expect(idx20).toBeGreaterThan(idx10);
+    expect(idx30).toBeGreaterThan(idx20);
+    expect(idx40).toBeGreaterThan(idx30);
+  });
+
   it("renders condition_immune in mechanical summary", () => {
     const item: ItemEntity = { name: "T", condition_immune: ["charmed", "frightened"] };
     const summary = renderItemMechanicalSummary(item);

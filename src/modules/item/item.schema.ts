@@ -111,6 +111,12 @@ const attachedSpellsSchema = z.object({
   daily: z.record(z.string(), z.array(z.string())).optional(),
   will: z.array(z.string()).optional(),
   rest: z.record(z.string(), z.array(z.string())).optional(),
+  // `limited` = total uses with no recharge (item often consumed when empty).
+  // Distinct from `charges` (cost-per-cast) and `daily` (resets per day).
+  // Source canonical pipeline emits this for Necklace of Fireballs, Helm of
+  // Brilliance, Candle of Invocation, Efreeti Bottle. Key is total available
+  // uses (e.g. "9": ["fireball"] for the necklace's 9 beads).
+  limited: z.record(z.string(), z.array(z.string())).optional(),
 });
 
 const attunementTagSchema = z.union([
