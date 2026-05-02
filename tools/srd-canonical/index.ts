@@ -138,6 +138,7 @@ function readBaseItemsRaw(rootPath: string, edition: "2014" | "2024"): BaseItem[
       arrow: e.arrow === true,
       bolt: e.bolt === true,
       dmgType: typeof e.dmgType === "string" ? e.dmgType : undefined,
+      weight: typeof e.weight === "number" ? e.weight : undefined,
     });
   }
   return out;

@@ -48,6 +48,7 @@ export interface ExpandedItem {
   attunement: { required: boolean };
   requires_attunement: boolean;
   description: string;
+  weight?: number;
 }
 
 export function expandVariants(
@@ -207,6 +208,9 @@ function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014
     return undefined;
   })();
 
+  // Weight inherits from the base item (variant rules don't override weight).
+  const weight = typeof base.weight === "number" ? base.weight : undefined;
+
   return {
     slug: slugifyName(name),
     name,
@@ -220,14 +224,31 @@ function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014
     attunement: { required: reqAttune },
     requires_attunement: reqAttune,
     description: buildDescription(variant, base, inherits),
+    ...(weight !== undefined ? { weight } : {}),
   };
+}
+
+/**
+ * Replace `{=fieldName}` template references in a string with the matching
+ * `inherits[fieldName]` value. Optional `/format` suffixes (e.g. `{=name/u}`
+ * for uppercase) are stripped — the raw value is substituted. References to
+ * fields not present on `inherits` are left untouched so the surface bug is
+ * still visible.
+ */
+function substituteTemplateVars(text: string, inherits: Record<string, unknown>): string {
+  return text.replace(/\{=([^}\/]+)(?:\/[^}]+)?\}/g, (match, rawKey: string) => {
+    const key = rawKey.trim();
+    const value = inherits[key];
+    if (value === undefined || value === null) return match;
+    return String(value);
+  });
 }
 
 function buildDescription(variant: VariantRule, base: BaseItem, inherits: Record<string, unknown>): string {
   const entries = inherits.entries;
   if (Array.isArray(entries)) {
     const text = (entries as unknown[]).filter((e): e is string => typeof e === "string").join("\n\n");
-    if (text.length > 0) return text;
+    if (text.length > 0) return substituteTemplateVars(text, inherits);
   }
   const bonusStr = (inherits.bonusWeapon ?? inherits.bonusAc ?? "") as string;
   if (bonusStr) {
