@@ -42,9 +42,9 @@ export interface ExpandedItem {
   source: string;
   type: string;
   rarity?: string;
-  tier?: number | string;
+  tier?: "major" | "minor";
   base_item: string;
-  bonuses: { attack?: number; damage?: number; ac?: number };
+  bonuses?: { weapon_attack?: number; weapon_damage?: number; ac?: number };
   attunement: { required: boolean };
   requires_attunement: boolean;
   description: string;
@@ -184,23 +184,25 @@ function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014
 
   const bWeapon = bonusNumber(inherits.bonusWeapon);
   const bAc = bonusNumber(inherits.bonusAc);
-  const bonuses: ExpandedItem["bonuses"] = {};
+  let bonuses: ExpandedItem["bonuses"] | undefined;
   if (bWeapon > 0) {
-    bonuses.attack = bWeapon;
-    bonuses.damage = bWeapon;
+    bonuses = bonuses ?? {};
+    bonuses.weapon_attack = bWeapon;
+    bonuses.weapon_damage = bWeapon;
   }
   if (bAc > 0) {
+    bonuses = bonuses ?? {};
     bonuses.ac = bAc;
   }
 
   const reqAttune = inherits.reqAttune === true || typeof inherits.reqAttune === "string";
   const rarity = typeof inherits.rarity === "string" ? inherits.rarity : undefined;
-  const tier = (() => {
-    if (typeof inherits.tier === "number") return inherits.tier;
+  const tier: "major" | "minor" | undefined = (() => {
+    if (inherits.tier === "major" || inherits.tier === "minor") return inherits.tier;
+    if (typeof inherits.tier === "number" && inherits.tier >= 1) return "major";
     if (typeof inherits.tier === "string") {
-      if (inherits.tier === "major" || inherits.tier === "minor") return inherits.tier;
       const n = Number.parseInt(inherits.tier, 10);
-      return Number.isNaN(n) ? undefined : n;
+      if (!Number.isNaN(n) && n >= 1) return "major";
     }
     return undefined;
   })();
@@ -214,7 +216,7 @@ function applyVariantToBase(variant: VariantRule, base: BaseItem, edition: "2014
     rarity,
     tier,
     base_item: `[[${compendium}/${subfolder}/${base.name}]]`,
-    bonuses,
+    ...(bonuses ? { bonuses } : {}),
     attunement: { required: reqAttune },
     requires_attunement: reqAttune,
     description: buildDescription(variant, base, inherits),

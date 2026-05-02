@@ -18,7 +18,7 @@ describe("expand-variants integration shapes", () => {
     expect(out).toHaveLength(1);
     expect(out[0].name).toBe("Longsword +1");
     expect(out[0].base_item).toBe("[[SRD 5e/Weapons/Longsword]]");
-    expect(out[0].bonuses.attack).toBe(1);
+    expect(out[0].bonuses?.weapon_attack).toBe(1);
     expect(out[0].rarity).toBe("uncommon");
   });
 
@@ -38,7 +38,7 @@ describe("expand-variants integration shapes", () => {
     expect(out).toHaveLength(1);
     expect(out[0].name).toBe("Plate +1");
     expect(out[0].base_item).toBe("[[SRD 5e/Armor/Plate]]");
-    expect(out[0].bonuses.ac).toBe(1);
+    expect(out[0].bonuses?.ac).toBe(1);
   });
 
   it("matches a sword-only variant against weapons flagged sword=true", () => {
