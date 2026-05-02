@@ -132,12 +132,11 @@ describe("enrichSpell — backtick tag conversion", () => {
     const raw: Record<string, unknown> = {
       name: "Flame Burst",
       level: 3,
-      description: [
+      description:
         "Each creature in the area must make a DC 15 Dexterity saving throw, taking 8d6 fire damage on a failed save, or half as much on a success.",
-      ],
     };
     const result = enrichSpell(raw);
-    const desc = (result.description as string[])[0];
+    const desc = result.description as string;
     expect(desc).toContain("`dc:15`");
     expect(desc).toContain("`dmg:8d6`");
   });
@@ -146,12 +145,11 @@ describe("enrichSpell — backtick tag conversion", () => {
     const raw: Record<string, unknown> = {
       name: "Flame Burst",
       level: 3,
-      description: [
+      description:
         "Each creature must make a `dc:15` Dexterity saving throw, taking `damage:8d6` fire damage on a failed save.",
-      ],
     };
     const result = enrichSpell(raw);
-    const desc = (result.description as string[])[0];
+    const desc = result.description as string;
     expect(desc).toBe(
       "Each creature must make a `dc:15` Dexterity saving throw, taking `damage:8d6` fire damage on a failed save.",
     );
@@ -174,12 +172,10 @@ describe("enrichSpell — backtick tag conversion", () => {
     const raw: Record<string, unknown> = {
       name: "Detect Magic",
       level: 1,
-      description: [
-        "For the duration, you sense the presence of magic within 30 feet of you.",
-      ],
+      description: "For the duration, you sense the presence of magic within 30 feet of you.",
     };
     const result = enrichSpell(raw);
-    const desc = (result.description as string[])[0];
+    const desc = result.description as string;
     expect(desc).toBe("For the duration, you sense the presence of magic within 30 feet of you.");
   });
 });

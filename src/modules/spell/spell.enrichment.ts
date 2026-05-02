@@ -21,10 +21,8 @@ export function enrichSpell(raw: Record<string, unknown>): Spell {
   };
 
   // Safety net: convert any plain-English mechanics to backtick tags (static fallback)
-  if (Array.isArray(enriched.description)) {
-    enriched.description = enriched.description.map((p: string) =>
-      convertDescToTags(p, STATIC_FALLBACK_CONTEXT),
-    );
+  if (typeof enriched.description === "string") {
+    enriched.description = convertDescToTags(enriched.description, STATIC_FALLBACK_CONTEXT);
   }
   if (Array.isArray(enriched.at_higher_levels)) {
     enriched.at_higher_levels = enriched.at_higher_levels.map((p: string) =>
