@@ -1,5 +1,5 @@
 import { Monster } from "./monster.types";
-import type { Feature } from "../../shared/types";
+import type { Feature, FeatureRecharge } from "../../shared/types";
 import type { Attack } from "../../shared/types/attack";
 import { abilityModifier, formatModifier } from "../../shared/dnd/math";
 import {
@@ -76,6 +76,21 @@ function renderAttackLine(
   }
 }
 
+function formatRechargeSuffix(r: FeatureRecharge | undefined): string {
+  if (!r) return "";
+  switch (r.type) {
+    case "recharge_on_roll":
+      // En-dash range; param=6 collapses to "Recharge 6".
+      return r.param >= 6 ? ` (Recharge ${r.param})` : ` (Recharge ${r.param}–6)`;
+    case "per_day":
+      return ` (${r.param}/Day)`;
+    case "per_short_rest":
+      return ` (${r.param}/Short Rest)`;
+    case "per_long_rest":
+      return ` (${r.param}/Long Rest)`;
+  }
+}
+
 function renderFeatureBlock(
   parent: HTMLElement,
   features: Feature[],
@@ -84,7 +99,7 @@ function renderFeatureBlock(
   for (const feature of features) {
     const featureDiv = el("div", { cls: "archivist-feature", parent });
     const nameSpan = el("span", { cls: "archivist-feature-name", parent: featureDiv });
-    nameSpan.textContent = feature.name + ".";
+    nameSpan.textContent = feature.name + formatRechargeSuffix(feature.recharge) + ".";
 
     if (feature.entries && feature.entries.length > 0) {
       const entrySpan = el("span", { cls: "archivist-feature-entry", parent: featureDiv });

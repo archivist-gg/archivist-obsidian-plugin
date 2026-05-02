@@ -1,6 +1,13 @@
 import { Monster } from "./monster.types";
-import type { Attack, Feature } from "../../shared/types";
+import type { Attack, Feature, FeatureRecharge } from "../../shared/types";
 import { ParseResult, parseYaml, toStringSafe } from "../../shared/parsers/yaml-utils";
+
+const VALID_RECHARGE_TYPES: ReadonlySet<FeatureRecharge["type"]> = new Set([
+  "recharge_on_roll",
+  "per_day",
+  "per_short_rest",
+  "per_long_rest",
+]);
 
 export function parseMonster(source: string): ParseResult<Monster> {
   const result = parseYaml<Record<string, unknown>>(source, ["name"]);
@@ -118,6 +125,19 @@ export function parseMonster(source: string): ParseResult<Monster> {
         feature.attacks = (f.attacks as Array<Record<string, unknown>>).map(parseAttack);
       }
       if (typeof f.action === "string") feature.action = f.action as Feature["action"];
+      if (f.recharge && typeof f.recharge === "object") {
+        const r = f.recharge as Record<string, unknown>;
+        if (
+          typeof r.type === "string" &&
+          VALID_RECHARGE_TYPES.has(r.type as FeatureRecharge["type"]) &&
+          typeof r.param === "number"
+        ) {
+          feature.recharge = {
+            type: r.type as FeatureRecharge["type"],
+            param: r.param,
+          };
+        }
+      }
       return feature;
     });
   };

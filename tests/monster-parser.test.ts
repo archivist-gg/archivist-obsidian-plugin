@@ -154,4 +154,72 @@ reactions:
       expect(result.data.reactions![0].action).toBe("reaction");
     }
   });
+
+  it("parses YAML with recharge_on_roll on a feature", () => {
+    const yamlBody = `
+name: Adult Black Dragon
+actions:
+  - name: Acid Breath
+    entries: ["Exhales acid."]
+    recharge:
+      type: recharge_on_roll
+      param: 5
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toEqual({ type: "recharge_on_roll", param: 5 });
+    }
+  });
+
+  it("parses YAML with per_day on a feature", () => {
+    const yamlBody = `
+name: Aboleth
+actions:
+  - name: Enslave
+    entries: ["Targets a creature."]
+    recharge:
+      type: per_day
+      param: 3
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toEqual({ type: "per_day", param: 3 });
+    }
+  });
+
+  it("ignores recharge with unknown type", () => {
+    const yamlBody = `
+name: Test
+actions:
+  - name: Power
+    entries: ["..."]
+    recharge:
+      type: bogus
+      param: 1
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toBeUndefined();
+    }
+  });
+
+  it("ignores recharge with non-numeric param", () => {
+    const yamlBody = `
+name: Test
+actions:
+  - name: Power
+    entries: ["..."]
+    recharge:
+      type: recharge_on_roll
+      param: "five"
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toBeUndefined();
+    }
+  });
 });

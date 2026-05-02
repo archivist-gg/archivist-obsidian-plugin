@@ -2,7 +2,7 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import type { Attack } from "../../../src/shared/types/attack";
-import type { Feature } from "../../../src/shared/types/feature";
+import type { Feature, FeatureRecharge } from "../../../src/shared/types/feature";
 
 interface Open5eDamageType {
   key: string;
@@ -199,6 +199,17 @@ function open5eAttackToAttack(oa: Open5eAttack): Attack {
   return a;
 }
 
+// Open5e usage_limits.type → canonical FeatureRecharge.type. Both `RECHARGE`
+// and `RECHARGE_ON_ROLL` carry the same semantics in observed Open5e v2 data
+// (param = recharge threshold on a d6); collapse them to one canonical kind.
+const USAGE_TYPE_MAP: Record<string, FeatureRecharge["type"]> = {
+  RECHARGE_ON_ROLL: "recharge_on_roll",
+  RECHARGE: "recharge_on_roll",
+  PER_DAY: "per_day",
+  PER_LONG_REST: "per_long_rest",
+  PER_SHORT_REST: "per_short_rest",
+};
+
 function actionToFeature(action: Open5eAction, edition: "2014" | "2024"): Feature {
   const f: Feature = {
     name: action.name,
@@ -206,6 +217,19 @@ function actionToFeature(action: Open5eAction, edition: "2014" | "2024"): Featur
   };
   if (action.attacks && action.attacks.length > 0) {
     f.attacks = action.attacks.map(open5eAttackToAttack);
+  }
+  const ul = action.usage_limits;
+  if (ul && typeof ul.type === "string" && typeof ul.param === "number") {
+    const mappedType = USAGE_TYPE_MAP[ul.type];
+    if (mappedType) {
+      f.recharge = { type: mappedType, param: ul.param };
+    } else {
+      // Surface unknown usage_limits.type values during build so future Open5e
+      // additions get noticed instead of silently dropped.
+      console.warn(
+        `[creature-merge] unknown usage_limits.type "${ul.type}" on action "${action.name}" — recharge dropped`,
+      );
+    }
   }
   return f;
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { toCreatureCanonical } from "../../../tools/srd-canonical/merger-rules/creature-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
@@ -382,5 +382,104 @@ describe("creature-merge edition-aware damage location", () => {
     const longbow = result.actions!.find(a => a.name === "Longbow")!;
     expect(longbow.attacks![0].type).toBe("ranged");
     expect(longbow.attacks![0].range).toEqual({ normal: 150, long: 600 });
+  });
+});
+
+describe("creature-merge usage_limits → Feature.recharge", () => {
+  function makeBaseWithAction(action: Record<string, unknown>): Record<string, unknown> {
+    return { ...aboleth2024, actions: [action] };
+  }
+
+  it("RECHARGE_ON_ROLL with param=5 → recharge.type=recharge_on_roll, param=5", () => {
+    const base = makeBaseWithAction({
+      name: "Acid Breath",
+      desc: "Exhales acid.",
+      action_type: "ACTION",
+      usage_limits: { type: "RECHARGE_ON_ROLL", param: 5 },
+      attacks: [],
+    });
+    const result = toCreatureCanonical(buildEntry(base, "2014"));
+    const acidBreath = result.actions!.find(a => a.name === "Acid Breath")!;
+    expect(acidBreath.recharge).toEqual({ type: "recharge_on_roll", param: 5 });
+  });
+
+  it("RECHARGE (2024 alias) with param=4 → recharge.type=recharge_on_roll, param=4", () => {
+    const base = makeBaseWithAction({
+      name: "Petrifying Gaze",
+      desc: "Petrifies a creature.",
+      action_type: "ACTION",
+      usage_limits: { type: "RECHARGE", param: 4 },
+      attacks: [],
+    });
+    const result = toCreatureCanonical(buildEntry(base, "2024"));
+    const gaze = result.actions!.find(a => a.name === "Petrifying Gaze")!;
+    expect(gaze.recharge).toEqual({ type: "recharge_on_roll", param: 4 });
+  });
+
+  it("PER_DAY with param=3 → recharge.type=per_day, param=3", () => {
+    const base = makeBaseWithAction({
+      name: "Enslave",
+      desc: "Targets one creature.",
+      action_type: "ACTION",
+      usage_limits: { type: "PER_DAY", param: 3 },
+      attacks: [],
+    });
+    const result = toCreatureCanonical(buildEntry(base, "2014"));
+    const enslave = result.actions!.find(a => a.name === "Enslave")!;
+    expect(enslave.recharge).toEqual({ type: "per_day", param: 3 });
+  });
+
+  it("PER_LONG_REST and PER_SHORT_REST map to canonical types", () => {
+    const baseLong = makeBaseWithAction({
+      name: "Daily Power",
+      desc: "...",
+      action_type: "ACTION",
+      usage_limits: { type: "PER_LONG_REST", param: 1 },
+      attacks: [],
+    });
+    expect(
+      toCreatureCanonical(buildEntry(baseLong, "2024")).actions!.find(a => a.name === "Daily Power")!.recharge,
+    ).toEqual({ type: "per_long_rest", param: 1 });
+
+    const baseShort = makeBaseWithAction({
+      name: "Surge",
+      desc: "...",
+      action_type: "ACTION",
+      usage_limits: { type: "PER_SHORT_REST", param: 2 },
+      attacks: [],
+    });
+    expect(
+      toCreatureCanonical(buildEntry(baseShort, "2024")).actions!.find(a => a.name === "Surge")!.recharge,
+    ).toEqual({ type: "per_short_rest", param: 2 });
+  });
+
+  it("absent usage_limits → no recharge field on Feature", () => {
+    const base = makeBaseWithAction({
+      name: "Slam",
+      desc: "Hits.",
+      action_type: "ACTION",
+      attacks: [],
+    });
+    const result = toCreatureCanonical(buildEntry(base, "2014"));
+    const slam = result.actions!.find(a => a.name === "Slam")!;
+    expect(slam.recharge).toBeUndefined();
+  });
+
+  it("unknown usage_limits.type → recharge dropped (no field) and warning logged", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const base = makeBaseWithAction({
+      name: "Mystery",
+      desc: "...",
+      action_type: "ACTION",
+      usage_limits: { type: "FUTURE_NEW_TYPE", param: 99 },
+      attacks: [],
+    });
+    const result = toCreatureCanonical(buildEntry(base, "2024"));
+    const mystery = result.actions!.find(a => a.name === "Mystery")!;
+    expect(mystery.recharge).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("FUTURE_NEW_TYPE"),
+    );
+    warnSpy.mockRestore();
   });
 });
