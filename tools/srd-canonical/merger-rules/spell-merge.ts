@@ -2,6 +2,7 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import type { CastingOption } from "../../../src/modules/spell/spell.types";
 import { rewriteCrossRefs } from "../cross-ref-map";
+import { flattenEntries } from "./condition-merge";
 
 export interface SpellCanonical {
   slug: string;
@@ -49,8 +50,24 @@ export function toSpellCanonical(entry: CanonicalEntry): SpellCanonical {
     duration: (base.duration as string | undefined) ?? "",
     concentration: base.concentration === true,
     ritual: base.ritual === true,
-    description: rewriteCrossRefs((base.desc as string) ?? "", entry.edition),
+    description: "",  // filled below — see "description" comment
   };
+
+  // description: prefer structured-rules `entries[]` over Open5e's flat
+  // `desc` because the structured shape preserves tables / lists / nested
+  // sections with proper line breaks. Open5e's 2024 dataset flattens table
+  // pipes onto a single line for some spells (Control Weather), which
+  // breaks downstream markdown table parsing. structured.entries is also
+  // strictly richer for 5e — Open5e's 2014 desc for Control Weather omits
+  // the precipitation/temperature/wind tables entirely.
+  let descText = "";
+  if (structured && Array.isArray(structured.entries) && structured.entries.length > 0) {
+    descText = flattenEntries(structured.entries);
+  }
+  if (!descText && typeof base.desc === "string") {
+    descText = base.desc;
+  }
+  out.description = rewriteCrossRefs(descText, entry.edition);
 
   // classes: Open5e v2 emits objects { name, key }; surface as lowercased name array.
   if (Array.isArray(base.classes)) {
@@ -76,7 +93,7 @@ export function toSpellCanonical(entry: CanonicalEntry): SpellCanonical {
   if (typeof base.higher_level === "string" && base.higher_level.length > 0) {
     out.at_higher_levels = [rewriteCrossRefs(base.higher_level, entry.edition)];
   } else if (structured && Array.isArray(structured.entriesHigherLevel)) {
-    const text = entriesToText(structured.entriesHigherLevel);
+    const text = flattenEntries(structured.entriesHigherLevel);
     if (text) out.at_higher_levels = [rewriteCrossRefs(text, entry.edition)];
   }
 
@@ -179,24 +196,5 @@ function composeComponents(base: Record<string, unknown>): string {
   return parts.join(", ");
 }
 
-/**
- * Flatten a structured-rules entries array (mix of strings and nested objects with `entries`)
- * into a single newline-joined string. Falls back to JSON.stringify for unrecognized objects.
- */
-function entriesToText(entries: unknown[]): string {
-  const parts: string[] = [];
-  for (const e of entries) {
-    if (typeof e === "string") {
-      parts.push(e);
-    } else if (e && typeof e === "object") {
-      const obj = e as Record<string, unknown>;
-      if (Array.isArray(obj.entries)) {
-        const inner = entriesToText(obj.entries);
-        if (inner) parts.push(inner);
-      } else {
-        parts.push(JSON.stringify(obj));
-      }
-    }
-  }
-  return parts.join("\n\n");
-}
+// (Local entriesToText removed — replaced by `flattenEntries` from
+// condition-merge, which handles strings, nested entries, lists, AND tables.)
