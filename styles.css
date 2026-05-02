@@ -6257,6 +6257,67 @@ code .claudian-file-link:hover {
   z-index: 10;
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * Shared archivist table — D&D brick-styled
+ * Applies to programmatic <table class="archivist-table"> and
+ * to <table> rendered by Obsidian MarkdownRenderer (post-processed
+ * to add the class). Monster .abilities-table keeps its distinct
+ * stat-tile style and is unaffected.
+ * ───────────────────────────────────────────────────────────── */
+.archivist-spell-block table.archivist-table,
+.archivist-item-block table.archivist-table,
+.archivist-class-block table.archivist-table,
+.archivist-monster-block table.archivist-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0;
+  font-size: 13px;
+  background: transparent;
+}
+.archivist-spell-block table.archivist-table th,
+.archivist-item-block table.archivist-table th,
+.archivist-class-block table.archivist-table th,
+.archivist-monster-block table.archivist-table th {
+  color: #7a200d;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 8px;
+  text-align: center;
+  border: none;
+  border-bottom: 1px solid #7a200d;
+  letter-spacing: 0.4px;
+  background: transparent;
+}
+.archivist-spell-block table.archivist-table th:first-child,
+.archivist-item-block table.archivist-table th:first-child,
+.archivist-class-block table.archivist-table th:first-child,
+.archivist-monster-block table.archivist-table th:first-child {
+  text-align: left;
+}
+.archivist-spell-block table.archivist-table td,
+.archivist-item-block table.archivist-table td,
+.archivist-class-block table.archivist-table td,
+.archivist-monster-block table.archivist-table td {
+  padding: 4px 8px;
+  text-align: center;
+  border: none;
+  font-size: 12px;
+}
+.archivist-spell-block table.archivist-table td:first-child,
+.archivist-item-block table.archivist-table td:first-child,
+.archivist-class-block table.archivist-table td:first-child,
+.archivist-monster-block table.archivist-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+.archivist-spell-block table.archivist-table tbody tr:nth-child(even) td,
+.archivist-item-block table.archivist-table tbody tr:nth-child(even) td,
+.archivist-class-block table.archivist-table tbody tr:nth-child(even) td,
+.archivist-monster-block table.archivist-table tbody tr:nth-child(even) td {
+  background: rgba(217, 196, 132, 0.35);
+}
+
 /* 5. Magic Item Block (reuses spell block pattern)
    ========================================================================== */
 
