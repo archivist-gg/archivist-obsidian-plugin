@@ -698,6 +698,26 @@
   font-style: italic;
 }
 
+/* Internal-link colour override inside archivist blocks. Obsidian's default
+ * is blue, which clashes with the parchment palette. Brick brown matches
+ * the rest of the block's accents. */
+.archivist-spell-block a.internal-link,
+.archivist-item-block a.internal-link,
+.archivist-class-block a.internal-link,
+.archivist-monster-block a.internal-link {
+  color: #7a200d;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+.archivist-spell-block a.internal-link:hover,
+.archivist-item-block a.internal-link:hover,
+.archivist-class-block a.internal-link:hover,
+.archivist-monster-block a.internal-link:hover {
+  color: #5a1808;
+  text-decoration-style: solid;
+}
+
 /* Spell Tags */
 .archivist-spell-block .spell-tags {
   display: flex;
