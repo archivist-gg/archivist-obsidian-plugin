@@ -45,14 +45,17 @@ class SpellModule implements ArchivistModule {
 
   render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
     const spell = data as Spell;
-    // Async renderer is fire-and-forget here: the placeholder is appended sync
-    // so the host can return it; markdown content streams in asynchronously.
-    const placeholder = el.doc.createElement("div");
-    el.appendChild(placeholder);
+    // Stable wrapper held by the host as `rendered`; the async renderer fills
+    // it as a child instead of replacing it. If we used placeholder.replaceWith,
+    // the host's `rendered` reference would point at a detached node after the
+    // swap, and `rendered.remove()` in enterEditMode would no-op — leaving the
+    // view block visible underneath the edit form.
+    const wrapper = el.doc.createElement("div");
+    el.appendChild(wrapper);
     void renderSpellBlock(spell).then((block) => {
-      placeholder.replaceWith(block);
+      wrapper.appendChild(block);
     });
-    return placeholder;
+    return wrapper;
   }
 
   renderEditMode(el: HTMLElement, data: unknown, ctx: EditContext): void {
