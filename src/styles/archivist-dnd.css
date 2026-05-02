@@ -579,19 +579,26 @@
   justify-content: flex-start;
 }
 
-.archivist-spell-block {
+/* Shared parchment palette for the three text-block types (spell/item/class).
+ * Monster has its own variable-driven theme (--stat-block-*) and is excluded. */
+.archivist-spell-block,
+.archivist-item-block,
+.archivist-class-block {
   background: #f0ddbd;
   font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-size: 14px;
-  line-height: 1.2em;
   color: #191813;
-  position: relative;
   box-shadow:
     0 4px 24px rgba(134, 116, 83, 0.3),
     0 2px 8px rgba(134, 116, 83, 0.2);
   padding: 0.6em;
-  width: 100%;
   border-radius: 4px;
+}
+
+.archivist-spell-block {
+  line-height: 1.2em;
+  position: relative;
+  width: 100%;
 }
 
 /* Header Section */
@@ -869,18 +876,9 @@
 }
 
 .archivist-item-block {
-  background: #f0ddbd;
-  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
-  font-size: 14px;
   line-height: 1.2em;
-  color: #191813;
   position: relative;
-  box-shadow:
-    0 4px 24px rgba(134, 116, 83, 0.3),
-    0 2px 8px rgba(134, 116, 83, 0.2);
-  padding: 0.6em;
   width: 100%;
-  border-radius: 4px;
 }
 
 /* Item Header */
@@ -1962,16 +1960,9 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 
-/* Class block — parchment palette mirrors spell/item */
+/* Class block — parchment palette mirrors spell/item (shared rule above) */
 .archivist-class-block {
-  background: #f0ddbd;
-  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
-  font-size: 14px;
   line-height: 1.3;
-  color: #191813;
-  box-shadow: 0 4px 24px rgba(134,116,83,0.3), 0 2px 8px rgba(134,116,83,0.2);
-  padding: 0.6em;
-  border-radius: 4px;
   margin: 1.5em 0;
 }
 .archivist-class-block-header {
