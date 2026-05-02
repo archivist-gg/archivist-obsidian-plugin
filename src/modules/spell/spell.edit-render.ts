@@ -237,38 +237,12 @@ export function renderSpellEditMode(
   const descHeader = descSection.createDiv({ cls: "higher-levels-header" });
   descHeader.textContent = "Description";
 
-  const descEntries = draft.description ?? [""];
-  if (descEntries.length === 0) descEntries.push("");
-
-  for (let i = 0; i < descEntries.length; i++) {
-    const ta = descSection.createEl("textarea", { cls: "archivist-feat-text-input" });
-    ta.value = descEntries[i];
-    ta.rows = 3;
-    const idx = i;
-    ta.addEventListener("input", () => {
-      descEntries[idx] = ta.value;
-      draft.description = descEntries.filter((e) => e.trim().length > 0);
-      markDirty();
-    });
-  }
-
-  // Add description paragraph button
-  const addDescBtn = descSection.createDiv({ cls: "archivist-side-btn archivist-edit-add-btn" });
-  setIcon(addDescBtn, "plus");
-  addDescBtn.setAttribute("aria-label", "Add paragraph");
-  addDescBtn.addEventListener("click", () => {
-    descEntries.push("");
-    const ta = descSection.createEl("textarea", { cls: "archivist-feat-text-input" });
-    ta.rows = 3;
-    // Insert before the add button
-    descSection.insertBefore(ta, addDescBtn);
-    const idx = descEntries.length - 1;
-    ta.addEventListener("input", () => {
-      descEntries[idx] = ta.value;
-      draft.description = descEntries.filter((e) => e.trim().length > 0);
-      markDirty();
-    });
-    ta.focus();
+  const descTa = descSection.createEl("textarea", { cls: "archivist-feat-text-input" });
+  descTa.value = draft.description ?? "";
+  descTa.rows = 6;
+  descTa.addEventListener("input", () => {
+    draft.description = descTa.value.length > 0 ? descTa.value : undefined;
+    markDirty();
   });
 
   // =========================================================================
