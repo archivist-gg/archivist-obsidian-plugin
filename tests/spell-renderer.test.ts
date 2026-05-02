@@ -106,4 +106,16 @@ describe("renderSpellBlock", () => {
     const w = await renderSpellBlock(cantrip);
     expect(w.querySelector(".spell-school")?.textContent).toBe("Evocation cantrip");
   });
+
+  it("embedded markdown table in description renders as <table class='archivist-table'>", async () => {
+    const spell: Spell = {
+      name: "Test",
+      description: `Intro paragraph.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\nOutro paragraph.`,
+    };
+    const w = await renderSpellBlock(spell);
+    const t = w.querySelector("table");
+    expect(t).not.toBeNull();
+    expect(t?.classList.contains("archivist-table")).toBe(true);
+    expect(t?.querySelectorAll("tbody tr")).toHaveLength(1);
+  });
 });

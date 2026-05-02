@@ -10,9 +10,38 @@ vi.mock("obsidian", () => ({
     render: async (_app: unknown, md: string, parent: HTMLElement) => {
       const doc = parent.ownerDocument;
       for (const para of md.split("\n\n")) {
-        const p = doc.createElement("p");
-        p.textContent = para;
-        parent.appendChild(p);
+        const lines = para.split("\n").filter((l: string) => l.trim().length > 0);
+        const isPipeTable = lines.length >= 2 && lines[0].includes("|") && /^\s*\|?\s*-+/.test(lines[1]);
+        if (isPipeTable) {
+          const headCells = lines[0].split("|").slice(1, -1).map((s: string) => s.trim());
+          const bodyRows = lines.slice(2).map((l: string) => l.split("|").slice(1, -1).map((s: string) => s.trim()));
+          const t = doc.createElement("table");
+          const thead = doc.createElement("thead");
+          const tr = doc.createElement("tr");
+          for (const h of headCells) {
+            const th = doc.createElement("th");
+            th.textContent = h;
+            tr.appendChild(th);
+          }
+          thead.appendChild(tr);
+          t.appendChild(thead);
+          const tb = doc.createElement("tbody");
+          for (const r of bodyRows) {
+            const row = doc.createElement("tr");
+            for (const c of r) {
+              const td = doc.createElement("td");
+              td.textContent = c;
+              row.appendChild(td);
+            }
+            tb.appendChild(row);
+          }
+          t.appendChild(tb);
+          parent.appendChild(t);
+        } else {
+          const p = doc.createElement("p");
+          p.textContent = para;
+          parent.appendChild(p);
+        }
       }
     },
   },
@@ -127,5 +156,16 @@ describe("renderItemBlock — markdown description, base_item, cost", () => {
     const item: ItemEntity = { name: "T", cost: "50 gp" };
     const block = await renderItemBlock(item);
     expect(block.textContent ?? "").toContain("50 gp");
+  });
+
+  it("embedded markdown table in item description renders with brick class", async () => {
+    const item: ItemEntity = {
+      name: "Necklace of Prayer Beads",
+      description: `Six types exist:\n\n| 1d20 | Bead | Spell |\n|------|------|-------|\n| 1-6  | Blessing | bless |\n| 7-12 | Curing | cure wounds |\n\nUse one as a bonus action.`,
+    };
+    const block = await renderItemBlock(item);
+    const t = block.querySelector("table");
+    expect(t).not.toBeNull();
+    expect(t?.classList.contains("archivist-table")).toBe(true);
   });
 });
