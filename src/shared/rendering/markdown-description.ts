@@ -1,7 +1,6 @@
 import { MarkdownRenderer, Component, type App } from "obsidian";
 import { parseInlineTag } from "./inline-tag-parser";
-import { renderInlineTag } from "./inline-tag-renderer";
-import { convert5eToolsTags } from "./renderer-utils";
+import { convert5eToolsTags, renderStatBlockTag } from "./renderer-utils";
 
 /**
  * Render a markdown string into `parent` using Obsidian's native renderer,
@@ -43,12 +42,14 @@ export async function renderMarkdownDescription(
 
   // Dice-tag swap. MarkdownRenderer renders backtick-wrapped tokens as <code>;
   // walk and replace recognized tags (d:2d6, dc:15, atk:STR, …) with widgets.
+  // Uses renderStatBlockTag (the same renderer at_higher_levels uses) so
+  // dice in description match dice in at_higher_levels visually.
   const codes = Array.from(parent.querySelectorAll("code"));
   for (const code of codes) {
     const text = code.textContent ?? "";
     const parsed = parseInlineTag(text);
     if (!parsed) continue;
-    const widget = renderInlineTag(parsed, parent.ownerDocument ?? activeDocument);
+    const widget = renderStatBlockTag(parsed, undefined, parent.ownerDocument ?? activeDocument);
     code.replaceWith(widget);
   }
 }

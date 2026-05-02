@@ -186,7 +186,7 @@ function resolveTagContent(
  * When monsterCtx is provided, formula tags (e.g. `atk:DEX`, `dc:WIS`, `damage:1d6+STR`)
  * are resolved to concrete values using the monster's ability scores and proficiency bonus.
  */
-function renderStatBlockTag(
+export function renderStatBlockTag(
   tag: { type: string; content: string },
   monsterCtx?: FormulaContext,
   doc: Document = activeDocument,
