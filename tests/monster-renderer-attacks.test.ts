@@ -242,3 +242,37 @@ describe("Monster renderer Feature.recharge suffix", () => {
     expect(text).not.toContain("/Day");
   });
 });
+
+describe("Monster renderer Legendary Resistance toggle widget", () => {
+  it("renders Legendary Resistance toggle widget when legendary_resistance > 0", () => {
+    const root = mountContainer();
+    const monster: Monster = {
+      name: "Adult Black Dragon",
+      legendary_actions: [{ name: "Pounce", entries: ["..."] }],
+      legendary_resistance: 3,
+    };
+    const wrapper = renderMonsterBlock(monster);
+    root.appendChild(wrapper);
+    const text = root.textContent ?? "";
+    // Label is rendered (without redundant prose)
+    expect(text).toContain("Legendary Resistance (3/Day)");
+    // Redundant prose lives in the TRAITS tab, not duplicated here
+    expect(text).not.toContain("can choose to succeed instead");
+    // Three interactive toggle boxes are rendered inside the LR block
+    const resBlock = wrapper.querySelector(".archivist-legendary-resistance");
+    expect(resBlock).not.toBeNull();
+    const boxes = resBlock!.querySelectorAll(".archivist-toggle-box");
+    expect(boxes.length).toBe(3);
+  });
+
+  it("does not render the LR widget when legendary_resistance is absent", () => {
+    const root = mountContainer();
+    const monster: Monster = {
+      name: "Goblin Boss",
+      legendary_actions: [{ name: "Pounce", entries: ["..."] }],
+    };
+    const wrapper = renderMonsterBlock(monster);
+    root.appendChild(wrapper);
+    expect(wrapper.querySelector(".archivist-legendary-resistance")).toBeNull();
+  });
+});

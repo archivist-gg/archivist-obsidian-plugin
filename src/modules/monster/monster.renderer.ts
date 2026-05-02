@@ -154,6 +154,18 @@ function renderLegendarySection(
   const introText = `The ${monsterName} can take ${legendaryCount} legendary actions, choosing from the options below. Only one legendary action option can be used at a time and only at the end of another creature's turn. The ${monsterName} regains spent legendary actions at the start of its turn.`;
   el("p", { cls: "archivist-legendary-intro", text: introText, parent });
   renderLegendaryBoxes(parent, legendaryCount);
+
+  if (monster.legendary_resistance && monster.legendary_resistance > 0) {
+    const resCount = monster.legendary_resistance;
+    const resBlock = el("div", { cls: "archivist-legendary-resistance", parent });
+    // Just a label + toggles; full prose lives in the TRAITS tab as the actual trait.
+    el("p", {
+      cls: "archivist-legendary-resistance-label",
+      text: `Legendary Resistance (${resCount}/Day)`,
+      parent: resBlock,
+    });
+    renderLegendaryBoxes(resBlock, resCount);
+  }
 }
 
 function createRichPropertyLine(
