@@ -233,6 +233,37 @@ describe("creature-merge field paths and structured attacks (β+)", () => {
     const result = toCreatureCanonical(buildEntry(aboleth2024, "2014"));
     expect(result.source).toBe("SRD 5.1");
   });
+
+  it("sorts actions by Open5e order_in_statblock within each action_type bucket", () => {
+    // Open5e's `actions` array is alphabetical; the canonical statblock order
+    // lives in each action's `order_in_statblock` ordinal (per-bucket).
+    const dragon: Record<string, unknown> = {
+      ...aboleth2024,
+      name: "Adult Black Dragon Test",
+      actions: [
+        // Alphabetical input — merger must reorder by order_in_statblock.
+        { name: "Acid Breath", desc: "Exhales acid.", action_type: "ACTION", order_in_statblock: 2, attacks: [] },
+        { name: "Multiattack", desc: "Three attacks.", action_type: "ACTION", order_in_statblock: 0, attacks: [] },
+        { name: "Rend", desc: "Bite + claws.", action_type: "ACTION", order_in_statblock: 1, attacks: [] },
+        { name: "Spellcasting", desc: "Casts a spell.", action_type: "ACTION", order_in_statblock: 3, attacks: [] },
+        { name: "Cloud of Insects", desc: "Insects swarm.", action_type: "LEGENDARY_ACTION", order_in_statblock: 0, attacks: [] },
+        { name: "Pounce", desc: "Pounces.", action_type: "LEGENDARY_ACTION", order_in_statblock: 2, attacks: [] },
+        { name: "Frightful Presence", desc: "Frightens foes.", action_type: "LEGENDARY_ACTION", order_in_statblock: 1, attacks: [] },
+      ],
+    };
+    const result = toCreatureCanonical(buildEntry(dragon, "2024"));
+    expect(result.actions!.map(a => a.name)).toEqual([
+      "Multiattack",
+      "Rend",
+      "Acid Breath",
+      "Spellcasting",
+    ]);
+    expect(result.legendary_actions!.map(a => a.name)).toEqual([
+      "Cloud of Insects",
+      "Frightful Presence",
+      "Pounce",
+    ]);
+  });
 });
 
 describe("creature-merge edition-aware damage location", () => {

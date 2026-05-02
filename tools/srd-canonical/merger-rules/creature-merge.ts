@@ -35,6 +35,7 @@ interface Open5eAction {
   legendary_action_cost?: number | null;
   usage_limits?: { type: string; param: number } | null;
   attacks?: Open5eAttack[];
+  order_in_statblock?: number;
 }
 
 interface Open5eTrait {
@@ -325,8 +326,17 @@ export function toCreatureCanonical(entry: CanonicalEntry): CreatureCanonical {
   const damage_vulnerabilities = flatKeys(ri.damage_vulnerabilities);
   const condition_immunities = flatKeys(ri.condition_immunities);
 
-  // Actions split by action_type.
-  const allActions = (Array.isArray(base.actions) ? (base.actions as Open5eAction[]) : []);
+  // Actions split by action_type. Open5e returns `actions` alphabetically;
+  // each action carries an `order_in_statblock` ordinal giving the canonical
+  // position WITHIN its action_type bucket. Sort the whole list once by that
+  // ordinal — bucketizing in a stable pass below preserves the per-bucket
+  // ordering. Missing values fall to the end.
+  const allActions = (Array.isArray(base.actions) ? [...(base.actions as Open5eAction[])] : []);
+  allActions.sort(
+    (a, b) =>
+      (a.order_in_statblock ?? Number.MAX_SAFE_INTEGER) -
+      (b.order_in_statblock ?? Number.MAX_SAFE_INTEGER),
+  );
   const actions: Feature[] = [];
   const reactions: Feature[] = [];
   const legendary: Feature[] = [];
