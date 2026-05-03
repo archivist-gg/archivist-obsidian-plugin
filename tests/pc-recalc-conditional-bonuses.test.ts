@@ -5,8 +5,13 @@
 // `when: [...]` conditions, and asserts the user-visible derived state
 // (ac, acBreakdown, acInformational, attacks, saves, speed).
 
-import { describe, it, expect } from "vitest";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { describe, it, expect, beforeAll } from "vitest";
 import { recalc } from "../src/modules/pc/pc.recalc";
+import { readNumericBonus } from "../src/modules/item/item.bonuses";
+import type { ItemEntity } from "../src/modules/item/item.types";
+import type { ConditionContext } from "../src/modules/item/item.conditions.types";
 import type {
   Character,
   ResolvedCharacter,
@@ -260,5 +265,63 @@ describe("Speed with conditional item bonuses", () => {
     // Walk speed stays at the default 30; the conditional underwater swim
     // bonus does not bleed into the headline walk number.
     expect(d.speed).toBe(30);
+  });
+});
+
+describe("recalc against bundle conditional bonuses", () => {
+  let bundle2014: Array<ItemEntity & { slug: string }>;
+
+  beforeAll(() => {
+    const file = path.resolve(__dirname, "../src/srd/data/runtime/item.2014.json");
+    bundle2014 = JSON.parse(fs.readFileSync(file, "utf8")) as Array<ItemEntity & { slug: string }>;
+  });
+
+  function loadBundleItem(slug: string): ItemEntity {
+    const found = bundle2014.find(i => i.slug === slug);
+    if (!found) throw new Error(`bundle item ${slug} not found`);
+    return found;
+  }
+
+  function makeBundleContext(overrides: Partial<ConditionContext["derived"]>): ConditionContext {
+    return {
+      derived: { equippedSlots: {} as never, ...overrides } as ConditionContext["derived"],
+      classList: [],
+      race: null,
+      subclasses: [],
+    };
+  }
+
+  it("Bracers of Defense applies +2 AC when no armor and no shield", () => {
+    const bracers = loadBundleItem("srd-5e_bracers-of-defense");
+    expect(bracers.bonuses?.ac).toMatchObject({
+      value: 2,
+      when: [{ kind: "no_armor" }, { kind: "no_shield" }],
+    });
+    const ctx = makeBundleContext({ equippedSlots: { armor: undefined, shield: undefined } });
+    const out = readNumericBonus(bracers.bonuses?.ac, ctx);
+    expect(out).toEqual({ kind: "applied", value: 2 });
+  });
+
+  it("Bracers of Defense skips when shield equipped", () => {
+    const bracers = loadBundleItem("srd-5e_bracers-of-defense");
+    const ctx = makeBundleContext({
+      equippedSlots: {
+        armor: undefined,
+        shield: { entity: { name: "Shield" } } as never,
+      },
+    });
+    const out = readNumericBonus(bracers.bonuses?.ac, ctx);
+    expect(out).toEqual({ kind: "skipped" });
+  });
+
+  it("Arrow-Catching Shield is informational (Tier 2 vs ranged)", () => {
+    const acs = loadBundleItem("srd-5e_arrow-catching-shield");
+    expect(acs.bonuses?.ac).toMatchObject({
+      value: 2,
+      when: [{ kind: "vs_attack_type", value: "ranged" }],
+    });
+    const ctx = makeBundleContext({ equippedSlots: {} });
+    const out = readNumericBonus(acs.bonuses?.ac, ctx);
+    expect(out).toMatchObject({ kind: "informational", value: 2 });
   });
 });
