@@ -149,3 +149,42 @@ describe("FIELD_PAIRINGS extractors", () => {
     expect(p.fivetoolsExtract({})).toBeUndefined();
   });
 });
+
+import { joinSources } from "../../tools/srd-canonical/audit-merger-gaps";
+
+describe("joinSources", () => {
+  it("matches by slug across the two sources", () => {
+    const open5e = [
+      { key: "srd-2024_sun-blade", name: "Sun Blade" },
+      { key: "srd-2024_holy-avenger", name: "Holy Avenger" },
+    ];
+    const fivetools = [
+      { name: "Sun Blade", source: "XDMG" },
+      { name: "Holy Avenger", source: "XDMG" },
+    ];
+    const pairs = joinSources(open5e, fivetools, "2024");
+    expect(pairs.length).toBe(2);
+    const sb = pairs.find(p => p.slug === "srd-2024_sun-blade");
+    expect(sb?.open5e).toBeDefined();
+    expect(sb?.fivetools).toBeDefined();
+    expect(sb?.fivetools?.name).toBe("Sun Blade");
+  });
+
+  it("includes Open5e items with no 5etools match", () => {
+    const open5e = [{ key: "srd-2024_only-open5e", name: "Only Open5e" }];
+    const fivetools: Array<Record<string, unknown>> = [];
+    const pairs = joinSources(open5e, fivetools, "2024");
+    expect(pairs.length).toBe(1);
+    expect(pairs[0].open5e).toBeDefined();
+    expect(pairs[0].fivetools).toBeUndefined();
+  });
+
+  it("includes 5etools items with no Open5e match", () => {
+    const open5e: Array<Record<string, unknown>> = [];
+    const fivetools = [{ name: "Only 5etools", source: "XDMG" }];
+    const pairs = joinSources(open5e, fivetools, "2024");
+    expect(pairs.length).toBe(1);
+    expect(pairs[0].open5e).toBeUndefined();
+    expect(pairs[0].fivetools).toBeDefined();
+  });
+});

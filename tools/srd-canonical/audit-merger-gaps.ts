@@ -155,3 +155,41 @@ export const FIELD_PAIRINGS: FieldPairing[] = [
     materiality: "informational",
   },
 ];
+
+import { slugifyName, editionPrefix } from "./sources/slug-normalize";
+
+export interface ItemPair {
+  slug: string;
+  edition: "2014" | "2024";
+  open5e: Record<string, unknown> | undefined;
+  fivetools: Record<string, unknown> | undefined;
+}
+
+export function joinSources(
+  open5eItems: Array<Record<string, unknown>>,
+  fivetoolsItems: Array<Record<string, unknown>>,
+  edition: "2014" | "2024",
+): ItemPair[] {
+  const prefix = editionPrefix(edition);
+  const byOpen5eKey = new Map<string, Record<string, unknown>>();
+  for (const o of open5eItems) {
+    const key = (o.key as string) ?? "";
+    if (key) byOpen5eKey.set(key, o);
+  }
+  const byFiveToolsSlug = new Map<string, Record<string, unknown>>();
+  for (const f of fivetoolsItems) {
+    const slug = `${prefix}${slugifyName(f.name as string)}`;
+    byFiveToolsSlug.set(slug, f);
+  }
+  const allSlugs = new Set<string>([...byOpen5eKey.keys(), ...byFiveToolsSlug.keys()]);
+  const out: ItemPair[] = [];
+  for (const slug of allSlugs) {
+    out.push({
+      slug,
+      edition,
+      open5e: byOpen5eKey.get(slug),
+      fivetools: byFiveToolsSlug.get(slug),
+    });
+  }
+  return out;
+}
