@@ -71,8 +71,8 @@ function slugToTitleName(slug: unknown): string | undefined {
 
 function entriesAsProse(entries: unknown): string | undefined {
   if (!Array.isArray(entries) || entries.length === 0) return undefined;
-  if (!entries.every(e => typeof e === "string")) return undefined;
-  return (entries as string[]).join("\n\n");
+  if (!entries.every((e): e is string => typeof e === "string")) return undefined;
+  return entries.join("\n\n");
 }
 
 function cpToGpStringForAudit(cp: unknown): string | undefined {
