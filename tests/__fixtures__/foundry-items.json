@@ -1,0 +1,35 @@
+{
+  "item": [
+    {
+      "name": "Bracers of Archery",
+      "source": "DMG",
+      "effects": [
+        {
+          "name": "Bracers of Archery",
+          "transfer": true,
+          "changes": [
+            { "key": "system.bonuses.rwak.damage", "mode": "ADD", "value": "+ 2" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Amulet of Health",
+      "source": "DMG",
+      "effects": [
+        {
+          "name": "Amulet of Health",
+          "transfer": true,
+          "changes": [
+            { "key": "system.abilities.con.value", "mode": "ADD", "value": 19 }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bracers of Archery",
+      "source": "XDMG",
+      "effects": []
+    }
+  ]
+}
