@@ -113,6 +113,77 @@ describe("itemMergeRule", () => {
     expect(out.attached_spells?.charges).toEqual({ "1": ["fireball"] });
     expect(out.attunement).toBeUndefined();
   });
+
+  it("bonusWeapon dual-emits weapon_attack AND weapon_damage", () => {
+    const entry: CanonicalEntry = {
+      slug: "srd-5e_sun-blade",
+      edition: "2014",
+      kind: "item",
+      base: {
+        key: "srd-5e_sun-blade",
+        name: "Sun Blade",
+        rarity: "rare",
+        requires_attunement: true,
+      },
+      structured: {
+        name: "Sun Blade",
+        source: "DMG",
+        bonusWeapon: "+2",
+      } as never,
+      activation: null,
+      overlay: null,
+    };
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.weapon_attack).toBe(2);
+    expect(out.bonuses?.weapon_damage).toBe(2);
+  });
+
+  it("bonusWeaponAttack does NOT dual-emit (attack-only)", () => {
+    const entry: CanonicalEntry = {
+      slug: "srd-5e_nikos-mace",
+      edition: "2014",
+      kind: "item",
+      base: {
+        key: "srd-5e_nikos-mace",
+        name: "Niko's Mace",
+        rarity: "rare",
+      },
+      structured: {
+        name: "Niko's Mace",
+        source: "DMG",
+        bonusWeaponAttack: "+1",
+      } as never,
+      activation: null,
+      overlay: null,
+    };
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.weapon_attack).toBe(1);
+    expect(out.bonuses?.weapon_damage).toBeUndefined();
+  });
+
+  it("bonusWeaponDamage does NOT dual-emit (damage-only — Bracers of Archery)", () => {
+    const entry: CanonicalEntry = {
+      slug: "srd-5e_bracers-of-archery",
+      edition: "2014",
+      kind: "item",
+      base: {
+        key: "srd-5e_bracers-of-archery",
+        name: "Bracers of Archery",
+        rarity: "uncommon",
+        requires_attunement: true,
+      },
+      structured: {
+        name: "Bracers of Archery",
+        source: "DMG",
+        bonusWeaponDamage: "+2",
+      } as never,
+      activation: null,
+      overlay: null,
+    };
+    const out = toItemCanonical(entry);
+    expect(out.bonuses?.weapon_damage).toBe(2);
+    expect(out.bonuses?.weapon_attack).toBeUndefined();
+  });
 });
 
 describe("item-merge Open5e shape normalization", () => {
