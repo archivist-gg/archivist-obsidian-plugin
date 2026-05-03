@@ -2,23 +2,26 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
+import type { ConditionalBonus } from "../../../src/modules/item/item.conditions.types";
+
+type NumberOrConditional = number | ConditionalBonus;
 
 export interface ItemBonuses {
-  weapon_attack?: number;
-  weapon_damage?: number;
-  ac?: number;
-  spell_attack?: number;
-  spell_save_dc?: number;
-  saving_throws?: number;
+  weapon_attack?: NumberOrConditional;
+  weapon_damage?: NumberOrConditional;
+  ac?: NumberOrConditional;
+  spell_attack?: NumberOrConditional;
+  spell_save_dc?: NumberOrConditional;
+  saving_throws?: NumberOrConditional;
   ability_scores?: {
     static?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", number>>;
-    bonus?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", number>>;
+    bonus?: Partial<Record<"str" | "dex" | "con" | "int" | "wis" | "cha", NumberOrConditional>>;
   };
   speed?: {
-    walk?: number;
-    fly?: number | "walk";
-    swim?: number;
-    climb?: number;
+    walk?: NumberOrConditional;
+    fly?: NumberOrConditional | "walk";
+    swim?: NumberOrConditional;
+    climb?: NumberOrConditional;
   };
 }
 
@@ -114,6 +117,15 @@ function coerceBonusNumber(value: unknown): number | undefined {
  * onto a canonical item — guarantees scalar bonus fields are numbers and
  * silently drops malformed entries. Pass-through for already-numeric input.
  */
+function isConditionalBonus(x: unknown): x is ConditionalBonus {
+  return (
+    !!x
+    && typeof x === "object"
+    && typeof (x as { value?: unknown }).value === "number"
+    && Array.isArray((x as { when?: unknown }).when)
+  );
+}
+
 function normalizeBonuses(src: ItemBonuses): ItemBonuses {
   const out: ItemBonuses = {};
   const scalarKeys: ScalarBonusKey[] = [
@@ -125,8 +137,13 @@ function normalizeBonuses(src: ItemBonuses): ItemBonuses {
     "saving_throws",
   ];
   for (const k of scalarKeys) {
-    const n = coerceBonusNumber(src[k]);
-    if (n !== undefined) out[k] = n;
+    const raw = src[k];
+    if (isConditionalBonus(raw)) {
+      out[k] = raw;
+    } else {
+      const n = coerceBonusNumber(raw);
+      if (n !== undefined) out[k] = n;
+    }
   }
   if (src.ability_scores) out.ability_scores = src.ability_scores;
   if (src.speed) out.speed = src.speed;
