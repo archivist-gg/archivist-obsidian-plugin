@@ -12,6 +12,7 @@ import {
   translateFoundryChanges,
   type FoundryContribution,
 } from "../sources/foundry-effects";
+import { CURATED_ITEM_CONDITIONS } from "../data/item-conditions";
 
 type NumberOrConditional = number | ConditionalBonus;
 
@@ -576,4 +577,89 @@ function wrap(
   const merged: Condition[] = [...existing.when];
   for (const c of when) if (!merged.includes(c)) merged.push(c);
   return { value: existing.value, when: merged };
+}
+
+/**
+ * Apply curated condition lists from data/item-conditions.ts onto canonical
+ * magic items. For each `(slug, field)` pair in the table, replace the
+ * field's `when[]` (or wrap a flat value) with the curated list.
+ *
+ * If a curated entry names a field where no value exists, log a warning
+ * and skip — the curated table relies on layer 2 or 3 to provide the value.
+ *
+ * Mutates `items` in place. Must run AFTER enrichItemsWithFoundryEffects
+ * so foundry-derived values are present before curated decides the gate.
+ */
+export function enrichItemsWithCuratedConditions(items: ItemCanonical[]): void {
+  for (const item of items) {
+    const perField = CURATED_ITEM_CONDITIONS[item.slug];
+    if (!perField) continue;
+    for (const [field, conds] of Object.entries(perField) as Array<[BonusFieldPath, Condition[]]>) {
+      applyCuratedField(item, field, conds);
+    }
+  }
+}
+
+function applyCuratedField(item: ItemCanonical, field: BonusFieldPath, conds: Condition[]): void {
+  const bonuses = item.bonuses;
+  if (!bonuses) {
+    console.warn(`[item-merge] ${item.slug}: curated entry for "${field}" but item has no bonuses — skipped`);
+    return;
+  }
+  const existingValue = readBonusValue(bonuses, field);
+  if (existingValue === undefined) {
+    console.warn(`[item-merge] ${item.slug}: curated entry for "${field}" but no value present — skipped`);
+    return;
+  }
+  writeBonusValue(bonuses, field, { value: existingValue, when: conds });
+}
+
+function readBonusValue(bonuses: ItemBonuses, field: BonusFieldPath): number | undefined {
+  if (
+    field === "weapon_attack" || field === "weapon_damage" || field === "ac"
+    || field === "spell_attack" || field === "spell_save_dc" || field === "saving_throws"
+  ) {
+    const raw = bonuses[field];
+    if (typeof raw === "number") return raw;
+    if (isConditionalBonus(raw)) return raw.value;
+    return undefined;
+  }
+  if (field.startsWith("speed.")) {
+    const sub = field.slice("speed.".length) as "walk" | "fly" | "swim" | "climb";
+    const raw = bonuses.speed?.[sub];
+    if (typeof raw === "number") return raw;
+    if (isConditionalBonus(raw)) return raw.value;
+    return undefined;
+  }
+  if (field.startsWith("ability_scores.bonus.")) {
+    const sub = field.slice("ability_scores.bonus.".length) as "str" | "dex" | "con" | "int" | "wis" | "cha";
+    const raw = bonuses.ability_scores?.bonus?.[sub];
+    if (typeof raw === "number") return raw;
+    if (isConditionalBonus(raw)) return raw.value;
+    return undefined;
+  }
+  return undefined;
+}
+
+function writeBonusValue(bonuses: ItemBonuses, field: BonusFieldPath, conditional: ConditionalBonus): void {
+  if (
+    field === "weapon_attack" || field === "weapon_damage" || field === "ac"
+    || field === "spell_attack" || field === "spell_save_dc" || field === "saving_throws"
+  ) {
+    bonuses[field] = conditional;
+    return;
+  }
+  if (field.startsWith("speed.")) {
+    const sub = field.slice("speed.".length) as "walk" | "fly" | "swim" | "climb";
+    bonuses.speed = bonuses.speed ?? {};
+    bonuses.speed[sub] = conditional;
+    return;
+  }
+  if (field.startsWith("ability_scores.bonus.")) {
+    const sub = field.slice("ability_scores.bonus.".length) as "str" | "dex" | "con" | "int" | "wis" | "cha";
+    bonuses.ability_scores = bonuses.ability_scores ?? {};
+    bonuses.ability_scores.bonus = bonuses.ability_scores.bonus ?? {};
+    bonuses.ability_scores.bonus[sub] = conditional;
+    return;
+  }
 }
