@@ -199,42 +199,60 @@ function appendSummaryRow(parent: HTMLElement, label: string, value: string): vo
   parent.appendChild(row);
 }
 
-function formatBonus(n: number): string {
+function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
-// Phase 0: item-card summary renders only flat-number bonuses; conditional
-// bonuses are surfaced later in the inventory row expand (Task 21).
-function flatBonus(b: number | ConditionalBonus | undefined): number | undefined {
-  return typeof b === "number" ? b : undefined;
+interface BonusForCard {
+  text: string;
+  conditional: boolean;
+}
+
+function formatBonusForCard(b: number | ConditionalBonus | undefined): BonusForCard | null {
+  if (b === undefined) return null;
+  if (typeof b === "number") return { text: formatSigned(b), conditional: false };
+  return { text: formatSigned(b.value), conditional: true };
+}
+
+function appendMarker(out: BonusForCard | null): string | null {
+  if (!out) return null;
+  return out.conditional ? `${out.text}*` : out.text;
 }
 
 function describeBonuses(b: NonNullable<ItemEntity["bonuses"]>): string[] {
   const out: string[] = [];
-  const ac = flatBonus(b.ac);
-  if (ac !== undefined) out.push(`AC ${formatBonus(ac)}`);
-  const atk = flatBonus(b.weapon_attack);
-  if (atk !== undefined) out.push(`Atk ${formatBonus(atk)}`);
-  const dmg = flatBonus(b.weapon_damage);
-  if (dmg !== undefined) out.push(`Dmg ${formatBonus(dmg)}`);
-  const spellAtk = flatBonus(b.spell_attack);
-  if (spellAtk !== undefined) out.push(`Spell Atk ${formatBonus(spellAtk)}`);
-  const spellDc = flatBonus(b.spell_save_dc);
-  if (spellDc !== undefined) out.push(`Spell DC ${formatBonus(spellDc)}`);
-  const saves = flatBonus(b.saving_throws);
-  if (saves !== undefined) out.push(`Saves ${formatBonus(saves)}`);
+  const ac = appendMarker(formatBonusForCard(b.ac));
+  if (ac) out.push(`AC ${ac}`);
+  const atk = appendMarker(formatBonusForCard(b.weapon_attack));
+  if (atk) out.push(`Atk ${atk}`);
+  const dmg = appendMarker(formatBonusForCard(b.weapon_damage));
+  if (dmg) out.push(`Dmg ${dmg}`);
+  const spellAtk = appendMarker(formatBonusForCard(b.spell_attack));
+  if (spellAtk) out.push(`Spell Atk ${spellAtk}`);
+  const spellDc = appendMarker(formatBonusForCard(b.spell_save_dc));
+  if (spellDc) out.push(`Spell DC ${spellDc}`);
+  const saves = appendMarker(formatBonusForCard(b.saving_throws));
+  if (saves) out.push(`Saves ${saves}`);
   if (b.speed) {
     const parts: string[] = [];
     for (const [k, v] of Object.entries(b.speed)) {
       if (typeof v === "number") parts.push(`${k} ${v} ft`);
       else if (v === "walk") parts.push(`${k} walk`);
-      // else: ConditionalBonus — skip, surface in Task 21
+      else if (v && typeof v === "object" && typeof (v as { value?: unknown }).value === "number") {
+        parts.push(`${k} ${(v as { value: number }).value} ft*`);
+      }
     }
     if (parts.length > 0) out.push(`Speed ${parts.join(", ")}`);
   }
   if (b.ability_scores?.static) {
     for (const [k, v] of Object.entries(b.ability_scores.static)) {
       out.push(`${k.toUpperCase()} = ${v}`);
+    }
+  }
+  if (b.ability_scores?.bonus) {
+    for (const [k, raw] of Object.entries(b.ability_scores.bonus)) {
+      const v = appendMarker(formatBonusForCard(raw));
+      if (v) out.push(`${k.toUpperCase()} ${v}`);
     }
   }
   return out;
