@@ -208,6 +208,10 @@ describe("auditPair", () => {
     expect(baseItem?.fivetools).toBe("Longsword");
     const weight = findings.find(f => f.field === "weight");
     expect(weight?.gapClass).toBe("match");
+    const cost = findings.find(f => f.field === "cost");
+    expect(cost?.gapClass).toBe("both-empty");
+    const restriction = findings.find(f => f.field === "attunement.restriction");
+    expect(restriction?.gapClass).toBe("both-empty");
   });
 });
 
@@ -219,6 +223,9 @@ describe("partitionFindings", () => {
       { slug: "a", edition: "2024", field: "rarity", gapClass: "both-empty", materiality: "material", open5e: null, fivetools: null },
       { slug: "a", edition: "2024", field: "rarity", gapClass: "match", materiality: "material", open5e: "rare", fivetools: "rare" },
       { slug: "a", edition: "2024", field: "weight", gapClass: "disagree", materiality: "material", open5e: 3, fivetools: 5 },
+      { slug: "a", edition: "2024", field: "name", gapClass: "disagree", materiality: "informational", open5e: "X", fivetools: "Y" },
+      { slug: "a", edition: "2024", field: "size", gapClass: "open5e-only", materiality: "informational", open5e: "M", fivetools: null },
+      { slug: "a", edition: "2024", field: "category", gapClass: "both-empty", materiality: "informational", open5e: null, fivetools: null },
     ];
     const buckets = partitionFindings(findings);
     expect(buckets.material.length).toBe(1); // base_item
@@ -226,5 +233,10 @@ describe("partitionFindings", () => {
     expect(buckets.informational.length).toBe(1); // category
     expect(buckets.symmetric.length).toBe(1); // rarity both-empty
     // 'match' findings are dropped (no actionable signal).
+    expect(buckets.informationalDisagree.length).toBe(1); // name
+    // open5e-only and informational both-empty are dropped (no actionable signal).
+    const totalBucketed = buckets.material.length + buckets.materialDisagree.length
+      + buckets.informational.length + buckets.informationalDisagree.length + buckets.symmetric.length;
+    expect(totalBucketed).toBe(5); // dropped: 'rarity match', 'size open5e-only', 'category both-empty informational'
   });
 });
