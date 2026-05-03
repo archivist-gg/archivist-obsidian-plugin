@@ -1,7 +1,11 @@
-// tests/item-renderer-bonuses.test.ts
-import { describe, it, expect } from "vitest";
+/** @vitest-environment jsdom */
+
+import { describe, it, expect, beforeAll } from "vitest";
+import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { renderItemMechanicalSummary } from "../src/modules/item/item.renderer";
 import type { ItemEntity } from "../src/modules/item/item.types";
+
+beforeAll(() => installObsidianDomHelpers());
 
 function makeItem(overrides: Partial<ItemEntity>): ItemEntity {
   return { name: "Test", ...overrides } as ItemEntity;
