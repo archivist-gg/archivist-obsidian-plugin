@@ -370,7 +370,7 @@ function loadOpen5eCache(edition: "2014" | "2024"): Array<Record<string, unknown
 async function loadFivetoolsItems(edition: "2014" | "2024", rootPath: string): Promise<Array<Record<string, unknown>>> {
   const slugSet = new Set<string>(); // empty set is fine — readStructuredRules has a magic-items code path that emits all matching-source items.
   const results = await readStructuredRules({ kind: "magicitems", edition, rootPath, slugSet });
-  return results as unknown as Array<Record<string, unknown>>;
+  return results;
 }
 
 async function runEdition(edition: "2014" | "2024", rootPath: string): Promise<Finding[]> {
