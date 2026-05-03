@@ -340,7 +340,6 @@ export function renderMarkdown(buckets: FindingBuckets): string {
 // CLI plumbing
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { readStructuredRules } from "./sources/structured-rules";
 
 interface CliOpts {
   edition: "2014" | "2024" | "all";
@@ -367,15 +366,27 @@ function loadOpen5eCache(edition: "2014" | "2024"): Array<Record<string, unknown
   return raw.results ?? [];
 }
 
-async function loadFivetoolsItems(edition: "2014" | "2024", rootPath: string): Promise<Array<Record<string, unknown>>> {
-  const slugSet = new Set<string>(); // empty set is fine — readStructuredRules has a magic-items code path that emits all matching-source items.
-  const results = await readStructuredRules({ kind: "magicitems", edition, rootPath, slugSet });
-  return results;
+function loadFivetoolsItems(edition: "2014" | "2024", rootPath: string): Array<Record<string, unknown>> {
+  // Read items.json directly. We don't use readStructuredRules here because
+  // its source filter is conjoined with a slugSet membership check; passing
+  // an empty slugSet would drop every item. The audit needs ALL items per
+  // edition so we filter only by the source-edition convention used by the
+  // merger (XPHB/XDMG/X… → 2024; everything else → 2014).
+  const filePath = path.resolve(rootPath, "items.json");
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`5etools items.json missing at ${filePath}`);
+  }
+  const raw = JSON.parse(fs.readFileSync(filePath, "utf8")) as { item?: Array<Record<string, unknown>> };
+  const all = raw.item ?? [];
+  return all.filter(item => {
+    const source = typeof item.source === "string" ? item.source : "";
+    return edition === "2024" ? source.startsWith("X") : !source.startsWith("X");
+  });
 }
 
-async function runEdition(edition: "2014" | "2024", rootPath: string): Promise<Finding[]> {
+function runEdition(edition: "2014" | "2024", rootPath: string): Finding[] {
   const open5e = loadOpen5eCache(edition);
-  const fivetools = await loadFivetoolsItems(edition, rootPath);
+  const fivetools = loadFivetoolsItems(edition, rootPath);
   const pairs = joinSources(open5e, fivetools, edition);
   const findings: Finding[] = [];
   for (const p of pairs) findings.push(...auditPair(p));
@@ -383,7 +394,7 @@ async function runEdition(edition: "2014" | "2024", rootPath: string): Promise<F
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  (async () => {
+  try {
     const opts = parseCli(process.argv.slice(2));
     const rootPath = process.env.STRUCTURED_RULES_PATH ?? "";
     if (!rootPath) {
@@ -393,7 +404,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const editions: Array<"2014" | "2024"> = opts.edition === "all" ? ["2014", "2024"] : [opts.edition];
     const allFindings: Finding[] = [];
     for (const ed of editions) {
-      allFindings.push(...await runEdition(ed, rootPath));
+      allFindings.push(...runEdition(ed, rootPath));
     }
     const buckets = partitionFindings(allFindings);
     const md = renderMarkdown(buckets);
@@ -407,8 +418,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (buckets.material.length > 0) {
       console.log(`[audit-merger-gaps] ⚠️  material gaps present — review report for Phase 2 fix list`);
     }
-  })().catch(err => {
+  } catch (err) {
     console.error(err);
     process.exit(1);
-  });
+  }
 }
