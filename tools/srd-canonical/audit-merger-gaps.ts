@@ -25,3 +25,19 @@ export function isEmpty(value: unknown, type: FieldType): boolean {
       return value !== true;
   }
 }
+
+export type GapClass =
+  | "match"
+  | "disagree"
+  | "open5e-only"
+  | "5etools-only"
+  | "both-empty";
+
+export function classifyGap(open5e: unknown, fivetools: unknown, type: FieldType): GapClass {
+  const aEmpty = isEmpty(open5e, type);
+  const bEmpty = isEmpty(fivetools, type);
+  if (aEmpty && bEmpty) return "both-empty";
+  if (aEmpty) return "5etools-only";
+  if (bEmpty) return "open5e-only";
+  return open5e === fivetools ? "match" : "disagree";
+}

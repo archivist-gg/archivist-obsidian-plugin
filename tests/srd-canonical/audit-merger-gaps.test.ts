@@ -30,3 +30,39 @@ describe("isEmpty", () => {
     expect(isEmpty(true, "boolean")).toBe(false);
   });
 });
+
+import { classifyGap } from "../../tools/srd-canonical/audit-merger-gaps";
+
+describe("classifyGap", () => {
+  it("both empty → both-empty", () => {
+    expect(classifyGap(null, undefined, "string")).toBe("both-empty");
+  });
+
+  it("only Open5e → open5e-only", () => {
+    expect(classifyGap("longsword", null, "string")).toBe("open5e-only");
+  });
+
+  it("only 5etools → 5etools-only", () => {
+    expect(classifyGap(null, "longsword", "string")).toBe("5etools-only");
+  });
+
+  it("both populated, equal values → match", () => {
+    expect(classifyGap("rare", "rare", "string")).toBe("match");
+  });
+
+  it("both populated, unequal values → disagree", () => {
+    expect(classifyGap("rare", "very rare", "string")).toBe("disagree");
+  });
+
+  it("both populated numbers, unequal → disagree", () => {
+    expect(classifyGap(3, 5, "number")).toBe("disagree");
+  });
+
+  it("cost: '0.00' on Open5e + '1.00' on 5etools → 5etools-only", () => {
+    expect(classifyGap("0.00", "1.00", "cost")).toBe("5etools-only");
+  });
+
+  it("boolean: false on Open5e + true on 5etools → 5etools-only", () => {
+    expect(classifyGap(false, true, "boolean")).toBe("5etools-only");
+  });
+});
