@@ -94,9 +94,9 @@ export interface ItemCanonical {
 export const itemMergeRule: MergeRule = {
   kind: "item",
   pickOverlay(_overlay: Overlay, _slug: string): unknown {
-    // Overlay is not yet used for items in this initial implementation.
-    // The seed overlay has no item entries; a follow-up will introduce
-    // conditional bonuses (e.g. Bracers of Defense `bonuses.ac.when: ['no_armor', 'no_shield']`).
+    // Items don't use the per-entry overlay slot. Conditional bonuses come
+    // from data/item-conditions.ts (curated) and foundry-effects translation
+    // applied via enrichItemsWithFoundryEffects / enrichItemsWithCuratedConditions.
     return null;
   },
 };
