@@ -66,3 +66,86 @@ describe("classifyGap", () => {
     expect(classifyGap(false, true, "boolean")).toBe("5etools-only");
   });
 });
+
+import { FIELD_PAIRINGS } from "../../tools/srd-canonical/audit-merger-gaps";
+
+describe("FIELD_PAIRINGS", () => {
+  it("has expected material fields", () => {
+    const material = FIELD_PAIRINGS.filter(p => p.materiality === "material").map(p => p.canonicalField);
+    expect(material).toContain("description");
+    expect(material).toContain("base_item");
+    expect(material).toContain("attunement.required");
+    expect(material).toContain("attunement.restriction");
+    expect(material).toContain("weight");
+    expect(material).toContain("cost");
+    expect(material).toContain("rarity");
+  });
+
+  it("has expected informational fields", () => {
+    const info = FIELD_PAIRINGS.filter(p => p.materiality === "informational").map(p => p.canonicalField);
+    expect(info).toContain("name");
+    expect(info).toContain("category");
+    expect(info).toContain("size");
+  });
+
+  it("every entry has both extractor functions", () => {
+    for (const p of FIELD_PAIRINGS) {
+      expect(typeof p.open5eExtract).toBe("function");
+      expect(typeof p.fivetoolsExtract).toBe("function");
+    }
+  });
+});
+
+describe("FIELD_PAIRINGS extractors", () => {
+  const get = (field: string) => {
+    const p = FIELD_PAIRINGS.find(p => p.canonicalField === field);
+    if (!p) throw new Error(`pairing ${field} missing`);
+    return p;
+  };
+
+  it("base_item: open5e weapon.name → string; null → undefined", () => {
+    const p = get("base_item");
+    expect(p.open5eExtract({ weapon: { name: "Longsword" } })).toBe("Longsword");
+    expect(p.open5eExtract({ weapon: null })).toBeUndefined();
+    expect(p.open5eExtract({ armor: { name: "Plate" } })).toBe("Plate");
+  });
+
+  it("base_item: 5etools baseItem slug → title-cased name", () => {
+    const p = get("base_item");
+    expect(p.fivetoolsExtract({ baseItem: "longsword|xphb" })).toBe("Longsword");
+    expect(p.fivetoolsExtract({ baseItem: "hand-crossbow|phb" })).toBe("Hand Crossbow");
+    expect(p.fivetoolsExtract({})).toBeUndefined();
+  });
+
+  it("description: open5e desc passes through; 5etools string entries join with double-newline", () => {
+    const p = get("description");
+    expect(p.open5eExtract({ desc: "hello" })).toBe("hello");
+    expect(p.fivetoolsExtract({ entries: ["one", "two"] })).toBe("one\n\ntwo");
+    expect(p.fivetoolsExtract({ entries: ["a", { type: "list" }] })).toBeUndefined();
+  });
+
+  it("attunement.required: open5e boolean; 5etools reqAttune true OR non-empty string → true", () => {
+    const p = get("attunement.required");
+    expect(p.open5eExtract({ requires_attunement: true })).toBe(true);
+    expect(p.open5eExtract({ requires_attunement: false })).toBe(false);
+    expect(p.fivetoolsExtract({ reqAttune: true })).toBe(true);
+    expect(p.fivetoolsExtract({ reqAttune: "by a wizard" })).toBe(true);
+    expect(p.fivetoolsExtract({})).toBe(false);
+  });
+
+  it("attunement.restriction: open5e attunement_detail; 5etools reqAttune-as-string", () => {
+    const p = get("attunement.restriction");
+    expect(p.open5eExtract({ attunement_detail: "by a paladin" })).toBe("by a paladin");
+    expect(p.open5eExtract({})).toBeUndefined();
+    expect(p.fivetoolsExtract({ reqAttune: "by a wizard" })).toBe("by a wizard");
+    expect(p.fivetoolsExtract({ reqAttune: true })).toBeUndefined();
+  });
+
+  it("cost: open5e cost passes through; 5etools value (cp) → gp string", () => {
+    const p = get("cost");
+    expect(p.open5eExtract({ cost: "1.50" })).toBe("1.50");
+    expect(p.fivetoolsExtract({ value: 100 })).toBe("1.00");
+    expect(p.fivetoolsExtract({ value: 0 })).toBeUndefined();
+    expect(p.fivetoolsExtract({})).toBeUndefined();
+  });
+});
