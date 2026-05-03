@@ -193,3 +193,66 @@ export function joinSources(
   }
   return out;
 }
+
+export interface Finding {
+  slug: string;
+  edition: "2014" | "2024";
+  field: string;
+  gapClass: GapClass;
+  materiality: "material" | "informational";
+  open5e: unknown;
+  fivetools: unknown;
+}
+
+export function auditPair(pair: ItemPair): Finding[] {
+  const findings: Finding[] = [];
+  const o = pair.open5e ?? {};
+  const f = pair.fivetools ?? {};
+  for (const p of FIELD_PAIRINGS) {
+    const ov = p.open5eExtract(o);
+    const fv = p.fivetoolsExtract(f);
+    findings.push({
+      slug: pair.slug,
+      edition: pair.edition,
+      field: p.canonicalField,
+      gapClass: classifyGap(ov, fv, p.type),
+      materiality: p.materiality,
+      open5e: ov,
+      fivetools: fv,
+    });
+  }
+  return findings;
+}
+
+export interface FindingBuckets {
+  material: Finding[];
+  materialDisagree: Finding[];
+  informational: Finding[];
+  informationalDisagree: Finding[];
+  symmetric: Finding[];
+}
+
+export function partitionFindings(findings: Finding[]): FindingBuckets {
+  const buckets: FindingBuckets = {
+    material: [],
+    materialDisagree: [],
+    informational: [],
+    informationalDisagree: [],
+    symmetric: [],
+  };
+  for (const f of findings) {
+    if (f.gapClass === "match" || f.gapClass === "open5e-only") continue;
+    if (f.gapClass === "both-empty") {
+      if (f.materiality === "material") buckets.symmetric.push(f);
+      continue;
+    }
+    if (f.gapClass === "5etools-only") {
+      (f.materiality === "material" ? buckets.material : buckets.informational).push(f);
+      continue;
+    }
+    if (f.gapClass === "disagree") {
+      (f.materiality === "material" ? buckets.materialDisagree : buckets.informationalDisagree).push(f);
+    }
+  }
+  return buckets;
+}

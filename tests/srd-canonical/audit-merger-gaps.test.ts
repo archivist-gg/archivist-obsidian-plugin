@@ -188,3 +188,43 @@ describe("joinSources", () => {
     expect(pairs[0].fivetools).toBeDefined();
   });
 });
+
+import { auditPair, partitionFindings, type Finding } from "../../tools/srd-canonical/audit-merger-gaps";
+
+describe("auditPair", () => {
+  it("emits a Finding per FIELD_PAIRINGS entry", () => {
+    const pair = {
+      slug: "srd-2024_sun-blade",
+      edition: "2024" as const,
+      open5e: { name: "Sun Blade", desc: "Bright blade.", weight: 3, weapon: null, requires_attunement: true, attunement_detail: null, cost: "0.00", rarity: "rare", category: "Weapon", size: "Medium" },
+      fivetools: { name: "Sun Blade", entries: ["one", "two"], weight: 3, baseItem: "longsword|xphb", reqAttune: true, value: 0, rarity: "rare", type: "M" },
+    };
+    const findings = auditPair(pair);
+    expect(findings.length).toBe(FIELD_PAIRINGS.length);
+    const baseItem = findings.find(f => f.field === "base_item");
+    expect(baseItem?.gapClass).toBe("5etools-only");
+    expect(baseItem?.materiality).toBe("material");
+    // Finding stores the canonical extracted value, not the raw source value.
+    expect(baseItem?.fivetools).toBe("Longsword");
+    const weight = findings.find(f => f.field === "weight");
+    expect(weight?.gapClass).toBe("match");
+  });
+});
+
+describe("partitionFindings", () => {
+  it("buckets material/informational/symmetric correctly", () => {
+    const findings: Finding[] = [
+      { slug: "a", edition: "2024", field: "base_item", gapClass: "5etools-only", materiality: "material", open5e: null, fivetools: "longsword|xphb" },
+      { slug: "a", edition: "2024", field: "category", gapClass: "5etools-only", materiality: "informational", open5e: null, fivetools: "M" },
+      { slug: "a", edition: "2024", field: "rarity", gapClass: "both-empty", materiality: "material", open5e: null, fivetools: null },
+      { slug: "a", edition: "2024", field: "rarity", gapClass: "match", materiality: "material", open5e: "rare", fivetools: "rare" },
+      { slug: "a", edition: "2024", field: "weight", gapClass: "disagree", materiality: "material", open5e: 3, fivetools: 5 },
+    ];
+    const buckets = partitionFindings(findings);
+    expect(buckets.material.length).toBe(1); // base_item
+    expect(buckets.materialDisagree.length).toBe(1); // weight
+    expect(buckets.informational.length).toBe(1); // category
+    expect(buckets.symmetric.length).toBe(1); // rarity both-empty
+    // 'match' findings are dropped (no actionable signal).
+  });
+});
