@@ -1384,7 +1384,8 @@
     "weight": 1,
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
     "bonuses": {
-      "weapon_attack": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "tier": "major"
   },
@@ -1613,6 +1614,7 @@
     },
     "bonuses": {
       "weapon_attack": 1,
+      "weapon_damage": 1,
       "ac": 1
     },
     "tier": "major"
@@ -1784,7 +1786,8 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "tier": "major"
   },
@@ -2637,7 +2640,8 @@
     "weight": 10,
     "base_item": "[[SRD 5e/Weapons/Maul]]",
     "bonuses": {
-      "weapon_attack": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     },
     "charges": {
       "max": 5,
@@ -3631,6 +3635,15 @@
             "value": "construct"
           }
         ]
+      },
+      "weapon_damage": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "vs_creature_type",
+            "value": "construct"
+          }
+        ]
       }
     },
     "tier": "major"
@@ -4166,7 +4179,8 @@
     "description": "This clear, gelatinous oil sparkles with tiny, ultrathin silver shards. The oil can coat one slashing or piercing weapon or up to 5 pieces of slashing or piercing ammunition. Applying the oil takes 1 minute. For 1 hour, the coated item is magical and has a +3 bonus to attack and damage rolls.",
     "type": "potion",
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "tier": "minor",
     "effects": [
@@ -5348,7 +5362,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "tier": "major"
   },
@@ -5484,7 +5499,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "tier": "major"
   },
@@ -6083,6 +6099,7 @@
     },
     "bonuses": {
       "weapon_attack": 2,
+      "weapon_damage": 2,
       "ac": 2,
       "spell_attack": 2,
       "saving_throws": 2
@@ -6128,7 +6145,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "charges": {
       "max": 10,
@@ -6213,6 +6231,7 @@
     },
     "bonuses": {
       "weapon_attack": 2,
+      "weapon_damage": 2,
       "spell_attack": 2
     },
     "attached_spells": {
@@ -6303,6 +6322,7 @@
     },
     "bonuses": {
       "weapon_attack": 2,
+      "weapon_damage": 2,
       "spell_attack": 2
     },
     "attached_spells": {
@@ -6349,7 +6369,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     },
     "tier": "major"
   },
@@ -6428,7 +6449,16 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 2
+      "weapon_attack": 2,
+      "weapon_damage": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "vs_creature_type",
+            "value": "undead"
+          }
+        ]
+      }
     },
     "tier": "major"
   },

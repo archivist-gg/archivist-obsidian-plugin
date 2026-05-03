@@ -1509,7 +1509,8 @@
     "type": "weapon",
     "weight": 1,
     "bonuses": {
-      "weapon_attack": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     }
   },
   {
@@ -2720,7 +2721,8 @@
       ]
     },
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -6171,7 +6173,8 @@
     "type": "weapon",
     "weight": 4,
     "bonuses": {
-      "weapon_attack": 1
+      "weapon_attack": 1,
+      "weapon_damage": 1
     }
   },
   {
@@ -7392,7 +7395,8 @@
     "type": "potion",
     "weight": 0.5,
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "effects": [
       {
@@ -8506,7 +8510,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     }
   },
   {
@@ -8662,7 +8667,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -9330,6 +9336,7 @@
     },
     "bonuses": {
       "weapon_attack": 2,
+      "weapon_damage": 2,
       "ac": 2,
       "spell_attack": 2,
       "saving_throws": 2
@@ -9374,7 +9381,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 3
+      "weapon_attack": 3,
+      "weapon_damage": 3
     },
     "charges": {
       "max": 10,
@@ -9457,6 +9465,7 @@
     },
     "bonuses": {
       "weapon_attack": 2,
+      "weapon_damage": 2,
       "spell_attack": {
         "value": 2,
         "when": [
@@ -9545,6 +9554,7 @@
     },
     "bonuses": {
       "weapon_attack": 2,
+      "weapon_damage": 2,
       "spell_attack": {
         "value": 2,
         "when": [
@@ -9600,7 +9610,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
@@ -9708,7 +9719,8 @@
       "required": true
     },
     "bonuses": {
-      "weapon_attack": 2
+      "weapon_attack": 2,
+      "weapon_damage": 2
     }
   },
   {
