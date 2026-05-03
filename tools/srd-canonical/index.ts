@@ -17,7 +17,14 @@ import { featMergeRule, toFeatCanonical } from "./merger-rules/feat-merge";
 import { backgroundMergeRule, toBackgroundCanonical } from "./merger-rules/background-merge";
 import { weaponMergeRule, toWeaponCanonical } from "./merger-rules/weapon-merge";
 import { armorMergeRule, toArmorCanonical } from "./merger-rules/armor-merge";
-import { itemMergeRule, toItemCanonical, enrichItemsWithVariantBonuses } from "./merger-rules/item-merge";
+import {
+  itemMergeRule,
+  toItemCanonical,
+  enrichItemsWithVariantBonuses,
+  enrichItemsWithFoundryEffects,
+  enrichItemsWithCuratedConditions,
+} from "./merger-rules/item-merge";
+import { readFoundryItemsIndex } from "./sources/foundry-items";
 import { spellMergeRule, toSpellCanonical } from "./merger-rules/spell-merge";
 import { creatureMergeRule, toCreatureCanonical } from "./merger-rules/creature-merge";
 import { conditionMergeRule, toConditionCanonical, buildConditionsFromStructured } from "./merger-rules/condition-merge";
@@ -192,6 +199,8 @@ async function main() {
     // `expanded` list is reused below for the dedup + emit pass.
     const baseItemsForExpansion = readBaseItemsRaw(cfg.structuredRulesPath, edition);
     const variantRulesForExpansion = readMagicVariantsRaw(cfg.structuredRulesPath, edition);
+    const foundryItemsIndex = readFoundryItemsIndex(cfg.structuredRulesPath, edition);
+    console.log(`[canonical] ${edition} foundry-items: ${foundryItemsIndex.size} indexed`);
     const expandedVariants = expandVariants(baseItemsForExpansion, variantRulesForExpansion, edition);
 
     for (const kind of ALL_KINDS) {
@@ -269,6 +278,14 @@ async function main() {
           expandedVariants,
         );
         console.log(`[canonical]   enriched: ${enrichedCount} magic-items with variant-derived bonuses`);
+        enrichItemsWithFoundryEffects(
+          canonical as Parameters<typeof enrichItemsWithFoundryEffects>[0],
+          foundryItemsIndex,
+        );
+        enrichItemsWithCuratedConditions(
+          canonical as Parameters<typeof enrichItemsWithCuratedConditions>[0],
+        );
+        console.log(`[canonical]   conditional-bonus enrichment applied`);
       }
 
       const entityKind = OPEN5E_KIND_TO_ENTITY[kind];
