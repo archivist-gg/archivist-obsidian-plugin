@@ -111,12 +111,7 @@ function coerceBonusNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-/**
- * Defensive normalize pass for an upstream {@link ItemBonuses}-shaped object.
- * Used when copying a foreign bonuses block (e.g. from the variant pipeline)
- * onto a canonical item — guarantees scalar bonus fields are numbers and
- * silently drops malformed entries. Pass-through for already-numeric input.
- */
+/** Local mirror of the runtime shape check from `src/modules/item/item.bonuses.ts`. */
 function isConditionalBonus(x: unknown): x is ConditionalBonus {
   return (
     !!x
@@ -126,6 +121,12 @@ function isConditionalBonus(x: unknown): x is ConditionalBonus {
   );
 }
 
+/**
+ * Defensive normalize pass for an upstream {@link ItemBonuses}-shaped object.
+ * Used when copying a foreign bonuses block (e.g. from the variant pipeline)
+ * onto a canonical item — guarantees scalar bonus fields are numbers and
+ * silently drops malformed entries. Pass-through for already-numeric input.
+ */
 function normalizeBonuses(src: ItemBonuses): ItemBonuses {
   const out: ItemBonuses = {};
   const scalarKeys: ScalarBonusKey[] = [
