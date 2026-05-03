@@ -240,3 +240,33 @@ describe("partitionFindings", () => {
     expect(totalBucketed).toBe(5); // dropped: 'rarity match', 'size open5e-only', 'category both-empty informational'
   });
 });
+
+import { renderMarkdown } from "../../tools/srd-canonical/audit-merger-gaps";
+
+describe("renderMarkdown", () => {
+  it("emits 3 sections (material, informational, symmetric) and a summary table", () => {
+    const buckets = {
+      material: [
+        { slug: "srd-2024_sun-blade", edition: "2024" as const, field: "base_item", gapClass: "5etools-only" as const, materiality: "material" as const, open5e: null, fivetools: "longsword|xphb" },
+      ],
+      materialDisagree: [
+        { slug: "srd-2024_x", edition: "2024" as const, field: "weight", gapClass: "disagree" as const, materiality: "material" as const, open5e: 3, fivetools: 5 },
+      ],
+      informational: [
+        { slug: "srd-2014_y", edition: "2014" as const, field: "category", gapClass: "5etools-only" as const, materiality: "informational" as const, open5e: null, fivetools: "M" },
+      ],
+      informationalDisagree: [],
+      symmetric: [
+        { slug: "srd-2024_z", edition: "2024" as const, field: "cost", gapClass: "both-empty" as const, materiality: "material" as const, open5e: null, fivetools: null },
+      ],
+    };
+    const md = renderMarkdown(buckets);
+    expect(md).toMatch(/# Merger gap audit/);
+    expect(md).toMatch(/## Material gaps/);
+    expect(md).toMatch(/## Informational gaps/);
+    expect(md).toMatch(/## Symmetric gaps/);
+    expect(md).toMatch(/srd-2024_sun-blade/);
+    expect(md).toMatch(/longsword\|xphb/);
+    expect(md).toMatch(/disagree/i);
+  });
+});

@@ -256,3 +256,83 @@ export function partitionFindings(findings: Finding[]): FindingBuckets {
   }
   return buckets;
 }
+
+function fmtValue(v: unknown): string {
+  if (v === null || v === undefined) return "_(empty)_";
+  if (typeof v === "string") return v.length > 60 ? `${v.slice(0, 57)}…` : v;
+  if (Array.isArray(v)) return `[${v.length} entries]`;
+  return JSON.stringify(v);
+}
+
+function findingRow(f: Finding): string {
+  return `| ${f.slug} | ${f.edition} | \`${f.field}\` | ${f.gapClass} | ${fmtValue(f.open5e)} | ${fmtValue(f.fivetools)} |`;
+}
+
+export function renderMarkdown(buckets: FindingBuckets): string {
+  const date = new Date().toISOString().slice(0, 10);
+  const lines: string[] = [];
+  lines.push(`# Merger gap audit (run on ${date})`);
+  lines.push("");
+
+  lines.push("## Material gaps");
+  lines.push("");
+  lines.push("Open5e empty + 5etools has data, on fields whose absence breaks runtime behavior. **Phase 2 fix list.**");
+  lines.push("");
+  if (buckets.material.length === 0) {
+    lines.push("_(none — Phase 2 may be unnecessary)_");
+  } else {
+    lines.push("| Slug | Edition | Field | Class | Open5e | 5etools |");
+    lines.push("|---|---|---|---|---|---|");
+    for (const f of buckets.material) lines.push(findingRow(f));
+  }
+  lines.push("");
+
+  if (buckets.materialDisagree.length > 0) {
+    lines.push("### Material disagreements (out of scope; recorded for review)");
+    lines.push("");
+    lines.push("| Slug | Edition | Field | Class | Open5e | 5etools |");
+    lines.push("|---|---|---|---|---|---|");
+    for (const f of buckets.materialDisagree) lines.push(findingRow(f));
+    lines.push("");
+  }
+
+  lines.push("## Informational gaps");
+  lines.push("");
+  lines.push("Open5e empty + 5etools has data, on fields not in runtime today. Recorded; no Phase 2 action.");
+  lines.push("");
+  if (buckets.informational.length === 0) {
+    lines.push("_(none)_");
+  } else {
+    lines.push("| Slug | Edition | Field | Class | Open5e | 5etools |");
+    lines.push("|---|---|---|---|---|---|");
+    for (const f of buckets.informational) lines.push(findingRow(f));
+  }
+  lines.push("");
+
+  lines.push("## Symmetric gaps");
+  lines.push("");
+  lines.push("Both sources empty on material fields. Upstream issues; out of scope.");
+  lines.push("");
+  if (buckets.symmetric.length === 0) {
+    lines.push("_(none)_");
+  } else {
+    lines.push("| Slug | Edition | Field | Open5e | 5etools |");
+    lines.push("|---|---|---|---|---|");
+    for (const f of buckets.symmetric) {
+      lines.push(`| ${f.slug} | ${f.edition} | \`${f.field}\` | ${fmtValue(f.open5e)} | ${fmtValue(f.fivetools)} |`);
+    }
+  }
+  lines.push("");
+
+  lines.push("## Summary");
+  lines.push("");
+  lines.push(`| Bucket | Count |`);
+  lines.push(`|---|---|`);
+  lines.push(`| Material gaps | ${buckets.material.length} |`);
+  lines.push(`| Material disagreements | ${buckets.materialDisagree.length} |`);
+  lines.push(`| Informational gaps | ${buckets.informational.length} |`);
+  lines.push(`| Symmetric gaps | ${buckets.symmetric.length} |`);
+  lines.push("");
+
+  return lines.join("\n");
+}
