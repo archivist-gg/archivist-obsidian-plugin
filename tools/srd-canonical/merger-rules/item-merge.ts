@@ -2,7 +2,16 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
-import type { ConditionalBonus } from "../../../src/modules/item/item.conditions.types";
+import type {
+  BonusFieldPath,
+  Condition,
+  ConditionalBonus,
+} from "../../../src/modules/item/item.conditions.types";
+import type { FoundryItem } from "../sources/foundry-items";
+import {
+  translateFoundryChanges,
+  type FoundryContribution,
+} from "../sources/foundry-effects";
 
 type NumberOrConditional = number | ConditionalBonus;
 
@@ -63,6 +72,22 @@ export interface ItemCanonical {
   tier?: number | "major" | "minor";
   /** foundry-items activation/save/damage records — pass-through for now. */
   effects?: unknown[];
+  /** Damage immunities granted by attuning/wearing the item. */
+  immune?: string[];
+  /** Damage resistances granted by attuning/wearing the item. */
+  resist?: string[];
+  /** Damage vulnerabilities granted by attuning/wearing the item. */
+  vulnerable?: string[];
+  /** Side-channel grants: senses, proficiency, etc. */
+  grants?: {
+    proficiency?: boolean;
+    senses?: {
+      darkvision?: number;
+      tremorsense?: number;
+      truesight?: number;
+      blindsight?: number;
+    };
+  };
 }
 
 export const itemMergeRule: MergeRule = {
@@ -414,4 +439,131 @@ export function enrichItemsWithVariantBonuses(
     if (touched) enriched += 1;
   }
   return enriched;
+}
+
+/**
+ * Apply foundry-items.json effects onto canonical magic items. For every
+ * item present in the foundry index:
+ *
+ *   - bonus contributions wrap the matching `bonuses.<field>` value in
+ *     `{ value, when[] }` shape (or set it from foundry's value if none
+ *     was present from structured-rules).
+ *   - static contributions set `bonuses.ability_scores.static.<ab>`,
+ *     warning if a different value already exists.
+ *   - side-channels append onto `immune` / `resist` / `vulnerable`,
+ *     populate `grants.senses.<x>`, or set `grants.proficiency = true`.
+ *
+ * Empty `when[]` (e.g. movement keys) collapses to a flat number.
+ *
+ * Mutates `items` in place.
+ */
+export function enrichItemsWithFoundryEffects(
+  items: ItemCanonical[],
+  foundryIndex: Map<string, FoundryItem>,
+): void {
+  for (const item of items) {
+    const bareSlug = item.slug.replace(/^srd-(5e|2024)_/, "");
+    const foundry = foundryIndex.get(bareSlug);
+    if (!foundry?.effects?.length) continue;
+    for (const effect of foundry.effects) {
+      const contribs = translateFoundryChanges(effect.changes ?? [], item.name);
+      for (const c of contribs) applyContribution(item, c);
+    }
+  }
+}
+
+function applyContribution(item: ItemCanonical, c: FoundryContribution): void {
+  if (c.tag === "bonus") {
+    const target = ensureBonuses(item);
+    setBonusField(target, c.field, c.value, c.when);
+    return;
+  }
+  if (c.tag === "static") {
+    const target = ensureBonuses(item);
+    target.ability_scores = target.ability_scores ?? {};
+    target.ability_scores.static = target.ability_scores.static ?? {};
+    const existing = target.ability_scores.static[c.ability];
+    if (existing !== undefined && existing !== c.value) {
+      console.warn(
+        `[item-merge] ${item.slug}: foundry sets ${c.ability}=${c.value}, structured says ${existing} — using ${existing}`,
+      );
+      return;
+    }
+    target.ability_scores.static[c.ability] = c.value;
+    return;
+  }
+  // Side channels.
+  if (c.kind === "immune") {
+    item.immune = item.immune ?? [];
+    if (!item.immune.includes(c.value)) item.immune.push(c.value);
+    return;
+  }
+  if (c.kind === "resist") {
+    item.resist = item.resist ?? [];
+    if (!item.resist.includes(c.value)) item.resist.push(c.value);
+    return;
+  }
+  if (c.kind === "vulnerable") {
+    item.vulnerable = item.vulnerable ?? [];
+    if (!item.vulnerable.includes(c.value)) item.vulnerable.push(c.value);
+    return;
+  }
+  if (c.kind === "sense") {
+    item.grants = item.grants ?? {};
+    item.grants.senses = item.grants.senses ?? {};
+    item.grants.senses[c.sense] = c.value;
+    return;
+  }
+  if (c.kind === "grants_proficiency") {
+    item.grants = item.grants ?? {};
+    item.grants.proficiency = true;
+    return;
+  }
+}
+
+function ensureBonuses(item: ItemCanonical): ItemBonuses {
+  item.bonuses = item.bonuses ?? {};
+  return item.bonuses;
+}
+
+function setBonusField(
+  target: ItemBonuses,
+  field: BonusFieldPath,
+  value: number,
+  when: Condition[],
+): void {
+  if (
+    field === "weapon_attack" || field === "weapon_damage" || field === "ac"
+    || field === "spell_attack" || field === "spell_save_dc" || field === "saving_throws"
+  ) {
+    target[field] = wrap(value, when, target[field]);
+    return;
+  }
+  if (field.startsWith("speed.")) {
+    const sub = field.slice("speed.".length) as "walk" | "fly" | "swim" | "climb";
+    target.speed = target.speed ?? {};
+    target.speed[sub] = wrap(value, when, target.speed[sub]);
+    return;
+  }
+  if (field.startsWith("ability_scores.bonus.")) {
+    const sub = field.slice("ability_scores.bonus.".length) as "str" | "dex" | "con" | "int" | "wis" | "cha";
+    target.ability_scores = target.ability_scores ?? {};
+    target.ability_scores.bonus = target.ability_scores.bonus ?? {};
+    target.ability_scores.bonus[sub] = wrap(value, when, target.ability_scores.bonus[sub]);
+    return;
+  }
+}
+
+function wrap(
+  value: number,
+  when: Condition[],
+  existing: NumberOrConditional | "walk" | undefined,
+): NumberOrConditional {
+  if (when.length === 0) return value;
+  if (existing === undefined || typeof existing === "number" || existing === "walk") {
+    return { value, when };
+  }
+  const merged: Condition[] = [...existing.when];
+  for (const c of when) if (!merged.includes(c)) merged.push(c);
+  return { value: existing.value, when: merged };
 }
