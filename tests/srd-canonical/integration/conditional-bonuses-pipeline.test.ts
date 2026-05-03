@@ -94,4 +94,31 @@ describe("conditional-bonuses pipeline", () => {
     enrichItemsWithCuratedConditions(items);
     expect(items[0].bonuses?.ability_scores?.static?.con).toBe(19);
   });
+
+  it("Sun Blade → bonuses.weapon_attack flat, weapon_damage curated vs undead", () => {
+    const entries = [entryFor("Sun Blade", { name: "Sun Blade", source: "DMG", bonusWeapon: "+2" })];
+    const items = entries.map(toItemCanonical);
+    enrichItemsWithFoundryEffects(items, new Map());
+    enrichItemsWithCuratedConditions(items);
+    expect(items[0].bonuses?.weapon_attack).toBe(2);
+    expect(items[0].bonuses?.weapon_damage).toEqual({
+      value: 2,
+      when: [{ kind: "vs_creature_type", value: "undead" }],
+    });
+  });
+
+  it("Mace of Smiting → both weapon_attack and weapon_damage curated vs construct", () => {
+    const entries = [entryFor("Mace of Smiting", { name: "Mace of Smiting", source: "DMG", bonusWeapon: "+1" })];
+    const items = entries.map(toItemCanonical);
+    enrichItemsWithFoundryEffects(items, new Map());
+    enrichItemsWithCuratedConditions(items);
+    expect(items[0].bonuses?.weapon_attack).toEqual({
+      value: 1,
+      when: [{ kind: "vs_creature_type", value: "construct" }],
+    });
+    expect(items[0].bonuses?.weapon_damage).toEqual({
+      value: 1,
+      when: [{ kind: "vs_creature_type", value: "construct" }],
+    });
+  });
 });
