@@ -336,3 +336,79 @@ export function renderMarkdown(buckets: FindingBuckets): string {
 
   return lines.join("\n");
 }
+
+// CLI plumbing
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { readStructuredRules } from "./sources/structured-rules";
+
+interface CliOpts {
+  edition: "2014" | "2024" | "all";
+  reportPath: string;
+}
+
+function parseCli(argv: string[]): CliOpts {
+  let edition: CliOpts["edition"] = "all";
+  let reportPath = path.resolve(__dirname, "audit-merger-gaps.report.md");
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--edition") edition = argv[++i] as CliOpts["edition"];
+    else if (a === "--report") reportPath = path.resolve(argv[++i]);
+  }
+  return { edition, reportPath };
+}
+
+function loadOpen5eCache(edition: "2014" | "2024"): Array<Record<string, unknown>> {
+  const cachePath = path.resolve(__dirname, ".cache/open5e", `magicitems.${edition}.json`);
+  if (!fs.existsSync(cachePath)) {
+    throw new Error(`Open5e cache missing: ${cachePath}. Run 'npm run build:srd-canonical' first.`);
+  }
+  const raw = JSON.parse(fs.readFileSync(cachePath, "utf8")) as { results?: Array<Record<string, unknown>> };
+  return raw.results ?? [];
+}
+
+async function loadFivetoolsItems(edition: "2014" | "2024", rootPath: string): Promise<Array<Record<string, unknown>>> {
+  const slugSet = new Set<string>(); // empty set is fine — readStructuredRules has a magic-items code path that emits all matching-source items.
+  const results = await readStructuredRules({ kind: "magicitems", edition, rootPath, slugSet });
+  return results as unknown as Array<Record<string, unknown>>;
+}
+
+async function runEdition(edition: "2014" | "2024", rootPath: string): Promise<Finding[]> {
+  const open5e = loadOpen5eCache(edition);
+  const fivetools = await loadFivetoolsItems(edition, rootPath);
+  const pairs = joinSources(open5e, fivetools, edition);
+  const findings: Finding[] = [];
+  for (const p of pairs) findings.push(...auditPair(p));
+  return findings;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  (async () => {
+    const opts = parseCli(process.argv.slice(2));
+    const rootPath = process.env.STRUCTURED_RULES_PATH ?? "";
+    if (!rootPath) {
+      console.error("STRUCTURED_RULES_PATH env var required.");
+      process.exit(2);
+    }
+    const editions: Array<"2014" | "2024"> = opts.edition === "all" ? ["2014", "2024"] : [opts.edition];
+    const allFindings: Finding[] = [];
+    for (const ed of editions) {
+      allFindings.push(...await runEdition(ed, rootPath));
+    }
+    const buckets = partitionFindings(allFindings);
+    const md = renderMarkdown(buckets);
+    fs.writeFileSync(opts.reportPath, md, "utf8");
+    console.log(`[audit-merger-gaps] wrote ${opts.reportPath}`);
+    console.log(`[audit-merger-gaps] material:           ${buckets.material.length}`);
+    console.log(`[audit-merger-gaps] material disagree:  ${buckets.materialDisagree.length}`);
+    console.log(`[audit-merger-gaps] informational:      ${buckets.informational.length}`);
+    console.log(`[audit-merger-gaps] informational disagree: ${buckets.informationalDisagree.length}`);
+    console.log(`[audit-merger-gaps] symmetric:          ${buckets.symmetric.length}`);
+    if (buckets.material.length > 0) {
+      console.log(`[audit-merger-gaps] ⚠️  material gaps present — review report for Phase 2 fix list`);
+    }
+  })().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}

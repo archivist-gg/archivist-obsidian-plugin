@@ -20,4 +20,5 @@ tools/srd-canonical/.cache/
 
 # audit work product (regenerated each run; not tracked)
 tools/srd-canonical/audit-conditions.report.md
+tools/srd-canonical/audit-merger-gaps.report.md
 
