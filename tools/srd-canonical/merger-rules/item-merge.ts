@@ -614,29 +614,28 @@ function applyCuratedField(item: ItemCanonical, field: BonusFieldPath, conds: Co
   writeBonusValue(bonuses, field, { value: existingValue, when: conds });
 }
 
+function readNumericFromBonusField(
+  raw: NumberOrConditional | "walk" | undefined,
+): number | undefined {
+  if (typeof raw === "number") return raw;
+  if (isConditionalBonus(raw)) return raw.value;
+  return undefined;
+}
+
 function readBonusValue(bonuses: ItemBonuses, field: BonusFieldPath): number | undefined {
   if (
     field === "weapon_attack" || field === "weapon_damage" || field === "ac"
     || field === "spell_attack" || field === "spell_save_dc" || field === "saving_throws"
   ) {
-    const raw = bonuses[field];
-    if (typeof raw === "number") return raw;
-    if (isConditionalBonus(raw)) return raw.value;
-    return undefined;
+    return readNumericFromBonusField(bonuses[field]);
   }
   if (field.startsWith("speed.")) {
     const sub = field.slice("speed.".length) as "walk" | "fly" | "swim" | "climb";
-    const raw = bonuses.speed?.[sub];
-    if (typeof raw === "number") return raw;
-    if (isConditionalBonus(raw)) return raw.value;
-    return undefined;
+    return readNumericFromBonusField(bonuses.speed?.[sub]);
   }
   if (field.startsWith("ability_scores.bonus.")) {
     const sub = field.slice("ability_scores.bonus.".length) as "str" | "dex" | "con" | "int" | "wis" | "cha";
-    const raw = bonuses.ability_scores?.bonus?.[sub];
-    if (typeof raw === "number") return raw;
-    if (isConditionalBonus(raw)) return raw.value;
-    return undefined;
+    return readNumericFromBonusField(bonuses.ability_scores?.bonus?.[sub]);
   }
   return undefined;
 }
