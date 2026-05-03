@@ -110,7 +110,12 @@ type ScalarBonusKey =
   | "saving_throws";
 
 const STRUCTURED_BONUS_KEYS: Array<[string, ScalarBonusKey]> = [
+  // bonusWeapon ("+N") is the 5e convention for a magic +N weapon — applies
+  // to BOTH attack AND damage rolls. Mirror the variant pipeline's dual-emit
+  // (expand-variants.ts:185-191). Items that need attack-only or damage-only
+  // semantics use the explicit bonusWeaponAttack / bonusWeaponDamage fields.
   ["bonusWeapon", "weapon_attack"],
+  ["bonusWeapon", "weapon_damage"],
   ["bonusWeaponAttack", "weapon_attack"],
   ["bonusWeaponDamage", "weapon_damage"],
   ["bonusAc", "ac"],
