@@ -475,7 +475,7 @@ export function enrichItemsWithFoundryEffects(
 function applyContribution(item: ItemCanonical, c: FoundryContribution): void {
   if (c.tag === "bonus") {
     const target = ensureBonuses(item);
-    setBonusField(target, c.field, c.value, c.when);
+    setBonusField(target, c.field, c.value, c.when, item.slug);
     return;
   }
   if (c.tag === "static") {
@@ -531,25 +531,26 @@ function setBonusField(
   field: BonusFieldPath,
   value: number,
   when: Condition[],
+  itemSlug?: string,
 ): void {
   if (
     field === "weapon_attack" || field === "weapon_damage" || field === "ac"
     || field === "spell_attack" || field === "spell_save_dc" || field === "saving_throws"
   ) {
-    target[field] = wrap(value, when, target[field]);
+    target[field] = wrap(value, when, target[field], itemSlug, field);
     return;
   }
   if (field.startsWith("speed.")) {
     const sub = field.slice("speed.".length) as "walk" | "fly" | "swim" | "climb";
     target.speed = target.speed ?? {};
-    target.speed[sub] = wrap(value, when, target.speed[sub]);
+    target.speed[sub] = wrap(value, when, target.speed[sub], itemSlug, field);
     return;
   }
   if (field.startsWith("ability_scores.bonus.")) {
     const sub = field.slice("ability_scores.bonus.".length) as "str" | "dex" | "con" | "int" | "wis" | "cha";
     target.ability_scores = target.ability_scores ?? {};
     target.ability_scores.bonus = target.ability_scores.bonus ?? {};
-    target.ability_scores.bonus[sub] = wrap(value, when, target.ability_scores.bonus[sub]);
+    target.ability_scores.bonus[sub] = wrap(value, when, target.ability_scores.bonus[sub], itemSlug, field);
     return;
   }
 }
@@ -558,10 +559,19 @@ function wrap(
   value: number,
   when: Condition[],
   existing: NumberOrConditional | "walk" | undefined,
+  itemSlug?: string,
+  fieldName?: string,
 ): NumberOrConditional {
   if (when.length === 0) return value;
   if (existing === undefined || typeof existing === "number" || existing === "walk") {
     return { value, when };
+  }
+  if (existing.value !== value) {
+    const slug = itemSlug ?? "<unknown>";
+    const field = fieldName ?? "<unknown-field>";
+    console.warn(
+      `[item-merge] ${slug}: ${field} value mismatch — keeping existing ${existing.value}, dropping new ${value}`,
+    );
   }
   const merged: Condition[] = [...existing.when];
   for (const c of when) if (!merged.includes(c)) merged.push(c);
