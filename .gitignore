@@ -18,3 +18,6 @@ tools/srd-canonical/.cache/
 # loose files would add ~15MB of duplicated content to the repo.
 .compendium-bundle/*/
 
+# audit work product (regenerated each run; not tracked)
+tools/srd-canonical/audit-conditions.report.md
+
