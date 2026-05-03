@@ -379,7 +379,15 @@
       "required": true
     },
     "bonuses": {
-      "ac": 2
+      "ac": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "vs_attack_type",
+            "value": "ranged"
+          }
+        ]
+      }
     },
     "tier": "major"
   },
@@ -775,9 +783,33 @@
       "required": true
     },
     "bonuses": {
-      "weapon_damage": 2
+      "weapon_damage": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "on_attack_type",
+            "value": "ranged"
+          },
+          {
+            "kind": "any_of",
+            "conditions": [
+              {
+                "kind": "with_weapon_property",
+                "value": "longbow"
+              },
+              {
+                "kind": "with_weapon_property",
+                "value": "shortbow"
+              }
+            ]
+          }
+        ]
+      }
     },
-    "tier": "major"
+    "tier": "major",
+    "grants": {
+      "proficiency": true
+    }
   },
   {
     "slug": "srd-5e_bracers-of-defense",
@@ -791,7 +823,17 @@
       "required": true
     },
     "bonuses": {
-      "ac": 2
+      "ac": {
+        "value": 2,
+        "when": [
+          {
+            "kind": "no_armor"
+          },
+          {
+            "kind": "no_shield"
+          }
+        ]
+      }
     },
     "tier": "major"
   },
@@ -1040,7 +1082,14 @@
     "type": "wondrous item",
     "bonuses": {
       "speed": {
-        "swim": 60
+        "swim": {
+          "value": 60,
+          "when": [
+            {
+              "kind": "underwater"
+            }
+          ]
+        }
       }
     },
     "tier": "minor"
@@ -3574,7 +3623,15 @@
     "weight": 4,
     "base_item": "[[SRD 5e/Weapons/Mace]]",
     "bonuses": {
-      "weapon_attack": 1
+      "weapon_attack": {
+        "value": 1,
+        "when": [
+          {
+            "kind": "vs_creature_type",
+            "value": "construct"
+          }
+        ]
+      }
     },
     "tier": "major"
   },
