@@ -227,6 +227,11 @@ function titleCaseWords(s: string): string {
   return s.split(/[-_]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
+export function cpToGpString(cp: number | null | undefined): string | undefined {
+  if (typeof cp !== "number" || cp <= 0) return undefined;
+  return (cp / 100).toFixed(2);
+}
+
 export function baseItemFromStructured(
   slug: string | null | undefined,
   edition: "2014" | "2024",

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
-import { baseItemFromStructured } from "../../../tools/srd-canonical/merger-rules/item-merge";
+import { baseItemFromStructured, cpToGpString } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
@@ -215,6 +215,27 @@ describe("itemMergeRule", () => {
       expect(baseItemFromStructured("", "2014", "weapon")).toBeUndefined();
       expect(baseItemFromStructured(null as unknown as string, "2014", "weapon")).toBeUndefined();
       expect(baseItemFromStructured("|", "2014", "weapon")).toBeUndefined();
+    });
+  });
+
+  describe("cpToGpString", () => {
+    it("100 cp → '1.00'", () => {
+      expect(cpToGpString(100)).toBe("1.00");
+    });
+
+    it("25 cp → '0.25'", () => {
+      expect(cpToGpString(25)).toBe("0.25");
+    });
+
+    it("1 cp → '0.01'", () => {
+      expect(cpToGpString(1)).toBe("0.01");
+    });
+
+    it("0 / null / undefined / negative → undefined", () => {
+      expect(cpToGpString(0)).toBeUndefined();
+      expect(cpToGpString(null as unknown as number)).toBeUndefined();
+      expect(cpToGpString(undefined)).toBeUndefined();
+      expect(cpToGpString(-1)).toBeUndefined();
     });
   });
 });
