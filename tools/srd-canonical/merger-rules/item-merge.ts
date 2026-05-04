@@ -265,8 +265,11 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
     name: base.name as string,
     edition: entry.edition,
     source: entry.edition === "2014" ? "SRD 5.1" : "SRD 5.2",
-    rarity: normalizeRarity(base.rarity),
-    description: rewriteCrossRefs((base.desc as string) ?? "", entry.edition),
+    rarity: normalizeRarity(base.rarity ?? (structured ? structured.rarity : undefined)),
+    description: rewriteCrossRefs(
+      ((base.desc as string) || (structured ? entriesToProse(structured.entries) : undefined) || ""),
+      entry.edition,
+    ),
   };
 
   // category → type (string)
@@ -291,6 +294,9 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
   // Open5e cost is a string like "0.00" (or null); skip empties / zeros.
   if (typeof base.cost === "string" && base.cost.length > 0 && base.cost !== "0.00") {
     out.cost = base.cost;
+  } else if (structured && typeof structured.value === "number") {
+    const gp = cpToGpString(structured.value);
+    if (gp) out.cost = gp;
   }
 
   // base_item wikilink for magical weapons / armor (Open5e v2 sub-objects).
@@ -301,14 +307,28 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
     out.base_item = `[[${compendium}/Weapons/${weapon.name}]]`;
   } else if (armor && typeof armor === "object" && typeof armor.name === "string") {
     out.base_item = `[[${compendium}/Armor/${armor.name}]]`;
+  } else if (structured) {
+    // Fallback to 5etools structured.baseItem when Open5e provides neither
+    // weapon nor armor sub-object. Type derived from out.type when set, else
+    // assume "weapon" (most common case for magic items with bonusWeapon*).
+    const fallbackType = out.type === "armor" || out.type === "shield" ? "armor" : "weapon";
+    const wikilink = baseItemFromStructured(structured.baseItem as string | undefined, entry.edition, fallbackType);
+    if (wikilink) out.base_item = wikilink;
   }
 
   // Attunement: canonical { required, restriction?, tags? } shape.
   const attunementDetail = base.attunement_detail;
-  if (requiresAttunement || (typeof attunementDetail === "string" && attunementDetail.length > 0)) {
-    out.attunement = { required: requiresAttunement };
+  const reqAttune = structured ? structured.reqAttune : undefined;
+  const structuredRequires = reqAttune === true || (typeof reqAttune === "string" && reqAttune.length > 0);
+  const structuredRestriction = (typeof reqAttune === "string" && reqAttune.length > 0 && reqAttune !== "true")
+    ? reqAttune
+    : undefined;
+  if (requiresAttunement || structuredRequires || (typeof attunementDetail === "string" && attunementDetail.length > 0)) {
+    out.attunement = { required: requiresAttunement || structuredRequires };
     if (typeof attunementDetail === "string" && attunementDetail.length > 0) {
       out.attunement.restriction = attunementDetail;
+    } else if (structuredRestriction) {
+      out.attunement.restriction = structuredRestriction;
     }
   }
 

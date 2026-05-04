@@ -258,6 +258,101 @@ describe("itemMergeRule", () => {
       expect(entriesToProse(["a", { type: "list", items: ["x"] }, "b"])).toBeUndefined();
     });
   });
+
+  function structuredFallbackEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown>; type?: string }): CanonicalEntry {
+    return {
+      slug: "srd-2024_test-item",
+      edition: "2024",
+      kind: "item",
+      base: { key: "srd-2024_test-item", name: "Test Item", rarity: "rare", ...overrides.base },
+      structured: (overrides.structured ?? null) as never,
+      activation: null,
+      overlay: null,
+    } as CanonicalEntry;
+  }
+
+  describe("structured fallbacks (Open5e empty → 5etools used)", () => {
+    it("base_item: falls back from structured.baseItem when base.weapon is null", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "Sun Blade", weapon: null, requires_attunement: true },
+        structured: { name: "Sun Blade", source: "XDMG", baseItem: "longsword|xphb", bonusWeapon: "+2" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.base_item).toBe("[[SRD 2024/Weapons/Longsword]]");
+    });
+
+    it("base_item: Open5e wins when both populated", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "Sun Blade", weapon: { name: "Greatsword" }, requires_attunement: true },
+        structured: { name: "Sun Blade", source: "XDMG", baseItem: "longsword|xphb" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.base_item).toBe("[[SRD 2024/Weapons/Greatsword]]");
+    });
+
+    it("attunement.required: false in Open5e + truthy reqAttune → required=true", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", requires_attunement: false },
+        structured: { name: "X", source: "XDMG", reqAttune: true },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.attunement?.required).toBe(true);
+    });
+
+    it("attunement.restriction: Open5e missing detail + reqAttune string → restriction set", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", requires_attunement: true, attunement_detail: null },
+        structured: { name: "X", source: "XDMG", reqAttune: "by a wizard" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.attunement?.restriction).toBe("by a wizard");
+    });
+
+    it("cost: '0.00' in Open5e + structured.value → converted gp string", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", cost: "0.00" },
+        structured: { name: "X", source: "XDMG", value: 100 },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.cost).toBe("1.00");
+    });
+
+    it("cost: Open5e wins when non-zero", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", cost: "5.00" },
+        structured: { name: "X", source: "XDMG", value: 100 },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.cost).toBe("5.00");
+    });
+
+    it("rarity: missing in Open5e + present in structured → fallback applies", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", rarity: undefined },
+        structured: { name: "X", source: "XDMG", rarity: "rare" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.rarity).toBe("rare");
+    });
+
+    it("description: empty Open5e desc + structured.entries (string array) → joined prose", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", desc: "" },
+        structured: { name: "X", source: "XDMG", entries: ["one", "two"] },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.description).toBe("one\n\ntwo");
+    });
+
+    it("description: empty Open5e + non-string entries → description stays empty", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", desc: "" },
+        structured: { name: "X", source: "XDMG", entries: ["one", { type: "list", items: ["x"] }] },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.description).toBe("");
+    });
+  });
 });
 
 describe("item-merge Open5e shape normalization", () => {
