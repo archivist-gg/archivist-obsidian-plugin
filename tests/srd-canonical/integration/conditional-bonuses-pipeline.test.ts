@@ -137,4 +137,22 @@ describe("conditional-bonuses pipeline", () => {
     expect(items[0].bonuses?.weapon_attack).toBe(2);
     expect(items[0].bonuses?.weapon_damage).toBe(2);
   });
+
+  it("2024 Sun Blade → emits damage_type + properties from structured 5etools fields", () => {
+    const entry = entryFor("Sun Blade", {
+      name: "Sun Blade",
+      source: "XDMG",
+      baseItem: "longsword|xphb",
+      bonusWeapon: "+2",
+      dmgType: "R",
+      property: ["F|XPHB", "V|XPHB"],
+    });
+    (entry.base as Record<string, unknown>).weapon = null;
+    (entry as { edition: "2014" | "2024" }).edition = "2024";
+    (entry as { slug: string }).slug = "srd-2024_sun-blade";
+    const items = [entry].map(toItemCanonical);
+    expect(items[0].base_item).toBe("[[SRD 2024/Weapons/Longsword]]");
+    expect(items[0].damage_type).toBe("radiant");
+    expect(items[0].properties).toEqual(["finesse", "versatile"]);
+  });
 });
