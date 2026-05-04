@@ -8,7 +8,6 @@ import type { WeaponEntity } from "../../../weapon/weapon.types";
 import type { ArmorEntity } from "../../../armor/armor.types";
 import type { Item } from "../../../item/item.types";
 import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
-import { resolveBaseItem } from "../../../../shared/entities/base-item-resolver";
 import { requiresAttunement } from "./requires-attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
@@ -18,9 +17,8 @@ export interface RowExpandCtx {
   resolved: ResolvedEquipped;
   app: App;
   editState: CharacterEditState | null;
-  /** Optional registry handle for resolving an Item's `base_item` wikilink to
-   *  the underlying weapon/armor entity. When omitted, the magic-weapon dual
-   *  render falls back to item-only display. */
+  /** Optional registry handle. Reserved for future expand-time entity lookups;
+   *  currently unused by the renderer itself but accepted for API stability. */
   registry?: EntityRegistry | null;
   onAttuneConflict?: (incomingIndex: number) => void;
 }
@@ -41,18 +39,6 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
     expand.appendChild(renderArmorBlock(ctx.resolved.entity as ArmorEntity));
   } else {
     const item = ctx.resolved.entity as Item;
-    // Magic weapon / magic armor dual-render: when a magic Item carries a
-    // `base_item` wikilink that resolves to a known weapon or armor entity,
-    // render the underlying weapon/armor block above the item card so the
-    // user sees damage/AC stats alongside the magical description.
-    if (ctx.registry && typeof item.base_item === "string" && item.base_item.length > 0) {
-      const found = resolveBaseItem(item.base_item, ctx.registry);
-      if (found?.entityType === "weapon") {
-        expand.appendChild(renderWeaponBlock(found.data as unknown as WeaponEntity));
-      } else if (found?.entityType === "armor") {
-        expand.appendChild(renderArmorBlock(found.data as unknown as ArmorEntity));
-      }
-    }
     // Async item renderer (markdown description); use a stable wrapper so the
     // returned `expand` reference stays valid for callers.
     const itemWrapper = expand.createDiv();

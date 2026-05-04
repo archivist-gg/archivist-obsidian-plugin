@@ -224,7 +224,7 @@ describe("renderRowExpand", () => {
     });
   });
 
-  it("magic weapon (entityType='item' with base_item) shows weapon block + item card", async () => {
+  it("magic weapon (entityType='item' with base_item) renders item card only — no duplicate base weapon block", async () => {
     const longsword = {
       slug: "srd-5e_longsword",
       name: "Longsword",
@@ -252,7 +252,11 @@ describe("renderRowExpand", () => {
     // Flush microtasks so the async item renderer fills its wrapper.
     await Promise.resolve();
     await Promise.resolve();
-    expect(root.querySelector(".archivist-weapon-block-wrapper, .archivist-weapon-block")).toBeTruthy();
+    await Promise.resolve();
+    // The item's own card renders — it carries its own `Base: <link>` reference,
+    // so the duplicate weapon stat block is redundant and should NOT appear.
     expect(root.querySelector(".archivist-item-block")).toBeTruthy();
+    expect(root.querySelector(".archivist-weapon-block-wrapper")).toBeNull();
+    expect(root.querySelector(".archivist-weapon-block")).toBeNull();
   });
 });
