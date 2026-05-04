@@ -886,3 +886,52 @@ describe("computeSlotsAndAttacks — carriedWeight", () => {
     expect(d.carriedWeight).toBe(0);
   });
 });
+
+describe("magic weapon overrides (name / damage type / properties)", () => {
+  const registry = buildEquipmentRegistry();
+  const profs = {
+    armor: { categories: [], specific: [] },
+    weapons: { categories: ["martial-melee"], specific: [] },
+    tools: { categories: [], specific: [] },
+  };
+  const mods: Record<string, number> = { str: 3, dex: 1, con: 0, int: 0, wis: 0, cha: 0 };
+
+  it("magic name flows through as the row label", () => {
+    const c = baseChar();
+    c.abilities = { str: 16, dex: 12, con: 10, int: 10, wis: 10, cha: 10 };
+    c.equipment = [{ item: "[[sun-blade]]", equipped: true, attuned: true, slot: "mainhand" }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, [], 2);
+    expect(d.attacks[0].name).toBe("Sun Blade");
+  });
+
+  it("damage type override flows through", () => {
+    const c = baseChar();
+    c.abilities = { str: 16, dex: 12, con: 10, int: 10, wis: 10, cha: 10 };
+    c.equipment = [{ item: "[[sun-blade]]", equipped: true, attuned: true, slot: "mainhand" }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, [], 2);
+    expect(d.attacks[0].damageType).toBe("radiant");
+  });
+
+  it("properties override flows through (replaces base weapon's properties)", () => {
+    const c = baseChar();
+    c.abilities = { str: 16, dex: 12, con: 10, int: 10, wis: 10, cha: 10 };
+    c.equipment = [{ item: "[[sun-blade]]", equipped: true, attuned: true, slot: "mainhand" }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, [], 2);
+    expect(d.attacks[0].properties).toEqual(["finesse", "versatile"]);
+  });
+
+  it("when no override is provided, base weapon's name / damage type / properties still flow", () => {
+    const c = baseChar();
+    c.abilities = { str: 16, dex: 12, con: 10, int: 10, wis: 10, cha: 10 };
+    // PLUS_ONE_LONGSWORD has bonuses but no damage_type/properties overrides.
+    c.equipment = [{ item: "[[plus-one-longsword]]", equipped: true, attuned: true, slot: "mainhand" }];
+    const d = computeSlotsAndAttacks(mkResolved(c), mods, profs, registry, [], 2);
+    // Name still falls through to the magic item's name (because it has one) —
+    // this assertion may shift if your spec's plumbing has the magic item's
+    // name win even without damage_type/properties overrides; here we lock in
+    // the spec's chosen behavior: magic itemName ALWAYS wins when present.
+    expect(d.attacks[0].name).toBe("+1 Longsword");
+    expect(d.attacks[0].damageType).toBe("slashing"); // base Longsword's
+    expect(d.attacks[0].properties).toEqual(["versatile"]); // base Longsword's
+  });
+});

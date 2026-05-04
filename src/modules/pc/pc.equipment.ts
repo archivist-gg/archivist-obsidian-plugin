@@ -503,7 +503,16 @@ function buildAttackRow(args: {
   mods: Record<Ability, number>;
   proficient: boolean;
   proficiencyBonus: number;
-  magic: { atk: number; dmg: number; extra?: string; sourceName?: string; informational: InformationalBonus[] };
+  magic: {
+    atk: number;
+    dmg: number;
+    extra?: string;
+    sourceName?: string;
+    itemName?: string;
+    damageTypeOverride?: string;
+    propertiesOverride?: string[];
+    informational: InformationalBonus[];
+  };
   slotKey?: "mainhand" | "offhand";
   actionCost?: "action" | "bonus-action" | "reaction" | "free" | "special";
   versatileDice?: string;
@@ -544,6 +553,10 @@ function buildAttackRow(args: {
   const stringProps: string[] = weapon.properties.filter(
     (p): p is Exclude<typeof p, { kind: "conditional" }> => typeof p === "string",
   );
+  // Magic items may carry an authoritative properties list (e.g. Sun Blade
+  // adds "finesse" to the base Longsword's "versatile"). When present, it
+  // replaces the base list entirely.
+  const finalProps: string[] = magic.propertiesOverride ?? stringProps;
 
   return {
     id,
@@ -551,14 +564,14 @@ function buildAttackRow(args: {
     range,
     toHit,
     damageDice,
-    damageType: weapon.damage.type,
+    damageType: magic.damageTypeOverride ?? weapon.damage.type,
     extraDamage: magic.extra,
-    properties: stringProps,
+    properties: finalProps,
     proficient,
     breakdown: { toHit: toHitBreakdown, damage: damageBreakdown },
     informational: args.magic.informational.length > 0 ? args.magic.informational : undefined,
     slotKey: args.slotKey,
-    subLabel: formatWeaponSubLabel(weapon, stringProps),
+    subLabel: formatWeaponSubLabel(weapon, finalProps),
     actionCost: args.actionCost,
     versatile: args.versatileDice ? { damageDice: formatDice(args.versatileDice) } : undefined,
   };
@@ -623,7 +636,7 @@ function computeAttacks(
     const ability = attackAbility(weapon, mods);
     const magic = magicBonusesForWeaponEntry(entry, registry, ctx);
     const ovr = entry.overrides ?? {};
-    const displayName = ovr.name ?? weapon.name;
+    const displayName = ovr.name ?? magic.itemName ?? weapon.name;
 
     // Versatile inline: when the weapon is versatile with a versatile_dice and
     // the offhand is free, the wielder could grip two-handed. Instead of a
