@@ -295,6 +295,7 @@
     "description": "While holding this Shield, you can take a Bonus Action to cause it to animate. The Shield leaps into the air and hovers in your space to protect you as if you were wielding it, leaving your hands free. The Shield remains animate for 1 minute, until you take a Bonus Action to end this effect, or until you die or have the Incapacitated condition, at which point the Shield falls to the ground or into your hand if you have one free.",
     "type": "armor",
     "weight": 6,
+    "base_item": "[[SRD 2024/Armor/Shield]]",
     "attunement": {
       "required": true
     },
@@ -322,6 +323,7 @@
     "description": "You have Resistance to Bludgeoning, Piercing, and Slashing damage while you wear this armor. Metal Shell. You can take a Magic action to give yourself Immunity to Bludgeoning, Piercing, and Slashing damage for 10 minutes or until you are no longer wearing the armor. Once this property is used, it can't be used again until the next dawn.",
     "type": "armor",
     "weight": 65,
+    "base_item": "[[SRD 2024/Armor/Plate armor]]",
     "attunement": {
       "required": true
     },
@@ -609,6 +611,7 @@
     "description": "You gain a +2 bonus to Armor Class against ranged attack rolls while you wield this Shield. This bonus is in addition to the Shield's normal bonus to AC. Whenever an attacker makes a ranged attack roll against a target within 5 feet of you, you can take a Reaction to become the target of the attack instead.",
     "type": "armor",
     "weight": 6,
+    "base_item": "[[SRD 2024/Armor/Shield]]",
     "attunement": {
       "required": true
     },
@@ -1508,6 +1511,7 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. You can take a Bonus Action to magically coat the blade with poison. The poison remains for 1 minute or until an attack using this weapon hits a creature. That creature must succeed on a DC 15 Constitution saving throw or take 2d10 Poison damage and have the Poisoned condition for 1 minute. The weapon can't be used this way again until the next dawn.",
     "type": "weapon",
     "weight": 1,
+    "base_item": "[[SRD 2024/Weapons/Dagger]]",
     "bonuses": {
       "weapon_attack": 1,
       "weapon_damage": 1
@@ -2711,6 +2715,7 @@
     "description": "You gain a +3 bonus to attack rolls and damage rolls made with this magic weapon. It has the Thrown property with a normal range of 20 feet and a long range of 60 feet. When you hit with a ranged attack using this weapon, it deals an extra 1d8 Force damage, or an extra 2d8 Force damage if the target is a Giant. Immediately after hitting or missing, the weapon flies back to your hand.",
     "type": "weapon",
     "weight": 5,
+    "base_item": "[[SRD 2024/Weapons/Warhammer]]",
     "attunement": {
       "required": true,
       "restriction": "Requires Attunement by a Dwarf or a Creature Attuned to a Belt of Dwarvenkind",
@@ -4235,6 +4240,7 @@
     "description": "While wearing this armor, you gain a +1 bonus to Armor Class. You can also take a Bonus Action to cause the armor to assume the appearance of a normal set of clothing or some other kind of armor. You decide what it looks like—including color, style, and accessories—but the armor retains its normal bulk and weight. The illusory appearance lasts until you use this property again or doff the armor.",
     "type": "armor",
     "weight": 13,
+    "base_item": "[[SRD 2024/Armor/Studded leather armor]]",
     "bonuses": {
       "ac": 1
     }
@@ -5603,6 +5609,7 @@
     "rarity": "rare",
     "description": "You can take a Magic action to blow the horn, which emits a thunderous blast in a 30-foot Cone that is audible out to 600 feet. Each creature in the Cone makes a DC 15 Constitution saving throw. On a failed save, a creature takes 5d8 Thunder damage and has the Deafened condition for 1 minute. On a successful save, a creature takes half as much damage only. Glass or crystal objects in the Cone that aren't being worn or carried take 10d8 Thunder damage. Each use of the horn's magic has a 20 percent chance of causing the horn to explode. The explosion deals 10d6 Force damage to the user and destroys the horn.",
     "type": "wondrous item",
+    "base_item": "[[SRD 2024/Weapons/Horn]]",
     "effects": [
       {
         "foundryId": "hornOfBlasting"
@@ -5694,7 +5701,8 @@
     "rarity": "uncommon",
     "description": "Each time you make an attack roll with this magic weapon and hit, you can have it deal Lightning damage instead of Piercing damage. Lightning Bolt. When you throw this weapon at a target no farther than 120 feet from you, you can forgo making a ranged attack roll and instead turn the weapon into a bolt of lightning. This bolt forms a 5-foot-wide Line between you and the target. The target and each other creature in the Line (excluding you) makes a DC 13 Dexterity saving throw, taking 4d6 Lightning damage on a failed save or half as much damage on a successful one. Immediately after dealing this damage, the weapon reappears in your hand. This property can't be used again until the next dawn.",
     "type": "weapon",
-    "weight": 2
+    "weight": 2,
+    "base_item": "[[SRD 2024/Weapons/Javelin]]"
   },
   {
     "slug": "srd-2024_javelin-1",
@@ -6159,6 +6167,7 @@
     "description": "When you hit a Fiend or an Undead with this magic weapon, that creature takes an extra 2d6 Radiant damage. If the target has 25 Hit Points or fewer after taking this damage, it must succeed on a DC 15 Wisdom saving throw or be destroyed. On a successful save, the creature has the Frightened condition until the end of your next turn. Light. While you hold this weapon, it sheds Bright Light in a 20-foot radius and Dim Light for an additional 20 feet.",
     "type": "weapon",
     "weight": 4,
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
     "attunement": {
       "required": true
     }
@@ -6172,6 +6181,7 @@
     "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. The bonus increases to +3 when you use the weapon to attack a Construct. When you roll a 20 on an attack roll made with this weapon, the target takes an extra 7 Bludgeoning damage, or 14 Bludgeoning damage if it's a Construct. If a Construct has 25 Hit Points or fewer after taking this damage, it is destroyed.",
     "type": "weapon",
     "weight": 4,
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
     "bonuses": {
       "weapon_attack": 1,
       "weapon_damage": 1
@@ -6186,6 +6196,7 @@
     "description": "This magic weapon has 3 charges and regains 1d3 expended charges daily at dawn. While holding the weapon, you can take a Magic action and expend 1 charge to release a wave of terror from it. Each creature of your choice within 30 feet of you must succeed on a DC 15 Wisdom saving throw or have the Frightened condition for 1 minute. While Frightened in this way, a creature must spend its turns trying to move as far away from you as it can, and it can't make Opportunity Attacks. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If it has nowhere it can move, the creature can take the Dodge action. At the end of each of its turns, a creature repeats the save, ending the effect on itself on a success.",
     "type": "weapon",
     "weight": 4,
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
     "attunement": {
       "required": true
     },
@@ -8663,6 +8674,7 @@
     "description": "You gain a +2 bonus to attack rolls and damage rolls made with this magic weapon. In addition, you can make one attack with it as a Bonus Action on each of your turns.",
     "type": "weapon",
     "weight": 3,
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
     "attunement": {
       "required": true
     },
@@ -8739,6 +8751,7 @@
     "description": "While holding this Shield, you have Resistance to damage from attacks made with Ranged weapons. Curse. This Shield is cursed. Attuning to it curses you until you are targeted by a Remove Curse spell or similar magic. Removing the Shield fails to end the curse on you. Whenever an attack with a Ranged weapon targets a creature within 10 feet of you, the curse causes you to become the target instead.",
     "type": "armor",
     "weight": 6,
+    "base_item": "[[SRD 2024/Armor/Shield]]",
     "attunement": {
       "required": true
     }
@@ -9065,6 +9078,7 @@
     "description": "While holding this Shield, you have Advantage on saving throws against spells and other magical effects, and spell attack rolls have Disadvantage against you.",
     "type": "armor",
     "weight": 6,
+    "base_item": "[[SRD 2024/Armor/Shield]]",
     "attunement": {
       "required": true
     }
@@ -9625,6 +9639,7 @@
     "weight": 4,
     "attunement": {
       "required": true,
+      "restriction": "by a cleric, druid, or warlock",
       "tags": [
         {
           "class": "cleric"
@@ -9715,6 +9730,7 @@
     "description": "This item appears to be a sword hilt. Blade of Radiance. While grasping the hilt, you can take a Bonus Action to cause a blade of pure radiance to spring into existence or make the blade disappear. While the blade exists, this magic weapon functions as a Longsword with the Finesse property. If you are proficient with Longswords or Shortswords, you are proficient with the Sun Blade. You gain a +2 bonus to attack rolls and damage rolls made with this weapon, which deals Radiant damage instead of Slashing damage. When you hit an Undead with it, that target takes an extra 1d8 Radiant damage. Sunlight. The sword's luminous blade emits Bright Light in a 15-foot radius and Dim Light for an additional 15 feet. The light is sunlight. While the blade persists, you can take a Magic action to expand or reduce its radius of Bright Light and Dim Light by 5 feet each, to a maximum of 30 feet each or a minimum of 10 feet each.",
     "type": "weapon",
     "weight": 3,
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
     "attunement": {
       "required": true
     },
@@ -9882,6 +9898,7 @@
     "description": "This magic weapon has 3 charges, and it regains 1d3 expended charges daily at dawn. While you carry it, you can expend 1 charge to cast Dominate Beast (save DC 15) from it on a Beast that has a Swim Speed.",
     "type": "weapon",
     "weight": 4,
+    "base_item": "[[SRD 2024/Weapons/Trident]]",
     "attunement": {
       "required": true
     },
