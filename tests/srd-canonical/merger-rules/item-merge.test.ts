@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
-import { baseItemFromStructured, cpToGpString } from "../../../tools/srd-canonical/merger-rules/item-merge";
+import { baseItemFromStructured, cpToGpString, entriesToProse } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
@@ -236,6 +236,26 @@ describe("itemMergeRule", () => {
       expect(cpToGpString(null as unknown as number)).toBeUndefined();
       expect(cpToGpString(undefined)).toBeUndefined();
       expect(cpToGpString(-1)).toBeUndefined();
+    });
+  });
+
+  describe("entriesToProse", () => {
+    it("plain string array → joined with double newlines", () => {
+      expect(entriesToProse(["one", "two", "three"])).toBe("one\n\ntwo\n\nthree");
+    });
+
+    it("single string → string without separators", () => {
+      expect(entriesToProse(["only"])).toBe("only");
+    });
+
+    it("empty array / null / undefined → undefined", () => {
+      expect(entriesToProse([])).toBeUndefined();
+      expect(entriesToProse(null as unknown as unknown[])).toBeUndefined();
+      expect(entriesToProse(undefined)).toBeUndefined();
+    });
+
+    it("mixed array with non-string element → undefined", () => {
+      expect(entriesToProse(["a", { type: "list", items: ["x"] }, "b"])).toBeUndefined();
     });
   });
 });

@@ -232,6 +232,12 @@ export function cpToGpString(cp: number | null | undefined): string | undefined 
   return (cp / 100).toFixed(2);
 }
 
+export function entriesToProse(entries: unknown): string | undefined {
+  if (!Array.isArray(entries) || entries.length === 0) return undefined;
+  if (!entries.every((e): e is string => typeof e === "string")) return undefined;
+  return entries.join("\n\n");
+}
+
 export function baseItemFromStructured(
   slug: string | null | undefined,
   edition: "2014" | "2024",
