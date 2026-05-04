@@ -259,6 +259,31 @@ export function mapDmgTypeCode(code: string | undefined | null): string | undefi
   return DMG_TYPE_CODE_MAP[code];
 }
 
+const PROPERTY_TAG_MAP: Record<string, string> = {
+  A: "ammunition",
+  F: "finesse",
+  H: "heavy",
+  L: "light",
+  LD: "loading",
+  R: "reach",
+  S: "special",
+  T: "thrown",
+  V: "versatile",
+  "2H": "two-handed",
+};
+
+export function mapPropertyTags(tags: unknown): string[] {
+  if (!Array.isArray(tags)) return [];
+  const out: string[] = [];
+  for (const tag of tags) {
+    if (typeof tag !== "string" || tag.length === 0) continue;
+    const prefix = tag.split("|")[0];
+    const mapped = PROPERTY_TAG_MAP[prefix];
+    if (mapped) out.push(mapped);
+  }
+  return out;
+}
+
 export function baseItemFromStructured(
   slug: string | null | undefined,
   edition: "2014" | "2024",

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import { baseItemFromStructured, cpToGpString, entriesToProse } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import { mapDmgTypeCode } from "../../../tools/srd-canonical/merger-rules/item-merge";
+import { mapPropertyTags } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
@@ -381,6 +382,50 @@ describe("itemMergeRule", () => {
       expect(mapDmgTypeCode(undefined)).toBeUndefined();
       expect(mapDmgTypeCode(null as unknown as string)).toBeUndefined();
       expect(mapDmgTypeCode(123 as unknown as string)).toBeUndefined();
+    });
+  });
+
+  describe("mapPropertyTags", () => {
+    it("maps single-letter prefixes with edition suffix", () => {
+      expect(mapPropertyTags(["F|XPHB", "V|XPHB"])).toEqual(["finesse", "versatile"]);
+      expect(mapPropertyTags(["F|PHB"])).toEqual(["finesse"]);
+    });
+
+    it("maps multi-letter prefixes (2H, LD)", () => {
+      expect(mapPropertyTags(["2H|XPHB", "H|XPHB"])).toEqual(["two-handed", "heavy"]);
+      expect(mapPropertyTags(["LD|PHB"])).toEqual(["loading"]);
+    });
+
+    it("maps tags without an edition suffix", () => {
+      expect(mapPropertyTags(["F", "V"])).toEqual(["finesse", "versatile"]);
+    });
+
+    it("drops unknown tags but keeps known ones in original order", () => {
+      expect(mapPropertyTags(["F|XPHB", "ZZ|XPHB", "V|XPHB"])).toEqual(["finesse", "versatile"]);
+    });
+
+    it("returns empty array for empty input", () => {
+      expect(mapPropertyTags([])).toEqual([]);
+    });
+
+    it("returns empty array for non-array / null / undefined", () => {
+      expect(mapPropertyTags(undefined)).toEqual([]);
+      expect(mapPropertyTags(null as unknown as string[])).toEqual([]);
+      expect(mapPropertyTags("F|XPHB" as unknown as string[])).toEqual([]);
+    });
+
+    it("ignores non-string array elements", () => {
+      expect(mapPropertyTags(["F|XPHB", 42 as unknown as string, "V|XPHB"])).toEqual(["finesse", "versatile"]);
+    });
+
+    it("maps the full standard weapon property set", () => {
+      expect(mapPropertyTags([
+        "A|XPHB", "F|XPHB", "H|XPHB", "L|XPHB", "LD|XPHB",
+        "R|XPHB", "S|XPHB", "T|XPHB", "V|XPHB", "2H|XPHB",
+      ])).toEqual([
+        "ammunition", "finesse", "heavy", "light", "loading",
+        "reach", "special", "thrown", "versatile", "two-handed",
+      ]);
     });
   });
 });
