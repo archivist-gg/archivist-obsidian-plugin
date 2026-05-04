@@ -223,6 +223,25 @@ function compendiumLabel(edition: "2014" | "2024"): string {
   return edition === "2014" ? "SRD 5e" : "SRD 2024";
 }
 
+function titleCaseWords(s: string): string {
+  return s.split(/[-_]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+export function baseItemFromStructured(
+  slug: string | null | undefined,
+  edition: "2014" | "2024",
+  type: string | undefined,
+): string | undefined {
+  if (typeof slug !== "string" || slug.length === 0) return undefined;
+  const baseSlug = slug.split("|")[0];
+  if (!baseSlug || baseSlug.length === 0) return undefined;
+  const subfolder = type === "weapon" ? "Weapons" : type === "armor" ? "Armor" : undefined;
+  if (!subfolder) return undefined;
+  const compendium = compendiumLabel(edition);
+  const baseName = titleCaseWords(baseSlug);
+  return `[[${compendium}/${subfolder}/${baseName}]]`;
+}
+
 export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
   const base = entry.base as Record<string, unknown>;
   const structured = entry.structured as Record<string, unknown> | null;

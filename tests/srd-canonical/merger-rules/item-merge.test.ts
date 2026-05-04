@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
+import { baseItemFromStructured } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
@@ -183,6 +184,38 @@ describe("itemMergeRule", () => {
     const out = toItemCanonical(entry);
     expect(out.bonuses?.weapon_damage).toBe(2);
     expect(out.bonuses?.weapon_attack).toBeUndefined();
+  });
+
+  describe("baseItemFromStructured", () => {
+    it("parses 5etools slug into a SRD 5e wikilink for weapons (2014)", () => {
+      expect(baseItemFromStructured("longsword|phb", "2014", "weapon"))
+        .toBe("[[SRD 5e/Weapons/Longsword]]");
+    });
+
+    it("parses 5etools slug into a SRD 2024 wikilink for weapons (2024)", () => {
+      expect(baseItemFromStructured("longsword|xphb", "2024", "weapon"))
+        .toBe("[[SRD 2024/Weapons/Longsword]]");
+    });
+
+    it("title-cases multi-word kebab base names", () => {
+      expect(baseItemFromStructured("hand-crossbow|phb", "2014", "weapon"))
+        .toBe("[[SRD 5e/Weapons/Hand Crossbow]]");
+    });
+
+    it("uses the Armor subfolder for armor type", () => {
+      expect(baseItemFromStructured("plate|phb", "2014", "armor"))
+        .toBe("[[SRD 5e/Armor/Plate]]");
+    });
+
+    it("returns undefined for unknown type", () => {
+      expect(baseItemFromStructured("longsword|phb", "2014", "wondrous")).toBeUndefined();
+    });
+
+    it("returns undefined for empty / malformed slugs", () => {
+      expect(baseItemFromStructured("", "2014", "weapon")).toBeUndefined();
+      expect(baseItemFromStructured(null as unknown as string, "2014", "weapon")).toBeUndefined();
+      expect(baseItemFromStructured("|", "2014", "weapon")).toBeUndefined();
+    });
   });
 });
 
