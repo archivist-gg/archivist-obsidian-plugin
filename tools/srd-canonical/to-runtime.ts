@@ -58,7 +58,7 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
     "resist", "immune", "vulnerable", "condition_immune",
     "grants", "container", "light",
     "cursed", "sentient", "focus",
-    "damage", "weapon_category", "armor_category",
+    "damage", "damage_type", "properties", "weapon_category", "armor_category",
     // Reserved.
     "consumes",
   ]),
@@ -71,7 +71,7 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
     "resist", "immune", "vulnerable", "condition_immune",
     "grants", "container", "light",
     "cursed", "sentient", "focus",
-    "damage", "weapon_category", "armor_category",
+    "damage", "damage_type", "properties", "weapon_category", "armor_category",
     "consumes",
   ]),
   spell: new Set([

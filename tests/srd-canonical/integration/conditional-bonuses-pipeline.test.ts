@@ -7,6 +7,7 @@ import {
 } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 import type { FoundryItem } from "../../../tools/srd-canonical/sources/foundry-items";
+import { projectToRuntime } from "../../../tools/srd-canonical/to-runtime";
 
 function entryFor(name: string, structured: Record<string, unknown> | null = null, baseExtra: Record<string, unknown> = {}): CanonicalEntry {
   const slug = `srd-5e_${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
@@ -154,5 +155,25 @@ describe("conditional-bonuses pipeline", () => {
     expect(items[0].base_item).toBe("[[SRD 2024/Weapons/Longsword]]");
     expect(items[0].damage_type).toBe("radiant");
     expect(items[0].properties).toEqual(["finesse", "versatile"]);
+  });
+
+  it("2024 Sun Blade → damage_type + properties survive runtime projection", () => {
+    const entry = entryFor("Sun Blade", {
+      name: "Sun Blade",
+      source: "XDMG",
+      baseItem: "longsword|xphb",
+      bonusWeapon: "+2",
+      dmgType: "R",
+      property: ["F|XPHB", "V|XPHB"],
+    });
+    (entry.base as Record<string, unknown>).weapon = null;
+    (entry as { edition: "2014" | "2024" }).edition = "2024";
+    (entry as { slug: string }).slug = "srd-2024_sun-blade";
+    const canonical = toItemCanonical(entry);
+    // Magic items are emitted under the "item" runtime kind (see
+    // OPEN5E_KIND_TO_ENTITY in tools/srd-canonical/index.ts: magicitems → "item").
+    const runtime = projectToRuntime("item", canonical as unknown as Record<string, unknown>);
+    expect(runtime.damage_type).toBe("radiant");
+    expect(runtime.properties).toEqual(["finesse", "versatile"]);
   });
 });
