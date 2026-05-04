@@ -109,6 +109,18 @@ export const PLUS_ONE_LONGSWORD: ItemEntity = {
   attunement: false,
 };
 
+export const SUN_BLADE: ItemEntity = {
+  name: "Sun Blade",
+  slug: "sun-blade",
+  type: "weapon",
+  rarity: "rare",
+  base_item: "longsword",
+  bonuses: { weapon_attack: 2, weapon_damage: 2 },
+  attunement: { required: true },
+  damage_type: "radiant",
+  properties: ["finesse", "versatile"],
+};
+
 export const BELT_OF_HILL_GIANT_STRENGTH: ItemEntity = {
   name: "Belt of Hill Giant Strength",
   slug: "belt-of-hill-giant-strength",
@@ -150,6 +162,7 @@ export function buildEquipmentRegistry(): EntityRegistry {
     { slug: "cloak-of-protection", entityType: "item", name: "Cloak of Protection", data: CLOAK_OF_PROTECTION },
     { slug: "flame-tongue", entityType: "item", name: "Flame Tongue", data: FLAME_TONGUE },
     { slug: "plus-one-longsword", entityType: "item", name: "+1 Longsword", data: PLUS_ONE_LONGSWORD },
+    { slug: "sun-blade", entityType: "item", name: "Sun Blade", data: SUN_BLADE },
     {
       slug: "belt-of-hill-giant-strength",
       entityType: "item",
