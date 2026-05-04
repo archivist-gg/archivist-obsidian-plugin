@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import { baseItemFromStructured, cpToGpString, entriesToProse } from "../../../tools/srd-canonical/merger-rules/item-merge";
+import { mapDmgTypeCode } from "../../../tools/srd-canonical/merger-rules/item-merge";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
@@ -351,6 +352,35 @@ describe("itemMergeRule", () => {
       });
       const out = toItemCanonical(entry);
       expect(out.description).toBe("");
+    });
+  });
+
+  describe("mapDmgTypeCode", () => {
+    it("maps physical damage codes", () => {
+      expect(mapDmgTypeCode("S")).toBe("slashing");
+      expect(mapDmgTypeCode("P")).toBe("piercing");
+      expect(mapDmgTypeCode("B")).toBe("bludgeoning");
+    });
+
+    it("maps magical damage codes", () => {
+      expect(mapDmgTypeCode("R")).toBe("radiant");
+      expect(mapDmgTypeCode("N")).toBe("necrotic");
+      expect(mapDmgTypeCode("F")).toBe("fire");
+      expect(mapDmgTypeCode("C")).toBe("cold");
+      expect(mapDmgTypeCode("O")).toBe("force");
+      expect(mapDmgTypeCode("Y")).toBe("psychic");
+      expect(mapDmgTypeCode("T")).toBe("thunder");
+      expect(mapDmgTypeCode("A")).toBe("acid");
+      expect(mapDmgTypeCode("L")).toBe("lightning");
+      expect(mapDmgTypeCode("I")).toBe("poison");
+    });
+
+    it("returns undefined for unknown codes", () => {
+      expect(mapDmgTypeCode("Z")).toBeUndefined();
+      expect(mapDmgTypeCode("")).toBeUndefined();
+      expect(mapDmgTypeCode(undefined)).toBeUndefined();
+      expect(mapDmgTypeCode(null as unknown as string)).toBeUndefined();
+      expect(mapDmgTypeCode(123 as unknown as string)).toBeUndefined();
     });
   });
 });

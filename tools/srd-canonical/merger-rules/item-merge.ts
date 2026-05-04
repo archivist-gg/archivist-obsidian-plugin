@@ -238,6 +238,27 @@ export function entriesToProse(entries: unknown): string | undefined {
   return entries.join("\n\n");
 }
 
+const DMG_TYPE_CODE_MAP: Record<string, string> = {
+  S: "slashing",
+  P: "piercing",
+  B: "bludgeoning",
+  R: "radiant",
+  N: "necrotic",
+  F: "fire",
+  C: "cold",
+  O: "force",
+  Y: "psychic",
+  T: "thunder",
+  A: "acid",
+  L: "lightning",
+  I: "poison",
+};
+
+export function mapDmgTypeCode(code: string | undefined | null): string | undefined {
+  if (typeof code !== "string" || code.length === 0) return undefined;
+  return DMG_TYPE_CODE_MAP[code];
+}
+
 export function baseItemFromStructured(
   slug: string | null | undefined,
   edition: "2014" | "2024",
