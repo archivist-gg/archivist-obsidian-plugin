@@ -121,4 +121,20 @@ describe("conditional-bonuses pipeline", () => {
       when: [{ kind: "vs_creature_type", value: "construct" }],
     });
   });
+
+  it("2024 Sun Blade → base_item from structured fallback + dual-emit weapon bonuses", () => {
+    const entry = entryFor("Sun Blade", { name: "Sun Blade", source: "XDMG", baseItem: "longsword|xphb", bonusWeapon: "+2" });
+    // Override the entry to mimic Open5e's 2024 Sun Blade shape: weapon: null,
+    // edition 2024, and the 2024 slug (so curator-conditions rules keyed on
+    // the 2014 slug `srd-5e_sun-blade` don't match this 2024 fixture).
+    (entry.base as Record<string, unknown>).weapon = null;
+    (entry as { edition: "2014" | "2024" }).edition = "2024";
+    (entry as { slug: string }).slug = "srd-2024_sun-blade";
+    const items = [entry].map(toItemCanonical);
+    enrichItemsWithFoundryEffects(items, new Map());
+    enrichItemsWithCuratedConditions(items);
+    expect(items[0].base_item).toBe("[[SRD 2024/Weapons/Longsword]]");
+    expect(items[0].bonuses?.weapon_attack).toBe(2);
+    expect(items[0].bonuses?.weapon_damage).toBe(2);
+  });
 });
