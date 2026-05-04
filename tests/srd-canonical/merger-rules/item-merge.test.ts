@@ -428,6 +428,72 @@ describe("itemMergeRule", () => {
       ]);
     });
   });
+
+  describe("magic-weapon canonical fields (damage_type, properties)", () => {
+    it("damage_type: structured.dmgType maps to canonical name when present", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "Sun Blade", weapon: null },
+        structured: { name: "Sun Blade", source: "XDMG", baseItem: "longsword|xphb", dmgType: "R" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.damage_type).toBe("radiant");
+    });
+
+    it("damage_type: omitted when structured.dmgType absent", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X", weapon: { name: "Mace" } },
+        structured: { name: "X", source: "XDMG", baseItem: "mace|xphb" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.damage_type).toBeUndefined();
+    });
+
+    it("damage_type: omitted when structured.dmgType is unknown code", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X" },
+        structured: { name: "X", source: "XDMG", dmgType: "Z" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.damage_type).toBeUndefined();
+    });
+
+    it("properties: structured.property maps to canonical names when present", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "Sun Blade", weapon: null },
+        structured: { name: "Sun Blade", source: "XDMG", property: ["F|XPHB", "V|XPHB"] },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.properties).toEqual(["finesse", "versatile"]);
+    });
+
+    it("properties: omitted when structured.property absent", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X" },
+        structured: { name: "X", source: "XDMG", baseItem: "longsword|xphb" },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.properties).toBeUndefined();
+    });
+
+    it("properties: omitted when structured.property is empty array", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X" },
+        structured: { name: "X", source: "XDMG", property: [] },
+      });
+      const out = toItemCanonical(entry);
+      expect(out.properties).toBeUndefined();
+    });
+
+    it("properties: omitted when no structured at all", () => {
+      const entry = structuredFallbackEntry({
+        base: { name: "X" },
+        structured: undefined,
+      });
+      const out = toItemCanonical(entry);
+      expect(out.damage_type).toBeUndefined();
+      expect(out.properties).toBeUndefined();
+    });
+  });
 });
 
 describe("item-merge Open5e shape normalization", () => {

@@ -79,6 +79,10 @@ export interface ItemCanonical {
   resist?: string[];
   /** Damage vulnerabilities granted by attuning/wearing the item. */
   vulnerable?: string[];
+  /** 5etools magic-weapon damage-type override (e.g. Sun Blade → "radiant"). */
+  damage_type?: string;
+  /** 5etools magic-weapon properties (authoritative when present, replacing base_item's). */
+  properties?: string[];
   /** Side-channel grants: senses, proficiency, etc. */
   grants?: {
     proficiency?: boolean;
@@ -376,6 +380,17 @@ export function toItemCanonical(entry: CanonicalEntry): ItemCanonical {
     } else if (structuredRestriction) {
       out.attunement.restriction = structuredRestriction;
     }
+  }
+
+  // 5etools weapon-identity overrides for magic items: damage type override
+  // and authoritative properties list. These are used by the action renderer
+  // to keep the magic item's identity (name + damage type + properties)
+  // distinct from the resolved base_item weapon.
+  if (structured) {
+    const dt = mapDmgTypeCode(typeof structured.dmgType === "string" ? structured.dmgType : undefined);
+    if (dt) out.damage_type = dt;
+    const props = mapPropertyTags(structured.property);
+    if (props.length > 0) out.properties = props;
   }
 
   // Structured-rules enrichment.
