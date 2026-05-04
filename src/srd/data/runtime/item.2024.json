@@ -1512,6 +1512,12 @@
     "type": "weapon",
     "weight": 1,
     "base_item": "[[SRD 2024/Weapons/Dagger]]",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
     "bonuses": {
       "weapon_attack": 1,
       "weapon_damage": 1
@@ -2725,6 +2731,11 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 3,
       "weapon_damage": 3
@@ -5702,7 +5713,11 @@
     "description": "Each time you make an attack roll with this magic weapon and hit, you can have it deal Lightning damage instead of Piercing damage. Lightning Bolt. When you throw this weapon at a target no farther than 120 feet from you, you can forgo making a ranged attack roll and instead turn the weapon into a bolt of lightning. This bolt forms a 5-foot-wide Line between you and the target. The target and each other creature in the Line (excluding you) makes a DC 13 Dexterity saving throw, taking 4d6 Lightning damage on a failed save or half as much damage on a successful one. Immediately after dealing this damage, the weapon reappears in your hand. This property can't be used again until the next dawn.",
     "type": "weapon",
     "weight": 2,
-    "base_item": "[[SRD 2024/Weapons/Javelin]]"
+    "base_item": "[[SRD 2024/Weapons/Javelin]]",
+    "damage_type": "piercing",
+    "properties": [
+      "thrown"
+    ]
   },
   {
     "slug": "srd-2024_javelin-1",
@@ -6170,7 +6185,8 @@
     "base_item": "[[SRD 2024/Weapons/Mace]]",
     "attunement": {
       "required": true
-    }
+    },
+    "damage_type": "bludgeoning"
   },
   {
     "slug": "srd-2024_mace-of-smiting",
@@ -6182,6 +6198,7 @@
     "type": "weapon",
     "weight": 4,
     "base_item": "[[SRD 2024/Weapons/Mace]]",
+    "damage_type": "bludgeoning",
     "bonuses": {
       "weapon_attack": 1,
       "weapon_damage": 1
@@ -6200,6 +6217,7 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
     "charges": {
       "max": 3,
       "recharge": "dawn",
@@ -8678,6 +8696,11 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "slashing",
+    "properties": [
+      "finesse",
+      "light"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2
@@ -9167,6 +9190,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -9209,6 +9236,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -9258,6 +9289,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -9305,6 +9340,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "will": [
         "cure wounds|xphb"
@@ -9348,6 +9387,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
@@ -9394,6 +9437,10 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 3,
       "weapon_damage": 3
@@ -9437,6 +9484,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "4": [
@@ -9477,6 +9528,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
@@ -9546,7 +9601,11 @@
     "weight": 4,
     "attunement": {
       "required": true
-    }
+    },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ]
   },
   {
     "slug": "srd-2024_staff-of-the-woodlands",
@@ -9566,6 +9625,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
@@ -9623,6 +9686,10 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2
@@ -9652,6 +9719,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "charges": {
       "max": 3,
       "recharge": "dawn",
@@ -9734,6 +9805,11 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "radiant",
+    "properties": [
+      "finesse",
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2
@@ -9902,6 +9978,11 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "piercing",
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [

@@ -1383,6 +1383,12 @@
     "type": "weapon",
     "weight": 1,
     "base_item": "[[SRD 5e/Weapons/Dagger]]",
+    "damage_type": "piercing",
+    "properties": [
+      "finesse",
+      "light",
+      "thrown"
+    ],
     "bonuses": {
       "weapon_attack": 1,
       "weapon_damage": 1
@@ -1785,6 +1791,11 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 3,
       "weapon_damage": 3
@@ -2639,6 +2650,11 @@
     "type": "weapon",
     "weight": 10,
     "base_item": "[[SRD 5e/Weapons/Maul]]",
+    "damage_type": "bludgeoning",
+    "properties": [
+      "heavy",
+      "two-handed"
+    ],
     "bonuses": {
       "weapon_attack": 1,
       "weapon_damage": 1
@@ -3293,6 +3309,10 @@
     "type": "weapon",
     "weight": 2,
     "base_item": "[[SRD 5e/Weapons/Javelin]]",
+    "damage_type": "piercing",
+    "properties": [
+      "thrown"
+    ],
     "tier": "major"
   },
   {
@@ -3619,6 +3639,7 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
     "tier": "major"
   },
   {
@@ -3631,6 +3652,7 @@
     "type": "weapon",
     "weight": 4,
     "base_item": "[[SRD 5e/Weapons/Mace]]",
+    "damage_type": "bludgeoning",
     "bonuses": {
       "weapon_attack": {
         "value": 1,
@@ -3666,6 +3688,7 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
     "charges": {
       "max": 3,
       "recharge": "dawn",
@@ -4158,6 +4181,12 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "piercing",
+    "properties": [
+      "ammunition",
+      "heavy",
+      "two-handed"
+    ],
     "tier": "major"
   },
   {
@@ -5504,6 +5533,11 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "slashing",
+    "properties": [
+      "finesse",
+      "light"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2
@@ -5929,6 +5963,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -5967,6 +6005,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -6014,6 +6056,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -6059,6 +6105,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
@@ -6103,6 +6153,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
@@ -6150,6 +6204,10 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 3,
       "weapon_damage": 3
@@ -6194,6 +6252,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "4": [
@@ -6235,6 +6297,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
@@ -6306,6 +6372,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "tier": "major"
   },
   {
@@ -6326,6 +6396,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
@@ -6374,6 +6448,10 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2
@@ -6404,6 +6482,10 @@
         }
       ]
     },
+    "damage_type": "bludgeoning",
+    "properties": [
+      "versatile"
+    ],
     "charges": {
       "max": 3,
       "recharge": "dawn",
@@ -6454,6 +6536,11 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "radiant",
+    "properties": [
+      "finesse",
+      "versatile"
+    ],
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": {
@@ -6809,6 +6896,11 @@
     "attunement": {
       "required": true
     },
+    "damage_type": "piercing",
+    "properties": [
+      "thrown",
+      "versatile"
+    ],
     "attached_spells": {
       "charges": {
         "1": [
