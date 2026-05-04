@@ -443,6 +443,9 @@ function magicBonusesForWeaponEntry(
   dmg: number;
   extra?: string;
   sourceName?: string;
+  itemName?: string;
+  damageTypeOverride?: string;
+  propertiesOverride?: string[];
   informational: InformationalBonus[];
 } {
   const { entity } = resolveEquipmentEntity(entry, registry);
@@ -454,10 +457,20 @@ function magicBonusesForWeaponEntry(
   let itemAttack = 0;
   let itemDamage = 0;
   let sourceName: string | undefined;
+  let itemName: string | undefined;
+  let damageTypeOverride: string | undefined;
+  let propertiesOverride: string[] | undefined;
   const informational: InformationalBonus[] = [];
 
   if (entity && isItemEntity(entity)) {
     sourceName = entity.name;
+    itemName = entity.name;
+    damageTypeOverride = typeof entity.damage_type === "string" && entity.damage_type.length > 0
+      ? entity.damage_type
+      : undefined;
+    propertiesOverride = Array.isArray(entity.properties) && entity.properties.length > 0
+      ? entity.properties
+      : undefined;
     const b = entity.bonuses;
     const atkOut = readNumericBonus(b?.weapon_attack, ctx);
     const dmgOut = readNumericBonus(b?.weapon_damage, ctx);
@@ -474,6 +487,9 @@ function magicBonusesForWeaponEntry(
     dmg: itemDamage + entryDamage,
     extra,
     sourceName,
+    itemName,
+    damageTypeOverride,
+    propertiesOverride,
     informational,
   };
 }
