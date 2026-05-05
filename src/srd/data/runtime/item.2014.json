@@ -2653,7 +2653,7 @@
     "damage_type": "bludgeoning",
     "properties": [
       "heavy",
-      "two-handed"
+      "two_handed"
     ],
     "bonuses": {
       "weapon_attack": 1,
@@ -4185,7 +4185,7 @@
     "properties": [
       "ammunition",
       "heavy",
-      "two-handed"
+      "two_handed"
     ],
     "tier": "major"
   },
