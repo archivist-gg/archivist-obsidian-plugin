@@ -273,7 +273,7 @@ const PROPERTY_TAG_MAP: Record<string, string> = {
   S: "special",
   T: "thrown",
   V: "versatile",
-  "2H": "two-handed",
+  "2H": "two_handed",
 };
 
 export function mapPropertyTags(tags: unknown): string[] {

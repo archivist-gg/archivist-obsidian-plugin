@@ -392,7 +392,7 @@ describe("itemMergeRule", () => {
     });
 
     it("maps multi-letter prefixes (2H, LD)", () => {
-      expect(mapPropertyTags(["2H|XPHB", "H|XPHB"])).toEqual(["two-handed", "heavy"]);
+      expect(mapPropertyTags(["2H|XPHB", "H|XPHB"])).toEqual(["two_handed", "heavy"]);
       expect(mapPropertyTags(["LD|PHB"])).toEqual(["loading"]);
     });
 
@@ -424,7 +424,7 @@ describe("itemMergeRule", () => {
         "R|XPHB", "S|XPHB", "T|XPHB", "V|XPHB", "2H|XPHB",
       ])).toEqual([
         "ammunition", "finesse", "heavy", "light", "loading",
-        "reach", "special", "thrown", "versatile", "two-handed",
+        "reach", "special", "thrown", "versatile", "two_handed",
       ]);
     });
   });
