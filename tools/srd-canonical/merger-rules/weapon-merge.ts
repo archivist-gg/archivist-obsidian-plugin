@@ -10,7 +10,7 @@ export interface WeaponCanonical {
   damage: { dice: string; type: string; versatile_dice?: string };
   properties: string[];
   range?: { normal: number; long: number };
-  /** Mastery property names (kebab-case), surfaced from
+  /** Mastery property names (snake_case), surfaced from
    *  Open5e `properties[].property.type === "Mastery"`.
    */
   mastery?: string[];
@@ -40,8 +40,8 @@ interface Open5eWeapon {
   properties?: Open5eProperty[];
 }
 
-function kebab(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, "-");
+function snake(s: string): string {
+  return s.toLowerCase().replace(/[\s-]+/g, "_");
 }
 
 function computeCategory(base: Open5eWeapon): string {
@@ -64,7 +64,7 @@ export function toWeaponCanonical(entry: CanonicalEntry): WeaponCanonical {
   };
   if (versatileEntry?.detail) damage.versatile_dice = versatileEntry.detail;
 
-  // Properties: non-Mastery → string[] (kebab-case names).
+  // Properties: non-Mastery → string[] (snake_case names).
   // Mastery: separate field.
   const propNames: string[] = [];
   const masteryNames: string[] = [];
@@ -72,9 +72,9 @@ export function toWeaponCanonical(entry: CanonicalEntry): WeaponCanonical {
     const name = p.property?.name;
     if (!name) continue;
     if (p.property.type === "Mastery") {
-      masteryNames.push(kebab(name));
+      masteryNames.push(snake(name));
     } else {
-      propNames.push(kebab(name));
+      propNames.push(snake(name));
     }
   }
 

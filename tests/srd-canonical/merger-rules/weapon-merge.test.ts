@@ -115,12 +115,12 @@ describe("weaponMergeRule", () => {
     expect(out.damage.versatile_dice).toBe("1d10");
   });
 
-  it("emits properties as kebab-case string array; excludes Mastery entries", () => {
+  it("emits properties as snake_case string array; excludes Mastery entries", () => {
     const out = toWeaponCanonical(entry(longsword2014));
     expect(out.properties).toEqual(["versatile"]);
 
     const greataxe = toWeaponCanonical(entry(greataxe2024, "2024"));
-    expect(greataxe.properties).toEqual(["heavy", "two-handed"]);
+    expect(greataxe.properties).toEqual(["heavy", "two_handed"]);
     expect(greataxe.properties).not.toContain("cleave");
   });
 
