@@ -129,7 +129,7 @@
     "properties": [
       "heavy",
       "reach",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "graze"
@@ -147,7 +147,7 @@
     },
     "properties": [
       "heavy",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "cleave"
@@ -164,7 +164,7 @@
       "type": "bludgeoning"
     },
     "properties": [
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "push"
@@ -182,7 +182,7 @@
     },
     "properties": [
       "heavy",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "graze"
@@ -201,7 +201,7 @@
     "properties": [
       "heavy",
       "reach",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "cleave"
@@ -266,7 +266,7 @@
       "ammunition",
       "heavy",
       "loading",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 100,
@@ -310,7 +310,7 @@
     "properties": [
       "heavy",
       "reach",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "topple"
@@ -329,7 +329,7 @@
     "properties": [
       "ammunition",
       "loading",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 80,
@@ -374,7 +374,7 @@
     "properties": [
       "ammunition",
       "heavy",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 150,
@@ -429,7 +429,7 @@
     },
     "properties": [
       "heavy",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "topple"
@@ -463,7 +463,7 @@
     "properties": [
       "ammunition",
       "loading",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 40,
@@ -486,7 +486,7 @@
     "properties": [
       "heavy",
       "reach",
-      "two-handed"
+      "two_handed"
     ],
     "mastery": [
       "push"
@@ -579,7 +579,7 @@
     },
     "properties": [
       "ammunition",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 80,

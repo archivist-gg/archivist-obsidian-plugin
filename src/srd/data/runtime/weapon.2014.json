@@ -79,7 +79,7 @@
     },
     "properties": [
       "loading",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 100,
@@ -168,7 +168,7 @@
     },
     "properties": [
       "reach",
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -182,7 +182,7 @@
       "type": "slashing"
     },
     "properties": [
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -196,7 +196,7 @@
       "type": "bludgeoning"
     },
     "properties": [
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -210,7 +210,7 @@
       "type": "slashing"
     },
     "properties": [
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -225,7 +225,7 @@
     },
     "properties": [
       "reach",
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -275,7 +275,7 @@
       "type": "piercing"
     },
     "properties": [
-      "special-(lance)",
+      "special_(lance)",
       "reach"
     ]
   },
@@ -310,7 +310,7 @@
     },
     "properties": [
       "ammunition",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 150,
@@ -355,7 +355,7 @@
       "type": "bludgeoning"
     },
     "properties": [
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -381,7 +381,7 @@
       "type": "bludgeoning"
     },
     "properties": [
-      "special-(net)",
+      "special_(net)",
       "thrown"
     ],
     "range": {
@@ -401,7 +401,7 @@
     },
     "properties": [
       "reach",
-      "two-handed"
+      "two_handed"
     ]
   },
   {
@@ -460,7 +460,7 @@
     },
     "properties": [
       "ammunition",
-      "two-handed"
+      "two_handed"
     ],
     "range": {
       "normal": 80,
@@ -546,7 +546,7 @@
       "versatile_dice": "1d8"
     },
     "properties": [
-      "two-handed",
+      "two_handed",
       "thrown",
       "versatile"
     ],
