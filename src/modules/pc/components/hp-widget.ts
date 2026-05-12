@@ -1,3 +1,4 @@
+import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { numberField, numberOverride } from "./edit-primitives";
 
@@ -24,13 +25,15 @@ export class HpWidget implements SheetComponent {
     const ds = ctx.resolved?.state?.death_saves;
     const hpCurrent = ctx.derived.hp.current;
     const isUnconscious = hpCurrent === 0;
-    const isDead = isUnconscious && !!ds && ds.failures >= 3;
+    const ce = ctx.derived.conditionEffects;
+    const isDeadFromExhaustion = !!ce && ce.exhaustion_level >= 6;
+    const isDead = (isUnconscious && !!ds && ds.failures >= 3) || isDeadFromExhaustion;
     const isStable = isUnconscious && !isDead && !!ds && ds.successes >= 3;
 
     let labelText = "HIT POINTS";
     if (isDead) {
       wrap.addClass("dead");
-      labelText = "DEAD";
+      labelText = isDeadFromExhaustion ? "DEAD (Exhaustion 6)" : "DEAD";
     } else if (isStable) {
       wrap.addClass("stable");
       labelText = "STABLE";
@@ -95,6 +98,10 @@ export class HpWidget implements SheetComponent {
         "TEMP",
         ctx.derived.hp.temp > 0 ? String(ctx.derived.hp.temp) : "—",
       );
+
+      if (ce && ce.hp_max_multiplier < 1) {
+        setTooltip(maxVal, `HP max halved by exhaustion ${ce.exhaustion_level}`);
+      }
 
       if (ctx.editState) {
         const editState = ctx.editState;

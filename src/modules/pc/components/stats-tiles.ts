@@ -1,3 +1,4 @@
+import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { formatModifier } from "../../../shared/dnd/math";
 import { numberOverride } from "./edit-primitives";
@@ -46,6 +47,24 @@ export class StatsTiles implements SheetComponent {
         onClear: () => ctx.editState!.clearSpeedOverride(),
         min: 0, max: 240,
       });
+    }
+
+    const ce = ctx.derived.conditionEffects;
+    if (ce) {
+      const speedAffected =
+        ce.speed_floor_zero ||
+        ce.speed_multiplier !== 1 ||
+        ce.speed_reduction_ft !== 0;
+      if (speedAffected) {
+        const sources = ce.sources
+          .filter((s) => {
+            const c = s.condition;
+            return c === "grappled" || c === "paralyzed" || c === "petrified" ||
+                   c === "restrained" || c === "unconscious" || c === "exhaustion";
+          })
+          .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
+        setTooltip(speedTile, `Speed reduced by: ${sources.join(", ")}`);
+      }
     }
 
     // INSPIRATION — unchanged from SP4

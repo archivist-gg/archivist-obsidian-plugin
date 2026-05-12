@@ -4,6 +4,7 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 import { SaveChip } from "../src/modules/pc/components/save-chip";
 import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
 import { ActionsTab } from "../src/modules/pc/components/actions-tab";
+import { HpWidget } from "../src/modules/pc/components/hp-widget";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { ConditionEffects } from "../src/modules/pc/pc.types";
 
@@ -136,5 +137,30 @@ describe("actions-tab — Incapacitated banner", () => {
     const root = mountContainer();
     new ActionsTab().render(root, actionsTabCtxWith({}));
     expect(root.querySelector(".pc-incapacitated-banner")).toBeNull();
+  });
+});
+
+describe("hp-widget — exhaustion death overlay", () => {
+  it("renders DEAD (Exhaustion 6) overlay when exhaustion_level >= 6", () => {
+    const root = mountContainer();
+    const ctx = ctxWith({ exhaustion_level: 6, sources: [{ condition: "exhaustion", level: 6, effects: [] }] }) as never;
+    (ctx as Record<string, unknown>).derived = {
+      ...((ctx as { derived: Record<string, unknown> }).derived),
+      hp: { current: 10, max: 10, temp: 0 },
+    };
+    new HpWidget().render(root, ctx);
+    expect(root.querySelector(".pc-hp-widget.dead")).not.toBeNull();
+    expect(root.textContent).toContain("DEAD (Exhaustion 6)");
+  });
+  it("renders normal HIT POINTS when no exhaustion and HP > 0", () => {
+    const root = mountContainer();
+    const ctx = ctxWith({}) as never;
+    (ctx as Record<string, unknown>).derived = {
+      ...((ctx as { derived: Record<string, unknown> }).derived),
+      hp: { current: 10, max: 10, temp: 0 },
+    };
+    new HpWidget().render(root, ctx);
+    expect(root.querySelector(".pc-hp-widget.dead")).toBeNull();
+    expect(root.textContent).toContain("HIT POINTS");
   });
 });

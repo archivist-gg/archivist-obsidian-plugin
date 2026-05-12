@@ -1,3 +1,4 @@
+import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { openConditionsPopover } from "./conditions-popover";
 import { openDefenseTypePopover, type DefenseKind } from "./defense-type-popover";
@@ -90,6 +91,7 @@ export class DefensesConditionsPanel implements SheetComponent {
 
     const conds = ctx.resolved?.state?.conditions ?? [];
     const exhaustion = ctx.resolved?.state?.exhaustion ?? 0;
+    const ce = ctx.derived.conditionEffects;
     const body = right.createDiv({ cls: "pc-cond-body" });
     if (conds.length === 0 && exhaustion === 0) {
       body.createDiv({ cls: "pc-cond-empty", text: "no active conditions" });
@@ -99,6 +101,12 @@ export class DefensesConditionsPanel implements SheetComponent {
         const iconWrap = chip.createSpan({ cls: "pc-cond-chip-icon" });
         setExhaustionIcon(iconWrap);
         chip.createSpan({ cls: "pc-cond-chip-label", text: `Exhaustion ${exhaustion}` });
+        if (ce) {
+          const source = ce.sources.find((s) => s.condition === "exhaustion");
+          if (source && source.effects.length > 0) {
+            setTooltip(chip, source.effects.join("\n"));
+          }
+        }
         if (ctx.editState) {
           chip.addEventListener("click", () => openConditionsPopover(addBtn, ctx));
         }
@@ -108,6 +116,14 @@ export class DefensesConditionsPanel implements SheetComponent {
         const iconWrap = chip.createSpan({ cls: "pc-cond-chip-icon" });
         setConditionIcon(iconWrap, c);
         chip.createSpan({ cls: "pc-cond-chip-label", text: CONDITION_DISPLAY_NAMES[c] });
+        if (ce) {
+          const source = ce.sources.find((s) =>
+            s.condition === c || (c === "exhaustion" && s.condition === "exhaustion")
+          );
+          if (source && source.effects.length > 0) {
+            setTooltip(chip, source.effects.join("\n"));
+          }
+        }
         if (ctx.editState) {
           const x = chip.createSpan({ cls: "pc-cond-chip-x", text: "×" });
           x.addEventListener("click", (e) => {
