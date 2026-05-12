@@ -31,6 +31,8 @@ function skillSlugFromDisplay(display: string): SkillSlug {
   return display.toLowerCase().replace(/\s+/g, "-") as SkillSlug;
 }
 
+const skillDisSources = new Set(["frightened", "poisoned", "exhaustion"]);
+
 export class SkillsPanel implements SheetComponent {
   readonly type = "skills-panel";
 
@@ -54,7 +56,7 @@ export class SkillsPanel implements SheetComponent {
       if (ce) {
         if (ce.ability_check_disadvantage) {
           const sources = ce.sources
-            .filter((s) => s.condition !== "exhaustion" || (s.level ?? 0) >= 1)
+            .filter((s) => skillDisSources.has(s.condition))
             .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
           renderConditionTag(row, "DIS", `Disadvantage on ability checks from ${sources.join(", ")}`);
         }

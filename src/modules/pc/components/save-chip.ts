@@ -57,7 +57,13 @@ export class SaveChip implements SheetComponent {
           .map((s) => s.condition);
         renderConditionTag(chip, "AUTO-FAIL", `Auto-fail from ${sources.join(", ") || "condition"}`);
       } else if (dis) {
-        const sources = ce.sources.map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
+        const sources = ce.sources
+          .filter((s) => {
+            if (s.condition === "exhaustion") return ce.saves_disadvantage_all;
+            if (s.condition === "restrained") return isDex; // only DEX saves
+            return false;
+          })
+          .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
         renderConditionTag(chip, "DIS", `Disadvantage from ${sources.join(", ")}`);
       }
 
