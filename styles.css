@@ -10289,6 +10289,9 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-hp-widget.dead {
   border-color: var(--pc-crimson);
 }
+.archivist-pc-sheet .pc-hp-widget.dead .pc-hp-nums {
+  opacity: 0.4;
+}
 
 /* State-specific label colour */
 .archivist-pc-sheet .pc-hp-widget.stable .pc-hp-label { color: var(--pc-green-muted, #4a6b3a); }
