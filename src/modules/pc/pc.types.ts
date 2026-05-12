@@ -272,4 +272,36 @@ export interface DerivedStats {
   carriedWeight: number;
   attunementUsed: number;
   attunementLimit: number;
+  conditionEffects: ConditionEffects;
+}
+
+export interface ConditionEffects {
+  // Numeric (consumed by recalc to adjust derived stats)
+  speed_multiplier: number;          // 1 = normal, 0.5 = halved
+  speed_reduction_ft: number;        // 2024 exhaustion: 5 * level
+  speed_floor_zero: boolean;         // Grappled, Paralyzed, Petrified, Restrained, Unconscious, exh5 (2014)
+  hp_max_multiplier: number;         // 0.5 when exhaustion ≥ 4 (2014)
+  d20_test_penalty: number;          // 2024 exhaustion: -2 * level (additive on attacks/saves/checks)
+  exhaustion_level: number;          // raw 0..6 mirror
+
+  // Roll-tag flags (consumed by components)
+  attack_disadvantage: boolean;
+  attack_advantage: boolean;
+  attack_advantage_against: boolean; // attackers get advantage vs you (informational; chip tooltip only)
+  ability_check_disadvantage: boolean;
+  save_disadvantage_dex: boolean;
+  save_autofail_str: boolean;
+  save_autofail_dex: boolean;
+  saves_disadvantage_all: boolean;   // 2014 exh3
+
+  // Action gating
+  actions_disabled: boolean;
+  reactions_disabled: boolean;
+
+  // Bookkeeping for chip tooltip
+  sources: Array<{
+    condition: ConditionSlug | "exhaustion";
+    level?: number;
+    effects: string[];
+  }>;
 }
