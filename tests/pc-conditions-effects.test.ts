@@ -268,5 +268,8 @@ describe("computeConditionEffects — sources ordering stability", () => {
     // Sources sorted by condition slug (alphabetical) then exhaustion last.
     expect(a.sources.map((s) => s.condition)).toEqual(b.sources.map((s) => s.condition));
     expect(a.sources[a.sources.length - 1].condition).toBe("exhaustion");
+    expect(a.sources.slice(0, -1).map((s) => s.condition)).toEqual([
+      "blinded", "frightened", "restrained",
+    ]);
   });
 });
