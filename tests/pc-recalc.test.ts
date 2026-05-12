@@ -300,6 +300,17 @@ describe("recalc (end-to-end)", () => {
     // DEX +3, prof +3, expertise → +3 + 6 = 9
     expect(d.skills["sleight-of-hand"].bonus).toBe(9);
   });
+
+  it("derived.conditionEffects is the zero-effects shape when no conditions and exhaustion 0", () => {
+    const r = withClass(mkClass("rogue", "d8", 5));
+    const d = recalc(r);
+    expect(d.conditionEffects.exhaustion_level).toBe(0);
+    expect(d.conditionEffects.speed_multiplier).toBe(1);
+    expect(d.conditionEffects.hp_max_multiplier).toBe(1);
+    expect(d.conditionEffects.d20_test_penalty).toBe(0);
+    expect(d.conditionEffects.actions_disabled).toBe(false);
+    expect(d.conditionEffects.sources).toEqual([]);
+  });
 });
 
 // ─────── helpers ───────

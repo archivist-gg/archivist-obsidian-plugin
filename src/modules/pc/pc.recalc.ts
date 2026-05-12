@@ -15,6 +15,7 @@ import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
+import { computeConditionEffects } from "./pc.conditions";
 import type {
   ACTerm,
   DerivedEquipment,
@@ -374,6 +375,12 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   const totalLevel = resolved.classes.reduce((s, c) => s + c.level, 0);
   const proficiencyBonus = proficiencyFromLevel(totalLevel || 1);
 
+  const conditionEffects = computeConditionEffects(
+    resolved.state,
+    resolved.definition.edition,
+    scores,
+  );
+
   // Saves (first class's saving_throws only, per 5e multiclass rule).
   const firstClass = resolved.classes[0]?.entity ?? null;
   const saveProfs = new Set<Ability>(firstClass?.saving_throws ?? []);
@@ -381,7 +388,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   for (const ab of ABILITY_KEYS) {
     const override = overrides.saves?.[ab];
     const prof = override?.proficient ?? saveProfs.has(ab);
-    const bonus = override?.bonus ?? (savingThrow(scores[ab], prof, proficiencyBonus) + applied.save_bonus);
+    const derivedBonus = savingThrow(scores[ab], prof, proficiencyBonus) + applied.save_bonus + conditionEffects.d20_test_penalty;
+    const bonus = override?.bonus ?? derivedBonus;
     saves[ab] = { bonus, proficient: prof };
   }
 
@@ -397,7 +405,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       ?? (expSet.has(skillKey) ? "expertise"
         : profSet.has(skillKey) ? "proficient"
         : "none");
-    const bonus = override?.bonus ?? skillBonus(scores[ab], tri, proficiencyBonus);
+    const bonus = override?.bonus ?? (skillBonus(scores[ab], tri, proficiencyBonus) + conditionEffects.d20_test_penalty);
     (skills as Record<string, { bonus: number; proficiency: ProficiencyTri; ability: Ability }>)[skillKey] = {
       bonus,
       proficiency: tri,
@@ -417,7 +425,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
 
   // HP
   const hpMaxDerived = multiclassMaxHP(resolved.classes, mods.con);
-  const hpMax = overrides.hp?.max ?? hpMaxDerived;
+  const hpMaxAfterConditions = Math.floor(hpMaxDerived * conditionEffects.hp_max_multiplier);
+  const hpMax = overrides.hp?.max ?? hpMaxAfterConditions;
 
   // AC + attacks (Pass B). Falls back to unarmored when no registry available.
   //
@@ -462,7 +471,10 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   const ac = overrides.ac ?? acDerived;
 
   // Speed
-  const speed = overrides.speed ?? (speedFromRace(resolved) + applied.speed_bonuses.walk);
+  const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk;
+  const adjustedSpeed = (baseSpeed * conditionEffects.speed_multiplier) - conditionEffects.speed_reduction_ft;
+  const conditionSpeed = conditionEffects.speed_floor_zero ? 0 : Math.max(0, Math.floor(adjustedSpeed));
+  const speed = overrides.speed ?? conditionSpeed;
   if (!resolved.race) warnings.push("No race resolved; speed defaulted to 30.");
 
   // Initiative
@@ -522,10 +534,14 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     defenses,
     acBreakdown: acBreakdownDerived,
     acInformational: acInformationalDerived,
-    attacks: derivedEquipment?.attacks ?? [],
+    attacks: (derivedEquipment?.attacks ?? []).map((a) => ({
+      ...a,
+      toHit: a.toHit + conditionEffects.d20_test_penalty,
+    })),
     equippedSlots: derivedEquipment?.equippedSlots ?? {},
     carriedWeight: derivedEquipment?.carriedWeight ?? 0,
     attunementUsed: derivedEquipment?.attunementUsed ?? 0,
     attunementLimit: derivedEquipment?.attunementLimit ?? (overrides.attunement_limit ?? 3),
+    conditionEffects,
   };
 }
