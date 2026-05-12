@@ -1479,3 +1479,36 @@
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }
 .pc-charges-current { cursor: pointer; font-weight: 600; }
 .pc-charges-recovery { font-size: 10px; color: var(--text-muted); margin-top: 0.1em; }
+
+/* SP4e — condition effect tags */
+.pc-cond-tag {
+  display: inline-block;
+  padding: 0 4px;
+  margin-left: 4px;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 3px;
+  vertical-align: middle;
+  user-select: none;
+}
+.pc-cond-tag-dis {
+  background: var(--color-red);
+  color: var(--text-on-accent);
+}
+.pc-cond-tag-adv {
+  background: var(--color-green);
+  color: var(--text-on-accent);
+}
+.pc-cond-tag-fail {
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  text-transform: uppercase;
+}
+
+/* SP4e — disabled action rows when Incapacitated */
+.pc-row-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
