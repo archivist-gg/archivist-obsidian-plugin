@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { SaveChip } from "../src/modules/pc/components/save-chip";
 import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
+import { ActionsTab } from "../src/modules/pc/components/actions-tab";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { ConditionEffects } from "../src/modules/pc/pc.types";
 
@@ -99,5 +100,41 @@ describe("renderConditionTag — primitive", () => {
     const tag = root.querySelector(".pc-cond-tag-adv") as HTMLElement;
     expect(tag).not.toBeNull();
     expect(tag.textContent).toBe("ADV");
+  });
+});
+
+function actionsTabCtxWith(effects: Partial<ConditionEffects>): ComponentRenderContext {
+  return {
+    resolved: {
+      definition: { equipment: [] },
+      features: [],
+      state: {} as never,
+    } as never,
+    derived: {
+      attacks: [],
+      conditionEffects: { ...ZERO_EFFECTS, ...effects },
+    } as never,
+    core: { entities: { getBySlug: () => null } } as never,
+    app: {} as never,
+    editState: null,
+  };
+}
+
+describe("actions-tab — Incapacitated banner", () => {
+  it("renders banner when actions_disabled is true", () => {
+    const root = mountContainer();
+    new ActionsTab().render(root, actionsTabCtxWith({
+      actions_disabled: true,
+      reactions_disabled: true,
+      sources: [{ condition: "incapacitated", effects: ["Can't take actions or reactions."] }],
+    }));
+    const banner = root.querySelector(".pc-incapacitated-banner") as HTMLElement | null;
+    expect(banner).not.toBeNull();
+    expect(banner?.textContent).toContain("incapacitated");
+  });
+  it("does NOT render banner when actions_disabled is false", () => {
+    const root = mountContainer();
+    new ActionsTab().render(root, actionsTabCtxWith({}));
+    expect(root.querySelector(".pc-incapacitated-banner")).toBeNull();
   });
 });

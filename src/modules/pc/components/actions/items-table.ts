@@ -47,6 +47,10 @@ export class ItemsTable implements SheetComponent {
       // Cost
       renderCostBadge(tr.createEl("td"), action.cost);
 
+      const ce = ctx.derived.conditionEffects;
+      const isAction = action.cost === "action" || action.cost === "reaction" || action.cost === "bonus-action";
+      if (ce && isAction && ce.actions_disabled) tr.addClass("pc-row-disabled");
+
       // Name + sub
       const nameCell = tr.createEl("td");
       const nameEl = nameCell.createDiv({ cls: "pc-action-row-name", text: r.entity?.name ?? slug });

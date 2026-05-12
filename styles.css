@@ -10884,6 +10884,17 @@ body.theme-light .archivist-tag-atk:hover {
   pointer-events: none;
 }
 
+/* SP4e — Incapacitated banner */
+.pc-incapacitated-banner {
+  margin: 4px 0 8px;
+  padding: 6px 10px;
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
 
 /* ============================================
    pc/blocks.css

@@ -59,6 +59,8 @@ export class WeaponsTable implements SheetComponent {
         if (ce.attack_advantage) {
           renderConditionTag(hitCell, "ADV", `Advantage from invisible`);
         }
+        const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
+        if (isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
       }
 
       // Damage (inline italic; versatile shows both stacked)

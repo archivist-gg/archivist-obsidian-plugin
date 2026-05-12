@@ -10,6 +10,16 @@ export class ActionsTab implements SheetComponent {
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-tab-body pc-actions-body pc-actions-tab" });
+
+    const ce = ctx.derived.conditionEffects;
+    if (ce && ce.actions_disabled) {
+      const banner = root.createDiv({ cls: "pc-incapacitated-banner" });
+      const sources = ce.sources
+        .filter((s) => s.condition === "incapacitated" || s.condition === "paralyzed" || s.condition === "petrified" || s.condition === "stunned" || s.condition === "unconscious")
+        .map((s) => s.condition);
+      banner.setText(`Actions and reactions disabled (${sources.join(", ") || "incapacitated"}).`);
+    }
+
     root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });
 
     new WeaponsTable().render(root.createDiv(), ctx);
@@ -24,6 +34,7 @@ export class ActionsTab implements SheetComponent {
       const tbody = t.createEl("tbody");
       for (const a of featureAttacks) {
         const tr = tbody.createEl("tr", { cls: "pc-attack-row" });
+        if (ce && ce.actions_disabled) tr.addClass("pc-row-disabled");
         tr.createEl("td", { cls: "pc-attack-name", text: a.name });
         tr.createEl("td", { text: a.range ?? "—" });
         tr.createEl("td", { text: a.toHit ?? "—" });
@@ -41,7 +52,7 @@ export class ActionsTab implements SheetComponent {
       }
     }
 
-    renderStandardActionsList(root);
+    renderStandardActionsList(root, ctx);
   }
 }
 

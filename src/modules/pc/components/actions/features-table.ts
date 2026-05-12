@@ -37,7 +37,12 @@ export class FeaturesTable implements SheetComponent {
       const tr = tbody.createEl("tr", { cls: "pc-action-row" });
       if (this.expand.is(key)) tr.classList.add("open");
 
-      renderCostBadge(tr.createEl("td"), feature.action as ActionCost);
+      const cost = feature.action as ActionCost;
+      renderCostBadge(tr.createEl("td"), cost);
+
+      const ce = ctx.derived.conditionEffects;
+      const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
+      if (ce && isAction && ce.actions_disabled) tr.addClass("pc-row-disabled");
 
       const nameCell = tr.createEl("td");
       nameCell.createDiv({ cls: "pc-action-row-name", text: feature.name });
