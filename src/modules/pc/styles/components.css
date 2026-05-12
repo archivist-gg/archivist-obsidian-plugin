@@ -1509,7 +1509,7 @@
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
 
 /* SP4e — disabled action rows when Incapacitated */
-.pc-row-disabled {
+.archivist-pc-sheet .pc-row-disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
