@@ -165,6 +165,18 @@ describe("PCSheetView — write path on afflicted state", () => {
     expect(out).not.toMatch(/poisoned/);
     expect(out).toMatch(/frightened/);
   });
+
+  it("Grendal fixture: conditionEffects.sources match the fixture's conditions + exhaustion", async () => {
+    const view = await bootAfflicted();
+    // @ts-expect-error — access the view-owned derived stats in test
+    const sources = view.derived!.conditionEffects.sources;
+    const slugs = sources.map((s) => s.condition);
+    // Fixture state: conditions: [poisoned, frightened], exhaustion: 1
+    expect(slugs).toContain("poisoned");
+    expect(slugs).toContain("frightened");
+    const exh = sources.find((s) => s.condition === "exhaustion");
+    expect(exh?.level).toBe(1);
+  });
 });
 
 describe("PCSheetView — error boundary + lifecycle", () => {
