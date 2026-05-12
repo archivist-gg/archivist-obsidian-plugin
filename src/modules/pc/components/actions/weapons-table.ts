@@ -1,10 +1,15 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "../../pc.types";
+import { renderConditionTag } from "../condition-tag";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { conditionsToText } from "../../../item/item.conditions";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+
+const attackDisSources = new Set([
+  "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
+]);
 
 export class WeaponsTable implements SheetComponent {
   readonly type = "weapons-table";
@@ -42,6 +47,19 @@ export class WeaponsTable implements SheetComponent {
       // Hit (inline italic)
       const hitCell = row.createEl("td", { cls: "pc-weapon-hit" });
       renderTextWithInlineTags(`\`atk:${formatSigned(a.toHit)}\``, hitCell, false);
+
+      const ce = ctx.derived.conditionEffects;
+      if (ce) {
+        if (ce.attack_disadvantage) {
+          const sources = ce.sources
+            .filter((s) => attackDisSources.has(s.condition))
+            .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
+          renderConditionTag(hitCell, "DIS", `Disadvantage from ${sources.join(", ")}`);
+        }
+        if (ce.attack_advantage) {
+          renderConditionTag(hitCell, "ADV", `Advantage from invisible`);
+        }
+      }
 
       // Damage (inline italic; versatile shows both stacked)
       const dmgCell = row.createEl("td", { cls: "pc-weapon-damage" });

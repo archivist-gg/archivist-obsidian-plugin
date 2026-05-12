@@ -1,7 +1,9 @@
+import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { ALL_SKILLS } from "../../../shared/dnd/constants";
 import { formatModifier } from "../../../shared/dnd/math";
 import type { SkillSlug } from "../../../shared/types";
+import { renderConditionTag } from "./condition-tag";
 import { numberOverride } from "./edit-primitives";
 
 const SKILL_DISPLAY_NAMES: Record<SkillSlug, string> = {
@@ -48,6 +50,22 @@ export class SkillsPanel implements SheetComponent {
       row.createSpan({ cls: toggleClasses.join(" ") });
       const bonusEl = row.createSpan({ cls: "pc-skill-bonus", text: formatModifier(entry.bonus) });
       row.createSpan({ cls: "pc-skill-name", text: SKILL_DISPLAY_NAMES[skillSlug] ?? display });
+      const ce = ctx.derived.conditionEffects;
+      if (ce) {
+        if (ce.ability_check_disadvantage) {
+          const sources = ce.sources
+            .filter((s) => s.condition !== "exhaustion" || (s.level ?? 0) >= 1)
+            .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
+          renderConditionTag(row, "DIS", `Disadvantage on ability checks from ${sources.join(", ")}`);
+        }
+        if (ce.d20_test_penalty !== 0) {
+          const baseBonus = entry.bonus - ce.d20_test_penalty;
+          setTooltip(
+            bonusEl,
+            `${baseBonus >= 0 ? "+" : ""}${baseBonus} base ${ce.d20_test_penalty < 0 ? "−" : "+"} ${Math.abs(ce.d20_test_penalty)} from exhaustion`,
+          );
+        }
+      }
       if (ctx.editState) {
         row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));
         bonusEl.addEventListener("click", (e) => e.stopPropagation());

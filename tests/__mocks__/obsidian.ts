@@ -1,4 +1,7 @@
 export function setIcon() {}
+export function setTooltip(el: HTMLElement, tooltip: string) {
+  if (el && tooltip != null) el.setAttribute("aria-label", tooltip);
+}
 export class Notice {
   constructor(_message: string) {}
 }

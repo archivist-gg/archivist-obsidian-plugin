@@ -1,5 +1,7 @@
+import { setTooltip } from "obsidian";
 import type { Ability } from "../../../shared/types";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { renderConditionTag } from "./condition-tag";
 import { numberOverride } from "./edit-primitives";
 
 /**
@@ -37,6 +39,36 @@ export class SaveChip implements SheetComponent {
     const overrides = ctx.resolved.definition?.overrides?.saves;
     const profOverridden = overrides?.[ability]?.proficient !== undefined;
     const bonusOverridden = overrides?.[ability]?.bonus !== undefined;
+
+    const ce = ctx.derived.conditionEffects;
+    if (ce) {
+      const isStr = ability === "str";
+      const isDex = ability === "dex";
+      const autofail = (isStr && ce.save_autofail_str) || (isDex && ce.save_autofail_dex);
+      const dis = !autofail && (ce.saves_disadvantage_all || (isDex && ce.save_disadvantage_dex));
+
+      if (autofail) {
+        bonusEl.classList.add("is-hidden");
+        const sources = ce.sources
+          .filter((s) => {
+            const slug = s.condition;
+            return slug === "paralyzed" || slug === "petrified" || slug === "stunned" || slug === "unconscious";
+          })
+          .map((s) => s.condition);
+        renderConditionTag(chip, "AUTO-FAIL", `Auto-fail from ${sources.join(", ") || "condition"}`);
+      } else if (dis) {
+        const sources = ce.sources.map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
+        renderConditionTag(chip, "DIS", `Disadvantage from ${sources.join(", ")}`);
+      }
+
+      if (ce.d20_test_penalty !== 0 && !autofail) {
+        const baseBonus = entry.bonus - ce.d20_test_penalty;
+        setTooltip(
+          bonusEl,
+          `${formatBonus(baseBonus)} base ${ce.d20_test_penalty < 0 ? "−" : "+"} ${Math.abs(ce.d20_test_penalty)} from exhaustion = ${formatBonus(entry.bonus)}`,
+        );
+      }
+    }
 
     if (ctx.editState) {
       chip.addEventListener("click", () => ctx.editState!.toggleSaveProficient(ability));

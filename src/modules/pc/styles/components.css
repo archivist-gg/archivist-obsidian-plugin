@@ -1505,6 +1505,8 @@
   color: var(--text-on-accent);
   text-transform: uppercase;
 }
+/* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
+.pc-save-bn.is-hidden { display: none; }
 
 /* SP4e — disabled action rows when Incapacitated */
 .pc-row-disabled {
