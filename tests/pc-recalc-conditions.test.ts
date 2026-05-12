@@ -92,7 +92,7 @@ describe("recalc — speed adjustments from conditions", () => {
 describe("recalc — HP max adjustments from conditions", () => {
   it("2014 exhaustion 4 halves HP max (current unchanged)", () => {
     const d = recalc(makeResolved({ exhaustion: 4 }));
-    expect(d.hp.max).toBe(Math.floor(d.hp.max * 1)); // recalc itself produced the floor
+    expect(d.hp.max).toBe(22);
     expect(d.conditionEffects.hp_max_multiplier).toBe(0.5);
     expect(d.hp.current).toBe(40);
   });
