@@ -15,10 +15,11 @@ export function openConditionsPopover(anchor: HTMLElement, ctx: ComponentRenderC
   const popover = activeDocument.body.createDiv({ cls: "pc-cond-popover" });
 
   // Position anchored below the button. position/z-index are defined in CSS;
-  // only top/left are dynamic.
-  const rect = anchor.getBoundingClientRect();
-  popover.style.top = `${rect.bottom + activeWindow.scrollY + 4}px`;
-  popover.style.left = `${rect.left + activeWindow.scrollX}px`;
+  // only top/left are dynamic. Final placement is clamped to the viewport
+  // after content is rendered (see clampPopoverToViewport below).
+  const anchorRect = anchor.getBoundingClientRect();
+  popover.style.top = `${anchorRect.bottom + activeWindow.scrollY + 4}px`;
+  popover.style.left = `${anchorRect.left + activeWindow.scrollX}px`;
 
   popover.createDiv({ cls: "pc-cond-popover-header", text: "Conditions" });
 
@@ -78,6 +79,8 @@ export function openConditionsPopover(anchor: HTMLElement, ctx: ComponentRenderC
     });
   }
 
+  clampPopoverToViewport(popover, anchorRect);
+
   // Close handlers — listen at document level, removed on close.
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Escape") closeConditionsPopover();
@@ -116,4 +119,30 @@ export function closeConditionsPopover(): void {
   current.cleanup();
   current.root.remove();
   current = null;
+}
+
+function clampPopoverToViewport(popover: HTMLElement, anchorRect: DOMRect): void {
+  const margin = 8;
+  const viewW = activeWindow.innerWidth;
+  const viewH = activeWindow.innerHeight;
+  const popRect = popover.getBoundingClientRect();
+
+  if (popRect.right > viewW - margin) {
+    const shift = popRect.right - (viewW - margin);
+    popover.style.left = `${parseFloat(popover.style.left) - shift}px`;
+  }
+  const afterHorizontal = popover.getBoundingClientRect();
+  if (afterHorizontal.left < margin) {
+    popover.style.left = `${parseFloat(popover.style.left) + (margin - afterHorizontal.left)}px`;
+  }
+
+  if (popRect.bottom > viewH - margin) {
+    const aboveTop = anchorRect.top - popRect.height - 4;
+    if (aboveTop >= margin) {
+      popover.style.top = `${aboveTop + activeWindow.scrollY}px`;
+    } else {
+      const clampedTop = Math.max(margin, viewH - popRect.height - margin);
+      popover.style.top = `${clampedTop + activeWindow.scrollY}px`;
+    }
+  }
 }
