@@ -4,6 +4,11 @@ import { WeaponsTable } from "./actions/weapons-table";
 import { ItemsTable } from "./actions/items-table";
 import { FeaturesTable } from "./actions/features-table";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
+import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
+
+const ACTION_DISABLING_CONDITIONS: ReadonlySet<ConditionSlug> = new Set([
+  "incapacitated", "paralyzed", "petrified", "stunned", "unconscious",
+]);
 
 export class ActionsTab implements SheetComponent {
   readonly type = "actions-tab";
@@ -14,10 +19,13 @@ export class ActionsTab implements SheetComponent {
     const ce = ctx.derived.conditionEffects;
     if (ce && ce.actions_disabled) {
       const banner = root.createDiv({ cls: "pc-incapacitated-banner" });
-      const sources = ce.sources
-        .filter((s) => s.condition === "incapacitated" || s.condition === "paralyzed" || s.condition === "petrified" || s.condition === "stunned" || s.condition === "unconscious")
-        .map((s) => s.condition);
-      banner.setText(`Actions and reactions disabled (${sources.join(", ") || "incapacitated"}).`);
+      const names = ce.sources
+        .filter((s): s is { condition: ConditionSlug; level?: number; effects: string[] } =>
+          s.condition !== "exhaustion" && ACTION_DISABLING_CONDITIONS.has(s.condition))
+        .map((s) => CONDITION_DISPLAY_NAMES[s.condition]);
+      const status = names.length > 0 ? names.join(" · ") : "Incapacitated";
+      banner.createDiv({ cls: "pc-incapacitated-banner-status", text: status });
+      banner.createDiv({ cls: "pc-incapacitated-banner-effect", text: "actions & reactions disabled" });
     }
 
     root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });

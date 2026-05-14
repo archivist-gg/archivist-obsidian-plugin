@@ -131,7 +131,8 @@ describe("actions-tab — Incapacitated banner", () => {
     }));
     const banner = root.querySelector(".pc-incapacitated-banner") as HTMLElement | null;
     expect(banner).not.toBeNull();
-    expect(banner?.textContent).toContain("incapacitated");
+    expect(banner?.querySelector(".pc-incapacitated-banner-status")?.textContent).toBe("Incapacitated");
+    expect(banner?.querySelector(".pc-incapacitated-banner-effect")?.textContent).toBe("actions & reactions disabled");
   });
   it("does NOT render banner when actions_disabled is false", () => {
     const root = mountContainer();

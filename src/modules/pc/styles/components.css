@@ -1483,30 +1483,32 @@
 .pc-charges-current { cursor: pointer; font-weight: 600; }
 .pc-charges-recovery { font-size: 10px; color: var(--text-muted); margin-top: 0.1em; }
 
-/* SP4e — condition effect tags */
-.pc-cond-tag {
+/* SP4e — condition effect tags (V5 outlined micro-caps; sheet-scoped for token access) */
+.archivist-pc-sheet .pc-cond-tag {
   display: inline-block;
-  padding: 0 4px;
-  margin-left: 4px;
-  font-size: 0.7em;
+  padding: 1px 4px;
+  margin-left: 5px;
+  font-size: var(--pc-fs-micro);
   font-weight: 700;
-  letter-spacing: 0.05em;
-  border-radius: 3px;
+  letter-spacing: 0.1em;
+  border-radius: 2px;
   vertical-align: middle;
+  background: transparent;
   user-select: none;
-}
-.pc-cond-tag-dis {
-  background: var(--color-red);
-  color: var(--text-on-accent);
-}
-.pc-cond-tag-adv {
-  background: var(--color-green);
-  color: var(--text-on-accent);
-}
-.pc-cond-tag-fail {
-  background: var(--background-modifier-error);
-  color: var(--text-on-accent);
   text-transform: uppercase;
+  line-height: 1.3;
+}
+.archivist-pc-sheet .pc-cond-tag-dis {
+  border: 1px solid var(--pc-crimson);
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-cond-tag-adv {
+  border: 1px solid var(--pc-rarity-rare);
+  color: var(--pc-rarity-rare);
+}
+.archivist-pc-sheet .pc-cond-tag-fail {
+  border: 1px solid var(--pc-crimson);
+  color: var(--pc-crimson);
 }
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
@@ -1518,13 +1520,40 @@
   pointer-events: none;
 }
 
-/* SP4e — Incapacitated banner */
-.pc-incapacitated-banner {
-  margin: 4px 0 8px;
-  padding: 6px 10px;
-  background: var(--background-modifier-error);
-  color: var(--text-on-accent);
-  border-radius: 4px;
-  font-size: 0.9em;
-  font-weight: 600;
+/* SP4e — Incapacitated banner (engraved cartouche) */
+.archivist-pc-sheet .pc-incapacitated-banner {
+  position: relative;
+  text-align: center;
+  margin: var(--pc-space-1) 0 var(--pc-space-3);
+  padding: 10px var(--pc-space-4) 8px;
+  background: rgba(146, 38, 16, 0.04);
+  border-top: 1px solid var(--pc-crimson);
+  border-bottom: 1px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-incapacitated-banner::before,
+.archivist-pc-sheet .pc-incapacitated-banner::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--pc-crimson);
+  opacity: 0.4;
+}
+.archivist-pc-sheet .pc-incapacitated-banner::before { top: 3px; }
+.archivist-pc-sheet .pc-incapacitated-banner::after { bottom: 3px; }
+.archivist-pc-sheet .pc-incapacitated-banner-status {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-heading);
+  font-weight: 700;
+  color: var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  line-height: var(--pc-lh-tight);
+  margin-bottom: 3px;
+}
+.archivist-pc-sheet .pc-incapacitated-banner-effect {
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-soft);
+  font-style: italic;
 }
