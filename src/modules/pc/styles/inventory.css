@@ -670,7 +670,7 @@
 }
 .archivist-pc-sheet .pc-override-actions-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--pc-space-2);
   font-family: var(--pc-font-sans);
   font-size: var(--pc-fs-small);
