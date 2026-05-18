@@ -830,13 +830,17 @@
    Responsive — breakpoints documented at the top of layout.css
    ================================================================ */
 
-/* md (<=1099px) — stats-band right cluster: stack the 2x2 tiles above
-   the defenses/conditions panel so the INITIATIVE/INSPIRATION column
-   no longer overlaps the defenses panel. At this width the stats-band
-   left half also gets tight enough that the SAVE chip's text overflows
-   its ability column — so we drop the chip label here and show only
-   the prof dot + bonus. */
-@media (max-width: 1099px) {
+/* Below wide tier: stats-band right cluster stacks the 2x2 tiles
+ * above the defenses/conditions panel; SAVE chip's text overflows
+ * its ability column so we drop the chip label here.
+ *
+ * Query pc-sheet rather than pc-content because .pc-stats-band is
+ * a direct child of .archivist-pc-sheet (sibling of .pc-body); it
+ * is not a descendant of .pc-content. A @container query can only
+ * restyle descendants of its container, so pc-content can't reach
+ * stats-band's subtree. Sheet width equals stats-band width (sheet
+ * has no horizontal padding), so the 899px threshold is preserved. */
+@container pc-sheet (max-width: 899px) {
   .archivist-pc-sheet .pc-stats-right {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -844,15 +848,16 @@
   .archivist-pc-sheet .pc-save-chip { gap: 3px; }
 }
 
-/* sm (<=899px) — stats-band collapses to a single column (abilities row
-   full width above the right cluster). Tighten its horizontal padding. */
-@media (max-width: 899px) {
+/* Below medium tier: stats-band collapses to a single column
+ * (abilities row full width above the right cluster). Tighten
+ * its horizontal padding and uncap ability-tile max-width since
+ * the row now has more horizontal room. Query pc-sheet — same
+ * rationale as the 899 block above. */
+@container pc-sheet (max-width: 699px) {
   .archivist-pc-sheet .pc-stats-band {
     grid-template-columns: minmax(0, 1fr);
     padding: 14px 18px;
   }
-  /* When abilities are full-width, the row has lots of horizontal room;
-     uncap max-width so cartouches scale up to the mockup's 92px. */
   .archivist-pc-sheet .pc-ab {
     max-width: 92px;
   }
