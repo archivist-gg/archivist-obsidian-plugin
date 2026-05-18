@@ -44,9 +44,13 @@
 
 /* Below narrow tier: body sidebar collapses under content.
  * Swap the vertical divider for a horizontal one so the two
- * sections stay clearly demarcated. Query pc-body (not the
- * viewport) so the collapse reflects the sheet's actual width. */
-@container pc-body (max-width: 499px) {
+ * sections stay clearly demarcated. Query pc-sheet (the
+ * outer sheet container) rather than pc-body — a @container
+ * query can only restyle descendants of its container, and
+ * .pc-body IS the pc-body container, so it can't restyle
+ * itself. Sheet width tracks body width 1:1 (sheet has no
+ * horizontal padding), so the 499px threshold is preserved. */
+@container pc-sheet (max-width: 499px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
     padding: 0 var(--pc-space-4) var(--pc-space-4);
