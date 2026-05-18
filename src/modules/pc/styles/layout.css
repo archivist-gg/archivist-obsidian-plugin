@@ -1,17 +1,6 @@
-/* =============================================================
- * PC Sheet responsive breakpoints (used across layout.css and
- * components.css). Keep this list as the single source of truth:
- *
- *   lg  >= 1100px   default desktop layout
- *   md   900-1099px stats-band right cluster stacks its 2x2+def-cond
- *   sm   760-899px  stats-band becomes single column (abilities row
- *                   full-width above the right cluster)
- *   xs   600-759px  body sidebar stacks under content; hero-right
- *                   wraps under identity; ability row collapses to
- *                   3 columns; save chips shrink (hide word "SAVE")
- *   xxs  < 600px    last-resort graceful degradation (2-col ability
- *                   row; tiles stack; everything stays legible)
- * ============================================================= */
+/* Layout skeleton for the PC sheet. Responsive behavior is driven
+ * by @container queries against pc-body and pc-content (see
+ * containers.css). Breakpoint widths live in tokens.css. */
 
 .archivist-pc-sheet {
   max-width: 1200px;
@@ -31,7 +20,7 @@
  * stays on the body so the two columns share a consistent outer inset. */
 .archivist-pc-sheet .pc-body {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
   gap: var(--pc-space-5);
   padding: 0 var(--pc-space-4);
 }
@@ -53,9 +42,11 @@
   padding: var(--pc-space-4) 0;
 }
 
-/* sm: body sidebar collapses under content — swap the vertical divider
- * for a horizontal one so the two sections stay clearly demarcated. */
-@media (max-width: 760px) {
+/* Below narrow tier: body sidebar collapses under content.
+ * Swap the vertical divider for a horizontal one so the two
+ * sections stay clearly demarcated. Query pc-body (not the
+ * viewport) so the collapse reflects the sheet's actual width. */
+@container pc-body (max-width: 499px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
     padding: 0 var(--pc-space-4) var(--pc-space-4);
