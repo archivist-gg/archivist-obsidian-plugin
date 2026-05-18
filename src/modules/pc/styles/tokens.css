@@ -45,6 +45,33 @@
   --pc-space-5: 24px;
   --pc-space-6: 32px;
 
+  /* --------------------------------------------------------------
+   * Sheet-width breakpoint tiers — used with @container only.
+   * Browsers do not support var() inside @container conditions,
+   * so call sites use literal values. These tokens are the single
+   * source of truth; any drift between this block and a use site
+   * is a code-review item.
+   *
+   * Each token is the inclusive lower bound of its tier:
+   *   wide   >= 900   default 2-col body, full ability row
+   *   medium 700-899  stats-band collapses; abilities auto-fit
+   *   narrow 500-699  sidebar stacks; SAVE label hidden
+   *   tiny   < 500    2-col abilities, single-col tiles
+   *
+   * "Below tier X" rules fire at max-width: <X minus 1>px.
+   * -------------------------------------------------------------- */
+  --pc-bp-wide:    900px;
+  --pc-bp-medium:  700px;
+  --pc-bp-narrow:  500px;
+  --pc-bp-tiny:    0;
+
+  /* Minimum cell widths for auto-fit grids — replaces scattered
+   * hard-coded min-width values across components and inventory. */
+  --pc-cell-min-ability:    64px;
+  --pc-cell-min-skill:     160px;
+  --pc-cell-min-stat-tile: 130px;
+  --pc-cell-min-save-chip:  56px;
+
   --pc-radius-sm: 4px;
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
