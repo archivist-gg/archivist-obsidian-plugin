@@ -65,12 +65,12 @@
   --pc-bp-narrow:  500px;
   --pc-bp-tiny:    0;
 
-  /* Minimum cell widths for auto-fit grids — replaces scattered
-   * hard-coded min-width values across components and inventory. */
+  /* Minimum cell widths for auto-fit grids — currently used by
+   * .pc-ability-row (cell-min-ability) and .pc-hd-widget
+   * (cell-min-stat-tile). Add more entries here when introducing
+   * a new auto-fit grid; the file is the single source of truth. */
   --pc-cell-min-ability:    64px;
-  --pc-cell-min-skill:     160px;
   --pc-cell-min-stat-tile: 130px;
-  --pc-cell-min-save-chip:  56px;
 
   --pc-radius-sm: 4px;
   --pc-radius-md: 6px;
