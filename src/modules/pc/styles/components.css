@@ -1567,3 +1567,18 @@
   color: var(--pc-text-soft);
   font-style: italic;
 }
+
+/* ---------- Responsive: tab bar (added in phase 5) ---------- */
+
+/* Below medium tier: tab bar wraps to a second line instead of
+ * horizontal-scrolling. The base .pc-tabs-bar rule keeps
+ * overflow-x: auto as a safety net for extreme cases; this rule
+ * activates a flow-wrap mode when the content column is narrow
+ * enough that wrapping is the better choice. */
+@container pc-content (max-width: 699px) {
+  .archivist-pc-sheet .pc-tabs-bar {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 2px;
+  }
+}

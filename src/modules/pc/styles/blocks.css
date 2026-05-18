@@ -69,3 +69,22 @@
   font-style: italic;
   margin-top: var(--pc-space-1);
 }
+
+/* ---------- Responsive (added in phase 5) ---------- */
+
+/* Below narrow tier: block meta cluster (.pc-block-meta is
+ * already flex-wrap, so this only adjusts spacing) tightens up
+ * and feature-list items lose the left border so the indent
+ * doesn't compete with the narrow column width. */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-block {
+    margin-bottom: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-feature-item {
+    border-left-width: 1.5px;
+    padding-left: var(--pc-space-2);
+  }
+  .archivist-pc-sheet .pc-block-meta {
+    gap: var(--pc-space-2);
+  }
+}

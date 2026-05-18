@@ -172,3 +172,37 @@
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
 }
+
+/* ---------- Responsive (added in phase 5) ---------- */
+
+/* Below narrow tier: attack & actions tables allow horizontal
+ * scroll so trailing columns (Range / Damage / Notes) remain
+ * reachable rather than overflowing the content column.
+ * Reflow-via-grid would require an HTML change (deferred). */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-attack-table,
+  .archivist-pc-sheet .pc-actions-table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+/* Below narrow tier: tighten condition-chip gap so more chips
+ * fit per row. .pc-cond-body remains flex-wrap throughout because
+ * chips have variable widths.
+ *
+ * Query pc-sheet rather than pc-content because the def-cond
+ * panel containing .pc-cond-body sits inside .pc-stats-band
+ * (sheet-level), not inside .pc-content. @container queries only
+ * match descendants of their container. The conditions popover
+ * (portaled to document.body) is outside the sheet entirely and
+ * keeps its base styling at every width. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-cond-body {
+    gap: 1px;
+  }
+  .archivist-pc-sheet .pc-cond-chip {
+    padding: 1px 4px;
+  }
+}
