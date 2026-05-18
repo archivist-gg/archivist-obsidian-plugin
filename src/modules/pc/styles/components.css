@@ -457,7 +457,7 @@
    (data URI) on each .pc-ab card. Score pill hangs off the bottom edge. */
 .archivist-pc-sheet .pc-ability-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--pc-cell-min-ability), 1fr));
   gap: 8px;
   justify-items: center;
   align-items: start;
@@ -863,10 +863,18 @@
   }
 }
 
-/* xs (<=759px) — hero-right wraps under the identity block; HP widget
-   drops its min-width so it lays out cleanly below identity; ability
-   row collapses to 3 columns; save chip hides the "SAVE" label. */
-@media (max-width: 759px) {
+/* Below medium tier: hero-right wraps under identity; HP/HD widgets
+ * drop their min-widths so they lay out cleanly below identity;
+ * ability row collapses to auto-fit (was hard-coded 3 cols);
+ * defenses/conditions panel collapses to single column.
+ *
+ * Query pc-sheet (not pc-content) because every target here is a
+ * direct or nested child of .archivist-pc-sheet outside .pc-content
+ * (.pc-hero-* sit inside the hero block; .pc-ability-row and the
+ * def-cond pair sit inside .pc-stats-band). A @container query can
+ * only restyle descendants of its container, so pc-content can't
+ * reach them. Sheet width tracks these panels' widths 1:1. */
+@container pc-sheet (max-width: 699px) {
   .archivist-pc-sheet .pc-hero-right {
     margin-left: 0;
     width: 100%;
@@ -877,12 +885,10 @@
   .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
 
   .archivist-pc-sheet .pc-ability-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--pc-cell-min-ability), 1fr));
     row-gap: 18px;
   }
 
-  /* Collapse the defenses/conditions merged panel to one column and
-     remove the vertical divider (it visually breaks when stacked). */
   .archivist-pc-sheet .pc-def-cond {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 10px;
@@ -893,16 +899,15 @@
     border-right: none;
     border-bottom: 1px solid rgba(58, 42, 20, 0.35);
   }
-
-  /* Save chip label is already hidden at md — no extra rules here. */
 }
 
-/* xxs (<=599px) — graceful degradation floor. Ability row to 2 cols so
-   cartouches stay legible; stats 2x2 stays 2 wide but gets tighter. */
-@media (max-width: 599px) {
-  .archivist-pc-sheet .pc-ability-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* Below narrow tier: graceful degradation floor. Stats-band gets
+ * tight padding; header gets compact spacing; name shrinks. The
+ * ability-row's auto-fit at the medium tier already handles the
+ * 2-col case at this width because the cell min-width (64px) only
+ * lets 2 cells fit in a column <~140px wide. Query pc-sheet —
+ * same rationale as the 699 block. */
+@container pc-sheet (max-width: 499px) {
   .archivist-pc-sheet .pc-stats-band {
     padding: 12px 12px;
   }
