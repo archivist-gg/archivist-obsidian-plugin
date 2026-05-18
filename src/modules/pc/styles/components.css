@@ -166,7 +166,7 @@
   letter-spacing: var(--pc-ls-caps-md);
   color: var(--pc-crimson);
 }
-.archivist-pc-sheet .pc-slot-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: var(--pc-space-3); }
+.archivist-pc-sheet .pc-slot-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; margin-bottom: var(--pc-space-3); }
 .archivist-pc-sheet .pc-slot-cell { text-align: center; padding: 4px 2px; background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); font-size: var(--pc-fs-small); }
 .archivist-pc-sheet .pc-slot-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; line-height: var(--pc-lh-tight); }
 .archivist-pc-sheet .pc-spell-list { list-style: none; padding: 0; font-size: var(--pc-fs-body); }
@@ -337,7 +337,7 @@
 }
 .archivist-pc-sheet .pc-hp-nums {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 10px;
   text-align: center;
 }
@@ -372,7 +372,7 @@
 
 /* Hit Dice widget */
 .archivist-pc-sheet .pc-hd-widget {
-  min-width: 130px;
+  min-width: var(--pc-cell-min-stat-tile);
   display: grid;
   grid-template-columns: auto 1fr;
   column-gap: 10px;
@@ -654,7 +654,7 @@
 }
 .archivist-pc-sheet .pc-stats-tiles {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
   gap: 8px;
 }
@@ -723,7 +723,7 @@
 }
 .archivist-pc-sheet .pc-def-cond {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 16px;
   flex: 1 1 auto;
   min-height: 0;
@@ -1390,7 +1390,7 @@
 /* SP4b — kind tab bar inside the defense popover */
 .pc-def-popover-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
 .pc-def-popover-tab {
