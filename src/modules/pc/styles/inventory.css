@@ -6,7 +6,11 @@
 /* ---------- Inventory row (collapsed) ---------- */
 .archivist-pc-sheet .pc-inv-row {
   display: grid;
-  grid-template-columns: 18px 18px 1fr 96px 42px 56px;
+  /* Form C — fixed cells for icons, fluid name, intrinsic trailing meta.
+   * Areas let the trailing cells reflow below the name at narrow widths
+   * without dropping content. */
+  grid-template-columns: 18px 18px minmax(0, 1fr) 96px 42px 56px;
+  grid-template-areas: "toggle icon name stat weight qty";
   gap: var(--pc-space-2);
   align-items: center;
   padding: 6px 4px 6px 6px;
@@ -15,6 +19,15 @@
   position: relative;
   transition: background 0.12s ease;
 }
+
+/* Assign each cell to its named area so the narrow-tier reflow
+ * can rearrange them without changing column counts. */
+.archivist-pc-sheet .pc-inv-toggle-cell { grid-area: toggle; }
+.archivist-pc-sheet .pc-inv-icon { grid-area: icon; }
+.archivist-pc-sheet .pc-inv-name-cell { grid-area: name; min-width: 0; }
+.archivist-pc-sheet .pc-inv-stat { grid-area: stat; }
+.archivist-pc-sheet .pc-inv-weight { grid-area: weight; }
+.archivist-pc-sheet .pc-inv-qty-cost { grid-area: qty; }
 .archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
 
 /* Crimson rail when equipped or attuned (or both — single rail) */
@@ -54,7 +67,6 @@
 }
 
 /* Name + subtitle */
-.archivist-pc-sheet .pc-inv-name-cell { min-width: 0; }
 .archivist-pc-sheet .pc-inv-name {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-body);
@@ -357,12 +369,6 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-}
-
-@media (max-width: 600px) {
-  .archivist-pc-sheet .pc-header-divider { display: none; }
-  .archivist-pc-sheet .pc-header-attune,
-  .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
 }
 
 /* Attunement strip — label + medallion row */
@@ -685,20 +691,36 @@
 
 /* ---------- Responsive ---------- */
 
-/* xs+: rows drop the qty/cost column */
-@media (max-width: 759px) {
+/* Below narrow tier: header divider hides; qty/cost lifts under name. */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-header-divider { display: none; }
+  .archivist-pc-sheet .pc-header-attune,
+  .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
+
+  /* Row reflow: keep all data, restack trailing meta under name.
+   * Row 1: toggle + icon + name + stat (the headline meta).
+   * Row 2: weight + qty-cost (the secondary meta), under the name. */
   .archivist-pc-sheet .pc-inv-row {
-    grid-template-columns: 18px 18px 1fr 70px 36px;  /* drop qty/cost column */
+    grid-template-columns: 18px 18px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "toggle icon name   stat"
+      ".      .    weight qty";
+    row-gap: 2px;
   }
-  .archivist-pc-sheet .pc-inv-qty-cost { display: none; }
 }
 
-/* xxs: rows lose Weight column (kept in a tooltip-like state) */
-@media (max-width: 599px) {
+/* Below tiny tier: stat lifts under the name too, freeing the
+ * top-right cell entirely. All data still visible. */
+@container pc-content (max-width: 399px) {
   .archivist-pc-sheet .pc-inv-row {
-    grid-template-columns: 18px 18px 1fr 70px;  /* drop weight column too */
+    grid-template-columns: 18px 18px minmax(0, 1fr);
+    grid-template-areas:
+      "toggle icon name"
+      ".      .    stat"
+      ".      .    weight"
+      ".      .    qty";
+    row-gap: 2px;
   }
-  .archivist-pc-sheet .pc-inv-weight { display: none; }
   .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
   .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
