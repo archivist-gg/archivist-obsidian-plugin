@@ -9208,6 +9208,33 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-space-5: 24px;
   --pc-space-6: 32px;
 
+  /* --------------------------------------------------------------
+   * Sheet-width breakpoint tiers — used with @container only.
+   * Browsers do not support var() inside @container conditions,
+   * so call sites use literal values. These tokens are the single
+   * source of truth; any drift between this block and a use site
+   * is a code-review item.
+   *
+   * Each token is the inclusive lower bound of its tier:
+   *   wide   >= 900   default 2-col body, full ability row
+   *   medium 700-899  stats-band collapses; abilities auto-fit
+   *   narrow 500-699  sidebar stacks; SAVE label hidden
+   *   tiny   < 500    2-col abilities, single-col tiles
+   *
+   * "Below tier X" rules fire at max-width: <X minus 1>px.
+   * -------------------------------------------------------------- */
+  --pc-bp-wide:    900px;
+  --pc-bp-medium:  700px;
+  --pc-bp-narrow:  500px;
+  --pc-bp-tiny:    0;
+
+  /* Minimum cell widths for auto-fit grids — currently used by
+   * .pc-ability-row (cell-min-ability) and .pc-hd-widget
+   * (cell-min-stat-tile). Add more entries here when introducing
+   * a new auto-fit grid; the file is the single source of truth. */
+  --pc-cell-min-ability:    64px;
+  --pc-cell-min-stat-tile: 130px;
+
   --pc-radius-sm: 4px;
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
@@ -9244,22 +9271,46 @@ body.theme-light .archivist-tag-atk:hover {
 
 
 /* ============================================
+   pc/containers.css
+   ============================================ */
+/* Container declarations for the PC sheet.
+ *
+ * Three named containers, layered outside-in:
+ *   pc-sheet   — the .archivist-pc-sheet root
+ *   pc-body    — the .pc-body grid (sidebar + content)
+ *   pc-content — the .pc-content column
+ *
+ * Panels query the smallest container that meaningfully constrains
+ * their width. Components inside .pc-content query pc-content.
+ * The body layout (sidebar collapse) queries pc-body. Sheet-wide
+ * density queries pc-sheet.
+ *
+ * `container-type: inline-size` is sufficient — we never query
+ * block-size. The shorthand `container: <name> / inline-size`
+ * sets both name and type.
+ */
+.archivist-pc-sheet      { container: pc-sheet   / inline-size; }
+.archivist-pc-sheet .pc-body    { container: pc-body    / inline-size; }
+.archivist-pc-sheet .pc-content { container: pc-content / inline-size; }
+
+/* min-width: 0 baseline — grid/flex children inside the body and
+ * content containers default to allowing shrink-below-content.
+ * Panels that need a real minimum opt back in with explicit
+ * min-width: <token> on the panel itself.
+ *
+ * This replaces the pattern where individual rules scattered through
+ * components.css and inventory.css remembered (or forgot) to set
+ * min-width: 0 case-by-case. */
+.archivist-pc-sheet :is(.pc-body, .pc-content) { min-width: 0; }
+.archivist-pc-sheet :is(.pc-sidebar, .pc-content) > * { min-width: 0; }
+
+
+/* ============================================
    pc/layout.css
    ============================================ */
-/* =============================================================
- * PC Sheet responsive breakpoints (used across layout.css and
- * components.css). Keep this list as the single source of truth:
- *
- *   lg  >= 1100px   default desktop layout
- *   md   900-1099px stats-band right cluster stacks its 2x2+def-cond
- *   sm   760-899px  stats-band becomes single column (abilities row
- *                   full-width above the right cluster)
- *   xs   600-759px  body sidebar stacks under content; hero-right
- *                   wraps under identity; ability row collapses to
- *                   3 columns; save chips shrink (hide word "SAVE")
- *   xxs  < 600px    last-resort graceful degradation (2-col ability
- *                   row; tiles stack; everything stays legible)
- * ============================================================= */
+/* Layout skeleton for the PC sheet. Responsive behavior is driven
+ * by @container queries against pc-body and pc-content (see
+ * containers.css). Breakpoint widths live in tokens.css. */
 
 .archivist-pc-sheet {
   max-width: 1200px;
@@ -9279,7 +9330,7 @@ body.theme-light .archivist-tag-atk:hover {
  * stays on the body so the two columns share a consistent outer inset. */
 .archivist-pc-sheet .pc-body {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
   gap: var(--pc-space-5);
   padding: 0 var(--pc-space-4);
 }
@@ -9301,9 +9352,15 @@ body.theme-light .archivist-tag-atk:hover {
   padding: var(--pc-space-4) 0;
 }
 
-/* sm: body sidebar collapses under content — swap the vertical divider
- * for a horizontal one so the two sections stay clearly demarcated. */
-@media (max-width: 760px) {
+/* Below narrow tier: body sidebar collapses under content.
+ * Swap the vertical divider for a horizontal one so the two
+ * sections stay clearly demarcated. Query pc-sheet (the
+ * outer sheet container) rather than pc-body — a @container
+ * query can only restyle descendants of its container, and
+ * .pc-body IS the pc-body container, so it can't restyle
+ * itself. Sheet width tracks body width 1:1 (sheet has no
+ * horizontal padding), so the 499px threshold is preserved. */
+@container pc-sheet (max-width: 499px) {
   .archivist-pc-sheet .pc-body {
     grid-template-columns: 1fr;
     padding: 0 var(--pc-space-4) var(--pc-space-4);
@@ -9535,7 +9592,7 @@ body.theme-light .archivist-tag-atk:hover {
   letter-spacing: var(--pc-ls-caps-md);
   color: var(--pc-crimson);
 }
-.archivist-pc-sheet .pc-slot-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: var(--pc-space-3); }
+.archivist-pc-sheet .pc-slot-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 4px; margin-bottom: var(--pc-space-3); }
 .archivist-pc-sheet .pc-slot-cell { text-align: center; padding: 4px 2px; background: var(--pc-parchment-dark); border-radius: var(--pc-radius-sm); font-size: var(--pc-fs-small); }
 .archivist-pc-sheet .pc-slot-val { font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; line-height: var(--pc-lh-tight); }
 .archivist-pc-sheet .pc-spell-list { list-style: none; padding: 0; font-size: var(--pc-fs-body); }
@@ -9706,7 +9763,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-hp-nums {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 10px;
   text-align: center;
 }
@@ -9741,7 +9798,7 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* Hit Dice widget */
 .archivist-pc-sheet .pc-hd-widget {
-  min-width: 130px;
+  min-width: var(--pc-cell-min-stat-tile);
   display: grid;
   grid-template-columns: auto 1fr;
   column-gap: 10px;
@@ -9826,7 +9883,7 @@ body.theme-light .archivist-tag-atk:hover {
    (data URI) on each .pc-ab card. Score pill hangs off the bottom edge. */
 .archivist-pc-sheet .pc-ability-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(var(--pc-cell-min-ability), 1fr));
   gap: 8px;
   justify-items: center;
   align-items: start;
@@ -10023,7 +10080,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-stats-tiles {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
   gap: 8px;
 }
@@ -10092,7 +10149,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-def-cond {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 16px;
   flex: 1 1 auto;
   min-height: 0;
@@ -10199,13 +10256,17 @@ body.theme-light .archivist-tag-atk:hover {
    Responsive — breakpoints documented at the top of layout.css
    ================================================================ */
 
-/* md (<=1099px) — stats-band right cluster: stack the 2x2 tiles above
-   the defenses/conditions panel so the INITIATIVE/INSPIRATION column
-   no longer overlaps the defenses panel. At this width the stats-band
-   left half also gets tight enough that the SAVE chip's text overflows
-   its ability column — so we drop the chip label here and show only
-   the prof dot + bonus. */
-@media (max-width: 1099px) {
+/* Below wide tier: stats-band right cluster stacks the 2x2 tiles
+ * above the defenses/conditions panel; SAVE chip's text overflows
+ * its ability column so we drop the chip label here.
+ *
+ * Query pc-sheet rather than pc-content because .pc-stats-band is
+ * a direct child of .archivist-pc-sheet (sibling of .pc-body); it
+ * is not a descendant of .pc-content. A @container query can only
+ * restyle descendants of its container, so pc-content can't reach
+ * stats-band's subtree. Sheet width equals stats-band width (sheet
+ * has no horizontal padding), so the 899px threshold is preserved. */
+@container pc-sheet (max-width: 899px) {
   .archivist-pc-sheet .pc-stats-right {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -10213,24 +10274,33 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-save-chip { gap: 3px; }
 }
 
-/* sm (<=899px) — stats-band collapses to a single column (abilities row
-   full width above the right cluster). Tighten its horizontal padding. */
-@media (max-width: 899px) {
+/* Below medium tier: stats-band collapses to a single column
+ * (abilities row full width above the right cluster). Tighten
+ * its horizontal padding and uncap ability-tile max-width since
+ * the row now has more horizontal room. Query pc-sheet — same
+ * rationale as the 899 block above. */
+@container pc-sheet (max-width: 699px) {
   .archivist-pc-sheet .pc-stats-band {
     grid-template-columns: minmax(0, 1fr);
     padding: 14px 18px;
   }
-  /* When abilities are full-width, the row has lots of horizontal room;
-     uncap max-width so cartouches scale up to the mockup's 92px. */
   .archivist-pc-sheet .pc-ab {
     max-width: 92px;
   }
 }
 
-/* xs (<=759px) — hero-right wraps under the identity block; HP widget
-   drops its min-width so it lays out cleanly below identity; ability
-   row collapses to 3 columns; save chip hides the "SAVE" label. */
-@media (max-width: 759px) {
+/* Below medium tier: hero-right wraps under identity; HP/HD widgets
+ * drop their min-widths so they lay out cleanly below identity;
+ * ability row collapses to auto-fit (was hard-coded 3 cols);
+ * defenses/conditions panel collapses to single column.
+ *
+ * Query pc-sheet (not pc-content) because every target here is a
+ * direct or nested child of .archivist-pc-sheet outside .pc-content
+ * (.pc-hero-* sit inside the hero block; .pc-ability-row and the
+ * def-cond pair sit inside .pc-stats-band). A @container query can
+ * only restyle descendants of its container, so pc-content can't
+ * reach them. Sheet width tracks these panels' widths 1:1. */
+@container pc-sheet (max-width: 699px) {
   .archivist-pc-sheet .pc-hero-right {
     margin-left: 0;
     width: 100%;
@@ -10241,12 +10311,9 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-hd-widget { min-width: 0; flex: 1 1 160px; }
 
   .archivist-pc-sheet .pc-ability-row {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     row-gap: 18px;
   }
 
-  /* Collapse the defenses/conditions merged panel to one column and
-     remove the vertical divider (it visually breaks when stacked). */
   .archivist-pc-sheet .pc-def-cond {
     grid-template-columns: minmax(0, 1fr);
     row-gap: 10px;
@@ -10257,16 +10324,16 @@ body.theme-light .archivist-tag-atk:hover {
     border-right: none;
     border-bottom: 1px solid rgba(58, 42, 20, 0.35);
   }
-
-  /* Save chip label is already hidden at md — no extra rules here. */
 }
 
-/* xxs (<=599px) — graceful degradation floor. Ability row to 2 cols so
-   cartouches stay legible; stats 2x2 stays 2 wide but gets tighter. */
-@media (max-width: 599px) {
-  .archivist-pc-sheet .pc-ability-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* Below narrow tier: graceful degradation floor. Stats-band gets
+ * tight padding; header gets compact spacing; name shrinks. The
+ * ability-row stays on its base auto-fit grid (no override here)
+ * — at sheet widths in the typical Obsidian pane range it will
+ * keep most of its cells in a single row; the row only thins to
+ * 2-3 cells if the sheet falls below ~210px wide. Query pc-sheet
+ * — same rationale as the 699 block. */
+@container pc-sheet (max-width: 499px) {
   .archivist-pc-sheet .pc-stats-band {
     padding: 12px 12px;
   }
@@ -10749,7 +10816,7 @@ body.theme-light .archivist-tag-atk:hover {
 /* SP4b — kind tab bar inside the defense popover */
 .pc-def-popover-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
 .pc-def-popover-tab {
@@ -10927,6 +10994,21 @@ body.theme-light .archivist-tag-atk:hover {
   font-style: italic;
 }
 
+/* ---------- Responsive: tab bar (added in phase 5) ---------- */
+
+/* Below medium tier: tab bar wraps to a second line instead of
+ * horizontal-scrolling. The base .pc-tabs-bar rule keeps
+ * overflow-x: auto as a safety net for extreme cases; this rule
+ * activates a flow-wrap mode when the content column is narrow
+ * enough that wrapping is the better choice. */
+@container pc-content (max-width: 699px) {
+  .archivist-pc-sheet .pc-tabs-bar {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 2px;
+  }
+}
+
 
 /* ============================================
    pc/blocks.css
@@ -11003,6 +11085,25 @@ body.theme-light .archivist-tag-atk:hover {
   margin-top: var(--pc-space-1);
 }
 
+/* ---------- Responsive (added in phase 5) ---------- */
+
+/* Below narrow tier: block meta cluster (.pc-block-meta is
+ * already flex-wrap, so this only adjusts spacing) tightens up
+ * and feature-list items lose the left border so the indent
+ * doesn't compete with the narrow column width. */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-block {
+    margin-bottom: var(--pc-space-3);
+  }
+  .archivist-pc-sheet .pc-feature-item {
+    border-left-width: 1.5px;
+    padding-left: var(--pc-space-2);
+  }
+  .archivist-pc-sheet .pc-block-meta {
+    gap: var(--pc-space-2);
+  }
+}
+
 
 /* ============================================
    pc/inventory.css
@@ -11015,7 +11116,11 @@ body.theme-light .archivist-tag-atk:hover {
 /* ---------- Inventory row (collapsed) ---------- */
 .archivist-pc-sheet .pc-inv-row {
   display: grid;
-  grid-template-columns: 18px 18px 1fr 96px 42px 56px;
+  /* Form C — fixed cells for icons, fluid name, intrinsic trailing meta.
+   * Areas let the trailing cells reflow below the name at narrow widths
+   * without dropping content. */
+  grid-template-columns: 18px 18px minmax(0, 1fr) 96px 42px 56px;
+  grid-template-areas: "toggle icon name stat weight qty";
   gap: var(--pc-space-2);
   align-items: center;
   padding: 6px 4px 6px 6px;
@@ -11024,6 +11129,15 @@ body.theme-light .archivist-tag-atk:hover {
   position: relative;
   transition: background 0.12s ease;
 }
+
+/* Assign each cell to its named area so the narrow-tier reflow
+ * can rearrange them without changing column counts. */
+.archivist-pc-sheet .pc-inv-toggle-cell { grid-area: toggle; }
+.archivist-pc-sheet .pc-inv-icon { grid-area: icon; }
+.archivist-pc-sheet .pc-inv-name-cell { grid-area: name; min-width: 0; }
+.archivist-pc-sheet .pc-inv-stat { grid-area: stat; }
+.archivist-pc-sheet .pc-inv-weight { grid-area: weight; }
+.archivist-pc-sheet .pc-inv-qty-cost { grid-area: qty; }
 .archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
 
 /* Crimson rail when equipped or attuned (or both — single rail) */
@@ -11063,7 +11177,6 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* Name + subtitle */
-.archivist-pc-sheet .pc-inv-name-cell { min-width: 0; }
 .archivist-pc-sheet .pc-inv-name {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-body);
@@ -11368,12 +11481,6 @@ body.theme-light .archivist-tag-atk:hover {
   flex: 0 0 auto;
 }
 
-@media (max-width: 600px) {
-  .archivist-pc-sheet .pc-header-divider { display: none; }
-  .archivist-pc-sheet .pc-header-attune,
-  .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
-}
-
 /* Attunement strip — label + medallion row */
 .archivist-pc-sheet .pc-attune-strip {
   display: flex;
@@ -11673,7 +11780,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-override-actions-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--pc-space-2);
   font-family: var(--pc-font-sans);
   font-size: var(--pc-fs-small);
@@ -11694,20 +11801,36 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Responsive ---------- */
 
-/* xs+: rows drop the qty/cost column */
-@media (max-width: 759px) {
+/* Below narrow tier: header divider hides; qty/cost lifts under name. */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-header-divider { display: none; }
+  .archivist-pc-sheet .pc-header-attune,
+  .archivist-pc-sheet .pc-header-currency { flex: 1 1 100%; }
+
+  /* Row reflow: keep all data, restack trailing meta under name.
+   * Row 1: toggle + icon + name + stat (the headline meta).
+   * Row 2: weight + qty-cost (the secondary meta), under the name. */
   .archivist-pc-sheet .pc-inv-row {
-    grid-template-columns: 18px 18px 1fr 70px 36px;  /* drop qty/cost column */
+    grid-template-columns: 18px 18px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "toggle icon name   stat"
+      ".      .    weight qty";
+    row-gap: 2px;
   }
-  .archivist-pc-sheet .pc-inv-qty-cost { display: none; }
 }
 
-/* xxs: rows lose Weight column (kept in a tooltip-like state) */
-@media (max-width: 599px) {
+/* Below tiny tier: stat lifts under the name too, freeing the
+ * top-right cell entirely. All data still visible. */
+@container pc-content (max-width: 399px) {
   .archivist-pc-sheet .pc-inv-row {
-    grid-template-columns: 18px 18px 1fr 70px;  /* drop weight column too */
+    grid-template-columns: 18px 18px minmax(0, 1fr);
+    grid-template-areas:
+      "toggle icon name"
+      ".      .    stat"
+      ".      .    weight"
+      ".      .    qty";
+    row-gap: 2px;
   }
-  .archivist-pc-sheet .pc-inv-weight { display: none; }
   .archivist-pc-sheet .pc-inv-filter-row { gap: var(--pc-space-2); }
   .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
@@ -11889,4 +12012,38 @@ body.theme-light .archivist-tag-atk:hover {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
   color: var(--pc-text-soft);
+}
+
+/* ---------- Responsive (added in phase 5) ---------- */
+
+/* Below narrow tier: attack & actions tables allow horizontal
+ * scroll so trailing columns (Range / Damage / Notes) remain
+ * reachable rather than overflowing the content column.
+ * Reflow-via-grid would require an HTML change (deferred). */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-attack-table,
+  .archivist-pc-sheet .pc-actions-table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+/* Below narrow tier: tighten condition-chip gap so more chips
+ * fit per row. .pc-cond-body remains flex-wrap throughout because
+ * chips have variable widths.
+ *
+ * Query pc-sheet rather than pc-content because the def-cond
+ * panel containing .pc-cond-body sits inside .pc-stats-band
+ * (sheet-level), not inside .pc-content. @container queries only
+ * match descendants of their container. The conditions popover
+ * (portaled to document.body) is outside the sheet entirely and
+ * keeps its base styling at every width. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-cond-body {
+    gap: 1px;
+  }
+  .archivist-pc-sheet .pc-cond-chip {
+    padding: 1px 4px;
+  }
 }
