@@ -11777,6 +11777,28 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-crimson, #922610);
 }
 
+/* Ghost-style Cancel inside the conflict modal. Two-class prefix wins
+   specificity against Obsidian's `.modal button` default. */
+.pc-attune-conflict .pc-attune-conflict-cancel {
+  background: transparent;
+  color: var(--pc-text-soft, #6b5e4b);
+  border: 1px solid var(--pc-tan, #d9c484);
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.pc-attune-conflict .pc-attune-conflict-cancel:hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.06);
+}
+
 /* ---------- Attune picker modal ----------
  * Modal mounts on document.body, so selectors are NOT scoped under
  * .archivist-pc-sheet. Tokens use hex fallbacks since cascade may not reach. */
@@ -11804,18 +11826,33 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: 10px;
   color: var(--pc-text-muted, #8a7a6a);
 }
-.pc-attune-picker-pick {
-  padding: 2px 8px;
-  font-family: 'Libre Baskerville', Georgia, serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+/* Two-class prefix needed to win specificity against Obsidian's
+   `.modal button` defaults; without it the row would fall back to the
+   default dark Obsidian button. */
+.pc-attune-picker .pc-attune-picker-pick {
+  padding: 4px 10px;
+  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--pc-crimson, #922610);
   background: transparent;
-  border: 1px solid var(--pc-tan, #d9c484);
-  border-radius: 3px;
+  border: 1px solid var(--pc-crimson, #922610);
+  border-radius: 4px;
   cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.pc-attune-picker .pc-attune-picker-pick:hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.08);
+}
+
+.pc-attune-picker .pc-attune-picker-pick:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .pc-attune-picker-empty {
   font-style: italic;
