@@ -49,3 +49,53 @@ describe("computeRestPlan — long rest — HP / exhaustion / spell slots", () =
     expect(plan.categories.find((cat) => cat.id === "spell-slots")).toBeUndefined();
   });
 });
+
+describe("computeRestPlan — long rest — HD regain", () => {
+  it("includes hd-regain when any pool has used > 0", () => {
+    const c = clone(FIGHTER_5_CLERIC_3); // d10 used:3/5, d8 used:2/3, totalLevel 8 → regain 4
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    const hd = plan.categories.find((cat) => cat.id === "hd-regain");
+    expect(hd).toBeDefined();
+    expect(hd!.preview).toBe("+4 (d10: +3, d8: +1)");
+  });
+
+  it("regain math floors at 1 even at level 1", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.class = [{ name: "[[fighter]]", level: 1, subclass: null, choices: {} }];
+    c.state.hit_dice = { d10: { used: 1, total: 1 } };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.categories.find((cat) => cat.id === "hd-regain")!.preview).toBe("+1 (d10: +1)");
+  });
+
+  it("omits hd-regain when all pools are full", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.hit_dice = {
+      d10: { used: 0, total: 5 },
+      d8:  { used: 0, total: 3 },
+    };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.categories.find((cat) => cat.id === "hd-regain")).toBeUndefined();
+  });
+
+  it("distribution fills the most-spent pool first", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    // totalLevel 8 → regain 4; d10:used 4/5, d8:used 1/3
+    c.state.hit_dice = {
+      d10: { used: 4, total: 5 },
+      d8:  { used: 1, total: 3 },
+    };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.categories.find((cat) => cat.id === "hd-regain")!.preview).toBe("+4 (d10: +4)");
+  });
+
+  it("caps distribution at total used (never over-restores)", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    // totalLevel 8 → regain 4; only 2 used total
+    c.state.hit_dice = {
+      d10: { used: 1, total: 5 },
+      d8:  { used: 1, total: 3 },
+    };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.categories.find((cat) => cat.id === "hd-regain")!.preview).toBe("+2 (d10: +1, d8: +1)");
+  });
+});

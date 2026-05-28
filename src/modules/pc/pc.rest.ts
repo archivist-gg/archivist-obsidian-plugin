@@ -26,7 +26,7 @@ export interface RestPlan {
 
 export function computeRestPlan(
   character: Character,
-  _resolved: ResolvedCharacter,
+  resolved: ResolvedCharacter,
   derived: DerivedStats,
   _registry: EntityRegistry | null,
   type: RestType,
@@ -54,6 +54,33 @@ export function computeRestPlan(
       .reduce((s, slot) => s + (slot.used ?? 0), 0);
     if (slotsUsed > 0) {
       cats.push({ id: "spell-slots", label: "Spell Slots", preview: "all reset" });
+    }
+
+    // HD regain
+    const totalLevel = resolved.totalLevel ?? 0;
+    const regainBudget = Math.max(1, Math.floor(totalLevel / 2));
+    const pools = Object.entries(character.state.hit_dice ?? {})
+      .map(([die, hd]) => ({ die, used: hd.used, total: hd.total }))
+      .filter((p) => p.used > 0)
+      .sort((a, b) => b.used - a.used);
+    if (pools.length > 0) {
+      let left = regainBudget;
+      const dist: Array<{ die: string; give: number }> = [];
+      for (const p of pools) {
+        if (left === 0) break;
+        const give = Math.min(p.used, left);
+        if (give > 0) dist.push({ die: p.die, give });
+        left -= give;
+      }
+      const totalGive = dist.reduce((s, d) => s + d.give, 0);
+      if (totalGive > 0) {
+        const detail = dist.map((d) => `${d.die}: +${d.give}`).join(", ");
+        cats.push({
+          id: "hd-regain",
+          label: "Hit Dice",
+          preview: `+${totalGive} (${detail})`,
+        });
+      }
     }
   }
 
