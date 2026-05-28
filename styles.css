@@ -12316,14 +12316,16 @@ body.theme-light .archivist-tag-atk:hover {
   justify-content: center;
 }
 
+/* Both rest buttons share the filled-crimson style so neither reads as
+   "disabled". The ☾ / ★ glyph alone differentiates short vs long. */
 .archivist-pc-sheet .pc-rest-btn {
-  background: transparent;
+  background: var(--pc-crimson);
   border: 1px solid var(--pc-crimson);
   border-radius: var(--pc-radius-sm);
   width: 32px;
   height: 32px;
   padding: 0;
-  color: var(--pc-crimson);
+  color: var(--pc-parchment-light);
   font-family: var(--pc-font-serif);
   font-size: 16px;
   font-weight: 700;
@@ -12335,21 +12337,12 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 .archivist-pc-sheet .pc-rest-btn:hover:not(:disabled) {
-  background: rgba(146, 38, 16, 0.08);
+  background: var(--pc-crimson-light);
 }
 
 .archivist-pc-sheet .pc-rest-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.archivist-pc-sheet .pc-rest-btn--long {
-  background: var(--pc-crimson);
-  color: var(--pc-parchment-light);
-}
-
-.archivist-pc-sheet .pc-rest-btn--long:hover:not(:disabled) {
-  background: var(--pc-crimson-light);
 }
 
 /* src/modules/pc/styles/rest.css  (append) */
