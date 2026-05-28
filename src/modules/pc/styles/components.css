@@ -1367,9 +1367,9 @@
 
 /* SP4b — defense-type popover (visual parity with pc-cond-popover) */
 /* Popover is portal'd to document.body, so selectors are scoped under
-   .pc-def-popover (not .archivist-pc-sheet). Tab rules use a two-class
-   prefix so they beat Obsidian's `.modal button` / generic button
-   defaults — without it the inactive tabs render dark Obsidian-style. */
+   .pc-def-popover (not .archivist-pc-sheet). Pip/checkbox rules use a
+   two-class prefix so they beat Obsidian's `.modal button` / generic
+   button defaults — without it the controls render dark Obsidian-style. */
 .pc-def-popover {
   position: absolute;
   z-index: 1000;
@@ -1393,41 +1393,91 @@
   color: var(--pc-text-soft, #7c6a4e);
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
-/* SP4b — kind tab bar inside the defense popover */
-.pc-def-popover .pc-def-popover-tabs {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--pc-border, #8a6f47);
+/* Section structure — two stacked groups (damage types + condition
+   immunities). Each header is a sticky-feeling tinted band. */
+.pc-def-popover .pc-def-popover-section + .pc-def-popover-section .pc-def-popover-section-header {
+  border-top: 1px solid var(--pc-border, #8a6f47);
 }
-.pc-def-popover .pc-def-popover-tab {
-  padding: 6px 4px;
-  border: 0;
-  border-right: 1px solid var(--pc-border, #8a6f47);
-  border-radius: 0;
-  background: transparent;
-  color: var(--pc-text-soft, #7c6a4e);
+.pc-def-popover .pc-def-popover-section-header {
+  padding: 10px 14px 4px;
   font-family: var(--pc-font-serif, Georgia, serif);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pc-text-soft, #7c6a4e);
+  background: rgba(255, 248, 220, 0.55);
+}
+.pc-def-popover .pc-def-popover-legend {
+  margin-left: 8px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--pc-text-muted, #8a7a6a);
+  text-transform: none;
+}
+
+/* Tri-state pip group — three pips per damage-type row, mutually
+   exclusive. Two-class prefix wins specificity against Obsidian's
+   `.modal button` defaults. */
+.pc-def-popover .pc-def-popover-tri {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pc-def-popover .pc-def-popover-pip {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1.4px solid var(--pc-crimson, #922610);
+  background: transparent;
+  color: var(--pc-crimson, #922610);
+  font-family: var(--pc-font-serif, Georgia, serif);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
-  text-align: center;
-  line-height: 1.2;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   box-shadow: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  transition: background 120ms, color 120ms, border-color 120ms;
 }
-.pc-def-popover .pc-def-popover-tab:last-child {
-  border-right: 0;
-}
-.pc-def-popover .pc-def-popover-tab:hover {
+.pc-def-popover .pc-def-popover-pip:hover:not(.on) {
   background: rgba(146, 38, 16, 0.08);
-  color: var(--pc-text-primary, #1c1811);
 }
-.pc-def-popover .pc-def-popover-tab.active {
-  background: rgba(146, 38, 16, 0.12);
-  color: var(--pc-crimson, #8a2414);
+.pc-def-popover .pc-def-popover-pip.on {
+  background: var(--pc-crimson, #922610);
+  color: var(--pc-parchment-light, #fdf1dc);
+}
+
+/* Custom checkbox for condition immunities — same vocabulary as the
+   shared `.archivist-modal input[type="checkbox"]` rule. */
+.pc-def-popover .pc-def-popover-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.4px solid var(--pc-crimson, #922610);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: none;
+}
+.pc-def-popover .pc-def-popover-checkbox:hover:not(:checked) {
+  background-color: rgba(146, 38, 16, 0.08);
+}
+.pc-def-popover .pc-def-popover-checkbox:checked {
+  background-color: var(--pc-crimson, #922610);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
 }
 .pc-def-popover-list {
   max-height: 240px;
@@ -1437,26 +1487,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 10px;
+  padding: 7px 14px;
+  border-bottom: 1px dotted #e8d5b0;
   cursor: default;
 }
+.pc-def-popover-row:last-child { border-bottom: 0; }
 .pc-def-popover-row:hover {
   background: color-mix(in srgb, var(--pc-crimson, #8a2414) 8%, transparent);
 }
 .pc-def-popover-row .pc-def-popover-name {
   font-size: 13px;
-}
-.pc-def-popover-row .pc-def-popover-toggle {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--pc-border, #8a6f47);
-  border-radius: 2px;
-  cursor: pointer;
-  background: transparent;
-}
-.pc-def-popover-row .pc-def-popover-toggle.on {
-  background: var(--pc-crimson, #8a2414);
-  border-color: var(--pc-crimson, #8a2414);
 }
 
 /* === SP5 Equipment === */
