@@ -1395,37 +1395,46 @@
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
 /* Tab bar — two tabs (Damages + Conditions) at the top of the popover.
-   Two-class prefix wins specificity against Obsidian's `.modal button`
-   defaults. */
+   Visual language matches the PC sheet's primary tab bar (`.pc-tabs-bar` /
+   `.pc-tab-btn`): sans-serif uppercase labels, crimson text, 2px crimson
+   border-bottom underline on the active tab, and a light crimson tint on
+   the active tab's background. Two-class prefix + `!important` reset
+   wins specificity against Obsidian's `.modal button` defaults. */
 .pc-def-popover .pc-def-popover-tabs {
   display: flex;
-  border-bottom: 1px solid var(--pc-border, #8a6f47);
-  background: rgba(255, 248, 220, 0.55);
+  gap: 2px;
+  border-bottom: 1px solid var(--d5e-text-accent, #7a200d);
 }
 .pc-def-popover .pc-def-popover-tab {
   flex: 1 1 0;
-  padding: 10px 14px;
-  border: 0;
-  background: transparent;
-  color: var(--pc-text-soft, #7c6a4e);
-  font-family: var(--pc-font-serif, Georgia, serif);
+  padding: 6px 12px;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--d5e-text-accent, #7a200d) !important;
+  font-family: 'Noto Sans', sans-serif;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
+  white-space: nowrap;
   box-shadow: none;
-  transition: background 120ms, color 120ms, box-shadow 120ms;
+  opacity: 1 !important;
+  transition: background-color 120ms, color 120ms, border-color 120ms;
 }
 .pc-def-popover .pc-def-popover-tab:hover:not(.active) {
-  background: rgba(146, 38, 16, 0.08);
+  background-color: rgba(122, 32, 13, 0.07) !important;
 }
 .pc-def-popover .pc-def-popover-tab.active {
-  color: var(--pc-crimson, #922610);
-  box-shadow: inset 0 -2px 0 var(--pc-crimson, #922610);
+  color: var(--d5e-bar-fill, #922610) !important;
+  border-bottom-color: var(--d5e-bar-fill, #922610) !important;
+  background-color: rgba(122, 32, 13, 0.18) !important;
+  margin-bottom: -1px;
 }
 .pc-def-popover .pc-def-popover-tab:focus-visible {
-  outline: 2px solid var(--pc-crimson, #922610);
+  outline: 2px solid var(--d5e-bar-fill, #922610);
   outline-offset: -2px;
 }
 
