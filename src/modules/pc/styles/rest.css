@@ -62,3 +62,122 @@
     font-size: 14px;
   }
 }
+
+/* src/modules/pc/styles/rest.css  (append) */
+
+/* ============================================
+   Rest modal — parchment surface, crimson trim
+   ============================================ */
+.pc-rest-modal {
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: 14px 16px;
+  max-width: 380px;
+}
+
+.pc-rest-modal-title {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-heading);
+  color: var(--pc-crimson);
+  border-bottom: 1px solid var(--pc-tan);
+  padding-bottom: 6px;
+  margin: 0 0 10px;
+}
+
+.pc-rest-modal-section-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-text-soft);
+  margin: 10px 0 6px;
+}
+
+.pc-rest-modal-empty {
+  font-style: italic;
+  color: var(--pc-text-muted);
+  text-align: center;
+  padding: 12px 0;
+}
+
+.pc-rest-opt-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--pc-fs-body);
+}
+
+.pc-rest-opt-row {
+  padding: 4px 0;
+  border-bottom: 1px dotted var(--pc-tan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pc-rest-opt-row:last-child {
+  border-bottom: none;
+}
+
+.pc-rest-opt-checkbox {
+  accent-color: var(--pc-crimson);
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.pc-rest-opt-label {
+  flex: 1;
+  color: var(--pc-text-primary);
+}
+
+.pc-rest-opt-preview {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  color: var(--pc-crimson);
+}
+
+.pc-rest-opt-row.opt-out .pc-rest-opt-label,
+.pc-rest-opt-row.opt-out .pc-rest-opt-preview {
+  color: var(--pc-text-muted);
+  text-decoration: line-through;
+}
+
+.pc-rest-modal-footer {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--pc-tan);
+}
+
+.pc-rest-btn-ghost,
+.pc-rest-btn-confirm {
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 14px;
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.pc-rest-btn-ghost {
+  background: transparent;
+  color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan);
+}
+
+.pc-rest-btn-confirm {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border: 1px solid var(--pc-crimson);
+}
+
+.pc-rest-btn-confirm:hover {
+  background: var(--pc-crimson-light);
+}
