@@ -10,6 +10,19 @@ import {
   type TappedPip,
 } from "./defense-type-popover-logic";
 
+/**
+ * Storage key for the four defense buckets the merged Defenses+Conditions
+ * panel iterates over. Imported by `defenses-conditions-panel.ts` to type its
+ * `DEFENSE_ROWS` table. The first three correspond to `defenseKindFor(...)`
+ * outputs from the tri-state cycle; `"condition_immunities"` is its own
+ * separate bucket on the character data model.
+ */
+export type DefenseKind =
+  | "resistances"
+  | "immunities"
+  | "vulnerabilities"
+  | "condition_immunities";
+
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
 
 /**
