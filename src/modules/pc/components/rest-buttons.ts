@@ -1,6 +1,5 @@
 // src/modules/pc/components/rest-buttons.ts
 import type { ComponentRenderContext } from "./component.types";
-import { computeRestPlan } from "../pc.rest";
 import { RestModal } from "./rest-modal";
 
 /**
@@ -8,10 +7,10 @@ import { RestModal } from "./rest-modal";
  * stacked vertically at the right edge of the hero, after the Hit Dice
  * widget. Icon-only — hover reveals the full label via the title attr.
  *
- * Owns its own disabled state — short button is disabled when HP=0 OR
- * when there's nothing to rest; long button disabled only when there's
- * nothing to rest. When either modal opens, both buttons disable until
- * the modal closes (single-modal invariant).
+ * Buttons are always enabled (narrative-friendly — a player may invoke
+ * a rest even with nothing mechanical to restore; the modal then shows
+ * "Nothing to restore."). The only disable is during an open modal to
+ * preserve the single-modal invariant.
  */
 export class RestButtons {
   private shortBtn!: HTMLButtonElement;
@@ -59,19 +58,10 @@ export class RestButtons {
   }
 
   private refreshDisabledState(): void {
-    const { resolved, derived } = this.ctx;
-    const hpZero = resolved.state.hp.current === 0;
-    const shortPlan = computeRestPlan(resolved.definition, resolved, derived, null, "short");
-    const longPlan = computeRestPlan(resolved.definition, resolved, derived, null, "long");
-    const nothingShort = shortPlan.categories.length === 0 && shortPlan.hdAvailable.length === 0;
-    const nothingLong = longPlan.categories.length === 0;
-
-    this.shortBtn.disabled = this.modalOpen || hpZero || nothingShort;
-    this.shortBtn.title = hpZero ? "cannot rest while unconscious"
-      : nothingShort ? "short rest — nothing to restore"
-      : "short rest";
-
-    this.longBtn.disabled = this.modalOpen || nothingLong;
-    this.longBtn.title = nothingLong ? "long rest — nothing to restore" : "long rest";
+    // Only the open-modal lock disables — see class JSDoc for rationale.
+    this.shortBtn.disabled = this.modalOpen;
+    this.shortBtn.title = "short rest";
+    this.longBtn.disabled = this.modalOpen;
+    this.longBtn.title = "long rest";
   }
 }
