@@ -3,7 +3,7 @@ import type { ComponentRenderContext } from "./component.types";
 import { RestModal } from "./rest-modal";
 
 /**
- * Hero rest cluster: ☾ short rest and ★ long rest, both filled crimson,
+ * Hero rest cluster: ☾ short rest (outline) and ★ long rest (solid),
  * stacked vertically at the right edge of the hero, after the Hit Dice
  * widget. Icon-only — hover reveals the full label via the title attr.
  *
