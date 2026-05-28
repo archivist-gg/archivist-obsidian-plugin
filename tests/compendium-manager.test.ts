@@ -5,8 +5,8 @@ import {
   parseCompendiumMetadata,
   generateCompendiumMetadata,
   CompendiumManager,
-} from "../src/entities/compendium-manager";
-import { EntityRegistry } from "../src/entities/entity-registry";
+} from "../src/shared/entities/compendium-manager";
+import { EntityRegistry } from "../src/shared/entities/entity-registry";
 
 // ---------------------------------------------------------------------------
 // parseCompendiumMetadata
@@ -487,10 +487,10 @@ type: humanoid
       expect(result.compendium).toBe("Homebrew");
       expect(result.readonly).toBe(false);
       expect(result.homebrew).toBe(true);
-      expect(result.slug).toBe("shadow-goblin");
+      expect(result.slug).toBe("homebrew_shadow-goblin");
 
       // Should be in the registry
-      expect(registry.getBySlug("shadow-goblin")).toBeDefined();
+      expect(registry.getBySlug("homebrew_shadow-goblin")).toBeDefined();
 
       // Should have created the file
       expect(vault.create).toHaveBeenCalledWith(

@@ -1,0 +1,236 @@
+/** @vitest-environment jsdom */
+
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
+import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
+
+beforeAll(() => installObsidianDomHelpers());
+
+vi.mock("obsidian", () => ({
+  MarkdownRenderer: {
+    render: async (_app: unknown, md: string, parent: HTMLElement) => {
+      const doc = parent.ownerDocument;
+      for (const para of md.split("\n\n")) {
+        const lines = para.split("\n").filter((l: string) => l.trim().length > 0);
+        const isPipeTable = lines.length >= 2 && lines[0].includes("|") && /^\s*\|?\s*-+/.test(lines[1]);
+        if (isPipeTable) {
+          const headCells = lines[0].split("|").slice(1, -1).map((s: string) => s.trim());
+          const bodyRows = lines.slice(2).map((l: string) => l.split("|").slice(1, -1).map((s: string) => s.trim()));
+          const t = doc.createElement("table");
+          const thead = doc.createElement("thead");
+          const tr = doc.createElement("tr");
+          for (const h of headCells) {
+            const th = doc.createElement("th");
+            th.textContent = h;
+            tr.appendChild(th);
+          }
+          thead.appendChild(tr);
+          t.appendChild(thead);
+          const tb = doc.createElement("tbody");
+          for (const r of bodyRows) {
+            const row = doc.createElement("tr");
+            for (const c of r) {
+              const td = doc.createElement("td");
+              td.textContent = c;
+              row.appendChild(td);
+            }
+            tb.appendChild(row);
+          }
+          t.appendChild(tb);
+          parent.appendChild(t);
+        } else {
+          const p = doc.createElement("p");
+          p.textContent = para;
+          parent.appendChild(p);
+        }
+      }
+    },
+  },
+  setIcon: vi.fn(),
+  Component: class {},
+}));
+
+import { parseItem } from "../src/modules/item/item.parser";
+import { renderItemBlock, renderItemMechanicalSummary } from "../src/modules/item/item.renderer";
+import type { ItemEntity } from "../src/modules/item/item.types";
+
+beforeEach(() => {
+  document.body.replaceChildren();
+});
+
+describe("renderItemMechanicalSummary", () => {
+  it("returns null for prose-only items (no mechanical fields)", () => {
+    const r = parseItem(`name: Plain Item\nentries: [some text]`);
+    if (!r.success) throw new Error(r.error);
+    expect(renderItemMechanicalSummary(r.data)).toBeNull();
+  });
+
+  it("renders Cloak of Protection bonuses", () => {
+    const r = parseItem(`
+name: Cloak of Protection
+bonuses: { ac: 1, saving_throws: 1 }
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data);
+    expect(el).not.toBeNull();
+    expect(el!.textContent).toContain("AC +1");
+    expect(el!.textContent).toContain("Saves +1");
+  });
+
+  it("renders Wand of Magic Missiles charges + spells", () => {
+    const r = parseItem(`
+name: Wand of Magic Missiles
+charges: { max: 7, recharge: dawn, recharge_amount: "1d6+1" }
+attached_spells: { charges: { "1": [magic-missile] } }
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    expect(el.textContent).toContain("7 charges");
+    expect(el.textContent).toContain("recharge dawn");
+    expect(el.textContent).toContain("1 ch: magic-missile");
+  });
+
+  it("renders Hat of Disguise at-will spell", () => {
+    const r = parseItem(`
+name: Hat of Disguise
+attached_spells: { will: [disguise-self] }
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    expect(el.textContent).toContain("At will: disguise-self");
+  });
+
+  it("renders Efreeti Chain immune + grants", () => {
+    const r = parseItem(`
+name: Efreeti Chain
+immune: [fire]
+grants: { languages: [primordial] }
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    expect(el.textContent).toContain("fire");
+    expect(el.textContent).toContain("primordial");
+  });
+
+  it("sorts spell charge keys numerically (1, 3, 4)", () => {
+    const r = parseItem(`
+name: Staff of Fire
+attached_spells:
+  charges:
+    "4": [wall-of-fire]
+    "1": [burning-hands]
+    "3": [fireball]
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    const text = el.textContent ?? "";
+    const idx1 = text.indexOf("1 ch:");
+    const idx3 = text.indexOf("3 ch:");
+    const idx4 = text.indexOf("4 ch:");
+    expect(idx1).toBeGreaterThan(-1);
+    expect(idx3).toBeGreaterThan(idx1);
+    expect(idx4).toBeGreaterThan(idx3);
+  });
+
+  it("renders Necklace of Fireballs limited spells", () => {
+    const r = parseItem(`
+name: Necklace of Fireballs
+attached_spells:
+  limited:
+    "9": [fireball]
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    expect(el.textContent).toContain("9 uses: fireball");
+  });
+
+  it("renders Helm of Brilliance limited spells with multiple keys sorted", () => {
+    const r = parseItem(`
+name: Helm of Brilliance
+attached_spells:
+  limited:
+    "30": [fireball]
+    "10": [prismatic-spray]
+    "40": [daylight]
+    "20": [wall-of-fire]
+`);
+    if (!r.success) throw new Error(r.error);
+    const el = renderItemMechanicalSummary(r.data)!;
+    const text = el.textContent ?? "";
+    const idx10 = text.indexOf("10 uses:");
+    const idx20 = text.indexOf("20 uses:");
+    const idx30 = text.indexOf("30 uses:");
+    const idx40 = text.indexOf("40 uses:");
+    expect(idx10).toBeGreaterThan(-1);
+    expect(idx20).toBeGreaterThan(idx10);
+    expect(idx30).toBeGreaterThan(idx20);
+    expect(idx40).toBeGreaterThan(idx30);
+  });
+
+  it("renders condition_immune in mechanical summary", () => {
+    const item: ItemEntity = { name: "T", condition_immune: ["charmed", "frightened"] };
+    const summary = renderItemMechanicalSummary(item);
+    expect(summary?.textContent ?? "").toContain("Cond. Immune");
+    expect(summary?.textContent ?? "").toContain("charmed");
+  });
+});
+
+describe("renderItemBlock — markdown description, base_item, cost", () => {
+  it("displays description body via markdown renderer", async () => {
+    const item: ItemEntity = { name: "T", description: "Body of the item." };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-description")?.textContent ?? "").toContain("Body of the item.");
+  });
+
+  it("displays base_item as wikilink in subtitle area", async () => {
+    const item: ItemEntity = { name: "Magic Sword", type: "weapon", base_item: "[[SRD 5e/Weapons/Longsword]]" };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-base-item")?.textContent ?? "").toContain("Longsword");
+  });
+
+  it("displays cost (not legacy value)", async () => {
+    const item: ItemEntity = { name: "T", cost: "50 gp" };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("50 gp");
+  });
+
+  it("embedded markdown table in item description renders with brick class", async () => {
+    const item: ItemEntity = {
+      name: "Necklace of Prayer Beads",
+      description: `Six types exist:\n\n| 1d20 | Bead | Spell |\n|------|------|-------|\n| 1-6  | Blessing | bless |\n| 7-12 | Curing | cure wounds |\n\nUse one as a bonus action.`,
+    };
+    const block = await renderItemBlock(item);
+    const t = block.querySelector("table");
+    expect(t).not.toBeNull();
+    expect(t?.classList.contains("archivist-table")).toBe(true);
+  });
+
+  it("renders cursed chip", async () => {
+    const item: ItemEntity = { name: "T", cursed: true };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-tag.cursed")?.textContent).toBe("Cursed");
+  });
+
+  it("renders sentient chip", async () => {
+    const item: ItemEntity = { name: "T", sentient: true };
+    const block = await renderItemBlock(item);
+    expect(block.querySelector(".archivist-item-tag.sentient")?.textContent).toBe("Sentient");
+  });
+
+  it("renders focus property line", async () => {
+    const item: ItemEntity = { name: "T", focus: "arcane" };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("Arcane focus");
+  });
+
+  it("renders container capacity_weight", async () => {
+    const item: ItemEntity = { name: "T", container: { capacity_weight: 500 } };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("Capacity: 500 lb");
+  });
+
+  it("renders light radii", async () => {
+    const item: ItemEntity = { name: "T", light: { bright_radius: 20, dim_radius: 40 } };
+    const block = await renderItemBlock(item);
+    expect(block.textContent ?? "").toContain("Bright 20 ft / Dim 40 ft");
+  });
+});

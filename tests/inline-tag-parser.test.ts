@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseInlineTag } from "../src/parsers/inline-tag-parser";
+import { parseInlineTag } from "../src/shared/rendering/inline-tag-parser";
 
 describe("parseInlineTag", () => {
   it("parses a roll tag (alias -> dice)", () => {

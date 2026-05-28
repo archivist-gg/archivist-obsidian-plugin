@@ -1,0 +1,61 @@
+slug: forgehearted
+name: Forgehearted
+edition: "2024"
+source: "Fictional test fixture"
+description: "An invented martial class used only for schema validation."
+hit_die: d10
+primary_abilities: [str, con]
+saving_throws: [str, con]
+proficiencies:
+  armor: [light, medium, heavy, shield]
+  weapons:
+    categories: [simple]
+    conditional:
+      - { category: martial, where_property: [heavy, two-handed] }
+  tools:
+    choice: { count: 1, from: [smiths-tools, tinkers-tools] }
+skill_choices:
+  count: 2
+  from: [athletics, intimidation, perception, survival]
+starting_equipment:
+  - { kind: choice, options: [forged-greatsword, reinforced-warhammer] }
+  - { kind: fixed, items: [explorers-pack] }
+  - { kind: gold, amount: 75 }
+spellcasting: null
+subclass_level: 3
+subclass_feature_name: "Forge Path"
+weapon_mastery: { starting_count: 2, scaling: { "7": 3, "13": 4 } }
+epic_boon_level: 19
+table:
+  "1": { prof_bonus: 2, feature_ids: [ember-heart, weapon-mastery] }
+  "2": { prof_bonus: 2, feature_ids: [forged-stance] }
+  "3": { prof_bonus: 2, feature_ids: [forge-path] }
+  "4": { prof_bonus: 2, feature_ids: [asi-4] }
+features_by_level:
+  "1":
+    - id: ember-heart
+      name: "Ember Heart"
+      description: "Invented narrative about an internal forge."
+      choices:
+        - { kind: skill, count: 1, from: [intimidation, perception] }
+    - id: weapon-mastery
+      name: "Weapon Mastery"
+      description: "Invented — mastery with 2 weapons, swappable on long rest."
+  "3":
+    - id: forge-path
+      name: "Forge Path"
+      description: "Choose a subclass."
+      choices: [{ kind: subclass }]
+  "4":
+    - id: asi-4
+      name: "Ability Score Improvement"
+      description: "Invented ASI."
+      choices: [{ kind: asi }]
+resources:
+  - id: ember-dice
+    name: "Ember Dice"
+    max_formula: "proficiency"
+    die: { base: d6, scaling: { "7": d8, "13": d10 } }
+    reset: long-rest
+    recovery:
+      - { id: ember-recover, name: "Quick Fire", amount: 1, action: bonus-action, uses: 1, reset: short-rest }

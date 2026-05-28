@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { JSDOM } from "jsdom";
-import { appendMarkdownText } from "../../src/renderers/renderer-utils";
+import { appendMarkdownText } from "../../src/shared/rendering/renderer-utils";
 
 describe("appendMarkdownText URL scheme allowlist", () => {
   let parent: HTMLElement;

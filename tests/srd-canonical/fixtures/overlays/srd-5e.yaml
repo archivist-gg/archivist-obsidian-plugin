@@ -1,0 +1,13 @@
+class_features:
+  action-surge:
+    action_cost: special
+    uses:
+      max: 1
+      recharge: short-rest
+      scales_at:
+        - level: 17
+          value: 2
+optional_feature_slugs:
+  invocation:
+    - agonizing-blast
+    - devil-sight

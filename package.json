@@ -4,13 +4,18 @@
   "description": "D&D 5e/2024 toolkit with an AI agent that generates monsters, spells, items, encounters, and NPCs. Renders parchment stat blocks, inline dice tags, and includes a full SRD compendium.",
   "main": "main.js",
   "scripts": {
+    "predev": "node scripts/generate-srd-md-index.mjs",
     "dev": "node esbuild.config.mjs",
+    "prebuild": "node scripts/generate-srd-md-index.mjs",
     "build": "npm run build:css && node esbuild.config.mjs production",
     "build:css": "node scripts/build-css.mjs",
-    "lint": "eslint 'src/**/*.ts'",
-    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "build:srd-canonical": "tsx tools/srd-canonical/index.ts",
+    "build:srd-canonical:refresh": "tsx tools/srd-canonical/index.ts --refresh-open5e",
+    "lint": "eslint 'src/**/*.ts' 'tools/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' 'tools/**/*.ts' --fix",
     "test": "vitest run --exclude 'tests/inquiry/**'",
-    "test:watch": "vitest --exclude 'tests/inquiry/**'"
+    "test:watch": "vitest --exclude 'tests/inquiry/**'",
+    "migrate-formula-tags": "tsx scripts/migrate-formula-tags.ts"
   },
   "keywords": [],
   "author": "Shinoobi",
@@ -32,6 +37,7 @@
     "jsdom": "^29.0.2",
     "obsidian": "latest",
     "ts-jest": "^29.1.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.6.0",
     "vitest": "^4.1.2"
   },
@@ -41,6 +47,7 @@
     "@codemirror/view": "^6.38.6",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "js-yaml": "^4.1.0",
+    "monkey-around": "^3.0.0",
     "tslib": "^2.7.0",
     "zod": "^4.3.6"
   }

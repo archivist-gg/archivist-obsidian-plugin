@@ -1,0 +1,50 @@
+slug: mindshard-adept
+name: "Mindshard Adept"
+parent_class: "[[forgehearted]]"
+edition: "2014"
+source: "Fictional test fixture"
+description: "An invented subclass that stress-tests the full feature schema."
+features_by_level:
+  "3":
+    - id: shard-awakening
+      name: "Shard Awakening"
+      description: "Invented — awaken mental shards that power other features."
+      grants_resource: shard-dice
+      sub_features:
+        - id: shard-bolster
+          name: "Shard Bolster"
+          description: "Invented — spend a shard to add a bonus to a check."
+          consumes: { source: resource, resource: shard-dice, amount: 1, expend_condition: roll_succeeds }
+          trigger: on-failed-proficient-check
+        - id: shard-whisper
+          name: "Shard Whisper"
+          description: "Invented — telepathy for a fictional duration."
+          action: action
+          consumes:
+            source: resource
+            resource: shard-dice
+            amount: 1
+            free_uses: { amount: 1, reset: long-rest, state_key: shard-whisper--free }
+    - id: psychic-edge
+      name: "Psychic Edge"
+      description: "Invented — attack with mental energy."
+      attacks:
+        - { name: "Shard Edge (Main)", type: melee, ability: [dex, str], damage: "1d6 + {ability}", damage_type: psychic, properties: [finesse, thrown], range: { normal: 60 } }
+        - { name: "Shard Edge (Bonus)", type: melee, ability: [dex, str], damage: "1d4", damage_type: psychic, action: bonus-action, properties: [finesse, thrown], range: { normal: 60 }, condition: "used_shard_edge_main_this_turn" }
+  "13":
+    - id: mindquake
+      name: "Mindquake"
+      description: "Invented — AoE psychic disruption."
+      action: action
+      trigger: on-shard-spend
+      dc_formula: "8 + proficiency + WIS"
+      effects:
+        - { kind: apply-condition, condition: stunned, duration: "1 minute", ends_on: [save-succeeds, deal-damage] }
+resources:
+  - id: shard-dice
+    name: "Shard Dice"
+    max_formula: "proficiency * 2"
+    die: { base: d6, scaling: { "5": d8, "11": d10, "17": d12 } }
+    reset: long-rest
+    recovery:
+      - { id: shard-recover, name: "Rally", amount: 1, action: bonus-action, uses: 1, reset: short-rest }

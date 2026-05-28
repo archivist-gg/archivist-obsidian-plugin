@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseMonster } from "../src/parsers/monster-parser";
+import { parseMonster } from "../src/modules/monster/monster.parser";
 
 describe("parseMonster", () => {
   it("parses a minimal monster (name only)", () => {
@@ -84,6 +84,178 @@ actions:
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.cr).toBe("5");
+    }
+  });
+});
+
+describe("Monster parser reads shared Feature shape (β+)", () => {
+  it("parses YAML with structured attacks[] on an action", () => {
+    const yamlBody = `
+name: Aboleth
+actions:
+  - name: Tail
+    entries:
+      - "Melee Weapon Attack: +9 to hit, reach 10 ft."
+    attacks:
+      - name: "Tail attack"
+        type: melee
+        bonus: 9
+        damage: "3d6+5"
+        damage_type: bludgeoning
+        range:
+          reach: 10
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].attacks).toBeDefined();
+      expect(result.data.actions![0].attacks![0].bonus).toBe(9);
+      expect(result.data.actions![0].attacks![0].damage).toBe("3d6+5");
+      expect(result.data.actions![0].attacks![0].damage_type).toBe("bludgeoning");
+      expect(result.data.actions![0].attacks![0].range?.reach).toBe(10);
+    }
+  });
+
+  it("parses YAML with extra_damage on an attack", () => {
+    const yamlBody = `
+name: Adult Red Dragon
+actions:
+  - name: Bite
+    entries: ["..."]
+    attacks:
+      - name: Bite attack
+        type: melee
+        bonus: 14
+        damage: "2d10+8"
+        damage_type: piercing
+        extra_damage:
+          dice: 4d6
+          type: fire
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].attacks![0].extra_damage).toEqual({ dice: "4d6", type: "fire" });
+    }
+  });
+
+  it("parses YAML with action and description on a feature", () => {
+    const yamlBody = `
+name: Test Monster
+reactions:
+  - name: Parry
+    description: "The creature adds 2 to its AC against one melee attack."
+    action: reaction
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.reactions![0].description).toBe("The creature adds 2 to its AC against one melee attack.");
+      expect(result.data.reactions![0].action).toBe("reaction");
+    }
+  });
+
+  it("parses YAML with recharge_on_roll on a feature", () => {
+    const yamlBody = `
+name: Adult Black Dragon
+actions:
+  - name: Acid Breath
+    entries: ["Exhales acid."]
+    recharge:
+      type: recharge_on_roll
+      param: 5
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toEqual({ type: "recharge_on_roll", param: 5 });
+    }
+  });
+
+  it("parses YAML with per_day on a feature", () => {
+    const yamlBody = `
+name: Aboleth
+actions:
+  - name: Enslave
+    entries: ["Targets a creature."]
+    recharge:
+      type: per_day
+      param: 3
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toEqual({ type: "per_day", param: 3 });
+    }
+  });
+
+  it("ignores recharge with unknown type", () => {
+    const yamlBody = `
+name: Test
+actions:
+  - name: Power
+    entries: ["..."]
+    recharge:
+      type: bogus
+      param: 1
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toBeUndefined();
+    }
+  });
+
+  it("ignores recharge with non-numeric param", () => {
+    const yamlBody = `
+name: Test
+actions:
+  - name: Power
+    entries: ["..."]
+    recharge:
+      type: recharge_on_roll
+      param: "five"
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.actions![0].recharge).toBeUndefined();
+    }
+  });
+
+  it("parses YAML with legendary_actions array (renamed from legendary)", () => {
+    const yamlBody = `
+name: Adult Black Dragon
+legendary_actions:
+  - name: Cloud of Insects
+    entries: ["..."]
+  - name: Pounce
+    entries: ["..."]
+legendary_action_uses: 3
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.legendary_actions?.length).toBe(2);
+      expect(result.data.legendary_actions?.[0].name).toBe("Cloud of Insects");
+      expect(result.data.legendary_action_uses).toBe(3);
+    }
+  });
+
+  it("backwards-compat: still parses legacy legendary array + numeric legendary_actions", () => {
+    const yamlBody = `
+name: Old Format Dragon
+legendary:
+  - name: Tail Swipe
+    entries: ["..."]
+legendary_actions: 4
+`;
+    const result = parseMonster(yamlBody);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.legendary_actions?.length).toBe(1);
+      expect(result.data.legendary_actions?.[0].name).toBe("Tail Swipe");
+      expect(result.data.legendary_action_uses).toBe(4);
     }
   });
 });

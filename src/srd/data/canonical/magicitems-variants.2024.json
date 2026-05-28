@@ -1,0 +1,3597 @@
+[
+  {
+    "slug": "adamantine-breastplate",
+    "name": "Adamantine Breastplate",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 20
+  },
+  {
+    "slug": "adamantine-chain-mail",
+    "name": "Adamantine Chain Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 55
+  },
+  {
+    "slug": "adamantine-chain-shirt",
+    "name": "Adamantine Chain Shirt",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 20
+  },
+  {
+    "slug": "adamantine-half-plate-armor",
+    "name": "Adamantine Half Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 40
+  },
+  {
+    "slug": "adamantine-hide-armor",
+    "name": "Adamantine Hide Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 12
+  },
+  {
+    "slug": "adamantine-plate-armor",
+    "name": "Adamantine Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 65
+  },
+  {
+    "slug": "adamantine-ring-mail",
+    "name": "Adamantine Ring Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 40
+  },
+  {
+    "slug": "adamantine-scale-mail",
+    "name": "Adamantine Scale Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 45
+  },
+  {
+    "slug": "adamantine-splint-armor",
+    "name": "Adamantine Splint Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you're wearing it, any {@variantrule Critical Hit|XPHB} against you becomes a normal hit.",
+    "weight": 60
+  },
+  {
+    "slug": "breastplate-armor-of-acid-resistance",
+    "name": "Breastplate, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-acid-resistance",
+    "name": "Chain Mail, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-acid-resistance",
+    "name": "Chain Shirt, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-acid-resistance",
+    "name": "Half Plate Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-acid-resistance",
+    "name": "Hide Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-acid-resistance",
+    "name": "Leather Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-acid-resistance",
+    "name": "Padded Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-acid-resistance",
+    "name": "Plate Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-acid-resistance",
+    "name": "Ring Mail, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-acid-resistance",
+    "name": "Scale Mail, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-acid-resistance",
+    "name": "Splint Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-acid-resistance",
+    "name": "Studded Leather Armor, Armor of Acid Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-cold-resistance",
+    "name": "Breastplate, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-cold-resistance",
+    "name": "Chain Mail, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-cold-resistance",
+    "name": "Chain Shirt, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-cold-resistance",
+    "name": "Half Plate Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-cold-resistance",
+    "name": "Hide Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-cold-resistance",
+    "name": "Leather Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-cold-resistance",
+    "name": "Padded Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-cold-resistance",
+    "name": "Plate Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-cold-resistance",
+    "name": "Ring Mail, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-cold-resistance",
+    "name": "Scale Mail, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-cold-resistance",
+    "name": "Splint Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-cold-resistance",
+    "name": "Studded Leather Armor, Armor of Cold Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-fire-resistance",
+    "name": "Breastplate, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-fire-resistance",
+    "name": "Chain Mail, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-fire-resistance",
+    "name": "Chain Shirt, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-fire-resistance",
+    "name": "Half Plate Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-fire-resistance",
+    "name": "Hide Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-fire-resistance",
+    "name": "Leather Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-fire-resistance",
+    "name": "Padded Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-fire-resistance",
+    "name": "Plate Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-fire-resistance",
+    "name": "Ring Mail, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-fire-resistance",
+    "name": "Scale Mail, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-fire-resistance",
+    "name": "Splint Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-fire-resistance",
+    "name": "Studded Leather Armor, Armor of Fire Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-force-resistance",
+    "name": "Breastplate, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-force-resistance",
+    "name": "Chain Mail, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-force-resistance",
+    "name": "Chain Shirt, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-force-resistance",
+    "name": "Half Plate Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-force-resistance",
+    "name": "Hide Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-force-resistance",
+    "name": "Leather Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-force-resistance",
+    "name": "Padded Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-force-resistance",
+    "name": "Plate Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-force-resistance",
+    "name": "Ring Mail, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-force-resistance",
+    "name": "Scale Mail, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-force-resistance",
+    "name": "Splint Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-force-resistance",
+    "name": "Studded Leather Armor, Armor of Force Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-lightning-resistance",
+    "name": "Breastplate, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-lightning-resistance",
+    "name": "Chain Mail, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-lightning-resistance",
+    "name": "Chain Shirt, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-lightning-resistance",
+    "name": "Half Plate Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-lightning-resistance",
+    "name": "Hide Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-lightning-resistance",
+    "name": "Leather Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-lightning-resistance",
+    "name": "Padded Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-lightning-resistance",
+    "name": "Plate Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-lightning-resistance",
+    "name": "Ring Mail, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-lightning-resistance",
+    "name": "Scale Mail, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-lightning-resistance",
+    "name": "Splint Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-lightning-resistance",
+    "name": "Studded Leather Armor, Armor of Lightning Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-necrotic-resistance",
+    "name": "Breastplate, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-necrotic-resistance",
+    "name": "Chain Mail, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-necrotic-resistance",
+    "name": "Chain Shirt, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-necrotic-resistance",
+    "name": "Half Plate Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-necrotic-resistance",
+    "name": "Hide Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-necrotic-resistance",
+    "name": "Leather Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-necrotic-resistance",
+    "name": "Padded Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-necrotic-resistance",
+    "name": "Plate Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-necrotic-resistance",
+    "name": "Ring Mail, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-necrotic-resistance",
+    "name": "Scale Mail, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-necrotic-resistance",
+    "name": "Splint Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-necrotic-resistance",
+    "name": "Studded Leather Armor, Armor of Necrotic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-poison-resistance",
+    "name": "Breastplate, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-poison-resistance",
+    "name": "Chain Mail, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-poison-resistance",
+    "name": "Chain Shirt, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-poison-resistance",
+    "name": "Half Plate Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-poison-resistance",
+    "name": "Hide Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-poison-resistance",
+    "name": "Leather Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-poison-resistance",
+    "name": "Padded Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-poison-resistance",
+    "name": "Plate Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-poison-resistance",
+    "name": "Ring Mail, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-poison-resistance",
+    "name": "Scale Mail, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-poison-resistance",
+    "name": "Splint Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-poison-resistance",
+    "name": "Studded Leather Armor, Armor of Poison Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-psychic-resistance",
+    "name": "Breastplate, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-psychic-resistance",
+    "name": "Chain Mail, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-psychic-resistance",
+    "name": "Chain Shirt, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-psychic-resistance",
+    "name": "Half Plate Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-psychic-resistance",
+    "name": "Hide Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-psychic-resistance",
+    "name": "Leather Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-psychic-resistance",
+    "name": "Padded Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-psychic-resistance",
+    "name": "Plate Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-psychic-resistance",
+    "name": "Ring Mail, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-psychic-resistance",
+    "name": "Scale Mail, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-psychic-resistance",
+    "name": "Splint Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-psychic-resistance",
+    "name": "Studded Leather Armor, Armor of Psychic Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-radiant-resistance",
+    "name": "Breastplate, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-radiant-resistance",
+    "name": "Chain Mail, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-radiant-resistance",
+    "name": "Chain Shirt, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-radiant-resistance",
+    "name": "Half Plate Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-radiant-resistance",
+    "name": "Hide Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-radiant-resistance",
+    "name": "Leather Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-radiant-resistance",
+    "name": "Padded Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-radiant-resistance",
+    "name": "Plate Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-radiant-resistance",
+    "name": "Ring Mail, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-radiant-resistance",
+    "name": "Scale Mail, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-radiant-resistance",
+    "name": "Splint Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-radiant-resistance",
+    "name": "Studded Leather Armor, Armor of Radiant Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-thunder-resistance",
+    "name": "Breastplate, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-thunder-resistance",
+    "name": "Chain Mail, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-thunder-resistance",
+    "name": "Chain Shirt, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-thunder-resistance",
+    "name": "Half Plate Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-thunder-resistance",
+    "name": "Hide Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-thunder-resistance",
+    "name": "Leather Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-thunder-resistance",
+    "name": "Padded Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-thunder-resistance",
+    "name": "Plate Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-thunder-resistance",
+    "name": "Ring Mail, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-thunder-resistance",
+    "name": "Scale Mail, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-thunder-resistance",
+    "name": "Splint Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-thunder-resistance",
+    "name": "Studded Leather Armor, Armor of Thunder Resistance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "{#itemEntry Armor of Resistance|XDMG}",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-vulnerability-bludgeoning",
+    "name": "Breastplate, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-vulnerability-bludgeoning",
+    "name": "Chain Mail, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-vulnerability-bludgeoning",
+    "name": "Chain Shirt, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Half Plate Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Hide Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Leather Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Padded Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Plate Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-vulnerability-bludgeoning",
+    "name": "Ring Mail, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-vulnerability-bludgeoning",
+    "name": "Scale Mail, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Splint Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-vulnerability-bludgeoning",
+    "name": "Studded Leather Armor, Armor of Vulnerability (Bludgeoning)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage.",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-vulnerability-piercing",
+    "name": "Breastplate, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-vulnerability-piercing",
+    "name": "Chain Mail, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-vulnerability-piercing",
+    "name": "Chain Shirt, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-vulnerability-piercing",
+    "name": "Half Plate Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-vulnerability-piercing",
+    "name": "Hide Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-vulnerability-piercing",
+    "name": "Leather Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-vulnerability-piercing",
+    "name": "Padded Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-vulnerability-piercing",
+    "name": "Plate Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-vulnerability-piercing",
+    "name": "Ring Mail, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-vulnerability-piercing",
+    "name": "Scale Mail, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-vulnerability-piercing",
+    "name": "Splint Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-vulnerability-piercing",
+    "name": "Studded Leather Armor, Armor of Vulnerability (Piercing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage.",
+    "weight": 13
+  },
+  {
+    "slug": "breastplate-armor-of-vulnerability-slashing",
+    "name": "Breastplate, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 20
+  },
+  {
+    "slug": "chain-mail-armor-of-vulnerability-slashing",
+    "name": "Chain Mail, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 55
+  },
+  {
+    "slug": "chain-shirt-armor-of-vulnerability-slashing",
+    "name": "Chain Shirt, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 20
+  },
+  {
+    "slug": "half-plate-armor-armor-of-vulnerability-slashing",
+    "name": "Half Plate Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 40
+  },
+  {
+    "slug": "hide-armor-armor-of-vulnerability-slashing",
+    "name": "Hide Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 12
+  },
+  {
+    "slug": "leather-armor-armor-of-vulnerability-slashing",
+    "name": "Leather Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 10
+  },
+  {
+    "slug": "padded-armor-armor-of-vulnerability-slashing",
+    "name": "Padded Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Padded Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 8
+  },
+  {
+    "slug": "plate-armor-armor-of-vulnerability-slashing",
+    "name": "Plate Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 65
+  },
+  {
+    "slug": "ring-mail-armor-of-vulnerability-slashing",
+    "name": "Ring Mail, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 40
+  },
+  {
+    "slug": "scale-mail-armor-of-vulnerability-slashing",
+    "name": "Scale Mail, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 45
+  },
+  {
+    "slug": "splint-armor-armor-of-vulnerability-slashing",
+    "name": "Splint Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 60
+  },
+  {
+    "slug": "studded-leather-armor-armor-of-vulnerability-slashing",
+    "name": "Studded Leather Armor, Armor of Vulnerability (Slashing)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Armor/Studded Leather Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage.",
+    "weight": 13
+  },
+  {
+    "slug": "dragon-slayer-battleaxe",
+    "name": "Dragon Slayer Battleaxe",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Battleaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 4
+  },
+  {
+    "slug": "dragon-slayer-blowgun",
+    "name": "Dragon Slayer Blowgun",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Blowgun]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 1
+  },
+  {
+    "slug": "dragon-slayer-club",
+    "name": "Dragon Slayer Club",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Club]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-dagger",
+    "name": "Dragon Slayer Dagger",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Dagger]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 1
+  },
+  {
+    "slug": "dragon-slayer-dart",
+    "name": "Dragon Slayer Dart",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Dart]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 0.25
+  },
+  {
+    "slug": "dragon-slayer-flail",
+    "name": "Dragon Slayer Flail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Flail]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-glaive",
+    "name": "Dragon Slayer Glaive",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 6
+  },
+  {
+    "slug": "dragon-slayer-greataxe",
+    "name": "Dragon Slayer Greataxe",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Greataxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 7
+  },
+  {
+    "slug": "dragon-slayer-greatclub",
+    "name": "Dragon Slayer Greatclub",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Greatclub]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 10
+  },
+  {
+    "slug": "dragon-slayer-greatsword",
+    "name": "Dragon Slayer Greatsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 6
+  },
+  {
+    "slug": "dragon-slayer-halberd",
+    "name": "Dragon Slayer Halberd",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Halberd]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 6
+  },
+  {
+    "slug": "dragon-slayer-hand-crossbow",
+    "name": "Dragon Slayer Hand Crossbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Hand Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 3
+  },
+  {
+    "slug": "dragon-slayer-handaxe",
+    "name": "Dragon Slayer Handaxe",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Handaxe]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-heavy-crossbow",
+    "name": "Dragon Slayer Heavy Crossbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Heavy Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 18
+  },
+  {
+    "slug": "dragon-slayer-javelin",
+    "name": "Dragon Slayer Javelin",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Javelin]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-lance",
+    "name": "Dragon Slayer Lance",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Lance]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 6
+  },
+  {
+    "slug": "dragon-slayer-light-crossbow",
+    "name": "Dragon Slayer Light Crossbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Light Crossbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 5
+  },
+  {
+    "slug": "dragon-slayer-light-hammer",
+    "name": "Dragon Slayer Light Hammer",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Light Hammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-longbow",
+    "name": "Dragon Slayer Longbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-longsword",
+    "name": "Dragon Slayer Longsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 3
+  },
+  {
+    "slug": "dragon-slayer-mace",
+    "name": "Dragon Slayer Mace",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Mace]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 4
+  },
+  {
+    "slug": "dragon-slayer-maul",
+    "name": "Dragon Slayer Maul",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Maul]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 10
+  },
+  {
+    "slug": "dragon-slayer-morningstar",
+    "name": "Dragon Slayer Morningstar",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Morningstar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 4
+  },
+  {
+    "slug": "dragon-slayer-musket",
+    "name": "Dragon Slayer Musket",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Musket]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 10
+  },
+  {
+    "slug": "dragon-slayer-pike",
+    "name": "Dragon Slayer Pike",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Pike]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 18
+  },
+  {
+    "slug": "dragon-slayer-pistol",
+    "name": "Dragon Slayer Pistol",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Pistol]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 3
+  },
+  {
+    "slug": "dragon-slayer-quarterstaff",
+    "name": "Dragon Slayer Quarterstaff",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Quarterstaff]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 4
+  },
+  {
+    "slug": "dragon-slayer-rapier",
+    "name": "Dragon Slayer Rapier",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-scimitar",
+    "name": "Dragon Slayer Scimitar",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 3
+  },
+  {
+    "slug": "dragon-slayer-shortbow",
+    "name": "Dragon Slayer Shortbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-shortsword",
+    "name": "Dragon Slayer Shortsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-sickle",
+    "name": "Dragon Slayer Sickle",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-sling",
+    "name": "Dragon Slayer Sling",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Sling]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon."
+  },
+  {
+    "slug": "dragon-slayer-spear",
+    "name": "Dragon Slayer Spear",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Spear]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 3
+  },
+  {
+    "slug": "dragon-slayer-trident",
+    "name": "Dragon Slayer Trident",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Trident]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 4
+  },
+  {
+    "slug": "dragon-slayer-war-pick",
+    "name": "Dragon Slayer War Pick",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/War Pick]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 2
+  },
+  {
+    "slug": "dragon-slayer-warhammer",
+    "name": "Dragon Slayer Warhammer",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Warhammer]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 5
+  },
+  {
+    "slug": "dragon-slayer-whip",
+    "name": "Dragon Slayer Whip",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Whip]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra {@damage 3d6} damage of the weapon's type if the target is a Dragon.",
+    "weight": 3
+  },
+  {
+    "slug": "dwarven-half-plate-armor",
+    "name": "Dwarven Half Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "bonuses": {
+      "ac": 2
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "While wearing this armor, you gain a +2 bonus to {@variantrule Armor Class|XPHB}. In addition, if an effect moves you against your will along the ground, you can take a {@variantrule Reaction|XPHB} to reduce the distance you are moved by up to 10 feet.",
+    "weight": 40
+  },
+  {
+    "slug": "dwarven-plate-armor",
+    "name": "Dwarven Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "bonuses": {
+      "ac": 2
+    },
+    "attunement": {
+      "required": false
+    },
+    "description": "While wearing this armor, you gain a +2 bonus to {@variantrule Armor Class|XPHB}. In addition, if an effect moves you against your will along the ground, you can take a {@variantrule Reaction|XPHB} to reduce the distance you are moved by up to 10 feet.",
+    "weight": 65
+  },
+  {
+    "slug": "energy-longbow",
+    "name": "Energy Longbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon, which has no string. Each time you pull your arm back in a firing motion, a magical arrow made of golden energy appears nocked and ready to fire. An arrow produced by this weapon deals Force damage instead of Piercing damage on a hit, and it disappears after it hits or misses its target. Until it disappears, the arrow emits {@variantrule Bright Light|XPHB} in a 20-foot radius and {@variantrule Dim Light|XPHB} for an additional 20 feet.\n\nThis weapon has the following additional properties.",
+    "weight": 2
+  },
+  {
+    "slug": "energy-shortbow",
+    "name": "Energy Shortbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon, which has no string. Each time you pull your arm back in a firing motion, a magical arrow made of golden energy appears nocked and ready to fire. An arrow produced by this weapon deals Force damage instead of Piercing damage on a hit, and it disappears after it hits or misses its target. Until it disappears, the arrow emits {@variantrule Bright Light|XPHB} in a 20-foot radius and {@variantrule Dim Light|XPHB} for an additional 20 feet.\n\nThis weapon has the following additional properties.",
+    "weight": 2
+  },
+  {
+    "slug": "luck-glaive",
+    "name": "Luck Glaive",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 6
+  },
+  {
+    "slug": "luck-greatsword",
+    "name": "Luck Greatsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 6
+  },
+  {
+    "slug": "luck-longsword",
+    "name": "Luck Longsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 3
+  },
+  {
+    "slug": "luck-rapier",
+    "name": "Luck Rapier",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 2
+  },
+  {
+    "slug": "luck-scimitar",
+    "name": "Luck Scimitar",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 3
+  },
+  {
+    "slug": "luck-shortsword",
+    "name": "Luck Shortsword",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 2
+  },
+  {
+    "slug": "luck-sickle",
+    "name": "Luck Sickle",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Weapons/Sickle]]",
+    "bonuses": {
+      "weapon_attack": 1,
+      "weapon_damage": 1
+    },
+    "attunement": {
+      "required": true
+    },
+    "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.",
+    "weight": 2
+  },
+  {
+    "slug": "mithral-breastplate",
+    "name": "Mithral Breastplate",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Breastplate]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 20
+  },
+  {
+    "slug": "mithral-chain-mail",
+    "name": "Mithral Chain Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Chain Mail]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 55
+  },
+  {
+    "slug": "mithral-chain-shirt",
+    "name": "Mithral Chain Shirt",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Chain Shirt]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 20
+  },
+  {
+    "slug": "mithral-half-plate-armor",
+    "name": "Mithral Half Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 40
+  },
+  {
+    "slug": "mithral-hide-armor",
+    "name": "Mithral Hide Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Hide Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 12
+  },
+  {
+    "slug": "mithral-plate-armor",
+    "name": "Mithral Plate Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 65
+  },
+  {
+    "slug": "mithral-ring-mail",
+    "name": "Mithral Ring Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Ring Mail]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 40
+  },
+  {
+    "slug": "mithral-scale-mail",
+    "name": "Mithral Scale Mail",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Scale Mail]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 45
+  },
+  {
+    "slug": "mithral-splint-armor",
+    "name": "Mithral Splint Armor",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "uncommon",
+    "base_item": "[[SRD 2024/Armor/Splint Armor]]",
+    "attunement": {
+      "required": false
+    },
+    "description": "Mithral is a light, flexible metal. A mithral chain shirt or breastplate can be worn under normal clothes.\n\nIf the armor normally imposes disadvantage on Dexterity ({@skill Stealth|XPHB}) checks or has a Strength requirement, the mithral version of the armor doesn't.",
+    "weight": 60
+  },
+  {
+    "slug": "oath-longbow",
+    "name": "Oath Longbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Longbow]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you nock an arrow on this bow, it whispers in Elvish, \"Swift defeat to my enemies.\" When you use this weapon to make a ranged attack, you can utter or sign the following command words: \"Swift death to you who have wronged me.\" The target of your attack becomes your sworn enemy until it dies or until dawn 7 days later. You can have only one such sworn enemy at a time. When your sworn enemy dies, you can choose a new one after the next dawn.\n\nWhen you make a ranged attack roll with this weapon against your sworn enemy, you have {@variantrule Advantage|XPHB} on the roll. In addition, your target gains no benefit from {@variantrule Cover|XPHB|Half Cover} or {@variantrule Cover|XPHB|Three-Quarters Cover}, and you suffer no {@variantrule Disadvantage|XPHB} due to long range. If the attack hits, your sworn enemy takes an extra {@damage 3d6} Piercing damage.\n\nWhile your sworn enemy lives, you have {@variantrule Disadvantage|XPHB} on attack rolls with all other weapons.",
+    "weight": 2
+  },
+  {
+    "slug": "oath-shortbow",
+    "name": "Oath Shortbow",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Shortbow]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you nock an arrow on this bow, it whispers in Elvish, \"Swift defeat to my enemies.\" When you use this weapon to make a ranged attack, you can utter or sign the following command words: \"Swift death to you who have wronged me.\" The target of your attack becomes your sworn enemy until it dies or until dawn 7 days later. You can have only one such sworn enemy at a time. When your sworn enemy dies, you can choose a new one after the next dawn.\n\nWhen you make a ranged attack roll with this weapon against your sworn enemy, you have {@variantrule Advantage|XPHB} on the roll. In addition, your target gains no benefit from {@variantrule Cover|XPHB|Half Cover} or {@variantrule Cover|XPHB|Three-Quarters Cover}, and you suffer no {@variantrule Disadvantage|XPHB} due to long range. If the attack hits, your sworn enemy takes an extra {@damage 3d6} Piercing damage.\n\nWhile your sworn enemy lives, you have {@variantrule Disadvantage|XPHB} on attack rolls with all other weapons.",
+    "weight": 2
+  },
+  {
+    "slug": "half-plate-armor-plate-armor-of-etherealness",
+    "name": "Half Plate Armor, Plate Armor of Etherealness (*)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Armor/Half Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While you're wearing this armor, you can take a {@action Magic|XPHB} action and use a command word to gain the effect of the {@spell Etherealness|XPHB} spell. The spell ends immediately if you remove the armor or take a {@action Magic|XPHB} action to repeat the command word. This property of the armor can't be used again until the next dawn.",
+    "weight": 40
+  },
+  {
+    "slug": "plate-armor-plate-armor-of-etherealness",
+    "name": "Plate Armor, Plate Armor of Etherealness (*)",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "armor",
+    "rarity": "legendary",
+    "base_item": "[[SRD 2024/Armor/Plate Armor]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "While you're wearing this armor, you can take a {@action Magic|XPHB} action and use a command word to gain the effect of the {@spell Etherealness|XPHB} spell. The spell ends immediately if you remove the armor or take a {@action Magic|XPHB} action to repeat the command word. This property of the armor can't be used again until the next dawn.",
+    "weight": 65
+  },
+  {
+    "slug": "glaive-sword-of-life-stealing",
+    "name": "Glaive, Sword of Life Stealing",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack a creature with this magic weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 15 Necrotic damage if it isn't a Construct or an Undead, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the amount of Necrotic damage taken.",
+    "weight": 6
+  },
+  {
+    "slug": "greatsword-sword-of-life-stealing",
+    "name": "Greatsword, Sword of Life Stealing",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack a creature with this magic weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 15 Necrotic damage if it isn't a Construct or an Undead, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the amount of Necrotic damage taken.",
+    "weight": 6
+  },
+  {
+    "slug": "longsword-sword-of-life-stealing",
+    "name": "Longsword, Sword of Life Stealing",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack a creature with this magic weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 15 Necrotic damage if it isn't a Construct or an Undead, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the amount of Necrotic damage taken.",
+    "weight": 3
+  },
+  {
+    "slug": "rapier-sword-of-life-stealing",
+    "name": "Rapier, Sword of Life Stealing",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack a creature with this magic weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 15 Necrotic damage if it isn't a Construct or an Undead, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the amount of Necrotic damage taken.",
+    "weight": 2
+  },
+  {
+    "slug": "scimitar-sword-of-life-stealing",
+    "name": "Scimitar, Sword of Life Stealing",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack a creature with this magic weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 15 Necrotic damage if it isn't a Construct or an Undead, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the amount of Necrotic damage taken.",
+    "weight": 3
+  },
+  {
+    "slug": "shortsword-sword-of-life-stealing",
+    "name": "Shortsword, Sword of Life Stealing",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack a creature with this magic weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 15 Necrotic damage if it isn't a Construct or an Undead, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the amount of Necrotic damage taken.",
+    "weight": 2
+  },
+  {
+    "slug": "glaive-sword-of-sharpness",
+    "name": "Glaive, Sword of Sharpness",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack an object with this magic weapon and hit, maximize your weapon damage dice against the target.\n\nWhen you attack a creature with this weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 14 Slashing damage and gains 1 {@condition Exhaustion|XPHB} level.",
+    "weight": 6
+  },
+  {
+    "slug": "greatsword-sword-of-sharpness",
+    "name": "Greatsword, Sword of Sharpness",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack an object with this magic weapon and hit, maximize your weapon damage dice against the target.\n\nWhen you attack a creature with this weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 14 Slashing damage and gains 1 {@condition Exhaustion|XPHB} level.",
+    "weight": 6
+  },
+  {
+    "slug": "longsword-sword-of-sharpness",
+    "name": "Longsword, Sword of Sharpness",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack an object with this magic weapon and hit, maximize your weapon damage dice against the target.\n\nWhen you attack a creature with this weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 14 Slashing damage and gains 1 {@condition Exhaustion|XPHB} level.",
+    "weight": 3
+  },
+  {
+    "slug": "scimitar-sword-of-sharpness",
+    "name": "Scimitar, Sword of Sharpness",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "very rare",
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you attack an object with this magic weapon and hit, maximize your weapon damage dice against the target.\n\nWhen you attack a creature with this weapon and roll a 20 on the {@dice d20} for the attack roll, that target takes an extra 14 Slashing damage and gains 1 {@condition Exhaustion|XPHB} level.",
+    "weight": 3
+  },
+  {
+    "slug": "glaive-sword-of-wounding",
+    "name": "Glaive, Sword of Wounding",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Glaive]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you hit a creature with an attack using this magic weapon, the target takes an extra {@damage 2d6} Necrotic damage and must succeed on a {@dc 15} Constitution saving throw or be unable to regain {@variantrule Hit Points|XPHB} for 1 hour. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.",
+    "weight": 6
+  },
+  {
+    "slug": "greatsword-sword-of-wounding",
+    "name": "Greatsword, Sword of Wounding",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Greatsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you hit a creature with an attack using this magic weapon, the target takes an extra {@damage 2d6} Necrotic damage and must succeed on a {@dc 15} Constitution saving throw or be unable to regain {@variantrule Hit Points|XPHB} for 1 hour. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.",
+    "weight": 6
+  },
+  {
+    "slug": "longsword-sword-of-wounding",
+    "name": "Longsword, Sword of Wounding",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Longsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you hit a creature with an attack using this magic weapon, the target takes an extra {@damage 2d6} Necrotic damage and must succeed on a {@dc 15} Constitution saving throw or be unable to regain {@variantrule Hit Points|XPHB} for 1 hour. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.",
+    "weight": 3
+  },
+  {
+    "slug": "rapier-sword-of-wounding",
+    "name": "Rapier, Sword of Wounding",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Rapier]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you hit a creature with an attack using this magic weapon, the target takes an extra {@damage 2d6} Necrotic damage and must succeed on a {@dc 15} Constitution saving throw or be unable to regain {@variantrule Hit Points|XPHB} for 1 hour. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.",
+    "weight": 2
+  },
+  {
+    "slug": "scimitar-sword-of-wounding",
+    "name": "Scimitar, Sword of Wounding",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Scimitar]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you hit a creature with an attack using this magic weapon, the target takes an extra {@damage 2d6} Necrotic damage and must succeed on a {@dc 15} Constitution saving throw or be unable to regain {@variantrule Hit Points|XPHB} for 1 hour. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.",
+    "weight": 3
+  },
+  {
+    "slug": "shortsword-sword-of-wounding",
+    "name": "Shortsword, Sword of Wounding",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "type": "weapon",
+    "rarity": "rare",
+    "base_item": "[[SRD 2024/Weapons/Shortsword]]",
+    "attunement": {
+      "required": true
+    },
+    "description": "When you hit a creature with an attack using this magic weapon, the target takes an extra {@damage 2d6} Necrotic damage and must succeed on a {@dc 15} Constitution saving throw or be unable to regain {@variantrule Hit Points|XPHB} for 1 hour. The target repeats the save at the end of each of its turns, ending the effect on itself on a success.",
+    "weight": 2
+  }
+]

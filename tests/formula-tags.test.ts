@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { detectFormula, resolveFormulaTag } from "../src/dnd/formula-tags";
-import type { MonsterAbilities } from "../src/types/monster";
+import { detectFormula, resolveFormulaTag } from "../src/shared/dnd/formula-tags";
+import type { Abilities } from "../src/shared/types/abilities";
 
 describe("detectFormula", () => {
   it("detects ability name in atk tag", () => {
@@ -23,10 +23,10 @@ describe("detectFormula", () => {
 });
 
 describe("resolveFormulaTag", () => {
-  const abilities: MonsterAbilities = { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 };
+  const abilities: Abilities = { str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8 };
   const profBonus = 2;
-  it("resolves atk:DEX -> +4", () => { expect(resolveFormulaTag("atk", "DEX", abilities, profBonus)).toBe("+4"); });
-  it("resolves atk:STR -> +1", () => { expect(resolveFormulaTag("atk", "STR", abilities, profBonus)).toBe("+1"); });
+  it("resolves atk:DEX+PB -> +4 (proficient)", () => { expect(resolveFormulaTag("atk", "DEX+PB", abilities, profBonus)).toBe("+4"); });
+  it("resolves atk:STR+PB -> +1 (proficient)", () => { expect(resolveFormulaTag("atk", "STR+PB", abilities, profBonus)).toBe("+1"); });
   it("resolves damage:1d6+DEX -> 1d6+2", () => { expect(resolveFormulaTag("damage", "1d6+DEX", abilities, profBonus)).toBe("1d6+2"); });
   it("resolves damage:2d10+STR -> 2d10-1", () => { expect(resolveFormulaTag("damage", "2d10+STR", abilities, profBonus)).toBe("2d10-1"); });
   it("resolves dc:WIS -> DC 9", () => { expect(resolveFormulaTag("dc", "WIS", abilities, profBonus)).toBe("DC 9"); });

@@ -1,0 +1,604 @@
+[
+  {
+    "slug": "srd-5e_champion",
+    "name": "Champion",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Fighter]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "improved-critical",
+          "name": "Improved Critical",
+          "description": "Beginning when you choose this archetype at 3rd level, your weapon attacks score a critical hit on a roll of 19 or 20."
+        }
+      ],
+      "7": [
+        {
+          "id": "remarkable-athlete",
+          "name": "Remarkable Athlete",
+          "description": "Starting at 7th level, you can add half your proficiency bonus (round up) to any Strength, Dexterity, or Constitution check you make that doesn't already use your proficiency bonus.\r\n\r\nIn addition, when you make a running long jump, the distance you can cover increases by a number of feet equal to your Strength modifier."
+        }
+      ],
+      "10": [
+        {
+          "id": "additional-fighting-style",
+          "name": "Additional Fighting Style",
+          "description": "At 10th level, you can choose a second option from the Fighting Style class feature."
+        }
+      ],
+      "15": [
+        {
+          "id": "superior-critical",
+          "name": "Superior Critical",
+          "description": "Starting at 15th level, your weapon attacks score a critical hit on a roll of 18-20."
+        }
+      ],
+      "18": [
+        {
+          "id": "survivor",
+          "name": "Survivor",
+          "description": "At 18th level, you attain the pinnacle of resilience in battle. At the start of each of your turns, you regain hit points equal to 5 + your Constitution modifier if you have no more than half of your hit points left. You don't gain this benefit if you have 0 hit points."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_circle-of-the-land",
+    "name": "Circle of the Land",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Druid]]",
+    "features_by_level": {
+      "2": [
+        {
+          "id": "bonus-cantrip",
+          "name": "Bonus Cantrip",
+          "description": "When you choose this circle at 2nd level, you learn one additional druid cantrip of your choice."
+        },
+        {
+          "id": "natural-recovery",
+          "name": "Natural Recovery",
+          "description": "Starting at 2nd level, you can regain some of your magical energy by sitting in meditation and communing with nature. During a short rest, you choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your druid level (rounded up), and none of the slots can be 6th level or higher. You can't use this feature again until you finish a long rest.\r\n\r\nFor example, when you are a 4th-level druid, you can recover up to two levels worth of spell slots. You can recover either a 2nd-level slot or two 1st-level slots."
+        }
+      ],
+      "3": [
+        {
+          "id": "circle-spells",
+          "name": "Circle Spells",
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+        }
+      ],
+      "5": [
+        {
+          "id": "circle-spells",
+          "name": "Circle Spells",
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+        }
+      ],
+      "6": [
+        {
+          "id": "lands-stride",
+          "name": "Land's Stride",
+          "description": "Starting at 6th level, moving through nonmagical difficult terrain costs you no extra movement. You can also pass through nonmagical plants without being slowed by them and without taking damage from them if they have thorns, spines, or a similar hazard.\r\n\r\nIn addition, you have advantage on saving throws against plants that are magically created or manipulated to impede movement, such those created by the entangle spell."
+        }
+      ],
+      "7": [
+        {
+          "id": "circle-spells",
+          "name": "Circle Spells",
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+        }
+      ],
+      "9": [
+        {
+          "id": "circle-spells",
+          "name": "Circle Spells",
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+        }
+      ],
+      "10": [
+        {
+          "id": "natures-ward",
+          "name": "Nature's Ward",
+          "description": "When you reach 10th level, you can't be charmed or frightened by elementals or fey, and you are immune to poison and disease."
+        }
+      ],
+      "14": [
+        {
+          "id": "natures-sanctuary",
+          "name": "Nature's Sanctuary",
+          "description": "When you reach 14th level, creatures of the natural world sense your connection to nature and become hesitant to attack you. When a beast or plant creature attacks you, that creature must make a Wisdom saving throw against your druid spell save DC. On a failed save, the creature must choose a different target, or the attack automatically misses. On a successful save, the creature is immune to this effect for 24 hours.\r\n\r\nThe creature is aware of this effect before it makes its attack against you."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_college-of-lore",
+    "name": "College of Lore",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Bard]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "bonus-proficiencies",
+          "name": "Bonus Proficiencies",
+          "description": "When you join the College of Lore at 3rd level, you gain proficiency with three skills of your choice."
+        },
+        {
+          "id": "cutting-words",
+          "name": "Cutting Words",
+          "description": "Also at 3rd level, you learn how to use your wit to distract, confuse, and otherwise sap the confidence and competence of others. When a creature that you can see within 60 feet of you makes an attack roll, an ability check, or a damage roll, you can use your reaction to expend one of your uses of Bardic Inspiration, rolling a Bardic Inspiration die and subtracting the number rolled from the creature's roll. You can choose to use this feature after the creature makes its roll, but before the GM determines whether the attack roll or ability check succeeds or fails, or before the creature deals its damage. The creature is immune if it can't hear you or if it's immune to being charmed."
+        }
+      ],
+      "6": [
+        {
+          "id": "additional-magical-secrets",
+          "name": "Additional Magical Secrets",
+          "description": "At 6th level, you learn two spells of your choice from any class. A spell you choose must be of a level you can cast, as shown on the Bard table, or a cantrip. The chosen spells count as bard spells for you but don't count against the number of bard spells you know."
+        }
+      ],
+      "14": [
+        {
+          "id": "peerless-skill",
+          "name": "Peerless Skill",
+          "description": "Starting at 14th level, when you make an ability check, you can expend one use of Bardic Inspiration. Roll a Bardic Inspiration die and add the number rolled to your ability check. You can choose to do so after you roll the die for the ability check, but before the GM tells you whether you succeed or fail."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_draconic-bloodline",
+    "name": "Draconic Bloodline",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Sorcerer]]",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "draconic-resilience",
+          "name": "Draconic Resilience",
+          "description": "As magic flows through your body, it causes physical traits of your dragon ancestors to emerge. At 1st level, your hit point maximum increases by 1 and increases by 1 again whenever you gain a level in this class.\r\n\r\nAdditionally, parts of your skin are covered by a thin sheen of dragon-like scales. When you aren't wearing armor, your AC equals 13 + your Dexterity modifier."
+        },
+        {
+          "id": "dragon-ancestor",
+          "name": "Dragon Ancestor",
+          "description": "At 1st level, you choose one type of dragon as your ancestor. The damage type associated with each dragon is used by features you gain later.\r\n\r\n### Draconic Ancestry (table)\r\n| Dragon | Damage Type |\r\n| --- | --- |\r\n| Black | Acid |\r\n| Blue | Lightning |\r\n| Brass | Fire |\r\n| Bronze | Lightning |\r\n| Copper | Acid |\r\n| Gold | Fire |\r\n| Green | Poison |\r\n| Red | Fire |\r\n| Silver | Cold |\r\n| White | Cold |\r\n\r\nYou can speak, read, and write Draconic. Additionally, whenever you make a Charisma check when interacting with dragons, your proficiency bonus is doubled if it applies to the check."
+        }
+      ],
+      "6": [
+        {
+          "id": "elemental-affinity",
+          "name": "Elemental Affinity",
+          "description": "Starting at 6th level, when you cast a spell that deals damage of the type associated with your draconic ancestry, you can add your Charisma modifier to one damage roll of that spell. At the same time, you can spend 1 sorcery point to gain resistance to that damage type for 1 hour."
+        }
+      ],
+      "14": [
+        {
+          "id": "dragon-wings",
+          "name": "Dragon Wings",
+          "description": "At 14th level, you gain the ability to sprout a pair of dragon wings from your back, gaining a flying speed equal to your current speed. You can create these wings as a bonus action on your turn. They last until you dismiss them as a bonus action on your turn.\r\n\r\nYou can't manifest your wings while wearing armor unless the armor is made to accommodate them, and clothing not made to accommodate your wings might be destroyed when you manifest them."
+        }
+      ],
+      "18": [
+        {
+          "id": "draconic-presence",
+          "name": "Draconic Presence",
+          "description": "Beginning at 18th level, you can channel the dread presence of your dragon ancestor, causing those around you to become awestruck or frightened. As an action, you can spend 5 sorcery points to draw on this power and exude an aura of awe or fear (your choice) to a distance of 60 feet. For 1 minute or until you lose your concentration (as if you were casting a concentration spell), each hostile creature that starts its turn in this aura must succeed on a Wisdom saving throw or be charmed (if you chose awe) or frightened (if you chose fear) until the aura ends. A creature that succeeds on this saving throw is immune to your aura for 24 hours."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_hunter",
+    "name": "Hunter",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Ranger]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "hunters-prey",
+          "name": "Hunter's Prey",
+          "description": "At 3rd level, you gain one of the following features of your choice.\r\n\r\n***Colossus Slayer.*** Your tenacity can wear down the most potent foes. When you hit a creature with a weapon attack, the creature takes an extra 1d8 damage if it's below its hit point maximum. You can deal this extra damage only once per turn.\r\n\r\n***Giant Killer.*** When a Large or larger creature within 5 feet of you hits or misses you with an attack, you can use your reaction to attack that creature immediately after its attack, provided that you can see the creature.\r\n\r\n***Horde Breaker.*** Once on each of your turns when you make a weapon attack, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target and within range of your weapon."
+        }
+      ],
+      "7": [
+        {
+          "id": "defensive-tactics",
+          "name": "Defensive Tactics",
+          "description": "At 7th level, you gain one of the following features of your choice.\r\n\r\n***Escape the Horde.*** Opportunity attacks against you are made with disadvantage.\r\n\r\n***Multiattack Defense.*** When a creature hits you with an attack, you gain a +4 bonus to AC against all subsequent attacks made by that creature for the rest of the turn.\r\n\r\n***Steel Will.*** You have advantage on saving throws against being frightened."
+        }
+      ],
+      "11": [
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "description": "At 11th level, you gain one of the following features of your choice.\r\n\r\n***Volley.*** You can use your action to make a ranged attack against any number of creatures within 10 feet of a point you can see within your weapon's range. You must have ammunition for each target, as normal, and you make a separate attack roll for each target.\r\n\r\n***Whirlwind Attack.*** You can use your action to make a melee attack against any number of creatures within 5 feet of you, with a separate attack roll for each target."
+        }
+      ],
+      "15": [
+        {
+          "id": "superior-hunters-defense",
+          "name": "Superior Hunter's Defense",
+          "description": "At 15th level, you gain one of the following features of your choice.\r\n\r\n***Evasion.*** When you are subjected to an effect, such as a red dragon's fiery breath or a lightning bolt spell, that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw, and only half damage if you fail.\r\n\r\n***Stand Against the Tide.*** When a hostile creature misses you with a melee attack, you can use your reaction to force that creature to repeat the same attack against another creature (other than itself) of your choice.\r\n\r\n***Uncanny Dodge.*** When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_life-domain",
+    "name": "Life Domain",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Cleric]]",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "bonus-proficiency",
+          "name": "Bonus Proficiency",
+          "description": "When you choose this domain at 1st level, you gain proficiency with heavy armor."
+        },
+        {
+          "id": "disciple-of-life",
+          "name": "Disciple of Life",
+          "description": "Also starting at 1st level, your healing spells are more effective. Whenever you use a spell of 1st level or higher to restore hit points to a creature, the creature regains additional hit points equal to 2 + the spell's level."
+        },
+        {
+          "id": "life-domain-spells-table",
+          "name": "Life Domain Spells (table)",
+          "description": "Cleric Level | Spells |\r\n|---|---|\r\n| 1st | bless, cure wounds | \r\n| 3rd | lesser restoration, spiritual weapon |\r\n| 5th | beacon of hope, revivify |\r\n| 7th | death ward, guardian of faith |\r\n| 9th | mass cure wounds, raise dead |"
+        }
+      ],
+      "2": [
+        {
+          "id": "channel-divinity-preserve-life",
+          "name": "Channel Divinity: Preserve Life",
+          "description": "Starting at 2nd level, you can use your Channel Divinity to heal the badly injured.\r\n\r\nAs an action, you present your holy symbol and evoke healing energy that can restore a number of hit points equal to five times your cleric level. Choose any creatures within 30 feet of you, and divide those hit points among them. This feature can restore a creature to no more than half of its hit point maximum. You can't use this feature on an undead or a construct."
+        }
+      ],
+      "6": [
+        {
+          "id": "blessed-healer",
+          "name": "Blessed Healer",
+          "description": "Beginning at 6th level, the healing spells you cast on others heal you as well. When you cast a spell of 1st level or higher that restores hit points to a creature other than you, you regain hit points equal to 2 + the spell's level."
+        }
+      ],
+      "8": [
+        {
+          "id": "divine-strike",
+          "name": "Divine Strike",
+          "description": "At 8th level, you gain the ability to infuse your weapon strikes with divine energy. Once on each of your turns when you hit a creature with a weapon attack, you can cause the attack to deal an extra 1d8 radiant damage to the target. When you reach 14th level, the extra damage increases to 2d8."
+        }
+      ],
+      "17": [
+        {
+          "id": "supreme-healing",
+          "name": "Supreme Healing",
+          "description": "Starting at 17th level, when you would normally roll one or more dice to restore hit points with a spell, you instead use the highest number possible for each die. For example, instead of restoring 2d6 hit points to a creature, you restore 12."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_oath-of-devotion",
+    "name": "Oath of Devotion",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Paladin]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "channel-divinity",
+          "name": "Channel Divinity",
+          "description": "When you take this oath at 3rd level, you gain the following two Channel Divinity options.\r\n\r\n**Sacred Weapon.** As an action, you can imbue one weapon that you are holding with positive energy, using your Channel Divinity. For 1 minute, you add your Charisma modifier to attack rolls made with that weapon (with a minimum bonus of +1). The weapon also emits bright light in a 20-foot radius and dim light 20 feet beyond that. If the weapon is not already magical, it becomes magical for the duration.\r\n\r\nYou can end this effect on your turn as part of any other action. If you are no longer holding or carrying this weapon, or if you fall unconscious, this effect ends.\r\n\r\n**Turn the Unholy.** As an action, you present your holy symbol and speak a prayer censuring fiends and undead, using your Channel Divinity. Each fiend or undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes damage.\r\n\r\nA turned creature must spend its turns trying to move as far away from you as it can, and it can't willingly move to a space within 30 feet of you. It also can't take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there's nowhere to move, the creature can use the Dodge action.",
+          "uses": {
+            "max": 1,
+            "recharge": "short-rest",
+            "scales_at": [
+              {
+                "level": 6,
+                "max": 2
+              },
+              {
+                "level": 18,
+                "max": 3
+              }
+            ]
+          }
+        },
+        {
+          "id": "oath-spells",
+          "name": "Oath Spells",
+          "description": "You gain oath spells at the paladin levels listed.\r\n\r\n### Oath of Devotion Spells\r\n| Paladin Level | Spells |\r\n| --- | --- |\r\n| 3rd | protection from evil and good, sanctuary |\r\n| 5th | lesser restoration, zone of truth |\r\n| 9th | beacon of hope, dispel magic |\r\n| 13th | freedom of movement, guardian of faith |\r\n| 17th | commune, flame strike |"
+        },
+        {
+          "id": "tenets-of-devotion",
+          "name": "Tenets of Devotion",
+          "description": "Though the exact words and strictures of the Oath of Devotion vary, paladins of this oath share these tenets.\r\n\r\n*Honesty.* Don't lie or cheat. Let your word be your promise.\r\n\r\n*Courage.* Never fear to act, though caution is wise.\r\n\r\n*Compassion.* Aid others, protect the weak, and punish those who threaten them. Show mercy to your foes, but temper it with wisdom.\r\n\r\n*Honor.* Treat others with fairness, and let your honorable deeds be an example to them. Do as much good as possible while causing the least amount of harm.\r\n\r\n*Duty.* Be responsible for your actions and their consequences, protect those entrusted to your care, and obey those who have just authority over you."
+        }
+      ],
+      "5": [
+        {
+          "id": "oath-spells",
+          "name": "Oath Spells",
+          "description": "You gain oath spells at the paladin levels listed.\r\n\r\n### Oath of Devotion Spells\r\n| Paladin Level | Spells |\r\n| --- | --- |\r\n| 3rd | protection from evil and good, sanctuary |\r\n| 5th | lesser restoration, zone of truth |\r\n| 9th | beacon of hope, dispel magic |\r\n| 13th | freedom of movement, guardian of faith |\r\n| 17th | commune, flame strike |"
+        }
+      ],
+      "7": [
+        {
+          "id": "aura-of-devotion",
+          "name": "Aura of Devotion",
+          "description": "Starting at 7th level, you and friendly creatures within 10 feet of you can't be charmed while you are conscious.\r\n\r\nAt 18th level, the range of this aura increases to 30 feet."
+        }
+      ],
+      "9": [
+        {
+          "id": "oath-spells",
+          "name": "Oath Spells",
+          "description": "You gain oath spells at the paladin levels listed.\r\n\r\n### Oath of Devotion Spells\r\n| Paladin Level | Spells |\r\n| --- | --- |\r\n| 3rd | protection from evil and good, sanctuary |\r\n| 5th | lesser restoration, zone of truth |\r\n| 9th | beacon of hope, dispel magic |\r\n| 13th | freedom of movement, guardian of faith |\r\n| 17th | commune, flame strike |"
+        }
+      ],
+      "13": [
+        {
+          "id": "oath-spells",
+          "name": "Oath Spells",
+          "description": "You gain oath spells at the paladin levels listed.\r\n\r\n### Oath of Devotion Spells\r\n| Paladin Level | Spells |\r\n| --- | --- |\r\n| 3rd | protection from evil and good, sanctuary |\r\n| 5th | lesser restoration, zone of truth |\r\n| 9th | beacon of hope, dispel magic |\r\n| 13th | freedom of movement, guardian of faith |\r\n| 17th | commune, flame strike |"
+        }
+      ],
+      "15": [
+        {
+          "id": "purity-of-spirit",
+          "name": "Purity of Spirit",
+          "description": "Beginning at 15th level, you are always under the effects of a *protection from evil and good* spell."
+        }
+      ],
+      "17": [
+        {
+          "id": "oath-spells",
+          "name": "Oath Spells",
+          "description": "You gain oath spells at the paladin levels listed.\r\n\r\n### Oath of Devotion Spells\r\n| Paladin Level | Spells |\r\n| --- | --- |\r\n| 3rd | protection from evil and good, sanctuary |\r\n| 5th | lesser restoration, zone of truth |\r\n| 9th | beacon of hope, dispel magic |\r\n| 13th | freedom of movement, guardian of faith |\r\n| 17th | commune, flame strike |"
+        }
+      ],
+      "18": [
+        {
+          "id": "aura-of-devotion",
+          "name": "Aura of Devotion",
+          "description": "Starting at 7th level, you and friendly creatures within 10 feet of you can't be charmed while you are conscious.\r\n\r\nAt 18th level, the range of this aura increases to 30 feet."
+        }
+      ],
+      "20": [
+        {
+          "id": "holy-nimbus",
+          "name": "Holy Nimbus",
+          "description": "At 20th level, as an action, you can emanate an aura of sunlight. For 1 minute, bright light shines from you in a 30-foot radius, and dim light shines 30 feet beyond that.\r\n\r\nWhenever an enemy creature starts its turn in the bright light, the creature takes 10 radiant damage.\r\n\r\nIn addition, for the duration, you have advantage on saving throws against spells cast by fiends or undead.\r\n\r\nOnce you use this feature, you can't use it again until you finish a long rest."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_path-of-the-berserker",
+    "name": "Path of the Berserker",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Barbarian]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "frenzy",
+          "name": "Frenzy",
+          "description": "Starting when you choose this path at 3rd level, you can go into a frenzy when you rage. If you do so, for the duration of your rage you can make a single melee weapon attack as a bonus action on each of your turns after this one. When your rage ends, you suffer one level of exhaustion (as described in appendix A)."
+        }
+      ],
+      "6": [
+        {
+          "id": "mindless-rage",
+          "name": "Mindless Rage",
+          "description": "Beginning at 6th level, you can't be charmed or frightened while raging. If you are charmed or frightened when you enter your rage, the effect is suspended for the duration of the rage."
+        }
+      ],
+      "10": [
+        {
+          "id": "intimidating-presence",
+          "name": "Intimidating Presence",
+          "description": "Beginning at 10th level, you can use your action to frighten someone with your menacing presence. When you do so, choose one creature that you can see within 30 feet of you. If the creature can see or hear you, it must succeed on a Wisdom saving throw (DC equal to 8 + your proficiency bonus + your Charisma modifier) or be frightened of you until the end of your next turn. On subsequent turns, you can use your action to extend the duration of this effect on the frightened creature until the end of your next turn. This effect ends if the creature ends its turn out of line of sight or more than 60 feet away from you.\r\n\r\nIf the creature succeeds on its saving throw, you can't use this feature on that creature again for 24 hours."
+        }
+      ],
+      "14": [
+        {
+          "id": "retaliation",
+          "name": "Retaliation",
+          "description": "Starting at 14th level, when you take damage from a creature that is within 5 feet of you, you can use your reaction to make a melee weapon attack against that creature."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_school-of-evocation",
+    "name": "School of Evocation",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Wizard]]",
+    "features_by_level": {
+      "2": [
+        {
+          "id": "evocation-savant",
+          "name": "Evocation Savant",
+          "description": "Beginning when you select this school at 2nd level, the gold and time you must spend to copy an evocation spell into your spellbook is halved."
+        },
+        {
+          "id": "sculpt-spells",
+          "name": "Sculpt Spells",
+          "description": "Beginning at 2nd level, you can create pockets of relative safety within the effects of your evocation spells. When you cast an evocation spell that affects other creatures that you can see, you can choose a number of them equal to 1 + the spell's level. The chosen creatures automatically succeed on their saving throws against the spell, and they take no damage if they would normally take half damage on a successful save."
+        }
+      ],
+      "6": [
+        {
+          "id": "potent-cantrip",
+          "name": "Potent Cantrip",
+          "description": "Starting at 6th level, your damaging cantrips affect even creatures that avoid the brunt of the effect. When a creature succeeds on a saving throw against your cantrip, the creature takes half the cantrip's damage (if any) but suffers no additional effect from the cantrip."
+        }
+      ],
+      "10": [
+        {
+          "id": "empowered-evocation",
+          "name": "Empowered Evocation",
+          "description": "Beginning at 10th level, you can add your Intelligence modifier to one damage roll of any wizard evocation spell you cast."
+        }
+      ],
+      "14": [
+        {
+          "id": "overchannel",
+          "name": "Overchannel",
+          "description": "Starting at 14th level, you can increase the power of your simpler spells. When you cast a wizard spell of 1st through 5th level that deals damage, you can deal maximum damage with that spell.\r\n\r\nThe first time you do so, you suffer no adverse effect. If you use this feature again before you finish a long rest, you take 2d12 necrotic damage for each level of the spell, immediately after you cast it. Each time you use this feature again before finishing a long rest, the necrotic damage per spell level increases by 1d12. This damage ignores resistance and immunity."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_the-fiend",
+    "name": "The Fiend",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Warlock]]",
+    "features_by_level": {
+      "1": [
+        {
+          "id": "dark-ones-blessing",
+          "name": "Dark One's Blessing",
+          "description": "Starting at 1st level, when you reduce a hostile creature to 0 hit points, you gain temporary hit points equal to your Charisma modifier + your warlock level (minimum of 1)."
+        },
+        {
+          "id": "expanded-spell-list",
+          "name": "Expanded Spell List",
+          "description": "The Fiend lets you choose from an expanded list of spells when you learn a warlock spell. The following spells are added to the warlock spell list for you.\r\n\r\n### Fiend Expanded Spells (table)\r\n| Spell Level | Spells |\r\n| --- | --- |\r\n| 1st | burning hands, command |\r\n| 2nd | blindness/deafness, scorching ray |\r\n| 3rd | fireball, stinking cloud |\r\n| 4th | fire shield, wall of fire |\r\n| 5th | flame strike, hallow |"
+        }
+      ],
+      "6": [
+        {
+          "id": "dark-ones-own-luck",
+          "name": "Dark One's Own Luck",
+          "description": "Starting at 6th level, you can call on your patron to alter fate in your favor. When you make an ability check or a saving throw, you can use this feature to add a d10 to your roll. You can do so after seeing the initial roll but before any of the roll's effects occur.\r\n\r\nOnce you use this feature, you can't use it again until you finish a short or long rest."
+        }
+      ],
+      "10": [
+        {
+          "id": "fiendish-resilience",
+          "name": "Fiendish Resilience",
+          "description": "Starting at 10th level, you can choose one damage type when you finish a short or long rest. You gain resistance to that damage type until you choose a different one with this feature. Damage from magical weapons or silver weapons ignores this resistance."
+        }
+      ],
+      "14": [
+        {
+          "id": "hurl-through-hell",
+          "name": "Hurl Through Hell",
+          "description": "Starting at 14th level, when you hit a creature with an attack, you can use this feature to instantly transport the target through the lower planes. The creature disappears and hurtles through a nightmare landscape.\r\n\r\nAt the end of your next turn, the target returns to the space it previously occupied, or the nearest unoccupied space. If the target is not a fiend, it takes 10d10 psychic damage as it reels from its horrific experience.\r\n\r\nOnce you use this feature, you can't use it again until you finish a long rest."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_thief",
+    "name": "Thief",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Rogue]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "fast-hands",
+          "name": "Fast Hands",
+          "description": "Starting at 3rd level, you can use the bonus action granted by your Cunning Action to make a Dexterity (Sleight of Hand) check, use your thieves' tools to disarm a trap or open a lock, or take the Use an Object action."
+        },
+        {
+          "id": "second-story-work",
+          "name": "Second-Story Work",
+          "description": "When you choose this archetype at 3rd level, you gain the ability to climb faster than normal; climbing no longer costs you extra movement.\r\n\r\nIn addition, when you make a running jump, the distance you cover increases by a number of feet equal to your Dexterity modifier."
+        }
+      ],
+      "9": [
+        {
+          "id": "supreme-sneak",
+          "name": "Supreme Sneak",
+          "description": "Starting at 9th level, you have advantage on a Dexterity (Stealth) check if you move no more than half your speed on the same turn."
+        }
+      ],
+      "13": [
+        {
+          "id": "use-magic-device",
+          "name": "Use Magic Device",
+          "description": "By 13th level, you have learned enough about the workings of magic that you can improvise the use of items even when they are not intended for you. You ignore all class, race, and level requirements on the use of magic items."
+        }
+      ],
+      "17": [
+        {
+          "id": "thiefs-reflexes",
+          "name": "Thief's Reflexes",
+          "description": "When you reach 17th level, you have become adept at laying ambushes and quickly escaping danger. You can take two turns during the first round of any combat. You take your first turn at your normal initiative and your second turn at your initiative minus 10. You can't use this feature when you are surprised."
+        }
+      ]
+    },
+    "resources": []
+  },
+  {
+    "slug": "srd-5e_way-of-the-open-hand",
+    "name": "Way of the Open Hand",
+    "edition": "2014",
+    "source": "SRD 5.1",
+    "description": "",
+    "parent_class": "[[SRD 5e/Classes/Monk]]",
+    "features_by_level": {
+      "3": [
+        {
+          "id": "open-hand-technique",
+          "name": "Open Hand Technique",
+          "description": "Starting when you choose this tradition at 3rd level, you can manipulate your enemy's ki when you harness your own. Whenever you hit a creature with one of the attacks granted by your Flurry of Blows, you can impose one of the following effects on that target:\r\n\r\n* It must succeed on a Dexterity saving throw or be knocked prone.\r\n* It must make a Strength saving throw. If it fails, you can push it up to 15 feet away from you.\r\n* It can't take reactions until the end of your next turn."
+        }
+      ],
+      "6": [
+        {
+          "id": "wholeness-of-body",
+          "name": "Wholeness of Body",
+          "description": "At 6th level, you gain the ability to heal yourself. As an action, you can regain hit points equal to three times your monk level. You must finish a long rest before you can use this feature again."
+        }
+      ],
+      "11": [
+        {
+          "id": "tranquility",
+          "name": "Tranquility",
+          "description": "Beginning at 11th level, you can enter a special meditation that surrounds you with an aura of peace. At the end of a long rest, you gain the effect of a sanctuary spell that lasts until the start of your next long rest (the spell can end early as normal). The saving throw DC for the spell equals 8 + your Wisdom modifier + your proficiency bonus."
+        }
+      ],
+      "17": [
+        {
+          "id": "quivering-palm",
+          "name": "Quivering Palm",
+          "description": "At 17th level, you gain the ability to set up lethal vibrations in someone's body. When you hit a creature with an unarmed strike, you can spend 3 ki points to start these imperceptible vibrations, which last for a number of days equal to your monk level. The vibrations are harmless unless you use your action to end them. To do so, you and the target must be on the same plane of existence. When you use this action, the creature must make a Constitution saving throw. If it fails, it is reduced to 0 hit points. If it succeeds, it takes 10d10 necrotic damage.\r\n\r\nYou can have only one creature under the effect of this feature at a time. You can choose to end the vibrations harmlessly without using an action."
+        }
+      ]
+    },
+    "resources": []
+  }
+]

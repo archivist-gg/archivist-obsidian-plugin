@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getChallengeRatingXP, getProficiencyBonus, parseCR } from "../src/ai/validation/cr-xp-mapping";
+import { getChallengeRatingXP, getProficiencyBonus, parseCR } from "../src/modules/monster/monster.enrichment";
 
 describe("getChallengeRatingXP", () => {
   it("returns 10 for CR 0", () => {

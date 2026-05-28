@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { enrichMonster, enrichSpell, enrichItem } from "../src/ai/validation/entity-enrichment";
+import { enrichMonster } from "../src/modules/monster/monster.enrichment";
+import { enrichSpell } from "../src/modules/spell/spell.enrichment";
+import { enrichItem } from "../src/modules/item/item.enrichment";
 
 describe("enrichMonster — backtick tag conversion", () => {
   it("converts plain English attack and damage to ability-linked tags", () => {
@@ -19,8 +21,8 @@ describe("enrichMonster — backtick tag conversion", () => {
     };
     const result = enrichMonster(raw);
     const entry = (result.actions as { name: string; entries: string[] }[])[0].entries[0];
-    expect(entry).toContain("`atk:STR`");
-    expect(entry).toContain("`damage:1d12+STR`");
+    expect(entry).toContain("`atk:STR+PB`");
+    expect(entry).toContain("`dmg:1d12+STR`");
     expect(entry).not.toContain("+5 to hit");
     expect(entry).not.toContain("9 (1d12 + 3)");
   });
@@ -109,9 +111,9 @@ describe("enrichMonster — backtick tag conversion", () => {
     const result = enrichMonster(raw);
     const actionEntry = (result.actions as { name: string; entries: string[] }[])[0].entries[0];
     const reactionEntry = (result.reactions as { name: string; entries: string[] }[])[0].entries[0];
-    expect(actionEntry).toContain("`atk:STR`");
-    expect(actionEntry).toContain("`damage:1d6+STR`");
-    expect(reactionEntry).toContain("`damage:1d6`");
+    expect(actionEntry).toContain("`atk:STR+PB`");
+    expect(actionEntry).toContain("`dmg:1d6+STR`");
+    expect(reactionEntry).toContain("`dmg:1d6`");
   });
 
   it("does not crash when monster has no feature sections", () => {
@@ -130,26 +132,24 @@ describe("enrichSpell — backtick tag conversion", () => {
     const raw: Record<string, unknown> = {
       name: "Flame Burst",
       level: 3,
-      description: [
+      description:
         "Each creature in the area must make a DC 15 Dexterity saving throw, taking 8d6 fire damage on a failed save, or half as much on a success.",
-      ],
     };
     const result = enrichSpell(raw);
-    const desc = (result.description as string[])[0];
+    const desc = result.description as string;
     expect(desc).toContain("`dc:15`");
-    expect(desc).toContain("`damage:8d6`");
+    expect(desc).toContain("`dmg:8d6`");
   });
 
   it("leaves already-tagged description unchanged", () => {
     const raw: Record<string, unknown> = {
       name: "Flame Burst",
       level: 3,
-      description: [
+      description:
         "Each creature must make a `dc:15` Dexterity saving throw, taking `damage:8d6` fire damage on a failed save.",
-      ],
     };
     const result = enrichSpell(raw);
-    const desc = (result.description as string[])[0];
+    const desc = result.description as string;
     expect(desc).toBe(
       "Each creature must make a `dc:15` Dexterity saving throw, taking `damage:8d6` fire damage on a failed save.",
     );
@@ -172,12 +172,10 @@ describe("enrichSpell — backtick tag conversion", () => {
     const raw: Record<string, unknown> = {
       name: "Detect Magic",
       level: 1,
-      description: [
-        "For the duration, you sense the presence of magic within 30 feet of you.",
-      ],
+      description: "For the duration, you sense the presence of magic within 30 feet of you.",
     };
     const result = enrichSpell(raw);
-    const desc = (result.description as string[])[0];
+    const desc = result.description as string;
     expect(desc).toBe("For the duration, you sense the presence of magic within 30 feet of you.");
   });
 });
@@ -194,7 +192,7 @@ describe("enrichItem — backtick tag conversion", () => {
     };
     const result = enrichItem(raw);
     const entry = (result.entries as string[])[0];
-    expect(entry).toContain("`damage:2d6`");
+    expect(entry).toContain("`dmg:2d6`");
   });
 
   it("leaves already-tagged entries unchanged", () => {

@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { enrichMonster, enrichSpell, enrichItem } from "../src/ai/validation/entity-enrichment";
+import { enrichMonster } from "../src/modules/monster/monster.enrichment";
+import { enrichSpell } from "../src/modules/spell/spell.enrichment";
+import { enrichItem } from "../src/modules/item/item.enrichment";
 
 describe("enrichMonster", () => {
   it("calculates XP from CR", () => {

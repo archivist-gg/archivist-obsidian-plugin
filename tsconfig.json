@@ -19,6 +19,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "tools/**/*"],
   "exclude": ["node_modules", "tests", "src/inquiry/main.reference.ts"]
 }

@@ -241,7 +241,7 @@
 .archivist-monster-two-col-flow .archivist-legendary-intro,
 .archivist-monster-two-col-flow .archivist-monster-section,
 .archivist-monster-two-col-flow .archivist-legendary-resistance,
-.archivist-monster-two-col-flow .archivist-legendary-box-row {
+.archivist-monster-two-col-flow .archivist-toggle-box-row {
   break-inside: avoid;
   -webkit-column-break-inside: avoid;
 }
@@ -579,19 +579,26 @@
   justify-content: flex-start;
 }
 
-.archivist-spell-block {
+/* Shared parchment palette for the three text-block types (spell/item/class).
+ * Monster has its own variable-driven theme (--stat-block-*) and is excluded. */
+.archivist-spell-block,
+.archivist-item-block,
+.archivist-class-block {
   background: #f0ddbd;
   font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
   font-size: 14px;
-  line-height: 1.2em;
   color: #191813;
-  position: relative;
   box-shadow:
     0 4px 24px rgba(134, 116, 83, 0.3),
     0 2px 8px rgba(134, 116, 83, 0.2);
   padding: 0.6em;
-  width: 100%;
   border-radius: 4px;
+}
+
+.archivist-spell-block {
+  line-height: 1.2em;
+  position: relative;
+  width: 100%;
 }
 
 /* Header Section */
@@ -698,6 +705,58 @@
   font-style: italic;
 }
 
+/* Internal-link colour override inside archivist blocks. Obsidian's default
+ * is blue, which clashes with the parchment palette. Brick brown matches
+ * the rest of the block's accents. */
+.archivist-spell-block a.internal-link,
+.archivist-item-block a.internal-link,
+.archivist-class-block a.internal-link,
+.archivist-monster-block a.internal-link {
+  color: #7a200d;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+.archivist-spell-block a.internal-link:hover,
+.archivist-item-block a.internal-link:hover,
+.archivist-class-block a.internal-link:hover,
+.archivist-monster-block a.internal-link:hover {
+  color: #5a1808;
+  text-decoration-style: solid;
+}
+
+/* Mechanical summary — appears under the item card in inventory expand */
+.archivist-item-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  margin-top: 0.6em;
+  padding-top: 0.4em;
+  border-top: 1px solid #d9c484;
+  font-size: 12px;
+  color: #191813;
+}
+.archivist-item-summary-row {
+  display: flex;
+  gap: 0.5em;
+  line-height: 1.3;
+}
+.archivist-item-summary-label {
+  font-weight: 700;
+  color: #7a200d;
+  min-width: 5em;
+  flex-shrink: 0;
+}
+.archivist-item-summary-value {
+  flex: 1;
+}
+.archivist-item-base-item {
+  font-style: italic;
+  font-size: 12px;
+  color: #666;
+  margin-top: 0.1em;
+}
+
 /* Spell Tags */
 .archivist-spell-block .spell-tags {
   display: flex;
@@ -726,62 +785,6 @@
   color: white;
 }
 
-/* Markdown Table Styles - D&D 5e PHB Style */
-.archivist-spell-block .markdown-table {
-  width: auto;
-  max-width: 100%;
-  border-collapse: collapse;
-  margin: 0.6em 0;
-  font-size: 13px;
-  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
-  background: transparent;
-  border: none;
-}
-
-.archivist-spell-block .markdown-table th {
-  background: #e0e5c1;
-  font-weight: 600;
-  color: #191813;
-  text-transform: uppercase;
-  font-size: 12px;
-  padding: 0.4em 0.8em;
-  border: none;
-  text-align: center;
-  vertical-align: middle;
-}
-
-.archivist-spell-block .markdown-table th:first-child {
-  text-align: left;
-}
-
-.archivist-spell-block .markdown-table td {
-  padding: 0.4em 0.8em;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 1.3;
-  border: none;
-  background: transparent;
-  font-size: 13px;
-}
-
-.archivist-spell-block .markdown-table td:first-child {
-  text-align: left;
-  font-weight: 600;
-}
-
-.archivist-spell-block .markdown-table tbody tr:nth-child(odd) td {
-  background: transparent;
-}
-
-.archivist-spell-block .markdown-table tbody tr:nth-child(even) td {
-  background: #e0e5c1;
-}
-
-.archivist-spell-block .table-wrapper {
-  margin: 0.6em 0;
-  overflow-x: auto;
-}
-
 /* Source Badge Styles */
 .archivist-spell-block .source-badge {
   position: absolute;
@@ -800,6 +803,67 @@
   z-index: 10;
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * Shared archivist table — D&D brick-styled
+ * Applies to programmatic <table class="archivist-table"> and
+ * to <table> rendered by Obsidian MarkdownRenderer (post-processed
+ * to add the class). Monster .abilities-table keeps its distinct
+ * stat-tile style and is unaffected.
+ * ───────────────────────────────────────────────────────────── */
+.archivist-spell-block table.archivist-table,
+.archivist-item-block table.archivist-table,
+.archivist-class-block table.archivist-table,
+.archivist-monster-block table.archivist-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4px 0;
+  font-size: 13px;
+  background: transparent;
+}
+.archivist-spell-block table.archivist-table th,
+.archivist-item-block table.archivist-table th,
+.archivist-class-block table.archivist-table th,
+.archivist-monster-block table.archivist-table th {
+  color: #7a200d;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 8px;
+  text-align: center;
+  border: none;
+  border-bottom: 1px solid #7a200d;
+  letter-spacing: 0.4px;
+  background: transparent;
+}
+.archivist-spell-block table.archivist-table th:first-child,
+.archivist-item-block table.archivist-table th:first-child,
+.archivist-class-block table.archivist-table th:first-child,
+.archivist-monster-block table.archivist-table th:first-child {
+  text-align: left;
+}
+.archivist-spell-block table.archivist-table td,
+.archivist-item-block table.archivist-table td,
+.archivist-class-block table.archivist-table td,
+.archivist-monster-block table.archivist-table td {
+  padding: 4px 8px;
+  text-align: center;
+  border: none;
+  font-size: 12px;
+}
+.archivist-spell-block table.archivist-table td:first-child,
+.archivist-item-block table.archivist-table td:first-child,
+.archivist-class-block table.archivist-table td:first-child,
+.archivist-monster-block table.archivist-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+.archivist-spell-block table.archivist-table tbody tr:nth-child(even) td,
+.archivist-item-block table.archivist-table tbody tr:nth-child(even) td,
+.archivist-class-block table.archivist-table tbody tr:nth-child(even) td,
+.archivist-monster-block table.archivist-table tbody tr:nth-child(even) td {
+  background: rgba(217, 196, 132, 0.35);
+}
+
 /* 5. Magic Item Block (reuses spell block pattern)
    ========================================================================== */
 
@@ -812,18 +876,9 @@
 }
 
 .archivist-item-block {
-  background: #f0ddbd;
-  font-family: 'Noto Sans', 'Myriad Pro', Calibri, Helvetica, Arial, sans-serif;
-  font-size: 14px;
   line-height: 1.2em;
-  color: #191813;
   position: relative;
-  box-shadow:
-    0 4px 24px rgba(134, 116, 83, 0.3),
-    0 2px 8px rgba(134, 116, 83, 0.2);
-  padding: 0.6em;
   width: 100%;
-  border-radius: 4px;
 }
 
 /* Item Header */
@@ -856,6 +911,10 @@
 .archivist-item-block .archivist-item-properties {
   margin: 0.4em 0;
   padding: 0.4em 0;
+}
+
+/* Separator only when a following section (description / charges / curse) exists. */
+.archivist-item-block .archivist-item-properties:has(+ *) {
   border-bottom: 1px solid #d9c484;
 }
 
@@ -882,6 +941,12 @@
 
 .archivist-item-block .property-value {
   color: #191813;
+}
+
+/* Conditional weapon property — dotted underline + tooltip cursor */
+.archivist-item-block .archivist-weapon-conditional-property {
+  text-decoration: underline dotted #7a200d;
+  cursor: help;
 }
 
 /* Item Description */
@@ -1198,12 +1263,12 @@
   min-height: 100px;
 }
 
-/* 9. Legendary Tracking Boxes (Actions + Resistance)
+/* 9. Toggle Boxes (used by monster Legendary Actions/Resistance + PC charge boxes)
    Unified box style — description text, then row of clickable boxes below.
    Backgrounds use !important to prevent Obsidian editor overrides.
    ========================================================================== */
 
-.archivist-legendary-box-row {
+.archivist-toggle-box-row {
   display: flex;
   gap: 6px;
   margin: 6px 0 12px 0;
@@ -1211,7 +1276,7 @@
   flex-wrap: wrap;
 }
 
-.archivist-monster-block .archivist-legendary-box {
+.archivist-toggle-box {
   position: relative;
   width: 18px !important;
   height: 18px !important;
@@ -1228,17 +1293,17 @@
   flex-shrink: 0;
 }
 
-.archivist-monster-block .archivist-legendary-box:hover {
+.archivist-toggle-box:hover {
   border-color: var(--d5e-text-accent) !important;
 }
 
-.archivist-monster-block .archivist-legendary-box-checked {
+.archivist-toggle-box-checked {
   border-color: var(--d5e-text-accent) !important;
 }
 
 /* X cross inside a checked box — drawn with two rotated pseudo-element lines */
-.archivist-monster-block .archivist-legendary-box-checked::before,
-.archivist-monster-block .archivist-legendary-box-checked::after {
+.archivist-toggle-box-checked::before,
+.archivist-toggle-box-checked::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -1250,11 +1315,11 @@
   pointer-events: none;
 }
 
-.archivist-monster-block .archivist-legendary-box-checked::before {
+.archivist-toggle-box-checked::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-.archivist-monster-block .archivist-legendary-box-checked::after {
+.archivist-toggle-box-checked::after {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
@@ -1403,8 +1468,152 @@ body.theme-light .archivist-tag-atk:hover {
 /* 13. Modal Styles
    ========================================================================== */
 
+/* Shared parchment theme for every plugin modal that opts in by adding the
+   `archivist-modal` class to its contentEl. Obsidian portals modals to
+   document.body, escaping the `.archivist-pc-sheet` scope where the PC
+   tokens are declared — so we redeclare every token used inside the modal
+   here, then style the frame, the close button, native checkboxes, and the
+   primary action button. */
+
+/* Outer modal box — strip Obsidian's dark frame so the parchment fills it. */
+.modal:has(.archivist-modal) {
+  background: #fdf1dc;
+  border: 1px solid #d9c484;
+  padding: 0;
+  width: auto;
+  max-width: 480px;
+  min-width: 320px;
+}
+
+.modal:has(.archivist-modal) .modal-close-button {
+  color: #6b5e4b;
+}
+
+/* Inner content — palette, fonts, padding, and a full set of PC tokens
+   so any `var(--pc-…)` reference inside the modal resolves. */
 .archivist-modal {
-  padding: 1em;
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --pc-fs-heading: 14px;
+  --pc-fs-body: 12px;
+  --pc-fs-small: 11px;
+  --pc-fs-label: 10px;
+  --pc-fs-micro: 8px;
+  --pc-ls-caps-sm: 0.08em;
+  --pc-ls-caps-md: 0.14em;
+  --pc-radius-sm: 4px;
+
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: 14px 16px;
+}
+
+/* Custom checkbox — Obsidian replaces native checkboxes with its own purple
+   square (and ignores `accent-color`), so we override appearance ourselves
+   to render a crimson-bordered square with a parchment-coloured checkmark. */
+.archivist-modal input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.4px solid var(--pc-crimson);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: none;
+}
+
+.archivist-modal input[type="checkbox"]:hover:not(:checked):not(:disabled) {
+  background-color: rgba(146, 38, 16, 0.08);
+}
+
+.archivist-modal input[type="checkbox"]:checked {
+  background-color: var(--pc-crimson);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px 14px;
+  border-color: var(--pc-crimson);
+}
+
+.archivist-modal input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: 1px;
+}
+
+/* Footer button row used by the entity/attune modals — align right with a
+   small gap and breathing room above. */
+.archivist-modal .archivist-modal-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--pc-tan);
+}
+
+/* Restyle the Obsidian primary-button class (used by Close in entity modals
+   and Pick row in attune-picker) to the crimson brand. */
+.archivist-modal button.mod-cta {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 14px;
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.archivist-modal button.mod-cta:hover:not(:disabled) {
+  background: var(--pc-crimson-light);
+}
+
+.archivist-modal button.mod-cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Generic plain buttons (Cancel in attune-picker, etc.) — ghost style. */
+.archivist-modal .archivist-modal-buttons > button:not(.mod-cta):not([class*="pc-"]) {
+  background: transparent;
+  color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 14px;
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.archivist-modal .archivist-modal-buttons > button:not(.mod-cta):not([class*="pc-"]):hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.06);
 }
 
 .archivist-modal-repeatable {
@@ -1894,3 +2103,59 @@ body.theme-light .archivist-tag-atk:hover {
   background: var(--background-modifier-hover);
 }
 
+
+/* Class block — parchment palette mirrors spell/item (shared rule above) */
+.archivist-class-block {
+  line-height: 1.3;
+  margin: 1.5em 0;
+}
+.archivist-class-block-header {
+  border-bottom: 2px solid #7a200d;
+  padding-bottom: 0.3em;
+  margin-bottom: 0.4em;
+}
+.archivist-class-name {
+  font-family: 'Libre Baskerville', 'Lora', Garamond, serif;
+  color: #7a200d;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+.archivist-class-description {
+  font-style: italic;
+  margin: 0 0 0.4em 0;
+}
+.archivist-class-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  font-size: 12px;
+  margin-bottom: 0.6em;
+}
+.archivist-class-meta-row {
+  display: flex;
+  gap: 0.5em;
+}
+.archivist-class-meta-label {
+  font-weight: 700;
+  color: #7a200d;
+  min-width: 7em;
+}
+.archivist-item-tags {
+  display: flex;
+  gap: 0.4em;
+  margin: 0.4em 0;
+  flex-wrap: wrap;
+}
+.archivist-item-tag {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 3px;
+}
+.archivist-item-tag.cursed { background: #6b0a0a; color: white; }
+.archivist-item-tag.sentient { background: #4a0a6b; color: white; }

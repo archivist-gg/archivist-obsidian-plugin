@@ -1,0 +1,107 @@
+.archivist-pc-sheet {
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-white: #ffffff;
+
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+
+  /* --------------------------------------------------------------
+   * Type scale — 9 sizes, mapped to roles. Every selector below
+   * references one of these; no raw px font-sizes elsewhere.
+   * -------------------------------------------------------------- */
+  --pc-fs-display: 22px;      /* character name */
+  --pc-fs-big:     22px;      /* primary big values (ab-mod, ac-num, tile-val) */
+  --pc-fs-mid:     18px;      /* secondary big values (hp-val, hd-nums) */
+  --pc-fs-title:   16px;      /* block title, currency/sense/slot large val */
+  --pc-fs-heading: 14px;      /* tab heading, block subtitle */
+  --pc-fs-body:    12px;      /* body text, skill rows, tables, descriptions */
+  --pc-fs-small:   11px;      /* secondary meta, tab buttons, inline bonuses */
+  --pc-fs-label:   10px;      /* section/microcap labels (uppercase) */
+  --pc-fs-micro:    8px;      /* super-tight uppercase labels (cartouche / tile) */
+  --pc-fs-tiny:   7.5px;      /* tightest microcap (save-chip "SAVE") */
+
+  --pc-lh-tight:  1;
+  --pc-lh-snug:   1.2;
+  --pc-lh-value:  1.05;
+  --pc-lh-body:   1.45;
+
+  /* Uppercase micro-label letter-spacing ramp (smaller = wider). */
+  --pc-ls-caps-sm:    0.08em;    /* 11-14px uppercase (buttons, subtitle) */
+  --pc-ls-caps-md:    0.14em;    /* 8-10px standard microcap */
+  --pc-ls-caps-lg:    0.2em;     /* 7.5-8px display microcap (AC / HP / HD) */
+
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
+  --pc-space-5: 24px;
+  --pc-space-6: 32px;
+
+  /* --------------------------------------------------------------
+   * Sheet-width breakpoint tiers — used with @container only.
+   * Browsers do not support var() inside @container conditions,
+   * so call sites use literal values. These tokens are the single
+   * source of truth; any drift between this block and a use site
+   * is a code-review item.
+   *
+   * Each token is the inclusive lower bound of its tier:
+   *   wide   >= 900   default 2-col body, full ability row
+   *   medium 700-899  stats-band collapses; abilities auto-fit
+   *   narrow 500-699  sidebar stacks; SAVE label hidden
+   *   tiny   < 500    2-col abilities, single-col tiles
+   *
+   * "Below tier X" rules fire at max-width: <X minus 1>px.
+   * -------------------------------------------------------------- */
+  --pc-bp-wide:    900px;
+  --pc-bp-medium:  700px;
+  --pc-bp-narrow:  500px;
+  --pc-bp-tiny:    0;
+
+  /* Minimum cell widths for auto-fit grids — currently used by
+   * .pc-ability-row (cell-min-ability) and .pc-hd-widget
+   * (cell-min-stat-tile). Add more entries here when introducing
+   * a new auto-fit grid; the file is the single source of truth. */
+  --pc-cell-min-ability:    64px;
+  --pc-cell-min-stat-tile: 130px;
+
+  --pc-radius-sm: 4px;
+  --pc-radius-md: 6px;
+  --pc-radius-lg: 12px;
+
+  /* --------------------------------------------------------------
+   * Rarity palette — italic + tinted hue for item names.
+   * Common defaults to the existing primary text color (no override).
+   * -------------------------------------------------------------- */
+  --pc-rarity-common:    var(--pc-text-primary);
+  --pc-rarity-uncommon:  #2f6f3a;
+  --pc-rarity-rare:      #1f3f7a;
+  --pc-rarity-very-rare: #5d2d8c;
+  --pc-rarity-legendary: #a3590a;
+  --pc-rarity-artifact:  var(--pc-crimson);
+  --pc-rarity-legacy:    #8a5a2a;
+
+  /* Coin colors — dramatic + harmonized */
+  --pc-coin-pp: #1f3f7a;  /* matches --pc-rarity-rare */
+  --pc-coin-gp: #a3590a;  /* matches --pc-rarity-legendary */
+  --pc-coin-ep: #6b6f2a;
+  --pc-coin-sp: #4a5a66;
+  --pc-coin-cp: #8a3d1f;
+
+  /* Attunement medallion sizing (used by attune-medallion.ts) */
+  --pc-medallion-size:   50px;
+  --pc-medallion-stroke: 1.5px;
+
+  background: var(--d5e-parchment, #f0ddbd);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: var(--pc-space-5);
+  min-height: 100%;
+}

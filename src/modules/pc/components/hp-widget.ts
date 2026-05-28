@@ -1,0 +1,173 @@
+import { setTooltip } from "obsidian";
+import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { numberField, numberOverride } from "./edit-primitives";
+
+/**
+ * HP widget in the hero right.
+ * - Normal mode (HP > 0): HEAL / input / DAMAGE on the left;
+ *   CURRENT / MAX / TEMP three-up with HIT POINTS label below on the right.
+ * - Unconscious mode (HP = 0, successes < 3, failures < 3): the body swaps
+ *   to an A3 two-column DEATH SAVES panel (Success / Failure, no divider)
+ *   with the "UNCONSCIOUS" label below. HEAL/input/DAMAGE is unchanged.
+ * - Stable mode (HP = 0, successes ≥ 3, failures < 3): same shape; label
+ *   becomes "STABLE". The dots are still interactive so a mis-tap can be
+ *   reverted back to UNCONSCIOUS.
+ * - Dead mode (HP = 0, failures ≥ 3): same shape; label becomes "DEAD".
+ *   HEAL stays clickable so a heal cascade can revive.
+ * Priority when HP=0: failures≥3 (DEAD) > successes≥3 (STABLE) > UNCONSCIOUS.
+ */
+export class HpWidget implements SheetComponent {
+  readonly type = "hp-widget";
+
+  render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const wrap = el.createDiv({ cls: "pc-panel pc-hp-widget" });
+
+    const ds = ctx.resolved?.state?.death_saves;
+    const hpCurrent = ctx.derived.hp.current;
+    const isUnconscious = hpCurrent === 0;
+    const ce = ctx.derived.conditionEffects;
+    const isDeadFromExhaustion = !!ce && ce.exhaustion_level >= 6;
+    const isDead = (isUnconscious && !!ds && ds.failures >= 3) || isDeadFromExhaustion;
+    const isStable = isUnconscious && !isDead && !!ds && ds.successes >= 3;
+
+    let labelText = "HIT POINTS";
+    if (isDead) {
+      wrap.addClass("dead");
+      labelText = isDeadFromExhaustion ? "DEAD (Exhaustion 6)" : "DEAD";
+    } else if (isStable) {
+      wrap.addClass("stable");
+      labelText = "STABLE";
+    } else if (isUnconscious) {
+      wrap.addClass("unconscious");
+      labelText = "UNCONSCIOUS";
+    }
+
+    // Action column — always present, always wired the same way.
+    const actions = wrap.createDiv({ cls: "pc-hp-actions" });
+    const healBtn = actions.createEl("button", { cls: "pc-hp-heal", text: "HEAL" });
+    const input = actions.createEl("input", {
+      cls: "pc-hp-input",
+      attr: { type: "number", placeholder: "0" },
+    });
+    const dmgBtn = actions.createEl("button", { cls: "pc-hp-damage", text: "DAMAGE" });
+
+    // Body — mode-specific.
+    const body = wrap.createDiv({ cls: "pc-hp-body" });
+
+    if (isUnconscious) {
+      // A3 two-column death-saves panel: "Success" and "Failure" columns,
+      // no vertical divider — just spacing. DEATH SAVES header on top,
+      // state label (UNCONSCIOUS / STABLE / DEAD) rendered below via
+      // the shared body.createDiv({ cls: "pc-hp-label" }) call.
+      body.createDiv({ cls: "pc-hp-death-header", text: "DEATH SAVES" });
+
+      const dsState = ds ?? { successes: 0, failures: 0 };
+      const pair = body.createDiv({ cls: "pc-hp-ds-pair" });
+
+      const successCol = pair.createDiv({ cls: "pc-hp-ds-col" });
+      successCol.createSpan({ cls: "pc-hp-ds-col-head", text: "Success" });
+      const successDots = successCol.createSpan({ cls: "pc-hp-ds-dots" });
+      for (let i = 0; i < 3; i++) {
+        const dot = successDots.createSpan({
+          cls: `pc-death-save-success${dsState.successes > i ? " filled" : ""}`,
+        });
+        if (ctx.editState) {
+          dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveSuccess(i as 0 | 1 | 2));
+        }
+      }
+
+      const failureCol = pair.createDiv({ cls: "pc-hp-ds-col" });
+      failureCol.createSpan({ cls: "pc-hp-ds-col-head", text: "Failure" });
+      const failureDots = failureCol.createSpan({ cls: "pc-hp-ds-dots" });
+      for (let i = 0; i < 3; i++) {
+        const dot = failureDots.createSpan({
+          cls: `pc-death-save-failure${dsState.failures > i ? " filled" : ""}`,
+        });
+        if (ctx.editState) {
+          dot.addEventListener("click", () => ctx.editState!.toggleDeathSaveFailure(i as 0 | 1 | 2));
+        }
+      }
+    } else {
+      // Normal body — the tiles + HIT POINTS label.
+      const nums = body.createDiv({ cls: "pc-hp-nums" });
+      const curVal = this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
+      const maxVal = this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
+      const tempVal = this.col(
+        nums,
+        "pc-hp-temp",
+        "TEMP",
+        ctx.derived.hp.temp > 0 ? String(ctx.derived.hp.temp) : "—",
+      );
+
+      if (ce && ce.hp_max_multiplier < 1) {
+        setTooltip(maxVal, `HP max halved by exhaustion ${ce.exhaustion_level}`);
+      }
+
+      if (ctx.editState) {
+        const editState = ctx.editState;
+        numberField(curVal, {
+          getValue: () => ctx.resolved.state.hp.current,
+          onSet: (n) => editState.setCurrentHp(n),
+          min: 0,
+          max: ctx.derived.hp.max,
+        });
+        const overridesHp = ctx.resolved.definition?.overrides?.hp;
+        numberOverride(maxVal, {
+          getEffective: () => ctx.derived.hp.max,
+          isOverridden: () => overridesHp?.max !== undefined,
+          onSet: (n) => editState.setMaxHpOverride(n),
+          onClear: () => editState.clearMaxHpOverride(),
+          min: 1,
+        });
+        numberField(tempVal, {
+          getValue: () => ctx.resolved.state.hp.temp,
+          onSet: (n) => editState.setTempHP(n),
+          min: 0,
+        });
+      }
+    }
+
+    body.createDiv({ cls: "pc-hp-label", text: labelText });
+
+    // Interactivity — same wiring regardless of mode.
+    if (!ctx.editState) return;
+    const editState = ctx.editState;
+    const readInput = () => Math.max(0, parseInt(input.value || "0", 10));
+
+    healBtn.addEventListener("click", () => {
+      const n = readInput();
+      if (!n) return;
+      editState.heal(n);
+      input.value = "";
+    });
+    dmgBtn.addEventListener("click", () => {
+      const n = readInput();
+      if (!n) return;
+      editState.damage(n);
+      input.value = "";
+    });
+    // Defensive: stop propagation so any document-level hotkey listener
+    // (e.g. Obsidian's hotkey manager attached to the TextFileView
+    // contentEl) cannot swallow the keystroke before the input processes
+    // it. Without this, typing digits into the HP input produces nothing
+    // because the event is intercepted at a higher capture phase.
+    const stopProp = (e: KeyboardEvent) => e.stopPropagation();
+    input.addEventListener("keydown", (e) => {
+      stopProp(e);
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const n = readInput();
+      if (!n) return;
+      editState.heal(n);
+      input.value = "";
+    });
+    input.addEventListener("keyup", stopProp);
+    input.addEventListener("keypress", stopProp);
+  }
+
+  private col(parent: HTMLElement, cls: string, label: string, value: string): HTMLElement {
+    const col = parent.createDiv({ cls: `pc-hp-col ${cls}` });
+    col.createDiv({ cls: "pc-hp-lbl", text: label });
+    return col.createDiv({ cls: "pc-hp-val", text: value });
+  }
+}

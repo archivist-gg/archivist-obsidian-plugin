@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { itemInputSchema } from "../src/ai/schemas/item-schema";
+import { itemInputSchema } from "../src/modules/item/item.ai-schema";
 
 describe("itemInputSchema", () => {
   it("validates a valid item", () => {

@@ -43,8 +43,8 @@ beforeAll(() => {
   };
 });
 
-import { renderMonsterBlock } from "../src/renderers/monster-renderer";
-import type { Monster } from "../src/types/monster";
+import { renderMonsterBlock } from "../src/modules/monster/monster.renderer";
+import type { Monster } from "../src/modules/monster/monster.types";
 
 const BASE_MONSTER: Monster = {
   name: "Test Dragon",

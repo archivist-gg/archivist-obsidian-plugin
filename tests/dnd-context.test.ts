@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildDndSystemPromptSection } from "../src/inquiry/core/prompts/dndContext";
+import { buildDndSystemPromptSection } from "../src/modules/inquiry/core/prompts/dndContext";
 
 describe("buildDndSystemPromptSection", () => {
   it("returns empty string when no D&D context provided", () => {

@@ -1,0 +1,30 @@
+/* Container declarations for the PC sheet.
+ *
+ * Three named containers, layered outside-in:
+ *   pc-sheet   — the .archivist-pc-sheet root
+ *   pc-body    — the .pc-body grid (sidebar + content)
+ *   pc-content — the .pc-content column
+ *
+ * Panels query the smallest container that meaningfully constrains
+ * their width. Components inside .pc-content query pc-content.
+ * The body layout (sidebar collapse) queries pc-body. Sheet-wide
+ * density queries pc-sheet.
+ *
+ * `container-type: inline-size` is sufficient — we never query
+ * block-size. The shorthand `container: <name> / inline-size`
+ * sets both name and type.
+ */
+.archivist-pc-sheet      { container: pc-sheet   / inline-size; }
+.archivist-pc-sheet .pc-body    { container: pc-body    / inline-size; }
+.archivist-pc-sheet .pc-content { container: pc-content / inline-size; }
+
+/* min-width: 0 baseline — grid/flex children inside the body and
+ * content containers default to allowing shrink-below-content.
+ * Panels that need a real minimum opt back in with explicit
+ * min-width: <token> on the panel itself.
+ *
+ * This replaces the pattern where individual rules scattered through
+ * components.css and inventory.css remembered (or forgot) to set
+ * min-width: 0 case-by-case. */
+.archivist-pc-sheet :is(.pc-body, .pc-content) { min-width: 0; }
+.archivist-pc-sheet :is(.pc-sidebar, .pc-content) > * { min-width: 0; }

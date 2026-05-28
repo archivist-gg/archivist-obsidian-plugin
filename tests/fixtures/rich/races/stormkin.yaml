@@ -1,0 +1,44 @@
+slug: stormkin
+name: Stormkin
+edition: "2014"
+source: "Fictional test fixture"
+description: "An invented species descended from lightning storms."
+size: medium
+speed: { walk: 30 }
+ability_score_increases:
+  - { ability: dex, amount: 2 }
+  - { choose: 1, pool: [str, con, int, wis, cha], amount: 1 }
+age: "Stormkin mature quickly. Entirely fictional."
+alignment: "Most stormkin trend toward chaotic neutral."
+vision: { darkvision: 60 }
+languages:
+  fixed: [common, auran]
+  choice: { count: 1, from: "any" }
+variant_label: "Lineage"
+variants:
+  - slug: stormkin-thunderborn
+    name: "Thunderborn"
+    description: "Invented variant with enhanced lightning affinity."
+    ability_score_increases:
+      - { ability: con, amount: 1 }
+    traits:
+      - id: thunder-voice
+        name: "Thunder Voice"
+        description: "Invented — thunder damage resistance."
+        effects:
+          - { kind: resistance, damage_type: thunder }
+  - slug: stormkin-windrider
+    name: "Windrider"
+    description: "Invented variant with flight at higher levels."
+    speed_delta: { fly: 20 }
+traits:
+  - id: static-sense
+    name: "Static Sense"
+    description: "Invented — detect electromagnetic disturbances."
+    choices: [{ kind: skill, count: 1, from: [perception, insight] }]
+    effects:
+      - { kind: darkvision, range: 60 }
+  - id: charge-pulse
+    name: "Charge Pulse"
+    description: "Invented — reaction discharge."
+    action: reaction

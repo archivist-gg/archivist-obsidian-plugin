@@ -1,0 +1,246 @@
+[
+  {
+    "slug": "srd-2024_acolyte",
+    "name": "Acolyte",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "",
+    "skill_proficiencies": [
+      "insight",
+      "religion"
+    ],
+    "tool_proficiencies": [
+      {
+        "kind": "fixed",
+        "items": [
+          "calligrapher's-supplies"
+        ]
+      }
+    ],
+    "language_proficiencies": [],
+    "equipment": [
+      {
+        "item": "(a)-calligrapher's-supplies",
+        "quantity": 1
+      },
+      {
+        "item": "book-(prayers)",
+        "quantity": 1
+      },
+      {
+        "item": "holy-symbol",
+        "quantity": 1
+      },
+      {
+        "item": "parchment",
+        "quantity": 10
+      },
+      {
+        "item": "robe",
+        "quantity": 1
+      },
+      {
+        "kind": "currency",
+        "gp": 8
+      }
+    ],
+    "feature": {
+      "name": "Background Feature",
+      "description": "(No description provided.)"
+    },
+    "ability_score_increases": {
+      "pool": [
+        "int",
+        "wis",
+        "cha"
+      ]
+    },
+    "origin_feat": "[[SRD 2024/Feats/Magic Initiate (Cleric)]]",
+    "suggested_characteristics": null
+  },
+  {
+    "slug": "srd-2024_criminal",
+    "name": "Criminal",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "",
+    "skill_proficiencies": [
+      "sleight-of-hand",
+      "stealth"
+    ],
+    "tool_proficiencies": [
+      {
+        "kind": "fixed",
+        "items": [
+          "thieves'-tools"
+        ]
+      }
+    ],
+    "language_proficiencies": [],
+    "equipment": [
+      {
+        "item": "(a)-2-daggers",
+        "quantity": 1
+      },
+      {
+        "item": "thieves'-tools",
+        "quantity": 1
+      },
+      {
+        "item": "crowbar",
+        "quantity": 1
+      },
+      {
+        "item": "pouches",
+        "quantity": 2
+      },
+      {
+        "item": "traveler's-clothes",
+        "quantity": 1
+      },
+      {
+        "kind": "currency",
+        "gp": 16
+      }
+    ],
+    "feature": {
+      "name": "Background Feature",
+      "description": "(No description provided.)"
+    },
+    "ability_score_increases": {
+      "pool": [
+        "dex",
+        "con",
+        "int"
+      ]
+    },
+    "origin_feat": "[[SRD 2024/Feats/Alert]]",
+    "suggested_characteristics": null
+  },
+  {
+    "slug": "srd-2024_sage",
+    "name": "Sage",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "",
+    "skill_proficiencies": [
+      "arcana",
+      "history"
+    ],
+    "tool_proficiencies": [
+      {
+        "kind": "fixed",
+        "items": [
+          "calligrapher's-supplies"
+        ]
+      }
+    ],
+    "language_proficiencies": [],
+    "equipment": [
+      {
+        "item": "(a)-quarterstaff",
+        "quantity": 1
+      },
+      {
+        "item": "calligrapher's-supplies",
+        "quantity": 1
+      },
+      {
+        "item": "book-(history)",
+        "quantity": 1
+      },
+      {
+        "item": "parchment",
+        "quantity": 8
+      },
+      {
+        "item": "robe",
+        "quantity": 1
+      },
+      {
+        "kind": "currency",
+        "gp": 8
+      }
+    ],
+    "feature": {
+      "name": "Background Feature",
+      "description": "(No description provided.)"
+    },
+    "ability_score_increases": {
+      "pool": [
+        "con",
+        "int",
+        "wis"
+      ]
+    },
+    "origin_feat": "[[SRD 2024/Feats/Magic Initiate (Wizard)]]",
+    "suggested_characteristics": null
+  },
+  {
+    "slug": "srd-2024_soldier",
+    "name": "Soldier",
+    "edition": "2024",
+    "source": "SRD 5.2",
+    "description": "",
+    "skill_proficiencies": [
+      "athletics",
+      "intimidation"
+    ],
+    "tool_proficiencies": [
+      {
+        "kind": "fixed",
+        "items": [
+          "choose-one-kind-of-gaming-set"
+        ]
+      }
+    ],
+    "language_proficiencies": [],
+    "equipment": [
+      {
+        "item": "(a)-spear",
+        "quantity": 1
+      },
+      {
+        "item": "shortbow",
+        "quantity": 1
+      },
+      {
+        "item": "arrows",
+        "quantity": 20
+      },
+      {
+        "item": "gaming-set-(same-as-above)",
+        "quantity": 1
+      },
+      {
+        "item": "healer's-kit",
+        "quantity": 1
+      },
+      {
+        "item": "quiver",
+        "quantity": 1
+      },
+      {
+        "item": "traveler's-clothes",
+        "quantity": 1
+      },
+      {
+        "kind": "currency",
+        "gp": 14
+      }
+    ],
+    "feature": {
+      "name": "Background Feature",
+      "description": "(No description provided.)"
+    },
+    "ability_score_increases": {
+      "pool": [
+        "str",
+        "dex",
+        "con"
+      ]
+    },
+    "origin_feat": "[[SRD 2024/Feats/Savage Attacker]]",
+    "suggested_characteristics": null
+  }
+]

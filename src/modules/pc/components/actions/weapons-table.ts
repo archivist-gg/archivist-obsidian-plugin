@@ -1,0 +1,170 @@
+import type { SheetComponent, ComponentRenderContext } from "../component.types";
+import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "../../pc.types";
+import { renderConditionTag } from "../condition-tag";
+import { renderCostBadge, type ActionCost } from "./cost-badge";
+import { createExpandState } from "./row-expand";
+import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
+import { conditionsToText } from "../../../item/item.conditions";
+import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+
+const attackDisSources = new Set([
+  "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
+]);
+
+export class WeaponsTable implements SheetComponent {
+  readonly type = "weapons-table";
+  private expand = createExpandState();
+
+  render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const attacks = ctx.derived.attacks ?? [];
+    if (attacks.length === 0) return;
+
+    const section = el.createDiv({ cls: "pc-actions-section" });
+    const head = section.createDiv({ cls: "pc-actions-section-head" });
+    head.createSpan({ cls: "pc-actions-section-title", text: "Weapons" });
+    head.createSpan({ cls: "pc-actions-section-count", text: `${attacks.length} equipped` });
+
+    const table = section.createEl("table", { cls: "pc-actions-table pc-weapons-table" });
+    const tbody = table.createEl("tbody");
+
+    for (const a of attacks) {
+      const expandKey = `weapon:${a.slotKey ?? a.id ?? a.name}`;
+      const row = tbody.createEl("tr", { cls: "pc-action-row" });
+
+      // Cost
+      const costCell = row.createEl("td", { cls: "pc-weapon-cost" });
+      const cost: ActionCost = a.actionCost ?? "action";
+      renderCostBadge(costCell, cost);
+
+      // Name + sub
+      const nameCell = row.createEl("td", { cls: "pc-weapon-name" });
+      nameCell.createDiv({ cls: "pc-action-row-name", text: a.name });
+      if (a.subLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: a.subLabel });
+
+      // Range
+      row.createEl("td", { cls: "pc-weapon-range", text: a.range ?? "" });
+
+      // Hit (inline italic)
+      const hitCell = row.createEl("td", { cls: "pc-weapon-hit" });
+      renderTextWithInlineTags(`\`atk:${formatSigned(a.toHit)}\``, hitCell, false);
+
+      const ce = ctx.derived.conditionEffects;
+      if (ce) {
+        if (ce.attack_disadvantage) {
+          const sources = ce.sources
+            .filter((s) => attackDisSources.has(s.condition))
+            .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
+          renderConditionTag(hitCell, "DIS", `Disadvantage from ${sources.join(", ")}`);
+        }
+        if (ce.attack_advantage) {
+          renderConditionTag(hitCell, "ADV", `Advantage from invisible`);
+        }
+        const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
+        if (isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
+      }
+
+      // Damage (inline italic; versatile shows both stacked)
+      const dmgCell = row.createEl("td", { cls: "pc-weapon-damage" });
+      renderTextWithInlineTags(
+        `\`damage:${a.damageDice}${a.damageType ? " " + a.damageType : ""}\``,
+        dmgCell,
+        false,
+      );
+      if (a.extraDamage) {
+        dmgCell.appendText(" + ");
+        renderTextWithInlineTags(`\`damage:${a.extraDamage}\``, dmgCell, false);
+      }
+      if (a.versatile?.damageDice) {
+        dmgCell.createEl("br");
+        renderTextWithInlineTags(`\`damage:${a.versatile.damageDice}\``, dmgCell, false);
+        dmgCell.appendText(" two-handed");
+      }
+
+      // Click anywhere on the row toggles the expand panel (matches inventory UX).
+      // Inner controls (dice tags, etc.) call e.stopPropagation() on their own
+      // listeners so their clicks don't bubble up here.
+      row.addEventListener("click", () => this.toggleAndRedraw(el, ctx, expandKey));
+
+      // Dice tags rolled inline — prevent bubbling to the row click.
+      hitCell.querySelectorAll(".archivist-tag").forEach((s) =>
+        s.addEventListener("click", (e) => e.stopPropagation()),
+      );
+      dmgCell.querySelectorAll(".archivist-tag").forEach((s) =>
+        s.addEventListener("click", (e) => e.stopPropagation()),
+      );
+
+      // Mark open if state is open
+      if (this.expand.is(expandKey)) {
+        row.classList.add("open");
+        const expandTr = tbody.createEl("tr", { cls: "pc-action-expand-row" });
+        const td = expandTr.createEl("td");
+        td.setAttribute("colspan", "5");
+        const inner = td.createDiv({ cls: "pc-action-expand-inner" });
+        const entry = findEntryForAttack(ctx, a);
+        const resolved = findResolvedForAttack(ctx, a);
+        if (entry && resolved) {
+          renderInventoryRowExpand(inner, {
+            entry, resolved, app: ctx.app, editState: ctx.editState,
+            registry: ctx.core?.entities ?? null,
+          });
+        } else {
+          inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
+        }
+      }
+
+      // Situational sub-line — renders informational modifiers (advantage/disadvantage etc.)
+      const info = a.informational;
+      if (info && info.length > 0) {
+        const sub = tbody.createEl("tr", { cls: "pc-attack-row-situational" });
+        const td = sub.createEl("td");
+        td.setAttribute("colspan", "5");
+        for (const i of info) {
+          const line = td.createDiv({ cls: "pc-attack-row-situational-line" });
+          line.createSpan({
+            text: `${i.source}: ${formatSigned(i.value)} ${fieldLabel(i.field)} ${conditionsToText(i.conditions)}`,
+          });
+        }
+      }
+    }
+  }
+
+  private toggleAndRedraw(el: HTMLElement, ctx: ComponentRenderContext, key: string): void {
+    this.expand.toggle(key);
+    el.empty();
+    this.render(el, ctx);
+  }
+}
+
+function formatSigned(n: number): string {
+  return n >= 0 ? `+${n}` : `${n}`;
+}
+
+function fieldLabel(field: string): string {
+  if (field === "weapon_attack") return "to hit";
+  if (field === "weapon_damage") return "dmg";
+  return field;
+}
+
+function findEntryForAttack(ctx: ComponentRenderContext, a: AttackRow): EquipmentEntry | null {
+  const equipment = ctx.resolved.definition.equipment ?? [];
+  const matchingSlot = equipment.find((e) => e.slot === a.slotKey && e.equipped);
+  if (matchingSlot) return matchingSlot;
+  return null;
+}
+
+function findResolvedForAttack(ctx: ComponentRenderContext, a: AttackRow): ResolvedEquipped | null {
+  const entry = findEntryForAttack(ctx, a);
+  if (!entry) return null;
+  const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
+  if (!slug) return null;
+  const reg = ctx.core?.entities as { getBySlug?: (s: string) => { entityType?: string; data?: object } | null } | undefined;
+  const found = reg?.getBySlug?.(slug);
+  if (!found) return null;
+  const idx = ctx.resolved.definition.equipment?.indexOf(entry) ?? -1;
+  return {
+    index: idx,
+    entity: (found.data ?? null) as ResolvedEquipped["entity"],
+    entityType: found.entityType ?? null,
+    entry,
+  };
+}

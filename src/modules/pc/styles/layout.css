@@ -1,0 +1,111 @@
+/* Layout skeleton for the PC sheet. Responsive behavior is driven
+ * by @container queries against pc-body and pc-content (see
+ * containers.css). Breakpoint widths live in tokens.css. */
+
+.archivist-pc-sheet {
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: var(--pc-radius-lg);
+  box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  overflow: hidden;
+}
+
+.archivist-pc-sheet .pc-header { padding: 0; }
+
+/* Body: the sidebar and content columns are both grid cells stretched to
+ * the same height, so a `border-right` on the sidebar naturally spans the
+ * full body. We zero the body's vertical padding and push it onto each
+ * column instead — that lets the sidebar's border sit flush against the
+ * stats-band rule above and the sheet footer below. Horizontal padding
+ * stays on the body so the two columns share a consistent outer inset. */
+.archivist-pc-sheet .pc-body {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: var(--pc-space-5);
+  padding: 0 var(--pc-space-4);
+}
+
+.archivist-pc-sheet .pc-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-3);
+  min-width: 0;
+  padding: var(--pc-space-4) var(--pc-space-4) var(--pc-space-4) 0;
+  border-right: 1px solid var(--pc-tan);
+}
+
+.archivist-pc-sheet .pc-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-3);
+  min-width: 0;
+  padding: var(--pc-space-4) 0;
+}
+
+/* Below narrow tier: body sidebar collapses under content.
+ * Swap the vertical divider for a horizontal one so the two
+ * sections stay clearly demarcated. Query pc-sheet (the
+ * outer sheet container) rather than pc-body — a @container
+ * query can only restyle descendants of its container, and
+ * .pc-body IS the pc-body container, so it can't restyle
+ * itself. Sheet width tracks body width 1:1 (sheet has no
+ * horizontal padding), so the 499px threshold is preserved. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-body {
+    grid-template-columns: 1fr;
+    padding: 0 var(--pc-space-4) var(--pc-space-4);
+  }
+  .archivist-pc-sheet .pc-sidebar {
+    padding: var(--pc-space-4) 0 var(--pc-space-3);
+    border-right: none;
+    border-bottom: 1px solid var(--pc-tan);
+  }
+  .archivist-pc-sheet .pc-content {
+    padding: var(--pc-space-3) 0 0;
+  }
+}
+
+.archivist-pc-error {
+  max-width: 600px;
+  margin: var(--pc-space-5) auto;
+  padding: var(--pc-space-5);
+  color: var(--pc-crimson);
+  background: var(--pc-parchment-light);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+  font-family: var(--pc-font-sans);
+  text-align: center;
+}
+
+.archivist-pc-error h2 {
+  font-family: var(--pc-font-serif);
+  color: var(--pc-crimson);
+  margin: 0 0 var(--pc-space-3);
+}
+
+.archivist-pc-error button.mod-cta {
+  margin-top: var(--pc-space-3);
+  padding: 8px 16px;
+  background: var(--pc-crimson);
+  color: var(--pc-white);
+  border: none;
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+
+.archivist-pc-warnings {
+  padding: var(--pc-space-3) var(--pc-space-4);
+  margin: var(--pc-space-3) var(--pc-space-4) 0;
+  background: #fff6e0;
+  border-left: 3px solid var(--pc-crimson);
+  font-size: var(--pc-fs-body);
+  border-radius: var(--pc-radius-sm);
+}
+
+.archivist-pc-warnings ul { margin: 0; padding-left: var(--pc-space-4); }
+
+.pc-loading-shim {
+  padding: var(--pc-space-4);
+  color: var(--text-muted);
+  font-style: italic;
+}

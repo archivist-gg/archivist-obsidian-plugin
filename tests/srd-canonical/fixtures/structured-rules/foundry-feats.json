@@ -1,0 +1,11 @@
+{
+  "feat": [
+    {
+      "name": "Polearm Master",
+      "source": "PHB",
+      "activities": [
+        { "type": "utility", "activation": { "type": "bonus", "value": 1 } }
+      ]
+    }
+  ]
+}

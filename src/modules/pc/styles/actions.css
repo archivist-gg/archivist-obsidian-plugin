@@ -1,0 +1,208 @@
+/* PC Actions tab — all rules scoped under .archivist-pc-sheet.
+ * Filled in incrementally by the actions tasks. Keep actions-specific
+ * styles isolated here so the redesign can be reverted as a single
+ * file if needed. */
+
+/* ---------- Cost badge (pill rendered next to action rows) ---------- */
+.archivist-pc-sheet .pc-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: var(--pc-fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: #fff;
+  line-height: var(--pc-lh-tight);
+}
+.archivist-pc-sheet .pc-cost-badge.cost-action   { background: var(--pc-crimson); }
+.archivist-pc-sheet .pc-cost-badge.cost-bonus    { background: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-cost-badge.cost-reaction { background: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
+
+/* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
+ * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
+ * Here we only own the outer flex wrapper that places the pip row next to the
+ * italic recovery suffix ("/ Dawn 1d6+1"), and the suffix's typography. */
+.archivist-pc-sheet .pc-charge-boxes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-charge-recovery {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+
+/* ---------- Row-expand panel (Weapons/Items/Features) ---------- */
+.archivist-pc-sheet .pc-action-row { cursor: pointer; }
+.archivist-pc-sheet .pc-action-row:hover { background: rgba(255, 255, 255, 0.18); }
+.archivist-pc-sheet .pc-action-expand-row {
+  background: rgba(255, 255, 255, 0.22);
+}
+.archivist-pc-sheet .pc-action-expand-inner {
+  padding: var(--pc-space-3);
+  border-left: 3px solid var(--pc-crimson);
+  margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
+}
+
+/* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
+.archivist-pc-sheet .pc-actions-section { margin-bottom: var(--pc-space-4); }
+.archivist-pc-sheet .pc-actions-section-head {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  margin-bottom: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan-muted);
+  padding-bottom: var(--pc-space-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.archivist-pc-sheet .pc-actions-section-count {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  letter-spacing: var(--pc-ls-caps-md);
+  font-weight: 600;
+}
+
+.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-actions-table th {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  text-align: left;
+  padding: var(--pc-space-1) var(--pc-space-1);
+  border-bottom: 1px solid var(--pc-tan-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  font-weight: 600;
+}
+.archivist-pc-sheet .pc-actions-table td {
+  padding: var(--pc-space-2) var(--pc-space-1);
+  vertical-align: middle;
+  border-bottom: 1px dashed var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-actions-table tr:last-child td { border-bottom: none; }
+.archivist-pc-sheet .pc-action-row-name {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-action-row-sub {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
+/* Inline italic dice tag override inside actions tab */
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-atk,
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-damage,
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-dice {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-weight: 700;
+  border-bottom: 1px dotted transparent;
+  cursor: pointer;
+  color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-damage { color: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-atk:hover    { border-bottom-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-actions-tab .archivist-tag-damage:hover { border-bottom-color: var(--pc-rarity-rare); }
+
+/* ---------- Standard combat actions reference block (Actions tab footer) ---------- */
+.archivist-pc-sheet .pc-standard-actions {
+  margin-top: var(--pc-space-4);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-soft);
+  line-height: var(--pc-lh-body);
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm);
+  padding: var(--pc-space-2) var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-standard-actions-title {
+  font-weight: 700;
+  color: var(--pc-text-primary);
+  margin-bottom: var(--pc-space-1);
+}
+
+/* ---------- Feature expand panel (FeaturesTable expanded row body) ---------- */
+.archivist-pc-sheet .pc-feature-expand-title {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  margin-bottom: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-feature-expand-meta {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+  margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-feature-expand-body {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  line-height: var(--pc-lh-body);
+}
+.archivist-pc-sheet .pc-feature-expand-body p { margin: 0 0 var(--pc-space-2); }
+.archivist-pc-sheet .pc-feature-expand-attacks {
+  margin-top: var(--pc-space-2);
+  padding-left: var(--pc-space-2);
+  border-left: 2px solid var(--pc-tan);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+
+/* ---------- Responsive (added in phase 5) ---------- */
+
+/* Below narrow tier: attack & actions tables allow horizontal
+ * scroll so trailing columns (Range / Damage / Notes) remain
+ * reachable rather than overflowing the content column.
+ * Reflow-via-grid would require an HTML change (deferred). */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-attack-table,
+  .archivist-pc-sheet .pc-actions-table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+/* Below narrow tier: tighten condition-chip gap so more chips
+ * fit per row. .pc-cond-body remains flex-wrap throughout because
+ * chips have variable widths.
+ *
+ * Query pc-sheet rather than pc-content because the def-cond
+ * panel containing .pc-cond-body sits inside .pc-stats-band
+ * (sheet-level), not inside .pc-content. @container queries only
+ * match descendants of their container. The conditions popover
+ * (portaled to document.body) is outside the sheet entirely and
+ * keeps its base styling at every width. */
+@container pc-sheet (max-width: 499px) {
+  .archivist-pc-sheet .pc-cond-body {
+    gap: 1px;
+  }
+  .archivist-pc-sheet .pc-cond-chip {
+    padding: 1px 4px;
+  }
+}

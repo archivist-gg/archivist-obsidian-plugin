@@ -55,4 +55,21 @@ export default defineConfig([
       "@eslint-community/eslint-comments/no-unused-disable": "error",
     },
   },
+  // Dev CLI tools: progress logging to stdout/stderr is intended behaviour, so
+  // narrow the no-console rule here rather than littering the code with
+  // forbidden eslint-disable comments. `no-console` remains enforced
+  // everywhere else (in obsidianmd's recommended config it is implemented via
+  // `obsidianmd/rule-custom-message`, which wraps `no-console`).
+  // Node-side rules (fetch, popout-window document reference, etc.) target
+  // the Obsidian plugin runtime and do not apply to Node CLI tools that run
+  // outside Obsidian.
+  {
+    files: ["tools/**/*.ts"],
+    rules: {
+      "no-console": "off",
+      "obsidianmd/rule-custom-message": "off",
+      "obsidianmd/prefer-active-doc": "off",
+      "no-restricted-globals": "off",
+    },
+  },
 ]);

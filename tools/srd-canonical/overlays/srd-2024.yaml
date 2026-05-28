@@ -1,0 +1,48 @@
+# SRD 5.2 overlay -- minimal seed
+# Mostly aligned with srd-5e.yaml; SRD 2024 has tighter upstream structure so fewer overrides needed.
+# Source: WotC SRD 5.2 PDF.
+# This is a SEED -- full authorship is deferred to a follow-up pass.
+
+class_features:
+  # Fighter (2024 -- Action Surge mostly unchanged)
+  action-surge:
+    action_cost: special
+    uses:
+      max: 1
+      recharge: short-rest
+      scales_at:
+        - level: 17
+          value: 2
+  # Barbarian (2024 -- Rage uses unchanged)
+  rage:
+    action_cost: bonus-action
+    uses:
+      max: 2
+      recharge: long-rest
+      scales_at:
+        - level: 3
+          max: 3
+        - level: 6
+          max: 4
+        - level: 12
+          max: 5
+        - level: 17
+          max: 6
+
+race_traits:
+  # Dragonborn (2024)
+  breath-weapon:
+    action_cost: action
+    uses:
+      max: 1
+      recharge: short-rest
+    save:
+      ability: dex
+      dc_formula: "8 + {con_mod} + {prof_bonus}"
+
+optional_feature_slugs:
+  invocation:
+    - agonizing-blast
+  fighting_style:
+    - defense
+    - dueling
