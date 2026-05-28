@@ -1,11 +1,11 @@
 // tests/pc-rest.test.ts
 import { describe, it, expect } from "vitest";
-import { computeRestPlan } from "../src/modules/pc/pc.rest";
+import { computeRestPlan, applyRestResets } from "../src/modules/pc/pc.rest";
 import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
   clone, fakeResolved, fakeDerived,
 } from "./fixtures/pc/rest-fixtures";
-import { MONK_6_DRAINED, PC_WITH_MAGIC_ITEMS } from "./fixtures/pc/rest-fixtures";
+import { MONK_6_DRAINED, PC_WITH_MAGIC_ITEMS, PC_AT_ZERO_HP } from "./fixtures/pc/rest-fixtures";
 
 describe("computeRestPlan — long rest — HP / exhaustion / spell slots", () => {
   it("includes hp-to-max when hp.current < derived.hp.max", () => {
@@ -217,5 +217,104 @@ describe("computeRestPlan — short rest", () => {
     const c = clone(FIGHTER_5_CLERIC_3);
     const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
     expect(plan.hdAvailable).toEqual([]);
+  });
+});
+
+describe("applyRestResets — long rest mutations", () => {
+  it("sets hp.current to derived.hp.max", () => {
+    const c = clone(WIZARD_5_WOUNDED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.hp.current).toBe(32);
+  });
+
+  it("clears death_saves when waking from 0 HP", () => {
+    const c = clone(PC_AT_ZERO_HP);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.death_saves).toEqual({ successes: 0, failures: 0 });
+  });
+
+  it("decrements exhaustion by 1", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.exhaustion).toBe(2);
+  });
+
+  it("exhaustion floors at 0", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.exhaustion = 0;
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.exhaustion).toBe(0);
+  });
+
+  it("resets all spell_slots to used=0", () => {
+    const c = clone(WIZARD_5_WOUNDED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    for (const slot of Object.values(c.state.spell_slots)) {
+      expect(slot.used).toBe(0);
+    }
+  });
+
+  it("clears concentration unconditionally (no opt-out)", () => {
+    const c = clone(FIGHTER_5_CLERIC_3); // concentration: '[[bless]]'
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.concentration).toBeNull();
+  });
+
+  it("distributes hd-regain most-spent-first", () => {
+    const c = clone(FIGHTER_5_CLERIC_3); // totalLevel 8 → regain 4; d10:3, d8:2
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.hit_dice.d10.used).toBe(0); // -3
+    expect(c.state.hit_dice.d8.used).toBe(1);  // -1
+  });
+
+  it("restores feature_uses with reset short OR long", () => {
+    const c = clone(MONK_6_DRAINED);
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "short-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses.ki.used).toBe(0);
+  });
+
+  it("restores item charges with reset in {short, long, dawn}", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.equipment[0].state!.charges!.current).toBe(3); // bag-of-tricks
+    expect(c.equipment[1].state!.charges!.current).toBe(1); // cloak (dawn)
+  });
+
+  it("opt-out of hp-to-max preserves current HP", () => {
+    const c = clone(WIZARD_5_WOUNDED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set(["hp-to-max"]));
+    expect(c.state.hp.current).toBe(12);
+  });
+
+  it("opt-out of exhaustion preserves exhaustion level", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set(["exhaustion"]));
+    expect(c.state.exhaustion).toBe(3);
+  });
+
+  it("with all categories opted out, only concentration changes", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    const allIds = new Set(plan.categories.map((cat) => cat.id));
+    const before = clone(c.state);
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, allIds);
+    expect(c.state.concentration).toBeNull(); // unconditional
+    expect(c.state.hp).toEqual(before.hp);
+    expect(c.state.exhaustion).toBe(before.exhaustion);
+    expect(c.state.spell_slots).toEqual(before.spell_slots);
   });
 });

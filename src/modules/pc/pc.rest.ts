@@ -168,11 +168,73 @@ export function computeRestPlan(
 }
 
 export function applyRestResets(
-  _character: Character,
-  _resolved: ResolvedCharacter,
-  _derived: DerivedStats,
-  _plan: RestPlan,
-  _optouts: Set<RestCategoryId>,
+  character: Character,
+  resolved: ResolvedCharacter,
+  derived: DerivedStats,
+  plan: RestPlan,
+  optouts: Set<RestCategoryId>,
 ): void {
-  // populated in later tasks
+  const isKept = (id: RestCategoryId) => !optouts.has(id);
+
+  for (const cat of plan.categories) {
+    if (!isKept(cat.id)) continue;
+
+    if (cat.id === "hp-to-max") {
+      const wasZero = character.state.hp.current === 0;
+      character.state.hp.current = derived.hp.max;
+      if (wasZero && character.state.death_saves) {
+        character.state.death_saves = { successes: 0, failures: 0 };
+      }
+      continue;
+    }
+
+    if (cat.id === "exhaustion") {
+      character.state.exhaustion = Math.max(0, character.state.exhaustion - 1);
+      continue;
+    }
+
+    if (cat.id === "spell-slots") {
+      for (const slot of Object.values(character.state.spell_slots ?? {})) {
+        slot.used = 0;
+      }
+      continue;
+    }
+
+    if (cat.id === "hd-regain") {
+      const totalLevel = resolved.totalLevel ?? 0;
+      let left = Math.max(1, Math.floor(totalLevel / 2));
+      const pools = Object.entries(character.state.hit_dice ?? {})
+        .map(([die, hd]) => ({ die, hd }))
+        .filter((p) => p.hd.used > 0)
+        .sort((a, b) => b.hd.used - a.hd.used);
+      for (const p of pools) {
+        if (left === 0) break;
+        const give = Math.min(p.hd.used, left);
+        p.hd.used -= give;
+        left -= give;
+      }
+      continue;
+    }
+
+    if (cat.id.startsWith("feature:")) {
+      const key = cat.id.slice("feature:".length);
+      const fu = character.state.feature_uses?.[key];
+      if (fu) fu.used = 0;
+      continue;
+    }
+
+    if (cat.id.startsWith("item:")) {
+      const idx = Number(cat.id.slice("item:".length));
+      const entry = character.equipment[idx];
+      if (entry?.state?.charges) {
+        entry.state.charges.current = entry.state.charges.max;
+      }
+      continue;
+    }
+  }
+
+  // Concentration is unconditional on long rest, no opt-out
+  if (plan.type === "long") {
+    character.state.concentration = null;
+  }
 }
