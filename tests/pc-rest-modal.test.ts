@@ -186,6 +186,29 @@ describe("RestModal — short rest — Manual entry", () => {
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
   });
+
+  it("Apply with empty input does NOT spend HD and does NOT heal", () => {
+    // Regression: `Number("")` is 0, which passed the finite/≥0 guard and
+    // burned HD for a 0-value heal (plus CON × spends). The empty-string
+    // guard should reject before any state mutation.
+    const c = clone(MONK_6_DRAINED);
+    c.state.hp.current = 10;
+    c.state.hp.max = 100;
+    c.abilities.con = 14; // +2 — would heal if the bug fired
+    const { m, character } = makeModal("short", c);
+    const hdUsedBefore = character.state.hit_dice.d10.used;
+    (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
+    (Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("manual")) as HTMLButtonElement).click();
+    const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
+    input.value = ""; // empty
+    const apply = m.contentEl.querySelector(".pc-rest-btn-roll--small") as HTMLButtonElement;
+    apply.click();
+    expect(character.state.hit_dice.d10.used).toBe(hdUsedBefore); // no HD burned
+    expect(character.state.hp.current).toBe(10); // no heal
+    // Manual input should still be open (rejection feedback, not commit)
+    expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeTruthy();
+  });
 });
 
 describe("RestModal — short rest — Confirm", () => {

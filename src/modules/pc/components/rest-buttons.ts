@@ -43,10 +43,15 @@ export class RestButtons {
     if (!app || !editState) return;
     this.modalOpen = true;
     this.refreshDisabledState();
+    // Thread the registry handle into the modal so its plan preview can
+    // resolve `[[item-slug]]` references to display names. Without it,
+    // resolveItemName returns undefined and the label falls back to the
+    // raw slug.
+    const registry = editState.getRegistry();
     const modal = new RestModal(app, editState, resolved, derived, type, () => {
       this.modalOpen = false;
       this.refreshDisabledState();
-    });
+    }, registry);
     modal.open();
   }
 

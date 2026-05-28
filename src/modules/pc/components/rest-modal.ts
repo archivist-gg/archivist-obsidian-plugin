@@ -2,6 +2,7 @@
 import { Modal, type App } from "obsidian";
 import type { DerivedStats, ResolvedCharacter } from "../pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
+import type { EntityRegistry } from "../../../shared/entities/entity-registry";
 import {
   computeRestPlan,
   type RestCategoryId,
@@ -27,6 +28,7 @@ export class RestModal extends Modal {
     private derived: DerivedStats,
     private type: RestType,
     private onCloseCallback?: () => void,
+    private registry: EntityRegistry | null = null,
   ) {
     super(app);
   }
@@ -66,7 +68,7 @@ export class RestModal extends Modal {
   private currentPlan(): RestPlan {
     // Read live character from editState so re-renders see the latest
     const character = this.editState.getCharacter();
-    return computeRestPlan(character, this.resolved, this.derived, null, this.type);
+    return computeRestPlan(character, this.resolved, this.derived, this.registry, this.type);
   }
 
   private renderOptList(plan: RestPlan): void {
@@ -187,9 +189,16 @@ export class RestModal extends Modal {
         text: "Apply",
       });
 
-      const totalSelectedForManual = totalSelected;
-      void totalSelectedForManual;
       const submit = () => {
+        // Reject empty submissions explicitly: `Number("")` is 0, which would
+        // otherwise pass the finite/≥0 guard below and burn HD for a 0-value
+        // heal (plus CON mod × spends). Shake the input the same way other
+        // invalid entries do so the affordance is consistent.
+        if (input.value.trim() === "") {
+          input.addClass("shake");
+          activeWindow.setTimeout(() => input.removeClass("shake"), 250);
+          return;
+        }
         const raw = Number(input.value);
         if (!Number.isFinite(raw) || raw < 0) {
           input.addClass("shake");
@@ -253,17 +262,10 @@ export class RestModal extends Modal {
     return Math.floor((con - 10) / 2);
   }
 
-  private commitHdSpend(mode: "roll" | "avg" | "manual", manualValue?: number): void {
+  private commitHdSpend(mode: "roll" | "avg"): void {
     const conMod = this.conMod();
     for (const [die, n] of this.selectedPips.entries()) {
       const max = Number(die.replace("d", ""));
-      if (mode === "manual" && manualValue !== undefined) {
-        // Manual: one spend op per pip in this pool, single heal at the end.
-        for (let i = 0; i < n; i++) this.editState.spendHitDie(die);
-        this.editState.heal(manualValue + conMod * n);
-        this.rollLog.push({ die, value: manualValue, tag: "manual" });
-        continue;
-      }
       for (let i = 0; i < n; i++) {
         const v = mode === "roll" ? 1 + Math.floor(Math.random() * max) : Math.floor(max / 2) + 1;
         this.editState.spendHitDie(die);

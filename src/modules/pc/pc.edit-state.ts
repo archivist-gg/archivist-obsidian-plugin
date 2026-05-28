@@ -414,6 +414,15 @@ export class CharacterEditState {
     return this.character;
   }
 
+  /**
+   * Expose the registry handle for components (e.g. RestModal) that need
+   * to resolve item slugs to display names. Returns `null` when the host
+   * didn't pass a registry (test fixtures and early-init paths).
+   */
+  getRegistry(): EntityRegistry | null {
+    return this.registry;
+  }
+
   toYaml(): string {
     return characterToYaml(this.character);
   }
