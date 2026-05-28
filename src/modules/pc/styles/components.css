@@ -1366,10 +1366,16 @@
 }
 
 /* SP4b — defense-type popover (visual parity with pc-cond-popover) */
+/* Popover is portal'd to document.body, so selectors are scoped under
+   .pc-def-popover (not .archivist-pc-sheet). Tab rules use a two-class
+   prefix so they beat Obsidian's `.modal button` / generic button
+   defaults — without it the inactive tabs render dark Obsidian-style. */
 .pc-def-popover {
   position: absolute;
   z-index: 1000;
-  min-width: 200px;
+  /* 280px = ~70px per tab — enough for "Condition Imm." without truncation. */
+  min-width: 280px;
+  max-width: 360px;
   padding: 6px 0;
   background: var(--pc-bg-soft, #fff6e0);
   border: 1px solid var(--pc-border, #8a6f47);
@@ -1378,7 +1384,7 @@
   font-family: var(--pc-font-body, Georgia, serif);
   color: var(--pc-text-primary, #1c1811);
 }
-.pc-def-popover-header {
+.pc-def-popover .pc-def-popover-header {
   padding: 4px 10px 6px;
   font-weight: 700;
   font-size: 11px;
@@ -1388,15 +1394,16 @@
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
 /* SP4b — kind tab bar inside the defense popover */
-.pc-def-popover-tabs {
+.pc-def-popover .pc-def-popover-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
-.pc-def-popover-tab {
-  padding: 4px 2px;
+.pc-def-popover .pc-def-popover-tab {
+  padding: 6px 4px;
   border: 0;
   border-right: 1px solid var(--pc-border, #8a6f47);
+  border-radius: 0;
   background: transparent;
   color: var(--pc-text-soft, #7c6a4e);
   font-family: var(--pc-font-serif, Georgia, serif);
@@ -1406,16 +1413,20 @@
   cursor: pointer;
   text-align: center;
   line-height: 1.2;
+  box-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.pc-def-popover-tab:last-child {
+.pc-def-popover .pc-def-popover-tab:last-child {
   border-right: 0;
 }
-.pc-def-popover-tab:hover {
-  background: color-mix(in srgb, var(--pc-crimson, #8a2414) 8%, transparent);
+.pc-def-popover .pc-def-popover-tab:hover {
+  background: rgba(146, 38, 16, 0.08);
   color: var(--pc-text-primary, #1c1811);
 }
-.pc-def-popover-tab.active {
-  background: color-mix(in srgb, var(--pc-crimson, #8a2414) 12%, transparent);
+.pc-def-popover .pc-def-popover-tab.active {
+  background: rgba(146, 38, 16, 0.12);
   color: var(--pc-crimson, #8a2414);
 }
 .pc-def-popover-list {

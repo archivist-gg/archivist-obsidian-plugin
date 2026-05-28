@@ -1,6 +1,7 @@
 import type { ComponentRenderContext } from "./component.types";
 import { DAMAGE_TYPES } from "../../../shared/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "../constants/conditions";
+import { clampPopoverToViewport } from "./popover-utils";
 
 export type DefenseKind = "resistances" | "immunities" | "vulnerabilities" | "condition_immunities";
 
@@ -33,9 +34,12 @@ export function openDefenseTypePopover(
   const editState = ctx.editState;
   const popover = activeDocument.body.createDiv({ cls: "pc-def-popover" });
 
-  const rect = anchor.getBoundingClientRect();
-  popover.style.top = `${rect.bottom + activeWindow.scrollY + 4}px`;
-  popover.style.left = `${rect.left + activeWindow.scrollX}px`;
+  // Initial placement anchored below the `+` button; final placement is
+  // clamped to the viewport once the tab bar + list are rendered (see
+  // `clampPopoverToViewport` call below).
+  const anchorRect = anchor.getBoundingClientRect();
+  popover.style.top = `${anchorRect.bottom + activeWindow.scrollY + 4}px`;
+  popover.style.left = `${anchorRect.left + activeWindow.scrollX}px`;
 
   popover.createDiv({ cls: "pc-def-popover-header", text: "Add Defense" });
 
@@ -95,6 +99,11 @@ export function openDefenseTypePopover(
   }
 
   renderList();
+
+  // Keep the popover inside the viewport — without this, a `+` button near
+  // the right edge of the sheet pushes the popover off-screen and the last
+  // tab ("Condition Imm.") clips.
+  clampPopoverToViewport(popover, anchorRect);
 
   const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") closeDefenseTypePopover(); };
   const onClick = (e: MouseEvent) => {

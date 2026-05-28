@@ -4,6 +4,7 @@ import {
   CONDITION_DISPLAY_NAMES,
 } from "../constants/conditions";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
+import { clampPopoverToViewport } from "./popover-utils";
 
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
 
@@ -121,28 +122,6 @@ export function closeConditionsPopover(): void {
   current = null;
 }
 
-function clampPopoverToViewport(popover: HTMLElement, anchorRect: DOMRect): void {
-  const margin = 8;
-  const viewW = activeWindow.innerWidth;
-  const viewH = activeWindow.innerHeight;
-  const popRect = popover.getBoundingClientRect();
-
-  if (popRect.right > viewW - margin) {
-    const shift = popRect.right - (viewW - margin);
-    popover.style.left = `${parseFloat(popover.style.left) - shift}px`;
-  }
-  const afterHorizontal = popover.getBoundingClientRect();
-  if (afterHorizontal.left < margin) {
-    popover.style.left = `${parseFloat(popover.style.left) + (margin - afterHorizontal.left)}px`;
-  }
-
-  if (popRect.bottom > viewH - margin) {
-    const aboveTop = anchorRect.top - popRect.height - 4;
-    if (aboveTop >= margin) {
-      popover.style.top = `${aboveTop + activeWindow.scrollY}px`;
-    } else {
-      const clampedTop = Math.max(margin, viewH - popRect.height - margin);
-      popover.style.top = `${clampedTop + activeWindow.scrollY}px`;
-    }
-  }
-}
+// `clampPopoverToViewport` moved to `./popover-utils` so the defenses
+// popover can share it. See conditions-popover.ts line ~18 for the same
+// motivation.
