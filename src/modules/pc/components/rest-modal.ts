@@ -89,7 +89,7 @@ export class RestModal extends Modal {
       const checkbox = li.createEl("input", {
         cls: "pc-rest-opt-checkbox",
         attr: { type: "checkbox" },
-      }) as HTMLInputElement;
+      });
       checkbox.checked = !this.optouts.has(cat.id);
       checkbox.addEventListener("change", () => {
         if (checkbox.checked) this.optouts.delete(cat.id);
@@ -152,7 +152,7 @@ export class RestModal extends Modal {
     const rollBtn = row.createEl("button", {
       cls: "pc-rest-btn-roll",
       text: totalSelected > 0 ? `⚄ Roll & Apply ${totalSelected}` : "⚄ Roll & Apply",
-    }) as HTMLButtonElement;
+    });
     rollBtn.disabled = totalSelected === 0;
     rollBtn.addEventListener("click", () => this.commitHdSpend("roll"));
 
@@ -160,14 +160,14 @@ export class RestModal extends Modal {
     const avgBtn = row.createEl("button", {
       cls: "pc-rest-btn-outline",
       text: totalSelected > 0 ? `Apply Avg +${avgAmount}` : "Apply Avg",
-    }) as HTMLButtonElement;
+    });
     avgBtn.disabled = totalSelected === 0;
     avgBtn.addEventListener("click", () => this.commitHdSpend("avg"));
 
     const manualBtn = row.createEl("button", {
       cls: this.manualOpen ? "pc-rest-btn-outline active" : "pc-rest-btn-outline",
-      text: "✎ Manual",
-    }) as HTMLButtonElement;
+      text: "✎ manual",
+    });
     manualBtn.disabled = totalSelected === 0;
     manualBtn.addEventListener("click", () => {
       this.manualOpen = !this.manualOpen;
@@ -180,12 +180,12 @@ export class RestModal extends Modal {
       const input = wrap.createEl("input", {
         cls: "pc-rest-manual-number",
         attr: { type: "number", min: "0", inputmode: "numeric" },
-      }) as HTMLInputElement;
-      setTimeout(() => input.focus(), 0);
+      });
+      activeWindow.setTimeout(() => input.focus(), 0);
       const apply = wrap.createEl("button", {
         cls: "pc-rest-btn-roll pc-rest-btn-roll--small",
         text: "Apply",
-      }) as HTMLButtonElement;
+      });
 
       const totalSelectedForManual = totalSelected;
       void totalSelectedForManual;
@@ -193,7 +193,7 @@ export class RestModal extends Modal {
         const raw = Number(input.value);
         if (!Number.isFinite(raw) || raw < 0) {
           input.addClass("shake");
-          setTimeout(() => input.removeClass("shake"), 250);
+          activeWindow.setTimeout(() => input.removeClass("shake"), 250);
           return;
         }
         // Cap at sum of selected dice maxes
@@ -205,7 +205,7 @@ export class RestModal extends Modal {
         if (value !== raw) {
           input.value = String(value);
           input.addClass("shake");
-          setTimeout(() => input.removeClass("shake"), 250);
+          activeWindow.setTimeout(() => input.removeClass("shake"), 250);
         }
         // Apply across pools; manual heals are split proportionally across pools
         // when multiple pools are selected — simplest behavior is to apply the

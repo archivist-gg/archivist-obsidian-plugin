@@ -154,7 +154,7 @@ describe("RestModal — short rest — Manual entry", () => {
     (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
     expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
     const manualBtn = Array.from(m.contentEl.querySelectorAll("button"))
-      .find((b) => b.textContent?.includes("Manual")) as HTMLButtonElement;
+      .find((b) => b.textContent?.includes("manual")) as HTMLButtonElement;
     manualBtn.click();
     expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeTruthy();
   });
@@ -167,7 +167,7 @@ describe("RestModal — short rest — Manual entry", () => {
     const { m, character } = makeModal("short", c);
     (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
     const manualBtn = Array.from(m.contentEl.querySelectorAll("button"))
-      .find((b) => b.textContent?.includes("Manual")) as HTMLButtonElement;
+      .find((b) => b.textContent?.includes("manual")) as HTMLButtonElement;
     manualBtn.click();
     const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
     input.value = "5";
@@ -181,7 +181,7 @@ describe("RestModal — short rest — Manual entry", () => {
     const { m } = makeModal("short", c);
     (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
     (Array.from(m.contentEl.querySelectorAll("button"))
-      .find((b) => b.textContent?.includes("Manual")) as HTMLButtonElement).click();
+      .find((b) => b.textContent?.includes("manual")) as HTMLButtonElement).click();
     const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();

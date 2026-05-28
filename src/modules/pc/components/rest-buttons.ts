@@ -24,12 +24,12 @@ export class RestButtons {
     const wrap = this.host.createDiv({ cls: "pc-rest-cluster" });
     this.shortBtn = wrap.createEl("button", {
       cls: "pc-rest-btn pc-rest-btn--short",
-      text: "☾ Short Rest",
-    }) as HTMLButtonElement;
+      text: "☾ short rest",
+    });
     this.longBtn = wrap.createEl("button", {
       cls: "pc-rest-btn pc-rest-btn--long",
-      text: "★ Long Rest",
-    }) as HTMLButtonElement;
+      text: "★ long rest",
+    });
 
     this.shortBtn.addEventListener("click", () => this.open("short"));
     this.longBtn.addEventListener("click", () => this.open("long"));
