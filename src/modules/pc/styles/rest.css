@@ -235,3 +235,88 @@
 .pc-rest-pip:hover:not(.spent) {
   box-shadow: 0 0 0 2px rgba(146, 38, 16, 0.18);
 }
+
+/* rest.css — append */
+
+.pc-rest-hd-buttons {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.pc-rest-btn-outline {
+  background: transparent;
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 12px;
+  color: var(--pc-crimson);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.pc-rest-btn-outline.active {
+  background: rgba(146, 38, 16, 0.12);
+}
+
+.pc-rest-btn-outline:disabled,
+.pc-rest-btn-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pc-rest-roll-log {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-soft);
+  font-style: italic;
+  margin-top: 6px;
+  line-height: 1.45;
+}
+
+.pc-rest-roll-log strong {
+  color: var(--pc-crimson);
+  font-style: normal;
+}
+
+.pc-rest-roll-tag {
+  font-family: var(--pc-font-sans);
+  font-style: normal;
+  font-size: var(--pc-fs-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan);
+  border-radius: 3px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+.pc-rest-btn-roll {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 12px;
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  line-height: 1;
+}
+.pc-rest-btn-roll:hover:not(:disabled) {
+  background: var(--pc-crimson-light);
+}
+.pc-rest-btn-roll:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

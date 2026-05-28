@@ -138,8 +138,95 @@ export class RestModal extends Modal {
       }
     }
 
-    // Buttons row populated in Task 16
-    strip.createDiv({ cls: "pc-rest-hd-buttons" });
+    this.renderHdButtons(strip);
+    this.renderRollLog(strip);
+  }
+
+  private renderHdButtons(strip: HTMLElement): void {
+    const totalSelected = Array.from(this.selectedPips.values()).reduce((s, n) => s + n, 0);
+    const row = strip.createDiv({ cls: "pc-rest-hd-buttons" });
+
+    // Note: class is `pc-rest-btn-roll`, NOT `pc-rest-btn-confirm`. The footer's
+    // Confirm button also uses `pc-rest-btn-confirm`; using a distinct class
+    // for the HD-spend button keeps test selectors unambiguous.
+    const rollBtn = row.createEl("button", {
+      cls: "pc-rest-btn-roll",
+      text: totalSelected > 0 ? `⚄ Roll & Apply ${totalSelected}` : "⚄ Roll & Apply",
+    }) as HTMLButtonElement;
+    rollBtn.disabled = totalSelected === 0;
+    rollBtn.addEventListener("click", () => this.commitHdSpend("roll"));
+
+    const avgAmount = this.previewAvgHeal();
+    const avgBtn = row.createEl("button", {
+      cls: "pc-rest-btn-outline",
+      text: totalSelected > 0 ? `Apply Avg +${avgAmount}` : "Apply Avg",
+    }) as HTMLButtonElement;
+    avgBtn.disabled = totalSelected === 0;
+    avgBtn.addEventListener("click", () => this.commitHdSpend("avg"));
+
+    const manualBtn = row.createEl("button", {
+      cls: this.manualOpen ? "pc-rest-btn-outline active" : "pc-rest-btn-outline",
+      text: "✎ Manual",
+    }) as HTMLButtonElement;
+    manualBtn.disabled = totalSelected === 0;
+    manualBtn.addEventListener("click", () => {
+      this.manualOpen = !this.manualOpen;
+      this.render();
+    });
+    // The manual inline input is added in Task 17
+  }
+
+  private previewAvgHeal(): number {
+    const conMod = this.conMod();
+    let total = 0;
+    for (const [die, n] of this.selectedPips.entries()) {
+      const max = Number(die.replace("d", ""));
+      total += n * (Math.floor(max / 2) + 1 + conMod);
+    }
+    return total;
+  }
+
+  private conMod(): number {
+    // Derived stats may not expose CON mod directly; compute from abilities.
+    const con = this.editState.getCharacter().abilities.con ?? 10;
+    return Math.floor((con - 10) / 2);
+  }
+
+  private commitHdSpend(mode: "roll" | "avg" | "manual", manualValue?: number): void {
+    const conMod = this.conMod();
+    for (const [die, n] of this.selectedPips.entries()) {
+      const max = Number(die.replace("d", ""));
+      if (mode === "manual" && manualValue !== undefined) {
+        // Manual: one spend op per pip in this pool, single heal at the end.
+        for (let i = 0; i < n; i++) this.editState.spendHitDie(die);
+        this.editState.heal(manualValue + conMod * n);
+        this.rollLog.push({ die, value: manualValue, tag: "manual" });
+        continue;
+      }
+      for (let i = 0; i < n; i++) {
+        const v = mode === "roll" ? 1 + Math.floor(Math.random() * max) : Math.floor(max / 2) + 1;
+        this.editState.spendHitDie(die);
+        this.editState.heal(v + conMod);
+        this.rollLog.push({ die, value: v, tag: mode === "avg" ? "avg" : undefined });
+      }
+    }
+    this.selectedPips.clear();
+    this.manualOpen = false;
+    this.render();
+  }
+
+  private renderRollLog(strip: HTMLElement): void {
+    if (this.rollLog.length === 0) return;
+    const log = strip.createDiv({ cls: "pc-rest-roll-log" });
+    for (const entry of this.rollLog) {
+      const line = log.createDiv({ cls: "pc-rest-roll-line" });
+      line.createSpan({ text: `${entry.die} ⇒ ` });
+      const v = line.createEl("strong");
+      v.setText(String(entry.value));
+      if (entry.tag) {
+        line.createSpan({ cls: "pc-rest-roll-tag", text: entry.tag });
+      }
+    }
   }
 
   private renderFooter(): void {

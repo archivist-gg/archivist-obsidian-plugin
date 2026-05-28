@@ -107,3 +107,41 @@ describe("RestModal — short rest — HD pips", () => {
     expect(m.contentEl.querySelectorAll(".pc-rest-pip.selected").length).toBeGreaterThan(0);
   });
 });
+
+describe("RestModal — short rest — Roll & Apply / Apply Avg", () => {
+  it("Apply Avg commits a deterministic heal per selected pip", () => {
+    const c = clone(MONK_6_DRAINED);
+    c.state.hp.current = 10; // wounded so heal doesn't cap immediately
+    c.state.hp.max = 100;
+    c.abilities.con = 14; // con mod +2
+    const { m, character } = makeModal("short", c);
+    // Select 1 d10 pip
+    const pip = m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement;
+    pip.click();
+    // Apply Avg — d10 avg is 6, + con 2 = +8
+    const avgBtn = Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Apply Avg")) as HTMLButtonElement;
+    avgBtn.click();
+    expect(character.state.hp.current).toBe(18); // 10 + 8
+  });
+
+  it("Roll & Apply calls spendHitDie and heal once per pip", () => {
+    const c = clone(MONK_6_DRAINED);
+    c.state.hp.current = 10;
+    c.state.hp.max = 100;
+    const { m, es } = makeModal("short", c);
+    const spendSpy = vi.spyOn(es, "spendHitDie");
+    const healSpy = vi.spyOn(es, "heal");
+    // Select 2 d10 pips (filter out spent ones — MONK_6_DRAINED has 3 d10 spent)
+    const empty = m.contentEl.querySelectorAll(".pc-rest-pip-row:first-child .pc-rest-pip:not(.spent)");
+    (empty[0] as HTMLDivElement).click();
+    // After the first click the modal re-renders; re-query the second empty pip.
+    const empty2 = m.contentEl.querySelectorAll(".pc-rest-pip-row:first-child .pc-rest-pip:not(.spent):not(.selected)");
+    (empty2[0] as HTMLDivElement).click();
+    // Click the HD strip's Roll & Apply button (class pc-rest-btn-roll —
+    // distinct from the footer's pc-rest-btn-confirm so test selectors don't collide)
+    (m.contentEl.querySelector(".pc-rest-btn-roll") as HTMLButtonElement).click();
+    expect(spendSpy).toHaveBeenCalledTimes(2);
+    expect(healSpy).toHaveBeenCalledTimes(2);
+  });
+});
