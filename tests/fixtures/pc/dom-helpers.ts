@@ -86,6 +86,17 @@ export function installObsidianDomHelpers(): void {
   proto.setText = function (this: HTMLElement, text: string) {
     this.textContent = text;
   };
+
+  proto.setAttr = function (this: HTMLElement, name: string, value: string | number | boolean | null) {
+    if (value == null || value === false) this.removeAttribute(name);
+    else this.setAttribute(name, String(value));
+  };
+
+  proto.toggleClass = function (this: HTMLElement, cls: string, force?: boolean) {
+    if (force === undefined) this.classList.toggle(cls);
+    else if (force) this.classList.add(cls);
+    else this.classList.remove(cls);
+  };
 }
 
 export function mountContainer(): HTMLElement {
