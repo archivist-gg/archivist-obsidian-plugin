@@ -147,7 +147,12 @@ export function openDefenseTypePopover(
     if (popover.contains(e.target) || anchor.contains(e.target)) return;
     closeDefenseTypePopover();
   };
-  const onScroll = () => closeDefenseTypePopover();
+  // Close on page/anchor scroll (which would visually disconnect the popover),
+  // but ignore scrolls inside the popover itself (its own list scrolling).
+  const onScroll = (e: Event) => {
+    if (e.target instanceof Node && popover.contains(e.target)) return;
+    closeDefenseTypePopover();
+  };
 
   activeDocument.addEventListener("keydown", onKeyDown);
   activeDocument.addEventListener("click", onClick);
