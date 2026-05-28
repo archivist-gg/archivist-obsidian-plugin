@@ -4,6 +4,7 @@ import type { Character, DerivedStats, EquipmentEntryOverrides, PassiveKind, Res
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
+import { computeRestPlan, applyRestResets, type RestCategoryId } from "./pc.rest";
 
 export interface EditStateContext {
   resolved: ResolvedCharacter;
@@ -510,6 +511,21 @@ export class CharacterEditState {
 
   clearAttunementLimitOverride(): void {
     delete this.character.overrides.attunement_limit;
+    this.onChange();
+  }
+
+  // ─── Rest ──────────────────────────────────────────────────────────
+  shortRest(optouts: Set<RestCategoryId>): void {
+    const { resolved, derived } = this.getContext();
+    const plan = computeRestPlan(this.character, resolved, derived, this.registry, "short");
+    applyRestResets(this.character, resolved, derived, plan, optouts);
+    this.onChange();
+  }
+
+  longRest(optouts: Set<RestCategoryId>): void {
+    const { resolved, derived } = this.getContext();
+    const plan = computeRestPlan(this.character, resolved, derived, this.registry, "long");
+    applyRestResets(this.character, resolved, derived, plan, optouts);
     this.onChange();
   }
 }
