@@ -10964,27 +10964,53 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft, #7c6a4e);
   border-bottom: 1px solid var(--pc-border, #8a6f47);
 }
-/* Section structure — two stacked groups (damage types + condition
-   immunities). Each header is a sticky-feeling tinted band. */
-.pc-def-popover .pc-def-popover-section + .pc-def-popover-section .pc-def-popover-section-header {
-  border-top: 1px solid var(--pc-border, #8a6f47);
-}
-.pc-def-popover .pc-def-popover-section-header {
-  padding: 10px 14px 4px;
-  font-family: var(--pc-font-serif, Georgia, serif);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--pc-text-soft, #7c6a4e);
+/* Tab bar — two tabs (Damages + Conditions) at the top of the popover.
+   Two-class prefix wins specificity against Obsidian's `.modal button`
+   defaults. */
+.pc-def-popover .pc-def-popover-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--pc-border, #8a6f47);
   background: rgba(255, 248, 220, 0.55);
 }
+.pc-def-popover .pc-def-popover-tab {
+  flex: 1 1 0;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--pc-text-soft, #7c6a4e);
+  font-family: var(--pc-font-serif, Georgia, serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 120ms, color 120ms, box-shadow 120ms;
+}
+.pc-def-popover .pc-def-popover-tab:hover:not(.active) {
+  background: rgba(146, 38, 16, 0.08);
+}
+.pc-def-popover .pc-def-popover-tab.active {
+  color: var(--pc-crimson, #922610);
+  box-shadow: inset 0 -2px 0 var(--pc-crimson, #922610);
+}
+.pc-def-popover .pc-def-popover-tab:focus-visible {
+  outline: 2px solid var(--pc-crimson, #922610);
+  outline-offset: -2px;
+}
+
+/* Panel — only the active one is visible. */
+.pc-def-popover .pc-def-popover-panel { display: none; }
+.pc-def-popover .pc-def-popover-panel.active { display: block; }
+
+/* Legend (R/I/V hint inside the Damages panel). */
 .pc-def-popover .pc-def-popover-legend {
-  margin-left: 8px;
+  padding: 8px 14px 4px;
+  font-family: var(--pc-font-serif, Georgia, serif);
+  font-size: 9px;
   font-weight: 400;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--pc-text-muted, #8a7a6a);
-  text-transform: none;
 }
 
 /* Tri-state pip group — three pips per damage-type row, mutually
@@ -11026,38 +11052,6 @@ body.theme-light .archivist-tag-atk:hover {
   outline-offset: 1px;
 }
 
-/* Custom checkbox for condition immunities — same vocabulary as the
-   shared `.archivist-modal input[type="checkbox"]` rule. */
-.pc-def-popover .pc-def-popover-checkbox {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 1.4px solid var(--pc-crimson, #922610);
-  border-radius: 3px;
-  background: transparent;
-  cursor: pointer;
-  flex: 0 0 auto;
-  margin: 0;
-  padding: 0;
-  display: inline-block;
-  vertical-align: middle;
-  box-shadow: none;
-}
-.pc-def-popover .pc-def-popover-checkbox:hover:not(:checked) {
-  background-color: rgba(146, 38, 16, 0.08);
-}
-.pc-def-popover .pc-def-popover-checkbox:checked {
-  background-color: var(--pc-crimson, #922610);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 16px 16px;
-}
-.pc-def-popover .pc-def-popover-checkbox:focus-visible {
-  outline: 2px solid var(--pc-crimson, #922610);
-  outline-offset: 1px;
-}
 .pc-def-popover-list {
   max-height: 240px;
   overflow-y: auto;
