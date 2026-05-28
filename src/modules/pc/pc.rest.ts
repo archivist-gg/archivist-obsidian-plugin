@@ -25,13 +25,39 @@ export interface RestPlan {
 }
 
 export function computeRestPlan(
-  _character: Character,
+  character: Character,
   _resolved: ResolvedCharacter,
-  _derived: DerivedStats,
+  derived: DerivedStats,
   _registry: EntityRegistry | null,
   type: RestType,
 ): RestPlan {
-  return { type, categories: [], hdAvailable: [] };
+  const cats: RestCategory[] = [];
+
+  if (type === "long") {
+    if (character.state.hp.current < derived.hp.max) {
+      cats.push({
+        id: "hp-to-max",
+        label: "Hit Points",
+        preview: `${character.state.hp.current} → ${derived.hp.max}`,
+      });
+    }
+
+    if (character.state.exhaustion > 0) {
+      cats.push({
+        id: "exhaustion",
+        label: "Exhaustion",
+        preview: `${character.state.exhaustion} → ${character.state.exhaustion - 1}`,
+      });
+    }
+
+    const slotsUsed = Object.values(character.state.spell_slots ?? {})
+      .reduce((s, slot) => s + (slot.used ?? 0), 0);
+    if (slotsUsed > 0) {
+      cats.push({ id: "spell-slots", label: "Spell Slots", preview: "all reset" });
+    }
+  }
+
+  return { type, categories: cats, hdAvailable: [] };
 }
 
 export function applyRestResets(
