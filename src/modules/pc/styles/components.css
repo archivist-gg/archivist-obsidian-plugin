@@ -1373,7 +1373,8 @@
 .pc-def-popover {
   position: absolute;
   z-index: 1000;
-  /* 280px = ~70px per tab — enough for "Condition Imm." without truncation. */
+  /* 280px = ~70px per pip column — enough for "Condition Imm." rows
+     to fit name + checkbox without truncation. */
   min-width: 280px;
   max-width: 360px;
   padding: 6px 0;
@@ -1450,6 +1451,10 @@
   background: var(--pc-crimson, #922610);
   color: var(--pc-parchment-light, #fdf1dc);
 }
+.pc-def-popover .pc-def-popover-pip:focus-visible {
+  outline: 2px solid var(--pc-crimson, #922610);
+  outline-offset: 1px;
+}
 
 /* Custom checkbox for condition immunities — same vocabulary as the
    shared `.archivist-modal input[type="checkbox"]` rule. */
@@ -1478,6 +1483,10 @@
   background-repeat: no-repeat;
   background-position: center;
   background-size: 16px 16px;
+}
+.pc-def-popover .pc-def-popover-checkbox:focus-visible {
+  outline: 2px solid var(--pc-crimson, #922610);
+  outline-offset: 1px;
 }
 .pc-def-popover-list {
   max-height: 240px;
