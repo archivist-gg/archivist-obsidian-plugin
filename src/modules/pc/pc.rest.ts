@@ -2,6 +2,18 @@
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import type { Character, DerivedStats, ResolvedCharacter } from "./pc.types";
 
+function resolveItemName(
+  entry: Character["equipment"][number],
+  registry: EntityRegistry | null,
+): string | undefined {
+  if (!registry) return undefined;
+  const ref = entry.item.match(/^\[\[(.+?)\]\]$/);
+  const slug = ref ? ref[1] : entry.item;
+  // `EntityRegistry.getBySlug(slug): RegisteredEntity | undefined` — `RegisteredEntity`
+  // has `name: string`. See `src/shared/entities/entity-registry.ts`.
+  return registry.getBySlug(slug)?.name;
+}
+
 export type RestType = "short" | "long";
 
 export type RestCategoryId =
@@ -28,7 +40,7 @@ export function computeRestPlan(
   character: Character,
   resolved: ResolvedCharacter,
   derived: DerivedStats,
-  _registry: EntityRegistry | null,
+  registry: EntityRegistry | null,
   type: RestType,
 ): RestPlan {
   const cats: RestCategory[] = [];
@@ -82,6 +94,38 @@ export function computeRestPlan(
         });
       }
     }
+
+    // Feature uses — long rest restores BOTH short-rest and long-rest resets
+    for (const [key, fu] of Object.entries(character.state.feature_uses ?? {})) {
+      if (fu.used <= 0) continue;
+      const rf = (resolved.features ?? []).find((r: { feature: { id?: string; name: string; resources?: Array<{ id?: string; reset: string }> } }) =>
+        (r.feature.resources?.[0]?.id ?? r.feature.id) === key,
+      );
+      const reset = rf?.feature.resources?.[0]?.reset ?? "long-rest";
+      if (reset !== "short-rest" && reset !== "long-rest") continue;
+      cats.push({
+        id: `feature:${key}`,
+        label: rf?.feature.name ?? key,
+        preview: `${fu.used}/${fu.max} restored`,
+      });
+    }
+
+    // Item charges — long rest restores short, long, AND dawn (rest spans the night)
+    character.equipment.forEach((entry, idx) => {
+      const rec = entry.state?.recovery;
+      const charges = entry.state?.charges;
+      if (!rec || !charges) return;
+      if (charges.current >= charges.max) return;
+      if (rec.reset !== "short" && rec.reset !== "long" && rec.reset !== "dawn") return;
+      const label = entry.overrides?.name
+        ?? resolveItemName(entry, registry)
+        ?? entry.item;
+      cats.push({
+        id: `item:${idx}`,
+        label,
+        preview: `${charges.current} → ${charges.max}`,
+      });
+    });
   }
 
   return { type, categories: cats, hdAvailable: [] };

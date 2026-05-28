@@ -5,6 +5,7 @@ import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
   clone, fakeResolved, fakeDerived,
 } from "./fixtures/pc/rest-fixtures";
+import { MONK_6_DRAINED, PC_WITH_MAGIC_ITEMS } from "./fixtures/pc/rest-fixtures";
 
 describe("computeRestPlan — long rest — HP / exhaustion / spell slots", () => {
   it("includes hp-to-max when hp.current < derived.hp.max", () => {
@@ -97,5 +98,67 @@ describe("computeRestPlan — long rest — HD regain", () => {
     };
     const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
     expect(plan.categories.find((cat) => cat.id === "hd-regain")!.preview).toBe("+2 (d10: +1, d8: +1)");
+  });
+});
+
+describe("computeRestPlan — long rest — feature_uses + item charges", () => {
+  it("includes feature_uses with reset 'long-rest'", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED); // rage used 3/3, reset long
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "rage", name: "Rage", resources: [{ id: "rage", reset: "long-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    const cat = plan.categories.find((x) => x.id === "feature:rage");
+    expect(cat).toBeDefined();
+    expect(cat!.label).toBe("Rage");
+    expect(cat!.preview).toBe("3/3 restored");
+  });
+
+  it("includes feature_uses with reset 'short-rest' on long rest (long includes short)", () => {
+    const c = clone(MONK_6_DRAINED); // ki used 6/6, reset short
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "short-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    expect(plan.categories.find((x) => x.id === "feature:ki")).toBeDefined();
+  });
+
+  it("omits feature_uses with used === 0", () => {
+    const c = clone(MONK_6_DRAINED);
+    c.state.feature_uses.ki.used = 0;
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "short-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    expect(plan.categories.find((x) => x.id === "feature:ki")).toBeUndefined();
+  });
+
+  it("includes item charges with reset in {short, long, dawn} when partially used", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    // bag-of-tricks reset:short, cloak reset:dawn — both included on long rest
+    expect(plan.categories.find((x) => x.id === "item:0")).toBeDefined();
+    expect(plan.categories.find((x) => x.id === "item:1")).toBeDefined();
+  });
+
+  it("falls back to entry.item slug when no registry provided", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    const itemCat = plan.categories.find((x) => x.id === "item:0");
+    expect(itemCat!.label).toBe("[[bag-of-tricks]]");
+  });
+
+  it("uses entry.overrides.name when present", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    c.equipment[0].overrides = { name: "My Tricky Bag" };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.categories.find((x) => x.id === "item:0")!.label).toBe("My Tricky Bag");
+  });
+
+  it("omits item charges that are already full", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    c.equipment[0].state!.charges = { current: 3, max: 3 };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.categories.find((x) => x.id === "item:0")).toBeUndefined();
   });
 });
