@@ -1,28 +1,30 @@
 import type { ComponentRenderContext } from "./component.types";
 import { DAMAGE_TYPES } from "../../../shared/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "../constants/conditions";
+import type { ConditionSlug } from "../constants/conditions";
 import { clampPopoverToViewport } from "./popover-utils";
-
-export type DefenseKind = "resistances" | "immunities" | "vulnerabilities" | "condition_immunities";
-
-const KIND_TABS: ReadonlyArray<{ key: DefenseKind; label: string }> = [
-  { key: "resistances", label: "Resistance" },
-  { key: "immunities", label: "Immunity" },
-  { key: "vulnerabilities", label: "Vulnerability" },
-  { key: "condition_immunities", label: "Condition Imm." },
-];
+import {
+  cycleAction,
+  defenseKindFor,
+  type DefenseRowState,
+  type TappedPip,
+} from "./defense-type-popover-logic";
 
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
 
 /**
- * Single popover for adding any defense (damage resistance / immunity /
- * vulnerability / condition immunity). Shows a tab bar with the four
- * kinds; clicking a tab updates the list below to toggleable damage types
- * or condition slugs scoped to that kind. Kind selection is an in-popover
- * step rather than a separate flow — no "back" button needed.
+ * Two-section popover for adding any defense:
+ *
+ * - Damage types: each row has three R/I/V pips. Mutually exclusive — see
+ *   `cycleAction` in ./defense-type-popover-logic for the transition table.
+ * - Condition immunities: each row has a single binary checkbox.
+ *
+ * Renders into `document.body` (outside `.archivist-pc-sheet`), so styles
+ * are scoped under `.pc-def-popover` to win specificity over Obsidian's
+ * defaults. See spec §3 for the canonical visual reference.
  *
  * See conditions-popover.ts for the click-race rationale on the document
- * `click` handler (the opening click must not self-close the popover).
+ * `click` handler.
  */
 export function openDefenseTypePopover(
   anchor: HTMLElement,
@@ -34,75 +36,98 @@ export function openDefenseTypePopover(
   const editState = ctx.editState;
   const popover = activeDocument.body.createDiv({ cls: "pc-def-popover" });
 
-  // Initial placement anchored below the `+` button; final placement is
-  // clamped to the viewport once the tab bar + list are rendered (see
-  // `clampPopoverToViewport` call below).
   const anchorRect = anchor.getBoundingClientRect();
   popover.style.top = `${anchorRect.bottom + activeWindow.scrollY + 4}px`;
   popover.style.left = `${anchorRect.left + activeWindow.scrollX}px`;
 
   popover.createDiv({ cls: "pc-def-popover-header", text: "Add Defense" });
 
-  const tabBar = popover.createDiv({ cls: "pc-def-popover-tabs" });
-  const list = popover.createDiv({ cls: "pc-def-popover-list" });
+  // Sections live inside their own wrapper so `:nth-of-type` selectors
+  // (used by the popover test fixtures) target section #1 / #2 without
+  // counting the header div as a sibling.
+  const sections = popover.createDiv({ cls: "pc-def-popover-sections" });
 
-  let activeKind: DefenseKind = "resistances";
+  // ─── Section 1: Damage types ─────────────────────────────────────
+  const damageSection = sections.createDiv({ cls: "pc-def-popover-section" });
+  const damageHeader = damageSection.createDiv({ cls: "pc-def-popover-section-header" });
+  damageHeader.appendText("Damage types");
+  damageHeader.createSpan({
+    cls: "pc-def-popover-legend",
+    text: "— R esist · I mmune · V uln",
+  });
+  const damageList = damageSection.createDiv({ cls: "pc-def-popover-list" });
 
-  const renderList = () => {
-    while (list.firstChild) list.firstChild.remove();
-    if (activeKind === "condition_immunities") {
-      const active = new Set(ctx.derived.defenses.condition_immunities);
-      for (const slug of CONDITION_SLUGS) {
-        addRow(list, CONDITION_DISPLAY_NAMES[slug], active.has(slug), () => {
-          if (active.has(slug)) {
-            editState.removeConditionImmunity(slug);
-            active.delete(slug);
-          } else {
-            editState.addConditionImmunity(slug);
-            active.add(slug);
-          }
-        });
+  for (const type of DAMAGE_TYPES) {
+    const slug = type.toLowerCase();
+    const row = damageList.createDiv({ cls: "pc-def-popover-row" });
+    row.createSpan({ cls: "pc-def-popover-name", text: type });
+    const tri = row.createDiv({ cls: "pc-def-popover-tri" });
+
+    const renderRow = (state: DefenseRowState) => {
+      for (const kind of ["resistance", "immunity", "vulnerability"] as const) {
+        const pip = tri.querySelector<HTMLButtonElement>(`.pc-def-popover-pip[data-kind="${kind}"]`);
+        if (pip) pip.classList.toggle("on", state === kind);
       }
-    } else {
-      const kind = activeKind;
-      const arr = ctx.derived.defenses[kind] ?? [];
-      const active = new Set(arr);
-      for (const type of DAMAGE_TYPES) {
-        const storeKey = type.toLowerCase();
-        addRow(list, type, active.has(storeKey), () => {
-          if (active.has(storeKey)) {
-            editState.removeDefense(kind, storeKey);
-            active.delete(storeKey);
-          } else {
-            editState.addDefense(kind, storeKey);
-            active.add(storeKey);
-          }
-        });
-      }
-    }
-  };
+    };
 
-  for (const { key, label } of KIND_TABS) {
-    const tab = tabBar.createEl("button", {
-      cls: `pc-def-popover-tab${key === activeKind ? " active" : ""}`,
-      text: label,
-      attr: { "data-kind": key },
-    });
-    tab.addEventListener("click", (e) => {
-      e.stopPropagation();
-      activeKind = key;
-      tabBar.querySelectorAll<HTMLElement>(".pc-def-popover-tab").forEach((t) => {
-        t.classList.toggle("active", t.getAttribute("data-kind") === key);
+    // Row-local mirror of the tri-state. Seeded from `ctx.derived.defenses`
+    // on first render; subsequent taps update it optimistically so re-renders
+    // don't need a round-trip through the resolver. (The data model is still
+    // the source of truth — `editState.{add,remove}Defense` writes through.)
+    const initialState = ((): DefenseRowState => {
+      const d = ctx.derived.defenses;
+      if (d.resistances?.includes(slug)) return "resistance";
+      if (d.immunities?.includes(slug)) return "immunity";
+      if (d.vulnerabilities?.includes(slug)) return "vulnerability";
+      return null;
+    })();
+    let rowState: DefenseRowState = initialState;
+
+    for (const kind of ["resistance", "immunity", "vulnerability"] as const) {
+      const pip = tri.createEl("button", {
+        cls: "pc-def-popover-pip",
+        text: kind.charAt(0).toUpperCase(),
+        attr: { "data-kind": kind, type: "button" },
       });
-      renderList();
+      pip.addEventListener("click", () => {
+        const action = cycleAction(rowState, kind as TappedPip);
+        if (action.removeKind) editState.removeDefense(defenseKindFor(action.removeKind), slug);
+        if (action.addKind) editState.addDefense(defenseKindFor(action.addKind), slug);
+        rowState = action.addKind ?? null;
+        renderRow(rowState);
+      });
+    }
+
+    renderRow(rowState);
+  }
+
+  // ─── Section 2: Condition immunities ─────────────────────────────
+  const condSection = sections.createDiv({ cls: "pc-def-popover-section" });
+  condSection.createDiv({
+    cls: "pc-def-popover-section-header",
+    text: "Condition immunities",
+  });
+  const condList = condSection.createDiv({ cls: "pc-def-popover-list" });
+
+  for (const slug of CONDITION_SLUGS) {
+    const row = condList.createDiv({
+      cls: "pc-def-popover-row",
+      attr: { "data-slug": slug },
+    });
+    row.createSpan({ cls: "pc-def-popover-name", text: CONDITION_DISPLAY_NAMES[slug] });
+    const cb = row.createEl("input", {
+      cls: "pc-def-popover-checkbox",
+      attr: { type: "checkbox" },
+    }) as HTMLInputElement;
+    cb.checked = (ctx.derived.defenses.condition_immunities ?? []).includes(slug);
+    cb.addEventListener("change", () => {
+      if (cb.checked) editState.addConditionImmunity(slug as ConditionSlug);
+      else editState.removeConditionImmunity(slug as ConditionSlug);
     });
   }
 
-  renderList();
-
-  // Keep the popover inside the viewport — without this, a `+` button near
-  // the right edge of the sheet pushes the popover off-screen and the last
-  // tab ("Condition Imm.") clips.
+  // Keep the popover inside the viewport — same helper the conditions
+  // popover uses; final placement runs after both sections render.
   clampPopoverToViewport(popover, anchorRect);
 
   const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") closeDefenseTypePopover(); };
@@ -125,21 +150,6 @@ export function openDefenseTypePopover(
       activeWindow.removeEventListener("scroll", onScroll, true);
     },
   };
-}
-
-function addRow(
-  list: HTMLElement,
-  label: string,
-  isActive: boolean,
-  onToggle: () => void,
-): void {
-  const row = list.createDiv({ cls: "pc-def-popover-row" });
-  row.createDiv({ cls: "pc-def-popover-name", text: label });
-  const toggle = row.createDiv({ cls: `pc-def-popover-toggle${isActive ? " on" : ""}` });
-  toggle.addEventListener("click", () => {
-    onToggle();
-    toggle.classList.toggle("on");
-  });
 }
 
 export function closeDefenseTypePopover(): void {
