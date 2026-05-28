@@ -145,3 +145,45 @@ describe("RestModal — short rest — Roll & Apply / Apply Avg", () => {
     expect(healSpy).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("RestModal — short rest — Manual entry", () => {
+  it("tapping ✎ Manual reveals an inline input", () => {
+    const c = clone(MONK_6_DRAINED);
+    const { m } = makeModal("short", c);
+    // Select a pip first
+    (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
+    expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
+    const manualBtn = Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Manual")) as HTMLButtonElement;
+    manualBtn.click();
+    expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeTruthy();
+  });
+
+  it("Apply commits the typed value plus CON mod", () => {
+    const c = clone(MONK_6_DRAINED);
+    c.state.hp.current = 10;
+    c.state.hp.max = 100;
+    c.abilities.con = 12; // +1
+    const { m, character } = makeModal("short", c);
+    (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
+    const manualBtn = Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Manual")) as HTMLButtonElement;
+    manualBtn.click();
+    const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
+    input.value = "5";
+    const apply = m.contentEl.querySelector(".pc-rest-btn-roll--small") as HTMLButtonElement;
+    apply.click();
+    expect(character.state.hp.current).toBe(16); // 10 + 5 (value) + 1 (con)
+  });
+
+  it("Escape collapses the manual input", () => {
+    const c = clone(MONK_6_DRAINED);
+    const { m } = makeModal("short", c);
+    (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
+    (Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Manual")) as HTMLButtonElement).click();
+    const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
+  });
+});

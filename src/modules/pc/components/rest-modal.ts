@@ -173,7 +173,68 @@ export class RestModal extends Modal {
       this.manualOpen = !this.manualOpen;
       this.render();
     });
-    // The manual inline input is added in Task 17
+
+    if (this.manualOpen) {
+      const wrap = row.createSpan({ cls: "pc-rest-manual-input" });
+      wrap.createSpan({ cls: "pc-rest-manual-label", text: "Heal" });
+      const input = wrap.createEl("input", {
+        cls: "pc-rest-manual-number",
+        attr: { type: "number", min: "0", inputmode: "numeric" },
+      }) as HTMLInputElement;
+      setTimeout(() => input.focus(), 0);
+      const apply = wrap.createEl("button", {
+        cls: "pc-rest-btn-roll pc-rest-btn-roll--small",
+        text: "Apply",
+      }) as HTMLButtonElement;
+
+      const totalSelectedForManual = totalSelected;
+      void totalSelectedForManual;
+      const submit = () => {
+        const raw = Number(input.value);
+        if (!Number.isFinite(raw) || raw < 0) {
+          input.addClass("shake");
+          setTimeout(() => input.removeClass("shake"), 250);
+          return;
+        }
+        // Cap at sum of selected dice maxes
+        let cap = 0;
+        for (const [die, n] of this.selectedPips.entries()) {
+          cap += Number(die.replace("d", "")) * n;
+        }
+        const value = Math.min(raw, cap);
+        if (value !== raw) {
+          input.value = String(value);
+          input.addClass("shake");
+          setTimeout(() => input.removeClass("shake"), 250);
+        }
+        // Apply across pools; manual heals are split proportionally across pools
+        // when multiple pools are selected — simplest behavior is to apply the
+        // value once per pool entry. For SP4b scope, the modal rarely runs with
+        // multiple pools selected at once; we spend each pool's selected dice
+        // and apply the typed value as the TOTAL (not per-die).
+        const conMod = this.conMod();
+        let totalSpends = 0;
+        for (const [die, n] of this.selectedPips.entries()) {
+          for (let i = 0; i < n; i++) {
+            this.editState.spendHitDie(die);
+            totalSpends++;
+          }
+          this.rollLog.push({ die, value, tag: "manual" });
+        }
+        this.editState.heal(value + conMod * totalSpends);
+        this.selectedPips.clear();
+        this.manualOpen = false;
+        this.render();
+      };
+      apply.addEventListener("click", submit);
+      input.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Enter") submit();
+        if (e.key === "Escape") {
+          this.manualOpen = false;
+          this.render();
+        }
+      });
+    }
   }
 
   private previewAvgHeal(): number {
