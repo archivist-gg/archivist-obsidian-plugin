@@ -23,9 +23,6 @@ export class HeaderSection implements SheetComponent {
     identity.createEl("h1", { cls: "pc-name", text: ctx.resolved.definition.name });
     identity.createDiv({ cls: "pc-subtitle", text: buildSubtitle(ctx.resolved) });
 
-    const restCluster = root.createDiv({ cls: "pc-rest-cluster-host" });
-    new RestButtons(restCluster, ctx).render();
-
     const right = root.createDiv({ cls: "pc-hero-right" });
     for (const type of ["ac-shield", "hp-widget", "hit-dice-widget"] as const) {
       const c = this.registry.get(type);
@@ -35,6 +32,9 @@ export class HeaderSection implements SheetComponent {
       }
       c.render(right, ctx);
     }
+    // Rest cluster sits to the right of Hit Dice — icon-only buttons, stacked.
+    const restCluster = right.createDiv({ cls: "pc-rest-cluster-host" });
+    new RestButtons(restCluster, ctx).render();
   }
 }
 

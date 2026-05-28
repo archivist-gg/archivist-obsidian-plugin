@@ -1,11 +1,14 @@
 /* src/modules/pc/styles/rest.css */
 
 /* ============================================
-   Rest cluster — hero pair between identity and AC shield
+   Rest cluster — icon-only pair stacked to the right of the Hit Dice
+   widget inside `.pc-hero-right`. Hover reveals the full label via
+   the title attribute on each button.
    ============================================ */
 .archivist-pc-sheet .pc-rest-cluster-host {
   display: flex;
   align-items: stretch;
+  margin-left: var(--pc-space-1, 4px);
 }
 
 .archivist-pc-sheet .pc-rest-cluster {
@@ -19,19 +22,18 @@
   background: transparent;
   border: 1px solid var(--pc-crimson);
   border-radius: var(--pc-radius-sm);
-  padding: 5px 10px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   color: var(--pc-crimson);
-  font-family: var(--pc-font-sans);
-  font-size: var(--pc-fs-small);
+  font-family: var(--pc-font-serif);
+  font-size: 16px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--pc-ls-caps-sm);
+  line-height: 1;
   cursor: pointer;
-  white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  line-height: 1;
+  justify-content: center;
 }
 
 .archivist-pc-sheet .pc-rest-btn:hover:not(:disabled) {
@@ -52,17 +54,6 @@
   background: var(--pc-crimson-light);
 }
 
-/* On narrow sheets, the cluster squeezes — buttons collapse to icon only */
-@container pc-sheet (max-width: 699px) {
-  .archivist-pc-sheet .pc-rest-btn {
-    padding: 5px 7px;
-    font-size: 0;
-  }
-  .archivist-pc-sheet .pc-rest-btn::first-letter {
-    font-size: 14px;
-  }
-}
-
 /* src/modules/pc/styles/rest.css  (append) */
 
 /* ============================================
@@ -75,11 +66,15 @@
    (dark backdrop, purple checkbox, gray buttons, invisible pip borders).
    ============================================ */
 
-/* Strip the Obsidian modal frame so the parchment content fills it. */
+/* Strip the Obsidian modal frame so the parchment content fills it.
+   Constrain the overall modal box — Obsidian's default is much wider. */
 .modal:has(.pc-rest-modal) {
   background: #fdf1dc;
   border: 1px solid #d9c484;
   padding: 0;
+  width: auto;
+  max-width: 420px;
+  min-width: 320px;
 }
 
 .modal:has(.pc-rest-modal) .modal-close-button {
@@ -191,8 +186,11 @@
   border-top: 1px solid var(--pc-tan);
 }
 
-.pc-rest-btn-ghost,
-.pc-rest-btn-confirm {
+/* All modal button rules below are prefixed with `.pc-rest-modal` to win
+   specificity against Obsidian's `.modal button` defaults — without the
+   prefix, every button below falls back to the dark Obsidian style. */
+.pc-rest-modal .pc-rest-btn-ghost,
+.pc-rest-modal .pc-rest-btn-confirm {
   border-radius: var(--pc-radius-sm);
   padding: 5px 14px;
   font-family: var(--pc-font-sans);
@@ -202,21 +200,26 @@
   letter-spacing: var(--pc-ls-caps-sm);
   cursor: pointer;
   line-height: 1;
+  box-shadow: none;
 }
 
-.pc-rest-btn-ghost {
+.pc-rest-modal .pc-rest-btn-ghost {
   background: transparent;
   color: var(--pc-text-soft);
   border: 1px solid var(--pc-tan);
 }
 
-.pc-rest-btn-confirm {
+.pc-rest-modal .pc-rest-btn-ghost:hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.06);
+}
+
+.pc-rest-modal .pc-rest-btn-confirm {
   background: var(--pc-crimson);
   color: var(--pc-parchment-light);
   border: 1px solid var(--pc-crimson);
 }
 
-.pc-rest-btn-confirm:hover {
+.pc-rest-modal .pc-rest-btn-confirm:hover:not(:disabled) {
   background: var(--pc-crimson-light);
 }
 
@@ -283,7 +286,7 @@
   flex-wrap: wrap;
 }
 
-.pc-rest-btn-outline {
+.pc-rest-modal .pc-rest-btn-outline {
   background: transparent;
   border: 1px solid var(--pc-crimson);
   border-radius: var(--pc-radius-sm);
@@ -297,14 +300,20 @@
   cursor: pointer;
   white-space: nowrap;
   line-height: 1;
+  box-shadow: none;
 }
 
-.pc-rest-btn-outline.active {
+.pc-rest-modal .pc-rest-btn-outline:hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.08);
+}
+
+.pc-rest-modal .pc-rest-btn-outline.active {
   background: rgba(146, 38, 16, 0.12);
 }
 
-.pc-rest-btn-outline:disabled,
-.pc-rest-btn-confirm:disabled {
+.pc-rest-modal .pc-rest-btn-outline:disabled,
+.pc-rest-modal .pc-rest-btn-confirm:disabled,
+.pc-rest-modal .pc-rest-btn-roll:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -337,7 +346,7 @@
   vertical-align: 1px;
 }
 
-.pc-rest-btn-roll {
+.pc-rest-modal .pc-rest-btn-roll {
   background: var(--pc-crimson);
   color: var(--pc-parchment-light);
   border: 1px solid var(--pc-crimson);
@@ -350,13 +359,10 @@
   letter-spacing: var(--pc-ls-caps-sm);
   cursor: pointer;
   line-height: 1;
+  box-shadow: none;
 }
-.pc-rest-btn-roll:hover:not(:disabled) {
+.pc-rest-modal .pc-rest-btn-roll:hover:not(:disabled) {
   background: var(--pc-crimson-light);
-}
-.pc-rest-btn-roll:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .pc-rest-manual-input {

@@ -4,8 +4,9 @@ import { computeRestPlan } from "../pc.rest";
 import { RestModal } from "./rest-modal";
 
 /**
- * Hero rest cluster: ☾ Short Rest (outline) and ★ Long Rest (solid).
- * Inserted between `.pc-identity` and `.pc-hero-right` in HeaderSection.
+ * Hero rest cluster: ☾ short rest (outline) and ★ long rest (solid),
+ * stacked vertically at the right edge of the hero, after the Hit Dice
+ * widget. Icon-only — hover reveals the full label via the title attr.
  *
  * Owns its own disabled state — short button is disabled when HP=0 OR
  * when there's nothing to rest; long button disabled only when there's
@@ -24,11 +25,13 @@ export class RestButtons {
     const wrap = this.host.createDiv({ cls: "pc-rest-cluster" });
     this.shortBtn = wrap.createEl("button", {
       cls: "pc-rest-btn pc-rest-btn--short",
-      text: "☾ short rest",
+      text: "☾",
+      attr: { "aria-label": "short rest" },
     });
     this.longBtn = wrap.createEl("button", {
       cls: "pc-rest-btn pc-rest-btn--long",
-      text: "★ long rest",
+      text: "★",
+      attr: { "aria-label": "long rest" },
     });
 
     this.shortBtn.addEventListener("click", () => this.open("short"));
@@ -64,11 +67,11 @@ export class RestButtons {
     const nothingLong = longPlan.categories.length === 0;
 
     this.shortBtn.disabled = this.modalOpen || hpZero || nothingShort;
-    this.shortBtn.title = hpZero ? "Cannot rest while unconscious"
-      : nothingShort ? "Nothing to rest"
-      : "";
+    this.shortBtn.title = hpZero ? "cannot rest while unconscious"
+      : nothingShort ? "short rest — nothing to restore"
+      : "short rest";
 
     this.longBtn.disabled = this.modalOpen || nothingLong;
-    this.longBtn.title = nothingLong ? "Nothing to rest" : "";
+    this.longBtn.title = nothingLong ? "long rest — nothing to restore" : "long rest";
   }
 }
