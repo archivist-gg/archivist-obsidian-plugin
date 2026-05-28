@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 import {
   openDefenseTypePopover,
   closeDefenseTypePopover,
@@ -16,6 +16,7 @@ import type { ComponentRenderContext } from "../src/modules/pc/components/compon
 import type { App } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
+afterEach(() => closeDefenseTypePopover());
 
 function withDefenses(over: Partial<{
   resistances: string[];
@@ -52,9 +53,20 @@ function getPopover(): HTMLElement {
   return el;
 }
 
+function tab(name: "damages" | "conditions"): HTMLButtonElement {
+  const el = getPopover().querySelector<HTMLButtonElement>(`.pc-def-popover-tab[data-tab="${name}"]`);
+  if (!el) throw new Error(`tab "${name}" not found`);
+  return el;
+}
+
+function panel(name: "damages" | "conditions"): HTMLElement {
+  const el = getPopover().querySelector<HTMLElement>(`.pc-def-popover-panel[data-tab="${name}"]`);
+  if (!el) throw new Error(`panel "${name}" not found`);
+  return el;
+}
+
 function damageRow(name: string): HTMLElement {
-  const popover = getPopover();
-  for (const row of popover.querySelectorAll<HTMLElement>(".pc-def-popover-section:nth-of-type(1) .pc-def-popover-row")) {
+  for (const row of panel("damages").querySelectorAll<HTMLElement>(".pc-def-popover-row")) {
     if (row.querySelector(".pc-def-popover-name")?.textContent === name) return row;
   }
   throw new Error(`damage row "${name}" not found`);
@@ -67,59 +79,89 @@ function pip(row: HTMLElement, kind: "resistance" | "immunity" | "vulnerability"
 }
 
 function conditionRow(slug: string): HTMLElement {
-  const popover = getPopover();
-  for (const row of popover.querySelectorAll<HTMLElement>(".pc-def-popover-section:nth-of-type(2) .pc-def-popover-row")) {
+  for (const row of panel("conditions").querySelectorAll<HTMLElement>(".pc-def-popover-row")) {
     if (row.dataset.slug === slug) return row;
   }
   throw new Error(`condition row "${slug}" not found`);
 }
 
+function conditionPip(slug: string): HTMLButtonElement {
+  return pip(conditionRow(slug), "immunity");
+}
+
 describe("defense popover — structure", () => {
-  it("renders two sections with correct headers", () => {
+  it("renders two tabs labeled Damages and Conditions, Damages active by default", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
-    const popover = getPopover();
-    const headers = Array.from(popover.querySelectorAll(".pc-def-popover-section-header"));
-    expect(headers.map((h) => h.textContent?.trim().toLowerCase())).toEqual([
-      expect.stringContaining("damage types"),
-      expect.stringContaining("condition immunities"),
-    ]);
-    closeDefenseTypePopover();
+    expect(tab("damages").textContent).toBe("Damages");
+    expect(tab("conditions").textContent).toBe("Conditions");
+    expect(tab("damages").classList.contains("active")).toBe(true);
+    expect(tab("conditions").classList.contains("active")).toBe(false);
+  });
+
+  it("damages panel is active by default; conditions panel is not", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(panel("damages").classList.contains("active")).toBe(true);
+    expect(panel("conditions").classList.contains("active")).toBe(false);
   });
 
   it("renders one damage-type row per DAMAGE_TYPES entry, each with three pips", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
-    const damageRows = getPopover().querySelectorAll(".pc-def-popover-section:nth-of-type(1) .pc-def-popover-row");
+    const damageRows = panel("damages").querySelectorAll(".pc-def-popover-row");
     expect(damageRows.length).toBe(DAMAGE_TYPES.length);
     for (const row of damageRows) {
       expect(row.querySelectorAll(".pc-def-popover-pip").length).toBe(3);
     }
-    closeDefenseTypePopover();
   });
 
-  it("renders one condition row per CONDITION_SLUGS entry, each with one checkbox", () => {
+  it("renders one condition row per CONDITION_SLUGS entry, each with a single immunity pip", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
-    const condRows = getPopover().querySelectorAll(".pc-def-popover-section:nth-of-type(2) .pc-def-popover-row");
+    const condRows = panel("conditions").querySelectorAll(".pc-def-popover-row");
     expect(condRows.length).toBe(CONDITION_SLUGS.length);
     for (const row of condRows) {
-      expect(row.querySelectorAll(".pc-def-popover-checkbox").length).toBe(1);
+      const pips = row.querySelectorAll<HTMLButtonElement>(".pc-def-popover-pip");
+      expect(pips.length).toBe(1);
+      expect(pips[0].dataset.kind).toBe("immunity");
+      expect(pips[0].textContent).toBe("I");
     }
-    closeDefenseTypePopover();
   });
 
   it("displays condition rows by their CONDITION_DISPLAY_NAMES label", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
-    const charmedRow = conditionRow("charmed");
-    expect(charmedRow.querySelector(".pc-def-popover-name")?.textContent).toBe(CONDITION_DISPLAY_NAMES.charmed);
-    closeDefenseTypePopover();
+    expect(conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent).toBe(
+      CONDITION_DISPLAY_NAMES.charmed,
+    );
+  });
+});
+
+describe("defense popover — tab switching", () => {
+  it("clicking the Conditions tab swaps the active tab + panel", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    tab("conditions").click();
+    expect(tab("conditions").classList.contains("active")).toBe(true);
+    expect(tab("damages").classList.contains("active")).toBe(false);
+    expect(panel("conditions").classList.contains("active")).toBe(true);
+    expect(panel("damages").classList.contains("active")).toBe(false);
+  });
+
+  it("clicking back to Damages restores the default", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    tab("conditions").click();
+    tab("damages").click();
+    expect(tab("damages").classList.contains("active")).toBe(true);
+    expect(panel("damages").classList.contains("active")).toBe(true);
+    expect(panel("conditions").classList.contains("active")).toBe(false);
   });
 });
 
 describe("defense popover — initial state mirrors derived.defenses", () => {
-  it("an `.on` pip appears for each existing entry", () => {
+  it("an `.on` pip appears for each existing damage entry", () => {
     const { ctx, anchor } = withDefenses({
       resistances: ["acid"],
       immunities: ["cold"],
@@ -130,19 +172,16 @@ describe("defense popover — initial state mirrors derived.defenses", () => {
     expect(pip(damageRow("Acid"), "immunity").classList.contains("on")).toBe(false);
     expect(pip(damageRow("Cold"), "immunity").classList.contains("on")).toBe(true);
     expect(pip(damageRow("Fire"), "vulnerability").classList.contains("on")).toBe(true);
-    closeDefenseTypePopover();
   });
 
-  it("a checked checkbox appears for each existing condition immunity", () => {
+  it("an `.on` immunity pip appears for each existing condition immunity", () => {
     const { ctx, anchor } = withDefenses({ condition_immunities: ["charmed"] });
     openDefenseTypePopover(anchor, ctx);
-    const cb = conditionRow("charmed").querySelector<HTMLInputElement>(".pc-def-popover-checkbox")!;
-    expect(cb.checked).toBe(true);
-    closeDefenseTypePopover();
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
   });
 });
 
-describe("defense popover — pip clicks", () => {
+describe("defense popover — damage pip clicks", () => {
   it("tap R on a neutral row calls addDefense(resistances, slug)", () => {
     const { ctx, editState, anchor } = withDefenses();
     const spy = vi.spyOn(editState, "addDefense");
@@ -150,7 +189,6 @@ describe("defense popover — pip clicks", () => {
     pip(damageRow("Acid"), "resistance").click();
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith("resistances", "acid");
-    closeDefenseTypePopover();
   });
 
   it("tap I on a resistance row removes then adds", () => {
@@ -161,11 +199,9 @@ describe("defense popover — pip clicks", () => {
     pip(damageRow("Acid"), "immunity").click();
     expect(removeSpy).toHaveBeenCalledWith("resistances", "acid");
     expect(addSpy).toHaveBeenCalledWith("immunities", "acid");
-    // Order: remove before add.
     const removeOrder = removeSpy.mock.invocationCallOrder[0];
     const addOrder = addSpy.mock.invocationCallOrder[0];
     expect(removeOrder).toBeLessThan(addOrder);
-    closeDefenseTypePopover();
   });
 
   it("tap the active pip clears the row", () => {
@@ -176,23 +212,48 @@ describe("defense popover — pip clicks", () => {
     pip(damageRow("Cold"), "immunity").click();
     expect(removeSpy).toHaveBeenCalledWith("immunities", "cold");
     expect(addSpy).not.toHaveBeenCalled();
-    closeDefenseTypePopover();
   });
 
   it("re-render after click reflects the new state", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
     pip(damageRow("Acid"), "resistance").click();
-    // Click handler should refresh the row in place.
     expect(pip(damageRow("Acid"), "resistance").classList.contains("on")).toBe(true);
-    closeDefenseTypePopover();
+  });
+});
+
+describe("defense popover — condition pip clicks", () => {
+  it("tap on a neutral condition row calls addConditionImmunity", () => {
+    const { ctx, editState, anchor } = withDefenses();
+    const spy = vi.spyOn(editState, "addConditionImmunity");
+    openDefenseTypePopover(anchor, ctx);
+    conditionPip("charmed").click();
+    expect(spy).toHaveBeenCalledWith("charmed");
+  });
+
+  it("tap on an active condition row calls removeConditionImmunity", () => {
+    const { ctx, editState, anchor } = withDefenses({ condition_immunities: ["charmed"] });
+    const spy = vi.spyOn(editState, "removeConditionImmunity");
+    openDefenseTypePopover(anchor, ctx);
+    conditionPip("charmed").click();
+    expect(spy).toHaveBeenCalledWith("charmed");
+  });
+
+  it("re-render after click toggles `.on` in place", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    const p = conditionPip("charmed");
+    expect(p.classList.contains("on")).toBe(false);
+    p.click();
+    expect(p.classList.contains("on")).toBe(true);
+    p.click();
+    expect(p.classList.contains("on")).toBe(false);
   });
 });
 
 describe("defense popover — viewport clamp", () => {
-  it("invokes the clamp after rendering both sections (right-edge anchor stays inside)", () => {
+  it("invokes the clamp after rendering both panels (right-edge anchor stays inside)", () => {
     const { ctx, anchor } = withDefenses();
-    // Force the anchor near the right edge of jsdom's window (defaults 1024×768).
     Object.defineProperty(window, "innerWidth", { value: 1024, configurable: true });
     Object.defineProperty(window, "innerHeight", { value: 768, configurable: true });
     anchor.getBoundingClientRect = () => ({
@@ -201,31 +262,7 @@ describe("defense popover — viewport clamp", () => {
     } as DOMRect);
     openDefenseTypePopover(anchor, ctx);
     const popover = getPopover();
-    // Clamp's margin is 8px → popover.right must be ≤ 1016px.
     const rect = popover.getBoundingClientRect();
     expect(rect.right).toBeLessThanOrEqual(1016);
-    closeDefenseTypePopover();
-  });
-});
-
-describe("defense popover — condition checkboxes", () => {
-  it("ticking an unchecked checkbox calls addConditionImmunity", () => {
-    const { ctx, editState, anchor } = withDefenses();
-    const spy = vi.spyOn(editState, "addConditionImmunity");
-    openDefenseTypePopover(anchor, ctx);
-    const cb = conditionRow("charmed").querySelector<HTMLInputElement>(".pc-def-popover-checkbox")!;
-    cb.click();
-    expect(spy).toHaveBeenCalledWith("charmed");
-    closeDefenseTypePopover();
-  });
-
-  it("unticking a checked checkbox calls removeConditionImmunity", () => {
-    const { ctx, editState, anchor } = withDefenses({ condition_immunities: ["charmed"] });
-    const spy = vi.spyOn(editState, "removeConditionImmunity");
-    openDefenseTypePopover(anchor, ctx);
-    const cb = conditionRow("charmed").querySelector<HTMLInputElement>(".pc-def-popover-checkbox")!;
-    cb.click();
-    expect(spy).toHaveBeenCalledWith("charmed");
-    closeDefenseTypePopover();
   });
 });

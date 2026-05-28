@@ -21,18 +21,21 @@ export type DefenseKind =
   | "vulnerabilities"
   | "condition_immunities";
 
+type DefenseTab = "damages" | "conditions";
+
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
 
 /**
- * Two-section popover for adding any defense:
+ * Tabbed popover for adding any defense:
  *
- * - Damage types: each row has three R/I/V pips. Mutually exclusive — see
- *   `cycleAction` in ./defense-type-popover-logic for the transition table.
- * - Condition immunities: each row has a single binary checkbox.
+ * - Damages tab (default): each row has three R/I/V pips. Mutually exclusive
+ *   — see `cycleAction` in ./defense-type-popover-logic for the transition table.
+ * - Conditions tab: each row has a single "I" (immunity) pip that toggles
+ *   on/off — same visual language as the damage pips, but binary not tri-state.
  *
  * Renders into `document.body` (outside `.archivist-pc-sheet`), so styles
  * are scoped under `.pc-def-popover` to win specificity over Obsidian's
- * defaults. See spec §3 for the canonical visual reference.
+ * defaults.
  *
  * See conditions-popover.ts for the click-race rationale on the document
  * `click` handler.
@@ -53,20 +56,41 @@ export function openDefenseTypePopover(
 
   popover.createDiv({ cls: "pc-def-popover-header", text: "Add Defense" });
 
-  // Sections live inside their own wrapper so `:nth-of-type` selectors
-  // (used by the popover test fixtures) target section #1 / #2 without
-  // counting the header div as a sibling.
-  const sections = popover.createDiv({ cls: "pc-def-popover-sections" });
-
-  // ─── Section 1: Damage types ─────────────────────────────────────
-  const damageSection = sections.createDiv({ cls: "pc-def-popover-section" });
-  const damageHeader = damageSection.createDiv({ cls: "pc-def-popover-section-header" });
-  damageHeader.appendText("Damage types");
-  damageHeader.createSpan({
-    cls: "pc-def-popover-legend",
-    text: "— R esist · I mmune · V uln",
+  // ─── Tab bar ─────────────────────────────────────────────────────
+  const tabBar = popover.createDiv({ cls: "pc-def-popover-tabs" });
+  const damagesTab = tabBar.createEl("button", {
+    cls: "pc-def-popover-tab active",
+    text: "Damages",
+    attr: { "data-tab": "damages", type: "button" },
   });
-  const damageList = damageSection.createDiv({ cls: "pc-def-popover-list" });
+  const conditionsTab = tabBar.createEl("button", {
+    cls: "pc-def-popover-tab",
+    text: "Conditions",
+    attr: { "data-tab": "conditions", type: "button" },
+  });
+
+  const panels = popover.createDiv({ cls: "pc-def-popover-panels" });
+
+  const setActiveTab = (tab: DefenseTab) => {
+    damagesTab.classList.toggle("active", tab === "damages");
+    conditionsTab.classList.toggle("active", tab === "conditions");
+    panels.querySelectorAll<HTMLElement>(".pc-def-popover-panel").forEach((p) => {
+      p.classList.toggle("active", p.dataset.tab === tab);
+    });
+  };
+  damagesTab.addEventListener("click", () => setActiveTab("damages"));
+  conditionsTab.addEventListener("click", () => setActiveTab("conditions"));
+
+  // ─── Panel 1: Damages (default active) ───────────────────────────
+  const damagesPanel = panels.createDiv({
+    cls: "pc-def-popover-panel active",
+    attr: { "data-tab": "damages" },
+  });
+  damagesPanel.createDiv({
+    cls: "pc-def-popover-legend",
+    text: "R esist · I mmune · V uln",
+  });
+  const damageList = damagesPanel.createDiv({ cls: "pc-def-popover-list" });
 
   for (const type of DAMAGE_TYPES) {
     const slug = type.toLowerCase();
@@ -112,13 +136,12 @@ export function openDefenseTypePopover(
     renderRow(rowState);
   }
 
-  // ─── Section 2: Condition immunities ─────────────────────────────
-  const condSection = sections.createDiv({ cls: "pc-def-popover-section" });
-  condSection.createDiv({
-    cls: "pc-def-popover-section-header",
-    text: "Condition immunities",
+  // ─── Panel 2: Conditions ──────────────────────────────────────────
+  const conditionsPanel = panels.createDiv({
+    cls: "pc-def-popover-panel",
+    attr: { "data-tab": "conditions" },
   });
-  const condList = condSection.createDiv({ cls: "pc-def-popover-list" });
+  const condList = conditionsPanel.createDiv({ cls: "pc-def-popover-list" });
 
   for (const slug of CONDITION_SLUGS) {
     const row = condList.createDiv({
@@ -126,19 +149,26 @@ export function openDefenseTypePopover(
       attr: { "data-slug": slug },
     });
     row.createSpan({ cls: "pc-def-popover-name", text: CONDITION_DISPLAY_NAMES[slug] });
-    const cb = row.createEl("input", {
-      cls: "pc-def-popover-checkbox",
-      attr: { type: "checkbox" },
+
+    // Row-local mirror of the binary state. Seeded from `ctx.derived.defenses`
+    // and flipped optimistically on tap — same pattern as damage rows.
+    let condState = (ctx.derived.defenses.condition_immunities ?? []).includes(slug);
+    const pip = row.createEl("button", {
+      cls: "pc-def-popover-pip",
+      text: "I",
+      attr: { "data-kind": "immunity", type: "button" },
     });
-    cb.checked = (ctx.derived.defenses.condition_immunities ?? []).includes(slug);
-    cb.addEventListener("change", () => {
-      if (cb.checked) editState.addConditionImmunity(slug);
-      else editState.removeConditionImmunity(slug);
+    if (condState) pip.classList.add("on");
+    pip.addEventListener("click", () => {
+      if (condState) editState.removeConditionImmunity(slug);
+      else editState.addConditionImmunity(slug);
+      condState = !condState;
+      pip.classList.toggle("on", condState);
     });
   }
 
   // Keep the popover inside the viewport — same helper the conditions
-  // popover uses; final placement runs after both sections render.
+  // popover uses; final placement runs after both panels render.
   clampPopoverToViewport(popover, anchorRect);
 
   const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") closeDefenseTypePopover(); };
