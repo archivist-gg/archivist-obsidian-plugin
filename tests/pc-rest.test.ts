@@ -162,3 +162,60 @@ describe("computeRestPlan — long rest — feature_uses + item charges", () => 
     expect(plan.categories.find((x) => x.id === "item:0")).toBeUndefined();
   });
 });
+
+describe("computeRestPlan — short rest", () => {
+  it("includes feature_uses with reset 'short-rest'", () => {
+    const c = clone(MONK_6_DRAINED);
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "short-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    expect(plan.categories.find((x) => x.id === "feature:ki")).toBeDefined();
+  });
+
+  it("excludes feature_uses with reset 'long-rest' on short rest", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "rage", name: "Rage", resources: [{ id: "rage", reset: "long-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    expect(plan.categories.find((x) => x.id === "feature:rage")).toBeUndefined();
+  });
+
+  it("includes item charges with reset 'short' only (not 'long' or 'dawn')", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
+    expect(plan.categories.find((x) => x.id === "item:0")).toBeDefined(); // bag-of-tricks: short ✓
+    expect(plan.categories.find((x) => x.id === "item:1")).toBeUndefined(); // cloak: dawn ✗
+  });
+
+  it("omits HP / exhaustion / spell-slots / hd-regain categories on short rest", () => {
+    const c = clone(WIZARD_5_WOUNDED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
+    for (const id of ["hp-to-max", "exhaustion", "spell-slots", "hd-regain"]) {
+      expect(plan.categories.find((x) => x.id === id)).toBeUndefined();
+    }
+  });
+
+  it("populates hdAvailable with pools that have remaining dice", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
+    expect(plan.hdAvailable).toEqual([
+      { die: "d10", remaining: 2 }, // 5 - 3
+      { die: "d8",  remaining: 1 }, // 3 - 2
+    ]);
+  });
+
+  it("hdAvailable excludes pools with 0 remaining", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.hit_dice.d10 = { used: 5, total: 5 };
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
+    expect(plan.hdAvailable.find((p) => p.die === "d10")).toBeUndefined();
+  });
+
+  it("hdAvailable is empty for long rest", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(plan.hdAvailable).toEqual([]);
+  });
+});

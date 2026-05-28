@@ -128,7 +128,43 @@ export function computeRestPlan(
     });
   }
 
-  return { type, categories: cats, hdAvailable: [] };
+  if (type === "short") {
+    for (const [key, fu] of Object.entries(character.state.feature_uses ?? {})) {
+      if (fu.used <= 0) continue;
+      const rf = (resolved.features ?? []).find((r: { feature: { id?: string; name: string; resources?: Array<{ id?: string; reset: string }> } }) =>
+        (r.feature.resources?.[0]?.id ?? r.feature.id) === key,
+      );
+      const reset = rf?.feature.resources?.[0]?.reset ?? "long-rest";
+      if (reset !== "short-rest") continue;
+      cats.push({
+        id: `feature:${key}`,
+        label: rf?.feature.name ?? key,
+        preview: `${fu.used}/${fu.max} restored`,
+      });
+    }
+
+    character.equipment.forEach((entry, idx) => {
+      const rec = entry.state?.recovery;
+      const charges = entry.state?.charges;
+      if (!rec || !charges) return;
+      if (charges.current >= charges.max) return;
+      if (rec.reset !== "short") return;
+      const label = entry.overrides?.name ?? resolveItemName(entry, registry) ?? entry.item;
+      cats.push({
+        id: `item:${idx}`,
+        label,
+        preview: `${charges.current} → ${charges.max}`,
+      });
+    });
+  }
+
+  const hdAvailable = type === "short"
+    ? Object.entries(character.state.hit_dice ?? {})
+        .filter(([, hd]) => hd.used < hd.total)
+        .map(([die, hd]) => ({ die, remaining: hd.total - hd.used }))
+    : [];
+
+  return { type, categories: cats, hdAvailable };
 }
 
 export function applyRestResets(
