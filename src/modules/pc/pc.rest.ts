@@ -34,6 +34,8 @@ export interface RestPlan {
   type: RestType;
   categories: RestCategory[];
   hdAvailable: Array<{ die: string; remaining: number }>;
+  /** Internal: per-die HD-regain target captured at plan time so apply is idempotent. */
+  hdRegainDist?: Array<{ die: string; targetUsed: number }>;
 }
 
 export function computeRestPlan(
@@ -44,6 +46,7 @@ export function computeRestPlan(
   type: RestType,
 ): RestPlan {
   const cats: RestCategory[] = [];
+  let hdRegainDist: Array<{ die: string; targetUsed: number }> | undefined;
 
   if (type === "long") {
     if (character.state.hp.current < derived.hp.max) {
@@ -77,11 +80,11 @@ export function computeRestPlan(
       .sort((a, b) => b.used - a.used);
     if (pools.length > 0) {
       let left = regainBudget;
-      const dist: Array<{ die: string; give: number }> = [];
+      const dist: Array<{ die: string; give: number; targetUsed: number }> = [];
       for (const p of pools) {
         if (left === 0) break;
         const give = Math.min(p.used, left);
-        if (give > 0) dist.push({ die: p.die, give });
+        if (give > 0) dist.push({ die: p.die, give, targetUsed: p.used - give });
         left -= give;
       }
       const totalGive = dist.reduce((s, d) => s + d.give, 0);
@@ -92,6 +95,7 @@ export function computeRestPlan(
           label: "Hit Dice",
           preview: `+${totalGive} (${detail})`,
         });
+        hdRegainDist = dist.map((d) => ({ die: d.die, targetUsed: d.targetUsed }));
       }
     }
 
@@ -164,12 +168,12 @@ export function computeRestPlan(
         .map(([die, hd]) => ({ die, remaining: hd.total - hd.used }))
     : [];
 
-  return { type, categories: cats, hdAvailable };
+  return { type, categories: cats, hdAvailable, hdRegainDist };
 }
 
 export function applyRestResets(
   character: Character,
-  resolved: ResolvedCharacter,
+  _resolved: ResolvedCharacter,
   derived: DerivedStats,
   plan: RestPlan,
   optouts: Set<RestCategoryId>,
@@ -201,17 +205,11 @@ export function applyRestResets(
     }
 
     if (cat.id === "hd-regain") {
-      const totalLevel = resolved.totalLevel ?? 0;
-      let left = Math.max(1, Math.floor(totalLevel / 2));
-      const pools = Object.entries(character.state.hit_dice ?? {})
-        .map(([die, hd]) => ({ die, hd }))
-        .filter((p) => p.hd.used > 0)
-        .sort((a, b) => b.hd.used - a.hd.used);
-      for (const p of pools) {
-        if (left === 0) break;
-        const give = Math.min(p.hd.used, left);
-        p.hd.used -= give;
-        left -= give;
+      // Use plan-captured target so re-applying is idempotent (min never re-restores).
+      for (const d of plan.hdRegainDist ?? []) {
+        const hd = character.state.hit_dice?.[d.die];
+        if (!hd) continue;
+        hd.used = Math.min(hd.used, Math.max(0, d.targetUsed));
       }
       continue;
     }

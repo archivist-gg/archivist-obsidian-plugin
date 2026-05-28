@@ -318,3 +318,74 @@ describe("applyRestResets — long rest mutations", () => {
     expect(c.state.spell_slots).toEqual(before.spell_slots);
   });
 });
+
+describe("applyRestResets — short rest + edge cases", () => {
+  it("short rest restores only short-rest features", () => {
+    const c = clone(MONK_6_DRAINED);
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "short-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses.ki.used).toBe(0);
+  });
+
+  it("short rest does not clear concentration", () => {
+    const c = clone(FIGHTER_5_CLERIC_3); // concentration: '[[bless]]'
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
+    applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set());
+    expect(c.state.concentration).toBe("[[bless]]");
+  });
+
+  it("short rest leaves long-rest features untouched", () => {
+    const c = clone(BARBARIAN_6_EXHAUSTED);
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "rage", name: "Rage", resources: [{ id: "rage", reset: "long-rest" }] }, source: null }],
+    });
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "short");
+    applyRestResets(c, resolved, fakeDerived(c), plan, new Set());
+    expect(c.state.feature_uses.rage.used).toBe(3);
+  });
+
+  it("is idempotent — applying twice equals applying once", () => {
+    const a = clone(WIZARD_5_WOUNDED);
+    const b = clone(WIZARD_5_WOUNDED);
+    const plan = computeRestPlan(a, fakeResolved(a), fakeDerived(a), null, "long");
+    applyRestResets(a, fakeResolved(a), fakeDerived(a), plan, new Set());
+    applyRestResets(b, fakeResolved(b), fakeDerived(b), plan, new Set());
+    applyRestResets(b, fakeResolved(b), fakeDerived(b), plan, new Set()); // twice
+    expect(a.state).toEqual(b.state);
+  });
+
+  it("optouts referencing a missing category id are ignored", () => {
+    const c = clone(WIZARD_5_WOUNDED);
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long");
+    expect(() => {
+      applyRestResets(c, fakeResolved(c), fakeDerived(c), plan, new Set(["item:99" as never]));
+    }).not.toThrow();
+    expect(c.state.hp.current).toBe(32); // long rest still applied
+  });
+
+  it("computeRestPlan does not throw on unknown reset value", () => {
+    const c = clone(MONK_6_DRAINED);
+    const resolved = fakeResolved(c, {
+      features: [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "weird-cadence" }] }, source: null }],
+    });
+    expect(() => computeRestPlan(c, resolved, fakeDerived(c), null, "long")).not.toThrow();
+    const plan = computeRestPlan(c, resolved, fakeDerived(c), null, "long");
+    expect(plan.categories.find((x) => x.id === "feature:ki")).toBeUndefined();
+  });
+
+  it("computeRestPlan tolerates missing state.exhaustion", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    delete (c.state as Partial<typeof c.state>).exhaustion;
+    expect(() => computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "long")).not.toThrow();
+  });
+
+  it("computeRestPlan tolerates empty hit_dice", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    c.state.hit_dice = {};
+    const plan = computeRestPlan(c, fakeResolved(c), fakeDerived(c), null, "short");
+    expect(plan.hdAvailable).toEqual([]);
+  });
+});
