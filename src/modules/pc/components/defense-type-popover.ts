@@ -1,13 +1,11 @@
 import type { ComponentRenderContext } from "./component.types";
 import { DAMAGE_TYPES } from "../../../shared/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "../constants/conditions";
-import type { ConditionSlug } from "../constants/conditions";
 import { clampPopoverToViewport } from "./popover-utils";
 import {
   cycleAction,
   defenseKindFor,
   type DefenseRowState,
-  type TappedPip,
 } from "./defense-type-popover-logic";
 
 /**
@@ -103,7 +101,7 @@ export function openDefenseTypePopover(
         attr: { "data-kind": kind, type: "button" },
       });
       pip.addEventListener("click", () => {
-        const action = cycleAction(rowState, kind as TappedPip);
+        const action = cycleAction(rowState, kind);
         if (action.removeKind) editState.removeDefense(defenseKindFor(action.removeKind), slug);
         if (action.addKind) editState.addDefense(defenseKindFor(action.addKind), slug);
         rowState = action.addKind ?? null;
@@ -131,11 +129,11 @@ export function openDefenseTypePopover(
     const cb = row.createEl("input", {
       cls: "pc-def-popover-checkbox",
       attr: { type: "checkbox" },
-    }) as HTMLInputElement;
+    });
     cb.checked = (ctx.derived.defenses.condition_immunities ?? []).includes(slug);
     cb.addEventListener("change", () => {
-      if (cb.checked) editState.addConditionImmunity(slug as ConditionSlug);
-      else editState.removeConditionImmunity(slug as ConditionSlug);
+      if (cb.checked) editState.addConditionImmunity(slug);
+      else editState.removeConditionImmunity(slug);
     });
   }
 
