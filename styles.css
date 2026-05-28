@@ -6925,8 +6925,152 @@ body.theme-light .archivist-tag-atk:hover {
 /* 13. Modal Styles
    ========================================================================== */
 
+/* Shared parchment theme for every plugin modal that opts in by adding the
+   `archivist-modal` class to its contentEl. Obsidian portals modals to
+   document.body, escaping the `.archivist-pc-sheet` scope where the PC
+   tokens are declared — so we redeclare every token used inside the modal
+   here, then style the frame, the close button, native checkboxes, and the
+   primary action button. */
+
+/* Outer modal box — strip Obsidian's dark frame so the parchment fills it. */
+.modal:has(.archivist-modal) {
+  background: #fdf1dc;
+  border: 1px solid #d9c484;
+  padding: 0;
+  width: auto;
+  max-width: 480px;
+  min-width: 320px;
+}
+
+.modal:has(.archivist-modal) .modal-close-button {
+  color: #6b5e4b;
+}
+
+/* Inner content — palette, fonts, padding, and a full set of PC tokens
+   so any `var(--pc-…)` reference inside the modal resolves. */
 .archivist-modal {
-  padding: 1em;
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --pc-fs-heading: 14px;
+  --pc-fs-body: 12px;
+  --pc-fs-small: 11px;
+  --pc-fs-label: 10px;
+  --pc-fs-micro: 8px;
+  --pc-ls-caps-sm: 0.08em;
+  --pc-ls-caps-md: 0.14em;
+  --pc-radius-sm: 4px;
+
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: 14px 16px;
+}
+
+/* Custom checkbox — Obsidian replaces native checkboxes with its own purple
+   square (and ignores `accent-color`), so we override appearance ourselves
+   to render a crimson-bordered square with a parchment-coloured checkmark. */
+.archivist-modal input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.4px solid var(--pc-crimson);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: none;
+}
+
+.archivist-modal input[type="checkbox"]:hover:not(:checked):not(:disabled) {
+  background-color: rgba(146, 38, 16, 0.08);
+}
+
+.archivist-modal input[type="checkbox"]:checked {
+  background-color: var(--pc-crimson);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px 14px;
+  border-color: var(--pc-crimson);
+}
+
+.archivist-modal input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: 1px;
+}
+
+/* Footer button row used by the entity/attune modals — align right with a
+   small gap and breathing room above. */
+.archivist-modal .archivist-modal-buttons {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--pc-tan);
+}
+
+/* Restyle the Obsidian primary-button class (used by Close in entity modals
+   and Pick row in attune-picker) to the crimson brand. */
+.archivist-modal button.mod-cta {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 14px;
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.archivist-modal button.mod-cta:hover:not(:disabled) {
+  background: var(--pc-crimson-light);
+}
+
+.archivist-modal button.mod-cta:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Generic plain buttons (Cancel in attune-picker, etc.) — ghost style. */
+.archivist-modal .archivist-modal-buttons > button:not(.mod-cta):not([class*="pc-"]) {
+  background: transparent;
+  color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 14px;
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.archivist-modal .archivist-modal-buttons > button:not(.mod-cta):not([class*="pc-"]):hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.06);
 }
 
 .archivist-modal-repeatable {
@@ -12111,56 +12255,17 @@ body.theme-light .archivist-tag-atk:hover {
 /* src/modules/pc/styles/rest.css  (append) */
 
 /* ============================================
-   Rest modal — parchment surface, crimson trim
-
-   Tokens are redeclared here because Obsidian's Modal portals to
-   document.body, outside the `.archivist-pc-sheet` scope where the
-   PC tokens live. Without this every `var(--pc-…)` reference below
-   would be invalid and the modal would fall back to Obsidian defaults
-   (dark backdrop, purple checkbox, gray buttons, invisible pip borders).
+   Rest modal — rest-specific layout on top of the shared `archivist-modal`
+   parchment theme (frame, tokens, fonts, checkbox, primary button — see
+   src/styles/archivist-dnd.css §13). Rules below add only what's unique
+   to the rest modal: title bar, opt-out rows, HD strip, rest-specific
+   buttons.
    ============================================ */
 
-/* Strip the Obsidian modal frame so the parchment content fills it.
-   Constrain the overall modal box — Obsidian's default is much wider. */
+/* Tighter max-width than the shared modal default (480px) — the rest modal
+   is a compact list, not a wide form. */
 .modal:has(.pc-rest-modal) {
-  background: #fdf1dc;
-  border: 1px solid #d9c484;
-  padding: 0;
-  width: auto;
   max-width: 420px;
-  min-width: 320px;
-}
-
-.modal:has(.pc-rest-modal) .modal-close-button {
-  color: #6b5e4b;
-}
-
-.pc-rest-modal {
-  --pc-parchment-light: #fdf1dc;
-  --pc-parchment-dark: #e8d5b0;
-  --pc-crimson: #922610;
-  --pc-crimson-light: #a83220;
-  --pc-tan: #d9c484;
-  --pc-tan-muted: #c4b07a;
-  --pc-text-primary: #1a1a1a;
-  --pc-text-muted: #8a7a6a;
-  --pc-text-soft: #6b5e4b;
-  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
-  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
-  --pc-fs-heading: 14px;
-  --pc-fs-body: 12px;
-  --pc-fs-small: 11px;
-  --pc-fs-label: 10px;
-  --pc-fs-micro: 8px;
-  --pc-ls-caps-sm: 0.08em;
-  --pc-ls-caps-md: 0.14em;
-  --pc-radius-sm: 4px;
-
-  background: var(--pc-parchment-light);
-  color: var(--pc-text-primary);
-  font-family: var(--pc-font-sans);
-  padding: 14px 16px;
-  max-width: 380px;
 }
 
 .pc-rest-modal-title {
@@ -12208,44 +12313,9 @@ body.theme-light .archivist-tag-atk:hover {
   border-bottom: none;
 }
 
-/* Custom checkbox — Obsidian replaces the native control with its own
-   purple-themed square (and ignores `accent-color`), so we build our own
-   on top of `appearance: none` to match the parchment palette. */
-.pc-rest-modal .pc-rest-opt-checkbox {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  border: 1.4px solid var(--pc-crimson);
-  border-radius: 3px;
-  background: transparent;
-  cursor: pointer;
-  flex: 0 0 auto;
-  margin: 0;
-  padding: 0;
-  position: relative;
-  display: inline-block;
-  vertical-align: middle;
-  box-shadow: none;
-}
-
-.pc-rest-modal .pc-rest-opt-checkbox:hover:not(:checked) {
-  background-color: rgba(146, 38, 16, 0.08);
-}
-
-.pc-rest-modal .pc-rest-opt-checkbox:checked {
-  background-color: var(--pc-crimson);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 14px 14px;
-  border-color: var(--pc-crimson);
-}
-
-.pc-rest-modal .pc-rest-opt-checkbox:focus-visible {
-  outline: 2px solid var(--pc-crimson);
-  outline-offset: 1px;
-}
+/* Checkbox styling lives in the shared `.archivist-modal input[type="checkbox"]`
+   rule (archivist-dnd.css §13). `.pc-rest-opt-checkbox` just needs layout
+   hints — flex sizing is already covered there too. */
 
 .pc-rest-opt-label {
   flex: 1;

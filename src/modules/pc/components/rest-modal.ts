@@ -35,7 +35,9 @@ export class RestModal extends Modal {
 
   onOpen(): void {
     this.contentEl.empty();
-    this.contentEl.addClass("pc-rest-modal");
+    // `archivist-modal` brings the shared parchment frame, tokens, checkbox,
+    // and primary-button theme. `pc-rest-modal` adds rest-specific layout.
+    this.contentEl.addClass("archivist-modal", "pc-rest-modal");
     this.render();
   }
 
