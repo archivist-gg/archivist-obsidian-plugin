@@ -51,9 +51,9 @@ export class RestModal extends Modal {
     const titleEl = this.contentEl.createEl("h2", { cls: "pc-rest-modal-title" });
     titleEl.setText(this.type === "short" ? "☾ Short Rest" : "★ Long Rest");
 
-    // HD strip (short rest only) — populated in Slice 5
+    // HD strip (short rest only)
     if (this.type === "short") {
-      this.contentEl.createDiv({ cls: "pc-rest-hd-strip" });
+      this.renderHdStrip(plan);
     }
 
     // Opt-out list
@@ -99,6 +99,47 @@ export class RestModal extends Modal {
       li.createSpan({ cls: "pc-rest-opt-label", text: cat.label });
       li.createSpan({ cls: "pc-rest-opt-preview", text: cat.preview });
     }
+  }
+
+  private renderHdStrip(plan: RestPlan): void {
+    if (plan.hdAvailable.length === 0) return; // no pip rows if no HD left
+
+    this.contentEl.createDiv({
+      cls: "pc-rest-modal-section-label",
+      text: "Spend Hit Dice",
+    });
+    const strip = this.contentEl.createDiv({ cls: "pc-rest-hd-strip" });
+
+    for (const pool of plan.hdAvailable) {
+      const character = this.editState.getCharacter();
+      const hd = character.state.hit_dice[pool.die];
+      const row = strip.createDiv({ cls: "pc-rest-pip-row" });
+      row.createSpan({ cls: "pc-rest-pip-label", text: pool.die });
+      const total = hd.total;
+      const spent = hd.used;
+      const selected = this.selectedPips.get(pool.die) ?? 0;
+      for (let i = 0; i < total; i++) {
+        const pip = row.createDiv({ cls: "pc-rest-pip" });
+        if (i < spent) pip.addClass("spent");
+        else if (i < spent + selected) pip.addClass("selected");
+        // Else: empty (available)
+        pip.addEventListener("click", () => {
+          if (i < spent) return;
+          const cur = this.selectedPips.get(pool.die) ?? 0;
+          if (i < spent + cur) {
+            // Click on a selected pip → deselect down to it
+            this.selectedPips.set(pool.die, i - spent);
+          } else {
+            // Click on an empty pip → select up to and including it
+            this.selectedPips.set(pool.die, i - spent + 1);
+          }
+          this.render();
+        });
+      }
+    }
+
+    // Buttons row populated in Task 16
+    strip.createDiv({ cls: "pc-rest-hd-buttons" });
   }
 
   private renderFooter(): void {

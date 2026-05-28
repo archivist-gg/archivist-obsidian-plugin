@@ -181,3 +181,57 @@
 .pc-rest-btn-confirm:hover {
   background: var(--pc-crimson-light);
 }
+
+/* rest.css — append */
+
+.pc-rest-hd-strip {
+  background: var(--pc-cream-wash, rgba(255, 248, 220, 0.55));
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: 9px 11px;
+  margin-bottom: 4px;
+}
+
+.pc-rest-pip-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.pc-rest-pip-row:last-child {
+  margin-bottom: 0;
+}
+
+.pc-rest-pip-label {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-text-soft);
+  min-width: 26px;
+}
+
+.pc-rest-pip {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.4px solid var(--pc-crimson);
+  background: transparent;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.pc-rest-pip.selected {
+  background: var(--pc-crimson);
+}
+
+.pc-rest-pip.spent {
+  background: var(--pc-text-muted);
+  border-color: var(--pc-text-muted);
+  cursor: default;
+}
+
+.pc-rest-pip:hover:not(.spent) {
+  box-shadow: 0 0 0 2px rgba(146, 38, 16, 0.18);
+}

@@ -25,7 +25,7 @@ import { RestModal } from "../src/modules/pc/components/rest-modal";
 import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import {
-  WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
+  WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED, MONK_6_DRAINED,
   clone, fakeResolved, fakeDerived,
 } from "./fixtures/pc/rest-fixtures";
 import type { App } from "obsidian";
@@ -89,5 +89,21 @@ describe("RestModal — long rest", () => {
     c.state.feature_uses = {};
     const { m } = makeModal("long", c);
     expect(m.contentEl.querySelector(".pc-rest-modal-empty")).toBeTruthy();
+  });
+});
+
+describe("RestModal — short rest — HD pips", () => {
+  it("renders one pip per die in each pool", () => {
+    const { m } = makeModal("short", clone(MONK_6_DRAINED)); // d10 pool 5 dice (one full pool)
+    const pips = m.contentEl.querySelectorAll(".pc-rest-pip-row .pc-rest-pip");
+    expect(pips.length).toBeGreaterThan(0);
+  });
+
+  it("clicking an empty pip selects up to and including it", () => {
+    const { m } = makeModal("short", clone(MONK_6_DRAINED));
+    const pips = Array.from(m.contentEl.querySelectorAll(".pc-rest-pip-row:first-child .pc-rest-pip"));
+    const target = pips.find((p) => !(p.classList.contains("spent"))) as HTMLDivElement;
+    target.click();
+    expect(m.contentEl.querySelectorAll(".pc-rest-pip.selected").length).toBeGreaterThan(0);
   });
 });
