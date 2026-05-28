@@ -12121,8 +12121,46 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ============================================
    Rest modal — parchment surface, crimson trim
+
+   Tokens are redeclared here because Obsidian's Modal portals to
+   document.body, outside the `.archivist-pc-sheet` scope where the
+   PC tokens live. Without this every `var(--pc-…)` reference below
+   would be invalid and the modal would fall back to Obsidian defaults
+   (dark backdrop, purple checkbox, gray buttons, invisible pip borders).
    ============================================ */
+
+/* Strip the Obsidian modal frame so the parchment content fills it. */
+.modal:has(.pc-rest-modal) {
+  background: #fdf1dc;
+  border: 1px solid #d9c484;
+  padding: 0;
+}
+
+.modal:has(.pc-rest-modal) .modal-close-button {
+  color: #6b5e4b;
+}
+
 .pc-rest-modal {
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --pc-fs-heading: 14px;
+  --pc-fs-body: 12px;
+  --pc-fs-small: 11px;
+  --pc-fs-label: 10px;
+  --pc-fs-micro: 8px;
+  --pc-ls-caps-sm: 0.08em;
+  --pc-ls-caps-md: 0.14em;
+  --pc-radius-sm: 4px;
+
   background: var(--pc-parchment-light);
   color: var(--pc-text-primary);
   font-family: var(--pc-font-sans);
