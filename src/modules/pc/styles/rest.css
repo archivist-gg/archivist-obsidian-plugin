@@ -1,0 +1,64 @@
+/* src/modules/pc/styles/rest.css */
+
+/* ============================================
+   Rest cluster — hero pair between identity and AC shield
+   ============================================ */
+.archivist-pc-sheet .pc-rest-cluster-host {
+  display: flex;
+  align-items: stretch;
+}
+
+.archivist-pc-sheet .pc-rest-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.archivist-pc-sheet .pc-rest-btn {
+  background: transparent;
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  padding: 5px 10px;
+  color: var(--pc-crimson);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+
+.archivist-pc-sheet .pc-rest-btn:hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.08);
+}
+
+.archivist-pc-sheet .pc-rest-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.archivist-pc-sheet .pc-rest-btn--long {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+}
+
+.archivist-pc-sheet .pc-rest-btn--long:hover:not(:disabled) {
+  background: var(--pc-crimson-light);
+}
+
+/* On narrow sheets, the cluster squeezes — buttons collapse to icon only */
+@container pc-sheet (max-width: 699px) {
+  .archivist-pc-sheet .pc-rest-btn {
+    padding: 5px 7px;
+    font-size: 0;
+  }
+  .archivist-pc-sheet .pc-rest-btn::first-letter {
+    font-size: 14px;
+  }
+}

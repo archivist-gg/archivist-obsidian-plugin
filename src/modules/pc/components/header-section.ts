@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ComponentRegistry } from "./component-registry";
 import type { ResolvedCharacter } from "../pc.types";
+import { RestButtons } from "./rest-buttons";
 
 /**
  * V7 hero: crest + name/subtitle on the left, right cluster with AC shield,
@@ -21,6 +22,9 @@ export class HeaderSection implements SheetComponent {
     const identity = root.createDiv({ cls: "pc-identity" });
     identity.createEl("h1", { cls: "pc-name", text: ctx.resolved.definition.name });
     identity.createDiv({ cls: "pc-subtitle", text: buildSubtitle(ctx.resolved) });
+
+    const restCluster = root.createDiv({ cls: "pc-rest-cluster-host" });
+    new RestButtons(restCluster, ctx).render();
 
     const right = root.createDiv({ cls: "pc-hero-right" });
     for (const type of ["ac-shield", "hp-widget", "hit-dice-widget"] as const) {
