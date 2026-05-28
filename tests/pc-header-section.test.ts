@@ -36,7 +36,7 @@ const BASE_RESOLVED: ResolvedCharacter = {
 
 const fakeCtx = (resolved: ResolvedCharacter): ComponentRenderContext => ({
   resolved,
-  derived: {} as DerivedStats,
+  derived: { hp: { max: resolved.state.hp.max, current: resolved.state.hp.current, temp: resolved.state.hp.temp } } as DerivedStats,
   core: {} as never,
   editState: null,
 });
@@ -69,14 +69,14 @@ function registryWith(types: string[]): ComponentRegistry {
 }
 
 describe("HeaderSection", () => {
-  it("renders name, subtitle, avatar placeholder, and hero right cluster (no rest buttons)", () => {
+  it("renders name, subtitle, avatar placeholder, and hero right cluster with rest cluster", () => {
     const container = mountContainer();
     const registry = registryWith(["ac-shield", "hp-widget", "hit-dice-widget"]);
     new HeaderSection(registry).render(container, fakeCtx(BASE_RESOLVED));
     expect(container.querySelector(".pc-name")?.textContent).toBe("Grendal the Wary");
     expect(container.querySelector(".pc-subtitle")?.textContent).toContain("Hill Folk");
     expect(container.querySelector(".pc-avatar")).not.toBeNull();
-    expect(container.querySelectorAll(".pc-rest-btn").length).toBe(0);
+    expect(container.querySelectorAll(".pc-rest-btn").length).toBe(2);
     expect(container.querySelector(".pc-hero-right .probe-ac-shield")).not.toBeNull();
     expect(container.querySelector(".pc-hero-right .probe-hp-widget")).not.toBeNull();
     expect(container.querySelector(".pc-hero-right .probe-hit-dice-widget")).not.toBeNull();
