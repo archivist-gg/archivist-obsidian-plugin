@@ -154,10 +154,43 @@
   border-bottom: none;
 }
 
-.pc-rest-opt-checkbox {
-  accent-color: var(--pc-crimson);
+/* Custom checkbox — Obsidian replaces the native control with its own
+   purple-themed square (and ignores `accent-color`), so we build our own
+   on top of `appearance: none` to match the parchment palette. */
+.pc-rest-modal .pc-rest-opt-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.4px solid var(--pc-crimson);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
   flex: 0 0 auto;
   margin: 0;
+  padding: 0;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: none;
+}
+
+.pc-rest-modal .pc-rest-opt-checkbox:hover:not(:checked) {
+  background-color: rgba(146, 38, 16, 0.08);
+}
+
+.pc-rest-modal .pc-rest-opt-checkbox:checked {
+  background-color: var(--pc-crimson);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 14px 14px;
+  border-color: var(--pc-crimson);
+}
+
+.pc-rest-modal .pc-rest-opt-checkbox:focus-visible {
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: 1px;
 }
 
 .pc-rest-opt-label {
