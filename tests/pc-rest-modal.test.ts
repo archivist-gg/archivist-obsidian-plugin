@@ -25,7 +25,7 @@ import { RestModal } from "../src/modules/pc/components/rest-modal";
 import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import {
-  WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED, MONK_6_DRAINED,
+  WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED, MONK_6_DRAINED, PC_WITH_MAGIC_ITEMS,
   clone, fakeResolved, fakeDerived,
 } from "./fixtures/pc/rest-fixtures";
 import type { App } from "obsidian";
@@ -185,5 +185,39 @@ describe("RestModal — short rest — Manual entry", () => {
     const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
+  });
+});
+
+describe("RestModal — short rest — Confirm", () => {
+  it("Confirm calls editState.shortRest with current optouts", () => {
+    const c = clone(MONK_6_DRAINED);
+    const ki = [{ feature: { id: "ki", name: "Ki", resources: [{ id: "ki", reset: "short-rest" }] }, source: null }];
+    const { m, character } = makeModal("short", c, ki);
+    (m.contentEl.querySelector(".pc-rest-modal-footer .pc-rest-btn-confirm") as HTMLButtonElement).click();
+    expect(character.state.feature_uses.ki.used).toBe(0);
+  });
+
+  it("HD already spent during modal remain spent after Cancel", () => {
+    const c = clone(MONK_6_DRAINED);
+    c.state.hp.current = 10;
+    c.state.hp.max = 100;
+    const { m, character } = makeModal("short", c);
+    // Spend 1 HD via Apply Avg
+    (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
+    (Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("Apply Avg")) as HTMLButtonElement).click();
+    const usedAfterSpend = character.state.hit_dice.d10.used;
+    expect(usedAfterSpend).toBeGreaterThan(0);
+    // Cancel
+    (m.contentEl.querySelector(".pc-rest-modal-footer .pc-rest-btn-ghost") as HTMLButtonElement).click();
+    expect(character.state.hit_dice.d10.used).toBe(usedAfterSpend); // not rolled back
+  });
+
+  it("Short rest restores magic-item charges with reset='short' only", () => {
+    const c = clone(PC_WITH_MAGIC_ITEMS);
+    const { m, character } = makeModal("short", c);
+    (m.contentEl.querySelector(".pc-rest-modal-footer .pc-rest-btn-confirm") as HTMLButtonElement).click();
+    expect(character.equipment[0].state!.charges!.current).toBe(3); // bag-of-tricks: short ✓
+    expect(character.equipment[1].state!.charges!.current).toBe(0); // cloak: dawn (skipped on short)
   });
 });
