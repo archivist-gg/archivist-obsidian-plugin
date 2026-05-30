@@ -600,4 +600,38 @@ export class CharacterEditState {
     this.character.state.concentration = null;
     this.onChange();
   }
+
+  // ─── Casting ───────────────────────────────────────────────────────
+  private resolvedSpell(slug: string) {
+    return this.getContext().resolved.spells?.find((s) => s.slug === slug) ?? null;
+  }
+
+  private setConcentrationIfNeeded(slug: string): void {
+    const sp = this.resolvedSpell(slug);
+    if (sp?.entity.concentration) this.character.state.concentration = slug;
+  }
+
+  castSpell(slug: string, atLevel: number): void {
+    // Only concentrate if a slot was actually spent. expendSlot fires onChange
+    // once when it expends (and set-concentration rides that same edit); if no
+    // slot was available it early-returns without notifying, so we must NOT set
+    // concentration either — otherwise a failed cast would leave stale
+    // concentration in memory to be persisted by a later unrelated edit.
+    const before = this.character.state.spell_slots?.[atLevel]?.used ?? 0;
+    this.expendSlot(atLevel);
+    const after = this.character.state.spell_slots?.[atLevel]?.used ?? 0;
+    if (after > before) this.setConcentrationIfNeeded(slug);
+  }
+
+  castAsRitual(slug: string): void {
+    this.setConcentrationIfNeeded(slug);
+    this.onChange();
+  }
+
+  castCantrip(_slug: string): void {
+    // Cantrips spend no slot and (per SP4c) set no concentration, so a cast
+    // changes no persistent state — intentionally a true no-op. We do NOT fire
+    // onChange, to avoid dirtying/re-writing the file for an action with no
+    // state delta. A future cast-log that actually persists can re-add a notify.
+  }
 }
