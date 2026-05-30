@@ -5,13 +5,16 @@ import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "../background/background.types";
 import type { FeatEntity } from "../feat/feat.types";
 import type { Feature } from "../../shared/types";
+import type { Spell } from "../spell/spell.types";
 import type {
   Character,
   ResolvedCharacter,
   ResolvedClass,
   ResolvedFeature,
+  ResolvedSpell,
   FeatureSource,
 } from "./pc.types";
+import { normalizeKnownSpell, getSpellcastingProfile } from "./pc.spellcasting";
 
 export interface ResolveResult {
   character: ResolvedCharacter;
@@ -68,6 +71,26 @@ export class PCResolver {
     const totalLevel = classes.reduce((sum, c) => sum + c.level, 0);
     const features = collectResolvedFeatures(race, classes, background, feats);
 
+    // Primary caster slug (for bare-slug spells that don't name their class).
+    const primaryCasterSlug = character.class
+      .map((c) => stripSlug(c.name))
+      .find((slug) => slug && getSpellcastingProfile(slug, character.edition)) ?? null;
+
+    const spells: ResolvedSpell[] = [];
+    for (const raw of character.spells.known ?? []) {
+      const n = normalizeKnownSpell(raw);
+      const reg = this.entities.getByTypeAndSlug("spell", n.slug);
+      if (!reg) {
+        warnings.push(`Spell [[${n.slug}]] not found in compendium.`);
+        continue;
+      }
+      const entity = reg.data as unknown as Spell;
+      const isCantrip = (entity.level ?? 0) === 0;
+      const classSlug = n.classSlug ?? primaryCasterSlug;
+      const prep = isCantrip || n.alwaysPrepared ? true : (n.preparedFlag ?? false);
+      spells.push({ entity, slug: n.slug, classSlug, source: n.source, prepared: prep, alwaysPrepared: n.alwaysPrepared });
+    }
+
     return {
       character: {
         definition: character,
@@ -77,6 +100,7 @@ export class PCResolver {
         feats,
         totalLevel,
         features,
+        spells,
         state: character.state,
       },
       warnings,

@@ -355,6 +355,7 @@ function emptyResolved(): ResolvedCharacter {
     feats: [],
     totalLevel: 0,
     features: [],
+    spells: [],
     state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [] },
   };
 }

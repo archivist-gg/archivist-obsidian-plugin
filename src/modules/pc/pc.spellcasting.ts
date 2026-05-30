@@ -1,5 +1,5 @@
 import type { Ability } from "../../shared/types";
-import type { Edition } from "./pc.types";
+import type { Edition, KnownSpellEntry } from "./pc.types";
 import { abilityModifier } from "../../shared/dnd/math";
 import type { ClassEntity } from "../class/class.types";
 
@@ -39,6 +39,27 @@ export function getSpellcastingProfile(classSlug: string, edition: Edition): Spe
   const p = PROFILES[bareSlug(classSlug)];
   if (!p) return null;
   return { ability: p.ability, casterType: p.casterType, preparation: p.preparation[edition] };
+}
+
+export interface NormalizedKnownSpell {
+  slug: string;            // bare slug, brackets stripped
+  classSlug: string | null;
+  source: "class" | "feat" | "item" | "race" | "domain";
+  preparedFlag: boolean | undefined; // undefined when entry didn't specify
+  alwaysPrepared: boolean;
+}
+
+export function normalizeKnownSpell(entry: KnownSpellEntry): NormalizedKnownSpell {
+  if (typeof entry === "string") {
+    return { slug: bareSlug(entry), classSlug: null, source: "class", preparedFlag: undefined, alwaysPrepared: false };
+  }
+  return {
+    slug: bareSlug(entry.spell),
+    classSlug: entry.class ? bareSlug(entry.class) : null,
+    source: entry.source ?? "class",
+    preparedFlag: entry.prepared,
+    alwaysPrepared: entry.always_prepared ?? false,
+  };
 }
 
 export interface CasterClassInput {

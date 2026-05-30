@@ -22,7 +22,7 @@ const baseChar = (): Character => ({
 
 const mkResolved = (definition: Character): ResolvedCharacter => ({
   definition, race: null, classes: [], background: null, feats: [], totalLevel: 1,
-  features: [], state: definition.state,
+  features: [], spells: [], state: definition.state,
 });
 
 describe("resolveTag with slug terms", () => {

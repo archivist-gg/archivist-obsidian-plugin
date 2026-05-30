@@ -105,7 +105,7 @@ describe("magicBonusesForWeaponEntry — weapon_damage path (regression)", () =>
   });
   const mkResolved = (definition: Character): ResolvedCharacter => ({
     definition, race: null, classes: [], background: null, feats: [], totalLevel: 1,
-    features: [], state: definition.state,
+    features: [], spells: [], state: definition.state,
   });
   const fullProfs = {
     armor: { categories: [], specific: [] },

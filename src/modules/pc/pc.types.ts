@@ -7,6 +7,7 @@ import type { FeatEntity } from "../feat/feat.types";
 import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";
+import type { Spell } from "../spell/spell.types";
 
 export type { ConditionSlug } from "./constants/conditions";
 import type { ConditionSlug } from "./constants/conditions";
@@ -144,6 +145,15 @@ export interface ResolvedFeature {
   source: FeatureSource;
 }
 
+export interface ResolvedSpell {
+  entity: Spell;
+  slug: string;
+  classSlug: string | null;       // source class for DC/ability
+  source: "class" | "feat" | "item" | "race" | "domain";
+  prepared: boolean;              // cantrips & known-caster spells → true
+  alwaysPrepared: boolean;
+}
+
 export interface ResolvedClass {
   entity: ClassEntity | null;
   level: number;
@@ -159,6 +169,7 @@ export interface ResolvedCharacter {
   feats: FeatEntity[];
   totalLevel: number;
   features: ResolvedFeature[];
+  spells: ResolvedSpell[];
   state: CharacterState;
 }
 

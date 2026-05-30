@@ -17,7 +17,7 @@ function resolvedWith(classes: ResolvedClass[], scores: Record<string, number>):
     spells: { known: [], overrides: [] }, equipment: [], overrides: {},
     state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], exhaustion: 0, inspiration: 0, feature_uses: {} },
   };
-  return { definition: def as never, race: null, classes, background: null, feats: [], totalLevel: classes.reduce((s, c) => s + c.level, 0), features: [], state: def.state as never };
+  return { definition: def as never, race: null, classes, background: null, feats: [], totalLevel: classes.reduce((s, c) => s + c.level, 0), features: [], spells: [], state: def.state as never };
 }
 
 describe("recalc — spellcasting", () => {

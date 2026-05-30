@@ -75,6 +75,7 @@ const mkResolved = (
   feats: [],
   totalLevel: 1,
   features,
+  spells: [],
   state: definition.state,
 });
 

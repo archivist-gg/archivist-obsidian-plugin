@@ -21,7 +21,7 @@ const baseChar = (): Character => ({
 
 function ctx(c: Character, attunementUsed = 0, attunementLimit = 3): ComponentRenderContext {
   return {
-    resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], state: c.state } as ResolvedCharacter,
+    resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], spells: [], state: c.state } as ResolvedCharacter,
     derived: { ac: 0, acBreakdown: [], attacks: [], equippedSlots: {} as EquippedSlots, carriedWeight: 0, attunementUsed, attunementLimit } as DerivedStats,
     core: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
