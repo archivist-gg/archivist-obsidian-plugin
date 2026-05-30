@@ -601,6 +601,12 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  setSpellsView(mode: "by-level" | "table"): void {
+    if (this.character.spells.view === mode) return;
+    this.character.spells.view = mode;
+    this.onChange();
+  }
+
   // ─── Known spell list ──────────────────────────────────────────────
   private static bare(ref: string): string {
     const m = ref.match(/^\[\[(.+?)\]\]$/);

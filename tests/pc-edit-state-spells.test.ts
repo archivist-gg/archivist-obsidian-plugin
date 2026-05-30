@@ -65,3 +65,11 @@ describe("CharacterEditState — slots", () => {
     expect(char.state.concentration).toBeNull();
   });
 });
+
+describe("CharacterEditState — spells view", () => {
+  it("setSpellsView persists the view preference", () => {
+    const { es, char } = make();
+    es.setSpellsView("table");
+    expect(char.spells.view).toBe("table");
+  });
+});
