@@ -1,5 +1,7 @@
 import type { Ability } from "../../shared/types";
 import type { Edition } from "./pc.types";
+import { abilityModifier } from "../../shared/dnd/math";
+import type { ClassEntity } from "../class/class.types";
 
 export type CasterType = "full" | "half" | "third" | "pact" | "none";
 
@@ -167,4 +169,53 @@ export function deriveSpellSlots(classes: CasterClassInput[], edition: Edition):
     : null;
 
   return { standard, pact };
+}
+
+export interface LimitClassInput {
+  classSlug: string;
+  level: number;
+  entity: ClassEntity;
+  /** Ability score for this class's spellcasting ability. */
+  abilityScore: number;
+}
+
+export interface SpellLimit {
+  classSlug: string;
+  kind: "known" | "prepared";
+  cantripsKnown: number | null;     // null = unknown / not shown
+  preparedOrKnown: number | null;
+}
+
+function readTableColumn(entity: ClassEntity, level: number, keys: string[]): number | null {
+  const cols = entity.table?.[level]?.columns;
+  if (!cols) return null;
+  for (const k of keys) {
+    const raw = cols[k];
+    if (raw === undefined || raw === null) continue;
+    const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
+    if (!Number.isNaN(n)) return n;
+  }
+  return null;
+}
+
+export function computeSpellLimits(inputs: LimitClassInput[], edition: Edition): SpellLimit[] {
+  const out: SpellLimit[] = [];
+  for (const i of inputs) {
+    const profile = getSpellcastingProfile(i.classSlug, edition);
+    if (!profile) continue;
+
+    const cantripsKnown = readTableColumn(i.entity, i.level, ["Cantrips Known", "Cantrips"]);
+    const mod = abilityModifier(i.abilityScore);
+
+    let preparedOrKnown: number | null;
+    if (profile.preparation === "prepared") {
+      const levelTerm = profile.casterType === "half" ? Math.floor(i.level / 2) : i.level;
+      preparedOrKnown = Math.max(1, mod + levelTerm);
+    } else {
+      preparedOrKnown = readTableColumn(i.entity, i.level, ["Spells Known", "Prepared Spells"]);
+    }
+
+    out.push({ classSlug: i.classSlug, kind: profile.preparation, cantripsKnown, preparedOrKnown });
+  }
+  return out;
 }
