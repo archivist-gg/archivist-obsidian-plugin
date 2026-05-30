@@ -36,10 +36,13 @@
 .archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
 .archivist-pc-sheet .pc-spell-mk { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); border: 1px solid var(--pc-tan-muted); border-radius: 3px; padding: 0 4px; color: var(--pc-text-soft); margin-left: 5px; }
 
-/* Filter pills (compact table view) reuse .pc-resource-badge look. */
-.archivist-pc-sheet .pc-spell-filters { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-filter { padding: 3px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); cursor: pointer; }
-.archivist-pc-sheet .pc-spell-filter.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
+/* Filter pills (compact table view) reuse .pc-resource-badge look.
+   Also scoped under .archivist-modal so the add-spell modal's filter bar,
+   "Show all classes" toggle, and "Add" buttons are styled (modals render
+   outside .archivist-pc-sheet). */
+.archivist-pc-sheet .pc-spell-filters, .archivist-modal .pc-spell-filters { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-filter, .archivist-modal .pc-spell-filter { padding: 3px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); cursor: pointer; }
+.archivist-pc-sheet .pc-spell-filter.active, .archivist-modal .pc-spell-filter.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
 
 .archivist-pc-sheet .pc-spell-addbtn {
   font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-crimson);
