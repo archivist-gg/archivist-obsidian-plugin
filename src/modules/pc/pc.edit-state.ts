@@ -664,15 +664,17 @@ export class CharacterEditState {
   }
 
   castSpell(slug: string, atLevel: number): void {
-    // Only concentrate if a slot was actually spent. expendSlot fires onChange
-    // once when it expends (and set-concentration rides that same edit); if no
-    // slot was available it early-returns without notifying, so we must NOT set
-    // concentration either — otherwise a failed cast would leave stale
-    // concentration in memory to be persisted by a later unrelated edit.
-    const before = this.character.state.spell_slots?.[atLevel]?.used ?? 0;
+    // Bail if no slot is available — a failed cast must set nothing (no slot,
+    // no concentration), so it can't leave stale concentration to be persisted
+    // by a later unrelated edit.
+    const total = this.slotTotal(atLevel);
+    const used = this.character.state.spell_slots?.[atLevel]?.used ?? 0;
+    if (used >= total) return;
+    // Set concentration BEFORE expending: expendSlot fires the single onChange,
+    // and the render it triggers must see concentration already applied
+    // (otherwise the banner lags one frame behind the slot pip).
+    this.setConcentrationIfNeeded(slug);
     this.expendSlot(atLevel);
-    const after = this.character.state.spell_slots?.[atLevel]?.used ?? 0;
-    if (after > before) this.setConcentrationIfNeeded(slug);
   }
 
   castAsRitual(slug: string): void {
