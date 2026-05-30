@@ -537,4 +537,67 @@ export class CharacterEditState {
     applyRestResets(this.character, resolved, derived, plan, optouts);
     this.onChange();
   }
+
+  // ─── Spell slots ───────────────────────────────────────────────────
+  private slotTotal(level: number): number {
+    const override = this.character.overrides.spell_slots?.[level];
+    if (override !== undefined) return override;
+    return this.getContext().derived.derivedSpellSlots?.[level] ?? 0;
+  }
+
+  expendSlot(level: number): void {
+    const total = this.slotTotal(level);
+    const slots = this.character.state.spell_slots ?? (this.character.state.spell_slots = {});
+    const slot = slots[level] ?? (slots[level] = { used: 0, total });
+    // `total` is a derived cache; resync it but do NOT fire onChange for that alone
+    // (the cap path below returns without notifying — a pure cache touch must not dirty the file).
+    slot.total = total;
+    if (slot.used >= total) return;
+    slot.used += 1;
+    this.onChange();
+  }
+
+  restoreSlot(level: number): void {
+    const slot = this.character.state.spell_slots?.[level];
+    if (!slot || slot.used <= 0) return;
+    slot.used -= 1;
+    this.onChange();
+  }
+
+  expendPactSlot(): void {
+    const pact = this.getContext().derived.pactMagic;
+    if (!pact) return;
+    const p = this.character.state.spell_slots_pact ?? (this.character.state.spell_slots_pact = { level: pact.level, used: 0, total: pact.total });
+    p.level = pact.level;
+    p.total = pact.total;
+    if (p.used >= pact.total) return;
+    p.used += 1;
+    this.onChange();
+  }
+
+  restorePactSlot(): void {
+    const p = this.character.state.spell_slots_pact;
+    if (!p || p.used <= 0) return;
+    p.used -= 1;
+    this.onChange();
+  }
+
+  setSlotOverride(level: number, total: number): void {
+    const o = this.character.overrides.spell_slots ?? (this.character.overrides.spell_slots = {});
+    o[level] = total;
+    this.onChange();
+  }
+
+  clearSlotOverride(level: number): void {
+    const o = this.character.overrides.spell_slots;
+    if (!o || o[level] === undefined) return;
+    delete o[level];
+    this.onChange();
+  }
+
+  breakConcentration(): void {
+    if (this.character.state.concentration === null) return;
+    this.character.state.concentration = null;
+    this.onChange();
+  }
 }
