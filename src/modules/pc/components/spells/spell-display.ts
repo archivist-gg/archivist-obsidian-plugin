@@ -1,4 +1,4 @@
-import type { ResolvedSpell } from "../../pc.types";
+import type { ResolvedSpell, SpellLimitInfo } from "../../pc.types";
 
 const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", constitution: "CON", intelligence: "INT", wisdom: "WIS", charisma: "CHA" };
 
@@ -50,4 +50,20 @@ export function groupByLevel(spells: ResolvedSpell[]): Map<number, ResolvedSpell
 /** Returns an array of `total` booleans: true = used, false = available. */
 export function slotCells(total: number, used: number): boolean[] {
   return Array.from({ length: total }, (_, i) => i < used);
+}
+
+/**
+ * Soft warnings for prepared-caster classes whose prepared spell count exceeds
+ * their limit. Cantrips and always-prepared spells are excluded from the count.
+ */
+export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo[]): string[] {
+  const out: string[] = [];
+  for (const lim of limits) {
+    if (lim.kind !== "prepared" || lim.preparedOrKnown == null) continue;
+    const count = spells.filter((s) =>
+      s.classSlug === lim.classSlug && s.prepared && !s.alwaysPrepared && (s.entity.level ?? 0) > 0,
+    ).length;
+    if (count > lim.preparedOrKnown) out.push(`${lim.classSlug}: ${count}/${lim.preparedOrKnown} prepared`);
+  }
+  return out;
 }

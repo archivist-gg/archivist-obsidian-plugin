@@ -2,6 +2,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { renderByLevelView } from "./spells/by-level-view";
 import { renderTableView } from "./spells/table-view";
 import { openAddSpellModal } from "./spells/add-spell-modal";
+import { preparedWarnings } from "./spells/spell-display";
 
 export class SpellsTab implements SheetComponent {
   readonly type = "spells-tab";
@@ -35,6 +36,10 @@ export class SpellsTab implements SheetComponent {
       dcRow.createEl("b", { text: `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}` });
       if (casters.length > 1) dcRow.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
     });
+
+    for (const w of preparedWarnings(ctx.resolved.spells, ctx.derived.spellLimits)) {
+      dcRow.createSpan({ cls: "pc-spell-limit-warn", text: `⚠ ${w}` });
+    }
 
     const mode = ctx.resolved.definition.spells.view ?? "by-level";
     const toggle = header.createEl("button", {
