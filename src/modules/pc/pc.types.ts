@@ -258,6 +258,14 @@ export interface DerivedStats {
     attackBonus: number;
     preparedCount?: number;
   } | null;
+  /** One entry per casting class (multiclass-aware). Empty for non-casters. */
+  spellcastingClasses: SpellcastingClassInfo[];
+  /** Derived standard slot totals by spell level (before user override). */
+  derivedSpellSlots: Record<number, number>;
+  /** Warlock Pact Magic, or null. */
+  pactMagic: { level: number; total: number } | null;
+  /** Per-class known/prepared + cantrip limits (advisory). */
+  spellLimits: SpellLimitInfo[];
   warnings: string[];
   defenses: {
     resistances: string[];
@@ -273,6 +281,23 @@ export interface DerivedStats {
   attunementUsed: number;
   attunementLimit: number;
   conditionEffects: ConditionEffects;
+}
+
+export interface SpellcastingClassInfo {
+  classSlug: string;
+  className: string;
+  ability: Ability;
+  saveDC: number;
+  attackBonus: number;
+  casterType: "full" | "half" | "third" | "pact";
+  preparation: "known" | "prepared";
+}
+
+export interface SpellLimitInfo {
+  classSlug: string;
+  kind: "known" | "prepared";
+  cantripsKnown: number | null;
+  preparedOrKnown: number | null;
 }
 
 export interface ConditionEffects {

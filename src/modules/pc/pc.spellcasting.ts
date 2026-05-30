@@ -12,6 +12,7 @@ export interface SpellcastingProfile {
 }
 
 function bareSlug(ref: string): string {
+  if (typeof ref !== "string") return "";
   const m = ref.match(/^\[\[(.+?)\]\]$/);
   return (m ? m[1] : ref).toLowerCase();
 }
