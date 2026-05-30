@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import type { Character, DerivedStats, EquipmentEntryOverrides, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { Character, DerivedStats, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
@@ -599,6 +599,52 @@ export class CharacterEditState {
     if (this.character.state.concentration === null) return;
     this.character.state.concentration = null;
     this.onChange();
+  }
+
+  // ─── Known spell list ──────────────────────────────────────────────
+  private static bare(ref: string): string {
+    const m = ref.match(/^\[\[(.+?)\]\]$/);
+    return m ? m[1] : ref;
+  }
+
+  private static slugOf(entry: KnownSpellEntry): string {
+    return CharacterEditState.bare(typeof entry === "string" ? entry : entry.spell);
+  }
+
+  togglePrepared(slug: string): void {
+    const known = this.character.spells.known;
+    const idx = known.findIndex((e) => CharacterEditState.slugOf(e) === slug);
+    if (idx === -1) return;
+    const entry = known[idx];
+    if (typeof entry === "string") {
+      known[idx] = { spell: entry, prepared: true };
+    } else {
+      entry.prepared = !entry.prepared;
+    }
+    this.onChange();
+  }
+
+  addKnownSpell(slug: string, opts?: { class?: string; source?: "class" | "feat" | "item" | "race" | "domain"; alwaysPrepared?: boolean }): void {
+    const bare = CharacterEditState.bare(slug);
+    if (this.character.spells.known.some((e) => CharacterEditState.slugOf(e) === bare)) return;
+    const ref = `[[${bare}]]`;
+    if (!opts || (!opts.class && !opts.source && !opts.alwaysPrepared)) {
+      this.character.spells.known.push(ref);
+    } else {
+      this.character.spells.known.push({
+        spell: ref,
+        ...(opts.class ? { class: `[[${CharacterEditState.bare(opts.class)}]]` } : {}),
+        ...(opts.source ? { source: opts.source } : {}),
+        ...(opts.alwaysPrepared ? { always_prepared: true } : {}),
+      });
+    }
+    this.onChange();
+  }
+
+  removeKnownSpell(slug: string): void {
+    const before = this.character.spells.known.length;
+    this.character.spells.known = this.character.spells.known.filter((e) => CharacterEditState.slugOf(e) !== slug);
+    if (this.character.spells.known.length !== before) this.onChange();
   }
 
   // ─── Casting ───────────────────────────────────────────────────────
