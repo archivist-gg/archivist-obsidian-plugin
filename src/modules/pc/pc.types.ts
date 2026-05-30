@@ -31,6 +31,15 @@ export interface SpellOverride {
   overrides: Record<string, unknown>;
 }
 
+export interface KnownSpellObject {
+  spell: string;
+  class?: string;
+  source?: "class" | "feat" | "item" | "race" | "domain";
+  prepared?: boolean;
+  always_prepared?: boolean;
+}
+export type KnownSpellEntry = string | KnownSpellObject;
+
 export type SlotKey = "mainhand" | "offhand" | "armor" | "shield";
 
 export interface EquipmentEntryOverrides {
@@ -73,6 +82,7 @@ export interface CharacterOverrides {
   speed?: number;
   initiative?: number;
   spellcasting?: { saveDC?: number; attackBonus?: number };
+  spell_slots?: Record<number, number>;
   attunement_limit?: number;
 }
 
@@ -80,6 +90,7 @@ export interface CharacterState {
   hp: { current: number; max: number; temp: number };
   hit_dice: Record<string, { used: number; total: number }>;
   spell_slots: Record<number, { used: number; total: number }>;
+  spell_slots_pact?: { level: number; used: number; total: number };
   concentration: string | null;
   conditions: ConditionSlug[];
   exhaustion: number;
@@ -103,7 +114,7 @@ export interface Character {
   abilities: Record<Ability, number>;
   ability_method: AbilityMethod;
   skills: { proficient: SkillSlug[]; expertise: SkillSlug[] };
-  spells: { known: string[]; overrides: SpellOverride[] };
+  spells: { known: KnownSpellEntry[]; overrides: SpellOverride[]; view?: "by-level" | "table" };
   equipment: EquipmentEntry[];
   overrides: CharacterOverrides;
   currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };

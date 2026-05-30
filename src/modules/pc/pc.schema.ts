@@ -77,6 +77,7 @@ const characterOverridesSchema = z.object({
     saveDC: z.number().int().optional(),
     attackBonus: z.number().int().optional(),
   }).optional(),
+  spell_slots: z.record(z.coerce.number().int(), z.number().int().nonnegative()).optional(),
   attunement_limit: z.number().int().nonnegative().optional(),
 }).default({});
 
@@ -94,6 +95,11 @@ const characterStateSchema = z.object({
     used: z.number().int().nonnegative(),
     total: z.number().int().nonnegative(),
   })).default({}),
+  spell_slots_pact: z.object({
+    level: z.number().int().nonnegative(),
+    used: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+  }).optional(),
   concentration: z.string().nullable().default(null),
   conditions: z.array(conditionSlugEnum).default([]),
   exhaustion: z.number().int().min(0).max(6).default(0),
@@ -128,6 +134,16 @@ const spellOverrideSchema = z.object({
   overrides: z.record(z.string(), z.unknown()).default({}),
 });
 
+const knownSpellObjectSchema = z.object({
+  spell: z.string().min(1),
+  class: z.string().optional(),
+  source: z.enum(["class", "feat", "item", "race", "domain"]).optional(),
+  prepared: z.boolean().optional(),
+  always_prepared: z.boolean().optional(),
+}).strict();
+
+const knownSpellEntrySchema = z.union([z.string().min(1), knownSpellObjectSchema]);
+
 export const characterSchema = z.object({
   name: z.string().min(1),
   edition: z.enum(["2014", "2024"]),
@@ -150,8 +166,9 @@ export const characterSchema = z.object({
     expertise: z.array(skillEnum).default([]),
   }).default({ proficient: [], expertise: [] }),
   spells: z.object({
-    known: z.array(z.string()).default([]),
+    known: z.array(knownSpellEntrySchema).default([]),
     overrides: z.array(spellOverrideSchema).default([]),
+    view: z.enum(["by-level", "table"]).optional(),
   }).default({ known: [], overrides: [] }),
   equipment: z.array(equipmentEntrySchema).default([]),
   overrides: characterOverridesSchema,

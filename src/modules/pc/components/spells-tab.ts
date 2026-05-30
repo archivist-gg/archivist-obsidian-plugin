@@ -46,9 +46,11 @@ export class SpellsTab implements SheetComponent {
       root.createEl("h4", { cls: "pc-tab-heading", text: "Spells known" });
       const list = root.createEl("ul", { cls: "pc-spell-list" });
       for (const raw of known) {
+        // `known` entries may be bare slugs or object form ({ spell, ... }).
+        const slug = typeof raw === "string" ? raw : raw.spell;
         const li = list.createEl("li");
-        li.createSpan({ cls: "pc-spell-name", text: prettifySlug(raw) });
-        li.createSpan({ cls: "pc-spell-slug", text: ` [[${stripBrackets(raw)}]]` });
+        li.createSpan({ cls: "pc-spell-name", text: prettifySlug(slug) });
+        li.createSpan({ cls: "pc-spell-slug", text: ` [[${stripBrackets(slug)}]]` });
       }
     } else {
       root.createDiv({ cls: "pc-empty-line", text: "No spells recorded on this character yet." });
