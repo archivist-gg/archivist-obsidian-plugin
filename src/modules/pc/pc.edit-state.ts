@@ -677,6 +677,19 @@ export class CharacterEditState {
     this.expendSlot(atLevel);
   }
 
+  castPactSpell(slug: string): void {
+    // Mirror castSpell for Pact Magic: bail if there's no pact progression or no
+    // remaining pact slot — a failed cast must set nothing (no slot, no
+    // concentration). Set concentration BEFORE expendPactSlot fires onChange so
+    // the render it triggers already reflects the concentration banner.
+    const pact = this.getContext().derived.pactMagic;
+    if (!pact) return;
+    const used = this.character.state.spell_slots_pact?.used ?? 0;
+    if (used >= pact.total) return;
+    this.setConcentrationIfNeeded(slug);
+    this.expendPactSlot();
+  }
+
   castAsRitual(slug: string): void {
     this.setConcentrationIfNeeded(slug);
     this.onChange();

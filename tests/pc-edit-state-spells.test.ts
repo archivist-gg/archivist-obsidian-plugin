@@ -13,7 +13,11 @@ const YAML = [
   "  spell_slots: {}", "  concentration: null", "  conditions: []", "  inspiration: 0",
 ].join("\n");
 
-function make(derived: Partial<DerivedStats> = {}, over?: (c: Character) => void) {
+function make(
+  derived: Partial<DerivedStats> = {},
+  over?: (c: Character) => void,
+  spells: Array<{ slug: string; entity: { concentration?: boolean } }> = [],
+) {
   const parsed = parsePC(YAML);
   if (!parsed.success) throw new Error(parsed.error);
   const char = parsed.data;
@@ -22,7 +26,7 @@ function make(derived: Partial<DerivedStats> = {}, over?: (c: Character) => void
   const es = new CharacterEditState(
     char,
     () => ({
-      resolved: { spells: [] } as unknown as ResolvedCharacter,
+      resolved: { spells } as unknown as ResolvedCharacter,
       derived: { derivedSpellSlots: { 1: 4, 2: 3, 3: 2 }, pactMagic: null, ...derived } as unknown as DerivedStats,
     }),
     onChange,
@@ -63,6 +67,17 @@ describe("CharacterEditState — slots", () => {
     const { es, char } = make({}, (c) => { c.state.concentration = "[[haste]]"; });
     es.breakConcentration();
     expect(char.state.concentration).toBeNull();
+  });
+
+  it("castPactSpell expends a pact slot and sets concentration for concentration spells", () => {
+    const { es, char } = make(
+      { pactMagic: { level: 1, total: 2 } },
+      undefined,
+      [{ slug: "hex", entity: { concentration: true } }],
+    );
+    es.castPactSpell("hex");
+    expect(char.state.spell_slots_pact?.used).toBe(1);
+    expect(char.state.concentration).toBe("hex");
   });
 });
 
