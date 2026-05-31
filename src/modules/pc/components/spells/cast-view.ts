@@ -18,6 +18,9 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   const ownedLevels = Object.keys(ctx.derived.derivedSpellSlots)
     .map(Number).filter((l) => slotTotal(l) > 0).sort((a, b) => a - b);
 
+  // Pact-class slugs: their leveled spells live in the Pact Magic section only.
+  const pactClassSlugs = ctx.derived.spellcastingClasses.filter((c) => c.casterType === "pact").map((c) => c.classSlug);
+
   // Cantrips
   const cantrips = castable.filter((s) => (s.entity.level ?? 0) === 0);
   if (cantrips.length) {
@@ -38,8 +41,8 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     });
 
     const list = root.createDiv({ cls: "pc-spell-list" });
-    const base = castable.filter((s) => (s.entity.level ?? 0) === lvl);
-    const upcasts = castable.filter((s) => upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
+    const base = castable.filter((s) => (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
+    const upcasts = castable.filter((s) => !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
     for (const s of base) renderCastRow(list, s, lvl, ctx, {});
     for (const s of upcasts) renderCastRow(list, s, lvl, ctx, { upcast: true });
     if (!base.length && !upcasts.length) list.createDiv({ cls: "pc-spell-empty-row", text: "No spells at this level." });
@@ -55,24 +58,37 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
       onExpend: () => ctx.editState?.expendPactSlot(),
       onRestore: () => ctx.editState?.restorePactSlot(),
     });
+
+    const list = root.createDiv({ cls: "pc-spell-list" });
+    const pactSpells = castable.filter((s) =>
+      (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
+    for (const s of pactSpells) renderCastRow(list, s, pact.level, ctx, { pact: true });
+    if (!pactSpells.length) list.createDiv({ cls: "pc-spell-empty-row", text: "No spells." });
   }
 }
 
 function renderCastRow(
   parent: HTMLElement, spell: ResolvedSpell, level: number,
-  ctx: ComponentRenderContext, opts: { cantrip?: boolean; upcast?: boolean },
+  ctx: ComponentRenderContext, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean },
 ): void {
   const row = parent.createDiv({ cls: `pc-spell-cast-row${opts.upcast ? " upcast" : ""}` });
 
-  // Left: cast pill
-  const slotTotal = ctx.resolved.definition.overrides.spell_slots?.[level] ?? ctx.derived.derivedSpellSlots[level] ?? 0;
-  const slotUsed = ctx.resolved.state.spell_slots?.[level]?.used ?? 0;
-  const noSlot = !opts.cantrip && slotUsed >= slotTotal;
+  // Left: cast pill — slot availability depends on the casting mode.
+  let noSlot = false;
+  if (opts.cantrip) noSlot = false;
+  else if (opts.pact) {
+    noSlot = (ctx.resolved.state.spell_slots_pact?.used ?? 0) >= (ctx.derived.pactMagic?.total ?? 0);
+  } else {
+    const slotTotal = ctx.resolved.definition.overrides.spell_slots?.[level] ?? ctx.derived.derivedSpellSlots[level] ?? 0;
+    const slotUsed = ctx.resolved.state.spell_slots?.[level]?.used ?? 0;
+    noSlot = slotUsed >= slotTotal;
+  }
   const pill = row.createEl("button", { cls: `pc-spell-castpill${opts.cantrip ? " ghost" : ""}${noSlot ? " disabled" : ""}`, text: "Cast" });
   if (!noSlot) {
     pill.addEventListener("click", (e) => {
       e.stopPropagation();
       if (opts.cantrip) ctx.editState?.castCantrip(spell.slug);
+      else if (opts.pact) ctx.editState?.castPactSpell(spell.slug);
       else ctx.editState?.castSpell(spell.slug, level);
     });
   }
@@ -86,8 +102,8 @@ function renderCastRow(
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
   nameWrap.addEventListener("click", () => toggleSpellBlock(row, spell, ctx));
 
-  // Right: scaled-effect chip (upcast rows, when structured data is trustworthy)
-  if (opts.upcast) {
+  // Right: scaled-effect chip (upcast/pact rows, when structured data is trustworthy)
+  if (opts.upcast || opts.pact) {
     const eff = spellEffectAtSlot(spell.entity, level);
     if (eff) row.createSpan({ cls: "pc-spell-eff", text: eff });
   }
