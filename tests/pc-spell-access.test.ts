@@ -24,4 +24,10 @@ describe("classSpellCandidates", () => {
     const r = classSpellCandidates(REG, ["wizard"], 9, new Set(), true, "cure");
     expect(r.map((e) => e.slug)).toEqual(["cure-wounds"]);
   });
+
+  it("matches compendium-prefixed class slugs against a spell's bare classes list", () => {
+    // Real vault: class slug is `srd-5e_wizard` but each spell's `classes` is bare (`wizard`).
+    const r = classSpellCandidates(REG, ["srd-5e_wizard"], 3, new Set());
+    expect(r.map((e) => e.slug).sort()).toEqual(["fire-bolt", "fireball"]);
+  });
 });

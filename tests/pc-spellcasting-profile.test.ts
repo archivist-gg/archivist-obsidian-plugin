@@ -34,4 +34,11 @@ describe("getSpellcastingProfile", () => {
   it("strips [[ ]] brackets and is case-insensitive on the class slug", () => {
     expect(getSpellcastingProfile("[[Wizard]]", "2014")?.ability).toBe("int");
   });
+
+  it("recognizes compendium-prefixed class slugs (real vault data uses srd-5e_/srd-2024_)", () => {
+    expect(getSpellcastingProfile("[[srd-5e_wizard]]", "2014")).toEqual({ ability: "int", casterType: "full", preparation: "prepared" });
+    expect(getSpellcastingProfile("srd-2024_bard", "2024")).toEqual({ ability: "cha", casterType: "full", preparation: "prepared" });
+    expect(getSpellcastingProfile("[[srd-5e_warlock]]", "2014")?.casterType).toBe("pact");
+    expect(getSpellcastingProfile("[[srd-5e_fighter]]", "2014")).toBeNull();
+  });
 });

@@ -1,5 +1,6 @@
 import type { EntityRegistry, RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import type { Spell } from "../../../spell/spell.types";
+import { baseClassName } from "../../pc.spellcasting";
 
 export interface SpellCandidate {
   slug: string;
@@ -24,7 +25,9 @@ export function classSpellCandidates(
 ): SpellCandidate[] {
   const all: RegisteredEntity[] = registry.search(query, "spell", 1000);
   const q = query.toLowerCase();
-  const classSet = new Set(classSlugs.map((s) => s.toLowerCase()));
+  // Class slugs arrive compendium-qualified (e.g. `srd-5e_wizard`), but a spell's
+  // `classes` list is bare (`wizard`) — normalize both sides to the bare name.
+  const classSet = new Set(classSlugs.map((s) => baseClassName(s)));
 
   return all
     .filter((e) => !knownSlugs.has(e.slug))
@@ -35,7 +38,7 @@ export function classSpellCandidates(
     .filter((c) => {
       if (q && !c.name.toLowerCase().includes(q)) return false;
       if (showAll) return true;
-      const classes = (c.entity.classes ?? []).map((x) => x.toLowerCase());
+      const classes = (c.entity.classes ?? []).map((x) => baseClassName(x));
       const inClass = classes.some((x) => classSet.has(x));
       return inClass && c.level <= maxLevel;
     })

@@ -1,4 +1,5 @@
 import type { ResolvedSpell, SpellLimitInfo } from "../../pc.types";
+import { baseClassName } from "../../pc.spellcasting";
 
 const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", constitution: "CON", intelligence: "INT", wisdom: "WIS", charisma: "CHA" };
 
@@ -63,7 +64,7 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
     const count = spells.filter((s) =>
       s.classSlug === lim.classSlug && s.prepared && !s.alwaysPrepared && (s.entity.level ?? 0) > 0,
     ).length;
-    if (count > lim.preparedOrKnown) out.push(`${lim.classSlug}: ${count}/${lim.preparedOrKnown} prepared`);
+    if (count > lim.preparedOrKnown) out.push(`${baseClassName(lim.classSlug)}: ${count}/${lim.preparedOrKnown} prepared`);
   }
   return out;
 }
