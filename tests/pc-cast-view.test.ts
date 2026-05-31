@@ -65,3 +65,52 @@ describe("renderCastView", () => {
     expect(root.querySelector(".pc-spell-castpill.ghost")).not.toBeNull();
   });
 });
+
+function pactSp(name: string, level: number, extra: Partial<ResolvedSpell["entity"]> = {}): ResolvedSpell {
+  return { entity: { name, level, ...extra } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
+    classSlug: "warlock", source: "class", prepared: true, alwaysPrepared: false };
+}
+function ctxForPact(spells: ResolvedSpell[], editState: unknown = null): ComponentRenderContext {
+  const resolved = {
+    definition: { name: "Bram", spells: { known: [], overrides: [] }, overrides: {} } as never,
+    state: { spell_slots: {}, spell_slots_pact: { level: 1, used: 0, total: 1 }, concentration: null } as never,
+    spells,
+  } as unknown as ResolvedCharacter;
+  const derived = {
+    spellcastingClasses: [{ classSlug: "warlock", className: "Warlock", ability: "cha", saveDC: 13, attackBonus: 5, casterType: "pact", preparation: "known" }],
+    derivedSpellSlots: {}, pactMagic: { level: 1, total: 1 }, spellLimits: [],
+  } as unknown as DerivedStats;
+  return { resolved, derived, core: {} as never, app: {} as never, editState: editState as never };
+}
+
+describe("renderCastView — pact casters", () => {
+  it("renders pact leveled spells as cast rows under the Pact Magic section", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxForPact([pactSp("Eldritch Blast", 0), pactSp("Hex", 1)]));
+    const rows = [...root.querySelectorAll(".pc-spell-cast-row")];
+    const hexRow = rows.find((r) => r.querySelector(".pc-spell-name")?.textContent === "Hex");
+    expect(hexRow).toBeTruthy();                 // Hex (leveled) appears as a cast row
+    // Eldritch Blast is a cantrip → it stays in the Cantrips section, with a ghost pill
+    expect(root.querySelector(".pc-spell-castpill.ghost")).not.toBeNull();
+  });
+
+  it("pact cast pill casts via editState.castPactSpell(slug)", () => {
+    const root = mountContainer();
+    const castPactSpell = vi.fn();
+    renderCastView(root, ctxForPact([pactSp("Hex", 1)], { castPactSpell, castCantrip: vi.fn(), castSpell: vi.fn(), expendPactSlot: vi.fn(), restorePactSlot: vi.fn() }));
+    const rows = [...root.querySelectorAll(".pc-spell-cast-row")];
+    const hexRow = rows.find((r) => r.querySelector(".pc-spell-name")?.textContent === "Hex")!;
+    (hexRow.querySelector(".pc-spell-castpill") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(castPactSpell).toHaveBeenCalledWith("hex");   // no level arg
+  });
+
+  it("disables the pact cast pill when no pact slot remains", () => {
+    const root = mountContainer();
+    const ctx = ctxForPact([pactSp("Hex", 1)], { castPactSpell: vi.fn() });
+    (ctx.resolved.state as never as { spell_slots_pact: { used: number; total: number; level: number } }).spell_slots_pact = { level: 1, used: 1, total: 1 };
+    renderCastView(root, ctx);
+    const rows = [...root.querySelectorAll(".pc-spell-cast-row")];
+    const hexRow = rows.find((r) => r.querySelector(".pc-spell-name")?.textContent === "Hex")!;
+    expect(hexRow.querySelector(".pc-spell-castpill.disabled")).not.toBeNull();
+  });
+});
