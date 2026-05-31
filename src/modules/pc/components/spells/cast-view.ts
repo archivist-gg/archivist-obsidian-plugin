@@ -4,10 +4,22 @@ import { renderChargeBoxes } from "../actions/charge-boxes";
 import { spellEffectAtSlot, upcastLevelsFor } from "./spell-scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { baseClassName } from "../../pc.spellcasting";
+import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor } from "./spell-display";
+import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
+}
+
+const COLS = ["", "Name", "Time", "Range", "Hit / DC", "Effect", "Components"];
+
+function tableFor(root: HTMLElement): HTMLElement {
+  const table = root.createEl("table", { cls: "pc-spell-cast-table" });
+  const thead = table.createEl("thead");
+  const htr = thead.createEl("tr");
+  for (const c of COLS) htr.createEl("th", { text: c });
+  return table.createEl("tbody");
 }
 
 export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): void {
@@ -18,107 +30,161 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   // castable. Normalize class slugs on both sides so a bare `class: sorcerer`
   // matches a compendium-prefixed derived slug like `srd-2024_sorcerer`.
   const knownClassSlugs = new Set(
-    ctx.derived.spellcastingClasses
-      .filter((c) => c.preparation === "known")
-      .map((c) => baseClassName(c.classSlug)),
+    ctx.derived.spellcastingClasses.filter((c) => c.preparation === "known").map((c) => baseClassName(c.classSlug)),
   );
   const isCastable = (s: ResolvedSpell): boolean =>
     s.prepared || knownClassSlugs.has(baseClassName(s.classSlug ?? ""));
   const castable = ctx.resolved.spells.filter(isCastable);
+
   const slotTotal = (lvl: number): number =>
     ctx.resolved.definition.overrides.spell_slots?.[lvl] ?? ctx.derived.derivedSpellSlots[lvl] ?? 0;
   const slotUsed = (lvl: number): number => ctx.resolved.state.spell_slots?.[lvl]?.used ?? 0;
-
   const ownedLevels = Object.keys(ctx.derived.derivedSpellSlots)
     .map(Number).filter((l) => slotTotal(l) > 0).sort((a, b) => a - b);
-
   // Pact-class slugs: their leveled spells live in the Pact Magic section only.
   const pactClassSlugs = ctx.derived.spellcastingClasses.filter((c) => c.casterType === "pact").map((c) => c.classSlug);
 
-  // Cantrips
+  const dcFor = (s: ResolvedSpell): number => {
+    const cls = ctx.derived.spellcastingClasses.find((c) => baseClassName(c.classSlug) === baseClassName(s.classSlug ?? ""));
+    return cls?.saveDC ?? ctx.derived.spellcastingClasses[0]?.saveDC ?? 0;
+  };
+
+  // ── Cantrips: At Will, no slots, no button ──
   const cantrips = castable.filter((s) => (s.entity.level ?? 0) === 0);
   if (cantrips.length) {
-    const head = root.createDiv({ cls: "pc-actions-section-head" });
-    head.createSpan({ text: "Cantrips" });
-    const tbl = root.createDiv({ cls: "pc-spell-list" });
-    for (const s of cantrips) renderCastRow(tbl, s, 0, ctx, { cantrip: true });
+    const head = root.createDiv({ cls: "pc-spell-sec" });
+    head.createSpan({ cls: "pc-spell-sec-label", text: "Cantrips" });
+    const body = tableFor(root);
+    for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, { cantrip: true });
   }
 
-  // Leveled sections
-  for (const lvl of ownedLevels) {
-    const head = root.createDiv({ cls: "pc-actions-section-head" });
-    head.createSpan({ text: `${ordinal(lvl)} Level` });
-    renderChargeBoxes(head, {
+  // ── Leveled sections: slot boxes + CAST ──
+  // Only surface leveled sections (and their slot boxes) when the character has
+  // at least one castable non-pact leveled spell. A cantrip-only loadout shows
+  // no slot tracks; an empty level *between* owned spells still renders so the
+  // slot economy stays visible.
+  const hasLeveled = castable.some((s) => (s.entity.level ?? 0) > 0 && !pactClassSlugs.includes(s.classSlug ?? ""));
+  for (const lvl of hasLeveled ? ownedLevels : []) {
+    const head = root.createDiv({ cls: "pc-spell-sec" });
+    head.createSpan({ cls: "pc-spell-sec-label", text: `${ordinal(lvl)} Level` });
+    const slots = head.createDiv({ cls: "pc-spell-slots" });
+    slots.createSpan({ cls: "pc-spell-slots-label", text: "Slots" });
+    renderChargeBoxes(slots, {
       used: slotUsed(lvl), max: slotTotal(lvl),
       onExpend: () => ctx.editState?.expendSlot(lvl),
       onRestore: () => ctx.editState?.restoreSlot(lvl),
     });
 
-    const list = root.createDiv({ cls: "pc-spell-list" });
+    const body = tableFor(root);
     const base = castable.filter((s) => (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
     const upcasts = castable.filter((s) => !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
-    for (const s of base) renderCastRow(list, s, lvl, ctx, {});
-    for (const s of upcasts) renderCastRow(list, s, lvl, ctx, { upcast: true });
-    if (!base.length && !upcasts.length) list.createDiv({ cls: "pc-spell-empty-row", text: "No spells at this level." });
+    for (const s of base) renderRow(body, s, lvl, ctx, dcFor, {});
+    for (const s of upcasts) renderRow(body, s, lvl, ctx, dcFor, { upcast: true });
+    if (!base.length && !upcasts.length) {
+      const tr = body.createEl("tr", { cls: "pc-spell-empty-row" });
+      tr.createEl("td", { attr: { colspan: String(COLS.length) }, text: "No spells at this level." });
+    }
   }
 
-  // Pact Magic
+  // ── Pact Magic ──
   const pact = ctx.derived.pactMagic;
   if (pact) {
-    const head = root.createDiv({ cls: "pc-actions-section-head" });
-    head.createSpan({ text: `Pact Magic (L${pact.level})` });
-    renderChargeBoxes(head, {
+    const head = root.createDiv({ cls: "pc-spell-sec" });
+    head.createSpan({ cls: "pc-spell-sec-label", text: `Pact Magic (L${pact.level})` });
+    const slots = head.createDiv({ cls: "pc-spell-slots" });
+    slots.createSpan({ cls: "pc-spell-slots-label", text: "Slots" });
+    renderChargeBoxes(slots, {
       used: ctx.resolved.state.spell_slots_pact?.used ?? 0, max: pact.total,
       onExpend: () => ctx.editState?.expendPactSlot(),
       onRestore: () => ctx.editState?.restorePactSlot(),
     });
-
-    const list = root.createDiv({ cls: "pc-spell-list" });
+    const body = tableFor(root);
     const pactSpells = castable.filter((s) =>
       (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
-    for (const s of pactSpells) renderCastRow(list, s, pact.level, ctx, { pact: true });
-    if (!pactSpells.length) list.createDiv({ cls: "pc-spell-empty-row", text: "No spells." });
+    for (const s of pactSpells) renderRow(body, s, pact.level, ctx, dcFor, { pact: true });
+    if (!pactSpells.length) {
+      const tr = body.createEl("tr", { cls: "pc-spell-empty-row" });
+      tr.createEl("td", { attr: { colspan: String(COLS.length) }, text: "No spells." });
+    }
   }
 }
 
-function renderCastRow(
-  parent: HTMLElement, spell: ResolvedSpell, level: number,
-  ctx: ComponentRenderContext, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean },
+function renderRow(
+  body: HTMLElement, spell: ResolvedSpell, level: number, ctx: ComponentRenderContext,
+  dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean },
 ): void {
-  const row = parent.createDiv({ cls: `pc-spell-cast-row${opts.upcast ? " upcast" : ""}` });
+  const tr = body.createEl("tr", { cls: "pc-spell-cast-row" });
 
-  // Left: cast pill — slot availability depends on the casting mode.
-  let noSlot = false;
-  if (opts.cantrip) noSlot = false;
-  else if (opts.pact) {
-    noSlot = (ctx.resolved.state.spell_slots_pact?.used ?? 0) >= (ctx.derived.pactMagic?.total ?? 0);
+  // ACTION cell
+  const actTd = tr.createEl("td", { cls: "pc-spell-act" });
+  if (opts.cantrip) {
+    actTd.createSpan({ cls: "pc-spell-atwill", text: "At Will" });
   } else {
-    const slotTotal = ctx.resolved.definition.overrides.spell_slots?.[level] ?? ctx.derived.derivedSpellSlots[level] ?? 0;
-    const slotUsed = ctx.resolved.state.spell_slots?.[level]?.used ?? 0;
-    noSlot = slotUsed >= slotTotal;
-  }
-  const pill = row.createEl("button", { cls: `pc-spell-castpill${opts.cantrip ? " ghost" : ""}${noSlot ? " disabled" : ""}`, text: "Cast" });
-  if (!noSlot) {
-    pill.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (opts.cantrip) ctx.editState?.castCantrip(spell.slug);
-      else if (opts.pact) ctx.editState?.castPactSpell(spell.slug);
-      else ctx.editState?.castSpell(spell.slug, level);
-    });
+    let noSlot: boolean;
+    if (opts.pact) {
+      noSlot = (ctx.resolved.state.spell_slots_pact?.used ?? 0) >= (ctx.derived.pactMagic?.total ?? 0);
+    } else {
+      const total = ctx.resolved.definition.overrides.spell_slots?.[level] ?? ctx.derived.derivedSpellSlots[level] ?? 0;
+      noSlot = (ctx.resolved.state.spell_slots?.[level]?.used ?? 0) >= total;
+    }
+    const btn = actTd.createEl("button", { cls: `pc-spell-castbtn${noSlot ? " disabled" : ""}`, text: "CAST" });
+    if (!noSlot) {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (opts.pact) ctx.editState?.castPactSpell(spell.slug);
+        else ctx.editState?.castSpell(spell.slug, level);
+      });
+    }
   }
 
-  // Name (+ school sub, markers) — opens block
-  const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
-  const name = nameWrap.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
-  if (spell.entity.concentration) name.createSpan({ cls: "pc-spell-mk", text: "C" });
-  if (spell.entity.ritual) name.createSpan({ cls: "pc-spell-mk", text: "R" });
-  if (opts.upcast) name.createSpan({ cls: "pc-spell-up", text: `↑ ${level}${level === 1 ? "st" : level === 2 ? "nd" : level === 3 ? "rd" : "th"}` });
-  if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
-  nameWrap.addEventListener("click", () => toggleSpellBlock(row, spell, ctx));
+  // NAME cell
+  const nameTd = tr.createEl("td", { cls: "pc-spell-namecell" });
+  const nl = nameTd.createDiv({ cls: "pc-spell-nl" });
+  nl.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
+  if (spell.entity.concentration) nl.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
+  if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
+  if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });
+  if (spell.entity.school) nameTd.createDiv({ cls: "pc-spell-school", text: spell.entity.school });
+  nameTd.addEventListener("click", () => toggleSpellBlock(tr, spell, ctx));
 
-  // Right: scaled-effect chip (upcast/pact rows, when structured data is trustworthy)
-  if (opts.upcast || opts.pact) {
-    const eff = spellEffectAtSlot(spell.entity, level);
-    if (eff) row.createSpan({ cls: "pc-spell-eff", text: eff });
+  // TIME / RANGE
+  tr.createEl("td", { cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
+  tr.createEl("td", { cls: "pc-spell-range", text: formatRange(spell.entity.range) });
+
+  // HIT / DC
+  const hd = tr.createEl("td", { cls: "pc-spell-hitdc" });
+  const desc = hitDcDescriptor(spell, dcFor(spell));
+  if (desc) {
+    hd.createSpan({ cls: "pc-spell-hitdc-ab", text: desc.ability });
+    hd.createSpan({ cls: "pc-spell-hitdc-v", text: `${desc.dc}` });
+  } else {
+    hd.setText("—");
+  }
+
+  // EFFECT
+  const effTd = tr.createEl("td", { cls: "pc-spell-effcell" });
+  const eff = effectDescriptor(spell);
+  const scaled = (opts.upcast || opts.pact) ? spellEffectAtSlot(spell.entity, level) : null;
+  if (scaled) {
+    const chip = effTd.createSpan({ cls: "pc-spell-eff" });
+    if (eff.damageType && hasDamageTypeIcon(eff.damageType)) {
+      setDamageTypeIcon(chip.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
+    }
+    chip.createSpan({ text: scaled });
+  }
+  if (eff.damageType) {
+    const dt = effTd.createSpan({ cls: "pc-spell-dtype" });
+    if (!scaled && hasDamageTypeIcon(eff.damageType)) {
+      setDamageTypeIcon(dt.createSpan({ cls: "pc-spell-dtype-icon dmg" }), eff.damageType);
+    }
+    dt.appendText(eff.damageType);
+  }
+
+  // COMPONENTS / duration
+  const comp = tr.createEl("td", { cls: "pc-spell-comp" });
+  if (spell.entity.components) comp.createDiv({ text: spell.entity.components });
+  if (spell.entity.duration) {
+    const d = spell.entity.concentration ? `Conc · ${spell.entity.duration}` : spell.entity.duration;
+    comp.createDiv({ cls: "pc-spell-dur", text: d });
   }
 }
