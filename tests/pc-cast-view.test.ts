@@ -4,6 +4,10 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 import { renderCastView } from "../src/modules/pc/components/spells/cast-view";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { ResolvedSpell, DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import { toggleSpellBlock } from "../src/modules/pc/components/spells/spell-block-expand";
+
+// Stub the block renderer so the expand wiring can be asserted without the async spell-block render.
+vi.mock("../src/modules/pc/components/spells/spell-block-expand", () => ({ toggleSpellBlock: vi.fn() }));
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -89,6 +93,23 @@ describe("renderCastView", () => {
     renderCastView(root, ctxFor([sp("Hold Person", 2, { concentration: true, ritual: false } as never)]));
     const marks = [...root.querySelectorAll(".pc-spell-cr")].map((m) => m.textContent);
     expect(marks).toContain("C");
+  });
+
+  it("expands the reference block as a full-width <tr> below the row (valid table DOM), and toggles off", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxFor([sp("Hold Person", 2)]));
+    const row = root.querySelector(".pc-spell-cast-row") as HTMLElement;
+    (row.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const next = row.nextElementSibling as HTMLElement;
+    expect(next?.tagName).toBe("TR");
+    expect(next.classList.contains("pc-spell-expand-row")).toBe(true);
+    const cell = next.querySelector("td")!;
+    expect(cell.getAttribute("colspan")).toBe(String(7));
+    // the block mounts into the colspan cell — NOT the original <tr> (which would be invalid and float out)
+    expect(toggleSpellBlock).toHaveBeenCalledWith(cell, expect.anything(), expect.anything());
+    // clicking the name again removes the expansion row
+    (row.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root.querySelector(".pc-spell-expand-row")).toBeNull();
   });
 });
 

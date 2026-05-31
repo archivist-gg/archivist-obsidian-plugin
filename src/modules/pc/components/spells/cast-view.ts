@@ -144,7 +144,17 @@ function renderRow(
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });
   if (spell.entity.school) nameTd.createDiv({ cls: "pc-spell-school", text: spell.entity.school });
-  nameTd.addEventListener("click", () => toggleSpellBlock(tr, spell, ctx));
+  // Expand the reference block as a full-width row BELOW this one. A bare div
+  // inside a <tr> is invalid (the browser ejects it), so the block must live in
+  // its own <tr><td colspan>; toggleSpellBlock then mounts into that cell.
+  nameTd.addEventListener("click", () => {
+    const next = tr.nextElementSibling;
+    if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); return; }
+    const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
+    tr.after(exprow);
+    const cell = exprow.createEl("td", { attr: { colspan: String(COLS.length) } });
+    toggleSpellBlock(cell, spell, ctx);
+  });
 
   // TIME / RANGE
   tr.createEl("td", { cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
