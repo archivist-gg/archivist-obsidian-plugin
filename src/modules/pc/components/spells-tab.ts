@@ -1,13 +1,16 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { renderByLevelView } from "./spells/by-level-view";
-import { renderTableView } from "./spells/table-view";
-import { openAddSpellModal } from "./spells/add-spell-modal";
-import { preparedWarnings } from "./spells/spell-display";
+import { renderCastView } from "./spells/cast-view";
+import { renderPrepareView } from "./spells/prepare-view";
+
+type SpellsMode = "cast" | "prepare";
 
 export class SpellsTab implements SheetComponent {
   readonly type = "spells-tab";
+  private mode: SpellsMode = "cast";
+  private modeForCharacter: string | null = null;
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    el.empty();
     const root = el.createDiv({ cls: "pc-tab-body pc-spells-body" });
     const casters = ctx.derived.spellcastingClasses;
 
@@ -17,14 +20,14 @@ export class SpellsTab implements SheetComponent {
       empty.createDiv({ cls: "pc-spells-empty-title", text: "No Spellcasting" });
       const name = ctx.resolved.definition.name;
       const className = ctx.resolved.classes[0]?.entity?.name ?? "this class";
-      empty.createDiv({
-        cls: "pc-spells-empty-subtitle",
-        text: `${name} is a ${className} with no spellcasting feature.`,
-      });
+      empty.createDiv({ cls: "pc-spells-empty-subtitle", text: `${name} is a ${className} with no spellcasting feature.` });
       return;
     }
 
-    // Header: per-class DC/attack + view toggle
+    // Ephemeral mode: reset to Cast when a different character is shown.
+    const charId = ctx.resolved.definition.name;
+    if (this.modeForCharacter !== charId) { this.mode = "cast"; this.modeForCharacter = charId; }
+
     const header = root.createDiv({ cls: "pc-spell-header" });
     const dcRow = header.createDiv({ cls: "pc-spell-dc-row" });
     casters.forEach((c, i) => {
@@ -37,20 +40,14 @@ export class SpellsTab implements SheetComponent {
       if (casters.length > 1) dcRow.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
     });
 
-    for (const w of preparedWarnings(ctx.resolved.spells, ctx.derived.spellLimits)) {
-      dcRow.createSpan({ cls: "pc-spell-limit-warn", text: `⚠ ${w}` });
-    }
+    // Cast / Prepare(Manage) segmented toggle.
+    const secondLabel = casters.some((c) => c.preparation === "prepared") ? "Prepare" : "Manage";
+    const seg = header.createDiv({ cls: "pc-spell-modetoggle" });
+    const castSeg = seg.createEl("button", { cls: `pc-mode-seg${this.mode === "cast" ? " active" : ""}`, text: "Cast" });
+    const prepSeg = seg.createEl("button", { cls: `pc-mode-seg${this.mode === "prepare" ? " active" : ""}`, text: secondLabel });
+    castSeg.addEventListener("click", () => { this.mode = "cast"; this.render(el, ctx); });
+    prepSeg.addEventListener("click", () => { this.mode = "prepare"; this.render(el, ctx); });
 
-    const mode = ctx.resolved.definition.spells.view ?? "by-level";
-    const toggle = header.createEl("button", {
-      cls: "pc-spell-viewtoggle",
-      text: mode === "by-level" ? "View: By level" : "View: Table",
-    });
-    toggle.addEventListener("click", () =>
-      ctx.editState?.setSpellsView(mode === "by-level" ? "table" : "by-level"),
-    );
-
-    // Concentration banner
     const conc = ctx.resolved.state.concentration;
     if (conc) {
       const banner = root.createDiv({ cls: "pc-conc-banner" });
@@ -62,15 +59,7 @@ export class SpellsTab implements SheetComponent {
       end.addEventListener("click", () => ctx.editState?.breakConcentration());
     }
 
-    // Body
-    if (mode === "table") renderTableView(root, ctx);
-    else renderByLevelView(root, ctx);
-
-    // Add spell. Label built via appendText (matching the inventory toolbar)
-    // so the multi-word title-case button text isn't reformatted by the
-    // sentence-case UI lint rule, which only inspects createEl `text:` literals.
-    const addBtn = root.createEl("button", { cls: "pc-spell-addbtn" });
-    addBtn.appendText("+ Add Spell");
-    addBtn.addEventListener("click", () => openAddSpellModal(ctx));
+    if (this.mode === "cast") renderCastView(root, ctx);
+    else renderPrepareView(root, ctx);
   }
 }
