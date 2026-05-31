@@ -12679,21 +12679,11 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-conc-end { margin-left: auto; color: var(--pc-crimson); font-style: italic; font-family: var(--pc-font-serif); cursor: pointer; }
 
-/* Level section heading reuses .pc-actions-section-head; pips on the right. */
-.archivist-pc-sheet .pc-slot-pips { display: inline-flex; gap: 4px; align-items: center; }
-.archivist-pc-sheet .pc-slot-pip {
-  width: 14px; height: 14px; border: 2px solid var(--pc-tan-muted); border-radius: 2px;
-  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; line-height: 1;
-}
-.archivist-pc-sheet .pc-slot-pip.used { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-slot-count { font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-text-muted); margin-left: 4px; }
+/* Slot tracker now renders via renderChargeBoxes (.pc-charge-boxes /
+   .archivist-toggle-box, styled in components.css + archivist-dnd.css);
+   no pip/count/prep-box rules live here anymore. */
 
-/* Spell row: reuse .pc-actions-table styles; add prepared box + comp + tags. */
-.archivist-pc-sheet .pc-prep-box {
-  width: 14px; height: 14px; border: 2px solid var(--pc-tan-muted); border-radius: 2px;
-  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--pc-crimson); font-weight: 700; line-height: 1;
-}
-.archivist-pc-sheet .pc-prep-box.on { border-color: var(--pc-crimson); }
+/* Spell row: reuse .pc-actions-table styles; add comp + tags. */
 .archivist-pc-sheet .pc-spell-comp { font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); letter-spacing: .08em; color: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-spell-comp .mat { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
@@ -12718,3 +12708,49 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-modal .pc-spell-pick-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 4px 6px; border-bottom: 1px dashed var(--pc-tan-muted); }
 .archivist-modal .pc-spell-pick-name { flex: 1; font-family: var(--pc-font-serif); font-weight: 700; }
 .archivist-modal .pc-spell-pick-meta { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
+
+/* Two-mode segmented toggle */
+.archivist-pc-sheet .pc-spell-modetoggle { display: inline-flex; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); overflow: hidden; }
+.archivist-pc-sheet .pc-mode-seg { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); padding: 4px 14px; background: transparent; color: var(--pc-text-soft); border: none; cursor: pointer; }
+.archivist-pc-sheet .pc-mode-seg.active { background: var(--pc-crimson); color: var(--pc-white); }
+
+/* Spell list + rows */
+.archivist-pc-sheet .pc-spell-list { margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-cast-row,
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-cast-row.upcast { padding-left: var(--pc-space-4); }
+.archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
+.archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
+.archivist-pc-sheet .pc-spell-cast-row.upcast .pc-spell-name { color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
+
+/* Left cast pill */
+.archivist-pc-sheet .pc-spell-castpill { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 600; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: 13px; padding: 4px 12px; cursor: pointer; flex-shrink: 0; }
+.archivist-pc-sheet .pc-spell-castpill:hover { background: var(--pc-crimson-light); }
+.archivist-pc-sheet .pc-spell-castpill.ghost { background: transparent; color: var(--pc-crimson); border: 1px solid var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-castpill.disabled { background: var(--pc-tan-muted); cursor: default; }
+
+/* Upcast badge + scaled chip */
+.archivist-pc-sheet .pc-spell-up { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; color: var(--pc-crimson); background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: 9px; padding: 0 6px; margin-left: 5px; }
+.archivist-pc-sheet .pc-spell-eff { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-crimson); }
+
+/* Prepare counters, locked box, always tag, remove */
+.archivist-pc-sheet .pc-spell-prep-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pc-space-3); flex-wrap: wrap; margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-counts { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-spell-counts b { color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-spell-counts b.over { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-box-locked { opacity: 0.55; cursor: default; }
+.archivist-pc-sheet .pc-spell-always { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); color: var(--pc-text-muted); font-style: italic; margin-left: 6px; }
+.archivist-pc-sheet .pc-spell-remove { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); color: var(--pc-text-muted); background: transparent; border: 1px solid transparent; border-radius: 12px; padding: 2px 8px; cursor: pointer; }
+.archivist-pc-sheet .pc-spell-remove:hover, .archivist-pc-sheet .pc-spell-remove.armed { color: var(--pc-crimson); border-color: var(--pc-tan-muted); }
+
+/* Inline add drawer */
+.archivist-pc-sheet .pc-spell-adddrawer { background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin: var(--pc-space-2) 0; }
+.archivist-pc-sheet .pc-add-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 3px 4px; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-add-row-name { flex: 1; font-family: var(--pc-font-serif); }
+.archivist-pc-sheet .pc-add-row-lvl { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-add-row-btn { color: var(--pc-crimson); background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: 50%; width: 22px; height: 22px; cursor: pointer; }
+
+/* Inline spell block under a row */
+.archivist-pc-sheet .pc-spell-expand { margin: 2px 0 8px var(--pc-space-4); }
+.archivist-pc-sheet .pc-spell-empty-row { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; padding: 4px; }
