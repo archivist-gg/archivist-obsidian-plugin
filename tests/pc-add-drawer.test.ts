@@ -28,7 +28,9 @@ describe("renderAddDrawer", () => {
     const names = [...root.querySelectorAll(".pc-add-row-name")].map((n) => n.textContent);
     expect(names).toContain("Fireball");      // wizard class match
     expect(names).not.toContain("Cure Wounds"); // cleric, filtered out
-    (root.querySelector(".pc-add-row-btn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    // v2: the ＋ is now an add/remove toggle (.pc-add-toggle). For an
+    // unknown spell it still adds via addKnownSpell with the same args.
+    (root.querySelector(".pc-add-toggle") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(addKnownSpell).toHaveBeenCalledWith("fireball", { class: "wizard" });
   });
 });
