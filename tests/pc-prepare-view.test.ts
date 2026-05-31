@@ -88,4 +88,17 @@ describe("renderPrepareView", () => {
     const tag = root.querySelector(".pc-spell-srctag");
     expect(tag?.textContent).toBe("2014");
   });
+
+  it("resets the level filter on a full re-render (no stale filter across characters/modes)", () => {
+    const root1 = mountContainer();
+    renderPrepareView(root1, ctx([sp("Fire Bolt", 0, true), sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
+    // Filter character A to 1st-level only.
+    const oneSt = [...root1.querySelectorAll(".pc-spell-fchip")].find((c) => c.textContent === "1st") as HTMLElement;
+    oneSt.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect([...root1.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).not.toContain("Fire Bolt");
+    // A full re-render (e.g. switching to a cantrip-only character) must NOT carry the stale "1st" filter.
+    const root2 = mountContainer();
+    renderPrepareView(root2, ctx([sp("Fire Bolt", 0, true)], { togglePrepared: vi.fn() }));
+    expect([...root2.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).toContain("Fire Bolt");
+  });
 });

@@ -5,8 +5,8 @@ import { renderAddDrawer } from "./add-drawer";
 import { editionTag } from "./spell-display";
 import { baseClassName } from "../../pc.spellcasting";
 
-// Ephemeral filter state (mirrors the host's ephemeral mode field; reset on
-// full re-render is acceptable per spec §5.1). 0 = cantrip.
+// Ephemeral Prepare-list filters. Module-scoped but reset at the top of
+// renderPrepareView on every full re-render (see §5.1). 0 = cantrip.
 let levelFilter: number | "all" = "all";
 let classFilter: string | "all" = "all";
 
@@ -21,6 +21,12 @@ function ordinal(n: number): string {
 }
 
 export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext): void {
+  // Ephemeral filter state resets on every full re-render (character switch,
+  // mode toggle, post-mutation recalc) — spec §5.1. Chip clicks call redraw(),
+  // not renderPrepareView, so a filter persists within one interaction session.
+  levelFilter = "all";
+  classFilter = "all";
+
   const hasPrepared = ctx.derived.spellcastingClasses.some((c) => c.preparation === "prepared");
 
   // Header: counters + add toggle
