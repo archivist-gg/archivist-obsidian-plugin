@@ -4,7 +4,7 @@ import { renderChargeBoxes } from "../actions/charge-boxes";
 import { spellEffectAtSlot, upcastLevelsFor } from "./spell-scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { baseClassName } from "../../pc.spellcasting";
-import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor } from "./spell-display";
+import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
 
 function ordinal(n: number): string {
@@ -181,7 +181,13 @@ function renderRow(
 
   // COMPONENTS / duration
   const comp = tr.createEl("td", { cls: "pc-spell-comp" });
-  if (spell.entity.components) comp.createDiv({ text: spell.entity.components });
+  if (spell.entity.components) {
+    const { letters } = componentLetters(spell.entity.components);
+    if (letters.length) {
+      // Compact "V S M"; full material prose available on hover, not dumped into the cell.
+      comp.createDiv({ text: letters.join(" "), attr: { title: spell.entity.components } });
+    }
+  }
   if (spell.entity.duration) {
     const d = spell.entity.concentration ? `Conc · ${spell.entity.duration}` : spell.entity.duration;
     comp.createDiv({ cls: "pc-spell-dur", text: d });

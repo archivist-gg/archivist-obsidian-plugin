@@ -60,6 +60,7 @@ describe("renderCastView", () => {
     const mm = sp("Magic Missile", 1, { casting_options: [{ type: "slot_level_2", target_count: 4 }] as never });
     renderCastView(root, ctxFor([mm]));
     expect(root.querySelectorAll(".pc-spell-up").length).toBe(1);
+    expect(root.querySelector(".pc-spell-up")?.textContent).toContain("↑ 2nd");
     expect(root.textContent).toContain("4 targets");
   });
 
