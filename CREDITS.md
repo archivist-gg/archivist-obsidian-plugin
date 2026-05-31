@@ -54,3 +54,22 @@ Items, jewelry, magic gear:
 - **wand** → [lorc/crystal-wand](https://game-icons.net/1x1/lorc/crystal-wand.html) (Lorc, CC-BY 3.0)
 - **staff** → [lorc/wizard-staff](https://game-icons.net/1x1/lorc/wizard-staff.html) (Lorc, CC-BY 3.0)
 - **rod** → [skoll/baton](https://game-icons.net/1x1/skoll/baton.html) (Skoll, CC-BY 3.0)
+
+## Damage-type icons
+
+The PC character sheet's spells "Cast" table uses icons from
+[game-icons.net](https://game-icons.net/), licensed under
+[CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
+- acid — lorc/acid-blob, game-icons.net, CC-BY 3.0
+- cold — lorc/frozen-orb, game-icons.net, CC-BY 3.0
+- fire — lorc/fire-silhouette, game-icons.net, CC-BY 3.0
+- force — lorc/circle-sparks, game-icons.net, CC-BY 3.0
+- lightning — lorc/lightning-tree, game-icons.net, CC-BY 3.0
+- necrotic — sbed/death-skull, game-icons.net, CC-BY 3.0
+- poison — lorc/poison-bottle, game-icons.net, CC-BY 3.0
+- psychic — lorc/brain, game-icons.net, CC-BY 3.0
+- radiant — lorc/barbed-sun, game-icons.net, CC-BY 3.0
+- thunder — skoll/sound-waves, game-icons.net, CC-BY 3.0
+- healing — skoll/hearts, game-icons.net, CC-BY 3.0
+- burst (bludgeoning/piercing/slashing fallback) — lorc/bright-explosion, game-icons.net, CC-BY 3.0
