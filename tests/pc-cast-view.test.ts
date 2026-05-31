@@ -46,7 +46,10 @@ describe("renderCastView", () => {
 
   it("cantrips show an At Will marker, no CAST button, and no slot boxes", () => {
     const root = mountContainer();
-    renderCastView(root, ctxFor([sp("Fire Bolt", 0)]));
+    const ctx = ctxFor([sp("Fire Bolt", 0)]);
+    // A real cantrip-only caster owns no leveled slots.
+    (ctx.derived as never as { derivedSpellSlots: Record<number, number> }).derivedSpellSlots = {};
+    renderCastView(root, ctx);
     expect(root.querySelector(".pc-spell-atwill")).not.toBeNull();
     expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
     expect(root.querySelector(".pc-spell-castbtn")).toBeNull();

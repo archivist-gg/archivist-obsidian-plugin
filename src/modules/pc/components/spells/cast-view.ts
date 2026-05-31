@@ -59,12 +59,11 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   }
 
   // ── Leveled sections: slot boxes + CAST ──
-  // Only surface leveled sections (and their slot boxes) when the character has
-  // at least one castable non-pact leveled spell. A cantrip-only loadout shows
-  // no slot tracks; an empty level *between* owned spells still renders so the
-  // slot economy stays visible.
-  const hasLeveled = castable.some((s) => (s.entity.level ?? 0) > 0 && !pactClassSlugs.includes(s.classSlug ?? ""));
-  for (const lvl of hasLeveled ? ownedLevels : []) {
+  // Render every owned leveled section (a derived slot level with total > 0)
+  // regardless of whether a spell is prepared there. The slot tracker lives only
+  // in Cast view, so a prepared caster with no leveled spell prepared still needs
+  // their owned slot boxes; an empty level renders a "No spells" row.
+  for (const lvl of ownedLevels) {
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: `${ordinal(lvl)} Level` });
     const slots = head.createDiv({ cls: "pc-spell-slots" });
