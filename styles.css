@@ -12794,8 +12794,16 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-fchip.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
 
 /* ── Add drawer: themed search + toggle ───────────────── */
-.archivist-pc-sheet .pc-spell-search { font-family: var(--pc-font-sans); font-size: var(--pc-fs-body); padding: 7px 12px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-primary); min-width: 220px; }
+.archivist-pc-sheet .pc-spell-search { font-family: var(--pc-font-sans); font-size: var(--pc-fs-body); padding: 7px 12px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-primary); min-width: 220px; outline: none; box-shadow: none; }
 .archivist-pc-sheet .pc-spell-search::placeholder { color: var(--pc-text-muted); }
+/* Override Obsidian's built-in input :hover (grey form-field highlight) and :focus
+   (box-shadow/outline ring) so the search box keeps the parchment look in every state. */
+.archivist-pc-sheet .pc-spell-search:hover,
+.archivist-pc-sheet .pc-spell-search:focus,
+.archivist-pc-sheet .pc-spell-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); outline: none; box-shadow: none; }
+/* Add-drawer level filter row + per-level section headers */
+.archivist-pc-sheet .pc-add-levelbar { margin: var(--pc-space-1) 0 var(--pc-space-2); }
+.archivist-pc-sheet .pc-add-section-head { margin-top: var(--pc-space-2); }
 .archivist-pc-sheet .pc-add-toggle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--pc-tan-muted); background: var(--pc-parchment-light); color: var(--pc-crimson); font-size: 15px; line-height: 1; cursor: pointer; flex-shrink: 0; }
 .archivist-pc-sheet .pc-add-toggle.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-add-row-name.on { color: var(--pc-crimson); font-weight: 700; }

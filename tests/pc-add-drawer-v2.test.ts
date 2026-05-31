@@ -57,3 +57,40 @@ describe("renderAddDrawer v2", () => {
     expect(tags).toEqual(["2024"]);
   });
 });
+
+const REG_MULTI = buildMockRegistry([
+  { slug: "srd-2024_fire-bolt", name: "Fire Bolt", entityType: "spell", data: { name: "Fire Bolt", level: 0, classes: ["wizard"], edition: "2024" } },
+  { slug: "srd-2024_magic-missile", name: "Magic Missile", entityType: "spell", data: { name: "Magic Missile", level: 1, classes: ["wizard"], edition: "2024" } },
+  { slug: "srd-2024_fireball", name: "Fireball", entityType: "spell", data: { name: "Fireball", level: 3, classes: ["wizard"], edition: "2024" } },
+]);
+
+function ctxMulti(): ComponentRenderContext {
+  return {
+    resolved: { spells: [] } as never,
+    derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 1: 4, 2: 3, 3: 2 }, pactMagic: null } as never,
+    core: { entities: REG_MULTI } as never, app: {} as never,
+    editState: { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() } as never,
+  };
+}
+
+describe("renderAddDrawer v2 — level grouping + filter", () => {
+  it("groups candidates under per-level section headers (not a flat list)", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctxMulti());
+    const heads = [...root.querySelectorAll(".pc-add-section-head")].map((h) => h.textContent);
+    expect(heads).toEqual(["Cantrips", "1st Level", "3rd Level"]);
+  });
+
+  it("renders a Level filter chip row that narrows the list to one level", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctxMulti());
+    const chips = [...root.querySelectorAll(".pc-add-levelbar .pc-spell-fchip")].map((c) => c.textContent);
+    expect(chips).toContain("All");
+    expect(chips).toContain("Cantrip");
+    expect(chips).toContain("1st");
+    const oneSt = [...root.querySelectorAll(".pc-add-levelbar .pc-spell-fchip")].find((c) => c.textContent === "1st") as HTMLElement;
+    oneSt.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect([...root.querySelectorAll(".pc-add-row-name")].map((n) => n.textContent)).toEqual(["Magic Missile"]);
+    expect([...root.querySelectorAll(".pc-add-section-head")].map((h) => h.textContent)).toEqual(["1st Level"]);
+  });
+});
