@@ -114,3 +114,39 @@ describe("renderCastView — pact casters", () => {
     expect(hexRow.querySelector(".pc-spell-castpill.disabled")).not.toBeNull();
   });
 });
+
+function knownCtx(spells: ResolvedSpell[]): ComponentRenderContext {
+  const resolved = {
+    definition: { name: "Tess", spells: { known: [], overrides: [] }, overrides: {} } as never,
+    state: { spell_slots: {}, spell_slots_pact: undefined, concentration: null } as never,
+    spells,
+  } as unknown as ResolvedCharacter;
+  const derived = {
+    spellcastingClasses: [{ classSlug: "sorcerer", className: "Sorcerer", ability: "cha", saveDC: 14, attackBonus: 6, casterType: "full", preparation: "known" }],
+    derivedSpellSlots: { 1: 4, 2: 3 }, pactMagic: null, spellLimits: [],
+  } as unknown as DerivedStats;
+  return { resolved, derived, core: {} as never, app: {} as never, editState: null as never };
+}
+function sorcSp(name: string, level: number, prepared: boolean): ResolvedSpell {
+  return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),
+    classSlug: "sorcerer", source: "class", prepared, alwaysPrepared: false };
+}
+
+describe("renderCastView — known casters", () => {
+  it("shows a known caster's leveled spells in Cast mode even when prepared is false", () => {
+    const root = mountContainer();
+    renderCastView(root, knownCtx([sorcSp("Magic Missile", 1, false), sorcSp("Shatter", 2, false)]));
+    const names = [...root.querySelectorAll(".pc-spell-name")].map((n) => n.textContent);
+    expect(names).toContain("Magic Missile");
+    expect(names).toContain("Shatter");
+  });
+
+  it("still hides an unprepared spell for a PREPARED caster (wizard)", () => {
+    const root = mountContainer();
+    // ctxFor defaults to a prepared wizard whose owned levels are 1 and 2;
+    // a level-2 spell with prepared=false must NOT show as a row.
+    renderCastView(root, ctxFor([sp("Sleet Storm", 2, {}, /*prepared*/ false)]));
+    const names = [...root.querySelectorAll(".pc-spell-name")].map((n) => n.textContent);
+    expect(names).not.toContain("Sleet Storm");
+  });
+});

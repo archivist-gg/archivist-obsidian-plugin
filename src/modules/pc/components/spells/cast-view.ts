@@ -3,6 +3,7 @@ import type { ResolvedSpell } from "../../pc.types";
 import { renderChargeBoxes } from "../actions/charge-boxes";
 import { spellEffectAtSlot, upcastLevelsFor } from "./spell-scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
+import { baseClassName } from "../../pc.spellcasting";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
@@ -10,7 +11,20 @@ function ordinal(n: number): string {
 }
 
 export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): void {
-  const castable = ctx.resolved.spells.filter((s) => s.prepared);
+  // A spell is castable when its class explicitly prepares it (prepared===true,
+  // which the resolver only ever sets for prepared casters, cantrips, and
+  // always-prepared spells) OR it belongs to a known-caster class — every known
+  // spell of a known caster (sorcerer / bard-2014 / warlock / ranger-2014) is
+  // castable. Normalize class slugs on both sides so a bare `class: sorcerer`
+  // matches a compendium-prefixed derived slug like `srd-2024_sorcerer`.
+  const knownClassSlugs = new Set(
+    ctx.derived.spellcastingClasses
+      .filter((c) => c.preparation === "known")
+      .map((c) => baseClassName(c.classSlug)),
+  );
+  const isCastable = (s: ResolvedSpell): boolean =>
+    s.prepared || knownClassSlugs.has(baseClassName(s.classSlug ?? ""));
+  const castable = ctx.resolved.spells.filter(isCastable);
   const slotTotal = (lvl: number): number =>
     ctx.resolved.definition.overrides.spell_slots?.[lvl] ?? ctx.derived.derivedSpellSlots[lvl] ?? 0;
   const slotUsed = (lvl: number): number => ctx.resolved.state.spell_slots?.[lvl]?.used ?? 0;
