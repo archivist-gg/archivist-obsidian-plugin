@@ -12769,9 +12769,10 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-hitdc-ab { display: block; font-size: var(--pc-fs-label); letter-spacing: .06em; color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-hitdc-v { font-weight: 700; color: var(--pc-text-primary); }
 
-.archivist-pc-sheet .pc-spell-effcell { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
-.archivist-pc-sheet .pc-spell-eff { display: inline-flex; align-items: center; gap: 5px; font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); border: 1px solid var(--pc-tan); border-radius: 6px; padding: 2px 9px; background: var(--pc-parchment-light); }
-.archivist-pc-sheet .pc-spell-dtype { display: inline-flex; align-items: center; gap: 4px; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+/* effcell stays a table-cell (no display:flex) so its dashed row-border lines up
+   with the other columns; the chip + type word stack as content-width block-flex children. */
+.archivist-pc-sheet .pc-spell-eff { display: flex; width: fit-content; align-items: center; gap: 5px; margin-bottom: 3px; font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); border: 1px solid var(--pc-tan); border-radius: 6px; padding: 2px 9px; background: var(--pc-parchment-light); }
+.archivist-pc-sheet .pc-spell-dtype { display: flex; width: fit-content; align-items: center; gap: 4px; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-spell-dtype-icon { display: inline-flex; width: 13px; height: 13px; flex-shrink: 0; }
 .archivist-pc-sheet .pc-spell-dtype-icon svg { width: 100%; height: 100%; fill: currentColor; }
 .archivist-pc-sheet .pc-spell-dtype-icon.dmg { color: var(--pc-crimson); }
