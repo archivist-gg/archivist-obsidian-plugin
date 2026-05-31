@@ -58,4 +58,34 @@ describe("renderPrepareView", () => {
     renderPrepareView(root, ctx([sp("Fireball", 3, true)], { togglePrepared: vi.fn() }, "known"));
     expect(root.querySelector(".pc-spell-prep-row .archivist-toggle-box")).toBeNull();
   });
+
+  it("renders a Level filter chip row and narrows the list when a level is chosen", () => {
+    const root = mountContainer();
+    renderPrepareView(root, ctx([sp("Fire Bolt", 0, true), sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
+    const chips = [...root.querySelectorAll(".pc-spell-fchip")].map((c) => c.textContent);
+    expect(chips).toContain("All");
+    expect(chips).toContain("Cantrip");
+    expect(chips).toContain("1st");
+    // click "1st" → only the 1st-level spell row remains
+    const oneSt = [...root.querySelectorAll(".pc-spell-fchip")].find((c) => c.textContent === "1st") as HTMLElement;
+    oneSt.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const names = [...root.querySelectorAll(".pc-spell-name")].map((n) => n.textContent);
+    expect(names).toContain("Magic Missile");
+    expect(names).not.toContain("Fire Bolt");
+  });
+
+  it("hides the Class filter row for a single-class caster", () => {
+    const root = mountContainer();
+    renderPrepareView(root, ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
+    expect(root.querySelector(".pc-spell-fchip-class")).toBeNull();
+  });
+
+  it("shows the edition source tag on each row", () => {
+    const root = mountContainer();
+    const s = sp("Magic Missile", 1, true);
+    (s.entity as never as { edition: string }).edition = "2014";
+    renderPrepareView(root, ctx([s], { togglePrepared: vi.fn() }));
+    const tag = root.querySelector(".pc-spell-srctag");
+    expect(tag?.textContent).toBe("2014");
+  });
 });

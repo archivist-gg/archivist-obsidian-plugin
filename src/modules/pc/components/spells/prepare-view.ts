@@ -2,6 +2,13 @@ import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "../../pc.types";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { renderAddDrawer } from "./add-drawer";
+import { editionTag } from "./spell-display";
+import { baseClassName } from "../../pc.spellcasting";
+
+// Ephemeral filter state (mirrors the host's ephemeral mode field; reset on
+// full re-render is acceptable per spec §5.1). 0 = cantrip.
+let levelFilter: number | "all" = "all";
+let classFilter: string | "all" = "all";
 
 // Matches the checked modifier rendered by renderChargeBoxes (actions/charge-boxes.ts)
 // so prepared boxes look identical to the cast-view slot boxes.
@@ -53,18 +60,72 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
     renderAddDrawer(drawerHost, ctx);
   });
 
-  // Spells by level
-  const byLevel = new Map<number, ResolvedSpell[]>();
-  for (const s of ctx.resolved.spells) {
-    const l = s.entity.level ?? 0;
-    (byLevel.get(l) ?? byLevel.set(l, []).get(l)!).push(s);
-  }
-  for (const lvl of [...byLevel.keys()].sort((a, b) => a - b)) {
-    const sec = root.createDiv({ cls: "pc-actions-section-head" });
-    sec.createSpan({ text: lvl === 0 ? "Cantrips" : `${ordinal(lvl)} Level` });
-    const list = root.createDiv({ cls: "pc-spell-list" });
-    for (const s of byLevel.get(lvl)!) renderPrepareRow(list, s, ctx, hasPrepared);
-  }
+  // Filter bar + re-rendered list host
+  const presentLevels = [...new Set(ctx.resolved.spells.map((s) => s.entity.level ?? 0))].sort(
+    (a, b) => a - b,
+  );
+  const bar = root.createDiv({ cls: "pc-spell-filterbar" });
+  const listHost = root.createDiv();
+
+  const drawLevelChips = () => {
+    const grp = bar.createDiv({ cls: "pc-spell-fgroup" });
+    grp.createSpan({ cls: "pc-spell-flabel", text: "Level" });
+    const chip = (label: string, val: number | "all") => {
+      const c = grp.createSpan({
+        cls: `pc-spell-fchip${levelFilter === val ? " active" : ""}`,
+        text: label,
+      });
+      c.addEventListener("click", () => {
+        levelFilter = val;
+        redraw();
+      });
+    };
+    chip("All", "all");
+    for (const l of presentLevels) chip(l === 0 ? "Cantrip" : ordinal(l), l);
+  };
+
+  const drawClassChips = () => {
+    if (ctx.derived.spellcastingClasses.length <= 1) return;
+    const grp = bar.createDiv({ cls: "pc-spell-fgroup pc-spell-fchip-class" });
+    grp.createSpan({ cls: "pc-spell-flabel", text: "Class" });
+    const chip = (label: string, val: string | "all") => {
+      const c = grp.createSpan({
+        cls: `pc-spell-fchip${classFilter === val ? " active" : ""}`,
+        text: label,
+      });
+      c.addEventListener("click", () => {
+        classFilter = val;
+        redraw();
+      });
+    };
+    chip("All", "all");
+    for (const cls of ctx.derived.spellcastingClasses)
+      chip(cls.className, baseClassName(cls.classSlug));
+  };
+
+  const redraw = () => {
+    bar.empty();
+    listHost.empty();
+    drawLevelChips();
+    drawClassChips();
+    const shown = ctx.resolved.spells.filter((s) => {
+      if (levelFilter !== "all" && (s.entity.level ?? 0) !== levelFilter) return false;
+      if (classFilter !== "all" && baseClassName(s.classSlug ?? "") !== classFilter) return false;
+      return true;
+    });
+    const byLevel = new Map<number, ResolvedSpell[]>();
+    for (const s of shown) {
+      const l = s.entity.level ?? 0;
+      (byLevel.get(l) ?? byLevel.set(l, []).get(l)!).push(s);
+    }
+    for (const lvl of [...byLevel.keys()].sort((a, b) => a - b)) {
+      const sec = listHost.createDiv({ cls: "pc-actions-section-head" });
+      sec.createSpan({ text: lvl === 0 ? "Cantrips" : `${ordinal(lvl)} Level` });
+      const list = listHost.createDiv({ cls: "pc-spell-list" });
+      for (const s of byLevel.get(lvl)!) renderPrepareRow(list, s, ctx, hasPrepared);
+    }
+  };
+  redraw();
 }
 
 function renderPrepareRow(
@@ -94,6 +155,8 @@ function renderPrepareRow(
 
   const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
   const name = nameWrap.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
+  const tag = editionTag(spell);
+  if (tag) name.parentElement!.createSpan({ cls: `pc-spell-srctag ${tag.mod}`, text: tag.label });
   if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
   nameWrap.addEventListener("click", () => toggleSpellBlock(row, spell, ctx));
