@@ -68,3 +68,59 @@ export function preparedWarnings(spells: ResolvedSpell[], limits: SpellLimitInfo
   }
   return out;
 }
+
+/** Compact casting-time label for the Cast table. Real tokens: action,
+ *  bonus-action, reaction, 1minute|minute, 10minutes, 1hour|hour, 8/12/24hours. */
+export function compactCastingTime(token: string | undefined): string {
+  switch (token) {
+    case "action": return "1A";
+    case "bonus-action": return "1BA";
+    case "reaction": return "1R";
+    case "minute":
+    case "1minute": return "1 min";
+    case "10minutes": return "10 min";
+    case "hour":
+    case "1hour": return "1 hr";
+    case "8hours": return "8 hr";
+    case "12hours": return "12 hr";
+    case "24hours": return "24 hr";
+    default: return token ? token : "—";
+  }
+}
+
+/** Compact range. `range` is already a human string ("120 feet", "Touch", "Self"…). */
+export function formatRange(range: string | undefined): string {
+  if (!range) return "—";
+  const feet = range.match(/^(\d+)\s*feet$/i);
+  if (feet) return `${feet[1]} ft`;
+  return range; // Touch / Self / Special / Sight / Unlimited / "1 mile" pass through
+}
+
+/** Three-letter ability code. Accepts full words ("dexterity") or codes ("DEX"). */
+export function abbrAbility(ability: string): string {
+  const key = ability.toLowerCase();
+  return ABBR[key] ?? ability.slice(0, 3).toUpperCase();
+}
+
+/** Hit/DC cell data. The model has no per-spell attack field, so only the
+ *  save branch exists; DC is the caster class's save DC (from derived). */
+export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number): { ability: string; dc: number } | null {
+  const save = spell.entity.saving_throw?.ability;
+  if (!save) return null;
+  return { ability: abbrAbility(save), dc: saveDC };
+}
+
+/** Structured-only effect descriptor. Base damage dice are NOT in the model,
+ *  so this returns the damage TYPE word only (or null). Upcast dice come from
+ *  spellEffectAtSlot, not here. */
+export function effectDescriptor(spell: ResolvedSpell): { damageType: string | null } {
+  return { damageType: spell.entity.damage?.types?.[0] ?? null };
+}
+
+/** Source/edition tag for a spell row, or null when the entity has no edition. */
+export function editionTag(spell: ResolvedSpell): { label: string; mod: string } | null {
+  const ed = spell.entity.edition;
+  if (ed === "2014") return { label: "2014", mod: "e2014" };
+  if (ed === "2024") return { label: "2024", mod: "e2024" };
+  return null;
+}
