@@ -21,7 +21,6 @@
    no pip/count/prep-box rules live here anymore. */
 
 /* Spell row: reuse .pc-actions-table styles; add comp + tags. */
-.archivist-pc-sheet .pc-spell-comp .mat { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
 .archivist-pc-sheet .pc-spell-mk { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); border: 1px solid var(--pc-tan-muted); border-radius: 3px; padding: 0 4px; color: var(--pc-text-soft); margin-left: 5px; }
 
@@ -96,7 +95,7 @@
 
 .archivist-pc-sheet .pc-spell-namecell { cursor: pointer; }
 .archivist-pc-sheet .pc-spell-nl { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-.archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-spell-cast-table .pc-spell-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-cr { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; border: 1px solid var(--pc-tan-muted); font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; color: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-spell-cr.c { color: var(--pc-crimson); border-color: var(--pc-crimson-light); }
 .archivist-pc-sheet .pc-spell-school { font-size: var(--pc-fs-label); color: var(--pc-text-muted); font-style: italic; margin-top: 3px; }
