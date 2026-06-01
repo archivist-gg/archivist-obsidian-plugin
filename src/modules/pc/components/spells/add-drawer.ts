@@ -25,7 +25,7 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   srcGroup.createSpan({ cls: "pc-spell-flabel", text: "Source" });
   const srcBtns: Record<SourceFilter, HTMLElement> = {
     all: srcGroup.createEl("button", { cls: "pc-spell-filter active", text: "All" }),
-    "2014": srcGroup.createEl("button", { cls: "pc-spell-filter", text: "2014" }),
+    "2014": srcGroup.createEl("button", { cls: "pc-spell-filter", text: "5e" }),
     "2024": srcGroup.createEl("button", { cls: "pc-spell-filter", text: "2024" }),
   };
   // Level filter row — rebuilt each draw from the levels currently available.
@@ -79,9 +79,11 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
         const row = list.createDiv({ cls: "pc-add-row" });
         const isKnown = known.has(c.slug);
         const toggle = row.createEl("button", { cls: `pc-add-toggle${isKnown ? " on" : ""}`, text: isKnown ? "✓" : "＋" });
-        const name = row.createSpan({ cls: `pc-add-row-name${isKnown ? " on" : ""}`, text: c.name });
+        // Name + source tag sit together at the left, the tag glued beside the title.
+        const main = row.createDiv({ cls: "pc-add-row-main" });
+        main.createSpan({ cls: `pc-add-row-name${isKnown ? " on" : ""}`, text: c.name });
         const ed = editionOf(c.entity);
-        if (ed) name.parentElement!.createSpan({ cls: `pc-spell-srctag e${ed}`, text: ed });
+        if (ed) main.createSpan({ cls: `pc-spell-srctag e${ed}`, text: ed === "2014" ? "5e" : ed });
         toggle.addEventListener("click", (e) => {
           e.stopPropagation();
           if (known.has(c.slug)) ctx.editState?.removeKnownSpell(c.slug);

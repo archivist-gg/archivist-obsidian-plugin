@@ -86,7 +86,7 @@ describe("renderPrepareView", () => {
     (s.entity as never as { edition: string }).edition = "2014";
     renderPrepareView(root, ctx([s], { togglePrepared: vi.fn() }));
     const tag = root.querySelector(".pc-spell-srctag");
-    expect(tag?.textContent).toBe("2014");
+    expect(tag?.textContent).toBe("5e"); // 2014 edition is labelled "5e"
   });
 
   it("resets the level filter on a full re-render (no stale filter across characters/modes)", () => {

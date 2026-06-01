@@ -25,7 +25,7 @@ describe("renderAddDrawer v2", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx([], { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() }));
     const tags = [...root.querySelectorAll(".pc-spell-srctag")].map((t) => t.textContent);
-    expect(tags).toContain("2014");
+    expect(tags).toContain("5e");   // 2014 edition is labelled "5e"
     expect(tags).toContain("2024");
   });
 

@@ -120,7 +120,7 @@ export function effectDescriptor(spell: ResolvedSpell): { damageType: string | n
 /** Source/edition tag for a spell row, or null when the entity has no edition. */
 export function editionTag(spell: ResolvedSpell): { label: string; mod: string } | null {
   const ed = spell.entity.edition;
-  if (ed === "2014") return { label: "2014", mod: "e2014" };
+  if (ed === "2014") return { label: "5e", mod: "e2014" };
   if (ed === "2024") return { label: "2024", mod: "e2024" };
   return null;
 }

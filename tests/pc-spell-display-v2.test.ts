@@ -65,7 +65,7 @@ describe("effectDescriptor", () => {
 
 describe("editionTag", () => {
   it("derives the source label + css modifier from entity.edition", () => {
-    expect(editionTag(sp({ edition: "2014" } as never))).toEqual({ label: "2014", mod: "e2014" });
+    expect(editionTag(sp({ edition: "2014" } as never))).toEqual({ label: "5e", mod: "e2014" });
     expect(editionTag(sp({ edition: "2024" } as never))).toEqual({ label: "2024", mod: "e2024" });
     expect(editionTag(sp({}))).toBeNull(); // no edition → no tag
   });

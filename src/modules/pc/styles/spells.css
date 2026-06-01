@@ -29,7 +29,7 @@
    "Show all classes" toggle, and "Add" buttons are styled (modals render
    outside .archivist-pc-sheet). */
 .archivist-pc-sheet .pc-spell-filters, .archivist-modal .pc-spell-filters { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-filter, .archivist-modal .pc-spell-filter { padding: 3px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); cursor: pointer; }
+.archivist-pc-sheet .pc-spell-filter, .archivist-modal .pc-spell-filter { padding: 3px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); color: var(--pc-text-soft); cursor: pointer; }
 .archivist-pc-sheet .pc-spell-filter.active, .archivist-modal .pc-spell-filter.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
 
 .archivist-pc-sheet .pc-spell-addbtn {
@@ -69,7 +69,9 @@
 /* Inline add drawer */
 .archivist-pc-sheet .pc-spell-adddrawer { background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin: var(--pc-space-2) 0; }
 .archivist-pc-sheet .pc-add-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 3px 4px; border-bottom: 1px dashed var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-add-row-name { flex: 1; font-family: var(--pc-font-serif); }
+.archivist-pc-sheet .pc-add-row-main { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.archivist-pc-sheet .pc-add-row-main .pc-spell-srctag { margin-left: 0; }
+.archivist-pc-sheet .pc-add-row-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-add-row-lvl { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
 
 /* Inline spell block under a row */
@@ -131,13 +133,14 @@
 .archivist-pc-sheet .pc-spell-fchip.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
 
 /* ── Add drawer: themed search + toggle ───────────────── */
-.archivist-pc-sheet .pc-spell-search { font-family: var(--pc-font-sans); font-size: var(--pc-fs-body); padding: 7px 12px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-primary); min-width: 220px; outline: none; box-shadow: none; }
-.archivist-pc-sheet .pc-spell-search::placeholder { color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spell-search { font-family: var(--pc-font-sans); font-size: var(--pc-fs-body); padding: 7px 12px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); min-width: 220px; outline: none; box-shadow: none; }
+.archivist-pc-sheet .pc-spell-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
 /* Override Obsidian's built-in input :hover (grey form-field highlight) and :focus
-   (box-shadow/outline ring) so the search box keeps the parchment look in every state. */
+   (box-shadow/outline ring + text recolor) so the search box keeps the parchment
+   look and dark text in every state. */
 .archivist-pc-sheet .pc-spell-search:hover,
 .archivist-pc-sheet .pc-spell-search:focus,
-.archivist-pc-sheet .pc-spell-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); outline: none; box-shadow: none; }
+.archivist-pc-sheet .pc-spell-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
 /* Add-drawer level filter row + per-level section headers */
 .archivist-pc-sheet .pc-add-levelbar { margin: var(--pc-space-1) 0 var(--pc-space-2); }
 .archivist-pc-sheet .pc-add-section-head { margin-top: var(--pc-space-2); }
