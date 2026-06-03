@@ -5,6 +5,12 @@ import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { renderAddDrawer } from "../src/modules/pc/components/spells/add-drawer";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
+// Stub the spell block renderer: the .pc-spell-expand container is created
+// synchronously by the drawer; this avoids depending on async markdown render.
+vi.mock("../src/modules/spell/spell.renderer", () => ({
+  renderSpellBlock: vi.fn(() => Promise.resolve(document.createElement("div"))),
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const REG = buildMockRegistry([
@@ -92,5 +98,55 @@ describe("renderAddDrawer v2 — level grouping + filter", () => {
     oneSt.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect([...root.querySelectorAll(".pc-add-row-name")].map((n) => n.textContent)).toEqual(["Magic Missile"]);
     expect([...root.querySelectorAll(".pc-add-section-head")].map((h) => h.textContent)).toEqual(["1st Level"]);
+  });
+});
+
+const REG_META = buildMockRegistry([
+  { slug: "srd-2024_fire-bolt", name: "Fire Bolt", entityType: "spell", data: {
+    name: "Fire Bolt", level: 0, classes: ["wizard"], edition: "2024",
+    school: "evocation", casting_time: "action", range: "120 feet",
+    components: "V, S", damage: { types: ["fire"] },
+  } },
+]);
+
+function ctxMeta(addKnownSpell = vi.fn()): ComponentRenderContext {
+  return {
+    resolved: { spells: [] } as never,
+    derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 1: 4 }, pactMagic: null } as never,
+    core: { entities: REG_META } as never, app: {} as never,
+    editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
+  };
+}
+
+describe("renderAddDrawer v2 — row meta + inline spell block", () => {
+  it("shows a level microcap and a meta sub-line per row", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctxMeta());
+    expect(root.querySelector(".pc-add-row-lvl")?.textContent).toBe("· Cantrip");
+    const meta = root.querySelector(".pc-add-row-meta")?.textContent ?? "";
+    expect(meta).toContain("evocation");
+    expect(meta).toContain("1A");
+    expect(meta).toContain("120 ft");
+    expect(meta).toContain("V S");
+    expect(meta).toContain("fire");
+  });
+
+  it("clicking a row (not the toggle) expands the spell block; clicking again closes it", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctxMeta());
+    const row = root.querySelector(".pc-add-row") as HTMLElement;
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root.querySelector(".pc-add-item.open > .pc-spell-expand")).not.toBeNull();
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root.querySelector(".pc-spell-expand")).toBeNull();
+  });
+
+  it("clicking the ＋ toggle adds the spell and does NOT expand the block", () => {
+    const root = mountContainer();
+    const addKnownSpell = vi.fn();
+    renderAddDrawer(root, ctxMeta(addKnownSpell));
+    (root.querySelector(".pc-add-toggle") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(addKnownSpell).toHaveBeenCalled();
+    expect(root.querySelector(".pc-spell-expand")).toBeNull();
   });
 });
