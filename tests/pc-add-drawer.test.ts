@@ -5,6 +5,10 @@ import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { renderAddDrawer } from "../src/modules/pc/components/spells/add-drawer";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
+vi.mock("../src/modules/spell/spell.renderer", () => ({
+  renderSpellBlock: vi.fn(() => Promise.resolve(document.createElement("div"))),
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const REG = buildMockRegistry([
@@ -16,20 +20,18 @@ function ctx(addKnownSpell = vi.fn()): ComponentRenderContext {
   return {
     resolved: { spells: [] } as never,
     derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 3: 1 }, pactMagic: null } as never,
-    core: { entities: REG } as never, app: {} as never, editState: { addKnownSpell } as never,
+    core: { entities: REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
   };
 }
 
-describe("renderAddDrawer", () => {
-  it("lists class candidates and adds on ＋ click", () => {
+describe("renderAddDrawer — class gating", () => {
+  it("lists class candidates only and adds on ＋ click", () => {
     const root = mountContainer();
     const addKnownSpell = vi.fn();
     renderAddDrawer(root, ctx(addKnownSpell));
-    const names = [...root.querySelectorAll(".pc-add-row-name")].map((n) => n.textContent);
-    expect(names).toContain("Fireball");      // wizard class match
-    expect(names).not.toContain("Cure Wounds"); // cleric, filtered out
-    // v2: the ＋ is now an add/remove toggle (.pc-add-toggle). For an
-    // unknown spell it still adds via addKnownSpell with the same args.
+    const names = [...root.querySelectorAll(".pc-spell-add-table .pc-add-name")].map((n) => n.textContent);
+    expect(names).toContain("Fireball");        // wizard class match
+    expect(names).not.toContain("Cure Wounds");  // cleric, filtered out
     (root.querySelector(".pc-add-toggle") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(addKnownSpell).toHaveBeenCalledWith("fireball", { class: "wizard" });
   });
