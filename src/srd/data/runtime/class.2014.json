@@ -257,32 +257,36 @@
           "id": "rage",
           "name": "Rage",
           "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\r\n\r\nWhile raging, you gain the following benefits if you aren't wearing heavy armor:\r\n\r\n* You have advantage on Strength checks and Strength saving throws.\r\n* When you make a melee weapon attack using Strength, you gain a bonus to the damage roll that increases as you gain levels as a barbarian, as shown in the Rage Damage column of the Barbarian table.\r\n* You have resistance to bludgeoning, piercing, and slashing damage. \r\n\r\nIf you are able to cast spells, you can't cast them or concentrate on them while raging.\r\n\r\nYour rage lasts for 1 minute. It ends early if you are knocked unconscious or if your turn ends and you haven't attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action.\r\n\r\nOnce you have raged the number of times shown for your barbarian level in the Rages column of the Barbarian table, you must finish a long rest before you can rage again.",
-          "uses": {
-            "max": 2,
-            "recharge": "long-rest",
-            "scales_at": [
-              {
-                "level": 3,
-                "max": 3
-              },
-              {
-                "level": 6,
-                "max": 4
-              },
-              {
-                "level": 12,
-                "max": 5
-              },
-              {
-                "level": 17,
-                "max": 6
-              },
-              {
-                "level": 20,
-                "max": 999
-              }
-            ]
-          }
+          "resources": [
+            {
+              "id": "barbarian:rage",
+              "name": "Rage",
+              "max_formula": "2",
+              "scales_at": [
+                {
+                  "level": 3,
+                  "max": "3"
+                },
+                {
+                  "level": 6,
+                  "max": "4"
+                },
+                {
+                  "level": 12,
+                  "max": "5"
+                },
+                {
+                  "level": 17,
+                  "max": "6"
+                },
+                {
+                  "level": 20,
+                  "max": "999"
+                }
+              ],
+              "reset": "long-rest"
+            }
+          ]
         },
         {
           "id": "unarmored-defense",
@@ -806,10 +810,22 @@
           "id": "bardic-inspiration",
           "name": "Bardic Inspiration",
           "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6.\r\n\r\nOnce within the next 10 minutes, the creature can roll the die and add the number rolled to one ability check, attack roll, or saving throw it makes. The creature can wait until after it rolls the d20 before deciding to use the Bardic Inspiration die, but must decide before the GM says whether the roll succeeds or fails. Once the Bardic Inspiration die is rolled, it is lost. A creature can have only one Bardic Inspiration die at a time.\r\n\r\nYou can use this feature a number of times equal to your Charisma modifier (a minimum of once). You regain any expended uses when you finish a long rest.\r\n\r\nYour Bardic Inspiration die changes when you reach certain levels in this class. The die becomes a d8 at 5th level, a d10 at 10th level, and a d12 at 15th level.",
-          "uses": {
-            "max": "{cha_mod}",
-            "recharge": "short-rest"
-          }
+          "resources": [
+            {
+              "id": "bard:bardic-inspiration",
+              "name": "Bardic Inspiration",
+              "max_formula": "{cha_mod}",
+              "die": {
+                "base": "d6",
+                "scaling": {
+                  "5": "d8",
+                  "10": "d10",
+                  "15": "d12"
+                }
+              },
+              "reset": "short-rest"
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -853,10 +869,22 @@
           "id": "bardic-inspiration",
           "name": "Bardic Inspiration",
           "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6.\r\n\r\nOnce within the next 10 minutes, the creature can roll the die and add the number rolled to one ability check, attack roll, or saving throw it makes. The creature can wait until after it rolls the d20 before deciding to use the Bardic Inspiration die, but must decide before the GM says whether the roll succeeds or fails. Once the Bardic Inspiration die is rolled, it is lost. A creature can have only one Bardic Inspiration die at a time.\r\n\r\nYou can use this feature a number of times equal to your Charisma modifier (a minimum of once). You regain any expended uses when you finish a long rest.\r\n\r\nYour Bardic Inspiration die changes when you reach certain levels in this class. The die becomes a d8 at 5th level, a d10 at 10th level, and a d12 at 15th level.",
-          "uses": {
-            "max": "{cha_mod}",
-            "recharge": "short-rest"
-          }
+          "resources": [
+            {
+              "id": "bard:bardic-inspiration",
+              "name": "Bardic Inspiration",
+              "max_formula": "{cha_mod}",
+              "die": {
+                "base": "d6",
+                "scaling": {
+                  "5": "d8",
+                  "10": "d10",
+                  "15": "d12"
+                }
+              },
+              "reset": "short-rest"
+            }
+          ]
         },
         {
           "id": "font-of-inspiration",
@@ -890,10 +918,22 @@
           "id": "bardic-inspiration",
           "name": "Bardic Inspiration",
           "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6.\r\n\r\nOnce within the next 10 minutes, the creature can roll the die and add the number rolled to one ability check, attack roll, or saving throw it makes. The creature can wait until after it rolls the d20 before deciding to use the Bardic Inspiration die, but must decide before the GM says whether the roll succeeds or fails. Once the Bardic Inspiration die is rolled, it is lost. A creature can have only one Bardic Inspiration die at a time.\r\n\r\nYou can use this feature a number of times equal to your Charisma modifier (a minimum of once). You regain any expended uses when you finish a long rest.\r\n\r\nYour Bardic Inspiration die changes when you reach certain levels in this class. The die becomes a d8 at 5th level, a d10 at 10th level, and a d12 at 15th level.",
-          "uses": {
-            "max": "{cha_mod}",
-            "recharge": "short-rest"
-          }
+          "resources": [
+            {
+              "id": "bard:bardic-inspiration",
+              "name": "Bardic Inspiration",
+              "max_formula": "{cha_mod}",
+              "die": {
+                "base": "d6",
+                "scaling": {
+                  "5": "d8",
+                  "10": "d10",
+                  "15": "d12"
+                }
+              },
+              "reset": "short-rest"
+            }
+          ]
         },
         {
           "id": "expertise",
@@ -932,10 +972,22 @@
           "id": "bardic-inspiration",
           "name": "Bardic Inspiration",
           "description": "You can inspire others through stirring words or music. To do so, you use a bonus action on your turn to choose one creature other than yourself within 60 feet of you who can hear you. That creature gains one Bardic Inspiration die, a d6.\r\n\r\nOnce within the next 10 minutes, the creature can roll the die and add the number rolled to one ability check, attack roll, or saving throw it makes. The creature can wait until after it rolls the d20 before deciding to use the Bardic Inspiration die, but must decide before the GM says whether the roll succeeds or fails. Once the Bardic Inspiration die is rolled, it is lost. A creature can have only one Bardic Inspiration die at a time.\r\n\r\nYou can use this feature a number of times equal to your Charisma modifier (a minimum of once). You regain any expended uses when you finish a long rest.\r\n\r\nYour Bardic Inspiration die changes when you reach certain levels in this class. The die becomes a d8 at 5th level, a d10 at 10th level, and a d12 at 15th level.",
-          "uses": {
-            "max": "{cha_mod}",
-            "recharge": "short-rest"
-          }
+          "resources": [
+            {
+              "id": "bard:bardic-inspiration",
+              "name": "Bardic Inspiration",
+              "max_formula": "{cha_mod}",
+              "die": {
+                "base": "d6",
+                "scaling": {
+                  "5": "d8",
+                  "10": "d10",
+                  "15": "d12"
+                }
+              },
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "16": [
@@ -1326,20 +1378,24 @@
           "id": "channel-divinity",
           "name": "Channel Divinity",
           "description": "At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description.\r\n\r\nWhen you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again.\r\n\r\nSome Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your cleric spell save DC.\r\n\r\nBeginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.\r\n\r\n### Channel Divinity: Turn Undead\r\n\r\nAs an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.\r\n\r\nA turned creature must spend its turns trying to move as far away from you as it can, and it can't willingly move to a space within 30 feet of you. It also can't take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there's nowhere to move, the creature can use the Dodge action.",
-          "uses": {
-            "max": 1,
-            "recharge": "short-rest",
-            "scales_at": [
-              {
-                "level": 6,
-                "max": 2
-              },
-              {
-                "level": 18,
-                "max": 3
-              }
-            ]
-          }
+          "resources": [
+            {
+              "id": "cleric:channel-divinity",
+              "name": "Channel Divinity",
+              "max_formula": "1",
+              "scales_at": [
+                {
+                  "level": 6,
+                  "max": "2"
+                },
+                {
+                  "level": 18,
+                  "max": "3"
+                }
+              ],
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "4": [
@@ -1361,20 +1417,24 @@
           "id": "channel-divinity",
           "name": "Channel Divinity",
           "description": "At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description.\r\n\r\nWhen you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again.\r\n\r\nSome Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your cleric spell save DC.\r\n\r\nBeginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.\r\n\r\n### Channel Divinity: Turn Undead\r\n\r\nAs an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.\r\n\r\nA turned creature must spend its turns trying to move as far away from you as it can, and it can't willingly move to a space within 30 feet of you. It also can't take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there's nowhere to move, the creature can use the Dodge action.",
-          "uses": {
-            "max": 1,
-            "recharge": "short-rest",
-            "scales_at": [
-              {
-                "level": 6,
-                "max": 2
-              },
-              {
-                "level": 18,
-                "max": 3
-              }
-            ]
-          }
+          "resources": [
+            {
+              "id": "cleric:channel-divinity",
+              "name": "Channel Divinity",
+              "max_formula": "1",
+              "scales_at": [
+                {
+                  "level": 6,
+                  "max": "2"
+                },
+                {
+                  "level": 18,
+                  "max": "3"
+                }
+              ],
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "8": [
@@ -1429,20 +1489,24 @@
           "id": "channel-divinity",
           "name": "Channel Divinity",
           "description": "At 2nd level, you gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description.\r\n\r\nWhen you use your Channel Divinity, you choose which effect to create. You must then finish a short or long rest to use your Channel Divinity again.\r\n\r\nSome Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your cleric spell save DC.\r\n\r\nBeginning at 6th level, you can use your Channel Divinity twice between rests, and beginning at 18th level, you can use it three times between rests. When you finish a short or long rest, you regain your expended uses.\r\n\r\n### Channel Divinity: Turn Undead\r\n\r\nAs an action, you present your holy symbol and speak a prayer censuring the undead. Each undead that can see or hear you within 30 feet of you must make a Wisdom saving throw. If the creature fails its saving throw, it is turned for 1 minute or until it takes any damage.\r\n\r\nA turned creature must spend its turns trying to move as far away from you as it can, and it can't willingly move to a space within 30 feet of you. It also can't take reactions. For its action, it can use only the Dash action or try to escape from an effect that prevents it from moving. If there's nowhere to move, the creature can use the Dodge action.",
-          "uses": {
-            "max": 1,
-            "recharge": "short-rest",
-            "scales_at": [
-              {
-                "level": 6,
-                "max": 2
-              },
-              {
-                "level": 18,
-                "max": 3
-              }
-            ]
-          }
+          "resources": [
+            {
+              "id": "cleric:channel-divinity",
+              "name": "Channel Divinity",
+              "max_formula": "1",
+              "scales_at": [
+                {
+                  "level": 6,
+                  "max": "2"
+                },
+                {
+                  "level": 18,
+                  "max": "3"
+                }
+              ],
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "19": [
@@ -2073,10 +2137,14 @@
           "id": "second-wind",
           "name": "Second Wind",
           "description": "You have a limited well of stamina that you can draw on to protect yourself from harm. On your turn, you can use a bonus action to regain hit points equal to 1d10 + your fighter level. Once you use this feature, you must finish a short or long rest before you can use it again.",
-          "uses": {
-            "max": 1,
-            "recharge": "short-rest"
-          }
+          "resources": [
+            {
+              "id": "fighter:second-wind",
+              "name": "Second Wind",
+              "max_formula": "1",
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "2": [
@@ -2084,16 +2152,20 @@
           "id": "action-surge",
           "name": "Action Surge",
           "description": "Starting at 2nd level, you can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action on top of your regular action and a possible bonus action.\r\n\r\nOnce you use this feature, you must finish a short or long rest before you can use it again. Starting at 17th level, you can use it twice before a rest, but only once on the same turn.",
-          "uses": {
-            "max": 1,
-            "recharge": "short-rest",
-            "scales_at": [
-              {
-                "level": 17,
-                "value": 2
-              }
-            ]
-          }
+          "resources": [
+            {
+              "id": "fighter:action-surge",
+              "name": "Action Surge",
+              "max_formula": "1",
+              "scales_at": [
+                {
+                  "level": 17,
+                  "max": "2"
+                }
+              ],
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "3": [
@@ -2178,16 +2250,20 @@
           "id": "action-surge",
           "name": "Action Surge",
           "description": "Starting at 2nd level, you can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action on top of your regular action and a possible bonus action.\r\n\r\nOnce you use this feature, you must finish a short or long rest before you can use it again. Starting at 17th level, you can use it twice before a rest, but only once on the same turn.",
-          "uses": {
-            "max": 1,
-            "recharge": "short-rest",
-            "scales_at": [
-              {
-                "level": 17,
-                "value": 2
-              }
-            ]
-          }
+          "resources": [
+            {
+              "id": "fighter:action-surge",
+              "name": "Action Surge",
+              "max_formula": "1",
+              "scales_at": [
+                {
+                  "level": 17,
+                  "max": "2"
+                }
+              ],
+              "reset": "short-rest"
+            }
+          ]
         },
         {
           "id": "indomitable",
@@ -5010,10 +5086,22 @@
           "id": "arcane-recovery",
           "name": "Arcane Recovery",
           "description": "You have learned to regain some of your magical energy by studying your spellbook. Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher.\r\n\r\nFor example, if you're a 4th-level wizard, you can recover up to two levels worth of spell slots. You can recover either a 2nd-level spell slot or two 1st-level spell slots.",
-          "uses": {
-            "max": 1,
-            "recharge": "long-rest"
-          }
+          "resources": [
+            {
+              "id": "wizard:arcane-recovery",
+              "name": "Arcane Recovery",
+              "max_formula": "1",
+              "reset": "long-rest",
+              "recovery": [
+                {
+                  "id": "wizard:arcane-recovery-slots",
+                  "name": "Recover spell slots",
+                  "amount": "ceil({class_level}/2)",
+                  "reset": "long-rest"
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "spellcasting",

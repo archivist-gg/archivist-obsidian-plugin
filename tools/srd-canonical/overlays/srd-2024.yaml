@@ -1,41 +1,38 @@
-# SRD 5.2 overlay -- minimal seed
-# Mostly aligned with srd-5e.yaml; SRD 2024 has tighter upstream structure so fewer overrides needed.
+# SRD 5.2 overlay -- limited-use resources + action economy + OptionalFeature SRD slugs.
+# Mostly aligned with srd-5e.yaml; SRD 2024 has tighter upstream structure.
 # Source: WotC SRD 5.2 PDF.
-# This is a SEED -- full authorship is deferred to a follow-up pass.
+# Per-feature `resources[]` carry structured limited-use pools (SP4d Phase 1).
 
 class_features:
-  # Fighter (2024 -- Action Surge mostly unchanged)
+  # Fighter (2024 -- Action Surge unchanged)
   action-surge:
     action_cost: special
-    uses:
-      max: 1
-      recharge: short-rest
-      scales_at:
-        - level: 17
-          value: 2
-  # Barbarian (2024 -- Rage uses unchanged)
+    resources:
+      - id: "fighter:action-surge"
+        name: Action Surge
+        max_formula: "1"
+        scales_at: [{ level: 17, max: "2" }]
+        reset: short-rest
+  # Barbarian (2024 -- Rage uses 2/3/4/5/6; no level-20 "unlimited" entry)
   rage:
     action_cost: bonus-action
-    uses:
-      max: 2
-      recharge: long-rest
-      scales_at:
-        - level: 3
-          max: 3
-        - level: 6
-          max: 4
-        - level: 12
-          max: 5
-        - level: 17
-          max: 6
+    resources:
+      - id: "barbarian:rage"
+        name: Rage
+        max_formula: "2"
+        scales_at: [{ level: 3, max: "3" }, { level: 6, max: "4" }, { level: 12, max: "5" }, { level: 17, max: "6" }]
+        reset: long-rest
 
 race_traits:
-  # Dragonborn (2024)
+  # Dragonborn (2024) -- Breath Weapon: uses = Proficiency Bonus, regain on a
+  # long rest. (This differs from 2014's 1/short-rest; the prior seed was wrong.)
   breath-weapon:
     action_cost: action
-    uses:
-      max: 1
-      recharge: short-rest
+    resources:
+      - id: "dragonborn:breath-weapon"
+        name: Breath Weapon
+        max_formula: "prof"
+        reset: long-rest
     save:
       ability: dex
       dc_formula: "8 + {con_mod} + {prof_bonus}"

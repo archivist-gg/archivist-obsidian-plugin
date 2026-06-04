@@ -39,7 +39,16 @@
         "save": {
           "ability": "dex",
           "dc_formula": "8 + {con_mod} + {prof_bonus}"
-        }
+        },
+        "id": "breath-weapon",
+        "resources": [
+          {
+            "id": "dragonborn:breath-weapon",
+            "name": "Breath Weapon",
+            "max_formula": "prof",
+            "reset": "long-rest"
+          }
+        ]
       },
       {
         "name": "Damage Resistance",
