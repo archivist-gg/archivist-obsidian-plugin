@@ -24,6 +24,7 @@ type Tok = { kind: "num"; value: number } | { kind: "id"; name: string }
   | { kind: "op"; op: "+" | "-" | "*" };
 
 function tokenize(input: string): Tok[] | null {
+  input = input.trim();
   const tokens: Tok[] = [];
   const re = /\s*(\{[a-z_]+\}|[a-z_]+|\d+|[+\-*])/y;
   let i = 0;
@@ -53,7 +54,12 @@ function evalTokens(tokens: Tok[], b: FormulaBindings): number | null {
     const t = peek();
     if (!t) return null;
     if (t.kind === "num") { pos++; return t.value; }
-    if (t.kind === "id") { pos++; return (b as unknown as Record<string, number>)[t.name]; }
+    if (t.kind === "id") {
+      const val = (b as unknown as Record<string, number>)[t.name];
+      if (val === undefined) return null;
+      pos++;
+      return val;
+    }
     return null;
   };
   const term = (): number | null => {

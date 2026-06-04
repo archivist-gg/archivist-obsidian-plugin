@@ -31,3 +31,24 @@ describe("evaluateMaxFormula", () => {
     expect(evaluateMaxFormula("prof * 2", ctx)).toBe(6);
   });
 });
+
+describe("isValidMaxFormula whitespace + precedence", () => {
+  it("accepts surrounding whitespace", () => {
+    expect(isValidMaxFormula("level ")).toBe(true);
+    expect(isValidMaxFormula("  1 + {cha_mod}  ")).toBe(true);
+  });
+});
+
+describe("evaluateMaxFormula precedence and edges", () => {
+  it("multiplication binds tighter than addition", () => {
+    expect(evaluateMaxFormula("1 + 2 * 3", ctx)).toBe(7);
+    expect(evaluateMaxFormula("2 * 3 + 1", ctx)).toBe(7);
+  });
+  it("subtraction is left-associative and may go negative", () => {
+    expect(evaluateMaxFormula("10 - 3 - 2", ctx)).toBe(5);
+    expect(evaluateMaxFormula("1 - 5", ctx)).toBe(-4);
+  });
+  it("tolerates trailing whitespace", () => {
+    expect(evaluateMaxFormula("2 ", ctx)).toBe(2);
+  });
+});
