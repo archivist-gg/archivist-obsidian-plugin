@@ -71,7 +71,7 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
   const syncAddBtn = () => {
     addBtn.empty();
     addBtn.classList.toggle("open", adding);
-    addBtn.appendText(adding ? "← Done adding" : "+ Add Spells");
+    addBtn.appendText(adding ? "✓ Done" : "+ Add Spells");
   };
 
   const renderPrepareList = (host: HTMLElement): void => {
