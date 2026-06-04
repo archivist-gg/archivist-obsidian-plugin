@@ -243,7 +243,15 @@
         {
           "id": "dark-ones-own-luck",
           "name": "Dark One's Own Luck",
-          "description": "You can call on your fiendish patron to alter fate in your favor. When you make an ability check or a saving throw, you can use this feature to add 1d10 to your roll. You can do so after seeing the roll but before any of the roll's effects occur.\n\nYou can use this feature a number of times equal to your Charisma modifier (minimum of once), but you can use it no more than once per roll. You regain all expended uses when you finish a Long Rest."
+          "description": "You can call on your fiendish patron to alter fate in your favor. When you make an ability check or a saving throw, you can use this feature to add 1d10 to your roll. You can do so after seeing the roll but before any of the roll's effects occur.\n\nYou can use this feature a number of times equal to your Charisma modifier (minimum of once), but you can use it no more than once per roll. You regain all expended uses when you finish a Long Rest.",
+          "resources": [
+            {
+              "id": "fiend-patron:dark-ones-own-luck",
+              "name": "Dark One's Own Luck",
+              "max_formula": "{cha_mod}",
+              "reset": "short-rest"
+            }
+          ]
         }
       ],
       "10": [
@@ -495,7 +503,15 @@
         {
           "id": "wholeness-of-body",
           "name": "Wholeness of Body",
-          "description": "You gain the ability to heal yourself. As a Bonus Action, you can roll your Martial Arts die. You regain a number of Hit Points equal to the number rolled plus your Wisdom modifier (minimum of 1 Hit Point regained).\n\nYou can use this feature a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest."
+          "description": "You gain the ability to heal yourself. As a Bonus Action, you can roll your Martial Arts die. You regain a number of Hit Points equal to the number rolled plus your Wisdom modifier (minimum of 1 Hit Point regained).\n\nYou can use this feature a number of times equal to your Wisdom modifier (minimum of once), and you regain all expended uses when you finish a Long Rest.",
+          "resources": [
+            {
+              "id": "warrior-of-the-open-hand:wholeness-of-body",
+              "name": "Wholeness of Body",
+              "max_formula": "{wis_mod}",
+              "reset": "long-rest"
+            }
+          ]
         }
       ],
       "11": [

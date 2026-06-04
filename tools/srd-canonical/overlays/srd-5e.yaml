@@ -42,6 +42,8 @@ class_features:
         die: { base: d6, scaling: { 5: d8, 10: d10, 15: d12 } }
         reset: short-rest
   # Cleric
+  # NOTE: feature-slug keying means this also lands on subclass Channel Divinity
+  # options (e.g. Oath of Devotion); cleric scaling is used for the shared pool.
   channel-divinity:
     action_cost: action
     resources:
@@ -61,6 +63,38 @@ class_features:
         max_formula: "1"
         reset: long-rest
         recovery: [{ id: "wizard:arcane-recovery-slots", name: "Recover spell slots", amount: "ceil({class_level}/2)", reset: long-rest }]
+  # Druid -- 2014 Wild Shape: 2 uses, regain on a short or long rest (no scaling
+  # on the base class; Circle of the Moon subclass changes this, not modeled here).
+  wild-shape:
+    action_cost: action
+    resources:
+      - id: "druid:wild-shape"
+        name: Wild Shape
+        max_formula: "2"
+        reset: short-rest
+  # Paladin
+  divine-sense:
+    action_cost: action
+    resources:
+      - id: "paladin:divine-sense"
+        name: Divine Sense
+        max_formula: "1 + {cha_mod}"
+        reset: long-rest
+  cleansing-touch:
+    action_cost: action
+    resources:
+      - id: "paladin:cleansing-touch"
+        name: Cleansing Touch
+        max_formula: "{cha_mod}"
+        reset: long-rest
+  # Warlock -- Eldritch Master: 1/long-rest recovery of Pact Magic slots.
+  eldritch-master:
+    action_cost: special
+    resources:
+      - id: "warlock:eldritch-master"
+        name: Eldritch Master
+        max_formula: "1"
+        reset: long-rest
 
 race_traits:
   # Dragonborn -- 2014 breath weapon: 1 use, regain on a short or long rest.
