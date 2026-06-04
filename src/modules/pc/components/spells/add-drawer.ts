@@ -4,9 +4,10 @@ import { renderSpellBlock } from "../../../spell/spell.renderer";
 import { compactCastingTime, formatRange, componentLetters, abbrAbility } from "./spell-display";
 import {
   type FilterState, type SortKey, defaultFilters, matchesFilters, compareCandidates,
-  activeFacetCount, type ChipItem,
+  activeFacetCount, resetFacets, type ChipItem,
   SOURCES, SCHOOLS, CAST_TIMES, RANGES, DAMAGE_TYPES, SAVES,
 } from "./spell-filter";
+import { confirmResetFilters } from "./reset-filters-modal";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
@@ -167,6 +168,8 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   const search = top.createEl("input", { cls: "pc-spell-search", attr: { type: "text", placeholder: "Search spells…" } });
   const allBtn = top.createEl("button", { cls: "pc-spell-filter", text: "All classes" });
   const moreBtn = top.createEl("button", { cls: "pc-spell-morebtn" });
+  const resetBtn = top.createEl("button", { cls: "pc-spell-resetbtn", text: "Reset filters" });
+  resetBtn.prepend("↺ ");
   const chipsHost = bar.createDiv({ cls: "pc-spell-addbar-primary" });
   const panelHost = bar.createDiv({ cls: "pc-spell-morepanel-host" });
   const tableHost = drawer.createDiv({ cls: "pc-add-tablehost" });
@@ -196,5 +199,8 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   search.addEventListener("input", () => { state.query = search.value; draw(); });
   allBtn.addEventListener("click", () => { state.showAll = !state.showAll; draw(); });
   moreBtn.addEventListener("click", () => { state.moreOpen = !state.moreOpen; draw(); });
+  resetBtn.addEventListener("click", () => {
+    confirmResetFilters(ctx.app, () => { resetFacets(state); search.value = ""; draw(); });
+  });
   draw();
 }

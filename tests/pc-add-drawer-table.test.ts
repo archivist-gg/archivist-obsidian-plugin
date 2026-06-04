@@ -9,6 +9,10 @@ vi.mock("../src/modules/spell/spell.renderer", () => ({
   renderSpellBlock: vi.fn(() => Promise.resolve(document.createElement("div"))),
 }));
 
+vi.mock("../src/modules/pc/components/spells/reset-filters-modal", () => ({
+  confirmResetFilters: (_app: unknown, onConfirm: () => void) => onConfirm(),
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 const REG = buildMockRegistry([
@@ -156,5 +160,30 @@ describe("renderAddDrawer — More filters", () => {
     openMore(root);
     panelChip(root, "Conj").dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(root.querySelector(".pc-spell-morebadge")?.textContent).toBe("1");
+  });
+});
+
+describe("renderAddDrawer — Reset", () => {
+  it("Reset (after confirm) clears active filters", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    (root.querySelector(".pc-spell-morebtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const conj = [...root.querySelectorAll(".pc-spell-morepanel .pc-spell-fchip")].find((c) => c.textContent === "Conj") as HTMLElement;
+    conj.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(rowNames(root)).toEqual(["Misty Step"]);
+
+    (root.querySelector(".pc-spell-resetbtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(rowNames(root)).toEqual(["Fire Bolt", "Bless", "Misty Step"]); // all back
+    expect(root.querySelector(".pc-spell-morebadge")).toBeNull(); // badge cleared
+  });
+
+  it("Reset sits next to More filters in the top bar", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    const top = root.querySelector(".pc-spell-addbar-top") as HTMLElement;
+    const kids = [...top.children].map((k) => k.className);
+    const iMore = kids.findIndex((c) => c.includes("pc-spell-morebtn"));
+    const iReset = kids.findIndex((c) => c.includes("pc-spell-resetbtn"));
+    expect(iReset).toBe(iMore + 1);
   });
 });
