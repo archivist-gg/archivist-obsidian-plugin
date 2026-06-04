@@ -124,6 +124,10 @@
 .archivist-pc-sheet .pc-spell-srctag { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; color: var(--pc-text-soft); margin-left: 5px; }
 .archivist-pc-sheet .pc-spell-srctag.e2014 { color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-srctag.e2024 { color: #1f3f7a; }
+/* Prepare list: source tag is a quiet grey label — not bold, no edition color. */
+.archivist-pc-sheet .pc-spell-prep-row .pc-spell-srctag,
+.archivist-pc-sheet .pc-spell-prep-row .pc-spell-srctag.e2014,
+.archivist-pc-sheet .pc-spell-prep-row .pc-spell-srctag.e2024 { font-weight: 400; color: var(--pc-text-muted); }
 
 /* ── Prepare filter bar ───────────────────────────────── */
 .archivist-pc-sheet .pc-spell-filterbar { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); align-items: center; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
