@@ -83,3 +83,11 @@ describe("resource coverage", () => {
     }
   }
 });
+
+it("no overlay entry still uses the legacy uses{} key", () => {
+  for (const ed of ["srd-5e", "srd-2024"]) {
+    const yaml = fs.readFileSync(
+      path.resolve(__dirname, `../../tools/srd-canonical/overlays/${ed}.yaml`), "utf8");
+    expect(yaml, `${ed}.yaml still contains a uses: block`).not.toMatch(/^\s*uses:/m);
+  }
+});
