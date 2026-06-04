@@ -2,6 +2,7 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
+import type { Resource } from "../../../src/shared/types/resource";
 
 export interface RaceCanonical {
   slug: string;
@@ -34,12 +35,14 @@ export interface RaceCanonical {
 }
 
 export interface RaceTrait {
+  id?: string;
   name: string;
   description: string;
   action_cost?: "action" | "bonus-action" | "reaction" | "free" | "special";
   save?: { ability: string; dc_formula: string };
   damage?: { dice: string; type: string };
   recharge?: "short-rest" | "long-rest" | "dawn" | "dusk" | "turn" | "round" | "custom";
+  resources?: Resource[];
 }
 
 export const raceMergeRule: MergeRule = {
@@ -148,6 +151,7 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
       ...(overlaid?.save ? { save: overlaid.save } : {}),
       ...(overlaid?.damage ? { damage: overlaid.damage } : {}),
       ...(overlaid?.recharge ? { recharge: overlaid.recharge } : {}),
+      ...(overlaid?.resources ? { id: slugifyName(t.name), resources: overlaid.resources } : {}),
     };
   });
 
