@@ -23,8 +23,6 @@ const COLS: Col[] = [
   { label: "Time",          sort: "time",   cls: "col-time" },
   { label: "School",        sort: "school", cls: "col-school" },
   { label: "Range",         sort: "range",  cls: "col-range" },
-  { label: "Concentration", cls: "col-conc",   center: true },
-  { label: "Ritual",        cls: "col-ritual", center: true },
   { label: "Components",    cls: "col-comp" },
   { label: "Duration",      cls: "col-dur" },
   { label: "Damage",        sort: "damage", cls: "col-damage" },
@@ -78,13 +76,13 @@ function renderRow(
 
   const nameTd = tr.createEl("td", { cls: "col-name" });
   nameTd.createSpan({ cls: `pc-add-name${isKnown ? " on" : ""}`, text: c.name });
+  if (e.concentration) nameTd.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
+  if (e.ritual) nameTd.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
 
   tr.createEl("td", { cls: "col-level", text: levelLabel(c.level) });
   tr.createEl("td", { cls: "col-time", text: compactCastingTime(e.casting_time) });
   tr.createEl("td", { cls: "col-school", text: e.school ?? "" });
   tr.createEl("td", { cls: "col-range", text: formatRange(e.range) });
-  tr.createEl("td", { cls: "col-conc", text: e.concentration ? "C" : "" });
-  tr.createEl("td", { cls: "col-ritual", text: e.ritual ? "R" : "" });
   tr.createEl("td", { cls: "col-comp", text: componentLetters(e.components).letters.join(" ") });
   tr.createEl("td", { cls: "col-dur", text: e.duration ?? "" });
   tr.createEl("td", { cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
@@ -101,6 +99,10 @@ function renderRow(
     tr.after(exprow);
     const cell = exprow.createEl("td", { attr: { colspan: String(COLS.length) } });
     const wrap = cell.createDiv({ cls: "pc-spell-expand" });
+    // The table may be wider than the drawer (it scrolls). Pin the expanded
+    // block to the visible width so its prose wraps instead of running off-screen.
+    const host = tr.closest(".pc-add-tablehost") as HTMLElement | null;
+    if (host) wrap.style.maxWidth = `${host.clientWidth - 28}px`;
     void renderSpellBlock(e, ctx.app).then((block) => wrap.appendChild(block));
   };
   tr.addEventListener("click", toggleExpand);

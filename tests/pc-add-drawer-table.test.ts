@@ -45,13 +45,26 @@ describe("renderAddDrawer — table", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
     const heads = [...root.querySelectorAll(".pc-spell-add-table thead th")].map((h) => h.textContent?.trim());
-    expect(heads).toEqual(["", "Name", "Level ▲", "Time", "School", "Range", "Concentration", "Ritual", "Components", "Duration", "Damage", "Save", "Source"]);
+    expect(heads).toEqual(["", "Name", "Level ▲", "Time", "School", "Range", "Components", "Duration", "Damage", "Save", "Source"]);
   });
 
   it("one row per candidate, default sort = level ascending", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
     expect(rowNames(root)).toEqual(["Fire Bolt", "Bless", "Misty Step"]);
+  });
+
+  it("concentration/ritual show as badges in the name cell, not as columns", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    // Bless is the concentration spell in the fixture → a .pc-spell-cr.c badge.
+    const blessCell = [...root.querySelectorAll(".pc-spell-add-table tbody td.col-name")].find(
+      (td) => td.querySelector(".pc-add-name")?.textContent === "Bless",
+    ) as HTMLElement;
+    expect(blessCell.querySelector(".pc-spell-cr.c")?.textContent).toBe("C");
+    // No standalone concentration/ritual columns remain.
+    expect(root.querySelector(".pc-spell-add-table td.col-conc")).toBeNull();
+    expect(root.querySelector(".pc-spell-add-table td.col-ritual")).toBeNull();
   });
 
   it("＋ adds an unknown spell; ✓ removes a known one", () => {
@@ -110,7 +123,7 @@ describe("renderAddDrawer — table", () => {
   it("optional columns carry .col-* classes so CSS can hide them responsively", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
-    for (const cls of ["col-save", "col-damage", "col-ritual", "col-conc", "col-comp", "col-dur", "col-time", "col-range"]) {
+    for (const cls of ["col-save", "col-damage", "col-comp", "col-dur", "col-time", "col-range"]) {
       expect(root.querySelector(`.pc-spell-add-table td.${cls}`)).not.toBeNull();
     }
   });

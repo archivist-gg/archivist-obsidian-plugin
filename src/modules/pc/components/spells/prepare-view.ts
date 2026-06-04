@@ -8,7 +8,7 @@ import { baseClassName } from "../../pc.spellcasting";
 // Ephemeral Prepare-list filters. Module-scoped but reset at the top of
 // renderPrepareView on every full re-render (see §5.1). 0 = cantrip.
 let levelFilter: number | "all" = "all";
-let classFilter: string | "all" = "all";
+let classFilter: string = "all";
 
 // Matches the checked modifier rendered by renderChargeBoxes (actions/charge-boxes.ts)
 // so prepared boxes look identical to the cast-view slot boxes.
@@ -56,82 +56,103 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
   }
 
   const addBtn = head.createEl("button", { cls: "pc-spell-addbtn" });
-  addBtn.appendText("+ Add Spells");
-  const drawerHost = root.createDiv();
-  addBtn.addEventListener("click", () => {
-    if (drawerHost.firstChild) {
-      drawerHost.empty();
-      return;
-    }
-    renderAddDrawer(drawerHost, ctx);
-  });
 
-  // Filter bar + re-rendered list host
   const presentLevels = [...new Set(ctx.resolved.spells.map((s) => s.entity.level ?? 0))].sort(
     (a, b) => a - b,
   );
-  const bar = root.createDiv({ cls: "pc-spell-filterbar" });
-  const listHost = root.createDiv();
 
-  const drawLevelChips = () => {
-    const grp = bar.createDiv({ cls: "pc-spell-fgroup" });
-    grp.createSpan({ cls: "pc-spell-flabel", text: "Level" });
-    const chip = (label: string, val: number | "all") => {
-      const c = grp.createSpan({
-        cls: `pc-spell-fchip${levelFilter === val ? " active" : ""}`,
-        text: label,
-      });
-      c.addEventListener("click", () => {
-        levelFilter = val;
-        redraw();
-      });
+  // The body shows EITHER the prepared list OR the add-spell drawer; the
+  // "+ Add Spells" button toggles between them in place (it replaces the list,
+  // not stacks on top). The button reflects the open state so a second click
+  // returns to the prepared list.
+  const body = root.createDiv({ cls: "pc-spell-prep-body" });
+  let adding = false;
+
+  const syncAddBtn = () => {
+    addBtn.empty();
+    addBtn.classList.toggle("open", adding);
+    addBtn.appendText(adding ? "← Done adding" : "+ Add Spells");
+  };
+
+  const renderPrepareList = (host: HTMLElement): void => {
+    const bar = host.createDiv({ cls: "pc-spell-filterbar" });
+    const listHost = host.createDiv();
+
+    const drawLevelChips = () => {
+      const grp = bar.createDiv({ cls: "pc-spell-fgroup" });
+      grp.createSpan({ cls: "pc-spell-flabel", text: "Level" });
+      const chip = (label: string, val: number | "all") => {
+        const c = grp.createSpan({
+          cls: `pc-spell-fchip${levelFilter === val ? " active" : ""}`,
+          text: label,
+        });
+        c.addEventListener("click", () => {
+          levelFilter = val;
+          redraw();
+        });
+      };
+      chip("All", "all");
+      for (const l of presentLevels) chip(l === 0 ? "Cantrip" : ordinal(l), l);
     };
-    chip("All", "all");
-    for (const l of presentLevels) chip(l === 0 ? "Cantrip" : ordinal(l), l);
-  };
 
-  const drawClassChips = () => {
-    if (ctx.derived.spellcastingClasses.length <= 1) return;
-    const grp = bar.createDiv({ cls: "pc-spell-fgroup pc-spell-fchip-class" });
-    grp.createSpan({ cls: "pc-spell-flabel", text: "Class" });
-    const chip = (label: string, val: string | "all") => {
-      const c = grp.createSpan({
-        cls: `pc-spell-fchip${classFilter === val ? " active" : ""}`,
-        text: label,
-      });
-      c.addEventListener("click", () => {
-        classFilter = val;
-        redraw();
-      });
+    const drawClassChips = () => {
+      if (ctx.derived.spellcastingClasses.length <= 1) return;
+      const grp = bar.createDiv({ cls: "pc-spell-fgroup pc-spell-fchip-class" });
+      grp.createSpan({ cls: "pc-spell-flabel", text: "Class" });
+      const chip = (label: string, val: string) => {
+        const c = grp.createSpan({
+          cls: `pc-spell-fchip${classFilter === val ? " active" : ""}`,
+          text: label,
+        });
+        c.addEventListener("click", () => {
+          classFilter = val;
+          redraw();
+        });
+      };
+      chip("All", "all");
+      for (const cls of ctx.derived.spellcastingClasses)
+        chip(cls.className, baseClassName(cls.classSlug));
     };
-    chip("All", "all");
-    for (const cls of ctx.derived.spellcastingClasses)
-      chip(cls.className, baseClassName(cls.classSlug));
+
+    const redraw = () => {
+      bar.empty();
+      listHost.empty();
+      drawLevelChips();
+      drawClassChips();
+      const shown = ctx.resolved.spells.filter((s) => {
+        if (levelFilter !== "all" && (s.entity.level ?? 0) !== levelFilter) return false;
+        if (classFilter !== "all" && baseClassName(s.classSlug ?? "") !== classFilter) return false;
+        return true;
+      });
+      const byLevel = new Map<number, ResolvedSpell[]>();
+      for (const s of shown) {
+        const l = s.entity.level ?? 0;
+        (byLevel.get(l) ?? byLevel.set(l, []).get(l)!).push(s);
+      }
+      for (const lvl of [...byLevel.keys()].sort((a, b) => a - b)) {
+        const sec = listHost.createDiv({ cls: "pc-actions-section-head" });
+        sec.createSpan({ text: lvl === 0 ? "Cantrips" : `${ordinal(lvl)} Level` });
+        const list = listHost.createDiv({ cls: "pc-spell-list" });
+        for (const s of byLevel.get(lvl)!) renderPrepareRow(list, s, ctx, hasPrepared);
+      }
+    };
+    redraw();
   };
 
-  const redraw = () => {
-    bar.empty();
-    listHost.empty();
-    drawLevelChips();
-    drawClassChips();
-    const shown = ctx.resolved.spells.filter((s) => {
-      if (levelFilter !== "all" && (s.entity.level ?? 0) !== levelFilter) return false;
-      if (classFilter !== "all" && baseClassName(s.classSlug ?? "") !== classFilter) return false;
-      return true;
-    });
-    const byLevel = new Map<number, ResolvedSpell[]>();
-    for (const s of shown) {
-      const l = s.entity.level ?? 0;
-      (byLevel.get(l) ?? byLevel.set(l, []).get(l)!).push(s);
-    }
-    for (const lvl of [...byLevel.keys()].sort((a, b) => a - b)) {
-      const sec = listHost.createDiv({ cls: "pc-actions-section-head" });
-      sec.createSpan({ text: lvl === 0 ? "Cantrips" : `${ordinal(lvl)} Level` });
-      const list = listHost.createDiv({ cls: "pc-spell-list" });
-      for (const s of byLevel.get(lvl)!) renderPrepareRow(list, s, ctx, hasPrepared);
-    }
+  const renderBody = () => {
+    body.empty();
+    if (adding) renderAddDrawer(body, ctx);
+    else renderPrepareList(body);
   };
-  redraw();
+
+  addBtn.addEventListener("click", () => {
+    adding = !adding;
+    syncAddBtn();
+    renderBody();
+  });
+
+  syncAddBtn();
+  renderBody();
 }
 
 function renderPrepareRow(

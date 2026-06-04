@@ -12700,6 +12700,8 @@ body.theme-light .archivist-tag-atk:hover {
   border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 5px 14px;
   display: inline-block; margin-top: var(--pc-space-3); cursor: pointer; font-size: var(--pc-fs-body); background: transparent;
 }
+/* Open state: the button toggles the add-spell drawer in place of the prepared list. */
+.archivist-pc-sheet .pc-spell-addbtn.open { background: var(--pc-crimson); border-style: solid; border-color: var(--pc-crimson); color: var(--pc-white); }
 .archivist-pc-sheet .pc-spell-limit-warn { color: var(--pc-crimson); font-size: var(--pc-fs-small); font-style: italic; margin-left: var(--pc-space-2); }
 
 /* Add-spell modal list rows */
@@ -12824,27 +12826,24 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-add-table thead th.ctr { text-align: center; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table td { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: middle; font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table td.col-conc, .archivist-pc-sheet .pc-spell-add-table td.col-ritual { text-align: center; }
 .archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row { cursor: pointer; }
 .archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row:hover td { background: rgba(146, 38, 16, 0.05); }
 .archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table .col-school { font-style: italic; color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-spell-add-table .col-conc { color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-spell-add-table .col-ritual { font-weight: 700; }
 .archivist-pc-sheet .pc-spell-add-table .col-damage { color: var(--pc-crimson); }
+/* Concentration / Ritual now ride as small badges beside the name (cols dropped). */
+.archivist-pc-sheet .pc-spell-add-table .col-name .pc-spell-cr { width: 15px; height: 15px; margin-left: 5px; vertical-align: middle; }
 
 /* Responsive column drop-priority (container pc-content; tiers = --pc-bp-*).
-   Save/Damage/Ritual drop first, then Conc/Components/Duration, then Time/Range.
-   ＋/Name/Level/School/Source never drop. */
+   Save/Damage drop first, then Components/Duration, then Time/Range.
+   Concentration/Ritual are name badges now; ＋/Name/Level/School/Source never drop. */
 @container pc-content (max-width: 899px) {
   .archivist-pc-sheet .pc-spell-add-table .col-save,
-  .archivist-pc-sheet .pc-spell-add-table .col-damage,
-  .archivist-pc-sheet .pc-spell-add-table .col-ritual { display: none; }
+  .archivist-pc-sheet .pc-spell-add-table .col-damage { display: none; }
 }
 @container pc-content (max-width: 699px) {
-  .archivist-pc-sheet .pc-spell-add-table .col-conc,
   .archivist-pc-sheet .pc-spell-add-table .col-comp,
   .archivist-pc-sheet .pc-spell-add-table .col-dur { display: none; }
 }
