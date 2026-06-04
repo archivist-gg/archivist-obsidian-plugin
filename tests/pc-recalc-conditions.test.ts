@@ -53,6 +53,7 @@ function makeResolved(overrides: {
     feats: [],
     totalLevel: 5,
     features: [],
+    spells: [],
     state: definition.state,
   };
 }

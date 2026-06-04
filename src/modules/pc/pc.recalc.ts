@@ -10,12 +10,12 @@ import {
 } from "../../shared/dnd/math";
 import { ABILITY_KEYS, SKILL_ABILITY, ALL_SKILLS } from "../../shared/dnd/constants";
 import type { Ability, SkillSlug } from "../../shared/types";
-import type { ClassEntity } from "../class/class.types";
 import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
 import { computeConditionEffects } from "./pc.conditions";
+import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
 import type {
   ACTerm,
   DerivedEquipment,
@@ -24,6 +24,8 @@ import type {
   ResolvedCharacter,
   ResolvedClass,
   CharacterOverrides,
+  SpellcastingClassInfo,
+  SpellLimitInfo,
 } from "./pc.types";
 import type { InformationalBonus } from "../item/item.conditions.types";
 
@@ -192,20 +194,6 @@ export function speedFromRace(resolved: ResolvedCharacter): number {
     if (typeof bonus === "number") extra += bonus;
   }
   return base + extra;
-}
-
-/** First class with a non-null spellcasting config, or null. */
-export function spellcastingForFirstCastingClass(classes: ResolvedClass[]): {
-  classEntity: ClassEntity;
-  ability: Ability;
-} | null {
-  for (const c of classes) {
-    const spell = c.entity?.spellcasting;
-    if (c.entity && spell && typeof spell.ability === "string") {
-      return { classEntity: c.entity, ability: spell.ability };
-    }
-  }
-  return null;
 }
 
 /**
@@ -480,18 +468,49 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // Initiative
   const init = overrides.initiative ?? initiativeBonus(mods.dex, resolved.feats, resolved.definition.edition);
 
-  // Spellcasting
-  let spellcasting: DerivedStats["spellcasting"] = null;
-  const casting = spellcastingForFirstCastingClass(resolved.classes);
-  if (casting) {
-    const saveDCDerived = saveDC(scores[casting.ability], proficiencyBonus) + applied.spell_save_dc;
-    const atkDerived = attackBonus(scores[casting.ability], proficiencyBonus) + applied.spell_attack;
-    spellcasting = {
-      ability: casting.ability,
-      saveDC: overrides.spellcasting?.saveDC ?? saveDCDerived,
-      attackBonus: overrides.spellcasting?.attackBonus ?? atkDerived,
-    };
+  // Spellcasting (per class, multiclass-aware)
+  const edition = resolved.definition.edition;
+  const spellcastingClasses: SpellcastingClassInfo[] = [];
+  for (const c of resolved.classes) {
+    if (!c.entity) continue;
+    const profile = getSpellcastingProfile(c.entity.slug, edition);
+    if (!profile) continue;
+    const dc = saveDC(scores[profile.ability], proficiencyBonus) + applied.spell_save_dc;
+    const atk = attackBonus(scores[profile.ability], proficiencyBonus) + applied.spell_attack;
+    spellcastingClasses.push({
+      classSlug: c.entity.slug,
+      className: c.entity.name,
+      ability: profile.ability,
+      saveDC: overrides.spellcasting?.saveDC ?? dc,
+      attackBonus: overrides.spellcasting?.attackBonus ?? atk,
+      casterType: profile.casterType,
+      preparation: profile.preparation,
+    });
   }
+
+  // Back-compat single object: first casting class (or null).
+  const spellcasting: DerivedStats["spellcasting"] = spellcastingClasses.length > 0
+    ? {
+        ability: spellcastingClasses[0].ability,
+        saveDC: spellcastingClasses[0].saveDC,
+        attackBonus: spellcastingClasses[0].attackBonus,
+      }
+    : null;
+
+  const derivedSlots = deriveSpellSlots(
+    resolved.classes.filter((c) => c.entity).map((c) => ({ classSlug: c.entity!.slug, level: c.level })),
+    edition,
+  );
+
+  const spellLimits: SpellLimitInfo[] = computeSpellLimits(
+    resolved.classes.flatMap((c) => {
+      if (!c.entity) return [];
+      const profile = getSpellcastingProfile(c.entity.slug, edition);
+      if (!profile) return [];
+      return [{ classSlug: c.entity.slug, level: c.level, entity: c.entity, abilityScore: scores[profile.ability] }];
+    }),
+    edition,
+  );
 
   const defenses = {
     resistances: [
@@ -530,6 +549,10 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     speed,
     initiative: init,
     spellcasting,
+    spellcastingClasses,
+    derivedSpellSlots: derivedSlots.standard,
+    pactMagic: derivedSlots.pact,
+    spellLimits,
     warnings,
     defenses,
     acBreakdown: acBreakdownDerived,

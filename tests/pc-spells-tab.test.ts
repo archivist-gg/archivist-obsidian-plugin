@@ -2,54 +2,68 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { SpellsTab } from "../src/modules/pc/components/spells-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter, ResolvedSpell, SpellcastingClassInfo } from "../src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
 const emptyState = { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [] };
-
-function nonCaster(): ResolvedCharacter {
+function spell(name: string, level: number, prepared = true): ResolvedSpell {
+  return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"), classSlug: "wizard", source: "class", prepared, alwaysPrepared: false };
+}
+function resolved(spells: ResolvedSpell[]): ResolvedCharacter {
   return {
-    definition: { name: "Tordek", edition: "2014", race: null, subrace: null, background: null, class: [], abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, ability_method: "manual", skills: { proficient: [], expertise: [] }, spells: { known: [], overrides: [] }, equipment: [], overrides: {}, state: emptyState } as never,
-    race: null,
-    classes: [{ entity: { slug: "fighter", name: "Fighter" } as never, level: 5, subclass: null, choices: {} }],
-    background: null, feats: [], totalLevel: 5, features: [], state: emptyState,
+    definition: { name: "Tordek", edition: "2014", race: null, subrace: null, background: null, class: [],
+      abilities: { str: 10, dex: 10, con: 10, int: 16, wis: 10, cha: 10 }, ability_method: "manual",
+      skills: { proficient: [], expertise: [] }, spells: { known: [], overrides: [] },
+      equipment: [], overrides: {}, state: emptyState } as never,
+    race: null, classes: [{ entity: { slug: "wizard", name: "Wizard" } as never, level: 5, subclass: null, choices: {} }],
+    background: null, feats: [], totalLevel: 5, features: [], spells, state: emptyState as never,
   };
 }
-
-function caster(): ResolvedCharacter {
-  const r = nonCaster();
-  (r.classes[0].entity as unknown as { spellcasting: unknown }).spellcasting = { ability: "int", preparation: "prepared", spell_list: "wizard" };
-  (r.definition.spells as { known: string[] }).known = ["[[fireball]]", "[[mage-armor]]"];
-  (r.state as { spell_slots: Record<number, { used: number; total: number }> }).spell_slots = { 1: { used: 1, total: 4 }, 2: { used: 0, total: 2 } };
-  return r;
+const wizardClass: SpellcastingClassInfo = { classSlug: "wizard", className: "Wizard", ability: "int", saveDC: 15, attackBonus: 7, casterType: "full", preparation: "prepared" };
+function derived(over: Partial<DerivedStats> = {}): DerivedStats {
+  return { spellcastingClasses: [wizardClass], derivedSpellSlots: { 1: 4, 2: 2 }, pactMagic: null, spellLimits: [], ...over } as DerivedStats;
 }
 
 describe("SpellsTab", () => {
   it("shows empty state for non-caster", () => {
-    const container = mountContainer();
-    new SpellsTab().render(container, { resolved: nonCaster(), derived: { spellcasting: null } as DerivedStats, core: {} as never, editState: null });
-    expect(container.querySelector(".pc-spells-empty-title")?.textContent).toBe("No Spellcasting");
+    const c = mountContainer();
+    new SpellsTab().render(c, { resolved: resolved([]), derived: derived({ spellcastingClasses: [] }), core: {} as never, app: {} as never, editState: null });
+    expect(c.querySelector(".pc-spells-empty-title")?.textContent).toBe("No Spellcasting");
   });
 
-  it("renders DC/atk summary, slot grid, and spell list for a caster", () => {
-    const container = mountContainer();
-    const d: DerivedStats = { spellcasting: { ability: "int", saveDC: 15, attackBonus: 7 } } as DerivedStats;
-    new SpellsTab().render(container, { resolved: caster(), derived: d, core: {} as never, editState: null });
-    expect(container.querySelector(".pc-spell-summary")?.textContent).toContain("15");
-    expect(container.querySelector(".pc-spell-summary")?.textContent).toContain("+7");
-    expect(container.querySelectorAll(".pc-slot-cell").length).toBe(2);
-    const names = [...container.querySelectorAll(".pc-spell-name")].map((n) => n.textContent);
-    expect(names).toEqual(["Fireball", "Mage Armor"]);
+  it("renders DC header, the Cast/Prepare toggle, and Cast view by default", () => {
+    const c = mountContainer();
+    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), core: {} as never, app: {} as never, editState: null });
+    expect(c.querySelector(".pc-spell-dc-row")?.textContent).toContain("15");
+    const segs = [...c.querySelectorAll(".pc-mode-seg")].map((s) => s.textContent);
+    expect(segs).toEqual(["Cast", "Prepare"]);
+    expect(c.querySelector(".pc-mode-seg.active")?.textContent).toBe("Cast");
+    expect(c.querySelectorAll(".archivist-toggle-box").length).toBe(4 + 2); // cast-view slot boxes
   });
 
-  it("uses empty-line message when caster has no known spells", () => {
-    const container = mountContainer();
-    const r = caster();
-    (r.definition.spells as { known: string[] }).known = [];
-    const d: DerivedStats = { spellcasting: { ability: "int", saveDC: 15, attackBonus: 7 } } as DerivedStats;
-    new SpellsTab().render(container, { resolved: r, derived: d, core: {} as never, editState: null });
-    expect(container.querySelector(".pc-empty-line")?.textContent).toMatch(/No spells/);
+  it("clicking Prepare switches to the prepare view (counters visible)", () => {
+    const c = mountContainer();
+    const tab = new SpellsTab();
+    const ctx = { resolved: resolved([spell("Magic Missile", 1)]), derived: derived({ spellLimits: [{ classSlug: "wizard", kind: "prepared", cantripsKnown: 5, preparedOrKnown: 8 } as never] }), core: {} as never, app: {} as never, editState: null };
+    tab.render(c, ctx);
+    (c.querySelector(".pc-mode-seg:nth-child(2)") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(c.querySelector(".pc-spell-counts")).not.toBeNull();
+  });
+
+  it("labels the second mode Manage for a known caster", () => {
+    const c = mountContainer();
+    const known: SpellcastingClassInfo = { ...wizardClass, classSlug: "sorcerer", className: "Sorcerer", ability: "cha", preparation: "known" };
+    new SpellsTab().render(c, { resolved: resolved([]), derived: derived({ spellcastingClasses: [known] }), core: {} as never, app: {} as never, editState: null });
+    const segs = [...c.querySelectorAll(".pc-mode-seg")].map((s) => s.textContent);
+    expect(segs).toEqual(["Cast", "Manage"]);
+  });
+
+  it("shows the concentration banner when concentrating", () => {
+    const c = mountContainer();
+    const r = resolved([spell("Hold Person", 2)]);
+    (r.state as never as { concentration: string }).concentration = "hold-person";
+    new SpellsTab().render(c, { resolved: r, derived: derived(), core: {} as never, app: {} as never, editState: null });
+    expect(c.querySelector(".pc-conc-banner")?.textContent).toContain("Hold Person");
   });
 });

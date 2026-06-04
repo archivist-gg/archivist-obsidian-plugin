@@ -20,6 +20,7 @@ export type RestCategoryId =
   | "hp-to-max"
   | "hd-regain"
   | "spell-slots"
+  | "pact-slots"
   | "exhaustion"
   | `feature:${string}`
   | `item:${number}`;
@@ -47,6 +48,12 @@ export function computeRestPlan(
 ): RestPlan {
   const cats: RestCategory[] = [];
   let hdRegainDist: Array<{ die: string; targetUsed: number }> | undefined;
+
+  // Pact Magic slots reset on BOTH short and long rest (unlike standard slots).
+  const pact = character.state.spell_slots_pact;
+  if (pact && pact.used > 0) {
+    cats.push({ id: "pact-slots", label: "Pact Magic Slots", preview: "all reset" });
+  }
 
   if (type === "long") {
     if (character.state.hp.current < derived.hp.max) {
@@ -201,6 +208,11 @@ export function applyRestResets(
       for (const slot of Object.values(character.state.spell_slots ?? {})) {
         slot.used = 0;
       }
+      continue;
+    }
+
+    if (cat.id === "pact-slots") {
+      if (character.state.spell_slots_pact) character.state.spell_slots_pact.used = 0;
       continue;
     }
 

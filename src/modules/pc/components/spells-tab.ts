@@ -1,13 +1,20 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { ResolvedCharacter } from "../pc.types";
+import { renderCastView } from "./spells/cast-view";
+import { renderPrepareView } from "./spells/prepare-view";
+
+type SpellsMode = "cast" | "prepare";
 
 export class SpellsTab implements SheetComponent {
   readonly type = "spells-tab";
+  private mode: SpellsMode = "cast";
+  private modeForCharacter: string | null = null;
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    el.empty();
     const root = el.createDiv({ cls: "pc-tab-body pc-spells-body" });
-    const casting = firstCastingClass(ctx.resolved);
-    if (!casting) {
+    const casters = ctx.derived.spellcastingClasses;
+
+    if (casters.length === 0) {
       const empty = root.createDiv({ cls: "pc-spells-empty" });
       empty.createDiv({ cls: "pc-spells-empty-icon", text: "☆" });
       empty.createDiv({ cls: "pc-spells-empty-title", text: "No Spellcasting" });
@@ -17,57 +24,42 @@ export class SpellsTab implements SheetComponent {
       return;
     }
 
-    // DC / attack summary
-    const summary = root.createDiv({ cls: "pc-spell-summary" });
-    if (ctx.derived.spellcasting) {
-      summary.createSpan({ cls: "pc-spell-key", text: "DC " });
-      summary.createSpan({ cls: "pc-spell-val", text: `${ctx.derived.spellcasting.saveDC}` });
-      summary.createSpan({ cls: "pc-spell-sep", text: " • " });
-      summary.createSpan({ cls: "pc-spell-key", text: "Atk " });
-      summary.createSpan({ cls: "pc-spell-val", text: `+${ctx.derived.spellcasting.attackBonus}` });
+    // Ephemeral mode: reset to Cast when a different character is shown.
+    const charId = ctx.resolved.definition.name;
+    if (this.modeForCharacter !== charId) { this.mode = "cast"; this.modeForCharacter = charId; }
+
+    const header = root.createDiv({ cls: "pc-spell-header" });
+    const dcRow = header.createDiv({ cls: "pc-spell-dc-row" });
+    casters.forEach((c, i) => {
+      if (i > 0) dcRow.createSpan({ text: "   " });
+      dcRow.createSpan({ text: `${c.ability.toUpperCase()} ` });
+      dcRow.createSpan({ text: "Save DC " });
+      dcRow.createEl("b", { text: `${c.saveDC}` });
+      dcRow.createSpan({ text: " · Atk " });
+      dcRow.createEl("b", { text: `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}` });
+      if (casters.length > 1) dcRow.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
+    });
+
+    // Cast / Prepare(Manage) segmented toggle.
+    const secondLabel = casters.some((c) => c.preparation === "prepared") ? "Prepare" : "Manage";
+    const seg = header.createDiv({ cls: "pc-spell-modetoggle" });
+    const castSeg = seg.createEl("button", { cls: `pc-mode-seg${this.mode === "cast" ? " active" : ""}`, text: "Cast" });
+    const prepSeg = seg.createEl("button", { cls: `pc-mode-seg${this.mode === "prepare" ? " active" : ""}`, text: secondLabel });
+    castSeg.addEventListener("click", () => { this.mode = "cast"; this.render(el, ctx); });
+    prepSeg.addEventListener("click", () => { this.mode = "prepare"; this.render(el, ctx); });
+
+    const conc = ctx.resolved.state.concentration;
+    if (conc) {
+      const banner = root.createDiv({ cls: "pc-conc-banner" });
+      const concSlug = conc.replace(/^\[\[|\]\]$/g, "");
+      const concSpell = ctx.resolved.spells.find((s) => s.slug === concSlug);
+      banner.createSpan({ text: "Concentrating: " });
+      banner.createEl("b", { text: concSpell?.entity.name ?? conc });
+      const end = banner.createSpan({ cls: "pc-conc-end", text: "end ✕" });
+      end.addEventListener("click", () => ctx.editState?.breakConcentration());
     }
 
-    // Slot grid
-    const slots = ctx.resolved.state.spell_slots ?? {};
-    const slotKeys = Object.keys(slots).map(Number).filter((n) => !Number.isNaN(n)).sort((a, b) => a - b);
-    if (slotKeys.length > 0) {
-      const grid = root.createDiv({ cls: "pc-slot-grid" });
-      for (const lvl of slotKeys) {
-        const cell = grid.createDiv({ cls: "pc-slot-cell" });
-        cell.createDiv({ cls: "pc-slot-label", text: `L${lvl}` });
-        const s = slots[lvl];
-        cell.createDiv({ cls: "pc-slot-val", text: `${s.total - s.used}/${s.total}` });
-      }
-    }
-
-    // Spells known, grouped by approximate level (best-effort: all under "Known" in SP3 since spell entities aren't resolved).
-    const known = ctx.resolved.definition.spells?.known ?? [];
-    if (known.length > 0) {
-      root.createEl("h4", { cls: "pc-tab-heading", text: "Spells known" });
-      const list = root.createEl("ul", { cls: "pc-spell-list" });
-      for (const raw of known) {
-        const li = list.createEl("li");
-        li.createSpan({ cls: "pc-spell-name", text: prettifySlug(raw) });
-        li.createSpan({ cls: "pc-spell-slug", text: ` [[${stripBrackets(raw)}]]` });
-      }
-    } else {
-      root.createDiv({ cls: "pc-empty-line", text: "No spells recorded on this character yet." });
-    }
+    if (this.mode === "cast") renderCastView(root, ctx);
+    else renderPrepareView(root, ctx);
   }
-}
-
-function firstCastingClass(r: ResolvedCharacter): boolean {
-  for (const c of r.classes) {
-    const sc = (c.entity as unknown as { spellcasting?: unknown })?.spellcasting;
-    if (sc) return true;
-  }
-  return false;
-}
-
-function stripBrackets(s: string) {
-  return s.replace(/^\[\[/, "").replace(/\]\]$/, "");
-}
-
-function prettifySlug(s: string) {
-  return stripBrackets(s).replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

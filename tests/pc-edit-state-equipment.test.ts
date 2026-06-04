@@ -41,6 +41,7 @@ function mkState(c: Character) {
         feats: [],
         totalLevel: 1,
         features: [],
+        spells: [],
         state: c.state,
       },
       derived: {} as never,

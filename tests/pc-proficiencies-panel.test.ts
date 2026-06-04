@@ -33,6 +33,7 @@ function mkResolved(): ResolvedCharacter {
     feats: [],
     totalLevel: 5,
     features: [],
+    spells: [],
     state: {} as never,
   };
 }

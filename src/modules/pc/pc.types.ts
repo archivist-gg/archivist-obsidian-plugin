@@ -7,6 +7,7 @@ import type { FeatEntity } from "../feat/feat.types";
 import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";
+import type { Spell } from "../spell/spell.types";
 
 export type { ConditionSlug } from "./constants/conditions";
 import type { ConditionSlug } from "./constants/conditions";
@@ -30,6 +31,15 @@ export interface SpellOverride {
   slug: string;
   overrides: Record<string, unknown>;
 }
+
+export interface KnownSpellObject {
+  spell: string;
+  class?: string;
+  source?: "class" | "feat" | "item" | "race" | "domain";
+  prepared?: boolean;
+  always_prepared?: boolean;
+}
+export type KnownSpellEntry = string | KnownSpellObject;
 
 export type SlotKey = "mainhand" | "offhand" | "armor" | "shield";
 
@@ -73,6 +83,7 @@ export interface CharacterOverrides {
   speed?: number;
   initiative?: number;
   spellcasting?: { saveDC?: number; attackBonus?: number };
+  spell_slots?: Record<number, number>;
   attunement_limit?: number;
 }
 
@@ -80,6 +91,7 @@ export interface CharacterState {
   hp: { current: number; max: number; temp: number };
   hit_dice: Record<string, { used: number; total: number }>;
   spell_slots: Record<number, { used: number; total: number }>;
+  spell_slots_pact?: { level: number; used: number; total: number };
   concentration: string | null;
   conditions: ConditionSlug[];
   exhaustion: number;
@@ -103,7 +115,7 @@ export interface Character {
   abilities: Record<Ability, number>;
   ability_method: AbilityMethod;
   skills: { proficient: SkillSlug[]; expertise: SkillSlug[] };
-  spells: { known: string[]; overrides: SpellOverride[] };
+  spells: { known: KnownSpellEntry[]; overrides: SpellOverride[]; view?: "by-level" | "table" };
   equipment: EquipmentEntry[];
   overrides: CharacterOverrides;
   currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
@@ -133,6 +145,15 @@ export interface ResolvedFeature {
   source: FeatureSource;
 }
 
+export interface ResolvedSpell {
+  entity: Spell;
+  slug: string;
+  classSlug: string | null;       // source class for DC/ability
+  source: "class" | "feat" | "item" | "race" | "domain";
+  prepared: boolean;              // cantrips & known-caster spells → true
+  alwaysPrepared: boolean;
+}
+
 export interface ResolvedClass {
   entity: ClassEntity | null;
   level: number;
@@ -148,6 +169,7 @@ export interface ResolvedCharacter {
   feats: FeatEntity[];
   totalLevel: number;
   features: ResolvedFeature[];
+  spells: ResolvedSpell[];
   state: CharacterState;
 }
 
@@ -258,6 +280,14 @@ export interface DerivedStats {
     attackBonus: number;
     preparedCount?: number;
   } | null;
+  /** One entry per casting class (multiclass-aware). Empty for non-casters. */
+  spellcastingClasses: SpellcastingClassInfo[];
+  /** Derived standard slot totals by spell level (before user override). */
+  derivedSpellSlots: Record<number, number>;
+  /** Warlock Pact Magic, or null. */
+  pactMagic: { level: number; total: number } | null;
+  /** Per-class known/prepared + cantrip limits (advisory). */
+  spellLimits: SpellLimitInfo[];
   warnings: string[];
   defenses: {
     resistances: string[];
@@ -273,6 +303,23 @@ export interface DerivedStats {
   attunementUsed: number;
   attunementLimit: number;
   conditionEffects: ConditionEffects;
+}
+
+export interface SpellcastingClassInfo {
+  classSlug: string;
+  className: string;
+  ability: Ability;
+  saveDC: number;
+  attackBonus: number;
+  casterType: "full" | "half" | "third" | "pact";
+  preparation: "known" | "prepared";
+}
+
+export interface SpellLimitInfo {
+  classSlug: string;
+  kind: "known" | "prepared";
+  cantripsKnown: number | null;
+  preparedOrKnown: number | null;
 }
 
 export interface ConditionEffects {

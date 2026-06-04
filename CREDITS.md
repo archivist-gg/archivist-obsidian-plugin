@@ -54,3 +54,22 @@ Items, jewelry, magic gear:
 - **wand** → [lorc/crystal-wand](https://game-icons.net/1x1/lorc/crystal-wand.html) (Lorc, CC-BY 3.0)
 - **staff** → [lorc/wizard-staff](https://game-icons.net/1x1/lorc/wizard-staff.html) (Lorc, CC-BY 3.0)
 - **rod** → [skoll/baton](https://game-icons.net/1x1/skoll/baton.html) (Skoll, CC-BY 3.0)
+
+## Damage-type icons
+
+The PC character sheet's spells "Cast" table uses icons from
+[game-icons.net](https://game-icons.net/), licensed under
+[CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
+- **acid** → [lorc/acid-blob](https://game-icons.net/1x1/lorc/acid-blob.html) (Lorc, CC-BY 3.0)
+- **cold** → [lorc/frozen-orb](https://game-icons.net/1x1/lorc/frozen-orb.html) (Lorc, CC-BY 3.0)
+- **fire** → [lorc/fire-silhouette](https://game-icons.net/1x1/lorc/fire-silhouette.html) (Lorc, CC-BY 3.0)
+- **force** → [lorc/circle-sparks](https://game-icons.net/1x1/lorc/circle-sparks.html) (Lorc, CC-BY 3.0)
+- **lightning** → [lorc/lightning-tree](https://game-icons.net/1x1/lorc/lightning-tree.html) (Lorc, CC-BY 3.0)
+- **necrotic** → [sbed/death-skull](https://game-icons.net/1x1/sbed/death-skull.html) (Sbed, CC-BY 3.0)
+- **poison** → [lorc/poison-bottle](https://game-icons.net/1x1/lorc/poison-bottle.html) (Lorc, CC-BY 3.0)
+- **psychic** → [lorc/brain](https://game-icons.net/1x1/lorc/brain.html) (Lorc, CC-BY 3.0)
+- **radiant** → [lorc/barbed-sun](https://game-icons.net/1x1/lorc/barbed-sun.html) (Lorc, CC-BY 3.0)
+- **thunder** → [skoll/sound-waves](https://game-icons.net/1x1/skoll/sound-waves.html) (Skoll, CC-BY 3.0)
+- **healing** → [skoll/hearts](https://game-icons.net/1x1/skoll/hearts.html) (Skoll, CC-BY 3.0)
+- **burst** (bludgeoning/piercing/slashing fallback) → [lorc/bright-explosion](https://game-icons.net/1x1/lorc/bright-explosion.html) (Lorc, CC-BY 3.0)
