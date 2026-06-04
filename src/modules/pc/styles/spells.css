@@ -151,7 +151,11 @@
 .archivist-pc-sheet .pc-spell-morepanel .pc-spell-flabel { min-width: 88px; }
 .archivist-pc-sheet .pc-spell-fchip.tog { border-style: dashed; }
 
-.archivist-pc-sheet .pc-spell-add-table { width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }
+/* The content column (.pc-content) is size-contained, so a nowrap table whose
+   columns out-measure the column can't stretch it — it would bleed past the
+   drawer's right border. Bound the table to the drawer and let it scroll. */
+.archivist-pc-sheet .pc-add-tablehost { overflow-x: auto; min-width: 0; }
+.archivist-pc-sheet .pc-spell-add-table { width: 100%; max-width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }
 .archivist-pc-sheet .pc-spell-add-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap; }
 .archivist-pc-sheet .pc-spell-add-table thead th.sortable { cursor: pointer; }
 .archivist-pc-sheet .pc-spell-add-table thead th.ctr { text-align: center; }
