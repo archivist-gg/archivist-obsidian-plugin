@@ -4,7 +4,8 @@ import { renderSpellBlock } from "../../../spell/spell.renderer";
 import { compactCastingTime, formatRange, componentLetters, abbrAbility } from "./spell-display";
 import {
   type FilterState, type SortKey, defaultFilters, matchesFilters, compareCandidates,
-  type ChipItem, SOURCES,
+  activeFacetCount, type ChipItem,
+  SOURCES, SCHOOLS, CAST_TIMES, RANGES, DAMAGE_TYPES, SAVES,
 } from "./spell-filter";
 
 function ordinal(n: number): string {
@@ -127,6 +128,24 @@ function renderTable(
   for (const c of cands) renderRow(body, c, ctx, known, expanded);
 }
 
+/** The collapsible "More filters" panel: School / Cast Time / Range / Damage /
+ *  Save chip groups + the Concentration/Ritual flag toggles. */
+function renderMorePanel(host: HTMLElement, state: FilterState, draw: () => void): void {
+  const panel = host.createDiv({ cls: "pc-spell-morepanel" });
+  chipGroup(panel, "School", SCHOOLS, state.schools, draw);
+  chipGroup(panel, "Cast Time", CAST_TIMES, state.castTimes, draw);
+  chipGroup(panel, "Range", RANGES, state.ranges, draw);
+  chipGroup(panel, "Damage", DAMAGE_TYPES, state.damages, draw);
+  chipGroup(panel, "Save", SAVES, state.saves, draw);
+
+  const flags = panel.createDiv({ cls: "pc-spell-fgroup" });
+  flags.createSpan({ cls: "pc-spell-flabel", text: "Flags" });
+  const conc = flags.createSpan({ cls: `pc-spell-fchip tog${state.concentration ? " active" : ""}`, text: "Concentration" });
+  conc.addEventListener("click", () => { state.concentration = !state.concentration; draw(); });
+  const rit = flags.createSpan({ cls: `pc-spell-fchip tog${state.ritual ? " active" : ""}`, text: "Ritual" });
+  rit.addEventListener("click", () => { state.ritual = !state.ritual; draw(); });
+}
+
 /** Inline add-spell drawer: a flat, sortable, multi-column table with a
  *  multi-select filter toolbar. Built once; draw() rebuilds chips + table. */
 export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext): void {
@@ -147,7 +166,9 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   const top = bar.createDiv({ cls: "pc-spell-addbar-top" });
   const search = top.createEl("input", { cls: "pc-spell-search", attr: { type: "text", placeholder: "Search spells…" } });
   const allBtn = top.createEl("button", { cls: "pc-spell-filter", text: "All classes" });
+  const moreBtn = top.createEl("button", { cls: "pc-spell-morebtn" });
   const chipsHost = bar.createDiv({ cls: "pc-spell-addbar-primary" });
+  const panelHost = bar.createDiv({ cls: "pc-spell-morepanel-host" });
   const tableHost = drawer.createDiv({ cls: "pc-add-tablehost" });
 
   const draw = (): void => {
@@ -156,6 +177,13 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     allBtn.classList.toggle("active", state.showAll);
     chipGroup(chipsHost, "Source", SOURCES, state.sources, draw);
     chipGroup(chipsHost, "Level", levelItems(maxLevel, state.showAll), state.levels, draw);
+
+    panelHost.empty();
+    moreBtn.empty();
+    moreBtn.appendText(`More filters ${state.moreOpen ? "▴" : "▾"}`);
+    const n = activeFacetCount(state);
+    if (n) moreBtn.createSpan({ cls: "pc-spell-morebadge", text: String(n) });
+    if (state.moreOpen) renderMorePanel(panelHost, state, draw);
 
     const known = knownSet();
     const cands = classSpellCandidates(ctx.core.entities, classSlugs, maxLevel, new Set(), state.showAll, state.query)
@@ -167,5 +195,6 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
 
   search.addEventListener("input", () => { state.query = search.value; draw(); });
   allBtn.addEventListener("click", () => { state.showAll = !state.showAll; draw(); });
+  moreBtn.addEventListener("click", () => { state.moreOpen = !state.moreOpen; draw(); });
   draw();
 }

@@ -111,3 +111,50 @@ describe("renderAddDrawer — table", () => {
     }
   });
 });
+
+describe("renderAddDrawer — More filters", () => {
+  const openMore = (root: HTMLElement) =>
+    (root.querySelector(".pc-spell-morebtn") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  const panelChip = (root: HTMLElement, text: string) =>
+    [...root.querySelectorAll(".pc-spell-morepanel .pc-spell-fchip")].find((c) => c.textContent === text) as HTMLElement;
+
+  it("More button toggles the panel", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    expect(root.querySelector(".pc-spell-morepanel")).toBeNull();
+    openMore(root);
+    expect(root.querySelector(".pc-spell-morepanel")).not.toBeNull();
+  });
+
+  it("School filter narrows (AND across groups)", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    openMore(root);
+    panelChip(root, "Conj").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(rowNames(root)).toEqual(["Misty Step"]); // only conjuration spell
+  });
+
+  it("Damage multi-select is OR within the group", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    openMore(root);
+    panelChip(root, "Fire").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(rowNames(root)).toEqual(["Fire Bolt"]);
+  });
+
+  it("Concentration flag requires concentration", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    openMore(root);
+    panelChip(root, "Concentration").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(rowNames(root)).toEqual(["Bless"]);
+  });
+
+  it("active hidden sections show a count badge on More", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx());
+    openMore(root);
+    panelChip(root, "Conj").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root.querySelector(".pc-spell-morebadge")?.textContent).toBe("1");
+  });
+});
