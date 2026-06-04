@@ -12836,18 +12836,5 @@ body.theme-light .archivist-tag-atk:hover {
 /* Concentration / Ritual now ride as small badges beside the name (cols dropped). */
 .archivist-pc-sheet .pc-spell-add-table .col-name .pc-spell-cr { width: 15px; height: 15px; margin-left: 5px; vertical-align: middle; }
 
-/* Responsive column drop-priority (container pc-content; tiers = --pc-bp-*).
-   Save/Damage drop first, then Components/Duration, then Time/Range.
-   Concentration/Ritual are name badges now; ＋/Name/Level/School/Source never drop. */
-@container pc-content (max-width: 899px) {
-  .archivist-pc-sheet .pc-spell-add-table .col-save,
-  .archivist-pc-sheet .pc-spell-add-table .col-damage { display: none; }
-}
-@container pc-content (max-width: 699px) {
-  .archivist-pc-sheet .pc-spell-add-table .col-comp,
-  .archivist-pc-sheet .pc-spell-add-table .col-dur { display: none; }
-}
-@container pc-content (max-width: 499px) {
-  .archivist-pc-sheet .pc-spell-add-table .col-time,
-  .archivist-pc-sheet .pc-spell-add-table .col-range { display: none; }
-}
+/* All columns always render; the table host (.pc-add-tablehost) scrolls
+   horizontally when it out-measures the content column. No responsive hiding. */

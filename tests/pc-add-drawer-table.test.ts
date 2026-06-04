@@ -45,7 +45,7 @@ describe("renderAddDrawer — table", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
     const heads = [...root.querySelectorAll(".pc-spell-add-table thead th")].map((h) => h.textContent?.trim());
-    expect(heads).toEqual(["", "Name", "Level ▲", "Time", "School", "Range", "Components", "Duration", "Damage", "Save", "Source"]);
+    expect(heads).toEqual(["", "Name", "Level ▲", "Time", "School", "Range", "Components", "Source", "Damage", "Save", "Duration"]);
   });
 
   it("one row per candidate, default sort = level ascending", () => {

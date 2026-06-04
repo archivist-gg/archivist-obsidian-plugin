@@ -24,10 +24,10 @@ const COLS: Col[] = [
   { label: "School",        sort: "school", cls: "col-school" },
   { label: "Range",         sort: "range",  cls: "col-range" },
   { label: "Components",    cls: "col-comp" },
-  { label: "Duration",      cls: "col-dur" },
+  { label: "Source",        sort: "source", cls: "col-source" },
   { label: "Damage",        sort: "damage", cls: "col-damage" },
   { label: "Save",          sort: "save",   cls: "col-save" },
-  { label: "Source",        sort: "source", cls: "col-source" },
+  { label: "Duration",      cls: "col-dur" },
 ];
 
 /** Multi-select chip group: an "All" chip (active when the set is empty) clears
@@ -84,12 +84,12 @@ function renderRow(
   tr.createEl("td", { cls: "col-school", text: e.school ?? "" });
   tr.createEl("td", { cls: "col-range", text: formatRange(e.range) });
   tr.createEl("td", { cls: "col-comp", text: componentLetters(e.components).letters.join(" ") });
-  tr.createEl("td", { cls: "col-dur", text: e.duration ?? "" });
-  tr.createEl("td", { cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
-  tr.createEl("td", { cls: "col-save", text: e.saving_throw?.ability ? abbrAbility(e.saving_throw.ability) : "—" });
   const srcTd = tr.createEl("td", { cls: "col-source" });
   const ed = e.edition === "2014" ? "2014" : e.edition === "2024" ? "2024" : null;
   if (ed) srcTd.createSpan({ cls: `pc-spell-srctag e${ed}`, text: ed === "2014" ? "5e" : ed });
+  tr.createEl("td", { cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
+  tr.createEl("td", { cls: "col-save", text: e.saving_throw?.ability ? abbrAbility(e.saving_throw.ability) : "—" });
+  tr.createEl("td", { cls: "col-dur", text: e.duration ?? "" });
 
   const toggleExpand = (): void => {
     const next = tr.nextElementSibling;
@@ -101,7 +101,7 @@ function renderRow(
     const wrap = cell.createDiv({ cls: "pc-spell-expand" });
     // The table may be wider than the drawer (it scrolls). Pin the expanded
     // block to the visible width so its prose wraps instead of running off-screen.
-    const host = tr.closest(".pc-add-tablehost") as HTMLElement | null;
+    const host = tr.closest(".pc-add-tablehost");
     if (host) wrap.style.maxWidth = `${host.clientWidth - 28}px`;
     void renderSpellBlock(e, ctx.app).then((block) => wrap.appendChild(block));
   };
