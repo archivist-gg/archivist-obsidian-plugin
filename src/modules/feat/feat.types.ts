@@ -1,5 +1,6 @@
 import type { Choice, Ability, FeatCategory, FeatureEffect } from "../../shared/types";
 import type { Edition } from "../class/class.types";
+import type { Resource } from "../../shared/types/resource";
 
 export type FeatPrerequisite =
   | { kind: "ability"; ability: Ability; min: number }
@@ -27,4 +28,5 @@ export interface FeatEntity {
   grants_asi: FeatGrantsAsi | null;
   repeatable: boolean;
   choices: Choice[];
+  resources?: Resource[];
 }

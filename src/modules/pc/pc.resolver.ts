@@ -179,7 +179,7 @@ export function collectResolvedFeatures(
     } else {
       const name = feat.name ?? feat.slug;
       const description = feat.description ?? "";
-      out.push({ feature: { name, description }, source: { kind: "feat", slug: feat.slug } });
+      out.push({ feature: { name, description, ...(feat.resources ? { resources: feat.resources } : {}) }, source: { kind: "feat", slug: feat.slug } });
     }
   }
 

@@ -1,5 +1,6 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { Edition } from "../class/class.types";
+import type { Resource } from "../../shared/types/resource";
 
 export type BackgroundToolProficiency =
   | { kind: "fixed"; items: string[] }
@@ -30,7 +31,7 @@ export interface BackgroundEntity {
   tool_proficiencies: BackgroundToolProficiency[];
   language_proficiencies: BackgroundLanguageProficiency[];
   equipment: BackgroundEquipmentEntry[];
-  feature: { name: string; description: string };
+  feature: { name: string; description: string; resources?: Resource[] };
   ability_score_increases: { pool: Ability[] } | null;
   origin_feat: string | null;
   suggested_characteristics: SuggestedCharacteristics | null;
