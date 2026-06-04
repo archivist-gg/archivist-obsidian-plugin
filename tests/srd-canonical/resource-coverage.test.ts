@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { resourceSchema } from "../../src/shared/schemas/resource-schema";
+import { isValidMaxFormula } from "../../src/shared/dnd/resource-formula";
 
 const RUNTIME = path.resolve(__dirname, "../../src/srd/data/runtime");
 const EDITIONS = ["2014", "2024"] as const;
@@ -123,6 +124,25 @@ describe("authored resources validate against resourceSchema", () => {
         for (const { key, resource } of collectRawResources(kind, edition)) {
           const parsed = resourceSchema.safeParse(resource);
           expect(parsed.success, `${key}: ${JSON.stringify(resource)}`).toBe(true);
+        }
+      });
+    }
+  }
+});
+
+// resourceSchema only checks max_formula/scales_at[].max are non-empty strings;
+// this enforces the max_formula DSL grammar on every authored runtime resource
+// so a typo (e.g. "clas_level") or unsupported form ("ceil(x/2)") fails the build.
+describe("authored resource formulas parse with the max_formula DSL", () => {
+  for (const edition of EDITIONS) {
+    for (const kind of ["class", "subclass", "race", "feat", "background"]) {
+      it(`${kind}.${edition}`, () => {
+        for (const { key, resource } of collectRawResources(kind, edition)) {
+          const r = resource as { max_formula?: string; scales_at?: Array<{ max?: string }> };
+          expect(isValidMaxFormula(r.max_formula ?? ""), `${key} max_formula: ${JSON.stringify(r.max_formula)}`).toBe(true);
+          for (const step of r.scales_at ?? []) {
+            expect(isValidMaxFormula(String(step.max)), `${key} scales_at.max: ${JSON.stringify(step.max)}`).toBe(true);
+          }
         }
       });
     }
