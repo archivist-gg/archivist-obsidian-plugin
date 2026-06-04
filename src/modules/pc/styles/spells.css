@@ -122,8 +122,9 @@
 
 /* ── Prepare filter bar ───────────────────────────────── */
 .archivist-pc-sheet .pc-spell-filterbar { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); align-items: center; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-fgroup { display: flex; align-items: center; gap: 6px; }
-.archivist-pc-sheet .pc-spell-flabel { font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spell-fgroup { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.archivist-pc-sheet .pc-spell-flabel { flex: 0 0 auto; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); white-space: nowrap; }
+.archivist-pc-sheet .pc-spell-fchips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; }
 .archivist-pc-sheet .pc-spell-fchip { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); padding: 3px 11px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan); border-radius: 12px; color: var(--pc-text-soft); cursor: pointer; }
 .archivist-pc-sheet .pc-spell-fchip.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
 
@@ -146,7 +147,8 @@
 .archivist-pc-sheet .pc-spell-morebadge { background: var(--pc-crimson); color: var(--pc-white); border-radius: 9px; font-size: var(--pc-fs-micro); font-weight: 700; padding: 0 6px; }
 .archivist-pc-sheet .pc-spell-resetbtn { font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid transparent; border-radius: var(--pc-radius-md); padding: 4px 10px; background: transparent; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-resetbtn:hover { color: var(--pc-crimson); border-color: var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-spell-morepanel { margin-top: var(--pc-space-2); background: var(--pc-parchment-light); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); padding: var(--pc-space-2) var(--pc-space-3); display: flex; flex-direction: column; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-morepanel { margin-top: var(--pc-space-2); background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: var(--pc-space-3); display: flex; flex-direction: column; gap: var(--pc-space-2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04); }
+.archivist-pc-sheet .pc-spell-morepanel .pc-spell-flabel { min-width: 88px; }
 .archivist-pc-sheet .pc-spell-fchip.tog { border-style: dashed; }
 
 .archivist-pc-sheet .pc-spell-add-table { width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }

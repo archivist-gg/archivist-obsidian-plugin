@@ -39,10 +39,11 @@ function chipGroup<V>(
 ): void {
   const grp = parent.createDiv({ cls: "pc-spell-fgroup" });
   grp.createSpan({ cls: "pc-spell-flabel", text: label });
-  const all = grp.createSpan({ cls: `pc-spell-fchip${set.size === 0 ? " active" : ""}`, text: "All" });
+  const chips = grp.createDiv({ cls: "pc-spell-fchips" });
+  const all = chips.createSpan({ cls: `pc-spell-fchip${set.size === 0 ? " active" : ""}`, text: "All" });
   all.addEventListener("click", () => { set.clear(); draw(); });
   for (const it of items) {
-    const chip = grp.createSpan({ cls: `pc-spell-fchip${set.has(it.value) ? " active" : ""}`, text: it.label });
+    const chip = chips.createSpan({ cls: `pc-spell-fchip${set.has(it.value) ? " active" : ""}`, text: it.label });
     chip.addEventListener("click", () => {
       if (set.has(it.value)) set.delete(it.value); else set.add(it.value);
       draw();
@@ -141,9 +142,10 @@ function renderMorePanel(host: HTMLElement, state: FilterState, draw: () => void
 
   const flags = panel.createDiv({ cls: "pc-spell-fgroup" });
   flags.createSpan({ cls: "pc-spell-flabel", text: "Flags" });
-  const conc = flags.createSpan({ cls: `pc-spell-fchip tog${state.concentration ? " active" : ""}`, text: "Concentration" });
+  const fchips = flags.createDiv({ cls: "pc-spell-fchips" });
+  const conc = fchips.createSpan({ cls: `pc-spell-fchip tog${state.concentration ? " active" : ""}`, text: "Concentration" });
   conc.addEventListener("click", () => { state.concentration = !state.concentration; draw(); });
-  const rit = flags.createSpan({ cls: `pc-spell-fchip tog${state.ritual ? " active" : ""}`, text: "Ritual" });
+  const rit = fchips.createSpan({ cls: `pc-spell-fchip tog${state.ritual ? " active" : ""}`, text: "Ritual" });
   rit.addEventListener("click", () => { state.ritual = !state.ritual; draw(); });
 }
 
