@@ -119,7 +119,7 @@
 
 /* ── Source tag (Cast + Prepare + Add) ────────────────── */
 .archivist-pc-sheet .pc-spell-srctag { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; color: var(--pc-text-soft); margin-left: 5px; }
-.archivist-pc-sheet .pc-spell-srctag.e2014 { color: #7a4a1f; }
+.archivist-pc-sheet .pc-spell-srctag.e2014 { color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-srctag.e2024 { color: #1f3f7a; }
 
 /* ── Prepare filter bar ───────────────────────────────── */
