@@ -72,7 +72,10 @@
 .archivist-pc-sheet .pc-spell-adddrawer { background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin: var(--pc-space-2) 0; }
 
 /* Inline spell block under a row */
-.archivist-pc-sheet .pc-spell-expand { margin: 2px 0 8px var(--pc-space-4); }
+/* white-space: normal re-establishes wrapping for the block — the add-drawer
+   mounts it inside a table <td> that sets white-space: nowrap, which would
+   otherwise leak into the spell prose and run it off the card. */
+.archivist-pc-sheet .pc-spell-expand { margin: 2px 0 8px var(--pc-space-4); white-space: normal; }
 /* Cast-table expansion row: block sits flush under its spell (no extra top gap). */
 .archivist-pc-sheet .pc-spell-expand-row > td { padding: 0 8px 10px; }
 .archivist-pc-sheet .pc-spell-empty-row { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; padding: 4px; }
