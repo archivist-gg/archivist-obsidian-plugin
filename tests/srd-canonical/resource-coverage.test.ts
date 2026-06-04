@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { resourceSchema } from "../../src/shared/schemas/resource-schema";
 
 const RUNTIME = path.resolve(__dirname, "../../src/srd/data/runtime");
 const EDITIONS = ["2014", "2024"] as const;
@@ -89,5 +90,41 @@ it("no overlay entry still uses the legacy uses{} key", () => {
     const yaml = fs.readFileSync(
       path.resolve(__dirname, `../../tools/srd-canonical/overlays/${ed}.yaml`), "utf8");
     expect(yaml, `${ed}.yaml still contains a uses: block`).not.toMatch(/^\s*uses:/m);
+  }
+});
+
+function collectRawResources(entityKind: string, edition: string): { key: string; resource: unknown }[] {
+  const file = path.join(RUNTIME, `${entityKind}.${edition}.json`);
+  if (!fs.existsSync(file)) return [];
+  const entries = JSON.parse(fs.readFileSync(file, "utf8")) as Array<Record<string, unknown>>;
+  const out: { key: string; resource: unknown }[] = [];
+  const take = (eslug: string, f: { id?: string; name?: string; resources?: unknown[] }) => {
+    if (!Array.isArray(f.resources)) return;
+    const fslug = f.id ?? (f.name ? slug(f.name) : "?");
+    for (const r of f.resources) out.push({ key: `${eslug}:${fslug}`, resource: r });
+  };
+  for (const e of entries) {
+    const eslug = (e.slug as string) ?? "";
+    const byLevel = e.features_by_level as Record<string, Array<{ id?: string; name?: string; resources?: unknown[] }>> | undefined;
+    if (byLevel) for (const fs0 of Object.values(byLevel)) for (const f of fs0) take(eslug, f);
+    const traits = e.traits as Array<{ id?: string; name?: string; resources?: unknown[] }> | undefined;
+    if (traits) for (const t of traits) take(eslug, t);
+    const feature = e.feature as { id?: string; name?: string; resources?: unknown[] } | undefined;
+    if (feature) take(eslug, feature);
+    if (entityKind === "feat") take(eslug, e as { id?: string; name?: string; resources?: unknown[] });
+  }
+  return out;
+}
+
+describe("authored resources validate against resourceSchema", () => {
+  for (const edition of EDITIONS) {
+    for (const kind of ["class", "subclass", "race", "feat", "background"]) {
+      it(`${kind}.${edition}`, () => {
+        for (const { key, resource } of collectRawResources(kind, edition)) {
+          const parsed = resourceSchema.safeParse(resource);
+          expect(parsed.success, `${key}: ${JSON.stringify(resource)}`).toBe(true);
+        }
+      });
+    }
   }
 });
