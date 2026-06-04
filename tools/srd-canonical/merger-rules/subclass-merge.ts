@@ -101,6 +101,7 @@ function bucketFeaturesByLevel(
         ...(overlaid?.action ? { action: overlaid.action } : {}),
         ...(overlaid?.uses ? { uses: overlaid.uses } : {}),
         ...(overlaid?.scales_at ? { scales_at: overlaid.scales_at } : {}),
+        ...(overlaid?.resources ? { resources: overlaid.resources } : {}),
       };
       const key = String(lvl);
       out[key] ??= [];
