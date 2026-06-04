@@ -2,6 +2,7 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
+import type { Resource } from "../../../src/shared/types/resource";
 
 /**
  * ClassCanonical mirrors the runtime ClassEntity shape (src/modules/class/class.schema.ts)
@@ -85,6 +86,7 @@ export interface ClassFeatureOut {
     scales_at?: Array<{ level: number; value?: number | string; max?: number | string }>;
   };
   scales_at?: Array<{ level: number; damage?: { dice: string }; max?: number | string }>;
+  resources?: Resource[];
 }
 
 interface ResourceOut {
@@ -379,6 +381,7 @@ function bucketFeaturesByLevel(
         ...(overlaid?.action ? { action: overlaid.action } : {}),
         ...(overlaid?.uses ? { uses: overlaid.uses } : {}),
         ...(overlaid?.scales_at ? { scales_at: overlaid.scales_at } : {}),
+        ...(overlaid?.resources ? { resources: overlaid.resources as Resource[] } : {}),
       };
       const key = String(lvl);
       out[key] ??= [];
