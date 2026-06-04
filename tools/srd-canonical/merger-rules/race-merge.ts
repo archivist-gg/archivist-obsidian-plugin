@@ -151,7 +151,7 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
       ...(overlaid?.save ? { save: overlaid.save } : {}),
       ...(overlaid?.damage ? { damage: overlaid.damage } : {}),
       ...(overlaid?.recharge ? { recharge: overlaid.recharge } : {}),
-      ...(overlaid?.resources ? { id: slugifyName(t.name), resources: overlaid.resources } : {}),
+      ...(overlaid?.resources ? { id: traitSlug, resources: overlaid.resources } : {}),
     };
   });
 
