@@ -61,9 +61,9 @@ function renderResourceBadge(parent: HTMLElement, resource: Resource, source: Fe
 
 function renderCounter(badge: HTMLElement, id: string, fu: { used: number; max: number }, ctx: ComponentRenderContext): void {
   const wrap = badge.createDiv({ cls: "pc-resource-counter" });
-  const minus = wrap.createEl("button", { cls: "pc-resource-step pc-resource-step-minus", text: "−" });
+  const minus = wrap.createEl("button", { cls: "pc-resource-step pc-resource-step-minus", text: "−", attr: { "aria-label": "Spend one use" } });
   wrap.createSpan({ cls: "pc-resource-counter-val", text: `${fu.max - fu.used}/${fu.max}` });
-  const plus = wrap.createEl("button", { cls: "pc-resource-step pc-resource-step-plus", text: "+" });
+  const plus = wrap.createEl("button", { cls: "pc-resource-step pc-resource-step-plus", text: "+", attr: { "aria-label": "Restore one use" } });
   // `used` counts spent; the displayed value is remaining. + restores (used−1), − spends (used+1).
   minus.addEventListener("click", (e) => { e.stopPropagation(); ctx.editState?.setFeatureUse(id, fu.used + 1); });
   plus.addEventListener("click", (e) => { e.stopPropagation(); ctx.editState?.setFeatureUse(id, fu.used - 1); });
@@ -99,14 +99,17 @@ function openRecoveryPicker(badge: HTMLElement, resourceId: string, amount: numb
   const refresh = () => { remaining.setText(`Slot levels left: ${amount - spent()}`); };
 
   for (const lvl of levels) {
+    // Slots currently expended at this level — you can't restore more than that.
+    const expended = ctx.resolved.state.spell_slots?.[lvl]?.used ?? 0;
     const row = picker.createDiv({ cls: "pc-resource-picker-row" });
     row.createSpan({ text: `L${lvl}` });
-    const dec = row.createEl("button", { text: "−" });
+    const dec = row.createEl("button", { text: "−", attr: { "aria-label": `Restore one level ${lvl} slot` } });
     const val = row.createSpan({ cls: "pc-resource-picker-val", text: "0" });
-    const inc = row.createEl("button", { text: "+" });
+    const inc = row.createEl("button", { text: "+", attr: { "aria-label": `Use one level ${lvl} slot` } });
     dec.addEventListener("click", (e) => { e.stopPropagation(); picks[lvl] = Math.max(0, (picks[lvl] ?? 0) - 1); val.setText(String(picks[lvl])); refresh(); });
     inc.addEventListener("click", (e) => {
       e.stopPropagation();
+      if ((picks[lvl] ?? 0) >= expended) return;          // can't restore more than is spent at this level
       if (spent() + lvl > amount) return;                 // budget guard
       picks[lvl] = (picks[lvl] ?? 0) + 1; val.setText(String(picks[lvl])); refresh();
     });
@@ -114,7 +117,11 @@ function openRecoveryPicker(badge: HTMLElement, resourceId: string, amount: numb
   refresh();
 
   const apply = picker.createEl("button", { cls: "pc-resource-picker-apply", text: "Recover" });
-  apply.addEventListener("click", (e) => { e.stopPropagation(); ctx.editState?.useRecovery(resourceId, picks); });
+  apply.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (spent() === 0) return;                             // no picks → don't burn the recovery use
+    ctx.editState?.useRecovery(resourceId, picks);
+  });
 }
 
 function currentDie(die: ResourceDie, totalLevel: number): string {
