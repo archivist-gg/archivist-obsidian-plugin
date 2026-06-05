@@ -123,6 +123,14 @@ describe("CharacterEditState — charge mutations", () => {
     expect(c.state.feature_uses["second-wind"].used).toBe(0);   // clamped to 0
   });
 
+  it("setFeatureUse ignores non-finite input", () => {
+    const c = baseChar();
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setFeatureUse("second-wind", 1);
+    es.setFeatureUse("second-wind", NaN);
+    expect(c.state.feature_uses["second-wind"].used).toBe(1);   // unchanged, not NaN
+  });
+
   it("setFeatureUse no-ops for an unknown key", () => {
     const c = baseChar();
     const es = new CharacterEditState(c, {} as never, () => {});
