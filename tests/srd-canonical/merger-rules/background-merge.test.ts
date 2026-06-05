@@ -220,4 +220,28 @@ describe("backgroundMergeRule", () => {
     expect(out.feature.name.length).toBeGreaterThan(0);
     expect(out.feature.description.length).toBeGreaterThan(0);
   });
+
+  it("attaches overlay background_features resources onto the background feature by slug", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-5e_haunted-one",
+      edition: "2014",
+      kind: "background",
+      base: {
+        key: "haunted-one",
+        name: "Haunted One",
+        desc: "x",
+        document: { key: "srd-2014", name: "SRD 5.1" },
+        benefits: [{ name: "Heart of Darkness", desc: "Those who look into your eyes can see you have faced unimaginable horror.", type: "feature" }],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: {
+        "haunted-one": {
+          resources: [{ id: "background:haunted-one", name: "Spectral Defense", max_formula: "1", reset: "long-rest" }],
+        },
+      } as never,
+    };
+    const out = toBackgroundCanonical(canonical);
+    expect((out.feature as { resources?: Array<{ id: string }> }).resources?.[0]?.id).toBe("background:haunted-one");
+  });
 });

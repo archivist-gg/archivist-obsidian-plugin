@@ -253,4 +253,33 @@ describe("raceMergeRule (legacy/structural cases)", () => {
     const out = toRaceCanonical(canonical);
     expect(out.traits[0].action_cost).toBe("action");  // overlay wins over passive
   });
+
+  it("attaches overlay resources (and a trait id) to the matching race trait", () => {
+    const canonical: CanonicalEntry = baseEntry({
+      slug: "srd-5e_dragonborn",
+      edition: "2014",
+      base: {
+        key: "srd_dragonborn",
+        name: "Dragonborn",
+        desc: "...",
+        is_subspecies: false,
+        subspecies_of: null,
+        traits: [
+          { name: "Breath Weapon", desc: "Exhale destructive energy.", type: null, order: null },
+        ],
+      },
+      overlay: {
+        "breath-weapon": {
+          resources: [{
+            id: "dragonborn:breath-weapon", name: "Breath Weapon",
+            max_formula: "1", reset: "short-rest",
+          }],
+        },
+      } as never,
+    });
+    const out = toRaceCanonical(canonical);
+    const bw = out.traits.find(t => t.name === "Breath Weapon");
+    expect(bw?.resources?.[0]?.id).toBe("dragonborn:breath-weapon");
+    expect(bw?.id).toBe("breath-weapon");
+  });
 });

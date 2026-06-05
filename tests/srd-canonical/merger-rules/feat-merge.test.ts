@@ -196,4 +196,30 @@ describe("featMergeRule", () => {
     const out = toFeatCanonical(canonical);
     expect(out.repeatable).toBe(true);
   });
+
+  it("attaches overlay feat_features resources to the canonical feat by slug", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-5e_lucky",
+      edition: "2014",
+      kind: "feat",
+      base: {
+        key: "lucky",
+        name: "Lucky",
+        desc: "You have inexplicable luck.",
+        document: { key: "srd-2014", name: "SRD 5.1" },
+        type: "General",
+        has_prerequisite: false,
+        benefits: [{ desc: "You have 3 luck points." }],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: {
+        lucky: {
+          resources: [{ id: "feat:lucky", name: "Luck Points", max_formula: "prof", reset: "long-rest" }],
+        },
+      } as never,
+    };
+    const out = toFeatCanonical(canonical);
+    expect((out as { resources?: Array<{ id: string }> }).resources?.[0]?.id).toBe("feat:lucky");
+  });
 });

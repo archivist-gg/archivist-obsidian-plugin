@@ -1,44 +1,192 @@
-# SRD 5.2 overlay -- minimal seed
-# Mostly aligned with srd-5e.yaml; SRD 2024 has tighter upstream structure so fewer overrides needed.
+# SRD 5.2 overlay -- limited-use resources + action economy + OptionalFeature SRD slugs.
+# Mostly aligned with srd-5e.yaml; SRD 2024 has tighter upstream structure.
 # Source: WotC SRD 5.2 PDF.
-# This is a SEED -- full authorship is deferred to a follow-up pass.
+# Per-feature `resources[]` carry structured limited-use pools (SP4d Phase 1).
 
 class_features:
-  # Fighter (2024 -- Action Surge mostly unchanged)
+  # Fighter (2024 -- Action Surge unchanged)
   action-surge:
     action_cost: special
-    uses:
-      max: 1
-      recharge: short-rest
-      scales_at:
-        - level: 17
-          value: 2
-  # Barbarian (2024 -- Rage uses unchanged)
+    resources:
+      - id: "fighter:action-surge"
+        name: Action Surge
+        max_formula: "1"
+        scales_at: [{ level: 17, max: "2" }]
+        reset: short-rest
+  second-wind:
+    action_cost: bonus-action
+    resources:
+      - id: "fighter:second-wind"
+        name: Second Wind
+        max_formula: "2"
+        scales_at: [{ level: 10, max: "3" }, { level: 17, max: "4" }]
+        reset: short-rest
+    healing: { dice: "1d10", bonus: "{level}" }
+  # Barbarian (2024 -- Rage uses 2/3/4/5/6; no level-20 "unlimited" entry)
   rage:
     action_cost: bonus-action
-    uses:
-      max: 2
-      recharge: long-rest
-      scales_at:
-        - level: 3
-          max: 3
-        - level: 6
-          max: 4
-        - level: 12
-          max: 5
-        - level: 17
-          max: 6
+    resources:
+      - id: "barbarian:rage"
+        name: Rage
+        max_formula: "2"
+        scales_at: [{ level: 3, max: "3" }, { level: 6, max: "4" }, { level: 12, max: "5" }, { level: 17, max: "6" }]
+        reset: long-rest
+  # Persistent Rage (L15) -- 1/long-rest recovery of expended Rage uses.
+  persistent-rage:
+    action_cost: special
+    resources:
+      - id: "barbarian:persistent-rage"
+        name: Persistent Rage
+        max_formula: "1"
+        reset: long-rest
+  # Bard (2024 -- Bardic Inspiration; die scales d6/d8/d10/d12)
+  bardic-inspiration:
+    action_cost: bonus-action
+    resources:
+      - id: "bard:bardic-inspiration"
+        name: Bardic Inspiration
+        max_formula: "{cha_mod}"
+        die: { base: d6, scaling: { 5: d8, 10: d10, 15: d12 } }
+        reset: short-rest
+  # Channel Divinity -- SHARED base pool. Feature-slug keying means this single
+  # entry lands on BOTH Cleric and Paladin (and their subclass CD options), which
+  # share a base of 2 uses in 2024. Per-class high-level scaling (Cleric 3@6/4@18,
+  # Paladin 3@11) cannot be expressed with one key, so scaling is omitted here.
+  channel-divinity:
+    action_cost: action
+    resources:
+      - id: "channel-divinity"
+        name: Channel Divinity
+        max_formula: "2"
+        reset: short-rest
+  # Druid (2024 -- Wild Shape 2/3/4 at 2/6/17)
+  wild-shape:
+    action_cost: bonus-action
+    resources:
+      - id: "druid:wild-shape"
+        name: Wild Shape
+        max_formula: "2"
+        scales_at: [{ level: 6, max: "3" }, { level: 17, max: "4" }]
+        reset: short-rest
+  # Monk (2024 -- Monk's Focus / Focus Points = Monk level)
+  monks-focus:
+    resources:
+      - id: "monk:focus-points"
+        name: Focus Points
+        max_formula: "class_level"
+        reset: short-rest
+  # Uncanny Metabolism (L2) -- 1/long-rest recovery of Focus Points.
+  uncanny-metabolism:
+    resources:
+      - id: "monk:uncanny-metabolism"
+        name: Uncanny Metabolism
+        max_formula: "1"
+        reset: long-rest
+  # Ranger (2024 -- Favored Enemy = free Hunter's Mark casts; 2/3/4/5/6)
+  favored-enemy:
+    resources:
+      - id: "ranger:favored-enemy"
+        name: Favored Enemy
+        max_formula: "2"
+        scales_at: [{ level: 5, max: "3" }, { level: 9, max: "4" }, { level: 13, max: "5" }, { level: 17, max: "6" }]
+        reset: long-rest
+  tireless:
+    action_cost: action
+    resources:
+      - id: "ranger:tireless"
+        name: Tireless
+        max_formula: "{wis_mod}"
+        reset: long-rest
+  natures-veil:
+    action_cost: bonus-action
+    resources:
+      - id: "ranger:natures-veil"
+        name: Nature's Veil
+        max_formula: "{wis_mod}"
+        reset: long-rest
+  # Sorcerer (2024)
+  innate-sorcery:
+    action_cost: bonus-action
+    resources:
+      - id: "sorcerer:innate-sorcery"
+        name: Innate Sorcery
+        max_formula: "2"
+        reset: long-rest
+  font-of-magic:
+    resources:
+      - id: "sorcerer:sorcery-points"
+        name: Sorcery Points
+        max_formula: "class_level"
+        reset: long-rest
+  # Sorcerous Restoration (L20) -- 1/long-rest recovery of Sorcery Points.
+  sorcerous-restoration:
+    resources:
+      - id: "sorcerer:sorcerous-restoration"
+        name: Sorcerous Restoration
+        max_formula: "1"
+        reset: long-rest
+  # Warlock -- Magical Cunning: 1/long-rest recovery of Pact Magic slots.
+  magic-cunning:
+    action_cost: special
+    resources:
+      - id: "warlock:magic-cunning"
+        name: Magical Cunning
+        max_formula: "1"
+        reset: long-rest
+
+  # --- Subclass features (subclass-merge reads the class_features overlay map) ---
+  # Fiend Patron (Warlock) -- Dark One's Own Luck
+  dark-ones-own-luck:
+    resources:
+      - id: "fiend-patron:dark-ones-own-luck"
+        name: Dark One's Own Luck
+        max_formula: "{cha_mod}"
+        reset: short-rest
+  # Warrior of the Open Hand (Monk) -- Wholeness of Body
+  wholeness-of-body:
+    action_cost: bonus-action
+    resources:
+      - id: "warrior-of-the-open-hand:wholeness-of-body"
+        name: Wholeness of Body
+        max_formula: "{wis_mod}"
+        reset: long-rest
 
 race_traits:
-  # Dragonborn (2024)
+  # Dragonborn (2024) -- Breath Weapon: uses = Proficiency Bonus, regain on a
+  # long rest. (This differs from 2014's 1/short-rest; the prior seed was wrong.)
   breath-weapon:
     action_cost: action
-    uses:
-      max: 1
-      recharge: short-rest
+    resources:
+      - id: "dragonborn:breath-weapon"
+        name: Breath Weapon
+        max_formula: "prof"
+        reset: long-rest
     save:
       ability: dex
       dc_formula: "8 + {con_mod} + {prof_bonus}"
+  # Dwarf (2024) -- Stonecunning: Tremorsense, PB uses / long rest.
+  stonecunning:
+    action_cost: bonus-action
+    resources:
+      - id: "dwarf:stonecunning"
+        name: Stonecunning
+        max_formula: "prof"
+        reset: long-rest
+  # Goliath (2024) -- Giant Ancestry boon, PB uses / long rest.
+  giant-ancestry:
+    resources:
+      - id: "goliath:giant-ancestry"
+        name: Giant Ancestry
+        max_formula: "prof"
+        reset: long-rest
+  # Orc (2024) -- Adrenaline Rush, PB uses / short or long rest.
+  adrenaline-rush:
+    action_cost: bonus-action
+    resources:
+      - id: "orc:adrenaline-rush"
+        name: Adrenaline Rush
+        max_formula: "prof"
+        reset: short-rest
 
 optional_feature_slugs:
   invocation:

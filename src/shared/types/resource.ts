@@ -15,12 +15,24 @@ export interface ResourceRecovery {
   reset: ResetTrigger;
 }
 
+export interface ResourceScaleStep {
+  level: number;
+  max: string;
+}
+
+export interface ResourceConsumesLink {
+  resource: string;
+  amount: number;
+}
+
 export interface Resource {
   id: string;
   name: string;
   max_formula: string;
+  scales_at?: ResourceScaleStep[];
   die?: ResourceDie;
   reset: ResetTrigger;
+  consumes?: ResourceConsumesLink;
   recovery?: ResourceRecovery[];
 }
 

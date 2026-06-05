@@ -2,6 +2,7 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
+import type { Resource } from "../../../src/shared/types/resource";
 
 export type FeatPrerequisite =
   | { kind: "level"; min: number }
@@ -30,13 +31,15 @@ export interface FeatCanonical {
   effects: unknown[];
   grants_asi: { amount: number; pool?: string[] } | null;
   choices: unknown[];
+  resources?: Resource[];
 }
 
 export const featMergeRule: MergeRule = {
   kind: "feat",
-  pickOverlay(_overlay: Overlay, _slug: string): unknown {
-    // Feat action economy comes from the foundry activation companion, not overlay.
-    return null;
+  pickOverlay(overlay: Overlay, _slug: string): unknown {
+    // Per-feat limited-use resources come from the overlay's feat_features map,
+    // keyed by feat-slug. (Action economy still comes from the activation companion.)
+    return overlay.feat_features ?? null;
   },
 };
 
@@ -46,6 +49,8 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
   const base = entry.base as Record<string, unknown>;
   const structured = entry.structured as Record<string, unknown> | null;
   const activation = entry.activation as Record<string, unknown> | null;
+  const overlay = entry.overlay as Record<string, { resources?: Resource[] }> | null;
+  const overlaid = overlay?.[slugifyName(base.name as string)];
 
   const typeStr = ((base.type as string | undefined) ?? "general").toLowerCase();
   const category: FeatCanonical["category"] = typeStr.includes("origin") ? "origin" : "general";
@@ -74,6 +79,7 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
     effects: [],
     grants_asi: null,
     choices: [],
+    ...(overlaid?.resources ? { resources: overlaid.resources } : {}),
   };
 
   // Activation companion → action_cost

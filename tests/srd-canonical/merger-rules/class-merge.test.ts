@@ -220,4 +220,37 @@ describe("class-merge: Open5e v2 class shape", () => {
     expect(result.spellcasting?.ability).toBe("int");
     expect(result.spellcasting?.spell_list.length).toBeGreaterThan(0);
   });
+
+  it("attaches overlay resources to the matching class feature", () => {
+    const result = toClassCanonical(baseEntry({
+      slug: "srd-5e_barbarian",
+      base: {
+        key: "srd_barbarian",
+        name: "Barbarian",
+        desc: "",
+        hit_dice: "D12",
+        subclass_of: null,
+        saving_throws: [{ name: "Strength" }, { name: "Constitution" }],
+        features: [
+          {
+            key: "srd_barbarian_rage",
+            name: "Rage",
+            desc: "You can enter a rage as a bonus action.",
+            feature_type: "CLASS_LEVEL_FEATURE",
+            gained_at: [{ level: 1, detail: null }],
+            data_for_class_table: [],
+          },
+        ],
+      },
+      overlay: {
+        rage: {
+          resources: [{
+            id: "barbarian:rage", name: "Rage", max_formula: "2", reset: "long-rest",
+          }],
+        },
+      },
+    })) as { features_by_level: Record<string, Array<{ name: string; resources?: Array<{ id: string }> }>> };
+    const rage = Object.values(result.features_by_level).flat().find((f) => f.name === "Rage");
+    expect(rage?.resources?.[0]?.id).toBe("barbarian:rage");
+  });
 });

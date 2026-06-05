@@ -1,83 +1,121 @@
-# SRD 5.1 overlay -- minimal seed
-# Class-feature action economy + race-trait gaps + OptionalFeature SRD slugs.
+# SRD 5.1 overlay -- limited-use resources + action economy + OptionalFeature SRD slugs.
 # Source: WotC SRD 5.1 PDF.
-# This is a SEED -- full authorship is deferred to a follow-up pass.
+# Per-feature `resources[]` carry structured limited-use pools (SP4d Phase 1).
 
 class_features:
   # Fighter
   action-surge:
     action_cost: special
-    uses:
-      max: 1
-      recharge: short-rest
-      scales_at:
-        - level: 17
-          value: 2
+    resources:
+      - id: "fighter:action-surge"
+        name: Action Surge
+        max_formula: "1"
+        scales_at: [{ level: 17, max: "2" }]
+        reset: short-rest
   second-wind:
     action_cost: bonus-action
-    uses:
-      max: 1
-      recharge: short-rest
-    healing:
-      dice: "1d10"
-      bonus: "{level}"
+    resources:
+      - id: "fighter:second-wind"
+        name: Second Wind
+        max_formula: "1"
+        reset: short-rest
+    healing: { dice: "1d10", bonus: "{level}" }
   # Barbarian
   rage:
     action_cost: bonus-action
-    uses:
-      max: 2
-      recharge: long-rest
-      scales_at:
-        - level: 3
-          max: 3
-        - level: 6
-          max: 4
-        - level: 12
-          max: 5
-        - level: 17
-          max: 6
-        - level: 20
-          max: 999  # unlimited
+    resources:
+      - id: "barbarian:rage"
+        name: Rage
+        max_formula: "2"
+        scales_at: [{ level: 3, max: "3" }, { level: 6, max: "4" }, { level: 12, max: "5" }, { level: 17, max: "6" }, { level: 20, max: "999" }]
+        reset: long-rest
   # Bard
+  # NOTE: 2014 Bardic Inspiration regains on a long rest until level 5, when
+  # Font of Inspiration switches it to short OR long rest. `reset` is a single
+  # enum and cannot express the level gate; we use short-rest (the 5+ behavior).
   bardic-inspiration:
     action_cost: bonus-action
-    uses:
-      max: "{cha_mod}"
-      recharge: short-rest  # at 5+, recharge: short-rest; below 5, long-rest. Simplified to short-rest baseline.
+    resources:
+      - id: "bard:bardic-inspiration"
+        name: Bardic Inspiration
+        max_formula: "{cha_mod}"
+        die: { base: d6, scaling: { 5: d8, 10: d10, 15: d12 } }
+        reset: short-rest
   # Cleric
+  # NOTE: feature-slug keying means this also lands on subclass Channel Divinity
+  # options (e.g. Oath of Devotion); cleric scaling is used for the shared pool.
   channel-divinity:
     action_cost: action
-    uses:
-      max: 1
-      recharge: short-rest
-      scales_at:
-        - level: 6
-          max: 2
-        - level: 18
-          max: 3
+    resources:
+      - id: "cleric:channel-divinity"
+        name: Channel Divinity
+        max_formula: "1"
+        scales_at: [{ level: 6, max: "2" }, { level: 18, max: "3" }]
+        reset: short-rest
   # Wizard
+  # NOTE: Arcane Recovery is "once per day" and requires a short rest; modeled
+  # here as a 1/long-rest pool that recovers spell-slot levels up to ceil(level/2).
   arcane-recovery:
     action_cost: special
-    uses:
-      max: 1
-      recharge: long-rest
+    resources:
+      - id: "wizard:arcane-recovery"
+        name: Arcane Recovery
+        max_formula: "1"
+        reset: long-rest
+        recovery: [{ id: "wizard:arcane-recovery-slots", name: "Recover spell slots", amount: "ceil({class_level}/2)", reset: long-rest }]
+  # Druid -- 2014 Wild Shape: 2 uses, regain on a short or long rest (no scaling
+  # on the base class; Circle of the Moon subclass changes this, not modeled here).
+  wild-shape:
+    action_cost: action
+    resources:
+      - id: "druid:wild-shape"
+        name: Wild Shape
+        max_formula: "2"
+        reset: short-rest
+  # Paladin
+  divine-sense:
+    action_cost: action
+    resources:
+      - id: "paladin:divine-sense"
+        name: Divine Sense
+        max_formula: "1 + {cha_mod}"
+        reset: long-rest
+  cleansing-touch:
+    action_cost: action
+    resources:
+      - id: "paladin:cleansing-touch"
+        name: Cleansing Touch
+        max_formula: "{cha_mod}"
+        reset: long-rest
+  # Warlock -- Eldritch Master: 1/long-rest recovery of Pact Magic slots.
+  eldritch-master:
+    action_cost: special
+    resources:
+      - id: "warlock:eldritch-master"
+        name: Eldritch Master
+        max_formula: "1"
+        reset: long-rest
 
 race_traits:
-  # Dragonborn
+  # Dragonborn -- 2014 breath weapon: 1 use, regain on a short or long rest.
   breath-weapon:
     action_cost: action
-    uses:
-      max: 1
-      recharge: short-rest
+    resources:
+      - id: "dragonborn:breath-weapon"
+        name: Breath Weapon
+        max_formula: "1"
+        reset: short-rest
     save:
       ability: dex   # default; ancestry varies
       dc_formula: "8 + {con_mod} + {prof_bonus}"
   # Half-Orc
   relentless-endurance:
     action_cost: special   # automatic on hit
-    uses:
-      max: 1
-      recharge: long-rest
+    resources:
+      - id: "half-orc:relentless-endurance"
+        name: Relentless Endurance
+        max_formula: "1"
+        reset: long-rest
     trigger: "reduced to 0 HP but not killed outright"
 
 optional_feature_slugs:

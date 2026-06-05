@@ -7,11 +7,19 @@ export const resourceSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   max_formula: z.string().min(1),
+  scales_at: z.array(z.object({
+    level: z.number().int().positive(),
+    max: z.string().min(1),
+  }).strict()).optional(),
   die: z.object({
     base: z.string().min(1),
     scaling: z.record(z.string(), z.string()).optional(),
   }).optional(),
   reset: resetTriggerEnum,
+  consumes: z.object({
+    resource: z.string().min(1),
+    amount: z.number().int().positive(),
+  }).optional(),
   recovery: z.array(z.object({
     id: z.string().min(1),
     name: z.string().min(1),

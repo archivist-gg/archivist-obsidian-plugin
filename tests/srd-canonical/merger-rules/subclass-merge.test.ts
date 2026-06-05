@@ -120,6 +120,28 @@ describe("subclassMergeRule", () => {
     expect(ra?.action).toBe("free");
   });
 
+  it("attaches overlay resources onto matching subclass feature by slug", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-5e_champion",
+      edition: "2014",
+      kind: "subclass",
+      base: baseChampion,
+      structured: null,
+      activation: null,
+      overlay: {
+        "improved-critical": {
+          resources: [{
+            id: "champion:improved-critical", name: "Improved Critical",
+            max_formula: "1", reset: "short-rest",
+          }],
+        },
+      },
+    };
+    const out = toSubclassCanonical(canonical);
+    const ic = out.features_by_level["3"]?.[0];
+    expect(ic?.resources?.[0]?.id).toBe("champion:improved-critical");
+  });
+
   it("emits empty resources array (Open5e exposes none on subclasses)", () => {
     const canonical: CanonicalEntry = {
       slug: "srd-5e_champion",

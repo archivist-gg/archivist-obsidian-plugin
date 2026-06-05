@@ -57,7 +57,16 @@
         "save": {
           "ability": "dex",
           "dc_formula": "8 + {con_mod} + {prof_bonus}"
-        }
+        },
+        "id": "breath-weapon",
+        "resources": [
+          {
+            "id": "dragonborn:breath-weapon",
+            "name": "Breath Weapon",
+            "max_formula": "1",
+            "reset": "short-rest"
+          }
+        ]
       },
       {
         "name": "Damage Resistance",
@@ -365,7 +374,16 @@
       {
         "name": "Relentless Endurance",
         "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest.",
-        "action_cost": "special"
+        "action_cost": "special",
+        "id": "relentless-endurance",
+        "resources": [
+          {
+            "id": "half-orc:relentless-endurance",
+            "name": "Relentless Endurance",
+            "max_formula": "1",
+            "reset": "long-rest"
+          }
+        ]
       },
       {
         "name": "Savage Attacks",
