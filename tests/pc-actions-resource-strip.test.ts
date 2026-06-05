@@ -81,6 +81,20 @@ describe("renderResourceStrip", () => {
     (root.querySelector(".pc-resource-step-plus") as HTMLElement).click();    // restore → used 3→2
     expect(setFeatureUse).toHaveBeenCalledWith("sp", 2);
   });
+
+  it("dedups a resource granted at multiple levels into a single badge", () => {
+    const root = mountContainer();
+    const bardic = () => ({
+      feature: { name: "Bardic Inspiration", resources: [{ id: "bard:bardic-inspiration", name: "Bardic Inspiration", max_formula: "{cha_mod}", reset: "short-rest" }] },
+      source: { kind: "class", slug: "bard", level: 1 },
+    });
+    renderResourceStrip(root, ctx(
+      [bardic(), bardic()],                                  // same id granted twice (levels 1 and 5)
+      { "bard:bardic-inspiration": { used: 0, max: 4 } },
+    ));
+    expect(root.querySelectorAll(".pc-resource-badge").length).toBe(1);   // not 2
+    expect(root.querySelectorAll(".pc-resource-name").length).toBe(1);
+  });
 });
 
 describe("renderResourceStrip — recovery picker", () => {

@@ -16,6 +16,7 @@ const RESET_LABEL: Record<string, string> = {
  *  NOT already shown inline in the Features table (dedup rule). */
 export function renderResourceStrip(root: HTMLElement, ctx: ComponentRenderContext): void {
   const entries: { resource: Resource; source: FeatureSource }[] = [];
+  const seen = new Set<string>();
   for (const rf of ctx.resolved.features ?? []) {
     const resources = rf.feature.resources;
     if (!resources?.length) continue;
@@ -23,6 +24,8 @@ export function renderResourceStrip(root: HTMLElement, ctx: ComponentRenderConte
     resources.forEach((r, i) => {
       if (!r.id) return;
       if (actionable && i === 0) return;          // shown inline in the Features table
+      if (seen.has(r.id)) return;                 // same id granted at multiple class levels → one badge
+      seen.add(r.id);
       entries.push({ resource: r, source: rf.source });
     });
   }
