@@ -57,4 +57,21 @@ describe("rest resets feature resources", () => {
     expect(character.state.feature_uses.a.used).toBe(0);
     expect(character.state.feature_uses.b.used).toBe(0);
   });
+
+  it("an orphaned feature_uses id (no matching resource) defaults to long-rest reset", () => {
+    // long rest clears it (default "long-rest")
+    {
+      const { character, resolved, derived } = setup({ orphan: { used: 1, max: 1 } }, []);
+      const plan = computeRestPlan(character, resolved, derived, null, "long");
+      applyRestResets(character, resolved, derived, plan, new Set());
+      expect(character.state.feature_uses.orphan.used).toBe(0);
+    }
+    // short rest leaves it (default "long-rest" is not short-rest)
+    {
+      const { character, resolved, derived } = setup({ orphan: { used: 1, max: 1 } }, []);
+      const plan = computeRestPlan(character, resolved, derived, null, "short");
+      applyRestResets(character, resolved, derived, plan, new Set());
+      expect(character.state.feature_uses.orphan.used).toBe(1);
+    }
+  });
 });
