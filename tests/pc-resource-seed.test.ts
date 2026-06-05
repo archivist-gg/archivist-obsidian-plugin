@@ -78,4 +78,30 @@ describe("seedFeatureUses", () => {
     seedFeatureUses(r, derived());
     expect(r.state.feature_uses["barbarian:rage"]).toEqual({ used: 2, max: 2 });
   });
+
+  it("skips a feature with no resources", () => {
+    const r = resolved(
+      [{ feature: { name: "X" }, source: { kind: "class", slug: "fighter", level: 1 } }],
+      5,
+      [{ entity: { slug: "fighter" }, level: 5 }],
+    );
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses).toEqual({});
+  });
+
+  it("leaves feature_uses untouched when there are no features", () => {
+    const r = resolved([], 5, [], { keep: { used: 1, max: 2 } });
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses).toEqual({ keep: { used: 1, max: 2 } });
+  });
+
+  it("skips a resource with an empty-string id", () => {
+    const r = resolved(
+      [{ feature: { name: "X", resources: [{ id: "", name: "X", max_formula: "1", reset: "short-rest" }] }, source: { kind: "class", slug: "fighter", level: 1 } }],
+      5,
+      [{ entity: { slug: "fighter" }, level: 5 }],
+    );
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses).toEqual({});
+  });
 });

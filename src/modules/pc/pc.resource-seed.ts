@@ -51,6 +51,8 @@ export function seedFeatureUses(resolved: ResolvedCharacter, derived: DerivedSta
     }
   }
 
+  // Seeding only adds/updates ids that are currently granted; stale ids from
+  // no-longer-owned features are intentionally left untouched (not pruned).
   for (const [id, max] of Object.entries(computed)) {
     const used = Math.min(fu[id]?.used ?? 0, max);
     fu[id] = { used, max };
