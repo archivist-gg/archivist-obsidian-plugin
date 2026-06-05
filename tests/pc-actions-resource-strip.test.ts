@@ -242,4 +242,24 @@ describe("renderResourceList — recovery action", () => {
     apply.click();   // disabled / nothing selected
     expect(useRecovery).not.toHaveBeenCalled();
   });
+
+  it("when the recovery use is already spent, shows a spent hint and no interactive picker", () => {
+    const root = mountContainer();
+    renderResourceList(root, ctx([FEATURE], { "wizard:arcane-recovery": { used: 1, max: 1 } }, null, {
+      spellSlots: SLOT_STATE,
+      derivedSpellSlots: DERIVED_SLOTS,
+    }));
+    // the recover area + header still render
+    const actions = root.querySelector(".pc-resource-actions");
+    expect(actions).toBeTruthy();
+    expect(root.querySelector(".pc-recover-title")?.textContent).toBe("Recover spell slots");
+    // but NO interactive picker: no slot pips and no Recover button
+    expect(root.querySelectorAll(".pc-slot-pip").length).toBe(0);
+    expect(root.querySelector(".pc-recover-apply")).toBeNull();
+    expect(root.querySelectorAll(".pc-recover-row").length).toBe(0);
+    // a muted spent hint explaining when it recharges
+    const hint = root.querySelector(".pc-recover-hint");
+    expect(hint?.textContent).toContain("Already used");
+    expect(hint?.textContent).toContain("Long Rest");
+  });
 });

@@ -107,7 +107,10 @@ function renderExpandBlock(
     renderTextWithInlineTags(feature.description, descEl);
   }
 
-  if (resource.recovery?.length) renderRecoveryAction(block, resource, source, ctx);
+  if (resource.recovery?.length) {
+    const fu = resource.id ? ctx.resolved.state.feature_uses?.[resource.id] : undefined;
+    renderRecoveryAction(block, resource, source, ctx, fu);
+  }
 }
 
 function renderCounter(track: HTMLElement, id: string, fu: { used: number; max: number }, ctx: ComponentRenderContext): void {
@@ -127,11 +130,25 @@ function renderCounter(track: HTMLElement, id: string, fu: { used: number; max: 
  * for recovery (within the level-total budget); over-budget pips are dimmed and
  * not selectable. Recover calls `useRecovery(id, picks)` and is disabled until
  * at least one pip is selected.
+ *
+ * When the recovery resource's own use is already spent (`fu.used >= fu.max`),
+ * the interactive picker is suppressed: we render only the header and a muted
+ * hint saying it's used and when it recharges. (Clicking Recover in that state
+ * would be a silent no-op, so we don't offer it.)
  */
-function renderRecoveryAction(block: HTMLElement, resource: Resource, source: FeatureSource, ctx: ComponentRenderContext): void {
+function renderRecoveryAction(block: HTMLElement, resource: Resource, source: FeatureSource, ctx: ComponentRenderContext, fu?: { used: number; max: number }): void {
   const rec = resource.recovery?.[0];
   const id = resource.id;
   if (!rec || !id) return;
+
+  // Use already spent → show a spent hint instead of an interactive picker.
+  if (fu && fu.used >= fu.max) {
+    const actions = block.createDiv({ cls: "pc-resource-actions" });
+    const head = actions.createDiv({ cls: "pc-recover-head" });
+    head.createSpan({ cls: "pc-recover-title", text: "Recover spell slots" });
+    actions.createDiv({ cls: "pc-recover-hint", text: `Already used — recharges on a ${RESET_LABEL[resource.reset] ?? "Special"}.` });
+    return;
+  }
 
   let budget = 0;
   try { budget = Math.max(0, Math.floor(evaluateMaxFormula(String(rec.amount), resourceBindings(ctx.resolved, ctx.derived, source)))); } catch { budget = 0; }
