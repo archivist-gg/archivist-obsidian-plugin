@@ -52,3 +52,24 @@ describe("evaluateMaxFormula precedence and edges", () => {
     expect(evaluateMaxFormula("2 ", ctx)).toBe(2);
   });
 });
+
+describe("DSL extension — division, ceil/floor, parens", () => {
+  it("real division then ceil/floor", () => {
+    expect(evaluateMaxFormula("ceil({class_level}/2)", ctx)).toBe(3);   // ceil(5/2)
+    expect(evaluateMaxFormula("floor({class_level}/2)", ctx)).toBe(2);  // floor(5/2)
+    expect(evaluateMaxFormula("level / 2", ctx)).toBe(2.5);
+  });
+  it("parentheses group", () => {
+    expect(evaluateMaxFormula("(1 + level) * 2", ctx)).toBe(12);
+  });
+  it("validates the new grammar", () => {
+    for (const f of ["ceil({class_level}/2)", "floor(level/3)", "(level + 1) * prof", "level / 2"]) {
+      expect(isValidMaxFormula(f)).toBe(true);
+    }
+  });
+  it("still rejects malformed input", () => {
+    for (const f of ["level /", "ceil(", "ceil()", "floor level", "( 1 + 2"]) {
+      expect(isValidMaxFormula(f)).toBe(false);
+    }
+  });
+});
