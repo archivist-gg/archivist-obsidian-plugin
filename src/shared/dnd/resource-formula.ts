@@ -137,3 +137,22 @@ export function evaluateMaxFormula(formula: string, bindings: FormulaBindings): 
   if (v === null) throw new Error(`invalid max_formula: ${JSON.stringify(formula)}`);
   return v;
 }
+
+export interface ScalableResource {
+  max_formula: string;
+  scales_at?: { level: number; max: string }[];
+}
+
+/** The max-formula string in effect at `totalLevel`: the highest `scales_at`
+ *  step whose level ≤ totalLevel, else the base `max_formula`. */
+export function resolveMaxAt(totalLevel: number, resource: ScalableResource): string {
+  let chosen = resource.max_formula;
+  let best = 0;
+  for (const step of resource.scales_at ?? []) {
+    if (step.level <= totalLevel && step.level > best) {
+      best = step.level;
+      chosen = step.max;
+    }
+  }
+  return chosen;
+}
