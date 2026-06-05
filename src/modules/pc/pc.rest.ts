@@ -14,6 +14,23 @@ function resolveItemName(
   return registry.getBySlug(slug)?.name;
 }
 
+/**
+ * First resource across all resolved features whose id matches `id`. The
+ * returned `label` prefers the resource's own name, falling back to the owning
+ * feature's name (resources synthesised from older fixtures may omit `name`).
+ */
+function findResourceById(
+  resolved: ResolvedCharacter,
+  id: string,
+): { label: string | undefined; reset: string } | undefined {
+  for (const rf of resolved.features ?? []) {
+    for (const r of rf.feature.resources ?? []) {
+      if (r.id === id) return { label: r.name ?? rf.feature.name, reset: r.reset };
+    }
+  }
+  return undefined;
+}
+
 export type RestType = "short" | "long";
 
 export type RestCategoryId =
@@ -106,17 +123,17 @@ export function computeRestPlan(
       }
     }
 
-    // Feature uses — long rest restores BOTH short-rest and long-rest resets
+    // Feature uses — a long rest restores short-rest, long-rest, dawn and dusk
+    // resets (it spans the night). turn/round are encounter-scoped (never reset
+    // by rest). See SP4d Phase 2 spec §5.
     for (const [key, fu] of Object.entries(character.state.feature_uses ?? {})) {
       if (fu.used <= 0) continue;
-      const rf = (resolved.features ?? []).find((r: { feature: { id?: string; name: string; resources?: Array<{ id?: string; reset: string }> } }) =>
-        (r.feature.resources?.[0]?.id ?? r.feature.id) === key,
-      );
-      const reset = rf?.feature.resources?.[0]?.reset ?? "long-rest";
-      if (reset !== "short-rest" && reset !== "long-rest") continue;
+      const res = findResourceById(resolved, key);
+      const reset = res?.reset ?? "long-rest";
+      if (reset !== "short-rest" && reset !== "long-rest" && reset !== "dawn" && reset !== "dusk") continue;
       cats.push({
         id: `feature:${key}`,
-        label: rf?.feature.name ?? key,
+        label: res?.label ?? key,
         preview: `${fu.used}/${fu.max} restored`,
       });
     }
@@ -142,14 +159,11 @@ export function computeRestPlan(
   if (type === "short") {
     for (const [key, fu] of Object.entries(character.state.feature_uses ?? {})) {
       if (fu.used <= 0) continue;
-      const rf = (resolved.features ?? []).find((r: { feature: { id?: string; name: string; resources?: Array<{ id?: string; reset: string }> } }) =>
-        (r.feature.resources?.[0]?.id ?? r.feature.id) === key,
-      );
-      const reset = rf?.feature.resources?.[0]?.reset ?? "long-rest";
-      if (reset !== "short-rest") continue;
+      const res = findResourceById(resolved, key);
+      if ((res?.reset ?? "long-rest") !== "short-rest") continue;
       cats.push({
         id: `feature:${key}`,
-        label: rf?.feature.name ?? key,
+        label: res?.label ?? key,
         preview: `${fu.used}/${fu.max} restored`,
       });
     }
