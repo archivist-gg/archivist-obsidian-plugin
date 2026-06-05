@@ -569,6 +569,27 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /**
+   * Spend one use of a recovery-bearing resource (e.g. Wizard Arcane Recovery)
+   * to restore spell slots. `picks` maps spell level → count to restore. The
+   * UI enforces the level-total budget; this clamps per-slot (never below 0)
+   * and ignores levels above 5 (RAW cap).
+   */
+  useRecovery(resourceId: string, picks: Record<number, number>): void {
+    const fu = this.character.state.feature_uses?.[resourceId];
+    if (!fu || fu.used >= fu.max) return;
+    const slots = this.character.state.spell_slots ?? (this.character.state.spell_slots = {});
+    for (const [lvlStr, count] of Object.entries(picks)) {
+      const lvl = Number(lvlStr);
+      if (!Number.isInteger(lvl) || lvl < 1 || lvl > 5) continue;
+      const slot = slots[lvl];
+      if (!slot) continue;
+      slot.used = Math.max(0, slot.used - Math.max(0, Math.floor(count)));
+    }
+    fu.used += 1;
+    this.onChange();
+  }
+
   expendPactSlot(): void {
     const pact = this.getContext().derived.pactMagic;
     if (!pact) return;
