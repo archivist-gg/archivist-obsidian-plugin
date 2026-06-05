@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PC Sheet — Resources / Features / Feats (as-built visual companion)</title>
+<style>
+/* ============================================================================
+ * VISUAL COMPANION — faithful reproduction of the as-built PC sheet UI.
+ *
+ * All rules below are copied VERBATIM from the plugin source on branch
+ * feat/sp4d-phase2-resource-engine, except this header comment and the
+ * standalone-fallback block immediately below. Source files:
+ *   - src/modules/pc/styles/tokens.css        (design tokens + base sheet)
+ *   - src/modules/pc/styles/components.css     (tab-heading + resource strip)
+ *   - src/modules/pc/styles/actions.css        (cost badge, charge wrapper, features table, expand)
+ *   - src/modules/pc/styles/blocks.css         (feature/feat blocks)
+ *   - src/styles/archivist-dnd.css             (.archivist-toggle-box pip visuals + :root d5e vars)
+ *
+ * Page chrome (the <h2> section labels and <p class="companion-caption">)
+ * is NOT part of the plugin; it exists only to organize this review page and
+ * is styled below the verbatim block under a clearly-marked companion section.
+ * ==========================================================================*/
+
+/* ---- STANDALONE FALLBACK (companion-only) -----------------------------------
+ * The PC sheet references a handful of theme variables that, in Obsidian, come
+ * from the d5e theme (src/styles/archivist-dnd.css :root) or Obsidian core.
+ * These are the REAL values copied verbatim from archivist-dnd.css :root so the
+ * companion renders identically standalone. Stubbed vars used by the reproduced
+ * sections:
+ *   --d5e-parchment      #f0ddbd   (sheet background fallback)
+ *   --d5e-border-tan     #d9c484   (toggle-box border)
+ *   --d5e-text-accent    #7a200d   (toggle-box checked border + X-cross)
+ *   --text-muted         (Obsidian core; only used by the shared
+ *                          .pc-charges-widget which this page does not render —
+ *                          stubbed for completeness)
+ * -------------------------------------------------------------------------- */
+:root {
+  --d5e-parchment: #f0ddbd;
+  --d5e-parchment-dark: #f4e4c1;
+  --d5e-parchment-light: #fef8ee;
+  --d5e-text-dark: #191813;
+  --d5e-text-accent: #7a200d;
+  --d5e-border-tan: #d9c484;
+  --d5e-border-tan-light: #e8dcc0;
+  --d5e-border-tan-dark: #c4a95e;
+  /* Obsidian core fallback (not used by reproduced sections; stubbed for safety) */
+  --text-muted: #8a7a6a;
+}
+
+/* ============================ VERBATIM PLUGIN CSS ===========================*/
+
+/* ---- src/modules/pc/styles/tokens.css (design tokens + base .archivist-pc-sheet) ---- */
+.archivist-pc-sheet {
+  --pc-parchment-light: #fdf1dc;
+  --pc-parchment-dark: #e8d5b0;
+  --pc-crimson: #922610;
+  --pc-crimson-light: #a83220;
+  --pc-tan: #d9c484;
+  --pc-tan-muted: #c4b07a;
+  --pc-text-primary: #1a1a1a;
+  --pc-text-muted: #8a7a6a;
+  --pc-text-soft: #6b5e4b;
+  --pc-white: #ffffff;
+
+  --pc-font-serif: 'Libre Baskerville', Georgia, serif;
+  --pc-font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+
+  /* --------------------------------------------------------------
+   * Type scale — 9 sizes, mapped to roles. Every selector below
+   * references one of these; no raw px font-sizes elsewhere.
+   * -------------------------------------------------------------- */
+  --pc-fs-display: 22px;      /* character name */
+  --pc-fs-big:     22px;      /* primary big values (ab-mod, ac-num, tile-val) */
+  --pc-fs-mid:     18px;      /* secondary big values (hp-val, hd-nums) */
+  --pc-fs-title:   16px;      /* block title, currency/sense/slot large val */
+  --pc-fs-heading: 14px;      /* tab heading, block subtitle */
+  --pc-fs-body:    12px;      /* body text, skill rows, tables, descriptions */
+  --pc-fs-small:   11px;      /* secondary meta, tab buttons, inline bonuses */
+  --pc-fs-label:   10px;      /* section/microcap labels (uppercase) */
+  --pc-fs-micro:    8px;      /* super-tight uppercase labels (cartouche / tile) */
+  --pc-fs-tiny:   7.5px;      /* tightest microcap (save-chip "SAVE") */
+
+  --pc-lh-tight:  1;
+  --pc-lh-snug:   1.2;
+  --pc-lh-value:  1.05;
+  --pc-lh-body:   1.45;
+
+  /* Uppercase micro-label letter-spacing ramp (smaller = wider). */
+  --pc-ls-caps-sm:    0.08em;    /* 11-14px uppercase (buttons, subtitle) */
+  --pc-ls-caps-md:    0.14em;    /* 8-10px standard microcap */
+  --pc-ls-caps-lg:    0.2em;     /* 7.5-8px display microcap (AC / HP / HD) */
+
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
+  --pc-space-5: 24px;
+  --pc-space-6: 32px;
+
+  /* --------------------------------------------------------------
+   * Sheet-width breakpoint tiers — used with @container only.
+   * Browsers do not support var() inside @container conditions,
+   * so call sites use literal values. These tokens are the single
+   * source of truth; any drift between this block and a use site
+   * is a code-review item.
+   *
+   * Each token is the inclusive lower bound of its tier:
+   *   wide   >= 900   default 2-col body, full ability row
+   *   medium 700-899  stats-band collapses; abilities auto-fit
+   *   narrow 500-699  sidebar stacks; SAVE label hidden
+   *   tiny   < 500    2-col abilities, single-col tiles
+   *
+   * "Below tier X" rules fire at max-width: <X minus 1>px.
+   * -------------------------------------------------------------- */
+  --pc-bp-wide:    900px;
+  --pc-bp-medium:  700px;
+  --pc-bp-narrow:  500px;
+  --pc-bp-tiny:    0;
+
+  /* Minimum cell widths for auto-fit grids — currently used by
+   * .pc-ability-row (cell-min-ability) and .pc-hd-widget
+   * (cell-min-stat-tile). Add more entries here when introducing
+   * a new auto-fit grid; the file is the single source of truth. */
+  --pc-cell-min-ability:    64px;
+  --pc-cell-min-stat-tile: 130px;
+
+  --pc-radius-sm: 4px;
+  --pc-radius-md: 6px;
+  --pc-radius-lg: 12px;
+
+  /* --------------------------------------------------------------
+   * Rarity palette — italic + tinted hue for item names.
+   * Common defaults to the existing primary text color (no override).
+   * -------------------------------------------------------------- */
+  --pc-rarity-common:    var(--pc-text-primary);
+  --pc-rarity-uncommon:  #2f6f3a;
+  --pc-rarity-rare:      #1f3f7a;
+  --pc-rarity-very-rare: #5d2d8c;
+  --pc-rarity-legendary: #a3590a;
+  --pc-rarity-artifact:  var(--pc-crimson);
+  --pc-rarity-legacy:    #8a5a2a;
+
+  /* Coin colors — dramatic + harmonized */
+  --pc-coin-pp: #1f3f7a;  /* matches --pc-rarity-rare */
+  --pc-coin-gp: #a3590a;  /* matches --pc-rarity-legendary */
+  --pc-coin-ep: #6b6f2a;
+  --pc-coin-sp: #4a5a66;
+  --pc-coin-cp: #8a3d1f;
+
+  /* Attunement medallion sizing (used by attune-medallion.ts) */
+  --pc-medallion-size:   50px;
+  --pc-medallion-stroke: 1.5px;
+
+  background: var(--d5e-parchment, #f0ddbd);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  padding: var(--pc-space-5);
+  min-height: 100%;
+}
+
+/* ---- src/modules/pc/styles/components.css (tab-heading + resource strip) ---- */
+.archivist-pc-sheet .pc-tab-heading {
+  font-family: var(--pc-font-serif);
+  color: var(--pc-crimson);
+  font-size: var(--pc-fs-heading);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  margin: var(--pc-space-3) 0 var(--pc-space-2);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-tab-heading:first-child { margin-top: 0; }
+.archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); margin-top: var(--pc-space-1); }
+.archivist-pc-sheet .pc-resource-badge {
+  background: var(--pc-parchment-dark);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  min-width: 104px;
+}
+.archivist-pc-sheet .pc-resource-badge-head {
+  display: flex; justify-content: space-between; gap: var(--pc-space-2);
+  align-items: baseline; margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-resource-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-resource-die { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-resource-reset { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); margin-top: var(--pc-space-2); }
+
+.archivist-pc-sheet .pc-resource-counter { display: inline-flex; align-items: center; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-resource-counter-val { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-title); min-width: 46px; text-align: center; }
+.archivist-pc-sheet .pc-resource-step {
+  width: 20px; height: 20px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  background: var(--pc-parchment-light); color: var(--pc-crimson); font-weight: 700; cursor: pointer;
+  line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.archivist-pc-sheet .pc-resource-recover-btn,
+.archivist-pc-sheet .pc-resource-picker-apply {
+  margin-top: var(--pc-space-2); font-size: var(--pc-fs-small); font-family: var(--pc-font-sans);
+  background: var(--pc-crimson); color: #fff; border: none; border-radius: var(--pc-radius-sm);
+  padding: 2px 8px; cursor: pointer;
+}
+.archivist-pc-sheet .pc-resource-recover-btn:disabled { background: var(--pc-text-muted); cursor: default; }
+.archivist-pc-sheet .pc-resource-picker { margin-top: var(--pc-space-2); border-top: 1px dashed var(--pc-tan-muted); padding-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-resource-picker-remaining { font-size: var(--pc-fs-small); color: var(--pc-text-soft); margin-bottom: var(--pc-space-1); }
+.archivist-pc-sheet .pc-resource-picker-row { display: flex; align-items: center; gap: var(--pc-space-2); font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-resource-picker-row button { width: 18px; height: 18px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); background: var(--pc-parchment-light); color: var(--pc-crimson); cursor: pointer; line-height: 1; }
+.archivist-pc-sheet .pc-resource-picker-val { min-width: 14px; text-align: center; }
+
+/* ---- src/modules/pc/styles/actions.css (cost badge, charge wrapper, features table, expand) ---- */
+/* ---------- Cost badge (pill rendered next to action rows) ---------- */
+.archivist-pc-sheet .pc-cost-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: var(--pc-fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  color: #fff;
+  line-height: var(--pc-lh-tight);
+}
+.archivist-pc-sheet .pc-cost-badge.cost-action   { background: var(--pc-crimson); }
+.archivist-pc-sheet .pc-cost-badge.cost-bonus    { background: var(--pc-rarity-legendary); }
+.archivist-pc-sheet .pc-cost-badge.cost-reaction { background: var(--pc-rarity-rare); }
+.archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
+
+/* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
+ * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
+ * Here we only own the outer flex wrapper that places the pip row next to the
+ * italic recovery suffix ("/ Dawn 1d6+1"), and the suffix's typography. */
+.archivist-pc-sheet .pc-charge-boxes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-charge-recovery {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+
+/* ---------- Row-expand panel (Weapons/Items/Features) ---------- */
+.archivist-pc-sheet .pc-action-row { cursor: pointer; }
+.archivist-pc-sheet .pc-action-row:hover { background: rgba(255, 255, 255, 0.18); }
+.archivist-pc-sheet .pc-action-expand-row {
+  background: rgba(255, 255, 255, 0.22);
+}
+.archivist-pc-sheet .pc-action-expand-inner {
+  padding: var(--pc-space-3);
+  border-left: 3px solid var(--pc-crimson);
+  margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
+}
+
+/* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
+.archivist-pc-sheet .pc-actions-section { margin-bottom: var(--pc-space-4); }
+.archivist-pc-sheet .pc-actions-section-head {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  margin-bottom: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan-muted);
+  padding-bottom: var(--pc-space-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.archivist-pc-sheet .pc-actions-section-count {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  letter-spacing: var(--pc-ls-caps-md);
+  font-weight: 600;
+}
+
+.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-actions-table th {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  text-align: left;
+  padding: var(--pc-space-1) var(--pc-space-1);
+  border-bottom: 1px solid var(--pc-tan-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  font-weight: 600;
+}
+.archivist-pc-sheet .pc-actions-table td {
+  padding: var(--pc-space-2) var(--pc-space-1);
+  vertical-align: middle;
+  border-bottom: 1px dashed var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-actions-table tr:last-child td { border-bottom: none; }
+.archivist-pc-sheet .pc-action-row-name {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-action-row-sub {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
+/* ---------- Feature expand panel (FeaturesTable expanded row body) ---------- */
+.archivist-pc-sheet .pc-feature-expand-title {
+  font-family: var(--pc-font-serif);
+  font-weight: 700;
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  margin-bottom: var(--pc-space-1);
+}
+.archivist-pc-sheet .pc-feature-expand-meta {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+  margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-feature-expand-body {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  line-height: var(--pc-lh-body);
+}
+.archivist-pc-sheet .pc-feature-expand-body p { margin: 0 0 var(--pc-space-2); }
+.archivist-pc-sheet .pc-feature-expand-attacks {
+  margin-top: var(--pc-space-2);
+  padding-left: var(--pc-space-2);
+  border-left: 2px solid var(--pc-tan);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+
+/* ---- src/styles/archivist-dnd.css (.archivist-toggle-box pip visuals) ---- */
+.archivist-toggle-box-row {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 12px 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.archivist-toggle-box {
+  position: relative;
+  width: 18px !important;
+  height: 18px !important;
+  border: 2px solid var(--d5e-border-tan) !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border-radius: 2px !important;
+  cursor: pointer;
+  display: inline-block;
+  padding: 0 !important;
+  margin: 0;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.archivist-toggle-box:hover {
+  border-color: var(--d5e-text-accent) !important;
+}
+
+.archivist-toggle-box-checked {
+  border-color: var(--d5e-text-accent) !important;
+}
+
+/* X cross inside a checked box — drawn with two rotated pseudo-element lines */
+.archivist-toggle-box-checked::before,
+.archivist-toggle-box-checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.5px;
+  height: 20px;
+  background-color: var(--d5e-text-accent);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.archivist-toggle-box-checked::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.archivist-toggle-box-checked::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* ---- src/modules/pc/styles/blocks.css (feature/feat blocks) ---- */
+/* Feature block wrappers — flat on parchment. No card background, no outer
+   border. The title carries a crimson hairline rule. Blocks are separated
+   by generous vertical rhythm. */
+.archivist-pc-sheet .pc-block {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: var(--pc-space-4);
+}
+.archivist-pc-sheet .pc-block-title {
+  margin: 0 0 var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  color: var(--pc-crimson);
+  font-size: var(--pc-fs-title);
+  font-weight: 700;
+  line-height: var(--pc-lh-snug);
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--pc-crimson);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+}
+.archivist-pc-sheet .pc-block-subtitle {
+  margin: var(--pc-space-3) 0 var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-heading);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-sm);
+  line-height: var(--pc-lh-snug);
+}
+.archivist-pc-sheet .pc-block-description {
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  margin: 0 0 var(--pc-space-2);
+  line-height: var(--pc-lh-body);
+}
+.archivist-pc-sheet .pc-block-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pc-space-3);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-meta-label { font-weight: 600; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-feature-item {
+  border-left: 2px solid var(--pc-tan);
+  padding-left: var(--pc-space-3);
+}
+.archivist-pc-sheet .pc-feature-desc {
+  white-space: pre-wrap;
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  margin-top: 2px;
+  line-height: var(--pc-lh-body);
+}
+.archivist-pc-sheet .pc-feat-prereq {
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  font-style: italic;
+  margin-top: var(--pc-space-1);
+}
+
+/* ============================ COMPANION PAGE CHROME =========================
+ * Not part of the plugin. Neutral page background so the parchment sheet
+ * (which sets its own background via .archivist-pc-sheet) stands out, plus
+ * styling for the review-only section labels and captions.
+ * ==========================================================================*/
+html, body { margin: 0; }
+body {
+  background: #5a5a5a;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1a1a1a;
+}
+.companion-header {
+  color: #f0ddbd;
+  padding: 20px 24px 0;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.companion-header h1 { font-size: 20px; margin: 0 0 4px; }
+.companion-header p { font-size: 13px; opacity: 0.85; margin: 0 0 4px; line-height: 1.5; }
+.companion-section-label {
+  color: #f0ddbd;
+  font-size: 16px;
+  margin: 28px 0 6px;
+  padding: 0 24px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.companion-caption {
+  color: #d8d2c4;
+  font-style: italic;
+  font-size: 12px;
+  margin: 4px 0 10px;
+  padding: 0 24px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+.archivist-pc-sheet {
+  max-width: 1000px;
+  margin: 0 auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+</style>
+</head>
+<body>
+
+<div class="companion-header">
+  <h1>PC Sheet — Resources / Features / Feats</h1>
+  <p>As-built visual companion (branch <code>feat/sp4d-phase2-resource-engine</code>). Every element below uses the real component class names and the verbatim plugin CSS, so it renders the way Obsidian shows it. The dark page background is companion-only; the parchment panels set their own background via <code>.archivist-pc-sheet</code>.</p>
+</div>
+
+<!-- =========================================================================
+     SECTION A — Resources strip (Phase-2). Mirrors renderResourceStrip /
+     renderResourceBadge / renderCounter / renderRecoveryButton /
+     openRecoveryPicker from
+     src/modules/pc/components/actions/resource-badge.ts
+     and renderChargeBoxes from .../charge-boxes.ts.
+     ====================================================================== -->
+<h2 class="companion-section-label">A. Resources strip (Phase-2 resource engine)</h2>
+<p class="companion-caption">
+  <code>h4.pc-tab-heading "Resources"</code> heading followed by <code>.pc-resource-strip</code>.
+  Each badge is one pool resource. Counter variant appears when <code>max &gt; 6</code> (COUNTER_THRESHOLD); otherwise pip charge-boxes (a box is checked when <code>i &lt; used</code>).
+  Captions per badge below.
+</p>
+
+<div class="archivist-pc-sheet">
+
+  <!-- renderResourceStrip: h4.pc-tab-heading "Resources" -->
+  <h4 class="pc-tab-heading">Resources</h4>
+
+  <!-- root.createDiv({ cls: "pc-resource-strip" }) -->
+  <div class="pc-resource-strip">
+
+    <!-- ===== Rage: pip badge, max 3, used 1 → 1 checked box; reset Long rest ===== -->
+    <div class="pc-resource-badge">
+      <div class="pc-resource-badge-head">
+        <span class="pc-resource-name">Rage</span>
+      </div>
+      <!-- renderChargeBoxes: wrap.pc-charge-boxes > .archivist-toggle-box-row > N boxes -->
+      <div class="pc-charge-boxes">
+        <div class="archivist-toggle-box-row">
+          <div class="archivist-toggle-box archivist-toggle-box-checked"></div>
+          <div class="archivist-toggle-box"></div>
+          <div class="archivist-toggle-box"></div>
+        </div>
+      </div>
+      <div class="pc-resource-reset">Long rest</div>
+    </div>
+
+    <!-- ===== Bardic Inspiration: pip badge WITH a die (d8), max 4 used 0; reset Short rest ===== -->
+    <div class="pc-resource-badge">
+      <div class="pc-resource-badge-head">
+        <span class="pc-resource-name">Bardic Inspiration</span>
+        <span class="pc-resource-die">d8</span>
+      </div>
+      <div class="pc-charge-boxes">
+        <div class="archivist-toggle-box-row">
+          <div class="archivist-toggle-box"></div>
+          <div class="archivist-toggle-box"></div>
+          <div class="archivist-toggle-box"></div>
+          <div class="archivist-toggle-box"></div>
+        </div>
+      </div>
+      <div class="pc-resource-reset">Short rest</div>
+    </div>
+
+    <!-- ===== Sorcery Points: counter variant, max 9 used 3 → shows remaining 6/9; reset Long rest ===== -->
+    <div class="pc-resource-badge">
+      <div class="pc-resource-badge-head">
+        <span class="pc-resource-name">Sorcery Points</span>
+      </div>
+      <!-- renderCounter: wrap.pc-resource-counter > minus / val / plus -->
+      <div class="pc-resource-counter">
+        <button class="pc-resource-step pc-resource-step-minus" aria-label="Spend one use">−</button>
+        <span class="pc-resource-counter-val">6/9</span>
+        <button class="pc-resource-step pc-resource-step-plus" aria-label="Restore one use">+</button>
+      </div>
+      <div class="pc-resource-reset">Long rest</div>
+    </div>
+
+    <!-- ===== Arcane Recovery: pip badge max 1 used 0, reset Long rest, WITH recovery button + picker OPEN ===== -->
+    <div class="pc-resource-badge">
+      <div class="pc-resource-badge-head">
+        <span class="pc-resource-name">Arcane Recovery</span>
+      </div>
+      <div class="pc-charge-boxes">
+        <div class="archivist-toggle-box-row">
+          <div class="archivist-toggle-box"></div>
+        </div>
+      </div>
+      <div class="pc-resource-reset">Long rest</div>
+      <!-- renderRecoveryButton: button.pc-resource-recover-btn, text = recovery[0].name -->
+      <button class="pc-resource-recover-btn">Arcane Recovery</button>
+      <!-- openRecoveryPicker: badge > .pc-resource-picker (shown OPEN here) -->
+      <div class="pc-resource-picker">
+        <div class="pc-resource-picker-remaining">Slot levels left: 3</div>
+        <!-- one .pc-resource-picker-row per derived slot level 1..5 (here L1/L2/L3) -->
+        <div class="pc-resource-picker-row">
+          <span>L1</span>
+          <button aria-label="Restore one level 1 slot">−</button>
+          <span class="pc-resource-picker-val">0</span>
+          <button aria-label="Use one level 1 slot">+</button>
+        </div>
+        <div class="pc-resource-picker-row">
+          <span>L2</span>
+          <button aria-label="Restore one level 2 slot">−</button>
+          <span class="pc-resource-picker-val">0</span>
+          <button aria-label="Use one level 2 slot">+</button>
+        </div>
+        <div class="pc-resource-picker-row">
+          <span>L3</span>
+          <button aria-label="Restore one level 3 slot">−</button>
+          <span class="pc-resource-picker-val">0</span>
+          <button aria-label="Use one level 3 slot">+</button>
+        </div>
+        <button class="pc-resource-picker-apply">Recover</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<p class="companion-caption">
+  Badge captions — <b>Rage</b>: pips, 1 of 3 used (one X box), Long rest.
+  <b>Bardic Inspiration</b>: pips + <code>.pc-resource-die "d8"</code>, 0 of 4 used, Short rest.
+  <b>Sorcery Points</b>: counter (max 9 &gt; threshold 6), 3 used → displays remaining <code>6/9</code> with −/+ steppers, Long rest.
+  <b>Arcane Recovery</b>: pip 0/1 + crimson recovery button + the inline <code>.pc-resource-picker</code> shown open (L1/L2/L3 steppers, "Slot levels left: 3", Recover).
+</p>
+
+<!-- =========================================================================
+     SECTION B — Features table. Mirrors FeaturesTable.render() from
+     src/modules/pc/components/actions/features-table.ts:
+       section.pc-actions-section > head(.pc-actions-section-head)
+         > .pc-actions-section-title + .pc-actions-section-count
+       table.pc-actions-table.pc-features-table > tbody
+         > tr.pc-action-row : td[cost-badge] | td[name+sub] | td[Self] | td[charge boxes or —]
+     renderChargeBoxes here also emits the .pc-charge-recovery "/ <reset>" suffix.
+     An expanded row (tr.pc-action-expand-row) is shown for Channel Divinity.
+     NOTE: the table renders tbody-only (no <thead>) — matching the component.
+     ====================================================================== -->
+<h2 class="companion-section-label">B. Features table (Actions tab)</h2>
+<p class="companion-caption">
+  Only features with a real action cost are listed (<code>feature.action &amp;&amp; !== "special"</code>). Columns: cost badge · name + source sub · target ("Self") · inline charge boxes with <code>/ &lt;reset&gt;</code> suffix (or "—" when no resource). One row is shown expanded to demonstrate <code>.pc-action-expand-row</code>.
+</p>
+
+<div class="archivist-pc-sheet">
+  <div class="pc-actions-section">
+    <div class="pc-actions-section-head">
+      <span class="pc-actions-section-title">Features</span>
+      <span class="pc-actions-section-count">4 features</span>
+    </div>
+
+    <table class="pc-actions-table pc-features-table">
+      <tbody>
+
+        <!-- Second Wind — bonus action — 0/1 box, / Short Rest -->
+        <tr class="pc-action-row">
+          <td><div class="pc-cost-badge cost-bonus">Bonus</div></td>
+          <td>
+            <div class="pc-action-row-name">Second Wind</div>
+            <div class="pc-action-row-sub">Fighter 1</div>
+          </td>
+          <td>Self</td>
+          <td>
+            <div class="pc-charge-boxes">
+              <div class="archivist-toggle-box-row">
+                <div class="archivist-toggle-box"></div>
+              </div>
+              <div class="pc-charge-recovery">/ Short Rest</div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Action Surge — action — 1/1 box (used), / Short Rest -->
+        <tr class="pc-action-row">
+          <td><div class="pc-cost-badge cost-action">Action</div></td>
+          <td>
+            <div class="pc-action-row-name">Action Surge</div>
+            <div class="pc-action-row-sub">Fighter 2</div>
+          </td>
+          <td>Self</td>
+          <td>
+            <div class="pc-charge-boxes">
+              <div class="archivist-toggle-box-row">
+                <div class="archivist-toggle-box archivist-toggle-box-checked"></div>
+              </div>
+              <div class="pc-charge-recovery">/ Short Rest</div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Channel Divinity — action — 1/2 boxes (one used), / Short Rest. Row shown OPEN. -->
+        <tr class="pc-action-row open">
+          <td><div class="pc-cost-badge cost-action">Action</div></td>
+          <td>
+            <div class="pc-action-row-name">Channel Divinity</div>
+            <div class="pc-action-row-sub">Cleric 2</div>
+          </td>
+          <td>Self</td>
+          <td>
+            <div class="pc-charge-boxes">
+              <div class="archivist-toggle-box-row">
+                <div class="archivist-toggle-box archivist-toggle-box-checked"></div>
+                <div class="archivist-toggle-box"></div>
+              </div>
+              <div class="pc-charge-recovery">/ Short Rest</div>
+            </div>
+          </td>
+        </tr>
+        <!-- expand row for Channel Divinity -->
+        <tr class="pc-action-expand-row">
+          <td colspan="4">
+            <div class="pc-action-expand-inner">
+              <!-- renderFeatureExpand: .pc-feature-expand > title / meta / body -->
+              <div class="pc-feature-expand">
+                <div class="pc-feature-expand-title">Channel Divinity</div>
+                <div class="pc-feature-expand-meta">Cleric 2</div>
+                <div class="pc-feature-expand-body">
+                  <p>You can channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. When you use your Channel Divinity, you choose which effect to create.</p>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- A passive/at-will-style action feature with no resource → charge cell shows "—" -->
+        <tr class="pc-action-row">
+          <td><div class="pc-cost-badge cost-bonus">Bonus</div></td>
+          <td>
+            <div class="pc-action-row-name">Cunning Action</div>
+            <div class="pc-action-row-sub">Rogue 2</div>
+          </td>
+          <td>Self</td>
+          <td><span>—</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="companion-caption">
+  Row captions — <b>Second Wind</b> (Bonus): 0 of 1 used. <b>Action Surge</b> (Action): 1 of 1 used (X box).
+  <b>Channel Divinity</b> (Action): 1 of 2 used, shown with its expand panel open (<code>.pc-action-expand-row</code> → <code>renderFeatureExpand</code>).
+  <b>Cunning Action</b> (Bonus): no resource, charge cell renders "—".
+  The section count text comes from the component (<code>${visible.length} features</code>).
+</p>
+
+<!-- =========================================================================
+     SECTION C — Feats. Mirrors FeatBlock.render() from
+     src/modules/pc/blocks/feat-block.ts (rendered inside features-tab under
+     .pc-features-section.pc-features-feat-block):
+       per feat: section.pc-block.pc-feat-block
+         > h3.pc-block-title
+         > p.pc-block-description           (when description present)
+         > .pc-feat-prereq                  (when prerequisites present)
+     ====================================================================== -->
+<h2 class="companion-section-label">C. Feats (Features tab)</h2>
+<p class="companion-caption">
+  Each feat is a <code>.pc-block.pc-feat-block</code> with an <code>h3.pc-block-title</code>, optional <code>p.pc-block-description</code>, and an optional <code>.pc-feat-prereq</code> line. Shown inside the features-tab section wrappers.
+</p>
+
+<div class="archivist-pc-sheet">
+  <!-- features-tab wrappers: .pc-tab-body.pc-features-body > .pc-features-section.pc-features-feat-block -->
+  <div class="pc-tab-body pc-features-body">
+    <div class="pc-features-section pc-features-feat-block">
+
+      <!-- Feat 1: description only -->
+      <div class="pc-block pc-feat-block">
+        <h3 class="pc-block-title">Alert</h3>
+        <p class="pc-block-description">Always on the lookout for danger, you gain the following benefits: You gain a +5 bonus to initiative. You can't be surprised while you are conscious. Other creatures don't gain advantage on attack rolls against you as a result of being unseen by you.</p>
+      </div>
+
+      <!-- Feat 2: description + prerequisites -->
+      <div class="pc-block pc-feat-block">
+        <h3 class="pc-block-title">Heavy Armor Master</h3>
+        <p class="pc-block-description">You can use your size and strength to deflect blows, gaining the following benefits: Increase your Strength score by 1, to a maximum of 20. While you are wearing heavy armor, bludgeoning, piercing, and slashing damage that you take from nonmagical weapons is reduced by 3.</p>
+        <div class="pc-feat-prereq">Prerequisites: Proficiency with heavy armor</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<p class="companion-caption">
+  Feat captions — <b>Alert</b>: title + description, no prerequisite. <b>Heavy Armor Master</b>: title + description + <code>.pc-feat-prereq</code> ("Prerequisites: …").
+</p>
+
+</body>
+</html>

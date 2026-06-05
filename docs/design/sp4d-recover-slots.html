@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Resources (list) — Recover spell slots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{ --d5e-parchment:#f0ddbd; --d5e-text-accent:#7a200d; --d5e-border-tan:#d9c484; --text-muted:#8a7a6a; }
+
+/* ---- tokens.css ---- */
+.archivist-pc-sheet{
+  --pc-parchment-light:#fdf1dc; --pc-parchment-dark:#e8d5b0;
+  --pc-crimson:#922610; --pc-crimson-light:#a83220; --pc-tan:#d9c484; --pc-tan-muted:#c4b07a;
+  --pc-text-primary:#1a1a1a; --pc-text-muted:#8a7a6a; --pc-text-soft:#6b5e4b; --pc-white:#fff;
+  --pc-font-serif:'Libre Baskerville',Georgia,serif; --pc-font-sans:'Noto Sans',system-ui,-apple-system,sans-serif;
+  --pc-fs-title:16px; --pc-fs-heading:14px; --pc-fs-body:12px; --pc-fs-small:11px; --pc-fs-label:10px; --pc-fs-tiny:7.5px;
+  --pc-lh-snug:1.2; --pc-lh-value:1.05;
+  --pc-ls-caps-sm:0.08em; --pc-ls-caps-md:0.14em;
+  --pc-space-1:4px; --pc-space-2:8px; --pc-space-3:12px; --pc-space-4:16px; --pc-space-5:24px;
+  --pc-radius-sm:4px; --pc-radius-md:6px;
+  background:var(--d5e-parchment,#f0ddbd); color:var(--pc-text-primary); font-family:var(--pc-font-sans); padding:var(--pc-space-5); min-height:100%;
+}
+/* ---- headings / counter / recover btn ---- */
+.archivist-pc-sheet .pc-tab-heading{font-family:var(--pc-font-serif); color:var(--pc-crimson); font-size:var(--pc-fs-heading); font-weight:700; line-height:var(--pc-lh-snug); margin:0 0 var(--pc-space-2); text-transform:uppercase; letter-spacing:var(--pc-ls-caps-sm); padding-bottom:3px; border-bottom:1px solid var(--pc-crimson)}
+.archivist-pc-sheet .pc-resource-die{font-family:var(--pc-font-serif); font-style:italic; font-size:var(--pc-fs-small); color:var(--pc-text-soft)}
+.archivist-pc-sheet .pc-resource-reset{font-size:var(--pc-fs-label); text-transform:uppercase; letter-spacing:var(--pc-ls-caps-md); color:var(--pc-text-muted)}
+.archivist-pc-sheet .pc-resource-counter{display:inline-flex; align-items:center; gap:var(--pc-space-2)}
+.archivist-pc-sheet .pc-resource-counter-val{font-family:var(--pc-font-serif); font-weight:700; font-size:var(--pc-fs-title); min-width:46px; text-align:center}
+.archivist-pc-sheet .pc-resource-step{width:20px; height:20px; border:1px solid var(--pc-tan-muted); border-radius:var(--pc-radius-sm); background:var(--pc-parchment-light); color:var(--pc-crimson); font-weight:700; cursor:pointer; line-height:1; display:inline-flex; align-items:center; justify-content:center}
+.archivist-pc-sheet .pc-resource-recover-btn{font-size:var(--pc-fs-small); font-family:var(--pc-font-sans); background:var(--pc-crimson); color:#fff; border:none; border-radius:var(--pc-radius-sm); padding:2px 8px; cursor:pointer}
+.archivist-pc-sheet .pc-resource-recover-btn:disabled{background:var(--pc-text-muted); cursor:default}
+/* ---- toggle-box pips ---- */
+.archivist-toggle-box-row{display:flex; gap:6px; margin:0; padding:0; flex-wrap:wrap}
+.archivist-toggle-box{position:relative; width:18px!important; height:18px!important; border:2px solid var(--d5e-border-tan)!important; background:transparent!important; border-radius:2px!important; cursor:pointer; display:inline-block; padding:0!important; transition:border-color .15s ease}
+.archivist-toggle-box-checked{border-color:var(--d5e-text-accent)!important}
+.archivist-toggle-box-checked::before,.archivist-toggle-box-checked::after{content:""; position:absolute; top:50%; left:50%; width:2.5px; height:20px; background:var(--d5e-text-accent); border-radius:1px}
+.archivist-toggle-box-checked::before{transform:translate(-50%,-50%) rotate(45deg)}
+.archivist-toggle-box-checked::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.pc-pips-inline .archivist-toggle-box{width:15px!important; height:15px!important}
+
+/* ---- LIST layout (chosen design) — feature-item left-rule motif ---- */
+.archivist-pc-sheet .pc-resource-list{display:flex; flex-direction:column; gap:var(--pc-space-1); margin-top:var(--pc-space-2)}
+.archivist-pc-sheet .pc-resource-line{display:flex; align-items:center; gap:var(--pc-space-3); border-left:2px solid var(--pc-tan); padding:var(--pc-space-2) 0 var(--pc-space-2) var(--pc-space-3)}
+.archivist-pc-sheet .pc-resource-line:hover{background:rgba(255,255,255,.14)}
+.archivist-pc-sheet .pc-resource-line-name{font-family:var(--pc-font-serif); font-weight:700; font-size:var(--pc-fs-body)}
+.archivist-pc-sheet .pc-resource-line-grow{flex:1}
+
+/* ---- SIMPLIFIED recovery picker — only expended slots; untick + Recover ---- */
+.archivist-pc-sheet .pc-recover{
+  border-left:2px solid var(--pc-crimson); background:var(--pc-parchment-light);
+  margin:0 0 var(--pc-space-1) var(--pc-space-3); padding:var(--pc-space-3);
+  border-radius:0 var(--pc-radius-sm) var(--pc-radius-sm) 0; max-width:320px;
+}
+.archivist-pc-sheet .pc-recover-head{display:flex; align-items:baseline; justify-content:space-between; gap:var(--pc-space-2); margin-bottom:var(--pc-space-1)}
+.archivist-pc-sheet .pc-recover-title{font-family:var(--pc-font-serif); font-weight:700; font-size:var(--pc-fs-small); color:var(--pc-crimson); text-transform:uppercase; letter-spacing:var(--pc-ls-caps-sm)}
+.archivist-pc-sheet .pc-recover-budget{font-family:var(--pc-font-serif); font-size:var(--pc-fs-small); color:var(--pc-text-soft)}
+.archivist-pc-sheet .pc-recover-budget b{color:var(--pc-crimson); font-variant-numeric:tabular-nums}
+.archivist-pc-sheet .pc-recover-hint{font-family:var(--pc-font-serif); font-style:italic; font-size:var(--pc-fs-small); color:var(--pc-text-soft); margin-bottom:var(--pc-space-2)}
+.archivist-pc-sheet .pc-recover-row{display:flex; align-items:center; gap:var(--pc-space-2); margin:var(--pc-space-1) 0}
+.archivist-pc-sheet .pc-recover-lv{font-family:var(--pc-font-serif); font-weight:700; font-size:var(--pc-fs-small); color:var(--pc-text-soft); width:30px; text-align:right}
+.archivist-pc-sheet .pc-recover-pips{display:flex; gap:5px; flex-wrap:wrap}
+.archivist-pc-sheet .pc-slot-pip{position:relative; width:16px; height:16px; border:2px solid var(--pc-tan); border-radius:2px; background:transparent; padding:0; cursor:pointer; transition:.12s}
+.archivist-pc-sheet .pc-slot-pip--spent::before,.archivist-pc-sheet .pc-slot-pip--spent::after{content:""; position:absolute; top:50%; left:50%; width:2.5px; height:18px; background:var(--d5e-text-accent); border-radius:1px; pointer-events:none}
+.archivist-pc-sheet .pc-slot-pip--spent::before{transform:translate(-50%,-50%) rotate(45deg)}
+.archivist-pc-sheet .pc-slot-pip--spent::after{transform:translate(-50%,-50%) rotate(-45deg)}
+.archivist-pc-sheet .pc-slot-pip--spent:hover{border-color:var(--pc-crimson)}
+.archivist-pc-sheet .pc-slot-pip--sel{border-color:var(--pc-crimson); box-shadow:0 0 0 2px rgba(146,38,16,.28)}   /* unticked = chosen to recover */
+.archivist-pc-sheet .pc-slot-pip--over{opacity:.28; cursor:not-allowed}
+.archivist-pc-sheet .pc-recover-actions{display:flex; align-items:center; gap:var(--pc-space-3); margin-top:var(--pc-space-3)}
+.archivist-pc-sheet .pc-recover-apply{font-family:var(--pc-font-sans); font-size:var(--pc-fs-small); background:var(--pc-crimson); color:#fff; border:none; border-radius:var(--pc-radius-sm); padding:4px 12px; cursor:pointer}
+.archivist-pc-sheet .pc-recover-apply:disabled{background:var(--pc-text-muted); cursor:default}
+.archivist-pc-sheet .pc-recover-cancel{background:none; border:none; color:var(--pc-text-muted); font-family:var(--pc-font-sans); font-size:var(--pc-fs-small); cursor:pointer; padding:0; text-decoration:underline}
+.archivist-pc-sheet .pc-recover-done{font-family:var(--pc-font-serif); font-style:italic; font-size:var(--pc-fs-small); color:var(--pc-crimson); margin-top:var(--pc-space-2)}
+
+/* ---- companion chrome ---- */
+html,body{margin:0}
+body{background:#5a5a5a; font-family:'Noto Sans',system-ui,sans-serif}
+.ch{color:#f0ddbd; max-width:760px; margin:0 auto; padding:22px 24px 0}
+.ch h1{font-family:'Libre Baskerville',serif; font-size:21px; margin:0 0 6px}
+.ch p{font-size:13px; opacity:.92; line-height:1.55; margin:0}
+.cap{color:#ddd6c6; font-style:italic; font-size:12.5px; max-width:760px; margin:14px auto 12px; padding:0 24px; line-height:1.55}
+.cap b{font-style:normal; color:#f0ddbd}
+.archivist-pc-sheet{max-width:760px; margin:0 auto; box-shadow:0 4px 24px rgba(0,0,0,.4)}
+</style>
+</head>
+<body>
+
+<div class="ch">
+  <h1>Resources — list layout · Recover spell slots</h1>
+  <p>Resources as a <b>list</b>. Arcane Recovery's picker shows <b>only your expended slots</b> — untick the ones you want back (within the 3‑level budget) and press Recover. Example: Grendal (Wizard&nbsp;5) spent two 1st, two 2nd, one 3rd.</p>
+</div>
+
+<div class="archivist-pc-sheet">
+  <h4 class="pc-tab-heading">Resources</h4>
+  <div class="pc-resource-list">
+
+    <div class="pc-resource-line">
+      <span class="pc-resource-line-name">Rage</span>
+      <span class="pc-pips-inline"><span class="archivist-toggle-box-row"><span class="archivist-toggle-box archivist-toggle-box-checked"></span><span class="archivist-toggle-box"></span><span class="archivist-toggle-box"></span></span></span>
+      <span class="pc-resource-line-grow"></span>
+      <span class="pc-resource-reset">Long rest</span>
+    </div>
+
+    <div class="pc-resource-line">
+      <span class="pc-resource-line-name">Bardic Inspiration</span><span class="pc-resource-die">d8</span>
+      <span class="pc-pips-inline"><span class="archivist-toggle-box-row"><span class="archivist-toggle-box"></span><span class="archivist-toggle-box"></span><span class="archivist-toggle-box"></span><span class="archivist-toggle-box"></span></span></span>
+      <span class="pc-resource-line-grow"></span>
+      <span class="pc-resource-reset">Short rest</span>
+    </div>
+
+    <div class="pc-resource-line">
+      <span class="pc-resource-line-name">Sorcery Points</span>
+      <span class="pc-resource-counter"><button class="pc-resource-step">−</button><span class="pc-resource-counter-val">6/9</span><button class="pc-resource-step">+</button></span>
+      <span class="pc-resource-line-grow"></span>
+      <span class="pc-resource-reset">Long rest</span>
+    </div>
+
+    <div class="pc-resource-line">
+      <span class="pc-resource-line-name">Arcane Recovery</span>
+      <span class="pc-pips-inline"><span class="archivist-toggle-box-row"><span class="archivist-toggle-box" id="arcane-pip"></span></span></span>
+      <span class="pc-resource-line-grow"></span>
+      <button class="pc-resource-recover-btn" id="recover-toggle">Recover slots</button>
+      <span class="pc-resource-reset">Long rest</span>
+    </div>
+
+    <!-- picker hangs under the Arcane Recovery line -->
+    <div class="pc-recover" id="recover">
+      <div class="pc-recover-head">
+        <span class="pc-recover-title">Recover spell slots</span>
+        <span class="pc-recover-budget"><b data-left>3</b> levels left</span>
+      </div>
+      <div class="pc-recover-hint">Untick the slots you want back.</div>
+
+      <div class="pc-recover-row">
+        <span class="pc-recover-lv">1st</span>
+        <span class="pc-recover-pips" data-lv="1">
+          <span class="pc-slot-pip pc-slot-pip--spent"></span>
+          <span class="pc-slot-pip pc-slot-pip--spent"></span>
+        </span>
+      </div>
+      <div class="pc-recover-row">
+        <span class="pc-recover-lv">2nd</span>
+        <span class="pc-recover-pips" data-lv="2">
+          <span class="pc-slot-pip pc-slot-pip--spent"></span>
+          <span class="pc-slot-pip pc-slot-pip--spent"></span>
+        </span>
+      </div>
+      <div class="pc-recover-row">
+        <span class="pc-recover-lv">3rd</span>
+        <span class="pc-recover-pips" data-lv="3">
+          <span class="pc-slot-pip pc-slot-pip--spent"></span>
+        </span>
+      </div>
+
+      <div class="pc-recover-actions">
+        <button class="pc-recover-apply" data-apply disabled>Recover</button>
+        <button class="pc-recover-cancel" data-cancel>Cancel</button>
+      </div>
+      <div class="pc-recover-done" hidden data-done></div>
+    </div>
+
+  </div>
+</div>
+
+<p class="cap"><b>Try it:</b> untick an expended slot (the ✗ clears and it rings crimson = chosen); the budget counts down by that level and unaffordable slots dim. Untick the lone 3rd to use the whole budget at once, or two 1st‑levels, etc. Press <b>Recover</b> to restore them and spend the use; an empty selection keeps Recover disabled.</p>
+
+<script>
+  (function(){
+    const BUDGET=3;
+    const panel=document.getElementById("recover");
+    const toggle=document.getElementById("recover-toggle");
+    const left=panel.querySelector("[data-left]");
+    const apply=panel.querySelector("[data-apply]");
+    const cancel=panel.querySelector("[data-cancel]");
+    const done=panel.querySelector("[data-done]");
+    let remaining=BUDGET;
+    const pips=[...panel.querySelectorAll(".pc-slot-pip")];
+    const lvlOf=p=>+p.closest(".pc-recover-pips").dataset.lv;
+    const selected=()=>pips.filter(p=>p.classList.contains("pc-slot-pip--sel"));
+
+    function refresh(){
+      left.textContent=remaining;
+      pips.forEach(p=>{
+        if(p.classList.contains("pc-slot-pip--spent"))
+          p.classList.toggle("pc-slot-pip--over", lvlOf(p)>remaining);
+      });
+      const n=BUDGET-remaining;
+      apply.disabled=selected().length===0;
+      apply.textContent=selected().length? `Recover (${n} ${n===1?"level":"levels"})` : "Recover";
+    }
+    pips.forEach(p=>p.addEventListener("click",()=>{
+      const lv=lvlOf(p);
+      if(p.classList.contains("pc-slot-pip--spent")){
+        if(lv>remaining) return;                                  // can't afford
+        p.classList.remove("pc-slot-pip--spent","pc-slot-pip--over"); p.classList.add("pc-slot-pip--sel"); remaining-=lv;
+      } else if(p.classList.contains("pc-slot-pip--sel")){
+        p.classList.remove("pc-slot-pip--sel"); p.classList.add("pc-slot-pip--spent"); remaining+=lv;
+      }
+      refresh();
+    }));
+    toggle.addEventListener("click",()=>{ if(!toggle.disabled) panel.style.display = panel.style.display==="none" ? "" : "none"; });
+    apply.addEventListener("click",()=>{
+      const sel=selected(); if(!sel.length) return;
+      const by={}; sel.forEach(p=>{const lv=lvlOf(p); by[lv]=(by[lv]||0)+1; p.style.visibility="hidden";});
+      const ord={1:"1st",2:"2nd",3:"3rd"};
+      done.hidden=false; done.textContent="Restored "+Object.keys(by).map(l=>`${by[l]}× ${ord[l]}`).join(", ")+" — use spent.";
+      document.getElementById("arcane-pip").classList.add("archivist-toggle-box-checked");
+      toggle.disabled=true; apply.disabled=true; cancel.textContent="Close";
+    });
+    cancel.addEventListener("click",()=>{
+      remaining=BUDGET; done.hidden=true; cancel.textContent="Cancel";
+      pips.forEach(p=>{p.style.visibility=""; p.classList.remove("pc-slot-pip--sel","pc-slot-pip--over"); p.classList.add("pc-slot-pip--spent");});
+      refresh();
+    });
+    refresh();
+  })();
+</script>
+</body>
+</html>

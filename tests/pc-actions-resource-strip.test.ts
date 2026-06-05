@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderResourceStrip } from "../src/modules/pc/components/actions/resource-badge";
+import { renderResourceList } from "../src/modules/pc/components/actions/resource-badge";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
@@ -33,76 +33,136 @@ function ctx(
   };
 }
 
-describe("renderResourceStrip", () => {
-  it("renders a pip badge for a non-action pool", () => {
+describe("renderResourceList", () => {
+  it("renders one row per resource with the reset label inline (max≤6 → pips)", () => {
     const root = mountContainer();
-    renderResourceStrip(root, ctx(
-      [{ feature: { name: "Rage", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "3", reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
+    renderResourceList(root, ctx(
+      [{ feature: { name: "Rage", description: "You can rage.", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "3", reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
       { "barbarian:rage": { used: 1, max: 3 } },
     ));
-    expect(root.querySelectorAll(".pc-resource-badge").length).toBe(1);
-    expect(root.textContent).toContain("Rage");
-    expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(3);
+    expect(root.querySelectorAll(".pc-resource-row").length).toBe(1);
+    expect(root.querySelector(".pc-resource-row-name")?.textContent).toBe("Rage");
+    // reset label lives in the row
+    const reset = root.querySelector(".pc-resource-row .pc-reset-inline");
+    expect(reset).toBeTruthy();
+    expect(reset?.textContent).toBe("Long Rest");
+    // pips for max≤6, inside the track wrapper
+    expect(root.querySelectorAll(".pc-resource-track .archivist-toggle-box").length).toBe(3);
     expect(root.querySelectorAll(".archivist-toggle-box-checked").length).toBe(1);
+    // the heading renders when there are entries
+    expect(root.querySelector(".pc-tab-heading")?.textContent).toBe("Resources");
   });
 
   it("renders a counter for a large pool (max > 6)", () => {
     const root = mountContainer();
-    renderResourceStrip(root, ctx(
+    renderResourceList(root, ctx(
       [{ feature: { name: "Sorcery Points", resources: [{ id: "sorcerer:sorcery-points", name: "Sorcery Points", max_formula: "9", reset: "long-rest" }] }, source: { kind: "class", slug: "sorcerer", level: 1 } }],
       { "sorcerer:sorcery-points": { used: 3, max: 9 } },
     ));
     expect(root.querySelectorAll(".pc-resource-counter").length).toBe(1);
     expect(root.querySelectorAll(".archivist-toggle-box").length).toBe(0);
-    expect(root.textContent).toContain("9");
+    expect(root.querySelector(".pc-resource-counter-val")?.textContent).toBe("6/9");
   });
 
-  it("omits an actionable feature's first resource (shown in the table) but keeps extras", () => {
+  it("renders the die label next to the name when present", () => {
     const root = mountContainer();
-    renderResourceStrip(root, ctx(
-      [{ feature: { name: "Second Wind", action: "bonus-action", resources: [{ id: "fighter:second-wind", name: "Second Wind", max_formula: "1", reset: "short-rest" }] }, source: { kind: "class", slug: "fighter", level: 1 } }],
-      { "fighter:second-wind": { used: 0, max: 1 } },
+    renderResourceList(root, ctx(
+      [{ feature: { name: "Bardic Inspiration", resources: [{ id: "bard:bi", name: "Bardic Inspiration", max_formula: "4", reset: "short-rest", die: { base: "d8" } }] }, source: { kind: "class", slug: "bard", level: 1 } }],
+      { "bard:bi": { used: 0, max: 4 } },
     ));
-    expect(root.querySelectorAll(".pc-resource-badge").length).toBe(0);   // no strip, no heading
-    expect(root.textContent).not.toContain("Resources");
+    expect(root.querySelector(".pc-resource-die")?.textContent).toBe("d8");
+    expect(root.querySelector(".pc-resource-row .pc-reset-inline")?.textContent).toBe("Short Rest");
   });
 
-  it("counter shows remaining and the −/+ steppers spend/restore via setFeatureUse", () => {
+  it("clicking a row reveals its expand block with the feature description", () => {
+    const root = mountContainer();
+    renderResourceList(root, ctx(
+      [{ feature: { name: "Rage", description: "In battle, you fight with primal ferocity.", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "3", reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
+      { "barbarian:rage": { used: 1, max: 3 } },
+    ));
+    const row = root.querySelector(".pc-resource-row") as HTMLElement;
+    const expand = row.nextElementSibling as HTMLElement;
+    expect(expand.classList.contains("pc-resource-expand")).toBe(true);
+    expect((expand as HTMLElement & { hidden: boolean }).hidden).toBe(true);
+
+    row.click();
+    expect((expand as HTMLElement & { hidden: boolean }).hidden).toBe(false);
+    expect(row.classList.contains("open")).toBe(true);
+    expect(expand.querySelector(".pc-block-title")?.textContent).toBe("Rage");
+    expect(expand.querySelector(".pc-block-description")?.textContent).toContain("primal ferocity");
+    // meta carries source + reset labels
+    const meta = expand.querySelector(".pc-block-meta");
+    expect(meta?.textContent).toContain("Barbarian");
+    expect(meta?.textContent).toContain("Long Rest");
+  });
+
+  it("clicking the usage tracker spends without expanding the row", () => {
+    const root = mountContainer();
+    const expendFeatureUse = vi.fn();
+    renderResourceList(root, ctx(
+      [{ feature: { name: "Rage", description: "x", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "3", reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
+      { "barbarian:rage": { used: 1, max: 3 } },
+      { expendFeatureUse },
+    ));
+    const row = root.querySelector(".pc-resource-row") as HTMLElement;
+    const expand = row.nextElementSibling as HTMLElement & { hidden: boolean };
+    // click an unchecked pip inside the track → spends, does NOT expand
+    const pip = root.querySelectorAll(".pc-resource-track .archivist-toggle-box")[2] as HTMLElement;
+    pip.click();
+    expect(expendFeatureUse).toHaveBeenCalled();
+    expect(expand.hidden).toBe(true);
+    expect(row.classList.contains("open")).toBe(false);
+  });
+
+  it("the counter −/+ steppers spend/restore via setFeatureUse and don't expand", () => {
     const root = mountContainer();
     const setFeatureUse = vi.fn();
-    renderResourceStrip(root, ctx(
+    renderResourceList(root, ctx(
       [{ feature: { name: "Sorcery Points", resources: [{ id: "sp", name: "Sorcery Points", max_formula: "9", reset: "long-rest" }] }, source: { kind: "class", slug: "sorcerer", level: 1 } }],
-      { "sp": { used: 3, max: 9 } },                                   // used=3 → remaining 6/9
+      { "sp": { used: 3, max: 9 } },
       { setFeatureUse },
     ));
-    expect(root.querySelector(".pc-resource-counter-val")?.textContent).toBe("6/9");
+    const row = root.querySelector(".pc-resource-row") as HTMLElement;
+    const expand = row.nextElementSibling as HTMLElement & { hidden: boolean };
     (root.querySelector(".pc-resource-step-minus") as HTMLElement).click();   // spend → used 3→4
     expect(setFeatureUse).toHaveBeenCalledWith("sp", 4);
     (root.querySelector(".pc-resource-step-plus") as HTMLElement).click();    // restore → used 3→2
     expect(setFeatureUse).toHaveBeenCalledWith("sp", 2);
+    expect(expand.hidden).toBe(true);   // stepper clicks don't expand
   });
 
-  it("dedups a resource granted at multiple levels into a single badge", () => {
+  it("omits an actionable feature's first resource (shown in the table)", () => {
+    const root = mountContainer();
+    renderResourceList(root, ctx(
+      [{ feature: { name: "Second Wind", action: "bonus-action", resources: [{ id: "fighter:second-wind", name: "Second Wind", max_formula: "1", reset: "short-rest" }] }, source: { kind: "class", slug: "fighter", level: 1 } }],
+      { "fighter:second-wind": { used: 0, max: 1 } },
+    ));
+    expect(root.querySelectorAll(".pc-resource-row").length).toBe(0);   // no list, no heading
+    expect(root.textContent).not.toContain("Resources");
+  });
+
+  it("dedups a resource granted at multiple levels into a single row", () => {
     const root = mountContainer();
     const bardic = () => ({
       feature: { name: "Bardic Inspiration", resources: [{ id: "bard:bardic-inspiration", name: "Bardic Inspiration", max_formula: "{cha_mod}", reset: "short-rest" }] },
       source: { kind: "class", slug: "bard", level: 1 },
     });
-    renderResourceStrip(root, ctx(
+    renderResourceList(root, ctx(
       [bardic(), bardic()],                                  // same id granted twice (levels 1 and 5)
       { "bard:bardic-inspiration": { used: 0, max: 4 } },
     ));
-    expect(root.querySelectorAll(".pc-resource-badge").length).toBe(1);   // not 2
-    expect(root.querySelectorAll(".pc-resource-name").length).toBe(1);
+    expect(root.querySelectorAll(".pc-resource-row").length).toBe(1);   // not 2
+    expect(root.querySelectorAll(".pc-resource-row-name").length).toBe(1);
   });
 });
 
-describe("renderResourceStrip — recovery picker", () => {
+describe("renderResourceList — recovery action", () => {
   // Arcane Recovery: non-actionable pool, used 0 < max 1, recovery amount "4".
-  // Derived slots at L1/L3/L6; expended slot state: L1=2, L3=1, L6 none.
+  // Expended slot state: L1=2, L3=1.  Budget = 4 slot-levels.
   const FEATURE = {
     feature: {
       name: "Arcane Recovery",
+      description: "You have learned to regain some of your magical energy by studying your spellbook.",
       resources: [{
         id: "wizard:arcane-recovery",
         name: "Arcane Recovery",
@@ -119,95 +179,67 @@ describe("renderResourceStrip — recovery picker", () => {
 
   function mount(editState: object | null = null) {
     const root = mountContainer();
-    renderResourceStrip(root, ctx([FEATURE], FEATURE_USES, editState, {
+    renderResourceList(root, ctx([FEATURE], FEATURE_USES, editState, {
       spellSlots: SLOT_STATE,
       derivedSpellSlots: DERIVED_SLOTS,
     }));
     return root;
   }
 
-  // Resolve the dec/inc/val for a given picker level row by its "L{lvl}" label.
-  function row(picker: Element, lvl: number) {
-    const rows = Array.from(picker.querySelectorAll(".pc-resource-picker-row"));
-    const r = rows.find((el) => el.querySelector("span")?.textContent === `L${lvl}`);
-    if (!r) throw new Error(`no picker row for L${lvl}`);
-    const btns = Array.from(r.querySelectorAll("button"));
-    return {
-      dec: btns[0] as HTMLButtonElement,
-      inc: btns[1] as HTMLButtonElement,
-      val: r.querySelector(".pc-resource-picker-val") as HTMLElement,
-    };
-  }
-
-  it("renders an enabled Recover button for the non-actionable pool", () => {
+  it("renders the recover action inside the resource block (no separate button)", () => {
     const root = mount();
-    const btn = root.querySelector(".pc-resource-recover-btn") as HTMLButtonElement;
-    expect(btn).toBeTruthy();
-    expect(btn.textContent).toBe("Recover slots");
-    expect(btn.disabled).toBe(false);   // used 0 < max 1
+    expect(root.querySelector(".pc-resource-recover-btn")).toBeNull();   // old button gone
+    const actions = root.querySelector(".pc-resource-actions");
+    expect(actions).toBeTruthy();
+    // one recover-row per expended level (L1, L3); L6 not expended/over-5 → excluded
+    const lvls = Array.from(root.querySelectorAll(".pc-recover-pips")).map((p) => (p as HTMLElement).getAttribute("data-lv"));
+    expect(lvls).toEqual(["1", "3"]);
+    // one spent ✗ pip per expended slot: L1 has 2, L3 has 1 → 3 total
+    expect(root.querySelectorAll(".pc-slot-pip--spent").length).toBe(3);
   });
 
-  it("opens exactly one picker, and re-clicking does not duplicate it", () => {
+  it("Recover starts disabled and stays disabled with no selection", () => {
     const root = mount();
-    const btn = root.querySelector(".pc-resource-recover-btn") as HTMLButtonElement;
-    btn.click();
-    expect(root.querySelectorAll(".pc-resource-picker").length).toBe(1);
-    btn.click();
-    expect(root.querySelectorAll(".pc-resource-picker").length).toBe(1);
+    const apply = root.querySelector(".pc-recover-apply") as HTMLButtonElement;
+    expect(apply.disabled).toBe(true);
   });
 
-  it("renders rows only for derived levels ≤5 (L1, L3 — not L6)", () => {
-    const root = mount();
-    (root.querySelector(".pc-resource-recover-btn") as HTMLElement).click();
-    const picker = root.querySelector(".pc-resource-picker")!;
-    const labels = Array.from(picker.querySelectorAll(".pc-resource-picker-row"))
-      .map((r) => r.querySelector("span")?.textContent);   // first span = the L{lvl} label
-    expect(labels).toEqual(["L1", "L3"]);   // L6 excluded by the ≤5 filter
-  });
-
-  it("caps a level's picks to the currently-expended slot count", () => {
-    const root = mount();
-    (root.querySelector(".pc-resource-recover-btn") as HTMLElement).click();
-    const picker = root.querySelector(".pc-resource-picker")!;
-    const l3 = row(picker, 3);
-    l3.inc.click();                              // 1 ≤ expended(3) and 3 ≤ budget(4) → allowed
-    expect(l3.val.textContent).toBe("1");
-
-    // fresh picker for the L1 cap (re-open clears picks)
-    const root2 = mount();
-    (root2.querySelector(".pc-resource-recover-btn") as HTMLElement).click();
-    const l1 = row(root2.querySelector(".pc-resource-picker")!, 1);
-    l1.inc.click(); l1.inc.click(); l1.inc.click();   // expended=2 → 3rd click rejected
-    expect(l1.val.textContent).toBe("2");
-  });
-
-  it("enforces the budget boundary: ==amount allowed, >amount rejected", () => {
-    const root = mount();
-    (root.querySelector(".pc-resource-recover-btn") as HTMLElement).click();
-    const picker = root.querySelector(".pc-resource-picker")!;
-    const l3 = row(picker, 3);
-    const l1 = row(picker, 1);
-    l3.inc.click();                  // spent 3
-    expect(l3.val.textContent).toBe("1");
-    l1.inc.click();                  // spent 3+1=4 == amount → allowed
-    expect(l1.val.textContent).toBe("1");
-    l1.inc.click();                  // spent would be 5 > amount → rejected
-    expect(l1.val.textContent).toBe("1");
-  });
-
-  it("does not burn the recovery use on an empty apply, but does once a pick is made", () => {
+  it("unticking expended pips within budget enables Recover and calls useRecovery with the picks", () => {
     const useRecovery = vi.fn();
     const root = mount({ useRecovery });
-    (root.querySelector(".pc-resource-recover-btn") as HTMLElement).click();
-    const picker = root.querySelector(".pc-resource-picker")!;
-
-    (picker.querySelector(".pc-resource-picker-apply") as HTMLElement).click();   // no picks
-    expect(useRecovery).not.toHaveBeenCalled();
-    expect(root.querySelectorAll(".pc-resource-picker").length).toBe(1);          // stays open
-
-    row(picker, 1).inc.click();                                                   // one valid pick
-    (picker.querySelector(".pc-resource-picker-apply") as HTMLElement).click();
+    const apply = root.querySelector(".pc-recover-apply") as HTMLButtonElement;
+    // untick one L1 pip and the L3 pip → picks {1:1, 3:1}, spent levels = 1+3 = 4 == budget
+    const l1pips = root.querySelector('.pc-recover-pips[data-lv="1"]')!;
+    const l3pips = root.querySelector('.pc-recover-pips[data-lv="3"]')!;
+    (l1pips.querySelector(".pc-slot-pip--spent") as HTMLElement).click();
+    expect(apply.disabled).toBe(false);
+    (l3pips.querySelector(".pc-slot-pip--spent") as HTMLElement).click();
+    apply.click();
     expect(useRecovery).toHaveBeenCalledTimes(1);
-    expect(useRecovery).toHaveBeenCalledWith("wizard:arcane-recovery", { 1: 1 });
+    expect(useRecovery).toHaveBeenCalledWith("wizard:arcane-recovery", { 1: 1, 3: 1 });
+  });
+
+  it("over-budget pips are marked --over and not selectable", () => {
+    const root = mount();
+    // select the L3 pip first → spends 3 of the 4-level budget, 1 left
+    const l3pip = root.querySelector('.pc-recover-pips[data-lv="3"] .pc-slot-pip--spent') as HTMLElement;
+    l3pip.click();
+    // remaining budget = 1; L1 pips (level 1) still fit (1 ≤ 1) so not over.
+    // Now select an L1 pip → budget exhausted (0 left), the OTHER L1 pip becomes over.
+    const l1pips = Array.from(root.querySelectorAll('.pc-recover-pips[data-lv="1"] .pc-slot-pip--spent')) as HTMLElement[];
+    l1pips[0].click();
+    const remainingL1 = root.querySelector('.pc-recover-pips[data-lv="1"] .pc-slot-pip--spent') as HTMLElement;
+    expect(remainingL1.classList.contains("pc-slot-pip--over")).toBe(true);
+    // clicking an over pip is a no-op
+    remainingL1.click();
+    expect(remainingL1.classList.contains("pc-slot-pip--sel")).toBe(false);
+  });
+
+  it("empty selection apply is a no-op (does not burn the use)", () => {
+    const useRecovery = vi.fn();
+    const root = mount({ useRecovery });
+    const apply = root.querySelector(".pc-recover-apply") as HTMLButtonElement;
+    apply.click();   // disabled / nothing selected
+    expect(useRecovery).not.toHaveBeenCalled();
   });
 });

@@ -4,7 +4,7 @@ import { WeaponsTable } from "./actions/weapons-table";
 import { ItemsTable } from "./actions/items-table";
 import { FeaturesTable } from "./actions/features-table";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
-import { renderResourceStrip } from "./actions/resource-badge";
+import { renderResourceList } from "./actions/resource-badge";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
 
 const ACTION_DISABLING_CONDITIONS: ReadonlySet<ConditionSlug> = new Set([
@@ -52,7 +52,7 @@ export class ActionsTab implements SheetComponent {
       }
     }
 
-    renderResourceStrip(root, ctx);
+    renderResourceList(root, ctx);
 
     renderStandardActionsList(root, ctx);
   }

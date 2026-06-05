@@ -9714,21 +9714,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); background: transparent; }
 .archivist-pc-sheet .pc-attack-name { font-weight: 600; }
-.archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); margin-top: var(--pc-space-1); }
-.archivist-pc-sheet .pc-resource-badge {
-  background: var(--pc-parchment-dark);
-  border: 1px solid var(--pc-tan);
-  border-radius: var(--pc-radius-md);
-  padding: var(--pc-space-2) var(--pc-space-3);
-  min-width: 104px;
-}
-.archivist-pc-sheet .pc-resource-badge-head {
-  display: flex; justify-content: space-between; gap: var(--pc-space-2);
-  align-items: baseline; margin-bottom: var(--pc-space-2);
-}
-.archivist-pc-sheet .pc-resource-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-resource-die { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
-.archivist-pc-sheet .pc-resource-reset { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); margin-top: var(--pc-space-2); }
 
 .archivist-pc-sheet .pc-resource-counter { display: inline-flex; align-items: center; gap: var(--pc-space-2); }
 .archivist-pc-sheet .pc-resource-counter-val { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-title); min-width: 46px; text-align: center; }
@@ -9737,18 +9723,40 @@ body.theme-light .archivist-tag-atk:hover {
   background: var(--pc-parchment-light); color: var(--pc-crimson); font-weight: 700; cursor: pointer;
   line-height: 1; display: inline-flex; align-items: center; justify-content: center;
 }
-.archivist-pc-sheet .pc-resource-recover-btn,
-.archivist-pc-sheet .pc-resource-picker-apply {
-  margin-top: var(--pc-space-2); font-size: var(--pc-fs-small); font-family: var(--pc-font-sans);
-  background: var(--pc-crimson); color: #fff; border: none; border-radius: var(--pc-radius-sm);
-  padding: 2px 8px; cursor: pointer;
-}
-.archivist-pc-sheet .pc-resource-recover-btn:disabled { background: var(--pc-text-muted); cursor: default; }
-.archivist-pc-sheet .pc-resource-picker { margin-top: var(--pc-space-2); border-top: 1px dashed var(--pc-tan-muted); padding-top: var(--pc-space-2); }
-.archivist-pc-sheet .pc-resource-picker-remaining { font-size: var(--pc-fs-small); color: var(--pc-text-soft); margin-bottom: var(--pc-space-1); }
-.archivist-pc-sheet .pc-resource-picker-row { display: flex; align-items: center; gap: var(--pc-space-2); font-size: var(--pc-fs-small); }
-.archivist-pc-sheet .pc-resource-picker-row button { width: 18px; height: 18px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); background: var(--pc-parchment-light); color: var(--pc-crimson); cursor: pointer; line-height: 1; }
-.archivist-pc-sheet .pc-resource-picker-val { min-width: 14px; text-align: center; }
+
+/* ---- LIST — matches the Features/Spells table rows (no caret) ---- */
+.archivist-pc-sheet .pc-resource-list { display: flex; flex-direction: column; margin-top: var(--pc-space-1); font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-resource-row { display: flex; align-items: center; gap: var(--pc-space-2); cursor: pointer; padding: var(--pc-space-2) var(--pc-space-1); border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-resource-row:hover { background: rgba(255,255,255,.18); }
+.archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-reset-inline { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-reset-inline::before { content: "·"; margin: 0 6px 0 5px; color: var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-row-grow { flex: 1; }
+.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
+
+/* expand body = the information block, in the Features-table expand idiom (crimson left rule) */
+.archivist-pc-sheet .pc-resource-expand { background: rgba(255,255,255,.22); margin: var(--pc-space-1) 0 var(--pc-space-2) var(--pc-space-3); padding: var(--pc-space-3); border-left: 3px solid var(--pc-crimson); }
+
+/* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
+.archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-recover-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--pc-space-2); margin-bottom: var(--pc-space-1); }
+.archivist-pc-sheet .pc-recover-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); }
+.archivist-pc-sheet .pc-recover-budget { font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-recover-budget b { color: var(--pc-crimson); font-variant-numeric: tabular-nums; }
+.archivist-pc-sheet .pc-recover-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-recover-row { display: flex; align-items: center; gap: var(--pc-space-2); margin: var(--pc-space-1) 0; }
+.archivist-pc-sheet .pc-recover-lv { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); width: 30px; text-align: right; }
+.archivist-pc-sheet .pc-recover-pips { display: flex; gap: 5px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-slot-pip { position: relative; width: 16px; height: 16px; border: 2px solid var(--pc-tan); border-radius: 2px; background: transparent; padding: 0; cursor: pointer; transition: .12s; }
+.archivist-pc-sheet .pc-slot-pip--spent::before, .archivist-pc-sheet .pc-slot-pip--spent::after { content: ""; position: absolute; top: 50%; left: 50%; width: 2.5px; height: 18px; background: var(--d5e-text-accent, #7a200d); border-radius: 1px; pointer-events: none; }
+.archivist-pc-sheet .pc-slot-pip--spent::before { transform: translate(-50%,-50%) rotate(45deg); }
+.archivist-pc-sheet .pc-slot-pip--spent::after { transform: translate(-50%,-50%) rotate(-45deg); }
+.archivist-pc-sheet .pc-slot-pip--spent:hover { border-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-slot-pip--sel { border-color: var(--pc-crimson); box-shadow: 0 0 0 2px rgba(146,38,16,.28); }
+.archivist-pc-sheet .pc-slot-pip--over { opacity: .28; cursor: not-allowed; }
+.archivist-pc-sheet .pc-recover-foot { display: flex; align-items: center; gap: var(--pc-space-3); margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-recover-apply { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); background: var(--pc-crimson); color: #fff; border: none; border-radius: var(--pc-radius-sm); padding: 4px 12px; cursor: pointer; }
+.archivist-pc-sheet .pc-recover-apply:disabled { background: var(--pc-text-muted); cursor: default; }
 .archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; }
 .archivist-pc-sheet .pc-spells-empty { text-align: center; padding: var(--pc-space-5); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spells-empty-icon { font-size: 32px; opacity: 0.3; }
@@ -12720,7 +12728,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
 .archivist-pc-sheet .pc-spell-mk { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); border: 1px solid var(--pc-tan-muted); border-radius: 3px; padding: 0 4px; color: var(--pc-text-soft); margin-left: 5px; }
 
-/* Filter pills (compact table view) reuse .pc-resource-badge look.
+/* Filter pills (compact table view) — parchment chips with a crimson active state.
    Also scoped under .archivist-modal so the add-spell modal's filter bar,
    "Show all classes" toggle, and "Add" buttons are styled (modals render
    outside .archivist-pc-sheet). */
