@@ -12165,16 +12165,24 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft);
 }
 
-/* ---------- Row-expand panel (Weapons/Items/Features) ---------- */
+/* ---------- Row-expand (Weapons/Items/Features) ----------
+   No redundant container around the block: the expand shows just the
+   spell/item card (which already carries its own parchment + shadow) and
+   its action buttons — no panel background, no crimson rail, no indent,
+   and no row hover. */
 .archivist-pc-sheet .pc-action-row { cursor: pointer; }
-.archivist-pc-sheet .pc-action-row:hover { background: rgba(255, 255, 255, 0.18); }
-.archivist-pc-sheet .pc-action-expand-row {
-  background: rgba(255, 255, 255, 0.22);
-}
+.archivist-pc-sheet .pc-action-expand-row { background: transparent; }
 .archivist-pc-sheet .pc-action-expand-inner {
-  padding: var(--pc-space-3);
-  border-left: 3px solid var(--pc-crimson);
-  margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
+  padding: 0 0 var(--pc-space-2);
+  border-left: none;
+  margin: 0;
+}
+/* strip the inventory-expand chrome (tint, dotted rule, padding) when the
+   inventory row-expand is reused inside the actions table */
+.archivist-pc-sheet .pc-action-expand-inner .pc-inv-expand {
+  background: transparent;
+  border-bottom: none;
+  padding: 0;
 }
 
 /* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
