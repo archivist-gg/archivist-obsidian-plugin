@@ -9727,7 +9727,7 @@ body.theme-light .archivist-tag-atk:hover {
 /* ---- LIST — matches the Features/Spells table rows (no caret) ---- */
 .archivist-pc-sheet .pc-resource-list { display: flex; flex-direction: column; margin-top: var(--pc-space-1); font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-resource-row { display: flex; align-items: center; gap: var(--pc-space-2); cursor: pointer; padding: var(--pc-space-2) var(--pc-space-1); border-bottom: 1px dashed var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-resource-row:hover { background: rgba(255,255,255,.18); }
+/* No hover background anywhere on the list — per request. */
 .archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-reset-inline { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-reset-inline::before { content: "·"; margin: 0 6px 0 5px; color: var(--pc-tan-muted); }

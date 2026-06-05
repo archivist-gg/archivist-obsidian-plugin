@@ -177,11 +177,14 @@ function renderRecoveryAction(block: HTMLElement, resource: Resource, source: Fe
   const id = resource.id;
   if (!rec || !id) return;
 
+  // The action area always renders so the recover option is visible in the
+  // block whatever the slot state — only the body below the header varies.
+  const actions = block.createDiv({ cls: "pc-resource-actions" });
+  const head = actions.createDiv({ cls: "pc-recover-head" });
+  head.createSpan({ cls: "pc-recover-title", text: "Recover spell slots" });
+
   // Use already spent → show a spent hint instead of an interactive picker.
   if (fu && fu.used >= fu.max) {
-    const actions = block.createDiv({ cls: "pc-resource-actions" });
-    const head = actions.createDiv({ cls: "pc-recover-head" });
-    head.createSpan({ cls: "pc-recover-title", text: "Recover spell slots" });
     actions.createDiv({ cls: "pc-recover-hint", text: `Already used — recharges on a ${RESET_LABEL[resource.reset] ?? "Special"}.` });
     return;
   }
@@ -195,11 +198,12 @@ function renderRecoveryAction(block: HTMLElement, resource: Resource, source: Fe
     const expended = ctx.resolved.state.spell_slots?.[lvl]?.used ?? 0;
     if (expended > 0) levels.push({ lvl, expended });
   }
-  if (levels.length === 0) return;
+  // No expended slots → nothing to recover yet, but keep the option visible.
+  if (levels.length === 0) {
+    actions.createDiv({ cls: "pc-recover-hint", text: "No expended spell slots to recover." });
+    return;
+  }
 
-  const actions = block.createDiv({ cls: "pc-resource-actions" });
-  const head = actions.createDiv({ cls: "pc-recover-head" });
-  head.createSpan({ cls: "pc-recover-title", text: "Recover spell slots" });
   const budgetEl = head.createSpan({ cls: "pc-recover-budget" });
   const budgetVal = budgetEl.createEl("b");
   budgetEl.appendText(" levels left");
