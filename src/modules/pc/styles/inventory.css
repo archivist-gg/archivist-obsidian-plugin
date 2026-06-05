@@ -28,7 +28,7 @@
 .archivist-pc-sheet .pc-inv-stat { grid-area: stat; }
 .archivist-pc-sheet .pc-inv-weight { grid-area: weight; }
 .archivist-pc-sheet .pc-inv-qty-cost { grid-area: qty; }
-.archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 
 /* Crimson rail when equipped or attuned (or both — single rail) */
 .archivist-pc-sheet .pc-inv-row.equipped,
