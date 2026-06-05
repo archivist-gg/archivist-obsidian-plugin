@@ -512,6 +512,11 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  setFeatureUse(featureKey: string, n: number): void {
+    eq.setFeatureUse(this.character, featureKey, n);
+    this.onChange();
+  }
+
   setAttunementLimitOverride(n: number): void {
     if (!Number.isFinite(n)) return;
     this.character.overrides.attunement_limit = Math.max(0, Math.floor(n));
