@@ -88,12 +88,16 @@ describe("renderResourceList", () => {
     row.click();
     expect((expand as HTMLElement & { hidden: boolean }).hidden).toBe(false);
     expect(row.classList.contains("open")).toBe(true);
-    expect(expand.querySelector(".pc-block-title")?.textContent).toBe("Rage");
-    expect(expand.querySelector(".pc-block-description")?.textContent).toContain("primal ferocity");
-    // meta carries source + reset labels
-    const meta = expand.querySelector(".pc-block-meta");
-    expect(meta?.textContent).toContain("Barbarian");
-    expect(meta?.textContent).toContain("Long Rest");
+    // the expand uses the SAME card UI as the spell/item block
+    const block = expand.querySelector(".archivist-item-block");
+    expect(block).toBeTruthy();
+    expect(block?.querySelector(".archivist-item-name")?.textContent).toBe("Rage");
+    expect(block?.querySelector(".archivist-item-description")?.textContent).toContain("primal ferocity");
+    // source label is the italic subtitle; recharge cadence is an info property
+    expect(block?.querySelector(".archivist-item-subtitle")?.textContent).toContain("Barbarian");
+    expect(block?.textContent).toContain("Long Rest");
+    // the surrounding panel background/border is NOT applied to the expand itself
+    expect((expand as HTMLElement).style.background === "" || (expand as HTMLElement).style.background === "transparent").toBe(true);
   });
 
   it("clicking the usage tracker spends without expanding the row", () => {

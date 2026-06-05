@@ -164,8 +164,13 @@
 .archivist-pc-sheet .pc-row-grow { flex: 1; }
 .archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
 
-/* expand body = the information block, in the Features-table expand idiom (crimson left rule) */
-.archivist-pc-sheet .pc-resource-expand { background: rgba(255,255,255,.22); margin: var(--pc-space-1) 0 var(--pc-space-2) var(--pc-space-3); padding: var(--pc-space-3); border-left: 3px solid var(--pc-crimson); }
+/* expand body = the SAME card UI as the spell/item block (.archivist-item-block).
+   The expand container itself carries NO background, NO border, NO hover — the
+   card floats on the parchment exactly like a spell/item block. */
+.archivist-pc-sheet .pc-resource-expand { background: transparent; border: none; padding: 0; }
+/* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
+   for an inline list expand so the card sits snug under its row. */
+.archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-2) 0 var(--pc-space-3); }
 
 /* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
 .archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }

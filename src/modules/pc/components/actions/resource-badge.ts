@@ -5,7 +5,7 @@ import type { Resource, ResourceDie } from "../../../../shared/types/resource";
 import { renderChargeBoxes } from "./charge-boxes";
 import { resourceBindings } from "../../pc.resource-seed";
 import { evaluateMaxFormula } from "../../../../shared/dnd/resource-formula";
-import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+import { createIconProperty, renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
 
 const COUNTER_THRESHOLD = 6;
 
@@ -87,6 +87,18 @@ function renderResourceRow(list: HTMLElement, entry: ResourceEntry, ctx: Compone
   });
 }
 
+/**
+ * The expanded resource info block — the EXACT same card UI used for spell and
+ * item blocks (`.archivist-item-block`: parchment card, drop shadow, crimson
+ * header rule, serif title, top-right source badge). The surrounding panel
+ * background + hover from the inventory expand is intentionally NOT applied
+ * here (see `.pc-resource-expand` in components.css — transparent, no hover);
+ * the card stands on the parchment like a floating spell/item block.
+ *
+ * The block is informational (source · recharge · description). Usage is NEVER
+ * repeated here — it lives in the list row. Recovery pools (Arcane Recovery)
+ * additionally get their interactive recover ACTION appended inside the card.
+ */
 function renderExpandBlock(
   expand: HTMLElement,
   resource: Resource,
@@ -94,23 +106,47 @@ function renderExpandBlock(
   source: FeatureSource,
   ctx: ComponentRenderContext,
 ): void {
-  const block = expand.createDiv({ cls: "pc-block" });
-  block.createEl("h3", { cls: "pc-block-title", text: resource.name });
+  const wrapper = expand.createDiv({ cls: "archivist-item-block-wrapper pc-resource-card" });
+  const block = wrapper.createDiv({ cls: "archivist-item-block" });
 
-  const meta = block.createDiv({ cls: "pc-block-meta" });
+  // Source badge (top-right) — edition-derived, mirrors spell/item blocks.
+  const badge = sourceBadgeText((ctx.resolved as { definition?: { edition?: string } }).definition?.edition);
+  if (badge) block.createSpan({ cls: "source-badge", text: badge });
+
+  // Header — title + italic source subtitle, with the crimson hairline rule.
+  const header = block.createDiv({ cls: "archivist-item-block-header" });
+  header.createEl("h3", { cls: "archivist-item-name", text: resource.name });
   const sourceLabel = formatSourceLabel(source);
-  if (sourceLabel) meta.createSpan({ cls: "pc-meta-label", text: sourceLabel });
-  meta.createSpan({ cls: "pc-meta-label", text: RESET_LABEL[resource.reset] ?? "Special" });
+  if (sourceLabel) header.createDiv({ cls: "archivist-item-subtitle", text: sourceLabel });
 
+  // Properties — recharge cadence (and die, when the pool has one). Same
+  // icon-property rhythm as an item block's Weight/Cost lines.
+  const props = block.createDiv({ cls: "archivist-item-properties" });
+  createIconProperty(props, "rotate-ccw", "Recharge:", RESET_LABEL[resource.reset] ?? "Special");
+  if (resource.die) createIconProperty(props, "dices", "Die:", currentDie(resource.die, ctx.resolved.totalLevel));
+
+  // Description (information only).
   if (feature.description) {
-    const descEl = block.createEl("p", { cls: "pc-block-description" });
-    renderTextWithInlineTags(feature.description, descEl);
+    const desc = block.createDiv({ cls: "archivist-item-description" });
+    for (const para of feature.description.split(/\n{2,}/)) {
+      if (!para.trim()) continue;
+      const p = desc.createDiv({ cls: "description-paragraph" });
+      renderTextWithInlineTags(para, p);
+    }
   }
 
+  // Recovery action (Arcane Recovery) — the only ACTION in the block.
   if (resource.recovery?.length) {
     const fu = resource.id ? ctx.resolved.state.feature_uses?.[resource.id] : undefined;
     renderRecoveryAction(block, resource, source, ctx, fu);
   }
+}
+
+/** Edition → friendly source-badge label, matching spell/item block badges. */
+function sourceBadgeText(edition: string | undefined): string | null {
+  if (edition === "2014") return "SRD 5e";
+  if (edition === "2024") return "SRD 2024";
+  return null;
 }
 
 function renderCounter(track: HTMLElement, id: string, fu: { used: number; max: number }, ctx: ComponentRenderContext): void {
