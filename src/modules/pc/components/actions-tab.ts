@@ -4,6 +4,7 @@ import { WeaponsTable } from "./actions/weapons-table";
 import { ItemsTable } from "./actions/items-table";
 import { FeaturesTable } from "./actions/features-table";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
+import { renderResourceStrip } from "./actions/resource-badge";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
 
 const ACTION_DISABLING_CONDITIONS: ReadonlySet<ConditionSlug> = new Set([
@@ -51,14 +52,7 @@ export class ActionsTab implements SheetComponent {
       }
     }
 
-    const resourceFeatures = ctx.resolved.features.filter((rf) => rf.feature.grants_resource || rf.feature.resources);
-    if (resourceFeatures.length > 0) {
-      root.createEl("h4", { cls: "pc-tab-heading", text: "Resources" });
-      const strip = root.createDiv({ cls: "pc-resource-strip" });
-      for (const rf of resourceFeatures) {
-        strip.createDiv({ cls: "pc-resource-badge" }).createSpan({ cls: "pc-resource-name", text: rf.feature.name });
-      }
-    }
+    renderResourceStrip(root, ctx);
 
     renderStandardActionsList(root, ctx);
   }

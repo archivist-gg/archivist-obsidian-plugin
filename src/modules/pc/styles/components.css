@@ -144,8 +144,41 @@
 }
 .archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); background: transparent; }
 .archivist-pc-sheet .pc-attack-name { font-weight: 600; }
-.archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); margin-top: var(--pc-space-1); }
+.archivist-pc-sheet .pc-resource-badge {
+  background: var(--pc-parchment-dark);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-md);
+  padding: var(--pc-space-2) var(--pc-space-3);
+  min-width: 104px;
+}
+.archivist-pc-sheet .pc-resource-badge-head {
+  display: flex; justify-content: space-between; gap: var(--pc-space-2);
+  align-items: baseline; margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-resource-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-resource-die { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-resource-reset { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); margin-top: var(--pc-space-2); }
+
+.archivist-pc-sheet .pc-resource-counter { display: inline-flex; align-items: center; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-resource-counter-val { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-title); min-width: 46px; text-align: center; }
+.archivist-pc-sheet .pc-resource-step {
+  width: 20px; height: 20px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  background: var(--pc-parchment-light); color: var(--pc-crimson); font-weight: 700; cursor: pointer;
+  line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+.archivist-pc-sheet .pc-resource-recover-btn,
+.archivist-pc-sheet .pc-resource-picker-apply {
+  margin-top: var(--pc-space-2); font-size: var(--pc-fs-small); font-family: var(--pc-font-sans);
+  background: var(--pc-crimson); color: #fff; border: none; border-radius: var(--pc-radius-sm);
+  padding: 2px 8px; cursor: pointer;
+}
+.archivist-pc-sheet .pc-resource-recover-btn:disabled { background: var(--pc-text-muted); cursor: default; }
+.archivist-pc-sheet .pc-resource-picker { margin-top: var(--pc-space-2); border-top: 1px dashed var(--pc-tan-muted); padding-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-resource-picker-remaining { font-size: var(--pc-fs-small); color: var(--pc-text-soft); margin-bottom: var(--pc-space-1); }
+.archivist-pc-sheet .pc-resource-picker-row { display: flex; align-items: center; gap: var(--pc-space-2); font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-resource-picker-row button { width: 18px; height: 18px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); background: var(--pc-parchment-light); color: var(--pc-crimson); cursor: pointer; line-height: 1; }
+.archivist-pc-sheet .pc-resource-picker-val { min-width: 14px; text-align: center; }
 .archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; }
 .archivist-pc-sheet .pc-spells-empty { text-align: center; padding: var(--pc-space-5); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spells-empty-icon { font-size: 32px; opacity: 0.3; }
