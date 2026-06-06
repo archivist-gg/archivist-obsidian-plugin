@@ -98,7 +98,7 @@ function renderRow(
     const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
     tr.after(exprow);
     tr.classList.add("pc-row-open");
-    const cell = exprow.createEl("td", { attr: { colspan: String(COLS.length) } });
+    const cell = exprow.createEl("td", { cls: "pc-open-expand", attr: { colspan: String(COLS.length) } });
     const wrap = cell.createDiv({ cls: "pc-spell-expand" });
     // The table may be wider than the drawer (it scrolls). Pin the expanded
     // block to the visible width so its prose wraps instead of running off-screen.

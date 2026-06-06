@@ -75,7 +75,7 @@ function renderResourceRow(list: HTMLElement, entry: ResourceEntry, ctx: Compone
   }
 
   // Sibling expand block (hidden until the row is clicked).
-  const expand = list.createDiv({ cls: "pc-resource-expand" });
+  const expand = list.createDiv({ cls: "pc-resource-expand pc-open-expand" });
   expand.hidden = true;
   renderExpandBlock(expand, resource, feature, source, ctx);
 

@@ -97,7 +97,7 @@ export class WeaponsTable implements SheetComponent {
       if (this.expand.is(expandKey)) {
         row.classList.add("open", "pc-row-open");
         const expandTr = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = expandTr.createEl("td");
+        const td = expandTr.createEl("td", { cls: "pc-open-expand" });
         td.setAttribute("colspan", "5");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         const entry = findEntryForAttack(ctx, a);

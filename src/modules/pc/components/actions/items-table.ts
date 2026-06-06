@@ -92,7 +92,7 @@ export class ItemsTable implements SheetComponent {
       // Expand row reuses inventory-row-expand
       if (this.expand.is(key)) {
         const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = exp.createEl("td");
+        const td = exp.createEl("td", { cls: "pc-open-expand" });
         td.setAttribute("colspan", "4");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         renderInventoryRowExpand(inner, {

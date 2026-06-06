@@ -153,7 +153,7 @@ function renderRow(
     const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
     tr.after(exprow);
     tr.classList.add("pc-row-open");
-    const cell = exprow.createEl("td", { attr: { colspan: String(COLS.length) } });
+    const cell = exprow.createEl("td", { cls: "pc-open-expand", attr: { colspan: String(COLS.length) } });
     toggleSpellBlock(cell, spell, ctx);
   });
 

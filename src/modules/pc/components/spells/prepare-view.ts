@@ -192,7 +192,10 @@ function renderPrepareRow(
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
   nameWrap.addEventListener("click", () => {
     toggleSpellBlock(host, spell, ctx);
-    row.classList.toggle("pc-row-open", !!host.querySelector(":scope > .pc-spell-expand"));
+    const open = !!host.querySelector(":scope > .pc-spell-expand");
+    row.classList.toggle("pc-row-open", open);
+    // Tint the whole block-level host (row + expanded card) as one open unit.
+    host.classList.toggle("pc-open-expand", open);
   });
 
   // Remove with inline two-tap confirm

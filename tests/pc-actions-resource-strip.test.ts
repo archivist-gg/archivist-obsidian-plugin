@@ -110,6 +110,9 @@ describe("renderResourceList", () => {
     ));
     const row = root.querySelector(".pc-resource-row") as HTMLElement;
     expect(row.classList.contains("pc-row-open")).toBe(false);
+    // the expand panel carries the shared open tint so the row + card read as one unit
+    const expand = row.nextElementSibling as HTMLElement;
+    expect(expand.classList.contains("pc-open-expand")).toBe(true);
     // open via a row click (not on the track)
     row.click();
     expect(row.classList.contains("pc-row-open")).toBe(true);

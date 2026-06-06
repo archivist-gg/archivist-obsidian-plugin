@@ -120,6 +120,9 @@ describe("renderCastView", () => {
     const name = row.querySelector(".pc-spell-namecell") as HTMLElement;
     name.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(row.classList.contains("pc-row-open")).toBe(true);
+    // the expand cell carries the shared open tint so the row + block read as one unit
+    const cell = (row.nextElementSibling as HTMLElement).querySelector("td") as HTMLElement;
+    expect(cell.classList.contains("pc-open-expand")).toBe(true);
     name.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(row.classList.contains("pc-row-open")).toBe(false);
   });

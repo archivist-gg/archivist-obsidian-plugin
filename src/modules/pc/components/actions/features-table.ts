@@ -76,7 +76,7 @@ export class FeaturesTable implements SheetComponent {
 
       if (this.expand.is(key)) {
         const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = exp.createEl("td");
+        const td = exp.createEl("td", { cls: "pc-open-expand" });
         td.setAttribute("colspan", "4");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         renderFeatureExpand(inner, feature, sourceLabel);
