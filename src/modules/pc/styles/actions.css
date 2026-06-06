@@ -84,24 +84,7 @@
   font-weight: 600;
 }
 
-.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); table-layout: fixed; }
-
-/* Deterministic column widths so inserting the colspan expand row never
-   re-measures the (fluid) Name column — that re-measure was the source of the
-   horizontal click jitter. These tables have no <thead>; under fixed layout the
-   first row's cells set the widths, so pin them per-cell instead. The Name cell
-   (col 2) is intentionally left unset so it absorbs the remaining width. The
-   colspan expand cell spans all columns and gets no width. */
-.archivist-pc-sheet .pc-items-table    td:nth-child(1),
-.archivist-pc-sheet .pc-features-table td:nth-child(1) { width: 48px; }
-.archivist-pc-sheet .pc-items-table    td:nth-child(3),
-.archivist-pc-sheet .pc-features-table td:nth-child(3) { width: 64px; }
-.archivist-pc-sheet .pc-items-table    td:nth-child(4),
-.archivist-pc-sheet .pc-features-table td:nth-child(4) { width: 120px; }
-.archivist-pc-sheet .pc-weapons-table td:nth-child(1) { width: 48px; }
-.archivist-pc-sheet .pc-weapons-table td:nth-child(3) { width: 60px; }
-.archivist-pc-sheet .pc-weapons-table td:nth-child(4) { width: 64px; }
-.archivist-pc-sheet .pc-weapons-table td:nth-child(5) { width: 96px; }
+.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-actions-table th {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
