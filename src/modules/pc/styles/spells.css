@@ -53,7 +53,11 @@
 
 /* Spell list + rows */
 .archivist-pc-sheet .pc-spell-list { margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; border-bottom: 1px dashed var(--pc-tan-muted); }
+/* Block-level host: the expanded reference block mounts here (sibling of the
+   flex row) so it stacks BELOW the row. The dashed separator lives on the host
+   so the row + its expanded block read as one unit above the line. */
+.archivist-pc-sheet .pc-spell-prep-row-host { display: block; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; }
 .archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }

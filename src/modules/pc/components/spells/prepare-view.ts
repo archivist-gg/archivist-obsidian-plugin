@@ -161,7 +161,11 @@ function renderPrepareRow(
   ctx: ComponentRenderContext,
   hasPrepared: boolean,
 ): void {
-  const row = parent.createDiv({ cls: "pc-spell-prep-row" });
+  // Block-level host wraps the flex row so the expanded reference block stacks
+  // BELOW the row (as a sibling of the flex row) instead of landing beside the
+  // title. Mirrors inventory's .pc-inv-row-host idiom.
+  const host = parent.createDiv({ cls: "pc-spell-prep-row-host" });
+  const row = host.createDiv({ cls: "pc-spell-prep-row" });
   const isCantrip = (spell.entity.level ?? 0) === 0;
 
   // Prepared box (prepared casters only). Cantrips/always-prepared are locked.
@@ -186,7 +190,7 @@ function renderPrepareRow(
   if (tag) name.parentElement!.createSpan({ cls: `pc-spell-srctag ${tag.mod}`, text: tag.label });
   if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
-  nameWrap.addEventListener("click", () => toggleSpellBlock(row, spell, ctx));
+  nameWrap.addEventListener("click", () => toggleSpellBlock(host, spell, ctx));
 
   // Remove with inline two-tap confirm
   const rm = row.createEl("button", { cls: "pc-spell-remove", text: "✕" });

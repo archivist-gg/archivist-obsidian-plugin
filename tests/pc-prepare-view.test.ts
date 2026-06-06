@@ -89,6 +89,27 @@ describe("renderPrepareView", () => {
     expect(tag?.textContent).toBe("5e"); // 2014 edition is labelled "5e"
   });
 
+  it("expands the spell block BELOW the row (block-level host), not beside the title", () => {
+    const root = mountContainer();
+    renderPrepareView(root, ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
+    const host = root.querySelector(".pc-spell-prep-row-host") as HTMLElement;
+    const row = root.querySelector(".pc-spell-prep-row") as HTMLElement;
+    expect(host).toBeTruthy();
+    expect(row).toBeTruthy();
+    // Click the name to open the reference block.
+    (root.querySelector(".pc-spell-namewrap") as HTMLElement)
+      .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const expand = root.querySelector(".pc-spell-expand") as HTMLElement;
+    // The container is created synchronously (markdown fills in async).
+    expect(expand).toBeTruthy();
+    // It must NOT be a direct child of the flex row (that lands it beside the title).
+    expect(row.querySelector(":scope > .pc-spell-expand")).toBeNull();
+    // It MUST be a direct child of the block-level host, sitting AFTER the flex row.
+    expect(host.querySelector(":scope > .pc-spell-expand")).toBe(expand);
+    expect(expand.parentElement).toBe(host);
+    expect(expand.previousElementSibling).toBe(row);
+  });
+
   it("resets the level filter on a full re-render (no stale filter across characters/modes)", () => {
     const root1 = mountContainer();
     renderPrepareView(root1, ctx([sp("Fire Bolt", 0, true), sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
