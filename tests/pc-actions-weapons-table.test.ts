@@ -107,6 +107,24 @@ describe("WeaponsTable", () => {
     expect(tags[1]?.textContent).toBe("2d6 fire");
   });
 
+  it("clicking a weapon row marks it .pc-row-open (and unmarks on re-click)", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
+      damageDice: "1d8 + 3", damageType: "slashing",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const row = () => root.querySelector(".pc-action-row") as HTMLElement;
+    expect(row().classList.contains("pc-row-open")).toBe(false);
+    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row().classList.contains("pc-row-open")).toBe(true);
+    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row().classList.contains("pc-row-open")).toBe(false);
+  });
+
   it("renders no situational sub-line when informational is undefined", () => {
     const root = mountContainer();
     const attacks = [{

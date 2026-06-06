@@ -9383,6 +9383,11 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
+  /* Shared reddish tint applied to an open/expanded list row (and its sibling
+   * expand panel) across every expandable list. Single source of truth — see
+   * the `.pc-row-open` rule in components.css. */
+  --pc-row-open-bg: rgba(146, 38, 16, 0.04);
+
   /* --------------------------------------------------------------
    * Rarity palette — italic + tinted hue for item names.
    * Common defaults to the existing primary text color (no override).
@@ -9578,6 +9583,11 @@ body.theme-light .archivist-tag-atk:hover {
   appearance: none;
   -webkit-appearance: none;
 }
+
+/* Shared open-row tint — every expandable list marks its open row with
+   .pc-row-open; the reddish background is defined here once. */
+.archivist-pc-sheet .pc-row-open { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet tr.pc-row-open > td { background: var(--pc-row-open-bg); }
 
 .archivist-pc-sheet .pc-header-root {
   display: flex;
@@ -11386,13 +11396,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-inv-qty-cost { grid-area: qty; }
 /* No hover background on list rows — per request (no row hover anywhere). */
 
-/* Crimson rail when equipped or attuned (or both — single rail) */
-.archivist-pc-sheet .pc-inv-row.equipped,
-.archivist-pc-sheet .pc-inv-row.attuned {
-  border-left: 1.5px solid var(--pc-crimson);
-}
 .archivist-pc-sheet .pc-inv-row.expanded {
-  background: rgba(146, 38, 16, 0.04);
   border-bottom-color: transparent;
 }
 
@@ -11470,7 +11474,7 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Row expand (item-block + PC actions) ---------- */
 .archivist-pc-sheet .pc-inv-expand {
-  background: rgba(146, 38, 16, 0.04);
+  background: var(--pc-row-open-bg);
   border-bottom: 1px dotted var(--pc-tan-muted);
   padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3);
 }
@@ -12208,7 +12212,24 @@ body.theme-light .archivist-tag-atk:hover {
   font-weight: 600;
 }
 
-.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); table-layout: fixed; }
+
+/* Deterministic column widths so inserting the colspan expand row never
+   re-measures the (fluid) Name column — that re-measure was the source of the
+   horizontal click jitter. These tables have no <thead>; under fixed layout the
+   first row's cells set the widths, so pin them per-cell instead. The Name cell
+   (col 2) is intentionally left unset so it absorbs the remaining width. The
+   colspan expand cell spans all columns and gets no width. */
+.archivist-pc-sheet .pc-items-table    td:nth-child(1),
+.archivist-pc-sheet .pc-features-table td:nth-child(1) { width: 48px; }
+.archivist-pc-sheet .pc-items-table    td:nth-child(3),
+.archivist-pc-sheet .pc-features-table td:nth-child(3) { width: 64px; }
+.archivist-pc-sheet .pc-items-table    td:nth-child(4),
+.archivist-pc-sheet .pc-features-table td:nth-child(4) { width: 120px; }
+.archivist-pc-sheet .pc-weapons-table td:nth-child(1) { width: 48px; }
+.archivist-pc-sheet .pc-weapons-table td:nth-child(3) { width: 60px; }
+.archivist-pc-sheet .pc-weapons-table td:nth-child(4) { width: 64px; }
+.archivist-pc-sheet .pc-weapons-table td:nth-child(5) { width: 96px; }
 .archivist-pc-sheet .pc-actions-table th {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-label);
@@ -12807,7 +12828,15 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-slots { display: flex; align-items: center; gap: var(--pc-space-1); }
 .archivist-pc-sheet .pc-spell-slots-label { font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); margin-right: var(--pc-space-1); }
 
-.archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); table-layout: fixed; }
+/* Fixed layout + explicit <th> widths keep column geometry deterministic so the
+   colspan reference-block row never reflows the (fluid) Name/Effect columns.
+   Cols: 1 action, 2 Name(auto), 3 Time, 4 Range, 5 Hit/DC, 6 Effect(auto),
+   7 Components. The action column width comes from .pc-spell-act (56px). */
+.archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(3) { width: 64px; }
+.archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(4) { width: 72px; }
+.archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(5) { width: 64px; }
+.archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(7) { width: 92px; }
 .archivist-pc-sheet .pc-spell-cast-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); }
 .archivist-pc-sheet .pc-spell-cast-table td { padding: 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: top; font-size: var(--pc-fs-body); color: var(--pc-text-soft); }
 /* No hover background on list rows — per request (no row hover anywhere). */
@@ -12885,7 +12914,23 @@ body.theme-light .archivist-tag-atk:hover {
    columns out-measure the column can't stretch it — it would bleed past the
    drawer's right border. Bound the table to the drawer and let it scroll. */
 .archivist-pc-sheet .pc-add-tablehost { overflow-x: auto; min-width: 0; }
-.archivist-pc-sheet .pc-spell-add-table { width: 100%; max-width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }
+/* Fixed layout + explicit per-column widths so the colspan reference-block row
+   never reflows the columns (the click-jitter root cause). This table already
+   scrolls inside .pc-add-tablehost; width:auto with min-width:100% lets it grow
+   past the host (scroll) when the deterministic columns out-measure the drawer,
+   and fill the drawer when they don't. The Name column (.col-name) is the wide,
+   fluid one; the meta columns are pinned to their nowrap content. */
+.archivist-pc-sheet .pc-spell-add-table { width: auto; min-width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); table-layout: fixed; }
+.archivist-pc-sheet .pc-spell-add-table .col-name   { width: 200px; }
+.archivist-pc-sheet .pc-spell-add-table .col-level  { width: 56px; }
+.archivist-pc-sheet .pc-spell-add-table .col-time   { width: 56px; }
+.archivist-pc-sheet .pc-spell-add-table .col-school { width: 96px; }
+.archivist-pc-sheet .pc-spell-add-table .col-range  { width: 80px; }
+.archivist-pc-sheet .pc-spell-add-table .col-comp   { width: 64px; }
+.archivist-pc-sheet .pc-spell-add-table .col-source { width: 56px; }
+.archivist-pc-sheet .pc-spell-add-table .col-damage { width: 80px; }
+.archivist-pc-sheet .pc-spell-add-table .col-save   { width: 56px; }
+.archivist-pc-sheet .pc-spell-add-table .col-dur    { width: 96px; }
 .archivist-pc-sheet .pc-spell-add-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap; }
 .archivist-pc-sheet .pc-spell-add-table thead th.sortable { cursor: pointer; }
 .archivist-pc-sheet .pc-spell-add-table thead th.ctr { text-align: center; }

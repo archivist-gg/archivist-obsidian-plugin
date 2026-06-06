@@ -93,10 +93,11 @@ function renderRow(
 
   const toggleExpand = (): void => {
     const next = tr.nextElementSibling;
-    if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); expanded.delete(c.slug); return; }
+    if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); expanded.delete(c.slug); tr.classList.remove("pc-row-open"); return; }
     expanded.add(c.slug);
     const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
     tr.after(exprow);
+    tr.classList.add("pc-row-open");
     const cell = exprow.createEl("td", { attr: { colspan: String(COLS.length) } });
     const wrap = cell.createDiv({ cls: "pc-spell-expand" });
     // The table may be wider than the drawer (it scrolls). Pin the expanded

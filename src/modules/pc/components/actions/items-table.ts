@@ -42,7 +42,7 @@ export class ItemsTable implements SheetComponent {
 
       const key = `item:${r.index}`;
       const tr = tbody.createEl("tr", { cls: "pc-action-row" });
-      if (this.expand.is(key)) tr.classList.add("open");
+      if (this.expand.is(key)) tr.classList.add("open", "pc-row-open");
 
       // Cost
       renderCostBadge(tr.createEl("td"), action.cost);

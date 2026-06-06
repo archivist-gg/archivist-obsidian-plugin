@@ -98,7 +98,7 @@ function renderBrowseRow(
   onToggle: () => void,
 ): void {
   const row = parent.createDiv({ cls: "pc-inv-row" });
-  if (isExpanded) row.classList.add("expanded");
+  if (isExpanded) row.classList.add("expanded", "pc-row-open");
   const e = v.resolved.entity as { name?: string; type?: string; rarity?: string; weight?: number; value?: number } | null;
 
   // Spacer for the toggle column (no toggle in browse mode)

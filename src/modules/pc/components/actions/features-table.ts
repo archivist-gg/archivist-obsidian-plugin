@@ -35,7 +35,7 @@ export class FeaturesTable implements SheetComponent {
     for (const { feature, sourceLabel } of visible) {
       const key = `feature:${feature.id ?? feature.name}`;
       const tr = tbody.createEl("tr", { cls: "pc-action-row" });
-      if (this.expand.is(key)) tr.classList.add("open");
+      if (this.expand.is(key)) tr.classList.add("open", "pc-row-open");
 
       const cost = feature.action as ActionCost;
       renderCostBadge(tr.createEl("td"), cost);

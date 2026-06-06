@@ -111,6 +111,18 @@ describe("renderCastView", () => {
     (row.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(root.querySelector(".pc-spell-expand-row")).toBeNull();
   });
+
+  it("toggles .pc-row-open on the spell <tr> when the name cell opens/closes the block", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxFor([sp("Hold Person", 2)]));
+    const row = root.querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+    const name = row.querySelector(".pc-spell-namecell") as HTMLElement;
+    name.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row.classList.contains("pc-row-open")).toBe(true);
+    name.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+  });
 });
 
 // ---- pact casters ----

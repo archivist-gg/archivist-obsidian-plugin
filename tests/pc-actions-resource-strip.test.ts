@@ -100,6 +100,28 @@ describe("renderResourceList", () => {
     expect((expand as HTMLElement).style.background === "" || (expand as HTMLElement).style.background === "transparent").toBe(true);
   });
 
+  it("toggles .pc-row-open on the row when it opens/closes (track clicks do not)", () => {
+    const root = mountContainer();
+    const expendFeatureUse = vi.fn();
+    renderResourceList(root, ctx(
+      [{ feature: { name: "Rage", description: "x", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "3", reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
+      { "barbarian:rage": { used: 1, max: 3 } },
+      { expendFeatureUse },
+    ));
+    const row = root.querySelector(".pc-resource-row") as HTMLElement;
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+    // open via a row click (not on the track)
+    row.click();
+    expect(row.classList.contains("pc-row-open")).toBe(true);
+    // close again
+    row.click();
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+    // a usage-track click must NOT toggle the open tint
+    const pip = root.querySelectorAll(".pc-resource-track .archivist-toggle-box")[2] as HTMLElement;
+    pip.click();
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+  });
+
   it("clicking the usage tracker spends without expanding the row", () => {
     const root = mountContainer();
     const expendFeatureUse = vi.fn();

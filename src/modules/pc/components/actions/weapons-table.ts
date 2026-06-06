@@ -95,7 +95,7 @@ export class WeaponsTable implements SheetComponent {
 
       // Mark open if state is open
       if (this.expand.is(expandKey)) {
-        row.classList.add("open");
+        row.classList.add("open", "pc-row-open");
         const expandTr = tbody.createEl("tr", { cls: "pc-action-expand-row" });
         const td = expandTr.createEl("td");
         td.setAttribute("colspan", "5");

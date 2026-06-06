@@ -9,6 +9,11 @@
   -webkit-appearance: none;
 }
 
+/* Shared open-row tint — every expandable list marks its open row with
+   .pc-row-open; the reddish background is defined here once. */
+.archivist-pc-sheet .pc-row-open { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet tr.pc-row-open > td { background: var(--pc-row-open-bg); }
+
 .archivist-pc-sheet .pc-header-root {
   display: flex;
   align-items: center;

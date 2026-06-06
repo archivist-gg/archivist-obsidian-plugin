@@ -190,7 +190,10 @@ function renderPrepareRow(
   if (tag) name.parentElement!.createSpan({ cls: `pc-spell-srctag ${tag.mod}`, text: tag.label });
   if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
-  nameWrap.addEventListener("click", () => toggleSpellBlock(host, spell, ctx));
+  nameWrap.addEventListener("click", () => {
+    toggleSpellBlock(host, spell, ctx);
+    row.classList.toggle("pc-row-open", !!host.querySelector(":scope > .pc-spell-expand"));
+  });
 
   // Remove with inline two-tap confirm
   const rm = row.createEl("button", { cls: "pc-spell-remove", text: "✕" });

@@ -84,6 +84,7 @@ function renderResourceRow(list: HTMLElement, entry: ResourceEntry, ctx: Compone
     if ((e.target as HTMLElement)?.closest(".pc-resource-track")) return;
     expand.hidden = !expand.hidden;
     row.classList.toggle("open", !expand.hidden);
+    row.classList.toggle("pc-row-open", !expand.hidden);
   });
 }
 

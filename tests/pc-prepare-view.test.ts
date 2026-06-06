@@ -110,6 +110,18 @@ describe("renderPrepareView", () => {
     expect(expand.previousElementSibling).toBe(row);
   });
 
+  it("toggles .pc-row-open on the prep row when the name opens/closes the block", () => {
+    const root = mountContainer();
+    renderPrepareView(root, ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
+    const row = root.querySelector(".pc-spell-prep-row") as HTMLElement;
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+    const nameWrap = root.querySelector(".pc-spell-namewrap") as HTMLElement;
+    nameWrap.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row.classList.contains("pc-row-open")).toBe(true);
+    nameWrap.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+  });
+
   it("resets the level filter on a full re-render (no stale filter across characters/modes)", () => {
     const root1 = mountContainer();
     renderPrepareView(root1, ctx([sp("Fire Bolt", 0, true), sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));

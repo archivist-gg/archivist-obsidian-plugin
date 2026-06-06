@@ -38,7 +38,7 @@ export class InventoryRow {
     const row = parent.createDiv({ cls: "pc-inv-row" });
     if (ctx.entry.equipped) row.classList.add("equipped");
     if (ctx.entry.attuned)  row.classList.add("attuned");
-    if (ctx.expanded)       row.classList.add("expanded");
+    if (ctx.expanded)       row.classList.add("expanded", "pc-row-open");
 
     // Toggle column: square toggle that flips equipped state on click.
     const toggleCell = row.createDiv({ cls: "pc-inv-toggle-cell" });
