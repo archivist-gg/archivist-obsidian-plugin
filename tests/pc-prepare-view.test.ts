@@ -110,20 +110,19 @@ describe("renderPrepareView", () => {
     expect(expand.previousElementSibling).toBe(row);
   });
 
-  it("toggles .pc-row-open on the prep row when the name opens/closes the block", () => {
+  it("tints the block-level host (one layer) when the name opens/closes the block", () => {
     const root = mountContainer();
     renderPrepareView(root, ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
     const row = root.querySelector(".pc-spell-prep-row") as HTMLElement;
     const host = root.querySelector(".pc-spell-prep-row-host") as HTMLElement;
-    expect(row.classList.contains("pc-row-open")).toBe(false);
     expect(host.classList.contains("pc-open-expand")).toBe(false);
     const nameWrap = root.querySelector(".pc-spell-namewrap") as HTMLElement;
     nameWrap.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(row.classList.contains("pc-row-open")).toBe(true);
-    // the block-level host carries the shared open tint so row + card read as one unit
+    // ONLY the host carries the tint (one translucent layer over row + card);
+    // the row must NOT also be tinted or its shade would darken vs the expand.
     expect(host.classList.contains("pc-open-expand")).toBe(true);
-    nameWrap.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(row.classList.contains("pc-row-open")).toBe(false);
+    nameWrap.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(host.classList.contains("pc-open-expand")).toBe(false);
   });
 

@@ -193,8 +193,9 @@ function renderPrepareRow(
   nameWrap.addEventListener("click", () => {
     toggleSpellBlock(host, spell, ctx);
     const open = !!host.querySelector(":scope > .pc-spell-expand");
-    row.classList.toggle("pc-row-open", open);
-    // Tint the whole block-level host (row + expanded card) as one open unit.
+    // Tint the whole block-level host (row + expanded card) as ONE open unit.
+    // Tinting the row too would double the translucent layer over the row and
+    // make it darker than the expand area, so the host carries the tint alone.
     host.classList.toggle("pc-open-expand", open);
   });
 
