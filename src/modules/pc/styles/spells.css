@@ -92,9 +92,13 @@
 
 .archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); table-layout: fixed; }
 /* Fixed layout + explicit <th> widths keep column geometry deterministic so the
-   colspan reference-block row never reflows the (fluid) Name/Effect columns.
-   Cols: 1 action, 2 Name(auto), 3 Time, 4 Range, 5 Hit/DC, 6 Effect(auto),
-   7 Components. The action column width comes from .pc-spell-act (56px). */
+   colspan reference-block row never reflows the columns.
+   Cols: 1 action, 2 Name, 3 Time, 4 Range, 5 Hit/DC, 6 Effect, 7 Components.
+   Under table-layout:fixed the widths are read from the <thead> row; the three
+   unpinned columns (1 action, 2 Name, 6 Effect) share the remaining width
+   equally and — being content-independent under fixed layout — do not shift
+   when the expand row is inserted. (.pc-spell-act below sizes the body cell but
+   does not pin the column; the action column stays fluid, which is fine.) */
 .archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(3) { width: 64px; }
 .archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(4) { width: 72px; }
 .archivist-pc-sheet .pc-spell-cast-table thead th:nth-child(5) { width: 64px; }
