@@ -137,4 +137,34 @@ describe("WeaponsTable", () => {
     new WeaponsTable().render(root, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-attack-row-situational")).toBeNull();
   });
+
+  it("renders rows as divs, not a <table>", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
+      damageDice: "1d8 + 3", damageType: "slashing",
+      properties: [], proficient: true, breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    expect(root.querySelector("table")).toBeNull();
+    expect(root.querySelector(".pc-action-row")?.tagName).toBe("DIV");
+  });
+
+  it("expands as a full-width sibling div carrying the open tint", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
+      damageDice: "1d8 + 3", damageType: "slashing",
+      properties: [], proficient: true, breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const expand = root.querySelector(".pc-action-expand") as HTMLElement;
+    expect(expand).not.toBeNull();
+    expect(expand.tagName).toBe("DIV");
+    expect(expand.classList.contains("pc-open-expand")).toBe(true);
+    expect(root.querySelector("table")).toBeNull();
+  });
 });

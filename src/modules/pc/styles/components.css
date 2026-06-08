@@ -1568,7 +1568,7 @@
 /* Inventory tab styles moved to inventory.css as part of the redesign.
  * .pc-charges-widget and .pc-ac-tooltip stay below — they're shared. */
 
-.pc-attack-row-situational td {
+.pc-attack-row-situational {
   font-style: italic;
   color: var(--pc-text-muted);
   font-size: var(--pc-fs-label);

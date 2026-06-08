@@ -24,28 +24,27 @@ export class WeaponsTable implements SheetComponent {
     head.createSpan({ cls: "pc-actions-section-title", text: "Weapons" });
     head.createSpan({ cls: "pc-actions-section-count", text: `${attacks.length} equipped` });
 
-    const table = section.createEl("table", { cls: "pc-actions-table pc-weapons-table" });
-    const tbody = table.createEl("tbody");
+    const list = section.createDiv({ cls: "pc-actions-table pc-weapons-table" });
 
     for (const a of attacks) {
       const expandKey = `weapon:${a.slotKey ?? a.id ?? a.name}`;
-      const row = tbody.createEl("tr", { cls: "pc-action-row" });
+      const row = list.createDiv({ cls: "pc-action-row" });
 
       // Cost
-      const costCell = row.createEl("td", { cls: "pc-weapon-cost" });
+      const costCell = row.createDiv({ cls: "pc-weapon-cost" });
       const cost: ActionCost = a.actionCost ?? "action";
       renderCostBadge(costCell, cost);
 
       // Name + sub
-      const nameCell = row.createEl("td", { cls: "pc-weapon-name" });
+      const nameCell = row.createDiv({ cls: "pc-weapon-name" });
       nameCell.createDiv({ cls: "pc-action-row-name", text: a.name });
       if (a.subLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: a.subLabel });
 
       // Range
-      row.createEl("td", { cls: "pc-weapon-range", text: a.range ?? "" });
+      row.createDiv({ cls: "pc-weapon-range", text: a.range ?? "" });
 
       // Hit (inline italic)
-      const hitCell = row.createEl("td", { cls: "pc-weapon-hit" });
+      const hitCell = row.createDiv({ cls: "pc-weapon-hit" });
       renderTextWithInlineTags(`\`atk:${formatSigned(a.toHit)}\``, hitCell, false);
 
       const ce = ctx.derived.conditionEffects;
@@ -64,7 +63,7 @@ export class WeaponsTable implements SheetComponent {
       }
 
       // Damage (inline italic; versatile shows both stacked)
-      const dmgCell = row.createEl("td", { cls: "pc-weapon-damage" });
+      const dmgCell = row.createDiv({ cls: "pc-weapon-damage" });
       renderTextWithInlineTags(
         `\`damage:${a.damageDice}${a.damageType ? " " + a.damageType : ""}\``,
         dmgCell,
@@ -93,13 +92,11 @@ export class WeaponsTable implements SheetComponent {
         s.addEventListener("click", (e) => e.stopPropagation()),
       );
 
-      // Mark open if state is open
+      // Expand block = a full-width sibling div after the row.
       if (this.expand.is(expandKey)) {
         row.classList.add("open", "pc-row-open");
-        const expandTr = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = expandTr.createEl("td", { cls: "pc-open-expand" });
-        td.setAttribute("colspan", "5");
-        const inner = td.createDiv({ cls: "pc-action-expand-inner" });
+        const exp = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
+        const inner = exp.createDiv({ cls: "pc-action-expand-inner" });
         const entry = findEntryForAttack(ctx, a);
         const resolved = findResolvedForAttack(ctx, a);
         if (entry && resolved) {
@@ -112,14 +109,12 @@ export class WeaponsTable implements SheetComponent {
         }
       }
 
-      // Situational sub-line — renders informational modifiers (advantage/disadvantage etc.)
+      // Situational sub-line — full-width sibling div (was a colspan row).
       const info = a.informational;
       if (info && info.length > 0) {
-        const sub = tbody.createEl("tr", { cls: "pc-attack-row-situational" });
-        const td = sub.createEl("td");
-        td.setAttribute("colspan", "5");
+        const sub = list.createDiv({ cls: "pc-attack-row-situational" });
         for (const i of info) {
-          const line = td.createDiv({ cls: "pc-attack-row-situational-line" });
+          const line = sub.createDiv({ cls: "pc-attack-row-situational-line" });
           line.createSpan({
             text: `${i.source}: ${formatSigned(i.value)} ${fieldLabel(i.field)} ${conditionsToText(i.conditions)}`,
           });
