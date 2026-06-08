@@ -94,8 +94,11 @@
 }
 .archivist-pc-sheet .pc-action-row.pc-row-open { border-bottom-color: transparent; }
 .archivist-pc-sheet .pc-action-row > * { min-width: 0; }
+/* The charges column gets the lion's share of the leftover width (3fr vs the
+   name's 1fr) so the pip tracker has room to stay on one line instead of the
+   name column hogging the slack and cramping the pips. */
 .archivist-pc-sheet .pc-items-table .pc-action-row,
-.archivist-pc-sheet .pc-features-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 220px; }
+.archivist-pc-sheet .pc-features-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
 .archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
