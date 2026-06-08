@@ -172,12 +172,6 @@
 .archivist-pc-sheet .pc-resource-list > .pc-resource-row:nth-last-child(2) { border-bottom: none; }
 /* No hover background anywhere on the list — per request. */
 .archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-reset-inline { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-reset-inline::before { content: "·"; margin: 0 6px 0 5px; color: var(--pc-tan-muted); }
-/* No flex spacer: the usage tracker stays left-aligned next to the reset label
-   instead of being pushed to the far-right edge (matches the left-aligned item
-   charge pips). */
-.archivist-pc-sheet .pc-row-grow { display: none; }
 .archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
 
 /* expand body = the SAME card UI as the spell/item block (.archivist-item-block).

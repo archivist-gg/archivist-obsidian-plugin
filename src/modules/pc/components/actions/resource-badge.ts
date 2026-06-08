@@ -57,8 +57,6 @@ function renderResourceRow(list: HTMLElement, entry: ResourceEntry, ctx: Compone
   const row = list.createDiv({ cls: "pc-resource-row" });
   row.createSpan({ cls: "pc-resource-row-name", text: resource.name });
   if (resource.die) row.createSpan({ cls: "pc-resource-die", text: currentDie(resource.die, ctx.resolved.totalLevel) });
-  row.createSpan({ cls: "pc-reset-inline", text: RESET_LABEL[resource.reset] ?? "Special" });
-  row.createSpan({ cls: "pc-row-grow" });
 
   // Usage tracker — the ONLY place uses are spent. Lives in a `.pc-resource-track`
   // wrapper so the row's expand handler can ignore clicks inside it.
@@ -73,6 +71,9 @@ function renderResourceRow(list: HTMLElement, entry: ResourceEntry, ctx: Compone
       onRestore: () => ctx.editState?.restoreFeatureUse(id),
     });
   }
+
+  // Recovery suffix after the tracker, mirroring the item charge style ("/ Long Rest").
+  row.createSpan({ cls: "pc-charge-recovery", text: `/ ${RESET_LABEL[resource.reset] ?? "Special"}` });
 
   // Sibling expand block (hidden until the row is clicked).
   const expand = list.createDiv({ cls: "pc-resource-expand pc-open-expand" });
