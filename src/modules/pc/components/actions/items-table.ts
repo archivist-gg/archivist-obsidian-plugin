@@ -32,8 +32,7 @@ export class ItemsTable implements SheetComponent {
     head.createSpan({ cls: "pc-actions-section-title", text: "Items" });
     head.createSpan({ cls: "pc-actions-section-count", text: `${rows.length} actions` });
 
-    const table = section.createEl("table", { cls: "pc-actions-table pc-items-table" });
-    const tbody = table.createEl("tbody");
+    const list = section.createDiv({ cls: "pc-actions-table pc-items-table" });
 
     for (const r of rows) {
       const slug = r.entry.item.match(/^\[\[(.+)\]\]$/)?.[1] ?? "";
@@ -41,18 +40,18 @@ export class ItemsTable implements SheetComponent {
       if (!action) continue;
 
       const key = `item:${r.index}`;
-      const tr = tbody.createEl("tr", { cls: "pc-action-row" });
-      if (this.expand.is(key)) tr.classList.add("open", "pc-row-open");
+      const row = list.createDiv({ cls: "pc-action-row" });
+      if (this.expand.is(key)) row.classList.add("open", "pc-row-open");
 
       // Cost
-      renderCostBadge(tr.createEl("td"), action.cost);
+      renderCostBadge(row.createDiv(), action.cost);
 
       const ce = ctx.derived.conditionEffects;
       const isAction = action.cost === "action" || action.cost === "reaction" || action.cost === "bonus-action";
-      if (ce && isAction && ce.actions_disabled) tr.addClass("pc-row-disabled");
+      if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
       // Name + sub
-      const nameCell = tr.createEl("td");
+      const nameCell = row.createDiv({ cls: "pc-action-namecell" });
       const nameEl = nameCell.createDiv({ cls: "pc-action-row-name", text: r.entity?.name ?? slug });
       const rcls = RARITY_CLASS[(r.entity?.rarity ?? "").toLowerCase()];
       if (rcls) nameEl.classList.add(rcls);
@@ -62,10 +61,10 @@ export class ItemsTable implements SheetComponent {
       if (subParts.length) nameCell.createDiv({ cls: "pc-action-row-sub", text: subParts.join(" · ") });
 
       // Range
-      tr.createEl("td", { text: action.range ?? "" });
+      row.createDiv({ cls: "pc-action-range", text: action.range ?? "" });
 
       // Charges
-      const chgCell = tr.createEl("td");
+      const chgCell = row.createDiv({ cls: "pc-action-charges" });
       const stateCharges = r.entry.state?.charges;
       const max = stateCharges?.max ?? action.max_charges ?? 0;
       const used = stateCharges ? Math.max(0, stateCharges.max - stateCharges.current) : 0;
@@ -83,18 +82,16 @@ export class ItemsTable implements SheetComponent {
 
       // Click anywhere on the row toggles the expand panel (matches inventory UX).
       // Charge boxes call e.stopPropagation() so their clicks don't bubble here.
-      tr.addEventListener("click", () => {
+      row.addEventListener("click", () => {
         this.expand.toggle(key);
         el.empty();
         this.render(el, ctx);
       });
 
-      // Expand row reuses inventory-row-expand
+      // Expand block = a full-width sibling div after the row (no table row, no colspan).
       if (this.expand.is(key)) {
-        const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = exp.createEl("td", { cls: "pc-open-expand" });
-        td.setAttribute("colspan", "4");
-        const inner = td.createDiv({ cls: "pc-action-expand-inner" });
+        const exp = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
+        const inner = exp.createDiv({ cls: "pc-action-expand-inner" });
         renderInventoryRowExpand(inner, {
           entry: r.entry,
           resolved: { index: r.index, entity: r.entity as never, entityType: r.entityType, entry: r.entry },
