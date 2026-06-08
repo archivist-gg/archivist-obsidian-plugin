@@ -64,9 +64,9 @@ function renderRow(
   const e = c.entity;
   const isKnown = known.has(c.slug);
   const firstClass = ctx.derived.spellcastingClasses[0]?.classSlug;
-  const tr = body.createEl("tr", { cls: "pc-spell-add-row" });
+  const tr = body.createDiv({ cls: "pc-spell-add-row" });
 
-  const addTd = tr.createEl("td", { cls: "col-add" });
+  const addTd = tr.createDiv({ cls: "col-add" });
   const toggle = addTd.createEl("button", { cls: `pc-add-toggle${isKnown ? " on" : ""}`, text: isKnown ? "✓" : "＋" });
   toggle.addEventListener("click", (ev) => {
     ev.stopPropagation();
@@ -74,36 +74,35 @@ function renderRow(
     else ctx.editState?.addKnownSpell(c.slug, { class: firstClass });
   });
 
-  const nameTd = tr.createEl("td", { cls: "col-name" });
+  const nameTd = tr.createDiv({ cls: "col-name" });
   nameTd.createSpan({ cls: `pc-add-name${isKnown ? " on" : ""}`, text: c.name });
   if (e.concentration) nameTd.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
   if (e.ritual) nameTd.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
 
-  tr.createEl("td", { cls: "col-level", text: levelLabel(c.level) });
-  tr.createEl("td", { cls: "col-time", text: compactCastingTime(e.casting_time) });
-  tr.createEl("td", { cls: "col-school", text: e.school ?? "" });
-  tr.createEl("td", { cls: "col-range", text: formatRange(e.range) });
-  tr.createEl("td", { cls: "col-comp", text: componentLetters(e.components).letters.join(" ") });
-  const srcTd = tr.createEl("td", { cls: "col-source" });
+  tr.createDiv({ cls: "col-level", text: levelLabel(c.level) });
+  tr.createDiv({ cls: "col-time", text: compactCastingTime(e.casting_time) });
+  tr.createDiv({ cls: "col-school", text: e.school ?? "" });
+  tr.createDiv({ cls: "col-range", text: formatRange(e.range) });
+  tr.createDiv({ cls: "col-comp", text: componentLetters(e.components).letters.join(" ") });
+  const srcTd = tr.createDiv({ cls: "col-source" });
   const ed = e.edition === "2014" ? "2014" : e.edition === "2024" ? "2024" : null;
   if (ed) srcTd.createSpan({ cls: `pc-spell-srctag e${ed}`, text: ed === "2014" ? "5e" : ed });
-  tr.createEl("td", { cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
-  tr.createEl("td", { cls: "col-save", text: e.saving_throw?.ability ? abbrAbility(e.saving_throw.ability) : "—" });
-  tr.createEl("td", { cls: "col-dur", text: e.duration ?? "" });
+  tr.createDiv({ cls: "col-damage", text: e.damage?.types?.[0] ?? "—" });
+  tr.createDiv({ cls: "col-save", text: e.saving_throw?.ability ? abbrAbility(e.saving_throw.ability) : "—" });
+  tr.createDiv({ cls: "col-dur", text: e.duration ?? "" });
 
   const toggleExpand = (): void => {
     const next = tr.nextElementSibling;
     if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); expanded.delete(c.slug); tr.classList.remove("pc-row-open"); return; }
     expanded.add(c.slug);
-    const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
-    tr.after(exprow);
     tr.classList.add("pc-row-open");
-    const cell = exprow.createEl("td", { cls: "pc-open-expand", attr: { colspan: String(COLS.length) } });
-    const wrap = cell.createDiv({ cls: "pc-spell-expand" });
+    const exprow = body.createDiv({ cls: "pc-spell-expand-row pc-open-expand" });
+    tr.after(exprow);
+    const wrap = exprow.createDiv({ cls: "pc-spell-expand" });
     // The table may be wider than the drawer (it scrolls). Pin the expanded
     // block to the visible width so its prose wraps instead of running off-screen.
     const host = tr.closest(".pc-add-tablehost");
-    if (host) wrap.style.maxWidth = `${host.clientWidth - 28}px`;
+    if (host) wrap.style.maxWidth = `${(host as HTMLElement).clientWidth - 28}px`;
     void renderSpellBlock(e, ctx.app).then((block) => wrap.appendChild(block));
   };
   tr.addEventListener("click", toggleExpand);
@@ -115,10 +114,10 @@ function renderTable(
   ctx: ComponentRenderContext, known: Set<string>, expanded: Set<string>, draw: () => void,
 ): void {
   if (!cands.length) { host.createDiv({ cls: "pc-spell-pick-meta", text: "No matching spells." }); return; }
-  const table = host.createEl("table", { cls: "pc-spell-add-table" });
-  const htr = table.createEl("thead").createEl("tr");
+  const list = host.createDiv({ cls: "pc-spell-add-table" });
+  const headRow = list.createDiv({ cls: "pc-spell-add-head" });
   for (const col of COLS) {
-    const th = htr.createEl("th", { cls: `${col.cls}${col.center ? " ctr" : ""}`, text: col.label });
+    const th = headRow.createDiv({ cls: `pc-add-th ${col.cls}${col.center ? " ctr" : ""}`, text: col.label });
     if (col.sort) {
       th.classList.add("sortable");
       if (state.sortKey === col.sort) th.createSpan({ cls: "pc-add-sortarr", text: state.sortDir === "asc" ? " ▲" : " ▼" });
@@ -129,8 +128,7 @@ function renderTable(
       });
     }
   }
-  const body = table.createEl("tbody");
-  for (const c of cands) renderRow(body, c, ctx, known, expanded);
+  for (const c of cands) renderRow(list, c, ctx, known, expanded);
 }
 
 /** The collapsible "More filters" panel: School / Cast Time / Range / Damage /

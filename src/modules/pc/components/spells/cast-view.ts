@@ -15,11 +15,10 @@ function ordinal(n: number): string {
 const COLS = ["", "Name", "Time", "Range", "Hit / DC", "Effect", "Components"];
 
 function tableFor(root: HTMLElement): HTMLElement {
-  const table = root.createEl("table", { cls: "pc-spell-cast-table" });
-  const thead = table.createEl("thead");
-  const htr = thead.createEl("tr");
-  for (const c of COLS) htr.createEl("th", { text: c });
-  return table.createEl("tbody");
+  const list = root.createDiv({ cls: "pc-spell-cast-table" });
+  const head = list.createDiv({ cls: "pc-spell-cast-head" });
+  for (const c of COLS) head.createDiv({ cls: "pc-spell-cast-hcell", text: c });
+  return list; // rows append here
 }
 
 export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): void {
@@ -80,8 +79,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     for (const s of base) renderRow(body, s, lvl, ctx, dcFor, {});
     for (const s of upcasts) renderRow(body, s, lvl, ctx, dcFor, { upcast: true });
     if (!base.length && !upcasts.length) {
-      const tr = body.createEl("tr", { cls: "pc-spell-empty-row" });
-      tr.createEl("td", { attr: { colspan: String(COLS.length) }, text: "No spells at this level." });
+      body.createDiv({ cls: "pc-spell-empty-row", text: "No spells at this level." });
     }
   }
 
@@ -102,8 +100,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
       (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
     for (const s of pactSpells) renderRow(body, s, pact.level, ctx, dcFor, { pact: true });
     if (!pactSpells.length) {
-      const tr = body.createEl("tr", { cls: "pc-spell-empty-row" });
-      tr.createEl("td", { attr: { colspan: String(COLS.length) }, text: "No spells." });
+      body.createDiv({ cls: "pc-spell-empty-row", text: "No spells." });
     }
   }
 }
@@ -112,10 +109,10 @@ function renderRow(
   body: HTMLElement, spell: ResolvedSpell, level: number, ctx: ComponentRenderContext,
   dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean },
 ): void {
-  const tr = body.createEl("tr", { cls: "pc-spell-cast-row" });
+  const tr = body.createDiv({ cls: "pc-spell-cast-row" });
 
   // ACTION cell
-  const actTd = tr.createEl("td", { cls: "pc-spell-act" });
+  const actTd = tr.createDiv({ cls: "pc-spell-act" });
   if (opts.cantrip) {
     actTd.createSpan({ cls: "pc-spell-atwill", text: "At Will" });
   } else {
@@ -137,32 +134,29 @@ function renderRow(
   }
 
   // NAME cell
-  const nameTd = tr.createEl("td", { cls: "pc-spell-namecell" });
+  const nameTd = tr.createDiv({ cls: "pc-spell-namecell" });
   const nl = nameTd.createDiv({ cls: "pc-spell-nl" });
   nl.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
   if (spell.entity.concentration) nl.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });
   if (spell.entity.school) nameTd.createDiv({ cls: "pc-spell-school", text: spell.entity.school });
-  // Expand the reference block as a full-width row BELOW this one. A bare div
-  // inside a <tr> is invalid (the browser ejects it), so the block must live in
-  // its own <tr><td colspan>; toggleSpellBlock then mounts into that cell.
+  // Expand the reference block as a full-width sibling div BELOW this row.
   nameTd.addEventListener("click", () => {
     const next = tr.nextElementSibling;
     if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); tr.classList.remove("pc-row-open"); return; }
-    const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
-    tr.after(exprow);
     tr.classList.add("pc-row-open");
-    const cell = exprow.createEl("td", { cls: "pc-open-expand", attr: { colspan: String(COLS.length) } });
-    toggleSpellBlock(cell, spell, ctx);
+    const expand = body.createDiv({ cls: "pc-spell-expand-row pc-open-expand" });
+    tr.after(expand);
+    toggleSpellBlock(expand, spell, ctx);
   });
 
   // TIME / RANGE
-  tr.createEl("td", { cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
-  tr.createEl("td", { cls: "pc-spell-range", text: formatRange(spell.entity.range) });
+  tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
+  tr.createDiv({ cls: "pc-spell-range", text: formatRange(spell.entity.range) });
 
   // HIT / DC
-  const hd = tr.createEl("td", { cls: "pc-spell-hitdc" });
+  const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
   const desc = hitDcDescriptor(spell, dcFor(spell));
   if (desc) {
     hd.createSpan({ cls: "pc-spell-hitdc-ab", text: desc.ability });
@@ -172,7 +166,7 @@ function renderRow(
   }
 
   // EFFECT
-  const effTd = tr.createEl("td", { cls: "pc-spell-effcell" });
+  const effTd = tr.createDiv({ cls: "pc-spell-effcell" });
   const eff = effectDescriptor(spell);
   const scaled = (opts.upcast || opts.pact) ? spellEffectAtSlot(spell.entity, level) : null;
   if (scaled) {
@@ -191,7 +185,7 @@ function renderRow(
   }
 
   // COMPONENTS / duration
-  const comp = tr.createEl("td", { cls: "pc-spell-comp" });
+  const comp = tr.createDiv({ cls: "pc-spell-comp" });
   if (spell.entity.components) {
     const { letters } = componentLetters(spell.entity.components);
     if (letters.length) {

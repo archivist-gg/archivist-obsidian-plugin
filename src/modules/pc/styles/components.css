@@ -11,14 +11,10 @@
 
 /* Shared open-row tint — every expandable list marks its open row with
    .pc-row-open and its open expand panel with .pc-open-expand, so the row AND
-   its expanded block share one tint and read as a single open unit (matching
-   the inventory expand). The reddish background is defined here once.
-   The tint is translucent, so every tinted element must carry EXACTLY ONE
-   layer or the shades won't match: for table rows we tint only the <td>s (not
-   the <tr>, which would show through the translucent cells and darken them);
-   `:not(tr)` keeps the plain rule for div/grid rows only. */
-.archivist-pc-sheet .pc-row-open:not(tr) { background: var(--pc-row-open-bg); }
-.archivist-pc-sheet tr.pc-row-open > td { background: var(--pc-row-open-bg); }
+   its expanded block share one translucent tint and read as a single open unit
+   (matching the inventory expand). Both are plain <div> boxes, each carrying
+   exactly one tint layer, so the shades match. Defined here once. */
+.archivist-pc-sheet .pc-row-open { background: var(--pc-row-open-bg); }
 .archivist-pc-sheet .pc-open-expand { background: var(--pc-row-open-bg); }
 
 .archivist-pc-sheet .pc-header-root {
@@ -169,18 +165,22 @@
 /* ---- LIST — matches the Features/Spells table rows (no caret) ---- */
 .archivist-pc-sheet .pc-resource-list { display: flex; flex-direction: column; margin-top: var(--pc-space-1); font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-resource-row { display: flex; align-items: center; gap: var(--pc-space-2); cursor: pointer; padding: var(--pc-space-2) var(--pc-space-1); border-bottom: 1px dashed var(--pc-tan-muted); }
+/* No trailing separator under the last entry of the resources list. Each
+   resource renders a row immediately followed by its (usually hidden) expand
+   div, so the last visible row is :nth-last-child(2), not :last-child. */
+.archivist-pc-sheet .pc-resource-list > .pc-resource-row:last-child,
+.archivist-pc-sheet .pc-resource-list > .pc-resource-row:nth-last-child(2) { border-bottom: none; }
 /* No hover background anywhere on the list — per request. */
 .archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-reset-inline { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-reset-inline::before { content: "·"; margin: 0 6px 0 5px; color: var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-row-grow { flex: 1; }
-.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
+/* Tracker sits a clear gap to the right of the resource name (the row's flex gap
+   alone is too tight). The "/ Long Rest" suffix follows right after the track. */
+.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; margin-left: var(--pc-space-5); }   /* usage tracker lives in the row */
 
 /* expand body = the SAME card UI as the spell/item block (.archivist-item-block).
    It carries the shared open tint (.pc-open-expand) so the row + expanded card
    read as one open unit (like inventory); NO border, NO crimson rail, NO hover.
    The card floats on the tint exactly like the inventory expand. */
-.archivist-pc-sheet .pc-resource-expand { border: none; padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+.archivist-pc-sheet .pc-resource-expand { border: none; padding: var(--pc-space-2) calc(var(--pc-space-6) * 1.5) var(--pc-space-3); }
 /* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
    for an inline list expand so the card sits snug under its row. */
 .archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-1) 0 var(--pc-space-2); }
@@ -1568,7 +1568,7 @@
 /* Inventory tab styles moved to inventory.css as part of the redesign.
  * .pc-charges-widget and .pc-ac-tooltip stay below — they're shared. */
 
-.pc-attack-row-situational td {
+.pc-attack-row-situational {
   font-style: italic;
   color: var(--pc-text-muted);
   font-size: var(--pc-fs-label);

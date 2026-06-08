@@ -38,13 +38,13 @@ function ctx(known: string[] = [], editState: object = { addKnownSpell: vi.fn(),
 }
 
 const rowNames = (root: HTMLElement) =>
-  [...root.querySelectorAll(".pc-spell-add-table tbody .pc-add-name")].map((n) => n.textContent);
+  [...root.querySelectorAll(".pc-spell-add-table .pc-spell-add-row .pc-add-name")].map((n) => n.textContent);
 
 describe("renderAddDrawer — table", () => {
   it("renders a table with the expected header columns", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
-    const heads = [...root.querySelectorAll(".pc-spell-add-table thead th")].map((h) => h.textContent?.trim());
+    const heads = [...root.querySelectorAll(".pc-spell-add-table .pc-add-th")].map((h) => h.textContent?.trim());
     expect(heads).toEqual(["", "Name", "Level ▲", "Time", "School", "Range", "Components", "Source", "Damage", "Save", "Duration"]);
   });
 
@@ -58,20 +58,20 @@ describe("renderAddDrawer — table", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
     // Bless is the concentration spell in the fixture → a .pc-spell-cr.c badge.
-    const blessCell = [...root.querySelectorAll(".pc-spell-add-table tbody td.col-name")].find(
+    const blessCell = [...root.querySelectorAll(".pc-spell-add-table .pc-spell-add-row .col-name")].find(
       (td) => td.querySelector(".pc-add-name")?.textContent === "Bless",
     ) as HTMLElement;
     expect(blessCell.querySelector(".pc-spell-cr.c")?.textContent).toBe("C");
     // No standalone concentration/ritual columns remain.
-    expect(root.querySelector(".pc-spell-add-table td.col-conc")).toBeNull();
-    expect(root.querySelector(".pc-spell-add-table td.col-ritual")).toBeNull();
+    expect(root.querySelector(".pc-spell-add-table .col-conc")).toBeNull();
+    expect(root.querySelector(".pc-spell-add-table .col-ritual")).toBeNull();
   });
 
   it("＋ adds an unknown spell; ✓ removes a known one", () => {
     const root = mountContainer();
     const addKnownSpell = vi.fn(); const removeKnownSpell = vi.fn();
     renderAddDrawer(root, ctx(["bless"], { addKnownSpell, removeKnownSpell }));
-    const add = root.querySelector(".pc-spell-add-table tbody tr .pc-add-toggle:not(.on)") as HTMLElement;
+    const add = root.querySelector(".pc-spell-add-table .pc-spell-add-row .pc-add-toggle:not(.on)") as HTMLElement;
     add.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(addKnownSpell).toHaveBeenCalledWith("fire-bolt", { class: "wizard" });
     const on = root.querySelector(".pc-add-toggle.on") as HTMLElement;
@@ -83,7 +83,7 @@ describe("renderAddDrawer — table", () => {
     const root = mountContainer();
     const addKnownSpell = vi.fn();
     renderAddDrawer(root, ctx([], { addKnownSpell, removeKnownSpell: vi.fn() }));
-    const firstRow = root.querySelector(".pc-spell-add-table tbody tr.pc-spell-add-row") as HTMLElement;
+    const firstRow = root.querySelector(".pc-spell-add-table .pc-spell-add-row") as HTMLElement;
     firstRow.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(root.querySelector(".pc-spell-expand-row")).not.toBeNull();
     firstRow.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -96,7 +96,7 @@ describe("renderAddDrawer — table", () => {
   it("clicking a row toggles .pc-row-open on the add row", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx([], { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() }));
-    const firstRow = root.querySelector(".pc-spell-add-table tbody tr.pc-spell-add-row") as HTMLElement;
+    const firstRow = root.querySelector(".pc-spell-add-table .pc-spell-add-row") as HTMLElement;
     expect(firstRow.classList.contains("pc-row-open")).toBe(false);
     firstRow.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(firstRow.classList.contains("pc-row-open")).toBe(true);
@@ -107,10 +107,10 @@ describe("renderAddDrawer — table", () => {
   it("clicking the Name header sorts by name; clicking again flips direction", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
-    const nameTh = [...root.querySelectorAll(".pc-spell-add-table thead th")].find((h) => h.textContent?.trim().startsWith("Name")) as HTMLElement;
+    const nameTh = [...root.querySelectorAll(".pc-spell-add-table .pc-add-th")].find((h) => h.textContent?.trim().startsWith("Name")) as HTMLElement;
     nameTh.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(rowNames(root)).toEqual(["Bless", "Fire Bolt", "Misty Step"]);
-    const nameTh2 = [...root.querySelectorAll(".pc-spell-add-table thead th")].find((h) => h.textContent?.trim().startsWith("Name")) as HTMLElement;
+    const nameTh2 = [...root.querySelectorAll(".pc-spell-add-table .pc-add-th")].find((h) => h.textContent?.trim().startsWith("Name")) as HTMLElement;
     nameTh2.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(rowNames(root)).toEqual(["Misty Step", "Fire Bolt", "Bless"]);
   });
@@ -135,7 +135,7 @@ describe("renderAddDrawer — table", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());
     for (const cls of ["col-save", "col-damage", "col-comp", "col-dur", "col-time", "col-range"]) {
-      expect(root.querySelector(`.pc-spell-add-table td.${cls}`)).not.toBeNull();
+      expect(root.querySelector(`.pc-spell-add-table .pc-spell-add-row .${cls}`)).not.toBeNull();
     }
   });
 });

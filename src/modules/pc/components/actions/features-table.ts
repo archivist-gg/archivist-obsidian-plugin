@@ -29,28 +29,27 @@ export class FeaturesTable implements SheetComponent {
     head.createSpan({ cls: "pc-actions-section-title", text: "Features" });
     head.createSpan({ cls: "pc-actions-section-count", text: `${visible.length} features` });
 
-    const table = section.createEl("table", { cls: "pc-actions-table pc-features-table" });
-    const tbody = table.createEl("tbody");
+    const list = section.createDiv({ cls: "pc-actions-table pc-features-table" });
 
     for (const { feature, sourceLabel } of visible) {
       const key = `feature:${feature.id ?? feature.name}`;
-      const tr = tbody.createEl("tr", { cls: "pc-action-row" });
-      if (this.expand.is(key)) tr.classList.add("open", "pc-row-open");
+      const row = list.createDiv({ cls: "pc-action-row" });
+      if (this.expand.is(key)) row.classList.add("open", "pc-row-open");
 
       const cost = feature.action as ActionCost;
-      renderCostBadge(tr.createEl("td"), cost);
+      renderCostBadge(row.createDiv(), cost);
 
       const ce = ctx.derived.conditionEffects;
       const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
-      if (ce && isAction && ce.actions_disabled) tr.addClass("pc-row-disabled");
+      if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
-      const nameCell = tr.createEl("td");
+      const nameCell = row.createDiv({ cls: "pc-action-namecell" });
       nameCell.createDiv({ cls: "pc-action-row-name", text: feature.name });
       if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
 
-      tr.createEl("td", { text: "Self" });
+      row.createDiv({ cls: "pc-action-range", text: "Self" });
 
-      const chgCell = tr.createEl("td");
+      const chgCell = row.createDiv({ cls: "pc-action-charges" });
       const featureKey = feature.resources?.[0]?.id ?? feature.id;
       const fu = featureKey ? ctx.resolved.state.feature_uses?.[featureKey] : undefined;
       if (fu && featureKey) {
@@ -68,17 +67,15 @@ export class FeaturesTable implements SheetComponent {
 
       // Click anywhere on the row toggles the expand panel (matches inventory UX).
       // Charge boxes call e.stopPropagation() so their clicks don't bubble here.
-      tr.addEventListener("click", () => {
+      row.addEventListener("click", () => {
         this.expand.toggle(key);
         el.empty();
         this.render(el, ctx);
       });
 
       if (this.expand.is(key)) {
-        const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = exp.createEl("td", { cls: "pc-open-expand" });
-        td.setAttribute("colspan", "4");
-        const inner = td.createDiv({ cls: "pc-action-expand-inner" });
+        const exp = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
+        const inner = exp.createDiv({ cls: "pc-action-expand-inner" });
         renderFeatureExpand(inner, feature, sourceLabel);
       }
     }

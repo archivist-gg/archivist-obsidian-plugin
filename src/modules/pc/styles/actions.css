@@ -46,10 +46,8 @@
    spell/item card (which already carries its own parchment + shadow) and
    its action buttons — no panel background, no crimson rail, no indent,
    and no row hover. */
-.archivist-pc-sheet .pc-action-row { cursor: pointer; }
-.archivist-pc-sheet .pc-action-expand-row { background: transparent; }
 .archivist-pc-sheet .pc-action-expand-inner {
-  padding: 0 0 var(--pc-space-2);
+  padding: var(--pc-space-2) calc(var(--pc-space-6) * 1.5) var(--pc-space-3);
   border-left: none;
   margin: 0;
 }
@@ -84,24 +82,31 @@
   font-weight: 600;
 }
 
-.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-actions-table th {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-label);
-  color: var(--pc-text-muted);
-  text-align: left;
-  padding: var(--pc-space-1) var(--pc-space-1);
-  border-bottom: 1px solid var(--pc-tan-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--pc-ls-caps-md);
-  font-weight: 600;
-}
-.archivist-pc-sheet .pc-actions-table td {
+/* ---------- Actions-tab lists (Weapons / Items / Features) — grid rows ---------- */
+.archivist-pc-sheet .pc-actions-table { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-action-row {
+  display: grid;
+  align-items: center;
+  gap: var(--pc-space-2);
   padding: var(--pc-space-2) var(--pc-space-1);
-  vertical-align: middle;
   border-bottom: 1px dashed var(--pc-tan-muted);
+  cursor: pointer;
 }
-.archivist-pc-sheet .pc-actions-table tr:last-child td { border-bottom: none; }
+.archivist-pc-sheet .pc-action-row.pc-row-open { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-action-row > * { min-width: 0; }
+/* The charges column gets the lion's share of the leftover width (3fr vs the
+   name's 1fr) so the pip tracker has room to stay on one line instead of the
+   name column hogging the slack and cramping the pips. */
+.archivist-pc-sheet .pc-items-table .pc-action-row,
+.archivist-pc-sheet .pc-features-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
+.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
+.archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
+.archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
+/* Expand block = full-width sibling div under the open row. The open tint comes
+   from the shared .pc-open-expand rule (components.css). */
+.archivist-pc-sheet .pc-action-expand { border-bottom: 1px dashed var(--pc-tan-muted); }
+/* No trailing separator under the last entry of each list. */
+.archivist-pc-sheet .pc-actions-table > *:last-child { border-bottom: none; }
 .archivist-pc-sheet .pc-action-row-name {
   font-family: var(--pc-font-serif);
   font-weight: 700;
@@ -183,13 +188,11 @@
 
 /* ---------- Responsive (added in phase 5) ---------- */
 
-/* Below narrow tier: attack & actions tables allow horizontal
- * scroll so trailing columns (Range / Damage / Notes) remain
- * reachable rather than overflowing the content column.
- * Reflow-via-grid would require an HTML change (deferred). */
 @container pc-content (max-width: 499px) {
-  .archivist-pc-sheet .pc-attack-table,
-  .archivist-pc-sheet .pc-actions-table {
+  /* The read-only feature-attacks table still scrolls as a block. The grid
+     lists (.pc-actions-table) reflow via their minmax(0,1fr) name column, so
+     they don't need block/scroll treatment. */
+  .archivist-pc-sheet .pc-attack-table {
     display: block;
     overflow-x: auto;
     max-width: 100%;

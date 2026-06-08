@@ -95,24 +95,24 @@ describe("renderCastView", () => {
     expect(marks).toContain("C");
   });
 
-  it("expands the reference block as a full-width <tr> below the row (valid table DOM), and toggles off", () => {
+  it("expands the reference block as a full-width sibling <div> below the row, and toggles off", () => {
     const root = mountContainer();
     renderCastView(root, ctxFor([sp("Hold Person", 2)]));
     const row = root.querySelector(".pc-spell-cast-row") as HTMLElement;
     (row.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    const next = row.nextElementSibling as HTMLElement;
-    expect(next?.tagName).toBe("TR");
-    expect(next.classList.contains("pc-spell-expand-row")).toBe(true);
-    const cell = next.querySelector("td")!;
-    expect(cell.getAttribute("colspan")).toBe(String(7));
-    // the block mounts into the colspan cell — NOT the original <tr> (which would be invalid and float out)
-    expect(toggleSpellBlock).toHaveBeenCalledWith(cell, expect.anything(), expect.anything());
-    // clicking the name again removes the expansion row
+    const expand = root.querySelector(".pc-spell-expand-row") as HTMLElement;
+    expect(expand).not.toBeNull();
+    expect(expand.tagName).toBe("DIV");
+    expect(expand.classList.contains("pc-open-expand")).toBe(true);
+    expect(root.querySelector("table")).toBeNull();
+    // the block mounts into the expand div itself — NOT a table cell
+    expect(toggleSpellBlock).toHaveBeenCalledWith(expand, expect.anything(), expect.anything());
+    // clicking the name again removes the expansion
     (row.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(root.querySelector(".pc-spell-expand-row")).toBeNull();
   });
 
-  it("toggles .pc-row-open on the spell <tr> when the name cell opens/closes the block", () => {
+  it("toggles .pc-row-open on the spell row and tints the sibling expand", () => {
     const root = mountContainer();
     renderCastView(root, ctxFor([sp("Hold Person", 2)]));
     const row = root.querySelector(".pc-spell-cast-row") as HTMLElement;
@@ -120,9 +120,9 @@ describe("renderCastView", () => {
     const name = row.querySelector(".pc-spell-namecell") as HTMLElement;
     name.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(row.classList.contains("pc-row-open")).toBe(true);
-    // the expand cell carries the shared open tint so the row + block read as one unit
-    const cell = (row.nextElementSibling as HTMLElement).querySelector("td") as HTMLElement;
-    expect(cell.classList.contains("pc-open-expand")).toBe(true);
+    // the sibling expand carries the shared open tint so row + block read as one unit
+    const expand = root.querySelector(".pc-spell-expand-row") as HTMLElement;
+    expect(expand.classList.contains("pc-open-expand")).toBe(true);
     name.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(row.classList.contains("pc-row-open")).toBe(false);
   });

@@ -77,4 +77,26 @@ describe("FeaturesTable", () => {
     empty.click();
     expect(expendFeatureUse).toHaveBeenCalledWith("action-surge");
   });
+
+  it("renders rows as divs, not a <table>", () => {
+    const root = mountContainer();
+    new FeaturesTable().render(root, ctxWithFeatures([
+      { id: "second-wind", name: "Second Wind", action: "bonus-action", description: "Heal 1d10+5" },
+    ]));
+    expect(root.querySelector("table")).toBeNull();
+    expect(root.querySelector(".pc-action-row")?.tagName).toBe("DIV");
+  });
+
+  it("expands as a full-width sibling div carrying the open tint", () => {
+    const root = mountContainer();
+    new FeaturesTable().render(root, ctxWithFeatures([
+      { id: "second-wind", name: "Second Wind", action: "bonus-action", description: "Heal 1d10+5" },
+    ]));
+    (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const expand = root.querySelector(".pc-action-expand") as HTMLElement;
+    expect(expand).not.toBeNull();
+    expect(expand.tagName).toBe("DIV");
+    expect(expand.classList.contains("pc-open-expand")).toBe(true);
+    expect(root.querySelector("table")).toBeNull();
+  });
 });

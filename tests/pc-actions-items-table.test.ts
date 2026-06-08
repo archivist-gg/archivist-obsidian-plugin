@@ -116,6 +116,30 @@ describe("ItemsTable", () => {
     expect(row().classList.contains("pc-row-open")).toBe(false);
   });
 
+  it("renders rows as divs, not a <table>", () => {
+    const root = mountContainer();
+    new ItemsTable().render(root, ctx({
+      entries: [{ item: "[[wand-of-fireballs]]", equipped: true, attuned: true }],
+      entityForSlug: () => ({ name: "Wand of Fireballs", rarity: "very rare", actions: { cost: "action", range: "150 ft." } }),
+    }));
+    expect(root.querySelector("table")).toBeNull();
+    expect(root.querySelector(".pc-action-row")?.tagName).toBe("DIV");
+  });
+
+  it("expands as a full-width sibling div carrying the open tint", () => {
+    const root = mountContainer();
+    new ItemsTable().render(root, ctx({
+      entries: [{ item: "[[wand-of-fireballs]]", equipped: true, attuned: true }],
+      entityForSlug: () => ({ name: "Wand of Fireballs", rarity: "very rare", actions: { cost: "action", range: "150 ft." } }),
+    }));
+    (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const expand = root.querySelector(".pc-action-expand") as HTMLElement;
+    expect(expand).not.toBeNull();
+    expect(expand.tagName).toBe("DIV");
+    expect(expand.classList.contains("pc-open-expand")).toBe(true);
+    expect(root.querySelector("table")).toBeNull();
+  });
+
   it("renders an action row for a PC equipping a compendium-prefixed wand wikilink", () => {
     // Regression for CB-4: PC sheets ship `[[srd-5e_wand-of-fireballs]]` but the
     // curated map keys by bare name; without prefix-stripping the row was missing.

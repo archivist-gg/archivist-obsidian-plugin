@@ -81,7 +81,7 @@
    otherwise leak into the spell prose and run it off the card. */
 .archivist-pc-sheet .pc-spell-expand { margin: 2px 0 8px var(--pc-space-4); white-space: normal; }
 /* Cast-table expansion row: block sits flush under its spell (no extra top gap). */
-.archivist-pc-sheet .pc-spell-expand-row > td { padding: 0 8px 10px; }
+.archivist-pc-sheet .pc-spell-expand-row { padding: 0 8px 10px; }
 .archivist-pc-sheet .pc-spell-empty-row { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; padding: 4px; }
 
 /* ── Cast table ───────────────────────────────────────── */
@@ -90,11 +90,37 @@
 .archivist-pc-sheet .pc-spell-slots { display: flex; align-items: center; gap: var(--pc-space-1); }
 .archivist-pc-sheet .pc-spell-slots-label { font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); margin-right: var(--pc-space-1); }
 
-.archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-cast-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-spell-cast-table td { padding: 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: top; font-size: var(--pc-fs-body); color: var(--pc-text-soft); }
-/* No hover background on list rows — per request (no row hover anywhere). */
-.archivist-pc-sheet .pc-spell-act { width: 56px; }
+.archivist-pc-sheet .pc-spell-cast-table { display: flex; flex-direction: column; margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-cast-head,
+.archivist-pc-sheet .pc-spell-cast-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1.4fr) 64px 72px 56px minmax(0, 1.2fr) minmax(80px, .8fr);
+  gap: 8px;
+  align-items: start;
+}
+/* The underline is ONE continuous line on the head container (matching the
+   full-width row separators), not a per-cell border that the grid gap would
+   break into segments. Labels bottom-align so they sit just above the line
+   even when a header (HIT / DC) wraps to two lines. Header cells carry no
+   horizontal padding so each label sits flush-left with its column's body
+   values (the row cells have no h-padding either). */
+.archivist-pc-sheet .pc-spell-cast-head {
+  align-items: end;
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-spell-cast-head > .pc-spell-cast-hcell {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 0 4px;
+}
+.archivist-pc-sheet .pc-spell-cast-row {
+  padding: 8px 0; border-bottom: 1px dashed var(--pc-tan-muted);
+  font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-spell-cast-row.pc-row-open { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-cast-row > * { min-width: 0; }
+/* No trailing separator under the last entry of each level group. */
+.archivist-pc-sheet .pc-spell-cast-table > *:last-child { border-bottom: none; }
 
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-castbtn:hover { background: var(--pc-crimson-light); }
@@ -168,15 +194,28 @@
    columns out-measure the column can't stretch it — it would bleed past the
    drawer's right border. Bound the table to the drawer and let it scroll. */
 .archivist-pc-sheet .pc-add-tablehost { overflow-x: auto; min-width: 0; }
-.archivist-pc-sheet .pc-spell-add-table { width: 100%; max-width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-add-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table thead th.sortable { cursor: pointer; }
-.archivist-pc-sheet .pc-spell-add-table thead th.ctr { text-align: center; }
+/* Grid "table": all columns fixed-width so header + every row share one track
+   set; the row width is intrinsic (sum of columns) and the .pc-add-tablehost
+   scrolls horizontally when it out-measures the content column. */
+.archivist-pc-sheet .pc-spell-add-table { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-add-head,
+.archivist-pc-sheet .pc-spell-add-row {
+  display: grid;
+  grid-template-columns: 30px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.sortable { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.ctr { text-align: center; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-spell-add-table td { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: middle; font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-row > * { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.archivist-pc-sheet .pc-spell-add-row.pc-row-open > * { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row:last-child > * { border-bottom: none; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row { cursor: pointer; }
 /* No hover background on list rows — per request (no row hover anywhere). */
-.archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table .col-school { font-style: italic; color: var(--pc-text-muted); }

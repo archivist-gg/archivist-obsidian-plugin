@@ -34,7 +34,7 @@ function ctx(
 }
 
 describe("renderResourceList", () => {
-  it("renders one row per resource with the reset label inline (max≤6 → pips)", () => {
+  it("renders one row per resource with the recovery suffix after the tracker (max≤6 → pips)", () => {
     const root = mountContainer();
     renderResourceList(root, ctx(
       [{ feature: { name: "Rage", description: "You can rage.", resources: [{ id: "barbarian:rage", name: "Rage", max_formula: "3", reset: "long-rest" }] }, source: { kind: "class", slug: "barbarian", level: 1 } }],
@@ -42,10 +42,10 @@ describe("renderResourceList", () => {
     ));
     expect(root.querySelectorAll(".pc-resource-row").length).toBe(1);
     expect(root.querySelector(".pc-resource-row-name")?.textContent).toBe("Rage");
-    // reset label lives in the row
-    const reset = root.querySelector(".pc-resource-row .pc-reset-inline");
+    // recovery suffix sits after the tracker, mirroring the item charge style
+    const reset = root.querySelector(".pc-resource-row .pc-charge-recovery");
     expect(reset).toBeTruthy();
-    expect(reset?.textContent).toBe("Long Rest");
+    expect(reset?.textContent).toBe("/ Long Rest");
     // pips for max≤6, inside the track wrapper
     expect(root.querySelectorAll(".pc-resource-track .archivist-toggle-box").length).toBe(3);
     expect(root.querySelectorAll(".archivist-toggle-box-checked").length).toBe(1);
@@ -71,7 +71,7 @@ describe("renderResourceList", () => {
       { "bard:bi": { used: 0, max: 4 } },
     ));
     expect(root.querySelector(".pc-resource-die")?.textContent).toBe("d8");
-    expect(root.querySelector(".pc-resource-row .pc-reset-inline")?.textContent).toBe("Short Rest");
+    expect(root.querySelector(".pc-resource-row .pc-charge-recovery")?.textContent).toBe("/ Short Rest");
   });
 
   it("clicking a row reveals its expand block with the feature description", () => {
