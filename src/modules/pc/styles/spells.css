@@ -203,7 +203,6 @@
 .archivist-pc-sheet .pc-spell-add-row.pc-row-open > * { border-bottom-color: transparent; }
 .archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row { cursor: pointer; }
 /* No hover background on list rows — per request (no row hover anywhere). */
-.archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table .col-school { font-style: italic; color: var(--pc-text-muted); }

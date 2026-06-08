@@ -11,14 +11,10 @@
 
 /* Shared open-row tint — every expandable list marks its open row with
    .pc-row-open and its open expand panel with .pc-open-expand, so the row AND
-   its expanded block share one tint and read as a single open unit (matching
-   the inventory expand). The reddish background is defined here once.
-   The tint is translucent, so every tinted element must carry EXACTLY ONE
-   layer or the shades won't match: for table rows we tint only the <td>s (not
-   the <tr>, which would show through the translucent cells and darken them);
-   `:not(tr)` keeps the plain rule for div/grid rows only. */
-.archivist-pc-sheet .pc-row-open:not(tr) { background: var(--pc-row-open-bg); }
-.archivist-pc-sheet tr.pc-row-open > td { background: var(--pc-row-open-bg); }
+   its expanded block share one translucent tint and read as a single open unit
+   (matching the inventory expand). Both are plain <div> boxes, each carrying
+   exactly one tint layer, so the shades match. Defined here once. */
+.archivist-pc-sheet .pc-row-open { background: var(--pc-row-open-bg); }
 .archivist-pc-sheet .pc-open-expand { background: var(--pc-row-open-bg); }
 
 .archivist-pc-sheet .pc-header-root {
