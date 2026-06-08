@@ -9586,14 +9586,10 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* Shared open-row tint — every expandable list marks its open row with
    .pc-row-open and its open expand panel with .pc-open-expand, so the row AND
-   its expanded block share one tint and read as a single open unit (matching
-   the inventory expand). The reddish background is defined here once.
-   The tint is translucent, so every tinted element must carry EXACTLY ONE
-   layer or the shades won't match: for table rows we tint only the <td>s (not
-   the <tr>, which would show through the translucent cells and darken them);
-   `:not(tr)` keeps the plain rule for div/grid rows only. */
-.archivist-pc-sheet .pc-row-open:not(tr) { background: var(--pc-row-open-bg); }
-.archivist-pc-sheet tr.pc-row-open > td { background: var(--pc-row-open-bg); }
+   its expanded block share one translucent tint and read as a single open unit
+   (matching the inventory expand). Both are plain <div> boxes, each carrying
+   exactly one tint layer, so the shades match. Defined here once. */
+.archivist-pc-sheet .pc-row-open { background: var(--pc-row-open-bg); }
 .archivist-pc-sheet .pc-open-expand { background: var(--pc-row-open-bg); }
 
 .archivist-pc-sheet .pc-header-root {
@@ -9744,18 +9740,22 @@ body.theme-light .archivist-tag-atk:hover {
 /* ---- LIST — matches the Features/Spells table rows (no caret) ---- */
 .archivist-pc-sheet .pc-resource-list { display: flex; flex-direction: column; margin-top: var(--pc-space-1); font-size: var(--pc-fs-body); }
 .archivist-pc-sheet .pc-resource-row { display: flex; align-items: center; gap: var(--pc-space-2); cursor: pointer; padding: var(--pc-space-2) var(--pc-space-1); border-bottom: 1px dashed var(--pc-tan-muted); }
+/* No trailing separator under the last entry of the resources list. Each
+   resource renders a row immediately followed by its (usually hidden) expand
+   div, so the last visible row is :nth-last-child(2), not :last-child. */
+.archivist-pc-sheet .pc-resource-list > .pc-resource-row:last-child,
+.archivist-pc-sheet .pc-resource-list > .pc-resource-row:nth-last-child(2) { border-bottom: none; }
 /* No hover background anywhere on the list — per request. */
 .archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-reset-inline { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-reset-inline::before { content: "·"; margin: 0 6px 0 5px; color: var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-row-grow { flex: 1; }
-.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
+/* Tracker sits a clear gap to the right of the resource name (the row's flex gap
+   alone is too tight). The "/ Long Rest" suffix follows right after the track. */
+.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; margin-left: var(--pc-space-5); }   /* usage tracker lives in the row */
 
 /* expand body = the SAME card UI as the spell/item block (.archivist-item-block).
    It carries the shared open tint (.pc-open-expand) so the row + expanded card
    read as one open unit (like inventory); NO border, NO crimson rail, NO hover.
    The card floats on the tint exactly like the inventory expand. */
-.archivist-pc-sheet .pc-resource-expand { border: none; padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+.archivist-pc-sheet .pc-resource-expand { border: none; padding: var(--pc-space-2) calc(var(--pc-space-6) * 1.5) var(--pc-space-3); }
 /* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
    for an inline list expand so the card sits snug under its row. */
 .archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-1) 0 var(--pc-space-2); }
@@ -11143,7 +11143,7 @@ body.theme-light .archivist-tag-atk:hover {
 /* Inventory tab styles moved to inventory.css as part of the redesign.
  * .pc-charges-widget and .pc-ac-tooltip stay below — they're shared. */
 
-.pc-attack-row-situational td {
+.pc-attack-row-situational {
   font-style: italic;
   color: var(--pc-text-muted);
   font-size: var(--pc-fs-label);
@@ -12182,10 +12182,8 @@ body.theme-light .archivist-tag-atk:hover {
    spell/item card (which already carries its own parchment + shadow) and
    its action buttons — no panel background, no crimson rail, no indent,
    and no row hover. */
-.archivist-pc-sheet .pc-action-row { cursor: pointer; }
-.archivist-pc-sheet .pc-action-expand-row { background: transparent; }
 .archivist-pc-sheet .pc-action-expand-inner {
-  padding: 0 0 var(--pc-space-2);
+  padding: var(--pc-space-2) calc(var(--pc-space-6) * 1.5) var(--pc-space-3);
   border-left: none;
   margin: 0;
 }
@@ -12220,24 +12218,31 @@ body.theme-light .archivist-tag-atk:hover {
   font-weight: 600;
 }
 
-.archivist-pc-sheet .pc-actions-table { width: 100%; border-collapse: collapse; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-actions-table th {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-label);
-  color: var(--pc-text-muted);
-  text-align: left;
-  padding: var(--pc-space-1) var(--pc-space-1);
-  border-bottom: 1px solid var(--pc-tan-muted);
-  text-transform: uppercase;
-  letter-spacing: var(--pc-ls-caps-md);
-  font-weight: 600;
-}
-.archivist-pc-sheet .pc-actions-table td {
+/* ---------- Actions-tab lists (Weapons / Items / Features) — grid rows ---------- */
+.archivist-pc-sheet .pc-actions-table { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-action-row {
+  display: grid;
+  align-items: center;
+  gap: var(--pc-space-2);
   padding: var(--pc-space-2) var(--pc-space-1);
-  vertical-align: middle;
   border-bottom: 1px dashed var(--pc-tan-muted);
+  cursor: pointer;
 }
-.archivist-pc-sheet .pc-actions-table tr:last-child td { border-bottom: none; }
+.archivist-pc-sheet .pc-action-row.pc-row-open { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-action-row > * { min-width: 0; }
+/* The charges column gets the lion's share of the leftover width (3fr vs the
+   name's 1fr) so the pip tracker has room to stay on one line instead of the
+   name column hogging the slack and cramping the pips. */
+.archivist-pc-sheet .pc-items-table .pc-action-row,
+.archivist-pc-sheet .pc-features-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
+.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
+.archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
+.archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
+/* Expand block = full-width sibling div under the open row. The open tint comes
+   from the shared .pc-open-expand rule (components.css). */
+.archivist-pc-sheet .pc-action-expand { border-bottom: 1px dashed var(--pc-tan-muted); }
+/* No trailing separator under the last entry of each list. */
+.archivist-pc-sheet .pc-actions-table > *:last-child { border-bottom: none; }
 .archivist-pc-sheet .pc-action-row-name {
   font-family: var(--pc-font-serif);
   font-weight: 700;
@@ -12319,13 +12324,11 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Responsive (added in phase 5) ---------- */
 
-/* Below narrow tier: attack & actions tables allow horizontal
- * scroll so trailing columns (Range / Damage / Notes) remain
- * reachable rather than overflowing the content column.
- * Reflow-via-grid would require an HTML change (deferred). */
 @container pc-content (max-width: 499px) {
-  .archivist-pc-sheet .pc-attack-table,
-  .archivist-pc-sheet .pc-actions-table {
+  /* The read-only feature-attacks table still scrolls as a block. The grid
+     lists (.pc-actions-table) reflow via their minmax(0,1fr) name column, so
+     they don't need block/scroll treatment. */
+  .archivist-pc-sheet .pc-attack-table {
     display: block;
     overflow-x: auto;
     max-width: 100%;
@@ -12810,7 +12813,7 @@ body.theme-light .archivist-tag-atk:hover {
    otherwise leak into the spell prose and run it off the card. */
 .archivist-pc-sheet .pc-spell-expand { margin: 2px 0 8px var(--pc-space-4); white-space: normal; }
 /* Cast-table expansion row: block sits flush under its spell (no extra top gap). */
-.archivist-pc-sheet .pc-spell-expand-row > td { padding: 0 8px 10px; }
+.archivist-pc-sheet .pc-spell-expand-row { padding: 0 8px 10px; }
 .archivist-pc-sheet .pc-spell-empty-row { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; padding: 4px; }
 
 /* ── Cast table ───────────────────────────────────────── */
@@ -12819,11 +12822,37 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-slots { display: flex; align-items: center; gap: var(--pc-space-1); }
 .archivist-pc-sheet .pc-spell-slots-label { font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); margin-right: var(--pc-space-1); }
 
-.archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-cast-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); }
-.archivist-pc-sheet .pc-spell-cast-table td { padding: 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: top; font-size: var(--pc-fs-body); color: var(--pc-text-soft); }
-/* No hover background on list rows — per request (no row hover anywhere). */
-.archivist-pc-sheet .pc-spell-act { width: 56px; }
+.archivist-pc-sheet .pc-spell-cast-table { display: flex; flex-direction: column; margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-cast-head,
+.archivist-pc-sheet .pc-spell-cast-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1.4fr) 64px 72px 56px minmax(0, 1.2fr) minmax(80px, .8fr);
+  gap: 8px;
+  align-items: start;
+}
+/* The underline is ONE continuous line on the head container (matching the
+   full-width row separators), not a per-cell border that the grid gap would
+   break into segments. Labels bottom-align so they sit just above the line
+   even when a header (HIT / DC) wraps to two lines. Header cells carry no
+   horizontal padding so each label sits flush-left with its column's body
+   values (the row cells have no h-padding either). */
+.archivist-pc-sheet .pc-spell-cast-head {
+  align-items: end;
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-spell-cast-head > .pc-spell-cast-hcell {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 0 4px;
+}
+.archivist-pc-sheet .pc-spell-cast-row {
+  padding: 8px 0; border-bottom: 1px dashed var(--pc-tan-muted);
+  font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-spell-cast-row.pc-row-open { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-cast-row > * { min-width: 0; }
+/* No trailing separator under the last entry of each level group. */
+.archivist-pc-sheet .pc-spell-cast-table > *:last-child { border-bottom: none; }
 
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-castbtn:hover { background: var(--pc-crimson-light); }
@@ -12897,15 +12926,28 @@ body.theme-light .archivist-tag-atk:hover {
    columns out-measure the column can't stretch it — it would bleed past the
    drawer's right border. Bound the table to the drawer and let it scroll. */
 .archivist-pc-sheet .pc-add-tablehost { overflow-x: auto; min-width: 0; }
-.archivist-pc-sheet .pc-spell-add-table { width: 100%; max-width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-add-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table thead th.sortable { cursor: pointer; }
-.archivist-pc-sheet .pc-spell-add-table thead th.ctr { text-align: center; }
+/* Grid "table": all columns fixed-width so header + every row share one track
+   set; the row width is intrinsic (sum of columns) and the .pc-add-tablehost
+   scrolls horizontally when it out-measures the content column. */
+.archivist-pc-sheet .pc-spell-add-table { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-add-head,
+.archivist-pc-sheet .pc-spell-add-row {
+  display: grid;
+  grid-template-columns: 30px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.sortable { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.ctr { text-align: center; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-spell-add-table td { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: middle; font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-row > * { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.archivist-pc-sheet .pc-spell-add-row.pc-row-open > * { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row:last-child > * { border-bottom: none; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row { cursor: pointer; }
 /* No hover background on list rows — per request (no row hover anywhere). */
-.archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table .col-school { font-style: italic; color: var(--pc-text-muted); }
