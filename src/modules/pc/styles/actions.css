@@ -47,7 +47,7 @@
    its action buttons — no panel background, no crimson rail, no indent,
    and no row hover. */
 .archivist-pc-sheet .pc-action-expand-inner {
-  padding: var(--pc-space-2) var(--pc-space-6) var(--pc-space-3);
+  padding: var(--pc-space-2) calc(var(--pc-space-6) * 1.5) var(--pc-space-3);
   border-left: none;
   margin: 0;
 }
