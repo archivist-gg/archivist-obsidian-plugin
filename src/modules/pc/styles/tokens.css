@@ -76,6 +76,11 @@
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
+  /* Shared reddish tint applied to an open/expanded list row (and its sibling
+   * expand panel) across every expandable list. Single source of truth — see
+   * the `.pc-row-open` rule in components.css. */
+  --pc-row-open-bg: rgba(146, 38, 16, 0.04);
+
   /* --------------------------------------------------------------
    * Rarity palette — italic + tinted hue for item names.
    * Common defaults to the existing primary text color (no override).

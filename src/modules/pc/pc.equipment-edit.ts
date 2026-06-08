@@ -293,3 +293,10 @@ export function restoreFeatureUse(character: Character, featureKey: string): voi
   if (!v) return;
   v.used = Math.max(0, v.used - 1);
 }
+
+export function setFeatureUse(character: Character, featureKey: string, n: number): void {
+  const v = character.state.feature_uses?.[featureKey];
+  if (!v) return;
+  if (!Number.isFinite(n)) return;
+  v.used = Math.max(0, Math.min(v.max, Math.floor(n)));
+}

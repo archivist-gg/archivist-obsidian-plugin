@@ -80,6 +80,18 @@ describe("InventoryRow", () => {
     expect(row?.querySelector(".pc-inv-sub")?.textContent).toMatch(/Equipped.*Attuned/i);
   });
 
+  it("expanded row carries .pc-row-open (collapsed row does not)", () => {
+    const it = make("[[longsword]]", { entity: { name: "Longsword" }, entityType: "weapon" });
+    const collapsed = mountContainer();
+    new InventoryRow().render(collapsed, { ...it, app: {} as never, editState: null, expanded: false });
+    expect(collapsed.querySelector(".pc-inv-row")?.classList.contains("pc-row-open")).toBe(false);
+    const open = mountContainer();
+    new InventoryRow().render(open, { ...it, app: {} as never, editState: null, expanded: true });
+    const row = open.querySelector(".pc-inv-row");
+    expect(row?.classList.contains("expanded")).toBe(true);
+    expect(row?.classList.contains("pc-row-open")).toBe(true);
+  });
+
   it("inline (null entity) row uses italic muted name", () => {
     const it = make("50 ft of hempen rope", { entity: null });
     const root = mountContainer();

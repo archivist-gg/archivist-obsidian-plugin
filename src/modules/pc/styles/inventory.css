@@ -28,15 +28,9 @@
 .archivist-pc-sheet .pc-inv-stat { grid-area: stat; }
 .archivist-pc-sheet .pc-inv-weight { grid-area: weight; }
 .archivist-pc-sheet .pc-inv-qty-cost { grid-area: qty; }
-.archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 
-/* Crimson rail when equipped or attuned (or both — single rail) */
-.archivist-pc-sheet .pc-inv-row.equipped,
-.archivist-pc-sheet .pc-inv-row.attuned {
-  border-left: 1.5px solid var(--pc-crimson);
-}
 .archivist-pc-sheet .pc-inv-row.expanded {
-  background: rgba(146, 38, 16, 0.04);
   border-bottom-color: transparent;
 }
 
@@ -114,7 +108,7 @@
 
 /* ---------- Row expand (item-block + PC actions) ---------- */
 .archivist-pc-sheet .pc-inv-expand {
-  background: rgba(146, 38, 16, 0.04);
+  background: var(--pc-row-open-bg);
   border-bottom: 1px dotted var(--pc-tan-muted);
   padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3);
 }

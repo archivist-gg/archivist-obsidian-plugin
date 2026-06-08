@@ -24,7 +24,7 @@
 .archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
 .archivist-pc-sheet .pc-spell-mk { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); border: 1px solid var(--pc-tan-muted); border-radius: 3px; padding: 0 4px; color: var(--pc-text-soft); margin-left: 5px; }
 
-/* Filter pills (compact table view) reuse .pc-resource-badge look.
+/* Filter pills (compact table view) — parchment chips with a crimson active state.
    Also scoped under .archivist-modal so the add-spell modal's filter bar,
    "Show all classes" toggle, and "Add" buttons are styled (modals render
    outside .archivist-pc-sheet). */
@@ -53,7 +53,11 @@
 
 /* Spell list + rows */
 .archivist-pc-sheet .pc-spell-list { margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; border-bottom: 1px dashed var(--pc-tan-muted); }
+/* Block-level host: the expanded reference block mounts here (sibling of the
+   flex row) so it stacks BELOW the row. The dashed separator lives on the host
+   so the row + its expanded block read as one unit above the line. */
+.archivist-pc-sheet .pc-spell-prep-row-host { display: block; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; }
 .archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
@@ -89,7 +93,7 @@
 .archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); }
 .archivist-pc-sheet .pc-spell-cast-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); }
 .archivist-pc-sheet .pc-spell-cast-table td { padding: 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: top; font-size: var(--pc-fs-body); color: var(--pc-text-soft); }
-.archivist-pc-sheet .pc-spell-cast-table tr:hover { background: rgba(146, 38, 16, 0.05); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 .archivist-pc-sheet .pc-spell-act { width: 56px; }
 
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
@@ -171,7 +175,7 @@
 .archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table td { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: middle; font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row { cursor: pointer; }
-.archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row:hover td { background: rgba(146, 38, 16, 0.05); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 .archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }

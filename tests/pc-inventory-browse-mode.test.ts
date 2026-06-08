@@ -87,6 +87,18 @@ describe("BrowseMode", () => {
     expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(1);
   });
 
+  it("an expanded browse row carries .pc-row-open (collapsed does not)", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],
+    ]);
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithRegistry(reg, { addItem: vi.fn() }));
+    expect((root.querySelector(".pc-inv-row") as HTMLElement).classList.contains("pc-row-open")).toBe(false);
+    (root.querySelector(".pc-inv-row") as HTMLElement).click();
+    expect((root.querySelector(".pc-inv-row") as HTMLElement).classList.contains("pc-row-open")).toBe(true);
+  });
+
   it("clicking the same row again collapses it", () => {
     const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
       ["longsword", { entityType: "weapon", data: { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } } }],

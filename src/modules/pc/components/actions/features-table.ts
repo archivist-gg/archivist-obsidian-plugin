@@ -35,7 +35,7 @@ export class FeaturesTable implements SheetComponent {
     for (const { feature, sourceLabel } of visible) {
       const key = `feature:${feature.id ?? feature.name}`;
       const tr = tbody.createEl("tr", { cls: "pc-action-row" });
-      if (this.expand.is(key)) tr.classList.add("open");
+      if (this.expand.is(key)) tr.classList.add("open", "pc-row-open");
 
       const cost = feature.action as ActionCost;
       renderCostBadge(tr.createEl("td"), cost);
@@ -76,7 +76,7 @@ export class FeaturesTable implements SheetComponent {
 
       if (this.expand.is(key)) {
         const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = exp.createEl("td");
+        const td = exp.createEl("td", { cls: "pc-open-expand" });
         td.setAttribute("colspan", "4");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         renderFeatureExpand(inner, feature, sourceLabel);

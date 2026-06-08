@@ -149,10 +149,11 @@ function renderRow(
   // its own <tr><td colspan>; toggleSpellBlock then mounts into that cell.
   nameTd.addEventListener("click", () => {
     const next = tr.nextElementSibling;
-    if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); return; }
+    if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); tr.classList.remove("pc-row-open"); return; }
     const exprow = body.createEl("tr", { cls: "pc-spell-expand-row" });
     tr.after(exprow);
-    const cell = exprow.createEl("td", { attr: { colspan: String(COLS.length) } });
+    tr.classList.add("pc-row-open");
+    const cell = exprow.createEl("td", { cls: "pc-open-expand", attr: { colspan: String(COLS.length) } });
     toggleSpellBlock(cell, spell, ctx);
   });
 

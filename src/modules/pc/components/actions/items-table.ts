@@ -42,7 +42,7 @@ export class ItemsTable implements SheetComponent {
 
       const key = `item:${r.index}`;
       const tr = tbody.createEl("tr", { cls: "pc-action-row" });
-      if (this.expand.is(key)) tr.classList.add("open");
+      if (this.expand.is(key)) tr.classList.add("open", "pc-row-open");
 
       // Cost
       renderCostBadge(tr.createEl("td"), action.cost);
@@ -92,7 +92,7 @@ export class ItemsTable implements SheetComponent {
       // Expand row reuses inventory-row-expand
       if (this.expand.is(key)) {
         const exp = tbody.createEl("tr", { cls: "pc-action-expand-row" });
-        const td = exp.createEl("td");
+        const td = exp.createEl("td", { cls: "pc-open-expand" });
         td.setAttribute("colspan", "4");
         const inner = td.createDiv({ cls: "pc-action-expand-inner" });
         renderInventoryRowExpand(inner, {

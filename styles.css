@@ -9383,6 +9383,11 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-radius-md: 6px;
   --pc-radius-lg: 12px;
 
+  /* Shared reddish tint applied to an open/expanded list row (and its sibling
+   * expand panel) across every expandable list. Single source of truth — see
+   * the `.pc-row-open` rule in components.css. */
+  --pc-row-open-bg: rgba(146, 38, 16, 0.04);
+
   /* --------------------------------------------------------------
    * Rarity palette — italic + tinted hue for item names.
    * Common defaults to the existing primary text color (no override).
@@ -9579,6 +9584,18 @@ body.theme-light .archivist-tag-atk:hover {
   -webkit-appearance: none;
 }
 
+/* Shared open-row tint — every expandable list marks its open row with
+   .pc-row-open and its open expand panel with .pc-open-expand, so the row AND
+   its expanded block share one tint and read as a single open unit (matching
+   the inventory expand). The reddish background is defined here once.
+   The tint is translucent, so every tinted element must carry EXACTLY ONE
+   layer or the shades won't match: for table rows we tint only the <td>s (not
+   the <tr>, which would show through the translucent cells and darken them);
+   `:not(tr)` keeps the plain rule for div/grid rows only. */
+.archivist-pc-sheet .pc-row-open:not(tr) { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet tr.pc-row-open > td { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-open-expand { background: var(--pc-row-open-bg); }
+
 .archivist-pc-sheet .pc-header-root {
   display: flex;
   align-items: center;
@@ -9714,8 +9731,55 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-attack-table td { padding: 4px 6px; border-bottom: 1px solid var(--pc-tan-muted); background: transparent; }
 .archivist-pc-sheet .pc-attack-name { font-weight: 600; }
-.archivist-pc-sheet .pc-resource-strip { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-resource-badge { padding: 4px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-resource-die { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+
+.archivist-pc-sheet .pc-resource-counter { display: inline-flex; align-items: center; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-resource-counter-val { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-title); min-width: 46px; text-align: center; }
+.archivist-pc-sheet .pc-resource-step {
+  width: 20px; height: 20px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  background: var(--pc-parchment-light); color: var(--pc-crimson); font-weight: 700; cursor: pointer;
+  line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+}
+
+/* ---- LIST — matches the Features/Spells table rows (no caret) ---- */
+.archivist-pc-sheet .pc-resource-list { display: flex; flex-direction: column; margin-top: var(--pc-space-1); font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-resource-row { display: flex; align-items: center; gap: var(--pc-space-2); cursor: pointer; padding: var(--pc-space-2) var(--pc-space-1); border-bottom: 1px dashed var(--pc-tan-muted); }
+/* No hover background anywhere on the list — per request. */
+.archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-reset-inline { font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-reset-inline::before { content: "·"; margin: 0 6px 0 5px; color: var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-row-grow { flex: 1; }
+.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
+
+/* expand body = the SAME card UI as the spell/item block (.archivist-item-block).
+   It carries the shared open tint (.pc-open-expand) so the row + expanded card
+   read as one open unit (like inventory); NO border, NO crimson rail, NO hover.
+   The card floats on the tint exactly like the inventory expand. */
+.archivist-pc-sheet .pc-resource-expand { border: none; padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+/* the shared block wrapper centers with wide gutters + 1.5em margin; tighten it
+   for an inline list expand so the card sits snug under its row. */
+.archivist-pc-sheet .pc-resource-card.archivist-item-block-wrapper { width: 100%; margin: var(--pc-space-1) 0 var(--pc-space-2); }
+
+/* ---- recovery special ACTION (shown directly in the block, no extra button) ---- */
+.archivist-pc-sheet .pc-resource-actions { margin-top: var(--pc-space-3); padding-top: var(--pc-space-3); border-top: 1px solid var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-recover-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--pc-space-2); margin-bottom: var(--pc-space-1); }
+.archivist-pc-sheet .pc-recover-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); }
+.archivist-pc-sheet .pc-recover-budget { font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-recover-budget b { color: var(--pc-crimson); font-variant-numeric: tabular-nums; }
+.archivist-pc-sheet .pc-recover-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-recover-row { display: flex; align-items: center; gap: var(--pc-space-2); margin: var(--pc-space-1) 0; }
+.archivist-pc-sheet .pc-recover-lv { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); width: 30px; text-align: right; }
+.archivist-pc-sheet .pc-recover-pips { display: flex; gap: 5px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-slot-pip { position: relative; width: 16px; height: 16px; border: 2px solid var(--pc-tan); border-radius: 2px; background: transparent; padding: 0; cursor: pointer; transition: .12s; }
+.archivist-pc-sheet .pc-slot-pip--spent::before, .archivist-pc-sheet .pc-slot-pip--spent::after { content: ""; position: absolute; top: 50%; left: 50%; width: 2.5px; height: 18px; background: var(--d5e-text-accent, #7a200d); border-radius: 1px; pointer-events: none; }
+.archivist-pc-sheet .pc-slot-pip--spent::before { transform: translate(-50%,-50%) rotate(45deg); }
+.archivist-pc-sheet .pc-slot-pip--spent::after { transform: translate(-50%,-50%) rotate(-45deg); }
+.archivist-pc-sheet .pc-slot-pip--spent:hover { border-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-slot-pip--sel { border-color: var(--pc-crimson); box-shadow: 0 0 0 2px rgba(146,38,16,.28); }
+.archivist-pc-sheet .pc-slot-pip--over { opacity: .28; cursor: not-allowed; }
+.archivist-pc-sheet .pc-recover-foot { display: flex; align-items: center; gap: var(--pc-space-3); margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-recover-apply { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); background: var(--pc-crimson); color: #fff; border: none; border-radius: var(--pc-radius-sm); padding: 4px 12px; cursor: pointer; }
+.archivist-pc-sheet .pc-recover-apply:disabled { background: var(--pc-text-muted); cursor: default; }
 .archivist-pc-sheet .pc-hd-row { display: flex; gap: var(--pc-space-3); font-family: var(--pc-font-serif); font-size: var(--pc-fs-heading); font-weight: 700; }
 .archivist-pc-sheet .pc-spells-empty { text-align: center; padding: var(--pc-space-5); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spells-empty-icon { font-size: 32px; opacity: 0.3; }
@@ -11338,15 +11402,9 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-inv-stat { grid-area: stat; }
 .archivist-pc-sheet .pc-inv-weight { grid-area: weight; }
 .archivist-pc-sheet .pc-inv-qty-cost { grid-area: qty; }
-.archivist-pc-sheet .pc-inv-row:hover { background: rgba(255, 248, 220, 0.5); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 
-/* Crimson rail when equipped or attuned (or both — single rail) */
-.archivist-pc-sheet .pc-inv-row.equipped,
-.archivist-pc-sheet .pc-inv-row.attuned {
-  border-left: 1.5px solid var(--pc-crimson);
-}
 .archivist-pc-sheet .pc-inv-row.expanded {
-  background: rgba(146, 38, 16, 0.04);
   border-bottom-color: transparent;
 }
 
@@ -11424,7 +11482,7 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ---------- Row expand (item-block + PC actions) ---------- */
 .archivist-pc-sheet .pc-inv-expand {
-  background: rgba(146, 38, 16, 0.04);
+  background: var(--pc-row-open-bg);
   border-bottom: 1px dotted var(--pc-tan-muted);
   padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3);
 }
@@ -12119,16 +12177,24 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-soft);
 }
 
-/* ---------- Row-expand panel (Weapons/Items/Features) ---------- */
+/* ---------- Row-expand (Weapons/Items/Features) ----------
+   No redundant container around the block: the expand shows just the
+   spell/item card (which already carries its own parchment + shadow) and
+   its action buttons — no panel background, no crimson rail, no indent,
+   and no row hover. */
 .archivist-pc-sheet .pc-action-row { cursor: pointer; }
-.archivist-pc-sheet .pc-action-row:hover { background: rgba(255, 255, 255, 0.18); }
-.archivist-pc-sheet .pc-action-expand-row {
-  background: rgba(255, 255, 255, 0.22);
-}
+.archivist-pc-sheet .pc-action-expand-row { background: transparent; }
 .archivist-pc-sheet .pc-action-expand-inner {
-  padding: var(--pc-space-3);
-  border-left: 3px solid var(--pc-crimson);
-  margin: var(--pc-space-1) 0 var(--pc-space-1) var(--pc-space-3);
+  padding: 0 0 var(--pc-space-2);
+  border-left: none;
+  margin: 0;
+}
+/* strip the inventory-expand chrome (tint, dotted rule, padding) when the
+   inventory row-expand is reused inside the actions table */
+.archivist-pc-sheet .pc-action-expand-inner .pc-inv-expand {
+  background: transparent;
+  border-bottom: none;
+  padding: 0;
 }
 
 /* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
@@ -12687,7 +12753,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
 .archivist-pc-sheet .pc-spell-mk { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); border: 1px solid var(--pc-tan-muted); border-radius: 3px; padding: 0 4px; color: var(--pc-text-soft); margin-left: 5px; }
 
-/* Filter pills (compact table view) reuse .pc-resource-badge look.
+/* Filter pills (compact table view) — parchment chips with a crimson active state.
    Also scoped under .archivist-modal so the add-spell modal's filter bar,
    "Show all classes" toggle, and "Add" buttons are styled (modals render
    outside .archivist-pc-sheet). */
@@ -12716,7 +12782,11 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* Spell list + rows */
 .archivist-pc-sheet .pc-spell-list { margin-bottom: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; border-bottom: 1px dashed var(--pc-tan-muted); }
+/* Block-level host: the expanded reference block mounts here (sibling of the
+   flex row) so it stacks BELOW the row. The dashed separator lives on the host
+   so the row + its expanded block read as one unit above the line. */
+.archivist-pc-sheet .pc-spell-prep-row-host { display: block; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; }
 .archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
 .archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
@@ -12752,7 +12822,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-cast-table { width: 100%; border-collapse: collapse; margin-bottom: var(--pc-space-2); }
 .archivist-pc-sheet .pc-spell-cast-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); }
 .archivist-pc-sheet .pc-spell-cast-table td { padding: 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: top; font-size: var(--pc-fs-body); color: var(--pc-text-soft); }
-.archivist-pc-sheet .pc-spell-cast-table tr:hover { background: rgba(146, 38, 16, 0.05); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 .archivist-pc-sheet .pc-spell-act { width: 56px; }
 
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
@@ -12834,7 +12904,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-add-table td { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: middle; font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row { cursor: pointer; }
-.archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row:hover td { background: rgba(146, 38, 16, 0.05); }
+/* No hover background on list rows — per request (no row hover anywhere). */
 .archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }

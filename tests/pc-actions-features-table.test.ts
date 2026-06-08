@@ -46,6 +46,19 @@ describe("FeaturesTable", () => {
     expect(root.querySelectorAll(".archivist-toggle-box-checked").length).toBe(1);
   });
 
+  it("clicking a feature row marks it .pc-row-open (and unmarks on re-click)", () => {
+    const root = mountContainer();
+    new FeaturesTable().render(root, ctxWithFeatures([
+      { id: "second-wind", name: "Second Wind", action: "bonus-action", description: "Heal 1d10+5" },
+    ]));
+    const row = () => root.querySelector(".pc-action-row") as HTMLElement;
+    expect(row().classList.contains("pc-row-open")).toBe(false);
+    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row().classList.contains("pc-row-open")).toBe(true);
+    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row().classList.contains("pc-row-open")).toBe(false);
+  });
+
   it("clicking pip dispatches editState.expendFeatureUse", () => {
     const root = mountContainer();
     const expendFeatureUse = vi.fn();

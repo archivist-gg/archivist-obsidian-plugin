@@ -93,6 +93,17 @@ describe("renderAddDrawer — table", () => {
     expect(addKnownSpell).toHaveBeenCalled();
   });
 
+  it("clicking a row toggles .pc-row-open on the add row", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctx([], { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() }));
+    const firstRow = root.querySelector(".pc-spell-add-table tbody tr.pc-spell-add-row") as HTMLElement;
+    expect(firstRow.classList.contains("pc-row-open")).toBe(false);
+    firstRow.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(firstRow.classList.contains("pc-row-open")).toBe(true);
+    firstRow.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(firstRow.classList.contains("pc-row-open")).toBe(false);
+  });
+
   it("clicking the Name header sorts by name; clicking again flips direction", () => {
     const root = mountContainer();
     renderAddDrawer(root, ctx());

@@ -102,6 +102,20 @@ describe("ItemsTable", () => {
     expect(setItemCharges).toHaveBeenCalledWith(0, 1, 7);
   });
 
+  it("clicking a row marks it .pc-row-open (and unmarks on re-click)", () => {
+    const root = mountContainer();
+    new ItemsTable().render(root, ctx({
+      entries: [{ item: "[[wand-of-fireballs]]", equipped: true, attuned: true }],
+      entityForSlug: () => ({ name: "Wand of Fireballs", rarity: "very rare", actions: { cost: "action", range: "150 ft." } }),
+    }));
+    const row = () => root.querySelector(".pc-action-row") as HTMLElement;
+    expect(row().classList.contains("pc-row-open")).toBe(false);
+    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row().classList.contains("pc-row-open")).toBe(true);
+    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(row().classList.contains("pc-row-open")).toBe(false);
+  });
+
   it("renders an action row for a PC equipping a compendium-prefixed wand wikilink", () => {
     // Regression for CB-4: PC sheets ship `[[srd-5e_wand-of-fireballs]]` but the
     // curated map keys by bare name; without prefix-stripping the row was missing.

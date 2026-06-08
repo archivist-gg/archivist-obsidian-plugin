@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isValidMaxFormula, evaluateMaxFormula, type FormulaBindings }
+import { isValidMaxFormula, evaluateMaxFormula, resolveMaxAt, type FormulaBindings }
   from "../src/shared/dnd/resource-formula";
 
 const ctx: FormulaBindings = {
@@ -50,5 +50,45 @@ describe("evaluateMaxFormula precedence and edges", () => {
   });
   it("tolerates trailing whitespace", () => {
     expect(evaluateMaxFormula("2 ", ctx)).toBe(2);
+  });
+});
+
+describe("DSL extension — division, ceil/floor, parens", () => {
+  it("real division then ceil/floor", () => {
+    expect(evaluateMaxFormula("ceil({class_level}/2)", ctx)).toBe(3);   // ceil(5/2)
+    expect(evaluateMaxFormula("floor({class_level}/2)", ctx)).toBe(2);  // floor(5/2)
+    expect(evaluateMaxFormula("level / 2", ctx)).toBe(2.5);
+  });
+  it("parentheses group", () => {
+    expect(evaluateMaxFormula("(1 + level) * 2", ctx)).toBe(12);
+  });
+  it("validates the new grammar", () => {
+    for (const f of ["ceil({class_level}/2)", "floor(level/3)", "(level + 1) * prof", "level / 2"]) {
+      expect(isValidMaxFormula(f)).toBe(true);
+    }
+  });
+  it("still rejects malformed input", () => {
+    for (const f of ["level /", "ceil(", "ceil()", "floor level", "( 1 + 2"]) {
+      expect(isValidMaxFormula(f)).toBe(false);
+    }
+  });
+});
+
+describe("resolveMaxAt", () => {
+  const rage = { max_formula: "2", scales_at: [
+    { level: 3, max: "3" }, { level: 6, max: "4" }, { level: 12, max: "5" },
+    { level: 17, max: "6" }, { level: 20, max: "999" },
+  ] };
+  it("returns base below the first step", () => {
+    expect(resolveMaxAt(1, rage)).toBe("2");
+    expect(resolveMaxAt(2, rage)).toBe("2");
+  });
+  it("returns the highest applicable step", () => {
+    expect(resolveMaxAt(3, rage)).toBe("3");
+    expect(resolveMaxAt(11, rage)).toBe("4");
+    expect(resolveMaxAt(20, rage)).toBe("999");
+  });
+  it("returns base when there are no steps", () => {
+    expect(resolveMaxAt(10, { max_formula: "level" })).toBe("level");
   });
 });

@@ -111,4 +111,30 @@ describe("CharacterEditState — charge mutations", () => {
     es.setItemCharges(0, 2);
     expect(c.equipment[0].state?.charges).toBeUndefined();
   });
+
+  it("setFeatureUse clamps into [0, max]", () => {
+    const c = baseChar();
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setFeatureUse("second-wind", 1);
+    expect(c.state.feature_uses["second-wind"].used).toBe(1);
+    es.setFeatureUse("second-wind", 99);
+    expect(c.state.feature_uses["second-wind"].used).toBe(1);   // clamped to max
+    es.setFeatureUse("second-wind", -3);
+    expect(c.state.feature_uses["second-wind"].used).toBe(0);   // clamped to 0
+  });
+
+  it("setFeatureUse ignores non-finite input", () => {
+    const c = baseChar();
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setFeatureUse("second-wind", 1);
+    es.setFeatureUse("second-wind", NaN);
+    expect(c.state.feature_uses["second-wind"].used).toBe(1);   // unchanged, not NaN
+  });
+
+  it("setFeatureUse no-ops for an unknown key", () => {
+    const c = baseChar();
+    const es = new CharacterEditState(c, {} as never, () => {});
+    es.setFeatureUse("missing", 2);
+    expect(c.state.feature_uses["missing"]).toBeUndefined();
+  });
 });

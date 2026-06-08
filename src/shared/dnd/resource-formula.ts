@@ -1,10 +1,12 @@
 /**
- * Tiny DSL for Resource.max_formula (SP4d). Grammar:
+ * Tiny DSL for Resource.max_formula and Resource.recovery[].amount (SP4d). Grammar:
  *   expr   := term (('+' | '-') term)*
- *   term   := factor ('*' factor)*
- *   factor := number | ident | '{' ident '}'
+ *   term   := factor (('*' | '/') factor)*
+ *   factor := number | ident | '{' ident '}' | fn '(' expr ')' | '(' expr ')'
+ *   fn     := 'ceil' | 'floor'
  *   ident  := level | class_level | prof | <abil>_mod
- * Left-to-right, no precedence beyond * binding tighter than +/-.
+ * '*' and '/' bind tighter than '+'/'-'. '/' is real division; wrap in
+ * ceil()/floor() for integer results (e.g. "ceil({class_level}/2)").
  * `999` is the at-will sentinel; it evaluates as the literal 999.
  */
 export interface FormulaBindings {
@@ -19,14 +21,20 @@ const IDENTS = new Set([
   "level", "class_level", "prof",
   "str_mod", "dex_mod", "con_mod", "int_mod", "wis_mod", "cha_mod",
 ]);
+const FUNCS = new Set(["ceil", "floor"]);
 
-type Tok = { kind: "num"; value: number } | { kind: "id"; name: string }
-  | { kind: "op"; op: "+" | "-" | "*" };
+type Tok =
+  | { kind: "num"; value: number }
+  | { kind: "id"; name: string }
+  | { kind: "fn"; name: "ceil" | "floor" }
+  | { kind: "op"; op: "+" | "-" | "*" | "/" }
+  | { kind: "lparen" }
+  | { kind: "rparen" };
 
 function tokenize(input: string): Tok[] | null {
   input = input.trim();
   const tokens: Tok[] = [];
-  const re = /\s*(\{[a-z_]+\}|[a-z_]+|\d+|[+\-*])/y;
+  const re = /\s*(\{[a-z_]+\}|[a-z_]+|\d+|[+\-*/()])/y;
   let i = 0;
   while (i < input.length) {
     re.lastIndex = i;
@@ -35,19 +43,21 @@ function tokenize(input: string): Tok[] | null {
     const raw = m[1];
     i = re.lastIndex;
     if (/^\d+$/.test(raw)) tokens.push({ kind: "num", value: parseInt(raw, 10) });
-    else if (raw === "+" || raw === "-" || raw === "*") tokens.push({ kind: "op", op: raw });
+    else if (raw === "(") tokens.push({ kind: "lparen" });
+    else if (raw === ")") tokens.push({ kind: "rparen" });
+    else if (raw === "+" || raw === "-" || raw === "*" || raw === "/") tokens.push({ kind: "op", op: raw });
     else {
-      const name = raw.startsWith("{") ? raw.slice(1, -1) : raw;
-      if (!IDENTS.has(name)) return null;
-      tokens.push({ kind: "id", name });
+      const braced = raw.startsWith("{");
+      const name = braced ? raw.slice(1, -1) : raw;
+      if (!braced && FUNCS.has(name)) tokens.push({ kind: "fn", name: name as "ceil" | "floor" });
+      else if (IDENTS.has(name)) tokens.push({ kind: "id", name });
+      else return null;
     }
   }
-  if (i !== input.length) return null;
   return tokens.length > 0 ? tokens : null;
 }
 
 function evalTokens(tokens: Tok[], b: FormulaBindings): number | null {
-  // Shunting-free recursive descent over the flat token list.
   let pos = 0;
   const peek = () => tokens[pos];
   const factor = (): number | null => {
@@ -60,23 +70,42 @@ function evalTokens(tokens: Tok[], b: FormulaBindings): number | null {
       pos++;
       return val;
     }
+    if (t.kind === "fn") {
+      pos++;
+      if (peek()?.kind !== "lparen") return null;
+      pos++;
+      const inner = expr();
+      if (inner === null) return null;
+      if (peek()?.kind !== "rparen") return null;
+      pos++;
+      return t.name === "ceil" ? Math.ceil(inner) : Math.floor(inner);
+    }
+    if (t.kind === "lparen") {
+      pos++;
+      const inner = expr();
+      if (inner === null) return null;
+      if (peek()?.kind !== "rparen") return null;
+      pos++;
+      return inner;
+    }
     return null;
   };
   const term = (): number | null => {
     let v = factor();
     if (v === null) return null;
-    while (peek() && peek().kind === "op" && (peek() as { op: string }).op === "*") {
+    while (peek()?.kind === "op" && ((peek() as { op: string }).op === "*" || (peek() as { op: string }).op === "/")) {
+      const op = (peek() as { op: string }).op;
       pos++;
       const r = factor();
       if (r === null) return null;
-      v = v * r;
+      v = op === "*" ? v * r : v / r;
     }
     return v;
   };
   const expr = (): number | null => {
     let v = term();
     if (v === null) return null;
-    while (peek() && peek().kind === "op" && (peek() as { op: string }).op !== "*") {
+    while (peek()?.kind === "op" && ((peek() as { op: string }).op === "+" || (peek() as { op: string }).op === "-")) {
       const op = (peek() as { op: "+" | "-" }).op;
       pos++;
       const r = term();
@@ -107,4 +136,23 @@ export function evaluateMaxFormula(formula: string, bindings: FormulaBindings): 
   const v = evalTokens(toks, bindings);
   if (v === null) throw new Error(`invalid max_formula: ${JSON.stringify(formula)}`);
   return v;
+}
+
+export interface ScalableResource {
+  max_formula: string;
+  scales_at?: { level: number; max: string }[];
+}
+
+/** The max-formula string in effect at `totalLevel`: the highest `scales_at`
+ *  step whose level ≤ totalLevel, else the base `max_formula`. */
+export function resolveMaxAt(totalLevel: number, resource: ScalableResource): string {
+  let chosen = resource.max_formula;
+  let best = 0;
+  for (const step of resource.scales_at ?? []) {
+    if (step.level <= totalLevel && step.level > best) {
+      best = step.level;
+      chosen = step.max;
+    }
+  }
+  return chosen;
 }
