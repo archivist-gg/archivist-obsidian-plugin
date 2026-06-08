@@ -98,12 +98,20 @@
   gap: 8px;
   align-items: start;
 }
-/* Header cells carry no horizontal padding so each label sits flush-left with
-   its column's body values (the row cells have no h-padding either). */
+/* The underline is ONE continuous line on the head container (matching the
+   full-width row separators), not a per-cell border that the grid gap would
+   break into segments. Labels bottom-align so they sit just above the line
+   even when a header (HIT / DC) wraps to two lines. Header cells carry no
+   horizontal padding so each label sits flush-left with its column's body
+   values (the row cells have no h-padding either). */
+.archivist-pc-sheet .pc-spell-cast-head {
+  align-items: end;
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
 .archivist-pc-sheet .pc-spell-cast-head > .pc-spell-cast-hcell {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
   text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
-  padding: 6px 0 4px; border-bottom: 1px solid var(--pc-tan-muted);
+  padding: 6px 0 4px;
 }
 .archivist-pc-sheet .pc-spell-cast-row {
   padding: 8px 0; border-bottom: 1px dashed var(--pc-tan-muted);
