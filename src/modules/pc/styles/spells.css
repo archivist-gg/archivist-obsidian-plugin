@@ -182,13 +182,26 @@
    columns out-measure the column can't stretch it — it would bleed past the
    drawer's right border. Bound the table to the drawer and let it scroll. */
 .archivist-pc-sheet .pc-add-tablehost { overflow-x: auto; min-width: 0; }
-.archivist-pc-sheet .pc-spell-add-table { width: 100%; max-width: 100%; border-collapse: collapse; margin-top: var(--pc-space-2); }
-.archivist-pc-sheet .pc-spell-add-table thead th { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; text-align: left; padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table thead th.sortable { cursor: pointer; }
-.archivist-pc-sheet .pc-spell-add-table thead th.ctr { text-align: center; }
+/* Grid "table": all columns fixed-width so header + every row share one track
+   set; the row width is intrinsic (sum of columns) and the .pc-add-tablehost
+   scrolls horizontally when it out-measures the content column. */
+.archivist-pc-sheet .pc-spell-add-table { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-add-head,
+.archivist-pc-sheet .pc-spell-add-row {
+  display: grid;
+  grid-template-columns: 30px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.sortable { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.ctr { text-align: center; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-spell-add-table td { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); vertical-align: middle; font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-add-table tr.pc-spell-add-row { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-row > * { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.archivist-pc-sheet .pc-spell-add-row.pc-row-open > * { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row { cursor: pointer; }
 /* No hover background on list rows — per request (no row hover anywhere). */
 .archivist-pc-sheet .pc-spell-add-table .col-add { width: 30px; }
 .archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
