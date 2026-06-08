@@ -172,7 +172,9 @@
 .archivist-pc-sheet .pc-resource-list > .pc-resource-row:nth-last-child(2) { border-bottom: none; }
 /* No hover background anywhere on the list — per request. */
 .archivist-pc-sheet .pc-resource-row-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; }   /* usage tracker lives in the row */
+/* Tracker sits a clear gap to the right of the resource name (the row's flex gap
+   alone is too tight). The "/ Long Rest" suffix follows right after the track. */
+.archivist-pc-sheet .pc-resource-track { display: inline-flex; align-items: center; margin-left: var(--pc-space-5); }   /* usage tracker lives in the row */
 
 /* expand body = the SAME card UI as the spell/item block (.archivist-item-block).
    It carries the shared open tint (.pc-open-expand) so the row + expanded card
