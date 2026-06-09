@@ -52,3 +52,21 @@
 .archivist-pc-sheet .pc-builder-back { background: transparent; color: var(--pc-text-soft); border-color: var(--pc-tan); }
 .archivist-pc-sheet .pc-builder-next,
 .archivist-pc-sheet .pc-builder-finish { background: var(--pc-crimson); color: var(--pc-parchment-light); margin-left: auto; }
+
+/* ── Shared selection UI: compendium filter + source tags ── */
+.archivist-pc-sheet .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
+.archivist-pc-sheet .pc-bfilter-label {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.archivist-pc-sheet .pc-bfilter-chip {
+  font-size: var(--pc-fs-small); color: var(--pc-text-muted);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 2px 9px; cursor: pointer;
+}
+.archivist-pc-sheet .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
+.archivist-pc-sheet .pc-bsrc.e2014 { color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bsrc.e2024 { color: #1f3f7a; }
+.archivist-pc-sheet .pc-bsrc.hb { color: #2f6f3a; }
