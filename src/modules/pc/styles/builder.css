@@ -70,3 +70,6 @@
 .archivist-pc-sheet .pc-bsrc.e2014 { color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-bsrc.e2024 { color: #1f3f7a; }
 .archivist-pc-sheet .pc-bsrc.hb { color: #2f6f3a; }
+
+.archivist-pc-sheet .pc-bblock { min-width: 0; }
+.archivist-pc-sheet .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
