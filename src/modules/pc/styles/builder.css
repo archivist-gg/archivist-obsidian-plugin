@@ -73,3 +73,24 @@
 
 .archivist-pc-sheet .pc-bblock { min-width: 0; }
 .archivist-pc-sheet .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
+
+/* ── N1 choice callout ── */
+.archivist-pc-sheet .pc-bchoice { margin: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-bchoice-head {
+  display: flex; align-items: baseline; gap: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
+}
+.archivist-pc-sheet .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-bchoice-badge {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bchoice-flag { color: var(--pc-amber); font-weight: 700; margin-left: auto; }
+.archivist-pc-sheet .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.archivist-pc-sheet .pc-bchoice-chip {
+  border: 1px solid var(--pc-text-primary); border-radius: var(--pc-radius-md);
+  padding: 3px 11px; font-size: var(--pc-fs-small); color: var(--pc-text-primary);
+  cursor: pointer; background: transparent;
+}
+.archivist-pc-sheet .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
+.archivist-pc-sheet .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
