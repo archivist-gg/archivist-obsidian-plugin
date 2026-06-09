@@ -397,7 +397,9 @@ export class CharacterEditState {
   }
 
   /** Seed `state.hit_dice` from class levels × each class's hit die. Hit dice
-   *  are not auto-derived elsewhere, so the Builder seeds them on Finish. */
+   *  are not auto-derived elsewhere, so the Builder seeds them on Finish.
+   *  Replaces the map wholesale (resets all `used` to 0); intended for a fresh
+   *  draft at Finish, not for live characters. */
   seedHitDice(): void {
     const dice: Record<string, { used: number; total: number }> = {};
     for (const entry of this.character.class) {

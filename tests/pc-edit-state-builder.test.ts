@@ -212,4 +212,33 @@ describe("CharacterEditState — state seeders (SP2)", () => {
     es.seedHitDice();
     expect(es.getCharacter().state.hit_dice).toEqual({ d8: { used: 0, total: 9 } });
   });
+
+  it("seedHitDice aggregates a multiclass: same dice sum, different dice split", () => {
+    const char = makeChar();
+    // dieForClass normalizes "d12" (string) and 10 (number, exercises the
+    // number branch) to a "dN" key; an unknown slug misses (returns undefined).
+    const dice: Record<string, { data: { hit_die: unknown } }> = {
+      "srd-5e_barbarian": { data: { hit_die: "d12" } },
+      "srd-5e_fighter": { data: { hit_die: 10 } },
+      "srd-5e_blood-hunter": { data: { hit_die: "d12" } },
+    };
+    const registry = {
+      getByTypeAndSlug: (type: string, slug: string) =>
+        type === "class" ? dice[slug] : undefined,
+    };
+    const es = new CharacterEditState(
+      char,
+      () => ({ resolved: { definition: char } as never, derived: { hp: { max: 0 } } as never }),
+      vi.fn(),
+      registry as never,
+    );
+    es.addClass("srd-5e_barbarian", 3);
+    es.addClass("srd-5e_fighter", 2);
+    es.addClass("srd-5e_blood-hunter", 4); // second d12 → summed with barbarian
+    es.seedHitDice();
+    expect(es.getCharacter().state.hit_dice).toEqual({
+      d12: { used: 0, total: 7 },
+      d10: { used: 0, total: 2 },
+    });
+  });
 });
