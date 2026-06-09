@@ -30,11 +30,12 @@ export class BuilderView implements SheetComponent {
 
     // Step rail.
     const rail = layout.createDiv({ cls: "pc-builder-rail" });
-    for (const step of BUILDER_STEPS) {
+    for (const [i, step] of BUILDER_STEPS.entries()) {
       const item = rail.createDiv({
         cls: `pc-builder-step${step.id === activeStep ? " active" : ""}`,
         attr: { "data-step": step.id },
       });
+      item.createSpan({ cls: "pc-builder-step-n", text: String(i + 1) });
       item.createSpan({ cls: "pc-builder-step-label", text: step.label });
       item.addEventListener("click", () => this.goTo(step.id, el, ctx));
     }

@@ -28,6 +28,15 @@
   background: var(--pc-row-open-bg); color: var(--pc-crimson); font-weight: 700;
   border-left: 2px solid var(--pc-crimson);
 }
+.archivist-pc-sheet .pc-builder-step-n {
+  flex: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--pc-tan-muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--pc-font-sans); font-size: 8px; color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-builder-step.active .pc-builder-step-n {
+  background: var(--pc-crimson); color: #fff; border-color: var(--pc-crimson);
+}
 .archivist-pc-sheet .pc-builder-main { padding: 12px 16px; }
 .archivist-pc-sheet .pc-builder-step-h {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson);

@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { BuilderView } from "../src/modules/pc/components/builder-view";
+import { BUILDER_STEPS } from "../src/modules/pc/components/builder-steps";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
@@ -103,6 +104,25 @@ describe("BuilderView shell", () => {
     expect(root.querySelector(".pc-bpicker")).not.toBeNull();
     root.querySelector<HTMLElement>(".pc-bpicker-row .pc-btoggle")!.click();
     expect(setRace).toHaveBeenCalledWith("srd-5e_elf");
+  });
+
+  it("prefixes each rail step with a 1-based numbered circle", () => {
+    const root = mountContainer();
+    new BuilderView().render(root, ctx());
+    const steps = root.querySelectorAll(".pc-builder-step");
+    expect(steps.length).toBe(BUILDER_STEPS.length);
+    steps.forEach((step, i) => {
+      const n = step.querySelector(".pc-builder-step-n");
+      expect(n).not.toBeNull();
+      expect(n?.textContent).toBe(String(i + 1));
+    });
+  });
+
+  it("renders the numbered circle inside the active step", () => {
+    const root = mountContainer();
+    new BuilderView().render(root, ctx());
+    const active = root.querySelector(".pc-builder-step.active");
+    expect(active?.querySelector(".pc-builder-step-n")).not.toBeNull();
   });
 
   it("marks the current race (a [[ref]]) as selected in the picker", () => {
