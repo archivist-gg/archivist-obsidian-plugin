@@ -106,15 +106,15 @@ describe("renderEntityBlock + real race module (integration)", () => {
 });
 
 describe("renderEntityPicker + real race module (integration)", () => {
-  it("(b) clicking the row fills the detail pane with the real race block", async () => {
+  it("(b) clicking the row unfolds the real race block inline", async () => {
     const root = mountContainer();
     renderEntityPicker(root, pickerCtx(new Map()), {
       entityType: "race", stateKey: "race", selectedSlug: null, onSelect: vi.fn(),
     });
-    root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
+    root.querySelector<HTMLElement>(".pc-btable-row")!.click();
     await flush();
-    const detail = root.querySelector(".pc-bpicker-detail")!;
-    expect(detail.querySelector(".archivist-race-block")).not.toBeNull();
-    expect(detail.querySelector(".archivist-race-block .spell-name")?.textContent).toBe("Gnome");
+    const expand = root.querySelector(".pc-btable-expand")!;
+    expect(expand.querySelector(".archivist-race-block")).not.toBeNull();
+    expect(expand.querySelector(".archivist-race-block .spell-name")?.textContent).toBe("Gnome");
   });
 });

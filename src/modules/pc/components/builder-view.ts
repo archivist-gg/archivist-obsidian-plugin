@@ -1,7 +1,34 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import type { RegisteredEntity } from "../../../shared/entities/entity-registry";
 import { BUILDER_STEPS } from "./builder-steps";
 import { renderEntityPicker } from "./builder/entity-picker";
+import type { ColSpec } from "./builder/selection-table";
 import { stripSlug } from "../pc.resolver";
+
+// Honest ledger columns for the race picker — size/speed exist in the entity
+// data today. Sorted by rank order (not alphabetically) and walking speed.
+const SIZE_ORDER = ["tiny", "small", "medium", "large", "huge"];
+const sizeOf = (e: RegisteredEntity): string => String((e.data as { size?: string }).size ?? "");
+const walkOf = (e: RegisteredEntity): number =>
+  Number((e.data as { speed?: { walk?: number } }).speed?.walk ?? 0);
+const RACE_COLUMNS: ColSpec[] = [
+  {
+    label: "Size", cls: "col-size", width: "90px",
+    sort: (a, b) => SIZE_ORDER.indexOf(sizeOf(a)) - SIZE_ORDER.indexOf(sizeOf(b)),
+    render: (cell, e) => {
+      const s = sizeOf(e);
+      cell.setText(s ? s.charAt(0).toUpperCase() + s.slice(1) : "—");
+    },
+  },
+  {
+    label: "Speed", cls: "col-speed", width: "90px",
+    sort: (a, b) => walkOf(a) - walkOf(b),
+    render: (cell, e) => {
+      const w = walkOf(e);
+      cell.setText(w ? `${w} ft.` : "—");
+    },
+  },
+];
 
 /** The full-screen Character Builder shell. Rendered by renderPCSheet in place
  *  of the sheet body when the character has no class. Step bodies are filled in
@@ -53,6 +80,7 @@ export class BuilderView implements SheetComponent {
         stateKey: "builder.race-picker",
         selectedSlug: stripSlug(ctx.resolved.definition.race),
         onSelect: (slug) => ctx.editState?.setRace(slug),
+        columns: RACE_COLUMNS,
       });
     } else {
       body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });

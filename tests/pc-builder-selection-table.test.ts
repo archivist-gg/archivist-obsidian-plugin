@@ -82,6 +82,35 @@ describe("renderSelectionTable", () => {
     expect(root2.querySelector(".pc-btable-expand .fake-block")).not.toBeNull();
   });
 
+  it("single mode renders seal toggles: ✓ always present, on-class only when selected", () => {
+    const root = mountContainer();
+    const onToggle = vi.fn();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t", selected: new Set(["a-feat"]), onToggle, single: true,
+    });
+    const toggles = root.querySelectorAll<HTMLElement>(".pc-btoggle");
+    toggles.forEach((t) => {
+      expect(t.classList.contains("seal")).toBe(true);
+      expect(t.textContent).toBe("✓"); // CSS hides it off rest rows (transparent)
+    });
+    expect(toggles[0].classList.contains("on")).toBe(true); // Alert selected
+    expect(toggles[0].getAttribute("title")).toBe("Current");
+    expect(toggles[1].classList.contains("on")).toBe(false);
+    expect(toggles[1].getAttribute("title")).toBe("Select");
+    toggles[1].click();
+    expect(onToggle).toHaveBeenCalledWith("b-feat");
+  });
+
+  it("multi mode (default) keeps the ＋ glyph on unselected rows", () => {
+    const root = mountContainer();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
+    });
+    const toggle = root.querySelector<HTMLElement>(".pc-btoggle")!;
+    expect(toggle.textContent).toBe("＋");
+    expect(toggle.classList.contains("seal")).toBe(false);
+  });
+
   it("source column shows the compendium name", () => {
     const root = mountContainer();
     renderSelectionTable(root, ctxWith(new Map()), {

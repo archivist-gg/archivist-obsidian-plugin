@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { renderEntityPicker } from "../src/modules/pc/components/builder/entity-picker";
+import type { ColSpec } from "../src/modules/pc/components/builder/selection-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
@@ -9,9 +10,9 @@ beforeAll(() => installObsidianDomHelpers());
 
 const races: RegisteredEntity[] = [
   { slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
-    data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false },
+    data: { name: "Elf", edition: "2014", size: "medium" }, compendium: "SRD 5e", readonly: true, homebrew: false },
   { slug: "srd-2024_human", name: "Human", entityType: "race", filePath: "human.md",
-    data: { name: "Human", edition: "2024" }, compendium: "SRD 2024", readonly: true, homebrew: false },
+    data: { name: "Human", edition: "2024", size: "medium" }, compendium: "SRD 2024", readonly: true, homebrew: false },
 ];
 
 function fakeCtx(bag: Map<string, unknown>): ComponentRenderContext {
@@ -26,7 +27,7 @@ function fakeCtx(bag: Map<string, unknown>): ComponentRenderContext {
         { name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" },
         { name: "SRD 2024", description: "", readonly: true, homebrew: false, folderPath: "" },
       ] },
-      modules: { getByEntityType: () => undefined }, // detail pane falls back to the name line
+      modules: { getByEntityType: () => undefined }, // expand falls back to the name line
     },
     builderUiState: bag,
   } as unknown as ComponentRenderContext;
@@ -35,22 +36,27 @@ function fakeCtx(bag: Map<string, unknown>): ComponentRenderContext {
 const baseOpts = (onSelect = vi.fn()) =>
   ({ entityType: "race", stateKey: "p", selectedSlug: null, onSelect });
 
-describe("renderEntityPicker", () => {
-  it("lists candidates with source tags and leaves the detail pane empty", () => {
+const rowByName = (root: HTMLElement, name: string): HTMLElement =>
+  [...root.querySelectorAll<HTMLElement>(".pc-btable-row")]
+    .find((r) => r.querySelector(".pc-btable-name")?.textContent === name)!;
+
+describe("renderEntityPicker (single-select ledger)", () => {
+  it("renders the ledger table: one row per candidate with seal toggles and source tags", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
-    expect(root.querySelectorAll(".pc-bpicker-row").length).toBe(2);
-    expect(root.querySelector(".pc-bpicker-row .pc-bsrc")?.textContent).toBe("SRD 5e");
-    expect(root.querySelector(".pc-bpicker-detail")!.childElementCount).toBe(0);
+    expect(root.querySelectorAll(".pc-btable-row").length).toBe(2);
+    expect(root.querySelectorAll(".pc-btoggle.seal").length).toBe(2);
+    expect(root.querySelector(".pc-btable-row .col-source .pc-bsrc")?.textContent).toBe("SRD 5e");
+    expect(root.querySelector(".pc-bpicker-detail")).toBeNull(); // two-pane layout is gone
   });
 
-  it("typing filters the list without rebuilding the search input (focus-safe)", () => {
+  it("typing filters the rows without rebuilding the search input (focus-safe)", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
     const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
     input.value = "hum";
     input.dispatchEvent(new Event("input"));
-    expect(root.querySelectorAll(".pc-bpicker-row").length).toBe(1);
+    expect(root.querySelectorAll(".pc-btable-row").length).toBe(1);
     expect(root.querySelector<HTMLInputElement>(".pc-bpicker-search")).toBe(input);
   });
 
@@ -60,82 +66,73 @@ describe("renderEntityPicker", () => {
     const chip = [...root.querySelectorAll<HTMLElement>(".pc-bfilter-chip")]
       .find((c) => c.textContent === "SRD 2024")!;
     chip.click();
-    const names = [...root.querySelectorAll(".pc-bpicker-name")].map((n) => n.textContent);
+    const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
     expect(names).toEqual(["Elf"]);
   });
 
-  it("clicking a row selects it AND shows its block (one gesture, no controls)", () => {
+  it("row click unfolds the entity block inline; the seal selects", () => {
     const root = mountContainer();
     const onSelect = vi.fn();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts(onSelect));
-    expect(root.querySelector(".pc-bpicker-row .pc-btoggle")).toBeNull(); // no toggle control
-    root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
-    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
+    rowByName(root, "Elf").click();
+    expect(root.querySelector(".pc-btable-expand .pc-bblock-fallback")?.textContent).toBe("Elf");
+    expect(onSelect).not.toHaveBeenCalled(); // reading is not choosing
+    rowByName(root, "Elf").querySelector<HTMLElement>(".pc-btoggle.seal")!.click();
     expect(onSelect).toHaveBeenCalledWith("srd-5e_elf");
   });
 
-  it("the row matching selectedSlug carries the sel class + ✓ seal and shows its block", () => {
+  it("the row matching selectedSlug carries the pressed seal and crimson name", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), selectedSlug: "srd-2024_human" });
-    const human = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
-      .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Human")!;
-    expect(human.classList.contains("sel")).toBe(true);
-    expect(human.querySelector(".pc-bpicker-seal")?.textContent).toBe("✓");
-    const elf = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
-      .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Elf")!;
-    expect(elf.classList.contains("sel")).toBe(false);
-    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Human");
+    const human = rowByName(root, "Human");
+    expect(human.querySelector(".pc-btoggle.seal")?.classList.contains("on")).toBe(true);
+    expect(human.querySelector(".pc-btable-name")?.classList.contains("on")).toBe(true);
+    const elf = rowByName(root, "Elf");
+    expect(elf.querySelector(".pc-btoggle.seal")?.classList.contains("on")).toBe(false);
   });
 
-  it("query + focus survive a full rebuild via the lifted bag", () => {
+  it("clicking the seal of the already-selected row fires no onSelect", () => {
+    const root = mountContainer();
+    const onSelect = vi.fn();
+    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(onSelect), selectedSlug: "srd-5e_elf" });
+    rowByName(root, "Elf").querySelector<HTMLElement>(".pc-btoggle.seal")!.click();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("query, ticks, and expanded rows survive a full rebuild via the lifted bag", () => {
     const bag = new Map<string, unknown>();
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(bag), baseOpts());
     const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
     input.value = "elf";
     input.dispatchEvent(new Event("input"));
-    root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
+    rowByName(root, "Elf").click(); // unfold
     // simulate the editState-mutation full re-render
     const root2 = mountContainer();
     renderEntityPicker(root2, fakeCtx(bag), baseOpts());
     expect(root2.querySelector<HTMLInputElement>(".pc-bpicker-search")!.value).toBe("elf");
-    expect(root2.querySelectorAll(".pc-bpicker-row").length).toBe(1);
-    expect(root2.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
+    expect(root2.querySelectorAll(".pc-btable-row").length).toBe(1);
+    expect(root2.querySelector(".pc-btable-expand .pc-bblock-fallback")?.textContent).toBe("Elf");
   });
 
-  it("shows the No-matches list hint and an empty detail pane when the query matches nothing", () => {
+  it("renders caller-supplied columns between Name and Source", () => {
+    const root = mountContainer();
+    const SIZE_COL: ColSpec = {
+      label: "Size", cls: "col-size", width: "90px",
+      render: (cell, e) => { cell.setText(String((e.data as { size?: string }).size ?? "—")); },
+    };
+    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), columns: [SIZE_COL] });
+    expect(root.querySelectorAll(".pc-btable-head .pc-btable-th").length).toBe(4); // seal, name, size, source
+    expect(rowByName(root, "Elf").querySelector(".col-size")?.textContent).toBe("medium");
+  });
+
+  it("shows the table's No-matches state when the query matches nothing", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
     const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
     input.value = "zzz";
     input.dispatchEvent(new Event("input"));
-    expect(root.querySelectorAll(".pc-bpicker-row").length).toBe(0);
-    expect(root.querySelector(".pc-bpicker-list .pc-bpicker-empty")?.textContent).toBe("No matches.");
-    expect(root.querySelector(".pc-bpicker-detail")!.childElementCount).toBe(0);
-  });
-
-  it("stale focus survives a transient filter exclusion", () => {
-    const root = mountContainer();
-    renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
-    root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
-    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
-    const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
-    input.value = "hum";
-    input.dispatchEvent(new Event("input"));
-    expect(root.querySelector(".pc-bpicker-detail")!.childElementCount).toBe(0);
-    input.value = "";
-    input.dispatchEvent(new Event("input"));
-    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
-  });
-
-  it("clicking the already-selected row focuses it but fires no onSelect", () => {
-    const root = mountContainer();
-    const onSelect = vi.fn();
-    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(onSelect), selectedSlug: "srd-5e_elf" });
-    const elf = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
-      .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Elf")!;
-    elf.click();
-    expect(onSelect).not.toHaveBeenCalled();
-    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
+    expect(root.querySelectorAll(".pc-btable-row").length).toBe(0);
+    expect(root.querySelector(".pc-btable-empty")?.textContent).toBe("No matches.");
   });
 });

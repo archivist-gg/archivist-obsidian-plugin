@@ -1,10 +1,9 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import {
-  allTicked, matchesTicked, renderCompendiumFilter, renderSourceTag,
+  allTicked, matchesTicked, renderCompendiumFilter,
   type CompendiumTickState,
 } from "./compendium-filter";
-import { renderEntityBlock } from "./entity-block";
+import { renderSelectionTable, type ColSpec } from "./selection-table";
 
 /** Reserved for the pinned ✦ Create-homebrew entry (parent spec §6). The
  *  Builder renders these in Plan 6; the option exists now so call-sites are
@@ -16,29 +15,33 @@ export interface PinnedEntry {
 
 export interface EntityPickerOptions {
   entityType: string;
-  /** builderUiState key (query / ticks / focus survive full re-renders). */
+  /** builderUiState key (query / ticks survive full re-renders; the ledger's
+   *  sort + expanded rows live under `${stateKey}.table`). */
   stateKey: string;
-  /** Current definition value; its row carries the ✓ seal + sel treatment. */
+  /** Current definition value; its row carries the pressed seal + crimson name. */
   selectedSlug: string | null;
-  /** Fired when a non-selected row is clicked. Picker selection is single:
-   *  picking swaps the previous choice (the caller writes the definition and
-   *  re-renders); re-clicking the standing pick is just a read. */
+  /** Fired when a non-selected row's seal is clicked. Picker selection is
+   *  single: picking swaps the previous choice (the caller writes the
+   *  definition and re-renders); the selected seal is inert. */
   onSelect: (slug: string) => void;
+  /** Extra ledger columns between the built-in Name and Source (e.g. Size /
+   *  Speed for races). Keep the array stable for a given stateKey — the
+   *  table's persisted sort key is column-index-based. */
+  columns?: ColSpec[];
   pinnedEntries?: PinnedEntry[];
 }
 
 interface PickerUiState {
   query: string;
   ticked: CompendiumTickState | null;
-  /** Row focused for reading; null falls back to selectedSlug. */
-  detailSlug: string | null;
 }
 
-/** The universal two-pane picker (parent spec §6): searchable, compendium-
- *  filtered list left; the chosen entity's real block right. Click-to-choose
- *  ledger: a row click selects AND reads in one gesture (selection is cheap
- *  and freely swappable). Persistent shell: the search input is built once
- *  and never rebuilt, so typing keeps focus through redraws. */
+/** The universal entity picker as a single-select ledger: a persistent search
+ *  input + compendium tick-filter over the shared selection table in seal
+ *  dress. Row click unfolds the entity's real block inline (the add-drawer
+ *  idiom, via the table); the seal takes the entity without opening it.
+ *  Persistent shell: the search input is built once and never rebuilt, so
+ *  typing keeps focus through redraws. */
 export function renderEntityPicker(
   parent: HTMLElement,
   ctx: ComponentRenderContext,
@@ -46,60 +49,39 @@ export function renderEntityPicker(
 ): void {
   const bag = ctx.builderUiState;
   const st: PickerUiState =
-    (bag?.get(opts.stateKey) as PickerUiState | undefined) ??
-    { query: "", ticked: null, detailSlug: null };
+    (bag?.get(opts.stateKey) as PickerUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
   const compendiums = ctx.core.compendiums.getAll();
   if (!st.ticked) st.ticked = allTicked(compendiums);
 
   const root = parent.createDiv({ cls: "pc-bpicker" });
-  const left = root.createDiv({ cls: "pc-bpicker-left" });
-  const search = left.createEl("input", {
+  const search = root.createEl("input", {
     cls: "pc-bpicker-search",
     attr: { type: "text", placeholder: "Search…" },
   });
   search.value = st.query;
-  const filterHost = left.createDiv({ cls: "pc-bpicker-filter" });
-  const listHost = left.createDiv({ cls: "pc-bpicker-list" });
-  const detail = root.createDiv({ cls: "pc-bpicker-detail" });
-
-  const renderListRow = (e: RegisteredEntity, focusSlug: string | null): void => {
-    const isSel = e.slug === opts.selectedSlug;
-    const cls = `pc-bpicker-row${isSel ? " sel" : ""}${e.slug === focusSlug ? " focus" : ""}`;
-    const row = listHost.createDiv({ cls });
-    // Click-to-choose ledger: clicking a row selects it AND shows its block —
-    // one gesture, no controls. Selection is permissive and free to swap, so
-    // reading and choosing collapse together. The ✓ seal sits in a fixed slot
-    // on every row (CSS hides it off the selected one) to keep names aligned.
-    row.createSpan({ cls: "pc-bpicker-seal", text: "✓" });
-    row.createSpan({ cls: "pc-bpicker-name", text: e.name });
-    renderSourceTag(row, e);
-    row.addEventListener("click", () => {
-      st.detailSlug = e.slug;
-      draw();
-      // Re-clicking the standing pick is just a read; everything else commits.
-      if (!isSel) opts.onSelect(e.slug);
-    });
-  };
+  const filterHost = root.createDiv({ cls: "pc-bpicker-filter" });
+  const tableHost = root.createDiv({ cls: "pc-bpicker-table" });
 
   const draw = (): void => {
     filterHost.empty();
-    listHost.empty();
-    detail.empty();
+    tableHost.empty();
     renderCompendiumFilter(filterHost, compendiums, st.ticked!, draw);
 
     const cands = ctx.core.entities
       .search(st.query, opts.entityType, Number.POSITIVE_INFINITY)
       .filter((e) => matchesTicked(e, st.ticked!));
-    if (!cands.length) listHost.createDiv({ cls: "pc-bpicker-empty", text: "No matches." });
-    const focusSlug = st.detailSlug ?? opts.selectedSlug;
-    for (const e of cands) renderListRow(e, focusSlug);
-
-    // detailSlug is intentionally NOT cleared when the focused entity is filtered out:
-    // the detail pane stays empty meanwhile, and focus returns if the filter re-includes it.
-    const focused = focusSlug ? cands.find((c) => c.slug === focusSlug) : undefined;
-    if (focused) renderEntityBlock(detail, focused, ctx.core);
+    renderSelectionTable(tableHost, ctx, {
+      columns: opts.columns ?? [],
+      candidates: cands,
+      stateKey: `${opts.stateKey}.table`,
+      selected: new Set(opts.selectedSlug ? [opts.selectedSlug] : []),
+      onToggle: (slug) => {
+        if (slug !== opts.selectedSlug) opts.onSelect(slug);
+      },
+      single: true,
+    });
   };
 
   search.addEventListener("input", () => {

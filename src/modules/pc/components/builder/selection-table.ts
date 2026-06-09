@@ -23,6 +23,11 @@ export interface SelectionTableOptions {
   stateKey: string;
   selected: Set<string>;
   onToggle: (slug: string) => void;
+  /** Single-select dress: the toggle renders as a hollow seal (✓ kept in the
+   *  DOM, hidden by CSS until hover/selected) instead of the multi-select ＋.
+   *  Swap semantics stay the caller's policy — the component still just
+   *  reports clicks via onToggle. */
+  single?: boolean;
 }
 
 interface TableUiState {
@@ -94,7 +99,13 @@ export function renderSelectionTable(
     tr.style.gridTemplateColumns = tracks;
 
     const addTd = tr.createDiv({ cls: "col-add" });
-    const toggle = addTd.createEl("button", { cls: `pc-btoggle${isSel ? " on" : ""}`, text: isSel ? "✓" : "＋" });
+    const toggle = opts.single
+      ? addTd.createEl("button", {
+          cls: `pc-btoggle seal${isSel ? " on" : ""}`,
+          text: "✓",
+          attr: { title: isSel ? "Current" : "Select" },
+        })
+      : addTd.createEl("button", { cls: `pc-btoggle${isSel ? " on" : ""}`, text: isSel ? "✓" : "＋" });
     toggle.addEventListener("click", (ev) => {
       ev.stopPropagation();
       opts.onToggle(e.slug);
