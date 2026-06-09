@@ -7,7 +7,7 @@ import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-hel
 
 beforeAll(() => installObsidianDomHelpers());
 
-function opts(classLen: number) {
+function opts(classLen: number, warnings: string[] = []) {
   const reg = new ComponentRegistry();
   reg.register(new BuilderView());
   return {
@@ -23,7 +23,7 @@ function opts(classLen: number) {
       modules: { getByEntityType: () => undefined },
     } as never,
     app: {} as never,
-    warnings: [],
+    warnings,
   } as never;
 }
 
@@ -33,5 +33,12 @@ describe("renderPCSheet — builder branch", () => {
     renderPCSheet(o as never);
     expect(o.root.querySelector(".pc-builder")).not.toBeNull();
     expect(o.root.querySelector(".pc-stats-band")).toBeNull();
+  });
+
+  it("suppresses the warnings banner in Builder mode", () => {
+    const o = opts(0, ["No race resolved; speed defaulted to 30."]) as { root: HTMLElement };
+    renderPCSheet(o as never);
+    expect(o.root.querySelector(".pc-builder")).not.toBeNull();
+    expect(o.root.querySelector(".archivist-pc-warnings")).toBeNull();
   });
 });
