@@ -11,6 +11,15 @@ export interface EditStateContext {
   derived: DerivedStats;
 }
 
+/** Wrap a bare compendium slug as a [[wikilink]]; pass through existing links;
+ *  empty string returns empty. Mirrors the inline wrapping done elsewhere in
+ *  this file for known-spell refs. */
+function toRef(slug: string): string {
+  const s = slug.trim();
+  if (!s) return s;
+  return /^\[\[.+\]\]$/.test(s) ? s : `[[${s}]]`;
+}
+
 /**
  * Centralized mutation surface for the PC sheet. Owned by `PCSheetView`;
  * re-built on every `setViewData`. Each mutation mutates `this.character`
@@ -290,6 +299,35 @@ export class CharacterEditState {
     } else {
       this.character.skills.expertise = exp.filter((s) => s !== skill);
     }
+    this.onChange();
+  }
+
+  // ─── Builder: identity ─────────────────────────────────────────────
+  setName(name: string): void {
+    const n = name.trim();
+    if (!n) return;
+    this.character.name = n;
+    this.onChange();
+  }
+
+  setAlignment(alignment: string | null): void {
+    if (alignment && alignment.trim()) this.character.alignment = alignment.trim();
+    else delete this.character.alignment;
+    this.onChange();
+  }
+
+  setRace(slug: string | null): void {
+    this.character.race = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
+  setSubrace(slug: string | null): void {
+    this.character.subrace = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
+  setBackground(slug: string | null): void {
+    this.character.background = slug ? toRef(slug) : null;
     this.onChange();
   }
 
