@@ -32,6 +32,15 @@ describe("applyChoiceToggle", () => {
     expect(sel.has("arcana")).toBe(false);
     expect(sel.size).toBe(2);
   });
+
+  it("choose-0 refuses all additions but still allows removal", () => {
+    const sel = new Set<string>();
+    applyChoiceToggle(sel, "athletics", 0);
+    expect(sel.size).toBe(0);
+    const stale = new Set<string>(["athletics"]);
+    applyChoiceToggle(stale, "athletics", 0);
+    expect(stale.size).toBe(0);
+  });
 });
 
 describe("renderChoiceCallout (N1)", () => {
