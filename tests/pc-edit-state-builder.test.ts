@@ -134,3 +134,26 @@ describe("CharacterEditState — class-entry mutators (SP2)", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+describe("CharacterEditState — setChoice (SP2 decision data)", () => {
+  it("writes choices[level][key] = value on the right class entry", () => {
+    const { es } = makeState(makeChar());
+    es.addClass("srd-5e_rogue", 9);
+    es.setChoice(0, 1, "skills", ["stealth", "deception"]);
+    es.setChoice(0, 4, "feat", "[[srd-5e_alert]]");
+    const choices = es.getCharacter().class[0].choices as Record<number, Record<string, unknown>>;
+    expect(choices[1].skills).toEqual(["stealth", "deception"]);
+    expect(choices[4].feat).toBe("[[srd-5e_alert]]");
+  });
+
+  it("clears a key when value is null/undefined and prunes nothing else", () => {
+    const { es } = makeState(makeChar());
+    es.addClass("srd-5e_rogue", 9);
+    es.setChoice(0, 4, "feat", "[[x]]");
+    es.setChoice(0, 4, "asi", { dex: 2 });
+    es.setChoice(0, 4, "feat", null);
+    const lvl4 = (es.getCharacter().class[0].choices as Record<number, Record<string, unknown>>)[4];
+    expect("feat" in lvl4).toBe(false);
+    expect(lvl4.asi).toEqual({ dex: 2 });
+  });
+});

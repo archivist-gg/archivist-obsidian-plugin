@@ -377,6 +377,22 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Populate `class[classIndex].choices[level][key]`. Pass null/undefined to
+   *  clear a key. The Builder uses this for skills/asi/feat/subclass/expertise/
+   *  fighting-style decisions (recalc reads asi from choices[lvl].asi and the
+   *  resolver reads feat from choices[*].feat today; the rest are recorded for
+   *  the ledger + future use). */
+  setChoice(classIndex: number, level: number, key: string, value: unknown): void {
+    const entry = this.character.class[classIndex];
+    if (!entry || !Number.isFinite(level)) return;
+    const lvl = Math.round(level);
+    const choices = entry.choices as Record<number, Record<string, unknown>>;
+    const atLevel = (choices[lvl] ??= {});
+    if (value === undefined || value === null) delete atLevel[key];
+    else atLevel[key] = value;
+    this.onChange();
+  }
+
   // ─── Saves (override mutation) ─────────────────────────────────────
   /**
    * Flip the saving-throw proficient bit against the class-derived baseline.
