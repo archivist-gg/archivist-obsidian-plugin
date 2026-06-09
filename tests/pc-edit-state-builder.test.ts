@@ -81,6 +81,9 @@ describe("CharacterEditState — ability mutators (SP2)", () => {
     expect(es.getCharacter().abilities.dex).toBe(15);
     expect(es.getCharacter().overrides.scores).toBeUndefined();
     expect(onChange).toHaveBeenCalledTimes(1);
+    es.setAbilityBaseScore("dex" as Ability, 14.6);
+    expect(es.getCharacter().abilities.dex).toBe(15);
+    expect(onChange).toHaveBeenCalledTimes(2);
   });
 
   it("setAbilityBaseScore ignores non-finite input", () => {
