@@ -20,6 +20,12 @@ export interface RenderSheetOptions {
   activeTabId?: string;
   /** Setter the parent uses to remember tab clicks across re-renders. */
   onActiveTabChange?: (panelId: string) => void;
+  /** Active Builder step to restore (lifted to PCSheetView; see activeTabId). */
+  activeStepId?: string;
+  /** Setter the parent uses to remember step changes across re-renders. */
+  onActiveStepChange?: (stepId: string) => void;
+  /** Per-file transient Builder UI state bag (lifted to PCSheetView). */
+  builderUiState?: Map<string, unknown>;
 }
 
 /**
@@ -43,6 +49,9 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     editState: opts.editState,
     activeTabId: opts.activeTabId,
     onActiveTabChange: opts.onActiveTabChange,
+    activeStepId: opts.activeStepId,
+    onActiveStepChange: opts.onActiveStepChange,
+    builderUiState: opts.builderUiState,
   };
 
   // Class-less character → render the Builder shell instead of the sheet.

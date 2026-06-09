@@ -6,9 +6,12 @@ import { BUILDER_STEPS } from "./builder-steps";
  *  by later plans; this shell owns the rail, routing, and footer. */
 export class BuilderView implements SheetComponent {
   readonly type = "builder";
-  private activeStep = BUILDER_STEPS[0].id;
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const activeStep =
+      ctx.activeStepId && BUILDER_STEPS.some((s) => s.id === ctx.activeStepId)
+        ? ctx.activeStepId
+        : BUILDER_STEPS[0].id;
     const root = el.createDiv({ cls: "pc-builder" });
 
     // Top bar with a live summary.
@@ -27,7 +30,7 @@ export class BuilderView implements SheetComponent {
     const rail = layout.createDiv({ cls: "pc-builder-rail" });
     for (const step of BUILDER_STEPS) {
       const item = rail.createDiv({
-        cls: `pc-builder-step${step.id === this.activeStep ? " active" : ""}`,
+        cls: `pc-builder-step${step.id === activeStep ? " active" : ""}`,
         attr: { "data-step": step.id },
       });
       item.createSpan({ cls: "pc-builder-step-label", text: step.label });
@@ -36,14 +39,14 @@ export class BuilderView implements SheetComponent {
 
     // Active step body (placeholder; later plans render the real step here).
     const main = layout.createDiv({ cls: "pc-builder-main" });
-    const body = main.createDiv({ cls: "pc-builder-body", attr: { "data-step": this.activeStep } });
-    const def = BUILDER_STEPS.find((s) => s.id === this.activeStep)!;
+    const body = main.createDiv({ cls: "pc-builder-body", attr: { "data-step": activeStep } });
+    const def = BUILDER_STEPS.find((s) => s.id === activeStep)!;
     body.createDiv({ cls: "pc-builder-step-h", text: def.label });
     body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
 
     // Footer.
     const foot = main.createDiv({ cls: "pc-builder-foot" });
-    const idx = BUILDER_STEPS.findIndex((s) => s.id === this.activeStep);
+    const idx = BUILDER_STEPS.findIndex((s) => s.id === activeStep);
     if (idx > 0) {
       const back = foot.createEl("button", { cls: "pc-builder-back", text: "◂ Back" });
       back.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx - 1].id, el, ctx));
@@ -57,8 +60,8 @@ export class BuilderView implements SheetComponent {
   }
 
   private goTo(step: string, el: HTMLElement, ctx: ComponentRenderContext): void {
-    this.activeStep = step;
+    ctx.onActiveStepChange?.(step);
     el.empty();
-    this.render(el, ctx);
+    this.render(el, { ...ctx, activeStepId: step });
   }
 }

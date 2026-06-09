@@ -32,6 +32,10 @@ export class PCSheetView extends TextFileView {
   // Reset only on file switch (onLoadFile / setViewData(clear=true) / clear),
   // never on internal mutations.
   private activeTabId: string = DEFAULT_ACTIVE_TAB;
+  // Builder step + transient builder UI state (search/filter/expand), lifted
+  // for the same survival reason as activeTabId. Reset on file switch only.
+  private activeStepId: string | null = null;
+  private builderUiState = new Map<string, unknown>();
   // Exposed for tests to await the deferred render. Obsidian itself treats
   // setViewData as sync (void return) and never awaits it.
   rendered: Promise<void> = Promise.resolve();
@@ -78,6 +82,8 @@ export class PCSheetView extends TextFileView {
     // Reset active tab on file switch — opening a different PC should land
     // the user on Actions, not whatever tab the previous PC happened to be on.
     this.activeTabId = DEFAULT_ACTIVE_TAB;
+    this.activeStepId = null;
+    this.builderUiState = new Map();
     if (clear) this.contentEl.empty();
 
     const gen = ++this.renderGeneration;
@@ -170,6 +176,8 @@ export class PCSheetView extends TextFileView {
     this.lastWrittenData = null;
     this.isDirty = false;
     this.activeTabId = DEFAULT_ACTIVE_TAB;
+    this.activeStepId = null;
+    this.builderUiState = new Map();
     this.contentEl.empty();
   }
 
@@ -192,6 +200,8 @@ export class PCSheetView extends TextFileView {
     this.lastWrittenData = null;
     this.isDirty = false;
     this.activeTabId = DEFAULT_ACTIVE_TAB;
+    this.activeStepId = null;
+    this.builderUiState = new Map();
     await super.onLoadFile(file);
   }
 
@@ -224,6 +234,11 @@ export class PCSheetView extends TextFileView {
       onActiveTabChange: (panelId) => {
         this.activeTabId = panelId;
       },
+      activeStepId: this.activeStepId ?? undefined,
+      onActiveStepChange: (stepId) => {
+        this.activeStepId = stepId;
+      },
+      builderUiState: this.builderUiState,
     });
   }
 

@@ -27,6 +27,21 @@ export interface ComponentRenderContext {
    * the user where they were. Optional for the same backward-compat reason.
    */
   onActiveTabChange?: (panelId: string) => void;
+  /**
+   * The Builder step currently active in the parent view. Lifted to
+   * PCSheetView (like activeTabId) so it survives editState re-renders and
+   * never leaks across files/leaves through the singleton BuilderView.
+   */
+  activeStepId?: string;
+  /** Callback fired when the user moves to a different Builder step. */
+  onActiveStepChange?: (stepId: string) => void;
+  /**
+   * Per-loaded-file bag for transient Builder UI state (search queries,
+   * ticked compendiums, expanded rows, focused detail). Owned by PCSheetView,
+   * reset on file switch only. Components key into it with a stateKey and
+   * type-narrow their own entry; the view never inspects contents.
+   */
+  builderUiState?: Map<string, unknown>;
 }
 
 export interface SheetComponent {

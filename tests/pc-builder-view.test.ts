@@ -53,4 +53,31 @@ describe("BuilderView shell", () => {
     expect(root.querySelector(".pc-builder-step.active")?.getAttribute("data-step")).toBe("race");
     expect(root.querySelector(".pc-builder-body")?.getAttribute("data-step")).toBe("race");
   });
+
+  it("honors ctx.activeStepId over the default first step", () => {
+    const root = mountContainer();
+    const c = { ...ctx(), activeStepId: "abilities" } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    expect(root.querySelector(".pc-builder-step.active")?.getAttribute("data-step")).toBe("abilities");
+    expect(root.querySelector(".pc-builder-body")?.getAttribute("data-step")).toBe("abilities");
+  });
+
+  it("fires onActiveStepChange on rail clicks and Back/Next", () => {
+    const root = mountContainer();
+    const seen: string[] = [];
+    const c = { ...ctx(), onActiveStepChange: (id: string) => seen.push(id) } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='class']")!.click();
+    root.querySelector<HTMLElement>(".pc-builder-back")!.click();
+    expect(seen).toEqual(["class", "race"]);
+  });
+
+  it("holds no instance state: a second render with a fresh ctx starts at race", () => {
+    const root = mountContainer();
+    const view = new BuilderView();
+    view.render(root, { ...ctx(), activeStepId: "details" } as unknown as ComponentRenderContext);
+    const rootB = mountContainer();
+    view.render(rootB, ctx());
+    expect(rootB.querySelector(".pc-builder-step.active")?.getAttribute("data-step")).toBe("race");
+  });
 });
