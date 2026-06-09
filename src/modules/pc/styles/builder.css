@@ -26,7 +26,6 @@
 }
 .archivist-pc-sheet .pc-builder-step.active {
   background: var(--pc-row-open-bg); color: var(--pc-crimson); font-weight: 700;
-  border-left: 2px solid var(--pc-crimson);
 }
 .archivist-pc-sheet .pc-builder-step-n {
   flex: none; width: 16px; height: 16px; border-radius: 50%;
