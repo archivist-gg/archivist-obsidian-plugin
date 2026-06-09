@@ -64,20 +64,25 @@ export function installObsidianDomHelpers(): void {
     return child;
   };
 
-  proto.addClass = function (this: HTMLElement, cls: string) {
-    cls.split(/\s+/).filter(Boolean).forEach((c) => this.classList.add(c));
+  // Obsidian's enhance.js: addClass(...args) → addClasses(args) →
+  // classList.add(arg) per entry — NO whitespace splitting, so a
+  // space-separated string throws InvalidCharacterError exactly like the
+  // browser. The fixture must mirror that strictness: a lenient split here
+  // once hid a runtime-only crash (multi-class strings through el()).
+  // Note Obsidian's createEl is different — it assigns className directly,
+  // so space-separated `cls` IS valid there (applyOpts mirrors that).
+  proto.addClass = function (this: HTMLElement, ...classes: string[]) {
+    classes.forEach((c) => this.classList.add(c));
     return this;
   };
 
   proto.addClasses = function (this: HTMLElement, classes: string[]) {
-    classes.forEach((cls) => {
-      cls.split(/\s+/).filter(Boolean).forEach((c) => this.classList.add(c));
-    });
+    classes.forEach((c) => this.classList.add(c));
     return this;
   };
 
-  proto.removeClass = function (this: HTMLElement, cls: string) {
-    cls.split(/\s+/).filter(Boolean).forEach((c) => this.classList.remove(c));
+  proto.removeClass = function (this: HTMLElement, ...classes: string[]) {
+    classes.forEach((c) => this.classList.remove(c));
     return this;
   };
 

@@ -22,7 +22,11 @@ export function el(tag: string, opts?: ElOptions): HTMLElement {
       if (Array.isArray(opts.cls)) {
         element.addClasses(opts.cls);
       } else {
-        element.addClass(opts.cls);
+        // Obsidian's addClass passes the string to classList.add as ONE
+        // token, so a CSS-idiomatic "a b" string throws InvalidCharacterError
+        // at runtime (createEl is lenient — it assigns className — but
+        // addClass is not). Tokenize here so multi-class strings are valid.
+        element.addClasses(opts.cls.split(/\s+/).filter(Boolean));
       }
     }
     if (opts.text) {
