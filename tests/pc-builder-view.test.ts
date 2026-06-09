@@ -69,7 +69,8 @@ describe("BuilderView shell", () => {
     new BuilderView().render(root, c);
     root.querySelector<HTMLElement>(".pc-builder-step[data-step='class']")!.click();
     root.querySelector<HTMLElement>(".pc-builder-back")!.click();
-    expect(seen).toEqual(["class", "race"]);
+    root.querySelector<HTMLElement>(".pc-builder-next")!.click();
+    expect(seen).toEqual(["class", "race", "class"]);
   });
 
   it("holds no instance state: a second render with a fresh ctx starts at race", () => {

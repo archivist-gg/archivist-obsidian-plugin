@@ -60,6 +60,9 @@ export class BuilderView implements SheetComponent {
   }
 
   private goTo(step: string, el: HTMLElement, ctx: ComponentRenderContext): void {
+    // Unlike the activeTabId/TabsContainer pattern (callback + CSS toggle only),
+    // step nav triggers no parent re-render, so we self-redraw here. The callback
+    // still fires to keep parent state in sync for the eventual full re-render.
     ctx.onActiveStepChange?.(step);
     el.empty();
     this.render(el, { ...ctx, activeStepId: step });
