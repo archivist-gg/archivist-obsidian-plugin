@@ -178,3 +178,38 @@ describe("CharacterEditState — setChoice (SP2 decision data)", () => {
     expect(es.getCharacter().class[0].choices).toEqual({});
   });
 });
+
+describe("CharacterEditState — state seeders (SP2)", () => {
+  it("seedHpToMax sets hp.current = max = derived max, temp 0", () => {
+    const char = makeChar();
+    const onChange = vi.fn();
+    const es = new CharacterEditState(
+      char,
+      () => ({ resolved: { definition: char } as never, derived: { hp: { max: 63 } } as never }),
+      onChange,
+      null as never,
+    );
+    es.seedHpToMax();
+    expect(es.getCharacter().state.hp).toMatchObject({ current: 63, max: 63, temp: 0 });
+  });
+
+  it("seedHitDice sums class levels per die from the registry", () => {
+    const char = makeChar();
+    // The real EntityRegistry.getByTypeAndSlug returns a RegisteredEntity
+    // ({ data: { ... } }) or undefined on miss — the class's hit_die lives in
+    // entity.data.hit_die.
+    const registry = {
+      getByTypeAndSlug: (type: string, slug: string) =>
+        type === "class" && slug === "srd-5e_rogue" ? { data: { hit_die: "d8" } } : undefined,
+    };
+    const es = new CharacterEditState(
+      char,
+      () => ({ resolved: { definition: char } as never, derived: { hp: { max: 0 } } as never }),
+      vi.fn(),
+      registry as never,
+    );
+    es.addClass("srd-5e_rogue", 9);
+    es.seedHitDice();
+    expect(es.getCharacter().state.hit_dice).toEqual({ d8: { used: 0, total: 9 } });
+  });
+});

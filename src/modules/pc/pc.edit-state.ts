@@ -377,6 +377,40 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Builder: state seeders ────────────────────────────────────────
+  /** Normalize a class entity's hit_die ("d8" | "8" | 8) to a "dN" key. */
+  private dieForClass(slug: string): string | null {
+    const entity = this.registry?.getByTypeAndSlug("class", slug) as { data?: { hit_die?: unknown } } | undefined;
+    const raw = entity?.data?.hit_die;
+    if (raw == null) return null;
+    const n = typeof raw === "number" ? raw : parseInt(String(raw).replace(/^d/i, ""), 10);
+    return Number.isFinite(n) && n > 0 ? `d${n}` : null;
+  }
+
+  /** Fill HP to the derived max, clearing temp HP. Called by the Builder's
+   *  Finish action before opening the finished sheet. */
+  seedHpToMax(): void {
+    const { derived } = this.getContext();
+    const max = derived.hp.max;
+    this.character.state.hp = { current: max, max, temp: 0 };
+    this.onChange();
+  }
+
+  /** Seed `state.hit_dice` from class levels × each class's hit die. Hit dice
+   *  are not auto-derived elsewhere, so the Builder seeds them on Finish. */
+  seedHitDice(): void {
+    const dice: Record<string, { used: number; total: number }> = {};
+    for (const entry of this.character.class) {
+      const die = this.dieForClass(CharacterEditState.bare(entry.name));
+      if (!die) continue;
+      const cur = dice[die] ?? { used: 0, total: 0 };
+      cur.total += entry.level;
+      dice[die] = cur;
+    }
+    this.character.state.hit_dice = dice;
+    this.onChange();
+  }
+
   /** Populate `class[classIndex].choices[level][key]`. Pass null/undefined to
    *  clear a key. The Builder uses this for skills/asi/feat/subclass/expertise/
    *  fighting-style decisions (recalc reads asi from choices[lvl].asi and the
