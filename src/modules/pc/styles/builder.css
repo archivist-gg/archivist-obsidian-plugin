@@ -123,3 +123,22 @@
   color: var(--pc-text-soft); cursor: pointer; font-size: var(--pc-fs-small); padding: 0;
 }
 .archivist-pc-sheet .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
+
+/* ── Two-pane entity picker ── */
+.archivist-pc-sheet .pc-bpicker { display: grid; grid-template-columns: minmax(230px, 5fr) minmax(0, 7fr); gap: var(--pc-space-3); align-items: start; }
+.archivist-pc-sheet .pc-bpicker-search {
+  width: 100%; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 5px 9px; color: var(--pc-text-primary); margin-bottom: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-bpicker-list { max-height: 430px; overflow-y: auto; }
+.archivist-pc-sheet .pc-bpicker-row {
+  display: flex; align-items: center; gap: 7px; padding: 6px 4px;
+  border-bottom: 1px dashed var(--pc-tan-muted); cursor: pointer;
+}
+.archivist-pc-sheet .pc-bpicker-row.focus { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bpicker-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-bpicker-row.focus .pc-bpicker-name { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bpicker-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-bpicker-detail { min-width: 0; }
