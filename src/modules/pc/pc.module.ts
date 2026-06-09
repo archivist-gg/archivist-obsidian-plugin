@@ -83,9 +83,10 @@ export class PCModule implements ArchivistModule {
 
   /**
    * Create a class-less draft PC in the configured PlayerCharacters folder and
-   * open it; the view-swap interceptor renders class-less PC files as the Builder.
-   * Folder resolution mirrors {@link isInPCFolder} so created files land where
-   * {@link shouldRenderAsPC} looks.
+   * open it directly as the PC view via setViewState; the view-swap interceptor
+   * can't swap a brand-new file because the metadata cache hasn't indexed its
+   * frontmatter yet. Folder resolution mirrors {@link isInPCFolder} so created
+   * files land where {@link shouldRenderAsPC} looks.
    */
   private async createNewCharacter(plugin: HostPlugin): Promise<void> {
     try {
