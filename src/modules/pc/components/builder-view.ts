@@ -50,9 +50,7 @@ export class BuilderView implements SheetComponent {
       renderEntityPicker(body, ctx, {
         entityType: "race",
         stateKey: "builder.race-picker",
-        selectedSlug: stripSlug(
-          (ctx.resolved.definition as { race?: string | null } | undefined)?.race ?? null,
-        ),
+        selectedSlug: stripSlug(ctx.resolved.definition.race),
         onSelect: (slug) => ctx.editState?.setRace(slug),
       });
     } else {
