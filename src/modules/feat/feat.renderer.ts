@@ -7,7 +7,14 @@ function titleCase(s: string): string {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-/** Slug → display name: drop the compendium prefix, dashes → spaces. */
+/** Title-case a hyphenated/slug-ish label, treating dashes as word breaks
+ *  (e.g. "saving-throw" → "Saving Throw", "fighting-style" → "Fighting Style"). */
+function labelCase(s: string): string {
+  return titleCase(s.replace(/-/g, " "));
+}
+
+/** Slug → display name: drop the compendium prefix, dashes → spaces.
+ *  Assumes a single leading `prefix_` underscore segment (e.g. "srd-5e_high-elf"). */
 function slugName(slug: string): string {
   return titleCase(slug.replace(/^[^_]*_/, "").replace(/-/g, " "));
 }
@@ -17,7 +24,7 @@ function prereqText(p: FeatPrerequisite): string {
     case "ability": return `${titleCase(p.ability)} ${p.min}+`;
     case "level": return `Level ${p.min}+`;
     case "spellcaster": return "The ability to cast at least one spell";
-    case "proficiency": return `${titleCase(p.proficiency_type)} proficiency: ${titleCase(p.value)}`;
+    case "proficiency": return `${labelCase(p.proficiency_type)} proficiency: ${labelCase(p.value)}`;
     case "race": return slugName(p.slug);
     case "class": return slugName(p.slug);
   }
@@ -39,7 +46,7 @@ export async function renderFeatBlock(
 
   const header = el("div", { cls: "spell-block-header", parent: block });
   el("h3", { cls: "spell-name", text: data.name, parent: header });
-  el("div", { cls: "spell-school", text: `${titleCase(data.category)} Feat`, parent: header });
+  el("div", { cls: "spell-school", text: `${labelCase(data.category)} Feat`, parent: header });
 
   const props = el("div", { cls: "spell-properties", parent: block });
   if (data.prerequisites.length > 0) {

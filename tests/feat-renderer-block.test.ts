@@ -38,4 +38,41 @@ describe("renderFeatBlock", () => {
     expect(items.length).toBe(1);
     expect(items[0].textContent).toContain("Advantage on attack rolls");
   });
+
+  it("de-hyphenates a hyphenated category in the header", async () => {
+    const root = mountContainer();
+    root.appendChild(
+      await renderFeatBlock({ ...feat, category: "fighting-style" } as unknown as FeatEntity),
+    );
+    expect(root.querySelector(".spell-school")?.textContent).toBe("Fighting Style Feat");
+  });
+
+  it("shows Repeatable and omits Prerequisites when there are none", async () => {
+    const root = mountContainer();
+    root.appendChild(
+      await renderFeatBlock({ ...feat, prerequisites: [], repeatable: true } as unknown as FeatEntity),
+    );
+    expect(root.textContent).toContain("Repeatable:");
+    expect(root.textContent).toContain("Yes");
+    expect(root.textContent).not.toContain("Prerequisites:");
+  });
+
+  it("renders no source badge when edition and source are absent", async () => {
+    const root = mountContainer();
+    root.appendChild(
+      await renderFeatBlock({ ...feat, edition: undefined, source: undefined } as unknown as FeatEntity),
+    );
+    expect(root.querySelector(".source-badge")).toBeNull();
+  });
+
+  it("renders a slug prerequisite as a readable name", async () => {
+    const root = mountContainer();
+    root.appendChild(
+      await renderFeatBlock({
+        ...feat,
+        prerequisites: [{ kind: "race", slug: "srd-5e_high-elf" }],
+      } as unknown as FeatEntity),
+    );
+    expect(root.textContent).toContain("High Elf");
+  });
 });
