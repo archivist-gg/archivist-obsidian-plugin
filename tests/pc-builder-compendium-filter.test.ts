@@ -37,6 +37,15 @@ describe("compendium filter", () => {
     expect(st.ticked.has("Me")).toBe(false);
     expect(matchesTicked(ent("Me", true), st)).toBe(false);
     expect(draw).toHaveBeenCalledTimes(1);
+    chips[1].click();
+    expect(st.ticked.has("Me")).toBe(true);
+    expect(matchesTicked(ent("Me", true), st)).toBe(true);
+    expect(draw).toHaveBeenCalledTimes(2);
+  });
+
+  it("hides entities whose compendium is not in the tick state", () => {
+    const st = allTicked([comp("SRD 5e")]);
+    expect(matchesTicked(ent("Unknown Comp", false), st)).toBe(false);
   });
 
   it("colour-keys tags: homebrew green class, 2024 blue class, else grey class", () => {
