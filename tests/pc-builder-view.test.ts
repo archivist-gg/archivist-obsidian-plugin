@@ -43,4 +43,14 @@ describe("BuilderView shell", () => {
     root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
     expect(root.querySelector(".pc-builder-finish")).not.toBeNull();
   });
+
+  it("hides Back on the first step and the Back button returns to the previous step", () => {
+    const root = mountContainer();
+    new BuilderView().render(root, ctx());
+    expect(root.querySelector(".pc-builder-back")).toBeNull();
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='class']")!.click();
+    root.querySelector<HTMLElement>(".pc-builder-back")!.click();
+    expect(root.querySelector(".pc-builder-step.active")?.getAttribute("data-step")).toBe("race");
+    expect(root.querySelector(".pc-builder-body")?.getAttribute("data-step")).toBe("race");
+  });
 });
