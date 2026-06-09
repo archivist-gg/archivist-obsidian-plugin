@@ -102,7 +102,7 @@ describe("BuilderView shell", () => {
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
     expect(root.querySelector(".pc-bpicker")).not.toBeNull();
-    root.querySelector<HTMLElement>(".pc-bpicker-row .pc-btoggle")!.click();
+    root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
     expect(setRace).toHaveBeenCalledWith("srd-5e_elf");
   });
 
@@ -142,6 +142,8 @@ describe("BuilderView shell", () => {
       },
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
-    expect(root.querySelector(".pc-bpicker-row .pc-btoggle")?.textContent).toBe("✓");
+    const selected = root.querySelector(".pc-bpicker-row.sel");
+    expect(selected).not.toBeNull();
+    expect(selected?.querySelector(".pc-bpicker-seal")?.textContent).toBe("✓");
   });
 });

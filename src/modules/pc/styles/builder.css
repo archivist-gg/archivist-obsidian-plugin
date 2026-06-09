@@ -154,7 +154,15 @@
   border-bottom: 1px dashed var(--pc-tan-muted); cursor: pointer;
 }
 .archivist-pc-sheet .pc-bpicker-row.focus { background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-bpicker-row.sel { background: var(--pc-row-open-bg); border-left: 2px solid var(--pc-crimson); }
+.archivist-pc-sheet .pc-bpicker-row.sel { background: var(--pc-row-open-bg); }
+/* Fixed ✓-seal slot on every row keeps the names aligned; only the standing
+   pick shows it (click-to-choose ledger — no row controls). */
+.archivist-pc-sheet .pc-bpicker-seal {
+  flex: none; width: 15px; text-align: center;
+  color: var(--pc-crimson); font-weight: 700; font-size: var(--pc-fs-small);
+  visibility: hidden;
+}
+.archivist-pc-sheet .pc-bpicker-row.sel .pc-bpicker-seal { visibility: visible; }
 .archivist-pc-sheet .pc-bpicker-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-bpicker-row.focus .pc-bpicker-name,
 .archivist-pc-sheet .pc-bpicker-row.sel .pc-bpicker-name { color: var(--pc-crimson); }

@@ -64,26 +64,23 @@ describe("renderEntityPicker", () => {
     expect(names).toEqual(["Elf"]);
   });
 
-  it("row click focuses (detail pane) without selecting; the radio toggle selects", () => {
+  it("clicking a row selects it AND shows its block (one gesture, no controls)", () => {
     const root = mountContainer();
     const onSelect = vi.fn();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts(onSelect));
+    expect(root.querySelector(".pc-bpicker-row .pc-btoggle")).toBeNull(); // no toggle control
     root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
     expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
-    expect(onSelect).not.toHaveBeenCalled();
-    const toggle = root.querySelector<HTMLElement>(".pc-bpicker-row .pc-btoggle")!;
-    expect(toggle.textContent).toBe(""); // hollow radio, not ＋
-    toggle.click();
     expect(onSelect).toHaveBeenCalledWith("srd-5e_elf");
   });
 
-  it("the row matching selectedSlug shows ✓, the sel class, and its block when nothing is focused", () => {
+  it("the row matching selectedSlug carries the sel class + ✓ seal and shows its block", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), selectedSlug: "srd-2024_human" });
     const human = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
       .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Human")!;
-    expect(human.querySelector(".pc-btoggle")?.textContent).toBe("✓");
     expect(human.classList.contains("sel")).toBe(true);
+    expect(human.querySelector(".pc-bpicker-seal")?.textContent).toBe("✓");
     const elf = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
       .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Elf")!;
     expect(elf.classList.contains("sel")).toBe(false);
@@ -131,13 +128,14 @@ describe("renderEntityPicker", () => {
     expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
   });
 
-  it("clicking the toggle on an already-selected row is a no-op", () => {
+  it("clicking the already-selected row focuses it but fires no onSelect", () => {
     const root = mountContainer();
     const onSelect = vi.fn();
     renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(onSelect), selectedSlug: "srd-5e_elf" });
     const elf = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
       .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Elf")!;
-    elf.querySelector<HTMLElement>(".pc-btoggle")!.click();
+    elf.click();
     expect(onSelect).not.toHaveBeenCalled();
+    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
   });
 });

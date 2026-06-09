@@ -18,10 +18,11 @@ export interface EntityPickerOptions {
   entityType: string;
   /** builderUiState key (query / ticks / focus survive full re-renders). */
   stateKey: string;
-  /** Current definition value; its row shows ✓. */
+  /** Current definition value; its row carries the ✓ seal + sel treatment. */
   selectedSlug: string | null;
-  /** Fired by the row toggle. Picker selection is single: picking swaps the
-   *  previous choice (the caller writes the definition and re-renders). */
+  /** Fired when a non-selected row is clicked. Picker selection is single:
+   *  picking swaps the previous choice (the caller writes the definition and
+   *  re-renders); re-clicking the standing pick is just a read. */
   onSelect: (slug: string) => void;
   pinnedEntries?: PinnedEntry[];
 }
@@ -34,10 +35,10 @@ interface PickerUiState {
 }
 
 /** The universal two-pane picker (parent spec §6): searchable, compendium-
- *  filtered list left; the focused entity's real block right. Row click
- *  focuses; the row radio toggle selects (single-select). Persistent shell:
- *  the search input is built once and never rebuilt, so typing keeps focus
- *  through redraws. */
+ *  filtered list left; the chosen entity's real block right. Click-to-choose
+ *  ledger: a row click selects AND reads in one gesture (selection is cheap
+ *  and freely swappable). Persistent shell: the search input is built once
+ *  and never rebuilt, so typing keeps focus through redraws. */
 export function renderEntityPicker(
   parent: HTMLElement,
   ctx: ComponentRenderContext,
@@ -67,20 +68,18 @@ export function renderEntityPicker(
     const isSel = e.slug === opts.selectedSlug;
     const cls = `pc-bpicker-row${isSel ? " sel" : ""}${e.slug === focusSlug ? " focus" : ""}`;
     const row = listHost.createDiv({ cls });
-    // Single-select: the selected row shows ✓; unselected rows show a hollow
-    // radio circle (empty button). The ＋ glyph is reserved for multi-select.
-    const toggle = isSel
-      ? row.createEl("button", { cls: "pc-btoggle on", text: "✓" })
-      : row.createEl("button", { cls: "pc-btoggle", text: "", attr: { title: "Select" } });
-    toggle.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      if (!isSel) opts.onSelect(e.slug);
-    });
+    // Click-to-choose ledger: clicking a row selects it AND shows its block —
+    // one gesture, no controls. Selection is permissive and free to swap, so
+    // reading and choosing collapse together. The ✓ seal sits in a fixed slot
+    // on every row (CSS hides it off the selected one) to keep names aligned.
+    row.createSpan({ cls: "pc-bpicker-seal", text: "✓" });
     row.createSpan({ cls: "pc-bpicker-name", text: e.name });
     renderSourceTag(row, e);
     row.addEventListener("click", () => {
       st.detailSlug = e.slug;
       draw();
+      // Re-clicking the standing pick is just a read; everything else commits.
+      if (!isSel) opts.onSelect(e.slug);
     });
   };
 
