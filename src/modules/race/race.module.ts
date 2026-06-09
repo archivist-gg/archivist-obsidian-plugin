@@ -1,7 +1,7 @@
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
 import type { RaceEntity } from "./race.types";
 import { parseRace } from "./race.parser";
-import { renderRaceStub } from "./race.renderer";
+import { renderRaceBlock } from "./race.renderer";
 
 class RaceModule implements ArchivistModule {
   readonly id = "race";
@@ -14,8 +14,15 @@ class RaceModule implements ArchivistModule {
     return parseRace(source);
   }
 
-  render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
-    return renderRaceStub(el, data as RaceEntity, ctx);
+  render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
+    // Stable wrapper held by the host; the async renderer fills it as a child
+    // (same contract as the feat/spell modules — see feat.module.ts render()).
+    const wrapper = el.doc.createElement("div");
+    el.appendChild(wrapper);
+    void renderRaceBlock(data as RaceEntity).then((block) => {
+      wrapper.appendChild(block);
+    });
+    return wrapper;
   }
 }
 
