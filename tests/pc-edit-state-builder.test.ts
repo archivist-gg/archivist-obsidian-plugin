@@ -101,12 +101,18 @@ describe("CharacterEditState — class-entry mutators (SP2)", () => {
     const cls = es.getCharacter().class;
     expect(cls).toHaveLength(1);
     expect(cls[0]).toMatchObject({ name: "[[srd-5e_rogue]]", level: 9, subclass: null, choices: {} });
+    es.addClass("srd-5e_cleric", 3, "srd-5e_life");
+    expect(es.getCharacter().class[1].subclass).toBe("[[srd-5e_life]]");
   });
 
   it("addClass clamps level to 1..20", () => {
     const { es } = makeState(makeChar());
     es.addClass("srd-5e_fighter", 99);
     expect(es.getCharacter().class[0].level).toBe(20);
+    es.setClassLevel(0, -3);
+    expect(es.getCharacter().class[0].level).toBe(1);
+    es.setClassLevel(0, 9.7);
+    expect(es.getCharacter().class[0].level).toBe(10);
   });
 
   it("setClassLevel and setSubclass update the right entry; removeClass splices", () => {
