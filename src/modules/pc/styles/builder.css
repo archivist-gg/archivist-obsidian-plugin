@@ -94,3 +94,32 @@
 }
 .archivist-pc-sheet .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
 .archivist-pc-sheet .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
+
+/* ── Shared selection table (the add-drawer pattern, generalized) ── */
+.archivist-pc-sheet .pc-btable-host { overflow-x: auto; min-width: 0; }
+.archivist-pc-sheet .pc-btable { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-btable-head, .archivist-pc-sheet .pc-btable-row { display: grid; }
+.archivist-pc-sheet .pc-btable-head > .pc-btable-th {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
+}
+.archivist-pc-sheet .pc-btable-head > .pc-btable-th.sortable { cursor: pointer; }
+.archivist-pc-sheet .pc-btable-sortarr { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-btable-row > * {
+  padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted);
+  font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.archivist-pc-sheet .pc-btable-row { cursor: pointer; }
+.archivist-pc-sheet .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-btable-name.on { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-btable-expand { padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+.archivist-pc-sheet .pc-btable-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-btoggle {
+  width: 20px; height: 20px; line-height: 1; border-radius: 50%;
+  border: 1px solid var(--pc-tan-muted); background: transparent;
+  color: var(--pc-text-soft); cursor: pointer; font-size: var(--pc-fs-small); padding: 0;
+}
+.archivist-pc-sheet .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
