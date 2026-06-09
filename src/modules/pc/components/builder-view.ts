@@ -1,0 +1,64 @@
+import type { SheetComponent, ComponentRenderContext } from "./component.types";
+import { BUILDER_STEPS } from "./builder-steps";
+
+/** The full-screen Character Builder shell. Rendered by renderPCSheet in place
+ *  of the sheet body when the character has no class. Step bodies are filled in
+ *  by later plans; this shell owns the rail, routing, and footer. */
+export class BuilderView implements SheetComponent {
+  readonly type = "builder";
+  private activeStep = BUILDER_STEPS[0].id;
+
+  render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const root = el.createDiv({ cls: "pc-builder" });
+
+    // Top bar with a live summary.
+    const name = ctx.resolved.definition?.name ?? "New Character";
+    const bar = root.createDiv({ cls: "pc-builder-topbar" });
+    bar.createDiv({ cls: "pc-builder-avatar" });
+    bar.createDiv({ cls: "pc-builder-title", text: `Create Character: ${name}` });
+    const sum = bar.createDiv({ cls: "pc-builder-summary" });
+    const lvl = ctx.derived?.totalLevel ?? 0;
+    sum.createSpan({ cls: "pc-builder-sum-item", text: `Lv ${lvl}` });
+    sum.createSpan({ cls: "pc-builder-sum-item", text: `Prof +${ctx.derived?.proficiencyBonus ?? 2}` });
+
+    const layout = root.createDiv({ cls: "pc-builder-layout" });
+
+    // Step rail.
+    const rail = layout.createDiv({ cls: "pc-builder-rail" });
+    for (const step of BUILDER_STEPS) {
+      const item = rail.createDiv({
+        cls: `pc-builder-step${step.id === this.activeStep ? " active" : ""}`,
+        attr: { "data-step": step.id },
+      });
+      item.createSpan({ cls: "pc-builder-step-label", text: step.label });
+      item.addEventListener("click", () => this.goTo(step.id, el, ctx));
+    }
+
+    // Active step body (placeholder; later plans render the real step here).
+    const main = layout.createDiv({ cls: "pc-builder-main" });
+    const body = main.createDiv({ cls: "pc-builder-body", attr: { "data-step": this.activeStep } });
+    const def = BUILDER_STEPS.find((s) => s.id === this.activeStep)!;
+    body.createDiv({ cls: "pc-builder-step-h", text: def.label });
+    body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
+
+    // Footer.
+    const foot = main.createDiv({ cls: "pc-builder-foot" });
+    const idx = BUILDER_STEPS.findIndex((s) => s.id === this.activeStep);
+    if (idx > 0) {
+      const back = foot.createEl("button", { cls: "pc-builder-back", text: "◂ Back" });
+      back.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx - 1].id, el, ctx));
+    }
+    if (idx < BUILDER_STEPS.length - 1) {
+      const next = foot.createEl("button", { cls: "pc-builder-next mod-cta", text: "Next ▸" });
+      next.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx + 1].id, el, ctx));
+    } else {
+      foot.createEl("button", { cls: "pc-builder-finish mod-cta", text: "✓ Finish & open sheet" });
+    }
+  }
+
+  private goTo(step: string, el: HTMLElement, ctx: ComponentRenderContext): void {
+    this.activeStep = step;
+    el.empty();
+    this.render(el, ctx);
+  }
+}
