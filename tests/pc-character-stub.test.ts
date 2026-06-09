@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildDraftCharacter, buildDraftFileBody } from "../src/modules/pc/builder/character-stub";
 import { characterSchema } from "../src/modules/pc/pc.schema";
+import { extractPCCodeBlock, parsePC } from "../src/modules/pc/pc.parser";
 
 describe("character-stub", () => {
   it("buildDraftCharacter produces a schema-valid class-less draft", () => {
@@ -18,5 +19,35 @@ describe("character-stub", () => {
     expect(body).toContain("```pc");
     expect(body).toMatch(/name:\s*("?)Valeria\1/);
     expect(body.trim().endsWith("```")).toBe(true);
+  });
+
+  it("buildDraftCharacter supports the 2024 edition path", () => {
+    const draft = buildDraftCharacter("Valeria", "2024");
+    const result = characterSchema.safeParse(draft);
+    expect(result.success).toBe(true);
+    expect(draft.edition).toBe("2024");
+  });
+
+  it("falls back to Untitled / untitled for a whitespace-only name", () => {
+    const draft = buildDraftCharacter("   ");
+    expect(draft.name).toBe("Untitled");
+
+    const body = buildDraftFileBody("   ");
+    expect(body).toContain("slug: untitled");
+    // yaml.dump renders the name; accept any quoted/unquoted YAML form of "Untitled".
+    expect(body).toMatch(/name:\s*("?)Untitled\1/);
+  });
+
+  it("buildDraftFileBody round-trips through extractPCCodeBlock + parsePC", () => {
+    const body = buildDraftFileBody("Valeria", "2024");
+    const block = extractPCCodeBlock(body);
+    expect(block).not.toBeNull();
+    const parsed = parsePC(block!.yaml);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.name).toBe("Valeria");
+      expect(parsed.data.edition).toBe("2024");
+      expect(parsed.data.class).toEqual([]);
+    }
   });
 });

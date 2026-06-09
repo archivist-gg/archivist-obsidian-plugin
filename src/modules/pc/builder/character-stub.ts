@@ -1,11 +1,8 @@
+import * as yaml from "js-yaml";
+import { slugify } from "../../../shared/entities/entity-vault-store";
 import { characterSchema } from "../pc.schema";
 import { characterToYaml } from "../pc.yaml-serializer";
 import type { Character } from "../pc.types";
-
-/** Slugify a name for the frontmatter `slug` field. */
-function slugify(name: string): string {
-  return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "untitled";
-}
 
 /** A schema-valid, class-less draft character to start a build from. */
 export function buildDraftCharacter(name: string, edition: "2014" | "2024" = "2014"): Character {
@@ -22,20 +19,14 @@ export function buildDraftCharacter(name: string, edition: "2014" | "2024" = "20
 /** The full markdown file body (frontmatter + ```pc block) for a new draft. */
 export function buildDraftFileBody(name: string, edition: "2014" | "2024" = "2014"): string {
   const draft = buildDraftCharacter(name, edition);
-  const yaml = characterToYaml(draft);
-  const display = name.trim() || "Untitled";
-  return [
-    "---",
-    "archivist: true",
-    "archivist-type: pc",
-    `slug: ${slugify(display)}`,
-    `name: ${display}`,
-    "compendium: Me",
-    "---",
-    "",
-    "```pc",
-    yaml.trimEnd(),
-    "```",
-    "",
-  ].join("\n");
+  const frontmatter: Record<string, unknown> = {
+    archivist: true,
+    "archivist-type": "pc",
+    slug: slugify(draft.name) || "untitled",
+    name: draft.name,
+    compendium: "Me",
+  };
+  const fm = yaml.dump(frontmatter, { lineWidth: -1, noRefs: true, sortKeys: false });
+  const body = characterToYaml(draft).trimEnd();
+  return `---\n${fm}---\n\n\`\`\`pc\n${body}\n\`\`\`\n`;
 }
