@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { BuilderView } from "../src/modules/pc/components/builder-view";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -80,5 +80,48 @@ describe("BuilderView shell", () => {
     const rootB = mountContainer();
     view.render(rootB, ctx());
     expect(rootB.querySelector(".pc-builder-step.active")?.getAttribute("data-step")).toBe("race");
+  });
+
+  it("mounts the race picker in the race step and wires setRace", () => {
+    const root = mountContainer();
+    const setRace = vi.fn();
+    const c = {
+      ...ctx(),
+      editState: { setRace },
+      builderUiState: new Map(),
+      core: {
+        plugin: {},
+        entities: { search: () => [{
+          slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+          data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+        }] },
+        compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
+        modules: { getByEntityType: () => undefined },
+      },
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    expect(root.querySelector(".pc-bpicker")).not.toBeNull();
+    root.querySelector<HTMLElement>(".pc-bpicker-row .pc-btoggle")!.click();
+    expect(setRace).toHaveBeenCalledWith("srd-5e_elf");
+  });
+
+  it("marks the current race (a [[ref]]) as selected in the picker", () => {
+    const root = mountContainer();
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]" } },
+      builderUiState: new Map(),
+      core: {
+        plugin: {},
+        entities: { search: () => [{
+          slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+          data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+        }] },
+        compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
+        modules: { getByEntityType: () => undefined },
+      },
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    expect(root.querySelector(".pc-bpicker-row .pc-btoggle")?.textContent).toBe("✓");
   });
 });

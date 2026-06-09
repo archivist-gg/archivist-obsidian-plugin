@@ -1,5 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { BUILDER_STEPS } from "./builder-steps";
+import { renderEntityPicker } from "./builder/entity-picker";
+import { stripSlug } from "../pc.resolver";
 
 /** The full-screen Character Builder shell. Rendered by renderPCSheet in place
  *  of the sheet body when the character has no class. Step bodies are filled in
@@ -42,7 +44,20 @@ export class BuilderView implements SheetComponent {
     const body = main.createDiv({ cls: "pc-builder-body", attr: { "data-step": activeStep } });
     const def = BUILDER_STEPS.find((s) => s.id === activeStep)!;
     body.createDiv({ cls: "pc-builder-step-h", text: def.label });
-    body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
+    if (def.id === "race" && ctx.core) {
+      // Reference consumer (Plan 2): basic race selection only. Subrace +
+      // racial decision callouts arrive with the full step in Plan 4.
+      renderEntityPicker(body, ctx, {
+        entityType: "race",
+        stateKey: "builder.race-picker",
+        selectedSlug: stripSlug(
+          (ctx.resolved.definition as { race?: string | null } | undefined)?.race ?? null,
+        ),
+        onSelect: (slug) => ctx.editState?.setRace(slug),
+      });
+    } else {
+      body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
+    }
 
     // Footer.
     const foot = main.createDiv({ cls: "pc-builder-foot" });

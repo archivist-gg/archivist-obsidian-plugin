@@ -16,7 +16,12 @@ function opts(classLen: number) {
     derived: { totalLevel: 0, proficiencyBonus: 2, hp: { max: 0 } },
     registry: reg,
     editState: null,
-    core: {} as never,
+    core: {
+      plugin: {},
+      entities: { search: () => [] },
+      compendiums: { getAll: () => [] },
+      modules: { getByEntityType: () => undefined },
+    } as never,
     app: {} as never,
     warnings: [],
   } as never;
