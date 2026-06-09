@@ -151,7 +151,10 @@ export const characterSchema = z.object({
   race: z.string().nullable().default(null),
   subrace: z.string().nullable().default(null),
   background: z.string().nullable().default(null),
-  class: z.array(classEntrySchema).min(1),
+  // Relaxed from .min(1) for build-in-progress drafts: the Builder is the only
+  // producer of class-less files, and recalc degrades gracefully (HP/derivation
+  // fall back with warnings) when no class is present. See SP2 spec §5/§9.
+  class: z.array(classEntrySchema).default([]),
   abilities: z.object({
     str: z.number().int(),
     dex: z.number().int(),

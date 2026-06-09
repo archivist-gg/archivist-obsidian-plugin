@@ -25,7 +25,7 @@ function fullRegistry(): ComponentRegistry {
   return r;
 }
 
-const resolved = { state: {} } as unknown as ResolvedCharacter;
+const resolved = { state: {}, definition: { class: [{}] } } as unknown as ResolvedCharacter;
 const derived = {} as DerivedStats;
 const core = {} as CoreAPI;
 

@@ -1,4 +1,4 @@
-import { WorkspaceLeaf } from "obsidian";
+import { Notice, WorkspaceLeaf } from "obsidian";
 import type { App, ViewState } from "obsidian";
 import { around } from "monkey-around";
 import type { ArchivistModule, CoreAPI, ParseResult } from "../../core/module-api";
@@ -25,17 +25,21 @@ import { FeaturesTab } from "./components/features-tab";
 import { BackgroundTab } from "./components/background-tab";
 import { NotesTab } from "./components/notes-tab";
 import { TabsContainer } from "./components/tabs-container";
+import { BuilderView } from "./components/builder-view";
 import { ClassBlock } from "./blocks/class-block";
 import { SubclassBlock } from "./blocks/subclass-block";
 import { RaceBlock } from "./blocks/race-block";
 import { BackgroundBlock } from "./blocks/background-block";
 import { FeatBlock } from "./blocks/feat-block";
 import { PCSheetView, VIEW_TYPE_PC } from "./pc.view";
+import { buildDraftFileBody } from "./builder/character-stub";
 
 interface HostPlugin {
   _loaded?: boolean;
   registerView: (type: string, factory: (leaf: WorkspaceLeaf) => PCSheetView) => void;
   register: (cb: () => void) => void;
+  addCommand?: (cmd: { id: string; name: string; callback: () => void | Promise<void> }) => void;
+  addRibbonIcon?: (icon: string, title: string, callback: () => void | Promise<void>) => void;
   app: App & {
     metadataCache: {
       getCache: (path: string) => { frontmatter?: Record<string, unknown> } | null;
@@ -68,6 +72,47 @@ export class PCModule implements ArchivistModule {
 
     plugin.registerView(VIEW_TYPE_PC, (leaf) => new PCSheetView(leaf, this));
     this.installViewSwapInterceptor(plugin);
+
+    plugin.addCommand?.({
+      id: "archivist-new-character",
+      name: "New character",
+      callback: () => this.createNewCharacter(plugin),
+    });
+    plugin.addRibbonIcon?.("user-plus", "New character", () => this.createNewCharacter(plugin));
+  }
+
+  /**
+   * Create a class-less draft PC in the configured PlayerCharacters folder and
+   * open it directly as the PC view via setViewState; the view-swap interceptor
+   * can't swap a brand-new file because the metadata cache hasn't indexed its
+   * frontmatter yet. Folder resolution mirrors {@link isInPCFolder} so created
+   * files land where {@link shouldRenderAsPC} looks.
+   */
+  private async createNewCharacter(plugin: HostPlugin): Promise<void> {
+    try {
+      const folder = (plugin.settings?.playerCharactersFolder ?? "PlayerCharacters").replace(/^\/+|\/+$/g, "");
+      const app = plugin.app;
+      // Ensure the folder exists.
+      if (folder && !app.vault.getAbstractFileByPath(folder)) {
+        await app.vault.createFolder(folder).catch(() => undefined);
+      }
+      // Pick a unique "Untitled Character" path.
+      const base = "Untitled Character";
+      let name = base;
+      let n = 2;
+      const pathFor = (nm: string) => (folder ? `${folder}/${nm}.md` : `${nm}.md`);
+      while (app.vault.getAbstractFileByPath(pathFor(name))) name = `${base} ${n++}`;
+      const file = await app.vault.create(pathFor(name), buildDraftFileBody(name));
+      // Open directly as the PC view: the interceptor can't swap a brand-new
+      // file because the metadata cache hasn't indexed its frontmatter yet.
+      await app.workspace.getLeaf(true).setViewState({
+        type: VIEW_TYPE_PC,
+        state: { file: file.path },
+        active: true,
+      });
+    } catch (e) {
+      new Notice(`Failed to create character: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   parseYaml(source: string): ParseResult<Character> {
@@ -174,6 +219,9 @@ export class PCModule implements ArchivistModule {
     r.register(new BackgroundTab(r));
     r.register(new NotesTab());
     r.register(new TabsContainer(r));
+
+    // Character Builder (rendered by renderPCSheet for class-less PCs)
+    r.register(new BuilderView());
   }
 }
 

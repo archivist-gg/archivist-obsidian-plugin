@@ -23,9 +23,9 @@ describe("characterSchema", () => {
     expect(r.success).toBe(true);
   });
 
-  it("rejects a character with no classes", () => {
+  it("accepts a character with no classes (build-in-progress draft)", () => {
     const r = characterSchema.safeParse({ ...minimalValid, class: [] });
-    expect(r.success).toBe(false);
+    expect(r.success).toBe(true);
   });
 
   it("rejects class level above 20", () => {

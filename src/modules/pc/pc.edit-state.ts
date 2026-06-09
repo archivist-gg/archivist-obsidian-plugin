@@ -11,6 +11,15 @@ export interface EditStateContext {
   derived: DerivedStats;
 }
 
+/** Wrap a bare compendium slug as a [[wikilink]]; pass through existing links;
+ *  empty string returns empty. Mirrors the inline wrapping done elsewhere in
+ *  this file for known-spell refs. */
+function toRef(slug: string): string {
+  const s = slug.trim();
+  if (!s) return s;
+  return /^\[\[.+\]\]$/.test(s) ? s : `[[${s}]]`;
+}
+
 /**
  * Centralized mutation surface for the PC sheet. Owned by `PCSheetView`;
  * re-built on every `setViewData`. Each mutation mutates `this.character`
@@ -290,6 +299,135 @@ export class CharacterEditState {
     } else {
       this.character.skills.expertise = exp.filter((s) => s !== skill);
     }
+    this.onChange();
+  }
+
+  // ─── Builder: identity ─────────────────────────────────────────────
+  setName(name: string): void {
+    const n = name.trim();
+    if (!n) return;
+    this.character.name = n;
+    this.onChange();
+  }
+
+  setAlignment(alignment: string | null): void {
+    if (alignment && alignment.trim()) this.character.alignment = alignment.trim();
+    else delete this.character.alignment;
+    this.onChange();
+  }
+
+  setRace(slug: string | null): void {
+    this.character.race = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
+  setSubrace(slug: string | null): void {
+    this.character.subrace = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
+  setBackground(slug: string | null): void {
+    this.character.background = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
+  // ─── Builder: abilities ────────────────────────────────────────────
+  setAbilityMethod(method: Character["ability_method"]): void {
+    this.character.ability_method = method;
+    this.onChange();
+  }
+
+  /** Sets the BASE ability score in `abilities` (distinct from the final-score
+   *  override written by `setScoreOverride`). Racial/ASI bonuses are added on top
+   *  by recalc. */
+  setAbilityBaseScore(ability: Ability, value: number): void {
+    if (!Number.isFinite(value)) return;
+    this.character.abilities[ability] = Math.round(value);
+    this.onChange();
+  }
+
+  // ─── Builder: class entries ────────────────────────────────────────
+  addClass(slug: string, level = 1, subclass: string | null = null): void {
+    this.character.class.push({
+      name: toRef(slug),
+      level: Math.max(1, Math.min(20, Math.round(level))),
+      subclass: subclass ? toRef(subclass) : null,
+      choices: {},
+    });
+    this.onChange();
+  }
+
+  removeClass(index: number): void {
+    if (index < 0 || index >= this.character.class.length) return;
+    this.character.class.splice(index, 1);
+    this.onChange();
+  }
+
+  setClassLevel(index: number, level: number): void {
+    const entry = this.character.class[index];
+    if (!entry || !Number.isFinite(level)) return;
+    entry.level = Math.max(1, Math.min(20, Math.round(level)));
+    this.onChange();
+  }
+
+  setSubclass(index: number, slug: string | null): void {
+    const entry = this.character.class[index];
+    if (!entry) return;
+    entry.subclass = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
+  // ─── Builder: state seeders ────────────────────────────────────────
+  /** Normalize a class entity's hit_die ("d8" | "8" | 8) to a "dN" key. */
+  private dieForClass(slug: string): string | null {
+    const entity = this.registry?.getByTypeAndSlug("class", slug) as { data?: { hit_die?: unknown } } | undefined;
+    const raw = entity?.data?.hit_die;
+    if (raw == null) return null;
+    const n = typeof raw === "number" ? raw : parseInt(String(raw).replace(/^d/i, ""), 10);
+    return Number.isFinite(n) && n > 0 ? `d${n}` : null;
+  }
+
+  /** Fill HP to the derived max, clearing temp HP. Called by the Builder's
+   *  Finish action before opening the finished sheet. */
+  seedHpToMax(): void {
+    const { derived } = this.getContext();
+    const max = derived.hp.max;
+    this.character.state.hp = { current: max, max, temp: 0 };
+    this.onChange();
+  }
+
+  /** Seed `state.hit_dice` from class levels × each class's hit die. Hit dice
+   *  are not auto-derived elsewhere, so the Builder seeds them on Finish.
+   *  Replaces the map wholesale (resets all `used` to 0); intended for a fresh
+   *  draft at Finish, not for live characters. */
+  seedHitDice(): void {
+    const dice: Record<string, { used: number; total: number }> = {};
+    for (const entry of this.character.class) {
+      const die = this.dieForClass(CharacterEditState.bare(entry.name));
+      if (!die) continue;
+      const cur = dice[die] ?? { used: 0, total: 0 };
+      cur.total += entry.level;
+      dice[die] = cur;
+    }
+    this.character.state.hit_dice = dice;
+    this.onChange();
+  }
+
+  /** Populate `class[classIndex].choices[level][key]`. Pass null/undefined to
+   *  clear a key. The Builder uses this for skills/asi/feat/subclass/expertise/
+   *  fighting-style decisions (recalc reads asi from choices[lvl].asi and the
+   *  resolver reads feat from choices[*].feat today; the rest are recorded for
+   *  the ledger + future use). */
+  setChoice(classIndex: number, level: number, key: string, value: unknown): void {
+    const entry = this.character.class[classIndex];
+    if (!entry || !Number.isFinite(level)) return;
+    const lvl = Math.round(level);
+    const choices = entry.choices as Record<number, Record<string, unknown>>;
+    const atLevel = (choices[lvl] ??= {});
+    if (value === undefined || value === null) {
+      delete atLevel[key];
+      if (Object.keys(atLevel).length === 0) delete choices[lvl];
+    } else atLevel[key] = value;
     this.onChange();
   }
 
