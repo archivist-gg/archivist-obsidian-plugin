@@ -388,8 +388,10 @@ export class CharacterEditState {
     const lvl = Math.round(level);
     const choices = entry.choices as Record<number, Record<string, unknown>>;
     const atLevel = (choices[lvl] ??= {});
-    if (value === undefined || value === null) delete atLevel[key];
-    else atLevel[key] = value;
+    if (value === undefined || value === null) {
+      delete atLevel[key];
+      if (Object.keys(atLevel).length === 0) delete choices[lvl];
+    } else atLevel[key] = value;
     this.onChange();
   }
 

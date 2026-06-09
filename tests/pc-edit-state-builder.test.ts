@@ -156,4 +156,25 @@ describe("CharacterEditState — setChoice (SP2 decision data)", () => {
     expect("feat" in lvl4).toBe(false);
     expect(lvl4.asi).toEqual({ dex: 2 });
   });
+
+  it("prunes the empty level-object when its last key is cleared", () => {
+    const { es } = makeState(makeChar());
+    es.addClass("srd-5e_rogue", 9);
+    es.setChoice(0, 4, "feat", "[[x]]");
+    es.setChoice(0, 4, "feat", null);
+    const choices = es.getCharacter().class[0].choices as Record<number, Record<string, unknown>>;
+    expect(4 in choices).toBe(false);
+    expect(Object.keys(choices)).toHaveLength(0);
+  });
+
+  it("out-of-range classIndex / non-finite level are no-ops", () => {
+    const { es, onChange } = makeState(makeChar());
+    es.setChoice(5, 1, "skills", ["x"]); // no class at index 5
+    expect(onChange).not.toHaveBeenCalled();
+    es.addClass("srd-5e_rogue", 9);
+    onChange.mockClear();
+    es.setChoice(0, Number.NaN, "skills", ["x"]); // non-finite level
+    expect(onChange).not.toHaveBeenCalled();
+    expect(es.getCharacter().class[0].choices).toEqual({});
+  });
 });
