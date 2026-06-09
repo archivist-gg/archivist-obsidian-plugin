@@ -36,12 +36,12 @@ const baseOpts = (onSelect = vi.fn()) =>
   ({ entityType: "race", stateKey: "p", selectedSlug: null, onSelect });
 
 describe("renderEntityPicker", () => {
-  it("lists candidates with source tags and an empty-detail hint", () => {
+  it("lists candidates with source tags and leaves the detail pane empty", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
     expect(root.querySelectorAll(".pc-bpicker-row").length).toBe(2);
     expect(root.querySelector(".pc-bpicker-row .pc-bsrc")?.textContent).toBe("SRD 5e");
-    expect(root.querySelector(".pc-bpicker-detail .pc-bpicker-empty")).not.toBeNull();
+    expect(root.querySelector(".pc-bpicker-detail")!.childElementCount).toBe(0);
   });
 
   it("typing filters the list without rebuilding the search input (focus-safe)", () => {
@@ -64,23 +64,29 @@ describe("renderEntityPicker", () => {
     expect(names).toEqual(["Elf"]);
   });
 
-  it("row click focuses (detail pane) without selecting; ＋ selects", () => {
+  it("row click focuses (detail pane) without selecting; the radio toggle selects", () => {
     const root = mountContainer();
     const onSelect = vi.fn();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts(onSelect));
     root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
     expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
     expect(onSelect).not.toHaveBeenCalled();
-    root.querySelector<HTMLElement>(".pc-bpicker-row .pc-btoggle")!.click();
+    const toggle = root.querySelector<HTMLElement>(".pc-bpicker-row .pc-btoggle")!;
+    expect(toggle.textContent).toBe(""); // hollow radio, not ＋
+    toggle.click();
     expect(onSelect).toHaveBeenCalledWith("srd-5e_elf");
   });
 
-  it("the row matching selectedSlug shows ✓ and its block when nothing is focused", () => {
+  it("the row matching selectedSlug shows ✓, the sel class, and its block when nothing is focused", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), selectedSlug: "srd-2024_human" });
     const human = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
       .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Human")!;
     expect(human.querySelector(".pc-btoggle")?.textContent).toBe("✓");
+    expect(human.classList.contains("sel")).toBe(true);
+    const elf = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
+      .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Elf")!;
+    expect(elf.classList.contains("sel")).toBe(false);
     expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Human");
   });
 
@@ -100,7 +106,7 @@ describe("renderEntityPicker", () => {
     expect(root2.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
   });
 
-  it("shows empty hints in both panes when the query matches nothing", () => {
+  it("shows the No-matches list hint and an empty detail pane when the query matches nothing", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
     const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
@@ -108,8 +114,7 @@ describe("renderEntityPicker", () => {
     input.dispatchEvent(new Event("input"));
     expect(root.querySelectorAll(".pc-bpicker-row").length).toBe(0);
     expect(root.querySelector(".pc-bpicker-list .pc-bpicker-empty")?.textContent).toBe("No matches.");
-    expect(root.querySelector(".pc-bpicker-detail .pc-bpicker-empty")?.textContent)
-      .toBe("Select an entry to read it.");
+    expect(root.querySelector(".pc-bpicker-detail")!.childElementCount).toBe(0);
   });
 
   it("stale focus survives a transient filter exclusion", () => {
@@ -120,14 +125,13 @@ describe("renderEntityPicker", () => {
     const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
     input.value = "hum";
     input.dispatchEvent(new Event("input"));
-    expect(root.querySelector(".pc-bpicker-detail .pc-bpicker-empty")?.textContent)
-      .toBe("Select an entry to read it.");
+    expect(root.querySelector(".pc-bpicker-detail")!.childElementCount).toBe(0);
     input.value = "";
     input.dispatchEvent(new Event("input"));
     expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
   });
 
-  it("＋ on an already-selected row is a no-op", () => {
+  it("clicking the toggle on an already-selected row is a no-op", () => {
     const root = mountContainer();
     const onSelect = vi.fn();
     renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(onSelect), selectedSlug: "srd-5e_elf" });

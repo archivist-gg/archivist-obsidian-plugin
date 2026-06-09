@@ -20,7 +20,7 @@ export interface EntityPickerOptions {
   stateKey: string;
   /** Current definition value; its row shows ✓. */
   selectedSlug: string | null;
-  /** Fired by the ＋ toggle. Picker selection is single: picking swaps the
+  /** Fired by the row toggle. Picker selection is single: picking swaps the
    *  previous choice (the caller writes the definition and re-renders). */
   onSelect: (slug: string) => void;
   pinnedEntries?: PinnedEntry[];
@@ -35,8 +35,9 @@ interface PickerUiState {
 
 /** The universal two-pane picker (parent spec §6): searchable, compendium-
  *  filtered list left; the focused entity's real block right. Row click
- *  focuses; the ＋/✓ toggle selects. Persistent shell: the search input is
- *  built once and never rebuilt, so typing keeps focus through redraws. */
+ *  focuses; the row radio toggle selects (single-select). Persistent shell:
+ *  the search input is built once and never rebuilt, so typing keeps focus
+ *  through redraws. */
 export function renderEntityPicker(
   parent: HTMLElement,
   ctx: ComponentRenderContext,
@@ -64,8 +65,13 @@ export function renderEntityPicker(
 
   const renderListRow = (e: RegisteredEntity, focusSlug: string | null): void => {
     const isSel = e.slug === opts.selectedSlug;
-    const row = listHost.createDiv({ cls: `pc-bpicker-row${e.slug === focusSlug ? " focus" : ""}` });
-    const toggle = row.createEl("button", { cls: `pc-btoggle${isSel ? " on" : ""}`, text: isSel ? "✓" : "＋" });
+    const cls = `pc-bpicker-row${isSel ? " sel" : ""}${e.slug === focusSlug ? " focus" : ""}`;
+    const row = listHost.createDiv({ cls });
+    // Single-select: the selected row shows ✓; unselected rows show a hollow
+    // radio circle (empty button). The ＋ glyph is reserved for multi-select.
+    const toggle = isSel
+      ? row.createEl("button", { cls: "pc-btoggle on", text: "✓" })
+      : row.createEl("button", { cls: "pc-btoggle", text: "", attr: { title: "Select" } });
     toggle.addEventListener("click", (ev) => {
       ev.stopPropagation();
       if (!isSel) opts.onSelect(e.slug);
@@ -92,10 +98,9 @@ export function renderEntityPicker(
     for (const e of cands) renderListRow(e, focusSlug);
 
     // detailSlug is intentionally NOT cleared when the focused entity is filtered out:
-    // the detail pane shows the hint meanwhile, and focus returns if the filter re-includes it.
+    // the detail pane stays empty meanwhile, and focus returns if the filter re-includes it.
     const focused = focusSlug ? cands.find((c) => c.slug === focusSlug) : undefined;
     if (focused) renderEntityBlock(detail, focused, ctx.core);
-    else detail.createDiv({ cls: "pc-bpicker-empty", text: "Select an entry to read it." });
   };
 
   search.addEventListener("input", () => {
