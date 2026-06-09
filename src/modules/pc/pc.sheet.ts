@@ -45,6 +45,13 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     onActiveTabChange: opts.onActiveTabChange,
   };
 
+  // Class-less character → render the Builder shell instead of the sheet.
+  if ((resolved.definition?.class?.length ?? 0) === 0) {
+    safeRender(sheet, "pc-builder-host", "builder", registry, ctx, { wrap: false });
+    root.scrollTop = prevScroll;
+    return;
+  }
+
   // 1. Hero (AC / HP / HD rendered internally by HeaderSection)
   safeRender(sheet, "pc-hero", "header-section", registry, ctx);
 

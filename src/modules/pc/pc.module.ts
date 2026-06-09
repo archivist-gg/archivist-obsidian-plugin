@@ -25,6 +25,7 @@ import { FeaturesTab } from "./components/features-tab";
 import { BackgroundTab } from "./components/background-tab";
 import { NotesTab } from "./components/notes-tab";
 import { TabsContainer } from "./components/tabs-container";
+import { BuilderView } from "./components/builder-view";
 import { ClassBlock } from "./blocks/class-block";
 import { SubclassBlock } from "./blocks/subclass-block";
 import { RaceBlock } from "./blocks/race-block";
@@ -174,6 +175,9 @@ export class PCModule implements ArchivistModule {
     r.register(new BackgroundTab(r));
     r.register(new NotesTab());
     r.register(new TabsContainer(r));
+
+    // Character Builder (rendered by renderPCSheet for class-less PCs)
+    r.register(new BuilderView());
   }
 }
 
