@@ -1,4 +1,4 @@
-import { WorkspaceLeaf } from "obsidian";
+import { Notice, WorkspaceLeaf } from "obsidian";
 import type { App, ViewState } from "obsidian";
 import { around } from "monkey-around";
 import type { ArchivistModule, CoreAPI, ParseResult } from "../../core/module-api";
@@ -88,21 +88,25 @@ export class PCModule implements ArchivistModule {
    * {@link shouldRenderAsPC} looks.
    */
   private async createNewCharacter(plugin: HostPlugin): Promise<void> {
-    const folder = (plugin.settings?.playerCharactersFolder ?? "PlayerCharacters").replace(/^\/+|\/+$/g, "");
-    const app = plugin.app;
-    // Ensure the folder exists.
-    if (folder && !app.vault.getAbstractFileByPath(folder)) {
-      await app.vault.createFolder(folder).catch(() => undefined);
+    try {
+      const folder = (plugin.settings?.playerCharactersFolder ?? "PlayerCharacters").replace(/^\/+|\/+$/g, "");
+      const app = plugin.app;
+      // Ensure the folder exists.
+      if (folder && !app.vault.getAbstractFileByPath(folder)) {
+        await app.vault.createFolder(folder).catch(() => undefined);
+      }
+      // Pick a unique "Untitled Character" path.
+      const base = "Untitled Character";
+      let name = base;
+      let n = 2;
+      const pathFor = (nm: string) => (folder ? `${folder}/${nm}.md` : `${nm}.md`);
+      while (app.vault.getAbstractFileByPath(pathFor(name))) name = `${base} ${n++}`;
+      const file = await app.vault.create(pathFor(name), buildDraftFileBody(name));
+      // Open it; the view-swap interceptor renders it as the PC Builder.
+      await app.workspace.getLeaf(true).openFile(file);
+    } catch (e) {
+      new Notice(`Failed to create character: ${e instanceof Error ? e.message : String(e)}`);
     }
-    // Pick a unique "Untitled Character" path.
-    const base = "Untitled Character";
-    let name = base;
-    let n = 2;
-    const pathFor = (nm: string) => (folder ? `${folder}/${nm}.md` : `${nm}.md`);
-    while (app.vault.getAbstractFileByPath(pathFor(name))) name = `${base} ${n++}`;
-    const file = await app.vault.create(pathFor(name), buildDraftFileBody(name));
-    // Open it; the view-swap interceptor renders it as the PC Builder.
-    await app.workspace.getLeaf(true).openFile(file);
   }
 
   parseYaml(source: string): ParseResult<Character> {
