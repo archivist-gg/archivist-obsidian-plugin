@@ -99,4 +99,41 @@ describe("renderEntityPicker", () => {
     expect(root2.querySelectorAll(".pc-bpicker-row").length).toBe(1);
     expect(root2.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
   });
+
+  it("shows empty hints in both panes when the query matches nothing", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
+    const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
+    input.value = "zzz";
+    input.dispatchEvent(new Event("input"));
+    expect(root.querySelectorAll(".pc-bpicker-row").length).toBe(0);
+    expect(root.querySelector(".pc-bpicker-list .pc-bpicker-empty")?.textContent).toBe("No matches.");
+    expect(root.querySelector(".pc-bpicker-detail .pc-bpicker-empty")?.textContent)
+      .toBe("Select an entry to read it.");
+  });
+
+  it("stale focus survives a transient filter exclusion", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), baseOpts());
+    root.querySelector<HTMLElement>(".pc-bpicker-row")!.click();
+    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
+    const input = root.querySelector<HTMLInputElement>(".pc-bpicker-search")!;
+    input.value = "hum";
+    input.dispatchEvent(new Event("input"));
+    expect(root.querySelector(".pc-bpicker-detail .pc-bpicker-empty")?.textContent)
+      .toBe("Select an entry to read it.");
+    input.value = "";
+    input.dispatchEvent(new Event("input"));
+    expect(root.querySelector(".pc-bpicker-detail .pc-bblock-fallback")?.textContent).toBe("Elf");
+  });
+
+  it("＋ on an already-selected row is a no-op", () => {
+    const root = mountContainer();
+    const onSelect = vi.fn();
+    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(onSelect), selectedSlug: "srd-5e_elf" });
+    const elf = [...root.querySelectorAll<HTMLElement>(".pc-bpicker-row")]
+      .find((r) => r.querySelector(".pc-bpicker-name")?.textContent === "Elf")!;
+    elf.querySelector<HTMLElement>(".pc-btoggle")!.click();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

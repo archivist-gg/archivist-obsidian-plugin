@@ -91,6 +91,8 @@ export function renderEntityPicker(
     const focusSlug = st.detailSlug ?? opts.selectedSlug;
     for (const e of cands) renderListRow(e, focusSlug);
 
+    // detailSlug is intentionally NOT cleared when the focused entity is filtered out:
+    // the detail pane shows the hint meanwhile, and focus returns if the filter re-includes it.
     const focused = focusSlug ? cands.find((c) => c.slug === focusSlug) : undefined;
     if (focused) renderEntityBlock(detail, focused, ctx.core);
     else detail.createDiv({ cls: "pc-bpicker-empty", text: "Select an entry to read it." });
