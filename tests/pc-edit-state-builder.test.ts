@@ -93,3 +93,38 @@ describe("CharacterEditState — ability mutators (SP2)", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+describe("CharacterEditState — class-entry mutators (SP2)", () => {
+  it("addClass appends a wrapped entry with clamped level and null subclass", () => {
+    const { es } = makeState(makeChar());
+    es.addClass("srd-5e_rogue", 9);
+    const cls = es.getCharacter().class;
+    expect(cls).toHaveLength(1);
+    expect(cls[0]).toMatchObject({ name: "[[srd-5e_rogue]]", level: 9, subclass: null, choices: {} });
+  });
+
+  it("addClass clamps level to 1..20", () => {
+    const { es } = makeState(makeChar());
+    es.addClass("srd-5e_fighter", 99);
+    expect(es.getCharacter().class[0].level).toBe(20);
+  });
+
+  it("setClassLevel and setSubclass update the right entry; removeClass splices", () => {
+    const { es } = makeState(makeChar());
+    es.addClass("srd-5e_rogue", 1);
+    es.addClass("srd-5e_wizard", 1);
+    es.setClassLevel(0, 9);
+    es.setSubclass(0, "srd-5e_soulknife");
+    expect(es.getCharacter().class[0]).toMatchObject({ level: 9, subclass: "[[srd-5e_soulknife]]" });
+    es.removeClass(1);
+    expect(es.getCharacter().class).toHaveLength(1);
+    expect(es.getCharacter().class[0].name).toBe("[[srd-5e_rogue]]");
+  });
+
+  it("out-of-range indices are no-ops", () => {
+    const { es, onChange } = makeState(makeChar());
+    es.setClassLevel(5, 3);
+    es.removeClass(5);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+});

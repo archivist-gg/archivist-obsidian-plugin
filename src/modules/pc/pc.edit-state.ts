@@ -346,6 +346,37 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Builder: class entries ────────────────────────────────────────
+  addClass(slug: string, level = 1, subclass: string | null = null): void {
+    this.character.class.push({
+      name: toRef(slug),
+      level: Math.max(1, Math.min(20, Math.round(level))),
+      subclass: subclass ? toRef(subclass) : null,
+      choices: {},
+    });
+    this.onChange();
+  }
+
+  removeClass(index: number): void {
+    if (index < 0 || index >= this.character.class.length) return;
+    this.character.class.splice(index, 1);
+    this.onChange();
+  }
+
+  setClassLevel(index: number, level: number): void {
+    const entry = this.character.class[index];
+    if (!entry || !Number.isFinite(level)) return;
+    entry.level = Math.max(1, Math.min(20, Math.round(level)));
+    this.onChange();
+  }
+
+  setSubclass(index: number, slug: string | null): void {
+    const entry = this.character.class[index];
+    if (!entry) return;
+    entry.subclass = slug ? toRef(slug) : null;
+    this.onChange();
+  }
+
   // ─── Saves (override mutation) ─────────────────────────────────────
   /**
    * Flip the saving-throw proficient bit against the class-derived baseline.
