@@ -417,6 +417,20 @@ export function renderTextWithInlineTags(
   }
 }
 
+/**
+ * Map the body-only `edition` (or `source`) field to a user-friendly badge
+ * label. The canonical pipeline writes "SRD 5.1" / "SRD 5.2" to source and
+ * "2014" / "2024" to edition; users see "SRD 5e" / "SRD 2024" everywhere
+ * else, so we surface that.
+ */
+export function sourceBadgeText(entity: { source?: string; edition?: string }): string | null {
+  if (entity.edition === "2014") return "SRD 5e";
+  if (entity.edition === "2024") return "SRD 2024";
+  if (entity.source === "SRD 5.1") return "SRD 5e";
+  if (entity.source === "SRD 5.2") return "SRD 2024";
+  return entity.source ?? null;
+}
+
 export function createErrorBlock(
   error: string,
   rawSource: string,
