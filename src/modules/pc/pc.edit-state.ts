@@ -331,6 +331,21 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  // ─── Builder: abilities ────────────────────────────────────────────
+  setAbilityMethod(method: Character["ability_method"]): void {
+    this.character.ability_method = method;
+    this.onChange();
+  }
+
+  /** Sets the BASE ability score in `abilities` (distinct from the final-score
+   *  override written by `setScoreOverride`). Racial/ASI bonuses are added on top
+   *  by recalc. */
+  setAbilityBaseScore(ability: Ability, value: number): void {
+    if (!Number.isFinite(value)) return;
+    this.character.abilities[ability] = Math.round(value);
+    this.onChange();
+  }
+
   // ─── Saves (override mutation) ─────────────────────────────────────
   /**
    * Flip the saving-throw proficient bit against the class-derived baseline.

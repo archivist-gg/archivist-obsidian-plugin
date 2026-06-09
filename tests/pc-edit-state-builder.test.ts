@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
 import { characterSchema } from "../src/modules/pc/pc.schema";
 import type { Character } from "../src/modules/pc/pc.types";
+import type { Ability } from "../src/shared/types";
 
 function makeChar(overrides: Record<string, unknown> = {}): Character {
   return characterSchema.parse({
@@ -64,5 +65,28 @@ describe("CharacterEditState — identity mutators (SP2)", () => {
     expect(es.getCharacter().alignment).toBe("Chaotic Good");
     es.setAlignment(null);
     expect(es.getCharacter().alignment).toBeUndefined();
+  });
+});
+
+describe("CharacterEditState — ability mutators (SP2)", () => {
+  it("setAbilityMethod writes the method", () => {
+    const { es } = makeState(makeChar());
+    es.setAbilityMethod("point-buy");
+    expect(es.getCharacter().ability_method).toBe("point-buy");
+  });
+
+  it("setAbilityBaseScore writes the BASE score (not an override), rounds, fires onChange", () => {
+    const { es, onChange } = makeState(makeChar());
+    es.setAbilityBaseScore("dex" as Ability, 15);
+    expect(es.getCharacter().abilities.dex).toBe(15);
+    expect(es.getCharacter().overrides.scores).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("setAbilityBaseScore ignores non-finite input", () => {
+    const { es, onChange } = makeState(makeChar());
+    es.setAbilityBaseScore("str" as Ability, Number.NaN);
+    expect(es.getCharacter().abilities.str).toBe(10);
+    expect(onChange).not.toHaveBeenCalled();
   });
 });
