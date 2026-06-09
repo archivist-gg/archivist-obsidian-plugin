@@ -102,8 +102,13 @@ export class PCModule implements ArchivistModule {
       const pathFor = (nm: string) => (folder ? `${folder}/${nm}.md` : `${nm}.md`);
       while (app.vault.getAbstractFileByPath(pathFor(name))) name = `${base} ${n++}`;
       const file = await app.vault.create(pathFor(name), buildDraftFileBody(name));
-      // Open it; the view-swap interceptor renders it as the PC Builder.
-      await app.workspace.getLeaf(true).openFile(file);
+      // Open directly as the PC view: the interceptor can't swap a brand-new
+      // file because the metadata cache hasn't indexed its frontmatter yet.
+      await app.workspace.getLeaf(true).setViewState({
+        type: VIEW_TYPE_PC,
+        state: { file: file.path },
+        active: true,
+      });
     } catch (e) {
       new Notice(`Failed to create character: ${e instanceof Error ? e.message : String(e)}`);
     }
