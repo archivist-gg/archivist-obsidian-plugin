@@ -89,4 +89,40 @@ describe("renderSelectionTable", () => {
     });
     expect(root.querySelector(".pc-btable-row .col-source .pc-bsrc")?.textContent).toBe("SRD 5e");
   });
+
+  it("clicking the same row twice collapses the inline entity block", () => {
+    const root = mountContainer();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
+    });
+    const row = root.querySelector<HTMLElement>(".pc-btable-row")!;
+    row.click();
+    expect(root.querySelector(".pc-btable-expand-row")).not.toBeNull();
+    expect(row.classList.contains("pc-row-open")).toBe(true);
+    row.click();
+    expect(root.querySelector(".pc-btable-expand-row")).toBeNull();
+    expect(root.querySelector(".pc-btable-row")!.classList.contains("pc-row-open")).toBe(false);
+  });
+
+  it("renders an empty-state message and no table when there are no candidates", () => {
+    const root = mountContainer();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [], candidates: [], stateKey: "t", selected: new Set(), onToggle: () => {},
+    });
+    expect(root.querySelector(".pc-btable-empty")?.textContent).toBe("No matches.");
+    expect(root.querySelector(".pc-btable")).toBeNull();
+  });
+
+  it("a stale persisted sort index falls back to name-ascending without throwing", () => {
+    const root = mountContainer();
+    const bag = new Map<string, unknown>();
+    bag.set("t", { sortKey: 5, sortDir: "asc", expanded: new Set<string>() });
+    expect(() =>
+      renderSelectionTable(root, ctxWith(bag), {
+        columns: [], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
+      }),
+    ).not.toThrow();
+    const names = [...root.querySelectorAll(".pc-btable-row .col-name")].map((n) => n.textContent);
+    expect(names).toEqual(["Alert", "Brawny"]);
+  });
 });

@@ -18,7 +18,8 @@ export interface SelectionTableOptions {
   /** Extra columns between the built-in Name and Source columns. */
   columns: ColSpec[];
   candidates: RegisteredEntity[];
-  /** builderUiState key (sort + expanded survive full re-renders). */
+  /** builderUiState key (sort + expanded survive full re-renders). Sort state is
+   *  column-index-based: keep the columns array stable for a given key. */
   stateKey: string;
   selected: Set<string>;
   onToggle: (slug: string) => void;
@@ -81,7 +82,8 @@ export function renderSelectionTable(
       });
     }
 
-    const cmp = st.sortKey === "name" ? byName : (opts.columns[st.sortKey].sort ?? byName);
+    const col = typeof st.sortKey === "number" ? opts.columns[st.sortKey] : undefined;
+    const cmp = st.sortKey === "name" ? byName : (col?.sort ?? byName);
     const sorted = [...opts.candidates].sort((a, b) => (st.sortDir === "asc" ? cmp(a, b) : cmp(b, a)));
     for (const e of sorted) renderRow(list, e);
   };
