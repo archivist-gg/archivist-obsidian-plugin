@@ -1,3 +1,4 @@
+import type { App } from "obsidian";
 import type {
   AIToolRegistry,
   ArchivistModule,
@@ -43,8 +44,9 @@ class ItemModule implements ArchivistModule {
     return parseItem(source);
   }
 
-  render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
+  render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const item = data as Item;
+    const app = (ctx.plugin as { app?: App } | undefined)?.app;
     // Stable wrapper held by the host as `rendered`; the async renderer fills
     // it as a child instead of replacing it. If we used placeholder.replaceWith,
     // the host's `rendered` reference would point at a detached node after the
@@ -52,9 +54,15 @@ class ItemModule implements ArchivistModule {
     // view block visible underneath the edit form.
     const wrapper = el.doc.createElement("div");
     el.appendChild(wrapper);
-    void renderItemBlock(item).then((block) => {
-      wrapper.appendChild(block);
-    });
+    void renderItemBlock(item, app)
+      .then((block) => { wrapper.appendChild(block); })
+      .catch((err: unknown) => {
+        console.error("[Archivist] item block render failed", err);
+        wrapper.createDiv({
+          cls: "archivist-block-error",
+          text: `${(data as { name?: string })?.name ?? "Entity"} — block failed to render: ${String(err)}`,
+        });
+      });
     return wrapper;
   }
 

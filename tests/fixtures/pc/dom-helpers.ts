@@ -31,6 +31,16 @@ export function installObsidianDomHelpers(): void {
   // that want to exercise the false path can override via vi.stubGlobal.
   (globalThis as { confirm: () => boolean }).confirm = () => true;
 
+  // Obsidian defines `Node.prototype.doc = ownerDocument || document` at
+  // runtime; module renderers reach for `el.doc.createElement(...)`. jsdom
+  // doesn't provide it, so tests exercising real modules would crash with
+  // "Cannot read properties of undefined (reading 'createElement')" without
+  // this augmentation.
+  Object.defineProperty(HTMLElement.prototype, "doc", {
+    get() { return this.ownerDocument ?? document; },
+    configurable: true,
+  });
+
   const proto = HTMLElement.prototype as unknown as Record<string, unknown>;
 
   proto.createDiv = function (this: HTMLElement, opts?: ElOpts) {

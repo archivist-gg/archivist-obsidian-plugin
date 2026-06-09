@@ -23,6 +23,13 @@ export function renderEntityBlock(
     return host;
   }
   const ctx: RenderContext = { plugin: core.plugin, ctx: null };
-  mod.render(host, parsed.data, ctx);
+  try {
+    mod.render(host, parsed.data, ctx);
+  } catch (err) {
+    // A synchronous crash in the module's render (e.g. a missing DOM helper)
+    // must never leave the pane silently empty — fall back to the name line.
+    console.error("[Archivist] entity block dispatch failed", err);
+    host.createDiv({ cls: "pc-bblock-fallback", text: entity.name });
+  }
   return host;
 }

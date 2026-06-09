@@ -2181,3 +2181,12 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-item-tag.cursed { background: #6b0a0a; color: white; }
 .archivist-item-tag.sentient { background: #4a0a6b; color: white; }
+
+/* Diagnostic shown when an async stat-block render rejects, so the pane is
+   never silently empty. Muted/italic to read as an inline notice, not a block. */
+.archivist-block-error {
+  color: var(--text-error);
+  font-style: italic;
+  font-size: 0.85em;
+  padding: 0.4em 0;
+}
