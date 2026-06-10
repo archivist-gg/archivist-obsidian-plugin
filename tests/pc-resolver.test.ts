@@ -294,7 +294,7 @@ describe("PCResolver", () => {
       .map((rf) => rf.feature.name)).toEqual(["Dueling"]);
   });
 
-  it("does NOT synthesize granted features from origin race traits (Plan 4 scope)", () => {
+  it("synthesizes granted features from origin race traits (origin choices now in scope)", () => {
     const raceWithStyleChoice = {
       slug: "half-elf", name: "Half-Elf", size: "Medium", speed: { walk: 30 },
       traits: [{
@@ -313,8 +313,10 @@ describe("PCResolver", () => {
     char.class = [{ name: "[[fighter]]", level: 1, subclass: null, choices: {} }];
     char.origin_choices = { "race:fey-style": "srd-2024_defense" };
     const { character } = new PCResolver(reg).resolve(char);
-    // Defense was selected on a RACE trait — it must not be synthesized (class/subclass only).
-    expect(character.features.some((rf) => rf.feature.name === "Defense")).toBe(false);
+    // Defense was selected on a RACE trait — origin grants are now synthesized too.
+    const defense = character.features.find((rf) => rf.feature.name === "Defense");
+    expect(defense).toBeDefined();
+    expect(defense?.source).toEqual({ kind: "race", slug: "half-elf" });
   });
 });
 
