@@ -221,6 +221,38 @@ describe("backgroundMergeRule", () => {
     expect(out.feature.description.length).toBeGreaterThan(0);
   });
 
+  it("attaches feature-level and entity-level choices from the overlay (SP2 Plan 3)", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-2024_sage",
+      edition: "2024",
+      kind: "background",
+      base: {
+        key: "srd-2024_sage",
+        name: "Sage",
+        desc: "x",
+        document: { key: "srd-2024", name: "SRD 5.2" },
+        benefits: [{ name: "Researcher", desc: "You know where to find lore.", type: "feature" }],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: {
+        background_features: {
+          sage: {
+            choices: [{ kind: "select-proficiency", id: "sage-tool", count: 1, domain: "tool", from: ["calligrapher's-supplies"] }],
+          },
+        },
+        backgrounds: {
+          sage: {
+            choices: [{ kind: "ability-points", id: "sage-asi", points: 3, max_per: 2 }],
+          },
+        },
+      } as never,
+    };
+    const out = toBackgroundCanonical(canonical);
+    expect((out.feature as { choices?: Array<{ id: string }> }).choices?.[0]?.id).toBe("sage-tool");
+    expect((out as { choices?: Array<{ id: string }> }).choices?.[0]?.id).toBe("sage-asi");
+  });
+
   it("attaches overlay background_features resources onto the background feature by slug", () => {
     const canonical: CanonicalEntry = {
       slug: "srd-5e_haunted-one",
@@ -236,8 +268,10 @@ describe("backgroundMergeRule", () => {
       structured: null,
       activation: null,
       overlay: {
-        "haunted-one": {
-          resources: [{ id: "background:haunted-one", name: "Spectral Defense", max_formula: "1", reset: "long-rest" }],
+        background_features: {
+          "haunted-one": {
+            resources: [{ id: "background:haunted-one", name: "Spectral Defense", max_formula: "1", reset: "long-rest" }],
+          },
         },
       } as never,
     };

@@ -18,4 +18,4 @@ grants_asi:
   pool: [int, wis, cha]
 repeatable: false
 choices:
-  - { kind: skill, count: 1 }
+  - { kind: select-proficiency, id: skills, domain: skill, count: 1 }

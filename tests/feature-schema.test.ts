@@ -22,7 +22,7 @@ describe("featureSchema", () => {
     expect(featureSchema.safeParse({
       name: "Expertise",
       description: "...",
-      choices: [{ kind: "skill-expertise", count: 2, from_proficient: true }],
+      choices: [{ kind: "select-proficiency", id: "expertise", domain: "skill", count: 2, from_proficient: true, expertise: true }],
     }).success).toBe(true);
   });
 

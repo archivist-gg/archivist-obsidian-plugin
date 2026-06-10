@@ -22,4 +22,17 @@ describe("characterSchema — draft (class-less) tolerance", () => {
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.class).toEqual([]);
   });
+
+  it("accepts the builder:true draft marker and keeps it on parse", () => {
+    const result = characterSchema.safeParse({ ...draft, builder: true });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.builder).toBe(true);
+  });
+
+  it("leaves builder absent (no default) when the key is omitted", () => {
+    const result = characterSchema.safeParse(draft);
+    expect(result.success).toBe(true);
+    // No default: a finished/legacy file never gains a builder key on parse.
+    if (result.success) expect(result.data.builder).toBeUndefined();
+  });
 });

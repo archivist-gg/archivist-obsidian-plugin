@@ -122,11 +122,36 @@ const characterStateSchema = z.object({
   attuned_items: z.array(z.string()).optional(),
 });
 
+/** Expected persisted decision shapes: entity slug / inline value (string),
+ *  multi-select slugs (string[]), ability-points allocation (record). The
+ *  trailing `.catch` keeps legacy or hand-edited oddities (null, numbers,
+ *  booleans) loadable — one stray value must never fail the whole character
+ *  parse. `.catch` passes the original input through unchanged on a union
+ *  miss (no value dropped) while keeping the inferred output type narrow so
+ *  `z.unknown()` never leaks into ChoiceValue. Readers narrow defensively
+ *  (ChoiceValue in pc.types). The documented union without the catch-all is:
+ *    z.union([z.string(), z.array(z.string()), z.record(z.string(), z.unknown())]) */
+const choiceValueSchema = z
+  .union([
+    z.string(),
+    z.array(z.string()),
+    z.record(z.string(), z.unknown()),
+  ])
+  .catch((ctx) => ctx.value as string);
+
 const classEntrySchema = z.object({
   name: z.string().min(1),
   level: z.number().int().min(1).max(20),
   subclass: z.string().nullable().default(null),
-  choices: z.record(z.coerce.number().int(), z.unknown()).default({}),
+  // Per-level record is also catch-guarded so a non-object level value
+  // (e.g. `choices: {1: null}` or `{1: "foo"}`) survives the parse instead
+  // of failing the whole character.
+  choices: z
+    .record(
+      z.coerce.number().int(),
+      z.record(z.string(), choiceValueSchema).catch((ctx) => ctx.value as Record<string, never>), // type-only cast; value preserved at runtime
+    )
+    .default({}),
 });
 
 const spellOverrideSchema = z.object({
@@ -147,6 +172,10 @@ const knownSpellEntrySchema = z.union([z.string().min(1), knownSpellObjectSchema
 export const characterSchema = z.object({
   name: z.string().min(1),
   edition: z.enum(["2014", "2024"]),
+  // Builder-draft marker (SP2 Plan 3). NO default: absent on every existing
+  // file and stays absent on save; present+true only while the file is an
+  // unfinished Builder draft. Finish deletes the key (see finishBuild).
+  builder: z.boolean().optional(),
   alignment: z.string().optional(),
   race: z.string().nullable().default(null),
   subrace: z.string().nullable().default(null),
@@ -155,6 +184,9 @@ export const characterSchema = z.object({
   // producer of class-less files, and recalc degrades gracefully (HP/derivation
   // fall back with warnings) when no class is present. See SP2 spec §5/§9.
   class: z.array(classEntrySchema).default([]),
+  // Race/background decision selections, keyed `race:<id>` / `background:<id>`
+  // (SP2 Plan 3). Permissive value arm mirrors per-level class choices.
+  origin_choices: z.record(z.string(), choiceValueSchema).default({}),
   abilities: z.object({
     str: z.number().int(),
     dex: z.number().int(),

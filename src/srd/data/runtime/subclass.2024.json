@@ -23,7 +23,19 @@
         {
           "id": "additional-fighting-style",
           "name": "Additional Fighting Style",
-          "description": "You gain another Fighting Style feat of your choice."
+          "description": "You gain another Fighting Style feat of your choice.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "10": [
@@ -106,7 +118,15 @@
         {
           "id": "bonus-proficiencies",
           "name": "Bonus Proficiencies",
-          "description": "You gain proficiency with three skills of your choice."
+          "description": "You gain proficiency with three skills of your choice.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "skills",
+              "count": 3,
+              "domain": "skill"
+            }
+          ]
         },
         {
           "id": "cutting-words",
@@ -155,7 +175,66 @@
         {
           "id": "elemental-affinity",
           "name": "Elemental Affinity",
-          "description": "Your draconic magic has an affinity with a damage type associated with dragons. Choose one of those types: Acid, Cold, Fire, Lightning, or Poison.\n\nYou have Resistance to that damage type, and when you cast a spell that deals damage of that type, you can add your Charisma modifier to one damage roll of that spell."
+          "description": "Your draconic magic has an affinity with a damage type associated with dragons. Choose one of those types: Acid, Cold, Fire, Lightning, or Poison.\n\nYou have Resistance to that damage type, and when you cast a spell that deals damage of that type, you can add your Charisma modifier to one damage roll of that spell.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "elemental-affinity",
+              "count": 1,
+              "options": [
+                {
+                  "value": "acid",
+                  "label": "Acid",
+                  "effects": [
+                    {
+                      "kind": "resistance",
+                      "damage_type": "Acid"
+                    }
+                  ]
+                },
+                {
+                  "value": "cold",
+                  "label": "Cold",
+                  "effects": [
+                    {
+                      "kind": "resistance",
+                      "damage_type": "Cold"
+                    }
+                  ]
+                },
+                {
+                  "value": "fire",
+                  "label": "Fire",
+                  "effects": [
+                    {
+                      "kind": "resistance",
+                      "damage_type": "Fire"
+                    }
+                  ]
+                },
+                {
+                  "value": "lightning",
+                  "label": "Lightning",
+                  "effects": [
+                    {
+                      "kind": "resistance",
+                      "damage_type": "Lightning"
+                    }
+                  ]
+                },
+                {
+                  "value": "poison",
+                  "label": "Poison",
+                  "effects": [
+                    {
+                      "kind": "resistance",
+                      "damage_type": "Poison"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
@@ -288,14 +367,52 @@
         {
           "id": "hunters-prey",
           "name": "Hunter's Prey",
-          "description": "You gain one of the following feature options of your choice. Whenever you finish a Short or Long Rest, you can replace the chosen option with the other one.\n\n**Colossus Slayer.** Your tenacity can wear down even the most resilient foes. When you hit a creature with a weapon, the weapon deals an extra 1d8 damage to the target if it's missing any of its Hit Points. You can deal this extra damage only once per turn.\n\n**Horde Breaker.** Once on each of your turns when you make an attack with a weapon, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target, that is within the weapon's range, and that you haven't attacked this turn."
+          "description": "You gain one of the following feature options of your choice. Whenever you finish a Short or Long Rest, you can replace the chosen option with the other one.\n\n**Colossus Slayer.** Your tenacity can wear down even the most resilient foes. When you hit a creature with a weapon, the weapon deals an extra 1d8 damage to the target if it's missing any of its Hit Points. You can deal this extra damage only once per turn.\n\n**Horde Breaker.** Once on each of your turns when you make an attack with a weapon, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target, that is within the weapon's range, and that you haven't attacked this turn.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "hunters-prey",
+              "count": 1,
+              "options": [
+                {
+                  "value": "colossus-slayer",
+                  "label": "Colossus Slayer",
+                  "description": "When you hit a creature with a weapon, the weapon deals an extra 1d8 damage to the target if it's missing any of its Hit Points (once per turn)."
+                },
+                {
+                  "value": "horde-breaker",
+                  "label": "Horde Breaker",
+                  "description": "Once on each of your turns when you make an attack with a weapon, you can make another attack with the same weapon against a different creature within 5 feet of the original target and within range."
+                }
+              ]
+            }
+          ]
         }
       ],
       "7": [
         {
           "id": "defensive-tactics",
           "name": "Defensive Tactics",
-          "description": "You gain one of the following feature options of your choice. Whenever you finish a Short or Long Rest, you can replace the chosen option with the other one.\n\n**Escape the Horde.** Opportunity Attacks have Disadvantage against you.\n\n**Multiattack Defense.** When a creature hits you with an attack roll, that creature has Disadvantage on all other attack rolls against you this turn."
+          "description": "You gain one of the following feature options of your choice. Whenever you finish a Short or Long Rest, you can replace the chosen option with the other one.\n\n**Escape the Horde.** Opportunity Attacks have Disadvantage against you.\n\n**Multiattack Defense.** When a creature hits you with an attack roll, that creature has Disadvantage on all other attack rolls against you this turn.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "defensive-tactics",
+              "count": 1,
+              "options": [
+                {
+                  "value": "escape-the-horde",
+                  "label": "Escape the Horde",
+                  "description": "Opportunity Attacks have Disadvantage against you."
+                },
+                {
+                  "value": "multiattack-defense",
+                  "label": "Multiattack Defense",
+                  "description": "When a creature hits you with an attack roll, that creature has Disadvantage on all other attack rolls against you this turn."
+                }
+              ]
+            }
+          ]
         }
       ],
       "11": [

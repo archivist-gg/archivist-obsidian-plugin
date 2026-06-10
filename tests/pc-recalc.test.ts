@@ -301,6 +301,17 @@ describe("recalc (end-to-end)", () => {
     expect(d.skills["sleight-of-hand"].bonus).toBe(9);
   });
 
+  it("folds chosen L1 skill decisions into derived skill proficiency", () => {
+    const c = mkClass("fighter", "d10", 1);
+    (c.entity as { skill_choices: unknown }).skill_choices = { count: 2, from: ["athletics", "perception"] };
+    c.choices = { 1: { skills: ["athletics"] } } as never;
+    const r = withClass(c);
+    r.definition.abilities = { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    const d = recalc(r);
+    expect(d.skills.athletics.proficiency).toBe("proficient");
+    expect(d.skills.perception.proficiency).toBe("none");
+  });
+
   it("derived.conditionEffects is the zero-effects shape when no conditions and exhaustion 0", () => {
     const r = withClass(mkClass("rogue", "d8", 5));
     const d = recalc(r);

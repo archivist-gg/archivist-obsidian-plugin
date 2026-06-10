@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { choiceSchema } from "../../shared/schemas/choice-schema";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const editionEnum = z.enum(["2014", "2024"]);
@@ -70,4 +71,5 @@ export const backgroundEntitySchema = z.object({
   }).nullable(),
   origin_feat: z.string().regex(wikilinkRegex).nullable(),
   suggested_characteristics: suggestedCharSchema.nullable(),
+  choices: z.array(choiceSchema).optional(),
 });

@@ -19,7 +19,14 @@
     "repeatable": true,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 2,
+        "max_per": 2
+      }
+    ]
   },
   {
     "slug": "srd-2024_alert",
@@ -74,7 +81,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ]
   },
   {
     "slug": "srd-2024_boon-of-dimensional-travel",
@@ -96,7 +110,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ]
   },
   {
     "slug": "srd-2024_boon-of-fate",
@@ -118,7 +139,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ]
   },
   {
     "slug": "srd-2024_boon-of-irresistible-offense",
@@ -141,7 +169,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ]
   },
   {
     "slug": "srd-2024_boon-of-spell-recall",
@@ -163,7 +198,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ]
   },
   {
     "slug": "srd-2024_boon-of-the-night-spirit",
@@ -186,7 +228,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": [],
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ],
     "action_cost": "bonus-action"
   },
   {
@@ -209,7 +258,14 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1
+      }
+    ]
   },
   {
     "slug": "srd-2024_defense",
@@ -253,7 +309,18 @@
     "repeatable": false,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "asi",
+        "points": 1,
+        "max_per": 1,
+        "pool": [
+          "str",
+          "dex"
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_great-weapon-fighting",
@@ -288,7 +355,46 @@
     "repeatable": true,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "select-inline",
+        "id": "spell-list",
+        "count": 1,
+        "options": [
+          {
+            "value": "cleric",
+            "label": "Cleric"
+          },
+          {
+            "value": "druid",
+            "label": "Druid"
+          },
+          {
+            "value": "wizard",
+            "label": "Wizard"
+          }
+        ]
+      },
+      {
+        "kind": "select-inline",
+        "id": "spellcasting-ability",
+        "count": 1,
+        "options": [
+          {
+            "value": "int",
+            "label": "Intelligence"
+          },
+          {
+            "value": "wis",
+            "label": "Wisdom"
+          },
+          {
+            "value": "cha",
+            "label": "Charisma"
+          }
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_savage-attacker",
@@ -321,7 +427,75 @@
     "repeatable": true,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "select-inline",
+        "id": "skills-or-tools",
+        "count": 1,
+        "options": [
+          {
+            "value": "three-skills",
+            "label": "Three skills",
+            "choices": [
+              {
+                "kind": "select-proficiency",
+                "id": "skills",
+                "count": 3,
+                "domain": "skill"
+              }
+            ]
+          },
+          {
+            "value": "two-skills-one-tool",
+            "label": "Two skills and one tool",
+            "choices": [
+              {
+                "kind": "select-proficiency",
+                "id": "skills",
+                "count": 2,
+                "domain": "skill"
+              },
+              {
+                "kind": "select-proficiency",
+                "id": "tools",
+                "count": 1,
+                "domain": "tool"
+              }
+            ]
+          },
+          {
+            "value": "one-skill-two-tools",
+            "label": "One skill and two tools",
+            "choices": [
+              {
+                "kind": "select-proficiency",
+                "id": "skills",
+                "count": 1,
+                "domain": "skill"
+              },
+              {
+                "kind": "select-proficiency",
+                "id": "tools",
+                "count": 2,
+                "domain": "tool"
+              }
+            ]
+          },
+          {
+            "value": "three-tools",
+            "label": "Three tools",
+            "choices": [
+              {
+                "kind": "select-proficiency",
+                "id": "tools",
+                "count": 3,
+                "domain": "tool"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_two-weapon-fighting",

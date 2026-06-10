@@ -35,7 +35,7 @@ traits:
   - id: static-sense
     name: "Static Sense"
     description: "Invented — detect electromagnetic disturbances."
-    choices: [{ kind: skill, count: 1, from: [perception, insight] }]
+    choices: [{ kind: select-proficiency, id: skills, domain: skill, count: 1, from: [perception, insight] }]
     effects:
       - { kind: darkvision, range: 60 }
   - id: charge-pulse

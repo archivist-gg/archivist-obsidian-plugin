@@ -1,4 +1,4 @@
-import type { Ability, SkillSlug } from "../../shared/types";
+import type { Ability, SkillSlug, Choice } from "../../shared/types";
 import type { Edition } from "../class/class.types";
 import type { Resource } from "../../shared/types/resource";
 
@@ -35,4 +35,5 @@ export interface BackgroundEntity {
   ability_score_increases: { pool: Ability[] } | null;
   origin_feat: string | null;
   suggested_characteristics: SuggestedCharacteristics | null;
+  choices?: Choice[];
 }

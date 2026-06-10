@@ -10,6 +10,8 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
     "vision", "subspecies_of", "traits", "additional_spells",
     // Schema-required minimal defaults emitted by race-merge (Phase 9).
     "ability_score_increases", "age", "alignment", "languages", "variant_label",
+    // Entity-level decision data (SP2 Plan 3).
+    "choices",
     // Backwards-compat alias.
     "abilities",
   ]),
@@ -17,6 +19,7 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
     "slug", "name", "edition", "source", "description", "size", "speed",
     "vision", "subspecies_of", "traits", "additional_spells",
     "ability_score_increases", "age", "alignment", "languages", "variant_label",
+    "choices",
     "abilities",
   ]),
   class: new Set([
@@ -39,6 +42,8 @@ const FIELDS_TO_KEEP_PER_KIND: Record<string, Set<string>> = {
     "slug", "name", "edition", "source", "description", "skill_proficiencies",
     "tool_proficiencies", "language_proficiencies", "equipment", "feature",
     "ability_score_increases", "origin_feat", "suggested_characteristics",
+    // Entity-level decision data (SP2 Plan 3).
+    "choices",
     // Backwards-compat alias.
     "languages",
   ]),

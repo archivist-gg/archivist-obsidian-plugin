@@ -3,6 +3,7 @@ import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
+import type { Choice } from "../../../src/shared/types/choice";
 
 export type FeatPrerequisite =
   | { kind: "level"; min: number }
@@ -30,7 +31,7 @@ export interface FeatCanonical {
    */
   effects: unknown[];
   grants_asi: { amount: number; pool?: string[] } | null;
-  choices: unknown[];
+  choices: Choice[];
   resources?: Resource[];
 }
 
@@ -38,7 +39,8 @@ export const featMergeRule: MergeRule = {
   kind: "feat",
   pickOverlay(overlay: Overlay, _slug: string): unknown {
     // Per-feat limited-use resources come from the overlay's feat_features map,
-    // keyed by feat-slug. (Action economy still comes from the activation companion.)
+    // keyed by feat-slug. Feature-level choices ride the same map (also keyed by
+    // feat-slug). (Action economy still comes from the activation companion.)
     return overlay.feat_features ?? null;
   },
 };
@@ -49,7 +51,7 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
   const base = entry.base as Record<string, unknown>;
   const structured = entry.structured as Record<string, unknown> | null;
   const activation = entry.activation as Record<string, unknown> | null;
-  const overlay = entry.overlay as Record<string, { resources?: Resource[] }> | null;
+  const overlay = entry.overlay as Record<string, { resources?: Resource[]; choices?: Choice[] }> | null;
   const overlaid = overlay?.[slugifyName(base.name as string)];
 
   const typeStr = ((base.type as string | undefined) ?? "general").toLowerCase();
@@ -78,7 +80,7 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
     // parser accepts these MDs; structured-rules enrichment is a future phase.
     effects: [],
     grants_asi: null,
-    choices: [],
+    choices: overlaid?.choices ?? [],
     ...(overlaid?.resources ? { resources: overlaid.resources } : {}),
   };
 

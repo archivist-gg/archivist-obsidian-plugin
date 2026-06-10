@@ -1,7 +1,9 @@
 export interface ChoiceCalloutOptions {
   label: string;
   choose: number;
-  options: { value: string; label: string }[];
+  /** `inert` chips render with the `.inert` class and never fire onToggle —
+   *  for visible-but-unselectable options (e.g. a slug with no resolved entity). */
+  options: { value: string; label: string; inert?: boolean }[];
   selected: Set<string>;
   onToggle: (value: string) => void;
   /** Shows the amber "!" while nothing is chosen. The flag lives on the
@@ -43,9 +45,10 @@ export function renderChoiceCallout(parent: HTMLElement, opts: ChoiceCalloutOpti
     // choose-1 never mutes: picking another chip is a swap request.
     const muted = !sel && atLimit && opts.choose !== 1;
     const chip = chips.createSpan({
-      cls: `pc-bchoice-chip${sel ? " sel" : ""}${muted ? " muted" : ""}`,
+      cls: `pc-bchoice-chip${sel ? " sel" : ""}${muted ? " muted" : ""}${o.inert ? " inert" : ""}`,
       text: sel ? `✓ ${o.label}` : o.label,
     });
-    if (!muted) chip.addEventListener("click", () => opts.onToggle(o.value));
+    // Inert chips are visible-but-unselectable: no click listener at all.
+    if (!o.inert && !muted) chip.addEventListener("click", () => opts.onToggle(o.value));
   }
 }

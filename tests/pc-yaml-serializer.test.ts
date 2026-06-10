@@ -78,4 +78,22 @@ describe("characterToYaml", () => {
     const dumped = characterToYaml(c);
     expect(dumped).toContain(longNote);
   });
+
+  it("emits NO builder: key when the flag is absent (finished/legacy file)", () => {
+    const c = parseMinimal();
+    expect(c.builder).toBeUndefined();
+    const dumped = characterToYaml(c);
+    // js-yaml omits undefined keys — a finished character carries no builder line.
+    expect(dumped).not.toMatch(/^builder:/m);
+    expect(dumped).not.toContain("builder:");
+  });
+
+  it("emits builder: true while the draft flag is set, and drops it once cleared", () => {
+    const c = parseMinimal();
+    c.builder = true;
+    expect(characterToYaml(c)).toMatch(/^builder:\s*true$/m);
+    // Mirrors finishBuild(): deleting the key removes it from serialization.
+    delete c.builder;
+    expect(characterToYaml(c)).not.toContain("builder:");
+  });
 });

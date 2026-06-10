@@ -68,6 +68,25 @@ describe("CharacterEditState — identity mutators (SP2)", () => {
   });
 });
 
+describe("CharacterEditState — finishBuild (SP2 Plan 3)", () => {
+  it("deletes the builder draft flag and fires onChange", () => {
+    const { es, onChange } = makeState(makeChar({ builder: true }));
+    expect(es.getCharacter().builder).toBe(true);
+    es.finishBuild();
+    expect(es.getCharacter().builder).toBeUndefined();
+    expect("builder" in es.getCharacter()).toBe(false);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("is a safe no-throw on a character with no builder flag (still notifies)", () => {
+    const { es, onChange } = makeState(makeChar());
+    expect(es.getCharacter().builder).toBeUndefined();
+    expect(() => es.finishBuild()).not.toThrow();
+    expect(es.getCharacter().builder).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("CharacterEditState — ability mutators (SP2)", () => {
   it("setAbilityMethod writes the method", () => {
     const { es } = makeState(makeChar());

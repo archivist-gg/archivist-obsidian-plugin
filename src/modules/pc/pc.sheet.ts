@@ -39,10 +39,14 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
   root.empty();
   const sheet = root.createDiv({ cls: "archivist-pc-sheet" });
 
-  // Class-less character → Builder shell (see branch below). Suppress the
-  // warnings banner there: a draft has no race/speed yet, so the warnings are
-  // expected noise mid-creation rather than something to surface.
-  const isBuilder = (resolved.definition?.class?.length ?? 0) === 0;
+  // Builder draft → Builder shell (see branch below). A file is a draft while
+  // it carries `builder: true` (set by the draft stub, cleared by Finish), which
+  // keeps the Builder up after the Class step adds a class. The class-less OR is
+  // kept as a fallback so legacy drafts written before the flag still open the
+  // Builder. Suppress the warnings banner here: a draft has no race/speed yet, so
+  // the warnings are expected noise mid-creation rather than something to surface.
+  const isBuilder =
+    resolved.definition?.builder === true || (resolved.definition?.class?.length ?? 0) === 0;
 
   if (!isBuilder && warnings.length > 0) renderWarnings(sheet, warnings);
 

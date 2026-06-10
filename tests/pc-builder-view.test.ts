@@ -45,6 +45,42 @@ describe("BuilderView shell", () => {
     expect(root.querySelector(".pc-builder-finish")).not.toBeNull();
   });
 
+  it("Finish carries no theme-accent mod-cta class, and nor does Next", () => {
+    const root = mountContainer();
+    new BuilderView().render(root, ctx());
+    const next = root.querySelector(".pc-builder-next");
+    expect(next).not.toBeNull();
+    expect(next?.classList.contains("mod-cta")).toBe(false);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    const finish = root.querySelector(".pc-builder-finish");
+    expect(finish?.classList.contains("mod-cta")).toBe(false);
+  });
+
+  it("Finish is disabled with a title hint while the character has no class", () => {
+    const root = mountContainer();
+    new BuilderView().render(root, ctx()); // ctx() has class: []
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    const finish = root.querySelector<HTMLButtonElement>(".pc-builder-finish")!;
+    expect(finish.disabled).toBe(true);
+    expect(finish.title).toMatch(/class/i);
+  });
+
+  it("Finish is enabled and calls editState.finishBuild() once a class is chosen", () => {
+    const root = mountContainer();
+    const finishBuild = vi.fn();
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState: { finishBuild },
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    const finish = root.querySelector<HTMLButtonElement>(".pc-builder-finish")!;
+    expect(finish.disabled).toBe(false);
+    finish.click();
+    expect(finishBuild).toHaveBeenCalledTimes(1);
+  });
+
   it("hides Back on the first step and the Back button returns to the previous step", () => {
     const root = mountContainer();
     new BuilderView().render(root, ctx());

@@ -39,17 +39,27 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a greataxe or (b) any martial melee weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) two handaxes or (b) any simple weapon"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a greataxe or (*b*) any martial melee weapon",
-          "(*a*) two handaxes or (*b*) any simple weapon",
-          "An explorer’s pack and four javelins"
+          "An explorer's pack and four javelins"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Primal Path",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -310,14 +320,58 @@
         {
           "id": "primal-path",
           "name": "Primal Path",
-          "description": "At 3rd level, you choose a path that shapes the nature of your rage. Choose the Path of the Berserker or the Path of the Totem Warrior, both detailed at the end of the class description. Your choice grants you features at 3rd level and again at 6th, 10th, and 14th levels."
+          "description": "At 3rd level, you choose a path that shapes the nature of your rage. Choose the Path of the Berserker or the Path of the Totem Warrior, both detailed at the end of the class description. Your choice grants you features at 3rd level and again at 6th, 10th, and 14th levels.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -343,7 +397,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -364,7 +451,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -385,7 +505,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -406,7 +559,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -479,18 +665,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a rapier, (b) a longsword, or (c) any simple weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a diplomat's pack or (b) an entertainer's pack"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a lute or (b) any other musical instrument"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a rapier, (*b*) a longsword, or (*c*) any simple weapon",
-          "(*a*) a diplomat’s pack or (*b*) an entertainer’s pack",
-          "(*a*) a lute or (*b*) any other musical instrument",
           "Leather armor and a dagger"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Bard College",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -849,19 +1050,73 @@
         {
           "id": "bard-college",
           "name": "Bard College",
-          "description": "At 3rd level, you delve into the advanced techniques of a bard college of your choice: the College of Lore or the College of Valor, both detailed at the end of the class description. Your choice grants you features at 3rd level and again at 6th and 14th level."
+          "description": "At 3rd level, you delve into the advanced techniques of a bard college of your choice: the College of Lore or the College of Valor, both detailed at the end of the class description. Your choice grants you features at 3rd level and again at 6th and 14th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "At 3rd level, choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 10th level, you can choose another two skill proficiencies to gain this benefit."
+          "description": "At 3rd level, choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 10th level, you can choose another two skill proficiencies to gain this benefit.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -903,7 +1158,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -938,7 +1226,17 @@
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "At 3rd level, choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 10th level, you can choose another two skill proficiencies to gain this benefit."
+          "description": "At 3rd level, choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 10th level, you can choose another two skill proficiencies to gain this benefit.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         },
         {
           "id": "magical-secrets",
@@ -950,7 +1248,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -994,7 +1325,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -1015,7 +1379,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -1066,19 +1463,39 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a mace or (b) a warhammer (if proficient)"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) scale mail, (b) leather armor, or (c) chain mail (if proficient)"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a priest's pack or (b) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a mace or (*b*) a warhammer (if proficient)",
-          "(*a*) scale mail, (*b*) leather armor, or (*c*) chain mail (if proficient)",
-          "(*a*) a light crossbow and 20 bolts or (*b*) any simple weapon",
-          "(*a*) a priest’s pack or (*b*) an explorer’s pack",
           "A shield and a holy symbol"
         ]
       }
     ],
     "spellcasting": null,
-    "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_level": 1,
+    "subclass_feature_name": "Divine Domain",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -1365,7 +1782,18 @@
         {
           "id": "divine-domain",
           "name": "Divine Domain",
-          "description": "Choose one domain related to your deity, such as  Life. Each domain is detailed at the end of the class  description, and each one provides examples of gods  associated with it. Your choice grants you domain  spells and other features when you choose it at 1st  level. It also grants you additional ways to use Channel Divinity when you gain that feature at 2nd  level, and additional benefits at 6th, 8th, and 17th  levels.\r\n\r\n### Domain Spells\r\nEach domain has a list of spells—its domain spells—that you gain at the cleric levels noted in the domain  description. Once you gain a domain spell, you always have it prepared, and it doesn’t count against the number of spells you can prepare each day. \r\nIf you have a domain spell that doesn’t appear on the cleric spell list, the spell is nonetheless a cleric spell for you."
+          "description": "Choose one domain related to your deity, such as  Life. Each domain is detailed at the end of the class  description, and each one provides examples of gods  associated with it. Your choice grants you domain  spells and other features when you choose it at 1st  level. It also grants you additional ways to use Channel Divinity when you gain that feature at 2nd  level, and additional benefits at 6th, 8th, and 17th  levels.\r\n\r\n### Domain Spells\r\nEach domain has a list of spells—its domain spells—that you gain at the cleric levels noted in the domain  description. Once you gain a domain spell, you always have it prepared, and it doesn’t count against the number of spells you can prepare each day. \r\nIf you have a domain spell that doesn’t appear on the cleric spell list, the spell is nonetheless a cleric spell for you.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -1402,7 +1830,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -1441,7 +1902,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "destroy-undead",
@@ -1474,7 +1968,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -1513,7 +2040,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -1581,17 +2141,27 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a wooden shield or (b) any simple weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a scimitar or (b) any simple melee weapon"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a wooden shield or (*b*) any simple weapon",
-          "(*a*) a scimitar or (*b*) any simple melee weapon",
-          "Leather armor, an explorer’s pack, and a druidic focus"
+          "Leather armor, an explorer's pack, and a druidic focus"
         ]
       }
     ],
     "spellcasting": null,
-    "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_level": 2,
+    "subclass_feature_name": "Druid Circle",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -1882,7 +2452,18 @@
         {
           "id": "druid-circle",
           "name": "Druid Circle",
-          "description": "At 2nd level, you choose to identify with a circle of druids such as the Circle of the Land. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level."
+          "description": "At 2nd level, you choose to identify with a circle of druids such as the Circle of the Land. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "wild-shape",
@@ -1902,7 +2483,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "wild-shape",
@@ -1922,7 +2536,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "wild-shape",
@@ -1942,14 +2589,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -1963,7 +2676,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -2020,18 +2766,33 @@
     },
     "starting_equipment": [
       {
-        "kind": "fixed",
-        "items": [
-          "(*a*) chain mail or (*b*) leather armor, longbow, and 20 arrows",
-          "(*a*) a martial weapon and a shield or (*b*) two martial weapons",
-          "(*a*) a light crossbow and 20 bolts or (*b*) two handaxes",
-          "(*a*) a dungeoneer’s pack or (*b*) an explorer’s pack"
+        "kind": "choice",
+        "options": [
+          "(a) chain mail or (b) leather armor, longbow, and 20 arrows"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a martial weapon and a shield or (b) two martial weapons"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a light crossbow and 20 bolts or (b) two handaxes"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a dungeoneer's pack or (b) an explorer's pack"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Martial Archetype",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -2155,7 +2916,19 @@
         {
           "id": "fighting-style",
           "name": "Fighting Style",
-          "description": "You adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again.\r\n\r\n###Archery\r\n\r\nYou gain a +2 bonus to attack rolls you make with ranged weapons.\r\n\r\n###Defense\r\n\r\nWhile you are wearing armor, you gain a +1 bonus to AC.\r\n\r\n###Dueling\r\n\r\nWhen you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.\r\n\r\n###Great Weapon Fighting\r\n\r\nWhen you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll, even if the new roll is a 1 or a 2. The weapon must have the two-handed or versatile property for you to gain this benefit.\r\n\r\n###Protection\r\n\r\nWhen a creature you can see attacks a target other than you that is within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield.\r\n\r\n###Two-Weapon Fighting\r\n\r\nWhen you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack."
+          "description": "You adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again.\r\n\r\n###Archery\r\n\r\nYou gain a +2 bonus to attack rolls you make with ranged weapons.\r\n\r\n###Defense\r\n\r\nWhile you are wearing armor, you gain a +1 bonus to AC.\r\n\r\n###Dueling\r\n\r\nWhen you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.\r\n\r\n###Great Weapon Fighting\r\n\r\nWhen you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll, even if the new roll is a 1 or a 2. The weapon must have the two-handed or versatile property for you to gain this benefit.\r\n\r\n###Protection\r\n\r\nWhen a creature you can see attacks a target other than you that is within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield.\r\n\r\n###Two-Weapon Fighting\r\n\r\nWhen you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         },
         {
           "id": "second-wind",
@@ -2196,14 +2969,58 @@
         {
           "id": "martial-archetype",
           "name": "Martial Archetype",
-          "description": "At 3rd level, you choose an archetype that you strive to emulate in your combat styles and techniques, such as Champion. The archetype you choose grants you features at 3rd level and again at 7th, 10th, 15th, and 18th level."
+          "description": "At 3rd level, you choose an archetype that you strive to emulate in your combat styles and techniques, such as Champion. The archetype you choose grants you features at 3rd level and again at 7th, 10th, 15th, and 18th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -2217,14 +3034,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -2245,7 +3128,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -2259,14 +3175,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -2299,7 +3281,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -2356,17 +3371,27 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a shortsword or (b) any simple weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a dungeoneer's pack or (b) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a shortsword or (*b*) any simple weapon",
-          "(*a*) a dungeoneer’s pack or (*b*) an explorer’s pack",
           "10 darts"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Monastic Tradition",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -2623,14 +3648,58 @@
         {
           "id": "monastic-tradition",
           "name": "Monastic Tradition",
-          "description": "When you reach 3rd level, you commit yourself to a monastic tradition such as the Way of the Open Hand. Your tradition grants you features at 3rd level and again at 6th, 11th, and 17th level."
+          "description": "When you reach 3rd level, you commit yourself to a monastic tradition such as the Way of the Open Hand. Your tradition grants you features at 3rd level and again at 6th, 11th, and 17th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "slow-fall",
@@ -2673,7 +3742,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
@@ -2687,7 +3789,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -2715,7 +3850,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -2729,7 +3897,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -2784,18 +3985,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a martial weapon and a shield or (b) two martial weapons"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) five javelins or (b) any simple melee weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a priest's pack or (b) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a martial weapon and a shield or (*b*) two martial weapons",
-          "(*a*) five javelins or (*b*) any simple melee weapon",
-          "(*a*) a priest’s pack or (*b*) an explorer’s pack",
           "Chain mail and a holy symbol"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Sacred Oath",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -3040,7 +4256,19 @@
         {
           "id": "fighting-style",
           "name": "Fighting Style",
-          "description": "At 2nd level, you adopt a style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again.\r\n\r\n### Defense\r\n\r\nWhile you are wearing armor, you gain a +1 bonus to AC.\r\n\r\n### Dueling\r\n\r\nWhen you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.\r\n\r\n### Great Weapon Fighting\r\n\r\nWhen you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll. The weapon must have the two-handed or versatile property for you to gain this benefit.\r\n\r\n### Protection\r\n\r\nWhen a creature you can see attacks a target other than you that is within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield."
+          "description": "At 2nd level, you adopt a style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again.\r\n\r\n### Defense\r\n\r\nWhile you are wearing armor, you gain a +1 bonus to AC.\r\n\r\n### Dueling\r\n\r\nWhen you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.\r\n\r\n### Great Weapon Fighting\r\n\r\nWhen you roll a 1 or 2 on a damage die for an attack you make with a melee weapon that you are wielding with two hands, you can reroll the die and must use the new roll. The weapon must have the two-handed or versatile property for you to gain this benefit.\r\n\r\n### Protection\r\n\r\nWhen a creature you can see attacks a target other than you that is within 5 feet of you, you can use your reaction to impose disadvantage on the attack roll. You must be wielding a shield.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -3057,14 +4285,58 @@
         {
           "id": "sacred-oath",
           "name": "Sacred Oath",
-          "description": "When you reach 3rd level, you swear the oath that binds you as a paladin forever. Up to this time you have been in a preparatory stage, committed to the path but not yet sworn to it. Now you choose the Oath of Devotion, the Oath of the Ancients, or the Oath of Vengeance, all detailed at the end of the class description.\r\n\r\nYour choice grants you features at 3rd level and again at 7th, 15th, and 20th level. Those features include oath spells and the Channel Divinity feature.\r\n\r\n### Oath Spells\r\n\r\nEach oath has a list of associated spells. You gain access to these spells at the levels specified in the oath description. Once you gain access to an oath spell, you always have it prepared. Oath spells don't count against the number of spells you can prepare each day.\r\n\r\nIf you gain an oath spell that doesn't appear on the paladin spell list, the spell is nonetheless a paladin spell for you.\r\n\r\n### Channel Divinity\r\n\r\nYour oath allows you to channel divine energy to fuel magical effects. Each Channel Divinity option provided by your oath explains how to use it.\r\n\r\nWhen you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again.\r\n\r\nSome Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your paladin spell save DC."
+          "description": "When you reach 3rd level, you swear the oath that binds you as a paladin forever. Up to this time you have been in a preparatory stage, committed to the path but not yet sworn to it. Now you choose the Oath of Devotion, the Oath of the Ancients, or the Oath of Vengeance, all detailed at the end of the class description.\r\n\r\nYour choice grants you features at 3rd level and again at 7th, 15th, and 20th level. Those features include oath spells and the Channel Divinity feature.\r\n\r\n### Oath Spells\r\n\r\nEach oath has a list of associated spells. You gain access to these spells at the levels specified in the oath description. Once you gain access to an oath spell, you always have it prepared. Oath spells don't count against the number of spells you can prepare each day.\r\n\r\nIf you gain an oath spell that doesn't appear on the paladin spell list, the spell is nonetheless a paladin spell for you.\r\n\r\n### Channel Divinity\r\n\r\nYour oath allows you to channel divine energy to fuel magical effects. Each Channel Divinity option provided by your oath explains how to use it.\r\n\r\nWhen you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again.\r\n\r\nSome Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your paladin spell save DC.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -3085,7 +4357,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
@@ -3106,7 +4411,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
@@ -3128,7 +4466,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -3147,7 +4518,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ]
     },
@@ -3196,18 +4600,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) scale mail or (b) leather armor"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) two shortswords or (b) two simple melee weapons"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a dungeoneer's pack or (b) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) scale mail or (*b*) leather armor",
-          "(*a*) two shortswords or (*b*) two simple melee weapons",
-          "(*a*) a dungeoneer’s pack or (*b*) an explorer’s pack",
           "A longbow and a quiver of 20 arrows"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Ranger Archetype",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -3448,19 +4867,139 @@
         {
           "id": "favored-enemy",
           "name": "Favored Enemy",
-          "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\r\n\r\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\r\n\r\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\r\n\r\nWhen you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all.\r\n\r\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures."
+          "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\r\n\r\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\r\n\r\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\r\n\r\nWhen you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all.\r\n\r\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "favored-enemy",
+              "count": 1,
+              "options": [
+                {
+                  "value": "aberrations",
+                  "label": "Aberrations"
+                },
+                {
+                  "value": "beasts",
+                  "label": "Beasts"
+                },
+                {
+                  "value": "celestials",
+                  "label": "Celestials"
+                },
+                {
+                  "value": "constructs",
+                  "label": "Constructs"
+                },
+                {
+                  "value": "dragons",
+                  "label": "Dragons"
+                },
+                {
+                  "value": "elementals",
+                  "label": "Elementals"
+                },
+                {
+                  "value": "fey",
+                  "label": "Fey"
+                },
+                {
+                  "value": "fiends",
+                  "label": "Fiends"
+                },
+                {
+                  "value": "giants",
+                  "label": "Giants"
+                },
+                {
+                  "value": "monstrosities",
+                  "label": "Monstrosities"
+                },
+                {
+                  "value": "oozes",
+                  "label": "Oozes"
+                },
+                {
+                  "value": "plants",
+                  "label": "Plants"
+                },
+                {
+                  "value": "undead",
+                  "label": "Undead"
+                },
+                {
+                  "value": "humanoids",
+                  "label": "Humanoids (two races)"
+                }
+              ]
+            },
+            {
+              "kind": "select-proficiency",
+              "id": "languages",
+              "count": 1,
+              "domain": "language"
+            }
+          ]
         },
         {
           "id": "natural-explorer",
           "name": "Natural Explorer",
-          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you're proficient in.\r\n\r\nWhile traveling for an hour or more in your favored terrain, you gain the following benefits:\r\n\r\n* Difficult terrain doesn't slow your group's travel.\r\n* Your group can't become lost except by magical means.\r\n* Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger.\r\n* If you are traveling alone, you can move stealthily at a normal pace.\r\n* When you forage, you find twice as much food as you normally would.\r\n* While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. \r\n\r\nYou choose additional favored terrain types at 6th and 10th level."
+          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you're proficient in.\r\n\r\nWhile traveling for an hour or more in your favored terrain, you gain the following benefits:\r\n\r\n* Difficult terrain doesn't slow your group's travel.\r\n* Your group can't become lost except by magical means.\r\n* Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger.\r\n* If you are traveling alone, you can move stealthily at a normal pace.\r\n* When you forage, you find twice as much food as you normally would.\r\n* While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. \r\n\r\nYou choose additional favored terrain types at 6th and 10th level.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "favored-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "2": [
         {
           "id": "fighting-style",
           "name": "Fighting Style",
-          "description": "At 2nd level, you adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again.\r\n\r\n### Archery\r\n\r\nYou gain a +2 bonus to attack rolls you make with ranged weapons.\r\n\r\n### Defense\r\n\r\nWhile you are wearing armor, you gain a +1 bonus to AC.\r\n\r\n### Dueling\r\n\r\nWhen you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.\r\n\r\n### Two-Weapon Fighting\r\n\r\nWhen you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack."
+          "description": "At 2nd level, you adopt a particular style of fighting as your specialty. Choose one of the following options. You can't take a Fighting Style option more than once, even if you later get to choose again.\r\n\r\n### Archery\r\n\r\nYou gain a +2 bonus to attack rolls you make with ranged weapons.\r\n\r\n### Defense\r\n\r\nWhile you are wearing armor, you gain a +1 bonus to AC.\r\n\r\n### Dueling\r\n\r\nWhen you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.\r\n\r\n### Two-Weapon Fighting\r\n\r\nWhen you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -3477,14 +5016,58 @@
         {
           "id": "ranger-archetype",
           "name": "Ranger Archetype",
-          "description": "At 3rd level, you choose an archetype that you strive to emulate: Hunter or Beast Master, both detailed at the end of the class description. Your choice grants you features at 3rd level and again at 7th, 11th, and 15th level."
+          "description": "At 3rd level, you choose an archetype that you strive to emulate: Hunter or Beast Master, both detailed at the end of the class description. Your choice grants you features at 3rd level and again at 7th, 11th, and 15th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -3498,19 +5081,160 @@
         {
           "id": "favored-enemy",
           "name": "Favored Enemy",
-          "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\r\n\r\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\r\n\r\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\r\n\r\nWhen you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all.\r\n\r\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures."
+          "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\r\n\r\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\r\n\r\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\r\n\r\nWhen you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all.\r\n\r\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "favored-enemy",
+              "count": 1,
+              "options": [
+                {
+                  "value": "aberrations",
+                  "label": "Aberrations"
+                },
+                {
+                  "value": "beasts",
+                  "label": "Beasts"
+                },
+                {
+                  "value": "celestials",
+                  "label": "Celestials"
+                },
+                {
+                  "value": "constructs",
+                  "label": "Constructs"
+                },
+                {
+                  "value": "dragons",
+                  "label": "Dragons"
+                },
+                {
+                  "value": "elementals",
+                  "label": "Elementals"
+                },
+                {
+                  "value": "fey",
+                  "label": "Fey"
+                },
+                {
+                  "value": "fiends",
+                  "label": "Fiends"
+                },
+                {
+                  "value": "giants",
+                  "label": "Giants"
+                },
+                {
+                  "value": "monstrosities",
+                  "label": "Monstrosities"
+                },
+                {
+                  "value": "oozes",
+                  "label": "Oozes"
+                },
+                {
+                  "value": "plants",
+                  "label": "Plants"
+                },
+                {
+                  "value": "undead",
+                  "label": "Undead"
+                },
+                {
+                  "value": "humanoids",
+                  "label": "Humanoids (two races)"
+                }
+              ]
+            },
+            {
+              "kind": "select-proficiency",
+              "id": "languages",
+              "count": 1,
+              "domain": "language"
+            }
+          ]
         },
         {
           "id": "natural-explorer",
           "name": "Natural Explorer",
-          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you're proficient in.\r\n\r\nWhile traveling for an hour or more in your favored terrain, you gain the following benefits:\r\n\r\n* Difficult terrain doesn't slow your group's travel.\r\n* Your group can't become lost except by magical means.\r\n* Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger.\r\n* If you are traveling alone, you can move stealthily at a normal pace.\r\n* When you forage, you find twice as much food as you normally would.\r\n* While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. \r\n\r\nYou choose additional favored terrain types at 6th and 10th level."
+          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you're proficient in.\r\n\r\nWhile traveling for an hour or more in your favored terrain, you gain the following benefits:\r\n\r\n* Difficult terrain doesn't slow your group's travel.\r\n* Your group can't become lost except by magical means.\r\n* Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger.\r\n* If you are traveling alone, you can move stealthily at a normal pace.\r\n* When you forage, you find twice as much food as you normally would.\r\n* While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. \r\n\r\nYou choose additional favored terrain types at 6th and 10th level.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "favored-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "lands-stride",
@@ -3527,21 +5251,162 @@
         {
           "id": "natural-explorer",
           "name": "Natural Explorer",
-          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you're proficient in.\r\n\r\nWhile traveling for an hour or more in your favored terrain, you gain the following benefits:\r\n\r\n* Difficult terrain doesn't slow your group's travel.\r\n* Your group can't become lost except by magical means.\r\n* Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger.\r\n* If you are traveling alone, you can move stealthily at a normal pace.\r\n* When you forage, you find twice as much food as you normally would.\r\n* While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. \r\n\r\nYou choose additional favored terrain types at 6th and 10th level."
+          "description": "You are particularly familiar with one type of natural environment and are adept at traveling and surviving in such regions. Choose one type of favored terrain: arctic, coast, desert, forest, grassland, mountain, or swamp. When you make an Intelligence or Wisdom check related to your favored terrain, your proficiency bonus is doubled if you are using a skill that you're proficient in.\r\n\r\nWhile traveling for an hour or more in your favored terrain, you gain the following benefits:\r\n\r\n* Difficult terrain doesn't slow your group's travel.\r\n* Your group can't become lost except by magical means.\r\n* Even when you are engaged in another activity while traveling (such as foraging, navigating, or tracking), you remain alert to danger.\r\n* If you are traveling alone, you can move stealthily at a normal pace.\r\n* When you forage, you find twice as much food as you normally would.\r\n* While tracking other creatures, you also learn their exact number, their sizes, and how long ago they passed through the area. \r\n\r\nYou choose additional favored terrain types at 6th and 10th level.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "favored-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "12": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
         {
           "id": "favored-enemy",
           "name": "Favored Enemy",
-          "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\r\n\r\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\r\n\r\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\r\n\r\nWhen you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all.\r\n\r\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures."
+          "description": "Beginning at 1st level, you have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\r\n\r\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\r\n\r\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\r\n\r\nWhen you gain this feature, you also learn one language of your choice that is spoken by your favored enemies, if they speak one at all.\r\n\r\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "favored-enemy",
+              "count": 1,
+              "options": [
+                {
+                  "value": "aberrations",
+                  "label": "Aberrations"
+                },
+                {
+                  "value": "beasts",
+                  "label": "Beasts"
+                },
+                {
+                  "value": "celestials",
+                  "label": "Celestials"
+                },
+                {
+                  "value": "constructs",
+                  "label": "Constructs"
+                },
+                {
+                  "value": "dragons",
+                  "label": "Dragons"
+                },
+                {
+                  "value": "elementals",
+                  "label": "Elementals"
+                },
+                {
+                  "value": "fey",
+                  "label": "Fey"
+                },
+                {
+                  "value": "fiends",
+                  "label": "Fiends"
+                },
+                {
+                  "value": "giants",
+                  "label": "Giants"
+                },
+                {
+                  "value": "monstrosities",
+                  "label": "Monstrosities"
+                },
+                {
+                  "value": "oozes",
+                  "label": "Oozes"
+                },
+                {
+                  "value": "plants",
+                  "label": "Plants"
+                },
+                {
+                  "value": "undead",
+                  "label": "Undead"
+                },
+                {
+                  "value": "humanoids",
+                  "label": "Humanoids (two races)"
+                }
+              ]
+            },
+            {
+              "kind": "select-proficiency",
+              "id": "languages",
+              "count": 1,
+              "domain": "language"
+            }
+          ]
         },
         {
           "id": "vanish",
@@ -3553,7 +5418,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -3567,7 +5465,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -3633,18 +5564,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a rapier or (b) a shortsword"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a shortbow and quiver of 20 arrows or (b) a shortsword"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a burglar's pack, (b) a dungeoneer's pack, or (c) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a rapier or (*b*) a shortsword",
-          "(*a*) a shortbow and quiver of 20 arrows or (*b*) a shortsword",
-          "(*a*) a burglar’s pack, (*b*) a dungeoneer’s pack, or (*c*) an explorer’s pack",
-          "(*a*) Leather armor, two daggers, and thieves’ tools"
+          "Leather armor, two daggers, and thieves' tools"
         ]
       }
     ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Roguish Archetype",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -3830,7 +5776,17 @@
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves' tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 6th level, you can choose two more of your proficiencies (in skills or with thieves' tools) to gain this benefit."
+          "description": "At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves' tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 6th level, you can choose two more of your proficiencies (in skills or with thieves' tools) to gain this benefit.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         },
         {
           "id": "sneak-attack",
@@ -3854,14 +5810,58 @@
         {
           "id": "roguish-archetype",
           "name": "Roguish Archetype",
-          "description": "At 3rd level, you choose an archetype that you emulate in the exercise of your rogue abilities: Thief, Assassin, or Arcane Trickster, all detailed at the end of the class description. Your archetype choice grants you features at 3rd level and then again at 9th, 13th, and 17th level."
+          "description": "At 3rd level, you choose an archetype that you emulate in the exercise of your rogue abilities: Thief, Assassin, or Arcane Trickster, all detailed at the end of the class description. Your archetype choice grants you features at 3rd level and then again at 9th, 13th, and 17th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -3875,7 +5875,17 @@
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves' tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 6th level, you can choose two more of your proficiencies (in skills or with thieves' tools) to gain this benefit."
+          "description": "At 1st level, choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves' tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\r\n\r\nAt 6th level, you can choose two more of your proficiencies (in skills or with thieves' tools) to gain this benefit.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         }
       ],
       "7": [
@@ -3889,14 +5899,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "11": [
@@ -3910,7 +5986,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
@@ -3931,7 +6040,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -3945,7 +6087,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -3997,18 +6172,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a component pouch or (b) an arcane focus"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a dungeoneer's pack or (b) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a light crossbow and 20 bolts or (*b*) any simple weapon",
-          "(*a*) a component pouch or (*b*) an arcane focus",
-          "(*a*) a dungeoneer’s pack or (*b*) an explorer’s pack",
           "Two daggers"
         ]
       }
     ],
     "spellcasting": null,
-    "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_level": 1,
+    "subclass_feature_name": "Sorcerous Origin",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -4327,7 +6517,18 @@
         {
           "id": "sorcerous-origin",
           "name": "Sorcerous Origin",
-          "description": "Choose a sorcerous origin, which describes the source of your innate magical power: Draconic Bloodline or Wild Magic, both detailed at the end of the class description.\r\n\r\nYour choice grants you features when you choose it at 1st level and again at 6th, 14th, and 18th level."
+          "description": "Choose a sorcerous origin, which describes the source of your innate magical power: Draconic Bloodline or Wild Magic, both detailed at the end of the class description.\r\n\r\nYour choice grants you features when you choose it at 1st level and again at 6th, 14th, and 18th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -4346,56 +6547,257 @@
         {
           "id": "metamagic",
           "name": "Metamagic",
-          "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\r\n\r\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted.\r\n\r\n### Careful Spell\r\n\r\nWhen you cast a spell that forces other creatures to make a saving throw, you can protect some of those creatures from the spell's full force. To do so, you spend 1 sorcery point and choose a number of those creatures up to your Charisma modifier (minimum of one creature). A chosen creature automatically succeeds on its saving throw against the spell.\r\n\r\n### Distant Spell\r\n\r\nWhen you cast a spell that has a range of 5 feet or greater, you can spend 1 sorcery point to double the range of the spell.\r\n\r\nWhen you cast a spell that has a range of touch, you can spend 1 sorcery point to make the range of the spell 30 feet.\r\n\r\n### Empowered Spell\r\n\r\nWhen you roll damage for a spell, you can spend 1 sorcery point to reroll a number of the damage dice up to your Charisma modifier (minimum of one). You must use the new rolls.\r\n\r\nYou can use Empowered Spell even if you have already used a different Metamagic option during the casting of the spell.\r\n\r\n### Extended Spell\r\n\r\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 sorcery point to double its duration, to a maximum duration of 24 hours.\r\n\r\n### Heightened Spell\r\n\r\nWhen you cast a spell that forces a creature to make a saving throw to resist its effects, you can spend 3 sorcery points to give one target of the spell disadvantage on its first saving throw made against the spell.\r\n\r\n### Quickened Spell\r\n\r\nWhen you cast a spell that has a casting time of 1 action, you can spend 2 sorcery points to change the casting time to 1 bonus action for this casting.\r\n\r\n### Subtle Spell\r\n\r\nWhen you cast a spell, you can spend 1 sorcery point to cast it without any somatic or verbal components.\r\n\r\n### Twinned Spell\r\n\r\nWhen you cast a spell that targets only one creature and doesn't have a range of self, you can spend a number of sorcery points equal to the spell's level to target a second creature in range with the same spell (1 sorcery point if the spell is a cantrip).\r\n\r\nTo be eligible, a spell must be incapable of targeting more than one creature at the spell's current level. For example, magic missile and scorching ray aren't eligible, but ray of frost and chromatic orb are."
+          "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\r\n\r\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted.\r\n\r\n### Careful Spell\r\n\r\nWhen you cast a spell that forces other creatures to make a saving throw, you can protect some of those creatures from the spell's full force. To do so, you spend 1 sorcery point and choose a number of those creatures up to your Charisma modifier (minimum of one creature). A chosen creature automatically succeeds on its saving throw against the spell.\r\n\r\n### Distant Spell\r\n\r\nWhen you cast a spell that has a range of 5 feet or greater, you can spend 1 sorcery point to double the range of the spell.\r\n\r\nWhen you cast a spell that has a range of touch, you can spend 1 sorcery point to make the range of the spell 30 feet.\r\n\r\n### Empowered Spell\r\n\r\nWhen you roll damage for a spell, you can spend 1 sorcery point to reroll a number of the damage dice up to your Charisma modifier (minimum of one). You must use the new rolls.\r\n\r\nYou can use Empowered Spell even if you have already used a different Metamagic option during the casting of the spell.\r\n\r\n### Extended Spell\r\n\r\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 sorcery point to double its duration, to a maximum duration of 24 hours.\r\n\r\n### Heightened Spell\r\n\r\nWhen you cast a spell that forces a creature to make a saving throw to resist its effects, you can spend 3 sorcery points to give one target of the spell disadvantage on its first saving throw made against the spell.\r\n\r\n### Quickened Spell\r\n\r\nWhen you cast a spell that has a casting time of 1 action, you can spend 2 sorcery points to change the casting time to 1 bonus action for this casting.\r\n\r\n### Subtle Spell\r\n\r\nWhen you cast a spell, you can spend 1 sorcery point to cast it without any somatic or verbal components.\r\n\r\n### Twinned Spell\r\n\r\nWhen you cast a spell that targets only one creature and doesn't have a range of self, you can spend a number of sorcery points equal to the spell's level to target a second creature in range with the same spell (1 sorcery point if the spell is a cantrip).\r\n\r\nTo be eligible, a spell must be incapable of targeting more than one creature at the spell's current level. For example, magic missile and scorching ray aren't eligible, but ray of frost and chromatic orb are.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "metamagic",
+              "count": 2,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "metamagic",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
         {
           "id": "metamagic",
           "name": "Metamagic",
-          "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\r\n\r\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted.\r\n\r\n### Careful Spell\r\n\r\nWhen you cast a spell that forces other creatures to make a saving throw, you can protect some of those creatures from the spell's full force. To do so, you spend 1 sorcery point and choose a number of those creatures up to your Charisma modifier (minimum of one creature). A chosen creature automatically succeeds on its saving throw against the spell.\r\n\r\n### Distant Spell\r\n\r\nWhen you cast a spell that has a range of 5 feet or greater, you can spend 1 sorcery point to double the range of the spell.\r\n\r\nWhen you cast a spell that has a range of touch, you can spend 1 sorcery point to make the range of the spell 30 feet.\r\n\r\n### Empowered Spell\r\n\r\nWhen you roll damage for a spell, you can spend 1 sorcery point to reroll a number of the damage dice up to your Charisma modifier (minimum of one). You must use the new rolls.\r\n\r\nYou can use Empowered Spell even if you have already used a different Metamagic option during the casting of the spell.\r\n\r\n### Extended Spell\r\n\r\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 sorcery point to double its duration, to a maximum duration of 24 hours.\r\n\r\n### Heightened Spell\r\n\r\nWhen you cast a spell that forces a creature to make a saving throw to resist its effects, you can spend 3 sorcery points to give one target of the spell disadvantage on its first saving throw made against the spell.\r\n\r\n### Quickened Spell\r\n\r\nWhen you cast a spell that has a casting time of 1 action, you can spend 2 sorcery points to change the casting time to 1 bonus action for this casting.\r\n\r\n### Subtle Spell\r\n\r\nWhen you cast a spell, you can spend 1 sorcery point to cast it without any somatic or verbal components.\r\n\r\n### Twinned Spell\r\n\r\nWhen you cast a spell that targets only one creature and doesn't have a range of self, you can spend a number of sorcery points equal to the spell's level to target a second creature in range with the same spell (1 sorcery point if the spell is a cantrip).\r\n\r\nTo be eligible, a spell must be incapable of targeting more than one creature at the spell's current level. For example, magic missile and scorching ray aren't eligible, but ray of frost and chromatic orb are."
+          "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\r\n\r\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted.\r\n\r\n### Careful Spell\r\n\r\nWhen you cast a spell that forces other creatures to make a saving throw, you can protect some of those creatures from the spell's full force. To do so, you spend 1 sorcery point and choose a number of those creatures up to your Charisma modifier (minimum of one creature). A chosen creature automatically succeeds on its saving throw against the spell.\r\n\r\n### Distant Spell\r\n\r\nWhen you cast a spell that has a range of 5 feet or greater, you can spend 1 sorcery point to double the range of the spell.\r\n\r\nWhen you cast a spell that has a range of touch, you can spend 1 sorcery point to make the range of the spell 30 feet.\r\n\r\n### Empowered Spell\r\n\r\nWhen you roll damage for a spell, you can spend 1 sorcery point to reroll a number of the damage dice up to your Charisma modifier (minimum of one). You must use the new rolls.\r\n\r\nYou can use Empowered Spell even if you have already used a different Metamagic option during the casting of the spell.\r\n\r\n### Extended Spell\r\n\r\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 sorcery point to double its duration, to a maximum duration of 24 hours.\r\n\r\n### Heightened Spell\r\n\r\nWhen you cast a spell that forces a creature to make a saving throw to resist its effects, you can spend 3 sorcery points to give one target of the spell disadvantage on its first saving throw made against the spell.\r\n\r\n### Quickened Spell\r\n\r\nWhen you cast a spell that has a casting time of 1 action, you can spend 2 sorcery points to change the casting time to 1 bonus action for this casting.\r\n\r\n### Subtle Spell\r\n\r\nWhen you cast a spell, you can spend 1 sorcery point to cast it without any somatic or verbal components.\r\n\r\n### Twinned Spell\r\n\r\nWhen you cast a spell that targets only one creature and doesn't have a range of self, you can spend a number of sorcery points equal to the spell's level to target a second creature in range with the same spell (1 sorcery point if the spell is a cantrip).\r\n\r\nTo be eligible, a spell must be incapable of targeting more than one creature at the spell's current level. For example, magic missile and scorching ray aren't eligible, but ray of frost and chromatic orb are.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "metamagic",
+              "count": 2,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "metamagic",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "12": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
         {
           "id": "metamagic",
           "name": "Metamagic",
-          "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\r\n\r\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted.\r\n\r\n### Careful Spell\r\n\r\nWhen you cast a spell that forces other creatures to make a saving throw, you can protect some of those creatures from the spell's full force. To do so, you spend 1 sorcery point and choose a number of those creatures up to your Charisma modifier (minimum of one creature). A chosen creature automatically succeeds on its saving throw against the spell.\r\n\r\n### Distant Spell\r\n\r\nWhen you cast a spell that has a range of 5 feet or greater, you can spend 1 sorcery point to double the range of the spell.\r\n\r\nWhen you cast a spell that has a range of touch, you can spend 1 sorcery point to make the range of the spell 30 feet.\r\n\r\n### Empowered Spell\r\n\r\nWhen you roll damage for a spell, you can spend 1 sorcery point to reroll a number of the damage dice up to your Charisma modifier (minimum of one). You must use the new rolls.\r\n\r\nYou can use Empowered Spell even if you have already used a different Metamagic option during the casting of the spell.\r\n\r\n### Extended Spell\r\n\r\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 sorcery point to double its duration, to a maximum duration of 24 hours.\r\n\r\n### Heightened Spell\r\n\r\nWhen you cast a spell that forces a creature to make a saving throw to resist its effects, you can spend 3 sorcery points to give one target of the spell disadvantage on its first saving throw made against the spell.\r\n\r\n### Quickened Spell\r\n\r\nWhen you cast a spell that has a casting time of 1 action, you can spend 2 sorcery points to change the casting time to 1 bonus action for this casting.\r\n\r\n### Subtle Spell\r\n\r\nWhen you cast a spell, you can spend 1 sorcery point to cast it without any somatic or verbal components.\r\n\r\n### Twinned Spell\r\n\r\nWhen you cast a spell that targets only one creature and doesn't have a range of self, you can spend a number of sorcery points equal to the spell's level to target a second creature in range with the same spell (1 sorcery point if the spell is a cantrip).\r\n\r\nTo be eligible, a spell must be incapable of targeting more than one creature at the spell's current level. For example, magic missile and scorching ray aren't eligible, but ray of frost and chromatic orb are."
+          "description": "At 3rd level, you gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\r\n\r\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted.\r\n\r\n### Careful Spell\r\n\r\nWhen you cast a spell that forces other creatures to make a saving throw, you can protect some of those creatures from the spell's full force. To do so, you spend 1 sorcery point and choose a number of those creatures up to your Charisma modifier (minimum of one creature). A chosen creature automatically succeeds on its saving throw against the spell.\r\n\r\n### Distant Spell\r\n\r\nWhen you cast a spell that has a range of 5 feet or greater, you can spend 1 sorcery point to double the range of the spell.\r\n\r\nWhen you cast a spell that has a range of touch, you can spend 1 sorcery point to make the range of the spell 30 feet.\r\n\r\n### Empowered Spell\r\n\r\nWhen you roll damage for a spell, you can spend 1 sorcery point to reroll a number of the damage dice up to your Charisma modifier (minimum of one). You must use the new rolls.\r\n\r\nYou can use Empowered Spell even if you have already used a different Metamagic option during the casting of the spell.\r\n\r\n### Extended Spell\r\n\r\nWhen you cast a spell that has a duration of 1 minute or longer, you can spend 1 sorcery point to double its duration, to a maximum duration of 24 hours.\r\n\r\n### Heightened Spell\r\n\r\nWhen you cast a spell that forces a creature to make a saving throw to resist its effects, you can spend 3 sorcery points to give one target of the spell disadvantage on its first saving throw made against the spell.\r\n\r\n### Quickened Spell\r\n\r\nWhen you cast a spell that has a casting time of 1 action, you can spend 2 sorcery points to change the casting time to 1 bonus action for this casting.\r\n\r\n### Subtle Spell\r\n\r\nWhen you cast a spell, you can spend 1 sorcery point to cast it without any somatic or verbal components.\r\n\r\n### Twinned Spell\r\n\r\nWhen you cast a spell that targets only one creature and doesn't have a range of self, you can spend a number of sorcery points equal to the spell's level to target a second creature in range with the same spell (1 sorcery point if the spell is a cantrip).\r\n\r\nTo be eligible, a spell must be incapable of targeting more than one creature at the spell's current level. For example, magic missile and scorching ray aren't eligible, but ray of frost and chromatic orb are.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "metamagic",
+              "count": 2,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "metamagic",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "19": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -4446,18 +6848,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a component pouch or (b) an arcane focus"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a scholar's pack or (b) a dungeoneer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a light crossbow and 20 bolts or (*b*) any simple weapon",
-          "(*a*) a component pouch or (*b*) an arcane focus",
-          "(*a*) a scholar’s pack or (*b*) a dungeoneer’s pack",
           "Leather armor, any simple weapon, and two daggers"
         ]
       }
     ],
     "spellcasting": null,
-    "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_level": 1,
+    "subclass_feature_name": "Otherworldly Patron",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -4711,7 +7128,18 @@
         {
           "id": "otherworldly-patron",
           "name": "Otherworldly Patron",
-          "description": "At 1st level, you have struck a bargain with an otherworldly being of your choice: the Archfey, the Fiend, or the Great Old One, each of which is detailed at the end of the class description. Your choice grants you features at 1st level and again at 6th, 10th, and 14th level."
+          "description": "At 1st level, you have struck a bargain with an otherworldly being of your choice: the Archfey, the Fiend, or the Great Old One, each of which is detailed at the end of the class description. Your choice grants you features at 1st level and again at 6th, 10th, and 14th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "pact-magic",
@@ -4723,28 +7151,130 @@
         {
           "id": "eldritch-invocations",
           "name": "Eldritch Invocations",
-          "description": "In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability.\r\n\r\nAt 2nd level, you gain two eldritch invocations of your choice. Your invocation options are detailed at the end of the class description. When you gain certain warlock levels, you gain additional invocations of your choice, as shown in the Invocations Known column of the Warlock table.\r\n\r\nAdditionally, when you gain a level in this class, you can choose one of the invocations you know and replace it with another invocation that you could learn at that level."
+          "description": "In your study of occult lore, you have unearthed eldritch invocations, fragments of forbidden knowledge that imbue you with an abiding magical ability.\r\n\r\nAt 2nd level, you gain two eldritch invocations of your choice. Your invocation options are detailed at the end of the class description. When you gain certain warlock levels, you gain additional invocations of your choice, as shown in the Invocations Known column of the Warlock table.\r\n\r\nAdditionally, when you gain a level in this class, you can choose one of the invocations you know and replace it with another invocation that you could learn at that level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "invocation",
+              "count": 2,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "invocation",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "3": [
         {
           "id": "pact-boon",
           "name": "Pact Boon",
-          "description": "At 3rd level, your otherworldly patron bestows a gift upon you for your loyal service. You gain one of the following features of your choice.\r\n\r\n### Pact of the Chain\r\n\r\nYou learn the find familiar spell and can cast it as a ritual. The spell doesn't count against your number of spells known.\r\n\r\nWhen you cast the spell, you can choose one of the normal forms for your familiar or one of the following special forms: imp, pseudodragon, quasit, or sprite.\r\n\r\nAdditionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its reaction.\r\n\r\n### Pact of the Blade\r\n\r\nYou can use your action to create a pact weapon in your empty hand. You can choose the form that this melee weapon takes each time you create it. You are proficient with it while you wield it. This weapon counts as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.\r\n\r\nYour pact weapon disappears if it is more than 5 feet away from you for 1 minute or more. It also disappears if you use this feature again, if you dismiss the weapon (no action required), or if you die.\r\n\r\nYou can transform one magic weapon into your pact weapon by performing a special ritual while you hold the weapon. You perform the ritual over the course of 1 hour, which can be done during a short rest. You can then dismiss the weapon, shunting it into an extradimensional space, and it appears whenever you create your pact weapon thereafter. You can't affect an artifact or a sentient weapon in this way. The weapon ceases being your pact weapon if you die, if you perform the 1-hour ritual on a different weapon, or if you use a 1-hour ritual to break your bond to it. The weapon appears at your feet if it is in the extradimensional space when the bond breaks.\r\n\r\n### Pact of the Tome\r\n\r\nYour patron gives you a grimoire called a Book of Shadows. When you gain this feature, choose three cantrips from any class's spell list (the three needn't be from the same list). While the book is on your person, you can cast those cantrips at will. They don't count against your number of cantrips known. If they don't appear on the warlock spell list, they are nonetheless warlock spells for you.\r\n\r\nIf you lose your Book of Shadows, you can perform a 1-hour ceremony to receive a replacement from your patron. This ceremony can be performed during a short or long rest, and it destroys the previous book. The book turns to ash when you die."
+          "description": "At 3rd level, your otherworldly patron bestows a gift upon you for your loyal service. You gain one of the following features of your choice.\r\n\r\n### Pact of the Chain\r\n\r\nYou learn the find familiar spell and can cast it as a ritual. The spell doesn't count against your number of spells known.\r\n\r\nWhen you cast the spell, you can choose one of the normal forms for your familiar or one of the following special forms: imp, pseudodragon, quasit, or sprite.\r\n\r\nAdditionally, when you take the Attack action, you can forgo one of your own attacks to allow your familiar to make one attack of its own with its reaction.\r\n\r\n### Pact of the Blade\r\n\r\nYou can use your action to create a pact weapon in your empty hand. You can choose the form that this melee weapon takes each time you create it. You are proficient with it while you wield it. This weapon counts as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.\r\n\r\nYour pact weapon disappears if it is more than 5 feet away from you for 1 minute or more. It also disappears if you use this feature again, if you dismiss the weapon (no action required), or if you die.\r\n\r\nYou can transform one magic weapon into your pact weapon by performing a special ritual while you hold the weapon. You perform the ritual over the course of 1 hour, which can be done during a short rest. You can then dismiss the weapon, shunting it into an extradimensional space, and it appears whenever you create your pact weapon thereafter. You can't affect an artifact or a sentient weapon in this way. The weapon ceases being your pact weapon if you die, if you perform the 1-hour ritual on a different weapon, or if you use a 1-hour ritual to break your bond to it. The weapon appears at your feet if it is in the extradimensional space when the bond breaks.\r\n\r\n### Pact of the Tome\r\n\r\nYour patron gives you a grimoire called a Book of Shadows. When you gain this feature, choose three cantrips from any class's spell list (the three needn't be from the same list). While the book is on your person, you can cast those cantrips at will. They don't count against your number of cantrips known. If they don't appear on the warlock spell list, they are nonetheless warlock spells for you.\r\n\r\nIf you lose your Book of Shadows, you can perform a 1-hour ceremony to receive a replacement from your patron. This ceremony can be performed during a short or long rest, and it destroys the previous book. The book turns to ash when you die.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "pact-boon",
+              "count": 1,
+              "options": [
+                {
+                  "value": "pact-of-the-chain",
+                  "label": "Pact of the Chain",
+                  "description": "You learn the Find Familiar spell and can cast it as a ritual; you can choose special familiar forms (imp, pseudodragon, quasit, or sprite). When you take the Attack action, you can forgo one of your attacks to let your familiar make one attack of its own with its reaction."
+                },
+                {
+                  "value": "pact-of-the-blade",
+                  "label": "Pact of the Blade",
+                  "description": "You can use your action to create a pact weapon in your empty hand, choosing its form each time. You are proficient with it, and it counts as magical. You can also transform one magic weapon into your pact weapon."
+                },
+                {
+                  "value": "pact-of-the-tome",
+                  "label": "Pact of the Tome",
+                  "description": "Your patron gives you a Book of Shadows. Choose three cantrips from any class's spell list; while the book is on your person you can cast those cantrips at will (they don't count against your cantrips known)."
+                }
+              ]
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "11": [
@@ -4758,7 +7288,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -4786,7 +7349,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [
@@ -4846,18 +7442,33 @@
     },
     "starting_equipment": [
       {
+        "kind": "choice",
+        "options": [
+          "(a) a quarterstaff or (b) a dagger"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a component pouch or (b) an arcane focus"
+        ]
+      },
+      {
+        "kind": "choice",
+        "options": [
+          "(a) a scholar's pack or (b) an explorer's pack"
+        ]
+      },
+      {
         "kind": "fixed",
         "items": [
-          "(*a*) a quarterstaff or (*b*) a dagger",
-          "(*a*) a component pouch or (*b*) an arcane focus",
-          "(*a*) a scholar’s pack or (*b*) an explorer’s pack",
           "A spellbook"
         ]
       }
     ],
     "spellcasting": null,
-    "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_level": 2,
+    "subclass_feature_name": "Arcane Tradition",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -5161,35 +7772,178 @@
         {
           "id": "arcane-tradition",
           "name": "Arcane Tradition",
-          "description": "When you reach 2nd level, you choose an arcane tradition, shaping your practice of magic through one of eight schools: Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, or Transmutation, all detailed at the end of the class description.\r\n\r\nYour choice grants you features at 2nd level and again at 6th, 10th, and 14th level."
+          "description": "When you reach 2nd level, you choose an arcane tradition, shaping your practice of magic through one of eight schools: Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, or Transmutation, all detailed at the end of the class description.\r\n\r\nYour choice grants you features at 2nd level and again at 6th, 10th, and 14th level.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "12": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -5203,7 +7957,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature."
+          "description": "When you reach 4th level, and again at 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can't increase an ability score above 20 using this feature.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "20": [

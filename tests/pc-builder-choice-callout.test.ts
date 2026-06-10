@@ -83,6 +83,23 @@ describe("renderChoiceCallout (N1)", () => {
     expect(onToggle).toHaveBeenCalledWith("stealth");
   });
 
+  it("renders an inert option with the .inert class and ignores clicks", () => {
+    const root = mountContainer();
+    const onToggle = vi.fn();
+    const options = [
+      { value: "athletics", label: "Athletics" },
+      { value: "ghost-walk", label: "Ghost Walk (missing)", inert: true },
+    ];
+    renderChoiceCallout(root, { label: "Skills", choose: 1, options, selected: new Set(), onToggle });
+    const chips = root.querySelectorAll<HTMLElement>(".pc-bchoice-chip");
+    expect(chips[1].classList.contains("inert")).toBe(true);
+    chips[1].click();
+    expect(onToggle).not.toHaveBeenCalled();
+    // a normal chip in the same callout still fires
+    chips[0].click();
+    expect(onToggle).toHaveBeenCalledWith("athletics");
+  });
+
   it("shows the amber ! only when required and empty", () => {
     const root = mountContainer();
     renderChoiceCallout(root, { label: "Skills", choose: 2, options: OPTS, selected: new Set(), onToggle: () => {}, required: true });

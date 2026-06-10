@@ -197,6 +197,52 @@ describe("featMergeRule", () => {
     expect(out.repeatable).toBe(true);
   });
 
+  it("emits overlay feat choices when present, and [] when absent (SP2 Plan 3)", () => {
+    const withChoices: CanonicalEntry = {
+      slug: "srd-2024_magic-initiate",
+      edition: "2024",
+      kind: "feat",
+      base: {
+        key: "magic-initiate",
+        name: "Magic Initiate",
+        desc: "You learn spells.",
+        document: { key: "srd-2024", name: "SRD 5.2" },
+        type: "Origin",
+        has_prerequisite: false,
+        benefits: [{ desc: "Learn two cantrips and a 1st-level spell." }],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: {
+        "magic-initiate": {
+          choices: [{ kind: "select-entity", id: "mi-class", count: 1, entity_type: "class" }],
+        },
+      } as never,
+    };
+    const withOut = toFeatCanonical(withChoices);
+    expect(withOut.choices).toHaveLength(1);
+    expect((withOut.choices[0] as { id: string }).id).toBe("mi-class");
+
+    const without: CanonicalEntry = {
+      slug: "alert",
+      edition: "2014",
+      kind: "feat",
+      base: {
+        key: "alert",
+        name: "Alert",
+        desc: "...",
+        document: { key: "srd-2014", name: "SRD 5.1" },
+        type: "Origin",
+        has_prerequisite: false,
+        benefits: [],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: null,
+    };
+    expect(toFeatCanonical(without).choices).toEqual([]);
+  });
+
   it("attaches overlay feat_features resources to the canonical feat by slug", () => {
     const canonical: CanonicalEntry = {
       slug: "srd-5e_lucky",

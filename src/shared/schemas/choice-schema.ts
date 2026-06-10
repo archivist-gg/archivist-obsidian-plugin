@@ -1,38 +1,60 @@
 import { z } from "zod";
+import { featureEffectSchema } from "./feature-effect-schema";
+import type { Choice, InlineOption } from "../types/choice";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 
-const skillEnum = z.enum([
-  "acrobatics", "animal-handling", "arcana", "athletics", "deception",
-  "history", "insight", "intimidation", "investigation", "medicine",
-  "nature", "perception", "performance", "persuasion", "religion",
-  "sleight-of-hand", "stealth", "survival",
-]);
+const entityFilterSchema = z.object({
+  feature_type: z.string().min(1).optional(),
+  category: z.string().min(1).optional(),
+  parent_class: z.literal("self").optional(),
+  available_to: z.literal("self").optional(),
+}).strict();
 
-const featCategoryEnum = z.enum(["origin", "general", "fighting-style", "epic-boon"]);
+const inlineOptionSchema: z.ZodType<InlineOption> = z.lazy(() => z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+  description: z.string().optional(),
+  effects: z.array(featureEffectSchema).optional(),
+  choices: z.array(choiceSchema).optional(),
+}).strict());
 
-export const choiceSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("skill"), count: z.number().int().positive(), from: z.array(skillEnum).optional() }),
-  z.object({ kind: z.literal("skill-expertise"), count: z.number().int().positive(), from_proficient: z.boolean() }),
-  z.object({ kind: z.literal("subclass") }),
-  z.object({ kind: z.literal("feat"), category: featCategoryEnum.optional() }),
-  z.object({ kind: z.literal("asi") }),
+export const choiceSchema: z.ZodType<Choice> = z.lazy(() => z.discriminatedUnion("kind", [
   z.object({
-    kind: z.literal("ability-score"),
-    count: z.number().int().positive(),
-    pool: z.array(abilityEnum).optional(),
-    each: z.number().int().positive(),
-  }),
-  z.object({ kind: z.literal("fighting-style"), from: z.array(z.string()).nonempty() }),
-  z.object({ kind: z.literal("language"), count: z.number().int().positive(), exclude: z.array(z.string()).optional() }),
-  z.object({ kind: z.literal("tool"), count: z.number().int().positive(), from: z.array(z.string()).optional() }),
+    kind: z.literal("select-inline"),
+    id: z.string().min(1),
+    label: z.string().optional(),
+    count: z.number().int().positive().optional(),
+    options: z.array(inlineOptionSchema).nonempty(),
+  }).strict(),
   z.object({
-    kind: z.literal("spell"),
+    kind: z.literal("select-entity"),
+    id: z.string().min(1),
+    label: z.string().optional(),
+    count: z.number().int().positive().optional(),
+    entity_type: z.string().min(1),
+    from: z.array(z.string().min(1)).nonempty().optional(),
+    where: entityFilterSchema.optional(),
+  }).strict(),
+  z.object({
+    kind: z.literal("select-proficiency"),
+    id: z.string().min(1),
+    label: z.string().optional(),
     count: z.number().int().positive(),
-    level: z.number().int().nonnegative().optional(),
-    from_list: z.string().min(1),
-  }),
-]);
+    domain: z.enum(["skill", "tool", "language", "save"]),
+    from: z.array(z.string().min(1)).nonempty().optional(),
+    from_proficient: z.boolean().optional(),
+    expertise: z.boolean().optional(),
+  }).strict(),
+  z.object({
+    kind: z.literal("ability-points"),
+    id: z.string().min(1),
+    label: z.string().optional(),
+    points: z.number().int().positive(),
+    max_per: z.number().int().positive(),
+    pool: z.array(abilityEnum).nonempty().optional(),
+  }).strict(),
+]));
 
 export type ChoiceInput = z.input<typeof choiceSchema>;
 export type ChoiceOutput = z.output<typeof choiceSchema>;

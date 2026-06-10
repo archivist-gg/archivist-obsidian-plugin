@@ -3,6 +3,8 @@ import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
+import type { Choice } from "../../../src/shared/types/choice";
+import { bareSlug } from "./class-merge";
 
 export interface RaceCanonical {
   slug: string;
@@ -28,6 +30,7 @@ export interface RaceCanonical {
   variant_label: string;
   subspecies_of?: string;
   traits: RaceTrait[];
+  choices?: Choice[];
   additional_spells?: {
     known?: Record<string, string[]>;
     innate?: Record<string, string[]>;
@@ -43,14 +46,28 @@ export interface RaceTrait {
   damage?: { dice: string; type: string };
   recharge?: "short-rest" | "long-rest" | "dawn" | "dusk" | "turn" | "round" | "custom";
   resources?: Resource[];
+  choices?: Choice[];
 }
+
+/** Per-trait overlay record from the overlay `race_traits:` section. */
+type TraitOverlay = {
+  action_cost?: RaceTrait["action_cost"];
+  save?: RaceTrait["save"];
+  damage?: RaceTrait["damage"];
+  recharge?: RaceTrait["recharge"];
+  resources?: Resource[];
+  choices?: Choice[];
+};
+
+/** Entity-level race override from the overlay `races:` section. */
+type RaceOverride = { choices?: Choice[] };
 
 export const raceMergeRule: MergeRule = {
   kind: "race",
   pickOverlay(overlay: Overlay, _slug: string): unknown {
-    // Race overlay is keyed by trait-slug, not race-slug. Pass the entire race_traits map;
-    // toRaceCanonical handles per-trait lookup.
-    return overlay.race_traits ?? null;
+    // race_traits is keyed by trait-slug (per-trait lookup in toRaceCanonical);
+    // races carries entity-level overrides (choices) keyed by bare race-slug.
+    return { race_traits: overlay.race_traits ?? null, races: overlay.races ?? null };
   },
 };
 
@@ -127,7 +144,13 @@ function resolveSubspeciesParent(value: unknown): string | null {
 export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
   const base = entry.base as Record<string, unknown>;
   const structured = entry.structured as Record<string, unknown> | null;
-  const overlay = entry.overlay as Record<string, RaceTrait> | null;
+  // pickOverlay now returns { race_traits, races }; unpack both sections.
+  const ov = entry.overlay as {
+    race_traits: Record<string, TraitOverlay> | null;
+    races: Record<string, RaceOverride> | null;
+  } | null;
+  const overlay = ov?.race_traits ?? null;
+  const raceOverride = ov?.races?.[bareSlug(entry.slug)];
 
   const compendium = entry.edition === "2014" ? "SRD 5e" : "SRD 2024";
   const baseTraits = (base.traits ?? []) as Array<{ name: string; desc?: string; type?: string | null; order?: number | null }>;
@@ -143,6 +166,8 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
 
   const traits: RaceTrait[] = baseTraits.map(t => {
     const traitSlug = slugifyName(t.name);
+    // NB: trait slugs are NOT owner-scoped (unlike subclass features) — race_traits
+    // keys are bare trait-slugs, so look up by traitSlug directly.
     const overlaid = overlay?.[traitSlug];
     return {
       name: t.name,
@@ -152,6 +177,7 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
       ...(overlaid?.damage ? { damage: overlaid.damage } : {}),
       ...(overlaid?.recharge ? { recharge: overlaid.recharge } : {}),
       ...(overlaid?.resources ? { id: traitSlug, resources: overlaid.resources } : {}),
+      ...(overlaid?.choices ? { id: traitSlug, choices: overlaid.choices } : {}),
     };
   });
 
@@ -177,6 +203,7 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
     languages,
     variant_label: "base",
     traits,
+    ...(raceOverride?.choices ? { choices: raceOverride.choices } : {}),
   };
 
   // Native Open5e v2 subspecies_of (object or string-key shape).

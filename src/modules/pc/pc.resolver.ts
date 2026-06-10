@@ -4,7 +4,7 @@ import type { RaceEntity } from "../race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "../background/background.types";
 import type { FeatEntity } from "../feat/feat.types";
-import type { Feature } from "../../shared/types";
+import type { Feature, Choice } from "../../shared/types";
 import type { Spell } from "../spell/spell.types";
 import type {
   Character,
@@ -70,6 +70,8 @@ export class PCResolver {
 
     const totalLevel = classes.reduce((sum, c) => sum + c.level, 0);
     const features = collectResolvedFeatures(race, classes, background, feats);
+    const extraFeatures = collectChosenGrantedFeatures(character, classes, this.entities);
+    features.push(...extraFeatures);
 
     // Primary caster slug (for bare-slug spells that don't name their class).
     const primaryCasterSlug = character.class
@@ -124,6 +126,74 @@ export function collectFeatSlugs(character: Character): string[] {
     }
   }
   return [...slugs];
+}
+
+/** Selected select-entity values (optional-features) and selected inline
+ *  options carrying effects[] become synthesized resolved features (SP2 Plan 3 §9).
+ *  The actions/resources engines consume these synthesized features today;
+ *  any effects[] are carried onto the features but not yet consumed anywhere —
+ *  no effect-application engine exists in the codebase yet (named deferral).
+ *  Scope is class/subclass only — origin (race/background) grants are Plan 4. */
+export function collectChosenGrantedFeatures(
+  character: Character,
+  classes: ResolvedClass[],
+  registry: { getByTypeAndSlug(type: string, slug: string): { data: Record<string, unknown> } | undefined },
+): ResolvedFeature[] {
+  const out: ResolvedFeature[] = [];
+  classes.forEach((c, i) => {
+    if (!c.entity) return;
+    const entity = c.entity;
+    const entry = character.class[i];
+    if (!entry) return;
+    for (const [lvlStr, atLevel] of Object.entries(entry.choices)) {
+      const lvl = Number(lvlStr);
+      if (!Number.isFinite(lvl) || lvl > entry.level) continue;
+      const features = (entity.features_by_level ?? {})[lvl] ?? [];
+      const subFeatures = c.subclass ? ((c.subclass.features_by_level ?? {})[lvl] ?? []) : [];
+      for (const feature of [...features, ...subFeatures]) {
+        walkChoiceGrants(feature.choices, atLevel, (granted) => {
+          out.push({ feature: granted, source: { kind: "class", slug: entity.slug, level: lvl } });
+        }, registry);
+      }
+    }
+  });
+  return out;
+}
+
+function walkChoiceGrants(
+  choices: Choice[] | undefined,
+  atLevel: Record<string, unknown>,
+  emit: (f: Feature) => void,
+  registry: { getByTypeAndSlug(type: string, slug: string): { data: Record<string, unknown> } | undefined },
+): void {
+  for (const ch of choices ?? []) {
+    const sel = atLevel[ch.id];
+    if (ch.kind === "select-entity" && ch.entity_type === "optional-feature") {
+      const slugs = Array.isArray(sel) ? sel : typeof sel === "string" ? [sel] : [];
+      for (const slug of slugs) {
+        const reg = registry.getByTypeAndSlug("optional-feature", stripSlug(String(slug)) ?? String(slug));
+        if (!reg) continue;
+        const d = reg.data as {
+          name?: string; slug?: string; description?: string;
+          effects?: unknown[]; action_cost?: string;
+        };
+        emit({
+          id: d.slug ?? String(slug),
+          name: d.name ?? String(slug),
+          description: d.description,
+          effects: d.effects as Feature["effects"],
+          ...(d.action_cost ? { action: d.action_cost as Feature["action"] } : {}),
+        });
+      }
+    }
+    if (ch.kind === "select-inline") {
+      const branch = typeof sel === "string" ? ch.options.find((o) => o.value === sel) : undefined;
+      if (branch?.effects?.length) {
+        emit({ id: `${ch.id}-${branch.value}`, name: branch.label, description: branch.description, effects: branch.effects });
+      }
+      if (branch?.choices) walkChoiceGrants(branch.choices, atLevel, emit, registry);
+    }
+  }
 }
 
 export function collectResolvedFeatures(
