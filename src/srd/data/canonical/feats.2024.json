@@ -355,7 +355,46 @@
     "repeatable": true,
     "effects": [],
     "grants_asi": null,
-    "choices": []
+    "choices": [
+      {
+        "kind": "select-inline",
+        "id": "spell-list",
+        "count": 1,
+        "options": [
+          {
+            "value": "cleric",
+            "label": "Cleric"
+          },
+          {
+            "value": "druid",
+            "label": "Druid"
+          },
+          {
+            "value": "wizard",
+            "label": "Wizard"
+          }
+        ]
+      },
+      {
+        "kind": "select-inline",
+        "id": "spellcasting-ability",
+        "count": 1,
+        "options": [
+          {
+            "value": "int",
+            "label": "Intelligence"
+          },
+          {
+            "value": "wis",
+            "label": "Wisdom"
+          },
+          {
+            "value": "cha",
+            "label": "Charisma"
+          }
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_savage-attacker",

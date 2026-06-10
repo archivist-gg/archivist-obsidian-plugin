@@ -266,7 +266,7 @@ class_features:
         count: 1
         from: [animal-handling, athletics, intimidation, nature, perception, survival]
 
-  # --- Weapon Mastery (scoped; barbarian/fighter L1, paladin/ranger/rogue L2) ---
+  # --- Weapon Mastery (scoped; all five classes grant it at L1) ---
   # "use the mastery properties of N kinds of ... weapons of your choice."
   # Re-pickable after a Long Rest, but the initial pick is a build decision
   # (same treatment as Hunter's Prey below). The WHERE vocabulary cannot
@@ -941,11 +941,32 @@ feat_features:
   # phrasing, but the decision is authored anyway).
   grappler:
     choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1, pool: [str, dex] }]
-  # Magic Initiate: the spell-list / spellcasting-ability picks only
-  # parameterize the cantrip + level-1 spell selection, which is spell
-  # management.
+  # Magic Initiate: "two cantrips of your choice from the Cleric, Druid, or
+  # Wizard spell list. Intelligence, Wisdom, or Charisma is your spellcasting
+  # ability for this feat's spells (choose when you select this feat)."
   magic-initiate:
-    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+    # cantrip/level-1-spell selection deferred: spell management lives on the sheet (SP4c)
+    choices:
+      - kind: select-inline
+        id: spell-list
+        count: 1
+        options:
+          - value: cleric
+            label: Cleric
+          - value: druid
+            label: Druid
+          - value: wizard
+            label: Wizard
+      - kind: select-inline
+        id: spellcasting-ability
+        count: 1
+        options:
+          - value: int
+            label: Intelligence
+          - value: wis
+            label: Wisdom
+          - value: cha
+            label: Charisma
   # Skilled: "proficiency in any combination of three skills or tools of your
   # choice." One select-proficiency cannot span two domains (skill + tool), so
   # the combination is encoded as a count-1 select-inline over the four
