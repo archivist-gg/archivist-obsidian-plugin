@@ -168,6 +168,73 @@ function buildItem(
   return item;
 }
 
+/** Walk every decision definition + persisted selection and collect chosen
+ *  proficiencies. Pure; called by recalc. Values are validated against the
+ *  decision's option pool — stale slugs (outside `from`) are ignored. */
+export function collectChosenProficiencies(resolved: ResolvedCharacter): {
+  skills: string[]; expertise: string[]; languages: string[]; tools: string[];
+} {
+  const out = { skills: [] as string[], expertise: [] as string[], languages: [] as string[], tools: [] as string[] };
+
+  const apply = (choice: Choice, selected: ChoiceValue | undefined): void => {
+    if (choice.kind !== "select-proficiency") return;
+    const vals = Array.isArray(selected) ? selected : typeof selected === "string" ? [selected] : [];
+    const pool = choice.from;
+    const valid = pool ? vals.filter((v) => pool.includes(v)) : vals;
+    const bucket = choice.domain === "skill" ? (choice.expertise ? out.expertise : out.skills)
+      : choice.domain === "language" ? out.languages
+      : choice.domain === "tool" ? out.tools : null;
+    if (bucket) for (const v of valid) if (!bucket.includes(v)) bucket.push(v);
+  };
+
+  const walk = (choices: Choice[] | undefined, read: (id: string) => ChoiceValue | undefined): void => {
+    for (const ch of choices ?? []) {
+      apply(ch, read(ch.id));
+      if (ch.kind === "select-inline") {
+        const sel = read(ch.id);
+        const branch = typeof sel === "string" ? ch.options.find((o) => o.value === sel) : undefined;
+        if (branch?.choices) walk(branch.choices, read);
+      }
+    }
+  };
+
+  resolved.classes.forEach((c, i) => {
+    if (!c.entity) return;
+    const entity = c.entity;
+    const readAt = (lvl: number) => (id: string): ChoiceValue | undefined =>
+      (c.choices[lvl] as Record<string, ChoiceValue> | undefined)?.[id];
+
+    // Entity-level L1 skill choice (first class only — multiclass rules are Plan 5).
+    if (i === 0 && entity.skill_choices?.from?.length) {
+      apply({ kind: "select-proficiency", id: "skills", count: entity.skill_choices.count,
+        domain: "skill", from: entity.skill_choices.from }, readAt(1)("skills"));
+    }
+
+    for (const rf of resolved.features) {
+      if (rf.source.kind !== "class" && rf.source.kind !== "subclass") continue;
+      const belongs = rf.source.kind === "class" ? rf.source.slug === entity.slug
+        : c.subclass != null && rf.source.slug === c.subclass.slug;
+      if (!belongs) continue;
+      walk(rf.feature.choices, readAt(rf.source.level));
+    }
+  });
+
+  const oc = resolved.definition.origin_choices ?? {};
+  const originRead = (ns: string) => (id: string): ChoiceValue | undefined => oc[`${ns}:${id}`];
+  if (resolved.race) {
+    walk(resolved.race.choices, originRead("race"));
+    for (const t of resolved.race.traits ?? []) walk(t.choices, originRead("race"));
+  }
+  if (resolved.background) {
+    walk(resolved.background.choices, originRead("background"));
+    if (resolved.background.feature) {
+      walk((resolved.background.feature as { choices?: Choice[] }).choices, originRead("background"));
+    }
+  }
+
+  return out;
+}
+
 export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionContext): DecisionLedger {
   const classes: DecisionLedger["classes"] = [];
 

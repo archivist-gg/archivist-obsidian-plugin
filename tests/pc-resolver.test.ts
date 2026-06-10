@@ -3,6 +3,36 @@ import { PCResolver, stripSlug, collectFeatSlugs } from "../src/modules/pc/pc.re
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { Character } from "../src/modules/pc/pc.types";
 
+const ALERT_FEAT = { slug: "alert", name: "Alert", description: "You can't be surprised." };
+
+const DEFENSE_OF = {
+  slug: "srd-2024_defense", name: "Defense", feature_type: "fighting_style",
+  description: "+1 AC while wearing armor.",
+  available_to: ["[[SRD 2024/Classes/Fighter]]"],
+  effects: [{ kind: "ac-bonus", value: 1 }],
+};
+
+// Fighter with a fighting-style decision at L1 (select-entity → optional-feature)
+// and an asi-or-feat decision at L4 (nested feat select-entity).
+const STYLED_FIGHTER = {
+  slug: "fighter", name: "Fighter", hit_die: "d10",
+  saving_throws: ["str", "con"],
+  features_by_level: {
+    1: [{
+      id: "fighting-style", name: "Fighting Style", description: "Choose one.",
+      choices: [{ kind: "select-entity", id: "fighting-style", count: 1,
+        entity_type: "optional-feature", where: { feature_type: "fighting_style", available_to: "self" } }],
+    }],
+    4: [{
+      id: "ability-score-improvement", name: "Ability Score Improvement", description: "ASI or feat.",
+      choices: [{ kind: "select-inline", id: "asi-or-feat", count: 1, options: [
+        { value: "asi", label: "ASI" },
+        { value: "feat", label: "Feat", choices: [{ kind: "select-entity", id: "feat", entity_type: "feat", count: 1 }] },
+      ] }],
+    }],
+  },
+};
+
 const BLADESWORN = {
   slug: "bladesworn",
   name: "Bladesworn",
@@ -145,6 +175,78 @@ describe("PCResolver", () => {
     ];
     const { character } = new PCResolver(reg).resolve(char);
     expect(character.totalLevel).toBe(7);
+  });
+
+  it("resolves a feat chosen via the nested asi-or-feat convention", () => {
+    const reg = buildMockRegistry([
+      { slug: "fighter", entityType: "class", data: STYLED_FIGHTER },
+      { slug: "alert", entityType: "feat", data: ALERT_FEAT },
+    ]);
+    const char = minimalCharacter();
+    char.class = [{ name: "[[fighter]]", level: 4, subclass: null,
+      choices: { 4: { "asi-or-feat": "feat", feat: "alert" } } }];
+    const { character } = new PCResolver(reg).resolve(char);
+    expect(character.feats.map((f) => f.slug)).toContain("alert");
+    expect(character.features.some((rf) => rf.source.kind === "feat" && rf.feature.name === "Alert")).toBe(true);
+  });
+
+  it("synthesizes a selected fighting-style optional-feature into resolved features with its effects", () => {
+    const reg = buildMockRegistry([
+      { slug: "fighter", entityType: "class", data: STYLED_FIGHTER },
+      { slug: "srd-2024_defense", entityType: "optional-feature", data: DEFENSE_OF },
+    ]);
+    const char = minimalCharacter();
+    char.class = [{ name: "[[fighter]]", level: 1, subclass: null,
+      choices: { 1: { "fighting-style": "srd-2024_defense" } } }];
+    const { character } = new PCResolver(reg).resolve(char);
+    const synth = character.features.find((rf) => rf.feature.name === "Defense");
+    expect(synth).toBeDefined();
+    expect(synth!.feature.effects).toEqual([{ kind: "ac-bonus", value: 1 }]);
+    expect(synth!.source.kind).toBe("class");
+  });
+
+  it("synthesizes select-inline branch effects when its option is chosen", () => {
+    const inlineStyleFighter = {
+      slug: "fighter", name: "Fighter", hit_die: "d10", saving_throws: ["str", "con"],
+      features_by_level: {
+        1: [{
+          id: "creed", name: "Creed", description: "Pick a creed.",
+          choices: [{ kind: "select-inline", id: "creed", options: [
+            { value: "valor", label: "Valor", description: "Bold.", effects: [{ kind: "speed-bonus", value: 5 }] },
+          ] }],
+        }],
+      },
+    };
+    const reg = buildMockRegistry([{ slug: "fighter", entityType: "class", data: inlineStyleFighter }]);
+    const char = minimalCharacter();
+    char.class = [{ name: "[[fighter]]", level: 1, subclass: null, choices: { 1: { creed: "valor" } } }];
+    const { character } = new PCResolver(reg).resolve(char);
+    const synth = character.features.find((rf) => rf.feature.name === "Valor");
+    expect(synth).toBeDefined();
+    expect(synth!.feature.effects).toEqual([{ kind: "speed-bonus", value: 5 }]);
+  });
+
+  it("does NOT synthesize granted features from origin race traits (Plan 4 scope)", () => {
+    const raceWithStyleChoice = {
+      slug: "half-elf", name: "Half-Elf", size: "Medium", speed: { walk: 30 },
+      traits: [{
+        name: "Fey Gift", description: "Choose a style.",
+        choices: [{ kind: "select-entity", id: "fey-style", count: 1,
+          entity_type: "optional-feature", where: { feature_type: "fighting_style" } }],
+      }],
+    };
+    const reg = buildMockRegistry([
+      { slug: "fighter", entityType: "class", data: STYLED_FIGHTER },
+      { slug: "half-elf", entityType: "race", data: raceWithStyleChoice },
+      { slug: "srd-2024_defense", entityType: "optional-feature", data: DEFENSE_OF },
+    ]);
+    const char = minimalCharacter();
+    char.race = "[[half-elf]]";
+    char.class = [{ name: "[[fighter]]", level: 1, subclass: null, choices: {} }];
+    char.origin_choices = { "race:fey-style": "srd-2024_defense" };
+    const { character } = new PCResolver(reg).resolve(char);
+    // Defense was selected on a RACE trait — it must not be synthesized (class/subclass only).
+    expect(character.features.some((rf) => rf.feature.name === "Defense")).toBe(false);
   });
 });
 

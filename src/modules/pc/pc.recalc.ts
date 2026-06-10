@@ -14,6 +14,7 @@ import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
+import { collectChosenProficiencies } from "./pc.decision-engine";
 import { computeConditionEffects } from "./pc.conditions";
 import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
 import type {
@@ -328,7 +329,17 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // Pass A: apply equipment-derived bonuses (only when registry is available).
   // The legacy single-arg call path keeps an empty AppliedBonuses so all the
   // arithmetic below is a no-op and existing callsites/tests stay green.
+  // Chosen proficiencies from persisted decisions (SP2 Plan 3): skills/expertise
+  // fold into the skill tri below; languages/tools fold into the proficiency set.
+  const chosenProfs = collectChosenProficiencies(resolved);
   const profsForApply = computeProficiencies(resolved);
+  for (const t of chosenProfs.tools) {
+    if (!profsForApply.tools.specific.includes(t)) profsForApply.tools.specific.push(t);
+  }
+  for (const l of chosenProfs.languages) {
+    if (!profsForApply.languages.includes(l)) profsForApply.languages.push(l);
+  }
+  profsForApply.languages.sort();
   const applied = registry
     ? computeAppliedBonuses(resolved, profsForApply, registry, warnings)
     : emptyAppliedBonuses();
@@ -381,9 +392,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     saves[ab] = { bonus, proficient: prof };
   }
 
-  // Skills
-  const profSet = new Set(resolved.definition.skills.proficient);
-  const expSet = new Set(resolved.definition.skills.expertise);
+  // Skills (definition lists + chosen decision proficiencies/expertise).
+  const profSet = new Set([...resolved.definition.skills.proficient, ...chosenProfs.skills]);
+  const expSet = new Set([...resolved.definition.skills.expertise, ...chosenProfs.expertise]);
   const skills: DerivedStats["skills"] = {} as never;
   for (const skill of ALL_SKILLS) {
     const skillKey = skillSlugFromDisplay(skill);

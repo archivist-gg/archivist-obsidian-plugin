@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildDecisionLedger } from "../src/modules/pc/pc.decision-engine";
+import { buildDecisionLedger, collectChosenProficiencies } from "../src/modules/pc/pc.decision-engine";
 import type { ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 
@@ -254,5 +254,66 @@ describe("buildDecisionLedger — recognizer fallback wiring", () => {
     expect(exp).toBeDefined();
     expect(exp.choice.kind).toBe("select-proficiency");
     expect(exp.status).toBe("unresolved");
+  });
+});
+
+describe("collectChosenProficiencies", () => {
+  it("folds chosen L1 skills (first class) into skills, dropping stale slugs", () => {
+    // from = ["athletics", "perception"]; "arcana" is outside the pool → dropped.
+    const c = resolvedFighter(1, { 1: { skills: ["athletics", "perception", "arcana"] } });
+    const out = collectChosenProficiencies(c);
+    expect(out.skills.sort()).toEqual(["athletics", "perception"]);
+    expect(out.skills).not.toContain("arcana");
+    expect(out.expertise).toEqual([]);
+  });
+
+  it("routes an expertise select-proficiency decision into expertise", () => {
+    const c = resolvedFighter(1);
+    // Inject an expertise feature at L1 carrying a select-proficiency choice.
+    const expFeature = {
+      id: "expertise", name: "Expertise", description: "Pick two.",
+      choices: [{ kind: "select-proficiency", id: "expertise", count: 2, domain: "skill",
+        expertise: true, from: ["athletics", "stealth"] }],
+    };
+    (c.classes[0].entity as { features_by_level: Record<number, unknown[]> }).features_by_level[1].push(expFeature);
+    c.features.push({ feature: expFeature, source: { kind: "class", slug: "srd-2024_fighter", level: 1 } } as never);
+    c.classes[0].choices[1] = { ...(c.classes[0].choices[1] ?? {}), expertise: ["athletics"] } as never;
+    const out = collectChosenProficiencies(c);
+    expect(out.expertise).toEqual(["athletics"]);
+    expect(out.skills).not.toContain("athletics");
+  });
+
+  it("walks a nested select-inline branch to collect a tool pick", () => {
+    const c = resolvedFighter(1);
+    const inlineFeature = {
+      id: "trade", name: "Guild Trade", description: "Choose a guild.",
+      choices: [{ kind: "select-inline", id: "trade", options: [
+        { value: "smith", label: "Smith", choices: [
+          { kind: "select-proficiency", id: "smith-tool", count: 1, domain: "tool",
+            from: ["smiths-tools", "tinkers-tools"] },
+        ] },
+      ] }],
+    };
+    (c.classes[0].entity as { features_by_level: Record<number, unknown[]> }).features_by_level[1].push(inlineFeature);
+    c.features.push({ feature: inlineFeature, source: { kind: "class", slug: "srd-2024_fighter", level: 1 } } as never);
+    c.classes[0].choices[1] = { ...(c.classes[0].choices[1] ?? {}), trade: "smith", "smith-tool": ["smiths-tools"] } as never;
+    const out = collectChosenProficiencies(c);
+    expect(out.tools).toEqual(["smiths-tools"]);
+  });
+
+  it("collects an origin race-trait language pick into languages", () => {
+    const c = resolvedFighter(1);
+    const race = {
+      slug: "srd-2024_half-elf", name: "Half-Elf",
+      choices: [],
+      traits: [{ name: "Versatile", choices: [
+        { kind: "select-proficiency", id: "extra-language", count: 1, domain: "language",
+          from: ["elvish", "dwarvish"] },
+      ] }],
+    };
+    (c as { race: unknown }).race = race;
+    (c.definition as { origin_choices: Record<string, unknown> }).origin_choices = { "race:extra-language": ["elvish"] };
+    const out = collectChosenProficiencies(c);
+    expect(out.languages).toEqual(["elvish"]);
   });
 });
