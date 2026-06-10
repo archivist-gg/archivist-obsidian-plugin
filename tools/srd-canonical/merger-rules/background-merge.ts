@@ -3,6 +3,8 @@ import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
+import type { Choice } from "../../../src/shared/types/choice";
+import { bareSlug } from "./class-merge";
 
 type Ability = "str" | "dex" | "con" | "int" | "wis" | "cha";
 type SkillSlug =
@@ -40,10 +42,11 @@ export interface BackgroundCanonical {
   tool_proficiencies: ToolProf[];
   language_proficiencies: LangProf[];
   equipment: EquipmentEntry[];
-  feature: { name: string; description: string; resources?: Resource[] };
+  feature: { name: string; description: string; resources?: Resource[]; choices?: Choice[] };
   ability_score_increases: { pool: Ability[] } | null;
   origin_feat: string | null;
   suggested_characteristics: SuggestedCharacteristics | null;
+  choices?: Choice[];
 }
 
 interface Open5eBenefit {
@@ -86,17 +89,23 @@ const ABILITY_NAME_TO_KEY: Record<string, Ability> = {
 export const backgroundMergeRule: MergeRule = {
   kind: "background",
   pickOverlay(overlay: Overlay, _slug: string): unknown {
-    // Per-background limited-use resources come from the overlay's
-    // background_features map, keyed by background-slug.
-    return overlay.background_features ?? null;
+    // background_features carries per-background feature overrides (resources,
+    // choices) keyed by background-slug; backgrounds carries entity-level
+    // overrides (choices) keyed by bare background-slug.
+    return { background_features: overlay.background_features ?? null, backgrounds: overlay.backgrounds ?? null };
   },
 };
 
 export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonical {
   const base = entry.base as Record<string, unknown>;
   const compendium = entry.edition === "2014" ? "SRD 5e" : "SRD 2024";
-  const overlay = entry.overlay as Record<string, { resources?: Resource[] }> | null;
-  const overlaid = overlay?.[slugifyName(base.name as string)];
+  // pickOverlay now returns { background_features, backgrounds }; unpack both.
+  const ov = entry.overlay as {
+    background_features: Record<string, { resources?: Resource[]; choices?: Choice[] }> | null;
+    backgrounds: Record<string, { choices?: Choice[] }> | null;
+  } | null;
+  const overlaid = ov?.background_features?.[slugifyName(base.name as string)];
+  const bgOverride = ov?.backgrounds?.[bareSlug(entry.slug)];
 
   const benefits = ((base.benefits as Open5eBenefit[] | undefined) ?? []);
 
@@ -104,7 +113,7 @@ export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonica
   const toolProfs: ToolProf[] = [];
   const langProfs: LangProf[] = [];
   let equipment: EquipmentEntry[] = [];
-  let feature: { name: string; description: string; resources?: Resource[] } = { name: "", description: "" };
+  let feature: { name: string; description: string; resources?: Resource[]; choices?: Choice[] } = { name: "", description: "" };
   let suggestedCharacteristics: SuggestedCharacteristics | null = null;
   let asi: { pool: Ability[] } | null = null;
   let originFeat: string | null = null;
@@ -171,6 +180,7 @@ export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonica
   if (!feature.name) feature = { name: "Background Feature", description: feature.description };
   if (!feature.description) feature = { ...feature, description: "(No description provided.)" };
   if (overlaid?.resources) feature = { ...feature, resources: overlaid.resources };
+  if (overlaid?.choices) feature = { ...feature, choices: overlaid.choices };
 
   const out: BackgroundCanonical = {
     slug: entry.slug,
@@ -186,6 +196,7 @@ export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonica
     ability_score_increases: asi,
     origin_feat: originFeat,
     suggested_characteristics: suggestedCharacteristics,
+    ...(bgOverride?.choices ? { choices: bgOverride.choices } : {}),
   };
 
   return out;

@@ -159,11 +159,13 @@ describe("raceMergeRule (legacy/structural cases)", () => {
         ],
       },
       overlay: {
-        "breath-weapon": {
-          action_cost: "action",
-          save: { ability: "dex", dc_formula: "8 + PB + CON" },
-          damage: { dice: "2d6", type: "(varies)" },
-          recharge: "short-rest",
+        race_traits: {
+          "breath-weapon": {
+            action_cost: "action",
+            save: { ability: "dex", dc_formula: "8 + PB + CON" },
+            damage: { dice: "2d6", type: "(varies)" },
+            recharge: "short-rest",
+          },
         },
       } as never,
     });
@@ -248,10 +250,44 @@ describe("raceMergeRule (legacy/structural cases)", () => {
         traits: [{ name: "Breath Weapon", desc: "...", type: null, order: null }],
       },
       activation: { activation: { type: "passive", value: 0 } } as never,
-      overlay: { "breath-weapon": { action_cost: "action" } } as never,
+      overlay: { race_traits: { "breath-weapon": { action_cost: "action" } } } as never,
     });
     const out = toRaceCanonical(canonical);
     expect(out.traits[0].action_cost).toBe("action");  // overlay wins over passive
+  });
+
+  it("attaches trait-level and entity-level choices from the overlay (SP2 Plan 3)", () => {
+    const canonical: CanonicalEntry = baseEntry({
+      slug: "srd-2024_elf",
+      edition: "2024",
+      base: {
+        key: "srd-2024_elf",
+        name: "Elf",
+        desc: "...",
+        is_subspecies: false,
+        subspecies_of: null,
+        traits: [
+          { name: "Keen Senses", desc: "You have proficiency in a skill.", type: null, order: null },
+        ],
+      },
+      overlay: {
+        race_traits: {
+          "keen-senses": {
+            choices: [{ kind: "select-proficiency", id: "keen-skill", count: 1, domain: "skill", from: ["insight", "perception", "survival"] }],
+          },
+        },
+        races: {
+          elf: {
+            choices: [{ kind: "select-entity", id: "elf-lineage", count: 1, entity_type: "race" }],
+          },
+        },
+      } as never,
+    });
+    const out = toRaceCanonical(canonical);
+    const ks = out.traits.find(t => t.name === "Keen Senses");
+    expect(ks?.id).toBe("keen-senses");
+    expect((ks as { choices?: Array<{ id: string }> }).choices?.[0]?.id).toBe("keen-skill");
+    expect((out as { choices?: Array<{ id: string }> }).choices?.[0]?.id).toBe("elf-lineage");
   });
 
   it("attaches overlay resources (and a trait id) to the matching race trait", () => {
@@ -269,11 +305,13 @@ describe("raceMergeRule (legacy/structural cases)", () => {
         ],
       },
       overlay: {
-        "breath-weapon": {
-          resources: [{
-            id: "dragonborn:breath-weapon", name: "Breath Weapon",
-            max_formula: "1", reset: "short-rest",
-          }],
+        race_traits: {
+          "breath-weapon": {
+            resources: [{
+              id: "dragonborn:breath-weapon", name: "Breath Weapon",
+              max_formula: "1", reset: "short-rest",
+            }],
+          },
         },
       } as never,
     });

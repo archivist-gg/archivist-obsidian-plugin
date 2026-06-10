@@ -1,4 +1,4 @@
-import type { Feature, Ability, Speed } from "../../shared/types";
+import type { Feature, Ability, Speed, Choice } from "../../shared/types";
 import type { Edition } from "../class/class.types";
 
 export type Size = "tiny" | "small" | "medium" | "large" | "huge";
@@ -34,5 +34,6 @@ export interface RaceEntity {
   languages: LanguageProficiencies;
   variant_label: string;
   traits: Feature[];
+  choices?: Choice[];
   subspecies_of?: string;
 }

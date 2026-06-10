@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { featureSchema } from "../../shared/schemas/feature-schema";
+import { choiceSchema } from "../../shared/schemas/choice-schema";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const editionEnum = z.enum(["2014", "2024"]);
@@ -53,5 +54,6 @@ export const raceEntitySchema = z.object({
   languages: languagesSchema,
   variant_label: z.string().min(1),
   traits: z.array(featureSchema),
+  choices: z.array(choiceSchema).optional(),
   subspecies_of: z.string().regex(wikilinkRegex).optional(),
 });

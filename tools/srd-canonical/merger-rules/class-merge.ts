@@ -205,9 +205,10 @@ function parseSavingThrows(raw: Array<{ name: string }> | undefined): Ability[] 
 }
 
 function deriveClassNameSlug(canonicalSlug: string, name: string): string {
-  // canonicalSlug is `srd-5e_<slugifiedname>`; strip the prefix when present.
-  const idx = canonicalSlug.indexOf("_");
-  if (idx >= 0) return canonicalSlug.slice(idx + 1).toLowerCase();
+  // canonicalSlug is `srd-5e_<slugifiedname>`; strip the prefix when present
+  // (delegates the prefix-strip to bareSlug, then lower-cases). Falls back to
+  // the slugified display name when there is no prefix to strip.
+  if (canonicalSlug.indexOf("_") >= 0) return bareSlug(canonicalSlug).toLowerCase();
   return slugifyName(name);
 }
 

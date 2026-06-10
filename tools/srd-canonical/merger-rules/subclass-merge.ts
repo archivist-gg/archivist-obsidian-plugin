@@ -2,7 +2,8 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
-import type { ClassFeatureOut } from "./class-merge";
+import type { ClassFeatureOut, FeatureOverlayMap } from "./class-merge";
+import { lookupFeatureOverlay, bareSlug } from "./class-merge";
 
 /**
  * Open5e v2 class-endpoint feature shape (subset). Mirrors the type in
@@ -80,13 +81,14 @@ function resolveParentName(subclassOf: unknown): string {
 function bucketFeaturesByLevel(
   features: Open5eClassFeature[],
   edition: "2014" | "2024",
-  overlay: Record<string, ClassFeatureOut> | null,
+  overlay: FeatureOverlayMap | null,
+  ownerBareSlug: string,
 ): Record<string, ClassFeatureOut[]> {
   const out: Record<string, ClassFeatureOut[]> = {};
   for (const f of features) {
     if (f.feature_type !== "CLASS_LEVEL_FEATURE") continue;
     const featureSlug = slugifyName(f.name);
-    const overlaid = overlay?.[featureSlug];
+    const overlaid = lookupFeatureOverlay(overlay, ownerBareSlug, featureSlug);
     const description = rewriteCrossRefs(f.desc ?? "", edition);
     const desc = description && description.length > 0 ? description : f.name;
     const levels = (f.gained_at ?? []).map(g => g.level).filter(n => Number.isFinite(n));
@@ -100,6 +102,7 @@ function bucketFeaturesByLevel(
         description: desc,
         ...(overlaid?.action ? { action: overlaid.action } : {}),
         ...(overlaid?.resources ? { resources: overlaid.resources } : {}),
+        ...(overlaid?.choices ? { choices: overlaid.choices } : {}),
       };
       const key = String(lvl);
       out[key] ??= [];
@@ -111,13 +114,15 @@ function bucketFeaturesByLevel(
 
 export function toSubclassCanonical(entry: CanonicalEntry): SubclassCanonical {
   const base = entry.base as Record<string, unknown>;
-  const overlay = entry.overlay as Record<string, ClassFeatureOut> | null;
+  // Subclass features share the class_features overlay namespace, keyed by
+  // feature-slug or subclass-scoped "<subclass>:<feature>" slug.
+  const overlay = entry.overlay as FeatureOverlayMap | null;
 
   const compendium = entry.edition === "2014" ? "SRD 5e" : "SRD 2024";
   const parentName = resolveParentName(base.subclass_of);
 
   const baseFeatures = (base.features ?? []) as Open5eClassFeature[];
-  const features_by_level = bucketFeaturesByLevel(baseFeatures, entry.edition, overlay);
+  const features_by_level = bucketFeaturesByLevel(baseFeatures, entry.edition, overlay, bareSlug(entry.slug));
 
   return {
     slug: entry.slug,

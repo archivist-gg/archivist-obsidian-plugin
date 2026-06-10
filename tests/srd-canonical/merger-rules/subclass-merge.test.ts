@@ -142,6 +142,52 @@ describe("subclassMergeRule", () => {
     expect(ic?.resources?.[0]?.id).toBe("champion:improved-critical");
   });
 
+  it("attaches overlay choices via subclass-scoped key, falling back to bare (SP2 Plan 3)", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-5e_champion",
+      edition: "2014",
+      kind: "subclass",
+      base: baseChampion,
+      structured: null,
+      activation: null,
+      overlay: {
+        "champion:improved-critical": {
+          choices: [{ kind: "select-inline", id: "crit-range", count: 1, options: [{ value: "19", label: "19-20" }] }],
+        },
+        "remarkable-athlete": {
+          choices: [{ kind: "select-inline", id: "athlete-pick", count: 1, options: [{ value: "a", label: "A" }] }],
+        },
+      } as never,
+    };
+    const out = toSubclassCanonical(canonical);
+    const ic = out.features_by_level["3"]?.[0];
+    expect(ic?.choices?.[0]).toMatchObject({ id: "crit-range" });
+    const ra = out.features_by_level["7"]?.[0];
+    expect(ra?.choices?.[0]).toMatchObject({ id: "athlete-pick" });
+  });
+
+  it("prefers the subclass-scoped overlay key over the bare key when both exist (SP2 Plan 3)", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-5e_champion",
+      edition: "2014",
+      kind: "subclass",
+      base: baseChampion,
+      structured: null,
+      activation: null,
+      overlay: {
+        "champion:improved-critical": {
+          choices: [{ kind: "select-inline", id: "scoped-wins", count: 1, options: [{ value: "x", label: "X" }] }],
+        },
+        "improved-critical": {
+          choices: [{ kind: "select-inline", id: "bare-loses", count: 1, options: [{ value: "y", label: "Y" }] }],
+        },
+      } as never,
+    };
+    const out = toSubclassCanonical(canonical);
+    const ic = out.features_by_level["3"]?.[0];
+    expect(ic?.choices?.[0]?.id).toBe("scoped-wins");
+  });
+
   it("emits empty resources array (Open5e exposes none on subclasses)", () => {
     const canonical: CanonicalEntry = {
       slug: "srd-5e_champion",
