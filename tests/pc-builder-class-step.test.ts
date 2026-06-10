@@ -158,6 +158,26 @@ describe("BuilderView class step (Task 17)", () => {
     expect(calls).toEqual(["remove:0", "add:srd-5e_wizard:5"]);
   });
 
+  it("clicking the already-selected class does not wipe choices (no removeClass/addClass)", () => {
+    // The entity-picker suppresses a same-slug reselect (the current seal is
+    // inert), so clicking the Fighter row when Fighter is already selected must
+    // not fire removeClass/addClass — that pins the no-choice-wipe guarantee at
+    // the class-step layer.
+    const root = mountContainer();
+    const removeClass = vi.fn();
+    const addClass = vi.fn();
+    new BuilderView().render(root, ctx({
+      classEntry: { name: "[[srd-5e_fighter]]", level: 5 },
+      editState: { removeClass, addClass, setClassLevel: vi.fn() },
+    }));
+    // Fighter is the already-selected row; clicking its seal must be inert.
+    const rows = [...root.querySelectorAll<HTMLElement>(".pc-btable-row")];
+    const fighterRow = rows.find((r) => r.querySelector(".pc-btable-name")?.textContent === "Fighter")!;
+    fighterRow.querySelector<HTMLElement>(".pc-btoggle.seal")!.click();
+    expect(removeClass).not.toHaveBeenCalled();
+    expect(addClass).not.toHaveBeenCalled();
+  });
+
   it("emits an orphan callout naming the subclass and the missing class", () => {
     const root = mountContainer();
     new BuilderView().render(root, ctx({
