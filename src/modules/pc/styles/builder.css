@@ -111,7 +111,7 @@
 /* ── N1 choice callout ── */
 .archivist-pc-sheet .pc-bchoice { margin: var(--pc-space-3) 0; }
 .archivist-pc-sheet .pc-bchoice-head {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
+  display: flex; align-items: center; gap: var(--pc-space-2);
   border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
 }
 .archivist-pc-sheet .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
@@ -119,7 +119,17 @@
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
   text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-bchoice-flag { color: var(--pc-amber); font-weight: 700; margin-left: auto; }
+/* N1 open flag: an amber filled "!" disc, right-aligned. This is the ONLY
+   signal for a required/open choice — no border bar, no box outline anywhere
+   in the ledger leans on chrome for it. */
+.archivist-pc-sheet .pc-bchoice-flag {
+  margin-left: auto; flex: 0 0 auto;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--pc-amber); color: var(--pc-white);
+  font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label);
+  line-height: 1;
+}
 .archivist-pc-sheet .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .archivist-pc-sheet .pc-bchoice-chip {
   border: 1px solid var(--pc-text-primary); border-radius: var(--pc-radius-md);
@@ -202,13 +212,18 @@
   background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 3px 8px; color: var(--pc-text-primary);
 }
-/* Muted warning treatment, consistent with the callout idiom: an amber rule and
-   quiet serif text — a data gap, not a hard error. */
+/* Quiet parchment notice (N1 note idiom): no border bar — a faint amber-warm
+   tint with an inline amber "!" mark and amber-keyed serif text. A data gap,
+   not a hard error, so it never raises a box outline or accent rule. */
 .archivist-pc-sheet .pc-bclass-orphan {
+  display: flex; align-items: baseline; gap: var(--pc-space-2);
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); font-style: italic;
-  color: var(--pc-text-soft); border-left: 3px solid var(--pc-amber);
-  background: var(--pc-row-open-bg); border-radius: var(--pc-radius-sm);
-  padding: 6px 10px; margin: var(--pc-space-2) 0;
+  color: var(--pc-text-soft); background: rgba(163, 105, 14, 0.06);
+  border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: var(--pc-space-2) 0;
+}
+.archivist-pc-sheet .pc-bclass-orphan::before {
+  content: "!"; flex: 0 0 auto; font-style: normal; font-family: var(--pc-font-sans);
+  font-weight: 700; color: var(--pc-amber);
 }
 
 /* ── Decision ledger (SP2 §7): level-grouped decision rows ── */
@@ -224,11 +239,14 @@
   border-bottom: 1px solid var(--pc-tan-muted); padding-bottom: 3px;
 }
 
-/* Resolved + collapsed → one-line green-✓ row; click reopens. */
+/* Resolved + collapsed → one-line green-✓ row; click reopens. N1 "answered"
+   look: no box, no border — a quiet hairline-separated row (the dotted rule
+   echoes the resolved ledger rows in the class-step mockup) with the green ✓,
+   serif label, and a muted right-aligned summary. */
 .archivist-pc-sheet .pc-bledger-done {
   display: flex; align-items: baseline; gap: var(--pc-space-2);
-  padding: 5px 8px; border-radius: var(--pc-radius-sm); cursor: pointer;
-  border: 1px solid var(--pc-tan-muted);
+  padding: 6px 4px; cursor: pointer;
+  border-bottom: 1px dotted var(--pc-tan-muted);
 }
 .archivist-pc-sheet .pc-bledger-done:hover { background: var(--pc-row-open-bg); }
 .archivist-pc-sheet .pc-bledger-done-check { color: var(--pc-rarity-uncommon); font-weight: 700; }
@@ -240,16 +258,22 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Open item: unresolved (`req`, crimson) / partial / reopened-resolved. */
+/* Open item: unresolved (`req`) / partial / reopened-resolved. N1 borderless
+   callout — NO box outline, NO left-border accent. The decision separates from
+   its neighbours by whitespace alone; "required/open" is signalled inside by
+   the callout's own amber "!" flag + crimson label, never by chrome here. */
 .archivist-pc-sheet .pc-bledger-item {
-  border: 1px solid var(--pc-tan-muted); border-left: 3px solid var(--pc-tan);
-  border-radius: var(--pc-radius-sm); padding: 7px 10px;
+  padding: 6px 0 4px;
 }
-.archivist-pc-sheet .pc-bledger-item.req { border-left-color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-bledger-item-h {
+  display: flex; align-items: baseline; gap: var(--pc-space-2);
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
-  font-size: var(--pc-fs-body); margin-bottom: 5px;
+  font-size: var(--pc-fs-body); border-bottom: 1px solid var(--pc-tan);
+  padding-bottom: 3px; margin-bottom: 7px;
 }
+/* An unresolved decision keys its own heading crimson (the N1 "open" colour);
+   resolved/partial reopened items keep the neutral ink heading. */
+.archivist-pc-sheet .pc-bledger-item.req > .pc-bledger-item-h { color: var(--pc-crimson); }
 
 /* Informational → quiet description row (never has a control). */
 .archivist-pc-sheet .pc-bledger-info {

@@ -138,10 +138,18 @@ function renderControl(
   if (ch.kind === "select-entity" && !ch.from) {
     const need = requiredOf(item);
     const selected = new Set(selectedSlugs(item));
+    const candidates = item.options.flatMap((o) => (o.entity ? [o.entity] : []));
     box.createDiv({ cls: "pc-bledger-item-h", text: `${labelOf(item)} — choose ${need}` });
+    // Zero resolved candidates → a quiet muted-italic empty line, not the full
+    // table chrome. The wrapping callout is already borderless, so this reads as
+    // a soft N1 note rather than an emphasized "No matches." box.
+    if (candidates.length === 0) {
+      box.createDiv({ cls: "pc-bledger-empty", text: "No options available in your vault yet." });
+      return;
+    }
     renderSelectionTable(box, ctx, {
       columns: [],
-      candidates: item.options.flatMap((o) => (o.entity ? [o.entity] : [])),
+      candidates,
       stateKey: `${opts.stateKey}.${item.level}.${item.key}`,
       selected,
       single: need === 1,
