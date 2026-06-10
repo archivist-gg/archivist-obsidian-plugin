@@ -47,4 +47,28 @@ describe("choiceSchema — four primitives", () => {
       ],
     }).success).toBe(false);
   });
+
+  it("accepts inline options with a valid feature effect", () => {
+    expect(choiceSchema.safeParse({
+      kind: "select-inline", id: "m", options: [
+        { value: "a", label: "A", effects: [{ kind: "initiative-bonus", value: 2 }] },
+      ],
+    }).success).toBe(true);
+  });
+
+  it("rejects inline options whose effect is missing a required field", () => {
+    expect(choiceSchema.safeParse({
+      kind: "select-inline", id: "m", options: [
+        { value: "a", label: "A", effects: [{ kind: "initiative-bonus" }] },
+      ],
+    }).success).toBe(false);
+  });
+
+  it("rejects inline options carrying an unknown effect kind", () => {
+    expect(choiceSchema.safeParse({
+      kind: "select-inline", id: "m", options: [
+        { value: "a", label: "A", effects: [{ kind: "totally-not-a-real-effect" }] },
+      ],
+    }).success).toBe(false);
+  });
 });
