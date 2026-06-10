@@ -37,7 +37,7 @@ export class SensesPanel implements SheetComponent {
     if (darkvision > 0) {
       const row = list.createDiv({ cls: "pc-sense-row" });
       row.createSpan({ cls: "pc-sense-name", text: "Darkvision" });
-      row.createSpan({ cls: "pc-sense-val", text: `${darkvision} ft` });
+      row.createSpan({ cls: "pc-sense-dist", text: `${darkvision} ft.` });
     }
   }
 }

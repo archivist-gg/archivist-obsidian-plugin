@@ -114,9 +114,12 @@ describe("SensesPanel — darkvision", () => {
   it("renders a darkvision row when derived.senses.darkvision > 0", () => {
     const container = mountContainer();
     new SensesPanel().render(container, mkCtx({ darkvision: 60 }));
-    expect(container.querySelectorAll(".pc-sense-row").length).toBe(4);
-    const vals = [...container.querySelectorAll(".pc-sense-val")].map((v) => v.textContent);
-    expect(vals).toContain("60 ft");
+    const rows = [...container.querySelectorAll(".pc-sense-row")];
+    expect(rows.length).toBe(4);
+    // Darkvision renders after the three passive rows.
+    expect(rows[3].querySelector(".pc-sense-name")?.textContent).toBe("Darkvision");
+    const dist = container.querySelector(".pc-sense-dist");
+    expect(dist?.textContent).toBe("60 ft.");
     const names = [...container.querySelectorAll(".pc-sense-name")].map((v) => v.textContent);
     expect(names).toContain("Darkvision");
   });
