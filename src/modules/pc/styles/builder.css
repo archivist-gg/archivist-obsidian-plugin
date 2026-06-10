@@ -155,3 +155,85 @@
 .archivist-pc-sheet .pc-bpicker-search:focus,
 .archivist-pc-sheet .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
 .archivist-pc-sheet .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
+
+/* ── Inert (visible-but-unselectable) callout chip: a `from` slug with no entity
+   behind it. Muted + un-clickable, distinct from `.muted` (over-limit dim). ── */
+.archivist-pc-sheet .pc-bchoice-chip.inert {
+  opacity: .4; cursor: default; border-style: dashed; color: var(--pc-text-muted);
+}
+
+/* ── Decision ledger (SP2 §7): level-grouped decision rows ── */
+.archivist-pc-sheet .pc-bledger { display: flex; flex-direction: column; gap: var(--pc-space-3); }
+.archivist-pc-sheet .pc-bledger-empty {
+  color: var(--pc-text-muted); font-style: italic; font-family: var(--pc-font-serif);
+  padding: var(--pc-space-3) 0;
+}
+.archivist-pc-sheet .pc-bledger-level { display: flex; flex-direction: column; gap: var(--pc-space-2); }
+.archivist-pc-sheet .pc-bledger-level-h {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+  border-bottom: 1px solid var(--pc-tan-muted); padding-bottom: 3px;
+}
+
+/* Resolved + collapsed → one-line green-✓ row; click reopens. */
+.archivist-pc-sheet .pc-bledger-done {
+  display: flex; align-items: baseline; gap: var(--pc-space-2);
+  padding: 5px 8px; border-radius: var(--pc-radius-sm); cursor: pointer;
+  border: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-bledger-done:hover { background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bledger-done-check { color: var(--pc-rarity-uncommon); font-weight: 700; }
+.archivist-pc-sheet .pc-bledger-done-label {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-bledger-done-value {
+  margin-left: auto; font-size: var(--pc-fs-small); color: var(--pc-text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Open item: unresolved (`req`, crimson) / partial / reopened-resolved. */
+.archivist-pc-sheet .pc-bledger-item {
+  border: 1px solid var(--pc-tan-muted); border-left: 3px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm); padding: 7px 10px;
+}
+.archivist-pc-sheet .pc-bledger-item.req { border-left-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bledger-item-h {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  font-size: var(--pc-fs-body); margin-bottom: 5px;
+}
+
+/* Informational → quiet description row (never has a control). */
+.archivist-pc-sheet .pc-bledger-info {
+  display: flex; align-items: baseline; gap: var(--pc-space-2);
+  padding: 4px 8px; color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-bledger-info-name {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-soft); font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-bledger-info-note {
+  font-size: var(--pc-fs-small); font-style: italic; color: var(--pc-text-muted);
+}
+
+/* Ability-points pool: a −/+ stepper per pool ability. */
+.archivist-pc-sheet .pc-bpoints-left { font-size: var(--pc-fs-small); color: var(--pc-crimson); font-weight: 700; }
+.archivist-pc-sheet .pc-bpoints {
+  display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-top: 4px;
+}
+.archivist-pc-sheet .pc-bpoints-cell {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 6px;
+}
+.archivist-pc-sheet .pc-bpoints-ab {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bpoints-n {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  min-width: 12px; text-align: center;
+}
+.archivist-pc-sheet .pc-bpoints-btn {
+  width: 18px; height: 18px; line-height: 1; padding: 0; border-radius: 50%;
+  border: 1px solid var(--pc-tan-muted); background: transparent;
+  color: var(--pc-crimson); cursor: pointer; font-size: var(--pc-fs-small); font-weight: 700;
+}
+.archivist-pc-sheet .pc-bpoints-btn:disabled { color: var(--pc-text-muted); border-color: var(--pc-tan-muted); opacity: .4; cursor: default; }
