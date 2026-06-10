@@ -3,18 +3,11 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
 import { choiceSchema } from "../../src/shared/schemas/choice-schema";
+import { DECISION_SIGNAL } from "../../src/modules/pc/decision-recognizer";
 
 const RUNTIME = path.resolve(__dirname, "../../src/srd/data/runtime");
 const EDITIONS = ["2014", "2024"] as const;
 const KINDS = ["class", "subclass", "race", "feat", "background"] as const;
-
-// Prose that signals a player decision. Tuned: bare "select"/"pick" produce
-// too many false positives; these three forms are the reliable signals.
-const DECISION_SIGNAL = [
-  /\bchoose (one|two|three|a|an)\b/i,
-  /\bof your choice\b/i,
-  /\byour choice of\b/i,
-];
 
 function slug(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");

@@ -1,7 +1,9 @@
 import type { Feature } from "../../shared/types/feature";
 import type { Choice } from "../../shared/types/choice";
 
-const DECISION_SIGNAL = [/\bchoose (one|two|three|a|an)\b/i, /\bof your choice\b/i, /\byour choice of\b/i];
+// Prose that signals a player decision. Tuned: bare "select"/"pick" produce
+// too many false positives; these three forms are the reliable signals.
+export const DECISION_SIGNAL = [/\bchoose (one|two|three|a|an)\b/i, /\bof your choice\b/i, /\byour choice of\b/i];
 
 const ASI_OR_FEAT: Choice = {
   kind: "select-inline", id: "asi-or-feat", count: 1,
@@ -14,7 +16,9 @@ const ASI_OR_FEAT: Choice = {
 };
 
 /** id/name-slug → synthesized decision. Keep small and justified: this only
- *  serves un-annotated homebrew (the coverage gate keeps SRD authored). */
+ *  serves un-annotated homebrew (the coverage gate keeps SRD authored).
+ *  These shapes intentionally mirror the canonical authored overlay entries in
+ *  `tools/srd-canonical/overlays/*.yaml`; keep them in sync. */
 const TABLE: Record<string, Choice[]> = {
   "ability-score-improvement": [ASI_OR_FEAT],
   "expertise": [{ kind: "select-proficiency", id: "expertise", count: 2, domain: "skill", from_proficient: true, expertise: true }],

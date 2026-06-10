@@ -242,4 +242,17 @@ describe("buildDecisionLedger — recognizer fallback wiring", () => {
     expect(echo.status).toBe("informational");
     expect(echo.options).toEqual([]);
   });
+
+  // Pins `!choices?.length`: an EMPTY ARRAY must behave like undefined, so a
+  // recognizer-mapped feature still gets its synthesized decision.
+  it("treats an empty choices array like undefined for recognizer-mapped features", () => {
+    const c = homebrewClass();
+    const expertise = c.features.find(f => f.feature.id === "expertise")!.feature as { choices?: unknown[] };
+    expertise.choices = [];
+    const ledger = buildDecisionLedger(c, { registry } as never);
+    const exp = ledger.classes[0].levels.flatMap(l => l.items).find(i => i.key === "expertise")!;
+    expect(exp).toBeDefined();
+    expect(exp.choice.kind).toBe("select-proficiency");
+    expect(exp.status).toBe("unresolved");
+  });
 });

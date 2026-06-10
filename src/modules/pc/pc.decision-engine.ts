@@ -173,7 +173,8 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
 
   resolved.classes.forEach((c, classIndex) => {
     if (!c.entity) return;
-    const ownerBare = bareEntitySlug(c.entity.slug);
+    const entity = c.entity;
+    const ownerBare = bareEntitySlug(entity.slug);
     const byLevel = new Map<number, DecisionItem[]>();
     const push = (lvl: number, item: DecisionItem) => {
       const arr = byLevel.get(lvl) ?? [];
@@ -184,26 +185,29 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
       (c.choices[lvl] as Record<string, ChoiceValue> | undefined)?.[id];
 
     // Entity-level: L1 skill choice (first class only — multiclass rules are Plan 5).
-    if (classIndex === 0 && c.entity.skill_choices?.from?.length) {
+    if (classIndex === 0 && entity.skill_choices?.from?.length) {
       const skillChoice: Choice = {
         kind: "select-proficiency", id: "skills", label: "Skill Proficiencies",
-        count: c.entity.skill_choices.count, domain: "skill",
-        from: c.entity.skill_choices.from,
+        count: entity.skill_choices.count, domain: "skill",
+        from: entity.skill_choices.from,
       };
-      push(1, buildItem(skillChoice, { kind: "class", slug: c.entity.slug, level: 1 }, 1,
+      push(1, buildItem(skillChoice, { kind: "class", slug: entity.slug, level: 1 }, 1,
         "Proficiencies", readAt(1), ctx, ownerBare));
     }
 
     // Entity-level: starting-equipment choices (recorded for the Equipment step;
     // the minimal Class-step host doesn't render these — Plan 5 does).
     if (classIndex === 0) {
-      (c.entity.starting_equipment ?? []).forEach((eq, i) => {
+      // `equipment-{i}`/`option-{j}` keys are positional and assume stable
+      // starting_equipment order (canonical SRD data); Plan 5 revisits if the
+      // Equipment step persists these more broadly.
+      (entity.starting_equipment ?? []).forEach((eq, i) => {
         if (eq.kind !== "choice") return;
         const ch: Choice = {
           kind: "select-inline", id: `equipment-${i}`, label: "Starting Equipment", count: 1,
           options: eq.options.map((opt, j) => ({ value: `option-${j}`, label: opt })),
         };
-        push(1, buildItem(ch, { kind: "class", slug: c.entity!.slug, level: 1 }, 1,
+        push(1, buildItem(ch, { kind: "class", slug: entity.slug, level: 1 }, 1,
           "Starting Equipment", readAt(1), ctx, ownerBare));
       });
     }
@@ -214,7 +218,7 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
       const src = rf.source;
       if (src.kind !== "class" && src.kind !== "subclass") continue;
       const belongs = src.kind === "class"
-        ? src.slug === c.entity.slug
+        ? src.slug === entity.slug
         : c.subclass != null && src.slug === c.subclass.slug;
       if (!belongs) continue;
       const lvl = src.level;
