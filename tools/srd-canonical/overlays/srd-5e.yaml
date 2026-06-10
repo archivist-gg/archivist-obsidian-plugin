@@ -305,6 +305,177 @@ class_features:
   signature-spells:
     noChoices: true # deferred: spell management lives on the sheet (SP4c)
 
+  # ===================================================================
+  # Subclass decision data (SP2 Plan 3). Scoped keys
+  # `<subclass-bare-slug>:<feature-slug>` so they land on the subclass's
+  # features only. Feature slugs are slugifyName(feature.name) (apostrophes
+  # stripped: "Hunter's Prey" -> hunters-prey). Every 2014 subclass in
+  # subclass.2014.json was walked (one per class; Battle Master is NOT in SRD
+  # 5.1, so only Champion ships for Fighter); only the features below carry a
+  # build-time choice.
+  # ===================================================================
+
+  # --- Champion (Fighter) -- Additional Fighting Style (L10) ---
+  # "you can choose a second option from the Fighting Style class feature."
+  # Same select-entity as the base Fighting Style. The fighting_style
+  # optional-features in optional-feature.2014.json carry the class reference
+  # list, so the data-driven WHERE resolves to the Fighter style set.
+  champion:additional-fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+
+  # --- Circle of the Land (Druid) -- Circle Spells (L3) -- terrain pick ---
+  # In 2014 the land type is a PERMANENT build decision made at L3 ("Choose
+  # that land...and consult the associated list of spells") that drives the
+  # always-prepared circle-spell list at L3/5/7/9. (Contrast 2024, where the
+  # land type is re-picked each Long Rest -- there it's a recurring runtime
+  # choice.) The granted spells are always-prepared (spell mgmt, SP4c); only
+  # the terrain pick itself is authored. Options are the seven lands the prose
+  # lists (no Underdark in SRD 5.1). The feature appears at L3/5/7/9 with the
+  # same name; the scoped key lands on every level entry, but the terrain is
+  # picked once -- the id is the persistence key, so re-renders share it.
+  circle-of-the-land:circle-spells:
+    choices:
+      - kind: select-inline
+        id: land-terrain
+        count: 1
+        options:
+          - { value: arctic, label: Arctic }
+          - { value: coast, label: Coast }
+          - { value: desert, label: Desert }
+          - { value: forest, label: Forest }
+          - { value: grassland, label: Grassland }
+          - { value: mountain, label: Mountain }
+          - { value: swamp, label: Swamp }
+  # Circle of the Land -- Bonus Cantrip (L2): "one additional druid cantrip of
+  # your choice" -- spell selection (SP4c deferral).
+  circle-of-the-land:bonus-cantrip:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+
+  # --- College of Lore (Bard) -- Bonus Proficiencies (L3) ---
+  # "you gain proficiency with three skills of your choice."
+  college-of-lore:bonus-proficiencies:
+    choices:
+      - kind: select-proficiency
+        id: skills
+        domain: skill
+        count: 3
+
+  # --- Draconic Bloodline (Sorcerer) -- Dragon Ancestor (L1) ---
+  # "you choose one type of dragon as your ancestor. The damage type associated
+  # with each dragon is used by features you gain later." The L1 pick itself
+  # grants NO direct effect (it's a flavor/forward-reference select-inline); the
+  # damage type only matters at L6 Elemental Affinity, which grants only a
+  # 1-hour resistance bought with a sorcery point (a runtime spend, not a build
+  # effect), so no resistance effect is authored on these options.
+  draconic-bloodline:dragon-ancestor:
+    choices:
+      - kind: select-inline
+        id: draconic-ancestry
+        count: 1
+        options:
+          - { value: black, label: Black (Acid) }
+          - { value: blue, label: Blue (Lightning) }
+          - { value: brass, label: Brass (Fire) }
+          - { value: bronze, label: Bronze (Lightning) }
+          - { value: copper, label: Copper (Acid) }
+          - { value: gold, label: Gold (Fire) }
+          - { value: green, label: Green (Poison) }
+          - { value: red, label: Red (Fire) }
+          - { value: silver, label: Silver (Cold) }
+          - { value: white, label: White (Cold) }
+
+  # --- Hunter (Ranger) -- Hunter's Prey (L3) ---
+  # "you gain one of the following features of your choice." Three options.
+  hunter:hunters-prey:
+    choices:
+      - kind: select-inline
+        id: hunters-prey
+        count: 1
+        options:
+          - value: colossus-slayer
+            label: Colossus Slayer
+            description: When you hit a creature with a weapon attack, the creature takes an extra 1d8 damage if it's below its hit point maximum. You can deal this extra damage only once per turn.
+          - value: giant-killer
+            label: Giant Killer
+            description: When a Large or larger creature within 5 feet of you hits or misses you with an attack, you can use your reaction to attack that creature immediately after its attack.
+          - value: horde-breaker
+            label: Horde Breaker
+            description: Once on each of your turns when you make a weapon attack, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target and within range of your weapon.
+  # --- Hunter (Ranger) -- Defensive Tactics (L7) ---
+  hunter:defensive-tactics:
+    choices:
+      - kind: select-inline
+        id: defensive-tactics
+        count: 1
+        options:
+          - value: escape-the-horde
+            label: Escape the Horde
+            description: Opportunity attacks against you are made with disadvantage.
+          - value: multiattack-defense
+            label: Multiattack Defense
+            description: When a creature hits you with an attack, you gain a +4 bonus to AC against all subsequent attacks made by that creature for the rest of the turn.
+          - value: steel-will
+            label: Steel Will
+            description: You have advantage on saving throws against being frightened.
+  # --- Hunter (Ranger) -- Multiattack (L11) ---
+  hunter:multiattack:
+    choices:
+      - kind: select-inline
+        id: multiattack
+        count: 1
+        options:
+          - value: volley
+            label: Volley
+            description: You can use your action to make a ranged attack against any number of creatures within 10 feet of a point you can see within your weapon's range. You must have ammunition for each target.
+          - value: whirlwind-attack
+            label: Whirlwind Attack
+            description: You can use your action to make a melee attack against any number of creatures within 5 feet of you, with a separate attack roll for each target.
+  # --- Hunter (Ranger) -- Superior Hunter's Defense (L15) ---
+  hunter:superior-hunters-defense:
+    choices:
+      - kind: select-inline
+        id: superior-hunters-defense
+        count: 1
+        options:
+          - value: evasion
+            label: Evasion
+            description: When you make a Dexterity saving throw to take only half damage, you instead take no damage on a success and only half damage on a failure.
+          - value: stand-against-the-tide
+            label: Stand Against the Tide
+            description: When a hostile creature misses you with a melee attack, you can use your reaction to force that creature to repeat the same attack against another creature of your choice.
+          - value: uncanny-dodge
+            label: Uncanny Dodge
+            description: When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you.
+
+  # --- Subclass features with no build-time choice (walked for coverage) ---
+  # Life Domain (Cleric): Bonus Proficiency (heavy armor, fixed), Disciple of
+  # Life (passive) -- no choice. Life Domain Spells = always-prepared table.
+  life-domain:life-domain-spells-table:
+    noChoices: true # always-prepared subclass spell table, no choice
+  # Oath of Devotion (Paladin): Channel Divinity grants TWO fixed options (not a
+  # pick); Tenets are flavor text. Oath Spells = always-prepared table.
+  oath-of-devotion:oath-spells:
+    noChoices: true # always-prepared subclass spell table, no choice
+  # The Fiend (Warlock): Expanded Spell List = spells added to the known list
+  # (spell mgmt, SP4c). Fiendish Resilience = damage type re-picked each rest.
+  the-fiend:expanded-spell-list:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  the-fiend:fiendish-resilience:
+    noChoices: true # recurring per-rest damage-type pick, not a build decision
+  # School of Evocation (Wizard): Evocation Savant = a copy-cost discount in
+  # 2014 (NOT the 2024 "pick two spells"); Sculpt Spells = passive. No choice.
+  # Way of the Open Hand (Monk): Open Hand Technique = per-attack effect pick
+  # (prone/push/no-reactions) resolved in play, not a build decision.
+  way-of-the-open-hand:open-hand-technique:
+    noChoices: true # per-attack runtime choice, not a build decision
+  # Path of the Berserker (Barbarian) -- Frenzy/Intimidating Presence: passive,
+  # no choice. Thief (Rogue): all features passive, no choice. (No keys needed.)
+
 race_traits:
   # Dragonborn -- 2014 breath weapon: 1 use, regain on a short or long rest.
   breath-weapon:
@@ -326,6 +497,135 @@ race_traits:
         max_formula: "1"
         reset: long-rest
     trigger: "reduced to 0 HP but not killed outright"
+
+  # ===================================================================
+  # Species trait decision data (SP2 Plan 3). race_traits keys are BARE
+  # trait-slugs (slugifyName(trait.name)), NOT owner-scoped -- so a key lands
+  # on EVERY species whose trait slugifies to it. The "Ability Score Increase"
+  # and "Languages" trait names are shared across every 2014 species, so those
+  # choices (Human/Half-Elf ability + language picks) CANNOT live here (a bare
+  # key would wrongly hit every species); they are authored as entity-level
+  # `races:` overrides below. Only traits whose slug is UNIQUE to a single
+  # species (and carry a choice) are keyed here. Every 2014 species in
+  # race.2014.json was walked. Subraces ship as separate entities with a
+  # `subspecies_of` field (High Elf, Hill Dwarf, Lightfoot, Rock Gnome); their
+  # traits render on the subrace entity, so subrace-only trait slugs key here.
+  # ===================================================================
+
+  # --- Dragonborn -- Draconic Ancestry: "Choose one type of dragon from the
+  # Draconic Ancestry table. Your breath weapon and damage resistance are
+  # determined by the dragon type." The separate Damage Resistance trait grants
+  # Resistance to the linked type, so each option carries that resistance effect
+  # (mirrors the 2024 overlay's draconic-ancestry). NB: the trait named
+  # "Draconic Ancestry table" slugifies to `draconic-ancestry-table` and is a
+  # different key -- the choice lands on `draconic-ancestry` only. ---
+  draconic-ancestry:
+    choices:
+      - kind: select-inline
+        id: draconic-ancestry
+        count: 1
+        options:
+          - value: black
+            label: Black (Acid)
+            effects: [{ kind: resistance, damage_type: Acid }]
+          - value: blue
+            label: Blue (Lightning)
+            effects: [{ kind: resistance, damage_type: Lightning }]
+          - value: brass
+            label: Brass (Fire)
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: bronze
+            label: Bronze (Lightning)
+            effects: [{ kind: resistance, damage_type: Lightning }]
+          - value: copper
+            label: Copper (Acid)
+            effects: [{ kind: resistance, damage_type: Acid }]
+          - value: gold
+            label: Gold (Fire)
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: green
+            label: Green (Poison)
+            effects: [{ kind: resistance, damage_type: Poison }]
+          - value: red
+            label: Red (Fire)
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: silver
+            label: Silver (Cold)
+            effects: [{ kind: resistance, damage_type: Cold }]
+          - value: white
+            label: White (Cold)
+            effects: [{ kind: resistance, damage_type: Cold }]
+
+  # --- Dwarf -- Tool Proficiency: "the artisan's tools of your choice: smith's
+  # tools, brewer's supplies, or mason's tools." Tool slugs are the prose
+  # strings. The trait slug `tool-proficiency` is unique to base Dwarf. ---
+  tool-proficiency:
+    choices:
+      - kind: select-proficiency
+        id: tool
+        domain: tool
+        count: 1
+        from: ["smith's tools", "brewer's supplies", "mason's tools"]
+
+  # --- High Elf (subrace) -- Cantrip: "one cantrip of your choice from the
+  # wizard spell list" -- spell selection (SP4c deferral). Trait slug `cantrip`
+  # is unique to High Elf. ---
+  cantrip:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # --- High Elf (subrace) -- Extra Language: "one extra language of your
+  # choice." Distinct trait slug `extra-language` unique to High Elf (the base
+  # Elf has no language choice), so this trait-level key is safe. ---
+  extra-language:
+    choices:
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 1
+
+  # --- Half-Elf -- Skill Versatility: "proficiency in two skills of your
+  # choice." Trait slug `skill-versatility` is unique to Half-Elf. ---
+  skill-versatility:
+    choices:
+      - kind: select-proficiency
+        id: skills
+        domain: skill
+        count: 2
+
+# ===================================================================
+# Entity-level species choices (SP2 Plan 3). Keyed by bare species slug. Used
+# for decisions that hang on a trait whose slug is SHARED across species (so a
+# trait-level race_traits key would wrongly hit every species). Every 2014
+# species was walked:
+# - Human -- Ability Score Increase: "your ability scores each increase by 1"
+#   is fully FIXED (all six +1), so no choice. Human -- Languages: "Common and
+#   one extra language of your choice" -> 1 language pick (authored here).
+# - Half-Elf -- Ability Score Increase: "Charisma +2, and two OTHER ability
+#   scores of your choice +1" -> the +2 Cha is fixed; the choice is +1 to two
+#   abilities from the all-but-Cha pool (ability-points, points 2, max_per 1).
+#   Half-Elf -- Languages: "Common, Elvish, and one extra language of your
+#   choice" -> 1 language pick (authored here). (Skill Versatility's 2-skill
+#   pick is a UNIQUE trait slug, authored in race_traits above.)
+# - All other species' shared Ability Score Increase / Languages traits are
+#   fully fixed, so they carry no entity-level choice.
+# ===================================================================
+races:
+  human:
+    choices:
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 1
+  half-elf:
+    choices:
+      - kind: ability-points
+        id: abilities
+        points: 2
+        max_per: 1
+        pool: [str, dex, con, int, wis]
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 1
 
 # ===================================================================
 # Entity-level class overrides (SP2 Plan 3). Keyed by bare class slug.
@@ -522,3 +822,19 @@ optional_feature_slugs:
     - dueling
     - great-weapon-fighting
     - protection
+
+# ===================================================================
+# Background decision data (SP2 Plan 3). Keyed by bare background slug. SRD 5.1
+# ships exactly ONE background -- Acolyte -- which was walked. 2014 backgrounds
+# grant no ability-score increase (that's a 2024 addition); Acolyte's skills
+# (Insight, Religion) and tool proficiencies are fixed. Its only player choice
+# is "two languages of your choice" (the runtime language_proficiencies carries
+# {kind: choice, count: 2, from: any}).
+# ===================================================================
+backgrounds:
+  acolyte:
+    choices:
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 2
