@@ -148,6 +148,24 @@ describe("renderDecisionLedger", () => {
     expect(root.querySelector(".pc-bledger-done")).toBeNull();
   });
 
+  it("re-renders in place under its host when a resolved row reopens", () => {
+    // Mount the ledger inside a wrapper div — the redraw must re-home the rebuilt
+    // ledger under that same host, not detach or duplicate it.
+    const root = mountContainer();
+    const host = root.createDiv();
+    const bag = new Map<string, unknown>();
+    const item = inlineItem({ selected: "archery", status: "resolved" });
+    renderDecisionLedger(host, fakeCtx(bag, fakeEditState()), { ledger: ledgerOf([item]), ...opts });
+    host.querySelector<HTMLElement>(".pc-bledger-done")!.click();
+    // exactly one ledger, still under the same host
+    expect(host.querySelectorAll(".pc-bledger").length).toBe(1);
+    expect(host.querySelector(".pc-bledger")!.parentElement).toBe(host);
+    // the reopened item now shows its open control instead of the done row
+    expect(host.querySelector(".pc-bledger-item.open")).not.toBeNull();
+    expect(host.querySelector(".pc-bledger-done")).toBeNull();
+    expect(host.querySelector(".pc-bchoice")).not.toBeNull();
+  });
+
   it("dispatches a no-`from` select-entity to the selection table", () => {
     const root = mountContainer();
     renderDecisionLedger(root, fakeCtx(new Map(), fakeEditState()), { ledger: ledgerOf([subclassItem()]), ...opts });

@@ -153,27 +153,28 @@ function renderControl(
     return;
   }
 
-  // Inline / proficiency / explicit-`from` entity picks → the N1 callout.
+  // Inline / proficiency / explicit-`from` entity picks → the N1 callout. A
+  // `missing` option (slug with no resolved entity) is shown inert: visible with
+  // a "(missing)" hint, but it carries no click listener so it can never write a
+  // dangling slug — the onToggle below only ever sees selectable values.
   const need = requiredOf(item);
   const selected = new Set(selectedSlugs(item));
   const callout = box.createDiv();
   renderChoiceCallout(callout, {
     label: labelOf(item),
     choose: need,
-    options: item.options.map((o) => ({ value: o.value, label: o.missing ? `${o.label} (missing)` : o.label })),
+    options: item.options.map((o) => ({
+      value: o.value,
+      label: o.missing ? `${o.label} (missing)` : o.label,
+      inert: o.missing,
+    })),
     selected,
     required: item.status === "unresolved",
     onToggle: (value) => {
-      const opt = item.options.find((o) => o.value === value);
-      if (opt?.missing) return; // visible-but-inert: never write a dangling slug
       applyChoiceToggle(selected, value, need);
       writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
     },
   });
-  // Dress the missing chips as inert (the callout renders them as plain chips).
-  for (const el of Array.from(callout.querySelectorAll<HTMLElement>(".pc-bchoice-chip"))) {
-    if (el.textContent?.endsWith("(missing)")) el.classList.add("inert");
-  }
 }
 
 function selectedSlugs(item: DecisionItem): string[] {
@@ -228,6 +229,8 @@ function renderAbilityPoints(
  *  bag, so a fresh pass restores expand/collapse). Used by the resolved-row
  *  reopen click; live builds rebuild via the sheet's onChange instead. */
 function redraw(parent: HTMLElement, ctx: ComponentRenderContext, opts: DecisionLedgerOptions): void {
+  // `parent` may be a level group or a nested item box; closest() climbs to the
+  // ledger root either way, so we re-render under the ledger's own host element.
   const host = parent.closest(".pc-bledger")?.parentElement;
   if (!host) return;
   host.querySelector(".pc-bledger")?.remove();
