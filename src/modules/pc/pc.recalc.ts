@@ -272,6 +272,22 @@ function mergeInto(target: ProficiencySet, source: { categories: string[]; speci
   for (const s of source.specific) if (!target.specific.includes(s)) target.specific.push(s);
 }
 
+/** Concats defense lists in precedence order (manual, equipment, features),
+ *  deduping case-insensitively — first occurrence's spelling wins. */
+function dedupeDefenseList(lists: string[][]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const list of lists) {
+    for (const v of list) {
+      const key = v.trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(v);
+    }
+  }
+  return out;
+}
+
 export function computeProficiencies(
   resolved: ResolvedCharacter,
 ): { armor: ProficiencySet; weapons: ProficiencySet; tools: ProficiencySet; languages: string[]; saves: Ability[] } {
@@ -546,22 +562,24 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   );
 
   const defenses = {
-    resistances: [
-      ...(resolved.definition.defenses?.resistances ?? []),
-      ...applied.defenses.resistances,
-    ],
-    immunities: [
-      ...(resolved.definition.defenses?.immunities ?? []),
-      ...applied.defenses.immunities,
-    ],
-    vulnerabilities: [
-      ...(resolved.definition.defenses?.vulnerabilities ?? []),
-      ...applied.defenses.vulnerabilities,
-    ],
-    condition_immunities: [
-      ...(resolved.definition.defenses?.condition_immunities ?? []),
-      ...applied.defenses.condition_immunities,
-    ],
+    resistances: dedupeDefenseList([
+      resolved.definition.defenses?.resistances ?? [],
+      applied.defenses.resistances,
+      featureEffects.resistances,
+    ]),
+    immunities: dedupeDefenseList([
+      resolved.definition.defenses?.immunities ?? [],
+      applied.defenses.immunities,
+    ]),
+    vulnerabilities: dedupeDefenseList([
+      resolved.definition.defenses?.vulnerabilities ?? [],
+      applied.defenses.vulnerabilities,
+    ]),
+    condition_immunities: dedupeDefenseList([
+      resolved.definition.defenses?.condition_immunities ?? [],
+      applied.defenses.condition_immunities,
+      featureEffects.condition_immunities,
+    ]),
   };
 
   return {

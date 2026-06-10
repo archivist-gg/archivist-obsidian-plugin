@@ -153,3 +153,35 @@ describe("recalc — feature effects: proficiencies", () => {
     expect(d.proficiencies.languages).toContain("Draconic");
   });
 });
+
+describe("recalc — feature effects: defenses", () => {
+  it("appends feature resistances to derived defenses", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "resistance", damage_type: "Fire" },
+      { kind: "resistance", damage_type: "Cold" },
+    ]));
+    expect(d.defenses.resistances).toEqual(["Fire", "Cold"]);
+  });
+
+  it("dedupes resistances case-insensitively across manual + feature sources (manual spelling wins)", () => {
+    const r = resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "resistance", damage_type: "Fire" }]);
+    r.definition.defenses = { resistances: ["fire"], immunities: [], vulnerabilities: [], condition_immunities: [] };
+    const d = recalc(r);
+    expect(d.defenses.resistances).toEqual(["fire"]);
+  });
+
+  it("applies ungated immune-condition to condition immunities and skips while-gated", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "immune-condition", condition: "Charmed" },
+      { kind: "immune-condition", condition: "Frightened", while: "while raging" },
+    ]));
+    expect(d.defenses.condition_immunities).toEqual(["Charmed"]);
+  });
+
+  it("dedupes manual duplicate defense entries (pre-existing concat bug)", () => {
+    const r = emptyResolved();
+    r.classes = [mkClass("rogue", "d8", 1)];
+    r.definition.defenses = { resistances: ["Fire", "fire"], immunities: [], vulnerabilities: [], condition_immunities: [] };
+    expect(recalc(r).defenses.resistances).toEqual(["Fire"]);
+  });
+});
