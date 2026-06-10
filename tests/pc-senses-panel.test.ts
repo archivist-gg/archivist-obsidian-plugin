@@ -99,3 +99,37 @@ describe("SensesPanel — interactive overrides (SP4c)", () => {
     expect(root.querySelector("input.pc-edit-inline")).toBeNull();
   });
 });
+
+describe("SensesPanel — darkvision", () => {
+  const mkCtx = (senses?: { darkvision: number }): ComponentRenderContext => ({
+    resolved: {} as ResolvedCharacter,
+    derived: {
+      passives: { perception: 14, investigation: 10, insight: 11 },
+      ...(senses ? { senses } : {}),
+    } as DerivedStats,
+    core: {} as never,
+    editState: null,
+  });
+
+  it("renders a darkvision row when derived.senses.darkvision > 0", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx({ darkvision: 60 }));
+    expect(container.querySelectorAll(".pc-sense-row").length).toBe(4);
+    const vals = [...container.querySelectorAll(".pc-sense-val")].map((v) => v.textContent);
+    expect(vals).toContain("60 ft");
+    const names = [...container.querySelectorAll(".pc-sense-name")].map((v) => v.textContent);
+    expect(names).toContain("Darkvision");
+  });
+
+  it("renders no darkvision row when darkvision is 0", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx({ darkvision: 0 }));
+    expect(container.querySelectorAll(".pc-sense-row").length).toBe(3);
+  });
+
+  it("renders no darkvision row when senses is absent (legacy cast fixtures)", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx(undefined));
+    expect(container.querySelectorAll(".pc-sense-row").length).toBe(3);
+  });
+});

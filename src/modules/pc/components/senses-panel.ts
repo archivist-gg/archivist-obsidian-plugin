@@ -30,5 +30,14 @@ export class SensesPanel implements SheetComponent {
         });
       }
     }
+
+    // Darkvision (computed: race vision ∨ feature effects). Optional-chained
+    // because tests cast partial DerivedStats objects.
+    const darkvision = ctx.derived.senses?.darkvision ?? 0;
+    if (darkvision > 0) {
+      const row = list.createDiv({ cls: "pc-sense-row" });
+      row.createSpan({ cls: "pc-sense-name", text: "Darkvision" });
+      row.createSpan({ cls: "pc-sense-val", text: `${darkvision} ft` });
+    }
   }
 }
