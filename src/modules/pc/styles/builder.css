@@ -162,6 +162,29 @@
   opacity: .4; cursor: default; border-style: dashed; color: var(--pc-text-muted);
 }
 
+/* ── Class step: level dropdown + orphan-subclass data ask ── */
+.archivist-pc-sheet .pc-bclass-levelrow {
+  display: flex; align-items: center; gap: var(--pc-space-2);
+  margin: var(--pc-space-3) 0;
+}
+.archivist-pc-sheet .pc-bclass-levellabel {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bclass-level {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 3px 8px; color: var(--pc-text-primary);
+}
+/* Muted warning treatment, consistent with the callout idiom: an amber rule and
+   quiet serif text — a data gap, not a hard error. */
+.archivist-pc-sheet .pc-bclass-orphan {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); font-style: italic;
+  color: var(--pc-text-soft); border-left: 3px solid var(--pc-amber);
+  background: var(--pc-row-open-bg); border-radius: var(--pc-radius-sm);
+  padding: 6px 10px; margin: var(--pc-space-2) 0;
+}
+
 /* ── Decision ledger (SP2 §7): level-grouped decision rows ── */
 .archivist-pc-sheet .pc-bledger { display: flex; flex-direction: column; gap: var(--pc-space-3); }
 .archivist-pc-sheet .pc-bledger-empty {

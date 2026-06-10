@@ -2,8 +2,10 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { RegisteredEntity } from "../../../shared/entities/entity-registry";
 import { BUILDER_STEPS } from "./builder-steps";
 import { renderEntityPicker } from "./builder/entity-picker";
+import { renderDecisionLedger } from "./builder/decision-ledger";
 import type { ColSpec } from "./builder/selection-table";
 import { stripSlug } from "../pc.resolver";
+import { buildDecisionLedger, wikilinkTailSlug } from "../pc.decision-engine";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
 // data today. Sorted by rank order (not alphabetically) and walking speed.
@@ -82,6 +84,8 @@ export class BuilderView implements SheetComponent {
         onSelect: (slug) => ctx.editState?.setRace(slug),
         columns: RACE_COLUMNS,
       });
+    } else if (def.id === "class" && ctx.core) {
+      this.renderClassStep(body, ctx);
     } else {
       body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
     }
@@ -98,6 +102,76 @@ export class BuilderView implements SheetComponent {
       next.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx + 1].id, el, ctx));
     } else {
       foot.createEl("button", { cls: "pc-builder-finish mod-cta", text: "✓ Finish & open sheet" });
+    }
+  }
+
+  /** SP2 Plan 3 / Task 17 — the minimal Class step: a class entity-picker, a
+   *  level dropdown, the live decision ledger, and the orphan-subclass data ask.
+   *  The full multiclass step (multiple class entries, per-class subclass UI)
+   *  arrives in Plan 5; this is the engine→UI→persistence proof for class 0. */
+  private renderClassStep(body: HTMLElement, ctx: ComponentRenderContext): void {
+    // The definition entry is the source of truth for slug + level (resolved.classes
+    // may have a null `entity` for an unrecognized slug; the picker still needs the
+    // chosen slug to mark the selected seal).
+    const entry = ctx.resolved.definition.class[0] as
+      | { name: string; level: number }
+      | undefined;
+    renderEntityPicker(body, ctx, {
+      entityType: "class",
+      stateKey: "builder.class-picker",
+      selectedSlug: entry ? stripSlug(entry.name) : null,
+      onSelect: (slug) => {
+        if (!ctx.editState) return;
+        // No setClass mutator exists (Plan 1 shipped add/remove/setLevel/setSubclass).
+        // To swap class 0 we remove + re-add, threading the prior level so the swap
+        // preserves it — replace-with-level-reset would surprise a mid-build user.
+        if (entry) {
+          ctx.editState.removeClass(0);
+          ctx.editState.addClass(slug, entry.level);
+        } else {
+          ctx.editState.addClass(slug);
+        }
+      },
+    });
+    this.renderOrphanSubclasses(body, ctx);
+    if (!entry) return;
+
+    const lvlRow = body.createDiv({ cls: "pc-bclass-levelrow" });
+    lvlRow.createSpan({ cls: "pc-bclass-levellabel", text: "Level" });
+    const sel = lvlRow.createEl("select", { cls: "pc-bclass-level" });
+    for (let i = 1; i <= 20; i++) {
+      const o = sel.createEl("option", { text: String(i), attr: { value: String(i) } });
+      if (i === entry.level) o.selected = true;
+    }
+    sel.addEventListener("change", () => ctx.editState?.setClassLevel(0, Number(sel.value)));
+
+    const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities });
+    renderDecisionLedger(body, ctx, { ledger, classIndex: 0, stateKey: "builder.class-ledger" });
+  }
+
+  /** Orphan-subclass data ask (spec §11): a subclass whose `parent_class` tail
+   *  resolves to no class entity is registered-but-unoffered. We name the gap and
+   *  ask the user to add the class note. Plan 6 upgrades this to the AI hand-off. */
+  private renderOrphanSubclasses(body: HTMLElement, ctx: ComponentRenderContext): void {
+    const classSlugs = new Set(
+      ctx.core.entities
+        .search("", "class", Number.POSITIVE_INFINITY)
+        .map((c) => wikilinkTailSlug(`[[${c.name}]]`)),
+    );
+    const orphans = ctx.core.entities
+      .search("", "subclass", Number.POSITIVE_INFINITY)
+      .filter((s) => {
+        const pc = (s.data as { parent_class?: string }).parent_class;
+        return pc ? !classSlugs.has(wikilinkTailSlug(pc)) : false;
+      });
+    for (const o of orphans) {
+      const pc = (o.data as { parent_class?: string }).parent_class ?? "?";
+      body.createDiv({
+        cls: "pc-bclass-orphan",
+        text:
+          `${o.name} requires the class "${wikilinkTailSlug(pc)}", which isn't in your vault` +
+          ` — add the class note to enable it.`,
+      });
     }
   }
 
