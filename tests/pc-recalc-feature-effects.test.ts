@@ -114,3 +114,42 @@ describe("recalc — feature effects: initiative / HP / speed / senses", () => {
     expect(recalc(r).senses.darkvision).toBe(0);
   });
 });
+
+describe("recalc — feature effects: proficiencies", () => {
+  it("proficiency skill effect makes the skill proficient", () => {
+    // L5 → prof +3; WIS 10 → mod 0; proficient Perception bonus = 3.
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 5), [
+      { kind: "proficiency", proficiency_type: "skill", value: "Perception" },
+    ]));
+    expect(d.skills.perception.proficiency).toBe("proficient");
+    expect(d.skills.perception.bonus).toBe(3);
+  });
+
+  it("skill override still wins over a feature skill proficiency", () => {
+    const r = resolvedWith(mkClass("rogue", "d8", 5), [
+      { kind: "proficiency", proficiency_type: "skill", value: "Perception" },
+    ]);
+    r.definition.overrides = { skills: { perception: { bonus: 0, proficiency: "none" } } };
+    const d = recalc(r);
+    expect(d.skills.perception.proficiency).toBe("none");
+    expect(d.skills.perception.bonus).toBe(0);
+  });
+
+  it("proficiency saving-throw effect marks the save proficient", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 5), [
+      { kind: "proficiency", proficiency_type: "saving-throw", value: "Wisdom" },
+    ]));
+    expect(d.saves.wis.proficient).toBe(true);
+    expect(d.saves.wis.bonus).toBe(3); // mod 0 + prof 3
+    expect(d.saves.str.proficient).toBe(false);
+  });
+
+  it("proficiency tool and language effects land in the proficiency sets", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "proficiency", proficiency_type: "tool", value: "Thieves' Tools" },
+      { kind: "proficiency", proficiency_type: "language", value: "Draconic" },
+    ]));
+    expect(d.proficiencies.tools.specific).toContain("Thieves' Tools");
+    expect(d.proficiencies.languages).toContain("Draconic");
+  });
+});

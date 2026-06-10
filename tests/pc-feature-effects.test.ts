@@ -81,6 +81,16 @@ describe("computeFeatureEffects", () => {
     expect(out.proficiencies.saves).toEqual([]);
   });
 
+  it("dedupes saves given the same ability as full name and key", () => {
+    const out = computeFeatureEffects([
+      rf([
+        { kind: "proficiency", proficiency_type: "saving-throw", value: "Wisdom" },
+        { kind: "proficiency", proficiency_type: "saving-throw", value: "wis" },
+      ]),
+    ]);
+    expect(out.proficiencies.saves).toEqual(["wis"]);
+  });
+
   it("collects ac-bonus terms with feature-name labels and gating flag", () => {
     const out = computeFeatureEffects([
       rf([{ kind: "ac-bonus", value: 1, requires_armor: true }], "Defense"),

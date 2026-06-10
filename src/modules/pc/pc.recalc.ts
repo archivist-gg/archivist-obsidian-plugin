@@ -343,6 +343,12 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   for (const l of chosenProfs.languages) {
     if (!profsForApply.languages.includes(l)) profsForApply.languages.push(l);
   }
+  for (const t of featureEffects.proficiencies.tools) {
+    if (!profsForApply.tools.specific.includes(t)) profsForApply.tools.specific.push(t);
+  }
+  for (const l of featureEffects.proficiencies.languages) {
+    if (!profsForApply.languages.includes(l)) profsForApply.languages.push(l);
+  }
   profsForApply.languages.sort();
   const applied = registry
     ? computeAppliedBonuses(resolved, profsForApply, registry, warnings)
@@ -387,6 +393,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // Saves (first class's saving_throws only, per 5e multiclass rule).
   const firstClass = resolved.classes[0]?.entity ?? null;
   const saveProfs = new Set<Ability>(firstClass?.saving_throws ?? []);
+  for (const ab of featureEffects.proficiencies.saves) saveProfs.add(ab);
   const saves: Record<Ability, { bonus: number; proficient: boolean }> = {} as never;
   for (const ab of ABILITY_KEYS) {
     const override = overrides.saves?.[ab];
@@ -397,7 +404,11 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   }
 
   // Skills (definition lists + chosen decision proficiencies/expertise).
-  const profSet = new Set([...resolved.definition.skills.proficient, ...chosenProfs.skills]);
+  const profSet = new Set([
+    ...resolved.definition.skills.proficient,
+    ...chosenProfs.skills,
+    ...featureEffects.proficiencies.skills,
+  ]);
   const expSet = new Set([...resolved.definition.skills.expertise, ...chosenProfs.expertise]);
   const skills: DerivedStats["skills"] = {} as never;
   for (const skill of ALL_SKILLS) {
