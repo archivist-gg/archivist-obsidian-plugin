@@ -37,7 +37,7 @@ features_by_level:
       name: "Ember Heart"
       description: "Invented narrative about an internal forge."
       choices:
-        - { kind: skill, count: 1, from: [intimidation, perception] }
+        - { kind: select-proficiency, id: skills, domain: skill, count: 1, from: [intimidation, perception] }
     - id: weapon-mastery
       name: "Weapon Mastery"
       description: "Invented — mastery with 2 weapons, swappable on long rest."
@@ -45,12 +45,12 @@ features_by_level:
     - id: forge-path
       name: "Forge Path"
       description: "Choose a subclass."
-      choices: [{ kind: subclass }]
+      choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
   "4":
     - id: asi-4
       name: "Ability Score Improvement"
       description: "Invented ASI."
-      choices: [{ kind: asi }]
+      choices: [{ kind: ability-points, id: asi, points: 2, max_per: 2 }]
 resources:
   - id: ember-dice
     name: "Ember Dice"
