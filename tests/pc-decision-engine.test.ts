@@ -12,6 +12,23 @@ const styles: RegisteredEntity[] = [
     compendium: "SRD 2024", readonly: true, homebrew: false },
 ];
 
+// A minimal sorcerer-flavoured pool for the multiclass pin.
+const metamagics: RegisteredEntity[] = [
+  { slug: "quickened", name: "Quickened Spell", entityType: "optional-feature", filePath: "q.md",
+    data: { feature_type: "metamagic", available_to: ["[[SRD 2024/Classes/Sorcerer]]"] },
+    compendium: "SRD 2024", readonly: true, homebrew: false },
+  { slug: "subtle", name: "Subtle Spell", entityType: "optional-feature", filePath: "s.md",
+    data: { feature_type: "metamagic", available_to: ["[[SRD 2024/Classes/Sorcerer]]"] },
+    compendium: "SRD 2024", readonly: true, homebrew: false },
+];
+
+const allEntities = [...styles, ...metamagics];
+const multiRegistry = {
+  search: (_q: string, type: string) => allEntities.filter(s => s.entityType === type),
+  getByTypeAndSlug: (type: string, slug: string) =>
+    allEntities.find(s => s.entityType === type && s.slug === slug),
+};
+
 const registry = {
   search: (_q: string, type: string) => styles.filter(s => s.entityType === type),
   getByTypeAndSlug: (type: string, slug: string) => styles.find(s => s.entityType === type && s.slug === slug),
@@ -48,6 +65,78 @@ function resolvedFighter(level: number, choices: Record<number, Record<string, u
   return { definition, race: null, classes: [cls], background: null, feats: [],
     totalLevel: level, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
 }
+
+/**
+ * Fighter (idx 0) + a minimal second class with its own entity slug and a single
+ * decision-bearing feature at L1. Used to pin per-class routing in the ledger.
+ */
+function resolvedMulticlass(): ResolvedCharacter {
+  const fsFeature = {
+    id: "fighting-style", name: "Fighting Style", description: "Choose one option…",
+    choices: [{ kind: "select-entity", id: "fighting-style", count: 1, entity_type: "optional-feature",
+      where: { feature_type: "fighting_style", available_to: "self" } }],
+  };
+  const mmFeature = {
+    id: "metamagic", name: "Metamagic", description: "Choose two options…",
+    choices: [{ kind: "select-entity", id: "metamagic", count: 2, entity_type: "optional-feature",
+      where: { feature_type: "metamagic", available_to: "self" } }],
+  };
+  const fighter = { slug: "srd-2024_fighter", name: "Fighter",
+    skill_choices: { count: 2, from: ["athletics", "perception"] },
+    features_by_level: { 1: [fsFeature] }, starting_equipment: [] };
+  const sorcerer = { slug: "srd-2024_sorcerer", name: "Sorcerer",
+    skill_choices: { count: 2, from: ["arcana", "deception"] },
+    features_by_level: { 1: [mmFeature] }, starting_equipment: [] };
+
+  const definition = {
+    name: "T", edition: "2024", race: null, subrace: null, background: null,
+    class: [
+      { name: "[[fighter]]", level: 1, subclass: null, choices: {} },
+      { name: "[[sorcerer]]", level: 1, subclass: null, choices: {} },
+    ],
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    ability_method: "manual", skills: { proficient: [], expertise: [] },
+    spells: { known: [], overrides: [] }, equipment: [], overrides: {}, origin_choices: {},
+    state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null,
+      conditions: [], exhaustion: 0, inspiration: 0, feature_uses: {} },
+  } as unknown as ResolvedCharacter["definition"];
+
+  const classes = [
+    { entity: fighter, level: 1, subclass: null, choices: {} },
+    { entity: sorcerer, level: 1, subclass: null, choices: {} },
+  ] as unknown as ResolvedCharacter["classes"];
+  const features = [
+    { feature: fsFeature, source: { kind: "class", slug: fighter.slug, level: 1 } },
+    { feature: mmFeature, source: { kind: "class", slug: sorcerer.slug, level: 1 } },
+  ];
+  return { definition, race: null, classes, background: null, feats: [],
+    totalLevel: 2, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+}
+
+describe("buildDecisionLedger — multiclass routing", () => {
+  it("routes each class's decisions under its own classIndex; skills only on class 0", () => {
+    const ledger = buildDecisionLedger(resolvedMulticlass(), { registry: multiRegistry } as never);
+
+    expect(ledger.classes.length).toBe(2);
+
+    const class0Items = ledger.classes[0].levels.flatMap(l => l.items);
+    const class1Items = ledger.classes[1].levels.flatMap(l => l.items);
+
+    // Synthesized L1 skills decision is first-class-only (multiclass rules are Plan 5).
+    expect(class0Items.filter(i => i.key === "skills")).toHaveLength(1);
+    expect(class1Items.filter(i => i.key === "skills")).toHaveLength(0);
+
+    // Fighter's fighting-style lands under class 0, never class 1.
+    expect(class0Items.find(i => i.key === "fighting-style")).toBeDefined();
+    expect(class1Items.find(i => i.key === "fighting-style")).toBeUndefined();
+    expect(class0Items.find(i => i.key === "metamagic")).toBeUndefined();
+
+    // Sorcerer's metamagic lands under class 1, never class 0.
+    const mm = class1Items.find(i => i.key === "metamagic")!;
+    expect(mm).toBeDefined();
+    expect(mm.options.map(o => o.value)).toEqual(["quickened", "subtle"]);
+  });
+});
 
 describe("buildDecisionLedger — feature-level", () => {
   it("collects level-gated decisions with unresolved status", () => {

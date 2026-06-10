@@ -17,6 +17,12 @@ export interface ResolvedOption {
   missing?: boolean;
 }
 
+/**
+ * Status contract: over-selection (n > need) reports `resolved` — the engine
+ * never reports an error for too many picks; the picker UI owns cap enforcement.
+ * Likewise for ability-points `max_per`: the engine only sums total points
+ * allocated, so per-ability caps are picker-enforced, not reflected here.
+ */
 export type DecisionStatus = "resolved" | "partial" | "unresolved" | "informational";
 
 export interface DecisionItem {
@@ -24,10 +30,21 @@ export interface DecisionItem {
   source: FeatureSource;
   level: number;               // 0 for origin (race/background) decisions
   featureName: string;
+  /**
+   * When `status === "informational"` this is a placeholder sentinel and MUST
+   * NOT be rendered — informational items render from `featureName` only
+   * (Task 16 contract). For every other status it is the real choice to render.
+   */
   choice: Choice;
   options: ResolvedOption[];
   selected: ChoiceValue | undefined;
   status: DecisionStatus;
+  /**
+   * Populated only for the selected branch of a select-inline (the
+   * revealed-on-selection rule): a child decision becomes visible once its
+   * parent option is chosen. An unresolved child downgrades the parent's
+   * status to "partial".
+   */
   children?: DecisionItem[];
 }
 
@@ -73,10 +90,12 @@ function enumerateOptions(choice: Choice, ctx: DecisionContext, ownerBare: strin
       return choice.options.map((o) => ({ value: o.value, label: o.label }));
     case "select-entity": {
       if (choice.from) {
+        const byBare = new Map<string, RegisteredEntity>();
+        for (const e of ctx.registry.search("", choice.entity_type, Number.POSITIVE_INFINITY)) {
+          byBare.set(bareEntitySlug(e.slug), e);
+        }
         return choice.from.map((slug) => {
-          const e = ctx.registry.getByTypeAndSlug(choice.entity_type, slug)
-            ?? ctx.registry.search("", choice.entity_type, Number.POSITIVE_INFINITY)
-              .find((c) => bareEntitySlug(c.slug) === slug);
+          const e = ctx.registry.getByTypeAndSlug(choice.entity_type, slug) ?? byBare.get(slug);
           return e ? { value: e.slug, label: e.name, entity: e } : { value: slug, label: slug, missing: true };
         });
       }
