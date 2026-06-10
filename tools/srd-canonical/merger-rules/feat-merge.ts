@@ -39,7 +39,8 @@ export const featMergeRule: MergeRule = {
   kind: "feat",
   pickOverlay(overlay: Overlay, _slug: string): unknown {
     // Per-feat limited-use resources come from the overlay's feat_features map,
-    // keyed by feat-slug. (Action economy still comes from the activation companion.)
+    // keyed by feat-slug. Feature-level choices ride the same map (also keyed by
+    // feat-slug). (Action economy still comes from the activation companion.)
     return overlay.feat_features ?? null;
   },
 };

@@ -166,6 +166,8 @@ export function toRaceCanonical(entry: CanonicalEntry): RaceCanonical {
 
   const traits: RaceTrait[] = baseTraits.map(t => {
     const traitSlug = slugifyName(t.name);
+    // NB: trait slugs are NOT owner-scoped (unlike subclass features) — race_traits
+    // keys are bare trait-slugs, so look up by traitSlug directly.
     const overlaid = overlay?.[traitSlug];
     return {
       name: t.name,
