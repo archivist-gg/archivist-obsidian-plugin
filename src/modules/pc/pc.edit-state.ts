@@ -440,6 +440,15 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Finish the build: drop the `builder` draft flag so the next render shows
+   *  the full character sheet instead of the Builder shell (see isBuilder in
+   *  pc.sheet). Deleting the key (vs setting `false`) keeps it absent from the
+   *  serialized file — a finished character carries no `builder:` line. */
+  finishBuild(): void {
+    delete this.character.builder;
+    this.onChange();
+  }
+
   // ─── Saves (override mutation) ─────────────────────────────────────
   /**
    * Flip the saving-throw proficient bit against the class-derived baseline.

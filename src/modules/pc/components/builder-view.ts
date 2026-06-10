@@ -98,10 +98,18 @@ export class BuilderView implements SheetComponent {
       back.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx - 1].id, el, ctx));
     }
     if (idx < BUILDER_STEPS.length - 1) {
-      const next = foot.createEl("button", { cls: "pc-builder-next mod-cta", text: "Next ▸" });
+      const next = foot.createEl("button", { cls: "pc-builder-next", text: "Next ▸" });
       next.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx + 1].id, el, ctx));
     } else {
-      foot.createEl("button", { cls: "pc-builder-finish mod-cta", text: "✓ Finish & open sheet" });
+      // Finish flips the draft to the full sheet by dropping the `builder` flag
+      // (finishBuild → isBuilder false on the next render). A class is the one
+      // hard requirement, so gate Finish on it with a title hint rather than
+      // letting the user finish into a class-less, unusable sheet.
+      const classed = (ctx.resolved.definition?.class?.length ?? 0) > 0;
+      const finish = foot.createEl("button", { cls: "pc-builder-finish", text: "✓ Finish & open sheet" });
+      finish.disabled = !classed;
+      if (!classed) finish.title = "Pick a class before finishing.";
+      finish.addEventListener("click", () => ctx.editState?.finishBuild());
     }
   }
 

@@ -172,6 +172,10 @@ const knownSpellEntrySchema = z.union([z.string().min(1), knownSpellObjectSchema
 export const characterSchema = z.object({
   name: z.string().min(1),
   edition: z.enum(["2014", "2024"]),
+  // Builder-draft marker (SP2 Plan 3). NO default: absent on every existing
+  // file and stays absent on save; present+true only while the file is an
+  // unfinished Builder draft. Finish deletes the key (see finishBuild).
+  builder: z.boolean().optional(),
   alignment: z.string().optional(),
   race: z.string().nullable().default(null),
   subrace: z.string().nullable().default(null),

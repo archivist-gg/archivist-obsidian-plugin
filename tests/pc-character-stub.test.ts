@@ -21,6 +21,16 @@ describe("character-stub", () => {
     expect(body.trim().endsWith("```")).toBe(true);
   });
 
+  it("buildDraftCharacter marks the draft with builder: true", () => {
+    const draft = buildDraftCharacter("Valeria");
+    expect(draft.builder).toBe(true);
+  });
+
+  it("buildDraftFileBody serializes the builder flag into the pc block", () => {
+    const body = buildDraftFileBody("Valeria");
+    expect(body).toMatch(/^builder:\s*true$/m);
+  });
+
   it("buildDraftCharacter supports the 2024 edition path", () => {
     const draft = buildDraftCharacter("Valeria", "2024");
     const result = characterSchema.safeParse(draft);

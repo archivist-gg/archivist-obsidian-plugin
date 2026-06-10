@@ -49,17 +49,43 @@
   display: flex; align-items: center; gap: 8px;
   margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--pc-tan);
 }
+/* Footer nav buttons mirror the rest-modal ghost/confirm idiom (rest.css):
+   parchment resting state, crimson primary. Every interactive state is pinned
+   explicitly (box-shadow reset + hover/focus/disabled) so Obsidian's theme
+   accent — the old `mod-cta` purple — can never leak back through the default
+   `button`/`.mod-cta` rules. */
 .archivist-pc-sheet .pc-builder-back,
 .archivist-pc-sheet .pc-builder-next,
 .archivist-pc-sheet .pc-builder-finish {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm);
   border-radius: var(--pc-radius-sm); padding: 6px 14px; cursor: pointer;
-  border: 1px solid var(--pc-crimson);
+  border: 1px solid var(--pc-crimson); line-height: 1; box-shadow: none;
 }
-.archivist-pc-sheet .pc-builder-back { background: transparent; color: var(--pc-text-soft); border-color: var(--pc-tan); }
+.archivist-pc-sheet .pc-builder-back {
+  background: transparent; color: var(--pc-text-soft); border-color: var(--pc-tan);
+}
+.archivist-pc-sheet .pc-builder-back:hover:not(:disabled) {
+  background: rgba(146, 38, 16, 0.06); box-shadow: none;
+}
 .archivist-pc-sheet .pc-builder-next,
-.archivist-pc-sheet .pc-builder-finish { background: var(--pc-crimson); color: var(--pc-parchment-light); margin-left: auto; }
+.archivist-pc-sheet .pc-builder-finish {
+  background: var(--pc-crimson); color: var(--pc-parchment-light); margin-left: auto;
+}
+.archivist-pc-sheet .pc-builder-next:hover:not(:disabled),
+.archivist-pc-sheet .pc-builder-finish:hover:not(:disabled) {
+  background: var(--pc-crimson-light); box-shadow: none;
+}
+.archivist-pc-sheet .pc-builder-back:focus-visible,
+.archivist-pc-sheet .pc-builder-next:focus-visible,
+.archivist-pc-sheet .pc-builder-finish:focus-visible {
+  outline: 2px solid var(--pc-crimson); outline-offset: 2px; box-shadow: none;
+}
+.archivist-pc-sheet .pc-builder-back:disabled,
+.archivist-pc-sheet .pc-builder-next:disabled,
+.archivist-pc-sheet .pc-builder-finish:disabled {
+  opacity: 0.45; cursor: not-allowed; box-shadow: none;
+}
 
 /* ── Shared selection UI: compendium filter + source tags ── */
 .archivist-pc-sheet .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }

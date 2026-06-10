@@ -114,6 +114,10 @@ export interface CharacterState {
 export interface Character {
   name: string;
   edition: Edition;
+  /** Present and `true` only while the file is a Builder draft (autosaved,
+   *  resumable). Removed by the Builder's Finish action, which flips the file
+   *  to the full character sheet. Absent on every pre-Builder/finished file. */
+  builder?: boolean;
   alignment?: string;
   race: string | null;
   subrace: string | null;

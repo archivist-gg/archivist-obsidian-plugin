@@ -9,6 +9,8 @@ export function buildDraftCharacter(name: string, edition: "2014" | "2024" = "20
   return characterSchema.parse({
     name: name.trim() || "Untitled",
     edition,
+    // Mark the file a Builder draft (resumable until Finish removes the flag).
+    builder: true,
     class: [],
     abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
     ability_method: "manual",
