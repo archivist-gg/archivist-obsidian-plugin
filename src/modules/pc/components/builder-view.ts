@@ -5,7 +5,7 @@ import { renderEntityPicker } from "./builder/entity-picker";
 import { renderDecisionLedger } from "./builder/decision-ledger";
 import type { ColSpec } from "./builder/selection-table";
 import { stripSlug } from "../pc.resolver";
-import { buildDecisionLedger, wikilinkTailSlug } from "../pc.decision-engine";
+import { buildDecisionLedger, wikilinkTailSlug, bareEntitySlug } from "../pc.decision-engine";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
 // data today. Sorted by rank order (not alphabetically) and walking speed.
@@ -153,11 +153,15 @@ export class BuilderView implements SheetComponent {
    *  resolves to no class entity is registered-but-unoffered. We name the gap and
    *  ask the user to add the class note. Plan 6 upgrades this to the AI hand-off. */
   private renderOrphanSubclasses(body: HTMLElement, ctx: ComponentRenderContext): void {
-    const classSlugs = new Set(
-      ctx.core.entities
-        .search("", "class", Number.POSITIVE_INFINITY)
-        .map((c) => wikilinkTailSlug(`[[${c.name}]]`)),
-    );
+    // Key on bareEntitySlug(slug) like the engine's parent_class==="self" filter
+    // (matchesFilter in pc.decision-engine) so the callout never false-positives
+    // when a homebrew class's display name ≠ slug. Keep the name tail as a
+    // secondary alias since a subclass may also link the display name.
+    const classSlugs = new Set<string>();
+    for (const c of ctx.core.entities.search("", "class", Number.POSITIVE_INFINITY)) {
+      classSlugs.add(bareEntitySlug(c.slug));
+      classSlugs.add(wikilinkTailSlug(`[[${c.name}]]`));
+    }
     const orphans = ctx.core.entities
       .search("", "subclass", Number.POSITIVE_INFINITY)
       .filter((s) => {

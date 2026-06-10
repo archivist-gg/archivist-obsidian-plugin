@@ -27,6 +27,18 @@ const orphanSub: RegisteredEntity = {
   data: { name: "Bladesong", edition: "2014", parent_class: "[[Homebrew/Classes/Swordmage]]" },
   compendium: "Homebrew", readonly: false, homebrew: true,
 };
+// Homebrew class whose display name ≠ slug: the engine's parent_class==="self"
+// filter keys on bareEntitySlug(slug) ("crimson-order"), so a subclass linking
+// the slug is offered fine — the orphan callout must NOT false-positive here.
+const crimsonOrder: RegisteredEntity = {
+  slug: "homebrew_crimson-order", name: "The Crimson Order", entityType: "class", filePath: "crimson-order.md",
+  data: { name: "The Crimson Order", edition: "2014" }, compendium: "Homebrew", readonly: false, homebrew: true,
+};
+const crimsonSub: RegisteredEntity = {
+  slug: "homebrew_blood-knight", name: "Blood Knight", entityType: "subclass", filePath: "blood-knight.md",
+  data: { name: "Blood Knight", edition: "2014", parent_class: "[[Homebrew/Classes/crimson-order]]" },
+  compendium: "Homebrew", readonly: false, homebrew: true,
+};
 
 interface CoreOpts {
   classes?: RegisteredEntity[];
@@ -161,6 +173,17 @@ describe("BuilderView class step (Task 17)", () => {
     const root = mountContainer();
     new BuilderView().render(root, ctx({
       core: { classes: [fighter], subclasses: [champion] },
+    }));
+    expect(root.querySelector(".pc-bclass-orphan")).toBeNull();
+  });
+
+  it("emits no orphan callout when a homebrew subclass links the class slug (name ≠ slug)", () => {
+    // The engine offers Blood Knight (parent_class slug "crimson-order" matches
+    // bareEntitySlug("homebrew_crimson-order")), so the callout must key on the
+    // entity slug too — a name-only set ("the-crimson-order") would false-positive.
+    const root = mountContainer();
+    new BuilderView().render(root, ctx({
+      core: { classes: [crimsonOrder], subclasses: [crimsonSub] },
     }));
     expect(root.querySelector(".pc-bclass-orphan")).toBeNull();
   });
