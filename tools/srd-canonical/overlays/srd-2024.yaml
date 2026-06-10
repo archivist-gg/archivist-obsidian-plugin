@@ -691,8 +691,8 @@ race_traits:
   # trait-slugs (slugifyName(trait.name)), NOT owner-scoped. Every 2024 species
   # was walked; only the traits below carry a build-time choice. Lineage traits
   # (Elf/Gnome/Tiefling) also let you pick Int/Wis/Cha as the spellcasting
-  # ability -- that sub-pick maps to no primitive (it grants nothing mechanical
-  # the engine tracks), so it is left for the Task-12 coverage gate to surface.
+  # ability for the lineage's spells; that sub-pick is authored as a sibling
+  # select-inline choice on each lineage trait below.
   # ===================================================================
 
   # --- Dragonborn -- Draconic Ancestry: pick a dragon kind; the Damage
@@ -752,6 +752,17 @@ race_traits:
           - value: wood-elf
             label: Wood Elf
             description: Your Speed increases to 35 feet, and you know the Druidcraft cantrip.
+      # Int/Wis/Cha is your spellcasting ability for this lineage's spells (picked when you select the lineage).
+      - kind: select-inline
+        id: spellcasting-ability
+        count: 1
+        options:
+          - value: int
+            label: Intelligence
+          - value: wis
+            label: Wisdom
+          - value: cha
+            label: Charisma
 
   # --- Elf -- Keen Senses: proficiency in Insight, Perception, or Survival. ---
   keen-senses:
@@ -775,6 +786,17 @@ race_traits:
           - value: rock-gnome
             label: Rock Gnome
             description: You know the Mending and Prestidigitation cantrips and can build a Tiny clockwork device (AC 5, 1 HP).
+      # Int/Wis/Cha is your spellcasting ability for this lineage's spells (picked when you select the lineage).
+      - kind: select-inline
+        id: spellcasting-ability
+        count: 1
+        options:
+          - value: int
+            label: Intelligence
+          - value: wis
+            label: Wisdom
+          - value: cha
+            label: Charisma
 
   # --- Human -- Skillful: proficiency in one skill of your choice. ---
   skillful:
@@ -812,6 +834,17 @@ race_traits:
             label: Infernal
             description: You know the Fire Bolt cantrip.
             effects: [{ kind: resistance, damage_type: Fire }]
+      # Int/Wis/Cha is your spellcasting ability for this legacy's spells (picked when you select the legacy).
+      - kind: select-inline
+        id: spellcasting-ability
+        count: 1
+        options:
+          - value: int
+            label: Intelligence
+          - value: wis
+            label: Wisdom
+          - value: cha
+            label: Charisma
 
 # ===================================================================
 # Entity-level species choices (SP2 Plan 3). Keyed by bare species slug. Used
