@@ -55,4 +55,28 @@ describe("mergeOptionalFeatures", () => {
     });
     expect(result).toEqual([]);
   });
+
+  it("applies overlay entity-level effects onto the optional feature", () => {
+    const structured = [
+      { name: "Defense", source: "PHB", featureType: ["FS:F"], entries: ["+1 AC while wearing armor"] },
+    ];
+    const result = mergeOptionalFeatures({
+      edition: "2014",
+      structured,
+      overlay: {
+        optional_feature_slugs: { fighting_style: ["defense"] },
+        optional_features: { defense: { effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }] } },
+      } as Overlay,
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].effects).toEqual([{ kind: "ac-bonus", value: 1, requires_armor: true }]);
+  });
+
+  it("leaves effects empty when no entity overlay entry exists", () => {
+    const structured = [
+      { name: "Defense", source: "PHB", featureType: ["FS:F"], entries: ["text"] },
+    ];
+    const result = mergeOptionalFeatures({ edition: "2014", structured, overlay });
+    expect(result[0].effects).toEqual([]);
+  });
 });

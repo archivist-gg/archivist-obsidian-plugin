@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { resourceSchema } from "../../src/shared/schemas/resource-schema";
 import { choiceSchema } from "../../src/shared/schemas/choice-schema";
+import { featureEffectSchema } from "../../src/shared/schemas/feature-effect-schema";
 
 const actionCost = z.enum(["action", "bonus-action", "reaction", "free", "special"]);
 const recharge = z.enum(["short-rest", "long-rest", "dawn", "dusk", "turn", "round", "custom"]);
@@ -49,6 +50,10 @@ const entityChoicesSchema = z.object({
   choices: z.array(choiceSchema).optional(),
 }).strict();
 
+const entityEffectsSchema = z.object({
+  effects: z.array(featureEffectSchema).nonempty(),
+}).strict();
+
 const optionalFeatureKind = z.enum(["invocation", "fighting_style", "metamagic", "maneuver", "infusion"]);
 
 export const overlaySchema = z.object({
@@ -60,6 +65,8 @@ export const overlaySchema = z.object({
   classes: z.record(z.string(), classOverrideSchema).optional(),
   races: z.record(z.string(), entityChoicesSchema).optional(),
   backgrounds: z.record(z.string(), entityChoicesSchema).optional(),
+  optional_features: z.record(z.string(), entityEffectsSchema).optional(),
+  feats: z.record(z.string(), entityEffectsSchema).optional(),
 });
 
 export type Overlay = z.infer<typeof overlaySchema>;

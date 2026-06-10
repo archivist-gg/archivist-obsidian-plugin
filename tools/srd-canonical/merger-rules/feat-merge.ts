@@ -38,10 +38,17 @@ export interface FeatCanonical {
 export const featMergeRule: MergeRule = {
   kind: "feat",
   pickOverlay(overlay: Overlay, _slug: string): unknown {
-    // Per-feat limited-use resources come from the overlay's feat_features map,
-    // keyed by feat-slug. Feature-level choices ride the same map (also keyed by
-    // feat-slug). (Action economy still comes from the activation companion.)
-    return overlay.feat_features ?? null;
+    // Per-feat limited-use resources and feature-level choices come from
+    // feat_features; entity-level effects come from the feats: section. Both
+    // are keyed by bare feat slug — merge into one per-slug record so
+    // toFeatCanonical reads a single map.
+    const features = overlay.feat_features ?? {};
+    const entities = overlay.feats ?? {};
+    const slugs = new Set([...Object.keys(features), ...Object.keys(entities)]);
+    if (slugs.size === 0) return null;
+    const merged: Record<string, unknown> = {};
+    for (const slug of slugs) merged[slug] = { ...features[slug], ...entities[slug] };
+    return merged;
   },
 };
 
@@ -51,7 +58,10 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
   const base = entry.base as Record<string, unknown>;
   const structured = entry.structured as Record<string, unknown> | null;
   const activation = entry.activation as Record<string, unknown> | null;
-  const overlay = entry.overlay as Record<string, { resources?: Resource[]; choices?: Choice[] }> | null;
+  const overlay = entry.overlay as Record<
+    string,
+    { resources?: Resource[]; choices?: Choice[]; effects?: unknown[] }
+  > | null;
   const overlaid = overlay?.[slugifyName(base.name as string)];
 
   const typeStr = ((base.type as string | undefined) ?? "general").toLowerCase();
@@ -76,9 +86,10 @@ export function toFeatCanonical(entry: CanonicalEntry): FeatCanonical {
     prerequisites,
     benefits,
     repeatable,
-    // Schema-required defaults (Phase 9). Populated minimally so the runtime
-    // parser accepts these MDs; structured-rules enrichment is a future phase.
-    effects: [],
+    // Schema-required defaults (Phase 9). Entity-level effects are authored in
+    // the overlay's feats: section (keyed by bare feat slug); default to []
+    // when none are present.
+    effects: overlaid?.effects ?? [],
     grants_asi: null,
     choices: overlaid?.choices ?? [],
     ...(overlaid?.resources ? { resources: overlaid.resources } : {}),

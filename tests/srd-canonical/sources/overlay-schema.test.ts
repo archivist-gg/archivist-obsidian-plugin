@@ -28,6 +28,35 @@ describe("overlaySchema", () => {
     const bad = { class_features: { x: { action_cost: "magical-action" } } };
     expect(overlaySchema.safeParse(bad).success).toBe(false);
   });
+
+  it("accepts optional_features and feats entries carrying entity-level effects", () => {
+    const overlay = {
+      optional_features: {
+        defense: { effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }] },
+      },
+      feats: {
+        defense: { effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }] },
+      },
+    };
+    expect(overlaySchema.safeParse(overlay).success).toBe(true);
+  });
+
+  it("rejects unknown keys inside an entity-effects entry", () => {
+    const bad = {
+      optional_features: { defense: { effects: [{ kind: "ac-bonus", value: 1 }], bogus: true } },
+    };
+    expect(overlaySchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("rejects empty effects arrays in entity-effects entries", () => {
+    const bad = { feats: { defense: { effects: [] } } };
+    expect(overlaySchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("rejects malformed effects in entity-effects entries", () => {
+    const bad = { feats: { defense: { effects: [{ kind: "ac-bonus" }] } } };
+    expect(overlaySchema.safeParse(bad).success).toBe(false);
+  });
 });
 
 describe("overlay resources", () => {

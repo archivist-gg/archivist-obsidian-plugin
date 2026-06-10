@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toFeatCanonical } from "../../../tools/srd-canonical/merger-rules/feat-merge";
+import { featMergeRule, toFeatCanonical } from "../../../tools/srd-canonical/merger-rules/feat-merge";
+import type { Overlay } from "../../../tools/srd-canonical/overlay.schema";
 import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
 
 describe("featMergeRule", () => {
@@ -267,5 +268,48 @@ describe("featMergeRule", () => {
     };
     const out = toFeatCanonical(canonical);
     expect((out as { resources?: Array<{ id: string }> }).resources?.[0]?.id).toBe("feat:lucky");
+  });
+
+  it("pickOverlay merges feat_features and feats sections per slug", () => {
+    const overlay: Overlay = {
+      feat_features: {
+        lucky: { resources: [{ id: "feat:lucky", name: "Luck Points", max_formula: "prof", reset: "long-rest" }] },
+      },
+      feats: {
+        lucky: { effects: [{ kind: "initiative-bonus", value: 5 }] },
+        defense: { effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }] },
+      },
+    };
+    const merged = featMergeRule.pickOverlay(overlay, "lucky") as Record<
+      string,
+      { resources?: unknown[]; effects?: unknown[] }
+    >;
+    expect(merged.lucky.resources).toHaveLength(1);
+    expect(merged.lucky.effects).toHaveLength(1);
+    expect(merged.defense.effects).toHaveLength(1);
+  });
+
+  it("attaches overlay feats: entity effects to the canonical feat by slug", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-2024_defense",
+      edition: "2024",
+      kind: "feat",
+      base: {
+        key: "defense",
+        name: "Defense",
+        desc: "+1 AC while wearing armor.",
+        document: { key: "srd-2024", name: "SRD 5.2" },
+        type: "GENERAL",
+        has_prerequisite: false,
+        benefits: [],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: {
+        defense: { effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }] },
+      } as never,
+    };
+    const out = toFeatCanonical(canonical);
+    expect(out.effects).toEqual([{ kind: "ac-bonus", value: 1, requires_armor: true }]);
   });
 });
