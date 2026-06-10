@@ -102,6 +102,17 @@ describe("computeFeatureEffects", () => {
     ]);
   });
 
+  it("collects ac-bonus terms from two same-named features as separate terms", () => {
+    const out = computeFeatureEffects([
+      rf([{ kind: "ac-bonus", value: 1 }], "Defense"),
+      rf([{ kind: "ac-bonus", value: 1 }], "Defense"),
+    ]);
+    expect(out.ac_terms).toEqual([
+      { value: 1, requires_armor: false, label: "Defense" },
+      { value: 1, requires_armor: false, label: "Defense" },
+    ]);
+  });
+
   it("skips action-time kinds and unknown kinds without throwing", () => {
     const out = computeFeatureEffects([
       rf([

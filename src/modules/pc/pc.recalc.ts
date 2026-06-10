@@ -468,6 +468,14 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // item/override AC contributions on top of the unarmored base, while still
   // dropping armor/shield/dex contributions from the equipment breakdown
   // (there's no armor, and the unarmored base already includes its own DEX).
+  // Feature ac-bonus terms: requires_armor terms only count when armor is
+  // actually equipped (the structured gate for Defense's "while wearing armor").
+  const featureAcTermsFor = (hasArmor: boolean): ACTerm[] =>
+    featureEffects.ac_terms
+      .filter((t) => !t.requires_armor || hasArmor)
+      .map((t) => ({ source: t.label, amount: t.value, kind: "feature" as const }));
+  const sumTerms = (terms: ACTerm[]): number => terms.reduce((s, t) => s + t.amount, 0);
+
   let derivedEquipment: DerivedEquipment | null = null;
   let acDerived: number;
   let acBreakdownDerived: ACTerm[] = [];
@@ -475,8 +483,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   if (registry) {
     derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus);
     if (derivedEquipment.equippedSlots.armor) {
-      acDerived = derivedEquipment.ac;
-      acBreakdownDerived = derivedEquipment.acBreakdown;
+      const featTerms = featureAcTermsFor(true);
+      acDerived = derivedEquipment.ac + sumTerms(featTerms);
+      acBreakdownDerived = [...derivedEquipment.acBreakdown, ...featTerms];
       acInformationalDerived = derivedEquipment.acInformational;
     } else {
       const { total: unarmored, terms: unarmoredTerms } = unarmoredACBreakdown(resolved, mods, warnings);
@@ -486,9 +495,10 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       const additive = derivedEquipment.acBreakdown.filter(
         (b) => b.kind === "item" || b.kind === "override",
       );
+      const featTerms = featureAcTermsFor(false);
       const additiveSum = additive.reduce((sum, b) => sum + b.amount, 0);
-      acDerived = unarmored + additiveSum;
-      acBreakdownDerived = [...unarmoredTerms, ...additive];
+      acDerived = unarmored + additiveSum + sumTerms(featTerms);
+      acBreakdownDerived = [...unarmoredTerms, ...additive, ...featTerms];
       // Magic items still source these conditional AC bonuses even on the
       // unarmored path (the additive merge above already includes their
       // numeric contributions); carry the situational pool through.
@@ -496,8 +506,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     }
   } else {
     const { total, terms } = unarmoredACBreakdown(resolved, mods, warnings);
-    acDerived = total;
-    acBreakdownDerived = terms;
+    const featTerms = featureAcTermsFor(false);
+    acDerived = total + sumTerms(featTerms);
+    acBreakdownDerived = [...terms, ...featTerms];
   }
   const ac = overrides.ac ?? acDerived;
 

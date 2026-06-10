@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { recalc } from "../src/modules/pc/pc.recalc";
 import type { ResolvedCharacter, ResolvedClass, ResolvedFeature } from "../src/modules/pc/pc.types";
+import type { Character } from "../src/modules/pc/pc.types";
 import type { FeatureEffect } from "../src/shared/types/feature-effect";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { STUDDED_LEATHER } from "./fixtures/pc/equipment-fixtures";
 
 function mkClass(slug: string, die: string, level: number): ResolvedClass {
   return {
@@ -58,6 +61,20 @@ function resolvedWith(level: ResolvedClass, effects: FeatureEffect[]): ResolvedC
   r.features.push(effectFeature(effects));
   return r;
 }
+
+function resolvedWithEquipment(
+  effects: FeatureEffect[],
+  equipment: Character["equipment"],
+): ResolvedCharacter {
+  const r = resolvedWith(mkClass("fighter", "d10", 1), effects);
+  r.definition.equipment = equipment;
+  return r;
+}
+
+const registry = () =>
+  buildMockRegistry([
+    { slug: "studded-leather", entityType: "armor", name: "Studded Leather", data: STUDDED_LEATHER },
+  ]);
 
 describe("recalc — feature effects: initiative / HP / speed / senses", () => {
   it("adds initiative-bonus to derived initiative", () => {
@@ -183,5 +200,41 @@ describe("recalc — feature effects: defenses", () => {
     r.classes = [mkClass("rogue", "d8", 1)];
     r.definition.defenses = { resistances: ["Fire", "fire"], immunities: [], vulnerabilities: [], condition_immunities: [] };
     expect(recalc(r).defenses.resistances).toEqual(["Fire"]);
+  });
+});
+
+describe("recalc — feature effects: AC", () => {
+  it("applies an ungated ac-bonus on the unarmored path (no registry)", () => {
+    const d = recalc(resolvedWith(mkClass("fighter", "d10", 1), [{ kind: "ac-bonus", value: 2 }]));
+    expect(d.ac).toBe(12); // 10 + DEX 0 + 2
+    expect(d.acBreakdown).toContainEqual({ source: "Effect Source", amount: 2, kind: "feature" });
+  });
+
+  it("does NOT apply a requires_armor ac-bonus when no armor is equipped", () => {
+    const d = recalc(resolvedWithEquipment([{ kind: "ac-bonus", value: 1, requires_armor: true }], []), registry());
+    expect(d.ac).toBe(10);
+    expect(d.acBreakdown.some((t) => t.kind === "feature")).toBe(false);
+  });
+
+  it("applies a requires_armor ac-bonus when armor is equipped", () => {
+    // Studded leather 12 + DEX 0 = 12; Defense +1 → 13.
+    const d = recalc(
+      resolvedWithEquipment(
+        [{ kind: "ac-bonus", value: 1, requires_armor: true }],
+        [{ item: "[[studded-leather]]", equipped: true }],
+      ),
+      registry(),
+    );
+    expect(d.ac).toBe(13);
+    expect(d.acBreakdown).toContainEqual({ source: "Effect Source", amount: 1, kind: "feature" });
+  });
+
+  it("overrides.ac wins over feature AC terms", () => {
+    const r = resolvedWithEquipment(
+      [{ kind: "ac-bonus", value: 1, requires_armor: true }],
+      [{ item: "[[studded-leather]]", equipped: true }],
+    );
+    r.definition.overrides = { ac: 25 };
+    expect(recalc(r, registry()).ac).toBe(25);
   });
 });

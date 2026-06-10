@@ -199,7 +199,7 @@ export interface ProficiencySet {
 export interface ACTerm {
   source: string;
   amount: number;
-  kind: "armor" | "shield" | "item" | "unarmored" | "override" | "dex" | "ability";
+  kind: "armor" | "shield" | "item" | "unarmored" | "override" | "dex" | "ability" | "feature";
 }
 
 export interface AttackRow {
