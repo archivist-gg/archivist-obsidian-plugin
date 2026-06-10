@@ -278,7 +278,7 @@ class_features:
   # former pact boons are Eldritch Invocations (e.g. Pact of the Tome), chosen
   # through Eldritch Invocations above. No separate choice is authored.
 
-  # --- Sorcerer Metamagic (L2 + L10): two Metamagic options each ---
+  # --- Sorcerer Metamagic (L2; +2 at L10 and L17, scaling deferred) ---
   sorcerer:metamagic:
     choices:
       - kind: select-entity
@@ -373,6 +373,125 @@ class_features:
         name: Wholeness of Body
         max_formula: "{wis_mod}"
         reset: long-rest
+
+  # ===================================================================
+  # Subclass decision data (SP2 Plan 3). Scoped keys
+  # `<subclass-bare-slug>:<feature-slug>` so they land on the subclass's
+  # features only. Feature slugs are slugifyName(feature.name). Every 2024
+  # subclass was walked; only the features below carry a build-time choice.
+  # ===================================================================
+
+  # --- Champion (Fighter) -- Additional Fighting Style (L7) ---
+  # "another Fighting Style feat of your choice." Same select-entity as the
+  # base Fighting Style. Registry gap: no fighting_style optional-features ship
+  # in optional-feature.2024.json (only `invocation`), so the WHERE filter
+  # currently resolves to an empty set -- the data-driven query is correct and
+  # will populate once the registry is backfilled (mirrors Task 8's note).
+  champion:additional-fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+
+  # --- College of Lore (Bard) -- Bonus Proficiencies (L3) ---
+  # "proficiency with three skills of your choice."
+  college-of-lore:bonus-proficiencies:
+    choices:
+      - kind: select-proficiency
+        id: skills
+        domain: skill
+        count: 3
+
+  # --- Draconic Sorcery (Sorcerer) -- Elemental Affinity (L6) ---
+  # "Choose one of those types: Acid, Cold, Fire, Lightning, or Poison." You
+  # gain Resistance to the chosen type (the CHA-to-damage rider is not an
+  # expressible effect, so it lives in option descriptions only).
+  draconic-sorcery:elemental-affinity:
+    choices:
+      - kind: select-inline
+        id: elemental-affinity
+        count: 1
+        options:
+          - value: acid
+            label: Acid
+            effects: [{ kind: resistance, damage_type: Acid }]
+          - value: cold
+            label: Cold
+            effects: [{ kind: resistance, damage_type: Cold }]
+          - value: fire
+            label: Fire
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: lightning
+            label: Lightning
+            effects: [{ kind: resistance, damage_type: Lightning }]
+          - value: poison
+            label: Poison
+            effects: [{ kind: resistance, damage_type: Poison }]
+
+  # --- Hunter (Ranger) -- Hunter's Prey (L3) ---
+  # "You gain one of the following feature options of your choice." Replaceable
+  # each rest, but the initial pick is a build decision.
+  hunter:hunters-prey:
+    choices:
+      - kind: select-inline
+        id: hunters-prey
+        count: 1
+        options:
+          - value: colossus-slayer
+            label: Colossus Slayer
+            description: When you hit a creature with a weapon, the weapon deals an extra 1d8 damage to the target if it's missing any of its Hit Points (once per turn).
+          - value: horde-breaker
+            label: Horde Breaker
+            description: Once on each of your turns when you make an attack with a weapon, you can make another attack with the same weapon against a different creature within 5 feet of the original target and within range.
+
+  # --- Hunter (Ranger) -- Defensive Tactics (L7) ---
+  hunter:defensive-tactics:
+    choices:
+      - kind: select-inline
+        id: defensive-tactics
+        count: 1
+        options:
+          - value: escape-the-horde
+            label: Escape the Horde
+            description: Opportunity Attacks have Disadvantage against you.
+          - value: multiattack-defense
+            label: Multiattack Defense
+            description: When a creature hits you with an attack roll, that creature has Disadvantage on all other attack rolls against you this turn.
+
+  # --- Subclass features with deferred / runtime-only decisions ---
+  # Circle of the Land (Druid) -- Circle of the Land Spells: "Whenever you
+  # finish a Long Rest, choose one type of land (arid/polar/temperate/tropical)"
+  # is a recurring runtime choice (re-picked each rest), not a build decision.
+  circle-of-the-land:circle-of-the-land-spells:
+    noChoices: true # recurring per-long-rest land pick, not a build decision
+  # College of Lore (Bard) -- Magical Discoveries: "two spells of your choice"
+  # from the Cleric/Druid/Wizard lists -- spell management (SP4c deferral).
+  college-of-lore:magical-discoveries:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Evoker (Wizard) -- Evocation Savant: "Choose two Wizard spells from the
+  # Evocation school" added to the spellbook -- spell management (SP4c).
+  evoker:evocation-savant:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Fiend Patron (Warlock) -- Fiendish Resilience: "Choose one damage type...
+  # whenever you finish a Short or Long Rest" -- recurring runtime choice.
+  fiend-patron:fiendish-resilience:
+    noChoices: true # recurring per-rest damage-type pick, not a build decision
+  # Expanded prepared-spell lists (always-prepared subclass spell tables) carry
+  # no player choice -- listed for coverage completeness (SP4c spell mgmt).
+  draconic-sorcery:draconic-spells:
+    noChoices: true # always-prepared subclass spell table, no choice
+  fiend-patron:fiend-spells:
+    noChoices: true # always-prepared subclass spell table, no choice
+  life-domain:life-domain-spells:
+    noChoices: true # always-prepared subclass spell table, no choice
+  oath-of-devotion:oath-of-devotion-spells:
+    noChoices: true # always-prepared subclass spell table, no choice
+  # Warrior of the Open Hand (Monk) -- Open Hand Technique: per-attack effect
+  # pick (Addle/Push/Topple) resolved in play, not a build decision.
+  warrior-of-the-open-hand:open-hand-technique:
+    noChoices: true # per-attack runtime choice, not a build decision
 
 # ===================================================================
 # Entity-level class overrides (SP2 Plan 3). Keyed by bare class slug.
@@ -526,13 +645,38 @@ race_traits:
         name: Stonecunning
         max_formula: "prof"
         reset: long-rest
-  # Goliath (2024) -- Giant Ancestry boon, PB uses / long rest.
+  # Goliath (2024) -- Giant Ancestry boon, PB uses / long rest. The boon itself
+  # is a build-time pick of one of six giant ancestries (effects are situational
+  # combat riders not expressible as FeatureEffects, so descriptions only).
   giant-ancestry:
     resources:
       - id: "goliath:giant-ancestry"
         name: Giant Ancestry
         max_formula: "prof"
         reset: long-rest
+    choices:
+      - kind: select-inline
+        id: giant-ancestry
+        count: 1
+        options:
+          - value: clouds-jaunt
+            label: Cloud's Jaunt (Cloud Giant)
+            description: As a Bonus Action, you magically teleport up to 30 feet to an unoccupied space you can see.
+          - value: fires-burn
+            label: Fire's Burn (Fire Giant)
+            description: When you hit a target with an attack roll and deal damage to it, you can also deal 1d10 Fire damage to that target.
+          - value: frosts-chill
+            label: Frost's Chill (Frost Giant)
+            description: When you hit a target with an attack roll and deal damage to it, you can also deal 1d6 Cold damage and reduce its Speed by 10 feet until the start of your next turn.
+          - value: hills-tumble
+            label: Hill's Tumble (Hill Giant)
+            description: When you hit a Large or smaller creature with an attack roll and deal damage to it, you can give that target the Prone condition.
+          - value: stones-endurance
+            label: Stone's Endurance (Stone Giant)
+            description: When you take damage, you can take a Reaction to roll 1d12, add your Constitution modifier, and reduce the damage by that total.
+          - value: storms-thunder
+            label: Storm's Thunder (Storm Giant)
+            description: When you take damage from a creature within 60 feet of you, you can take a Reaction to deal 1d8 Thunder damage to that creature.
   # Orc (2024) -- Adrenaline Rush, PB uses / short or long rest.
   adrenaline-rush:
     action_cost: bonus-action
@@ -542,9 +686,190 @@ race_traits:
         max_formula: "prof"
         reset: short-rest
 
+  # ===================================================================
+  # Species trait decision data (SP2 Plan 3). race_traits keys are BARE
+  # trait-slugs (slugifyName(trait.name)), NOT owner-scoped. Every 2024 species
+  # was walked; only the traits below carry a build-time choice. Lineage traits
+  # (Elf/Gnome/Tiefling) also let you pick Int/Wis/Cha as the spellcasting
+  # ability -- that sub-pick maps to no primitive (it grants nothing mechanical
+  # the engine tracks), so it is left for the Task-12 coverage gate to surface.
+  # ===================================================================
+
+  # --- Dragonborn -- Draconic Ancestry: pick a dragon kind; the Damage
+  # Resistance trait grants Resistance to the linked damage type, so each option
+  # carries that resistance effect. (Breath Weapon damage type is the same.)
+  draconic-ancestry:
+    choices:
+      - kind: select-inline
+        id: draconic-ancestry
+        count: 1
+        options:
+          - value: black
+            label: Black (Acid)
+            effects: [{ kind: resistance, damage_type: Acid }]
+          - value: blue
+            label: Blue (Lightning)
+            effects: [{ kind: resistance, damage_type: Lightning }]
+          - value: brass
+            label: Brass (Fire)
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: bronze
+            label: Bronze (Lightning)
+            effects: [{ kind: resistance, damage_type: Lightning }]
+          - value: copper
+            label: Copper (Acid)
+            effects: [{ kind: resistance, damage_type: Acid }]
+          - value: gold
+            label: Gold (Fire)
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: green
+            label: Green (Poison)
+            effects: [{ kind: resistance, damage_type: Poison }]
+          - value: red
+            label: Red (Fire)
+            effects: [{ kind: resistance, damage_type: Fire }]
+          - value: silver
+            label: Silver (Cold)
+            effects: [{ kind: resistance, damage_type: Cold }]
+          - value: white
+            label: White (Cold)
+            effects: [{ kind: resistance, damage_type: Cold }]
+
+  # --- Elf -- Elven Lineage: pick Drow / High Elf / Wood Elf (level-1 benefit;
+  # higher-level always-prepared spells are spell mgmt, SP4c). ---
+  elven-lineage:
+    choices:
+      - kind: select-inline
+        id: elven-lineage
+        count: 1
+        options:
+          - value: drow
+            label: Drow
+            description: The range of your Darkvision increases to 120 feet, and you know the Dancing Lights cantrip.
+          - value: high-elf
+            label: High Elf
+            description: You know the Prestidigitation cantrip; on a Long Rest you can swap it for a different Wizard cantrip.
+          - value: wood-elf
+            label: Wood Elf
+            description: Your Speed increases to 35 feet, and you know the Druidcraft cantrip.
+
+  # --- Elf -- Keen Senses: proficiency in Insight, Perception, or Survival. ---
+  keen-senses:
+    choices:
+      - kind: select-proficiency
+        id: skill
+        domain: skill
+        count: 1
+        from: [insight, perception, survival]
+
+  # --- Gnome -- Gnomish Lineage: pick Forest Gnome or Rock Gnome. ---
+  gnomish-lineage:
+    choices:
+      - kind: select-inline
+        id: gnomish-lineage
+        count: 1
+        options:
+          - value: forest-gnome
+            label: Forest Gnome
+            description: You know the Minor Illusion cantrip and always have Speak with Animals prepared (PB casts without a slot per Long Rest).
+          - value: rock-gnome
+            label: Rock Gnome
+            description: You know the Mending and Prestidigitation cantrips and can build a Tiny clockwork device (AC 5, 1 HP).
+
+  # --- Human -- Skillful: proficiency in one skill of your choice. ---
+  skillful:
+    choices:
+      - kind: select-proficiency
+        id: skill
+        domain: skill
+        count: 1
+  # --- Human -- Versatile: an Origin feat of your choice. ---
+  versatile:
+    choices:
+      - kind: select-entity
+        id: origin-feat
+        count: 1
+        entity_type: feat
+        where: { category: origin }
+
+  # --- Tiefling -- Fiendish Legacy: pick Abyssal / Chthonic / Infernal; each
+  # grants a fixed Resistance at level 1, so options carry that effect. ---
+  fiendish-legacy:
+    choices:
+      - kind: select-inline
+        id: fiendish-legacy
+        count: 1
+        options:
+          - value: abyssal
+            label: Abyssal
+            description: You know the Poison Spray cantrip.
+            effects: [{ kind: resistance, damage_type: Poison }]
+          - value: chthonic
+            label: Chthonic
+            description: You know the Chill Touch cantrip.
+            effects: [{ kind: resistance, damage_type: Necrotic }]
+          - value: infernal
+            label: Infernal
+            description: You know the Fire Bolt cantrip.
+            effects: [{ kind: resistance, damage_type: Fire }]
+
+# ===================================================================
+# Entity-level species choices (SP2 Plan 3). Keyed by bare species slug. Used
+# for decisions not attached to a single named trait. Every 2024 species was
+# walked; none has a species-level (non-trait) build choice -- ability scores
+# come from the background, languages from background/creation -- so this
+# section is intentionally empty and omitted. (Per-trait choices live above.)
+# ===================================================================
+
 optional_feature_slugs:
   invocation:
     - agonizing-blast
   fighting_style:
     - defense
     - dueling
+
+# ===================================================================
+# Background decision data (SP2 Plan 3). Keyed by bare background slug. Every
+# 2024 background grants 2 FIXED skills + 1 origin feat (FIXED per background)
+# + an ability-score allocation over a fixed pool of three abilities (+2/+1 or
+# +1/+1/+1) -- the ability-points primitive expresses both patterns (points: 3,
+# max_per: 2). Skills/feat carry no choice, so they are not authored. Tool
+# proficiency is fixed except Soldier (a Gaming Set pick). All four 2024
+# backgrounds were walked.
+# ===================================================================
+backgrounds:
+  acolyte:
+    choices:
+      - kind: ability-points
+        id: abilities
+        points: 3
+        max_per: 2
+        pool: [int, wis, cha]
+  criminal:
+    choices:
+      - kind: ability-points
+        id: abilities
+        points: 3
+        max_per: 2
+        pool: [dex, con, int]
+  sage:
+    choices:
+      - kind: ability-points
+        id: abilities
+        points: 3
+        max_per: 2
+        pool: [con, int, wis]
+  soldier:
+    choices:
+      - kind: ability-points
+        id: abilities
+        points: 3
+        max_per: 2
+        pool: [str, dex, con]
+      # Soldier's tool proficiency is a Gaming Set of your choice (the specific
+      # gaming-set tool list isn't enumerated in the runtime data, so this is an
+      # open tool pick of count 1).
+      - kind: select-proficiency
+        id: tool
+        domain: tool
+        count: 1
