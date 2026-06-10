@@ -58,3 +58,55 @@ describe("overlay resources", () => {
     expect(r.success && r.data.background_features !== undefined).toBe(true);
   });
 });
+
+describe("overlay choices (SP2 Plan 3)", () => {
+  it("accepts feature choices, scoped keys, and noChoices opt-out", () => {
+    const r = overlaySchema.safeParse({
+      class_features: {
+        "ability-score-improvement": { choices: [{
+          kind: "select-inline", id: "asi-or-feat", count: 1,
+          options: [
+            { value: "asi", label: "Ability Score Increase",
+              choices: [{ kind: "ability-points", id: "asi", points: 2, max_per: 2 }] },
+            { value: "feat", label: "Feat",
+              choices: [{ kind: "select-entity", id: "feat", entity_type: "feat", count: 1 }] },
+          ],
+        }] },
+        "fighter:fighting-style": { choices: [{
+          kind: "select-entity", id: "fighting-style", count: 1,
+          entity_type: "optional-feature",
+          where: { feature_type: "fighting_style", available_to: "self" },
+        }] },
+        "spellcasting": { noChoices: true },
+      },
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("accepts entity-level classes/races/backgrounds sections", () => {
+    const r = overlaySchema.safeParse({
+      classes: { fighter: {
+        skill_choices: { count: 2, from: ["acrobatics", "athletics"] },
+        starting_equipment: [
+          { kind: "choice", options: ["(a) chain mail", "(b) leather armor, longbow, 20 arrows"] },
+          { kind: "fixed", items: ["a light crossbow and 20 bolts"] },
+        ],
+        subclass_level: 3,
+        subclass_feature_name: "Martial Archetype",
+      } },
+      races: { "half-elf": { choices: [
+        { kind: "select-proficiency", id: "skills", domain: "skill", count: 2 },
+      ] } },
+      backgrounds: { acolyte: { choices: [
+        { kind: "select-proficiency", id: "languages", domain: "language", count: 2 },
+      ] } },
+    });
+    expect(r.success).toBe(true);
+  });
+
+  it("rejects malformed choices", () => {
+    expect(overlaySchema.safeParse({
+      class_features: { expertise: { choices: [{ kind: "select-proficiency", id: "x", domain: "skill" }] } },
+    }).success).toBe(false); // missing count
+  });
+});
