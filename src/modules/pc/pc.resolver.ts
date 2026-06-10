@@ -151,7 +151,7 @@ export function collectChosenGrantedFeatures(
       const features = (entity.features_by_level ?? {})[lvl] ?? [];
       const subFeatures = c.subclass ? ((c.subclass.features_by_level ?? {})[lvl] ?? []) : [];
       for (const feature of [...features, ...subFeatures]) {
-        walkChoiceGrants(feature.choices, atLevel as Record<string, unknown>, (granted) => {
+        walkChoiceGrants(feature.choices, atLevel, (granted) => {
           out.push({ feature: granted, source: { kind: "class", slug: entity.slug, level: lvl } });
         }, registry);
       }

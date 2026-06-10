@@ -1,6 +1,6 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import type { Character, ChoiceValue, DerivedStats, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { Character, DerivedStats, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
@@ -436,7 +436,7 @@ export class CharacterEditState {
   setOriginChoice(key: string, value: unknown): void {
     const oc = (this.character.origin_choices ??= {});
     if (value === undefined || value === null) delete oc[key];
-    else oc[key] = value as ChoiceValue;
+    else oc[key] = value;
     this.onChange();
   }
 

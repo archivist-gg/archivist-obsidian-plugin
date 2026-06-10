@@ -10,5 +10,5 @@ export function parseFeat(source: string): ParseResult<FeatEntity> {
   if (!result.success) {
     return { success: false, error: `feat schema validation failed: ${result.error.message}` };
   }
-  return { success: true, data: result.data as FeatEntity };
+  return { success: true, data: result.data };
 }

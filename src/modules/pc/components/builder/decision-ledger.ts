@@ -193,7 +193,7 @@ function renderAbilityPoints(
   if (ch.kind !== "ability-points") return;
   const alloc: Partial<Record<Ability, number>> =
     item.selected && typeof item.selected === "object" && !Array.isArray(item.selected)
-      ? { ...(item.selected as Partial<Record<Ability, number>>) }
+      ? { ...item.selected }
       : {};
   const spent = Object.values(alloc).reduce((s, v) => s + (v ?? 0), 0);
 
@@ -234,5 +234,5 @@ function redraw(parent: HTMLElement, ctx: ComponentRenderContext, opts: Decision
   const host = parent.closest(".pc-bledger")?.parentElement;
   if (!host) return;
   host.querySelector(".pc-bledger")?.remove();
-  renderDecisionLedger(host as HTMLElement, ctx, opts);
+  renderDecisionLedger(host, ctx, opts);
 }
