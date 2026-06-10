@@ -96,6 +96,215 @@ class_features:
         max_formula: "1"
         reset: long-rest
 
+  # ===================================================================
+  # Decision data (SP2 Plan 3) -- player choices carried as `choices`.
+  # Four primitives: select-inline / select-entity / select-proficiency /
+  # ability-points (recursive nesting via option `choices`). `id` values are
+  # permanent persistence keys. Bare keys apply to every class with that
+  # feature slug; scoped `<class-bare-slug>:<feature-slug>` keys are
+  # class-specific and win over bare keys. Every 2014 class was walked against
+  # class.2014.json; only the features below carry a build-time choice.
+  # ===================================================================
+
+  # Ability Score Improvement (shared) -- 2014 all 12 classes share the bare
+  # feature slug `ability-score-improvement`, so one bare key covers them all.
+  # 2014's feature is the ASI rule (+2 / +1+1); the optional-feat variant rule
+  # lets you take a feat instead, modeled here as the agreed asi-or-feat block.
+  ability-score-improvement:
+    choices:
+      - kind: select-inline
+        id: asi-or-feat
+        count: 1
+        options:
+          - value: asi
+            label: Ability Score Increase
+            choices: [{ kind: ability-points, id: asi, points: 2, max_per: 2 }]
+          - value: feat
+            label: Feat
+            choices: [{ kind: select-entity, id: feat, entity_type: feat, count: 1 }]
+
+  # --- Subclass selection (scoped; one per class) ---
+  # 2014 subclass-choice feature slugs differ per class, so each is its own
+  # scoped key. (Levels vary -- cleric/sorcerer/warlock L1, druid/wizard L2,
+  # rest L3 -- but the choice shape is identical; subclass_level overrides
+  # below carry the real levels.)
+  barbarian:primal-path:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  bard:bard-college:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  cleric:divine-domain:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  druid:druid-circle:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  fighter:martial-archetype:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  monk:monastic-tradition:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  paladin:sacred-oath:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  ranger:ranger-archetype:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  rogue:roguish-archetype:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  sorcerer:sorcerous-origin:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  warlock:otherworldly-patron:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  wizard:arcane-tradition:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+
+  # --- Fighting Style (scoped; fighter L1 / paladin L2 / ranger L2) ---
+  # 2014 shares the bare feature slug `fighting-style` across all three, but
+  # the per-class style lists differ. The optional-feature `available_to: self`
+  # filter is data-driven (fighting_style optional-features in
+  # optional-feature.2014.json carry the class reference list), so scoped keys
+  # with the same WHERE resolve to each class's allowed styles.
+  fighter:fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+  paladin:fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+  ranger:fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+
+  # --- Expertise (scoped) ---
+  # Rogue: L1 picks 2, L6 picks 2 more (same scoped key covers both entries).
+  # 2014 prose lets each pick be a skill OR proficiency with thieves' tools;
+  # the proficiency domain has no thieves'-tools member, so domain stays skill
+  # and the thieves'-tools alternative is deferred (registry/domain gap).
+  rogue:expertise:
+    choices: [{ kind: select-proficiency, id: expertise, domain: skill, count: 2, from_proficient: true, expertise: true }]
+  # Bard: L3 picks 2, L10 picks 2 more (one runtime entry; key covers both).
+  bard:expertise:
+    choices: [{ kind: select-proficiency, id: expertise, domain: skill, count: 2, from_proficient: true, expertise: true }]
+
+  # --- Warlock Eldritch Invocations (L2): two invocations of your choice ---
+  # 2014 grants TWO at L2 (count 2). deferred: scaling invocation counts at
+  # higher Warlock levels (per the Invocations Known table column).
+  eldritch-invocations:
+    choices:
+      - kind: select-entity
+        id: invocation
+        count: 2
+        entity_type: optional-feature
+        where: { feature_type: invocation, available_to: self }
+  # --- Warlock Pact Boon (L3): one of Chain/Blade/Tome (distinct feature in
+  # 2014; unlike 2024 where pact boons are invocations). Options carry prose
+  # descriptions only -- the boons grant spells/proficiencies not expressible
+  # as FeatureEffects here. ---
+  pact-boon:
+    choices:
+      - kind: select-inline
+        id: pact-boon
+        count: 1
+        options:
+          - value: pact-of-the-chain
+            label: Pact of the Chain
+            description: You learn the Find Familiar spell and can cast it as a ritual; you can choose special familiar forms (imp, pseudodragon, quasit, or sprite). When you take the Attack action, you can forgo one of your attacks to let your familiar make one attack of its own with its reaction.
+          - value: pact-of-the-blade
+            label: Pact of the Blade
+            description: You can use your action to create a pact weapon in your empty hand, choosing its form each time. You are proficient with it, and it counts as magical. You can also transform one magic weapon into your pact weapon.
+          - value: pact-of-the-tome
+            label: Pact of the Tome
+            description: Your patron gives you a Book of Shadows. Choose three cantrips from any class's spell list; while the book is on your person you can cast those cantrips at will (they don't count against your cantrips known).
+
+  # --- Sorcerer Metamagic (L3): two Metamagic options of your choice ---
+  # +1 more at L10 and L17 (scaling deferred). Registry gap: no `metamagic`
+  # optional-features ship in optional-feature.2014.json (only `invocation`
+  # and `fighting_style`), so the WHERE filter resolves to an empty set today
+  # -- the data-driven query is correct and populates once the registry is
+  # backfilled (mirrors the 2024 overlay's metamagic note).
+  sorcerer:metamagic:
+    choices:
+      - kind: select-entity
+        id: metamagic
+        count: 2
+        entity_type: optional-feature
+        where: { feature_type: metamagic, available_to: self }
+
+  # --- Ranger Favored Enemy (L1): a favored-enemy type + a language ---
+  # The enemy-type pick has no expressible FeatureEffect, so it's a flavor
+  # select-inline; the granted language is a select-proficiency. +1 more at L6
+  # and L14 (scaling deferred). The two-humanoid-races alternative is folded
+  # into the single "humanoids" option for simplicity.
+  favored-enemy:
+    choices:
+      - kind: select-inline
+        id: favored-enemy
+        count: 1
+        options:
+          - { value: aberrations, label: Aberrations }
+          - { value: beasts, label: Beasts }
+          - { value: celestials, label: Celestials }
+          - { value: constructs, label: Constructs }
+          - { value: dragons, label: Dragons }
+          - { value: elementals, label: Elementals }
+          - { value: fey, label: Fey }
+          - { value: fiends, label: Fiends }
+          - { value: giants, label: Giants }
+          - { value: monstrosities, label: Monstrosities }
+          - { value: oozes, label: Oozes }
+          - { value: plants, label: Plants }
+          - { value: undead, label: Undead }
+          - { value: humanoids, label: Humanoids (two races) }
+      # You also learn one language spoken by your favored enemies.
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 1
+
+  # --- Ranger Natural Explorer (L1): a favored-terrain type ---
+  # Flavor select-inline (no expressible FeatureEffect). +1 more at L6 and L10
+  # (scaling deferred).
+  natural-explorer:
+    choices:
+      - kind: select-inline
+        id: favored-terrain
+        count: 1
+        options:
+          - { value: arctic, label: Arctic }
+          - { value: coast, label: Coast }
+          - { value: desert, label: Desert }
+          - { value: forest, label: Forest }
+          - { value: grassland, label: Grassland }
+          - { value: mountain, label: Mountain }
+          - { value: swamp, label: Swamp }
+
+  # --- Spellcasting / spell-management features (no build-time choice here) ---
+  # Cantrip/spell selection lives on the sheet (SP4c deferral).
+  spellcasting:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  pact-magic:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  mystic-arcanum:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Bard Magical Secrets (L10/14/18): pick spells from any class -- spell mgmt.
+  magical-secrets:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Druid Beast Spells (L18): cast while in Wild Shape -- no build choice.
+  beast-spells:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Wizard Spell Mastery (L18): pick a 1st- and 2nd-level spell to cast at will.
+  spell-mastery:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Wizard Signature Spells (L20): pick two 3rd-level spells -- spell mgmt.
+  signature-spells:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+
 race_traits:
   # Dragonborn -- 2014 breath weapon: 1 use, regain on a short or long rest.
   breath-weapon:
@@ -117,6 +326,191 @@ race_traits:
         max_formula: "1"
         reset: long-rest
     trigger: "reduced to 0 HP but not killed outright"
+
+# ===================================================================
+# Entity-level class overrides (SP2 Plan 3). Keyed by bare class slug.
+# - skill_choices: class.2014.json ALREADY carries correct 2014 counts+lists
+#   for every class (verified -- not the all-18 fallback), so NO skill_choices
+#   override is authored here (it would be redundant).
+# - starting_equipment: the runtime ships a single {kind: fixed} blob with the
+#   prose (a)/(b)/(c) rows embedded as plain strings; here each option row is
+#   authored as a real {kind: choice} (fixed items appended as one row), per
+#   the 2014 Equipment prose.
+# - subclass_feature_name: 2014 runtime hardcodes "Subclass"; overridden with
+#   the real per-class name.
+# - subclass_level: 2014 runtime hardcodes 3; the real levels are Cleric 1,
+#   Sorcerer 1, Warlock 1, Druid 2, Wizard 2 (all others 3 == default).
+#   Overrides authored ONLY where the real level differs from 3.
+# ===================================================================
+classes:
+  barbarian:
+    subclass_feature_name: Primal Path
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a greataxe or (b) any martial melee weapon"
+      - kind: choice
+        options:
+          - "(a) two handaxes or (b) any simple weapon"
+      - kind: fixed
+        items: ["An explorer's pack and four javelins"]
+  bard:
+    subclass_feature_name: Bard College
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a rapier, (b) a longsword, or (c) any simple weapon"
+      - kind: choice
+        options:
+          - "(a) a diplomat's pack or (b) an entertainer's pack"
+      - kind: choice
+        options:
+          - "(a) a lute or (b) any other musical instrument"
+      - kind: fixed
+        items: ["Leather armor and a dagger"]
+  cleric:
+    subclass_feature_name: Divine Domain
+    subclass_level: 1
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a mace or (b) a warhammer (if proficient)"
+      - kind: choice
+        options:
+          - "(a) scale mail, (b) leather armor, or (c) chain mail (if proficient)"
+      - kind: choice
+        options:
+          - "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+      - kind: choice
+        options:
+          - "(a) a priest's pack or (b) an explorer's pack"
+      - kind: fixed
+        items: ["A shield and a holy symbol"]
+  druid:
+    subclass_feature_name: Druid Circle
+    subclass_level: 2
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a wooden shield or (b) any simple weapon"
+      - kind: choice
+        options:
+          - "(a) a scimitar or (b) any simple melee weapon"
+      - kind: fixed
+        items: ["Leather armor, an explorer's pack, and a druidic focus"]
+  fighter:
+    subclass_feature_name: Martial Archetype
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) chain mail or (b) leather armor, longbow, and 20 arrows"
+      - kind: choice
+        options:
+          - "(a) a martial weapon and a shield or (b) two martial weapons"
+      - kind: choice
+        options:
+          - "(a) a light crossbow and 20 bolts or (b) two handaxes"
+      - kind: choice
+        options:
+          - "(a) a dungeoneer's pack or (b) an explorer's pack"
+  monk:
+    subclass_feature_name: Monastic Tradition
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a shortsword or (b) any simple weapon"
+      - kind: choice
+        options:
+          - "(a) a dungeoneer's pack or (b) an explorer's pack"
+      - kind: fixed
+        items: ["10 darts"]
+  paladin:
+    subclass_feature_name: Sacred Oath
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a martial weapon and a shield or (b) two martial weapons"
+      - kind: choice
+        options:
+          - "(a) five javelins or (b) any simple melee weapon"
+      - kind: choice
+        options:
+          - "(a) a priest's pack or (b) an explorer's pack"
+      - kind: fixed
+        items: ["Chain mail and a holy symbol"]
+  ranger:
+    subclass_feature_name: Ranger Archetype
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) scale mail or (b) leather armor"
+      - kind: choice
+        options:
+          - "(a) two shortswords or (b) two simple melee weapons"
+      - kind: choice
+        options:
+          - "(a) a dungeoneer's pack or (b) an explorer's pack"
+      - kind: fixed
+        items: ["A longbow and a quiver of 20 arrows"]
+  rogue:
+    subclass_feature_name: Roguish Archetype
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a rapier or (b) a shortsword"
+      - kind: choice
+        options:
+          - "(a) a shortbow and quiver of 20 arrows or (b) a shortsword"
+      - kind: choice
+        options:
+          - "(a) a burglar's pack, (b) a dungeoneer's pack, or (c) an explorer's pack"
+      - kind: fixed
+        items: ["Leather armor, two daggers, and thieves' tools"]
+  sorcerer:
+    subclass_feature_name: Sorcerous Origin
+    subclass_level: 1
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+      - kind: choice
+        options:
+          - "(a) a component pouch or (b) an arcane focus"
+      - kind: choice
+        options:
+          - "(a) a dungeoneer's pack or (b) an explorer's pack"
+      - kind: fixed
+        items: ["Two daggers"]
+  warlock:
+    subclass_feature_name: Otherworldly Patron
+    subclass_level: 1
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+      - kind: choice
+        options:
+          - "(a) a component pouch or (b) an arcane focus"
+      - kind: choice
+        options:
+          - "(a) a scholar's pack or (b) a dungeoneer's pack"
+      - kind: fixed
+        items: ["Leather armor, any simple weapon, and two daggers"]
+  wizard:
+    subclass_feature_name: Arcane Tradition
+    subclass_level: 2
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(a) a quarterstaff or (b) a dagger"
+      - kind: choice
+        options:
+          - "(a) a component pouch or (b) an arcane focus"
+      - kind: choice
+        options:
+          - "(a) a scholar's pack or (b) an explorer's pack"
+      - kind: fixed
+        items: ["A spellbook"]
 
 optional_feature_slugs:
   invocation:
