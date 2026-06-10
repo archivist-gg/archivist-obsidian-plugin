@@ -100,6 +100,54 @@ describe("collectChosenGrantedFeatures — origin (race/background) choices", ()
     expect(collectChosenGrantedFeatures(character, [], noRegistry, race, null)).toEqual([]);
   });
 
+  it("carries a 2014 fighting-style optional-feature's effects via the class select-entity branch", () => {
+    // 2014 Defense is an optional-feature (edition 2014), selected through a class
+    // fighting-style select-entity choice. This pins walkChoiceGrants's
+    // select-entity branch — the only link in the chain not otherwise covered.
+    const defense2014 = {
+      slug: "srd-5e_defense",
+      name: "Defense",
+      feature_type: "fighting_style",
+      description: "While you are wearing armor, you gain a +1 bonus to AC.",
+      effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }],
+    };
+    const registry = {
+      getByTypeAndSlug: (type: string, slug: string) =>
+        type === "optional-feature" && slug === "srd-5e_defense"
+          ? { data: defense2014 }
+          : undefined,
+    };
+    const fighter = {
+      slug: "srd-5e_fighter",
+      features_by_level: {
+        1: [
+          {
+            name: "Fighting Style",
+            choices: [
+              {
+                kind: "select-entity",
+                id: "fighting-style",
+                count: 1,
+                entity_type: "optional-feature",
+                where: { feature_type: "fighting_style", available_to: "self" },
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const classes = [{ entity: fighter, level: 1, subclass: null, choices: {} }] as never;
+    const character = {
+      class: [{ name: "[[srd-5e_fighter]]", level: 1, subclass: null, choices: { 1: { "fighting-style": "srd-5e_defense" } } }],
+      origin_choices: {},
+    } as never;
+    const out = collectChosenGrantedFeatures(character, classes, registry, null, null);
+    expect(out).toHaveLength(1);
+    expect(out[0].feature.name).toBe("Defense");
+    expect(out[0].feature.effects).toEqual([{ kind: "ac-bonus", value: 1, requires_armor: true }]);
+    expect(out[0].source).toEqual({ kind: "class", slug: "srd-5e_fighter", level: 1 });
+  });
+
   it("walks background feature choices via the background namespace", () => {
     const background = {
       slug: "srd-5e_acolyte",
