@@ -15,6 +15,7 @@ import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
 import { collectChosenProficiencies } from "./pc.decision-engine";
+import { computeFeatureEffects } from "./pc.feature-effects";
 import { computeConditionEffects } from "./pc.conditions";
 import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
 import type {
@@ -332,6 +333,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // Chosen proficiencies from persisted decisions (SP2 Plan 3): skills/expertise
   // fold into the skill tri below; languages/tools fold into the proficiency set.
   const chosenProfs = collectChosenProficiencies(resolved);
+  // Feature-effects pass (effects-application engine): one pure aggregation
+  // over resolved.features; threaded into each stat below, before overrides.
+  const featureEffects = computeFeatureEffects(resolved.features);
   const profsForApply = computeProficiencies(resolved);
   for (const t of chosenProfs.tools) {
     if (!profsForApply.tools.specific.includes(t)) profsForApply.tools.specific.push(t);
@@ -423,7 +427,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   };
 
   // HP
-  const hpMaxDerived = multiclassMaxHP(resolved.classes, mods.con);
+  const hpMaxDerived = multiclassMaxHP(resolved.classes, mods.con)
+    + featureEffects.hp_per_level_bonus * totalLevel;
   const hpMaxAfterConditions = Math.floor(hpMaxDerived * conditionEffects.hp_max_multiplier);
   const hpMax = overrides.hp?.max ?? hpMaxAfterConditions;
 
@@ -470,14 +475,20 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   const ac = overrides.ac ?? acDerived;
 
   // Speed
-  const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk;
+  const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk + featureEffects.speed_walk_bonus;
   const adjustedSpeed = (baseSpeed * conditionEffects.speed_multiplier) - conditionEffects.speed_reduction_ft;
   const conditionSpeed = conditionEffects.speed_floor_zero ? 0 : Math.max(0, Math.floor(adjustedSpeed));
   const speed = overrides.speed ?? conditionSpeed;
   if (!resolved.race) warnings.push("No race resolved; speed defaulted to 30.");
 
   // Initiative
-  const init = overrides.initiative ?? initiativeBonus(mods.dex, resolved.feats, resolved.definition.edition);
+  const init = overrides.initiative
+    ?? (initiativeBonus(mods.dex, resolved.feats, resolved.definition.edition) + featureEffects.initiative_bonus);
+
+  // Senses: race vision vs feature-effect darkvision — larger wins.
+  const senses = {
+    darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.darkvision),
+  };
 
   // Spellcasting (per class, multiclass-aware)
   const edition = resolved.definition.edition;
@@ -551,6 +562,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     proficiencies: profsForApply,
     skills,
     passives,
+    senses,
     hp: {
       max: hpMax,
       current: resolved.state.hp.current,
