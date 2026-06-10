@@ -54,6 +54,35 @@ describe("origin_choices + typed class choices", () => {
       expect(r.success, JSON.stringify(choices)).toBe(true);
     }
   });
+
+  it("preserves odd legacy choice values unchanged (round-trips, not just parses)", () => {
+    // The schema's `.catch` arms must pass the ORIGINAL value through, not
+    // drop it. A value-dropping fallback (e.g. `.catch(() => ({}))`) would
+    // still pass the success-only assertions above while silently rewriting
+    // users' hand-edited data on save — these deep-equals pin that contract.
+    // (Zod stringifies record keys, so output keys are `"1"`, but toEqual
+    // treats `{1: ...}` and `{"1": ...}` as equal for plain objects.)
+    const r1 = characterSchema.safeParse({
+      ...minimal,
+      class: [{ name: "[[fighter]]", level: 4, choices: { 1: null } }],
+    });
+    expect(r1.success).toBe(true);
+    if (r1.success) expect(r1.data.class[0].choices).toEqual({ 1: null });
+
+    const r2 = characterSchema.safeParse({
+      ...minimal,
+      class: [{ name: "[[fighter]]", level: 4, choices: { 1: { a: null, b: 7 } } }],
+    });
+    expect(r2.success).toBe(true);
+    if (r2.success) expect(r2.data.class[0].choices).toEqual({ 1: { a: null, b: 7 } });
+
+    const r3 = characterSchema.safeParse({
+      ...minimal,
+      origin_choices: { "race:odd": 42 },
+    });
+    expect(r3.success).toBe(true);
+    if (r3.success) expect(r3.data.origin_choices!["race:odd"]).toBe(42);
+  });
 });
 
 describe("CharacterEditState — setOriginChoice", () => {

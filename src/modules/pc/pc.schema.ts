@@ -149,7 +149,7 @@ const classEntrySchema = z.object({
   choices: z
     .record(
       z.coerce.number().int(),
-      z.record(z.string(), choiceValueSchema).catch((ctx) => ctx.value as Record<string, never>),
+      z.record(z.string(), choiceValueSchema).catch((ctx) => ctx.value as Record<string, never>), // type-only cast; value preserved at runtime
     )
     .default({}),
 });
