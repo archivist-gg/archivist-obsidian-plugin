@@ -129,8 +129,10 @@ export function collectFeatSlugs(character: Character): string[] {
 }
 
 /** Selected select-entity values (optional-features) and selected inline
- *  options carrying effects[] become synthesized resolved features, so the
- *  existing effects/actions/resource engines apply them (SP2 Plan 3 §9).
+ *  options carrying effects[] become synthesized resolved features (SP2 Plan 3 §9).
+ *  The actions/resources engines consume these synthesized features today;
+ *  any effects[] are carried onto the features but not yet consumed anywhere —
+ *  no effect-application engine exists in the codebase yet (named deferral).
  *  Scope is class/subclass only — origin (race/background) grants are Plan 4. */
 export function collectChosenGrantedFeatures(
   character: Character,

@@ -1,15 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { PCResolver, stripSlug, collectFeatSlugs } from "../src/modules/pc/pc.resolver";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { featureEffectSchema } from "../src/shared/schemas/feature-effect-schema";
 import type { Character } from "../src/modules/pc/pc.types";
 
 const ALERT_FEAT = { slug: "alert", name: "Alert", description: "You can't be surprised." };
 
 const DEFENSE_OF = {
   slug: "srd-2024_defense", name: "Defense", feature_type: "fighting_style",
-  description: "+1 AC while wearing armor.",
+  description: "+1 to initiative while wearing armor.",
   available_to: ["[[SRD 2024/Classes/Fighter]]"],
-  effects: [{ kind: "ac-bonus", value: 1 }],
+  effects: [{ kind: "initiative-bonus", value: 1 }],
 };
 
 // Fighter with a fighting-style decision at L1 (select-entity → optional-feature)
@@ -31,6 +32,26 @@ const STYLED_FIGHTER = {
       ] }],
     }],
   },
+};
+
+// Second class with its own L1 fighting-style decision, to test multiclass grant scoping.
+const STYLED_RANGER = {
+  slug: "ranger", name: "Ranger", hit_die: "d10",
+  saving_throws: ["str", "dex"],
+  features_by_level: {
+    1: [{
+      id: "ranger-style", name: "Ranger Style", description: "Choose one.",
+      choices: [{ kind: "select-entity", id: "ranger-style", count: 1,
+        entity_type: "optional-feature", where: { feature_type: "fighting_style", available_to: "self" } }],
+    }],
+  },
+};
+
+const DUELING_OF = {
+  slug: "srd-2024_dueling", name: "Dueling", feature_type: "fighting_style",
+  description: "+2 damage with a one-handed weapon.",
+  available_to: ["[[SRD 2024/Classes/Ranger]]"],
+  effects: [{ kind: "damage-bonus", damage_type: "weapon", amount: "2" }],
 };
 
 const BLADESWORN = {
@@ -69,6 +90,15 @@ const DRIFTER = {
   feature: { name: "Wanderer's Way", description: "Travel is easy." },
   proficiencies: { skills: ["survival", "insight"], tools: [], languages: [] },
 };
+
+describe("fixture effects are schema-valid", () => {
+  it("optional-feature + inline-branch fixtures parse against featureEffectSchema", () => {
+    for (const eff of [...DEFENSE_OF.effects, ...DUELING_OF.effects]) {
+      expect(() => featureEffectSchema.parse(eff)).not.toThrow();
+    }
+    expect(() => featureEffectSchema.parse({ kind: "speed-bonus", mode: "walk", value: 5 })).not.toThrow();
+  });
+});
 
 describe("stripSlug", () => {
   it("removes wikilink brackets", () => {
@@ -201,7 +231,7 @@ describe("PCResolver", () => {
     const { character } = new PCResolver(reg).resolve(char);
     const synth = character.features.find((rf) => rf.feature.name === "Defense");
     expect(synth).toBeDefined();
-    expect(synth!.feature.effects).toEqual([{ kind: "ac-bonus", value: 1 }]);
+    expect(synth!.feature.effects).toEqual([{ kind: "initiative-bonus", value: 1 }]);
     expect(synth!.source.kind).toBe("class");
   });
 
@@ -212,7 +242,7 @@ describe("PCResolver", () => {
         1: [{
           id: "creed", name: "Creed", description: "Pick a creed.",
           choices: [{ kind: "select-inline", id: "creed", options: [
-            { value: "valor", label: "Valor", description: "Bold.", effects: [{ kind: "speed-bonus", value: 5 }] },
+            { value: "valor", label: "Valor", description: "Bold.", effects: [{ kind: "speed-bonus", mode: "walk", value: 5 }] },
           ] }],
         }],
       },
@@ -223,7 +253,45 @@ describe("PCResolver", () => {
     const { character } = new PCResolver(reg).resolve(char);
     const synth = character.features.find((rf) => rf.feature.name === "Valor");
     expect(synth).toBeDefined();
-    expect(synth!.feature.effects).toEqual([{ kind: "speed-bonus", value: 5 }]);
+    expect(synth!.feature.effects).toEqual([{ kind: "speed-bonus", mode: "walk", value: 5 }]);
+  });
+
+  it("multiclass: each class's selected optional-feature is scoped to its OWNING class slug", () => {
+    const reg = buildMockRegistry([
+      { slug: "fighter", entityType: "class", data: STYLED_FIGHTER },
+      { slug: "ranger", entityType: "class", data: STYLED_RANGER },
+      { slug: "srd-2024_defense", entityType: "optional-feature", data: DEFENSE_OF },
+      { slug: "srd-2024_dueling", entityType: "optional-feature", data: DUELING_OF },
+    ]);
+    const char = minimalCharacter();
+    char.class = [
+      { name: "[[fighter]]", level: 1, subclass: null,
+        choices: { 1: { "fighting-style": "srd-2024_defense" } } },
+      { name: "[[ranger]]", level: 1, subclass: null,
+        choices: { 1: { "ranger-style": "srd-2024_dueling" } } },
+    ];
+    const { character } = new PCResolver(reg).resolve(char);
+
+    const defense = character.features.find((rf) => rf.feature.name === "Defense");
+    const dueling = character.features.find((rf) => rf.feature.name === "Dueling");
+    expect(defense).toBeDefined();
+    expect(dueling).toBeDefined();
+
+    // Each synthesized feature is pinned to its OWNING class's entity slug.
+    expect(defense!.source.kind).toBe("class");
+    expect((defense!.source as { slug: string }).slug).toBe("fighter");
+    expect(dueling!.source.kind).toBe("class");
+    expect((dueling!.source as { slug: string }).slug).toBe("ranger");
+
+    // Neither class's selection produces a grant from the other's features:
+    // exactly one synthesized feature per owning class, none cross-attributed.
+    const synthesized = character.features.filter(
+      (rf) => rf.feature.name === "Defense" || rf.feature.name === "Dueling");
+    expect(synthesized).toHaveLength(2);
+    expect(synthesized.filter((rf) => (rf.source as { slug: string }).slug === "fighter")
+      .map((rf) => rf.feature.name)).toEqual(["Defense"]);
+    expect(synthesized.filter((rf) => (rf.source as { slug: string }).slug === "ranger")
+      .map((rf) => rf.feature.name)).toEqual(["Dueling"]);
   });
 
   it("does NOT synthesize granted features from origin race traits (Plan 4 scope)", () => {

@@ -181,6 +181,8 @@ export function collectChosenProficiencies(resolved: ResolvedCharacter): {
     const vals = Array.isArray(selected) ? selected : typeof selected === "string" ? [selected] : [];
     const pool = choice.from;
     const valid = pool ? vals.filter((v) => pool.includes(v)) : vals;
+    // domain:"save" is intentionally not collected here — saving-throw
+    // proficiencies come from class `saving_throws`, not decisions.
     const bucket = choice.domain === "skill" ? (choice.expertise ? out.expertise : out.skills)
       : choice.domain === "language" ? out.languages
       : choice.domain === "tool" ? out.tools : null;
