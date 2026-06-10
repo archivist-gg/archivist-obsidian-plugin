@@ -279,7 +279,13 @@
       "While you're wearing Light, Medium, or Heavy armor, you gain a +1 bonus to Armor Class."
     ],
     "repeatable": false,
-    "effects": [],
+    "effects": [
+      {
+        "kind": "ac-bonus",
+        "value": 1,
+        "requires_armor": true
+      }
+    ],
     "grants_asi": null,
     "choices": []
   },
