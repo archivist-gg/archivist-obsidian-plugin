@@ -122,11 +122,21 @@ const characterStateSchema = z.object({
   attuned_items: z.array(z.string()).optional(),
 });
 
+// A persisted decision value: entity slug / inline value (string), multi-select
+// slugs (string[]), or an ability-points / legacy record. The record arm is
+// intentionally loose so no legacy value is ever dropped at parse time; readers
+// narrow defensively.
+const choiceValueSchema = z.union([
+  z.string(),
+  z.array(z.string()),
+  z.record(z.string(), z.unknown()),   // ability-points records + legacy oddities
+]);
+
 const classEntrySchema = z.object({
   name: z.string().min(1),
   level: z.number().int().min(1).max(20),
   subclass: z.string().nullable().default(null),
-  choices: z.record(z.coerce.number().int(), z.unknown()).default({}),
+  choices: z.record(z.coerce.number().int(), z.record(z.string(), choiceValueSchema)).default({}),
 });
 
 const spellOverrideSchema = z.object({
@@ -155,6 +165,9 @@ export const characterSchema = z.object({
   // producer of class-less files, and recalc degrades gracefully (HP/derivation
   // fall back with warnings) when no class is present. See SP2 spec §5/§9.
   class: z.array(classEntrySchema).default([]),
+  // Race/background decision selections, keyed `race:<id>` / `background:<id>`
+  // (SP2 Plan 3). Permissive value arm mirrors per-level class choices.
+  origin_choices: z.record(z.string(), choiceValueSchema).default({}),
   abilities: z.object({
     str: z.number().int(),
     dex: z.number().int(),

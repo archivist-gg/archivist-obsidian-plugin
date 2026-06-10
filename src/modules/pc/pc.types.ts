@@ -20,11 +20,18 @@ export type Edition = "2014" | "2024";
 
 export type AbilityMethod = "standard-array" | "point-buy" | "rolled" | "manual";
 
+/** A persisted decision value: entity slug / inline value (string), multi-select
+ *  slugs (string[]), or an ability-points allocation. Stale/odd legacy values
+ *  survive parsing (schema is permissive); readers narrow defensively. */
+export type ChoiceValue = string | string[] | Partial<Record<Ability, number>>;
+
+export type LevelChoices = Record<string, ChoiceValue>;
+
 export interface ClassEntry {
   name: string;                        // "[[rogue]]" or "rogue"
   level: number;
   subclass: string | null;             // "[[soulknife]]" or null
-  choices: Record<number, unknown>;    // per-level; typed loosely in SP3
+  choices: Record<number, LevelChoices>;
 }
 
 export interface SpellOverride {
@@ -112,6 +119,9 @@ export interface Character {
   subrace: string | null;
   background: string | null;
   class: ClassEntry[];
+  /** Race/background decision selections, keyed `race:<choice-id>` /
+   *  `background:<choice-id>` (SP2 Plan 3). */
+  origin_choices?: Record<string, ChoiceValue>;
   abilities: Record<Ability, number>;
   ability_method: AbilityMethod;
   skills: { proficient: SkillSlug[]; expertise: SkillSlug[] };
@@ -158,7 +168,7 @@ export interface ResolvedClass {
   entity: ClassEntity | null;
   level: number;
   subclass: SubclassEntity | null;
-  choices: Record<number, unknown>;
+  choices: Record<number, LevelChoices>;
 }
 
 export interface ResolvedCharacter {
