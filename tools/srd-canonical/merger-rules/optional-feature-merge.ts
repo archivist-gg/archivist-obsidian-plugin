@@ -57,7 +57,7 @@ export function mergeOptionalFeatures(opts: MergeOptionalFeatureOptions): Option
     // Entity-level effects authored in the overlay (keyed by bare slug).
     const entityOverlay = opts.overlay.optional_features?.[slug];
     if (entityOverlay?.effects?.length) {
-      normalized.data.effects = entityOverlay.effects as OptionalFeatureEntity["effects"];
+      normalized.data.effects = entityOverlay.effects;
     }
     out.push(normalized.data);
   }
