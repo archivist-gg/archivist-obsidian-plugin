@@ -134,6 +134,229 @@ class_features:
         max_formula: "1"
         reset: long-rest
 
+  # ===================================================================
+  # Decision data (SP2 Plan 3) -- player choices carried as `choices`.
+  # Four primitives: select-inline / select-entity / select-proficiency /
+  # ability-points (recursive nesting via option `choices`). `id` values are
+  # permanent persistence keys. Bare keys apply to every class with that
+  # feature slug; scoped `<class-bare-slug>:<feature-slug>` keys are
+  # class-specific and win over bare keys.
+  # ===================================================================
+
+  # Ability Score Improvement (shared) -- 2024 ASI is a feat grant: the
+  # Ability Score Improvement feat (+2 / +1+1) OR another feat of your choice.
+  # Represented as the agreed asi-or-feat select-inline.
+  ability-score-improvement:
+    choices:
+      - kind: select-inline
+        id: asi-or-feat
+        count: 1
+        options:
+          - value: asi
+            label: Ability Score Increase
+            choices: [{ kind: ability-points, id: asi, points: 2, max_per: 2 }]
+          - value: feat
+            label: Feat
+            choices: [{ kind: select-entity, id: feat, entity_type: feat, count: 1 }]
+  # Epic Boon (shared, L19) -- an Epic Boon feat or another feat of your
+  # choice. No epic-boon feat category exists in SRD feat data, so this is an
+  # open feat pick (the "another feat of your choice" clause).
+  epic-boon:
+    choices:
+      - kind: select-entity
+        id: epic-boon
+        count: 1
+        entity_type: feat
+
+  # --- Subclass selection (scoped; one per class) ---
+  barbarian:barbarian-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  cleric:cleric-subclasses:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  druid:druid-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  fighter:fighter-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  monk:monk-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  paladin:paladin-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  ranger:ranger-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  rogue:rogue-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  sorcerer:sorcerer-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  warlock:warlock-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  wizard:wizard-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  # NOTE: Bard's L3 "Bard Subclass" feature is absent from the 2024 runtime
+  # class JSON (table L3 feature_ids is empty), so no scoped key is authored
+  # here -- keying it would be a dead key. Upstream data gap, out of scope.
+
+  # --- Fighting Style (scoped; fighter L1 / paladin L2 / ranger L2) ---
+  # A Fighting Style optional feature of your choice. (Paladin/Ranger also
+  # offer the Blessed/Druidic Warrior cantrip alternative -- deferred.)
+  fighter:fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+  paladin:fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+  ranger:fighting-style:
+    choices:
+      - kind: select-entity
+        id: fighting-style
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: fighting_style, available_to: self }
+
+  # --- Expertise (scoped) ---
+  # Rogue: L1 picks 2, L6 picks 2 more (same scoped key covers both entries).
+  rogue:expertise:
+    choices: [{ kind: select-proficiency, id: expertise, domain: skill, count: 2, from_proficient: true, expertise: true }]
+  # Bard: L2 picks 2, L9 picks 2 more (one entry in runtime; key covers all).
+  bard:expertise:
+    choices: [{ kind: select-proficiency, id: expertise, domain: skill, count: 2, from_proficient: true, expertise: true }]
+  # Ranger L9: choose two skills you lack Expertise in.
+  ranger:expertise:
+    choices: [{ kind: select-proficiency, id: expertise, domain: skill, count: 2, from_proficient: true, expertise: true }]
+
+  # --- Ranger Deft Explorer (L2): Expertise (1 skill) + 2 languages ---
+  ranger:deft-explorer:
+    choices:
+      - kind: select-proficiency
+        id: expertise
+        domain: skill
+        count: 1
+        from_proficient: true
+        expertise: true
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 2
+
+  # --- Wizard Scholar (L2): Expertise in one listed skill you're proficient in ---
+  wizard:scholar:
+    choices:
+      - kind: select-proficiency
+        id: expertise
+        domain: skill
+        count: 1
+        from: [arcana, history, investigation, medicine, nature, religion]
+        from_proficient: true
+        expertise: true
+
+  # --- Barbarian Primal Knowledge (L3): one more skill from the Barbarian list ---
+  barbarian:primal-knowledge:
+    choices:
+      - kind: select-proficiency
+        id: skill
+        domain: skill
+        count: 1
+        from: [animal-handling, athletics, intimidation, nature, perception, survival]
+
+  # --- Warlock Eldritch Invocations (L1): one invocation of your choice ---
+  # deferred: scaling invocation counts at higher levels (3 at L2, etc.)
+  eldritch-invocations:
+    choices:
+      - kind: select-entity
+        id: invocation
+        count: 1
+        entity_type: optional-feature
+        where: { feature_type: invocation, available_to: self }
+  # Pact Boon: in 2024 there is no distinct pact-boon decision feature -- the
+  # former pact boons are Eldritch Invocations (e.g. Pact of the Tome), chosen
+  # through Eldritch Invocations above. No separate choice is authored.
+
+  # --- Sorcerer Metamagic (L2 + L10): two Metamagic options each ---
+  sorcerer:metamagic:
+    choices:
+      - kind: select-entity
+        id: metamagic
+        count: 2
+        entity_type: optional-feature
+        where: { feature_type: metamagic, available_to: self }
+
+  # --- Cleric Divine Order (L1): one sacred role (flavor pick) ---
+  # No FeatureEffect kind covers weapon/armor training or extra cantrips, so
+  # options carry descriptions only.
+  divine-order:
+    choices:
+      - kind: select-inline
+        id: divine-order
+        count: 1
+        options:
+          - value: protector
+            label: Protector
+            description: Trained for battle, you gain proficiency with Martial weapons and training with Heavy armor.
+          - value: thaumaturge
+            label: Thaumaturge
+            description: You know one extra cantrip from the Cleric spell list, and gain a bonus to Intelligence (Arcana or Religion) checks equal to your Wisdom modifier (minimum +1).
+
+  # --- Druid Primal Order (L1): one sacred role (flavor pick) ---
+  primal-order:
+    choices:
+      - kind: select-inline
+        id: primal-order
+        count: 1
+        options:
+          - value: magician
+            label: Magician
+            description: You know one extra cantrip from the Druid spell list, and gain a bonus to Intelligence (Arcana or Nature) checks equal to your Wisdom modifier (minimum +1).
+          - value: warden
+            label: Warden
+            description: Trained for battle, you gain proficiency with Martial weapons and training with Medium armor.
+
+  # --- Cleric Blessed Strikes (L7): one combat boon (flavor pick) ---
+  blessed-strikes:
+    choices:
+      - kind: select-inline
+        id: blessed-strikes
+        count: 1
+        options:
+          - value: divine-strike
+            label: Divine Strike
+            description: Once on each of your turns when you hit with a weapon, deal an extra 1d8 Necrotic or Radiant damage (your choice).
+          - value: potent-spellcasting
+            label: Potent Spellcasting
+            description: Add your Wisdom modifier to the damage you deal with any Cleric cantrip.
+
+  # --- Druid Elemental Fury (L7): one elemental boon (flavor pick) ---
+  elemental-fury:
+    choices:
+      - kind: select-inline
+        id: elemental-fury
+        count: 1
+        options:
+          - value: potent-spellcasting
+            label: Potent Spellcasting
+            description: Add your Wisdom modifier to the damage you deal with any Druid cantrip.
+          - value: primal-strike
+            label: Primal Strike
+            description: Once on each of your turns when you hit with a weapon or a Wild Shape Beast attack, deal an extra 1d8 Cold, Fire, Lightning, or Thunder damage.
+
+  # --- Spellcasting / prepared-spell features (no build-time choice here) ---
+  spellcasting:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  pact-magic:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  mystic-arcanum:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Monk Empowered Strikes (L6): per-attack damage-type swap, resolved in play,
+  # not a build-time decision.
+  empowered-strikes:
+    noChoices: true # per-attack runtime choice, not a build decision
+
   # --- Subclass features (subclass-merge reads the class_features overlay map) ---
   # Fiend Patron (Warlock) -- Dark One's Own Luck
   dark-ones-own-luck:
@@ -150,6 +373,137 @@ class_features:
         name: Wholeness of Body
         max_formula: "{wis_mod}"
         reset: long-rest
+
+# ===================================================================
+# Entity-level class overrides (SP2 Plan 3). Keyed by bare class slug.
+# skill_choices + starting_equipment transcribed from each class's Core Traits
+# table; the prose parser falls back to all-18 skills / empty equipment for
+# every 2024 class, so these are authored. subclass_feature_name overrides the
+# generic "Subclass" default with the class-specific name. subclass_level is 3
+# for every 2024 class (== default), so no override is authored.
+# ===================================================================
+classes:
+  barbarian:
+    subclass_feature_name: Barbarian Subclass
+    skill_choices:
+      count: 2
+      from: [animal-handling, athletics, intimidation, nature, perception, survival]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Greataxe, 4 Handaxes, Explorer's Pack, and 15 GP"
+          - "(B) 75 GP"
+  bard:
+    subclass_feature_name: Bard Subclass
+    skill_choices:
+      count: 3
+      from: [acrobatics, animal-handling, arcana, athletics, deception, history, insight, intimidation, investigation, medicine, nature, perception, performance, persuasion, religion, sleight-of-hand, stealth, survival]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Leather Armor, 2 Daggers, Musical Instrument of your choice, Entertainer's Pack, and 19 GP"
+          - "(B) 90 GP"
+  cleric:
+    subclass_feature_name: Cleric Subclass
+    skill_choices:
+      count: 2
+      from: [history, insight, medicine, persuasion, religion]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Chain Shirt, Shield, Mace, Holy Symbol, Priest's Pack, and 7 GP"
+          - "(B) 110 GP"
+  druid:
+    subclass_feature_name: Druid Subclass
+    skill_choices:
+      count: 2
+      from: [animal-handling, arcana, insight, medicine, nature, perception, religion, survival]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer's Pack, Herbalism Kit, and 9 GP"
+          - "(B) 50 GP"
+  fighter:
+    subclass_feature_name: Fighter Subclass
+    skill_choices:
+      count: 2
+      from: [acrobatics, animal-handling, athletics, history, insight, intimidation, persuasion, perception, survival]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Chain Mail, Greatsword, Flail, 8 Javelins, Dungeoneer's Pack, and 4 GP"
+          - "(B) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Dungeoneer's Pack, and 11 GP"
+          - "(C) 155 GP"
+  monk:
+    subclass_feature_name: Monk Subclass
+    skill_choices:
+      count: 2
+      from: [acrobatics, athletics, history, insight, religion, stealth]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Spear, 5 Daggers, Artisan's Tools or Musical Instrument chosen for the tool proficiency, Explorer's Pack, and 11 GP"
+          - "(B) 50 GP"
+  paladin:
+    subclass_feature_name: Paladin Subclass
+    skill_choices:
+      count: 2
+      from: [athletics, insight, intimidation, medicine, persuasion, religion]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Chain Mail, Shield, Longsword, 6 Javelins, Holy Symbol, Priest's Pack, and 9 GP"
+          - "(B) 150 GP"
+  ranger:
+    subclass_feature_name: Ranger Subclass
+    skill_choices:
+      count: 3
+      from: [animal-handling, athletics, insight, investigation, nature, perception, stealth, survival]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer's Pack, and 7 GP"
+          - "(B) 150 GP"
+  rogue:
+    subclass_feature_name: Rogue Subclass
+    skill_choices:
+      count: 4
+      from: [acrobatics, athletics, deception, insight, intimidation, investigation, perception, persuasion, sleight-of-hand, stealth]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Leather Armor, 2 Daggers, Shortsword, Shortbow, 20 Arrows, Quiver, Thieves' Tools, Burglar's Pack, and 8 GP"
+          - "(B) 100 GP"
+  sorcerer:
+    subclass_feature_name: Sorcerer Subclass
+    skill_choices:
+      count: 2
+      from: [arcana, deception, insight, intimidation, persuasion, religion]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer's Pack, and 28 GP"
+          - "(B) 50 GP"
+  warlock:
+    subclass_feature_name: Warlock Subclass
+    skill_choices:
+      count: 2
+      from: [arcana, deception, history, intimidation, investigation, nature, religion]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar's Pack, and 15 GP"
+          - "(B) 100 GP"
+  wizard:
+    subclass_feature_name: Wizard Subclass
+    skill_choices:
+      count: 2
+      from: [arcana, history, insight, investigation, medicine, nature, religion]
+    starting_equipment:
+      - kind: choice
+        options:
+          - "(A) 2 Daggers, Arcane Focus (Quarterstaff), Robe, Spellbook, Scholar's Pack, and 5 GP"
+          - "(B) 55 GP"
 
 race_traits:
   # Dragonborn (2024) -- Breath Weapon: uses = Proficiency Bonus, regain on a
