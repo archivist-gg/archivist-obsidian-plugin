@@ -36,6 +36,24 @@ describe("origin_choices + typed class choices", () => {
     });
     expect(r.success).toBe(true);
   });
+
+  it("never fails the character parse on legacy/hand-edited oddities", () => {
+    const cases = [
+      { 1: { a: null } },
+      { 1: { b: 7 } },
+      { 1: { c: [1, 2] } },
+      { 1: { d: true } },
+      { 1: null },
+      { 1: "loose" },
+    ];
+    for (const choices of cases) {
+      const r = characterSchema.safeParse({
+        ...minimal,
+        class: [{ name: "[[fighter]]", level: 4, choices }],
+      });
+      expect(r.success, JSON.stringify(choices)).toBe(true);
+    }
+  });
 });
 
 describe("CharacterEditState — setOriginChoice", () => {

@@ -122,21 +122,36 @@ const characterStateSchema = z.object({
   attuned_items: z.array(z.string()).optional(),
 });
 
-// A persisted decision value: entity slug / inline value (string), multi-select
-// slugs (string[]), or an ability-points / legacy record. The record arm is
-// intentionally loose so no legacy value is ever dropped at parse time; readers
-// narrow defensively.
-const choiceValueSchema = z.union([
-  z.string(),
-  z.array(z.string()),
-  z.record(z.string(), z.unknown()),   // ability-points records + legacy oddities
-]);
+/** Expected persisted decision shapes: entity slug / inline value (string),
+ *  multi-select slugs (string[]), ability-points allocation (record). The
+ *  trailing `.catch` keeps legacy or hand-edited oddities (null, numbers,
+ *  booleans) loadable — one stray value must never fail the whole character
+ *  parse. `.catch` passes the original input through unchanged on a union
+ *  miss (no value dropped) while keeping the inferred output type narrow so
+ *  `z.unknown()` never leaks into ChoiceValue. Readers narrow defensively
+ *  (ChoiceValue in pc.types). The documented union without the catch-all is:
+ *    z.union([z.string(), z.array(z.string()), z.record(z.string(), z.unknown())]) */
+const choiceValueSchema = z
+  .union([
+    z.string(),
+    z.array(z.string()),
+    z.record(z.string(), z.unknown()),
+  ])
+  .catch((ctx) => ctx.value as string);
 
 const classEntrySchema = z.object({
   name: z.string().min(1),
   level: z.number().int().min(1).max(20),
   subclass: z.string().nullable().default(null),
-  choices: z.record(z.coerce.number().int(), z.record(z.string(), choiceValueSchema)).default({}),
+  // Per-level record is also catch-guarded so a non-object level value
+  // (e.g. `choices: {1: null}` or `{1: "foo"}`) survives the parse instead
+  // of failing the whole character.
+  choices: z
+    .record(
+      z.coerce.number().int(),
+      z.record(z.string(), choiceValueSchema).catch((ctx) => ctx.value as Record<string, never>),
+    )
+    .default({}),
 });
 
 const spellOverrideSchema = z.object({
