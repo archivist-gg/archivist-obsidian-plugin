@@ -1,3 +1,4 @@
+import type { App } from "obsidian";
 import type {
   AIToolRegistry,
   ArchivistModule,
@@ -43,8 +44,9 @@ class SpellModule implements ArchivistModule {
     return parseSpell(source);
   }
 
-  render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
+  render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const spell = data as Spell;
+    const app = (ctx.plugin as { app?: App } | undefined)?.app;
     // Stable wrapper held by the host as `rendered`; the async renderer fills
     // it as a child instead of replacing it. If we used placeholder.replaceWith,
     // the host's `rendered` reference would point at a detached node after the
@@ -52,9 +54,15 @@ class SpellModule implements ArchivistModule {
     // view block visible underneath the edit form.
     const wrapper = el.doc.createElement("div");
     el.appendChild(wrapper);
-    void renderSpellBlock(spell).then((block) => {
-      wrapper.appendChild(block);
-    });
+    void renderSpellBlock(spell, app)
+      .then((block) => { wrapper.appendChild(block); })
+      .catch((err: unknown) => {
+        console.error("[Archivist] spell block render failed", err);
+        wrapper.createDiv({
+          cls: "archivist-block-error",
+          text: `${(data as { name?: string })?.name ?? "Entity"} — block failed to render: ${String(err)}`,
+        });
+      });
     return wrapper;
   }
 

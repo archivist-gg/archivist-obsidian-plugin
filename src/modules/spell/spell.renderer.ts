@@ -4,6 +4,7 @@ import {
   el,
   createIconProperty,
   renderTextWithInlineTags,
+  sourceBadgeText,
 } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
@@ -23,20 +24,6 @@ function getSpellHeader(spell: Spell): string {
   const school = titleCase(spell.school ?? "Unknown");
   if (level === 0) return `${school} cantrip`;
   return `${ordinal(level)}-level ${school}`;
-}
-
-/**
- * Map the body-only `edition` (or `source`) field to a user-friendly badge
- * label. The canonical pipeline writes "SRD 5.1" / "SRD 5.2" to source and
- * "2014" / "2024" to edition; users see "SRD 5e" / "SRD 2024" everywhere
- * else, so we surface that.
- */
-function sourceBadgeText(spell: { source?: string; edition?: string }): string | null {
-  if (spell.edition === "2014") return "SRD 5e";
-  if (spell.edition === "2024") return "SRD 2024";
-  if (spell.source === "SRD 5.1") return "SRD 5e";
-  if (spell.source === "SRD 5.2") return "SRD 2024";
-  return spell.source ?? null;
 }
 
 export async function renderSpellBlock(

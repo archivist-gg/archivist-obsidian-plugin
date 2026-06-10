@@ -26,7 +26,15 @@
 }
 .archivist-pc-sheet .pc-builder-step.active {
   background: var(--pc-row-open-bg); color: var(--pc-crimson); font-weight: 700;
-  border-left: 2px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-builder-step-n {
+  flex: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--pc-tan-muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--pc-font-sans); font-size: 8px; color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-builder-step.active .pc-builder-step-n {
+  background: var(--pc-crimson); color: #fff; border-color: var(--pc-crimson);
 }
 .archivist-pc-sheet .pc-builder-main { padding: 12px 16px; }
 .archivist-pc-sheet .pc-builder-step-h {
@@ -52,3 +60,98 @@
 .archivist-pc-sheet .pc-builder-back { background: transparent; color: var(--pc-text-soft); border-color: var(--pc-tan); }
 .archivist-pc-sheet .pc-builder-next,
 .archivist-pc-sheet .pc-builder-finish { background: var(--pc-crimson); color: var(--pc-parchment-light); margin-left: auto; }
+
+/* ── Shared selection UI: compendium filter + source tags ── */
+.archivist-pc-sheet .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
+.archivist-pc-sheet .pc-bfilter-label {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.archivist-pc-sheet .pc-bfilter-chip {
+  font-size: var(--pc-fs-small); color: var(--pc-text-muted);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 2px 9px; cursor: pointer;
+}
+.archivist-pc-sheet .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
+.archivist-pc-sheet .pc-bsrc.e2014 { color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bsrc.e2024 { color: #1f3f7a; }
+.archivist-pc-sheet .pc-bsrc.hb { color: #2f6f3a; }
+
+.archivist-pc-sheet .pc-bblock { min-width: 0; }
+.archivist-pc-sheet .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
+
+/* ── N1 choice callout ── */
+.archivist-pc-sheet .pc-bchoice { margin: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-bchoice-head {
+  display: flex; align-items: baseline; gap: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
+}
+.archivist-pc-sheet .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-bchoice-badge {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bchoice-flag { color: var(--pc-amber); font-weight: 700; margin-left: auto; }
+.archivist-pc-sheet .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.archivist-pc-sheet .pc-bchoice-chip {
+  border: 1px solid var(--pc-text-primary); border-radius: var(--pc-radius-md);
+  padding: 3px 11px; font-size: var(--pc-fs-small); color: var(--pc-text-primary);
+  cursor: pointer; background: transparent;
+}
+.archivist-pc-sheet .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
+.archivist-pc-sheet .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
+
+/* ── Shared selection table (the add-drawer pattern, generalized) ── */
+.archivist-pc-sheet .pc-btable-host { overflow-x: auto; min-width: 0; }
+.archivist-pc-sheet .pc-btable { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-btable-head, .archivist-pc-sheet .pc-btable-row { display: grid; }
+.archivist-pc-sheet .pc-btable-head > .pc-btable-th {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
+}
+.archivist-pc-sheet .pc-btable-head > .pc-btable-th.sortable { cursor: pointer; }
+.archivist-pc-sheet .pc-btable-sortarr { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-btable-row > * {
+  padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted);
+  font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.archivist-pc-sheet .pc-btable-row { cursor: pointer; }
+.archivist-pc-sheet .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-btable-name.on { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-btable-expand { padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+.archivist-pc-sheet .pc-btable-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-btoggle {
+  width: 20px; height: 20px; line-height: 1; border-radius: 50%;
+  border: 1px solid var(--pc-tan-muted); background: transparent;
+  color: var(--pc-text-soft); cursor: pointer; font-size: var(--pc-fs-small); padding: 0;
+}
+.archivist-pc-sheet .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
+/* Single-select seal: the ✓ stays in the DOM but rests invisible; hovering the
+   row previews it in crimson outline, the standing pick is a filled stamp. */
+.archivist-pc-sheet .pc-btoggle.seal { color: transparent; font-weight: 700; }
+.archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal { border-color: var(--pc-crimson); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-btoggle.seal.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
+.archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal.on { color: var(--pc-parchment-light); }
+
+/* ── Entity picker (single-select ledger: search + filter + seal table) ── */
+.archivist-pc-sheet .pc-bpicker { min-width: 0; }
+.archivist-pc-sheet .pc-bpicker-search {
+  width: 100%; max-width: 320px; display: block;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 5px 9px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
+  caret-color: var(--pc-crimson); margin-bottom: var(--pc-space-2); outline: none; box-shadow: none;
+}
+.archivist-pc-sheet .pc-bpicker-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
+/* Override Obsidian's built-in input :hover (grey form-field highlight) and :focus
+   (box-shadow/outline ring + text recolor) so the search box keeps the parchment
+   look and dark text in every state. */
+.archivist-pc-sheet .pc-bpicker-search:hover,
+.archivist-pc-sheet .pc-bpicker-search:focus,
+.archivist-pc-sheet .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
+.archivist-pc-sheet .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
