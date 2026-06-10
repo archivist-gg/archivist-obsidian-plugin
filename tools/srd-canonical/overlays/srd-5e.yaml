@@ -35,6 +35,7 @@ class_features:
   # enum and cannot express the level gate; we use short-rest (the 5+ behavior).
   bardic-inspiration:
     action_cost: bonus-action
+    noChoices: true # in-play target pick ("choose one creature... within 60 feet"), not a build decision
     resources:
       - id: "bard:bardic-inspiration"
         name: Bardic Inspiration
@@ -468,13 +469,28 @@ class_features:
   the-fiend:fiendish-resilience:
     noChoices: true # recurring per-rest damage-type pick, not a build decision
   # School of Evocation (Wizard): Evocation Savant = a copy-cost discount in
-  # 2014 (NOT the 2024 "pick two spells"); Sculpt Spells = passive. No choice.
+  # 2014 (NOT the 2024 "pick two spells"). Sculpt Spells: spared-creature
+  # picks are made per cast, in play.
+  school-of-evocation:sculpt-spells:
+    noChoices: true # per-cast runtime choice, not a build decision
+  # College of Lore (Bard) -- Additional Magical Secrets (L6): "two spells of
+  # your choice from any class" -- spell management.
+  college-of-lore:additional-magical-secrets:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Circle of the Land (Druid) -- Nature's Sanctuary (L14): the "choose a
+  # different target" is the ATTACKING creature's in-play choice, not the
+  # player's.
+  circle-of-the-land:natures-sanctuary:
+    noChoices: true # attacker's in-play choice, not a player build decision
   # Way of the Open Hand (Monk): Open Hand Technique = per-attack effect pick
   # (prone/push/no-reactions) resolved in play, not a build decision.
   way-of-the-open-hand:open-hand-technique:
     noChoices: true # per-attack runtime choice, not a build decision
-  # Path of the Berserker (Barbarian) -- Frenzy/Intimidating Presence: passive,
-  # no choice. Thief (Rogue): all features passive, no choice. (No keys needed.)
+  # Path of the Berserker (Barbarian) -- Frenzy: passive, no choice.
+  # Intimidating Presence (L10): the frightened creature is picked each use,
+  # in play. Thief (Rogue): all features passive, no choice.
+  path-of-the-berserker:intimidating-presence:
+    noChoices: true # in-play target pick, not a build decision
 
 race_traits:
   # Dragonborn -- 2014 breath weapon: 1 use, regain on a short or long rest.
@@ -590,6 +606,21 @@ race_traits:
         id: skills
         domain: skill
         count: 2
+
+  # --- Shared-slug trait opt-outs (decision lives at entity level) ---
+  # "Ability Score Increase" and "Languages" slugify identically on EVERY 2014
+  # species, so a bare choices key here would wrongly hit them all. The only
+  # species whose ASI/Languages prose carries a pick (Half-Elf's two +1s,
+  # Human/Half-Elf's extra language) have those choices authored as
+  # entity-level `races:` overrides below; the trait-level keys are opted out.
+  ability-score-increase:
+    noChoices: true # Half-Elf's ability pick is authored at entity level (races: below); all other species' ASI traits are fixed
+  languages:
+    noChoices: true # Human/Half-Elf language picks are authored at entity level (races: below); all other species' Languages traits are fixed
+  # --- Rock Gnome (subrace) -- Tinker: the clockwork-device option ("choose
+  # one of the following") is picked each time a device is crafted, in play.
+  tinker:
+    noChoices: true # in-play crafting pick, not a build decision
 
 # ===================================================================
 # Entity-level species choices (SP2 Plan 3). Keyed by bare species slug. Used

@@ -30,7 +30,117 @@
       },
       {
         "name": "Draconic Ancestry",
-        "description": "Your lineage stems from a dragon progenitor. Choose the kind of dragon from the Draconic Ancestors table. Your choice affects your Breath Weapon and Damage Resistance traits as well as your appearance.\n\nTable: Draconic Ancestors\n\n| Dragon | Damage Type |\n|---|---|\n| Black | Acid |\n| Blue | Lightning |\n| Brass |Fire |\n| Bronze | Lightning |\n| Copper | Acid|\n|Gold|Fire|\n|Green|Poison|\n|Red|Fire|\n|Silver|Cold|\n|White|Cold|"
+        "description": "Your lineage stems from a dragon progenitor. Choose the kind of dragon from the Draconic Ancestors table. Your choice affects your Breath Weapon and Damage Resistance traits as well as your appearance.\n\nTable: Draconic Ancestors\n\n| Dragon | Damage Type |\n|---|---|\n| Black | Acid |\n| Blue | Lightning |\n| Brass |Fire |\n| Bronze | Lightning |\n| Copper | Acid|\n|Gold|Fire|\n|Green|Poison|\n|Red|Fire|\n|Silver|Cold|\n|White|Cold|",
+        "id": "draconic-ancestry",
+        "choices": [
+          {
+            "kind": "select-inline",
+            "id": "draconic-ancestry",
+            "count": 1,
+            "options": [
+              {
+                "value": "black",
+                "label": "Black (Acid)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Acid"
+                  }
+                ]
+              },
+              {
+                "value": "blue",
+                "label": "Blue (Lightning)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Lightning"
+                  }
+                ]
+              },
+              {
+                "value": "brass",
+                "label": "Brass (Fire)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              },
+              {
+                "value": "bronze",
+                "label": "Bronze (Lightning)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Lightning"
+                  }
+                ]
+              },
+              {
+                "value": "copper",
+                "label": "Copper (Acid)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Acid"
+                  }
+                ]
+              },
+              {
+                "value": "gold",
+                "label": "Gold (Fire)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              },
+              {
+                "value": "green",
+                "label": "Green (Poison)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Poison"
+                  }
+                ]
+              },
+              {
+                "value": "red",
+                "label": "Red (Fire)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              },
+              {
+                "value": "silver",
+                "label": "Silver (Cold)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Cold"
+                  }
+                ]
+              },
+              {
+                "value": "white",
+                "label": "White (Cold)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Cold"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "Breath Weapon",
@@ -156,7 +266,51 @@
       },
       {
         "name": "Elven Lineage",
-        "description": "You are part of a lineage that grants you supernatural abilities. Choose a lineage from the Elven Lineages table. You gain the level 1 benefit of that lineage.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nTable: Elven Lineages\n\n|Lineage|Level 1|Level 3|Level 5|\n|---|---|---|---|\n|Drow|The range of your Darkvision increases to 120 feet. You also know the Dancing Lights cantrip.|Faerie Fire|Darkness|\n|High Elf|You know the Prestidigitation cantrip. Whenever you finish a Long Rest, you can replace that cantrip with a different cantrip from the Wizard spell list.|Detect Magic|Misty Step|\n|Wood Elf|Your Speed increases to 35 feet. You also know the Druidcraft cantrip.|Longstrider|Pass without Trace|\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage)."
+        "description": "You are part of a lineage that grants you supernatural abilities. Choose a lineage from the Elven Lineages table. You gain the level 1 benefit of that lineage.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nTable: Elven Lineages\n\n|Lineage|Level 1|Level 3|Level 5|\n|---|---|---|---|\n|Drow|The range of your Darkvision increases to 120 feet. You also know the Dancing Lights cantrip.|Faerie Fire|Darkness|\n|High Elf|You know the Prestidigitation cantrip. Whenever you finish a Long Rest, you can replace that cantrip with a different cantrip from the Wizard spell list.|Detect Magic|Misty Step|\n|Wood Elf|Your Speed increases to 35 feet. You also know the Druidcraft cantrip.|Longstrider|Pass without Trace|\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage).",
+        "id": "elven-lineage",
+        "choices": [
+          {
+            "kind": "select-inline",
+            "id": "elven-lineage",
+            "count": 1,
+            "options": [
+              {
+                "value": "drow",
+                "label": "Drow",
+                "description": "The range of your Darkvision increases to 120 feet, and you know the Dancing Lights cantrip."
+              },
+              {
+                "value": "high-elf",
+                "label": "High Elf",
+                "description": "You know the Prestidigitation cantrip; on a Long Rest you can swap it for a different Wizard cantrip."
+              },
+              {
+                "value": "wood-elf",
+                "label": "Wood Elf",
+                "description": "Your Speed increases to 35 feet, and you know the Druidcraft cantrip."
+              }
+            ]
+          },
+          {
+            "kind": "select-inline",
+            "id": "spellcasting-ability",
+            "count": 1,
+            "options": [
+              {
+                "value": "int",
+                "label": "Intelligence"
+              },
+              {
+                "value": "wis",
+                "label": "Wisdom"
+              },
+              {
+                "value": "cha",
+                "label": "Charisma"
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "Fey Ancestry",
@@ -164,7 +318,21 @@
       },
       {
         "name": "Keen Senses",
-        "description": "You have proficiency in the Insight, Perception, or Survival skill."
+        "description": "You have proficiency in the Insight, Perception, or Survival skill.",
+        "id": "keen-senses",
+        "choices": [
+          {
+            "kind": "select-proficiency",
+            "id": "skill",
+            "count": 1,
+            "domain": "skill",
+            "from": [
+              "insight",
+              "perception",
+              "survival"
+            ]
+          }
+        ]
       },
       {
         "name": "Trance",
@@ -218,7 +386,46 @@
       },
       {
         "name": "Gnomish Lineage",
-        "description": "You are part of a lineage that grants you supernatural abilities. Choose one of the following options; whichever one you choose, Intelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage):\n\n**Forest Gnome.** You know the *Minor Illusion* cantrip. You also always have the *Speak with Animals* spell prepared. You can cast it without a spell slot a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest. You can also use any spell slots you have to cast the spell.\n\n**Rock Gnome.** You know the *Mending* and *Prestidigitation* cantrips. In addition, you can spend 10 minutes casting *Prestidigitation* to create a Tiny clockwork device (AC 5, 1 HP), such as a toy, fire starter, or music box. When you create the device, you determine its function by choosing one effect from *Prestidigitation*; the device produces that effect whenever you or another creature takes a Bonus Action to activate it with a touch. If the chosen effect has options within it, you choose one of those options for the device when you create it. For example, if you choose the spell's ignite-extinguish effect, you determine whether the device ignites or extinguishes fire; the device doesn't do both. You can have three such devices in existence at a time, and each falls apart 8 hours after its creation or when you dismantle it with a touch as a Utilize action."
+        "description": "You are part of a lineage that grants you supernatural abilities. Choose one of the following options; whichever one you choose, Intelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the lineage):\n\n**Forest Gnome.** You know the *Minor Illusion* cantrip. You also always have the *Speak with Animals* spell prepared. You can cast it without a spell slot a number of times equal to your Proficiency Bonus, and you regain all expended uses when you finish a Long Rest. You can also use any spell slots you have to cast the spell.\n\n**Rock Gnome.** You know the *Mending* and *Prestidigitation* cantrips. In addition, you can spend 10 minutes casting *Prestidigitation* to create a Tiny clockwork device (AC 5, 1 HP), such as a toy, fire starter, or music box. When you create the device, you determine its function by choosing one effect from *Prestidigitation*; the device produces that effect whenever you or another creature takes a Bonus Action to activate it with a touch. If the chosen effect has options within it, you choose one of those options for the device when you create it. For example, if you choose the spell's ignite-extinguish effect, you determine whether the device ignites or extinguishes fire; the device doesn't do both. You can have three such devices in existence at a time, and each falls apart 8 hours after its creation or when you dismantle it with a touch as a Utilize action.",
+        "id": "gnomish-lineage",
+        "choices": [
+          {
+            "kind": "select-inline",
+            "id": "gnomish-lineage",
+            "count": 1,
+            "options": [
+              {
+                "value": "forest-gnome",
+                "label": "Forest Gnome",
+                "description": "You know the Minor Illusion cantrip and always have Speak with Animals prepared (PB casts without a slot per Long Rest)."
+              },
+              {
+                "value": "rock-gnome",
+                "label": "Rock Gnome",
+                "description": "You know the Mending and Prestidigitation cantrips and can build a Tiny clockwork device (AC 5, 1 HP)."
+              }
+            ]
+          },
+          {
+            "kind": "select-inline",
+            "id": "spellcasting-ability",
+            "count": 1,
+            "options": [
+              {
+                "value": "int",
+                "label": "Intelligence"
+              },
+              {
+                "value": "wis",
+                "label": "Wisdom"
+              },
+              {
+                "value": "cha",
+                "label": "Charisma"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
@@ -259,6 +466,45 @@
             "name": "Giant Ancestry",
             "max_formula": "prof",
             "reset": "long-rest"
+          }
+        ],
+        "choices": [
+          {
+            "kind": "select-inline",
+            "id": "giant-ancestry",
+            "count": 1,
+            "options": [
+              {
+                "value": "clouds-jaunt",
+                "label": "Cloud's Jaunt (Cloud Giant)",
+                "description": "As a Bonus Action, you magically teleport up to 30 feet to an unoccupied space you can see."
+              },
+              {
+                "value": "fires-burn",
+                "label": "Fire's Burn (Fire Giant)",
+                "description": "When you hit a target with an attack roll and deal damage to it, you can also deal 1d10 Fire damage to that target."
+              },
+              {
+                "value": "frosts-chill",
+                "label": "Frost's Chill (Frost Giant)",
+                "description": "When you hit a target with an attack roll and deal damage to it, you can also deal 1d6 Cold damage and reduce its Speed by 10 feet until the start of your next turn."
+              },
+              {
+                "value": "hills-tumble",
+                "label": "Hill's Tumble (Hill Giant)",
+                "description": "When you hit a Large or smaller creature with an attack roll and deal damage to it, you can give that target the Prone condition."
+              },
+              {
+                "value": "stones-endurance",
+                "label": "Stone's Endurance (Stone Giant)",
+                "description": "When you take damage, you can take a Reaction to roll 1d12, add your Constitution modifier, and reduce the damage by that total."
+              },
+              {
+                "value": "storms-thunder",
+                "label": "Storm's Thunder (Storm Giant)",
+                "description": "When you take damage from a creature within 60 feet of you, you can take a Reaction to deal 1d8 Thunder damage to that creature."
+              }
+            ]
           }
         ]
       },
@@ -350,11 +596,32 @@
       },
       {
         "name": "Skillful",
-        "description": "You gain proficiency in one skill of your choice."
+        "description": "You gain proficiency in one skill of your choice.",
+        "id": "skillful",
+        "choices": [
+          {
+            "kind": "select-proficiency",
+            "id": "skill",
+            "count": 1,
+            "domain": "skill"
+          }
+        ]
       },
       {
         "name": "Versatile",
-        "description": "You gain an Origin feat of your choice (see \"Feats\"). Skilled is recommended."
+        "description": "You gain an Origin feat of your choice (see \"Feats\"). Skilled is recommended.",
+        "id": "versatile",
+        "choices": [
+          {
+            "kind": "select-entity",
+            "id": "origin-feat",
+            "count": 1,
+            "entity_type": "feat",
+            "where": {
+              "category": "origin"
+            }
+          }
+        ]
       }
     ]
   },
@@ -446,7 +713,69 @@
       },
       {
         "name": "Fiendish Legacy",
-        "description": "You are the recipient of a legacy that grants you supernatural abilities. Choose a legacy from the Fiendish Legacies table. You gain the level 1 benefit of the chosen legacy.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the legacy).\n\n**Table: Fiendish Legacies**\n\n|Legacy|Level 1|Level 3|Level 5|\n|---|---|---|---|\n|Abyssal|You have Resistance to Poison damage. You also know the Poison Spray cantrip.|Ray of Sickness|Hold Person|\n|Chthonic|You have Resistance to Necrotic damage. You also know the Chill Touch cantrip.|False Life|Ray of Enfeeblement|\n|Infernal|You have Resistance to Fire damage. You also know the Fire Bolt cantrip.|Hellish Rebuke|Darkness|"
+        "description": "You are the recipient of a legacy that grants you supernatural abilities. Choose a legacy from the Fiendish Legacies table. You gain the level 1 benefit of the chosen legacy.\n\nWhen you reach character levels 3 and 5, you learn a higher-level spell, as shown on the table. You always have that spell prepared. You can cast it once without a spell slot, and you regain the ability to cast it in that way when you finish a Long Rest. You can also cast the spell using any spell slots you have of the appropriate level.\n\nIntelligence, Wisdom, or Charisma is your spellcasting ability for the spells you cast with this trait (choose the ability when you select the legacy).\n\n**Table: Fiendish Legacies**\n\n|Legacy|Level 1|Level 3|Level 5|\n|---|---|---|---|\n|Abyssal|You have Resistance to Poison damage. You also know the Poison Spray cantrip.|Ray of Sickness|Hold Person|\n|Chthonic|You have Resistance to Necrotic damage. You also know the Chill Touch cantrip.|False Life|Ray of Enfeeblement|\n|Infernal|You have Resistance to Fire damage. You also know the Fire Bolt cantrip.|Hellish Rebuke|Darkness|",
+        "id": "fiendish-legacy",
+        "choices": [
+          {
+            "kind": "select-inline",
+            "id": "fiendish-legacy",
+            "count": 1,
+            "options": [
+              {
+                "value": "abyssal",
+                "label": "Abyssal",
+                "description": "You know the Poison Spray cantrip.",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Poison"
+                  }
+                ]
+              },
+              {
+                "value": "chthonic",
+                "label": "Chthonic",
+                "description": "You know the Chill Touch cantrip.",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Necrotic"
+                  }
+                ]
+              },
+              {
+                "value": "infernal",
+                "label": "Infernal",
+                "description": "You know the Fire Bolt cantrip.",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "select-inline",
+            "id": "spellcasting-ability",
+            "count": 1,
+            "options": [
+              {
+                "value": "int",
+                "label": "Intelligence"
+              },
+              {
+                "value": "wis",
+                "label": "Wisdom"
+              },
+              {
+                "value": "cha",
+                "label": "Charisma"
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "Otherworldly Presence",

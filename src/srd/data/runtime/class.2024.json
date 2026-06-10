@@ -24,30 +24,26 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
         "animal-handling",
-        "arcana",
         "athletics",
-        "deception",
-        "history",
-        "insight",
         "intimidation",
-        "investigation",
-        "medicine",
         "nature",
         "perception",
-        "performance",
-        "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
         "survival"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Greataxe, 4 Handaxes, Explorer's Pack, and 15 GP",
+          "(B) 75 GP"
+        ]
+      }
+    ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Barbarian Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -313,7 +309,15 @@
         {
           "id": "weapon-mastery",
           "name": "Weapon Mastery",
-          "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table."
+          "description": "Your training with weapons allows you to use the mastery properties of two kinds of Simple or Martial Melee weapons of your choice, such as Greataxes and Handaxes. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Barbarian levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Barbarian Features table.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "weapon-mastery",
+              "count": 2,
+              "entity_type": "weapon"
+            }
+          ]
         }
       ],
       "2": [
@@ -332,19 +336,79 @@
         {
           "id": "barbarian-subclass",
           "name": "Barbarian Subclass",
-          "description": "You gain a Barbarian subclass of your choice. The Path of the Berserker subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass's features that are of your Barbarian level or lower."
+          "description": "You gain a Barbarian subclass of your choice. The Path of the Berserker subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Barbarian levels. For the rest of your career, you gain each of your subclass's features that are of your Barbarian level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "primal-knowledge",
           "name": "Primal Knowledge",
-          "description": "You gain proficiency in another skill of your choice from the skill list available to Barbarians at level 1.\n\nIn addition, while your Rage is active, you can channel primal power when you attempt certain tasks; whenever you make an ability check using one of the following skills, you can make it as a Strength check even if it normally uses a different ability: Acrobatics, Intimidation, Perception, Stealth, or Survival. When you use this ability, your Strength represents primal power coursing through you, honing your agility, bearing, and senses."
+          "description": "You gain proficiency in another skill of your choice from the skill list available to Barbarians at level 1.\n\nIn addition, while your Rage is active, you can channel primal power when you attempt certain tasks; whenever you make an ability check using one of the following skills, you can make it as a Strength check even if it normally uses a different ability: Acrobatics, Intimidation, Perception, Stealth, or Survival. When you use this ability, your Strength represents primal power coursing through you, honing your agility, bearing, and senses.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "skill",
+              "count": 1,
+              "domain": "skill",
+              "from": [
+                "animal-handling",
+                "athletics",
+                "intimidation",
+                "nature",
+                "perception",
+                "survival"
+              ]
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -375,7 +439,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -396,7 +493,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -425,7 +555,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Barbarian levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -446,7 +609,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Irresistible Offense is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Irresistible Offense is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -482,7 +653,7 @@
       }
     },
     "skill_choices": {
-      "count": 2,
+      "count": 3,
       "from": [
         "acrobatics",
         "animal-handling",
@@ -504,14 +675,22 @@
         "survival"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Leather Armor, 2 Daggers, Musical Instrument of your choice, Entertainer's Pack, and 19 GP",
+          "(B) 90 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "cha",
       "preparation": "known",
       "spell_list": "Bard"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Bard Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -863,7 +1042,17 @@
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "You gain Expertise (see \"Rules Glossary\") in two of your skill proficiencies of your choice. Performance and Persuasion are recommended if you have proficiency in them.\n\nAt Bard level 9, you gain Expertise in two more of your skill proficiencies of your choice."
+          "description": "You gain Expertise (see \"Rules Glossary\") in two of your skill proficiencies of your choice. Performance and Persuasion are recommended if you have proficiency in them.\n\nAt Bard level 9, you gain Expertise in two more of your skill proficiencies of your choice.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         },
         {
           "id": "jack-of-all-trades",
@@ -875,7 +1064,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -896,7 +1118,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
@@ -910,14 +1165,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Bard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -931,7 +1252,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Spell Recall is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Spell Recall is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -969,34 +1298,29 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
-        "animal-handling",
-        "arcana",
-        "athletics",
-        "deception",
         "history",
         "insight",
-        "intimidation",
-        "investigation",
         "medicine",
-        "nature",
-        "perception",
-        "performance",
         "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
-        "survival"
+        "religion"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Chain Shirt, Shield, Mace, Holy Symbol, Priest's Pack, and 7 GP",
+          "(B) 110 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "wis",
       "preparation": "known",
       "spell_list": "Cleric"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Cleric Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -1320,7 +1644,26 @@
         {
           "id": "divine-order",
           "name": "Divine Order",
-          "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\n**Protector.** Trained for battle, you gain proficiency with Martial weapons and training with Heavy armor.\n\n**Thaumaturge.** You know one extra cantrip from the Cleric spell list. In addition, your mystical connection to the divine gives you a bonus to your Intelligence (Arcana or Religion) checks. The bonus equals your Wisdom modifier (minimum of +1)."
+          "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\n**Protector.** Trained for battle, you gain proficiency with Martial weapons and training with Heavy armor.\n\n**Thaumaturge.** You know one extra cantrip from the Cleric spell list. In addition, your mystical connection to the divine gives you a bonus to your Intelligence (Arcana or Religion) checks. The bonus equals your Wisdom modifier (minimum of +1).",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "divine-order",
+              "count": 1,
+              "options": [
+                {
+                  "value": "protector",
+                  "label": "Protector",
+                  "description": "Trained for battle, you gain proficiency with Martial weapons and training with Heavy armor."
+                },
+                {
+                  "value": "thaumaturge",
+                  "label": "Thaumaturge",
+                  "description": "You know one extra cantrip from the Cleric spell list, and gain a bonus to Intelligence (Arcana or Religion) checks equal to your Wisdom modifier (minimum +1)."
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -1347,14 +1690,58 @@
         {
           "id": "cleric-subclasses",
           "name": "Cleric Subclasses",
-          "description": "You gain a Cleric subclass of your choice. The Life Domain subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Cleric levels. For the rest of your career, you gain each of your subclass's features that are of your Cleric level or lower."
+          "description": "You gain a Cleric subclass of your choice. The Life Domain subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Cleric levels. For the rest of your career, you gain each of your subclass's features that are of your Cleric level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -1368,14 +1755,66 @@
         {
           "id": "blessed-strikes",
           "name": "Blessed Strikes",
-          "description": "Divine power infuses you in battle. You gain one of the following options of your choice (if you get either option from a Cleric subclass in an older book, use only the option you choose for this feature).\n\n**Divine Strike.** Once on each of your turns when you hit a creature with an attack roll using a weapon, you can cause the target to take an extra 1d8 Necrotic or Radiant damage (your choice).\n\n**Potent Spellcasting.** Add your Wisdom modifier to the damage you deal with any Cleric cantrip."
+          "description": "Divine power infuses you in battle. You gain one of the following options of your choice (if you get either option from a Cleric subclass in an older book, use only the option you choose for this feature).\n\n**Divine Strike.** Once on each of your turns when you hit a creature with an attack roll using a weapon, you can cause the target to take an extra 1d8 Necrotic or Radiant damage (your choice).\n\n**Potent Spellcasting.** Add your Wisdom modifier to the damage you deal with any Cleric cantrip.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "blessed-strikes",
+              "count": 1,
+              "options": [
+                {
+                  "value": "divine-strike",
+                  "label": "Divine Strike",
+                  "description": "Once on each of your turns when you hit with a weapon, deal an extra 1d8 Necrotic or Radiant damage (your choice)."
+                },
+                {
+                  "value": "potent-spellcasting",
+                  "label": "Potent Spellcasting",
+                  "description": "Add your Wisdom modifier to the damage you deal with any Cleric cantrip."
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
@@ -1389,7 +1828,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
@@ -1403,14 +1875,55 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Cleric levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "19": [
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Fate is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Fate is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -1448,34 +1961,32 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
         "animal-handling",
         "arcana",
-        "athletics",
-        "deception",
-        "history",
         "insight",
-        "intimidation",
-        "investigation",
         "medicine",
         "nature",
         "perception",
-        "performance",
-        "persuasion",
         "religion",
-        "sleight-of-hand",
-        "stealth",
         "survival"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer's Pack, Herbalism Kit, and 9 GP",
+          "(B) 50 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "wis",
       "preparation": "known",
       "spell_list": "Druid"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Druid Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -1806,7 +2317,26 @@
         {
           "id": "primal-order",
           "name": "Primal Order",
-          "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\n**Magician.** You know one extra cantrip from the Druid spell list. In addition, your mystical connection to nature gives you a bonus to your Intelligence (Arcana or Nature) checks. The bonus equals your Wisdom modifier (minimum bonus of +1).\n\n**Warden.** Trained for battle, you gain proficiency with Martial weapons and training with Medium armor."
+          "description": "You have dedicated yourself to one of the following sacred roles of your choice.\n\n**Magician.** You know one extra cantrip from the Druid spell list. In addition, your mystical connection to nature gives you a bonus to your Intelligence (Arcana or Nature) checks. The bonus equals your Wisdom modifier (minimum bonus of +1).\n\n**Warden.** Trained for battle, you gain proficiency with Martial weapons and training with Medium armor.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "primal-order",
+              "count": 1,
+              "options": [
+                {
+                  "value": "magician",
+                  "label": "Magician",
+                  "description": "You know one extra cantrip from the Druid spell list, and gain a bonus to Intelligence (Arcana or Nature) checks equal to your Wisdom modifier (minimum +1)."
+                },
+                {
+                  "value": "warden",
+                  "label": "Warden",
+                  "description": "Trained for battle, you gain proficiency with Martial weapons and training with Medium armor."
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "spellcasting",
@@ -1848,14 +2378,58 @@
         {
           "id": "druid-subclass",
           "name": "Druid Subclass",
-          "description": "You gain a Druid subclass of your choice. The Circle of the Land subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass's features that are of your Druid level or lower."
+          "description": "You gain a Druid subclass of your choice. The Circle of the Land subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Druid levels. For the rest of your career, you gain each of your subclass's features that are of your Druid level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -1869,21 +2443,106 @@
         {
           "id": "elemental-fury",
           "name": "Elemental Fury",
-          "description": "The might of the elements flows through you. You gain one of the following options of your choice.\n\n**Potent Spellcasting.** Add your Wisdom modifier to the damage you deal with any Druid cantrip.\n\n**Primal Strike.** Once on each of your turns when you hit a creature with an attack roll using a weapon or a Beast form's attack in Wild Shape, you can cause the target to take an extra 1d8 Cold, Fire, Lightning, or Thunder damage (choose when you hit)."
+          "description": "The might of the elements flows through you. You gain one of the following options of your choice.\n\n**Potent Spellcasting.** Add your Wisdom modifier to the damage you deal with any Druid cantrip.\n\n**Primal Strike.** Once on each of your turns when you hit a creature with an attack roll using a weapon or a Beast form's attack in Wild Shape, you can cause the target to take an extra 1d8 Cold, Fire, Lightning, or Thunder damage (choose when you hit).",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "elemental-fury",
+              "count": 1,
+              "options": [
+                {
+                  "value": "potent-spellcasting",
+                  "label": "Potent Spellcasting",
+                  "description": "Add your Wisdom modifier to the damage you deal with any Druid cantrip."
+                },
+                {
+                  "value": "primal-strike",
+                  "label": "Primal Strike",
+                  "description": "Once on each of your turns when you hit with a weapon or a Wild Shape Beast attack, deal an extra 1d8 Cold, Fire, Lightning, or Thunder damage."
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "12": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "15": [
@@ -1897,7 +2556,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Druid levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -1911,7 +2603,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Dimensional Travel is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Dimensional Travel is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -1952,28 +2652,28 @@
       "from": [
         "acrobatics",
         "animal-handling",
-        "arcana",
         "athletics",
-        "deception",
         "history",
         "insight",
         "intimidation",
-        "investigation",
-        "medicine",
-        "nature",
-        "perception",
-        "performance",
         "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
+        "perception",
         "survival"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Chain Mail, Greatsword, Flail, 8 Javelins, Dungeoneer's Pack, and 4 GP",
+          "(B) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Dungeoneer's Pack, and 11 GP",
+          "(C) 155 GP"
+        ]
+      }
+    ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Fighter Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -2182,7 +2882,19 @@
         {
           "id": "fighting-style",
           "name": "Fighting Style",
-          "description": "You have honed your martial prowess and gain a Fighting Style feat of your choice (see \"Feats\"). Defense is recommended.\n\nWhenever you gain a Fighter level, you can replace the feat you chose with a different Fighting Style feat."
+          "description": "You have honed your martial prowess and gain a Fighting Style feat of your choice (see \"Feats\"). Defense is recommended.\n\nWhenever you gain a Fighter level, you can replace the feat you chose with a different Fighting Style feat.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         },
         {
           "id": "second-wind",
@@ -2210,7 +2922,15 @@
         {
           "id": "weapon-mastery",
           "name": "Weapon Mastery",
-          "description": "Your training with weapons allows you to use the mastery properties of three kinds of Simple or Martial weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Fighter levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Fighter Features table."
+          "description": "Your training with weapons allows you to use the mastery properties of three kinds of Simple or Martial weapons of your choice. Whenever you finish a Long Rest, you can practice weapon drills and change one of those weapon choices.\n\nWhen you reach certain Fighter levels, you gain the ability to use the mastery properties of more kinds of weapons, as shown in the Weapon Mastery column of the Fighter Features table.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "weapon-mastery",
+              "count": 3,
+              "entity_type": "weapon"
+            }
+          ]
         }
       ],
       "2": [
@@ -2243,14 +2963,58 @@
         {
           "id": "fighter-subclass",
           "name": "Fighter Subclass",
-          "description": "You gain a Fighter subclass of your choice. The Champion subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Fighter levels. For the rest of your career, you gain each of your subclass's features that are of your Fighter level or lower."
+          "description": "You gain a Fighter subclass of your choice. The Champion subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Fighter levels. For the rest of your career, you gain each of your subclass's features that are of your Fighter level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -2269,14 +3033,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -2302,7 +3132,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -2321,14 +3184,80 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Fighter levels 6, 8, 12, 14, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -2361,7 +3290,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Combat Prowess is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Combat Prowess is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -2401,29 +3338,25 @@
       "count": 2,
       "from": [
         "acrobatics",
-        "animal-handling",
-        "arcana",
         "athletics",
-        "deception",
         "history",
         "insight",
-        "intimidation",
-        "investigation",
-        "medicine",
-        "nature",
-        "perception",
-        "performance",
-        "persuasion",
         "religion",
-        "sleight-of-hand",
-        "stealth",
-        "survival"
+        "stealth"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Spear, 5 Daggers, Artisan's Tools or Musical Instrument chosen for the tool proficiency, Explorer's Pack, and 11 GP",
+          "(B) 50 GP"
+        ]
+      }
+    ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Monk Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -2699,7 +3632,18 @@
         {
           "id": "monk-subclass",
           "name": "Monk Subclass",
-          "description": "You gain a Monk subclass of your choice. The Warrior of the Open Hand subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Monk levels. For the rest of your career, you gain each of your subclass's features that are of your Monk level or lower."
+          "description": "You gain a Monk subclass of your choice. The Warrior of the Open Hand subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Monk levels. For the rest of your career, you gain each of your subclass's features that are of your Monk level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "stunning-strike",
@@ -2711,7 +3655,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         },
         {
           "id": "slow-fall",
@@ -2749,7 +3726,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -2775,7 +3785,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -2803,7 +3846,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Monk levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -2817,7 +3893,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Irresistible Offense is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Irresistible Offense is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -2856,34 +3940,30 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
-        "animal-handling",
-        "arcana",
         "athletics",
-        "deception",
-        "history",
         "insight",
         "intimidation",
-        "investigation",
         "medicine",
-        "nature",
-        "perception",
-        "performance",
         "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
-        "survival"
+        "religion"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Chain Mail, Shield, Longsword, 6 Javelins, Holy Symbol, Priest's Pack, and 9 GP",
+          "(B) 150 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "cha",
       "preparation": "known",
       "spell_list": "Paladin"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Paladin Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -3156,14 +4236,34 @@
         {
           "id": "weapon-mastery",
           "name": "Weapon Mastery",
-          "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Longswords and Javelins.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Halberds and Flails."
+          "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Longswords and Javelins.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Halberds and Flails.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "weapon-mastery",
+              "count": 2,
+              "entity_type": "weapon"
+            }
+          ]
         }
       ],
       "2": [
         {
           "id": "fighting-style",
           "name": "Fighting Style",
-          "description": "You gain a Fighting Style feat of your choice (see \"Feats\" for feats). Instead of choosing one of those feats, you can choose the option below.\n\n**Blessed Warrior.** You learn two Cleric cantrips of your choice (see the Cleric class's section for a list of Cleric spells). *Guidance* and *Sacred Flame* are recommended. The chosen cantrips count as Paladin spells for you, and Charisma is your spellcasting ability for them. Whenever you gain a Paladin level, you can replace one of these cantrips with another Cleric cantrip."
+          "description": "You gain a Fighting Style feat of your choice (see \"Feats\" for feats). Instead of choosing one of those feats, you can choose the option below.\n\n**Blessed Warrior.** You learn two Cleric cantrips of your choice (see the Cleric class's section for a list of Cleric spells). *Guidance* and *Sacred Flame* are recommended. The chosen cantrips count as Paladin spells for you, and Charisma is your spellcasting ability for them. Whenever you gain a Paladin level, you can replace one of these cantrips with another Cleric cantrip.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         },
         {
           "id": "paladins-smite",
@@ -3188,14 +4288,58 @@
         {
           "id": "paladin-subclass",
           "name": "Paladin Subclass",
-          "description": "You gain a Paladin subclass of your choice. The Oath of Devotion subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Paladin levels. For the rest of your career, you gain each of your subclass's features that are of your Paladin level or lower."
+          "description": "You gain a Paladin subclass of your choice. The Oath of Devotion subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Paladin levels. For the rest of your career, you gain each of your subclass's features that are of your Paladin level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -3221,7 +4365,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -3249,7 +4426,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
@@ -3263,7 +4473,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Paladin levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -3277,7 +4520,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Truesight is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Truesight is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ]
     },
@@ -3307,36 +4558,34 @@
       }
     },
     "skill_choices": {
-      "count": 2,
+      "count": 3,
       "from": [
-        "acrobatics",
         "animal-handling",
-        "arcana",
         "athletics",
-        "deception",
-        "history",
         "insight",
-        "intimidation",
         "investigation",
-        "medicine",
         "nature",
         "perception",
-        "performance",
-        "persuasion",
-        "religion",
-        "sleight-of-hand",
         "stealth",
         "survival"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer's Pack, and 7 GP",
+          "(B) 150 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "wis",
       "preparation": "known",
       "spell_list": "Ranger"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Ranger Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -3639,33 +4888,113 @@
         {
           "id": "weapon-mastery",
           "name": "Weapon Mastery",
-          "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Longbows and Shortswords.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Scimitars and Longswords."
+          "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Longbows and Shortswords.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Scimitars and Longswords.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "weapon-mastery",
+              "count": 2,
+              "entity_type": "weapon"
+            }
+          ]
         }
       ],
       "2": [
         {
           "id": "deft-explorer",
           "name": "Deft Explorer",
-          "description": "Thanks to your travels, you gain the following benefits.\n\n**Expertise.** Choose one of your skill proficiencies with which you lack Expertise. You gain Expertise in that skill.\n\n**Languages.** You know two languages of your choice from the language tables in \"Character Creation.\""
+          "description": "Thanks to your travels, you gain the following benefits.\n\n**Expertise.** Choose one of your skill proficiencies with which you lack Expertise. You gain Expertise in that skill.\n\n**Languages.** You know two languages of your choice from the language tables in \"Character Creation.\"",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 1,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            },
+            {
+              "kind": "select-proficiency",
+              "id": "languages",
+              "count": 2,
+              "domain": "language"
+            }
+          ]
         },
         {
           "id": "fighting-style",
           "name": "Fighting Style",
-          "description": "You gain a Fighting Style feat of your choice (see \"Feats\"). Instead of choosing one of those feats, you can choose the option below.\n\n**Druidic Warrior.** You learn two Druid cantrips of your choice (see the Druid class's section for a list of Druid spells). *Guidance* and *Starry Wisp* are recommended. The chosen cantrips count as Ranger spells for you, and Wisdom is your spellcasting ability for them. Whenever you gain a Ranger level, you can replace one of these cantrips with another Druid cantrip."
+          "description": "You gain a Fighting Style feat of your choice (see \"Feats\"). Instead of choosing one of those feats, you can choose the option below.\n\n**Druidic Warrior.** You learn two Druid cantrips of your choice (see the Druid class's section for a list of Druid spells). *Guidance* and *Starry Wisp* are recommended. The chosen cantrips count as Ranger spells for you, and Wisdom is your spellcasting ability for them. Whenever you gain a Ranger level, you can replace one of these cantrips with another Druid cantrip.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "3": [
         {
           "id": "ranger-subclass",
           "name": "Ranger Subclass",
-          "description": "You gain a Ranger subclass of your choice. The Hunter subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass's features that are of your Ranger level or lower."
+          "description": "You gain a Ranger subclass of your choice. The Hunter subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Ranger levels. For the rest of your career, you gain each of your subclass's features that are of your Ranger level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -3686,14 +5015,57 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "Choose two of your skill proficiencies with which you lack Expertise. You gain Expertise in those skills."
+          "description": "Choose two of your skill proficiencies with which you lack Expertise. You gain Expertise in those skills.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         }
       ],
       "10": [
@@ -3715,7 +5087,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -3744,7 +5149,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Ranger levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -3765,7 +5203,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Dimensional Travel is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Dimensional Travel is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -3801,32 +5247,32 @@
       }
     },
     "skill_choices": {
-      "count": 2,
+      "count": 4,
       "from": [
         "acrobatics",
-        "animal-handling",
-        "arcana",
         "athletics",
         "deception",
-        "history",
         "insight",
         "intimidation",
         "investigation",
-        "medicine",
-        "nature",
         "perception",
-        "performance",
         "persuasion",
-        "religion",
         "sleight-of-hand",
-        "stealth",
-        "survival"
+        "stealth"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Leather Armor, 2 Daggers, Shortsword, Shortbow, 20 Arrows, Quiver, Thieves' Tools, Burglar's Pack, and 8 GP",
+          "(B) 100 GP"
+        ]
+      }
+    ],
     "spellcasting": null,
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Rogue Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -4014,7 +5460,17 @@
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "You gain Expertise in two of your skill proficiencies of your choice. Sleight of Hand and Stealth are recommended if you have proficiency in them.\n\nAt Rogue level 6, you gain Expertise in two more of your skill proficiencies of your choice."
+          "description": "You gain Expertise in two of your skill proficiencies of your choice. Sleight of Hand and Stealth are recommended if you have proficiency in them.\n\nAt Rogue level 6, you gain Expertise in two more of your skill proficiencies of your choice.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         },
         {
           "id": "sneak-attack",
@@ -4024,12 +5480,28 @@
         {
           "id": "thieves-cant",
           "name": "Thieves' Cant",
-          "description": "You picked up various languages in the communities where you plied your roguish talents. You know Thieves' Cant and one other language of your choice, which you choose from the language tables in \"Character Creation.\""
+          "description": "You picked up various languages in the communities where you plied your roguish talents. You know Thieves' Cant and one other language of your choice, which you choose from the language tables in \"Character Creation.\"",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "languages",
+              "count": 1,
+              "domain": "language"
+            }
+          ]
         },
         {
           "id": "weapon-mastery",
           "name": "Weapon Mastery",
-          "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Daggers and Shortbows.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Scimitars and Shortswords."
+          "description": "Your training with weapons allows you to use the mastery properties of two kinds of weapons of your choice with which you have proficiency, such as Daggers and Shortbows.\n\nWhenever you finish a Long Rest, you can change the kinds of weapons you chose. For example, you could switch to using the mastery properties of Scimitars and Shortswords.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "weapon-mastery",
+              "count": 2,
+              "entity_type": "weapon"
+            }
+          ]
         }
       ],
       "2": [
@@ -4043,7 +5515,18 @@
         {
           "id": "rogue-subclass",
           "name": "Rogue Subclass",
-          "description": "You gain a Rogue subclass of your choice. The Thief subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Rogue levels. For the rest of your career, you gain each of your subclass's features that are of your Rogue level or lower."
+          "description": "You gain a Rogue subclass of your choice. The Thief subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Rogue levels. For the rest of your career, you gain each of your subclass's features that are of your Rogue level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         },
         {
           "id": "steady-aim",
@@ -4055,7 +5538,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -4074,7 +5590,17 @@
         {
           "id": "expertise",
           "name": "Expertise",
-          "description": "You gain Expertise in two of your skill proficiencies of your choice. Sleight of Hand and Stealth are recommended if you have proficiency in them.\n\nAt Rogue level 6, you gain Expertise in two more of your skill proficiencies of your choice."
+          "description": "You gain Expertise in two of your skill proficiencies of your choice. Sleight of Hand and Stealth are recommended if you have proficiency in them.\n\nAt Rogue level 6, you gain Expertise in two more of your skill proficiencies of your choice.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 2,
+              "domain": "skill",
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         }
       ],
       "7": [
@@ -4093,7 +5619,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "11": [
@@ -4107,7 +5666,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "14": [
@@ -4128,7 +5720,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Rogue levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -4142,7 +5767,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of the Night Spirit is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of the Night Spirit is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -4180,34 +5813,30 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
-        "animal-handling",
         "arcana",
-        "athletics",
         "deception",
-        "history",
         "insight",
         "intimidation",
-        "investigation",
-        "medicine",
-        "nature",
-        "perception",
-        "performance",
         "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
-        "survival"
+        "religion"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer's Pack, and 28 GP",
+          "(B) 50 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "cha",
       "preparation": "known",
       "spell_list": "Sorcerer"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Sorcerer Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -4563,21 +6192,77 @@
         {
           "id": "metamagic",
           "name": "Metamagic",
-          "description": "Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from \"Metamagic Options\" later in this class's description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.\n\nYou can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.\n\nWhenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don't know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17."
+          "description": "Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from \"Metamagic Options\" later in this class's description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.\n\nYou can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.\n\nWhenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don't know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "metamagic",
+              "count": 2,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "metamagic",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "3": [
         {
           "id": "sorcerer-subclass",
           "name": "Sorcerer Subclass",
-          "description": "You gain a Sorcerer subclass of your choice. The Draconic Sorcery subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Sorcerer levels. For the rest of your career, you gain each of your subclass's features that are of your Sorcerer level or lower."
+          "description": "You gain a Sorcerer subclass of your choice. The Draconic Sorcery subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Sorcerer levels. For the rest of your career, you gain each of your subclass's features that are of your Sorcerer level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -4606,35 +6291,154 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
         {
           "id": "metamagic",
           "name": "Metamagic",
-          "description": "Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from \"Metamagic Options\" later in this class's description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.\n\nYou can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.\n\nWhenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don't know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17."
+          "description": "Because your magic flows from within, you can alter your spells to suit your needs; you gain two Metamagic options of your choice from \"Metamagic Options\" later in this class's description. You use the chosen options to temporarily modify spells you cast. To use an option, you must spend the number of Sorcery Points that it costs.\n\nYou can use only one Metamagic option on a spell when you cast it unless otherwise noted in one of those options.\n\nWhenever you gain a Sorcerer level, you can replace one of your Metamagic options with one you don't know. You gain two more options at Sorcerer level 10 and two more at Sorcerer level 17.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "metamagic",
+              "count": 2,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "metamagic",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "12": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Sorcerer levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "19": [
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Dimensional Travel is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Dimensional Travel is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -4672,34 +6476,31 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
-        "animal-handling",
         "arcana",
-        "athletics",
         "deception",
         "history",
-        "insight",
         "intimidation",
         "investigation",
-        "medicine",
         "nature",
-        "perception",
-        "performance",
-        "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
-        "survival"
+        "religion"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar's Pack, and 15 GP",
+          "(B) 100 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "cha",
       "preparation": "known",
       "spell_list": "Warlock"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Warlock Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -4958,7 +6759,19 @@
         {
           "id": "eldritch-invocations",
           "name": "Eldritch Invocations",
-          "description": "You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the \"Eldritch Invocation Options\" section later in this class's description.\n\n**Prerequisites.** If an invocation has a prerequisite, you must meet it to learn that invocation. For example, if an invocation requires you to be a level 5+ Warlock, you can select the invocation once you reach Warlock level 5.\n\n**Replacing and Gaining Invocations.** Whenever you gain a Warlock level, you can replace one of your invocations with another one for which you qualify. You can't replace an invocation if it's a prerequisite for another invocation that you have.\n\nWhen you gain certain Warlock levels, you gain more invocations of your choice, as shown in the Invocations column of the Warlock Features table.\n\nYou can't pick the same invocation more than once unless its description says otherwise."
+          "description": "You have unearthed Eldritch Invocations, pieces of forbidden knowledge that imbue you with an abiding magical ability or other lessons. You gain one invocation of your choice, such as Pact of the Tome. Invocations are described in the \"Eldritch Invocation Options\" section later in this class's description.\n\n**Prerequisites.** If an invocation has a prerequisite, you must meet it to learn that invocation. For example, if an invocation requires you to be a level 5+ Warlock, you can select the invocation once you reach Warlock level 5.\n\n**Replacing and Gaining Invocations.** Whenever you gain a Warlock level, you can replace one of your invocations with another one for which you qualify. You can't replace an invocation if it's a prerequisite for another invocation that you have.\n\nWhen you gain certain Warlock levels, you gain more invocations of your choice, as shown in the Invocations column of the Warlock Features table.\n\nYou can't pick the same invocation more than once unless its description says otherwise.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "invocation",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "invocation",
+                "available_to": "self"
+              }
+            }
+          ]
         },
         {
           "id": "pact-magic",
@@ -4985,21 +6798,98 @@
         {
           "id": "warlock-subclass",
           "name": "Warlock Subclass",
-          "description": "You gain a Warlock subclass of your choice. The Fiend Patron subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass's features that are of your Warlock level or lower."
+          "description": "You gain a Warlock subclass of your choice. The Fiend Patron subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Warlock levels. For the rest of your career, you gain each of your subclass's features that are of your Warlock level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "8": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
@@ -5020,7 +6910,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "13": [
@@ -5041,7 +6964,40 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Warlock levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "17": [
@@ -5055,7 +7011,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Fate is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Fate is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [
@@ -5093,34 +7057,31 @@
     "skill_choices": {
       "count": 2,
       "from": [
-        "acrobatics",
-        "animal-handling",
         "arcana",
-        "athletics",
-        "deception",
         "history",
         "insight",
-        "intimidation",
         "investigation",
         "medicine",
         "nature",
-        "perception",
-        "performance",
-        "persuasion",
-        "religion",
-        "sleight-of-hand",
-        "stealth",
-        "survival"
+        "religion"
       ]
     },
-    "starting_equipment": [],
+    "starting_equipment": [
+      {
+        "kind": "choice",
+        "options": [
+          "(A) 2 Daggers, Arcane Focus (Quarterstaff), Robe, Spellbook, Scholar's Pack, and 5 GP",
+          "(B) 55 GP"
+        ]
+      }
+    ],
     "spellcasting": {
       "ability": "int",
       "preparation": "prepared",
       "spell_list": "Wizard"
     },
     "subclass_level": 3,
-    "subclass_feature_name": "Subclass",
+    "subclass_feature_name": "Wizard Subclass",
     "weapon_mastery": null,
     "epic_boon_level": null,
     "table": {
@@ -5439,21 +7400,83 @@
         {
           "id": "scholar",
           "name": "Scholar",
-          "description": "While studying magic, you also specialized in another field of study. Choose one of the following skills in which you have proficiency: Arcana, History, Investigation, Medicine, Nature, or Religion. You have Expertise in the chosen skill."
+          "description": "While studying magic, you also specialized in another field of study. Choose one of the following skills in which you have proficiency: Arcana, History, Investigation, Medicine, Nature, or Religion. You have Expertise in the chosen skill.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "expertise",
+              "count": 1,
+              "domain": "skill",
+              "from": [
+                "arcana",
+                "history",
+                "investigation",
+                "medicine",
+                "nature",
+                "religion"
+              ],
+              "from_proficient": true,
+              "expertise": true
+            }
+          ]
         }
       ],
       "3": [
         {
           "id": "wizard-subclass",
           "name": "Wizard Subclass",
-          "description": "You gain a Wizard subclass of your choice. The Evoker subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Wizard levels. For the rest of your career, you gain each of your subclass's features that are of your Wizard level or lower."
+          "description": "You gain a Wizard subclass of your choice. The Evoker subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Wizard levels. For the rest of your career, you gain each of your subclass's features that are of your Wizard level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
@@ -5467,21 +7490,120 @@
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "12": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "16": [
         {
           "id": "ability-score-improvement",
           "name": "Ability Score Improvement",
-          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16."
+          "description": "You gain the Ability Score Improvement feat (see \"Feats\") or another feat of your choice for which you qualify. You gain this feature again at Wizard levels 8, 12, and 16.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "asi-or-feat",
+              "count": 1,
+              "options": [
+                {
+                  "value": "asi",
+                  "label": "Ability Score Increase",
+                  "choices": [
+                    {
+                      "kind": "ability-points",
+                      "id": "asi",
+                      "points": 2,
+                      "max_per": 2
+                    }
+                  ]
+                },
+                {
+                  "value": "feat",
+                  "label": "Feat",
+                  "choices": [
+                    {
+                      "kind": "select-entity",
+                      "id": "feat",
+                      "count": 1,
+                      "entity_type": "feat"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
         }
       ],
       "18": [
@@ -5495,7 +7617,15 @@
         {
           "id": "epic-boon",
           "name": "Epic Boon",
-          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Spell Recall is recommended."
+          "description": "You gain an Epic Boon feat (see \"Feats\") or another feat of your choice for which you qualify. Boon of Spell Recall is recommended.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "epic-boon",
+              "count": 1,
+              "entity_type": "feat"
+            }
+          ]
         }
       ],
       "20": [

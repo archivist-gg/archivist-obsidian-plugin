@@ -54,6 +54,7 @@ class_features:
   # Paladin 3@11) cannot be expressed with one key, so scaling is omitted here.
   channel-divinity:
     action_cost: action
+    noChoices: true # per-use effect pick (e.g. Divine Spark vs Turn Undead), resolved in play, not a build decision
     resources:
       - id: "channel-divinity"
         name: Channel Divinity
@@ -265,6 +266,35 @@ class_features:
         count: 1
         from: [animal-handling, athletics, intimidation, nature, perception, survival]
 
+  # --- Weapon Mastery (scoped; barbarian/fighter L1, paladin/ranger/rogue L2) ---
+  # "use the mastery properties of N kinds of ... weapons of your choice."
+  # Re-pickable after a Long Rest, but the initial pick is a build decision
+  # (same treatment as Hunter's Prey below). The WHERE vocabulary cannot
+  # express the per-class weapon restrictions (Barbarian: Simple/Martial
+  # MELEE only; Paladin/Ranger/Rogue: weapons you're proficient with), so the
+  # pick is an open weapon select and the restriction stays in the feature
+  # prose. Higher-level count increases (Weapon Mastery column) ride later
+  # levels and are deferred (the runtime feature row exists only at the grant
+  # level).
+  barbarian:weapon-mastery:
+    choices: [{ kind: select-entity, id: weapon-mastery, count: 2, entity_type: weapon }]
+  fighter:weapon-mastery:
+    choices: [{ kind: select-entity, id: weapon-mastery, count: 3, entity_type: weapon }]
+  paladin:weapon-mastery:
+    choices: [{ kind: select-entity, id: weapon-mastery, count: 2, entity_type: weapon }]
+  ranger:weapon-mastery:
+    choices: [{ kind: select-entity, id: weapon-mastery, count: 2, entity_type: weapon }]
+  rogue:weapon-mastery:
+    choices: [{ kind: select-entity, id: weapon-mastery, count: 2, entity_type: weapon }]
+
+  # --- Rogue Thieves' Cant (L1): Thieves' Cant + one language of your choice ---
+  thieves-cant:
+    choices:
+      - kind: select-proficiency
+        id: languages
+        domain: language
+        count: 1
+
   # --- Warlock Eldritch Invocations (L1): one invocation of your choice ---
   # deferred: scaling invocation counts at higher levels (3 at L2, etc.)
   eldritch-invocations:
@@ -356,6 +386,17 @@ class_features:
   # not a build-time decision.
   empowered-strikes:
     noChoices: true # per-attack runtime choice, not a build decision
+  # Barbarian Brutal Strike (L9): forgo-Advantage + effect pick made per attack.
+  brutal-strike:
+    noChoices: true # per-attack runtime choice, not a build decision
+  # Druid Archdruid (L20): Wild Shape uses -> spell slot conversion happens in
+  # play ("Choose a number of your unexpended uses...").
+  archdruid:
+    noChoices: true # in-play resource conversion, not a build decision
+  # Monk Heightened Focus (L10): the Step of the Wind "choose a willing
+  # creature" rider is an in-play target pick.
+  heightened-focus:
+    noChoices: true # in-play target pick, not a build decision
 
   # --- Subclass features (subclass-merge reads the class_features overlay map) ---
   # Fiend Patron (Warlock) -- Dark One's Own Luck
@@ -492,6 +533,17 @@ class_features:
   # pick (Addle/Push/Topple) resolved in play, not a build decision.
   warrior-of-the-open-hand:open-hand-technique:
     noChoices: true # per-attack runtime choice, not a build decision
+  # Circle of the Land (Druid) -- Land's Aid (L3): point + affected-creature
+  # picks made each use, in play.
+  circle-of-the-land:lands-aid:
+    noChoices: true # in-play target pick, not a build decision
+  # Evoker (Wizard) -- Sculpt Spells (L6): spared-creature picks made per cast.
+  evoker:sculpt-spells:
+    noChoices: true # per-cast runtime choice, not a build decision
+  # Path of the Berserker (Barbarian) -- Intimidating Presence (L14): affected
+  # creatures are picked each use, in play.
+  path-of-the-berserker:intimidating-presence:
+    noChoices: true # in-play target pick, not a build decision
 
 # ===================================================================
 # Entity-level class overrides (SP2 Plan 3). Keyed by bare class slug.
@@ -853,6 +905,76 @@ race_traits:
 # come from the background, languages from background/creation -- so this
 # section is intentionally empty and omitted. (Per-trait choices live above.)
 # ===================================================================
+
+# ===================================================================
+# Feat decision data (SP2 Plan 3). feat_features keys are BARE feat slugs
+# (feat-merge looks up slugifyName(feat.name)); authored `choices` land on the
+# feat entity itself. Every 2024 feat in feat.2024.json was walked; feats not
+# keyed here have fixed benefits only (no decision prose).
+# ===================================================================
+feat_features:
+  # Ability Score Improvement: "Increase one ability score of your choice by
+  # 2, or increase two ability scores of your choice by 1" -- the classic
+  # +2 / +1+1 point spend. (The "can't exceed 20" cap is a rules cap, not part
+  # of the choice shape.)
+  ability-score-improvement:
+    choices: [{ kind: ability-points, id: asi, points: 2, max_per: 2 }]
+  # Epic Boons: each grants "Increase one ability score of your choice by 1,
+  # to a maximum of 30" plus fixed benefits -- a single-point spend (the 30
+  # cap is a rules cap, not part of the choice shape).
+  boon-of-combat-prowess:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  boon-of-dimensional-travel:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  boon-of-fate:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  boon-of-irresistible-offense:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  boon-of-spell-recall:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  boon-of-the-night-spirit:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  boon-of-the-truesight:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1 }]
+  # Grappler: "Increase your Strength or Dexterity score by 1" -- a real
+  # 1-point spend from a 2-ability pool (the coverage regexes can't see this
+  # phrasing, but the decision is authored anyway).
+  grappler:
+    choices: [{ kind: ability-points, id: asi, points: 1, max_per: 1, pool: [str, dex] }]
+  # Magic Initiate: the spell-list / spellcasting-ability picks only
+  # parameterize the cantrip + level-1 spell selection, which is spell
+  # management.
+  magic-initiate:
+    noChoices: true # deferred: spell management lives on the sheet (SP4c)
+  # Skilled: "proficiency in any combination of three skills or tools of your
+  # choice." One select-proficiency cannot span two domains (skill + tool), so
+  # the combination is encoded as a count-1 select-inline over the four
+  # skill/tool splits, each option nesting domain-true select-proficiency
+  # picks.
+  skilled:
+    choices:
+      - kind: select-inline
+        id: skills-or-tools
+        count: 1
+        options:
+          - value: three-skills
+            label: Three skills
+            choices:
+              - { kind: select-proficiency, id: skills, domain: skill, count: 3 }
+          - value: two-skills-one-tool
+            label: Two skills and one tool
+            choices:
+              - { kind: select-proficiency, id: skills, domain: skill, count: 2 }
+              - { kind: select-proficiency, id: tools, domain: tool, count: 1 }
+          - value: one-skill-two-tools
+            label: One skill and two tools
+            choices:
+              - { kind: select-proficiency, id: skills, domain: skill, count: 1 }
+              - { kind: select-proficiency, id: tools, domain: tool, count: 2 }
+          - value: three-tools
+            label: Three tools
+            choices:
+              - { kind: select-proficiency, id: tools, domain: tool, count: 3 }
 
 optional_feature_slugs:
   invocation:

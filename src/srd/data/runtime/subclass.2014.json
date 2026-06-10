@@ -25,7 +25,19 @@
         {
           "id": "additional-fighting-style",
           "name": "Additional Fighting Style",
-          "description": "At 10th level, you can choose a second option from the Fighting Style class feature."
+          "description": "At 10th level, you can choose a second option from the Fighting Style class feature.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "fighting-style",
+              "count": 1,
+              "entity_type": "optional-feature",
+              "where": {
+                "feature_type": "fighting_style",
+                "available_to": "self"
+              }
+            }
+          ]
         }
       ],
       "15": [
@@ -69,14 +81,88 @@
         {
           "id": "circle-spells",
           "name": "Circle Spells",
-          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "land-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "5": [
         {
           "id": "circle-spells",
           "name": "Circle Spells",
-          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "land-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "6": [
@@ -90,14 +176,88 @@
         {
           "id": "circle-spells",
           "name": "Circle Spells",
-          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "land-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "9": [
         {
           "id": "circle-spells",
           "name": "Circle Spells",
-          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |"
+          "description": "Your mystical connection to the land infuses you with the ability to cast certain spells. At 3rd, 5th, 7th, and 9th level you gain access to circle spells connected to the land where you became a druid. Choose that land-arctic, coast, desert, forest, grassland, mountain, or swamp-and consult the associated list of spells. \r\n\r\nOnce you gain access to a circle spell, you always have it prepared, and it doesn't count against the number of spells you can prepare each day. If you gain access to a spell that doesn't appear on the druid spell list, the spell is nonetheless a druid spell for you.\r\n\r\n**Arctic (table)**\r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | hold person, spike growth | \r\n| 5th | sleet storm, slow | \r\n| 7th | freedom of movement, ice storm  | \r\n| 9th | commune with nature, cone of cold | \r\n \r\n**Coast (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | mirror image, misty step | \r\n| 5th | water breathing, water walk  | \r\n| 7th | control water, freedom of movement | \r\n| 9th | conjure elemental, scrying | \r\n \r\n**Desert (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | blur, silence | \r\n| 5th | create food and water, protection from energy | \r\n| 7th | blight, hallucinatory terrain | \r\n| 9th | insect plague, wall of stone  | \r\n \r\n**Forest (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | barkskin, spider climb | \r\n| 5th | call lightning, plant growth | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | commune with nature, tree stride | \r\n \r\n**Grassland (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | invisibility, pass without trace | \r\n| 5th | daylight, haste  | \r\n| 7th | divination, freedom of movement  | \r\n| 9th | dream, insect plague | \r\n \r\n**Mountain (table)** \r\n \r\n| Druid Level | Circle Spells | \r\n|---|---| \r\n| 3rd | spider climb, spike growth  | \r\n| 5th | lightning bolt, meld into stone | \r\n| 7th | stone shape, stoneskin  | \r\n| 9th | passwall, wall of stone | \r\n \r\n**Swamp (table)** \r\n \r\n| Druid Level | Circle Spells  | \r\n|---|---| \r\n| 3rd | acid arrow, darkness | \r\n| 5th | water walk, stinking cloud | \r\n| 7th | freedom of movement, locate creature | \r\n| 9th | insect plague, scrying |",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "land-terrain",
+              "count": 1,
+              "options": [
+                {
+                  "value": "arctic",
+                  "label": "Arctic"
+                },
+                {
+                  "value": "coast",
+                  "label": "Coast"
+                },
+                {
+                  "value": "desert",
+                  "label": "Desert"
+                },
+                {
+                  "value": "forest",
+                  "label": "Forest"
+                },
+                {
+                  "value": "grassland",
+                  "label": "Grassland"
+                },
+                {
+                  "value": "mountain",
+                  "label": "Mountain"
+                },
+                {
+                  "value": "swamp",
+                  "label": "Swamp"
+                }
+              ]
+            }
+          ]
         }
       ],
       "10": [
@@ -129,7 +289,15 @@
         {
           "id": "bonus-proficiencies",
           "name": "Bonus Proficiencies",
-          "description": "When you join the College of Lore at 3rd level, you gain proficiency with three skills of your choice."
+          "description": "When you join the College of Lore at 3rd level, you gain proficiency with three skills of your choice.",
+          "choices": [
+            {
+              "kind": "select-proficiency",
+              "id": "skills",
+              "count": 3,
+              "domain": "skill"
+            }
+          ]
         },
         {
           "id": "cutting-words",
@@ -171,7 +339,56 @@
         {
           "id": "dragon-ancestor",
           "name": "Dragon Ancestor",
-          "description": "At 1st level, you choose one type of dragon as your ancestor. The damage type associated with each dragon is used by features you gain later.\r\n\r\n### Draconic Ancestry (table)\r\n| Dragon | Damage Type |\r\n| --- | --- |\r\n| Black | Acid |\r\n| Blue | Lightning |\r\n| Brass | Fire |\r\n| Bronze | Lightning |\r\n| Copper | Acid |\r\n| Gold | Fire |\r\n| Green | Poison |\r\n| Red | Fire |\r\n| Silver | Cold |\r\n| White | Cold |\r\n\r\nYou can speak, read, and write Draconic. Additionally, whenever you make a Charisma check when interacting with dragons, your proficiency bonus is doubled if it applies to the check."
+          "description": "At 1st level, you choose one type of dragon as your ancestor. The damage type associated with each dragon is used by features you gain later.\r\n\r\n### Draconic Ancestry (table)\r\n| Dragon | Damage Type |\r\n| --- | --- |\r\n| Black | Acid |\r\n| Blue | Lightning |\r\n| Brass | Fire |\r\n| Bronze | Lightning |\r\n| Copper | Acid |\r\n| Gold | Fire |\r\n| Green | Poison |\r\n| Red | Fire |\r\n| Silver | Cold |\r\n| White | Cold |\r\n\r\nYou can speak, read, and write Draconic. Additionally, whenever you make a Charisma check when interacting with dragons, your proficiency bonus is doubled if it applies to the check.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "draconic-ancestry",
+              "count": 1,
+              "options": [
+                {
+                  "value": "black",
+                  "label": "Black (Acid)"
+                },
+                {
+                  "value": "blue",
+                  "label": "Blue (Lightning)"
+                },
+                {
+                  "value": "brass",
+                  "label": "Brass (Fire)"
+                },
+                {
+                  "value": "bronze",
+                  "label": "Bronze (Lightning)"
+                },
+                {
+                  "value": "copper",
+                  "label": "Copper (Acid)"
+                },
+                {
+                  "value": "gold",
+                  "label": "Gold (Fire)"
+                },
+                {
+                  "value": "green",
+                  "label": "Green (Poison)"
+                },
+                {
+                  "value": "red",
+                  "label": "Red (Fire)"
+                },
+                {
+                  "value": "silver",
+                  "label": "Silver (Cold)"
+                },
+                {
+                  "value": "white",
+                  "label": "White (Cold)"
+                }
+              ]
+            }
+          ]
         }
       ],
       "6": [
@@ -210,28 +427,119 @@
         {
           "id": "hunters-prey",
           "name": "Hunter's Prey",
-          "description": "At 3rd level, you gain one of the following features of your choice.\r\n\r\n***Colossus Slayer.*** Your tenacity can wear down the most potent foes. When you hit a creature with a weapon attack, the creature takes an extra 1d8 damage if it's below its hit point maximum. You can deal this extra damage only once per turn.\r\n\r\n***Giant Killer.*** When a Large or larger creature within 5 feet of you hits or misses you with an attack, you can use your reaction to attack that creature immediately after its attack, provided that you can see the creature.\r\n\r\n***Horde Breaker.*** Once on each of your turns when you make a weapon attack, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target and within range of your weapon."
+          "description": "At 3rd level, you gain one of the following features of your choice.\r\n\r\n***Colossus Slayer.*** Your tenacity can wear down the most potent foes. When you hit a creature with a weapon attack, the creature takes an extra 1d8 damage if it's below its hit point maximum. You can deal this extra damage only once per turn.\r\n\r\n***Giant Killer.*** When a Large or larger creature within 5 feet of you hits or misses you with an attack, you can use your reaction to attack that creature immediately after its attack, provided that you can see the creature.\r\n\r\n***Horde Breaker.*** Once on each of your turns when you make a weapon attack, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target and within range of your weapon.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "hunters-prey",
+              "count": 1,
+              "options": [
+                {
+                  "value": "colossus-slayer",
+                  "label": "Colossus Slayer",
+                  "description": "When you hit a creature with a weapon attack, the creature takes an extra 1d8 damage if it's below its hit point maximum. You can deal this extra damage only once per turn."
+                },
+                {
+                  "value": "giant-killer",
+                  "label": "Giant Killer",
+                  "description": "When a Large or larger creature within 5 feet of you hits or misses you with an attack, you can use your reaction to attack that creature immediately after its attack."
+                },
+                {
+                  "value": "horde-breaker",
+                  "label": "Horde Breaker",
+                  "description": "Once on each of your turns when you make a weapon attack, you can make another attack with the same weapon against a different creature that is within 5 feet of the original target and within range of your weapon."
+                }
+              ]
+            }
+          ]
         }
       ],
       "7": [
         {
           "id": "defensive-tactics",
           "name": "Defensive Tactics",
-          "description": "At 7th level, you gain one of the following features of your choice.\r\n\r\n***Escape the Horde.*** Opportunity attacks against you are made with disadvantage.\r\n\r\n***Multiattack Defense.*** When a creature hits you with an attack, you gain a +4 bonus to AC against all subsequent attacks made by that creature for the rest of the turn.\r\n\r\n***Steel Will.*** You have advantage on saving throws against being frightened."
+          "description": "At 7th level, you gain one of the following features of your choice.\r\n\r\n***Escape the Horde.*** Opportunity attacks against you are made with disadvantage.\r\n\r\n***Multiattack Defense.*** When a creature hits you with an attack, you gain a +4 bonus to AC against all subsequent attacks made by that creature for the rest of the turn.\r\n\r\n***Steel Will.*** You have advantage on saving throws against being frightened.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "defensive-tactics",
+              "count": 1,
+              "options": [
+                {
+                  "value": "escape-the-horde",
+                  "label": "Escape the Horde",
+                  "description": "Opportunity attacks against you are made with disadvantage."
+                },
+                {
+                  "value": "multiattack-defense",
+                  "label": "Multiattack Defense",
+                  "description": "When a creature hits you with an attack, you gain a +4 bonus to AC against all subsequent attacks made by that creature for the rest of the turn."
+                },
+                {
+                  "value": "steel-will",
+                  "label": "Steel Will",
+                  "description": "You have advantage on saving throws against being frightened."
+                }
+              ]
+            }
+          ]
         }
       ],
       "11": [
         {
           "id": "multiattack",
           "name": "Multiattack",
-          "description": "At 11th level, you gain one of the following features of your choice.\r\n\r\n***Volley.*** You can use your action to make a ranged attack against any number of creatures within 10 feet of a point you can see within your weapon's range. You must have ammunition for each target, as normal, and you make a separate attack roll for each target.\r\n\r\n***Whirlwind Attack.*** You can use your action to make a melee attack against any number of creatures within 5 feet of you, with a separate attack roll for each target."
+          "description": "At 11th level, you gain one of the following features of your choice.\r\n\r\n***Volley.*** You can use your action to make a ranged attack against any number of creatures within 10 feet of a point you can see within your weapon's range. You must have ammunition for each target, as normal, and you make a separate attack roll for each target.\r\n\r\n***Whirlwind Attack.*** You can use your action to make a melee attack against any number of creatures within 5 feet of you, with a separate attack roll for each target.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "multiattack",
+              "count": 1,
+              "options": [
+                {
+                  "value": "volley",
+                  "label": "Volley",
+                  "description": "You can use your action to make a ranged attack against any number of creatures within 10 feet of a point you can see within your weapon's range. You must have ammunition for each target."
+                },
+                {
+                  "value": "whirlwind-attack",
+                  "label": "Whirlwind Attack",
+                  "description": "You can use your action to make a melee attack against any number of creatures within 5 feet of you, with a separate attack roll for each target."
+                }
+              ]
+            }
+          ]
         }
       ],
       "15": [
         {
           "id": "superior-hunters-defense",
           "name": "Superior Hunter's Defense",
-          "description": "At 15th level, you gain one of the following features of your choice.\r\n\r\n***Evasion.*** When you are subjected to an effect, such as a red dragon's fiery breath or a lightning bolt spell, that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw, and only half damage if you fail.\r\n\r\n***Stand Against the Tide.*** When a hostile creature misses you with a melee attack, you can use your reaction to force that creature to repeat the same attack against another creature (other than itself) of your choice.\r\n\r\n***Uncanny Dodge.*** When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you."
+          "description": "At 15th level, you gain one of the following features of your choice.\r\n\r\n***Evasion.*** When you are subjected to an effect, such as a red dragon's fiery breath or a lightning bolt spell, that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw, and only half damage if you fail.\r\n\r\n***Stand Against the Tide.*** When a hostile creature misses you with a melee attack, you can use your reaction to force that creature to repeat the same attack against another creature (other than itself) of your choice.\r\n\r\n***Uncanny Dodge.*** When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you.",
+          "choices": [
+            {
+              "kind": "select-inline",
+              "id": "superior-hunters-defense",
+              "count": 1,
+              "options": [
+                {
+                  "value": "evasion",
+                  "label": "Evasion",
+                  "description": "When you make a Dexterity saving throw to take only half damage, you instead take no damage on a success and only half damage on a failure."
+                },
+                {
+                  "value": "stand-against-the-tide",
+                  "label": "Stand Against the Tide",
+                  "description": "When a hostile creature misses you with a melee attack, you can use your reaction to force that creature to repeat the same attack against another creature of your choice."
+                },
+                {
+                  "value": "uncanny-dodge",
+                  "label": "Uncanny Dodge",
+                  "description": "When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you."
+                }
+              ]
+            }
+          ]
         }
       ]
     },

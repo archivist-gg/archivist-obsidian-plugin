@@ -48,7 +48,117 @@
       },
       {
         "name": "Draconic Ancestry",
-        "description": "You have draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath weapon and damage resistance are determined by the dragon type, as shown in the table."
+        "description": "You have draconic ancestry. Choose one type of dragon from the Draconic Ancestry table. Your breath weapon and damage resistance are determined by the dragon type, as shown in the table.",
+        "id": "draconic-ancestry",
+        "choices": [
+          {
+            "kind": "select-inline",
+            "id": "draconic-ancestry",
+            "count": 1,
+            "options": [
+              {
+                "value": "black",
+                "label": "Black (Acid)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Acid"
+                  }
+                ]
+              },
+              {
+                "value": "blue",
+                "label": "Blue (Lightning)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Lightning"
+                  }
+                ]
+              },
+              {
+                "value": "brass",
+                "label": "Brass (Fire)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              },
+              {
+                "value": "bronze",
+                "label": "Bronze (Lightning)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Lightning"
+                  }
+                ]
+              },
+              {
+                "value": "copper",
+                "label": "Copper (Acid)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Acid"
+                  }
+                ]
+              },
+              {
+                "value": "gold",
+                "label": "Gold (Fire)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              },
+              {
+                "value": "green",
+                "label": "Green (Poison)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Poison"
+                  }
+                ]
+              },
+              {
+                "value": "red",
+                "label": "Red (Fire)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Fire"
+                  }
+                ]
+              },
+              {
+                "value": "silver",
+                "label": "Silver (Cold)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Cold"
+                  }
+                ]
+              },
+              {
+                "value": "white",
+                "label": "White (Cold)",
+                "effects": [
+                  {
+                    "kind": "resistance",
+                    "damage_type": "Cold"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       {
         "name": "Breath Weapon",
@@ -133,7 +243,21 @@
       },
       {
         "name": "Tool Proficiency",
-        "description": "You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies, or mason's tools."
+        "description": "You gain proficiency with the artisan's tools of your choice: smith's tools, brewer's supplies, or mason's tools.",
+        "id": "tool-proficiency",
+        "choices": [
+          {
+            "kind": "select-proficiency",
+            "id": "tool",
+            "count": 1,
+            "domain": "tool",
+            "from": [
+              "smith's tools",
+              "brewer's supplies",
+              "mason's tools"
+            ]
+          }
+        ]
       },
       {
         "name": "Stonecunning",
@@ -314,7 +438,37 @@
       },
       {
         "name": "Skill Versatility",
-        "description": "You gain proficiency in two skills of your choice."
+        "description": "You gain proficiency in two skills of your choice.",
+        "id": "skill-versatility",
+        "choices": [
+          {
+            "kind": "select-proficiency",
+            "id": "skills",
+            "count": 2,
+            "domain": "skill"
+          }
+        ]
+      }
+    ],
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "abilities",
+        "points": 2,
+        "max_per": 1,
+        "pool": [
+          "str",
+          "dex",
+          "con",
+          "int",
+          "wis"
+        ]
+      },
+      {
+        "kind": "select-proficiency",
+        "id": "languages",
+        "count": 1,
+        "domain": "language"
       }
     ]
   },
@@ -479,7 +633,16 @@
       },
       {
         "name": "Extra Language",
-        "description": "You can speak, read, and write one extra language of your choice."
+        "description": "You can speak, read, and write one extra language of your choice.",
+        "id": "extra-language",
+        "choices": [
+          {
+            "kind": "select-proficiency",
+            "id": "languages",
+            "count": 1,
+            "domain": "language"
+          }
+        ]
       }
     ],
     "subspecies_of": "[[SRD 5e/Races/Elf]]"
@@ -554,6 +717,14 @@
       {
         "name": "Languages",
         "description": "You can speak, read, and write Common and one extra language of your choice. Humans typically learn the languages of other peoples they deal with, including obscure dialects. They are fond of sprinkling their speech with words borrowed from other tongues: Orc curses, Elvish musical expressions, Dwarvish military phrases, and so on."
+      }
+    ],
+    "choices": [
+      {
+        "kind": "select-proficiency",
+        "id": "languages",
+        "count": 1,
+        "domain": "language"
       }
     ]
   },

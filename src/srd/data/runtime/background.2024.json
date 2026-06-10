@@ -56,7 +56,20 @@
       ]
     },
     "origin_feat": "[[SRD 2024/Feats/Magic Initiate (Cleric)]]",
-    "suggested_characteristics": null
+    "suggested_characteristics": null,
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "abilities",
+        "points": 3,
+        "max_per": 2,
+        "pool": [
+          "int",
+          "wis",
+          "cha"
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_criminal",
@@ -115,7 +128,20 @@
       ]
     },
     "origin_feat": "[[SRD 2024/Feats/Alert]]",
-    "suggested_characteristics": null
+    "suggested_characteristics": null,
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "abilities",
+        "points": 3,
+        "max_per": 2,
+        "pool": [
+          "dex",
+          "con",
+          "int"
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_sage",
@@ -174,7 +200,20 @@
       ]
     },
     "origin_feat": "[[SRD 2024/Feats/Magic Initiate (Wizard)]]",
-    "suggested_characteristics": null
+    "suggested_characteristics": null,
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "abilities",
+        "points": 3,
+        "max_per": 2,
+        "pool": [
+          "con",
+          "int",
+          "wis"
+        ]
+      }
+    ]
   },
   {
     "slug": "srd-2024_soldier",
@@ -241,6 +280,25 @@
       ]
     },
     "origin_feat": "[[SRD 2024/Feats/Savage Attacker]]",
-    "suggested_characteristics": null
+    "suggested_characteristics": null,
+    "choices": [
+      {
+        "kind": "ability-points",
+        "id": "abilities",
+        "points": 3,
+        "max_per": 2,
+        "pool": [
+          "str",
+          "dex",
+          "con"
+        ]
+      },
+      {
+        "kind": "select-proficiency",
+        "id": "tool",
+        "count": 1,
+        "domain": "tool"
+      }
+    ]
   }
 ]
