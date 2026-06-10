@@ -17,4 +17,5 @@ export type FeatureEffect =
       kind: "proficiency";
       proficiency_type: "skill" | "tool" | "language" | "saving-throw";
       value: string;
-    };
+    }
+  | { kind: "ac-bonus"; value: number; requires_armor?: boolean };
