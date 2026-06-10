@@ -194,6 +194,20 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
         "Proficiencies", readAt(1), ctx, ownerBare));
     }
 
+    // Entity-level: starting-equipment choices (recorded for the Equipment step;
+    // the minimal Class-step host doesn't render these — Plan 5 does).
+    if (classIndex === 0) {
+      (c.entity.starting_equipment ?? []).forEach((eq, i) => {
+        if (eq.kind !== "choice") return;
+        const ch: Choice = {
+          kind: "select-inline", id: `equipment-${i}`, label: "Starting Equipment", count: 1,
+          options: eq.options.map((opt, j) => ({ value: `option-${j}`, label: opt })),
+        };
+        push(1, buildItem(ch, { kind: "class", slug: c.entity!.slug, level: 1 }, 1,
+          "Starting Equipment", readAt(1), ctx, ownerBare));
+      });
+    }
+
     // Feature-level (class + subclass features already level-gated by the resolver),
     // with the recognizer as fallback for un-annotated decision prose (homebrew).
     for (const rf of resolved.features) {

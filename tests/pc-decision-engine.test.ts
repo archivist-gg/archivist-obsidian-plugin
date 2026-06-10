@@ -176,3 +176,70 @@ describe("buildDecisionLedger — feature-level", () => {
     expect(sk.options).toHaveLength(2);
   });
 });
+
+describe("buildDecisionLedger — starting equipment", () => {
+  it("synthesizes an equipment-0 decision from a choice entry; ignores fixed entries", () => {
+    const c = resolvedFighter(1);
+    (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+      { kind: "choice", options: ["(a) X", "(b) Y"] },
+      { kind: "fixed", items: ["A pack"] },
+    ];
+    const ledger = buildDecisionLedger(c, { registry } as never);
+    const items = ledger.classes[0].levels.flatMap(l => l.items);
+    const eq = items.find(i => i.key === "equipment-0")!;
+    expect(eq).toBeDefined();
+    expect(eq.level).toBe(1);
+    expect(eq.choice.kind).toBe("select-inline");
+    expect(eq.options.map(o => o.label)).toEqual(["(a) X", "(b) Y"]);
+    // The fixed entry yields no decision.
+    expect(items.find(i => i.key === "equipment-1")).toBeUndefined();
+  });
+});
+
+describe("buildDecisionLedger — recognizer fallback wiring", () => {
+  // A class whose features carry NO authored choices, so the engine must
+  // consult recognizeDecision (the homebrew fallback path).
+  function homebrewClass(): ResolvedCharacter {
+    const expertiseFeature = {
+      id: "expertise", name: "Expertise", description: "Choose two of your skill proficiencies…",
+    };
+    const proseFeature = {
+      id: "spooky-echo", name: "Spooky Echo", description: "Choose one of the following echoes.",
+    };
+    const entity = { slug: "hb_rogue", name: "Rogue",
+      skill_choices: { count: 0, from: [] },
+      features_by_level: { 1: [expertiseFeature, proseFeature] }, starting_equipment: [] };
+    const definition = {
+      name: "T", edition: "2024", race: null, subrace: null, background: null,
+      class: [{ name: "[[rogue]]", level: 1, subclass: null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual", skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] }, equipment: [], overrides: {}, origin_choices: {},
+      state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null,
+        conditions: [], exhaustion: 0, inspiration: 0, feature_uses: {} },
+    } as unknown as ResolvedCharacter["definition"];
+    const cls = { entity, level: 1, subclass: null, choices: {} } as unknown as ResolvedCharacter["classes"][number];
+    const features = [
+      { feature: expertiseFeature, source: { kind: "class", slug: entity.slug, level: 1 } },
+      { feature: proseFeature, source: { kind: "class", slug: entity.slug, level: 1 } },
+    ];
+    return { definition, race: null, classes: [cls], background: null, feats: [],
+      totalLevel: 1, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+  }
+
+  it("synthesizes a select-proficiency item for a feature mapped by id", () => {
+    const ledger = buildDecisionLedger(homebrewClass(), { registry } as never);
+    const exp = ledger.classes[0].levels.flatMap(l => l.items).find(i => i.key === "expertise")!;
+    expect(exp).toBeDefined();
+    expect(exp.choice.kind).toBe("select-proficiency");
+    expect(exp.status).toBe("unresolved");
+  });
+
+  it("emits an informational item for unmapped decision prose", () => {
+    const ledger = buildDecisionLedger(homebrewClass(), { registry } as never);
+    const echo = ledger.classes[0].levels.flatMap(l => l.items).find(i => i.featureName === "Spooky Echo")!;
+    expect(echo).toBeDefined();
+    expect(echo.status).toBe("informational");
+    expect(echo.options).toEqual([]);
+  });
+});
