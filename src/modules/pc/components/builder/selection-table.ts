@@ -7,7 +7,8 @@ export interface ColSpec {
   label: string;
   /** Cell class, e.g. "col-cat". */
   cls: string;
-  /** Fixed grid track, e.g. "90px" (the add-drawer's fixed-track approach). */
+  /** Grid track for the column, normally fixed, e.g. "90px" (any track
+   *  expression works). The built-in Name column is the fluid 1fr track. */
   width: string;
   /** Comparator; presence makes the header sortable. */
   sort?: (a: RegisteredEntity, b: RegisteredEntity) => number;
@@ -56,7 +57,11 @@ export function renderSelectionTable(
   bag?.set(opts.stateKey, st);
 
   const host = parent.createDiv({ cls: "pc-btable-host" });
-  const tracks = ["30px", "200px", ...opts.columns.map((c) => c.width), "110px"].join(" ");
+  // The built-in Name column is the single fluid track: data columns keep
+  // their fixed widths while Name absorbs the remaining host width, so the
+  // ledger fills wide hosts (builder step bodies) and still overflows into
+  // the host's horizontal scroll in narrow ones (drawers).
+  const tracks = ["30px", "minmax(200px, 1fr)", ...opts.columns.map((c) => c.width), "110px"].join(" ");
 
   const draw = (): void => {
     host.empty();

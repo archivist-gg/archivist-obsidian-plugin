@@ -101,6 +101,17 @@ describe("renderSelectionTable", () => {
     expect(onToggle).toHaveBeenCalledWith("b-feat");
   });
 
+  it("sizes the name column as the fluid track so the ledger fills wide hosts", () => {
+    const root = mountContainer();
+    renderSelectionTable(root, ctxWith(new Map()), {
+      columns: [CAT_COL], candidates: CANDS, stateKey: "t", selected: new Set(), onToggle: () => {},
+    });
+    const head = root.querySelector<HTMLElement>(".pc-btable-head")!;
+    expect(head.style.gridTemplateColumns).toBe("30px minmax(200px, 1fr) 90px 110px");
+    const row = root.querySelector<HTMLElement>(".pc-btable-row")!;
+    expect(row.style.gridTemplateColumns).toBe(head.style.gridTemplateColumns);
+  });
+
   it("multi mode (default) keeps the ＋ glyph on unselected rows", () => {
     const root = mountContainer();
     renderSelectionTable(root, ctxWith(new Map()), {
