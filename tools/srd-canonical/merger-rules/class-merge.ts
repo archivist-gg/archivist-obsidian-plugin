@@ -3,6 +3,7 @@ import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
+import type { Choice } from "../../../src/shared/types/choice";
 
 /**
  * ClassCanonical mirrors the runtime ClassEntity shape (src/modules/class/class.schema.ts)
@@ -80,6 +81,7 @@ export interface ClassFeatureOut {
   description: string;
   action?: "action" | "bonus-action" | "reaction" | "free" | "special";
   resources?: Resource[];
+  choices?: Choice[];
 }
 
 interface ResourceOut {
@@ -92,9 +94,11 @@ interface ResourceOut {
 export const classMergeRule: MergeRule = {
   kind: "class",
   pickOverlay(overlay: Overlay, _slug: string): unknown {
-    // Class overlay is keyed by feature-slug, not class-slug. Pass the full class_features map;
-    // toClassCanonical handles per-feature lookup.
-    return overlay.class_features ?? null;
+    // Feature map is keyed by feature-slug (optionally class-scoped
+    // "<class>:<feature>"); classes carries entity-level overrides
+    // (skill_choices / starting_equipment / subclass_level / subclass_feature_name).
+    // toClassCanonical unpacks both sections.
+    return { class_features: overlay.class_features ?? null, classes: overlay.classes ?? null };
   },
 };
 
@@ -347,10 +351,51 @@ function parseStartingEquipment(features: Open5eClassFeature[]): StartingEquipme
   return [{ kind: "fixed", items }];
 }
 
+/**
+ * Per-feature overlay record applied to an emitted feature. Keyed in the
+ * overlay map by feature-slug or class-scoped "<class>:<feature>" slug.
+ * Exported so subclass-merge (Task 7) shares the same shape.
+ */
+export type FeatureOverlayMap = Record<
+  string,
+  {
+    action?: ClassFeatureOut["action"];
+    resources?: Resource[];
+    choices?: Choice[];
+  }
+>;
+
+/**
+ * Entity-level class override (mirrors overlay.schema classOverrideSchema):
+ * pulled from the overlay `classes:` section, keyed by bare class-slug.
+ */
+export interface ClassOverride {
+  skill_choices?: { count: number; from: SkillSlug[] };
+  starting_equipment?: StartingEquipmentEntry[];
+  subclass_level?: number;
+  subclass_feature_name?: string;
+  choices?: Choice[];
+}
+
+/** "srd-2024_fighter" → "fighter" (overlay keys use vendor-free bare slugs). */
+export function bareSlug(slug: string): string {
+  const i = slug.indexOf("_");
+  return i === -1 ? slug : slug.slice(i + 1);
+}
+
+export function lookupFeatureOverlay<T>(
+  map: Record<string, T> | null,
+  ownerBareSlug: string,
+  featureSlug: string,
+): T | undefined {
+  return map?.[`${ownerBareSlug}:${featureSlug}`] ?? map?.[featureSlug];
+}
+
 function bucketFeaturesByLevel(
   features: Open5eClassFeature[],
   edition: "2014" | "2024",
-  overlay: Record<string, ClassFeatureOut> | null,
+  overlay: FeatureOverlayMap | null,
+  ownerBareSlug: string,
 ): { features_by_level: Record<string, ClassFeatureOut[]>; idsByLevel: Map<number, string[]> } {
   const out: Record<string, ClassFeatureOut[]> = {};
   const idsByLevel = new Map<number, string[]>();
@@ -359,7 +404,7 @@ function bucketFeaturesByLevel(
   for (const f of features) {
     if (!KEEP_TYPES.has(f.feature_type)) continue;
     const featureSlug = slugifyName(f.name);
-    const overlaid = overlay?.[featureSlug];
+    const overlaid = lookupFeatureOverlay(overlay, ownerBareSlug, featureSlug);
     const description = rewriteCrossRefs(f.desc ?? "", edition);
     const desc = description && description.length > 0 ? description : f.name;
     const levels = (f.gained_at ?? []).map((g) => g.level).filter((n) => Number.isFinite(n));
@@ -373,6 +418,7 @@ function bucketFeaturesByLevel(
         description: desc,
         ...(overlaid?.action ? { action: overlaid.action } : {}),
         ...(overlaid?.resources ? { resources: overlaid.resources } : {}),
+        ...(overlaid?.choices ? { choices: overlaid.choices } : {}),
       };
       const key = String(lvl);
       out[key] ??= [];
@@ -511,7 +557,14 @@ function buildResources(structured: Record<string, unknown> | null): ResourceOut
 export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
   const base = entry.base as unknown as Open5eClassBase;
   const structured = entry.structured as Record<string, unknown> | null;
-  const overlay = entry.overlay as Record<string, ClassFeatureOut> | null;
+  // pickOverlay now returns { class_features, classes }; unpack both sections.
+  const ov = entry.overlay as {
+    class_features: FeatureOverlayMap | null;
+    classes: Record<string, ClassOverride> | null;
+  } | null;
+  const featureOverlay = ov?.class_features ?? null;
+  const ownerBareSlug = bareSlug(entry.slug);
+  const classOverride = ov?.classes?.[ownerBareSlug];
 
   const features = base.features ?? [];
 
@@ -522,7 +575,7 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
 
   const { proficiencies, skill_choices } = parseProficienciesProse(features);
   const starting_equipment = parseStartingEquipment(features);
-  const { features_by_level, idsByLevel } = bucketFeaturesByLevel(features, entry.edition, overlay);
+  const { features_by_level, idsByLevel } = bucketFeaturesByLevel(features, entry.edition, featureOverlay, ownerBareSlug);
   const table = buildTable(features, idsByLevel);
 
   const out: ClassCanonical = {
@@ -546,6 +599,13 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
     features_by_level,
     resources: buildResources(structured),
   };
+
+  // Entity-level overrides from the overlay `classes:` section take precedence
+  // over values derived from Open5e prose / defaults.
+  if (classOverride?.skill_choices) out.skill_choices = classOverride.skill_choices;
+  if (classOverride?.starting_equipment) out.starting_equipment = classOverride.starting_equipment;
+  if (classOverride?.subclass_level) out.subclass_level = classOverride.subclass_level;
+  if (classOverride?.subclass_feature_name) out.subclass_feature_name = classOverride.subclass_feature_name;
 
   return out;
 }

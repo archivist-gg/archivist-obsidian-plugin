@@ -221,6 +221,91 @@ describe("class-merge: Open5e v2 class shape", () => {
     expect(result.spellcasting?.spell_list.length).toBeGreaterThan(0);
   });
 
+  it("attaches overlay choices via class-scoped key, falling back to the bare key (SP2 Plan 3)", () => {
+    const out = toClassCanonical(baseEntry({
+      slug: "srd-2024_fighter",
+      edition: "2024",
+      base: {
+        key: "srd-2024_fighter",
+        name: "Fighter",
+        desc: "",
+        hit_dice: "D10",
+        subclass_of: null,
+        saving_throws: [{ name: "Strength" }, { name: "Constitution" }],
+        features: [
+          {
+            key: "srd-2024_fighter_fighting-style",
+            name: "Fighting Style",
+            desc: "Choose a fighting style.",
+            feature_type: "CLASS_LEVEL_FEATURE",
+            gained_at: [{ level: 1, detail: null }],
+            data_for_class_table: [],
+          },
+          {
+            key: "srd-2024_fighter_ability-score-improvement",
+            name: "Ability Score Improvement",
+            desc: "Boost an ability.",
+            feature_type: "CLASS_LEVEL_FEATURE",
+            gained_at: [{ level: 4, detail: null }],
+            data_for_class_table: [],
+          },
+        ],
+      },
+      overlay: {
+        class_features: {
+          "fighter:fighting-style": { choices: [{ kind: "select-entity", id: "fighting-style", count: 1, entity_type: "optional-feature", where: { feature_type: "fighting_style", available_to: "self" } }] },
+          "ability-score-improvement": { choices: [{ kind: "select-inline", id: "asi-or-feat", count: 1, options: [{ value: "asi", label: "ASI" }] }] },
+        },
+        classes: { fighter: { skill_choices: { count: 2, from: ["athletics", "perception"] }, subclass_feature_name: "Martial Archetype" } },
+      },
+    })) as {
+      features_by_level: Record<string, Array<{ id?: string; choices?: Array<{ kind: string; id: string }> }>>;
+      skill_choices: { count: number; from: string[] };
+      subclass_feature_name: string;
+    };
+    const l1 = out.features_by_level["1"].find(f => f.id === "fighting-style")!;
+    expect(l1.choices?.[0]).toMatchObject({ kind: "select-entity", id: "fighting-style" });
+    const l4 = out.features_by_level["4"].find(f => f.id === "ability-score-improvement")!;
+    expect(l4.choices?.[0]).toMatchObject({ id: "asi-or-feat" });
+    expect(out.skill_choices).toEqual({ count: 2, from: ["athletics", "perception"] });
+    expect(out.subclass_feature_name).toBe("Martial Archetype");
+  });
+
+  it("prefers the class-scoped overlay key over the bare key when both exist (SP2 Plan 3)", () => {
+    const out = toClassCanonical(baseEntry({
+      slug: "srd-2024_fighter",
+      edition: "2024",
+      base: {
+        key: "srd-2024_fighter",
+        name: "Fighter",
+        desc: "",
+        hit_dice: "D10",
+        subclass_of: null,
+        saving_throws: [{ name: "Strength" }, { name: "Constitution" }],
+        features: [
+          {
+            key: "srd-2024_fighter_fighting-style",
+            name: "Fighting Style",
+            desc: "Choose a fighting style.",
+            feature_type: "CLASS_LEVEL_FEATURE",
+            gained_at: [{ level: 1, detail: null }],
+            data_for_class_table: [],
+          },
+        ],
+      },
+      overlay: {
+        class_features: {
+          "fighter:fighting-style": { choices: [{ kind: "select-entity", id: "scoped-wins", count: 1, entity_type: "optional-feature", where: { feature_type: "fighting_style", available_to: "self" } }] },
+          "fighting-style": { choices: [{ kind: "select-entity", id: "bare-loses", count: 1, entity_type: "optional-feature", where: { feature_type: "fighting_style", available_to: "self" } }] },
+        },
+      },
+    })) as {
+      features_by_level: Record<string, Array<{ id?: string; choices?: Array<{ id: string }> }>>;
+    };
+    const l1 = out.features_by_level["1"].find(f => f.id === "fighting-style")!;
+    expect(l1.choices?.[0]?.id).toBe("scoped-wins");
+  });
+
   it("attaches overlay resources to the matching class feature", () => {
     const result = toClassCanonical(baseEntry({
       slug: "srd-5e_barbarian",
@@ -243,10 +328,12 @@ describe("class-merge: Open5e v2 class shape", () => {
         ],
       },
       overlay: {
-        rage: {
-          resources: [{
-            id: "barbarian:rage", name: "Rage", max_formula: "2", reset: "long-rest",
-          }],
+        class_features: {
+          rage: {
+            resources: [{
+              id: "barbarian:rage", name: "Rage", max_formula: "2", reset: "long-rest",
+            }],
+          },
         },
       },
     })) as { features_by_level: Record<string, Array<{ name: string; resources?: Array<{ id: string }> }>> };
