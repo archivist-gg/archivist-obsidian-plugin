@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import type { Ability } from "../../../../shared/types/choice";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
@@ -229,8 +230,11 @@ function renderForm(
       }
     )
       .saveEntity(homebrew.name, "background", built)
-      .then((reg) => ctx.editState?.setBackground(reg.slug))
-      .catch((err: unknown) => console.error("[builder] custom background save failed", err));
+      .then((reg) => {
+        ctx.editState?.setBackground(reg.slug);
+        new Notice(`Saved to ${homebrew.name}`);
+      })
+      .catch((err: Error) => new Notice(`Failed to save: ${err.message}`));
   });
 }
 

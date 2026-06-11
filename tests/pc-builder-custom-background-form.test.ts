@@ -1,5 +1,14 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
+
+// Spy on Notice so save success/failure surfacing can be asserted, while
+// keeping the rest of the obsidian shim (DOM helpers etc.) intact.
+vi.mock("obsidian", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>("obsidian");
+  return { ...actual, Notice: vi.fn() };
+});
+
+import { Notice } from "obsidian";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderCustomBackgroundRow } from "../src/modules/pc/components/builder/custom-background";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
@@ -247,5 +256,43 @@ describe("renderCustomBackgroundRow", () => {
       extras2024: { pool: string[]; originFeat: string | null } | null;
     };
     expect(st2.extras2024!.originFeat).toBeNull();
+  });
+
+  it("a successful save surfaces a 'Saved to {comp}' Notice", async () => {
+    vi.mocked(Notice).mockClear();
+    const container = mountContainer();
+    const saveEntity = vi.fn().mockResolvedValue({ slug: "me_wandering-scholar" });
+    const ctx = mkCtx({ saveEntity });
+    renderCustomBackgroundRow(container, ctx);
+    container.querySelector<HTMLElement>(".pc-bcustomrow")!.click();
+    const nameInput = container.querySelector<HTMLInputElement>(".pc-bcustom-name")!;
+    nameInput.value = "Wandering Scholar";
+    nameInput.dispatchEvent(new Event("change"));
+    container.querySelector<HTMLButtonElement>(".pc-bcreate")!.click();
+
+    await vi.waitFor(() => expect(saveEntity).toHaveBeenCalledTimes(1));
+    await flushPromises();
+    expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Saved to Me"));
+  });
+
+  it("a rejecting save raises a Notice naming the failure and does NOT select the background", async () => {
+    vi.mocked(Notice).mockClear();
+    const container = mountContainer();
+    // Realistic failure: saveEntity derives filePath from the raw name while only
+    // the slug is uniquified, so a duplicate-name create rejects in vault.create.
+    const saveEntity = vi.fn().mockRejectedValue(new Error("File already exists"));
+    const setBackground = vi.fn();
+    const ctx = mkCtx({ saveEntity, setBackground });
+    renderCustomBackgroundRow(container, ctx);
+    container.querySelector<HTMLElement>(".pc-bcustomrow")!.click();
+    const nameInput = container.querySelector<HTMLInputElement>(".pc-bcustom-name")!;
+    nameInput.value = "Wandering Scholar";
+    nameInput.dispatchEvent(new Event("change"));
+    container.querySelector<HTMLButtonElement>(".pc-bcreate")!.click();
+
+    await vi.waitFor(() => expect(saveEntity).toHaveBeenCalledTimes(1));
+    await flushPromises();
+    expect(Notice).toHaveBeenCalledWith(expect.stringContaining("File already exists"));
+    expect(setBackground).not.toHaveBeenCalled();
   });
 });
