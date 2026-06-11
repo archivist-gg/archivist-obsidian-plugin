@@ -6,7 +6,11 @@ import type { Ability } from "../../../../shared/types/choice";
 
 export interface DecisionLedgerOptions {
   ledger: DecisionLedger;
-  classIndex: number;
+  /** Class scope: render this class's level groups. Ignored when `origin` is set. */
+  classIndex?: number;
+  /** Origin scope: render the flat `ledger.origin` items for one source kind
+   *  (race / background), no level headers, nothing at all when empty. */
+  origin?: "race" | "background";
   /** Expand/collapse state lives under `${stateKey}.open` in builderUiState. */
   stateKey: string;
 }
@@ -27,7 +31,18 @@ export function renderDecisionLedger(
   bag?.set(openKey, open);
 
   const root = parent.createDiv({ cls: "pc-bledger" });
-  const cls = opts.ledger.classes.find((c) => c.classIndex === opts.classIndex);
+
+  // Origin scope: flat race/background items for one source kind, no level
+  // headers. When the filter matches nothing we render the empty `.pc-bledger`
+  // root and stop — no empty-state line (Tasks 5/12 mount this inside the
+  // Race/Background steps, where a "No decisions yet" note would be noise).
+  if (opts.origin) {
+    const items = opts.ledger.origin.filter((i) => i.source.kind === opts.origin);
+    for (const item of items) renderItem(root, ctx, item, opts, open);
+    return;
+  }
+
+  const cls = opts.ledger.classes.find((c) => c.classIndex === (opts.classIndex ?? 0));
   if (!cls || cls.levels.length === 0) {
     root.createDiv({ cls: "pc-bledger-empty", text: "No decisions yet — pick a class." });
     return;
@@ -111,14 +126,14 @@ function writeValue(
   const es = ctx.editState;
   if (!es) return;
   if (item.choice.kind === "select-entity" && item.choice.entity_type === "subclass") {
-    es.setSubclass(opts.classIndex, typeof value === "string" ? value : null);
+    es.setSubclass(opts.classIndex ?? 0, typeof value === "string" ? value : null);
     return;
   }
   if (item.source.kind === "race" || item.source.kind === "background") {
     es.setOriginChoice(`${item.source.kind}:${item.key}`, value);
     return;
   }
-  es.setChoice(opts.classIndex, item.level, item.key, value);
+  es.setChoice(opts.classIndex ?? 0, item.level, item.key, value);
 }
 
 function renderControl(

@@ -315,6 +315,60 @@ describe("renderDecisionLedger", () => {
     expect(es.setChoice).not.toHaveBeenCalled();
   });
 
+  describe("origin scope", () => {
+    function originLedgerOf(items: DecisionItem[]): DecisionLedger {
+      return { classes: [], origin: items };
+    }
+    const raceItem = (): DecisionItem => {
+      const choice: Choice = {
+        kind: "select-inline", id: "draconic-ancestry", label: "Draconic Ancestry", count: 1,
+        options: [{ value: "red", label: "Red (Fire)" }, { value: "black", label: "Black (Acid)" }],
+      };
+      return {
+        key: "draconic-ancestry", source: { kind: "race", slug: "srd-5e_dragonborn" }, level: 0,
+        featureName: "Draconic Ancestry", choice,
+        options: [{ value: "red", label: "Red (Fire)" }, { value: "black", label: "Black (Acid)" }],
+        selected: undefined, status: "unresolved",
+      };
+    };
+    const bgItem = (): DecisionItem => ({
+      ...raceItem(), key: "langs", source: { kind: "background", slug: "srd-5e_acolyte" }, featureName: "Languages",
+    });
+
+    it("renders only items whose source matches the origin filter, with no level headers", () => {
+      const container = mountContainer();
+      renderDecisionLedger(container, fakeCtx(new Map(), fakeEditState()), {
+        ledger: originLedgerOf([raceItem(), bgItem()]), origin: "race", stateKey: "t.origin1",
+      });
+      expect(container.querySelectorAll(".pc-bledger-item").length).toBe(1);
+      expect(container.querySelectorAll(".pc-bledger-level-h").length).toBe(0);
+      expect(container.textContent).toContain("Draconic Ancestry");
+      expect(container.textContent).not.toContain("Languages");
+    });
+
+    it("renders nothing (no empty-state line) when the origin has no items", () => {
+      const container = mountContainer();
+      renderDecisionLedger(container, fakeCtx(new Map(), fakeEditState()), {
+        ledger: originLedgerOf([bgItem()]), origin: "race", stateKey: "t.origin2",
+      });
+      expect(container.querySelector(".pc-bledger")?.children.length ?? 0).toBe(0);
+      expect(container.querySelector(".pc-bledger-empty")).toBeNull();
+    });
+
+    it("selecting an option writes through setOriginChoice with the namespaced key", () => {
+      const container = mountContainer();
+      const es = fakeEditState();
+      renderDecisionLedger(container, fakeCtx(new Map(), es), {
+        ledger: originLedgerOf([raceItem()]), origin: "race", stateKey: "t.origin3",
+      });
+      const chip = [...container.querySelectorAll<HTMLElement>(".pc-bchoice-chip")]
+        .find((c) => c.textContent?.includes("Red"))!;
+      chip.click();
+      expect(es.setOriginChoice).toHaveBeenCalledWith("race:draconic-ancestry", "red");
+      expect(es.setChoice).not.toHaveBeenCalled();
+    });
+  });
+
   it("writes class proficiency picks via setChoice with the selected slug", () => {
     const root = mountContainer();
     const es = fakeEditState();
