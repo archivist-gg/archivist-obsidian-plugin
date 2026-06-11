@@ -367,6 +367,21 @@ describe("renderDecisionLedger", () => {
       expect(es.setOriginChoice).toHaveBeenCalledWith("race:draconic-ancestry", "red");
       expect(es.setChoice).not.toHaveBeenCalled();
     });
+
+    it("a background-origin option writes setOriginChoice with the background namespace", () => {
+      const container = mountContainer();
+      const es = fakeEditState();
+      renderDecisionLedger(container, fakeCtx(new Map(), es), {
+        ledger: originLedgerOf([bgItem()]), origin: "background", stateKey: "t.origin4",
+      });
+      const chip = [...container.querySelectorAll<HTMLElement>(".pc-bchoice-chip")]
+        .find((c) => c.textContent?.includes("Red"))!;
+      chip.click();
+      // bgItem reuses raceItem's options but its source.kind is background and its
+      // key is "langs"; the write keys on item.key under the background namespace.
+      expect(es.setOriginChoice).toHaveBeenCalledWith("background:langs", "red");
+      expect(es.setChoice).not.toHaveBeenCalled();
+    });
   });
 
   it("writes class proficiency picks via setChoice with the selected slug", () => {

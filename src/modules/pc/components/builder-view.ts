@@ -2,6 +2,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { BUILDER_STEPS } from "./builder-steps";
 import { renderEntityPicker } from "./builder/entity-picker";
 import { renderRaceStep } from "./builder/race-step";
+import { renderBackgroundStep } from "./builder/background-step";
 import { renderAbilitiesStep } from "./builder/abilities-step";
 import { renderDecisionLedger } from "./builder/decision-ledger";
 import { stripSlug } from "../pc.resolver";
@@ -55,6 +56,8 @@ export class BuilderView implements SheetComponent {
       this.renderClassStep(body, ctx);
     } else if (def.id === "abilities" && ctx.core) {
       renderAbilitiesStep(body, ctx);
+    } else if (def.id === "background" && ctx.core) {
+      renderBackgroundStep(body, ctx);
     } else {
       body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
     }

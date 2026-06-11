@@ -388,3 +388,30 @@
   padding: 6px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;
 }
 .archivist-pc-sheet .pc-baibtn:disabled { opacity: 0.55; }
+
+/* ── Background step (SP2 Plan 4) ──────────────────────────────────────── */
+/* Edition-mix banner: a permissive amber note above the chosen background's
+   block. No left-border bar — the amber "!" disc + amber-warm tint carry the
+   "this is unusual, not wrong" signal (the N1 note idiom, not an error box). */
+.archivist-pc-sheet .pc-bwarn {
+  display: flex; align-items: flex-start; gap: 9px;
+  background: rgba(163, 105, 14, 0.1); border-bottom: 1px solid rgba(163, 105, 14, 0.4);
+  padding: 8px 12px; margin-bottom: 8px;
+}
+.archivist-pc-sheet .pc-bwarn-c {
+  flex: 0 0 auto; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--pc-amber); color: var(--pc-white); font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.archivist-pc-sheet .pc-bwarn-t {
+  font-size: var(--pc-fs-small); line-height: 1.45; color: #7a4a0a; font-family: var(--pc-font-serif);
+}
+/* Origin-feat info row: a fixed (un-chosen) feat naming + click-to-expand block. */
+.archivist-pc-sheet .pc-bofeat {
+  display: flex; align-items: center; gap: 8px; padding: 7px 6px; cursor: pointer;
+  border-bottom: 1px dotted var(--pc-tan);
+}
+.archivist-pc-sheet .pc-bofeat-l { font-weight: 700; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bofeat-v { font-family: var(--pc-font-serif); color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-bofeat-x { margin-left: auto; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }

@@ -259,6 +259,9 @@ export function collectChosenAbilityPoints(resolved: ResolvedCharacter): OriginA
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
       let left = ch.points;
       for (const ab of ABILITY_KEYS) {
+        // Pool parity with collectChosenProficiencies: out-of-pool allocations
+        // from hand-edited files must not fold (the picker can't produce them).
+        if (ch.pool && !ch.pool.includes(ab)) continue;
         const v = (raw as Partial<Record<Ability, number>>)[ab];
         if (typeof v !== "number" || v <= 0 || left <= 0) continue;
         const take = Math.min(v, ch.max_per, left);

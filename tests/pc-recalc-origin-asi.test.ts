@@ -58,6 +58,16 @@ describe("collectChosenAbilityPoints", () => {
     });
     expect(collectChosenAbilityPoints(r)).toEqual({ race: {}, background: {} });
   });
+
+  it("ignores allocations to an ability outside the choice's pool", () => {
+    // BG_2024's pool is [dex, con, int]; a hand-edited str allocation must not
+    // fold, while in-pool dex still does.
+    const r = resolvedWith({
+      background: BG_2024,
+      definition: { origin_choices: { "background:asi": { str: 2, dex: 1 } } },
+    });
+    expect(collectChosenAbilityPoints(r)).toEqual({ race: {}, background: { dex: 1 } });
+  });
 });
 
 describe("computeAbilityScores — origin folds", () => {
