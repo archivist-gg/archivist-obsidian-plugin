@@ -24,7 +24,9 @@ const CRIMINAL_2024_DATA = {
   name: "Criminal",
   skill_proficiencies: ["sleight-of-hand", "stealth"],
   ability_score_increases: { pool: ["dex", "con", "int"] },
-  origin_feat: "[[srd-2024_alert]]",
+  // Canonical 2024 backgrounds use PATH-style wikilinks, not slug-style. See
+  // src/srd/data/canonical/backgrounds.2024.json — "[[SRD 2024/Feats/Alert]]".
+  origin_feat: "[[SRD 2024/Feats/Alert]]",
   choices: [{ kind: "ability-points", id: "asi", points: 3, max_per: 2, pool: ["dex", "con", "int"] }],
 };
 
@@ -127,14 +129,43 @@ describe("renderBackgroundStep", () => {
     expect(container.textContent).toContain("DEX");
   });
 
-  it("origin feat renders as an info row naming the feat", () => {
+  it("origin feat resolves a PATH-style wikilink and renders an expandable info row", () => {
     const container = mountContainer();
     const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
     renderBackgroundStep(container, ctx);
     const row = container.querySelector(".pc-bofeat");
     expect(row).not.toBeNull();
     expect(row!.textContent).toContain("Origin Feat");
-    expect(row!.textContent).toContain("Alert");
+    // The value span must hold the resolved feat NAME, never the raw path. If the
+    // path-style "[[SRD 2024/Feats/Alert]]" link fails to resolve, the value falls
+    // back to the raw "SRD 2024/Feats/Alert" slug — which a `.toContain("Alert")`
+    // would pass vacuously. Assert the exact name + that the feat block expands.
+    expect(row!.querySelector(".pc-bofeat-v")?.textContent).toBe("Alert");
+    expect(row!.querySelector(".pc-bofeat-x")).not.toBeNull();
+  });
+
+  it("origin feat resolves a bare-slug homebrew ref via exact-match", () => {
+    const HOMEBREW_FEAT = {
+      slug: "my-feat", name: "My Feat", entityType: "feat", filePath: "x",
+      readonly: false, homebrew: true, compendium: "Homebrew", data: { name: "My Feat" },
+    } as unknown as RegisteredEntity;
+    const container = mountContainer();
+    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
+    // Override the feat search to return ONLY the bare-slug homebrew feat, and point
+    // the origin_feat at a bare-slug wikilink "[[my-feat]]".
+    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+      type === "background" ? BACKGROUNDS : type === "feat" ? [HOMEBREW_FEAT] : [];
+    (resolvedCriminal as { name: string }).name; // keep ref shape stable
+    const bgRow = BACKGROUNDS.find((b) => b.slug === "srd-2024_criminal")!;
+    const prev = (bgRow.data as { origin_feat?: string }).origin_feat;
+    (bgRow.data as { origin_feat?: string }).origin_feat = "[[my-feat]]";
+    try {
+      renderBackgroundStep(container, ctx);
+      const row = container.querySelector(".pc-bofeat");
+      expect(row!.querySelector(".pc-bofeat-v")?.textContent).toBe("My Feat");
+    } finally {
+      (bgRow.data as { origin_feat?: string }).origin_feat = prev;
+    }
   });
 
   it("edition-mix banner appears when race grants ASI and background has a 2024 pool", () => {

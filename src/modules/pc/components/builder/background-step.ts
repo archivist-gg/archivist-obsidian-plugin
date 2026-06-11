@@ -4,7 +4,7 @@ import type { ColSpec } from "./selection-table";
 import { renderEntityPicker } from "./entity-picker";
 import { renderEntityBlock } from "./entity-block";
 import { renderDecisionLedger } from "./decision-ledger";
-import { buildDecisionLedger } from "../../pc.decision-engine";
+import { buildDecisionLedger, wikilinkTailSlug } from "../../pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
 
 /** Humanize a hyphenated proficiency slug for display, e.g. "sleight-of-hand"
@@ -87,10 +87,19 @@ function renderEditionMixBanner(wrap: HTMLElement, ctx: ComponentRenderContext, 
 function renderOriginFeatRow(wrap: HTMLElement, ctx: ComponentRenderContext, e: RegisteredEntity): void {
   const ref = (e.data as { origin_feat?: string | null }).origin_feat;
   if (!ref) return;
-  const slug = ref.replace(/\[\[|\]\]/g, "");
-  const feat = ctx.core.entities.search("", "feat", Number.POSITIVE_INFINITY).find(
-    (f) => f.slug === slug || f.slug.endsWith(`_${slug}`),
-  );
+  // Canonical 2024 backgrounds carry PATH-style wikilinks, e.g.
+  // "[[SRD 2024/Feats/Alert]]" — the tail segment slugified is the bare feat slug
+  // ("alert"). `wikilinkTailSlug` also yields the bare slug for slug-style refs
+  // ("[[my-feat]]" → "my-feat"), so it handles both shapes.
+  const slug = wikilinkTailSlug(ref);
+  const feats = ctx.core.entities.search("", "feat", Number.POSITIVE_INFINITY);
+  // Prefer an EXACT full-slug match (covers bare-slug homebrew refs like
+  // "[[my-feat]]"), so a homebrew "homebrew_alert" can't shadow "srd-2024_alert"
+  // via the loose tail match. Fall back to the suffix match for compendium feats
+  // whose slug is "<compendium>_<bare>". First tail match wins (acceptable).
+  const feat =
+    feats.find((f) => f.slug === slug) ??
+    feats.find((f) => f.slug.endsWith(`_${slug}`));
   const row = wrap.createDiv({ cls: "pc-bofeat" });
   row.createSpan({ cls: "pc-bofeat-l", text: "Origin Feat" });
   row.createSpan({ cls: "pc-bofeat-v", text: feat?.name ?? slug });
