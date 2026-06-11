@@ -14,7 +14,7 @@ import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
-import { collectChosenProficiencies } from "./pc.decision-engine";
+import { collectChosenProficiencies, collectChosenAbilityPoints } from "./pc.decision-engine";
 import { computeFeatureEffects } from "./pc.feature-effects";
 import { computeConditionEffects } from "./pc.conditions";
 import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
@@ -81,6 +81,46 @@ export function flattenRaceAsi(race: RaceEntity | null): Partial<Record<Ability,
       out[asi.ability] = (out[asi.ability] ?? 0) + asi.amount;
     }
     // Choice increases are resolved through class.choices; skip here.
+  }
+  return out;
+}
+
+/**
+ * Resolves the selected subrace's fixed ability-score increases, matched by
+ * slug the same way race-block merges subrace traits (the `[[..]]` wikilink
+ * wrapper is stripped before comparison). Returns [] when no subrace selected
+ * or no match. Choice-style increases are not expected on subraces here.
+ */
+function subraceAsi(
+  resolved: ResolvedCharacter,
+): Array<{ ability?: Ability; amount?: number }> {
+  const subSlug = resolved.definition.subrace?.replace(/\[\[|\]\]/g, "") ?? null;
+  if (!subSlug) return [];
+  const subraces =
+    (resolved.race as unknown as {
+      subraces?: Array<{ slug: string; ability_score_increases?: Array<{ ability?: Ability; amount?: number }> }>;
+    })?.subraces ?? [];
+  const sub = subraces.find((s) => s.slug === subSlug);
+  return sub?.ability_score_increases ?? [];
+}
+
+/** Per-ability bonus provenance for the builder's obelisk captions:
+ *  species = fixed race ASI + subrace fixed ASI + race ability-points choices;
+ *  background = background ability-points choices. */
+export function abilityBonusBreakdown(
+  resolved: ResolvedCharacter,
+): Record<Ability, { species: number; background: number }> {
+  const race = flattenRaceAsi(resolved.race);
+  const origin = collectChosenAbilityPoints(resolved);
+  const sub = subraceAsi(resolved);
+
+  const out = {} as Record<Ability, { species: number; background: number }>;
+  for (const ab of ABILITY_KEYS) {
+    let species = (race[ab] ?? 0) + (origin.race[ab] ?? 0);
+    for (const asi of sub) {
+      if (asi.ability === ab && typeof asi.amount === "number") species += asi.amount;
+    }
+    out[ab] = { species, background: origin.background[ab] ?? 0 };
   }
   return out;
 }
@@ -213,6 +253,22 @@ export function computeAbilityScores(
   for (const ab of ABILITY_KEYS) {
     const b = raceBonuses[ab];
     if (typeof b === "number") out[ab] = (out[ab] ?? 0) + b;
+  }
+
+  // Subrace fixed increases (e.g. Hill Dwarf +1 WIS) — matched by slug the
+  // same way race-block merges subrace traits.
+  for (const asi of subraceAsi(resolved)) {
+    if (asi.ability && typeof asi.amount === "number") out[asi.ability] = (out[asi.ability] ?? 0) + asi.amount;
+  }
+
+  // Origin (race/background) ability-points decisions (SP2 Plan 4). Class-level
+  // ASI stays on the legacy choices[lvl].asi path below — no double-counting.
+  const originPoints = collectChosenAbilityPoints(resolved);
+  for (const src of [originPoints.race, originPoints.background]) {
+    for (const ab of ABILITY_KEYS) {
+      const v = src[ab];
+      if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
+    }
   }
 
   for (const c of resolved.classes) {

@@ -18,7 +18,7 @@ import type { ConditionSlug } from "./constants/conditions";
 
 export type Edition = "2014" | "2024";
 
-export type AbilityMethod = "standard-array" | "point-buy" | "rolled" | "manual";
+export type AbilityMethod = "standard-array" | "point-buy" | "archivist-point-buy" | "rolled" | "manual";
 
 /** A persisted decision value: entity slug / inline value (string), multi-select
  *  slugs (string[]), or an ability-points allocation. Stale/odd legacy values
@@ -119,6 +119,8 @@ export interface Character {
    *  to the full character sheet. Absent on every pre-Builder/finished file. */
   builder?: boolean;
   alignment?: string;
+  /** Optional free-text age ("26", "Ageless") — Details step. */
+  age?: string;
   race: string | null;
   subrace: string | null;
   background: string | null;

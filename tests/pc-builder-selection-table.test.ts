@@ -166,3 +166,84 @@ describe("renderSelectionTable", () => {
     expect(names).toEqual(["Alert", "Brawny"]);
   });
 });
+
+describe("renderSelectionTable — expandSelect mode", () => {
+  // CANDS render name-sorted, so the first DOM row is "Alert" (a-feat). Tests
+  // that pre-select "the selected row" use that slug to keep DOM order honest.
+  const FIRST_SLUG = "a-feat";
+
+  it("renders no toggle column and no col-add header", () => {
+    const container = mountContainer();
+    renderSelectionTable(container, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t.es1",
+      selected: new Set(), onToggle: vi.fn(), expandSelect: true,
+    });
+    expect(container.querySelectorAll(".pc-btoggle").length).toBe(0);
+    expect(container.querySelectorAll(".col-add").length).toBe(0);
+  });
+
+  it("row click expands the row AND fires onToggle for an unselected row", () => {
+    const container = mountContainer();
+    const onToggle = vi.fn();
+    renderSelectionTable(container, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t.es2",
+      selected: new Set(), onToggle, expandSelect: true,
+    });
+    (container.querySelector(".pc-btable-row") as HTMLElement).click();
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    expect(onToggle).toHaveBeenCalledTimes(1);
+  });
+
+  it("expanding a second row collapses the first (solo-expand)", () => {
+    const container = mountContainer();
+    renderSelectionTable(container, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t.es3",
+      selected: new Set(), onToggle: vi.fn(), expandSelect: true,
+    });
+    const rows = container.querySelectorAll(".pc-btable-row");
+    (rows[0] as HTMLElement).click();
+    (rows[1] as HTMLElement).click();
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    expect(rows[1].classList.contains("pc-row-open")).toBe(true);
+    expect(rows[0].classList.contains("pc-row-open")).toBe(false);
+  });
+
+  it("re-clicking the selected row collapses without firing onToggle", () => {
+    const container = mountContainer();
+    const onToggle = vi.fn();
+    renderSelectionTable(container, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t.es4",
+      selected: new Set([FIRST_SLUG]), onToggle, expandSelect: true,
+    });
+    const row = container.querySelector(".pc-btable-row") as HTMLElement;
+    row.click(); // expand (already selected → no toggle)
+    row.click(); // collapse
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(0);
+  });
+
+  it("selected row shows the inline name seal; restore-open never fires onToggle", () => {
+    const container = mountContainer();
+    const onToggle = vi.fn();
+    const bag = new Map<string, unknown>();
+    bag.set("t.es5", { sortKey: "name", sortDir: "asc", expanded: new Set([FIRST_SLUG]) });
+    renderSelectionTable(container, ctxWith(bag), {
+      columns: [], candidates: CANDS, stateKey: "t.es5",
+      selected: new Set([FIRST_SLUG]), onToggle, expandSelect: true,
+    });
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1); // restored
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(container.querySelector(".pc-bname-seal")?.textContent).toContain("✓");
+  });
+
+  it("renderExpand override replaces the default entity block", () => {
+    const container = mountContainer();
+    renderSelectionTable(container, ctxWith(new Map()), {
+      columns: [], candidates: CANDS, stateKey: "t.es6",
+      selected: new Set(), onToggle: vi.fn(), expandSelect: true,
+      renderExpand: (wrap) => wrap.createDiv({ cls: "custom-expand", text: "hi" }),
+    });
+    (container.querySelector(".pc-btable-row") as HTMLElement).click();
+    expect(container.querySelector(".custom-expand")).toBeTruthy();
+  });
+});

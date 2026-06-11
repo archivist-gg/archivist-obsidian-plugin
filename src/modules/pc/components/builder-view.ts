@@ -1,36 +1,13 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { RegisteredEntity } from "../../../shared/entities/entity-registry";
 import { BUILDER_STEPS } from "./builder-steps";
 import { renderEntityPicker } from "./builder/entity-picker";
+import { renderRaceStep } from "./builder/race-step";
+import { renderBackgroundStep } from "./builder/background-step";
+import { renderAbilitiesStep } from "./builder/abilities-step";
+import { renderDetailsStep, getHpSeedChoice } from "./builder/details-step";
 import { renderDecisionLedger } from "./builder/decision-ledger";
-import type { ColSpec } from "./builder/selection-table";
 import { stripSlug } from "../pc.resolver";
 import { buildDecisionLedger, wikilinkTailSlug, bareEntitySlug } from "../pc.decision-engine";
-
-// Honest ledger columns for the race picker — size/speed exist in the entity
-// data today. Sorted by rank order (not alphabetically) and walking speed.
-const SIZE_ORDER = ["tiny", "small", "medium", "large", "huge"];
-const sizeOf = (e: RegisteredEntity): string => String((e.data as { size?: string }).size ?? "");
-const walkOf = (e: RegisteredEntity): number =>
-  Number((e.data as { speed?: { walk?: number } }).speed?.walk ?? 0);
-const RACE_COLUMNS: ColSpec[] = [
-  {
-    label: "Size", cls: "col-size", width: "90px",
-    sort: (a, b) => SIZE_ORDER.indexOf(sizeOf(a)) - SIZE_ORDER.indexOf(sizeOf(b)),
-    render: (cell, e) => {
-      const s = sizeOf(e);
-      cell.setText(s ? s.charAt(0).toUpperCase() + s.slice(1) : "—");
-    },
-  },
-  {
-    label: "Speed", cls: "col-speed", width: "90px",
-    sort: (a, b) => walkOf(a) - walkOf(b),
-    render: (cell, e) => {
-      const w = walkOf(e);
-      cell.setText(w ? `${w} ft.` : "—");
-    },
-  },
-];
 
 /** The full-screen Character Builder shell. Rendered by renderPCSheet in place
  *  of the sheet body when the character has no class. Step bodies are filled in
@@ -60,11 +37,12 @@ export class BuilderView implements SheetComponent {
     // Step rail.
     const rail = layout.createDiv({ cls: "pc-builder-rail" });
     for (const [i, step] of BUILDER_STEPS.entries()) {
+      const done = this.isStepDone(step.id, ctx);
       const item = rail.createDiv({
-        cls: `pc-builder-step${step.id === activeStep ? " active" : ""}`,
+        cls: `pc-builder-step${step.id === activeStep ? " active" : ""}${done ? " done" : ""}`,
         attr: { "data-step": step.id },
       });
-      item.createSpan({ cls: "pc-builder-step-n", text: String(i + 1) });
+      item.createSpan({ cls: "pc-builder-step-n", text: done ? "✓" : String(i + 1) });
       item.createSpan({ cls: "pc-builder-step-label", text: step.label });
       item.addEventListener("click", () => this.goTo(step.id, el, ctx));
     }
@@ -75,17 +53,15 @@ export class BuilderView implements SheetComponent {
     const def = BUILDER_STEPS.find((s) => s.id === activeStep)!;
     body.createDiv({ cls: "pc-builder-step-h", text: def.label });
     if (def.id === "race" && ctx.core) {
-      // Reference consumer (Plan 2): basic race selection only. Subrace +
-      // racial decision callouts arrive with the full step in Plan 4.
-      renderEntityPicker(body, ctx, {
-        entityType: "race",
-        stateKey: "builder.race-picker",
-        selectedSlug: stripSlug(ctx.resolved.definition.race),
-        onSelect: (slug) => ctx.editState?.setRace(slug),
-        columns: RACE_COLUMNS,
-      });
+      renderRaceStep(body, ctx);
     } else if (def.id === "class" && ctx.core) {
       this.renderClassStep(body, ctx);
+    } else if (def.id === "abilities" && ctx.core) {
+      renderAbilitiesStep(body, ctx);
+    } else if (def.id === "background" && ctx.core) {
+      renderBackgroundStep(body, ctx);
+    } else if (def.id === "details") {
+      renderDetailsStep(body, ctx);
     } else {
       body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
     }
@@ -109,7 +85,45 @@ export class BuilderView implements SheetComponent {
       const finish = foot.createEl("button", { cls: "pc-builder-finish", text: "✓ Finish & open sheet" });
       finish.disabled = !classed;
       if (!classed) finish.title = "Pick a class before finishing.";
-      finish.addEventListener("click", () => ctx.editState?.finishBuild());
+      finish.addEventListener("click", () => {
+        if (!ctx.editState) return;
+        // Seed the survival numbers a finished sheet needs — finishBuild last.
+        // D10: HP per the Details-step choice; Average is the default. Either
+        // way the finished sheet never opens at 0 HP.
+        ctx.editState.seedHitDice();
+        const hp = getHpSeedChoice(ctx);
+        if (hp.mode === "manual" && hp.value != null && hp.value > 0) {
+          ctx.editState.setHpMax(hp.value);
+        } else {
+          ctx.editState.seedHpToMax();
+        }
+        ctx.editState.finishBuild();
+      });
+    }
+  }
+
+  /** Advisory rail ✓ (D4, permissive model — never blocks navigation): steps
+   *  with a clear single criterion mark done; the amber "!" is a house-rule no-op
+   *  on the rail. Details is the Finish step (all fields optional) and never does.
+   *  Note: a manual user who typed scores GETS the abilities ✓ — intended. */
+  private isStepDone(id: string, ctx: ComponentRenderContext): boolean {
+    const d = ctx.resolved.definition;
+    switch (id) {
+      case "race":
+        return !!d.race;
+      case "class":
+        return (d.class?.length ?? 0) > 0;
+      case "background":
+        return !!d.background;
+      case "abilities":
+        return (
+          d.ability_method !== "manual" ||
+          Object.values(d.abilities ?? {}).some((v) => v !== 10)
+        );
+      case "equipment":
+        return (d.equipment?.length ?? 0) > 0;
+      default:
+        return false;
     }
   }
 

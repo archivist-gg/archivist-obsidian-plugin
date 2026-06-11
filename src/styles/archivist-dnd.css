@@ -706,19 +706,23 @@
 }
 
 /* Race Traits Section -- mirrors the spell "higher levels" treatment: a
- * top-bordered block of named entries, each trait led by a bold serif name. */
-.archivist-race-block .race-traits {
+ * top-bordered block of named entries, each trait led by a bold serif name.
+ * The background block reuses the same trait idiom for its feature entry. */
+.archivist-race-block .race-traits,
+.archivist-background-block .race-traits {
   margin-top: 0.6em;
   padding-top: 0.4em;
   border-top: 1px solid #d9c484;
 }
 
-.archivist-race-block .race-trait {
+.archivist-race-block .race-trait,
+.archivist-background-block .race-trait {
   margin: 0.4em 0;
   line-height: 1.4em;
 }
 
-.archivist-race-block .race-trait-name {
+.archivist-race-block .race-trait-name,
+.archivist-background-block .race-trait-name {
   font-family:
     'Libre Baskerville', 'Lora', 'Calisto MT', 'Bookman Old Style', Bookman, 'Goudy Old Style', Garamond,
     'Hoefler Text', 'Bitstream Charter', Georgia, serif;

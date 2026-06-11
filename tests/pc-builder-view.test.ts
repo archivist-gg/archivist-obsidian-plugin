@@ -71,7 +71,8 @@ describe("BuilderView shell", () => {
     const c = {
       ...ctx(),
       resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
-      editState: { finishBuild },
+      editState: { finishBuild, seedHitDice: vi.fn(), seedHpToMax: vi.fn(), setHpMax: vi.fn() },
+      builderUiState: new Map(),
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
     root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
@@ -138,14 +139,101 @@ describe("BuilderView shell", () => {
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
     expect(root.querySelector(".pc-bpicker")).not.toBeNull();
-    expect(root.querySelectorAll(".pc-btable-head .pc-btable-th").length).toBe(5); // seal, name, size, speed, source
-    root.querySelector<HTMLElement>(".pc-btable-row .pc-btoggle.seal")!.click();
+    // expandSelect race ledger: no toggle column → name, size, speed, source.
+    expect(root.querySelectorAll(".pc-btable-head .pc-btable-th").length).toBe(4); // name, size, speed, source
+    expect(root.querySelectorAll(".pc-btoggle").length).toBe(0);
+    root.querySelector<HTMLElement>(".pc-btable-row")!.click(); // row click = select
     expect(setRace).toHaveBeenCalledWith("srd-5e_elf");
   });
 
-  it("prefixes each rail step with a 1-based numbered circle", () => {
+  it("Finish with Average (default) seeds hit dice + max HP before clearing the draft flag", () => {
     const root = mountContainer();
-    new BuilderView().render(root, ctx());
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState,
+      builderUiState: new Map(),
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "seedHpToMax", "finishBuild"]);
+    expect(editState.setHpMax).not.toHaveBeenCalled();
+  });
+
+  it("Finish with Manual 25 seeds hit dice + writes the manual max, NOT seedHpToMax", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "manual", value: 25 }]]);
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState,
+      builderUiState: bag,
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "setHpMax", "finishBuild"]);
+    expect(editState.setHpMax).toHaveBeenCalledWith(25);
+    expect(editState.seedHpToMax).not.toHaveBeenCalled();
+  });
+
+  it("Finish with Manual but no/invalid value falls back to Average seeding", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "manual", value: null }]]);
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState,
+      builderUiState: bag,
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "seedHpToMax", "finishBuild"]);
+    expect(editState.setHpMax).not.toHaveBeenCalled();
+  });
+
+  it("prefixes each rail step with a 1-based numbered circle when nothing is done", () => {
+    const root = mountContainer();
+    // A definition where every D4 done-predicate is false: no race/class/bg/equipment
+    // and a manual all-10 spread → every circle keeps its index, no ✓.
+    const c = {
+      ...ctx(),
+      resolved: {
+        definition: {
+          name: "Valeria",
+          race: null,
+          class: [],
+          background: null,
+          ability_method: "manual",
+          abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          equipment: [],
+        },
+      },
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
     const steps = root.querySelectorAll(".pc-builder-step");
     expect(steps.length).toBe(BUILDER_STEPS.length);
     steps.forEach((step, i) => {
@@ -160,6 +248,161 @@ describe("BuilderView shell", () => {
     new BuilderView().render(root, ctx());
     const active = root.querySelector(".pc-builder-step.active");
     expect(active?.querySelector(".pc-builder-step-n")).not.toBeNull();
+  });
+
+  describe("BuilderView — rail done indicators", () => {
+    function railStep(root: HTMLElement, id: string): HTMLElement | null {
+      return root.querySelector<HTMLElement>(`.pc-builder-step[data-step='${id}']`);
+    }
+
+    it("race/class/background steps show ✓ once their entity is chosen", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        resolved: {
+          definition: {
+            name: "Valeria",
+            race: "[[srd-5e_elf]]",
+            class: [{ name: "[[srd-5e_fighter]]", level: 1 }],
+            background: null,
+          },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+
+      const race = railStep(root, "race")!;
+      expect(race.classList.contains("done")).toBe(true);
+      expect(race.querySelector(".pc-builder-step-n")?.textContent).toBe("✓");
+
+      const klass = railStep(root, "class")!;
+      expect(klass.classList.contains("done")).toBe(true);
+      expect(klass.querySelector(".pc-builder-step-n")?.textContent).toBe("✓");
+
+      const bg = railStep(root, "background")!;
+      expect(bg.classList.contains("done")).toBe(false);
+      // background is the 4th step → keeps its 1-based number.
+      expect(bg.querySelector(".pc-builder-step-n")?.textContent).toBe("4");
+    });
+
+    it("abilities shows ✓ when the method is non-manual or any base differs from 10", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        resolved: {
+          definition: {
+            name: "Valeria",
+            class: [],
+            ability_method: "point-buy",
+            abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+      const ab = railStep(root, "abilities")!;
+      expect(ab.classList.contains("done")).toBe(true);
+      expect(ab.querySelector(".pc-builder-step-n")?.textContent).toBe("✓");
+    });
+
+    it("abilities stays not-done for a manual all-10 spread", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        resolved: {
+          definition: {
+            name: "Valeria",
+            class: [],
+            ability_method: "manual",
+            abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+      const ab = railStep(root, "abilities")!;
+      expect(ab.classList.contains("done")).toBe(false);
+      expect(ab.querySelector(".pc-builder-step-n")?.textContent).toBe("3");
+    });
+
+    it("abilities shows ✓ for a manual spread with any base differing from 10", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        resolved: {
+          definition: {
+            name: "Valeria",
+            class: [],
+            ability_method: "manual",
+            abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+          },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+      const ab = railStep(root, "abilities")!;
+      expect(ab.classList.contains("done")).toBe(true);
+    });
+
+    it("equipment shows ✓ once it has any entry", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        resolved: {
+          definition: { name: "Valeria", class: [], equipment: [{ name: "Rope" }] },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+      const eq = railStep(root, "equipment")!;
+      expect(eq.classList.contains("done")).toBe(true);
+      expect(eq.querySelector(".pc-builder-step-n")?.textContent).toBe("✓");
+    });
+
+    it("details never shows ✓", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        resolved: {
+          definition: {
+            name: "Valeria",
+            race: "[[srd-5e_elf]]",
+            class: [{ name: "[[srd-5e_fighter]]", level: 1 }],
+            background: "[[srd-5e_acolyte]]",
+            ability_method: "point-buy",
+            abilities: { str: 15, dex: 14, con: 13, int: 12, wis: 10, cha: 8 },
+            equipment: [{ name: "Rope" }],
+            alignment: "Lawful Good",
+            age: "26",
+          },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+      const det = railStep(root, "details")!;
+      expect(det.classList.contains("done")).toBe(false);
+      // details is the 6th step → keeps its number, never a ✓.
+      expect(det.querySelector(".pc-builder-step-n")?.textContent).toBe("6");
+    });
+
+    it("the active step keeps the active dress even when done", () => {
+      const root = mountContainer();
+      const c = {
+        ...ctx(),
+        activeStepId: "race",
+        resolved: { definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]" } },
+        builderUiState: new Map(),
+        core: {
+          plugin: {},
+          entities: { search: () => [{
+            slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+            data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+          }] },
+          compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
+          modules: { getByEntityType: () => undefined },
+        },
+      } as unknown as ComponentRenderContext;
+      new BuilderView().render(root, c);
+      const race = railStep(root, "race")!;
+      expect(race.classList.contains("active")).toBe(true);
+      expect(race.classList.contains("done")).toBe(true);
+      // ✓ replaces the number on the active+done step too.
+      expect(race.querySelector(".pc-builder-step-n")?.textContent).toBe("✓");
+    });
   });
 
   it("marks the current race (a [[ref]]) as selected in the picker", () => {
@@ -179,8 +422,10 @@ describe("BuilderView shell", () => {
       },
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
-    const seal = root.querySelector(".pc-btable-row .pc-btoggle.seal");
-    expect(seal).not.toBeNull();
-    expect(seal?.classList.contains("on")).toBe(true);
+    // expandSelect race ledger: the chosen race wears the crimson name dress +
+    // inline seal instead of a toggle-column seal.
+    const name = root.querySelector(".pc-btable-row .pc-btable-name");
+    expect(name?.classList.contains("on")).toBe(true);
+    expect(root.querySelector(".pc-btable-row .pc-bname-seal")).not.toBeNull();
   });
 });

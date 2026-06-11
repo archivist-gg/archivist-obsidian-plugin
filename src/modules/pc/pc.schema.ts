@@ -177,6 +177,7 @@ export const characterSchema = z.object({
   // unfinished Builder draft. Finish deletes the key (see finishBuild).
   builder: z.boolean().optional(),
   alignment: z.string().optional(),
+  age: z.string().optional(),
   race: z.string().nullable().default(null),
   subrace: z.string().nullable().default(null),
   background: z.string().nullable().default(null),
@@ -195,7 +196,7 @@ export const characterSchema = z.object({
     wis: z.number().int(),
     cha: z.number().int(),
   }),
-  ability_method: z.enum(["standard-array", "point-buy", "rolled", "manual"]),
+  ability_method: z.enum(["standard-array", "point-buy", "archivist-point-buy", "rolled", "manual"]),
   skills: z.object({
     proficient: z.array(skillEnum).default([]),
     expertise: z.array(skillEnum).default([]),

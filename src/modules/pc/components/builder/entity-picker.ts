@@ -1,4 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
+import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import {
   allTicked, matchesTicked, renderCompendiumFilter,
   type CompendiumTickState,
@@ -29,6 +30,9 @@ export interface EntityPickerOptions {
    *  table's persisted sort key is column-index-based. */
   columns?: ColSpec[];
   pinnedEntries?: PinnedEntry[];
+  /** Threads through to renderSelectionTable (race-step semantics). */
+  expandSelect?: boolean;
+  renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
 }
 
 interface PickerUiState {
@@ -81,6 +85,8 @@ export function renderEntityPicker(
         if (slug !== opts.selectedSlug) opts.onSelect(slug);
       },
       single: true,
+      expandSelect: opts.expandSelect,
+      renderExpand: opts.renderExpand,
     });
   };
 

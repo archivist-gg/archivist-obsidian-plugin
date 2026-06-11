@@ -316,8 +316,29 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  setAge(age: string | null): void {
+    const v = age?.trim();
+    if (v) this.character.age = v;
+    else delete this.character.age;
+    this.onChange();
+  }
+
+  /** Drops origin_choices keys in the given namespace ("race" | "background").
+   *  Switching origin entities orphans their namespaced decisions (class-step
+   *  decisions doc, Plan-4 note) — prune rather than carry stale answers. */
+  private pruneOriginChoices(ns: "race" | "background"): void {
+    const oc = this.character.origin_choices;
+    if (!oc) return;
+    for (const key of Object.keys(oc)) {
+      if (key.startsWith(`${ns}:`)) delete oc[key];
+    }
+    if (Object.keys(oc).length === 0) delete this.character.origin_choices;
+  }
+
   setRace(slug: string | null): void {
     this.character.race = slug ? toRef(slug) : null;
+    this.character.subrace = null;
+    this.pruneOriginChoices("race");
     this.onChange();
   }
 
@@ -328,6 +349,7 @@ export class CharacterEditState {
 
   setBackground(slug: string | null): void {
     this.character.background = slug ? toRef(slug) : null;
+    this.pruneOriginChoices("background");
     this.onChange();
   }
 
@@ -385,6 +407,20 @@ export class CharacterEditState {
     if (raw == null) return null;
     const n = typeof raw === "number" ? raw : parseInt(String(raw).replace(/^d/i, ""), 10);
     return Number.isFinite(n) && n > 0 ? `d${n}` : null;
+  }
+
+  /** Seed a hand-typed max HP at Finish (D10 "Manual"). Unlike
+   *  `setMaxHpOverride` — which only clamps current DOWN — this raises current
+   *  to the new max too, so the finished sheet opens at the typed value rather
+   *  than the draft's `current: 1`. Writes the override (so recalc honors it)
+   *  and seeds `state.hp.current/max`, clearing temp. */
+  setHpMax(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const max = Math.max(1, Math.floor(value));
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.max = max;
+    this.character.state.hp = { current: max, max, temp: 0 };
+    this.onChange();
   }
 
   /** Fill HP to the derived max, clearing temp HP. Called by the Builder's
