@@ -8,8 +8,7 @@
 
 /* ── Chronicle block shell ── */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cblock {
-  background: var(--pc-parchment-dark); /* page-tone card on the lighter sheet */
-  background: #f0ddbd;
+  background: #f0ddbd; /* page-tone card, one step darker than --pc-parchment-dark */
   border: 1px solid var(--pc-tan);
   border-radius: var(--pc-radius-sm);
   box-shadow: 0 3px 14px rgba(134, 116, 83, 0.25);
