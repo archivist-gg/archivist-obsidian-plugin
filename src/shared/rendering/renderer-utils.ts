@@ -7,6 +7,11 @@ import { decorateProseDice } from "./prose-decorator";
 
 export type { FormulaContext };
 
+/** "sleight-of-hand" → "Sleight Of Hand". Apostrophe-safe: only capitalizes
+ *  after start-of-string or whitespace, never after `'`. */
+export const humanizeSlug = (s: string): string =>
+  s.replace(/-/g, " ").replace(/(^|\s)\w/g, (c) => c.toUpperCase());
+
 interface ElOptions {
   cls?: string | string[];
   text?: string;

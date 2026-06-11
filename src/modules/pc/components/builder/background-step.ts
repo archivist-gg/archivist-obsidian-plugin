@@ -7,12 +7,7 @@ import { renderEntityBlock } from "./entity-block";
 import { renderDecisionLedger } from "./decision-ledger";
 import { buildDecisionLedger, wikilinkTailSlug } from "../../pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
-
-/** Humanize a hyphenated proficiency slug for display, e.g. "sleight-of-hand"
- *  → "Sleight Of Hand". Kept local: `labelCase` in background.renderer.ts is
- *  module-scoped (not exported), so there is no shared helper to import. */
-const labelCase = (s: string): string =>
-  s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 
 const skillsOf = (e: RegisteredEntity): string[] =>
   (e.data as { skill_proficiencies?: string[] }).skill_proficiencies ?? [];
@@ -21,7 +16,7 @@ const BG_COLUMNS: ColSpec[] = [
   {
     label: "Skills", cls: "col-skills", width: "180px",
     render: (cell, e) => {
-      const s = skillsOf(e).map(labelCase);
+      const s = skillsOf(e).map(humanizeSlug);
       cell.setText(s.length ? s.join(", ") : "—");
     },
   },
