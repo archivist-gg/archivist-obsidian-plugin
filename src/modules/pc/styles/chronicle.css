@@ -191,3 +191,26 @@
 .pc-bclass-modal .pc-bcm-add:disabled { background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed; }
 .pc-bclass-modal .pc-bcm-claim { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 13px; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1.5px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 11px 16px; cursor: pointer; }
 .pc-bclass-modal .pc-bcm-claim:hover { background: var(--pc-crimson-light); }
+
+/* ── SP2 Plan 5: Class step — chosen-class card stack ──────────────────────── */
+.archivist-pc-sheet .pc-bcempty { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-body); color: var(--pc-text-muted); margin: 14px 0 6px; text-align: center; }
+.archivist-pc-sheet .pc-bcadd-wrap { display: flex; margin: 10px 0; }
+.archivist-pc-sheet .pc-bcadd-wrap.hero { justify-content: center; padding: 18px 0 6px; }
+.archivist-pc-sheet .pc-bcadd { background: transparent; border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 7px 16px; cursor: pointer; width: auto; }
+.archivist-pc-sheet .pc-bcadd-wrap.hero .pc-bcadd { padding: 11px 22px; font-size: var(--pc-fs-heading); letter-spacing: var(--pc-ls-caps-md); }
+.archivist-pc-sheet .pc-bcadd:hover { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bcstack { display: flex; flex-direction: column; gap: 9px; margin: 0 0 4px; }
+.archivist-pc-sheet .pc-bccard { border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); background: var(--pc-parchment-light); box-shadow: 0 2px 8px rgba(134, 116, 83, 0.18); overflow: hidden; }
+.archivist-pc-sheet .pc-bccard-h { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: rgba(146, 38, 16, 0.07); border-bottom: 1px solid var(--pc-tan-muted); cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-seal { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--pc-crimson); border: 1px solid #7a200d; color: var(--pc-parchment-light); font-size: var(--pc-fs-micro); box-shadow: 0 1px 3px rgba(122, 32, 13, 0.4); }
+.archivist-pc-sheet .pc-bccard-nm { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-title); line-height: 1.1; }
+.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--pc-tan-muted); border-radius: 5px; background: var(--pc-parchment-light); padding: 2px 5px 2px 8px; }
+.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
+.archivist-pc-sheet .pc-bccard-rgt { margin-left: auto; display: inline-flex; align-items: center; gap: 11px; flex: none; }
+.archivist-pc-sheet .pc-bccard-rm { font-family: var(--pc-font-sans); font-size: 8.5px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm:hover { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bccard-chev { flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-bccard-body { padding: 10px 12px 12px; }
+.archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
+.archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
