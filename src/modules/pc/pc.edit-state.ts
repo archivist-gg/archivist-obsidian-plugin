@@ -316,8 +316,29 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  setAge(age: string | null): void {
+    const v = age?.trim();
+    if (v) this.character.age = v;
+    else delete this.character.age;
+    this.onChange();
+  }
+
+  /** Drops origin_choices keys in the given namespace ("race" | "background").
+   *  Switching origin entities orphans their namespaced decisions (class-step
+   *  decisions doc, Plan-4 note) — prune rather than carry stale answers. */
+  private pruneOriginChoices(ns: "race" | "background"): void {
+    const oc = this.character.origin_choices;
+    if (!oc) return;
+    for (const key of Object.keys(oc)) {
+      if (key.startsWith(`${ns}:`)) delete oc[key];
+    }
+    if (Object.keys(oc).length === 0) delete this.character.origin_choices;
+  }
+
   setRace(slug: string | null): void {
     this.character.race = slug ? toRef(slug) : null;
+    this.character.subrace = null;
+    this.pruneOriginChoices("race");
     this.onChange();
   }
 
@@ -328,6 +349,7 @@ export class CharacterEditState {
 
   setBackground(slug: string | null): void {
     this.character.background = slug ? toRef(slug) : null;
+    this.pruneOriginChoices("background");
     this.onChange();
   }
 
