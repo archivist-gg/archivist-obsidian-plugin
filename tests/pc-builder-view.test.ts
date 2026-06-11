@@ -439,6 +439,10 @@ describe("BuilderView shell", () => {
         { slug: "warlock", name: "Warlock", entityType: "class", filePath: "warlock.md",
           data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
           compendium: "SRD", readonly: true, homebrew: false },
+        // The real, compendium-scoped slug shape addClass persists (toRef("srd-2024_bard")).
+        { slug: "srd-2024_bard", name: "Bard", entityType: "class", filePath: "srd-2024_bard.md",
+          data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
+          compendium: "SRD 2024", readonly: true, homebrew: false },
       ];
       const all = [...classes];
       return {
@@ -515,6 +519,37 @@ describe("BuilderView shell", () => {
       expect(
         root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
       ).toBe("Bard 4 · Warlock 1");
+    });
+
+    it("the badge resolves a real compendium-scoped class ref to its display name", () => {
+      // addClass persists toRef("srd-2024_bard") → [[srd-2024_bard]]. humanizeSlug
+      // can't touch the underscore (would read "Srd 2024_bard 1"), so the badge must
+      // resolve the display name through the registry, exactly like the card header.
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({
+          activeStepId: "race",
+          classes: [{ name: "[[srd-2024_bard]]", level: 1 }],
+        }),
+      );
+      expect(
+        root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
+      ).toBe("Bard 1");
+    });
+
+    it("the badge falls back to humanizeSlug for an unregistered class slug", () => {
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({
+          activeStepId: "race",
+          classes: [{ name: "[[ranger]]", level: 3 }],
+        }),
+      );
+      expect(
+        root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
+      ).toBe("Ranger 3");
     });
   });
 });

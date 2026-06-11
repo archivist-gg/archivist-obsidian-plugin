@@ -49,7 +49,13 @@ export class BuilderView implements SheetComponent {
           item.createSpan({
             cls: "pc-builder-step-badge",
             text: classes
-              .map((c) => `${humanizeSlug(stripSlug(c.name) ?? "?")} ${c.level}`)
+              .map((c) => {
+                const slug = stripSlug(c.name);
+                const name =
+                  (slug && ctx.core?.entities.getByTypeAndSlug("class", slug)?.name) ??
+                  humanizeSlug(slug ?? "?");
+                return `${name} ${c.level}`;
+              })
               .join(" · "),
           });
         }
