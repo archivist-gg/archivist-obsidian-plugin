@@ -316,3 +316,47 @@
   color: var(--pc-crimson); cursor: pointer; font-size: var(--pc-fs-small); font-weight: 700;
 }
 .archivist-pc-sheet .pc-bpoints-btn:disabled { color: var(--pc-text-muted); border-color: var(--pc-tan-muted); opacity: .4; cursor: default; }
+
+/* ── Abilities step (SP2 Plan 4) ───────────────────────────────── */
+.archivist-pc-sheet .pc-bmethods { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.archivist-pc-sheet .pc-bmtab {
+  font-family: var(--pc-font-sans); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.03em; text-transform: uppercase; color: var(--pc-crimson);
+  border: 1px solid var(--pc-tan); border-radius: 999px; padding: 5px 13px;
+  background: var(--pc-parchment-light, rgba(255, 248, 220, 0.7)); cursor: pointer;
+}
+.archivist-pc-sheet .pc-bmtab.on { background: var(--pc-crimson); color: var(--pc-parchment-light, #fdf1dc); border-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bmtab.ai { border-style: dashed; border-color: var(--pc-crimson); display: inline-flex; align-items: center; gap: 6px; }
+.archivist-pc-sheet .pc-bmtab-star { font-size: 11px; }
+.archivist-pc-sheet .pc-bhb {
+  font-size: 7.5px; letter-spacing: 0.08em; border-radius: 6px; padding: 0 5px; margin-left: 6px;
+  background: rgba(146, 38, 16, 0.12); color: var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-bmtab.on .pc-bhb { background: rgba(255, 255, 255, 0.25); color: #fff; }
+.archivist-pc-sheet .pc-bctx {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  border: 1px solid var(--pc-tan); border-radius: 5px; padding: 8px 12px; margin-bottom: 12px;
+}
+.archivist-pc-sheet .pc-bctx-l { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-babrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; justify-items: center; padding: 10px 4px 4px; }
+.archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bdd {
+  border: 1px solid var(--pc-tan); border-radius: 4px; background: rgba(255, 248, 220, 0.7);
+  padding: 4px 10px; font-family: var(--pc-font-serif); font-size: 12px; color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; }
+.archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
+.archivist-pc-sheet .pc-blegend { font-style: italic; font-size: 11px; color: var(--pc-text-muted); margin-top: 10px; }
+.archivist-pc-sheet .pc-baibox {
+  border: 1px dashed var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.04);
+  padding: 10px 12px; margin-bottom: 12px;
+}
+.archivist-pc-sheet .pc-baibox-t { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-baibox-b { font-size: 11px; color: var(--pc-text-muted); margin: 4px 0 8px; }
+.archivist-pc-sheet .pc-baibtn {
+  background: var(--pc-crimson); color: #fdf1dc; border: none; border-radius: 4px;
+  padding: 6px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-baibtn:disabled { opacity: 0.55; }
