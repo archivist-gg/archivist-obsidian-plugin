@@ -1,8 +1,22 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { DecisionItem } from "../../pc.decision-engine";
-import { applyChoiceToggle } from "./choice-callout";
 import { renderSelectionTable } from "./selection-table";
 import type { Ability } from "../../../../shared/types/choice";
+
+/** Canonical toggle semantics shared by every call-site: under the limit
+ *  toggle membership; at the limit choose-1 swaps, choose-N refuses. The
+ *  caller owns the Set and re-renders after applying. */
+export function applyChoiceToggle(selected: Set<string>, value: string, choose: number): void {
+  if (selected.has(value)) {
+    selected.delete(value);
+    return;
+  }
+  if (selected.size >= choose) {
+    if (choose !== 1) return;
+    selected.clear();
+  }
+  selected.add(value);
+}
 
 export interface DecisionStripOptions {
   items: DecisionItem[];
@@ -88,7 +102,7 @@ function statusText(item: DecisionItem): string {
   return `choose ${requiredOf(item)}`;
 }
 
-// ── ported module-private helpers from decision-ledger.ts ───────────────────
+// ── module-private helpers ──────────────────────────────────────────────────
 
 function labelOf(item: DecisionItem): string {
   if (item.choice.kind !== "ability-points" && item.choice.label) return item.choice.label;
@@ -213,7 +227,7 @@ function renderControl(
  *  Caps are PICKER-owned (the engine never reflects over-selection or max_per):
  *  + disables at the points-spent cap and the per-ability max_per cap. Writes
  *  the merged allocation through writeValue; clearing the last point writes
- *  null. Ported from decision-ledger.ts. */
+ *  null. */
 function renderAbilityPoints(
   nest: HTMLElement,
   ctx: ComponentRenderContext,

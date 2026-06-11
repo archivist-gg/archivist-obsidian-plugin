@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, renderStripInfoRow, domainPill } from "../src/modules/pc/components/builder/decision-strip";
+import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle } from "../src/modules/pc/components/builder/decision-strip";
 import type { DecisionItem } from "../src/modules/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
@@ -117,6 +117,30 @@ describe("renderDecisionStrip", () => {
     expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Magic Initiate");
   });
 
+  it("renders a live select-inline item's unresolved child inside the parent's nest", () => {
+    const c = mountContainer();
+    const child = item({
+      key: "drow-spell",
+      featureName: "Drow Spell",
+      choice: { kind: "select-inline", id: "drow-spell", count: 1, options: [] } as never,
+      options: [
+        { value: "dancing-lights", label: "Dancing Lights" },
+        { value: "faerie-fire", label: "Faerie Fire" },
+      ],
+      selected: undefined,
+      status: "unresolved",
+    });
+    const parent = item({ status: "resolved", selected: "drow", children: [child] });
+    renderDecisionStrip(c, mkCtx(), { items: [parent], pill: domainPill, live: true, stateKey: "t" });
+    const nest = c.querySelector(".pc-dstrip-row .pc-dstrip-nest")!;
+    // The child row renders inside the parent's nest, with its own name + control.
+    const childRow = [...nest.querySelectorAll(".pc-dstrip-row")].find((r) =>
+      r.textContent?.includes("Drow Spell"),
+    )!;
+    expect(childRow).not.toBeUndefined();
+    expect(childRow.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+  });
+
   it("a missing option renders inert and does not write on click", () => {
     const c = mountContainer();
     const setOriginChoice = vi.fn();
@@ -156,5 +180,37 @@ describe("domainPill", () => {
     expect(domainPill(item({ choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" } as never }))).toBe("Lang");
     expect(domainPill(item({ choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never }))).toBe("Feat");
     expect(domainPill(item({ choice: { kind: "select-inline", id: "", count: 1, options: [] } as never }))).toBe("Pick");
+  });
+});
+
+describe("applyChoiceToggle", () => {
+  it("toggles membership under the limit", () => {
+    const sel = new Set<string>();
+    applyChoiceToggle(sel, "stealth", 2);
+    expect([...sel]).toEqual(["stealth"]);
+    applyChoiceToggle(sel, "stealth", 2);
+    expect(sel.size).toBe(0);
+  });
+
+  it("choose-1 swaps instead of refusing", () => {
+    const sel = new Set<string>(["athletics"]);
+    applyChoiceToggle(sel, "stealth", 1);
+    expect([...sel]).toEqual(["stealth"]);
+  });
+
+  it("choose-N refuses additions beyond the limit", () => {
+    const sel = new Set<string>(["athletics", "stealth"]);
+    applyChoiceToggle(sel, "arcana", 2);
+    expect(sel.has("arcana")).toBe(false);
+    expect(sel.size).toBe(2);
+  });
+
+  it("choose-0 refuses all additions but still allows removal", () => {
+    const sel = new Set<string>();
+    applyChoiceToggle(sel, "athletics", 0);
+    expect(sel.size).toBe(0);
+    const stale = new Set<string>(["athletics"]);
+    applyChoiceToggle(stale, "athletics", 0);
+    expect(stale.size).toBe(0);
   });
 });

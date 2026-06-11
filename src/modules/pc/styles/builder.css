@@ -209,20 +209,7 @@
   opacity: .4; cursor: default; border-style: dashed; color: var(--pc-text-muted);
 }
 
-/* ── Class step: level dropdown + orphan-subclass data ask ── */
-.archivist-pc-sheet .pc-bclass-levelrow {
-  display: flex; align-items: center; gap: var(--pc-space-2);
-  margin: var(--pc-space-3) 0;
-}
-.archivist-pc-sheet .pc-bclass-levellabel {
-  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
-}
-.archivist-pc-sheet .pc-bclass-level {
-  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
-  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
-  padding: 3px 8px; color: var(--pc-text-primary);
-}
+/* ── Class step: orphan-subclass data ask ── */
 /* Quiet parchment notice (N1 note idiom): no border bar — a faint amber-warm
    tint with an inline amber "!" mark and amber-keyed serif text. A data gap,
    not a hard error, so it never raises a box outline or accent rule. */
@@ -237,69 +224,7 @@
   font-weight: 700; color: var(--pc-amber);
 }
 
-/* ── Decision ledger (SP2 §7): level-grouped decision rows ── */
-.archivist-pc-sheet .pc-bledger { display: flex; flex-direction: column; gap: var(--pc-space-3); }
-.archivist-pc-sheet .pc-bledger-empty {
-  color: var(--pc-text-muted); font-style: italic; font-family: var(--pc-font-serif);
-  padding: var(--pc-space-3) 0;
-}
-.archivist-pc-sheet .pc-bledger-level { display: flex; flex-direction: column; gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-bledger-level-h {
-  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
-  border-bottom: 1px solid var(--pc-tan-muted); padding-bottom: 3px;
-}
-
-/* Resolved + collapsed → one-line green-✓ row; click reopens. N1 "answered"
-   look: no box, no border — a quiet hairline-separated row (the dotted rule
-   echoes the resolved ledger rows in the class-step mockup) with the green ✓,
-   serif label, and a muted right-aligned summary. */
-.archivist-pc-sheet .pc-bledger-done {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
-  padding: 6px 4px; cursor: pointer;
-  border-bottom: 1px dotted var(--pc-tan-muted);
-}
-.archivist-pc-sheet .pc-bledger-done:hover { background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-bledger-done-check { color: var(--pc-rarity-uncommon); font-weight: 700; }
-.archivist-pc-sheet .pc-bledger-done-label {
-  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
-}
-.archivist-pc-sheet .pc-bledger-done-value {
-  margin-left: auto; font-size: var(--pc-fs-small); color: var(--pc-text-soft);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-/* Open item: unresolved (`req`) / partial / reopened-resolved. N1 borderless
-   callout — NO box outline, NO left-border accent. The decision separates from
-   its neighbours by whitespace alone; "required/open" is signalled inside by
-   the callout's own amber "!" flag + crimson label, never by chrome here. */
-.archivist-pc-sheet .pc-bledger-item {
-  padding: 6px 0 4px;
-}
-.archivist-pc-sheet .pc-bledger-item-h {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
-  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
-  font-size: var(--pc-fs-body); border-bottom: 1px solid var(--pc-tan);
-  padding-bottom: 3px; margin-bottom: 7px;
-}
-/* An unresolved decision keys its own heading crimson (the N1 "open" colour);
-   resolved/partial reopened items keep the neutral ink heading. */
-.archivist-pc-sheet .pc-bledger-item.req > .pc-bledger-item-h { color: var(--pc-crimson); }
-
-/* Informational → quiet description row (never has a control). */
-.archivist-pc-sheet .pc-bledger-info {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
-  padding: 4px 8px; color: var(--pc-text-soft);
-}
-.archivist-pc-sheet .pc-bledger-info-name {
-  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-soft); font-size: var(--pc-fs-body);
-}
-.archivist-pc-sheet .pc-bledger-info-note {
-  font-size: var(--pc-fs-small); font-style: italic; color: var(--pc-text-muted);
-}
-
 /* Ability-points pool: a −/+ stepper per pool ability. */
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-left { font-size: var(--pc-fs-small); color: var(--pc-crimson); font-weight: 700; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints {
   display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-top: 4px;
 }
@@ -411,14 +336,7 @@
 .archivist-pc-sheet .pc-bwarn-t {
   font-size: var(--pc-fs-small); line-height: 1.45; color: #7a4a0a; font-family: var(--pc-font-serif);
 }
-/* Origin-feat info row: a fixed (un-chosen) feat naming + click-to-expand block. */
-.archivist-pc-sheet .pc-bofeat {
-  display: flex; align-items: center; gap: 8px; padding: 7px 6px; cursor: pointer;
-  border-bottom: 1px dotted var(--pc-tan);
-}
-.archivist-pc-sheet .pc-bofeat-l { font-weight: 700; color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-bofeat-v { font-family: var(--pc-font-serif); color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-bofeat-x { margin-left: auto; color: var(--pc-text-muted); }
+/* Origin-feat expand: the click-to-expand block beneath the strip info row. */
 .archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }
 
 /* ── Custom Background: the pinned ✦ Build row + parts-builder form ──

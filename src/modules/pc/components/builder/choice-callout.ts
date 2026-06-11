@@ -11,21 +11,6 @@ export interface ChoiceCalloutOptions {
   required?: boolean;
 }
 
-/** Canonical toggle semantics shared by every call-site: under the limit
- *  toggle membership; at the limit choose-1 swaps, choose-N refuses. The
- *  caller owns the Set and re-renders after applying. */
-export function applyChoiceToggle(selected: Set<string>, value: string, choose: number): void {
-  if (selected.has(value)) {
-    selected.delete(value);
-    return;
-  }
-  if (selected.size >= choose) {
-    if (choose !== 1) return;
-    selected.clear();
-  }
-  selected.add(value);
-}
-
 /** N1 treatment (parent spec §8): borderless callout — serif-bold label over
  *  a hairline tan rule with a muted "Choose N" badge; ink-outlined chips,
  *  crimson + ✓ when selected. Pure presentational: clicking a clickable chip

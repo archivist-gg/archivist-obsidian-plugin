@@ -3,7 +3,8 @@ import type { Ability } from "../../../../shared/types/choice";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import { ALL_SKILL_SLUGS } from "../../../../shared/types/choice";
-import { renderChoiceCallout, applyChoiceToggle } from "./choice-callout";
+import { renderChoiceCallout } from "./choice-callout";
+import { applyChoiceToggle } from "./decision-strip";
 
 // ── Form state ────────────────────────────────────────────────────────────
 
