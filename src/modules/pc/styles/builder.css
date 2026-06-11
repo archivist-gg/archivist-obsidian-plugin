@@ -33,6 +33,11 @@
   display: inline-flex; align-items: center; justify-content: center;
   font-family: var(--pc-font-sans); font-size: 8px; color: var(--pc-text-muted);
 }
+/* Advisory ✓ done dress (D4). :not(.active) so an active+done step keeps the
+   crimson active circle — the done tint only applies to inactive done steps. */
+.archivist-pc-sheet .pc-builder-step.done:not(.active) .pc-builder-step-n {
+  color: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon);
+}
 .archivist-pc-sheet .pc-builder-step.active .pc-builder-step-n {
   background: var(--pc-crimson); color: #fff; border-color: var(--pc-crimson);
 }

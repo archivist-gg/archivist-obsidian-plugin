@@ -37,11 +37,12 @@ export class BuilderView implements SheetComponent {
     // Step rail.
     const rail = layout.createDiv({ cls: "pc-builder-rail" });
     for (const [i, step] of BUILDER_STEPS.entries()) {
+      const done = this.isStepDone(step.id, ctx);
       const item = rail.createDiv({
-        cls: `pc-builder-step${step.id === activeStep ? " active" : ""}`,
+        cls: `pc-builder-step${step.id === activeStep ? " active" : ""}${done ? " done" : ""}`,
         attr: { "data-step": step.id },
       });
-      item.createSpan({ cls: "pc-builder-step-n", text: String(i + 1) });
+      item.createSpan({ cls: "pc-builder-step-n", text: done ? "✓" : String(i + 1) });
       item.createSpan({ cls: "pc-builder-step-label", text: step.label });
       item.addEventListener("click", () => this.goTo(step.id, el, ctx));
     }
@@ -98,6 +99,31 @@ export class BuilderView implements SheetComponent {
         }
         ctx.editState.finishBuild();
       });
+    }
+  }
+
+  /** Advisory rail ✓ (D4, permissive model — never blocks navigation): steps
+   *  with a clear single criterion mark done; the amber "!" is a house-rule no-op
+   *  on the rail. Details is the Finish step (all fields optional) and never does.
+   *  Note: a manual user who typed scores GETS the abilities ✓ — intended. */
+  private isStepDone(id: string, ctx: ComponentRenderContext): boolean {
+    const d = ctx.resolved.definition;
+    switch (id) {
+      case "race":
+        return !!d.race;
+      case "class":
+        return (d.class?.length ?? 0) > 0;
+      case "background":
+        return !!d.background;
+      case "abilities":
+        return (
+          d.ability_method !== "manual" ||
+          Object.values(d.abilities ?? {}).some((v) => v !== 10)
+        );
+      case "equipment":
+        return (d.equipment?.length ?? 0) > 0;
+      default:
+        return false;
     }
   }
 

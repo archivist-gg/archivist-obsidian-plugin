@@ -43,7 +43,7 @@ export function renderDetailsStep(body: HTMLElement, ctx: ComponentRenderContext
   const ageWrap = ageField.createDiv({ cls: "pc-bage" });
   const ageInput = ageWrap.createEl("input", {
     cls: "pc-binp",
-    attr: { type: "text", value: (ctx.resolved.definition as { age?: string }).age ?? "" },
+    attr: { type: "text", value: ctx.resolved.definition.age ?? "" },
   });
   ageInput.addEventListener("change", () => ctx.editState?.setAge(ageInput.value.trim() || null));
 
@@ -81,6 +81,8 @@ function renderHpField(form: HTMLElement, ctx: ComponentRenderContext): void {
       cls: "pc-binp pc-bhp-input",
       attr: { type: "number", min: "1", value: choice.value != null ? String(choice.value) : "" },
     });
+    // Writes ONLY to the session bag — must never trigger a re-render: a blur
+    // that re-renders mid-flight would swallow a following Finish click.
     input.addEventListener("change", () => {
       const v = Number(input.value);
       ctx.builderUiState?.set("builder.details.hp", {
