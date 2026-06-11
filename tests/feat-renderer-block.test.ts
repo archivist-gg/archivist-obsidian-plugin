@@ -65,6 +65,23 @@ describe("renderFeatBlock", () => {
     expect(root.querySelector(".source-badge")).toBeNull();
   });
 
+  it("does not capitalize the letter after an apostrophe in a tool-proficiency prerequisite", async () => {
+    // A tool-proficiency prerequisite value is an open slug string that can
+    // carry an embedded apostrophe (e.g. "smith's-tools"). labelCase must not
+    // uppercase the post-apostrophe letter (regression from the old \b\w rule).
+    const root = mountContainer();
+    root.appendChild(
+      await renderFeatBlock({
+        ...feat,
+        prerequisites: [
+          { kind: "proficiency", proficiency_type: "tool", value: "smith's-tools" },
+        ],
+      } as unknown as FeatEntity),
+    );
+    expect(root.textContent).toContain("Smith's Tools");
+    expect(root.textContent).not.toContain("Smith'S Tools");
+  });
+
   it("renders a slug prerequisite as a readable name", async () => {
     const root = mountContainer();
     root.appendChild(

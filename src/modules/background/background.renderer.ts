@@ -8,8 +8,13 @@ import type {
 import { el, createIconProperty, sourceBadgeText } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
+/** Capitalize only the first letter of each whitespace-delimited word. Anchoring
+ *  on start/whitespace (rather than `\b`) avoids uppercasing the letter after an
+ *  embedded apostrophe — slug tokens like "calligrapher's-supplies" become
+ *  "Calligrapher's Supplies", not "Calligrapher'S Supplies". (labelCase replaces
+ *  hyphens with spaces first, so every word still starts after whitespace.) */
 function titleCase(s: string): string {
-  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+  return s.replace(/(^|\s)\w/g, (c) => c.toUpperCase());
 }
 
 /** Title-case a hyphenated/slug-ish label, treating dashes as word breaks

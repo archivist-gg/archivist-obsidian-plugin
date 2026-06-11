@@ -19,8 +19,9 @@ const acolyte: BackgroundEntity = {
   source: "SRD 5.1",
   description: "You have spent your life in the service of a **temple**.",
   skill_proficiencies: ["insight", "religion"],
-  // Real SRD data stores tool/equipment tokens as hyphenated slugs.
-  tool_proficiencies: [{ kind: "fixed", items: ["calligraphers-supplies"] }],
+  // Real SRD data stores tool/equipment tokens as hyphenated slugs, and some
+  // carry an embedded apostrophe (e.g. "calligrapher's-supplies" in Sage.md).
+  tool_proficiencies: [{ kind: "fixed", items: ["calligrapher's-supplies"] }],
   language_proficiencies: [{ kind: "choice", count: 2, from: "any" }],
   equipment: [
     { item: "holy-symbol", quantity: 1 },
@@ -80,8 +81,11 @@ describe("renderBackgroundBlock", () => {
     expect(root.textContent).toContain("Skills:");
     expect(root.textContent).toContain("Insight, Religion");
     expect(root.textContent).toContain("Tools:");
-    // tokens are slugs in data, humanized via labelCase for display
-    expect(root.textContent).toContain("Calligraphers Supplies");
+    // tokens are slugs in data, humanized via labelCase for display. The letter
+    // after an embedded apostrophe must NOT be capitalized (regression: the old
+    // \b\w pattern produced "Calligrapher'S Supplies" because ' is a word break).
+    expect(root.textContent).toContain("Calligrapher's Supplies");
+    expect(root.textContent).not.toContain("Calligrapher'S Supplies");
     expect(root.textContent).toContain("Languages:");
     // bare string sentinel "any" is free text, left untouched
     expect(root.textContent).toContain("Choose 2 (any)");
@@ -129,6 +133,31 @@ describe("renderBackgroundBlock", () => {
     // (c) language-choice `from` slugs humanized; free-text currency untouched
     expect(root.textContent).toContain("Choose 1 (Draconic, Elvish)");
     expect(root.textContent).toContain("10 gp");
+  });
+
+  it("does not capitalize the letter following an embedded apostrophe in slug labels", async () => {
+    // Real vault data carries apostrophe-bearing tokens (Criminal.md:
+    // thieves'-tools, traveler's-clothes). The post-apostrophe letter is
+    // lowercase on ingest and must STAY lowercase through labelCase — the old
+    // \b\w title-case treated ' as a word break and wrongly uppercased it.
+    const apostropheBg: BackgroundEntity = {
+      ...acolyte,
+      tool_proficiencies: [{ kind: "fixed", items: ["thieves'-tools"] }],
+      equipment: [
+        { item: "traveler's-clothes", quantity: 1 },
+        { item: "calligrapher's-supplies", quantity: 1 },
+      ],
+    } as unknown as BackgroundEntity;
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(apostropheBg));
+    // "-" follows the apostrophe in thieves'-tools → already OK, but assert it.
+    expect(root.textContent).toContain("Thieves' Tools");
+    expect(root.textContent).not.toContain("Thieves' tools");
+    // these two are the real regressions (a letter follows the apostrophe).
+    expect(root.textContent).toContain("Traveler's Clothes");
+    expect(root.textContent).not.toContain("Traveler'S Clothes");
+    expect(root.textContent).toContain("Calligrapher's Supplies");
+    expect(root.textContent).not.toContain("Calligrapher'S Supplies");
   });
 });
 
