@@ -1,5 +1,6 @@
 import type { Choice, InlineOption, EntityFilter, Ability } from "../../shared/types/choice";
 import { ALL_SKILL_SLUGS } from "../../shared/types/choice";
+import { ABILITY_KEYS } from "../../shared/dnd/constants";
 import type { ResolvedCharacter, ChoiceValue, FeatureSource } from "./pc.types";
 import type { RegisteredEntity } from "../../shared/entities/entity-registry";
 import { recognizeDecision } from "./decision-recognizer";
@@ -234,6 +235,49 @@ export function collectChosenProficiencies(resolved: ResolvedCharacter): {
     }
   }
 
+  return out;
+}
+
+export interface OriginAbilityPoints {
+  race: Partial<Record<Ability, number>>;
+  background: Partial<Record<Ability, number>>;
+}
+
+/** Pure: folds ORIGIN (race/background) `ability-points` decisions out of
+ *  origin_choices into per-namespace totals. Values are clamped picker-side
+ *  already, but clamp again defensively: per-ability max_per, then stop at the
+ *  points total walking ABILITY_KEYS order. Class-level ASI stays on the
+ *  legacy choices[lvl].asi path recalc already folds — do not double-count. */
+export function collectChosenAbilityPoints(resolved: ResolvedCharacter): OriginAbilityPoints {
+  const oc = resolved.definition.origin_choices ?? {};
+  const out: OriginAbilityPoints = { race: {}, background: {} };
+
+  const fold = (ns: "race" | "background", choices: Choice[] | undefined): void => {
+    for (const ch of choices ?? []) {
+      if (ch.kind !== "ability-points") continue;
+      const raw = oc[`${ns}:${ch.id}`];
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+      let left = ch.points;
+      for (const ab of ABILITY_KEYS) {
+        const v = (raw as Partial<Record<Ability, number>>)[ab];
+        if (typeof v !== "number" || v <= 0 || left <= 0) continue;
+        const take = Math.min(v, ch.max_per, left);
+        out[ns][ab] = (out[ns][ab] ?? 0) + take;
+        left -= take;
+      }
+    }
+  };
+
+  const race = resolved.race;
+  if (race) {
+    fold("race", race.choices);
+    for (const t of race.traits ?? []) fold("race", t.choices);
+  }
+  const bg = resolved.background;
+  if (bg) {
+    fold("background", bg.choices);
+    fold("background", (bg.feature as { choices?: Choice[] } | undefined)?.choices);
+  }
   return out;
 }
 
