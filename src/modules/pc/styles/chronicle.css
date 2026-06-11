@@ -117,3 +117,9 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
   font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
 }
+
+/* ── Collapsible folds (Progression / Features / Equipment) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold { border-top: 1px solid var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h { display: flex; align-items: center; gap: 9px; padding: 9px 2px 8px; cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev { flex: none; width: 11px; color: var(--pc-crimson); font-size: 9px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-body { padding: 2px 2px 6px; }

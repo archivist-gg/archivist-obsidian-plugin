@@ -5,7 +5,7 @@ import type { DecisionItem } from "../../pc.decision-engine";
 import { renderEntityPicker } from "./entity-picker";
 import { buildDecisionLedger } from "../../pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
-import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
+import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
@@ -51,14 +51,6 @@ const FOLDED = new Set(["size", "speed", "darkvision"]);
 const stripSummary = (items: DecisionItem[]): string => {
   const done = items.filter((i) => i.status === "resolved").length;
   return `${items.length} total · ${done} resolved · ${items.length - done} open`;
-};
-
-/** First sentence of a description (up to the first sentence-ending punctuation
- *  followed by whitespace or end-of-string). LOCAL to the race step for now —
- *  Task 8 moves the shared copy to chronicle-block.ts. */
-const firstSentence = (d: string): string => {
-  const m = d.match(/^[\s\S]*?[.!?](?=\s|$)/);
-  return m ? m[0] : d;
 };
 
 /** SP2 §1 (Plan 5) — the Race / Species step. The chosen species' expanded row

@@ -48,3 +48,11 @@ export function renderSectionRule(parent: HTMLElement, label: string, right?: st
   sec.createSpan({ cls: "pc-cb-sec-l", text: label });
   if (right) sec.createSpan({ cls: "pc-cb-sec-r", text: right });
 }
+
+/** First sentence of a description (up to the first sentence-ending punctuation
+ *  followed by whitespace or end-of-string). Shared by the Race step and the
+ *  class Chronicle so neither depends on the other. */
+export function firstSentence(d: string): string {
+  const m = d.match(/^[\s\S]*?[.!?](?=\s|$)/);
+  return m ? m[0] : d;
+}
