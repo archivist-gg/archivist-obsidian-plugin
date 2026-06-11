@@ -409,6 +409,20 @@ export class CharacterEditState {
     return Number.isFinite(n) && n > 0 ? `d${n}` : null;
   }
 
+  /** Seed a hand-typed max HP at Finish (D10 "Manual"). Unlike
+   *  `setMaxHpOverride` — which only clamps current DOWN — this raises current
+   *  to the new max too, so the finished sheet opens at the typed value rather
+   *  than the draft's `current: 1`. Writes the override (so recalc honors it)
+   *  and seeds `state.hp.current/max`, clearing temp. */
+  setHpMax(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const max = Math.max(1, Math.floor(value));
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.max = max;
+    this.character.state.hp = { current: max, max, temp: 0 };
+    this.onChange();
+  }
+
   /** Fill HP to the derived max, clearing temp HP. Called by the Builder's
    *  Finish action before opening the finished sheet. */
   seedHpToMax(): void {

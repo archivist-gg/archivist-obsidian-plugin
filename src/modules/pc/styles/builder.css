@@ -574,3 +574,27 @@
 .archivist-pc-sheet .pc-bcreate:disabled {
   background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed;
 }
+
+/* ── Details step (SP2 Plan 4) ─────────────────────────────────── */
+.archivist-pc-sheet .pc-bform { max-width: 380px; }
+.archivist-pc-sheet .pc-bfield { margin-bottom: 18px; }
+.archivist-pc-sheet .pc-bseclabel {
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--pc-text-muted); margin-bottom: 5px;
+}
+.archivist-pc-sheet .pc-binp {
+  width: 100%; border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: rgba(255, 248, 220, 0.6); padding: 8px 11px;
+  font-family: var(--pc-font-serif); font-size: 15px; color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-balgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.archivist-pc-sheet .pc-bal {
+  border: 1px solid var(--pc-tan); border-radius: 4px; cursor: pointer;
+  background: rgba(255, 248, 220, 0.5); padding: 7px 4px; text-align: center;
+}
+.archivist-pc-sheet .pc-bal-ab { font-size: 12px; font-weight: 700; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bal-w { font-size: 7.5px; text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bal.on { border-color: var(--pc-crimson); background: rgba(146, 38, 16, 0.1); }
+.archivist-pc-sheet .pc-bal.on .pc-bal-ab { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bage { max-width: 120px; }
+.archivist-pc-sheet .pc-bhint { font-style: italic; font-size: 10px; color: var(--pc-text-muted); margin-top: 4px; }

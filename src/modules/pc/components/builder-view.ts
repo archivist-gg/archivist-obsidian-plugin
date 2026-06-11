@@ -4,6 +4,7 @@ import { renderEntityPicker } from "./builder/entity-picker";
 import { renderRaceStep } from "./builder/race-step";
 import { renderBackgroundStep } from "./builder/background-step";
 import { renderAbilitiesStep } from "./builder/abilities-step";
+import { renderDetailsStep, getHpSeedChoice } from "./builder/details-step";
 import { renderDecisionLedger } from "./builder/decision-ledger";
 import { stripSlug } from "../pc.resolver";
 import { buildDecisionLedger, wikilinkTailSlug, bareEntitySlug } from "../pc.decision-engine";
@@ -58,6 +59,8 @@ export class BuilderView implements SheetComponent {
       renderAbilitiesStep(body, ctx);
     } else if (def.id === "background" && ctx.core) {
       renderBackgroundStep(body, ctx);
+    } else if (def.id === "details") {
+      renderDetailsStep(body, ctx);
     } else {
       body.createDiv({ cls: "pc-builder-placeholder", text: `${def.label} — coming in a later plan` });
     }
@@ -81,7 +84,20 @@ export class BuilderView implements SheetComponent {
       const finish = foot.createEl("button", { cls: "pc-builder-finish", text: "✓ Finish & open sheet" });
       finish.disabled = !classed;
       if (!classed) finish.title = "Pick a class before finishing.";
-      finish.addEventListener("click", () => ctx.editState?.finishBuild());
+      finish.addEventListener("click", () => {
+        if (!ctx.editState) return;
+        // Seed the survival numbers a finished sheet needs — finishBuild last.
+        // D10: HP per the Details-step choice; Average is the default. Either
+        // way the finished sheet never opens at 0 HP.
+        ctx.editState.seedHitDice();
+        const hp = getHpSeedChoice(ctx);
+        if (hp.mode === "manual" && hp.value != null && hp.value > 0) {
+          ctx.editState.setHpMax(hp.value);
+        } else {
+          ctx.editState.seedHpToMax();
+        }
+        ctx.editState.finishBuild();
+      });
     }
   }
 

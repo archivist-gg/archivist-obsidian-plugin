@@ -71,7 +71,8 @@ describe("BuilderView shell", () => {
     const c = {
       ...ctx(),
       resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
-      editState: { finishBuild },
+      editState: { finishBuild, seedHitDice: vi.fn(), seedHpToMax: vi.fn(), setHpMax: vi.fn() },
+      builderUiState: new Map(),
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
     root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
@@ -143,6 +144,75 @@ describe("BuilderView shell", () => {
     expect(root.querySelectorAll(".pc-btoggle").length).toBe(0);
     root.querySelector<HTMLElement>(".pc-btable-row")!.click(); // row click = select
     expect(setRace).toHaveBeenCalledWith("srd-5e_elf");
+  });
+
+  it("Finish with Average (default) seeds hit dice + max HP before clearing the draft flag", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState,
+      builderUiState: new Map(),
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "seedHpToMax", "finishBuild"]);
+    expect(editState.setHpMax).not.toHaveBeenCalled();
+  });
+
+  it("Finish with Manual 25 seeds hit dice + writes the manual max, NOT seedHpToMax", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "manual", value: 25 }]]);
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState,
+      builderUiState: bag,
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "setHpMax", "finishBuild"]);
+    expect(editState.setHpMax).toHaveBeenCalledWith(25);
+    expect(editState.seedHpToMax).not.toHaveBeenCalled();
+  });
+
+  it("Finish with Manual but no/invalid value falls back to Average seeding", () => {
+    const root = mountContainer();
+    const order: string[] = [];
+    const editState = {
+      seedHitDice: vi.fn(() => order.push("seedHitDice")),
+      seedHpToMax: vi.fn(() => order.push("seedHpToMax")),
+      setHpMax: vi.fn(() => order.push("setHpMax")),
+      finishBuild: vi.fn(() => order.push("finishBuild")),
+    };
+    const bag = new Map<string, unknown>([["builder.details.hp", { mode: "manual", value: null }]]);
+    const c = {
+      ...ctx(),
+      resolved: { definition: { name: "Valeria", class: [{ name: "[[srd-5e_fighter]]", level: 1 }] } },
+      editState,
+      builderUiState: bag,
+    } as unknown as ComponentRenderContext;
+    new BuilderView().render(root, c);
+    root.querySelector<HTMLElement>(".pc-builder-step[data-step='details']")!.click();
+    root.querySelector<HTMLButtonElement>(".pc-builder-finish")!.click();
+    expect(order).toEqual(["seedHitDice", "seedHpToMax", "finishBuild"]);
+    expect(editState.setHpMax).not.toHaveBeenCalled();
   });
 
   it("prefixes each rail step with a 1-based numbered circle", () => {

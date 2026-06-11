@@ -64,6 +64,37 @@ describe("setAge", () => {
     expect(c.age).toBeUndefined();
     expect(onChange).toHaveBeenCalledTimes(2);
   });
+
+  it("whitespace-only age clears it", () => {
+    const c = mkCharacter({ age: "26" });
+    const { es } = mkState(c);
+    es.setAge("  ");
+    expect(c.age).toBeUndefined();
+  });
+});
+
+describe("setHpMax — Builder manual-HP seed (D10)", () => {
+  it("writes the override AND seeds state.hp.current/max to the typed value", () => {
+    const c = mkCharacter();
+    const { es, onChange } = mkState(c);
+    es.setHpMax(25);
+    expect(c.overrides.hp?.max).toBe(25);
+    expect(c.state.hp.current).toBe(25);
+    expect(c.state.hp.max).toBe(25);
+    expect(c.state.hp.temp).toBe(0);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("clamps to a floored minimum of 1 and ignores non-finite input", () => {
+    const c = mkCharacter();
+    const { es, onChange } = mkState(c);
+    es.setHpMax(0);
+    expect(c.overrides.hp?.max).toBe(1);
+    expect(c.state.hp.current).toBe(1);
+    es.setHpMax(Number.NaN);
+    expect(c.overrides.hp?.max).toBe(1); // unchanged
+    expect(onChange).toHaveBeenCalledTimes(1); // NaN bailed before notify
+  });
 });
 
 describe("archivist-point-buy method", () => {
