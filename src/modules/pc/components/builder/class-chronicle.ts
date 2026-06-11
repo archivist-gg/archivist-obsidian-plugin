@@ -202,7 +202,7 @@ function renderProgression(host: HTMLElement, d: ClassData, level: number): void
     return;
   }
   const { scalars, slots } = tableColumns(table);
-  const tracks = ["30px", "34px", "minmax(0, 1.8fr)", ...scalars.map(() => "44px"), ...(slots.length ? ["minmax(0, 2fr)"] : [])].join(" ");
+  const tracks = ["30px", "34px", "minmax(0, 1.8fr)", ...scalars.map(() => "minmax(44px, max-content)"), ...(slots.length ? ["minmax(0, 2fr)"] : [])].join(" ");
   const pt = host.createDiv({ cls: "pc-cb-pt" });
   const head = pt.createDiv({ cls: "pc-cb-pt-h" });
   head.style.gridTemplateColumns = tracks;
@@ -226,6 +226,7 @@ function renderProgression(host: HTMLElement, d: ClassData, level: number): void
       const cell = row.createSpan({ cls: "pc-cb-pt-slotrow" });
       for (const s of slots) {
         const v = r.columns?.[s];
+        // en-dash "–" = slot tier not yet available; scalars use em-dash "—" = no data
         cell.createSpan({ cls: `pc-cb-pt-s${v == null || v === 0 || v === "0" ? " z" : ""}`, text: v == null ? "–" : String(v) });
       }
     }
