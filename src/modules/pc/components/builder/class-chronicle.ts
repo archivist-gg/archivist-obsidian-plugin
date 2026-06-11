@@ -1,6 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import type { DecisionItem, DecisionLedger } from "../../pc.decision-engine";
+import type { Feature } from "../../../../shared/types/feature";
 import { recognizeDecision } from "../../decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
@@ -43,25 +44,41 @@ const ABILITY_NAME: Record<string, string> = {
   str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma",
 };
 
+/** A feature's `choices` are typed `unknown[]` in the local ClassData cast;
+ *  this narrows safely to "an authored subclass pick" (the runtime JSON shape
+ *  `{ kind: "select-entity", entity_type: "subclass" }`). */
+function isAuthoredSubclassChoice(c: unknown): boolean {
+  return (
+    typeof c === "object" && c !== null &&
+    (c as { kind?: unknown }).kind === "select-entity" &&
+    (c as { entity_type?: unknown }).entity_type === "subclass"
+  );
+}
+
 /** Browse-side walker: every authored feature choice, plus recognizer-synthesized
  *  homebrew decisions (the recognizer returns Choice[] for those), skipping
  *  informational prose (it returns "informational") and plain features (null).
  *  The subclass pick is guaranteed a row off subclass_level even when the
- *  runtime JSON lacks the authored select-entity (the 2024 Bard gap). */
+ *  runtime JSON lacks the authored select-entity (the 2024 Bard gap). The
+ *  guarantee fires on "no authored subclass choice was seen" — not on a name
+ *  match — because `subclass_feature_name` ("Cleric Subclass") and the authored
+ *  feature's own name ("Cleric Subclasses") come from different source fields
+ *  and need not agree, which would otherwise synthesize a duplicate L3 row. */
 export function collectBrowseDecisions(d: ClassData): BrowseDecision[] {
   const out: BrowseDecision[] = [];
+  let sawAuthoredSubclass = false;
   for (const [lvl, feats] of Object.entries(d.features_by_level ?? {})) {
     for (const f of feats) {
       const authored = (f.choices?.length ?? 0) > 0;
-      const recognized = !authored && recognizeDecision(f as never);
+      if (authored && f.choices!.some(isAuthoredSubclassChoice)) sawAuthoredSubclass = true;
+      const recognized = !authored && recognizeDecision(f as unknown as Feature);
       if (authored || (recognized && recognized !== "informational")) {
         out.push({ level: Number(lvl), name: f.name });
       }
     }
   }
-  const subName = d.subclass_feature_name ?? "Subclass";
-  if (d.subclass_level && !out.some((r) => r.name === subName)) {
-    out.push({ level: d.subclass_level, name: subName });
+  if (d.subclass_level && !sawAuthoredSubclass) {
+    out.push({ level: d.subclass_level, name: d.subclass_feature_name ?? "Subclass" });
   }
   return out.sort((a, b) => a.level - b.level);
 }

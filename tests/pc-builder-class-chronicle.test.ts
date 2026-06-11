@@ -89,12 +89,51 @@ const mkCtx = (): ComponentRenderContext =>
     builderUiState: new Map(),
   }) as unknown as ComponentRenderContext;
 
+/** Minimal Cleric-shaped runtime class entity (mirrors the 2024 class JSON).
+ *  Here `subclass_feature_name` ("Cleric Subclass", singular) differs from the
+ *  authored L3 feature's own name ("Cleric Subclasses", plural) — they come
+ *  from different source fields. The L3 feature carries the authored
+ *  select-entity subclass pick, so the walker must NOT synthesize a second row
+ *  off subclass_level (a name-based dedupe would, since the strings differ). */
+function clericData(): ClassData {
+  return {
+    hit_die: "d8",
+    primary_abilities: ["wis"],
+    saving_throws: ["wis", "cha"],
+    subclass_level: 3,
+    subclass_feature_name: "Cleric Subclass",
+    features_by_level: {
+      1: [
+        { id: "spellcasting", name: "Spellcasting", description: "You can cast cleric spells." },
+        { id: "divine-order", name: "Divine Order", description: "You have dedicated yourself." },
+      ],
+      3: [
+        {
+          id: "cleric-subclasses",
+          name: "Cleric Subclasses",
+          description: "You gain a Cleric subclass of your choice.",
+          choices: [{ kind: "select-entity", id: "subclass", count: 1, entity_type: "subclass", where: { parent_class: "self" } }],
+        },
+      ],
+    },
+    description: "A priestly champion who wields divine magic in service of a higher power.",
+    source: "SRD 5.2",
+    edition: "2024",
+  };
+}
+
 describe("collectBrowseDecisions", () => {
   it("collects authored choices and guarantees the subclass row even when unauthored", () => {
     const rows = collectBrowseDecisions(bardData());          // bardData: no select-entity subclass authored (the 2024 Bard gap)
     expect(rows).toContainEqual({ level: 2, name: "Expertise" });
     expect(rows).toContainEqual({ level: 3, name: "Bard Subclass" });
     expect(rows.map((r) => r.level)).toEqual([...rows.map((r) => r.level)].sort((a, b) => a - b));
+  });
+
+  it("dedupes the subclass row by authored choice, not name (Cleric: 'Cleric Subclass' vs 'Cleric Subclasses')", () => {
+    const rows = collectBrowseDecisions(clericData());
+    const l3 = rows.filter((r) => r.level === 3);
+    expect(l3).toEqual([{ level: 3, name: "Cleric Subclasses" }]); // exactly the authored row, no synthesized duplicate
   });
 });
 
