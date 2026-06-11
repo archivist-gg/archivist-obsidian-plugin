@@ -383,6 +383,50 @@ describe("computeSlotsAndAttacks — AC chain", () => {
     expect(d.ac).toBe(18);
   });
 
+  it("vault-loaded armor without ac.flat: AC = base + DEX (not NaN)", () => {
+    // Real vault armor MD carries `ac: {base: 12, add_dex: true}` with NO
+    // `flat` key — the zod default (flat: 0) lives in armor.schema.ts, which
+    // the vault resolve path never runs (resolveEquipmentEntity casts raw
+    // data directly). The arithmetic must default the missing flat to 0.
+    const studdedRaw = {
+      name: "Studded Leather",
+      slug: "vault-studded",
+      category: "light",
+      ac: { base: 12, add_dex: true }, // NO flat key
+    } as unknown as ArmorEntity;
+    const reg = buildMockRegistry([
+      { slug: "vault-studded", entityType: "armor", name: "Studded Leather", data: studdedRaw },
+    ]);
+    const c = baseChar(); c.abilities.dex = 16;
+    const localProfs = { armor: { categories: ["light", "medium", "heavy"], specific: [] }, weapons: { categories: [], specific: [] }, tools: { categories: [], specific: [] } };
+    c.equipment = [{ item: "[[vault-studded]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 3, con: 0, int: 0, wis: 0, cha: 0 }, localProfs, reg, [], 2);
+    expect(Number.isNaN(d.ac)).toBe(false);
+    expect(d.ac).toBe(15); // 12 base + 3 DEX
+    const armorTerm = d.acBreakdown.find((t) => t.kind === "armor");
+    expect(armorTerm?.amount).toBe(12); // base, not NaN
+  });
+
+  it("vault-loaded shield without ac.flat: contributes its base (not NaN)", () => {
+    const shieldRaw = {
+      name: "Shield",
+      slug: "vault-shield",
+      category: "shield",
+      ac: { base: 2, add_dex: false }, // NO flat key
+    } as unknown as ArmorEntity;
+    const reg = buildMockRegistry([
+      { slug: "vault-shield", entityType: "armor", name: "Shield", data: shieldRaw },
+    ]);
+    const c = baseChar();
+    const localProfs = { armor: { categories: ["light", "medium", "heavy", "shield"], specific: [] }, weapons: { categories: [], specific: [] }, tools: { categories: [], specific: [] } };
+    c.equipment = [{ item: "[[vault-shield]]", equipped: true }];
+    const d = computeSlotsAndAttacks(mkResolved(c), { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 }, localProfs, reg, [], 2);
+    expect(Number.isNaN(d.ac)).toBe(false);
+    expect(d.ac).toBe(12); // 10 unarmored + 2 shield base
+    const shieldTerm = d.acBreakdown.find((t) => t.kind === "shield");
+    expect(shieldTerm?.amount).toBe(2);
+  });
+
   it("acBreakdown enumerates each contributing term", () => {
     const c = baseChar();
     c.equipment = [
