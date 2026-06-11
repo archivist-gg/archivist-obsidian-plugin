@@ -245,10 +245,79 @@ function renderFeatureNames(cell: HTMLElement, d: ClassData, lvl: number, ids: s
   });
 }
 
-function renderFeatureTimeline(host: HTMLElement, _ctx: ComponentRenderContext, _d: ClassData, _opts: ClassChronicleOptions): void {
-  host.createDiv({ cls: "pc-dstrip-empty", text: "(see Features task)" });
+function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d: ClassData, opts: ClassChronicleOptions): void {
+  const all = Object.entries(d.features_by_level ?? {})
+    .flatMap(([lvl, feats]) => feats.map((f) => ({ lvl: Number(lvl), f })))
+    .sort((a, b) => a.lvl - b.lvl);
+  if (!all.length) {
+    host.createDiv({ cls: "pc-dstrip-empty", text: "No feature data for this class." });
+    return;
+  }
+  const bag = ctx.builderUiState;
+  const key = `${opts.stateKey}.showall`;
+  const showAll = (bag?.get(key) as boolean | undefined) ?? false;
+  const scoped = showAll ? all : all.filter((e) => e.lvl <= opts.level);
+  const scope = host.createDiv({ cls: "pc-cb-scope" });
+  scope.createSpan({ cls: "pc-cb-scope-l", text: showAll ? "All 20 levels" : `Through level ${opts.level}` });
+  const ghost = scope.createSpan({ cls: "pc-cb-ghost", text: showAll ? `scope to level ${opts.level}` : "show all levels" });
+  ghost.addEventListener("click", () => {
+    bag?.set(key, !showAll);
+    host.empty();
+    renderFeatureTimeline(host, ctx, d, opts);
+  });
+  const tl = host.createDiv({ cls: "pc-cb-timeline" });
+  for (const { lvl, f } of scoped) {
+    const state = lvl === opts.level ? "cur" : lvl < opts.level ? "have" : "locked";
+    const e = tl.createDiv({ cls: `pc-cb-tle ${state}` });
+    e.createSpan({ cls: "pc-cb-med", text: String(lvl) });
+    const n = e.createDiv({ cls: "pc-cb-fn", text: f.name });
+    if ((f.choices?.length ?? 0) > 0) n.createSpan({ cls: "pc-cb-fmeta", text: "▸ decision" });
+    if (f.description) {
+      const head = firstSentence(f.description);
+      const desc = e.createDiv({ cls: "pc-cb-fd", text: head });
+      if (head.length < f.description.length) {
+        const more = desc.createSpan({ cls: "pc-cb-more", text: " Read full ▸" });
+        let open = false;
+        more.addEventListener("click", () => {
+          open = !open;
+          desc.setText(open ? f.description! : head);
+          desc.appendChild(more);
+          more.setText(open ? " Show less ▴" : " Read full ▸");
+        });
+      }
+    }
+  }
 }
 
-function renderProfsEquipment(host: HTMLElement, _d: ClassData): void {
-  host.createDiv({ cls: "pc-dstrip-empty", text: "(see Equipment task)" });
+function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
+  if (d.saving_throws?.length) prop(host, "Saving Throws", d.saving_throws.map((s) => ABILITY_NAME[s] ?? s.toUpperCase()).join(", "));
+  const w = d.proficiencies?.weapons;
+  const weapons = [...(w?.categories ?? []), ...(w?.fixed ?? [])].map(humanizeSlug).join(", ");
+  if (weapons) prop(host, "Weapons", weapons);
+  if (d.proficiencies?.armor?.length) prop(host, "Armor", d.proficiencies.armor.map(humanizeSlug).join(", "));
+  if (d.skill_choices) {
+    const from = d.skill_choices.from.map(humanizeSlug);
+    const shown = from.slice(0, 6).join(", ");
+    prop(host, "Skills", `choose ${d.skill_choices.count} of: ${shown}${from.length > 6 ? ` +${from.length - 6} more` : ""}`);
+  }
+  for (const eq of d.starting_equipment ?? []) {
+    if (eq.kind === "choice") {
+      for (const optStr of eq.options) {
+        const m = optStr.match(/^\(([A-Za-z])\)\s*(.*)$/);
+        const row = host.createDiv({ cls: "pc-cb-eqopt" });
+        row.createSpan({ cls: "pc-cb-eqltr", text: (m?.[1] ?? "•").toLowerCase() });
+        row.createSpan({ cls: "pc-cb-eqtext", text: m?.[2] ?? optStr });
+      }
+    } else if (eq.kind === "fixed") {
+      prop(host, "Equipment", eq.items.map(humanizeSlug).join(", "));
+    } else {
+      prop(host, "Gold", `${eq.amount} GP`);
+    }
+  }
+}
+
+function prop(host: HTMLElement, label: string, value: string): void {
+  const p = host.createDiv({ cls: "pc-cb-prop" });
+  p.createSpan({ cls: "pc-cb-prop-l", text: label });
+  p.createSpan({ text: value });
 }

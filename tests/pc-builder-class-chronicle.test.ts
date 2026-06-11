@@ -40,8 +40,7 @@ function bardData(): ClassData {
     subclass_level: 3,
     subclass_feature_name: "Bard Subclass",
     starting_equipment: [
-      { kind: "choice", options: ["a rapier", "any simple weapon"] },
-      { kind: "gold", amount: 90 },
+      { kind: "choice", options: ["(A) Leather Armor, two Daggers, a Musical Instrument, an Entertainer's Pack, 19 GP", "(B) 90 GP"] },
     ],
     table: {
       1: { prof_bonus: 2, columns: { "Bardic Die": "d6", Cantrips: 2, "Prepared Spells": 4, "1st": 2 }, feature_ids: ["bardic-inspiration", "spellcasting"] },
@@ -63,6 +62,15 @@ function bardData(): ClassData {
           choices: [{ kind: "select-proficiency", id: "expertise", count: 2, domain: "skill", expertise: true }],
         },
         { id: "jack-of-all-trades", name: "Jack of All Trades", description: "You add half your proficiency bonus." },
+      ],
+      // Mirrors the real Bard L3 subclass feature, but carries NO authored
+      // select-entity (the 2024 Bard gap) so the synthesized "Bard Subclass"
+      // browse row is preserved. Present so the timeline locks at show-all.
+      3: [
+        { id: "bard-subclass", name: "Bard Subclass", description: "You gain a Bard subclass of your choice." },
+      ],
+      5: [
+        { id: "font-of-inspiration", name: "Font of Inspiration", description: "You regain Bardic Inspiration on a short or long rest." },
       ],
     },
     description: "An inspiring magician whose power echoes the music of creation. Bards are masters of song.",
@@ -193,5 +201,39 @@ describe("progression table", () => {
     renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 1, mode: "browse", stateKey: "t" });
     openProgression(c);
     expect(c.querySelectorAll(".pc-cb-pt-s.z").length).toBeGreaterThan(0);
+  });
+});
+
+describe("feature timeline", () => {
+  it("scopes to the current level with a show-all ghost; medallion states track level", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 2, mode: "browse", stateKey: "t" });
+    // features fold is open by default in browse
+    expect([...c.querySelectorAll(".pc-cb-tle")].every((e) => !e.classList.contains("locked"))).toBe(true);
+    const ghost = c.querySelector(".pc-cb-ghost") as HTMLElement;
+    ghost.click();
+    expect(c.querySelectorAll(".pc-cb-tle.locked").length).toBeGreaterThan(0);
+    const cur = c.querySelector(".pc-cb-tle.cur .pc-cb-med")!;
+    expect(cur.textContent).toBe("2");
+  });
+
+  it("marks decision-bearing features with the crimson meta", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 2, mode: "browse", stateKey: "t" });
+    const expertise = [...c.querySelectorAll(".pc-cb-tle")].find((e) => e.textContent!.includes("Expertise"))!;
+    expect(expertise.querySelector(".pc-cb-fmeta")).not.toBeNull();
+  });
+});
+
+describe("equipment & proficiencies fold", () => {
+  it("renders saves/skills props and lettered equipment option rows", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 1, mode: "browse", stateKey: "t" });
+    const fold = [...c.querySelectorAll(".pc-cb-fold-h")].find((h) => h.textContent!.includes("Equipment"))!;
+    (fold as HTMLElement).click();
+    expect(c.querySelector(".pc-cb-prop")).not.toBeNull();
+    const opts = c.querySelectorAll(".pc-cb-eqopt");
+    expect(opts.length).toBe(2);                                   // Bard: (A)…/(B) 90 GP
+    expect(opts[0].querySelector(".pc-cb-eqltr")!.textContent).toBe("a");
   });
 });
