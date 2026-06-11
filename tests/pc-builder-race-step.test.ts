@@ -70,16 +70,25 @@ describe("renderRaceStep", () => {
 
 // Entity-data shape the picker hands `renderExpand` (carries subraces + a trait
 // choice). The race-block merges traits by `subraces[].slug`; the trait choice
-// is a select-inline (no registry needed to enumerate).
+// is a select-inline (no registry needed to enumerate). Carries the folded
+// Size/Speed/Darkvision traits (Task 6 folds these into glance tiles), a vision
+// block (Darkvision tile + sub-line), and a long-description decision trait.
 const DWARF_DATA = {
-  name: "Dwarf", size: "medium", speed: { walk: 25 },
+  name: "Dwarf", size: "medium", speed: { walk: 25 }, vision: { darkvision: 60 },
+  description: "Dwarves are a stout and hardy folk.",
   subraces: [{ slug: "hill-dwarf", name: "Hill Dwarf" }, { slug: "mountain-dwarf", name: "Mountain Dwarf" }],
-  traits: [{
-    name: "Tool Proficiency",
-    choices: [{ kind: "select-inline", id: "dwarf-tools", count: 1, options: [
-      { value: "smith", label: "Smith's tools" }, { value: "brewer", label: "Brewer's supplies" },
-    ] }],
-  }],
+  traits: [
+    { name: "Size", description: "Your size is Medium." },
+    { name: "Speed", description: "Your base walking speed is 25 feet." },
+    { name: "Darkvision", description: "You can see in dim light within 60 feet." },
+    {
+      name: "Tool Proficiency",
+      description: "You gain proficiency with one artisan's tool of your choice. You can use this tool to craft and repair items. The tool you choose reflects your dwarven heritage.",
+      choices: [{ kind: "select-inline", id: "dwarf-tools", count: 1, options: [
+        { value: "smith", label: "Smith's tools" }, { value: "brewer", label: "Brewer's supplies" },
+      ] }],
+    },
+  ],
 };
 
 const DWARF_ROW: RegisteredEntity = {
@@ -92,7 +101,7 @@ const DWARF_ROW: RegisteredEntity = {
  *  seeded so the dwarf row restores open at render. The fake registry's
  *  getByTypeAndSlug returns undefined — the trait's select-inline needs none. */
 function mkCtxWithChosenDwarf(
-  data: typeof DWARF_DATA,
+  data: typeof DWARF_DATA = DWARF_DATA,
   over: { setSubrace?: unknown; subrace?: string | null } = {},
 ): ComponentRenderContext {
   const races: RegisteredEntity[] = [
@@ -134,13 +143,41 @@ function expandRowFor(ctx: ComponentRenderContext, slug: string): void {
 }
 
 describe("renderRaceStep — expanded composition", () => {
-  it("chosen race's expanded row shows the subrace callout and racial decision items", () => {
+  it("chosen expansion renders the Chronicle block with strip inside it", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const block = c.querySelector(".pc-btable-expand .pc-cblock")!;
+    expect(block.querySelector(".pc-cb-name")!.textContent).toBe("Dwarf");
+    expect(block.querySelector(".pc-dstrip")).not.toBeNull();          // strip INSIDE the block
+    expect(c.querySelector(".pc-bledger")).toBeNull();                  // old appended ledger gone
+  });
+
+  it("chosen expansion shows the subrace row and racial decision items", () => {
     const container = mountContainer();
-    const ctx = mkCtxWithChosenDwarf(DWARF_DATA);
-    renderRaceStep(container, ctx);
+    renderRaceStep(container, mkCtxWithChosenDwarf());
     expect(container.textContent).toContain("Subrace");
     expect(container.textContent).toContain("Hill Dwarf");
     expect(container.textContent).toContain("Tool Proficiency");
+  });
+
+  it("folds Size/Speed/Darkvision traits into tiles and out of the trait list", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const names = [...c.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent);
+    expect(names).not.toContain("Size");
+    expect(names).not.toContain("Speed");
+    expect(names).not.toContain("Darkvision");
+    expect([...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toContain("Darkvision");
+  });
+
+  it("trait with choices carries the decision meta; Read full expands the rest", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const t = [...c.querySelectorAll(".pc-cb-trait")].find((x) => x.querySelector(".pc-cb-trait-meta"))!;
+    const more = t.querySelector(".pc-cb-more") as HTMLElement;
+    const before = t.querySelector(".pc-cb-trait-d")!.textContent!.length;
+    more.click();
+    expect(t.querySelector(".pc-cb-trait-d")!.textContent!.length).toBeGreaterThan(before);
   });
 
   it("subrace chip click writes setSubrace; re-click clears it", () => {
@@ -163,12 +200,14 @@ describe("renderRaceStep — expanded composition", () => {
     expect(setSubrace).toHaveBeenCalledWith(null);
   });
 
-  it("a non-chosen race's expanded row shows only the entity block (no subrace/decisions)", () => {
+  it("a non-chosen race's expanded row shows the block WITHOUT the strip (no subrace/decisions)", () => {
     const container = mountContainer();
     const ctx = mkCtxWithChosenDwarf(DWARF_DATA); // elf row expanded while dwarf is chosen
     expandRowFor(ctx, "srd-5e_elf");
     renderRaceStep(container, ctx);
     const expand = container.querySelector(".pc-btable-expand");
+    expect(expand?.querySelector(".pc-cblock")).not.toBeNull();
+    expect(expand?.querySelector(".pc-dstrip")).toBeNull();
     expect(expand?.textContent).not.toContain("Subrace");
   });
 });
