@@ -1,0 +1,50 @@
+/**
+ * Pure presentational shell for the builder's Chronicle blocks (Race,
+ * Background, and class steps). Renders the identity band, optional flavor
+ * paragraph, at-a-glance tiles, and a caller-supplied body. The matching CSS
+ * (`.pc-cblock` / `.pc-cb-*`) ships in chronicle.css.
+ */
+
+export interface GlanceTile { label: string; value: string; small?: string; }
+
+export interface ChronicleBlockOptions {
+  name: string;
+  /** Italic sub-line under the name (omit segments with no data — caller's job). */
+  sub: string;
+  /** Corner badge, e.g. "SRD 5.2 · 2024". */
+  badge?: string;
+  /** Description paragraph; omitted entirely when falsy/empty. */
+  flavor?: string;
+  tiles: GlanceTile[];
+  /** Renders content above the identity band (edition-mix note). */
+  pre?: (host: HTMLElement) => void;
+  /** Renders everything after the tiles (strip + body sections). */
+  body: (host: HTMLElement) => void;
+}
+
+export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOptions): HTMLElement {
+  const block = parent.createDiv({ cls: "pc-cblock" });
+  opts.pre?.(block);
+  if (opts.badge) block.createSpan({ cls: "pc-cb-badge", text: opts.badge });
+  const bh = block.createDiv({ cls: "pc-cb-bh" });
+  bh.createEl("h3", { cls: "pc-cb-name", text: opts.name });
+  bh.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  if (opts.flavor) block.createDiv({ cls: "pc-cb-flavor", text: opts.flavor });
+  if (opts.tiles.length) {
+    const glance = block.createDiv({ cls: "pc-cb-glance" });
+    for (const t of opts.tiles) {
+      const tile = glance.createDiv({ cls: "pc-cb-tile" });
+      tile.createSpan({ cls: "pc-cb-tl", text: t.label });
+      const v = tile.createSpan({ cls: "pc-cb-tv", text: t.value });
+      if (t.small) v.createSpan({ cls: "pc-cb-ts", text: t.small });
+    }
+  }
+  opts.body(block);
+  return block;
+}
+
+export function renderSectionRule(parent: HTMLElement, label: string, right?: string): void {
+  const sec = parent.createDiv({ cls: "pc-cb-sec" });
+  sec.createSpan({ cls: "pc-cb-sec-l", text: label });
+  if (right) sec.createSpan({ cls: "pc-cb-sec-r", text: right });
+}
