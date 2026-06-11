@@ -97,12 +97,29 @@ function renderOriginFeatRow(wrap: HTMLElement, ctx: ComponentRenderContext, e: 
   // "[[my-feat]]"), so a homebrew "homebrew_alert" can't shadow "srd-2024_alert"
   // via the loose tail match. Fall back to the suffix match for compendium feats
   // whose slug is "<compendium>_<bare>". First tail match wins (acceptable).
-  const feat =
-    feats.find((f) => f.slug === slug) ??
-    feats.find((f) => f.slug.endsWith(`_${slug}`));
+  const lookup = (s: string): RegisteredEntity | undefined =>
+    feats.find((f) => f.slug === s) ?? feats.find((f) => f.slug.endsWith(`_${s}`));
+  let feat = lookup(slug);
+  // Variant fallback: canonical 2024 Acolyte/Sage carry parenthesized refs like
+  // "[[SRD 2024/Feats/Magic Initiate (Cleric)]]" whose tail slugifies to
+  // "magic-initiate-cleric", but the only real feat is "srd-2024_magic-initiate".
+  // Strip ONE trailing parenthetical from the RAW tail, re-slugify, and retry —
+  // resolving to the BASE feat while still naming the VARIANT in the display span.
+  let variantName: string | undefined;
+  if (!feat) {
+    const rawTail = ref.replace(/^\[\[/, "").replace(/\]\]$/, "").split("/").pop()?.trim() ?? "";
+    const base = rawTail.replace(/\s*\([^()]*\)\s*$/, "").trim();
+    if (base && base !== rawTail) {
+      const baseFeat = lookup(wikilinkTailSlug(`[[${base}]]`));
+      if (baseFeat) {
+        feat = baseFeat;
+        variantName = rawTail; // honest about which variant the background grants
+      }
+    }
+  }
   const row = wrap.createDiv({ cls: "pc-bofeat" });
   row.createSpan({ cls: "pc-bofeat-l", text: "Origin Feat" });
-  row.createSpan({ cls: "pc-bofeat-v", text: feat?.name ?? slug });
+  row.createSpan({ cls: "pc-bofeat-v", text: variantName ?? feat?.name ?? slug });
   if (!feat) return;
   row.createSpan({ cls: "pc-bofeat-x", text: "›" });
   let open = false;

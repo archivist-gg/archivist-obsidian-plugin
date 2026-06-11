@@ -144,6 +144,41 @@ describe("renderBackgroundStep", () => {
     expect(row!.querySelector(".pc-bofeat-x")).not.toBeNull();
   });
 
+  it("origin feat resolves a parenthesized variant to its base feat, showing the variant name", () => {
+    // Canonical 2024 Acolyte/Sage carry parenthesized origin-feat refs like
+    // "[[SRD 2024/Feats/Magic Initiate (Cleric)]]" whose tail slugifies to
+    // "magic-initiate-cleric" — but the only real feat is "srd-2024_magic-initiate"
+    // ("Magic Initiate"). The row must resolve to the BASE feat while still
+    // displaying the VARIANT name (honest about which variant the bg grants).
+    const MAGIC_INITIATE_FEAT = {
+      slug: "srd-2024_magic-initiate", name: "Magic Initiate", entityType: "feat",
+      filePath: "x", readonly: true, homebrew: false, compendium: "SRD 2024",
+      data: { name: "Magic Initiate" },
+    } as unknown as RegisteredEntity;
+    const container = mountContainer();
+    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
+    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+      type === "background" ? BACKGROUNDS : type === "feat" ? [MAGIC_INITIATE_FEAT] : [];
+    const bgRow = BACKGROUNDS.find((b) => b.slug === "srd-2024_criminal")!;
+    const prev = (bgRow.data as { origin_feat?: string }).origin_feat;
+    (bgRow.data as { origin_feat?: string }).origin_feat = "[[SRD 2024/Feats/Magic Initiate (Cleric)]]";
+    try {
+      renderBackgroundStep(container, ctx);
+      const row = container.querySelector<HTMLElement>(".pc-bofeat")!;
+      // Variant display name (NOT the base "Magic Initiate", NOT the degraded slug).
+      expect(row.querySelector(".pc-bofeat-v")?.textContent).toBe("Magic Initiate (Cleric)");
+      // Chevron renders (the row is expandable).
+      expect(row.querySelector(".pc-bofeat-x")).not.toBeNull();
+      // Clicking expands the BASE feat's block (fallback name line = "Magic Initiate").
+      row.click();
+      const expand = container.querySelector(".pc-bofeat-expand");
+      expect(expand).not.toBeNull();
+      expect(expand!.textContent).toContain("Magic Initiate");
+    } finally {
+      (bgRow.data as { origin_feat?: string }).origin_feat = prev;
+    }
+  });
+
   it("origin feat resolves a bare-slug homebrew ref via exact-match", () => {
     const HOMEBREW_FEAT = {
       slug: "my-feat", name: "My Feat", entityType: "feat", filePath: "x",
