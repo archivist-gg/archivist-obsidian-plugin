@@ -173,6 +173,12 @@
 .archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal { border-color: var(--pc-crimson); color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-btoggle.seal.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
 .archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal.on { color: var(--pc-parchment-light); }
+/* expandSelect mode: the standing pick is marked by an inline name seal (no
+   toggle column), since the row itself is the selection control. */
+.archivist-pc-sheet .pc-bname-seal {
+  color: var(--pc-crimson);
+  font-weight: 700;
+}
 
 /* ── Entity picker (single-select ledger: search + filter + seal table) ── */
 .archivist-pc-sheet .pc-bpicker { min-width: 0; }

@@ -29,6 +29,13 @@ export interface SelectionTableOptions {
    *  Swap semantics stay the caller's policy — the component still just
    *  reports clicks via onToggle. */
   single?: boolean;
+  /** Race-step semantics (class-step decisions doc): row click = solo-expand =
+   *  selected. Drops the toggle column entirely; clicking an unselected row
+   *  expands it (collapsing any other) AND fires onToggle. Re-clicking the
+   *  selected row toggles its expansion only — it never deselects. */
+  expandSelect?: boolean;
+  /** Custom expanded-row content; defaults to the inline entity block. */
+  renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
 }
 
 interface TableUiState {
@@ -61,7 +68,12 @@ export function renderSelectionTable(
   // their fixed widths while Name absorbs the remaining host width, so the
   // ledger fills wide hosts (builder step bodies) and still overflows into
   // the host's horizontal scroll in narrow ones (drawers).
-  const tracks = ["30px", "minmax(200px, 1fr)", ...opts.columns.map((c) => c.width), "110px"].join(" ");
+  const tracks = [
+    ...(opts.expandSelect ? [] : ["30px"]),
+    "minmax(200px, 1fr)",
+    ...opts.columns.map((c) => c.width),
+    "110px",
+  ].join(" ");
 
   const draw = (): void => {
     host.empty();
@@ -74,7 +86,7 @@ export function renderSelectionTable(
     const head = list.createDiv({ cls: "pc-btable-head" });
     head.style.gridTemplateColumns = tracks;
     const headers: { label: string; key: "name" | number | null; cls: string }[] = [
-      { label: "", key: null, cls: "col-add" },
+      ...(opts.expandSelect ? [] : [{ label: "", key: null as null, cls: "col-add" }]),
       { label: "Name", key: "name", cls: "col-name" },
       ...opts.columns.map((c, i): { label: string; key: "name" | number | null; cls: string } =>
         ({ label: c.label, key: c.sort ? i : null, cls: c.cls })),
@@ -103,31 +115,40 @@ export function renderSelectionTable(
     const tr = list.createDiv({ cls: "pc-btable-row" });
     tr.style.gridTemplateColumns = tracks;
 
-    const addTd = tr.createDiv({ cls: "col-add" });
-    const toggle = opts.single
-      ? addTd.createEl("button", {
-          cls: `pc-btoggle seal${isSel ? " on" : ""}`,
-          text: "✓",
-          attr: { title: isSel ? "Current" : "Select" },
-        })
-      : addTd.createEl("button", { cls: `pc-btoggle${isSel ? " on" : ""}`, text: isSel ? "✓" : "＋" });
-    toggle.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      opts.onToggle(e.slug);
-    });
+    if (!opts.expandSelect) {
+      const addTd = tr.createDiv({ cls: "col-add" });
+      const toggle = opts.single
+        ? addTd.createEl("button", {
+            cls: `pc-btoggle seal${isSel ? " on" : ""}`,
+            text: "✓",
+            attr: { title: isSel ? "Current" : "Select" },
+          })
+        : addTd.createEl("button", { cls: `pc-btoggle${isSel ? " on" : ""}`, text: isSel ? "✓" : "＋" });
+      toggle.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        opts.onToggle(e.slug);
+      });
+    }
 
     const nameTd = tr.createDiv({ cls: "col-name" });
     nameTd.createSpan({ cls: `pc-btable-name${isSel ? " on" : ""}`, text: e.name });
+    if (opts.expandSelect && isSel) nameTd.createSpan({ cls: "pc-bname-seal", text: " ✓" });
     for (const c of opts.columns) c.render(tr.createDiv({ cls: c.cls }), e);
     renderSourceTag(tr.createDiv({ cls: "col-source" }), e);
 
-    const toggleExpand = (): void => {
+    const toggleExpand = (fromClick: boolean): void => {
       const next = tr.nextElementSibling;
       if (next?.classList.contains("pc-btable-expand-row")) {
         next.remove();
         st.expanded.delete(e.slug);
         tr.classList.remove("pc-row-open");
         return;
+      }
+      if (opts.expandSelect) {
+        // Solo-expand: at most one open row in this mode.
+        list.querySelectorAll(".pc-btable-expand-row").forEach((n) => n.remove());
+        list.querySelectorAll(".pc-row-open").forEach((n) => n.classList.remove("pc-row-open"));
+        st.expanded.clear();
       }
       st.expanded.add(e.slug);
       tr.classList.add("pc-row-open");
@@ -137,10 +158,13 @@ export function renderSelectionTable(
       // Pin prose to the visible width when the table out-measures the host.
       const scroller = tr.closest(".pc-btable-host");
       if (scroller) wrap.style.maxWidth = `${(scroller as HTMLElement).clientWidth - 28}px`;
-      renderEntityBlock(wrap, e, ctx.core);
+      if (opts.renderExpand) opts.renderExpand(wrap, e);
+      else renderEntityBlock(wrap, e, ctx.core);
+      // Selection rides the user's expand gesture — never the redraw-restore path.
+      if (fromClick && opts.expandSelect && !opts.selected.has(e.slug)) opts.onToggle(e.slug);
     };
-    tr.addEventListener("click", toggleExpand);
-    if (st.expanded.has(e.slug)) toggleExpand(); // restore open state across redraws
+    tr.addEventListener("click", () => toggleExpand(true));
+    if (st.expanded.has(e.slug)) toggleExpand(false); // restore open state across redraws
   };
 
   draw();
