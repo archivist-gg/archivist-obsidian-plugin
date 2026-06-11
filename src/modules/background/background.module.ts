@@ -1,7 +1,8 @@
+import type { App } from "obsidian";
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
 import type { BackgroundEntity } from "./background.types";
 import { parseBackground } from "./background.parser";
-import { renderBackgroundStub } from "./background.renderer";
+import { renderBackgroundBlock } from "./background.renderer";
 
 class BackgroundModule implements ArchivistModule {
   readonly id = "background";
@@ -15,7 +16,21 @@ class BackgroundModule implements ArchivistModule {
   }
 
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
-    return renderBackgroundStub(el, data as BackgroundEntity, ctx);
+    // Stable wrapper held by the host; the async renderer fills it as a child
+    // (same contract as the race/feat/spell modules — see race.module.ts render()).
+    const app = (ctx.plugin as { app?: App } | undefined)?.app;
+    const wrapper = el.doc.createElement("div");
+    el.appendChild(wrapper);
+    void renderBackgroundBlock(data as BackgroundEntity, app)
+      .then((block) => { wrapper.appendChild(block); })
+      .catch((err: unknown) => {
+        console.error("[Archivist] background block render failed", err);
+        wrapper.createDiv({
+          cls: "archivist-block-error",
+          text: `${(data as { name?: string })?.name ?? "Entity"} — block failed to render: ${String(err)}`,
+        });
+      });
+    return wrapper;
   }
 }
 
