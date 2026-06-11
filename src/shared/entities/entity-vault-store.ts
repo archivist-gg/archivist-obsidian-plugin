@@ -134,7 +134,7 @@ export function parseEntityFile(content: string): EntityNote | null {
   // Extract fenced code block from body
   const bodyStart = endIndex + 4; // skip "\n---"
   const bodyContent = content.substring(bodyStart);
-  const codeBlockMatch = bodyContent.match(/```\w+\n([\s\S]*?)```/);
+  const codeBlockMatch = bodyContent.match(/```[\w-]+\n([\s\S]*?)```/);
   if (!codeBlockMatch) return null;
 
   let data: Record<string, unknown>;

@@ -54,6 +54,11 @@ export function mergeOptionalFeatures(opts: MergeOptionalFeatureOptions): Option
     const normalized = normalizeOptionalFeature(input);
     // Apply compendium-prefixed slug (mirrors mergeKind's buildCanonicalSlug).
     normalized.data.slug = `${opts.edition === "2014" ? "srd-5e" : "srd-2024"}_${normalized.data.slug}`;
+    // Entity-level effects authored in the overlay (keyed by bare slug).
+    const entityOverlay = opts.overlay.optional_features?.[slug];
+    if (entityOverlay?.effects?.length) {
+      normalized.data.effects = entityOverlay.effects;
+    }
     out.push(normalized.data);
   }
 

@@ -108,6 +108,17 @@
   background: transparent;
   flex-shrink: 0;
 }
+/* Distance reading (e.g. Darkvision "60 ft.") — quiet serif text aligned in
+   the value column, NOT the boxed-numeral treatment used for passive scores. */
+.archivist-pc-sheet .pc-sense-dist {
+  order: 0;
+  min-width: 28px;
+  text-align: right;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+  flex-shrink: 0;
+}
 .archivist-pc-sheet .pc-sense-name {
   order: 1;
   font-family: var(--pc-font-serif);

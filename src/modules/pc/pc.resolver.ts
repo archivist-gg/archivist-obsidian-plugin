@@ -70,7 +70,7 @@ export class PCResolver {
 
     const totalLevel = classes.reduce((sum, c) => sum + c.level, 0);
     const features = collectResolvedFeatures(race, classes, background, feats);
-    const extraFeatures = collectChosenGrantedFeatures(character, classes, this.entities);
+    const extraFeatures = collectChosenGrantedFeatures(character, classes, this.entities, race, background);
     features.push(...extraFeatures);
 
     // Primary caster slug (for bare-slug spells that don't name their class).
@@ -130,14 +130,16 @@ export function collectFeatSlugs(character: Character): string[] {
 
 /** Selected select-entity values (optional-features) and selected inline
  *  options carrying effects[] become synthesized resolved features (SP2 Plan 3 §9).
- *  The actions/resources engines consume these synthesized features today;
- *  any effects[] are carried onto the features but not yet consumed anywhere —
- *  no effect-application engine exists in the codebase yet (named deferral).
- *  Scope is class/subclass only — origin (race/background) grants are Plan 4. */
+ *  The actions/resources engines consume these synthesized features, and the
+ *  effects-application pass (pc.feature-effects.ts → recalc) consumes their
+ *  effects[]. Scope: class/subclass level choices, plus race/background origin
+ *  choices (origin_choices keys are namespaced "race:<id>" / "background:<id>"). */
 export function collectChosenGrantedFeatures(
   character: Character,
   classes: ResolvedClass[],
   registry: { getByTypeAndSlug(type: string, slug: string): { data: Record<string, unknown> } | undefined },
+  race: RaceEntity | null = null,
+  background: BackgroundEntity | null = null,
 ): ResolvedFeature[] {
   const out: ResolvedFeature[] = [];
   classes.forEach((c, i) => {
@@ -157,6 +159,37 @@ export function collectChosenGrantedFeatures(
       }
     }
   });
+
+  // Origin (race/background) grants. origin_choices keys are "<ns>:<choiceId>";
+  // strip the namespace so walkChoiceGrants can match on bare choice ids.
+  const oc = character.origin_choices ?? {};
+  const originAt = (ns: string): Record<string, unknown> => {
+    const at: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(oc)) {
+      if (key.startsWith(`${ns}:`)) at[key.slice(ns.length + 1)] = val;
+    }
+    return at;
+  };
+  if (race) {
+    const atRace = originAt("race");
+    const emitRace = (granted: Feature): void => {
+      out.push({ feature: granted, source: { kind: "race", slug: race.slug } });
+    };
+    walkChoiceGrants(race.choices, atRace, emitRace, registry);
+    for (const trait of race.traits ?? []) {
+      walkChoiceGrants(trait.choices, atRace, emitRace, registry);
+    }
+  }
+  if (background) {
+    const atBg = originAt("background");
+    const emitBg = (granted: Feature): void => {
+      out.push({ feature: granted, source: { kind: "background", slug: background.slug } });
+    };
+    walkChoiceGrants(background.choices, atBg, emitBg, registry);
+    if (background.feature) {
+      walkChoiceGrants((background.feature as { choices?: Choice[] }).choices, atBg, emitBg, registry);
+    }
+  }
   return out;
 }
 
@@ -244,12 +277,28 @@ export function collectResolvedFeatures(
 
   for (const feat of feats) {
     const bundled = (feat as unknown as { features?: Feature[] }).features ?? [];
+    const entityEffects = feat.effects ?? [];
     if (bundled.length > 0) {
-      for (const f of bundled) out.push({ feature: f, source: { kind: "feat", slug: feat.slug } });
+      bundled.forEach((f, i) => {
+        // Entity-level feat effects ride the first bundled feature. Shallow
+        // copy — registry entities are shared and must not be mutated.
+        const feature = i === 0 && entityEffects.length > 0
+          ? { ...f, effects: [...(f.effects ?? []), ...entityEffects] }
+          : f;
+        out.push({ feature, source: { kind: "feat", slug: feat.slug } });
+      });
     } else {
       const name = feat.name ?? feat.slug;
       const description = feat.description ?? "";
-      out.push({ feature: { name, description, ...(feat.resources ? { resources: feat.resources } : {}) }, source: { kind: "feat", slug: feat.slug } });
+      out.push({
+        feature: {
+          name,
+          description,
+          ...(feat.resources ? { resources: feat.resources } : {}),
+          ...(entityEffects.length > 0 ? { effects: entityEffects } : {}),
+        },
+        source: { kind: "feat", slug: feat.slug },
+      });
     }
   }
 

@@ -299,6 +299,60 @@ rarity: uncommon
     expect(result!.entityType).toBe("item");
   });
 
+  it("parses optional-feature entity (hyphenated code block fence)", () => {
+    const content = `---
+archivist: true
+entity_type: optional-feature
+slug: fighting-style-defense
+name: Defense
+compendium: SRD
+---
+
+\`\`\`optional-feature
+name: Defense
+effects:
+  - kind: ac-bonus
+    value: 1
+    requires_armor: true
+\`\`\`
+`;
+    const result = parseEntityFile(content);
+    expect(result).not.toBeNull();
+    expect(result!.slug).toBe("fighting-style-defense");
+    expect(result!.name).toBe("Defense");
+    expect(result!.entityType).toBe("optional-feature");
+    expect(result!.compendium).toBe("SRD");
+    expect(result!.data).toEqual({
+      name: "Defense",
+      effects: [{ kind: "ac-bonus", value: 1, requires_armor: true }],
+    });
+  });
+
+  it("regression: single-word fence (feat) still parses", () => {
+    const content = `---
+archivist: true
+entity_type: feat
+slug: alert
+name: Alert
+compendium: SRD
+---
+
+\`\`\`feat
+name: Alert
+effects:
+  - kind: ability-bonus
+    value: 1
+\`\`\`
+`;
+    const result = parseEntityFile(content);
+    expect(result).not.toBeNull();
+    expect(result!.entityType).toBe("feat");
+    expect(result!.data).toEqual({
+      name: "Alert",
+      effects: [{ kind: "ability-bonus", value: 1 }],
+    });
+  });
+
   it("roundtrips through generate and parseEntityFile", () => {
     const original: EntityNote = {
       slug: "fireball",

@@ -19,7 +19,9 @@ export interface ArmorEntity {
   category: ArmorCategory;
   ac: {
     base: number;
-    flat: number;
+    // Optional: the zod default (flat: 0) only applies on the parsed path.
+    // Raw vault data omits this key entirely, so read-sites must default it.
+    flat?: number;
     add_dex: boolean;
     dex_max?: number;
     add_con: boolean;

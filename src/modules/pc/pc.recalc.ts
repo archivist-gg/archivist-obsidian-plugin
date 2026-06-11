@@ -15,6 +15,7 @@ import type { RaceEntity } from "../race/race.types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
 import { collectChosenProficiencies } from "./pc.decision-engine";
+import { computeFeatureEffects } from "./pc.feature-effects";
 import { computeConditionEffects } from "./pc.conditions";
 import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
 import type {
@@ -271,6 +272,22 @@ function mergeInto(target: ProficiencySet, source: { categories: string[]; speci
   for (const s of source.specific) if (!target.specific.includes(s)) target.specific.push(s);
 }
 
+/** Concats defense lists in precedence order (manual, equipment, features),
+ *  deduping case-insensitively — first occurrence's spelling wins. */
+function dedupeDefenseList(lists: string[][]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const list of lists) {
+    for (const v of list) {
+      const key = v.trim().toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(v);
+    }
+  }
+  return out;
+}
+
 export function computeProficiencies(
   resolved: ResolvedCharacter,
 ): { armor: ProficiencySet; weapons: ProficiencySet; tools: ProficiencySet; languages: string[]; saves: Ability[] } {
@@ -332,11 +349,20 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // Chosen proficiencies from persisted decisions (SP2 Plan 3): skills/expertise
   // fold into the skill tri below; languages/tools fold into the proficiency set.
   const chosenProfs = collectChosenProficiencies(resolved);
+  // Feature-effects pass (effects-application engine): one pure aggregation
+  // over resolved.features; threaded into each stat below, before overrides.
+  const featureEffects = computeFeatureEffects(resolved.features);
   const profsForApply = computeProficiencies(resolved);
   for (const t of chosenProfs.tools) {
     if (!profsForApply.tools.specific.includes(t)) profsForApply.tools.specific.push(t);
   }
   for (const l of chosenProfs.languages) {
+    if (!profsForApply.languages.includes(l)) profsForApply.languages.push(l);
+  }
+  for (const t of featureEffects.proficiencies.tools) {
+    if (!profsForApply.tools.specific.includes(t)) profsForApply.tools.specific.push(t);
+  }
+  for (const l of featureEffects.proficiencies.languages) {
     if (!profsForApply.languages.includes(l)) profsForApply.languages.push(l);
   }
   profsForApply.languages.sort();
@@ -383,6 +409,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // Saves (first class's saving_throws only, per 5e multiclass rule).
   const firstClass = resolved.classes[0]?.entity ?? null;
   const saveProfs = new Set<Ability>(firstClass?.saving_throws ?? []);
+  for (const ab of featureEffects.proficiencies.saves) saveProfs.add(ab);
   const saves: Record<Ability, { bonus: number; proficient: boolean }> = {} as never;
   for (const ab of ABILITY_KEYS) {
     const override = overrides.saves?.[ab];
@@ -393,7 +420,11 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   }
 
   // Skills (definition lists + chosen decision proficiencies/expertise).
-  const profSet = new Set([...resolved.definition.skills.proficient, ...chosenProfs.skills]);
+  const profSet = new Set([
+    ...resolved.definition.skills.proficient,
+    ...chosenProfs.skills,
+    ...featureEffects.proficiencies.skills,
+  ]);
   const expSet = new Set([...resolved.definition.skills.expertise, ...chosenProfs.expertise]);
   const skills: DerivedStats["skills"] = {} as never;
   for (const skill of ALL_SKILLS) {
@@ -423,7 +454,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   };
 
   // HP
-  const hpMaxDerived = multiclassMaxHP(resolved.classes, mods.con);
+  const hpMaxDerived = multiclassMaxHP(resolved.classes, mods.con)
+    + featureEffects.hp_per_level_bonus * totalLevel;
   const hpMaxAfterConditions = Math.floor(hpMaxDerived * conditionEffects.hp_max_multiplier);
   const hpMax = overrides.hp?.max ?? hpMaxAfterConditions;
 
@@ -436,6 +468,14 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // item/override AC contributions on top of the unarmored base, while still
   // dropping armor/shield/dex contributions from the equipment breakdown
   // (there's no armor, and the unarmored base already includes its own DEX).
+  // Feature ac-bonus terms: requires_armor terms only count when armor is
+  // actually equipped (the structured gate for Defense's "while wearing armor").
+  const featureAcTermsFor = (hasArmor: boolean): ACTerm[] =>
+    featureEffects.ac_terms
+      .filter((t) => !t.requires_armor || hasArmor)
+      .map((t) => ({ source: t.label, amount: t.value, kind: "feature" as const }));
+  const sumTerms = (terms: ACTerm[]): number => terms.reduce((s, t) => s + t.amount, 0);
+
   let derivedEquipment: DerivedEquipment | null = null;
   let acDerived: number;
   let acBreakdownDerived: ACTerm[] = [];
@@ -443,8 +483,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   if (registry) {
     derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus);
     if (derivedEquipment.equippedSlots.armor) {
-      acDerived = derivedEquipment.ac;
-      acBreakdownDerived = derivedEquipment.acBreakdown;
+      const featTerms = featureAcTermsFor(true);
+      acDerived = derivedEquipment.ac + sumTerms(featTerms);
+      acBreakdownDerived = [...derivedEquipment.acBreakdown, ...featTerms];
       acInformationalDerived = derivedEquipment.acInformational;
     } else {
       const { total: unarmored, terms: unarmoredTerms } = unarmoredACBreakdown(resolved, mods, warnings);
@@ -454,9 +495,10 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       const additive = derivedEquipment.acBreakdown.filter(
         (b) => b.kind === "item" || b.kind === "override",
       );
+      const featTerms = featureAcTermsFor(false);
       const additiveSum = additive.reduce((sum, b) => sum + b.amount, 0);
-      acDerived = unarmored + additiveSum;
-      acBreakdownDerived = [...unarmoredTerms, ...additive];
+      acDerived = unarmored + additiveSum + sumTerms(featTerms);
+      acBreakdownDerived = [...unarmoredTerms, ...additive, ...featTerms];
       // Magic items still source these conditional AC bonuses even on the
       // unarmored path (the additive merge above already includes their
       // numeric contributions); carry the situational pool through.
@@ -464,20 +506,27 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     }
   } else {
     const { total, terms } = unarmoredACBreakdown(resolved, mods, warnings);
-    acDerived = total;
-    acBreakdownDerived = terms;
+    const featTerms = featureAcTermsFor(false);
+    acDerived = total + sumTerms(featTerms);
+    acBreakdownDerived = [...terms, ...featTerms];
   }
   const ac = overrides.ac ?? acDerived;
 
   // Speed
-  const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk;
+  const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk + featureEffects.speed_walk_bonus;
   const adjustedSpeed = (baseSpeed * conditionEffects.speed_multiplier) - conditionEffects.speed_reduction_ft;
   const conditionSpeed = conditionEffects.speed_floor_zero ? 0 : Math.max(0, Math.floor(adjustedSpeed));
   const speed = overrides.speed ?? conditionSpeed;
   if (!resolved.race) warnings.push("No race resolved; speed defaulted to 30.");
 
   // Initiative
-  const init = overrides.initiative ?? initiativeBonus(mods.dex, resolved.feats, resolved.definition.edition);
+  const init = overrides.initiative
+    ?? (initiativeBonus(mods.dex, resolved.feats, resolved.definition.edition) + featureEffects.initiative_bonus);
+
+  // Senses: race vision vs feature-effect darkvision — larger wins.
+  const senses = {
+    darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.darkvision),
+  };
 
   // Spellcasting (per class, multiclass-aware)
   const edition = resolved.definition.edition;
@@ -524,22 +573,24 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   );
 
   const defenses = {
-    resistances: [
-      ...(resolved.definition.defenses?.resistances ?? []),
-      ...applied.defenses.resistances,
-    ],
-    immunities: [
-      ...(resolved.definition.defenses?.immunities ?? []),
-      ...applied.defenses.immunities,
-    ],
-    vulnerabilities: [
-      ...(resolved.definition.defenses?.vulnerabilities ?? []),
-      ...applied.defenses.vulnerabilities,
-    ],
-    condition_immunities: [
-      ...(resolved.definition.defenses?.condition_immunities ?? []),
-      ...applied.defenses.condition_immunities,
-    ],
+    resistances: dedupeDefenseList([
+      resolved.definition.defenses?.resistances ?? [],
+      applied.defenses.resistances,
+      featureEffects.resistances,
+    ]),
+    immunities: dedupeDefenseList([
+      resolved.definition.defenses?.immunities ?? [],
+      applied.defenses.immunities,
+    ]),
+    vulnerabilities: dedupeDefenseList([
+      resolved.definition.defenses?.vulnerabilities ?? [],
+      applied.defenses.vulnerabilities,
+    ]),
+    condition_immunities: dedupeDefenseList([
+      resolved.definition.defenses?.condition_immunities ?? [],
+      applied.defenses.condition_immunities,
+      featureEffects.condition_immunities,
+    ]),
   };
 
   return {
@@ -551,6 +602,7 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     proficiencies: profsForApply,
     skills,
     passives,
+    senses,
     hp: {
       max: hpMax,
       current: resolved.state.hp.current,

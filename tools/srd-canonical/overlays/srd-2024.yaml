@@ -1049,3 +1049,12 @@ backgrounds:
         id: tool
         domain: tool
         count: 1
+
+# ===================================================================
+# Entity-level effect authoring (effects-application engine, 2026-06-10).
+# 2024 fighting styles are FEATS -- keyed by bare feat slug.
+# ===================================================================
+feats:
+  defense:
+    effects:
+      - { kind: ac-bonus, value: 1, requires_armor: true }

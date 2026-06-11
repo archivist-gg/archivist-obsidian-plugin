@@ -330,8 +330,8 @@ function computeAC(
 
   let ac = 10;
   if (armorEntity && isArmorEntity(armorEntity)) {
-    ac = armorEntity.ac.base + armorEntity.ac.flat;
-    breakdown.push({ source: armorEntity.name, amount: armorEntity.ac.base + armorEntity.ac.flat, kind: "armor" });
+    ac = armorEntity.ac.base + (armorEntity.ac.flat ?? 0);
+    breakdown.push({ source: armorEntity.name, amount: armorEntity.ac.base + (armorEntity.ac.flat ?? 0), kind: "armor" });
     if (armorEntity.ac.add_dex) {
       const dexCap = armorEntity.ac.dex_max ?? Number.POSITIVE_INFINITY;
       const dexAdd = Math.min(mods.dex, dexCap);
@@ -359,7 +359,7 @@ function computeAC(
   const mainIsTwoHanded = main && isWeaponEntity(main) && isTwoHanded(main);
   const shieldEntity = equippedSlots.shield?.entity ?? null;
   if (shieldEntity && isArmorEntity(shieldEntity) && !mainIsTwoHanded) {
-    const n = shieldEntity.ac.base + shieldEntity.ac.flat;
+    const n = shieldEntity.ac.base + (shieldEntity.ac.flat ?? 0);
     ac += n;
     breakdown.push({ source: shieldEntity.name, amount: n, kind: "shield" });
   }

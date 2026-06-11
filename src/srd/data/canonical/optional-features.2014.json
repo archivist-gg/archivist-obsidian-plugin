@@ -28,7 +28,13 @@
       "[[SRD 5e/paladin]]",
       "[[SRD 5e/ranger]]"
     ],
-    "effects": []
+    "effects": [
+      {
+        "kind": "ac-bonus",
+        "value": 1,
+        "requires_armor": true
+      }
+    ]
   },
   {
     "slug": "srd-5e_dueling",

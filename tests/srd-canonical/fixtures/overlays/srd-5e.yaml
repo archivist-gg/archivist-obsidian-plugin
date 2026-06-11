@@ -11,3 +11,7 @@ optional_feature_slugs:
   invocation:
     - agonizing-blast
     - devil-sight
+optional_features:
+  defense:
+    effects:
+      - { kind: ac-bonus, value: 1, requires_armor: true }

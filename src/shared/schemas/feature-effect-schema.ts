@@ -27,4 +27,9 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     proficiency_type: z.enum(["skill", "tool", "language", "saving-throw"]),
     value: z.string().min(1),
   }),
+  z.object({
+    kind: z.literal("ac-bonus"),
+    value: z.number().int(),
+    requires_armor: z.boolean().optional(),
+  }),
 ]);

@@ -855,6 +855,16 @@ optional_feature_slugs:
     - protection
 
 # ===================================================================
+# Entity-level effect authoring (effects-application engine, 2026-06-10).
+# Keyed by bare optional-feature slug. Only Defense is authored -- the other
+# fighting styles need per-attack vocabulary (named deferral in the spec).
+# ===================================================================
+optional_features:
+  defense:
+    effects:
+      - { kind: ac-bonus, value: 1, requires_armor: true }
+
+# ===================================================================
 # Background decision data (SP2 Plan 3). Keyed by bare background slug. SRD 5.1
 # ships exactly ONE background -- Acolyte -- which was walked. 2014 backgrounds
 # grant no ability-score increase (that's a 2024 addition); Acolyte's skills

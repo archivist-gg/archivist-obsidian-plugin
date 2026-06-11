@@ -199,7 +199,7 @@ export interface ProficiencySet {
 export interface ACTerm {
   source: string;
   amount: number;
-  kind: "armor" | "shield" | "item" | "unarmored" | "override" | "dex" | "ability";
+  kind: "armor" | "shield" | "item" | "unarmored" | "override" | "dex" | "ability" | "feature";
 }
 
 export interface AttackRow {
@@ -284,6 +284,8 @@ export interface DerivedStats {
     ability: Ability;
   }>;
   passives: { perception: number; investigation: number; insight: number };
+  /** Computed senses: max of race vision and feature-effect darkvision. 0 = none. */
+  senses: { darkvision: number };
   hp: { max: number; current: number; temp: number };
   ac: number;
   speed: number;
