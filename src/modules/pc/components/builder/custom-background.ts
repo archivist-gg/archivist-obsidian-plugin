@@ -76,6 +76,15 @@ export function buildCustomBackgroundData(
           }
         : { ...PLACEHOLDER_FEATURE };
 
+  // The 2024 benefits are "omit while incomplete": the drawer seeds an empty
+  // pool the moment it opens, and a half-filled pool (length ≠ 3) would produce
+  // a degenerate ability_score_increases ({pool: []}) + an ability-points choice
+  // with an empty pool — a record the REAL backgroundEntitySchema rejects (pool
+  // requires .length(3), choice pool .nonempty()) yet saveEntity does not
+  // validate, so it would land in the vault as a permanently-unresolvable
+  // stepper. Only attach the benefits once the pool is exactly 3 abilities.
+  const extras2024Complete = st.extras2024 && st.extras2024.pool.length === 3;
+
   const data: Record<string, unknown> = {
     name: st.name.trim(),
     edition,
@@ -90,11 +99,12 @@ export function buildCustomBackgroundData(
       .map((e) => ({ kind: "fixed", languages: [e.value] })),
     equipment: [],
     feature,
-    ability_score_increases: st.extras2024 ? { pool: [...st.extras2024.pool] } : null,
-    origin_feat: st.extras2024?.originFeat ? `[[${st.extras2024.originFeat}]]` : null,
+    ability_score_increases: extras2024Complete ? { pool: [...st.extras2024!.pool] } : null,
+    origin_feat:
+      extras2024Complete && st.extras2024!.originFeat ? `[[${st.extras2024!.originFeat}]]` : null,
     suggested_characteristics: null,
   };
-  if (st.extras2024) {
+  if (extras2024Complete) {
     data.choices = [
       {
         kind: "ability-points",
@@ -102,7 +112,7 @@ export function buildCustomBackgroundData(
         label: "Ability Scores",
         points: 3,
         max_per: 2,
-        pool: [...st.extras2024.pool],
+        pool: [...st.extras2024!.pool],
       },
     ];
   }
@@ -202,7 +212,7 @@ function renderForm(
   renderFeatureSection(form, ctx, st, redraw);
 
   // ── Optional 2024-style benefits drawer
-  render2024Drawer(form, st, redraw);
+  render2024Drawer(form, ctx, st, redraw);
 
   // ── Create & use
   const data = buildCustomBackgroundData(st, editionOf(ctx));
@@ -345,7 +355,22 @@ function renderWrite(box: HTMLElement, st: CustomBackgroundState): void {
   });
 }
 
-function render2024Drawer(form: HTMLElement, st: CustomBackgroundState, redraw: () => void): void {
+/** The six ability slugs, ordered, with their conventional short labels. */
+const ABILITY_OPTIONS: Array<{ value: Ability; label: string }> = [
+  { value: "str", label: "STR" },
+  { value: "dex", label: "DEX" },
+  { value: "con", label: "CON" },
+  { value: "int", label: "INT" },
+  { value: "wis", label: "WIS" },
+  { value: "cha", label: "CHA" },
+];
+
+function render2024Drawer(
+  form: HTMLElement,
+  ctx: ComponentRenderContext,
+  st: CustomBackgroundState,
+  redraw: () => void,
+): void {
   const box = form.createDiv({ cls: "pc-b2024" });
   const head = box.createDiv({ cls: "pc-b2024-head" });
   head.createSpan({ cls: "pc-b2024-title", text: "✦ 2024-style benefits" });
@@ -359,5 +384,40 @@ function render2024Drawer(form: HTMLElement, st: CustomBackgroundState, redraw: 
     text:
       "Optionally add an ability-score increase pool of three and an origin feat. " +
       "Build fresh — editions may mix.",
+  });
+
+  // Closed: just the title/toggle/note. The benefits only matter when authored,
+  // and a half-filled pool is omitted from the assembled entity (see assembler).
+  if (!st.extras2024) return;
+  const extras = st.extras2024;
+
+  // ── Ability pool: choose 3 of the six abilities (choice-callout reuse).
+  const poolSel = new Set<string>(extras.pool);
+  renderChoiceCallout(box, {
+    label: "Ability Score Increase",
+    choose: 3,
+    options: ABILITY_OPTIONS.map((a) => ({ value: a.value, label: a.label })),
+    selected: poolSel,
+    required: true,
+    onToggle: (value) => {
+      applyChoiceToggle(poolSel, value, 3);
+      extras.pool = [...poolSel] as Ability[];
+      redraw();
+    },
+  });
+
+  // ── Origin feat: a simple select over registry feats, "None" by default.
+  const featRow = box.createDiv({ cls: "pc-b2024-featrow" });
+  featRow.createSpan({ cls: "pc-b2024-featlbl", text: "Origin Feat" });
+  const feats = ctx.core.entities.search("", "feat", Number.POSITIVE_INFINITY);
+  const select = featRow.createEl("select", { cls: "pc-b2024-feat" });
+  select.createEl("option", { text: "None", attr: { value: "" } });
+  for (const f of feats) {
+    select.createEl("option", { text: f.name, attr: { value: f.slug } });
+  }
+  select.value = extras.originFeat ?? "";
+  select.addEventListener("change", () => {
+    extras.originFeat = select.value || null;
+    redraw();
   });
 }

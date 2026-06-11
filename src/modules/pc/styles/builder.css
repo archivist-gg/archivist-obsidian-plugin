@@ -551,6 +551,17 @@
   font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label);
   color: var(--pc-text-soft); line-height: 1.4; margin-top: 4px;
 }
+/* Origin-feat select inside the open drawer, beneath the choose-3 pool callout. */
+.archivist-pc-sheet .pc-b2024-featrow { display: flex; align-items: center; gap: 8px; margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-b2024-featlbl {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-b2024-feat {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 4px 8px; color: var(--pc-text-primary);
+}
 
 /* Footer: the Create & use CTA (crimson filled when enabled, muted disabled). */
 .archivist-pc-sheet .pc-bcustom-foot { margin-top: 12px; padding-top: 9px; border-top: 1px solid var(--pc-tan); }

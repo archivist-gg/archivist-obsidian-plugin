@@ -57,6 +57,37 @@ describe("buildCustomBackgroundData", () => {
     ]);
   });
 
+  it("2024 drawer with an incomplete pool omits ASI/origin-feat/choices (valid 2014-shaped record)", () => {
+    // Reproduces the reviewer-found MEDIUM bug: opening the 2024 drawer seeds
+    // `extras2024 = { pool: [], originFeat: null }`. While the pool is not yet
+    // exactly 3 abilities the assembler must NOT carry the degenerate
+    // ability_score_increases/origin_feat/choices — "omit while incomplete" —
+    // so Create & use never persists an entity the real schema rejects.
+    const st = emptyCustomBackgroundState();
+    st.name = "Half-built";
+    st.extras2024 = { pool: [], originFeat: null };
+    const data = buildCustomBackgroundData(st, "2024")!;
+    expect(data).not.toBeNull();
+    expect(data.ability_score_increases).toBeNull();
+    expect(data.origin_feat).toBeNull();
+    expect(data.choices).toBeUndefined();
+    // The incomplete-drawer record is a valid 2014-shaped entity.
+    const parsed = backgroundEntitySchema.safeParse({ slug: "me_half-built", ...data });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("2024 drawer with a partial (1- or 2-ability) pool still omits the benefits", () => {
+    const st = emptyCustomBackgroundState();
+    st.name = "Two-of-three";
+    st.extras2024 = { pool: ["dex", "con"], originFeat: "srd-2024_alert" };
+    const data = buildCustomBackgroundData(st, "2024")!;
+    expect(data.ability_score_increases).toBeNull();
+    expect(data.origin_feat).toBeNull();
+    expect(data.choices).toBeUndefined();
+    const parsed = backgroundEntitySchema.safeParse({ slug: "me_two-of-three", ...data });
+    expect(parsed.success).toBe(true);
+  });
+
   it("validation: requires a name and exactly 2 skills + 2 extras when provided", () => {
     const st = emptyCustomBackgroundState();
     expect(buildCustomBackgroundData(st, "2014")).toBeNull(); // no name

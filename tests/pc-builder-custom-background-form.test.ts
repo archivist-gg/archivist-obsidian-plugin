@@ -21,6 +21,20 @@ const ACOLYTE: RegisteredEntity = {
 
 const BACKGROUNDS = [CRIMINAL, ACOLYTE];
 
+const ALERT: RegisteredEntity = {
+  slug: "srd-2024_alert", name: "Alert", entityType: "feat", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024",
+  data: { name: "Alert" },
+} as unknown as RegisteredEntity;
+
+const LUCKY: RegisteredEntity = {
+  slug: "srd-2024_lucky", name: "Lucky", entityType: "feat", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024",
+  data: { name: "Lucky" },
+} as unknown as RegisteredEntity;
+
+const FEATS = [ALERT, LUCKY];
+
 function flushPromises(): Promise<void> {
   return new Promise((r) => setTimeout(r, 0));
 }
@@ -39,7 +53,8 @@ function mkCtx(over: { saveEntity?: ReturnType<typeof vi.fn>; setBackground?: Re
     core: {
       plugin: {},
       entities: {
-        search: (_q: string, type: string) => (type === "background" ? BACKGROUNDS : []),
+        search: (_q: string, type: string) =>
+          type === "background" ? BACKGROUNDS : type === "feat" ? FEATS : [],
         getByTypeAndSlug: () => undefined,
       },
       compendiums: {
@@ -161,5 +176,76 @@ describe("renderCustomBackgroundRow", () => {
     expect(saveEntity).toHaveBeenCalledWith("Me", "background", expect.objectContaining({ name: "Wandering Scholar" }));
     await flushPromises();
     expect(setBackground).toHaveBeenCalledWith("me_wandering-scholar");
+  });
+
+  it("2024 drawer: toggling open reveals a choose-3 ability pool picker + an origin-feat select", () => {
+    const container = mountContainer();
+    const ctx = mkCtx();
+    renderCustomBackgroundRow(container, ctx);
+    container.querySelector<HTMLElement>(".pc-bcustomrow")!.click();
+    // Drawer starts closed: no picker, no select.
+    expect(container.querySelector(".pc-b2024 .pc-bchoice")).toBeNull();
+    expect(container.querySelector("select.pc-b2024-feat")).toBeNull();
+    // Toggle the drawer open.
+    container.querySelector<HTMLElement>(".pc-b2024-toggle")!.click();
+    const pool = container.querySelector<HTMLElement>(".pc-b2024 .pc-bchoice")!;
+    expect(pool).not.toBeNull();
+    expect(pool.textContent).toContain("Ability Score Increase");
+    const chips = [...pool.querySelectorAll<HTMLElement>(".pc-bchoice-chip")];
+    // Six ability slugs.
+    expect(chips.length).toBe(6);
+    // Origin-feat select with a "None" default + registry feats.
+    const sel = container.querySelector<HTMLSelectElement>("select.pc-b2024-feat")!;
+    expect(sel).not.toBeNull();
+    const optTexts = [...sel.querySelectorAll("option")].map((o) => o.textContent);
+    expect(optTexts[0]).toBe("None");
+    expect(optTexts).toContain("Alert");
+    expect(optTexts).toContain("Lucky");
+  });
+
+  it("2024 drawer: clicking 3 abilities fills the pool and assembles the ASI + matching choice", () => {
+    const container = mountContainer();
+    const ctx = mkCtx({ edition: "2024" });
+    renderCustomBackgroundRow(container, ctx);
+    container.querySelector<HTMLElement>(".pc-bcustomrow")!.click();
+    // Need a name so the assembled record is non-null.
+    const nameInput = container.querySelector<HTMLInputElement>(".pc-bcustom-name")!;
+    nameInput.value = "Sky Marshal";
+    nameInput.dispatchEvent(new Event("change"));
+    container.querySelector<HTMLElement>(".pc-b2024-toggle")!.click();
+    const pool = () => container.querySelector<HTMLElement>(".pc-b2024 .pc-bchoice")!;
+    const chip = (label: string) =>
+      [...pool().querySelectorAll<HTMLElement>(".pc-bchoice-chip")].find((c) =>
+        c.textContent?.replace(/^✓ /, "") === label,
+      )!;
+    chip("DEX").click();
+    chip("CON").click();
+    chip("INT").click();
+    const st = ctx.builderUiState!.get("builder.bg-custom") as {
+      extras2024: { pool: string[]; originFeat: string | null } | null;
+    };
+    expect(st.extras2024!.pool.sort()).toEqual(["con", "dex", "int"]);
+  });
+
+  it("2024 drawer: selecting an origin feat writes its slug and assembles a wikilink", () => {
+    const container = mountContainer();
+    const ctx = mkCtx({ edition: "2024" });
+    renderCustomBackgroundRow(container, ctx);
+    container.querySelector<HTMLElement>(".pc-bcustomrow")!.click();
+    container.querySelector<HTMLElement>(".pc-b2024-toggle")!.click();
+    const sel = container.querySelector<HTMLSelectElement>("select.pc-b2024-feat")!;
+    sel.value = "srd-2024_alert";
+    sel.dispatchEvent(new Event("change"));
+    const st = ctx.builderUiState!.get("builder.bg-custom") as {
+      extras2024: { pool: string[]; originFeat: string | null } | null;
+    };
+    expect(st.extras2024!.originFeat).toBe("srd-2024_alert");
+    // Reset to None clears it.
+    sel.value = "";
+    sel.dispatchEvent(new Event("change"));
+    const st2 = ctx.builderUiState!.get("builder.bg-custom") as {
+      extras2024: { pool: string[]; originFeat: string | null } | null;
+    };
+    expect(st2.extras2024!.originFeat).toBeNull();
   });
 });
