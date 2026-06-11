@@ -24,6 +24,9 @@ describe("renderChronicleBlock", () => {
     expect(block.querySelector(".pc-cb-flavor")).toBeNull();
     expect(block.querySelectorAll(".pc-cb-tile").length).toBe(2);
     expect(block.querySelector(".x-body")).not.toBeNull();
+    const kids = [...block.children].map((k) => k.className.split(" ")[0]);
+    expect(kids.indexOf("pc-cb-bh")).toBeLessThan(kids.indexOf("pc-cb-glance"));
+    expect(kids.indexOf("pc-cb-glance")).toBeLessThan(kids.indexOf("x-body"));
   });
 
   it("pre() content lands ABOVE the identity band; flavor between band and tiles", () => {
@@ -34,6 +37,9 @@ describe("renderChronicleBlock", () => {
       pre: (host) => host.createDiv({ cls: "x-warn" }),
     });
     const kids = [...c.querySelector(".pc-cblock")!.children].map((k) => k.className.split(" ")[0]);
+    expect(kids).toContain("x-warn");
+    expect(kids).toContain("pc-cb-bh");
+    expect(kids).toContain("pc-cb-flavor");
     expect(kids.indexOf("x-warn")).toBeLessThan(kids.indexOf("pc-cb-bh"));
     expect(kids.indexOf("pc-cb-bh")).toBeLessThan(kids.indexOf("pc-cb-flavor"));
   });
