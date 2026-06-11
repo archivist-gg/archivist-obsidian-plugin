@@ -19,16 +19,19 @@ function labelCase(s: string): string {
   return titleCase(s.replace(/-/g, " "));
 }
 
-/** Flatten a tool-proficiency entry into display text. */
+/** Flatten a tool-proficiency entry into display text. Tokens are stored as
+ *  hyphenated slugs, so humanize them through labelCase (consistent with skills). */
 function toolText(t: BackgroundToolProficiency): string {
-  if (t.kind === "fixed") return t.items.join(", ");
-  return `Choose ${t.count} (${t.from.join(", ")})`;
+  if (t.kind === "fixed") return t.items.map(labelCase).join(", ");
+  return `Choose ${t.count} (${t.from.map(labelCase).join(", ")})`;
 }
 
-/** Flatten a language-proficiency entry into display text. */
+/** Flatten a language-proficiency entry into display text. The `from` tokens are
+ *  hyphenated slugs (humanized), but a bare string sentinel like "any" is free
+ *  text and is left untouched. */
 function languageText(l: BackgroundLanguageProficiency): string {
-  if (l.kind === "fixed") return l.languages.join(", ");
-  const from = Array.isArray(l.from) ? l.from.join(", ") : l.from;
+  if (l.kind === "fixed") return l.languages.map(labelCase).join(", ");
+  const from = Array.isArray(l.from) ? l.from.map(labelCase).join(", ") : l.from;
   return `Choose ${l.count} (${from})`;
 }
 
@@ -43,8 +46,10 @@ function equipmentText(e: BackgroundEquipmentEntry): string {
     if (e.cp) coins.push(`${e.cp} cp`);
     return coins.join(", ");
   }
+  // Equipment item names are hyphenated slugs → humanize like the other tokens.
   const item = e as { item: string; quantity: number };
-  return item.quantity > 1 ? `${item.item} (×${item.quantity})` : item.item;
+  const name = labelCase(item.item);
+  return item.quantity > 1 ? `${name} (×${item.quantity})` : name;
 }
 
 /** The background stat block in the shared parchment-card style. Reuses the

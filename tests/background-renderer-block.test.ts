@@ -19,10 +19,11 @@ const acolyte: BackgroundEntity = {
   source: "SRD 5.1",
   description: "You have spent your life in the service of a **temple**.",
   skill_proficiencies: ["insight", "religion"],
-  tool_proficiencies: [{ kind: "fixed", items: ["Calligrapher's Supplies"] }],
+  // Real SRD data stores tool/equipment tokens as hyphenated slugs.
+  tool_proficiencies: [{ kind: "fixed", items: ["calligraphers-supplies"] }],
   language_proficiencies: [{ kind: "choice", count: 2, from: "any" }],
   equipment: [
-    { item: "Holy Symbol", quantity: 1 },
+    { item: "holy-symbol", quantity: 1 },
     { kind: "currency", gp: 15 },
   ],
   feature: {
@@ -79,8 +80,10 @@ describe("renderBackgroundBlock", () => {
     expect(root.textContent).toContain("Skills:");
     expect(root.textContent).toContain("Insight, Religion");
     expect(root.textContent).toContain("Tools:");
-    expect(root.textContent).toContain("Calligrapher's Supplies");
+    // tokens are slugs in data, humanized via labelCase for display
+    expect(root.textContent).toContain("Calligraphers Supplies");
     expect(root.textContent).toContain("Languages:");
+    // bare string sentinel "any" is free text, left untouched
     expect(root.textContent).toContain("Choose 2 (any)");
     expect(root.textContent).toContain("Equipment:");
     expect(root.textContent).toContain("Holy Symbol");
@@ -97,6 +100,35 @@ describe("renderBackgroundBlock", () => {
     const desc = root.querySelector(".spell-description");
     expect(desc).not.toBeNull();
     expect(desc?.textContent).toContain("in the service of a");
+  });
+
+  it("humanizes hyphenated slug tokens in tool-choice, equipment, and language arms", async () => {
+    // Slug-shaped tokens (as stored in the data) must surface humanized in the
+    // user-facing card, mirroring the labelCase treatment applied to skills.
+    const slugBg: BackgroundEntity = {
+      ...acolyte,
+      tool_proficiencies: [
+        { kind: "choice", count: 1, from: ["cartographers-tools", "calligraphers-tools"] },
+      ],
+      language_proficiencies: [{ kind: "choice", count: 1, from: ["draconic", "elvish"] }],
+      equipment: [
+        { item: "traveling-satchel", quantity: 1 },
+        { item: "quill", quantity: 3 },
+        { kind: "currency", gp: 10 },
+      ],
+    } as unknown as BackgroundEntity;
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(slugBg));
+    // (a) tool-choice `from` slugs humanized (labelCase: no apostrophes added)
+    expect(root.textContent).toContain("Choose 1 (Cartographers Tools, Calligraphers Tools)");
+    expect(root.textContent).not.toContain("cartographers-tools");
+    // (b) equipment quantity branch (×N) humanizes the item slug
+    expect(root.textContent).toContain("Quill (×3)");
+    expect(root.textContent).not.toContain("traveling-satchel");
+    expect(root.textContent).toContain("Traveling Satchel");
+    // (c) language-choice `from` slugs humanized; free-text currency untouched
+    expect(root.textContent).toContain("Choose 1 (Draconic, Elvish)");
+    expect(root.textContent).toContain("10 gp");
   });
 });
 
