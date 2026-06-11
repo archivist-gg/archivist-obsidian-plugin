@@ -1,6 +1,8 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { DecisionItem } from "../../pc.decision-engine";
 import { applyChoiceToggle } from "./choice-callout";
+import { renderSelectionTable } from "./selection-table";
+import type { Ability } from "../../../../shared/types/choice";
 
 export interface DecisionStripOptions {
   items: DecisionItem[];
@@ -138,8 +140,10 @@ function writeValue(
 }
 
 // ── controls ────────────────────────────────────────────────────────────────
-// This task covers the chips path only; the ability-points stepper and the
-// registry-backed selection table land in Task 3.
+// Kind-based dispatch — ability-points and the registry-backed selection table
+// short-circuit BEFORE the chips fall-through, so an ability-points item (whose
+// value is a Record<ability, number>) can never reach the chips writer (which
+// emits a string/array) and corrupt the allocation.
 
 function renderControl(
   nest: HTMLElement,
@@ -147,6 +151,42 @@ function renderControl(
   item: DecisionItem,
   opts: DecisionStripOptions,
 ): void {
+  const ch = item.choice;
+
+  // Ability-points → the always-mounted ±-stepper (Record<ability, number>).
+  if (ch.kind === "ability-points") {
+    renderAbilityPoints(nest, ctx, item, opts);
+    return;
+  }
+
+  // Registry-backed entity pick (no explicit `from`) → the shared selection
+  // table over the resolved candidate entities.
+  if (ch.kind === "select-entity" && !ch.from) {
+    const need = requiredOf(item);
+    const selected = new Set(selectedSlugs(item));
+    // Candidates ride on the options the engine already resolved (each carries
+    // its `.entity`); there is no separate registry pass here.
+    const candidates = item.options.flatMap((o) => (o.entity ? [o.entity] : []));
+    nest.createDiv({ cls: "pc-dstrip-tlabel", text: `${labelOf(item)} — choose ${need}` });
+    // Zero resolved candidates → a quiet line, not the full table chrome.
+    if (candidates.length === 0) {
+      nest.createDiv({ cls: "pc-dstrip-empty", text: "No options available in your vault yet." });
+      return;
+    }
+    renderSelectionTable(nest, ctx, {
+      columns: [],
+      candidates,
+      stateKey: `${opts.stateKey}.${item.level}.${item.key}`,
+      selected,
+      single: need === 1,
+      onToggle: (slug) => {
+        applyChoiceToggle(selected, slug, need);
+        writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
+      },
+    });
+    return;
+  }
+
   // Inline / proficiency / explicit-`from` entity picks → the always-open chips
   // row. A `missing` option (slug with no resolved entity) is shown inert:
   // visible with a "(missing)" hint and no click listener, so it can never write
@@ -167,4 +207,61 @@ function renderControl(
       writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
     });
   }
+}
+
+/** ±-stepper for ability-points: one cell per pool ability, always mounted.
+ *  Caps are PICKER-owned (the engine never reflects over-selection or max_per):
+ *  + disables at the points-spent cap and the per-ability max_per cap. Writes
+ *  the merged allocation through writeValue; clearing the last point writes
+ *  null. Ported from decision-ledger.ts. */
+function renderAbilityPoints(
+  nest: HTMLElement,
+  ctx: ComponentRenderContext,
+  item: DecisionItem,
+  opts: DecisionStripOptions,
+): void {
+  const ch = item.choice;
+  if (ch.kind !== "ability-points") return;
+  const alloc: Partial<Record<Ability, number>> =
+    item.selected && typeof item.selected === "object" && !Array.isArray(item.selected)
+      ? { ...item.selected }
+      : {};
+  const spent = Object.values(alloc).reduce((s, v) => s + (v ?? 0), 0);
+
+  const row = nest.createDiv({ cls: "pc-bpoints" });
+  for (const o of item.options) {
+    const a = o.value as Ability;
+    const cell = row.createDiv({ cls: "pc-bpoints-cell" });
+    cell.createSpan({ cls: "pc-bpoints-ab", text: o.label });
+    const minus = cell.createEl("button", { cls: "pc-bpoints-btn", text: "−" });
+    cell.createSpan({ cls: "pc-bpoints-n", text: String(alloc[a] ?? 0) });
+    const plus = cell.createEl("button", { cls: "pc-bpoints-btn", text: "+" });
+    plus.disabled = spent >= ch.points || (alloc[a] ?? 0) >= ch.max_per;
+    minus.disabled = (alloc[a] ?? 0) <= 0;
+    plus.addEventListener("click", () => {
+      alloc[a] = (alloc[a] ?? 0) + 1;
+      writeValue(ctx, item, opts, alloc);
+    });
+    minus.addEventListener("click", () => {
+      alloc[a] = (alloc[a] ?? 0) - 1;
+      if (alloc[a] === 0) delete alloc[a];
+      writeValue(ctx, item, opts, Object.keys(alloc).length ? alloc : null);
+    });
+  }
+}
+
+export interface StripInfoRowSpec {
+  pill: string;
+  name: string;
+  value: string;
+}
+
+/** A quiet strip-dressed row for fixed grants (no decision). Returns the row
+ *  so the caller can attach expansion behavior (e.g. origin-feat block). */
+export function renderStripInfoRow(parent: HTMLElement, spec: StripInfoRowSpec): HTMLElement {
+  const row = parent.createDiv({ cls: "pc-dstrip-row info" });
+  row.createSpan({ cls: "pc-dstrip-pill", text: spec.pill });
+  row.createSpan({ cls: "pc-dstrip-name", text: spec.name });
+  row.createSpan({ cls: "pc-dstrip-val", text: spec.value });
+  return row;
 }

@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, domainPill } from "../src/modules/pc/components/builder/decision-strip";
+import { renderDecisionStrip, renderStripInfoRow, domainPill } from "../src/modules/pc/components/builder/decision-strip";
 import type { DecisionItem } from "../src/modules/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
@@ -71,6 +71,79 @@ describe("renderDecisionStrip", () => {
     const row = c.querySelector(".pc-dstrip-row.info")!;
     expect(row.textContent).toContain("Elven Lineage");
     expect(row.querySelectorAll(".pc-bchoice-chip").length).toBe(0);
+  });
+
+  it("ability-points renders the pc-bpoints stepper, always mounted, caps enforced", () => {
+    const c = mountContainer();
+    const setOriginChoice = vi.fn();
+    const it_ = item({
+      key: "abilities",
+      source: { kind: "background" } as never,
+      featureName: "Ability Scores",
+      choice: { kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] } as never,
+      options: [
+        { value: "int", label: "INT" }, { value: "wis", label: "WIS" }, { value: "cha", label: "CHA" },
+      ],
+      selected: { int: 2 },
+      status: "partial",
+    });
+    renderDecisionStrip(c, mkCtx({ setOriginChoice }), { items: [it_], pill: domainPill, live: true, stateKey: "t" });
+    expect(c.querySelectorAll(".pc-bpoints-cell").length).toBe(3);
+    // INT is at max_per → its + is disabled
+    const intPlus = c.querySelectorAll(".pc-bpoints-cell")[0].querySelectorAll("button")[1] as HTMLButtonElement;
+    expect(intPlus.disabled).toBe(true);
+    // WIS + writes the merged allocation
+    (c.querySelectorAll(".pc-bpoints-cell")[1].querySelectorAll("button")[1] as HTMLElement).click();
+    expect(setOriginChoice).toHaveBeenCalledWith("background:abilities", { int: 2, wis: 1 });
+  });
+
+  it("resolved ability-points keeps the stepper mounted (always-open)", () => {
+    const c = mountContainer();
+    const it_ = item({
+      key: "abilities", source: { kind: "background" } as never, featureName: "Ability Scores",
+      choice: { kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] } as never,
+      options: [{ value: "int", label: "INT" }, { value: "wis", label: "WIS" }, { value: "cha", label: "CHA" }],
+      selected: { int: 2, wis: 1 }, status: "resolved",
+    });
+    renderDecisionStrip(c, mkCtx(), { items: [it_], pill: domainPill, live: true, stateKey: "t" });
+    expect(c.querySelector(".pc-dstrip-row")!.classList.contains("done")).toBe(true);
+    expect(c.querySelectorAll(".pc-bpoints-cell").length).toBe(3);
+  });
+
+  it("renderStripInfoRow renders the quiet fixed-grant row", () => {
+    const c = mountContainer();
+    const row = renderStripInfoRow(c, { pill: "Feat", name: "Origin Feat", value: "Magic Initiate (Cleric) ▸" });
+    expect(row.classList.contains("info")).toBe(true);
+    expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Magic Initiate");
+  });
+
+  it("a missing option renders inert and does not write on click", () => {
+    const c = mountContainer();
+    const setOriginChoice = vi.fn();
+    const it_ = item({
+      options: [
+        { value: "drow", label: "Drow" },
+        { value: "ghost-elf", label: "Ghost Elf", missing: true } as never,
+      ],
+    });
+    renderDecisionStrip(c, mkCtx({ setOriginChoice }), { items: [it_], pill: domainPill, live: true, stateKey: "t" });
+    const inert = c.querySelector(".pc-bchoice-chip.inert")!;
+    expect(inert.textContent).toMatch(/\(missing\)$/);
+    (inert as HTMLElement).click();
+    expect(setOriginChoice).not.toHaveBeenCalled();
+  });
+
+  it("clicking the selected chip of a resolved choose-1 row deselects (writes null)", () => {
+    const c = mountContainer();
+    const setOriginChoice = vi.fn();
+    renderDecisionStrip(c, mkCtx({ setOriginChoice }), {
+      items: [item({ status: "resolved", selected: "drow" })],
+      pill: domainPill, live: true, stateKey: "t",
+    });
+    const selChip = c.querySelector(".pc-bchoice-chip.sel") as HTMLElement;
+    expect(selChip.textContent).toContain("Drow");
+    selChip.click();
+    expect(setOriginChoice).toHaveBeenCalledWith("race:elven-lineage", null);
   });
 });
 
