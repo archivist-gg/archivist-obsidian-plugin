@@ -223,17 +223,69 @@ describe("feature timeline", () => {
     const expertise = [...c.querySelectorAll(".pc-cb-tle")].find((e) => e.textContent!.includes("Expertise"))!;
     expect(expertise.querySelector(".pc-cb-fmeta")).not.toBeNull();
   });
+
+  it("Read full expands a multi-sentence feature description (mirrors race-step)", () => {
+    const data = bardData();
+    data.features_by_level = {
+      1: [{
+        id: "long-feature",
+        name: "Long Feature",
+        description: "First sentence is the headline. Second sentence adds detail that is hidden until expanded. Third sentence completes the prose.",
+      }],
+    };
+    const entity = { ...bardEntity(), data: data as unknown as Record<string, unknown> };
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity, level: 1, mode: "browse", stateKey: "t" });
+    const tle = [...c.querySelectorAll(".pc-cb-tle")].find((e) => e.textContent!.includes("Long Feature"))!;
+    const more = tle.querySelector(".pc-cb-more") as HTMLElement;
+    const before = tle.querySelector(".pc-cb-fd")!.textContent!.length;
+    more.click();
+    expect(tle.querySelector(".pc-cb-fd")!.textContent!.length).toBeGreaterThan(before);
+  });
 });
 
 describe("equipment & proficiencies fold", () => {
+  const openEquipment = (c: HTMLElement) => {
+    const fold = [...c.querySelectorAll(".pc-cb-fold-h")].find((h) => h.textContent!.includes("Equipment"))!;
+    (fold as HTMLElement).click();
+  };
+
   it("renders saves/skills props and lettered equipment option rows", () => {
     const c = mountContainer();
     renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 1, mode: "browse", stateKey: "t" });
-    const fold = [...c.querySelectorAll(".pc-cb-fold-h")].find((h) => h.textContent!.includes("Equipment"))!;
-    (fold as HTMLElement).click();
+    openEquipment(c);
     expect(c.querySelector(".pc-cb-prop")).not.toBeNull();
     const opts = c.querySelectorAll(".pc-cb-eqopt");
     expect(opts.length).toBe(2);                                   // Bard: (A)…/(B) 90 GP
     expect(opts[0].querySelector(".pc-cb-eqltr")!.textContent).toBe("a");
+  });
+
+  it("renders 2014 single-bundled-option choices unbadged with the full string", () => {
+    // 2014 canonical models each pick as a `choice` whose ONE option string
+    // bundles all sub-choices inline — the (a)/(b) ARE the option markers.
+    const data = bardData();
+    data.starting_equipment = [
+      { kind: "choice", options: ["(a) a rapier, (b) a longsword, or (c) any simple weapon"] },
+      { kind: "choice", options: ["(a) a diplomat's pack or (b) an entertainer's pack"] },
+      { kind: "fixed", items: ["leather-armor", "dagger"] },
+    ];
+    const entity = { ...bardEntity(), data: data as unknown as Record<string, unknown> };
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity, level: 1, mode: "browse", stateKey: "t" });
+    openEquipment(c);
+    const opts = [...c.querySelectorAll(".pc-cb-eqopt")];
+    expect(opts.length).toBe(2);                                   // one row per single-option choice
+    // no letter badges — the inline markers carry the lettering
+    expect(opts.every((o) => o.querySelector(".pc-cb-eqltr") === null)).toBe(true);
+    // the full bundled string is preserved (leading "(a)" not stripped)
+    expect(opts[0].querySelector(".pc-cb-eqtext")!.textContent)
+      .toBe("(a) a rapier, (b) a longsword, or (c) any simple weapon");
+    expect(opts[1].querySelector(".pc-cb-eqtext")!.textContent)
+      .toBe("(a) a diplomat's pack or (b) an entertainer's pack");
+    // the fixed entry renders as the Equipment prop, not an eqopt row
+    const equipProp = [...c.querySelectorAll(".pc-cb-prop")]
+      .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment")!;
+    expect(equipProp.textContent).toContain("Leather Armor");
+    expect(equipProp.textContent).toContain("Dagger");
   });
 });

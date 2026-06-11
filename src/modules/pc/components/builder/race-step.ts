@@ -117,7 +117,9 @@ function renderTraits(host: HTMLElement, d: RaceData): void {
     if (t.choices?.length) n.createSpan({ cls: "pc-cb-trait-meta", text: "▸ decision" });
     const head = firstSentence(t.description);
     const desc = row.createDiv({ cls: "pc-cb-trait-d", text: head });
-    if (head.length < t.description.length) {
+    // trimEnd so a trailing-whitespace-only tail doesn't surface a "Read full"
+    // that reveals nothing but blanks.
+    if (head.length < t.description.trimEnd().length) {
       const more = desc.createSpan({ cls: "pc-cb-more", text: " Read full ▸" });
       let open = false;
       more.addEventListener("click", () => {

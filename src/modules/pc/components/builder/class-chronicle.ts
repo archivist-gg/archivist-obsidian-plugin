@@ -275,7 +275,9 @@ function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d
     if (f.description) {
       const head = firstSentence(f.description);
       const desc = e.createDiv({ cls: "pc-cb-fd", text: head });
-      if (head.length < f.description.length) {
+      // trimEnd so a description with only trailing whitespace past `head`
+      // doesn't surface a "Read full" that reveals nothing but blanks.
+      if (head.length < f.description.trimEnd().length) {
         const more = desc.createSpan({ cls: "pc-cb-more", text: " Read full ▸" });
         let open = false;
         more.addEventListener("click", () => {
@@ -302,6 +304,16 @@ function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
   }
   for (const eq of d.starting_equipment ?? []) {
     if (eq.kind === "choice") {
+      // 2014 canonical models each pick as a `choice` whose SINGLE option string
+      // bundles all sub-choices inline (e.g. "(a) a greataxe or (b) any martial
+      // melee weapon") — the inline (a)/(b) ARE the option markers, so we render
+      // the full string unbadged. 2024 data uses clean multi-option (A)/(B)
+      // arrays, which keep the lettered-row treatment below.
+      if (eq.options.length === 1) {
+        const row = host.createDiv({ cls: "pc-cb-eqopt" });
+        row.createSpan({ cls: "pc-cb-eqtext", text: eq.options[0] });
+        continue;
+      }
       for (const optStr of eq.options) {
         const m = optStr.match(/^\(([A-Za-z])\)\s*(.*)$/);
         const row = host.createDiv({ cls: "pc-cb-eqopt" });
