@@ -214,3 +214,9 @@
 .archivist-pc-sheet .pc-bccard-body { padding: 10px 12px 12px; }
 .archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
 .archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
+
+/* ── Builder footer Next-gate hint + rail class badge (SP2 Plan 5 / Task 13) ── */
+.archivist-pc-sheet .pc-builder-foot-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); margin-left: auto; }
+.archivist-pc-sheet .pc-builder-foot-hint + .pc-builder-next { margin-left: 8px; }
+.archivist-pc-sheet .pc-builder-step-badge { flex-basis: 100%; padding-left: 22px; font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); color: var(--pc-text-muted); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; }
+.archivist-pc-sheet .pc-builder-step { flex-wrap: wrap; }

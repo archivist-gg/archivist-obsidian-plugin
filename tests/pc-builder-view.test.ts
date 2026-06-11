@@ -428,4 +428,93 @@ describe("BuilderView shell", () => {
     expect(name?.classList.contains("on")).toBe(true);
     expect(root.querySelector(".pc-btable-row .pc-bname-seal")).not.toBeNull();
   });
+
+  describe("BuilderView — class step dispatch, Next gating, rail badge", () => {
+    // A registry shaped just enough for the class step + buildDecisionLedger.
+    function classRegistry(): unknown {
+      const classes = [
+        { slug: "bard", name: "Bard", entityType: "class", filePath: "bard.md",
+          data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
+          compendium: "SRD", readonly: true, homebrew: false },
+        { slug: "warlock", name: "Warlock", entityType: "class", filePath: "warlock.md",
+          data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
+          compendium: "SRD", readonly: true, homebrew: false },
+      ];
+      const all = [...classes];
+      return {
+        search: (q: string, type: string) =>
+          all.filter((e) => e.entityType === type && e.name.toLowerCase().includes(q.toLowerCase())),
+        getByTypeAndSlug: (type: string, slug: string) =>
+          all.find((e) => e.entityType === type && e.slug === slug),
+      };
+    }
+
+    function classCtx(opts: {
+      activeStepId: string;
+      classes: Array<{ name: string; level: number; subclass?: string | null }>;
+    }): ComponentRenderContext {
+      return {
+        ...ctx(),
+        app: {},
+        activeStepId: opts.activeStepId,
+        resolved: {
+          definition: { name: "Valeria", class: opts.classes },
+          classes: opts.classes.map((c) => ({ entity: null, level: c.level, subclass: null, choices: {} })),
+          features: [],
+        },
+        derived: { totalLevel: 0, proficiencyBonus: 2, scores: {} },
+        editState: { addClass: vi.fn(), removeClass: vi.fn(), setClassLevel: vi.fn() },
+        builderUiState: new Map(),
+        core: {
+          plugin: {},
+          entities: classRegistry(),
+          compendiums: { getAll: () => [{ name: "SRD", description: "", readonly: true, homebrew: false, folderPath: "" }] },
+          modules: { getByEntityType: () => undefined },
+        },
+      } as unknown as ComponentRenderContext;
+    }
+
+    it("class step dispatches to the new card-stack host (old level dropdown gone)", () => {
+      const root = mountContainer();
+      new BuilderView().render(root, classCtx({ activeStepId: "class", classes: [] }));
+      expect(root.querySelector(".pc-bcadd")).not.toBeNull(); // new host
+      expect(root.querySelector(".pc-bclass-level")).toBeNull(); // old level dropdown gone
+    });
+
+    it("Next is disabled with the quiet hint on a class-less Class step", () => {
+      const root = mountContainer();
+      new BuilderView().render(root, classCtx({ activeStepId: "class", classes: [] }));
+      const next = root.querySelector(".pc-builder-next") as HTMLButtonElement;
+      expect(next.disabled).toBe(true);
+      expect(root.querySelector(".pc-builder-foot-hint")!.textContent).toContain("pick a class");
+    });
+
+    it("Next is enabled once a class exists; other steps never gate", () => {
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({ activeStepId: "class", classes: [{ name: "[[bard]]", level: 5 }] }),
+      );
+      expect((root.querySelector(".pc-builder-next") as HTMLButtonElement).disabled).toBe(false);
+      expect(root.querySelector(".pc-builder-foot-hint")).toBeNull();
+
+      const root2 = mountContainer();
+      new BuilderView().render(root2, classCtx({ activeStepId: "race", classes: [] }));
+      expect((root2.querySelector(".pc-builder-next") as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    it("the class rail item carries the classes badge", () => {
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({
+          activeStepId: "race",
+          classes: [{ name: "[[bard]]", level: 4 }, { name: "[[warlock]]", level: 1 }],
+        }),
+      );
+      expect(
+        root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
+      ).toBe("Bard 4 · Warlock 1");
+    });
+  });
 });
