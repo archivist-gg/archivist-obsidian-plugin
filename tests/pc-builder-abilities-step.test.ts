@@ -81,6 +81,43 @@ describe("renderAbilitiesStep — tiles", () => {
   });
 });
 
+describe("renderAbilitiesStep — point-buy bar", () => {
+  it("shows spent/left meter for archivist point buy (all-10 = 12 spent, 16 left)", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "archivist-point-buy" }));
+    const bar = container.querySelector(".pc-bctx");
+    expect(bar?.textContent).toContain("12 of 28 spent");
+    expect(bar?.textContent).toContain("16 left");
+    expect(container.querySelector(".pc-bmeter-fill")).toBeTruthy();
+  });
+
+  it("renders the cost legend chips for the active rule", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "archivist-point-buy" }));
+    const chips = [...container.querySelectorAll(".pc-bcost > span")];
+    expect(chips.some((c) => c.textContent?.includes("7") && c.textContent?.includes("-1"))).toBe(true);
+    expect(chips.some((c) => c.textContent?.includes("16") && c.textContent?.includes("11"))).toBe(true);
+  });
+
+  it("base dropdowns exclude unaffordable values", () => {
+    const container = mountContainer();
+    // 15/15/15/8/8/8 = 27 spent on standard point buy → int has no headroom.
+    renderAbilitiesStep(container, mkCtx({
+      method: "point-buy",
+      abilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
+    }));
+    const selects = [...container.querySelectorAll(".pc-babctl select")] as HTMLSelectElement[];
+    const intSel = selects[3]; // ABILITY_KEYS order str,dex,con,int,wis,cha
+    expect([...intSel.options].map((o) => o.value)).toEqual(["8"]);
+  });
+
+  it("renders no context bar for the manual method", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual" }));
+    expect(container.querySelector(".pc-bctx")).toBeNull();
+  });
+});
+
 describe("renderAbilitiesStep — custom (Plan 6 hand-off)", () => {
   it("toggling the ✦ Custom tab shows the inert Inquiry prompt box", () => {
     const container = mountContainer();

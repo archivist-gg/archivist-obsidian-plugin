@@ -10,6 +10,7 @@ export interface AbilityMethodDef {
   homebrew?: boolean;
 }
 
+/** Array order = tab display order. */
 export const ABILITY_METHODS: readonly AbilityMethodDef[] = [
   { id: "standard-array", label: "Standard Array" },
   { id: "point-buy", label: "Standard Point Buy" },
@@ -28,6 +29,7 @@ export interface PointBuyRule {
   cost: Record<number, number>;
 }
 
+/** Absent for non-point-buy methods; callers must guard. */
 export const POINT_BUY_RULES: Partial<Record<AbilityMethod, PointBuyRule>> = {
   "point-buy": {
     budget: 27, min: 8, max: 15,

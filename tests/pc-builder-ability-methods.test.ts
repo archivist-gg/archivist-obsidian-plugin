@@ -47,6 +47,14 @@ describe("archivist point buy (28 / 7-16, 7 refunds a point)", () => {
     expect(pointBuySpent(rule, dump)).toBe(-2);
     expect(pointBuyRemaining(rule, dump)).toBe(30);
   });
+  it("allowedScores drops a 16 once the budget is nearly exhausted (refund-table path)", () => {
+    // Everything but con spends 9+7+1+1+1 = 19, leaving 9 of headroom for con:
+    // a 15 (cost 9) still fits but a 16 (cost 11) does not, so 16 drops out.
+    const tight = { str: 15, dex: 14, con: 16, int: 9, wis: 9, cha: 9 };
+    const con = allowedScores(rule, tight, "con");
+    expect(con).toContain(15);
+    expect(con).not.toContain(16);
+  });
 });
 
 describe("STANDARD_ARRAY", () => {

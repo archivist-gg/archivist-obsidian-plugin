@@ -2,7 +2,10 @@ import type { ComponentRenderContext } from "../component.types";
 import type { Ability } from "../../../../shared/types/choice";
 import type { AbilityMethod } from "../../pc.types";
 import { ABILITY_KEYS } from "../../../../shared/dnd/constants";
-import { ABILITY_METHODS, POINT_BUY_RULES, STANDARD_ARRAY, allowedScores } from "./ability-methods";
+import {
+  ABILITY_METHODS, POINT_BUY_RULES, STANDARD_ARRAY, allowedScores,
+  pointBuySpent, pointBuyRemaining,
+} from "./ability-methods";
 import type { PointBuyRule } from "./ability-methods";
 import { abilityBonusBreakdown } from "../../pc.recalc";
 
@@ -64,10 +67,8 @@ function renderCustomBox(body: HTMLElement): void {
 function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod): void {
   const breakdown = abilityBonusBreakdown(ctx.resolved);
   // DerivedStats holds the final totals on `scores` + the modifiers on `mods`.
-  const derivedScores: Partial<Record<Ability, number>> =
-    (ctx.derived as unknown as { scores?: Record<Ability, number> }).scores ?? {};
-  const derivedMods: Partial<Record<Ability, number>> =
-    (ctx.derived as unknown as { mods?: Record<Ability, number> }).mods ?? {};
+  const derivedScores = ctx.derived.scores;
+  const derivedMods = ctx.derived.mods;
   const row = body.createDiv({ cls: "pc-babrow" });
   for (const ab of ABILITY_KEYS) {
     const col = row.createDiv({ cls: "pc-babcol" });
@@ -134,9 +135,27 @@ function renderMethodBar(body: HTMLElement, ctx: ComponentRenderContext, method:
 // ── Per-method context bars ───────────────────────────────────────────
 // Tasks 10-11 replace these bodies; the signatures here are FIXED. Each is the
 // minimal honest context line for now (no placeholder copy).
-function renderPointBuyBar(body: HTMLElement, _ctx: ComponentRenderContext, method: AbilityMethod, _rule: PointBuyRule): void {
+function renderPointBuyBar(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod, rule: PointBuyRule): void {
+  const abilities = ctx.resolved.definition.abilities;
+  const spent = pointBuySpent(rule, abilities);
+  const left = pointBuyRemaining(rule, abilities);
   const bar = body.createDiv({ cls: "pc-bctx" });
   bar.createSpan({ cls: "pc-bctx-l", text: ABILITY_METHODS.find((m) => m.id === method)?.label ?? "" });
+
+  const meter = bar.createDiv({ cls: "pc-bmeter" });
+  meter.createSpan({ cls: "pc-bmeter-t", text: `${spent} of ${rule.budget} spent` });
+  const track = meter.createDiv({ cls: "pc-bmeter-bar" });
+  const fill = track.createDiv({ cls: "pc-bmeter-fill" });
+  const pct = Math.max(0, Math.min(100, (spent / rule.budget) * 100));
+  fill.style.width = `${pct}%`;
+  meter.createSpan({ cls: "pc-bmeter-t", text: `${left} left` });
+
+  const legend = bar.createDiv({ cls: "pc-bcost" });
+  for (let v = rule.min; v <= rule.max; v++) {
+    const chip = legend.createEl("span");
+    chip.createSpan({ cls: "pc-bcost-s", text: String(v) });
+    chip.createSpan({ text: ` ${rule.cost[v]}` });
+  }
 }
 
 function renderArrayBar(body: HTMLElement, _ctx: ComponentRenderContext): void {
