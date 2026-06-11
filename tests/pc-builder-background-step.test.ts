@@ -8,16 +8,32 @@ import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 beforeAll(() => installObsidianDomHelpers());
 
 // ── fixtures ──────────────────────────────────────────────────────────────
-// ACOLYTE: a 2014 background with fixed skills + a language select-proficiency
-// choice. CRIMINAL_2024: a 2024 background carrying a 2024 ASI pool (for the
-// edition-mix banner) and an ability-points origin decision + an origin feat.
-const ACOLYTE_DATA = {
+// ACOLYTE_2014: a 2014 background with fixed skills + a language select-
+// proficiency choice and a named feature. ACOLYTE_2024 / CRIMINAL_2024:
+// 2024 backgrounds carrying a 2024 ASI pool (for the edition-mix banner), an
+// ability-points origin decision, and a fixed origin feat.
+const ACOLYTE_2014_DATA = {
   name: "Acolyte",
   skill_proficiencies: ["insight", "religion"],
-  choices: [{
-    kind: "select-proficiency", id: "lang", label: "Languages", count: 2,
-    domain: "language", from: ["celestial", "abyssal"],
-  }],
+  language_proficiencies: [{ kind: "choice", count: 2, from: "any" }],
+  feature: { name: "Shelter of the Faithful", description: "You command the respect of those who share your faith." },
+  choices: [{ kind: "select-proficiency", id: "languages", count: 2, domain: "language" }],
+};
+
+const ACOLYTE_2024_DATA = {
+  name: "Acolyte",
+  skill_proficiencies: ["insight", "religion"],
+  tool_proficiencies: [{ kind: "fixed", items: ["calligrapher's-supplies"] }],
+  language_proficiencies: [],
+  equipment: [
+    { item: "holy-symbol", quantity: 1 },
+    { item: "parchment", quantity: 10 },
+    { kind: "currency", gp: 8 },
+  ],
+  feature: { name: "Background Feature", description: "(No description provided.)" },
+  ability_score_increases: { pool: ["int", "wis", "cha"] },
+  origin_feat: "[[SRD 2024/Feats/Alert]]",
+  choices: [{ kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] }],
 };
 
 const CRIMINAL_2024_DATA = {
@@ -30,9 +46,14 @@ const CRIMINAL_2024_DATA = {
   choices: [{ kind: "ability-points", id: "asi", points: 3, max_per: 2, pool: ["dex", "con", "int"] }],
 };
 
-const ACOLYTE_ROW: RegisteredEntity = {
-  slug: "srd-2014_acolyte", name: "Acolyte", entityType: "background", filePath: "x",
-  readonly: true, homebrew: false, compendium: "SRD 2014", data: ACOLYTE_DATA,
+const ACOLYTE_2014_ROW: RegisteredEntity = {
+  slug: "srd-5e_acolyte", name: "Acolyte", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2014", data: ACOLYTE_2014_DATA,
+} as unknown as RegisteredEntity;
+
+const ACOLYTE_2024_ROW: RegisteredEntity = {
+  slug: "srd-2024_acolyte", name: "Acolyte", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: ACOLYTE_2024_DATA,
 } as unknown as RegisteredEntity;
 
 const CRIMINAL_ROW: RegisteredEntity = {
@@ -45,13 +66,13 @@ const ALERT_FEAT: RegisteredEntity = {
   readonly: true, homebrew: false, compendium: "SRD 2024", data: { name: "Alert" },
 } as unknown as RegisteredEntity;
 
-const BACKGROUNDS = [ACOLYTE_ROW, CRIMINAL_ROW];
+const BACKGROUNDS = [ACOLYTE_2014_ROW, ACOLYTE_2024_ROW, CRIMINAL_ROW];
 
 /** Build a ctx for the background step. `chosen` marks definition.background +
  *  shapes `resolved.background` (the resolver-shaped entity the engine reads
  *  for origin decisions); `race` is the resolver-shaped species the banner reads
- *  for its ability-increase grant. When `chosen` is the criminal slug we seed
- *  the picker table's expanded set so its row restores open at render. */
+ *  for its ability-increase grant. When `chosen` is set we seed the picker
+ *  table's expanded set so its row restores open at render. */
 function mkCtx(over: {
   background?: string | null;
   resolvedBackground?: unknown;
@@ -93,16 +114,34 @@ function mkCtx(over: {
   } as unknown as ComponentRenderContext;
 }
 
-/** Resolver-shaped background the engine reads for origin decisions. */
+/** Resolver-shaped backgrounds the engine reads for origin decisions. */
 const resolvedCriminal = {
   slug: "srd-2024_criminal", name: "Criminal", choices: CRIMINAL_2024_DATA.choices,
 };
+const resolvedAcolyte2024 = {
+  slug: "srd-2024_acolyte", name: "Acolyte", choices: ACOLYTE_2024_DATA.choices,
+};
+const resolvedAcolyte2014 = {
+  slug: "srd-5e_acolyte", name: "Acolyte", choices: ACOLYTE_2014_DATA.choices,
+};
+
+// Chosen-background factories used by the Task-7 composition tests.
+const mkCtxWithChosenAcolyte2024 = (): ComponentRenderContext =>
+  mkCtx({ background: "[[srd-2024_acolyte]]", resolvedBackground: resolvedAcolyte2024 });
+const mkCtxAcolyte2024WithAsiRace = (): ComponentRenderContext =>
+  mkCtx({
+    background: "[[srd-2024_acolyte]]",
+    resolvedBackground: resolvedAcolyte2024,
+    race: { slug: "srd-5e_half-elf", name: "Half-Elf", ability_score_increases: [{ ability: "cha", amount: 2 }] },
+  });
+const mkCtxWithChosenAcolyte2014 = (): ComponentRenderContext =>
+  mkCtx({ background: "[[srd-5e_acolyte]]", resolvedBackground: resolvedAcolyte2014 });
 
 describe("renderBackgroundStep", () => {
   it("renders the ledger with Skills column and no toggle column", () => {
     const container = mountContainer();
     renderBackgroundStep(container, mkCtx());
-    expect(container.querySelectorAll(".pc-btable-row").length).toBe(2);
+    expect(container.querySelectorAll(".pc-btable-row").length).toBe(3);
     expect(container.querySelectorAll(".pc-btoggle").length).toBe(0);
     const cells = [...container.querySelectorAll(".col-skills")];
     const acolyteCell = cells.find((c) => c.textContent?.includes("Insight"));
@@ -114,9 +153,9 @@ describe("renderBackgroundStep", () => {
     const setBackground = vi.fn();
     renderBackgroundStep(container, mkCtx({ editState: { setBackground } }));
     const row = [...container.querySelectorAll<HTMLElement>(".pc-btable-row")]
-      .find((r) => r.querySelector(".pc-btable-name")?.textContent === "Acolyte")!;
+      .find((r) => r.querySelector(".pc-btable-name")?.textContent === "Criminal")!;
     row.click();
-    expect(setBackground).toHaveBeenCalledWith("srd-2014_acolyte");
+    expect(setBackground).toHaveBeenCalledWith("srd-2024_criminal");
     expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
   });
 
@@ -127,80 +166,6 @@ describe("renderBackgroundStep", () => {
     // The CRIMINAL_2024 ability-points decision renders as the −/+ stepper.
     expect(container.querySelectorAll(".pc-bpoints-cell").length).toBe(3);
     expect(container.textContent).toContain("DEX");
-  });
-
-  it("origin feat resolves a PATH-style wikilink and renders an expandable info row", () => {
-    const container = mountContainer();
-    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
-    renderBackgroundStep(container, ctx);
-    const row = container.querySelector(".pc-bofeat");
-    expect(row).not.toBeNull();
-    expect(row!.textContent).toContain("Origin Feat");
-    // The value span must hold the resolved feat NAME, never the raw path. If the
-    // path-style "[[SRD 2024/Feats/Alert]]" link fails to resolve, the value falls
-    // back to the raw "SRD 2024/Feats/Alert" slug — which a `.toContain("Alert")`
-    // would pass vacuously. Assert the exact name + that the feat block expands.
-    expect(row!.querySelector(".pc-bofeat-v")?.textContent).toBe("Alert");
-    expect(row!.querySelector(".pc-bofeat-x")).not.toBeNull();
-  });
-
-  it("origin feat resolves a parenthesized variant to its base feat, showing the variant name", () => {
-    // Canonical 2024 Acolyte/Sage carry parenthesized origin-feat refs like
-    // "[[SRD 2024/Feats/Magic Initiate (Cleric)]]" whose tail slugifies to
-    // "magic-initiate-cleric" — but the only real feat is "srd-2024_magic-initiate"
-    // ("Magic Initiate"). The row must resolve to the BASE feat while still
-    // displaying the VARIANT name (honest about which variant the bg grants).
-    const MAGIC_INITIATE_FEAT = {
-      slug: "srd-2024_magic-initiate", name: "Magic Initiate", entityType: "feat",
-      filePath: "x", readonly: true, homebrew: false, compendium: "SRD 2024",
-      data: { name: "Magic Initiate" },
-    } as unknown as RegisteredEntity;
-    const container = mountContainer();
-    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
-    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
-      type === "background" ? BACKGROUNDS : type === "feat" ? [MAGIC_INITIATE_FEAT] : [];
-    const bgRow = BACKGROUNDS.find((b) => b.slug === "srd-2024_criminal")!;
-    const prev = (bgRow.data as { origin_feat?: string }).origin_feat;
-    (bgRow.data as { origin_feat?: string }).origin_feat = "[[SRD 2024/Feats/Magic Initiate (Cleric)]]";
-    try {
-      renderBackgroundStep(container, ctx);
-      const row = container.querySelector<HTMLElement>(".pc-bofeat")!;
-      // Variant display name (NOT the base "Magic Initiate", NOT the degraded slug).
-      expect(row.querySelector(".pc-bofeat-v")?.textContent).toBe("Magic Initiate (Cleric)");
-      // Chevron renders (the row is expandable).
-      expect(row.querySelector(".pc-bofeat-x")).not.toBeNull();
-      // Clicking expands the BASE feat's block (fallback name line = "Magic Initiate").
-      row.click();
-      const expand = container.querySelector(".pc-bofeat-expand");
-      expect(expand).not.toBeNull();
-      expect(expand!.textContent).toContain("Magic Initiate");
-    } finally {
-      (bgRow.data as { origin_feat?: string }).origin_feat = prev;
-    }
-  });
-
-  it("origin feat resolves a bare-slug homebrew ref via exact-match", () => {
-    const HOMEBREW_FEAT = {
-      slug: "my-feat", name: "My Feat", entityType: "feat", filePath: "x",
-      readonly: false, homebrew: true, compendium: "Homebrew", data: { name: "My Feat" },
-    } as unknown as RegisteredEntity;
-    const container = mountContainer();
-    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
-    // Override the feat search to return ONLY the bare-slug homebrew feat, and point
-    // the origin_feat at a bare-slug wikilink "[[my-feat]]".
-    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
-      type === "background" ? BACKGROUNDS : type === "feat" ? [HOMEBREW_FEAT] : [];
-    (resolvedCriminal as { name: string }).name; // keep ref shape stable
-    const bgRow = BACKGROUNDS.find((b) => b.slug === "srd-2024_criminal")!;
-    const prev = (bgRow.data as { origin_feat?: string }).origin_feat;
-    (bgRow.data as { origin_feat?: string }).origin_feat = "[[my-feat]]";
-    try {
-      renderBackgroundStep(container, ctx);
-      const row = container.querySelector(".pc-bofeat");
-      expect(row!.querySelector(".pc-bofeat-v")?.textContent).toBe("My Feat");
-    } finally {
-      (bgRow.data as { origin_feat?: string }).origin_feat = prev;
-    }
   });
 
   it("edition-mix banner appears when race grants ASI and background has a 2024 pool", () => {
@@ -225,5 +190,95 @@ describe("renderBackgroundStep", () => {
     });
     renderBackgroundStep(container, ctx);
     expect(container.querySelector(".pc-bwarn")).toBeNull();
+  });
+});
+
+// ── Task 7: Chronicle-block composition (tiles, in-block strip, origin feat) ──
+
+describe("renderBackgroundStep — Chronicle composition", () => {
+  it("chosen Acolyte 2024 renders tiles, the in-block strip, and the origin-feat info row", () => {
+    const c = mountContainer();
+    renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
+    const block = c.querySelector(".pc-btable-expand .pc-cblock")!;
+    expect([...block.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toEqual(
+      ["Skills", "Tool", "Ability Points", "Origin Feat"]);
+    expect(block.querySelector(".pc-dstrip")).not.toBeNull();
+    const info = block.querySelector(".pc-dstrip-row.info")!;
+    expect(info.querySelector(".pc-dstrip-val")!.textContent).toContain("▸");
+    expect(c.querySelector(".pc-bledger")).toBeNull();
+    expect(c.querySelector(".pc-bofeat")).toBeNull();                  // old below-block row gone
+  });
+
+  it("origin-feat info row click expands the feat block beneath it", () => {
+    const c = mountContainer();
+    renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
+    (c.querySelector(".pc-dstrip-row.info .pc-dstrip-val") as HTMLElement).click();
+    expect(c.querySelector(".pc-dstrip-row.info + .pc-bofeat-expand")).not.toBeNull();
+  });
+
+  it("edition-mix note renders INSIDE the block, above the identity band", () => {
+    const c = mountContainer();
+    renderBackgroundStep(c, mkCtxAcolyte2024WithAsiRace());            // race grants ASI → banner fires
+    const block = c.querySelector(".pc-cblock")!;
+    const kids = [...block.children].map((k) => k.className.split(" ")[0]);
+    expect(kids.indexOf("pc-bwarn")).toBeGreaterThanOrEqual(0);
+    expect(kids.indexOf("pc-bwarn")).toBeLessThan(kids.indexOf("pc-cb-bh"));
+  });
+
+  it("2014 background tiles show Languages choose-count and Feature name", () => {
+    const c = mountContainer();
+    renderBackgroundStep(c, mkCtxWithChosenAcolyte2014());
+    const labels = [...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent);
+    expect(labels).toContain("Languages");
+    expect(labels).toContain("Feature");
+    const lang = [...c.querySelectorAll(".pc-cb-tile")].find((t) => t.querySelector(".pc-cb-tl")!.textContent === "Languages")!;
+    expect(lang.querySelector(".pc-cb-tv")!.textContent).toContain("choose 2");
+  });
+
+  it("origin feat resolves a parenthesized variant to its base feat, showing the variant name", () => {
+    const MAGIC_INITIATE_FEAT = {
+      slug: "srd-2024_magic-initiate", name: "Magic Initiate", entityType: "feat",
+      filePath: "x", readonly: true, homebrew: false, compendium: "SRD 2024",
+      data: { name: "Magic Initiate" },
+    } as unknown as RegisteredEntity;
+    const c = mountContainer();
+    const ctx = mkCtxWithChosenAcolyte2024();
+    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+      type === "background" ? BACKGROUNDS : type === "feat" ? [MAGIC_INITIATE_FEAT] : [];
+    const prev = (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat;
+    (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = "[[SRD 2024/Feats/Magic Initiate (Cleric)]]";
+    try {
+      renderBackgroundStep(c, ctx);
+      const info = c.querySelector(".pc-dstrip-row.info")!;
+      // Variant display name (NOT the base "Magic Initiate", NOT the degraded slug).
+      expect(info.querySelector(".pc-dstrip-val")!.textContent).toContain("Magic Initiate (Cleric)");
+      // Clicking expands the BASE feat's block.
+      (info.querySelector(".pc-dstrip-val") as HTMLElement).click();
+      const expand = c.querySelector(".pc-bofeat-expand");
+      expect(expand).not.toBeNull();
+      expect(expand!.textContent).toContain("Magic Initiate");
+    } finally {
+      (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = prev;
+    }
+  });
+
+  it("origin feat resolves a bare-slug homebrew ref via exact-match", () => {
+    const HOMEBREW_FEAT = {
+      slug: "my-feat", name: "My Feat", entityType: "feat", filePath: "x",
+      readonly: false, homebrew: true, compendium: "Homebrew", data: { name: "My Feat" },
+    } as unknown as RegisteredEntity;
+    const c = mountContainer();
+    const ctx = mkCtxWithChosenAcolyte2024();
+    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+      type === "background" ? BACKGROUNDS : type === "feat" ? [HOMEBREW_FEAT] : [];
+    const prev = (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat;
+    (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = "[[my-feat]]";
+    try {
+      renderBackgroundStep(c, ctx);
+      const info = c.querySelector(".pc-dstrip-row.info")!;
+      expect(info.querySelector(".pc-dstrip-val")!.textContent).toContain("My Feat");
+    } finally {
+      (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = prev;
+    }
   });
 });
