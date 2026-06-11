@@ -138,8 +138,10 @@ describe("BuilderView shell", () => {
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
     expect(root.querySelector(".pc-bpicker")).not.toBeNull();
-    expect(root.querySelectorAll(".pc-btable-head .pc-btable-th").length).toBe(5); // seal, name, size, speed, source
-    root.querySelector<HTMLElement>(".pc-btable-row .pc-btoggle.seal")!.click();
+    // expandSelect race ledger: no toggle column → name, size, speed, source.
+    expect(root.querySelectorAll(".pc-btable-head .pc-btable-th").length).toBe(4); // name, size, speed, source
+    expect(root.querySelectorAll(".pc-btoggle").length).toBe(0);
+    root.querySelector<HTMLElement>(".pc-btable-row")!.click(); // row click = select
     expect(setRace).toHaveBeenCalledWith("srd-5e_elf");
   });
 
@@ -179,8 +181,10 @@ describe("BuilderView shell", () => {
       },
     } as unknown as ComponentRenderContext;
     new BuilderView().render(root, c);
-    const seal = root.querySelector(".pc-btable-row .pc-btoggle.seal");
-    expect(seal).not.toBeNull();
-    expect(seal?.classList.contains("on")).toBe(true);
+    // expandSelect race ledger: the chosen race wears the crimson name dress +
+    // inline seal instead of a toggle-column seal.
+    const name = root.querySelector(".pc-btable-row .pc-btable-name");
+    expect(name?.classList.contains("on")).toBe(true);
+    expect(root.querySelector(".pc-btable-row .pc-bname-seal")).not.toBeNull();
   });
 });

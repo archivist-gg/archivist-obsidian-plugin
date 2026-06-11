@@ -32,7 +32,8 @@ export interface SelectionTableOptions {
   /** Race-step semantics (class-step decisions doc): row click = solo-expand =
    *  selected. Drops the toggle column entirely; clicking an unselected row
    *  expands it (collapsing any other) AND fires onToggle. Re-clicking the
-   *  selected row toggles its expansion only — it never deselects. */
+   *  selected row toggles its expansion only — it never deselects. Supersedes
+   *  `single` when both set. */
   expandSelect?: boolean;
   /** Custom expanded-row content; defaults to the inline entity block. */
   renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
@@ -86,7 +87,7 @@ export function renderSelectionTable(
     const head = list.createDiv({ cls: "pc-btable-head" });
     head.style.gridTemplateColumns = tracks;
     const headers: { label: string; key: "name" | number | null; cls: string }[] = [
-      ...(opts.expandSelect ? [] : [{ label: "", key: null as null, cls: "col-add" }]),
+      ...(opts.expandSelect ? [] : [{ label: "", key: null, cls: "col-add" }]),
       { label: "Name", key: "name", cls: "col-name" },
       ...opts.columns.map((c, i): { label: string; key: "name" | number | null; cls: string } =>
         ({ label: c.label, key: c.sort ? i : null, cls: c.cls })),
