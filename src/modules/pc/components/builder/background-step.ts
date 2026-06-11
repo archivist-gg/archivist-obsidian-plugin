@@ -2,6 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import type { ColSpec } from "./selection-table";
 import type { DecisionItem } from "../../pc.decision-engine";
+import type { BackgroundLanguageProficiency } from "../../../background/background.types";
 import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { renderEntityBlock } from "./entity-block";
@@ -32,7 +33,7 @@ interface BackgroundData {
   description?: string;
   skill_proficiencies?: string[];
   tool_proficiencies?: Array<{ kind: string; items?: string[] }>;
-  language_proficiencies?: Array<{ kind: string; count?: number; from?: string } | string>;
+  language_proficiencies?: BackgroundLanguageProficiency[];
   equipment?: Array<{ item: string; quantity?: number } | { kind: "currency"; gp: number }>;
   feature?: { name: string; description?: string };
   ability_score_increases?: { pool?: string[] } | null;
@@ -141,13 +142,13 @@ function originFeatTile(d: BackgroundData): Array<{ label: string; value: string
   return [{ label: "Origin Feat", value: originFeatDisplayName(d.origin_feat) }];
 }
 
-/** 2014 Languages tile: prefers fixed `language_proficiencies` strings, else the
- *  choice entry → `choose <n>`. */
+/** 2014 Languages tile: prefers the fixed-entry language names, else the choice
+ *  entry → `choose <n>`. */
 function languagesTile(d: BackgroundData): string {
   const fixed = fixedLanguageNames(d);
   if (fixed) return fixed;
   const choice = (d.language_proficiencies ?? []).find(
-    (l): l is { kind: string; count?: number } => typeof l === "object" && l.kind === "choice",
+    (l): l is Extract<BackgroundLanguageProficiency, { kind: "choice" }> => l.kind === "choice",
   );
   if (choice) return `choose ${choice.count ?? 1}`;
   return "";
@@ -161,11 +162,12 @@ function fixedToolNames(d: BackgroundData): string {
   return names.join(", ");
 }
 
-/** Fixed (string) language names humanized — choice entries are skipped. */
+/** Fixed language names humanized — only `kind:"fixed"` entries' `languages`
+ *  arrays (flattened); choice entries are skipped. */
 function fixedLanguageNames(d: BackgroundData): string {
   const names = (d.language_proficiencies ?? [])
-    .filter((l): l is string => typeof l === "string")
-    .map(humanizeSlug);
+    .filter((l): l is Extract<BackgroundLanguageProficiency, { kind: "fixed" }> => l.kind === "fixed")
+    .flatMap((l) => l.languages.map(humanizeSlug));
   return names.join(", ");
 }
 
@@ -279,7 +281,7 @@ function renderGearProps(host: HTMLElement, d: BackgroundData): void {
   if (langs) prop(host, "Languages", langs);
   const eq = (d.equipment ?? []).map((x) =>
     "kind" in x && x.kind === "currency" ? `${x.gp} GP`
-      : `${humanizeSlug((x as { item: string }).item)}${(x as { quantity?: number }).quantity! > 1 ? ` ×${(x as { quantity: number }).quantity}` : ""}`,
+      : `${humanizeSlug((x as { item: string }).item)}${((x as { quantity?: number }).quantity ?? 1) > 1 ? ` ×${(x as { quantity: number }).quantity}` : ""}`,
   );
   if (eq.length) prop(host, "Equipment", eq.join(", "));
   if (d.feature?.description && d.feature.description !== NO_DESC) {

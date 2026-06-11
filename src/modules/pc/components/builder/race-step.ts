@@ -140,7 +140,10 @@ function renderTraits(host: HTMLElement, d: RaceData): void {
 
 /** Subrace = the first strip row when the entity carries a `subraces` array
  *  (no SRD entity does — 2014 subraces are flattened entries; homebrew may).
- *  Same data contract as the retired Plan-4 callout, now in strip dress. */
+ *  Same data contract as the retired Plan-4 callout, now in strip dress.
+ *  Bypasses renderDecisionStrip because a subrace is not a DecisionItem — it
+ *  writes the dedicated `character.subrace` field via setSubrace, not an origin
+ *  choice. */
 function renderSubraceRow(host: HTMLElement, ctx: ComponentRenderContext, e: RegisteredEntity): void {
   const subraces = (e.data as RaceData).subraces ?? [];
   if (!subraces.length) return;

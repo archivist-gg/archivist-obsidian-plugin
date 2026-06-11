@@ -36,6 +36,16 @@ const ACOLYTE_2024_DATA = {
   choices: [{ kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] }],
 };
 
+// SAGE_2014: a 2014 background carrying FIXED languages (the real normalizer
+// shape — { kind: "fixed", languages: [...] }, never bare strings) and NO
+// choice entry, so the Languages tile must show the humanized fixed names.
+const SAGE_2014_DATA = {
+  name: "Sage",
+  skill_proficiencies: ["arcana", "history"],
+  language_proficiencies: [{ kind: "fixed", languages: ["dwarvish", "giant"] }],
+  feature: { name: "Researcher", description: "When you attempt to learn a piece of lore..." },
+};
+
 const CRIMINAL_2024_DATA = {
   name: "Criminal",
   skill_proficiencies: ["sleight-of-hand", "stealth"],
@@ -49,6 +59,11 @@ const CRIMINAL_2024_DATA = {
 const ACOLYTE_2014_ROW: RegisteredEntity = {
   slug: "srd-5e_acolyte", name: "Acolyte", entityType: "background", filePath: "x",
   readonly: true, homebrew: false, compendium: "SRD 2014", data: ACOLYTE_2014_DATA,
+} as unknown as RegisteredEntity;
+
+const SAGE_2014_ROW: RegisteredEntity = {
+  slug: "srd-5e_sage", name: "Sage", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2014", data: SAGE_2014_DATA,
 } as unknown as RegisteredEntity;
 
 const ACOLYTE_2024_ROW: RegisteredEntity = {
@@ -66,7 +81,7 @@ const ALERT_FEAT: RegisteredEntity = {
   readonly: true, homebrew: false, compendium: "SRD 2024", data: { name: "Alert" },
 } as unknown as RegisteredEntity;
 
-const BACKGROUNDS = [ACOLYTE_2014_ROW, ACOLYTE_2024_ROW, CRIMINAL_ROW];
+const BACKGROUNDS = [ACOLYTE_2014_ROW, SAGE_2014_ROW, ACOLYTE_2024_ROW, CRIMINAL_ROW];
 
 /** Build a ctx for the background step. `chosen` marks definition.background +
  *  shapes `resolved.background` (the resolver-shaped entity the engine reads
@@ -124,6 +139,9 @@ const resolvedAcolyte2024 = {
 const resolvedAcolyte2014 = {
   slug: "srd-5e_acolyte", name: "Acolyte", choices: ACOLYTE_2014_DATA.choices,
 };
+const resolvedSage2014 = {
+  slug: "srd-5e_sage", name: "Sage", choices: undefined,
+};
 
 // Chosen-background factories used by the Task-7 composition tests.
 const mkCtxWithChosenAcolyte2024 = (): ComponentRenderContext =>
@@ -136,12 +154,14 @@ const mkCtxAcolyte2024WithAsiRace = (): ComponentRenderContext =>
   });
 const mkCtxWithChosenAcolyte2014 = (): ComponentRenderContext =>
   mkCtx({ background: "[[srd-5e_acolyte]]", resolvedBackground: resolvedAcolyte2014 });
+const mkCtxWithChosenSage2014 = (): ComponentRenderContext =>
+  mkCtx({ background: "[[srd-5e_sage]]", resolvedBackground: resolvedSage2014 });
 
 describe("renderBackgroundStep", () => {
   it("renders the ledger with Skills column and no toggle column", () => {
     const container = mountContainer();
     renderBackgroundStep(container, mkCtx());
-    expect(container.querySelectorAll(".pc-btable-row").length).toBe(3);
+    expect(container.querySelectorAll(".pc-btable-row").length).toBe(4);
     expect(container.querySelectorAll(".pc-btoggle").length).toBe(0);
     const cells = [...container.querySelectorAll(".col-skills")];
     const acolyteCell = cells.find((c) => c.textContent?.includes("Insight"));
@@ -233,6 +253,20 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     expect(labels).toContain("Feature");
     const lang = [...c.querySelectorAll(".pc-cb-tile")].find((t) => t.querySelector(".pc-cb-tl")!.textContent === "Languages")!;
     expect(lang.querySelector(".pc-cb-tv")!.textContent).toContain("choose 2");
+  });
+
+  it("2014 fixed languages: Languages tile + gear-props row show the humanized fixed names", () => {
+    const c = mountContainer();
+    renderBackgroundStep(c, mkCtxWithChosenSage2014());
+    // The Languages glance tile prefers the fixed entry's names over `choose <n>`.
+    const langTile = [...c.querySelectorAll(".pc-cb-tile")].find(
+      (t) => t.querySelector(".pc-cb-tl")!.textContent === "Languages")!;
+    expect(langTile.querySelector(".pc-cb-tv")!.textContent).toBe("Dwarvish, Giant");
+    // The "Proficiencies & starting gear" section's Languages prop renders them too.
+    const langProp = [...c.querySelectorAll(".pc-cb-prop")].find(
+      (p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Languages")!;
+    expect(langProp).not.toBeUndefined();
+    expect(langProp.textContent).toContain("Dwarvish, Giant");
   });
 
   it("origin feat resolves a parenthesized variant to its base feat, showing the variant name", () => {
