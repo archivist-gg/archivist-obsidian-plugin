@@ -415,3 +415,151 @@
 .archivist-pc-sheet .pc-bofeat-v { font-family: var(--pc-font-serif); color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-bofeat-x { margin-left: auto; color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }
+
+/* ── Custom Background: the pinned ✦ Build row + parts-builder form ──
+   The row pins above the picker table; clicking unfolds the form host beneath
+   it. Dress follows the mockup: crimson-outline Build tag, dashed + affordances,
+   bordered seg toggle with a crimson .on fill. No border-left anywhere. */
+.archivist-pc-sheet .pc-bcustomwrap { margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-bcustomrow {
+  display: flex; align-items: center; gap: 8px; padding: 7px 10px; cursor: pointer;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-parchment-light);
+}
+.archivist-pc-sheet .pc-bcustomrow.open { border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bcustomrow-nm {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.archivist-pc-sheet .pc-bctag {
+  margin-left: auto; font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
+  font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase;
+  color: var(--pc-crimson); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm);
+  padding: 1px 6px;
+}
+.archivist-pc-sheet .pc-bcustom-host:empty { display: none; }
+.archivist-pc-sheet .pc-bcustom {
+  border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md);
+  background: var(--pc-parchment-light); padding: 12px 14px; margin-top: var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-bcustom-intro {
+  font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft); line-height: 1.45; margin-bottom: 10px;
+}
+.archivist-pc-sheet .pc-bcustom-namerow { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.archivist-pc-sheet .pc-bcustom-namelbl {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-bcustom-name {
+  flex: 1 1 auto; min-width: 0; max-width: 320px;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 5px 9px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
+  caret-color: var(--pc-crimson); outline: none; box-shadow: none;
+}
+
+/* Extras: tools-or-languages chips + a text input with two dashed add buttons. */
+.archivist-pc-sheet .pc-bextra { margin: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-bextra-head {
+  display: flex; align-items: center; gap: var(--pc-space-2);
+  border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
+}
+.archivist-pc-sheet .pc-bextra-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
+.archivist-pc-sheet .pc-bextra-badge {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bextra-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 7px; }
+.archivist-pc-sheet .pc-bextra-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-md);
+  padding: 3px 9px; font-size: var(--pc-fs-small); color: var(--pc-crimson); background: var(--pc-row-open-bg);
+}
+.archivist-pc-sheet .pc-bextra-chip-v { font-family: var(--pc-font-serif); font-weight: 700; }
+.archivist-pc-sheet .pc-bextra-chip-ty {
+  font-size: var(--pc-fs-label); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm);
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-bextra-chip-x { cursor: pointer; color: var(--pc-text-muted); font-weight: 700; }
+.archivist-pc-sheet .pc-bextra-adder { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-bextra-input {
+  flex: 1 1 auto; min-width: 0; max-width: 240px;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 4px 8px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
+  caret-color: var(--pc-crimson); outline: none; box-shadow: none;
+}
+.archivist-pc-sheet .pc-bextra-add {
+  font-size: var(--pc-fs-small); font-family: var(--pc-font-serif); cursor: pointer;
+  border: 1px dashed var(--pc-crimson); border-radius: var(--pc-radius-md);
+  padding: 3px 10px; color: var(--pc-crimson); background: transparent;
+}
+
+/* Feature: a three-mode seg toggle (bordered inline-flex, crimson .on fill). */
+.archivist-pc-sheet .pc-bfeat { margin: var(--pc-space-3) 0; }
+.archivist-pc-sheet .pc-bfeat-label {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  font-size: var(--pc-fs-body); border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
+}
+.archivist-pc-sheet .pc-bseg {
+  display: inline-flex; border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm);
+  overflow: hidden; margin-bottom: 7px;
+}
+.archivist-pc-sheet .pc-bseg-opt {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson);
+  padding: 4px 11px; cursor: pointer; border-right: 1px solid var(--pc-crimson);
+}
+.archivist-pc-sheet .pc-bseg-opt:last-child { border-right: none; }
+.archivist-pc-sheet .pc-bseg-opt.on { background: var(--pc-crimson); color: var(--pc-parchment-light); }
+.archivist-pc-sheet .pc-bseg-opt.disabled { color: var(--pc-text-muted); cursor: not-allowed; }
+.archivist-pc-sheet .pc-bfeat-pick { display: flex; align-items: center; gap: 8px; }
+.archivist-pc-sheet .pc-bborrow {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 4px 8px; color: var(--pc-text-primary);
+}
+.archivist-pc-sheet .pc-bfeat-desc {
+  font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft); line-height: 1.45; margin-top: 6px;
+}
+.archivist-pc-sheet .pc-bfeat-name {
+  display: block; width: 100%; max-width: 320px; margin-bottom: 6px;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 4px 8px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
+  caret-color: var(--pc-crimson); outline: none; box-shadow: none;
+}
+.archivist-pc-sheet .pc-bfeat-text {
+  display: block; width: 100%; min-height: 64px; resize: vertical;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small);
+  background: var(--pc-white); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 6px 8px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
+  caret-color: var(--pc-crimson); outline: none; box-shadow: none;
+}
+
+/* 2024-style benefits drawer: a dashed crimson note with a +/− toggle. */
+.archivist-pc-sheet .pc-b2024 {
+  margin-top: var(--pc-space-3); border: 1px dashed var(--pc-crimson); border-radius: var(--pc-radius-md);
+  background: var(--pc-row-open-bg); padding: 8px 10px;
+}
+.archivist-pc-sheet .pc-b2024-head { display: flex; align-items: center; gap: 7px; }
+.archivist-pc-sheet .pc-b2024-title { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-b2024-toggle { margin-left: auto; color: var(--pc-tan-muted); font-size: var(--pc-fs-body); cursor: pointer; }
+.archivist-pc-sheet .pc-b2024-note {
+  font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label);
+  color: var(--pc-text-soft); line-height: 1.4; margin-top: 4px;
+}
+
+/* Footer: the Create & use CTA (crimson filled when enabled, muted disabled). */
+.archivist-pc-sheet .pc-bcustom-foot { margin-top: 12px; padding-top: 9px; border-top: 1px solid var(--pc-tan); }
+.archivist-pc-sheet .pc-bcreate {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md);
+  border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm);
+  padding: 6px 14px; background: var(--pc-crimson); color: var(--pc-parchment-light); cursor: pointer;
+}
+.archivist-pc-sheet .pc-bcreate:disabled {
+  background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed;
+}

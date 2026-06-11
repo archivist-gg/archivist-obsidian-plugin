@@ -2,6 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import type { ColSpec } from "./selection-table";
 import { renderEntityPicker } from "./entity-picker";
+import { renderCustomBackgroundRow } from "./custom-background";
 import { renderEntityBlock } from "./entity-block";
 import { renderDecisionLedger } from "./decision-ledger";
 import { buildDecisionLedger, wikilinkTailSlug } from "../../pc.decision-engine";
@@ -31,6 +32,9 @@ const BG_COLUMNS: ColSpec[] = [
  *  decision ledger, and the 2024 origin-feat row. Every other expanded row
  *  shows the entity block only. */
 export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderContext): void {
+  // The pinned ✦ Custom Background entry sits ABOVE the picker table: it opens a
+  // parts builder that writes a real homebrew BackgroundEntity and selects it.
+  renderCustomBackgroundRow(body, ctx);
   renderEntityPicker(body, ctx, {
     entityType: "background",
     stateKey: "builder.background-picker",
