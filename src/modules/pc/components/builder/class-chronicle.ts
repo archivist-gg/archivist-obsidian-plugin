@@ -5,6 +5,7 @@ import type { Feature } from "../../../../shared/types/feature";
 import { recognizeDecision } from "../../decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
+import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 
 /** Structural view of the class runtime entity (class.types.ts). */
 export interface ClassData {
@@ -176,10 +177,71 @@ function renderFolds(block: HTMLElement, ctx: ComponentRenderContext, d: ClassDa
   renderFold(block, ctx, opts.stateKey, { id: "equip", label: "Equipment & proficiencies", defaultOpen: false, body: (h) => renderProfsEquipment(h, d) });
 }
 
-// ── placeholder bodies (Tasks 9–10 replace) ─────────────────────────────────
+// ── progression table (1–20, dynamic columns) ───────────────────────────────
 
-function renderProgression(host: HTMLElement, _d: ClassData, _level: number): void {
-  host.createDiv({ cls: "pc-dstrip-empty", text: "(see Progression task)" });
+const ORDINAL_RE = /^[1-9](?:st|nd|rd|th)$/;
+
+/** Column census over all rows, first-seen order; ordinals split out and sorted. */
+export function tableColumns(table: NonNullable<ClassData["table"]>): { scalars: string[]; slots: string[] } {
+  const scalars: string[] = [];
+  const slots: string[] = [];
+  for (const row of Object.values(table)) {
+    for (const k of Object.keys(row.columns ?? {})) {
+      const bucket = ORDINAL_RE.test(k) ? slots : scalars;
+      if (!bucket.includes(k)) bucket.push(k);
+    }
+  }
+  slots.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+  return { scalars, slots };
+}
+
+function renderProgression(host: HTMLElement, d: ClassData, level: number): void {
+  const table = d.table;
+  if (!table || !Object.keys(table).length) {
+    host.createDiv({ cls: "pc-dstrip-empty", text: "No progression table in this class's data." });
+    return;
+  }
+  const { scalars, slots } = tableColumns(table);
+  const tracks = ["30px", "34px", "minmax(0, 1.8fr)", ...scalars.map(() => "44px"), ...(slots.length ? ["minmax(0, 2fr)"] : [])].join(" ");
+  const pt = host.createDiv({ cls: "pc-cb-pt" });
+  const head = pt.createDiv({ cls: "pc-cb-pt-h" });
+  head.style.gridTemplateColumns = tracks;
+  for (const t of ["Lv", "Prof", "Features", ...scalars]) head.createSpan({ text: t });
+  if (slots.length) {
+    const sh = head.createSpan({ cls: "pc-cb-pt-slots" });
+    sh.createSpan({ cls: "pc-cb-pt-slots-t", text: "Spell Slots" });
+    const row = sh.createDiv({ cls: "pc-cb-pt-slotrow" });
+    for (const s of slots) row.createSpan({ cls: "pc-cb-pt-s", text: s.replace(/\D/g, "") });
+  }
+  const levels = Object.keys(table).map(Number).sort((a, b) => a - b);
+  for (const lvl of levels) {
+    const r = table[lvl];
+    const row = pt.createDiv({ cls: `pc-cb-pt-r${lvl === level ? " cur" : ""}` });
+    row.style.gridTemplateColumns = tracks;
+    row.createSpan({ cls: "pc-cb-pt-lvl", text: String(lvl) });
+    row.createSpan({ cls: "pc-cb-pt-pb", text: `+${r.prof_bonus}` });
+    renderFeatureNames(row.createSpan({ cls: "pc-cb-pt-feat" }), d, lvl, r.feature_ids);
+    for (const k of scalars) row.createSpan({ cls: "pc-cb-pt-n", text: String(r.columns?.[k] ?? "—") });
+    if (slots.length) {
+      const cell = row.createSpan({ cls: "pc-cb-pt-slotrow" });
+      for (const s of slots) {
+        const v = r.columns?.[s];
+        cell.createSpan({ cls: `pc-cb-pt-s${v == null || v === 0 || v === "0" ? " z" : ""}`, text: v == null ? "–" : String(v) });
+      }
+    }
+  }
+}
+
+function renderFeatureNames(cell: HTMLElement, d: ClassData, lvl: number, ids: string[]): void {
+  if (!ids.length) { cell.setText("—"); return; }
+  const feats = d.features_by_level?.[lvl] ?? [];
+  ids.forEach((id, i) => {
+    const f = feats.find((x) => x.id === id);
+    const name = f?.name ?? humanizeSlug(id);
+    const isSub = name === (d.subclass_feature_name ?? "");
+    const isAsi = /ability score improvement|epic boon/i.test(name);
+    cell.createSpan({ cls: isSub ? "sub" : isAsi ? "asi" : "", text: `${i ? ", " : ""}${name}` });
+  });
 }
 
 function renderFeatureTimeline(host: HTMLElement, _ctx: ComponentRenderContext, _d: ClassData, _opts: ClassChronicleOptions): void {

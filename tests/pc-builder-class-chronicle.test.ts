@@ -6,8 +6,12 @@ import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 import {
   renderClassChronicle,
   collectBrowseDecisions,
+  tableColumns,
   type ClassData,
 } from "../src/modules/pc/components/builder/class-chronicle";
+import type { DecisionLedger } from "../src/modules/pc/pc.decision-engine";
+
+const emptyLedger = (): DecisionLedger => ({ classes: [], origin: [] });
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -146,5 +150,48 @@ describe("renderClassChronicle (browse)", () => {
     expect(labels).toEqual(expect.arrayContaining(["Hit Die", "Saves", "Primary", "Skills", "Subclass", "Spellcasting"]));
     expect(c.querySelector(".pc-dstrip-row .pc-dstrip-pill")!.textContent).toBe("L2");
     expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);   // browse = no controls
+  });
+});
+
+describe("tableColumns", () => {
+  it("splits scalars (first-seen order) from ordinal slots (numeric sort)", () => {
+    const { scalars, slots } = tableColumns(bardData().table!);
+    expect(scalars).toEqual(["Bardic Die", "Cantrips", "Prepared Spells"]);
+    expect(slots).toEqual(["1st", "2nd"]);
+  });
+});
+
+describe("progression table", () => {
+  const openProgression = (c: HTMLElement) => {
+    const fold = [...c.querySelectorAll(".pc-cb-fold-h")].find((h) => h.textContent!.includes("Progression"))!;
+    (fold as HTMLElement).click();
+  };
+
+  it("renders a row per table level with prof bonus and feature names", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 3, mode: "browse", stateKey: "t" });
+    openProgression(c);
+    const rows = c.querySelectorAll(".pc-cb-pt-r");
+    expect(rows.length).toBe(Object.keys(bardData().table!).length);
+    expect(rows[0].textContent).toContain("+2");
+    expect(rows[0].textContent).toContain("Bardic Inspiration");
+  });
+
+  it("splits scalar columns from ordinal slot columns and highlights the current level", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 3, mode: "owned", classIndex: 0, ledger: emptyLedger(), stateKey: "t" });
+    openProgression(c);
+    const head = c.querySelector(".pc-cb-pt-h")!;
+    expect(head.textContent).toContain("Bardic Die");
+    expect(head.textContent).toContain("Spell Slots");
+    const cur = c.querySelector(".pc-cb-pt-r.cur")!;
+    expect(cur.querySelector(".pc-cb-pt-lvl")!.textContent).toBe("3");
+  });
+
+  it("renders – for missing slot cells", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 1, mode: "browse", stateKey: "t" });
+    openProgression(c);
+    expect(c.querySelectorAll(".pc-cb-pt-s.z").length).toBeGreaterThan(0);
   });
 });

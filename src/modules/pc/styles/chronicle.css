@@ -123,3 +123,31 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h { display: flex; align-items: center; gap: 9px; padding: 9px 2px 8px; cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev { flex: none; width: 11px; color: var(--pc-crimson); font-size: 9px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-body { padding: 2px 2px 6px; }
+
+/* ── Progression table (1–20, dynamic columns — cast-table idiom) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r { display: grid; gap: 0; align-items: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h { border-bottom: 1px solid var(--pc-tan-muted); align-items: end; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h > span {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; padding: 6px 5px 4px; white-space: nowrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r > span {
+  padding: 5px; border-bottom: 1px dashed var(--pc-tan-muted); color: var(--pc-text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r:last-child > span { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-lvl { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-pb { font-family: var(--pc-font-serif); text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat { font-family: var(--pc-font-serif); color: var(--pc-text-primary); white-space: normal; line-height: 1.35; overflow: visible; text-overflow: clip; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat .asi { color: var(--pc-amber); font-style: italic; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat .sub { color: var(--pc-crimson); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-n { text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slotrow { display: flex; gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slotrow .pc-cb-pt-s { flex: 1; min-width: 0; text-align: center; font-variant-numeric: tabular-nums; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-s.z { color: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slots-t { display: block; text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r.cur > span { background: rgba(146, 38, 16, 0.07); border-bottom-color: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r.cur .pc-cb-pt-lvl { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r:nth-child(even):not(.cur) > span { background: rgba(232, 213, 176, 0.28); }
