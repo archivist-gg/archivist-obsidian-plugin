@@ -30,6 +30,8 @@ export interface EntityPickerOptions {
    *  table's persisted sort key is column-index-based. */
   columns?: ColSpec[];
   pinnedEntries?: PinnedEntry[];
+  /** Slugs filtered OUT of the candidate list (e.g. classes already held). */
+  exclude?: Set<string>;
   /** Threads through to renderSelectionTable (race-step semantics). */
   expandSelect?: boolean;
   renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
@@ -75,7 +77,8 @@ export function renderEntityPicker(
 
     const cands = ctx.core.entities
       .search(st.query, opts.entityType, Number.POSITIVE_INFINITY)
-      .filter((e) => matchesTicked(e, st.ticked!));
+      .filter((e) => matchesTicked(e, st.ticked!))
+      .filter((e) => !opts.exclude?.has(e.slug));
     renderSelectionTable(tableHost, ctx, {
       columns: opts.columns ?? [],
       candidates: cands,

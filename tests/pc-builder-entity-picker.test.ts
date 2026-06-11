@@ -126,6 +126,13 @@ describe("renderEntityPicker (single-select ledger)", () => {
     expect(rowByName(root, "Elf").querySelector(".col-size")?.textContent).toBe("medium");
   });
 
+  it("excluded slugs never render a row", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), exclude: new Set(["srd-5e_elf"]) });
+    const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toEqual(["Human"]);
+  });
+
   it("shows the table's No-matches state when the query matches nothing", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());

@@ -5,7 +5,21 @@ export function setTooltip(el: HTMLElement, tooltip: string) {
 export class Notice {
   constructor(_message: string) {}
 }
-export class Modal {}
+export class Modal {
+  app: unknown;
+  contentEl: HTMLElement;
+  constructor(app: unknown) {
+    this.app = app;
+    this.contentEl = document.createElement("div");
+    document.body.appendChild(this.contentEl);
+  }
+  open(): void {
+    (this as { onOpen?: () => void }).onOpen?.();
+  }
+  close(): void {
+    (this as { onClose?: () => void }).onClose?.();
+  }
+}
 export class Plugin {}
 export class PluginSettingTab {}
 export class Setting {}

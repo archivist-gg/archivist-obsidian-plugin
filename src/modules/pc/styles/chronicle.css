@@ -180,3 +180,14 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt { display: flex; align-items: flex-start; gap: 9px; padding: 7px 10px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); margin-bottom: 6px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqltr { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--pc-tan-muted); display: inline-flex; align-items: center; justify-content: center; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqtext { font-size: var(--pc-fs-body); color: var(--pc-text-primary); line-height: 1.45; }
+
+/* ── Add-Class modal (Task 11) ─ modal-scoped: .pc-bclass-modal beats Obsidian's .modal button ─ */
+.pc-bclass-modal .pc-bcm-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-heading); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); border-bottom: 1px solid var(--pc-tan); padding-bottom: 6px; margin: 0 0 10px; }
+.pc-bclass-modal .pc-bcm-scroll { max-height: 62vh; overflow-y: auto; }
+.pc-bclass-modal .pc-bcm-foot { display: flex; align-items: center; gap: 8px; padding-top: 11px; margin-top: 11px; border-top: 1px solid var(--pc-tan); }
+.pc-bclass-modal .pc-bcm-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+.pc-bclass-modal .pc-bcm-add { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+.pc-bclass-modal .pc-bcm-add:hover { background: var(--pc-crimson-light); }
+.pc-bclass-modal .pc-bcm-add:disabled { background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed; }
+.pc-bclass-modal .pc-bcm-claim { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 13px; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1.5px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 11px 16px; cursor: pointer; }
+.pc-bclass-modal .pc-bcm-claim:hover { background: var(--pc-crimson-light); }
