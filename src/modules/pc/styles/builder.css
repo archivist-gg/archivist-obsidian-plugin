@@ -93,41 +93,41 @@
 }
 
 /* ── Shared selection UI: compendium filter + source tags ── */
-.archivist-pc-sheet .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
-.archivist-pc-sheet .pc-bfilter-label {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-label {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.archivist-pc-sheet .pc-bfilter-chip {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chip {
   font-size: var(--pc-fs-small); color: var(--pc-text-muted);
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 2px 9px; cursor: pointer;
 }
-.archivist-pc-sheet .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
-.archivist-pc-sheet .pc-bsrc.e2014 { color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-bsrc.e2024 { color: #1f3f7a; }
-.archivist-pc-sheet .pc-bsrc.hb { color: #2f6f3a; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2014 { color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2024 { color: #1f3f7a; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.hb { color: #2f6f3a; }
 
-.archivist-pc-sheet .pc-bblock { min-width: 0; }
-.archivist-pc-sheet .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bblock { min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
 
 /* ── N1 choice callout ── */
-.archivist-pc-sheet .pc-bchoice { margin: var(--pc-space-3) 0; }
-.archivist-pc-sheet .pc-bchoice-head {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice { margin: var(--pc-space-3) 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-head {
   display: flex; align-items: center; gap: var(--pc-space-2);
   border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
 }
-.archivist-pc-sheet .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-bchoice-badge {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-badge {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
   text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-muted);
 }
 /* N1 open flag: an amber filled "!" disc, right-aligned. This is the ONLY
    signal for a required/open choice — no border bar, no box outline anywhere
    in the ledger leans on chrome for it. */
-.archivist-pc-sheet .pc-bchoice-flag {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-flag {
   margin-left: auto; flex: 0 0 auto;
   width: 16px; height: 16px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
@@ -135,77 +135,77 @@
   font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label);
   line-height: 1;
 }
-.archivist-pc-sheet .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.archivist-pc-sheet .pc-bchoice-chip {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip {
   border: 1px solid var(--pc-text-primary); border-radius: var(--pc-radius-md);
   padding: 3px 11px; font-size: var(--pc-fs-small); color: var(--pc-text-primary);
   cursor: pointer; background: transparent;
 }
-.archivist-pc-sheet .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
-.archivist-pc-sheet .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
 
 /* ── Shared selection table (the add-drawer pattern, generalized) ── */
-.archivist-pc-sheet .pc-btable-host { overflow-x: auto; min-width: 0; }
-.archivist-pc-sheet .pc-btable { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
-.archivist-pc-sheet .pc-btable-head, .archivist-pc-sheet .pc-btable-row { display: grid; }
-.archivist-pc-sheet .pc-btable-head > .pc-btable-th {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-host { overflow-x: auto; min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-head, :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { display: grid; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-head > .pc-btable-th {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
   text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
   padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
 }
-.archivist-pc-sheet .pc-btable-head > .pc-btable-th.sortable { cursor: pointer; }
-.archivist-pc-sheet .pc-btable-sortarr { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-btable-row > * {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-head > .pc-btable-th.sortable { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-sortarr { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row > * {
   padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted);
   font-size: var(--pc-fs-body); color: var(--pc-text-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.archivist-pc-sheet .pc-btable-row { cursor: pointer; }
-.archivist-pc-sheet .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-btable-name.on { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-btable-expand { padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
-.archivist-pc-sheet .pc-btable-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
-.archivist-pc-sheet .pc-btoggle {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-name.on { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-expand { padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle {
   width: 20px; height: 20px; line-height: 1; border-radius: 50%;
   border: 1px solid var(--pc-tan-muted); background: transparent;
   color: var(--pc-text-soft); cursor: pointer; font-size: var(--pc-fs-small); padding: 0;
 }
-.archivist-pc-sheet .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
 /* Single-select seal: the ✓ stays in the DOM but rests invisible; hovering the
    row previews it in crimson outline, the standing pick is a filled stamp. */
-.archivist-pc-sheet .pc-btoggle.seal { color: transparent; font-weight: 700; }
-.archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal { border-color: var(--pc-crimson); color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-btoggle.seal.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
-.archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal.on { color: var(--pc-parchment-light); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle.seal { color: transparent; font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row:hover .pc-btoggle.seal { border-color: var(--pc-crimson); color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle.seal.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row:hover .pc-btoggle.seal.on { color: var(--pc-parchment-light); }
 /* expandSelect mode: the standing pick is marked by an inline name seal (no
    toggle column), since the row itself is the selection control. */
-.archivist-pc-sheet .pc-bname-seal {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bname-seal {
   color: var(--pc-crimson);
   font-weight: 700;
 }
 
 /* ── Entity picker (single-select ledger: search + filter + seal table) ── */
-.archivist-pc-sheet .pc-bpicker { min-width: 0; }
-.archivist-pc-sheet .pc-bpicker-search {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker { min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search {
   width: 100%; max-width: 320px; display: block;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
   background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 5px 9px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); margin-bottom: var(--pc-space-2); outline: none; box-shadow: none;
 }
-.archivist-pc-sheet .pc-bpicker-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
 /* Override Obsidian's built-in input :hover (grey form-field highlight) and :focus
    (box-shadow/outline ring + text recolor) so the search box keeps the parchment
    look and dark text in every state. */
-.archivist-pc-sheet .pc-bpicker-search:hover,
-.archivist-pc-sheet .pc-bpicker-search:focus,
-.archivist-pc-sheet .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
-.archivist-pc-sheet .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:hover,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:focus,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
 
 /* ── Inert (visible-but-unselectable) callout chip: a `from` slug with no entity
    behind it. Muted + un-clickable, distinct from `.muted` (over-limit dim). ── */
-.archivist-pc-sheet .pc-bchoice-chip.inert {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip.inert {
   opacity: .4; cursor: default; border-style: dashed; color: var(--pc-text-muted);
 }
 
@@ -299,28 +299,28 @@
 }
 
 /* Ability-points pool: a −/+ stepper per pool ability. */
-.archivist-pc-sheet .pc-bpoints-left { font-size: var(--pc-fs-small); color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-bpoints {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-left { font-size: var(--pc-fs-small); color: var(--pc-crimson); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints {
   display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-top: 4px;
 }
-.archivist-pc-sheet .pc-bpoints-cell {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-cell {
   display: inline-flex; align-items: center; gap: 5px;
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 6px;
 }
-.archivist-pc-sheet .pc-bpoints-ab {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-ab {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
   letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-bpoints-n {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-n {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
   min-width: 12px; text-align: center;
 }
-.archivist-pc-sheet .pc-bpoints-btn {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-btn {
   width: 18px; height: 18px; line-height: 1; padding: 0; border-radius: 50%;
   border: 1px solid var(--pc-tan-muted); background: transparent;
   color: var(--pc-crimson); cursor: pointer; font-size: var(--pc-fs-small); font-weight: 700;
 }
-.archivist-pc-sheet .pc-bpoints-btn:disabled { color: var(--pc-text-muted); border-color: var(--pc-tan-muted); opacity: .4; cursor: default; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-btn:disabled { color: var(--pc-text-muted); border-color: var(--pc-tan-muted); opacity: .4; cursor: default; }
 
 /* ── Abilities step (SP2 Plan 4) ───────────────────────────────── */
 .archivist-pc-sheet .pc-bmethods { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -436,7 +436,7 @@
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson);
   display: inline-flex; align-items: center; gap: 6px;
 }
-.archivist-pc-sheet .pc-bctag {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bctag {
   margin-left: auto; font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
   font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase;
   color: var(--pc-crimson); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm);

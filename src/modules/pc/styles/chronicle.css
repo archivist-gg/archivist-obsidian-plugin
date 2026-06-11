@@ -1,0 +1,120 @@
+/* Class Chronicle block + decision strip. Shared between the PC sheet
+ * (.archivist-pc-sheet) and the class-builder modal, which Obsidian portals
+ * to document.body (escaping the sheet scope) carrying .archivist-modal — so
+ * every shared rule is dual-scoped via :is(.archivist-pc-sheet, .archivist-modal).
+ * The only unscoped rule is the modal width override below. */
+
+.modal:has(.pc-bclass-modal) { max-width: 680px; width: 680px; }
+
+/* ── Chronicle block shell ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cblock {
+  background: var(--pc-parchment-dark); /* page-tone card on the lighter sheet */
+  background: #f0ddbd;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  box-shadow: 0 3px 14px rgba(134, 116, 83, 0.25);
+  padding: 15px 18px 14px;
+  position: relative;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge {
+  position: absolute; top: 11px; right: 13px;
+  font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+  font-family: var(--pc-font-sans);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh {
+  border-bottom: 2px solid #7a200d; padding-bottom: 0.35em; margin-bottom: 0.55em;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-name {
+  font-family: var(--pc-font-serif); color: #7a200d; font-size: var(--pc-fs-big);
+  font-weight: 700; letter-spacing: 1px; margin: 0; line-height: 1.15;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub {
+  font-style: italic; font-size: 13px; color: var(--pc-text-primary); margin-top: 2px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
+  font-style: italic; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  color: var(--pc-text-soft); line-height: 1.55; margin: 0.2em 0 0.7em;
+}
+/* glance tiles */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-glance { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tile {
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-parchment-light); padding: 5px 10px 6px; min-width: 78px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tl {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tv {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  font-size: 15px; line-height: 1.05; display: flex; align-items: baseline; gap: 5px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
+}
+/* section rule */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec-l {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec-r {
+  margin-left: auto; font-size: 9px; letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted);
+}
+
+/* ── Decision strip (hairline all-around borders — NO side bars) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip { display: flex; flex-direction: column; gap: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row {
+  display: flex; align-items: baseline; gap: 9px; padding: 6px 9px;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); flex-wrap: wrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-pill {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 18px; border-radius: 9px; padding: 0 7px;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-name {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
+  margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; }
+/* resolved */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done { border-color: var(--pc-rarity-uncommon); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-pill {
+  background: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon); color: #fff;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-val { color: var(--pc-rarity-uncommon); }
+/* open (live unresolved) */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open { border-color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open .pc-dstrip-pill {
+  background: var(--pc-amber); border-color: var(--pc-amber); color: var(--pc-parchment-light);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open .pc-dstrip-val { color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-bang {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; align-self: center;
+  background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700;
+}
+/* browse-required + info */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req { border-color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-pill {
+  background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-val { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info .pc-dstrip-val { color: var(--pc-crimson); cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-tlabel {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft); margin-bottom: 5px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
+  font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
+}
