@@ -107,6 +107,16 @@ function baseChoicesFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: 
     if (!pool.includes(abilities[ab])) pool.push(abilities[ab]);
     return [...new Set(pool)].sort((a, b) => b - a);
   }
+  if (method === "rolled") {
+    const state = ctx.builderUiState?.get("builder.abilities.roll") as { dice: number[][] } | undefined;
+    const totals = (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
+    for (const k of ABILITY_KEYS) {
+      if (k === ab) continue;
+      const i = totals.indexOf(abilities[k]);
+      if (i >= 0) totals.splice(i, 1);
+    }
+    return totals.length ? [...new Set(totals)].sort((a, b) => b - a) : [abilities[ab]];
+  }
   const out: number[] = [];
   for (let v = 3; v <= 20; v++) out.push(v);
   return out;
@@ -158,10 +168,48 @@ function renderPointBuyBar(body: HTMLElement, ctx: ComponentRenderContext, metho
   }
 }
 
-function renderArrayBar(body: HTMLElement, _ctx: ComponentRenderContext): void {
-  body.createDiv({ cls: "pc-bctx" }).createSpan({ cls: "pc-bctx-l", text: "Standard Array" });
+function renderArrayBar(body: HTMLElement, ctx: ComponentRenderContext): void {
+  const abilities = ctx.resolved.definition.abilities;
+  const bar = body.createDiv({ cls: "pc-bctx" });
+  bar.createSpan({ cls: "pc-bctx-l", text: "Standard Array" });
+  // Pool = array values minus those already assigned (each value consumed once).
+  const pool = [...STANDARD_ARRAY];
+  for (const ab of ABILITY_KEYS) {
+    const i = pool.indexOf(abilities[ab]);
+    if (i >= 0) pool.splice(i, 1);
+  }
+  const wrap = bar.createDiv({ cls: "pc-bpool" });
+  wrap.createSpan({ cls: "pc-bmeter-t", text: pool.length ? "Unassigned:" : "All values assigned." });
+  for (const v of pool) wrap.createSpan({ cls: "pc-bpool-chip", text: String(v) });
 }
 
-function renderRollBar(body: HTMLElement, _ctx: ComponentRenderContext): void {
-  body.createDiv({ cls: "pc-bctx" }).createSpan({ cls: "pc-bctx-l", text: "Roll" });
+interface RollState { dice: number[][]; }
+
+function renderRollBar(body: HTMLElement, ctx: ComponentRenderContext): void {
+  const bag = ctx.builderUiState;
+  const state = bag?.get("builder.abilities.roll") as RollState | undefined;
+  const bar = body.createDiv({ cls: "pc-bctx" });
+  bar.createSpan({ cls: "pc-bctx-l", text: "Roll" });
+  const btn = bar.createEl("button", { cls: "pc-broll-btn", text: state ? "Re-roll" : "Roll 4d6 × 6" });
+  btn.addEventListener("click", () => {
+    const dice: number[][] = [];
+    for (let i = 0; i < 6; i++) {
+      const set = [0, 0, 0, 0].map(() => 1 + Math.floor(Math.random() * 6));
+      set.sort((a, b) => b - a);
+      dice.push(set);
+    }
+    bag?.set("builder.abilities.roll", { dice } satisfies RollState);
+    redraw(body, ctx);
+  });
+  if (!state) {
+    bar.createSpan({ cls: "pc-bmeter-t", text: "Roll a pool of six, then assign via the Base dropdowns." });
+    return;
+  }
+  const sets = bar.createDiv({ cls: "pc-broll-sets" });
+  for (const roll of state.dice) {
+    const set = sets.createDiv({ cls: "pc-broll-set" });
+    roll.forEach((d, i) => set.createSpan({ cls: `pc-broll-die${i === roll.length - 1 ? " strike" : ""}`, text: String(d) }));
+    const total = roll[0] + roll[1] + roll[2]; // sorted desc — drop the lowest
+    set.createSpan({ cls: "pc-broll-total", text: String(total) });
+  }
 }

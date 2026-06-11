@@ -118,6 +118,72 @@ describe("renderAbilitiesStep — point-buy bar", () => {
   });
 });
 
+describe("renderAbilitiesStep — standard array bar", () => {
+  it("lists unassigned array values as pool chips", () => {
+    const container = mountContainer();
+    // str=15 assigned → pool shows 14,13,12,8 unassigned (10 consumed once by the three 10s).
+    renderAbilitiesStep(container, mkCtx({
+      method: "standard-array",
+      abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    }));
+    const chips = [...container.querySelectorAll(".pc-bpool-chip")];
+    // 10 appears three times in scores but only once in the array → consumed once.
+    expect(chips.map((c) => c.textContent)).toEqual(["14", "13", "12", "8"]);
+  });
+});
+
+describe("renderAbilitiesStep — roll bar", () => {
+  it("shows the Roll button; rolling fills the session pool with six 4d6-drop-lowest results", () => {
+    const container = mountContainer();
+    const bag = new Map<string, unknown>();
+    const ctx = mkCtx({ method: "rolled" });
+    (ctx as unknown as { builderUiState: Map<string, unknown> }).builderUiState = bag;
+    renderAbilitiesStep(container, ctx);
+    (container.querySelector(".pc-broll-btn") as HTMLElement).click();
+    const pool = bag.get("builder.abilities.roll") as { dice: number[][] } | undefined;
+    expect(pool?.dice.length).toBe(6);
+    for (const roll of pool!.dice) {
+      expect(roll.length).toBe(4);
+      for (const d of roll) { expect(d).toBeGreaterThanOrEqual(1); expect(d).toBeLessThanOrEqual(6); }
+    }
+  });
+
+  it("renders rolled results as dice chips with the lowest struck and the kept total", () => {
+    const container = mountContainer();
+    const bag = new Map<string, unknown>();
+    bag.set("builder.abilities.roll", { dice: [[6, 5, 4, 1], [3, 3, 2, 2], [6, 6, 6, 1], [4, 4, 3, 2], [5, 4, 2, 1], [2, 2, 2, 1]] });
+    const ctx = mkCtx({ method: "rolled" });
+    (ctx as unknown as { builderUiState: Map<string, unknown> }).builderUiState = bag;
+    renderAbilitiesStep(container, ctx);
+    const first = container.querySelector(".pc-broll-set");
+    expect(first?.querySelectorAll(".pc-broll-die").length).toBe(4);
+    expect(first?.querySelectorAll(".pc-broll-die.strike").length).toBe(1);
+    expect(first?.querySelector(".pc-broll-total")?.textContent).toBe("15"); // 6+5+4
+  });
+
+  it("rolled-method dropdowns offer the unconsumed pool totals, with duplicates honoured", () => {
+    const container = mountContainer();
+    const bag = new Map<string, unknown>();
+    // Totals (top three of each, sorted desc): 15, 16, 16, 12, 13, 9.
+    bag.set("builder.abilities.roll", { dice: [[6, 5, 4, 1], [6, 6, 4, 2], [6, 6, 4, 1], [4, 4, 4, 2], [5, 5, 3, 1], [3, 3, 3, 1]] });
+    const ctx = mkCtx({
+      method: "rolled",
+      // str already took one 16; two 16s in the pool → the other dropdown must still offer 16.
+      abilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    });
+    (ctx as unknown as { builderUiState: Map<string, unknown> }).builderUiState = bag;
+    renderAbilitiesStep(container, ctx);
+    const selects = [...container.querySelectorAll(".pc-babctl select")] as HTMLSelectElement[];
+    // str (index 0) already holds 16; its own value stays selectable + one 16 remains in the pool.
+    const dexOpts = [...selects[1].options].map((o) => o.value);
+    expect(dexOpts).toContain("16"); // second 16 still assignable
+    expect(dexOpts).toContain("15");
+    expect(dexOpts).toContain("13");
+    expect(dexOpts).toContain("12");
+    expect(dexOpts).toContain("9");
+  });
+});
+
 describe("renderAbilitiesStep — custom (Plan 6 hand-off)", () => {
   it("toggling the ✦ Custom tab shows the inert Inquiry prompt box", () => {
     const container = mountContainer();

@@ -348,6 +348,24 @@
   background: rgba(255, 248, 220, 0.6); font-size: 10px; color: var(--pc-text-muted);
 }
 .archivist-pc-sheet .pc-bcost-s { color: var(--pc-crimson); font-weight: 700; font-family: var(--pc-font-serif); }
+.archivist-pc-sheet .pc-bpool { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-bpool-chip {
+  border: 1px solid var(--pc-tan); border-radius: 4px; padding: 2px 8px;
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  background: rgba(255, 248, 220, 0.6);
+}
+.archivist-pc-sheet .pc-broll-btn {
+  border: 1px solid var(--pc-crimson); color: var(--pc-crimson); background: transparent;
+  border-radius: 4px; padding: 4px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+}
+.archivist-pc-sheet .pc-broll-sets { display: flex; gap: 10px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-broll-set {
+  display: inline-flex; align-items: center; gap: 3px;
+  border: 1px solid var(--pc-tan); border-radius: 4px; padding: 2px 7px; background: rgba(255, 248, 220, 0.6);
+}
+.archivist-pc-sheet .pc-broll-die { font-size: 10px; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-broll-die.strike { text-decoration: line-through; opacity: 0.5; }
+.archivist-pc-sheet .pc-broll-total { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); margin-left: 4px; }
 .archivist-pc-sheet .pc-babrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; justify-items: center; padding: 10px 4px 4px; }
 .archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
