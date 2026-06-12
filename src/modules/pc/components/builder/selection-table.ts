@@ -174,8 +174,43 @@ export function renderSelectionTable(
       tr.after(exprow);
       const wrap = exprow.createDiv({ cls: "pc-btable-expand" });
       // Pin prose to the visible width when the table out-measures the host.
-      const scroller = tr.closest(".pc-btable-host");
-      if (scroller) wrap.style.maxWidth = `${(scroller as HTMLElement).clientWidth - 28}px`;
+      //
+      // The host's clientWidth is read live. But on Obsidian's first open with
+      // this tab already active, the leaf is restored DEFERRED — the view tree
+      // is built before the workspace lays it out, so clientWidth reads 0 and
+      // the pin clamps the block to a sliver (`max-width: -28px` → ~0). The user
+      // saw this as the chronicle block rendering ~45% wide ONLY on first open;
+      // switching steps re-renders once the view is sized, so it looked fine.
+      // (The class card escapes this — it is not hosted in an expand cell.)
+      //
+      // Root fix: re-measure when the host GAINS size. A ResizeObserver on the
+      // host re-applies the pin on every size change, so the deferred 0-width
+      // first paint self-corrects the instant the workspace lays the leaf out —
+      // no re-render needed. The observer disconnects when this expand row is
+      // removed (collapse / redraw), so it never leaks.
+      const scroller = tr.closest<HTMLElement>(".pc-btable-host");
+      if (scroller) {
+        const applyMax = (): void => {
+          const w = scroller.clientWidth;
+          // Only pin once the host has a real measured width; a 0/near-0 read
+          // (deferred paint) leaves max-width unset so the block fills naturally
+          // until the observer fires with the laid-out width.
+          if (w > 28) wrap.style.maxWidth = `${w - 28}px`;
+          else wrap.style.removeProperty("max-width");
+        };
+        applyMax();
+        if (typeof ResizeObserver !== "undefined") {
+          const ro = new ResizeObserver(applyMax);
+          ro.observe(scroller);
+          // Tear down when the expand row leaves the DOM (collapse/redraw): a
+          // MutationObserver on the list watches for exprow's removal, then
+          // disconnects both observers.
+          const mo = new MutationObserver(() => {
+            if (!exprow.isConnected) { ro.disconnect(); mo.disconnect(); }
+          });
+          mo.observe(list, { childList: true });
+        }
+      }
       if (opts.renderExpand) opts.renderExpand(wrap, e);
       else renderEntityBlock(wrap, e, ctx.core);
       // Selection rides the user's expand gesture — never the redraw-restore path.
