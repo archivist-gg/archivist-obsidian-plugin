@@ -227,8 +227,17 @@ function renderFold(parent: HTMLElement, ctx: ComponentRenderContext, stateKey: 
 
 function renderFolds(block: HTMLElement, ctx: ComponentRenderContext, d: ClassData, opts: ClassChronicleOptions): void {
   const browse = opts.mode === "browse";
+  // A quiet right-side count on the Features header so the (collapsed-by-default
+  // in owned mode) fold reads as content-bearing — the subclass features live in
+  // here, so the user needs to know it's worth opening.
+  const featureCount = Object.values(mergedFeaturesByLevel(d, subclassDataOf(opts)))
+    .reduce((n, arr) => n + arr.length, 0);
+  const featRight = [
+    featureCount ? `${featureCount} feature${featureCount === 1 ? "" : "s"}` : "",
+    "filled = gained · hollow = ahead",
+  ].filter(Boolean).join(" · ");
   renderFold(block, ctx, opts.stateKey, { id: "prog", label: "Progression · Levels 1–20", defaultOpen: false, body: (h) => renderProgression(h, d, opts.level, subclassDataOf(opts)) });
-  renderFold(block, ctx, opts.stateKey, { id: "feats", label: "Features by level", right: "filled = gained · hollow = ahead", defaultOpen: browse, body: (h) => renderFeatureTimeline(h, ctx, d, opts) });
+  renderFold(block, ctx, opts.stateKey, { id: "feats", label: "Features by level", right: featRight, defaultOpen: browse, body: (h) => renderFeatureTimeline(h, ctx, d, opts) });
   renderFold(block, ctx, opts.stateKey, { id: "equip", label: "Equipment & proficiencies", defaultOpen: false, body: (h) => renderProfsEquipment(h, d) });
 }
 

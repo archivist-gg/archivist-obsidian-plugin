@@ -171,6 +171,33 @@ describe("renderClassStep", () => {
     expect(card.querySelector(".pc-cblock .pc-dstrip")).not.toBeNull();
   });
 
+  it("owned: the collapsed 'Features by level' fold toggles open (then closed) on header click", () => {
+    const c = mountContainer();
+    renderClassStep(c, mkCtxWithBard5({}));
+    const card = c.querySelector(".pc-bccard")!;
+    const featHeader = (): HTMLElement =>
+      [...card.querySelectorAll(".pc-cb-fold-h")].find(
+        (h) => h.textContent!.includes("Features by level"),
+      ) as HTMLElement;
+
+    // Owned mode collapses this fold by default — its body (the timeline) is
+    // absent and the chevron reads closed. This is where subclass features live,
+    // so it must be openable.
+    expect(card.querySelector(".pc-cb-timeline")).toBeNull();
+    expect(featHeader().querySelector(".pc-cb-fold-chev")!.textContent).toBe("▸");
+    // A count hint makes the collapsed fold read as content-bearing.
+    expect(featHeader().querySelector(".pc-cb-sec-r")!.textContent).toContain("1 feature");
+
+    featHeader().click();
+    expect(card.querySelector(".pc-cb-timeline")).not.toBeNull();
+    expect(card.querySelector(".pc-cb-fn")!.textContent).toContain("Bardic Inspiration");
+    expect(featHeader().querySelector(".pc-cb-fold-chev")!.textContent).toBe("▾");
+
+    featHeader().click();
+    expect(card.querySelector(".pc-cb-timeline")).toBeNull();
+    expect(featHeader().querySelector(".pc-cb-fold-chev")!.textContent).toBe("▸");
+  });
+
   it("remove ghost link removes the class without toggling collapse", () => {
     const c = mountContainer();
     const removeClass = vi.fn();

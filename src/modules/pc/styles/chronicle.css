@@ -132,10 +132,21 @@
   border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
 }
 
-/* ── Collapsible folds (Progression / Features / Equipment) ── */
+/* ── Collapsible folds (Progression / Features / Equipment) ──
+ * These headers MUST read as clickable: a legible chevron, a warm hover
+ * tint + crimson label, and a roomy hit area. No left/right accent bars. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold { border-top: 1px solid var(--pc-tan-muted); }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h { display: flex; align-items: center; gap: 9px; padding: 9px 2px 8px; cursor: pointer; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev { flex: none; width: 11px; color: var(--pc-crimson); font-size: 9px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h {
+  display: flex; align-items: center; gap: 9px; padding: 11px 8px 10px; cursor: pointer;
+  border-radius: var(--pc-radius-sm); transition: background 0.12s ease;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover { background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover .pc-cb-sec-l { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev {
+  flex: none; width: 14px; text-align: center; color: var(--pc-crimson);
+  font-size: 12px; line-height: 1;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover .pc-cb-fold-chev { color: var(--pc-crimson-light); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-body { padding: 2px 2px 6px; }
 
 /* ── Progression table (1–20, dynamic columns — cast-table idiom) ── */
