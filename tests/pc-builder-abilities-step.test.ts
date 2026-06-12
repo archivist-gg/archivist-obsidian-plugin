@@ -30,6 +30,7 @@ function ruleBlock(css: string, selectorFragment: string): string {
 function mkCtx(over: {
   method?: string; abilities?: Record<string, number>; editState?: unknown;
   race?: unknown; origin_choices?: Record<string, unknown>;
+  classes?: unknown[]; feats?: unknown[];
 } = {}): ComponentRenderContext {
   const abilities = over.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
   return {
@@ -42,7 +43,7 @@ function mkCtx(over: {
         equipment: [], overrides: {},
         state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [] },
       },
-      race: over.race ?? null, background: null, classes: [], feats: [], features: [], spells: [],
+      race: over.race ?? null, background: null, classes: over.classes ?? [], feats: over.feats ?? [], features: [], spells: [],
     },
     // Real DerivedStats fields are `scores` (final totals) + `mods`.
     derived: { scores: abilities, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 } },
@@ -99,6 +100,24 @@ describe("renderAbilitiesStep — tiles", () => {
     }));
     const caps = [...container.querySelectorAll(".pc-babcap .pc-bsp")];
     expect(caps.some((c) => c.textContent === "+2 species")).toBe(true);
+  });
+
+  it("class chosen-feat ability-points caption as '+N feat' in the same crimson row", () => {
+    const container = mountContainer();
+    // Fighter L4 ASI feat with str+2 allocation. The tile total includes the +2
+    // (computeAbilityScores folds it) so the caption must reconcile it.
+    renderAbilitiesStep(container, mkCtx({
+      classes: [{
+        entity: { slug: "srd-2024_fighter", name: "Fighter" }, level: 4, subclass: null,
+        choices: { 4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 2 } } },
+      }],
+      feats: [{
+        slug: "srd-2024_ability-score-improvement", name: "Ability Score Improvement",
+        choices: [{ kind: "ability-points", id: "asi", points: 2, max_per: 2 }],
+      }],
+    }));
+    const caps = [...container.querySelectorAll(".pc-babcap .pc-bsp")];
+    expect(caps.some((c) => c.textContent === "+2 feat")).toBe(true);
   });
 
   it("every tile column emits the identical structure regardless of the bonus caption", () => {

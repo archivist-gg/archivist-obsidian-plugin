@@ -112,10 +112,33 @@ describe("abilityBonusBreakdown", () => {
       definition: { origin_choices: { "race:half-elf-asi": { str: 1, dex: 1 }, "background:asi": { dex: 2, con: 1 } } },
     });
     const b = abilityBonusBreakdown(r);
-    expect(b.cha).toEqual({ species: 2, background: 0 }); // fixed race ASI
-    expect(b.str).toEqual({ species: 1, background: 0 }); // race choice points
-    expect(b.dex).toEqual({ species: 1, background: 2 }); // both
-    expect(b.con).toEqual({ species: 0, background: 1 });
+    expect(b.cha).toEqual({ species: 2, background: 0, feat: 0 }); // fixed race ASI
+    expect(b.str).toEqual({ species: 1, background: 0, feat: 0 }); // race choice points
+    expect(b.dex).toEqual({ species: 1, background: 2, feat: 0 }); // both
+    expect(b.con).toEqual({ species: 0, background: 1, feat: 0 });
+  });
+
+  it("buckets class chosen-feat ability-points into a feat bucket", () => {
+    // Fighter L4 picks the ASI feat and allocates str+1, con+1 → both land in the
+    // feat bucket (disjoint from species/background, which stay 0).
+    const r = fighterWith({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 1, con: 1 } },
+    });
+    const b = abilityBonusBreakdown(r);
+    expect(b.str).toEqual({ species: 0, background: 0, feat: 1 });
+    expect(b.con).toEqual({ species: 0, background: 0, feat: 1 });
+    expect(b.dex).toEqual({ species: 0, background: 0, feat: 0 });
+  });
+
+  it("buckets flat feat ability_bonuses into the feat bucket too", () => {
+    // A feat carrying a flat ability_bonuses (e.g. Athlete +1 STR) is uncaptioned
+    // unless it folds into the feat bucket — computeAbilityScores already totals it.
+    const r = resolvedWith({});
+    (r as { feats: unknown[] }).feats = [
+      { slug: "athlete", name: "Athlete", ability_bonuses: { str: 1 } },
+    ];
+    const b = abilityBonusBreakdown(r);
+    expect(b.str).toEqual({ species: 0, background: 0, feat: 1 });
   });
 });
 

@@ -107,21 +107,31 @@ function subraceAsi(
 
 /** Per-ability bonus provenance for the builder's obelisk captions:
  *  species = fixed race ASI + subrace fixed ASI + race ability-points choices;
- *  background = background ability-points choices. */
+ *  background = background ability-points choices;
+ *  feat = class chosen-feat ability-points (the L4 asi-or-feat → feat path) +
+ *         flat feat ability_bonuses (e.g. Athlete +1 STR). Both already fold into
+ *         computeAbilityScores totals, so the caption must account for them or a
+ *         tile reads higher than species+background explain (smoke r1). */
 export function abilityBonusBreakdown(
   resolved: ResolvedCharacter,
-): Record<Ability, { species: number; background: number }> {
+): Record<Ability, { species: number; background: number; feat: number }> {
   const race = flattenRaceAsi(resolved.race);
   const origin = collectChosenAbilityPoints(resolved);
   const sub = subraceAsi(resolved);
+  const featPoints = collectClassFeatAbilityPoints(resolved);
 
-  const out = {} as Record<Ability, { species: number; background: number }>;
+  const out = {} as Record<Ability, { species: number; background: number; feat: number }>;
   for (const ab of ABILITY_KEYS) {
     let species = (race[ab] ?? 0) + (origin.race[ab] ?? 0);
     for (const asi of sub) {
       if (asi.ability === ab && typeof asi.amount === "number") species += asi.amount;
     }
-    out[ab] = { species, background: origin.background[ab] ?? 0 };
+    let feat = featPoints[ab] ?? 0;
+    for (const f of resolved.feats) {
+      const bonus = (f as unknown as { ability_bonuses?: Partial<Record<Ability, number>> }).ability_bonuses?.[ab];
+      if (typeof bonus === "number") feat += bonus;
+    }
+    out[ab] = { species, background: origin.background[ab] ?? 0, feat };
   }
   return out;
 }

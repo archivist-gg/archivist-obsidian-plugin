@@ -43,7 +43,7 @@ export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderConte
   renderTiles(body, ctx, method);
   body.createDiv({
     cls: "pc-blegend",
-    text: "Tiles show final totals. Species and background bonuses fold in automatically — called out in crimson.",
+    text: "Tiles show final totals. Species, background, and feat bonuses fold in automatically — called out in crimson.",
   });
 }
 
@@ -86,6 +86,7 @@ function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: Abi
     const parts: string[] = [];
     if (breakdown[ab].species > 0) parts.push(`+${breakdown[ab].species} species`);
     if (breakdown[ab].background > 0) parts.push(`+${breakdown[ab].background} background`);
+    if (breakdown[ab].feat > 0) parts.push(`+${breakdown[ab].feat} feat`);
     if (parts.length) cap.createSpan({ cls: "pc-bsp", text: parts.join(" · ") });
   }
 }
