@@ -699,4 +699,16 @@ describe("renderAbilitiesStep — custom tab (Plan 6 hand-off)", () => {
     expect(setAbilityMethod).toHaveBeenCalledWith("standard-array");
     expect((ctx.builderUiState as unknown as Map<string, unknown>).get("builder.abilities.custom")).toBe(false);
   });
+
+  it("local repaint preserves host-owned children (the step heading survives entering Custom)", () => {
+    // Mirror production: the host renders the step heading into the SAME body
+    // before calling renderAbilitiesStep. Entering Custom triggers a local
+    // repaint, which must not destroy that host-owned heading.
+    const container = mountContainer();
+    container.createDiv({ cls: "pc-builder-step-h", text: "Abilities" });
+    renderAbilitiesStep(container, mkCtx());
+    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
+    expect(container.querySelector(".pc-builder-step-h")?.textContent).toBe("Abilities");
+    expect(container.querySelector(".pc-baibox")).not.toBeNull();
+  });
 });
