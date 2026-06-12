@@ -300,9 +300,22 @@
 .archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-bdd {
-  border: 1px solid var(--pc-tan); border-radius: 4px; background: rgba(255, 248, 220, 0.7);
-  padding: 4px 10px; font-family: var(--pc-font-serif); font-size: 12px; color: var(--pc-text-primary);
+/* Shared builder dropdown: parchment-dressed native select (class-card Lv +
+   abilities Base). The native chrome is suppressed (appearance: none) so the
+   closed control reads as a parchment box; a slim right-pad leaves room for the
+   value to breathe (the adjacent microlabel — Lv / the column cap — gives the
+   context, so no custom caret is needed). Scoped to the sheet + modal so a
+   later modal-hosted select inherits the same dress. */
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd {
+  -webkit-appearance: none; appearance: none;
+  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm); padding: 2px 6px;
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary); cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:hover { border-color: var(--pc-tan); }
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:focus-visible {
+  outline: 2px solid var(--pc-crimson); outline-offset: 1px;
 }
 .archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
