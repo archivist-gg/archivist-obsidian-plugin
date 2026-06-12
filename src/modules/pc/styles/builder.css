@@ -314,6 +314,54 @@
 .archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
+
+/* Base picker (Plan-5 picker B-II): a button-dressed control that opens an
+   anchored in-DOM parchment popover — no native <select>, so the OS option menu
+   never draws. The panel is positioned `absolute` inside `.pc-base-pop-anchor`
+   (position: relative), so the builder's per-write re-render unmounts it
+   naturally — no portal. Scoped to the sheet + modal so a modal-hosted builder
+   keeps the dress. No left/right accent bars; the panel's caret notch and the
+   conditions-popover shadow carry the affordance. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-anchor { position: relative; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  background: var(--pc-parchment-light); padding: 2px 7px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-btn:hover { border-color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-v { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-text-primary); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-cv { color: var(--pc-text-muted); font-size: 8px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop {
+  position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 50;
+  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); padding: 8px 9px; width: 128px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-arrow {
+  position: absolute; bottom: calc(100% - 1px); left: 50%; margin-left: -5px; width: 10px; height: 10px;
+  background: var(--pc-parchment-light); border-left: 1px solid var(--pc-tan); border-top: 1px solid var(--pc-tan);
+  transform: rotate(45deg);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-h {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft);
+  border-bottom: 1px solid var(--pc-tan); padding-bottom: 4px; margin-bottom: 6px; text-align: center;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-list { display: flex; flex-direction: column; gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt {
+  display: flex; align-items: center; gap: 7px; padding: 3px 6px; border-radius: var(--pc-radius-sm);
+  cursor: pointer; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt:not(.used):hover { background: rgba(146, 38, 16, 0.07); color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-ck { width: 13px; display: inline-flex; justify-content: center; color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt.cur { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt.used { opacity: 0.4; text-decoration: line-through; cursor: default; color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-numgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-numgrid-c {
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft);
+  text-align: center; padding: 4px 0; border: 1px solid transparent; border-radius: 3px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-numgrid-c:hover { background: rgba(146, 38, 16, 0.07); color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-numgrid-c.cur { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
 /* Shared PC select dress: parchment-dressed native <select> used by every
    picker on the sheet + builder surfaces (class-card Lv, abilities Base,
    custom-background borrow-cost + origin-feat, inventory override-actions

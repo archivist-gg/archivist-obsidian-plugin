@@ -75,22 +75,29 @@ describe("renderAbilitiesStep — tabs", () => {
 });
 
 describe("renderAbilitiesStep — tiles", () => {
-  it("renders six obelisk tiles reusing the sheet classes, with Base dropdowns", () => {
+  it("renders six obelisk tiles reusing the sheet classes, each with a Base popover control (no native select)", () => {
     const container = mountContainer();
     renderAbilitiesStep(container, mkCtx());
     expect(container.querySelectorAll(".pc-ab").length).toBe(6);
     expect(container.querySelectorAll(".pc-ab-mod").length).toBe(6);
-    expect(container.querySelectorAll(".pc-babctl select").length).toBe(6);
+    // Picker B-II: the Base control is a button + anchored popover, never a <select>.
+    expect(container.querySelectorAll(".pc-babctl .pc-base-pop-btn").length).toBe(6);
+    expect(container.querySelectorAll(".pc-babctl select").length).toBe(0);
   });
 
-  it("changing a Base dropdown writes setAbilityBaseScore", () => {
+  it("manual mode: opening a Base popover and clicking a grid cell writes setAbilityBaseScore", () => {
     const container = mountContainer();
     const setAbilityBaseScore = vi.fn();
-    renderAbilitiesStep(container, mkCtx({ editState: { setAbilityBaseScore } }));
-    const sel = container.querySelector(".pc-babctl select") as HTMLSelectElement;
-    sel.value = "12";
-    sel.dispatchEvent(new Event("change"));
+    renderAbilitiesStep(container, mkCtx({ method: "manual", editState: { setAbilityBaseScore } }));
+    const btn = container.querySelector(".pc-babctl .pc-base-pop-btn") as HTMLElement;
+    btn.click();
+    const panel = container.querySelector(".pc-base-pop")!;
+    expect(panel).not.toBeNull();
+    const cell = [...panel.querySelectorAll(".pc-base-numgrid-c")].find((c) => c.textContent === "12") as HTMLElement;
+    cell.click();
     expect(setAbilityBaseScore).toHaveBeenCalledWith("str", 12);
+    // The write's re-render unmounts the panel; the commit also closes it.
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
   });
 
   it("species/background bonuses caption in crimson under the tile", () => {
@@ -243,16 +250,17 @@ describe("renderAbilitiesStep — point-buy bar", () => {
     expect(chips.some((c) => c.textContent?.includes("16") && c.textContent?.includes("11"))).toBe(true);
   });
 
-  it("base dropdowns exclude unaffordable values", () => {
+  it("point-buy: the Base popover grid excludes unaffordable values", () => {
     const container = mountContainer();
     // 15/15/15/8/8/8 = 27 spent on standard point buy → int has no headroom.
     renderAbilitiesStep(container, mkCtx({
       method: "point-buy",
       abilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
     }));
-    const selects = [...container.querySelectorAll(".pc-babctl select")] as HTMLSelectElement[];
-    const intSel = selects[3]; // ABILITY_KEYS order str,dex,con,int,wis,cha
-    expect([...intSel.options].map((o) => o.value)).toEqual(["8"]);
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[3].click(); // ABILITY_KEYS order str,dex,con,int,wis,cha → int
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")].map((c) => c.textContent);
+    expect(cells).toEqual(["8"]);
   });
 
   it("renders no context bar for the manual method", () => {
@@ -305,26 +313,122 @@ describe("renderAbilitiesStep — roll bar", () => {
     expect(first?.querySelector(".pc-broll-total")?.textContent).toBe("15"); // 6+5+4
   });
 
-  it("rolled-method dropdowns offer the unconsumed pool totals, with duplicates honoured", () => {
+  it("rolled-method Base popover lists the full pool with duplicates honoured, ghosting values another tile already claimed", () => {
     const container = mountContainer();
     const bag = new Map<string, unknown>();
     // Totals (top three of each, sorted desc): 15, 16, 16, 12, 13, 9.
     bag.set("builder.abilities.roll", { dice: [[6, 5, 4, 1], [6, 6, 4, 2], [6, 6, 4, 1], [4, 4, 4, 2], [5, 5, 3, 1], [3, 3, 3, 1]] });
     const ctx = mkCtx({
       method: "rolled",
-      // str already took one 16; two 16s in the pool → the other dropdown must still offer 16.
-      abilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      // str took one 16; two 16s in the pool → the dex popover shows one used 16 + one free 16.
+      abilities: { str: 16, dex: 15, con: 10, int: 10, wis: 10, cha: 10 },
     });
     (ctx as unknown as { builderUiState: Map<string, unknown> }).builderUiState = bag;
     renderAbilitiesStep(container, ctx);
-    const selects = [...container.querySelectorAll(".pc-babctl select")] as HTMLSelectElement[];
-    // str (index 0) already holds 16; its own value stays selectable + one 16 remains in the pool.
-    const dexOpts = [...selects[1].options].map((o) => o.value);
-    expect(dexOpts).toContain("16"); // second 16 still assignable
-    expect(dexOpts).toContain("15");
-    expect(dexOpts).toContain("13");
-    expect(dexOpts).toContain("12");
-    expect(dexOpts).toContain("9");
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[1].click(); // dex — its current value 15 is in the pool, so it owns a slot (no off-pool guard)
+    const opts = [...container.querySelectorAll(".pc-base-pop .pc-base-pool-opt")];
+    // The FULL pool is listed (six totals), not the trimmed select list.
+    expect(opts.map((o) => o.textContent?.replace("✓", "").trim())).toEqual(["16", "16", "15", "13", "12", "9"]);
+    // dex owns the 15 → it carries the ✓ (cur).
+    const fifteen = opts.find((o) => o.textContent?.includes("15"))!;
+    expect(fifteen.classList.contains("cur")).toBe(true);
+    expect(fifteen.textContent).toContain("✓");
+    // str claimed one 16 → exactly one 16 is ghosted `used` and inert; the other is free.
+    const sixteens = opts.filter((o) => o.textContent?.includes("16"));
+    expect(sixteens.filter((o) => o.classList.contains("used")).length).toBe(1);
+    expect(sixteens.filter((o) => !o.classList.contains("used")).length).toBe(1);
+  });
+
+  it("rolled: clicking a free pool value writes setAbilityBaseScore; a ghosted (used) value is inert", () => {
+    const container = mountContainer();
+    const bag = new Map<string, unknown>();
+    bag.set("builder.abilities.roll", { dice: [[6, 5, 4, 1], [6, 6, 4, 2], [6, 6, 4, 1], [4, 4, 4, 2], [5, 5, 3, 1], [3, 3, 3, 1]] });
+    const setAbilityBaseScore = vi.fn();
+    const ctx = mkCtx({
+      method: "rolled",
+      // con holds 12 (a pool value owned by con); dex's popover should ghost that 12.
+      abilities: { str: 16, dex: 15, con: 12, int: 10, wis: 10, cha: 10 },
+      editState: { setAbilityBaseScore },
+    });
+    (ctx as unknown as { builderUiState: Map<string, unknown> }).builderUiState = bag;
+    renderAbilitiesStep(container, ctx);
+    btns(container)[1].click(); // dex
+    const opts = [...container.querySelectorAll(".pc-base-pop .pc-base-pool-opt")];
+    // con's 12 is claimed by another tile → ghosted `used`, no click handler, writes nothing.
+    const used = opts.find((o) => o.classList.contains("used") && o.textContent?.includes("12")) as HTMLElement;
+    expect(used).toBeTruthy();
+    used.click();
+    expect(setAbilityBaseScore).not.toHaveBeenCalled();
+    // A free value assigns and closes.
+    const free = opts.find((o) => o.textContent?.includes("13") && !o.classList.contains("used")) as HTMLElement;
+    free.click();
+    expect(setAbilityBaseScore).toHaveBeenCalledWith("dex", 13);
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
+  });
+});
+
+function btns(container: HTMLElement): HTMLElement[] {
+  return [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+}
+
+describe("renderAbilitiesStep — Base popover (picker B-II)", () => {
+  it("clicking the Base box opens an anchored parchment panel; clicking the same box again closes it", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual" }));
+    const btn = container.querySelector(".pc-babctl .pc-base-pop-btn") as HTMLElement;
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
+    btn.click();
+    const panel = container.querySelector(".pc-base-pop")!;
+    expect(panel).not.toBeNull();
+    expect(panel.querySelector(".pc-base-pop-arrow")).not.toBeNull(); // caret notch
+    btn.click(); // toggle closed
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
+  });
+
+  it("manual grid spans the real 3–20 range (not the mockup's illustrative 3–18)", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual" }));
+    (container.querySelector(".pc-babctl .pc-base-pop-btn") as HTMLElement).click();
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")].map((c) => Number(c.textContent));
+    expect(cells[0]).toBe(3);
+    expect(cells.at(-1)).toBe(20);
+    expect(cells.length).toBe(18); // 3..20 inclusive
+  });
+
+  it("only one panel is open at a time: opening a second tile's Base closes the first", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual" }));
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[0].click();
+    expect(container.querySelectorAll(".pc-base-pop").length).toBe(1);
+    btns[1].click();
+    // Still exactly one panel; it now belongs to the second anchor.
+    expect(container.querySelectorAll(".pc-base-pop").length).toBe(1);
+    expect(btns[1].parentElement!.querySelector(".pc-base-pop")).not.toBeNull();
+    expect(btns[0].parentElement!.querySelector(".pc-base-pop")).toBeNull();
+  });
+
+  it("Escape closes the panel with no write", () => {
+    const container = mountContainer();
+    const setAbilityBaseScore = vi.fn();
+    renderAbilitiesStep(container, mkCtx({ method: "manual", editState: { setAbilityBaseScore } }));
+    (container.querySelector(".pc-babctl .pc-base-pop-btn") as HTMLElement).click();
+    expect(container.querySelector(".pc-base-pop")).not.toBeNull();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
+    expect(setAbilityBaseScore).not.toHaveBeenCalled();
+  });
+
+  it("an outside click closes the panel with no write", () => {
+    const container = mountContainer();
+    const setAbilityBaseScore = vi.fn();
+    renderAbilitiesStep(container, mkCtx({ method: "manual", editState: { setAbilityBaseScore } }));
+    (container.querySelector(".pc-babctl .pc-base-pop-btn") as HTMLElement).click();
+    expect(container.querySelector(".pc-base-pop")).not.toBeNull();
+    document.body.click(); // outside the panel + trigger
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
+    expect(setAbilityBaseScore).not.toHaveBeenCalled();
   });
 });
 

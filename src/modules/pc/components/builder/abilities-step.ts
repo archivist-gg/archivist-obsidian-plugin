@@ -14,9 +14,10 @@ const ABILITY_LABELS: Record<Ability, string> = {
 };
 
 /** SP2 §7 Step 3 — Ability Scores: method pills, per-method context bar, six
- *  obelisk tiles (the sheet's exact classes) with a Base dropdown + crimson
- *  bonus caption each. Tiles show FINAL totals from derived; the dropdowns
- *  write BASE scores via setAbilityBaseScore. */
+ *  obelisk tiles (the sheet's exact classes) with a Base picker + crimson bonus
+ *  caption each. Tiles show FINAL totals from derived; the Base control (picker
+ *  design B-II — an anchored parchment popover, no native <select>) writes BASE
+ *  scores via setAbilityBaseScore. */
 export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const method = ctx.resolved.definition.ability_method;
 
@@ -80,7 +81,7 @@ function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: Abi
 
     const ctl = col.createDiv({ cls: "pc-babctl" });
     ctl.createSpan({ cls: "pc-babctl-l", text: "Base" });
-    renderBaseSelect(ctl, ctx, method, ab);
+    renderBaseControl(ctl, ctx, method, ab);
 
     const cap = col.createDiv({ cls: "pc-babcap" });
     const parts: string[] = [];
@@ -124,16 +125,151 @@ function baseChoicesFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: 
   return out;
 }
 
-function renderBaseSelect(ctl: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): void {
-  const cur = ctx.resolved.definition.abilities[ab];
-  const sel = ctl.createEl("select", { cls: "pc-bdd" });
-  const values = baseChoicesFor(ctx, method, ab);
-  if (!values.includes(cur)) values.unshift(cur);
-  for (const v of values) {
-    const o = sel.createEl("option", { text: String(v), attr: { value: String(v) } });
-    if (v === cur) o.selected = true;
+/** A pool method (standard-array / rolled) draws its Base picker from a fixed
+ *  multiset of values shared across the six tiles. This resolves the FULL pool
+ *  and tags each instance by who owns it: `cur` = this tile's value (carries the
+ *  ✓), `used` = claimed by another tile (ghosted/inert), `free` = assignable.
+ *  Duplicates are honoured slot-by-slot so two 15s read independently. */
+interface PoolSlot { value: number; state: "cur" | "used" | "free"; }
+
+function isPoolMethod(method: AbilityMethod): boolean {
+  return method === "standard-array" || method === "rolled";
+}
+
+function poolSlotsFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): PoolSlot[] {
+  const abilities = ctx.resolved.definition.abilities;
+  let pool: number[];
+  if (method === "standard-array") {
+    pool = [...STANDARD_ARRAY];
+  } else {
+    const state = ctx.builderUiState?.get("builder.abilities.roll") as { dice: number[][] } | undefined;
+    pool = (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
   }
-  sel.addEventListener("change", () => ctx.editState?.setAbilityBaseScore(ab, Number(sel.value)));
+  // Claim one slot per ability that holds a matching value (first-fit), so
+  // duplicates are owned independently. Then label each slot relative to `ab`.
+  const owner: (Ability | null)[] = pool.map(() => null);
+  for (const k of ABILITY_KEYS) {
+    const want = abilities[k];
+    const i = pool.findIndex((v, idx) => v === want && owner[idx] === null);
+    if (i >= 0) owner[i] = k;
+  }
+  const slots: PoolSlot[] = pool
+    .map((value, idx): PoolSlot => ({
+      value,
+      state: owner[idx] === ab ? "cur" : owner[idx] !== null ? "used" : "free",
+    }))
+    .sort((a, b) => b.value - a.value);
+  // Guard: the current value must always be representable (e.g. a manual edit
+  // left a score outside the pool). If no slot owns this tile, stamp the
+  // highest free slot — or, failing that, prepend the current value as `cur`.
+  if (!slots.some((s) => s.state === "cur")) {
+    slots.unshift({ value: abilities[ab], state: "cur" });
+  }
+  return slots;
+}
+
+/** The Base picker (picker design B-II): a button-dressed control that opens an
+ *  anchored in-DOM parchment popover below it — no native <select>, so the OS
+ *  menu never draws. Pool methods list the pool (✓ on current, other-tile values
+ *  ghosted); manual/point-buy show a numeral grid over the real range. The panel
+ *  is created INSIDE a relative anchor wrapper, so the builder's per-write
+ *  re-render unmounts it naturally; outside-click + Escape close it with no
+ *  write. */
+function renderBaseControl(ctl: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): void {
+  const cur = ctx.resolved.definition.abilities[ab];
+  const anchor = ctl.createDiv({ cls: "pc-base-pop-anchor" });
+  const btn = anchor.createEl("button", { cls: "pc-base-pop-btn", attr: { "data-ability": ab } });
+  btn.createSpan({ cls: "pc-base-pop-v", text: String(cur) });
+  btn.createSpan({ cls: "pc-base-pop-cv", text: "▾" });
+  btn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (closeBasePopoverFor(anchor)) return; // clicking the open tile's button closes it
+    openBasePopover(anchor, btn, ctx, method, ab);
+  });
+}
+
+/** Module-level singleton so only one Base popover is ever open: opening another
+ *  tile's closes the first. The cleanup tears down the document-level listeners. */
+let currentBasePopover: { anchor: HTMLElement; panel: HTMLElement; cleanup: () => void } | null = null;
+
+function closeBasePopover(): void {
+  if (!currentBasePopover) return;
+  currentBasePopover.cleanup();
+  currentBasePopover.panel.remove();
+  currentBasePopover = null;
+}
+
+/** Closes the popover if it belongs to `anchor`, returning whether it did — so a
+ *  click on the same trigger toggles closed instead of reopening. */
+function closeBasePopoverFor(anchor: HTMLElement): boolean {
+  if (currentBasePopover?.anchor === anchor) {
+    closeBasePopover();
+    return true;
+  }
+  closeBasePopover(); // a different tile's popover, if any, also closes
+  return false;
+}
+
+function openBasePopover(
+  anchor: HTMLElement, trigger: HTMLElement,
+  ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability,
+): void {
+  const cur = ctx.resolved.definition.abilities[ab];
+  const panel = anchor.createDiv({ cls: "pc-base-pop" });
+  panel.createDiv({ cls: "pc-base-pop-arrow" });
+  panel.addEventListener("click", (ev) => ev.stopPropagation());
+
+  const commit = (value: number): void => {
+    closeBasePopover();
+    ctx.editState?.setAbilityBaseScore(ab, value);
+  };
+
+  if (isPoolMethod(method)) {
+    panel.createDiv({ cls: "pc-base-pop-h", text: "Assign value" });
+    const list = panel.createDiv({ cls: "pc-base-pool-list" });
+    for (const slot of poolSlotsFor(ctx, method, ab)) {
+      const opt = list.createDiv({
+        cls: `pc-base-pool-opt${slot.state === "cur" ? " cur" : ""}${slot.state === "used" ? " used" : ""}`,
+      });
+      opt.createSpan({ cls: "pc-base-pool-ck", text: slot.state === "cur" ? "✓" : "" });
+      opt.createSpan({ text: String(slot.value) });
+      if (slot.state !== "used") opt.addEventListener("click", () => commit(slot.value));
+    }
+  } else {
+    panel.createDiv({ cls: "pc-base-pop-h", text: "Set value" });
+    const grid = panel.createDiv({ cls: "pc-base-numgrid" });
+    for (const v of baseChoicesFor(ctx, method, ab)) {
+      const cell = grid.createDiv({ cls: `pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
+      cell.addEventListener("click", () => commit(v));
+    }
+  }
+
+  // Dismissal — the conditions-popover idiom: register document-level
+  // outside-click + Escape on open, tear down on close. The opening click is
+  // still bubbling when this runs, but it targets the trigger (inside `anchor`),
+  // so `anchor.contains` ignores it and the listener survives the open. A
+  // builder re-render unmounts the panel without calling close, so each handler
+  // also bails (and tears down) the moment the panel leaves the DOM.
+  const onClick = (e: MouseEvent): void => {
+    if (!panel.isConnected) { closeBasePopover(); return; }
+    if (!(e.target instanceof Node)) return;
+    if (panel.contains(e.target) || trigger.contains(e.target)) return;
+    closeBasePopover();
+  };
+  const onKey = (e: KeyboardEvent): void => {
+    if (!panel.isConnected) { closeBasePopover(); return; }
+    if (e.key === "Escape") closeBasePopover();
+  };
+  activeDocument.addEventListener("click", onClick);
+  activeDocument.addEventListener("keydown", onKey);
+
+  currentBasePopover = {
+    anchor, panel,
+    cleanup: () => {
+      activeDocument.removeEventListener("click", onClick);
+      activeDocument.removeEventListener("keydown", onKey);
+    },
+  };
 }
 
 function renderMethodBar(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod): void {
