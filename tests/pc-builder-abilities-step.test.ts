@@ -120,6 +120,20 @@ describe("renderAbilitiesStep — tiles", () => {
     expect(caps.some((c) => c.textContent === "+2 feat")).toBe(true);
   });
 
+  it("legacy class ASI-BRANCH allocation captions as '+N class' in the same crimson row", () => {
+    const container = mountContainer();
+    // Fighter L4 takes the plain +2 ASI branch (choices[4].asi = {str:2}). The tile
+    // total folds the +2, so the caption must attribute it to the class bucket.
+    renderAbilitiesStep(container, mkCtx({
+      classes: [{
+        entity: { slug: "srd-2024_fighter", name: "Fighter" }, level: 4, subclass: null,
+        choices: { 4: { "asi-or-feat": "asi", asi: { str: 2 } } },
+      }],
+    }));
+    const caps = [...container.querySelectorAll(".pc-babcap .pc-bsp")];
+    expect(caps.some((c) => c.textContent === "+2 class")).toBe(true);
+  });
+
   it("every tile column emits the identical structure regardless of the bonus caption", () => {
     const container = mountContainer();
     // INT gets a species bonus → a .pc-bsp caption; the other five do not. The

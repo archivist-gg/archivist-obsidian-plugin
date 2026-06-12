@@ -105,22 +105,51 @@ function subraceAsi(
   return sub?.ability_score_increases ?? [];
 }
 
+/**
+ * Sums the LEGACY class-level ASI-BRANCH allocations (`choices[lvl].asi`) per
+ * ability across every class. This is the path taken when an L4/L8-style
+ * "Ability Score Increase or Feat" decision resolves to the plain +2 ASI branch
+ * rather than a feat. Shared by both `computeAbilityScores`' fold and
+ * `abilityBonusBreakdown`'s `class` bucket so the two reads can never drift.
+ *
+ * Disjoint from chosen-feat ability-points (`choices[lvl]["feat:<id>"]`) and from
+ * origin ability-points — no source double-counts.
+ */
+export function collectClassAsiBranch(
+  resolved: ResolvedCharacter,
+): Partial<Record<Ability, number>> {
+  const out: Partial<Record<Ability, number>> = {};
+  for (const c of resolved.classes) {
+    for (const [, choice] of Object.entries(c.choices)) {
+      const asi = (choice as { asi?: Partial<Record<Ability, number>> })?.asi;
+      if (!asi) continue;
+      for (const ab of ABILITY_KEYS) {
+        const v = asi[ab];
+        if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
+      }
+    }
+  }
+  return out;
+}
+
 /** Per-ability bonus provenance for the builder's obelisk captions:
  *  species = fixed race ASI + subrace fixed ASI + race ability-points choices;
  *  background = background ability-points choices;
+ *  class = legacy class ASI-BRANCH allocations (the L4 asi-or-feat → asi path);
  *  feat = class chosen-feat ability-points (the L4 asi-or-feat → feat path) +
- *         flat feat ability_bonuses (e.g. Athlete +1 STR). Both already fold into
+ *         flat feat ability_bonuses (e.g. Athlete +1 STR). All already fold into
  *         computeAbilityScores totals, so the caption must account for them or a
- *         tile reads higher than species+background explain (smoke r1). */
+ *         tile reads higher than the named sources explain (smoke r1/r5c). */
 export function abilityBonusBreakdown(
   resolved: ResolvedCharacter,
-): Record<Ability, { species: number; background: number; feat: number }> {
+): Record<Ability, { species: number; background: number; class: number; feat: number }> {
   const race = flattenRaceAsi(resolved.race);
   const origin = collectChosenAbilityPoints(resolved);
   const sub = subraceAsi(resolved);
+  const classAsi = collectClassAsiBranch(resolved);
   const featPoints = collectClassFeatAbilityPoints(resolved);
 
-  const out = {} as Record<Ability, { species: number; background: number; feat: number }>;
+  const out = {} as Record<Ability, { species: number; background: number; class: number; feat: number }>;
   for (const ab of ABILITY_KEYS) {
     let species = (race[ab] ?? 0) + (origin.race[ab] ?? 0);
     for (const asi of sub) {
@@ -131,7 +160,7 @@ export function abilityBonusBreakdown(
       const bonus = (f as unknown as { ability_bonuses?: Partial<Record<Ability, number>> }).ability_bonuses?.[ab];
       if (typeof bonus === "number") feat += bonus;
     }
-    out[ab] = { species, background: origin.background[ab] ?? 0, feat };
+    out[ab] = { species, background: origin.background[ab] ?? 0, class: classAsi[ab] ?? 0, feat };
   }
   return out;
 }
@@ -333,16 +362,13 @@ export function computeAbilityScores(
     }
   }
 
-  for (const c of resolved.classes) {
-    for (const [, choice] of Object.entries(c.choices)) {
-      const asi = (choice as { asi?: Partial<Record<Ability, number>> })?.asi;
-      if (asi) {
-        for (const ab of ABILITY_KEYS) {
-          const v = asi[ab];
-          if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
-        }
-      }
-    }
+  // Legacy class ASI-BRANCH fold (`choices[lvl].asi`). Extracted into
+  // collectClassAsiBranch so this fold and the breakdown's `class` bucket read
+  // identically and can't drift.
+  const classAsi = collectClassAsiBranch(resolved);
+  for (const ab of ABILITY_KEYS) {
+    const v = classAsi[ab];
+    if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
   }
 
   // Class CHOSEN-FEAT ability-points (SP2 Plan 5). Disjoint from the asi-branch

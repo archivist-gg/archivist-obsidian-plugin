@@ -112,10 +112,10 @@ describe("abilityBonusBreakdown", () => {
       definition: { origin_choices: { "race:half-elf-asi": { str: 1, dex: 1 }, "background:asi": { dex: 2, con: 1 } } },
     });
     const b = abilityBonusBreakdown(r);
-    expect(b.cha).toEqual({ species: 2, background: 0, feat: 0 }); // fixed race ASI
-    expect(b.str).toEqual({ species: 1, background: 0, feat: 0 }); // race choice points
-    expect(b.dex).toEqual({ species: 1, background: 2, feat: 0 }); // both
-    expect(b.con).toEqual({ species: 0, background: 1, feat: 0 });
+    expect(b.cha).toEqual({ species: 2, background: 0, class: 0, feat: 0 }); // fixed race ASI
+    expect(b.str).toEqual({ species: 1, background: 0, class: 0, feat: 0 }); // race choice points
+    expect(b.dex).toEqual({ species: 1, background: 2, class: 0, feat: 0 }); // both
+    expect(b.con).toEqual({ species: 0, background: 1, class: 0, feat: 0 });
   });
 
   it("buckets class chosen-feat ability-points into a feat bucket", () => {
@@ -125,9 +125,9 @@ describe("abilityBonusBreakdown", () => {
       4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 1, con: 1 } },
     });
     const b = abilityBonusBreakdown(r);
-    expect(b.str).toEqual({ species: 0, background: 0, feat: 1 });
-    expect(b.con).toEqual({ species: 0, background: 0, feat: 1 });
-    expect(b.dex).toEqual({ species: 0, background: 0, feat: 0 });
+    expect(b.str).toEqual({ species: 0, background: 0, class: 0, feat: 1 });
+    expect(b.con).toEqual({ species: 0, background: 0, class: 0, feat: 1 });
+    expect(b.dex).toEqual({ species: 0, background: 0, class: 0, feat: 0 });
   });
 
   it("buckets flat feat ability_bonuses into the feat bucket too", () => {
@@ -138,7 +138,41 @@ describe("abilityBonusBreakdown", () => {
       { slug: "athlete", name: "Athlete", ability_bonuses: { str: 1 } },
     ];
     const b = abilityBonusBreakdown(r);
-    expect(b.str).toEqual({ species: 0, background: 0, feat: 1 });
+    expect(b.str).toEqual({ species: 0, background: 0, class: 0, feat: 1 });
+  });
+
+  it("buckets the legacy class ASI-BRANCH allocation into a class bucket", () => {
+    // Fighter L4 picks the plain +2 ASI branch (choices[4].asi = {str:2}) — the
+    // same value computeAbilityScores folds — so it must surface in `class`,
+    // disjoint from species/background/feat.
+    const r = fighterWith({
+      4: { "asi-or-feat": "asi", asi: { str: 2 } },
+    });
+    const b = abilityBonusBreakdown(r);
+    expect(b.str).toEqual({ species: 0, background: 0, class: 2, feat: 0 });
+    expect(b.dex).toEqual({ species: 0, background: 0, class: 0, feat: 0 });
+  });
+
+  it("buckets feat, class-branch, and background on the same ability separately and totals them all", () => {
+    // STR receives a flat feat ability_bonus (+1), a class ASI-branch (+2), and a
+    // background ability-point (+1). Each lands in its own bucket; the totals from
+    // computeAbilityScores sum all three on top of the base 10 → 14.
+    const r = fighterWith({
+      4: { "asi-or-feat": "asi", asi: { str: 2 } },
+    });
+    (r as { background: unknown }).background = {
+      slug: "srd-2024_soldier", name: "Soldier",
+      choices: [{ kind: "ability-points", id: "asi", points: 1, max_per: 1, pool: ["str"] }],
+    };
+    (r.definition as { origin_choices?: Record<string, unknown> }).origin_choices = { "background:asi": { str: 1 } };
+    (r as { feats: unknown[] }).feats = [
+      ASI_FEAT,
+      { slug: "athlete", name: "Athlete", ability_bonuses: { str: 1 } },
+    ];
+    const b = abilityBonusBreakdown(r);
+    expect(b.str).toEqual({ species: 0, background: 1, class: 2, feat: 1 });
+    // Independence guarantee: the same three sources sum in the score totals.
+    expect(computeAbilityScores(r, {}).str).toBe(14); // 10 + 1 + 2 + 1
   });
 });
 
