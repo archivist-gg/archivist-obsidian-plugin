@@ -280,8 +280,8 @@ describe("BuilderView shell", () => {
 
       const bg = railStep(root, "background")!;
       expect(bg.classList.contains("done")).toBe(false);
-      // background is the 4th step → keeps its 1-based number.
-      expect(bg.querySelector(".pc-builder-step-n")?.textContent).toBe("4");
+      // background is the 3rd step → keeps its 1-based number.
+      expect(bg.querySelector(".pc-builder-step-n")?.textContent).toBe("3");
     });
 
     it("abilities shows ✓ when the method is non-manual or any base differs from 10", () => {
@@ -319,7 +319,7 @@ describe("BuilderView shell", () => {
       new BuilderView().render(root, c);
       const ab = railStep(root, "abilities")!;
       expect(ab.classList.contains("done")).toBe(false);
-      expect(ab.querySelector(".pc-builder-step-n")?.textContent).toBe("3");
+      expect(ab.querySelector(".pc-builder-step-n")?.textContent).toBe("4");
     });
 
     it("abilities shows ✓ for a manual spread with any base differing from 10", () => {
