@@ -189,6 +189,26 @@ describe("renderAbilitiesStep — uniform obelisk tile size (CSS invariant)", ()
     expect(hover).toMatch(/box-shadow:\s*none/);
     expect(hover).toMatch(/background-color:\s*var\(--pc-parchment-light\)/);
   });
+
+  /* SP2 Plan 5 smoke r5b: two layout invariants jsdom can't measure.
+   * (1) The decision-row head must NOT tint on hover (user request) — it stays
+   *     click-collapsible via cursor + chevron, so there must be no
+   *     `.pc-dstrip-head:hover` background rule in chronicle.css.
+   * (2) The chips container must center its flex children: on long-list rows
+   *     the compact `Change ▸` ghost intrinsically out-measures an 11px chip,
+   *     and the default `align-items: stretch` grew the chips to match it. */
+  it("the decision-row head carries no hover tint (only cursor + chevron afford the toggle)", () => {
+    const css = readPcStyle("chronicle.css");
+    expect(css).not.toMatch(/\.pc-dstrip-head:hover\s*\{/);
+    const head = ruleBlock(css, ".pc-dstrip-head {");
+    expect(head).toMatch(/cursor:\s*pointer/);
+  });
+
+  it("the chips container centers its flex line so a chip never stretches to the taller Change ghost", () => {
+    const css = readPcStyle("builder.css");
+    const chips = ruleBlock(css, ".pc-bchoice-chips");
+    expect(chips).toMatch(/align-items:\s*center/);
+  });
 });
 
 describe("renderAbilitiesStep — point-buy bar", () => {
