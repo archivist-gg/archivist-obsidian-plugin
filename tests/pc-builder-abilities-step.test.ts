@@ -276,17 +276,60 @@ describe("renderAbilitiesStep — point-buy bar", () => {
     expect(Math.round(parseFloat(overSeg.style.width))).toBe(7); // 2/30
   });
 
-  it("point-buy: the Base popover grid excludes unaffordable values", () => {
+  it("point-buy: the grid shows the full range, ghosting unaffordable values with costs in place", () => {
     const container = mountContainer();
-    // 15/15/15/8/8/8 = 27 spent on standard point buy → int has no headroom.
+    // 15/15/15/8/8/8 = 27 spent on standard point buy → int (8) has no headroom.
     renderAbilitiesStep(container, mkCtx({
       method: "point-buy",
       abilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
     }));
     const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
     btns[3].click(); // ABILITY_KEYS order str,dex,con,int,wis,cha → int
-    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")].map((c) => c.textContent);
-    expect(cells).toEqual(["8"]);
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")];
+    expect(cells.map((c) => c.querySelector(".pc-numgrid-v")?.textContent))
+      .toEqual(["8", "9", "10", "11", "12", "13", "14", "15"]);
+    expect(cells.filter((c) => c.classList.contains("ghost")).map((c) => c.querySelector(".pc-numgrid-v")?.textContent))
+      .toEqual(["9", "10", "11", "12", "13", "14", "15"]);
+    expect(cells[0].querySelector(".pc-numgrid-cost")?.textContent).toBe("0");
+    expect(cells[7].querySelector(".pc-numgrid-cost")?.textContent).toBe("9");
+    expect(container.querySelector(".pc-base-pop-h")?.textContent).toBe("Set value · 0 pts left");
+    expect(container.querySelector(".pc-base-pop-note")?.textContent).toBe("greyed = not enough points");
+  });
+
+  it("point-buy: ghost cells are inert, live cells commit", () => {
+    const container = mountContainer();
+    const setAbilityBaseScore = vi.fn();
+    renderAbilitiesStep(container, mkCtx({
+      method: "point-buy",
+      abilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
+      editState: { setAbilityBaseScore },
+    }));
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[3].click();
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")] as HTMLElement[];
+    cells.find((c) => c.classList.contains("ghost"))!.click();
+    expect(setAbilityBaseScore).not.toHaveBeenCalled();
+    cells[0].click(); // "8" — the current, affordable value
+    expect(setAbilityBaseScore).toHaveBeenCalledWith("int", 8);
+  });
+
+  it("archivist over-budget arrival: header reads N over; lower picks stay live; true minus on the refund", () => {
+    const container = mountContainer();
+    // 30 of 28 spent (2 over). For str (16, cost 11): others = 19 → affordable = cost ≤ 9 → 7..15.
+    renderAbilitiesStep(container, mkCtx({
+      method: "archivist-point-buy",
+      abilities: { str: 16, dex: 16, con: 14, int: 9, wis: 8, cha: 8 },
+    }));
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[0].click(); // str
+    expect(container.querySelector(".pc-base-pop-h")?.textContent).toBe("Set value · 2 over");
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")];
+    // 7..15 all land at/under budget; 16 is the current value — .cur, never ghosted.
+    expect(cells.filter((c) => c.classList.contains("ghost")).length).toBe(0);
+    expect(cells.find((c) => c.classList.contains("cur"))?.querySelector(".pc-numgrid-v")?.textContent).toBe("16");
+    expect(cells[0].querySelector(".pc-numgrid-cost")?.textContent).toBe("−1");
+    // nothing ghosted ⇒ no footnote
+    expect(container.querySelector(".pc-base-pop-note")).toBeNull();
   });
 
   it("renders no context bar for the manual method", () => {

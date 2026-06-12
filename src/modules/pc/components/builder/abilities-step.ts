@@ -101,13 +101,11 @@ function rollPool(ctx: ComponentRenderContext): number[] {
   return (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
 }
 
-/** Allowed Base values per method: point-buy rules constrain by budget;
- *  standard-array offers unused array values (+ the current one); rolled offers
- *  the session pool (Task 11); manual offers 3-20. */
+/** Allowed Base values per non-point-buy method: standard-array offers unused
+ *  array values (+ the current one); rolled offers the session pool (Task 11);
+ *  manual offers 3-20. */
 function baseChoicesFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): number[] {
   const abilities = ctx.resolved.definition.abilities;
-  const rule = POINT_BUY_RULES[method];
-  if (rule) return allowedScores(rule, abilities, ab);
   if (method === "standard-array") {
     const used = ABILITY_KEYS.filter((k) => k !== ab).map((k) => abilities[k]);
     const pool = [...STANDARD_ARRAY];
@@ -275,11 +273,39 @@ function openBasePopover(
       un.addEventListener("click", () => clear());
     }
   } else {
-    panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Set value" });
-    const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
-    for (const v of baseChoicesFor(ctx, method, ab)) {
-      const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
-      cell.addEventListener("click", () => commit(v));
+    const rule = POINT_BUY_RULES[method];
+    if (rule) {
+      // Design D: the score→cost table lives here, at the point of spend. The
+      // FULL range renders; values `allowedScores` can't afford ghost out (the
+      // current value is always live — it's where you are, and re-committing it
+      // is harmless). Any live pick lands the budget at or under target, which
+      // is also the ladder out of an over-budget arrival.
+      const left = pointBuyRemaining(rule, ctx.resolved.definition.abilities);
+      panel.createDiv({
+        cls: "pc-pop-h pc-base-pop-h",
+        text: left < 0 ? `Set value · ${-left} over` : `Set value · ${left} pt${left === 1 ? "" : "s"} left`,
+      });
+      const affordable = new Set(allowedScores(rule, ctx.resolved.definition.abilities, ab));
+      const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
+      let anyGhost = false;
+      for (let v = rule.min; v <= rule.max; v++) {
+        const isCur = v === cur;
+        const ghost = !isCur && !affordable.has(v);
+        anyGhost = anyGhost || ghost;
+        const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${isCur ? " cur" : ""}${ghost ? " ghost" : ""}` });
+        cell.createSpan({ cls: "pc-numgrid-v", text: String(v) });
+        // True minus on the dump-stat refund, not a hyphen.
+        cell.createSpan({ cls: "pc-numgrid-cost", text: String(rule.cost[v]).replace("-", "−") });
+        if (!ghost) cell.addEventListener("click", () => commit(v));
+      }
+      if (anyGhost) panel.createDiv({ cls: "pc-base-pop-note", text: "greyed = not enough points" });
+    } else {
+      panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Set value" });
+      const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
+      for (const v of baseChoicesFor(ctx, method, ab)) {
+        const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
+        cell.addEventListener("click", () => commit(v));
+      }
     }
   }
 

@@ -389,6 +389,22 @@
   text-align: center; cursor: pointer;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-base-unassign:hover { color: var(--pc-crimson); }
+/* Design D — the cost-bearing point-buy grid. Costs render as a sub-line under
+   each numeral; unaffordable values ghost (opacity, inert) rather than vanish,
+   and a quiet dashed footnote explains the grey. Panel widens so three columns
+   of value+cost cells breathe. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop { width: 148px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.ghost { opacity: 0.35; cursor: default; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.ghost:hover { background: transparent; color: var(--pc-text-soft); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-cost {
+  display: block; font-family: var(--pc-font-sans); font-weight: 600;
+  font-size: var(--pc-fs-tiny); letter-spacing: 0.04em; color: var(--pc-text-muted); margin-top: 1px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.cur .pc-numgrid-cost { color: rgba(253, 241, 220, 0.8); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-note {
+  margin-top: 6px; padding-top: 4px; border-top: 1px dashed var(--pc-tan-muted);
+  font-size: 9px; color: var(--pc-text-muted); text-align: center;
+}
 /* Shared PC select dress: parchment-dressed native <select> used by every
    picker on the sheet + builder surfaces (class-card Lv, abilities Base,
    custom-background borrow-cost + origin-feat, inventory override-actions
