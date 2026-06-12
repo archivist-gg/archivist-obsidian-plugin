@@ -392,14 +392,35 @@ export function lookupFeatureOverlay<T>(
   return map?.[`${ownerBareSlug}:${featureSlug}`] ?? map?.[featureSlug];
 }
 
+interface SubclassFeatureHint {
+  /** Resolved subclass-grant level (e.g. 3) used to bucket the subclass feature. */
+  level: number;
+  /** Resolved subclass feature display name (e.g. "Bard Subclass"). */
+  name: string;
+}
+
 function bucketFeaturesByLevel(
   features: Open5eClassFeature[],
   edition: "2014" | "2024",
   overlay: FeatureOverlayMap | null,
   ownerBareSlug: string,
+  subclassHint: SubclassFeatureHint | null,
 ): { features_by_level: Record<string, ClassFeatureOut[]>; idsByLevel: Map<number, string[]> } {
   const out: Record<string, ClassFeatureOut[]> = {};
   const idsByLevel = new Map<number, string[]>();
+
+  // The subclass-grant feature ("<Class> Subclass") is identified by matching
+  // the resolved subclass_feature_name or the `<class>-subclass` slug. When the
+  // upstream base data omits its gained_at level (a known data gap for some
+  // classes, e.g. 2024 Bard), we bucket it at the class's subclass_level so it
+  // lands in features_by_level / the progression table like every sibling class.
+  const subclassSlug = subclassHint ? slugifyName(subclassHint.name) : null;
+  const isSubclassFeature = (featureSlug: string, featureName: string): boolean => {
+    if (!subclassHint) return false;
+    return featureSlug === subclassSlug
+      || featureSlug === `${ownerBareSlug}-subclass`
+      || featureName === subclassHint.name;
+  };
 
   const KEEP_TYPES = new Set(["CLASS_LEVEL_FEATURE", "CORE_TRAITS_TABLE"]);
   for (const f of features) {
@@ -408,7 +429,13 @@ function bucketFeaturesByLevel(
     const overlaid = lookupFeatureOverlay(overlay, ownerBareSlug, featureSlug);
     const description = rewriteCrossRefs(f.desc ?? "", edition);
     const desc = description && description.length > 0 ? description : f.name;
-    const levels = (f.gained_at ?? []).map((g) => g.level).filter((n) => Number.isFinite(n));
+    let levels = (f.gained_at ?? []).map((g) => g.level).filter((n) => Number.isFinite(n));
+    // Backfill the subclass feature's level from subclass_level when the base
+    // data carries no gained_at (otherwise it would never bucket and the L3
+    // progression cell would render "—").
+    if (levels.length === 0 && isSubclassFeature(featureSlug, f.name)) {
+      levels = [subclassHint!.level];
+    }
     const seen = new Set<number>();
     for (const lvl of levels) {
       if (seen.has(lvl)) continue;
@@ -576,7 +603,17 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
 
   const { proficiencies, skill_choices } = parseProficienciesProse(features);
   const starting_equipment = parseStartingEquipment(features);
-  const { features_by_level, idsByLevel } = bucketFeaturesByLevel(features, entry.edition, featureOverlay, ownerBareSlug);
+
+  // Resolve the subclass level/name (default → overlay `classes:` override)
+  // before bucketing so the subclass-feature backfill can target the right
+  // feature and level.
+  const subclassLevel = classOverride?.subclass_level ?? 3;
+  const subclassFeatureName = classOverride?.subclass_feature_name ?? "Subclass";
+
+  const { features_by_level, idsByLevel } = bucketFeaturesByLevel(
+    features, entry.edition, featureOverlay, ownerBareSlug,
+    { level: subclassLevel, name: subclassFeatureName },
+  );
   const table = buildTable(features, idsByLevel);
 
   const out: ClassCanonical = {
@@ -592,8 +629,8 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
     skill_choices,
     starting_equipment,
     spellcasting: buildSpellcasting(base, entry.slug, structured),
-    subclass_level: 3,
-    subclass_feature_name: "Subclass",
+    subclass_level: subclassLevel,
+    subclass_feature_name: subclassFeatureName,
     weapon_mastery: null,
     epic_boon_level: null,
     table,
@@ -605,8 +642,6 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
   // over values derived from Open5e prose / defaults.
   if (classOverride?.skill_choices) out.skill_choices = classOverride.skill_choices;
   if (classOverride?.starting_equipment) out.starting_equipment = classOverride.starting_equipment;
-  if (classOverride?.subclass_level) out.subclass_level = classOverride.subclass_level;
-  if (classOverride?.subclass_feature_name) out.subclass_feature_name = classOverride.subclass_feature_name;
 
   return out;
 }

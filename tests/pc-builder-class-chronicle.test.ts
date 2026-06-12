@@ -94,6 +94,26 @@ function bardEntity(): RegisteredEntity {
   };
 }
 
+/** Bard with the L3 subclass feature now carrying the authored select-entity
+ *  pick — mirrors the FIXED 2024 runtime data (canonical pipeline backfills the
+ *  feature level + the overlay attaches the choice). The walker must NOT
+ *  synthesize a second subclass row off subclass_level, the same dedupe the
+ *  Cleric test pins. Here the feature name ("Bard Subclass") happens to equal
+ *  subclass_feature_name, so authored-choice detection (not name) is what
+ *  suppresses the duplicate. */
+function authoredBardData(): ClassData {
+  const d = bardData();
+  d.features_by_level![3] = [
+    {
+      id: "bard-subclass",
+      name: "Bard Subclass",
+      description: "You gain a Bard subclass of your choice.",
+      choices: [{ kind: "select-entity", id: "subclass", count: 1, entity_type: "subclass", where: { parent_class: "self" } }],
+    },
+  ];
+  return d;
+}
+
 const mkCtx = (): ComponentRenderContext =>
   ({
     resolved: { definition: {} },
@@ -175,6 +195,12 @@ describe("collectBrowseDecisions", () => {
     const rows = collectBrowseDecisions(clericData());
     const l3 = rows.filter((r) => r.level === 3);
     expect(l3).toEqual([{ level: 3, name: "Cleric Subclasses" }]); // exactly the authored row, no synthesized duplicate
+  });
+
+  it("suppresses synthesis once Bard L3 carries the authored subclass choice (data-fix regression)", () => {
+    const rows = collectBrowseDecisions(authoredBardData());
+    const l3 = rows.filter((r) => r.level === 3);
+    expect(l3).toEqual([{ level: 3, name: "Bard Subclass" }]); // single authored row, no synthesized duplicate
   });
 });
 

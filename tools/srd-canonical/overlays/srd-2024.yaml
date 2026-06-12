@@ -172,6 +172,8 @@ class_features:
   # --- Subclass selection (scoped; one per class) ---
   barbarian:barbarian-subclass:
     choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
+  bard:bard-subclass:
+    choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
   cleric:cleric-subclasses:
     choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
   druid:druid-subclass:
@@ -192,9 +194,10 @@ class_features:
     choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
   wizard:wizard-subclass:
     choices: [{ kind: select-entity, id: subclass, count: 1, entity_type: subclass, where: { parent_class: self } }]
-  # NOTE: Bard's L3 "Bard Subclass" feature is absent from the 2024 runtime
-  # class JSON (table L3 feature_ids is empty), so no scoped key is authored
-  # here -- keying it would be a dead key. Upstream data gap, out of scope.
+  # NOTE: Bard's L3 "Bard Subclass" feature carries an empty gained_at in the
+  # base data (unlike every sibling class), so the class merger backfills its
+  # level from subclass_level (3). The scoped key above attaches the standard
+  # subclass select-entity choice once the feature is bucketed.
 
   # --- Fighting Style (scoped; fighter L1 / paladin L2 / ranger L2) ---
   # A Fighting Style optional feature of your choice. (Paladin/Ranger also

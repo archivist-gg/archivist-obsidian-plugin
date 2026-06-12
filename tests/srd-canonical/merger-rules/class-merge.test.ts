@@ -306,6 +306,74 @@ describe("class-merge: Open5e v2 class shape", () => {
     expect(l1.choices?.[0]?.id).toBe("scoped-wins");
   });
 
+  it("backfills the subclass feature's level from subclass_level when gained_at is empty (2024 Bard data gap)", () => {
+    const out = toClassCanonical(baseEntry({
+      slug: "srd-2024_bard",
+      edition: "2024",
+      base: {
+        key: "srd-2024_bard",
+        name: "Bard",
+        desc: "",
+        hit_dice: "D8",
+        subclass_of: null,
+        saving_throws: [{ name: "Dexterity" }, { name: "Charisma" }],
+        features: [
+          {
+            // Mirrors the upstream defect: the subclass feature exists but
+            // carries no gained_at level (every sibling class has [{level:3}]).
+            key: "srd-2024_bard_bard-subclass",
+            name: "Bard Subclass",
+            desc: "You gain a Bard subclass of your choice.",
+            feature_type: "CLASS_LEVEL_FEATURE",
+            gained_at: [],
+            data_for_class_table: [],
+          },
+        ],
+      },
+      overlay: {
+        class_features: {
+          "bard:bard-subclass": { choices: [{ kind: "select-entity", id: "subclass", count: 1, entity_type: "subclass", where: { parent_class: "self" } }] },
+        },
+        classes: { bard: { subclass_feature_name: "Bard Subclass" } },
+      },
+    })) as {
+      features_by_level: Record<string, Array<{ id?: string; name: string; choices?: Array<{ kind: string; id: string; entity_type?: string }> }>>;
+      table: Record<string, { feature_ids: string[] }>;
+    };
+    const l3 = out.features_by_level["3"]?.find(f => f.id === "bard-subclass");
+    expect(l3, "Bard Subclass should bucket at L3").toBeDefined();
+    expect(l3!.choices?.[0]).toMatchObject({ kind: "select-entity", id: "subclass", entity_type: "subclass" });
+    expect(out.table["3"].feature_ids).toContain("bard-subclass");
+  });
+
+  it("does NOT backfill non-subclass features that lack gained_at (spell-list pseudo-features stay out)", () => {
+    const out = toClassCanonical(baseEntry({
+      slug: "srd-2024_bard",
+      edition: "2024",
+      base: {
+        key: "srd-2024_bard",
+        name: "Bard",
+        desc: "",
+        hit_dice: "D8",
+        subclass_of: null,
+        saving_throws: [{ name: "Dexterity" }, { name: "Charisma" }],
+        features: [
+          {
+            key: "srd-2024_bard_bard-spell-list",
+            name: "Bard Spell List",
+            desc: "The Bard Spell List.",
+            feature_type: "CLASS_LEVEL_FEATURE",
+            gained_at: [],
+            data_for_class_table: [],
+          },
+        ],
+      },
+      overlay: { classes: { bard: { subclass_feature_name: "Bard Subclass" } } },
+    })) as { features_by_level: Record<string, Array<{ name: string }>> };
+    const names = Object.values(out.features_by_level).flat().map(f => f.name);
+    expect(names).not.toContain("Bard Spell List");
+  });
+
   it("attaches overlay resources to the matching class feature", () => {
     const result = toClassCanonical(baseEntry({
       slug: "srd-5e_barbarian",
