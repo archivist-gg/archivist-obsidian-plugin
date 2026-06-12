@@ -7,6 +7,7 @@ import { buildDecisionLedger } from "../../pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
+import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
 // data today. Sorted by rank order (not alphabetically) and walking speed.
@@ -99,7 +100,7 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
             renderSubraceRow(host, ctx, e);                 // strip-dressed; no-ops without d.subraces
             renderDecisionStrip(host, ctx, { items, pill: domainPill, live: true, stateKey: "builder.race-strip" });
           }
-          renderTraits(host, d);
+          renderTraits(host, ctx, d);
         },
       });
     },
@@ -110,7 +111,7 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
  *  `choices`, and the COMPLETE description (smoke r6 — no first-sentence truncation
  *  or Read-full toggle; traits read in full at a glance). Size/Speed/Darkvision
  *  are folded out (they live in the glance tiles). */
-function renderTraits(host: HTMLElement, d: RaceData): void {
+function renderTraits(host: HTMLElement, ctx: ComponentRenderContext, d: RaceData): void {
   const traits = (d.traits ?? []).filter((t) => !FOLDED.has(t.name.toLowerCase()));
   if (!traits.length) return;
   renderSectionRule(host, "Traits", "from the species entry");
@@ -118,7 +119,16 @@ function renderTraits(host: HTMLElement, d: RaceData): void {
     const row = host.createDiv({ cls: "pc-cb-trait" });
     const n = row.createDiv({ cls: "pc-cb-trait-n", text: t.name });
     if (t.choices?.length) n.createSpan({ cls: "pc-cb-trait-meta", text: "▸ decision" });
-    row.createDiv({ cls: "pc-cb-trait-d", text: t.description });
+    // The description renders through the SHARED markdown path (ctx.app threaded,
+    // async) so a trait carrying a pipe table — e.g. the Elf's "Elven Lineage"
+    // lineage table — shows a real table instead of raw `|...|` text (smoke r7).
+    // The `.catch` paints a visible error div (Plan-2 idiom); the `.pc-cb-trait-d`
+    // container keeps its dress, which the rendered `p`/`table` inherit via CSS.
+    const dd = row.createDiv({ cls: "pc-cb-trait-d" });
+    void renderMarkdownDescription(dd, t.description, ctx.app).catch((err: unknown) => {
+      console.error("[Archivist] trait description render failed", err);
+      dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+    });
   }
 }
 

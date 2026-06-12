@@ -4,7 +4,22 @@ import type { RegisteredEntity } from "../../../../shared/entities/entity-regist
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
+import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import type { Ability } from "../../../../shared/types/choice";
+
+/** Render a decision/trait description as a quiet markdown block (smoke r7) at
+ *  the top of a top-level live row's nest. Routes through the SHARED markdown
+ *  path the compendium blocks use (ctx.app threaded, async) so pipe tables —
+ *  e.g. the Elf's "Elven Lineage" lineage table — render as real tables rather
+ *  than raw `|...|` text. On failure the `.catch` paints a visible error div so
+ *  the pane never silently drops the prose (the Plan-2 error-paint idiom). */
+function renderDescBlock(host: HTMLElement, ctx: ComponentRenderContext, markdown: string): void {
+  const desc = host.createDiv({ cls: "pc-dstrip-desc" });
+  void renderMarkdownDescription(desc, markdown, ctx.app).catch((err: unknown) => {
+    console.error("[Archivist] decision description render failed", err);
+    desc.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+  });
+}
 
 /** Above this many resolved candidates the inline selection table is replaced
  *  by chips + a "Browse all N ▸" ghost that opens the filtered picker modal
@@ -131,6 +146,10 @@ function renderRow(
     if (!open) return;
 
     const nest = row.createDiv({ cls: "pc-dstrip-nest" });
+    // The source feature/trait's own description sits at the TOP of the nest so
+    // each live row is self-explanatory (smoke r7). Top-level rows only — a
+    // child carries no inherited description; browse rows stay compact (no nest).
+    if (item.description?.trim()) renderDescBlock(nest, ctx, item.description.trim());
     renderControl(nest, ctx, item, opts, false);
     // SP2 Plan 5 (Variant II sans pathline): children render as a FLAT group
     // inside the parent's nest — no own borders, no own pills. Each child is a

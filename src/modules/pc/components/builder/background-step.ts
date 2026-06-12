@@ -11,6 +11,7 @@ import { stripSlug } from "../../pc.resolver";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
+import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 
 const skillsOf = (e: RegisteredEntity): string[] =>
   (e.data as { skill_proficiencies?: string[] }).skill_proficiencies ?? [];
@@ -93,7 +94,7 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
             const strip = host.querySelector<HTMLElement>(".pc-dstrip") ?? host.createDiv({ cls: "pc-dstrip" });
             renderOriginFeatStripRow(strip, ctx, e);
           }
-          renderGearProps(host, d);
+          renderGearProps(host, ctx, d);
         },
       });
     },
@@ -278,7 +279,7 @@ function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext
 /** The "Proficiencies & starting gear" section: skills, fixed tool, fixed 2014
  *  languages, starting equipment (humanized items + ×n quantities + <gp> GP),
  *  and the 2014 feature as a trait-dress entry when it carries a description. */
-function renderGearProps(host: HTMLElement, d: BackgroundData): void {
+function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: BackgroundData): void {
   renderSectionRule(host, "Proficiencies & starting gear");
   prop(host, "Skills", (d.skill_proficiencies ?? []).map(humanizeSlug).join(", "));
   const tool = fixedToolNames(d);
@@ -293,7 +294,13 @@ function renderGearProps(host: HTMLElement, d: BackgroundData): void {
   if (d.feature?.description && d.feature.description !== NO_DESC) {
     const row = host.createDiv({ cls: "pc-cb-trait" });
     row.createDiv({ cls: "pc-cb-trait-n", text: d.feature.name });
-    row.createDiv({ cls: "pc-cb-trait-d", text: d.feature.description });
+    // Shared markdown path (smoke r7): a 2014 feature's description may carry a
+    // pipe table; render it as a real table with the `.catch` error-paint idiom.
+    const dd = row.createDiv({ cls: "pc-cb-trait-d" });
+    void renderMarkdownDescription(dd, d.feature.description, ctx.app).catch((err: unknown) => {
+      console.error("[Archivist] background feature description render failed", err);
+      dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+    });
   }
 }
 

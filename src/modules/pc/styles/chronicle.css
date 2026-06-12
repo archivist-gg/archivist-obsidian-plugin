@@ -148,6 +148,13 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
   font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
 }
+/* Decision description (smoke r7): the source feature/trait's own description,
+   rendered as markdown at the TOP of a top-level live row's nest so the row is
+   self-explanatory. Quiet text dress matching `.pc-cb-trait-d`; rendered tables
+   inherit the cast-table idiom below. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc {
+  font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-bottom: 8px;
+}
 /* Long-list browse ghost (.pc-bcadd idiom): compact dashed, auto-width — NEVER
    full-width. Opens the filtered picker modal for huge candidate lists. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse {
@@ -247,7 +254,40 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-meta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; white-space: pre-line; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* Markdown-rendered description dress (smoke r7): trait + decision descriptions
+   now render through the shared markdown path, so their `p`/`table`/`ul` must
+   inherit the quiet dress. Tables follow the progression cast-table idiom (caps
+   muted headers, hairline header underline, dashed zebra rows). Scoped to BOTH
+   the trait-dress and the decision-strip description blocks. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d > p,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc > p {
+  margin: 0 0 0.45em; font-size: inherit; color: inherit; line-height: 1.45;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d > p:last-child,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc > p:last-child { margin-bottom: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d ul,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d ol,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc ul,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc ol { margin: 0.2em 0 0.45em; padding-left: 1.3em; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d table,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc table {
+  border-collapse: collapse; width: 100%; margin: 0.4em 0; font-size: inherit;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d th,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc th {
+  text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--pc-tan-muted);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc td {
+  padding: 5px 8px; border-bottom: 1px dashed var(--pc-tan-muted); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tr:last-child td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tr:last-child td { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tbody tr:nth-child(even) td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tbody tr:nth-child(even) td { background: rgba(232, 213, 176, 0.28); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }
@@ -311,11 +351,25 @@
 /* The block inside a card drops its own border/shadow/radius — the card frame
    already provides them — so the two frames don't double up. */
 .archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
-.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--pc-tan-muted); border-radius: 5px; background: var(--pc-parchment-light); padding: 2px 5px 2px 8px; }
-.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+/* LV control (smoke r7): the PRIMARY level control — bigger select (serif,
+   title-size ~16px, roomier padding) and a proportionally larger "LV" microlabel
+   so it reads as the dominant band control. A picker redesign is pending; this
+   is the interim size bump on the existing select. */
+.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--pc-tan-muted); border-radius: 6px; background: var(--pc-parchment-light); padding: 3px 7px 3px 10px; }
+.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bccard-lvl select.pc-bdd { font-size: var(--pc-fs-title); padding: 3px 9px; }
 .archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-bccard-rm { font-family: var(--pc-font-sans); font-size: 8.5px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
-.archivist-pc-sheet .pc-bccard-rm:hover { color: var(--pc-crimson); }
+/* Remove control (smoke r7): a proper small ghost BUTTON in harmony with the
+   `.pc-bcadd` dress (visible border, crimson text, label-size) — never a dotted
+   underline ghost; no left/right accent bars. The two-step confirm swaps it for
+   a crimson-filled Confirm + a quiet Cancel. */
+.archivist-pc-sheet .pc-bccard-rm-wrap { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.archivist-pc-sheet .pc-bccard-rm { background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); color: var(--pc-crimson); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 11px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm:hover { border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bccard-rm-confirm { background: var(--pc-crimson); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); color: var(--pc-parchment-light); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 11px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm-confirm:hover { background: var(--pc-crimson-light); }
+.archivist-pc-sheet .pc-bccard-rm-cancel { background: transparent; border: none; color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 6px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm-cancel:hover { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
 .archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
 

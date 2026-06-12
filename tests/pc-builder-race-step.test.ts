@@ -104,8 +104,10 @@ function mkCtxWithChosenDwarf(
   data: typeof DWARF_DATA = DWARF_DATA,
   over: { setSubrace?: unknown; subrace?: string | null } = {},
 ): ComponentRenderContext {
+  const dwarfRow: RegisteredEntity =
+    data === DWARF_DATA ? DWARF_ROW : ({ ...DWARF_ROW, data } as unknown as RegisteredEntity);
   const races: RegisteredEntity[] = [
-    DWARF_ROW,
+    dwarfRow,
     { slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "x", readonly: true,
       homebrew: false, compendium: "SRD 5e", data: { name: "Elf", size: "medium", speed: { walk: 30 } } } as unknown as RegisteredEntity,
   ];
@@ -189,6 +191,30 @@ describe("renderRaceStep — expanded composition", () => {
     expect(t.querySelector(".pc-cb-trait-d")!.textContent).toBe(toolTrait.description);
     // No truncation affordance survives in any trait row.
     expect(c.querySelectorAll(".pc-cb-trait .pc-cb-more").length).toBe(0);
+  });
+
+  it("a trait description renders through the markdown path; pipe-table content lands in the .pc-cb-trait-d block (smoke r7)", () => {
+    const c = mountContainer();
+    // A trait whose description carries a markdown pipe table (the Elven-Lineage
+    // shape). The jsdom MarkdownRenderer mock sets textContent = source, so the
+    // table source is present in the container; real Obsidian renders a <table>.
+    const data = {
+      ...DWARF_DATA,
+      traits: [
+        ...DWARF_DATA.traits,
+        {
+          name: "Stonecunning",
+          description: "You gain expertise.\n\n| Tier | Bonus |\n| --- | --- |\n| 1 | +2 |",
+        },
+      ],
+    };
+    renderRaceStep(c, mkCtxWithChosenDwarf(data as typeof DWARF_DATA));
+    const stone = [...c.querySelectorAll(".pc-cb-trait")].find(
+      (t) => t.querySelector(".pc-cb-trait-n")?.textContent === "Stonecunning",
+    )!;
+    const dd = stone.querySelector(".pc-cb-trait-d")!;
+    expect(dd).not.toBeNull();                              // the dress container still exists
+    expect(dd.textContent).toContain("| Tier | Bonus |");   // the pipe table reached the markdown renderer
   });
 
   it("subrace chip click writes setSubrace; re-click clears it", () => {

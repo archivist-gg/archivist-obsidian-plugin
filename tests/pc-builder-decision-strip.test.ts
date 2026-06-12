@@ -618,6 +618,69 @@ describe("renderDecisionStrip", () => {
   });
 });
 
+// ── Decision descriptions (smoke r7) ──
+// A top-level live row carrying a `description` renders it as a quiet markdown
+// block at the TOP of the row's nest, BEFORE the control. Children and browse
+// rows never render it. The markdown path is the shared renderer; the jsdom
+// mock's MarkdownRenderer sets textContent = source synchronously, so the table
+// markdown lands as text (we assert structure + content, not parsed table HTML).
+describe("renderDecisionStrip — row descriptions", () => {
+  const ELVEN_TABLE =
+    "Choose a lineage.\n\n| Lineage | Benefit |\n| --- | --- |\n| Drow | Darkvision |\n| Wood Elf | Speed |";
+
+  it("renders the description as a .pc-dstrip-desc block at the TOP of the nest, before the control", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({ description: ELVEN_TABLE })], pill: domainPill, live: true, stateKey: "t",
+    });
+    const nest = c.querySelector(".pc-dstrip-nest")!;
+    const desc = nest.querySelector(".pc-dstrip-desc")!;
+    expect(desc).not.toBeNull();
+    // The desc block precedes the chips control in DOM order (top of the nest).
+    const children = [...nest.children];
+    expect(children.indexOf(desc as Element)).toBeLessThan(
+      children.findIndex((el) => el.querySelector(".pc-bchoice-chip") || el.classList.contains("pc-bchoice-chips")),
+    );
+    // The shared markdown path ran: the pipe-table source is present in the block
+    // (the jsdom mock renders source text; real Obsidian renders a <table>).
+    expect(desc.textContent).toContain("| Lineage | Benefit |");
+  });
+
+  it("does NOT render a desc block when the item carries no description", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), { items: [item({})], pill: domainPill, live: true, stateKey: "t" });
+    expect(c.querySelector(".pc-dstrip-desc")).toBeNull();
+  });
+
+  it("browse rows (live:false) never render the desc block", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({ description: ELVEN_TABLE })], pill: domainPill, live: false, stateKey: "t",
+    });
+    expect(c.querySelector(".pc-dstrip-desc")).toBeNull();
+  });
+
+  it("a child's description is never surfaced as a desc block (children skip)", () => {
+    const c = mountContainer();
+    const child = item({
+      key: "drow-spell", featureName: "Drow Spell",
+      choice: { kind: "select-inline", id: "drow-spell", count: 1, options: [] } as never,
+      options: [{ value: "dancing-lights", label: "Dancing Lights" }],
+      selected: undefined, status: "unresolved",
+      // even if a child carried a description, it must NOT render one.
+      description: "child desc that must not show",
+    });
+    const parent = item({ status: "resolved", selected: "drow", description: ELVEN_TABLE, children: [child] });
+    renderDecisionStrip(c, mkCtx(), { items: [parent], pill: domainPill, live: true, stateKey: "t" });
+    // Exactly ONE desc block — the parent's — never the child's.
+    const descs = [...c.querySelectorAll(".pc-dstrip-desc")];
+    expect(descs.length).toBe(1);
+    expect(descs[0].textContent).not.toContain("child desc that must not show");
+    // The desc lives in the top-level nest, not inside the flat child group.
+    expect(c.querySelector(".pc-dstrip-fgroup .pc-dstrip-desc")).toBeNull();
+  });
+});
+
 describe("domainPill", () => {
   it("maps kinds deterministically", () => {
     expect(domainPill(item({}))).toBe("Lineage");

@@ -32,6 +32,15 @@ export interface DecisionItem {
   level: number;               // 0 for origin (race/background) decisions
   featureName: string;
   /**
+   * The source feature/trait's own description (race trait, background feature,
+   * class feature) — threaded through from the walk that emits the item so the
+   * decision strip can render it as a quiet markdown block at the top of the
+   * row's nest (smoke r7). Top-level rows only; a child inherits NOTHING from
+   * its parent — it carries the sub-choice option's own `description` (when the
+   * authored InlineOption supplies one) or none.
+   */
+  description?: string;
+  /**
    * When `status === "informational"` this is a placeholder sentinel and MUST
    * NOT be rendered — informational items render from `featureName` only
    * (Task 16 contract). For every other status it is the real choice to render.
@@ -172,7 +181,7 @@ function buildItem(
   readValue: (id: string) => ChoiceValue | undefined,
   ctx: DecisionContext,
   ownerBare: string,
-  opts?: { keyPrefix?: string; expandFeatChildren?: boolean },
+  opts?: { keyPrefix?: string; expandFeatChildren?: boolean; description?: string },
 ): DecisionItem {
   const keyPrefix = opts?.keyPrefix ?? "";
   // `expandFeatChildren` defaults true at the top level; we set it false inside a
@@ -183,6 +192,7 @@ function buildItem(
   const selected = readValue(key);
   const item: DecisionItem = {
     key, source, level, featureName, choice,
+    description: opts?.description,
     options: enumerateOptions(choice, ctx, ownerBare),
     selected, status: statusOf(choice, selected),
   };
@@ -236,10 +246,11 @@ function buildSubclassItem(
   c: ResolvedCharacter["classes"][number],
   ctx: DecisionContext,
   ownerBare: string,
+  description?: string,
 ): DecisionItem {
   const selected = c.subclass ? c.subclass.slug : undefined;
   return {
-    key: "subclass", source, level, featureName,
+    key: "subclass", source, level, featureName, description,
     choice, options: enumerateOptions(choice, ctx, ownerBare),
     selected, status: selected ? "resolved" : "unresolved",
   };
@@ -437,10 +448,11 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
         // The subclass decision is structural: it reads/writes ClassEntry.subclass.
         if (ch.kind === "select-entity" && ch.entity_type === "subclass") {
           sawAuthoredSubclass = true;
-          push(lvl, buildSubclassItem(ch, src, lvl, rf.feature.name, c, ctx, ownerBare));
+          push(lvl, buildSubclassItem(ch, src, lvl, rf.feature.name, c, ctx, ownerBare, rf.feature.description));
           continue;
         }
-        push(lvl, buildItem(ch, src, lvl, rf.feature.name, readAt(lvl), ctx, ownerBare));
+        push(lvl, buildItem(ch, src, lvl, rf.feature.name, readAt(lvl), ctx, ownerBare,
+          { description: rf.feature.description }));
       }
     }
 
@@ -475,26 +487,30 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
   const oc = resolved.definition.origin_choices ?? {};
   const originRead = (ns: string) => (id: string): ChoiceValue | undefined => oc[`${ns}:${id}`];
   const pushOrigin = (choices: Choice[] | undefined, ns: "race" | "background",
-    source: FeatureSource, featureName: string, ownerBare: string) => {
+    source: FeatureSource, featureName: string, ownerBare: string, description?: string) => {
     for (const ch of choices ?? []) {
-      origin.push(buildItem(ch, source, 0, featureName, originRead(ns), ctx, ownerBare));
+      origin.push(buildItem(ch, source, 0, featureName, originRead(ns), ctx, ownerBare, { description }));
     }
   };
   if (resolved.race) {
     const bare = bareEntitySlug(resolved.race.slug);
     pushOrigin(resolved.race.choices, "race",
-      { kind: "race", slug: resolved.race.slug }, resolved.race.name ?? "Race", bare);
+      { kind: "race", slug: resolved.race.slug }, resolved.race.name ?? "Race", bare,
+      (resolved.race as { description?: string }).description);
     for (const t of resolved.race.traits ?? []) {
-      pushOrigin(t.choices, "race", { kind: "race", slug: resolved.race.slug }, t.name, bare);
+      pushOrigin(t.choices, "race", { kind: "race", slug: resolved.race.slug }, t.name, bare,
+        (t as { description?: string }).description);
     }
   }
   if (resolved.background) {
     const bare = bareEntitySlug(resolved.background.slug);
     pushOrigin(resolved.background.choices, "background",
-      { kind: "background", slug: resolved.background.slug }, resolved.background.name ?? "Background", bare);
+      { kind: "background", slug: resolved.background.slug }, resolved.background.name ?? "Background", bare,
+      (resolved.background as { description?: string }).description);
     if (resolved.background.feature) {
-      pushOrigin((resolved.background.feature as { choices?: Choice[] }).choices, "background",
-        { kind: "background", slug: resolved.background.slug }, resolved.background.feature.name, bare);
+      pushOrigin((resolved.background.feature as { choices?: Choice[]; description?: string }).choices, "background",
+        { kind: "background", slug: resolved.background.slug }, resolved.background.feature.name, bare,
+        (resolved.background.feature as { description?: string }).description);
     }
   }
 

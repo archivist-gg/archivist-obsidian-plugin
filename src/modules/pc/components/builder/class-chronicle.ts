@@ -59,6 +59,10 @@ export interface ClassChronicleOptions {
    *  subclass. Its granted features fold into the card's timeline & progression
    *  (Fix A). Browse mode stays class-only — never supply this there. */
   subclassEntity?: RegisteredEntity;
+  /** Owned-card mode (smoke r7): the chosen subclass's display name, rendered as
+   *  a tag next to the class title in the identity area ("Fighter · Champion"),
+   *  NOT in the band's right controls. */
+  subclassName?: string;
   stateKey: string;
   /** Owned-card mode (smoke r6): inline band controls (level select / subclass
    *  name / remove ghost). Threaded to the block's `bandRight` hook so the band
@@ -156,6 +160,10 @@ export function renderClassChronicle(host: HTMLElement, ctx: ComponentRenderCont
   const d = opts.entity.data as ClassData;
   renderChronicleBlock(host, {
     name: opts.entity.name,
+    // Chosen subclass tag next to the title: "Fighter · Champion" (smoke r7).
+    nameSuffix: opts.subclassName
+      ? (nameEl) => nameEl.createSpan({ cls: "pc-bccard-sub", text: ` · ${opts.subclassName}` })
+      : undefined,
     sub: [
       "Class",
       d.hit_die ? `Hit Die ${d.hit_die}` : "",

@@ -177,6 +177,45 @@ describe("buildDecisionLedger — feature-level", () => {
   });
 });
 
+describe("buildDecisionLedger — decision descriptions (smoke r7)", () => {
+  it("threads the source class feature's description onto the DecisionItem", () => {
+    const ledger = buildDecisionLedger(resolvedFighter(1), { registry } as never);
+    const fs = ledger.classes[0].levels.flatMap(l => l.items).find(i => i.key === "fighting-style")!;
+    // resolvedFighter's Fighting Style feature carries description "Choose one option…".
+    expect(fs.description).toBe("Choose one option…");
+  });
+
+  it("threads an origin race-trait's description onto its origin DecisionItem; children inherit none", () => {
+    const c = resolvedFighter(1);
+    const race = {
+      slug: "srd-2024_elf", name: "Elf", choices: [],
+      traits: [{
+        name: "Elven Lineage",
+        description: "Choose a lineage.\n\n| Lineage | Benefit |\n| --- | --- |\n| Drow | Darkvision |",
+        choices: [{
+          kind: "select-inline", id: "elven-lineage", count: 1,
+          options: [{ value: "drow", label: "Drow" }, { value: "wood-elf", label: "Wood Elf" }],
+        }],
+      }],
+    };
+    (c as { race: unknown }).race = race;
+    const ledger = buildDecisionLedger(c, { registry } as never);
+    const lineage = ledger.origin.find(i => i.key === "elven-lineage")!;
+    expect(lineage.description).toContain("| Lineage | Benefit |");   // the pipe table is carried verbatim
+    // A select-inline child reveals when its parent option is chosen; it inherits
+    // NO description (the Choice union has no description field).
+    (c.definition as { origin_choices: Record<string, unknown> }).origin_choices = {};
+  });
+
+  it("a revealed select-inline child carries no inherited description", () => {
+    const choices = { 4: { "asi-or-feat": "asi" } };
+    const ledger = buildDecisionLedger(resolvedFighter(4, choices), { registry } as never);
+    const aof = ledger.classes[0].levels.flatMap(l => l.items).find(i => i.key === "asi-or-feat")!;
+    expect(aof.description).toBe("choose one…");          // the parent feature's description
+    expect(aof.children?.[0].description).toBeUndefined(); // the child inherits nothing
+  });
+});
+
 describe("buildDecisionLedger — starting equipment", () => {
   it("synthesizes an equipment-0 decision from a choice entry; ignores fixed entries", () => {
     const c = resolvedFighter(1);

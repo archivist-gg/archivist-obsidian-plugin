@@ -9,6 +9,11 @@ export interface GlanceTile { label: string; value: string; small?: string; }
 
 export interface ChronicleBlockOptions {
   name: string;
+  /** Optional callback to render content INLINE after the name (same baseline),
+   *  e.g. the class card's chosen-subclass tag "· Champion" (smoke r7). Renders
+   *  into the `.pc-cb-name` heading itself so it sits next to the title, not in
+   *  the sub-line. */
+  nameSuffix?: (nameEl: HTMLElement) => void;
   /** Italic sub-line under the name (omit segments with no data — caller's job). */
   sub: string;
   /** Corner badge, e.g. "SRD 5.2 · 2024". */
@@ -42,7 +47,8 @@ export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOp
   const bh = block.createDiv({ cls: "pc-cb-bh" });
   if (opts.collapsible) bh.addClass("collapsible");
   const ident = bh.createDiv({ cls: "pc-cb-bh-ident" });
-  ident.createEl("h3", { cls: "pc-cb-name", text: opts.name });
+  const nameEl = ident.createEl("h3", { cls: "pc-cb-name", text: opts.name });
+  opts.nameSuffix?.(nameEl);
   ident.createDiv({ cls: "pc-cb-sub", text: opts.sub });
   if (opts.bandRight) {
     const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });

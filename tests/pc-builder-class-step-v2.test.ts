@@ -112,6 +112,20 @@ function mkCtx(opts: {
   } as unknown as ComponentRenderContext;
 }
 
+/** Bard with a chosen subclass (Champion-flavoured): the definition class entry
+ *  carries `subclass`, and a registered subclass entity supplies the name. Used
+ *  to pin the subclass-tag-next-to-title placement (smoke r7). */
+function mkCtxWithBardSubclass(): ComponentRenderContext {
+  const ctx = mkCtx({
+    classEntries: [{ name: "srd-2024_bard", level: 5, subclass: "srd-2024_college-of-lore" }],
+    entities: [
+      entityOf("srd-2024_bard", "Bard", bardData()),
+      entityOf("srd-2024_college-of-lore", "College of Lore", {} as ClassData, "subclass"),
+    ],
+  });
+  return ctx;
+}
+
 function mkCtxNoClass(): ComponentRenderContext {
   return mkCtx({ classEntries: [], entities: [entityOf("srd-2024_bard", "Bard", bardData())] });
 }
@@ -205,14 +219,51 @@ describe("renderClassStep", () => {
     expect(featHeader().querySelector(".pc-cb-fold-chev")!.textContent).toBe("▸");
   });
 
-  it("remove ghost link removes the class without toggling collapse", () => {
+  it("remove is a two-step confirm: the first click does NOT remove; it swaps in Confirm/Cancel (smoke r7)", () => {
     const c = mountContainer();
     const removeClass = vi.fn();
     renderClassStep(c, mkCtxWithBard5({ removeClass }));
-    (c.querySelector(".pc-bccard-rm") as HTMLElement).click();
+    const rm = c.querySelector(".pc-bccard-rm") as HTMLElement;
+    expect(rm.tagName).toBe("BUTTON");           // a proper ghost button, not a dotted-underline span
+    rm.click();
+    // First click NEVER removes — it reveals the confirm pair.
+    expect(removeClass).not.toHaveBeenCalled();
+    expect(c.querySelector(".pc-bccard-rm")).toBeNull();              // the bare Remove button is gone
+    expect(c.querySelector(".pc-bccard-rm-confirm")).not.toBeNull();
+    expect(c.querySelector(".pc-bccard-rm-cancel")).not.toBeNull();
+    // Card never collapsed (no collapse flag written by the first click).
+    expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
+  });
+
+  it("remove confirm calls removeClass; cancel restores the safe Remove button (smoke r7)", () => {
+    // Confirm path.
+    const c1 = mountContainer();
+    const removeClass = vi.fn();
+    renderClassStep(c1, mkCtxWithBard5({ removeClass }));
+    (c1.querySelector(".pc-bccard-rm") as HTMLElement).click();
+    (c1.querySelector(".pc-bccard-rm-confirm") as HTMLElement).click();
     expect(removeClass).toHaveBeenCalledWith(0);
-    // Removing must not have collapsed the card (no collapse flag written).
-    expect((c.querySelector(".pc-bccard") as HTMLElement)).not.toBeNull();
+
+    // Cancel path: restores the Remove button without calling removeClass.
+    const c2 = mountContainer();
+    const removeClass2 = vi.fn();
+    renderClassStep(c2, mkCtxWithBard5({ removeClass: removeClass2 }));
+    (c2.querySelector(".pc-bccard-rm") as HTMLElement).click();
+    (c2.querySelector(".pc-bccard-rm-cancel") as HTMLElement).click();
+    expect(removeClass2).not.toHaveBeenCalled();
+    expect(c2.querySelector(".pc-bccard-rm")).not.toBeNull();         // safe state restored
+    expect(c2.querySelector(".pc-bccard-rm-confirm")).toBeNull();
+  });
+
+  it("the remove control never toggles collapse: confirm/cancel clicks stop propagation (smoke r7)", () => {
+    const c = mountContainer();
+    const ctx = mkCtxWithBard5({ removeClass: vi.fn() });
+    renderClassStep(c, ctx);
+    (c.querySelector(".pc-bccard-rm") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    (c.querySelector(".pc-bccard-rm-cancel") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    // No collapse flag was ever written by any of the remove-control clicks.
+    expect((ctx.builderUiState!.get("builder.class-cards") as Set<number> | undefined)?.has(0) ?? false).toBe(false);
+    expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
   });
 
   it("the level select does NOT toggle collapse when clicked (stopPropagation)", () => {
@@ -273,6 +324,30 @@ describe("renderClassStep", () => {
     const note = c.querySelectorAll(".pc-bccard")[1].querySelector(".pc-bcprereq")!;
     expect(note.textContent).toContain("13");
     expect(note.querySelector(".pc-bcprereq-bang")!.textContent).toBe("!");
+  });
+
+  it("the chosen subclass name sits next to the class title, not in the band-right controls (smoke r7)", () => {
+    const c = mountContainer();
+    renderClassStep(c, mkCtxWithBardSubclass());
+    const nameEl = c.querySelector(".pc-cblock .pc-cb-name")!;
+    // The subclass tag renders INSIDE the title heading ("Bard · College of Lore").
+    const tag = nameEl.querySelector(".pc-bccard-sub")!;
+    expect(tag).not.toBeNull();
+    expect(tag.textContent).toContain("College of Lore");
+    expect(nameEl.textContent).toContain("Bard");
+    expect(nameEl.textContent).toContain("College of Lore");
+    // It is NOT duplicated into the band's right controls.
+    expect(c.querySelector(".pc-cb-bh-rgt .pc-bccard-sub")).toBeNull();
+  });
+
+  it("the band's LV select carries a larger size class wiring (smoke r7)", () => {
+    const c = mountContainer();
+    renderClassStep(c, mkCtxWithBard5({}));
+    // The LV select still lives in the band-right, inside the .pc-bccard-lvl shell
+    // that the CSS up-sizes; the microlabel reads "Lv".
+    const lvl = c.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl")!;
+    expect(lvl.querySelector(".pc-bccard-lvl-l")!.textContent).toBe("Lv");
+    expect(lvl.querySelector("select.pc-bdd")).not.toBeNull();
   });
 
   it("orphan subclasses still get the data-ask callout", () => {

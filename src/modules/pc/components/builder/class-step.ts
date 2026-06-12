@@ -78,7 +78,7 @@ function renderClassCard(
     const ident = bh.createDiv({ cls: "pc-cb-bh-ident" });
     ident.createEl("h3", { cls: "pc-cb-name", text: humanizeSlug(slug ?? "unknown") });
     const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });
-    renderBandControls(rgt, ctx, entry, index, undefined);
+    renderBandControls(rgt, ctx, entry, index);
     block.createDiv({ cls: "pc-dstrip-empty", text: "No class data in your vault for this entry." });
     return;
   }
@@ -96,8 +96,8 @@ function renderClassCard(
   // strip + folds) unmounts while the band controls stay usable.
   renderClassChronicle(card, ctx, {
     entity, level: entry.level, mode: "owned", classIndex: index, ledger,
-    subclassEntity, stateKey: `builder.class-card.${index}`,
-    bandRight: (rgt) => renderBandControls(rgt, ctx, entry, index, subclassName),
+    subclassEntity, subclassName, stateKey: `builder.class-card.${index}`,
+    bandRight: (rgt) => renderBandControls(rgt, ctx, entry, index),
     collapsible: true,
     collapsed: !open,
     onToggleCollapse: () => {
@@ -108,16 +108,16 @@ function renderClassCard(
   });
 }
 
-/** The band's inline controls (smoke r6): the level select, the subclass name
- *  (italic, when set), and the remove ghost. select/remove stop propagation so a
- *  click on them never reaches the band's collapse handler — level changes stay
- *  usable while collapsed, like the old header. */
+/** The band's inline controls (smoke r6/r7): the level select and the remove
+ *  control. The subclass name now sits next to the class title in the identity
+ *  area (smoke r7 — see renderClassChronicle's `subtitle`), not here. select /
+ *  remove stop propagation so a click on them never reaches the band's collapse
+ *  handler — level changes stay usable while collapsed, like the old header. */
 function renderBandControls(
   rgt: HTMLElement,
   ctx: ComponentRenderContext,
   entry: { level: number },
   index: number,
-  subclassName: string | undefined,
 ): void {
   const lvl = rgt.createDiv({ cls: "pc-bccard-lvl" });
   lvl.createSpan({ cls: "pc-bccard-lvl-l", text: "Lv" });
@@ -128,9 +128,32 @@ function renderBandControls(
   sel.value = String(entry.level);
   sel.addEventListener("click", (ev) => ev.stopPropagation());
   sel.addEventListener("change", () => ctx.editState?.setClassLevel(index, Number(sel.value)));
-  if (subclassName) rgt.createSpan({ cls: "pc-bccard-sub", text: subclassName });
-  const rm = rgt.createSpan({ cls: "pc-bccard-rm", text: "remove" });
-  rm.addEventListener("click", (ev) => { ev.stopPropagation(); ctx.editState?.removeClass(index); });
+  renderRemoveControl(rgt, ctx, index);
+}
+
+/** The remove control (smoke r7): a proper small ghost BUTTON (visible border,
+ *  crimson text, label-size) in harmony with the `.pc-bcadd` dress — never the
+ *  old 8.5px dotted-underline ghost. Removing is a TWO-STEP confirm: the first
+ *  click swaps the button inline for a crimson-filled "Confirm" + a quiet
+ *  "cancel"; only Confirm calls removeClass, cancel restores the button. Every
+ *  control stops propagation so the band's collapse handler never fires. State
+ *  is transient — local to this band-right area, reset by any re-render. */
+function renderRemoveControl(rgt: HTMLElement, ctx: ComponentRenderContext, index: number): void {
+  const wrap = rgt.createDiv({ cls: "pc-bccard-rm-wrap" });
+  wrap.addEventListener("click", (ev) => ev.stopPropagation());
+  const draw = (confirming: boolean): void => {
+    wrap.empty();
+    if (!confirming) {
+      const btn = wrap.createEl("button", { cls: "pc-bccard-rm", text: "Remove" });
+      btn.addEventListener("click", (ev) => { ev.stopPropagation(); draw(true); });
+      return;
+    }
+    const confirm = wrap.createEl("button", { cls: "pc-bccard-rm-confirm", text: "Confirm" });
+    confirm.addEventListener("click", (ev) => { ev.stopPropagation(); ctx.editState?.removeClass(index); });
+    const cancel = wrap.createEl("button", { cls: "pc-bccard-rm-cancel", text: "Cancel" });
+    cancel.addEventListener("click", (ev) => { ev.stopPropagation(); draw(false); });
+  };
+  draw(false);
 }
 
 /** Multiclass prerequisites are PERMISSIVE — a quiet amber "!" note, never a
