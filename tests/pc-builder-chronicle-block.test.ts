@@ -44,6 +44,37 @@ describe("renderChronicleBlock", () => {
     expect(kids.indexOf("pc-cb-bh")).toBeLessThan(kids.indexOf("pc-cb-flavor"));
   });
 
+  it("with bandRight (owned mode) the corner badge is dropped and the source rides the sub-line (smoke r8)", () => {
+    const c = mountContainer();
+    renderChronicleBlock(c, {
+      name: "Fighter",
+      sub: "Class · Hit Die d10 · Strength",
+      badge: "SRD 5.2 · 2024",
+      tiles: [],
+      bandRight: (rgt) => rgt.createSpan({ cls: "lv-ctl", text: "LV" }),
+      body: () => {},
+    });
+    const block = c.querySelector(".pc-cblock")!;
+    // No absolute corner badge to collide with the band-right controls.
+    expect(block.querySelector(".pc-cb-badge")).toBeNull();
+    // The source is present INLINE in the sub-line instead.
+    const src = block.querySelector(".pc-cb-sub .pc-cb-src")!;
+    expect(src).not.toBeNull();
+    expect(src.textContent).toBe("SRD 5.2 · 2024");
+    // The band-right controls are still rendered.
+    expect(block.querySelector(".pc-cb-bh-rgt .lv-ctl")).not.toBeNull();
+  });
+
+  it("without bandRight (race/background/browse) the corner badge stays intact (smoke r8)", () => {
+    const c = mountContainer();
+    renderChronicleBlock(c, {
+      name: "Elf", sub: "Species · Medium", badge: "SRD 5.2 · 2024", tiles: [], body: () => {},
+    });
+    const block = c.querySelector(".pc-cblock")!;
+    expect(block.querySelector(".pc-cb-badge")!.textContent).toBe("SRD 5.2 · 2024");
+    expect(block.querySelector(".pc-cb-src")).toBeNull();
+  });
+
   it("renderSectionRule renders label + right note", () => {
     const c = mountContainer();
     renderSectionRule(c, "What you decide", "3 total · 1 resolved");

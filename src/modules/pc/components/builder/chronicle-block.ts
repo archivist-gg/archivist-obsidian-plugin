@@ -43,13 +43,25 @@ export interface ChronicleBlockOptions {
 export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOptions): HTMLElement {
   const block = parent.createDiv({ cls: "pc-cblock" });
   opts.pre?.(block);
-  if (opts.badge) block.createSpan({ cls: "pc-cb-badge", text: opts.badge });
+  // The corner badge is positioned absolute at top-right. In owned-card mode
+  // (`bandRight` supplied) the band's right side already hosts the LV select /
+  // REMOVE / chevron controls (smoke r7), which the absolute badge overlaps
+  // (smoke r8). So when the band heads itself, the source moves INLINE as a
+  // quiet trailing segment of the sub-line instead, where it stays visible and
+  // collides with nothing. Race/background/browse blocks (no bandRight) keep the
+  // corner badge untouched.
+  const inlineSource = !!opts.bandRight;
+  if (opts.badge && !inlineSource) block.createSpan({ cls: "pc-cb-badge", text: opts.badge });
   const bh = block.createDiv({ cls: "pc-cb-bh" });
   if (opts.collapsible) bh.addClass("collapsible");
   const ident = bh.createDiv({ cls: "pc-cb-bh-ident" });
   const nameEl = ident.createEl("h3", { cls: "pc-cb-name", text: opts.name });
   opts.nameSuffix?.(nameEl);
-  ident.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  const subEl = ident.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  if (opts.badge && inlineSource) {
+    subEl.createSpan({ cls: "pc-cb-sub-sep", text: " · " });
+    subEl.createSpan({ cls: "pc-cb-src", text: opts.badge });
+  }
   if (opts.bandRight) {
     const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });
     opts.bandRight(rgt);

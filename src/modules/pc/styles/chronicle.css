@@ -43,6 +43,15 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub {
   font-style: italic; font-size: 13px; color: var(--pc-text-primary); margin-top: 2px;
 }
+/* Inline source segment (smoke r8): in owned-card mode the source moves out of
+   the absolute corner badge — which would collide with the band-right LV/REMOVE
+   controls — and rides the sub-line as a quiet trailing run, matching the badge's
+   muted sans dress so it reads as metadata, not part of the italic identity sub. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-src {
+  font-style: normal; font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub-sep { color: rgba(0, 0, 0, 0.4); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
   font-style: italic; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
   color: var(--pc-text-soft); line-height: 1.55; margin: 0.2em 0 0.7em;
