@@ -78,7 +78,7 @@ function renderRow(
   opts: DecisionStripOptions,
 ): void {
   // Informational: render from featureName only — `choice` is a sentinel and
-  // MUST NOT be read (engine Task 16 contract).
+  // MUST NOT be read (engine Task 16 contract). No chevron/toggle (no nest).
   if (item.status === "informational") {
     const row = root.createDiv({ cls: "pc-dstrip-row info" });
     row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
@@ -88,12 +88,48 @@ function renderRow(
   }
   const done = item.status === "resolved";
   const state = done ? "done" : opts.live ? "open" : "req";
-  const row = root.createDiv({ cls: `pc-dstrip-row ${state}` });
-  row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
-  if (!done && opts.live) row.createSpan({ cls: "pc-dstrip-bang", text: "!" });
-  row.createSpan({ cls: "pc-dstrip-name", text: labelOf(item) });
-  row.createSpan({ cls: "pc-dstrip-val", text: done ? `✓ ${selectedSummary(item)}` : statusText(item) });
-  if (opts.live) {
+
+  // Browse-mode rows (live:false) have no controls/nest → no collapse toggle,
+  // and keep the legacy flat header (pill/bang/name/val are direct children).
+  if (!opts.live) {
+    const row = root.createDiv({ cls: `pc-dstrip-row ${state}` });
+    row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
+    row.createSpan({ cls: "pc-dstrip-name", text: labelOf(item) });
+    row.createSpan({ cls: "pc-dstrip-val", text: statusText(item) });
+    return;
+  }
+
+  // Live top-level rows are MANUALLY collapsible (SP2 Plan 5, smoke r5).
+  // Default = expanded ALWAYS (incl. after resolve — never auto-collapse);
+  // collapse is strictly user-initiated and persists in builderUiState. We
+  // locally re-render just this row on toggle (chronicle-fold `draw()` idiom)
+  // so a click costs only this row, not a full sheet re-render.
+  const bag = ctx.builderUiState;
+  const collapseKey = `${opts.stateKey}.rowsCollapsed`;
+  const collapsed = (bag?.get(collapseKey) as Set<string> | undefined) ?? new Set<string>();
+  bag?.set(collapseKey, collapsed);
+  const rowKey = `${item.level}.${item.key}`;
+
+  const row = root.createDiv();
+  const draw = (): void => {
+    row.empty();
+    const open = !collapsed.has(rowKey);
+    row.className = `pc-dstrip-row ${state}`;
+    // Header wrapper carries the click+pointer; the nest below is a SEPARATE
+    // flex child, so clicks on chips/steppers/tables never bubble to this
+    // toggle. `.pc-dstrip-val` keeps its margin-left:auto inside the head.
+    const head = row.createDiv({ cls: "pc-dstrip-head" });
+    head.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
+    if (!done) head.createSpan({ cls: "pc-dstrip-bang", text: "!" });
+    head.createSpan({ cls: "pc-dstrip-name", text: labelOf(item) });
+    head.createSpan({ cls: "pc-dstrip-val", text: done ? `✓ ${selectedSummary(item)}` : statusText(item) });
+    head.createSpan({ cls: "pc-dstrip-chev", text: open ? "▾" : "▸" });
+    head.addEventListener("click", () => {
+      if (open) collapsed.add(rowKey); else collapsed.delete(rowKey);
+      draw();
+    });
+    if (!open) return;
+
     const nest = row.createDiv({ cls: "pc-dstrip-nest" });
     renderControl(nest, ctx, item, opts, false);
     // SP2 Plan 5 (Variant II sans pathline): children render as a FLAT group
@@ -104,7 +140,8 @@ function renderRow(
       const group = nest.createDiv({ cls: "pc-dstrip-fgroup" });
       for (const child of item.children) renderChildRow(group, ctx, child, opts, 0);
     }
-  }
+  };
+  draw();
 }
 
 /** Variant II flat child: a named sub-choice rendered without its own border or

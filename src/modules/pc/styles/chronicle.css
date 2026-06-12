@@ -85,6 +85,22 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
   margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
 }
+/* Header wrapper (SP2 Plan 5, smoke r5): a 100%-basis flex child that hosts the
+   pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse
+   click + pointer. The nest is a SEPARATE row child below it, so nest clicks
+   never reach this toggle. Layout matches the legacy direct-child row exactly. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head {
+  flex-basis: 100%; display: flex; align-items: baseline; gap: 9px;
+  cursor: pointer; border-radius: var(--pc-radius-sm); transition: background 0.12s ease;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head:hover { background: var(--pc-row-open-bg); }
+/* Collapse chevron — fold/card idiom (crimson, ~12px), sits at the far right
+   after the val (which keeps its margin-left:auto, pushing the chevron flush). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-chev {
+  flex: none; align-self: center; width: 14px; text-align: center;
+  color: var(--pc-crimson); font-size: 12px; line-height: 1;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head:hover .pc-dstrip-chev { color: var(--pc-crimson-light); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; }
 /* resolved */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done { border-color: var(--pc-rarity-uncommon); }

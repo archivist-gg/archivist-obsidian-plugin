@@ -506,6 +506,116 @@ describe("renderDecisionStrip", () => {
     (loreRow.querySelector(".pc-btoggle") as HTMLElement).click();
     expect(setSubclass).toHaveBeenCalledWith(0, "srd-2024_college-of-lore");
   });
+
+  // ── Manually collapsible top-level rows (SP2 Plan 5, smoke r5) ──
+  // Every live top-level decision row is collapsible. Default = expanded ALWAYS,
+  // including after the decision resolves (never auto-collapse on resolve).
+  // Collapse is strictly user-initiated, hides the nest, keeps the header +
+  // ✓/status summary + flips the chevron, and persists across re-renders.
+  describe("manually collapsible rows", () => {
+    const liveItem = (over: Partial<DecisionItem> = {}): DecisionItem =>
+      item({ status: "resolved", selected: "wood-elf", ...over });
+
+    it("a RESOLVED row is EXPANDED by default — chips mounted, chevron shows ▾", () => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [liveItem()], pill: domainPill, live: true, stateKey: "t" });
+      const row = c.querySelector(".pc-dstrip-row")!;
+      // nest + chips present (always-open default survives a resolved row).
+      expect(row.querySelector(".pc-dstrip-nest")).not.toBeNull();
+      expect(row.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+      // header + ✓ summary visible, state class retained.
+      expect(row.classList.contains("done")).toBe(true);
+      expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Wood Elf");
+      // chevron present and open (▾).
+      const chev = row.querySelector(".pc-dstrip-chev")!;
+      expect(chev).not.toBeNull();
+      expect(chev.textContent).toBe("▾");
+    });
+
+    it("clicking the head collapses the row — nest/chips gone, header + ✓ + state stay, chevron flips to ▸", () => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [liveItem()], pill: domainPill, live: true, stateKey: "t" });
+      const head = c.querySelector(".pc-dstrip-head") as HTMLElement;
+      head.click();
+      const row = c.querySelector(".pc-dstrip-row")!;
+      // nest + chips are gone.
+      expect(row.querySelector(".pc-dstrip-nest")).toBeNull();
+      expect(row.querySelectorAll(".pc-bchoice-chip").length).toBe(0);
+      // header line survives: name, ✓ summary, state class.
+      expect(row.classList.contains("done")).toBe(true);
+      expect(row.querySelector(".pc-dstrip-name")!.textContent).toContain("Elven Lineage");
+      expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Wood Elf");
+      // chevron flipped to ▸.
+      expect(row.querySelector(".pc-dstrip-chev")!.textContent).toBe("▸");
+    });
+
+    it("a second head click re-expands the row", () => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [liveItem()], pill: domainPill, live: true, stateKey: "t" });
+      (c.querySelector(".pc-dstrip-head") as HTMLElement).click();   // collapse
+      expect(c.querySelector(".pc-dstrip-nest")).toBeNull();
+      (c.querySelector(".pc-dstrip-head") as HTMLElement).click();   // re-expand
+      const row = c.querySelector(".pc-dstrip-row")!;
+      expect(row.querySelector(".pc-dstrip-nest")).not.toBeNull();
+      expect(row.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+      expect(row.querySelector(".pc-dstrip-chev")!.textContent).toBe("▾");
+    });
+
+    it("collapse state persists across a fresh render with the same ctx (builderUiState)", () => {
+      const c = mountContainer();
+      const ctx = mkCtx();
+      const opts = { items: [liveItem()], pill: domainPill, live: true, stateKey: "t" } as const;
+      renderDecisionStrip(c, ctx, { ...opts });
+      (c.querySelector(".pc-dstrip-head") as HTMLElement).click();   // collapse → writes to bag
+      // Re-render the strip into a fresh container with the SAME ctx/bag.
+      const c2 = mountContainer();
+      renderDecisionStrip(c2, ctx, { ...opts });
+      const row = c2.querySelector(".pc-dstrip-row")!;
+      expect(row.querySelector(".pc-dstrip-nest")).toBeNull();        // still collapsed
+      expect(row.querySelector(".pc-dstrip-chev")!.textContent).toBe("▸");
+    });
+
+    it("clicking a CHIP in the nest does NOT collapse the row (and still writes)", () => {
+      const c = mountContainer();
+      const setOriginChoice = vi.fn();
+      renderDecisionStrip(c, mkCtx({ setOriginChoice }), {
+        items: [liveItem()], pill: domainPill, live: true, stateKey: "t",
+      });
+      // Click a non-selected chip (Drow) inside the nest.
+      const drow = [...c.querySelectorAll(".pc-bchoice-chip")].find((ch) =>
+        ch.textContent!.includes("Drow"),
+      ) as HTMLElement;
+      drow.click();
+      // The nest is still present (no collapse) and the write fired.
+      expect(c.querySelector(".pc-dstrip-nest")).not.toBeNull();
+      expect(setOriginChoice).toHaveBeenCalledWith("race:elven-lineage", "drow");
+    });
+
+    it("an informational row has NO chevron / head wrapper (no toggle)", () => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), {
+        items: [item({ status: "informational" })], pill: domainPill, live: true, stateKey: "t",
+      });
+      const row = c.querySelector(".pc-dstrip-row.info")!;
+      expect(row.querySelector(".pc-dstrip-chev")).toBeNull();
+      expect(row.querySelector(".pc-dstrip-head")).toBeNull();
+    });
+
+    it("a renderStripInfoRow row has NO chevron (origin-feat keeps its own expand)", () => {
+      const c = mountContainer();
+      const row = renderStripInfoRow(c, { pill: "Feat", name: "Origin Feat", value: "Magic Initiate ▸" });
+      expect(row.querySelector(".pc-dstrip-chev")).toBeNull();
+      expect(row.querySelector(".pc-dstrip-head")).toBeNull();
+    });
+
+    it("browse mode (live:false) rows have NO chevron / head wrapper (no controls to toggle)", () => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [item({})], pill: domainPill, live: false, stateKey: "t" });
+      const row = c.querySelector(".pc-dstrip-row.req")!;
+      expect(row.querySelector(".pc-dstrip-chev")).toBeNull();
+      expect(row.querySelector(".pc-dstrip-head")).toBeNull();
+    });
+  });
 });
 
 describe("domainPill", () => {
