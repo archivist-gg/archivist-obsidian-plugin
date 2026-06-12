@@ -165,6 +165,30 @@ describe("renderAbilitiesStep — uniform obelisk tile size (CSS invariant)", ()
     const stack = ruleBlock(css, ".pc-ab-stack");
     expect(stack).toMatch(/width:\s*100%/);
   });
+
+  /* Obsidian's app CSS styles bare `select` with a raised input dress
+   * (box-shadow: var(--input-shadow), height: var(--input-height),
+   * appearance, etc.) that wins on every property our sheet-scoped rule
+   * omits. The `pc-bdd` rule must therefore COMPLETELY null that chrome —
+   * a previous fix set background/border but left box-shadow + height
+   * unanswered, so the off-white shadow box still bled through. Pin the
+   * load-bearing nullifiers at the rule level (jsdom does no cascade we can
+   * trust for app-CSS interplay). */
+  it("the shared pc-bdd select dress defeats Obsidian's native input chrome", () => {
+    const css = readPcStyle("builder.css");
+    const dress = ruleBlock(css, "select.pc-bdd {");
+    expect(dress).toMatch(/appearance:\s*none/);
+    expect(dress).toMatch(/box-shadow:\s*none/);
+    expect(dress).toMatch(/height:\s*auto/);
+    expect(dress).toMatch(/background-color:\s*var\(--pc-parchment-light\)/);
+  });
+
+  it("the pc-bdd :hover state also kills Obsidian's hover shadow and hover background", () => {
+    const css = readPcStyle("builder.css");
+    const hover = ruleBlock(css, "select.pc-bdd:hover");
+    expect(hover).toMatch(/box-shadow:\s*none/);
+    expect(hover).toMatch(/background-color:\s*var\(--pc-parchment-light\)/);
+  });
 });
 
 describe("renderAbilitiesStep — point-buy bar", () => {

@@ -308,22 +308,43 @@
 .archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
-/* Shared builder dropdown: parchment-dressed native select (class-card Lv +
-   abilities Base). The native chrome is suppressed (appearance: none) so the
-   closed control reads as a parchment box; a slim right-pad leaves room for the
-   value to breathe (the adjacent microlabel — Lv / the column cap — gives the
-   context, so no custom caret is needed). Scoped to the sheet + modal so a
-   later modal-hosted select inherits the same dress. */
+/* Shared PC select dress: parchment-dressed native <select> used by every
+   picker on the sheet + builder surfaces (class-card Lv, abilities Base,
+   custom-background borrow-cost + origin-feat, inventory override-actions
+   cost/recovery). All carry the `pc-bdd` class.
+
+   This rule must be COMPLETE: Obsidian's app CSS styles bare `select` with a
+   raised input dress that wins on every property we omit, even though our
+   sheet-scoped selector out-specifies it. Specifically Obsidian sets
+   `box-shadow: var(--input-shadow)` (the off-white drop-shadow box the user
+   saw), `height: var(--input-height)` (a tall 30px input), a tight
+   `line-height`, and `--font-ui-small` sizing — plus on :hover it swaps in
+   `box-shadow: var(--input-shadow-hover)` AND `background-color:
+   var(--dropdown-background-hover)`. None of those were countered before, so
+   Obsidian's chrome bled through. We now explicitly null the shadow, free the
+   height, and pin every box/typographic property — and the hover state kills
+   both the hover shadow and the hover background. The native caret is
+   suppressed (appearance: none); the adjacent microlabel gives context, so no
+   custom caret is drawn. Scoped to the sheet + modal so modal-hosted selects
+   inherit the same dress. */
 :is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd {
   -webkit-appearance: none; appearance: none;
-  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted);
-  border-radius: var(--pc-radius-sm); padding: 2px 6px;
+  box-shadow: none;
+  height: auto; min-height: 0;
+  line-height: 1.3;
+  background-color: var(--pc-parchment-light); background-image: none;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  padding: 2px 6px; margin: 0;
   font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body);
   color: var(--pc-text-primary); cursor: pointer;
 }
-:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:hover { border-color: var(--pc-tan); }
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:hover {
+  border-color: var(--pc-tan);
+  box-shadow: none; background-color: var(--pc-parchment-light);
+}
 :is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:focus-visible {
   outline: 2px solid var(--pc-crimson); outline-offset: 1px;
+  box-shadow: none;
 }
 .archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; max-width: 100%; text-align: center; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }

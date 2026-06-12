@@ -18,7 +18,7 @@ export function renderOverrideActionsPanel(parent: HTMLElement, opts: OverrideAc
 
   // Action cost
   const costLabel = grid.createEl("label", { text: "Cost" });
-  const costSel = costLabel.createEl("select");
+  const costSel = costLabel.createEl("select", { cls: "pc-bdd" });
   costSel.setAttribute("data-field", "action");
   costSel.createEl("option", { text: "—", attr: { value: "" } });
   for (const c of COSTS) costSel.createEl("option", { text: c, attr: { value: c } });
@@ -59,7 +59,7 @@ export function renderOverrideActionsPanel(parent: HTMLElement, opts: OverrideAc
 
   // Recovery reset
   const resetLabel = grid.createEl("label", { text: "Recovery" });
-  const resetSel = resetLabel.createEl("select");
+  const resetSel = resetLabel.createEl("select", { cls: "pc-bdd" });
   resetSel.setAttribute("data-field", "recovery_reset");
   resetSel.createEl("option", { text: "—", attr: { value: "" } });
   for (const r of RESETS) resetSel.createEl("option", { text: r, attr: { value: r } });
