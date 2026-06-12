@@ -265,7 +265,8 @@ export function collectClassFeatAbilityPoints(
   for (const c of resolved.classes) {
     for (const atLevel of Object.values(c.choices)) {
       const block = atLevel as Record<string, ChoiceValue> | undefined;
-      const featRef = block?.feat;
+      if (!block) continue;
+      const featRef = block.feat;
       if (typeof featRef !== "string") continue;
       const feat = featBySlug.get(stripRef(featRef));
       if (!feat) continue;

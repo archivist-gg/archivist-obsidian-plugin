@@ -6994,6 +6994,19 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-ls-caps-sm: 0.08em;
   --pc-ls-caps-md: 0.14em;
   --pc-radius-sm: 4px;
+  --pc-fs-big: 22px;
+  --pc-fs-mid: 18px;
+  --pc-fs-title: 16px;
+  --pc-fs-tiny: 7.5px;
+  --pc-ls-caps-lg: 0.2em;
+  --pc-radius-md: 6px;
+  --pc-amber: #a3690e;
+  --pc-row-open-bg: rgba(146, 38, 16, 0.04);
+  --pc-rarity-uncommon: #2f6f3a;
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
 
   background: var(--pc-parchment-light);
   color: var(--pc-text-primary);
@@ -13104,41 +13117,41 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* ── Shared selection UI: compendium filter + source tags ── */
-.archivist-pc-sheet .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
-.archivist-pc-sheet .pc-bfilter-label {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter { display: flex; align-items: center; gap: var(--pc-space-2); flex-wrap: wrap; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-label {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
   text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-.archivist-pc-sheet .pc-bfilter-chip {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chip {
   font-size: var(--pc-fs-small); color: var(--pc-text-muted);
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 2px 9px; cursor: pointer;
 }
-.archivist-pc-sheet .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
-.archivist-pc-sheet .pc-bsrc.e2014 { color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-bsrc.e2024 { color: #1f3f7a; }
-.archivist-pc-sheet .pc-bsrc.hb { color: #2f6f3a; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bfilter-chip.on { color: var(--pc-crimson); border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; margin-left: 5px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2014 { color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.e2024 { color: #1f3f7a; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bsrc.hb { color: #2f6f3a; }
 
-.archivist-pc-sheet .pc-bblock { min-width: 0; }
-.archivist-pc-sheet .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bblock { min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bblock-fallback { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-text-muted); padding: var(--pc-space-3) 0; }
 
 /* ── N1 choice callout ── */
-.archivist-pc-sheet .pc-bchoice { margin: var(--pc-space-3) 0; }
-.archivist-pc-sheet .pc-bchoice-head {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice { margin: var(--pc-space-3) 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-head {
   display: flex; align-items: center; gap: var(--pc-space-2);
   border-bottom: 1px solid var(--pc-tan); padding-bottom: 3px; margin-bottom: 7px;
 }
-.archivist-pc-sheet .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
-.archivist-pc-sheet .pc-bchoice-badge {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-label { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-badge {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
   text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); color: var(--pc-text-muted);
 }
 /* N1 open flag: an amber filled "!" disc, right-aligned. This is the ONLY
    signal for a required/open choice — no border bar, no box outline anywhere
    in the ledger leans on chrome for it. */
-.archivist-pc-sheet .pc-bchoice-flag {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-flag {
   margin-left: auto; flex: 0 0 auto;
   width: 16px; height: 16px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
@@ -13146,94 +13159,81 @@ body.theme-light .archivist-tag-atk:hover {
   font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label);
   line-height: 1;
 }
-.archivist-pc-sheet .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.archivist-pc-sheet .pc-bchoice-chip {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip {
   border: 1px solid var(--pc-text-primary); border-radius: var(--pc-radius-md);
   padding: 3px 11px; font-size: var(--pc-fs-small); color: var(--pc-text-primary);
   cursor: pointer; background: transparent;
 }
-.archivist-pc-sheet .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
-.archivist-pc-sheet .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip.sel { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip.muted { opacity: .45; cursor: default; }
 
 /* ── Shared selection table (the add-drawer pattern, generalized) ── */
-.archivist-pc-sheet .pc-btable-host { overflow-x: auto; min-width: 0; }
-.archivist-pc-sheet .pc-btable { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
-.archivist-pc-sheet .pc-btable-head, .archivist-pc-sheet .pc-btable-row { display: grid; }
-.archivist-pc-sheet .pc-btable-head > .pc-btable-th {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-host { overflow-x: auto; min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-head, :is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { display: grid; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-head > .pc-btable-th {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
   text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
   padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
 }
-.archivist-pc-sheet .pc-btable-head > .pc-btable-th.sortable { cursor: pointer; }
-.archivist-pc-sheet .pc-btable-sortarr { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-btable-row > * {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-head > .pc-btable-th.sortable { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-sortarr { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row > * {
   padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted);
   font-size: var(--pc-fs-body); color: var(--pc-text-soft);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.archivist-pc-sheet .pc-btable-row { cursor: pointer; }
-.archivist-pc-sheet .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-btable-name.on { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-btable-expand { padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
-.archivist-pc-sheet .pc-btable-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
-.archivist-pc-sheet .pc-btoggle {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row.pc-row-open > * { border-bottom-color: transparent; background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-name.on { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-expand { padding: var(--pc-space-2) var(--pc-space-3) var(--pc-space-3); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-empty { color: var(--pc-text-muted); font-style: italic; padding: var(--pc-space-3) 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle {
   width: 20px; height: 20px; line-height: 1; border-radius: 50%;
   border: 1px solid var(--pc-tan-muted); background: transparent;
   color: var(--pc-text-soft); cursor: pointer; font-size: var(--pc-fs-small); padding: 0;
 }
-.archivist-pc-sheet .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle.on { border-color: var(--pc-crimson); color: var(--pc-crimson); font-weight: 700; }
 /* Single-select seal: the ✓ stays in the DOM but rests invisible; hovering the
    row previews it in crimson outline, the standing pick is a filled stamp. */
-.archivist-pc-sheet .pc-btoggle.seal { color: transparent; font-weight: 700; }
-.archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal { border-color: var(--pc-crimson); color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-btoggle.seal.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
-.archivist-pc-sheet .pc-btable-row:hover .pc-btoggle.seal.on { color: var(--pc-parchment-light); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle.seal { color: transparent; font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row:hover .pc-btoggle.seal { border-color: var(--pc-crimson); color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btoggle.seal.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-btable-row:hover .pc-btoggle.seal.on { color: var(--pc-parchment-light); }
 /* expandSelect mode: the standing pick is marked by an inline name seal (no
    toggle column), since the row itself is the selection control. */
-.archivist-pc-sheet .pc-bname-seal {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bname-seal {
   color: var(--pc-crimson);
   font-weight: 700;
 }
 
 /* ── Entity picker (single-select ledger: search + filter + seal table) ── */
-.archivist-pc-sheet .pc-bpicker { min-width: 0; }
-.archivist-pc-sheet .pc-bpicker-search {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker { min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search {
   width: 100%; max-width: 320px; display: block;
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
   background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   padding: 5px 9px; color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary);
   caret-color: var(--pc-crimson); margin-bottom: var(--pc-space-2); outline: none; box-shadow: none;
 }
-.archivist-pc-sheet .pc-bpicker-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
 /* Override Obsidian's built-in input :hover (grey form-field highlight) and :focus
    (box-shadow/outline ring + text recolor) so the search box keeps the parchment
    look and dark text in every state. */
-.archivist-pc-sheet .pc-bpicker-search:hover,
-.archivist-pc-sheet .pc-bpicker-search:focus,
-.archivist-pc-sheet .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
-.archivist-pc-sheet .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:hover,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:focus,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpicker-filter { margin-bottom: var(--pc-space-2); }
 
 /* ── Inert (visible-but-unselectable) callout chip: a `from` slug with no entity
    behind it. Muted + un-clickable, distinct from `.muted` (over-limit dim). ── */
-.archivist-pc-sheet .pc-bchoice-chip.inert {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip.inert {
   opacity: .4; cursor: default; border-style: dashed; color: var(--pc-text-muted);
 }
 
-/* ── Class step: level dropdown + orphan-subclass data ask ── */
-.archivist-pc-sheet .pc-bclass-levelrow {
-  display: flex; align-items: center; gap: var(--pc-space-2);
-  margin: var(--pc-space-3) 0;
-}
-.archivist-pc-sheet .pc-bclass-levellabel {
-  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
-}
-.archivist-pc-sheet .pc-bclass-level {
-  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
-  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
-  padding: 3px 8px; color: var(--pc-text-primary);
-}
+/* ── Class step: orphan-subclass data ask ── */
 /* Quiet parchment notice (N1 note idiom): no border bar — a faint amber-warm
    tint with an inline amber "!" mark and amber-keyed serif text. A data gap,
    not a hard error, so it never raises a box outline or accent rule. */
@@ -13248,90 +13248,28 @@ body.theme-light .archivist-tag-atk:hover {
   font-weight: 700; color: var(--pc-amber);
 }
 
-/* ── Decision ledger (SP2 §7): level-grouped decision rows ── */
-.archivist-pc-sheet .pc-bledger { display: flex; flex-direction: column; gap: var(--pc-space-3); }
-.archivist-pc-sheet .pc-bledger-empty {
-  color: var(--pc-text-muted); font-style: italic; font-family: var(--pc-font-serif);
-  padding: var(--pc-space-3) 0;
-}
-.archivist-pc-sheet .pc-bledger-level { display: flex; flex-direction: column; gap: var(--pc-space-2); }
-.archivist-pc-sheet .pc-bledger-level-h {
-  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
-  text-transform: uppercase; letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
-  border-bottom: 1px solid var(--pc-tan-muted); padding-bottom: 3px;
-}
-
-/* Resolved + collapsed → one-line green-✓ row; click reopens. N1 "answered"
-   look: no box, no border — a quiet hairline-separated row (the dotted rule
-   echoes the resolved ledger rows in the class-step mockup) with the green ✓,
-   serif label, and a muted right-aligned summary. */
-.archivist-pc-sheet .pc-bledger-done {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
-  padding: 6px 4px; cursor: pointer;
-  border-bottom: 1px dotted var(--pc-tan-muted);
-}
-.archivist-pc-sheet .pc-bledger-done:hover { background: var(--pc-row-open-bg); }
-.archivist-pc-sheet .pc-bledger-done-check { color: var(--pc-rarity-uncommon); font-weight: 700; }
-.archivist-pc-sheet .pc-bledger-done-label {
-  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
-}
-.archivist-pc-sheet .pc-bledger-done-value {
-  margin-left: auto; font-size: var(--pc-fs-small); color: var(--pc-text-soft);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-/* Open item: unresolved (`req`) / partial / reopened-resolved. N1 borderless
-   callout — NO box outline, NO left-border accent. The decision separates from
-   its neighbours by whitespace alone; "required/open" is signalled inside by
-   the callout's own amber "!" flag + crimson label, never by chrome here. */
-.archivist-pc-sheet .pc-bledger-item {
-  padding: 6px 0 4px;
-}
-.archivist-pc-sheet .pc-bledger-item-h {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
-  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
-  font-size: var(--pc-fs-body); border-bottom: 1px solid var(--pc-tan);
-  padding-bottom: 3px; margin-bottom: 7px;
-}
-/* An unresolved decision keys its own heading crimson (the N1 "open" colour);
-   resolved/partial reopened items keep the neutral ink heading. */
-.archivist-pc-sheet .pc-bledger-item.req > .pc-bledger-item-h { color: var(--pc-crimson); }
-
-/* Informational → quiet description row (never has a control). */
-.archivist-pc-sheet .pc-bledger-info {
-  display: flex; align-items: baseline; gap: var(--pc-space-2);
-  padding: 4px 8px; color: var(--pc-text-soft);
-}
-.archivist-pc-sheet .pc-bledger-info-name {
-  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-soft); font-size: var(--pc-fs-body);
-}
-.archivist-pc-sheet .pc-bledger-info-note {
-  font-size: var(--pc-fs-small); font-style: italic; color: var(--pc-text-muted);
-}
-
 /* Ability-points pool: a −/+ stepper per pool ability. */
-.archivist-pc-sheet .pc-bpoints-left { font-size: var(--pc-fs-small); color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-bpoints {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints {
   display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-top: 4px;
 }
-.archivist-pc-sheet .pc-bpoints-cell {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-cell {
   display: inline-flex; align-items: center; gap: 5px;
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 6px;
 }
-.archivist-pc-sheet .pc-bpoints-ab {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-ab {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
   letter-spacing: var(--pc-ls-caps-md); color: var(--pc-text-muted);
 }
-.archivist-pc-sheet .pc-bpoints-n {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-n {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
   min-width: 12px; text-align: center;
 }
-.archivist-pc-sheet .pc-bpoints-btn {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-btn {
   width: 18px; height: 18px; line-height: 1; padding: 0; border-radius: 50%;
   border: 1px solid var(--pc-tan-muted); background: transparent;
   color: var(--pc-crimson); cursor: pointer; font-size: var(--pc-fs-small); font-weight: 700;
 }
-.archivist-pc-sheet .pc-bpoints-btn:disabled { color: var(--pc-text-muted); border-color: var(--pc-tan-muted); opacity: .4; cursor: default; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bpoints-btn:disabled { color: var(--pc-text-muted); border-color: var(--pc-tan-muted); opacity: .4; cursor: default; }
 
 /* ── Abilities step (SP2 Plan 4) ───────────────────────────────── */
 .archivist-pc-sheet .pc-bmethods { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -13383,14 +13321,35 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-broll-die.strike { text-decoration: line-through; opacity: 0.5; }
 .archivist-pc-sheet .pc-broll-total { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); margin-left: 4px; }
 .archivist-pc-sheet .pc-babrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; justify-items: center; padding: 10px 4px 4px; }
-.archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+/* The obelisk tile `.pc-ab` is sized `width: 100%; max-width: 72px` against its
+   parent (see components.css). On the sheet that parent is `.pc-ab-stack`, which
+   sets `width: 100%` so the frame always reaches its max-width. The builder must
+   mirror that: give the column a defined width that fills the `1fr` grid cell,
+   else it shrink-wraps to its widest child — the crimson "+N background/species"
+   caption — so captioned tiles grow to ~72px while uncaptioned ones collapse to a
+   cramped frame. `min-width: 0` keeps the cell from being forced wider than 1fr;
+   the caption then wraps below WITHOUT widening the frame. */
+.archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
-.archivist-pc-sheet .pc-bdd {
-  border: 1px solid var(--pc-tan); border-radius: 4px; background: rgba(255, 248, 220, 0.7);
-  padding: 4px 10px; font-family: var(--pc-font-serif); font-size: 12px; color: var(--pc-text-primary);
+/* Shared builder dropdown: parchment-dressed native select (class-card Lv +
+   abilities Base). The native chrome is suppressed (appearance: none) so the
+   closed control reads as a parchment box; a slim right-pad leaves room for the
+   value to breathe (the adjacent microlabel — Lv / the column cap — gives the
+   context, so no custom caret is needed). Scoped to the sheet + modal so a
+   later modal-hosted select inherits the same dress. */
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd {
+  -webkit-appearance: none; appearance: none;
+  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-sm); padding: 2px 6px;
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary); cursor: pointer;
 }
-.archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:hover { border-color: var(--pc-tan); }
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:focus-visible {
+  outline: 2px solid var(--pc-crimson); outline-offset: 1px;
+}
+.archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; max-width: 100%; text-align: center; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
 .archivist-pc-sheet .pc-blegend { font-style: italic; font-size: 11px; color: var(--pc-text-muted); margin-top: 10px; }
 .archivist-pc-sheet .pc-baibox {
@@ -13422,14 +13381,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-bwarn-t {
   font-size: var(--pc-fs-small); line-height: 1.45; color: #7a4a0a; font-family: var(--pc-font-serif);
 }
-/* Origin-feat info row: a fixed (un-chosen) feat naming + click-to-expand block. */
-.archivist-pc-sheet .pc-bofeat {
-  display: flex; align-items: center; gap: 8px; padding: 7px 6px; cursor: pointer;
-  border-bottom: 1px dotted var(--pc-tan);
-}
-.archivist-pc-sheet .pc-bofeat-l { font-weight: 700; color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-bofeat-v { font-family: var(--pc-font-serif); color: var(--pc-text-primary); }
-.archivist-pc-sheet .pc-bofeat-x { margin-left: auto; color: var(--pc-text-muted); }
+/* Origin-feat expand: the click-to-expand block beneath the strip info row. */
 .archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }
 
 /* ── Custom Background: the pinned ✦ Build row + parts-builder form ──
@@ -13447,7 +13399,7 @@ body.theme-light .archivist-tag-atk:hover {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson);
   display: inline-flex; align-items: center; gap: 6px;
 }
-.archivist-pc-sheet .pc-bctag {
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bctag {
   margin-left: auto; font-family: var(--pc-font-sans); font-size: var(--pc-fs-label);
   font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase;
   color: var(--pc-crimson); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm);
@@ -13614,3 +13566,253 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-bal.on .pc-bal-ab { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-bage { max-width: 120px; }
 .archivist-pc-sheet .pc-bhint { font-style: italic; font-size: 10px; color: var(--pc-text-muted); margin-top: 4px; }
+
+
+/* ============================================
+   pc/chronicle.css
+   ============================================ */
+/* Class Chronicle block + decision strip. Shared between the PC sheet
+ * (.archivist-pc-sheet) and the class-builder modal, which Obsidian portals
+ * to document.body (escaping the sheet scope) carrying .archivist-modal — so
+ * every shared rule is dual-scoped via :is(.archivist-pc-sheet, .archivist-modal).
+ * The only unscoped rule is the modal width override below. */
+
+.modal:has(:is(.pc-bclass-modal, .pc-bdecide-modal)) { max-width: 680px; width: 680px; }
+
+/* ── Chronicle block shell ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cblock {
+  background: #f0ddbd; /* page-tone card, one step darker than --pc-parchment-dark */
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  box-shadow: 0 3px 14px rgba(134, 116, 83, 0.25);
+  padding: 15px 18px 14px;
+  position: relative;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge {
+  position: absolute; top: 11px; right: 13px;
+  font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+  font-family: var(--pc-font-sans);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh {
+  border-bottom: 2px solid #7a200d; padding-bottom: 0.35em; margin-bottom: 0.55em;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-name {
+  font-family: var(--pc-font-serif); color: #7a200d; font-size: var(--pc-fs-big);
+  font-weight: 700; letter-spacing: 1px; margin: 0; line-height: 1.15;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub {
+  font-style: italic; font-size: 13px; color: var(--pc-text-primary); margin-top: 2px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
+  font-style: italic; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  color: var(--pc-text-soft); line-height: 1.55; margin: 0.2em 0 0.7em;
+}
+/* glance tiles */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-glance { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tile {
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-parchment-light); padding: 5px 10px 6px; min-width: 78px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tl {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tv {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  font-size: 15px; line-height: 1.05; display: flex; align-items: baseline; gap: 5px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
+}
+/* section rule */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec-l {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec-r {
+  margin-left: auto; font-size: 9px; letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted);
+}
+
+/* ── Decision strip (hairline all-around borders — NO side bars) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip { display: flex; flex-direction: column; gap: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row {
+  display: flex; align-items: baseline; gap: 9px; padding: 6px 9px;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); flex-wrap: wrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-pill {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 18px; border-radius: 9px; padding: 0 7px;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-name {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
+  margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; }
+/* resolved */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done { border-color: var(--pc-rarity-uncommon); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-pill {
+  background: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon); color: #fff;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-val { color: var(--pc-rarity-uncommon); }
+/* open (live unresolved) */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open { border-color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open .pc-dstrip-pill {
+  background: var(--pc-amber); border-color: var(--pc-amber); color: var(--pc-parchment-light);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open .pc-dstrip-val { color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-bang {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; align-self: center;
+  background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700;
+}
+/* browse-required + info */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req { border-color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-pill {
+  background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-val { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info .pc-dstrip-val { color: var(--pc-crimson); cursor: pointer; }
+/* An expandable info row (e.g. Origin Feat) is clickable across its whole width. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info.expandable { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-tlabel {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft); margin-bottom: 5px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
+  font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
+}
+/* Long-list browse ghost (.pc-bcadd idiom): compact dashed, auto-width — NEVER
+   full-width. Opens the filtered picker modal for huge candidate lists. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse {
+  display: inline-block; width: auto; margin-top: 5px;
+  background: transparent; border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700;
+  font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  padding: 5px 14px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse:hover {
+  border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
+}
+
+/* ── Collapsible folds (Progression / Features / Equipment) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold { border-top: 1px solid var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h { display: flex; align-items: center; gap: 9px; padding: 9px 2px 8px; cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev { flex: none; width: 11px; color: var(--pc-crimson); font-size: 9px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-body { padding: 2px 2px 6px; }
+
+/* ── Progression table (1–20, dynamic columns — cast-table idiom) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r { display: grid; gap: 0; align-items: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h { border-bottom: 1px solid var(--pc-tan-muted); align-items: end; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h > span {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; padding: 6px 5px 4px; white-space: nowrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r > span {
+  padding: 5px; border-bottom: 1px dashed var(--pc-tan-muted); color: var(--pc-text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r:last-child > span { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-lvl { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-pb { font-family: var(--pc-font-serif); text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat { font-family: var(--pc-font-serif); color: var(--pc-text-primary); white-space: normal; line-height: 1.35; overflow: visible; text-overflow: clip; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat .asi { color: var(--pc-amber); font-style: italic; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat .sub { color: var(--pc-crimson); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-n { text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slotrow { display: flex; gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slotrow .pc-cb-pt-s { flex: 1; min-width: 0; text-align: center; font-variant-numeric: tabular-nums; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-s.z { color: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slots-t { display: block; text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r.cur > span { background: rgba(146, 38, 16, 0.07); border-bottom-color: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r.cur .pc-cb-pt-lvl { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r:nth-child(even):not(.cur) > span { background: rgba(232, 213, 176, 0.28); }
+
+/* trait rows + prop lines (race/background/class share these) */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait { padding: 6px 0 8px; border-bottom: 1px dashed var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-meta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; white-space: pre-line; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }
+/* timeline */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-timeline { position: relative; margin-left: 6px; padding-left: 26px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-timeline::before { content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px; background: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle { position: relative; padding: 6px 0 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked { opacity: 0.66; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-med { position: absolute; left: -26px; top: 4px; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--pc-tan-muted); background: #f0ddbd; display: inline-flex; align-items: center; justify-content: center; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); z-index: 1; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.have .pc-cb-med { border-color: #7a200d; background: var(--pc-parchment-light); color: #7a200d; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.cur .pc-cb-med { background: var(--pc-crimson); border-color: #7a200d; color: var(--pc-parchment-light); box-shadow: 0 1px 5px rgba(122, 32, 13, 0.45); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn { color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fmeta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fd { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* scope bar + equipment options */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-scope { display: flex; align-items: baseline; gap: 9px; margin: 2px 0 9px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-scope-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ghost { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt { display: flex; align-items: flex-start; gap: 9px; padding: 7px 10px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); margin-bottom: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqltr { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--pc-tan-muted); display: inline-flex; align-items: center; justify-content: center; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqtext { font-size: var(--pc-fs-body); color: var(--pc-text-primary); line-height: 1.45; }
+
+/* ── Builder modals (Add-Class + long-list decision picker) ──────────────────
+ * Modal-scoped so .pc-b{class,decide}-modal beats Obsidian's .modal button.
+ * The chrome rules (title / scroll / foot / hint / add) are shared by both
+ * modals via :is(); the claim bar is Add-Class-only; the decide count/Done sit
+ * under .pc-bdecide-modal below. */
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-heading); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); border-bottom: 1px solid var(--pc-tan); padding-bottom: 6px; margin: 0 0 10px; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-scroll { max-height: 62vh; overflow-y: auto; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-foot { display: flex; align-items: center; gap: 8px; padding-top: 11px; margin-top: 11px; border-top: 1px solid var(--pc-tan); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add:hover { background: var(--pc-crimson-light); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add:disabled { background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed; }
+.pc-bclass-modal .pc-bcm-claim { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 13px; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1.5px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 11px 16px; cursor: pointer; }
+.pc-bclass-modal .pc-bcm-claim:hover { background: var(--pc-crimson-light); }
+
+/* Decide-modal footer: live count on the left, crimson Done (close-only) right. */
+.pc-bdecide-modal .pc-bdecide-count { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+.pc-bdecide-modal .pc-bdecide-done { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+.pc-bdecide-modal .pc-bdecide-done:hover { background: var(--pc-crimson-light); }
+
+/* ── SP2 Plan 5: Class step — chosen-class card stack ──────────────────────── */
+.archivist-pc-sheet .pc-bcempty { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-body); color: var(--pc-text-muted); margin: 14px 0 6px; text-align: center; }
+.archivist-pc-sheet .pc-bcadd-wrap { display: flex; margin: 10px 0; }
+.archivist-pc-sheet .pc-bcadd-wrap.hero { justify-content: center; padding: 18px 0 6px; }
+.archivist-pc-sheet .pc-bcadd { background: transparent; border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 7px 16px; cursor: pointer; width: auto; }
+.archivist-pc-sheet .pc-bcadd-wrap.hero .pc-bcadd { padding: 11px 22px; font-size: var(--pc-fs-heading); letter-spacing: var(--pc-ls-caps-md); }
+.archivist-pc-sheet .pc-bcadd:hover { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bcstack { display: flex; flex-direction: column; gap: 9px; margin: 0 0 4px; }
+.archivist-pc-sheet .pc-bccard { border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); background: var(--pc-parchment-light); box-shadow: 0 2px 8px rgba(134, 116, 83, 0.18); overflow: hidden; }
+.archivist-pc-sheet .pc-bccard-h { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: rgba(146, 38, 16, 0.07); border-bottom: 1px solid var(--pc-tan-muted); cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-seal { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--pc-crimson); border: 1px solid #7a200d; color: var(--pc-parchment-light); font-size: var(--pc-fs-micro); box-shadow: 0 1px 3px rgba(122, 32, 13, 0.4); }
+.archivist-pc-sheet .pc-bccard-nm { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-title); line-height: 1.1; }
+.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--pc-tan-muted); border-radius: 5px; background: var(--pc-parchment-light); padding: 2px 5px 2px 8px; }
+.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
+.archivist-pc-sheet .pc-bccard-rgt { margin-left: auto; display: inline-flex; align-items: center; gap: 11px; flex: none; }
+.archivist-pc-sheet .pc-bccard-rm { font-family: var(--pc-font-sans); font-size: 8.5px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm:hover { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bccard-chev { flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); }
+.archivist-pc-sheet .pc-bccard-body { padding: 10px 12px 12px; }
+.archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
+.archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
+
+/* ── Builder footer Next-gate hint + rail class badge (SP2 Plan 5 / Task 13) ── */
+.archivist-pc-sheet .pc-builder-foot-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); margin-left: auto; }
+.archivist-pc-sheet .pc-builder-foot-hint + .pc-builder-next { margin-left: 8px; }
+.archivist-pc-sheet .pc-builder-step-badge { flex-basis: 100%; padding-left: 22px; font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); color: var(--pc-text-muted); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; }
+.archivist-pc-sheet .pc-builder-step { flex-wrap: wrap; }
