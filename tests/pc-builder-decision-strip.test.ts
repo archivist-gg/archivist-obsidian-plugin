@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../src/modules/pc/components/builder/decision-strip";
+import { DecisionPickModal } from "../src/modules/pc/components/builder/decision-modal";
 import type { DecisionItem, ResolvedOption } from "../src/modules/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
@@ -200,7 +201,7 @@ describe("renderDecisionStrip", () => {
       status: selected.length >= 3 ? "resolved" : "unresolved",
     });
 
-  it("a select-entity item with >12 candidates renders chips + Browse ghost, NO inline table", () => {
+  it("a select-entity item with >12 candidates and picks renders chips + inline Change ghost, NO inline table", () => {
     const c = mountContainer();
     renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
       items: [bigEntityItem(70, ["w-0", "w-1"])],
@@ -210,9 +211,52 @@ describe("renderDecisionStrip", () => {
     expect(nest.querySelector(".pc-btable")).toBeNull();                 // no inline table
     expect(nest.querySelector(".pc-dstrip-tlabel")!.textContent).toContain("choose 3");
     expect(nest.querySelectorAll(".pc-bchoice-chip.sel").length).toBe(2); // current picks as chips
+    // smoke r4: with picks made, the ghost is a compact inline "Change ▸" living
+    // on the chips line (not a prominent "Browse all N").
     const browse = nest.querySelector(".pc-dstrip-browse") as HTMLElement;
     expect(browse).not.toBeNull();
+    expect(browse.classList.contains("compact")).toBe(true);
+    expect(browse.textContent).toContain("Change ▸");
+    expect(browse.textContent).not.toContain("Browse all");
+    expect(browse.parentElement!.classList.contains("pc-bchoice-chips")).toBe(true); // same line as chips
+  });
+
+  it("an UNRESOLVED long-list (no picks) renders the prominent 'Browse all N ▸' ghost, no chips", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [bigEntityItem(70)],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const nest = c.querySelector(".pc-dstrip-nest")!;
+    expect(nest.querySelector(".pc-btable")).toBeNull();
+    expect(nest.querySelectorAll(".pc-bchoice-chip.sel").length).toBe(0);
+    const browse = nest.querySelector(".pc-dstrip-browse") as HTMLElement;
+    expect(browse).not.toBeNull();
+    expect(browse.classList.contains("compact")).toBe(false);
     expect(browse.textContent).toContain("Browse all 70");
+  });
+
+  it("the ghost opens the DecisionPickModal in BOTH the unresolved and resolved modes", () => {
+    const openSpy = vi.spyOn(DecisionPickModal.prototype, "open").mockImplementation(() => {});
+    try {
+      // Unresolved: "Browse all N ▸" opens the modal.
+      const c1 = mountContainer();
+      renderDecisionStrip(c1, mkCtx({ setChoice: vi.fn() }), {
+        items: [bigEntityItem(70)], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+      });
+      (c1.querySelector(".pc-dstrip-browse") as HTMLElement).click();
+      expect(openSpy).toHaveBeenCalledTimes(1);
+
+      // Resolved: the compact "Change ▸" opens the same modal.
+      const c2 = mountContainer();
+      renderDecisionStrip(c2, mkCtx({ setChoice: vi.fn() }), {
+        items: [bigEntityItem(70, ["w-0", "w-1"])], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+      });
+      (c2.querySelector(".pc-dstrip-browse.compact") as HTMLElement).click();
+      expect(openSpy).toHaveBeenCalledTimes(2);
+    } finally {
+      openSpy.mockRestore();
+    }
   });
 
   it("a select-entity item with ≤12 candidates still renders the inline table (regression pin)", () => {
@@ -342,6 +386,45 @@ describe("renderDecisionStrip", () => {
     expect(fc.querySelector(".pc-dstrip-fc-flag")!.textContent).toBe("!");
     expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Skills — choose 3 · 1 picked");
     expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(4);
+  });
+
+  // ── child long-list header (smoke r4) ──
+  // A feat CHILD whose registry-backed entity pick has a long candidate list
+  // (the flat L4 → Feat → Magic Initiate nesting) must NOT re-emit the
+  // parent-derived `.pc-dstrip-tlabel` header inside the child: the
+  // `.pc-dstrip-fcl` sub-label (childLabel → "Feat") already precedes the
+  // control. The control must NEVER surface the inherited parent featureName.
+  it("a long-list feat CHILD suppresses the tlabel and never shows the parent featureName", () => {
+    const c = mountContainer();
+    const featChild = item({
+      key: "feat", source: { kind: "class" } as never, level: 4,
+      featureName: "Ability Score Improvement",        // inherited parent name — must NOT leak
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      options: Array.from({ length: 18 }, (_, i) => entityOpt(`feat-${i}`)),  // long list
+      selected: undefined, status: "unresolved",
+    });
+    const parent = item({
+      key: "asi-or-feat", source: { kind: "class" } as never, level: 4,
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-inline", id: "asi-or-feat", count: 1, options: [] } as never,
+      options: [{ value: "feat", label: "Take a Feat" }], selected: "feat",
+      status: "partial", children: [featChild],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const fc = [...c.querySelectorAll(".pc-dstrip-fgroup .pc-dstrip-fc")].find((r) =>
+      r.querySelector(".pc-dstrip-browse"),
+    )!;
+    expect(fc).not.toBeUndefined();
+    // The child's own sub-label names the sub-choice (childLabel → "Feat").
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Feat");
+    // No parent-derived caps header inside the child…
+    expect(fc.querySelector(".pc-dstrip-tlabel")).toBeNull();
+    // …and the inherited parent featureName never appears anywhere in the child.
+    expect(fc.textContent).not.toContain("Ability Score Improvement");
+    // The long-list ghost still renders (unresolved → "Browse all 18 ▸").
+    expect((fc.querySelector(".pc-dstrip-browse") as HTMLElement).textContent).toContain("Browse all 18");
   });
 
   it("grandchildren FLATTEN into one group (Skilled-shaped): no nested .pc-dstrip-row borders", () => {

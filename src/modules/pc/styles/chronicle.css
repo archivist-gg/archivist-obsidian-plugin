@@ -131,6 +131,12 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse:hover {
   border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
 }
+/* Compact inline variant (smoke r4): once a pick is made, the ghost sits on the
+   chips line as a small "Change ▸" — no top margin, snug padding — so children
+   of a chosen feat follow the selection, not the browse button. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse.compact {
+  margin-top: 0; padding: 3px 9px; align-self: center;
+}
 
 /* ── SP2 Plan 5: nested decisions — flat child group (Variant II sans pathline) ──
  * Children of a decision render as ONE flat group inside the parent's nest: NO

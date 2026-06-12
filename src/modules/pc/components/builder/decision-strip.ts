@@ -95,7 +95,7 @@ function renderRow(
   row.createSpan({ cls: "pc-dstrip-val", text: done ? `✓ ${selectedSummary(item)}` : statusText(item) });
   if (opts.live) {
     const nest = row.createDiv({ cls: "pc-dstrip-nest" });
-    renderControl(nest, ctx, item, opts);
+    renderControl(nest, ctx, item, opts, false);
     // SP2 Plan 5 (Variant II sans pathline): children render as a FLAT group
     // inside the parent's nest — no own borders, no own pills. Each child is a
     // named sub-choice; grandchildren flatten into the same group with a modest
@@ -130,7 +130,12 @@ function renderChildRow(
   label.createSpan({ cls: "pc-dstrip-fc-name", text: childLabel(item) });
   if (done) label.createSpan({ cls: "pc-dstrip-fc-ok", text: "✓" });
 
-  renderControl(fc, ctx, item, opts);
+  // inChild = true: the `.pc-dstrip-fcl` sub-label above already names this
+  // sub-choice (via childLabel — carrying the "— choose N" requirement), so the
+  // long-list control must NOT re-emit its own `.pc-dstrip-tlabel` header
+  // (which is parent-derived from labelOf and would read "FEAT FEAT" / surface
+  // the inherited parent featureName). The control suppresses it in child scope.
+  renderControl(fc, ctx, item, opts, true);
 
   // Grandchildren flatten into the SAME group (no nested border), one indent
   // step deeper so the lineage still reads.
@@ -250,6 +255,7 @@ function renderControl(
   ctx: ComponentRenderContext,
   item: DecisionItem,
   opts: DecisionStripOptions,
+  inChild: boolean,
 ): void {
   const ch = item.choice;
 
@@ -267,7 +273,11 @@ function renderControl(
     // Candidates ride on the options the engine already resolved (each carries
     // its `.entity`); there is no separate registry pass here.
     const candidates = item.options.flatMap((o) => (o.entity ? [o.entity] : []));
-    nest.createDiv({ cls: "pc-dstrip-tlabel", text: `${labelOf(item)} — choose ${need}` });
+    // Top-level only: the parent-derived caps header. In child scope the
+    // `.pc-dstrip-fcl` sub-label (childLabel) already precedes this control and
+    // carries the requirement, so re-emitting tlabel would duplicate the label
+    // and leak the inherited parent featureName ("FEAT FEAT").
+    if (!inChild) nest.createDiv({ cls: "pc-dstrip-tlabel", text: `${labelOf(item)} — choose ${need}` });
     // Zero resolved candidates → a quiet line, not the full table chrome.
     if (candidates.length === 0) {
       nest.createDiv({ cls: "pc-dstrip-empty", text: "No options available in your vault yet." });
@@ -317,11 +327,14 @@ function renderControl(
   }
 }
 
-/** Long-list dress for a registry-backed entity pick: the current picks as
- *  removable sel chips + a compact dashed ghost (the `.pc-bcadd` idiom, never
- *  full-width) that opens the filtered picker modal. Removal and modal toggles
- *  share the same applyChoiceToggle + writeValue path the inline table uses, so
- *  the sheet re-render rebuilds the strip with the new picks. */
+/** Long-list dress for a registry-backed entity pick. Two modes (smoke r4):
+ *  - UNRESOLVED (nothing picked) → the prominent dashed ghost `Browse all N ▸`
+ *    where the chips would be, inviting the first pick.
+ *  - RESOLVED (pick made) → the chosen chip(s) plus a COMPACT inline `Change ▸`
+ *    ghost on the SAME line, so any sub-decisions that follow visually attach to
+ *    the selection, not the browse button.
+ *  Both open the same DecisionPickModal; chip removal and modal writes share the
+ *  applyChoiceToggle + writeValue path so the sheet re-render rebuilds the strip. */
 function renderLongListBrowse(
   nest: HTMLElement,
   ctx: ComponentRenderContext,
@@ -333,7 +346,18 @@ function renderLongListBrowse(
 ): void {
   const write = (): void =>
     writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
+  const openModal = (): void => {
+    new DecisionPickModal(ctx.app, ctx, {
+      title: `${labelOf(item)} — choose ${need}`,
+      need,
+      candidates,
+      initialSelected: [...selected],
+      writeValue: (value) => writeValue(ctx, item, opts, need === 1 ? (value[0] ?? null) : value),
+      stateKey: `${opts.stateKey}.${item.level}.${item.key}.modal`,
+    }).open();
+  };
 
+  // Resolved: chips + a compact inline "Change ▸" ghost on the same line.
   if (selected.size) {
     const chips = nest.createDiv({ cls: "pc-bchoice-chips" });
     for (const slug of selected) {
@@ -344,22 +368,17 @@ function renderLongListBrowse(
         write();
       });
     }
+    const change = chips.createEl("button", { cls: "pc-dstrip-browse compact", text: `Change ▸` });
+    change.addEventListener("click", openModal);
+    return;
   }
 
+  // Unresolved: the prominent dashed ghost where the chips would be.
   const browse = nest.createEl("button", {
     cls: "pc-dstrip-browse",
     text: `Browse all ${candidates.length} ▸`,
   });
-  browse.addEventListener("click", () => {
-    new DecisionPickModal(ctx.app, ctx, {
-      title: `${labelOf(item)} — choose ${need}`,
-      need,
-      candidates,
-      initialSelected: [...selected],
-      writeValue: (value) => writeValue(ctx, item, opts, need === 1 ? (value[0] ?? null) : value),
-      stateKey: `${opts.stateKey}.${item.level}.${item.key}.modal`,
-    }).open();
-  });
+  browse.addEventListener("click", openModal);
 }
 
 /** ±-stepper for ability-points: one cell per pool ability, always mounted.
