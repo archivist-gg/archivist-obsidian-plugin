@@ -82,11 +82,15 @@ function renderClassCard(
   sel.value = String(entry.level);
   sel.addEventListener("click", (ev) => ev.stopPropagation());
   sel.addEventListener("change", () => ctx.editState?.setClassLevel(index, Number(sel.value)));
+  // Resolve the picked subclass entity once: its name dresses the header here,
+  // and the same entity threads into the chronicle so its granted features fold
+  // into the timeline & progression (Fix A).
+  const subSlug = entry.subclass ? stripSlug(entry.subclass) : undefined;
+  const subclassEntity = subSlug ? ctx.core.entities.getByTypeAndSlug("subclass", subSlug) : undefined;
   if (entry.subclass) {
-    const sub = stripSlug(entry.subclass);
     h.createSpan({
       cls: "pc-bccard-sub",
-      text: (sub && ctx.core.entities.getByTypeAndSlug("subclass", sub)?.name) ?? humanizeSlug(sub ?? ""),
+      text: subclassEntity?.name ?? humanizeSlug(subSlug ?? ""),
     });
   }
   const rgt = h.createDiv({ cls: "pc-bccard-rgt" });
@@ -107,7 +111,7 @@ function renderClassCard(
   renderPrereqNote(cardBody, ctx, entity.data, index);
   renderClassChronicle(cardBody, ctx, {
     entity, level: entry.level, mode: "owned", classIndex: index, ledger,
-    stateKey: `builder.class-card.${index}`,
+    subclassEntity, stateKey: `builder.class-card.${index}`,
   });
 }
 

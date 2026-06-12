@@ -185,6 +185,10 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.cur .pc-cb-med { background: var(--pc-crimson); border-color: #7a200d; color: var(--pc-parchment-light); box-shadow: 0 1px 5px rgba(122, 32, 13, 0.45); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn { color: var(--pc-text-muted); }
+/* Subclass-granted timeline feature: a quiet crimson "· <Subclass>" attribution
+ * on the feature name (no border bars — tint + crimson only). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn .sub { color: var(--pc-crimson); font-weight: 600; font-size: var(--pc-fs-small); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn .sub { color: var(--pc-text-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fmeta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fd { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
 /* scope bar + equipment options */

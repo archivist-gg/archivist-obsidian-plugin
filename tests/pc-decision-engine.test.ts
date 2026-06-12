@@ -437,3 +437,131 @@ describe("buildDecisionLedger — chosen-feat children", () => {
     expect(sub.children).toBeUndefined();
   });
 });
+
+// ── subclass-pick guarantee (Fix B) ──────────────────────────────────────────
+//
+// The owned ledger must always offer the subclass pick once subclass_level is
+// reached — even for the one class (2024 Bard) whose runtime JSON lacks the
+// authored select-entity. The synthesized item filters candidates by
+// parent_class==="self" and writes through the SAME setSubclass path (key
+// "subclass", choice.entity_type "subclass") as the authored item.
+describe("buildDecisionLedger — subclass-pick guarantee", () => {
+  // Two Bard subclasses (parent_class → Bard) and one Fighter subclass (must be
+  // excluded by the parent_class==="self" filter).
+  const subclasses: RegisteredEntity[] = [
+    { slug: "srd-2024_college-of-lore", name: "College of Lore", entityType: "subclass", filePath: "lore.md",
+      data: { parent_class: "[[SRD 2024/Classes/Bard]]", features_by_level: {} },
+      compendium: "SRD 2024", readonly: true, homebrew: false },
+    { slug: "srd-2024_college-of-valor", name: "College of Valor", entityType: "subclass", filePath: "valor.md",
+      data: { parent_class: "[[SRD 2024/Classes/Bard]]", features_by_level: {} },
+      compendium: "SRD 2024", readonly: true, homebrew: false },
+    { slug: "srd-2024_champion", name: "Champion", entityType: "subclass", filePath: "champ.md",
+      data: { parent_class: "[[SRD 2024/Classes/Fighter]]", features_by_level: {} },
+      compendium: "SRD 2024", readonly: true, homebrew: false },
+  ];
+  const subRegistry = {
+    search: (_q: string, type: string) => subclasses.filter((s) => s.entityType === type),
+    getByTypeAndSlug: (type: string, slug: string) =>
+      subclasses.find((s) => s.entityType === type && s.slug === slug),
+  };
+
+  /** Bard-shaped resolved character: subclass_level 3, subclass_feature_name set,
+   *  NO authored subclass select-entity anywhere (the 2024 Bard gap). The L3
+   *  "Bard Subclass" feature is a plain feature (no choices). */
+  function resolvedBard(level: number, subclass: { slug: string } | null = null): ResolvedCharacter {
+    const subFeature = { id: "bard-subclass", name: "Bard Subclass", description: "You gain a Bard subclass." };
+    const entity = {
+      slug: "srd-2024_bard", name: "Bard",
+      skill_choices: { count: 3, from: ["arcana", "deception"] },
+      subclass_level: 3, subclass_feature_name: "Bard Subclass",
+      features_by_level: { 1: [], 3: [subFeature] }, starting_equipment: [],
+    };
+    const definition = {
+      name: "T", edition: "2024", race: null, subrace: null, background: null,
+      class: [{ name: "[[bard]]", level, subclass: subclass ? `[[${subclass.slug}]]` : null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual", skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] }, equipment: [], overrides: {}, origin_choices: {},
+      state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null,
+        conditions: [], exhaustion: 0, inspiration: 0, feature_uses: {} },
+    } as unknown as ResolvedCharacter["definition"];
+    const cls = { entity, level, subclass, choices: {} } as unknown as ResolvedCharacter["classes"][number];
+    const features = level >= 3
+      ? [{ feature: subFeature, source: { kind: "class", slug: entity.slug, level: 3 } }]
+      : [];
+    return { definition, race: null, classes: [cls], background: null, feats: [],
+      totalLevel: level, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+  }
+
+  it("synthesizes a subclass pick at subclass_level, filtered by parent_class, unresolved when unset", () => {
+    const ledger = buildDecisionLedger(resolvedBard(3), { registry: subRegistry } as never);
+    const items = ledger.classes[0].levels.flatMap((l) => l.items);
+    const sub = items.find((i) => i.key === "subclass")!;
+    expect(sub).toBeDefined();
+    expect(sub.level).toBe(3);
+    expect(sub.status).toBe("unresolved");
+    expect(sub.choice.kind).toBe("select-entity");
+    expect((sub.choice as { entity_type: string }).entity_type).toBe("subclass");
+    // Only the two Bard subclasses — the Fighter Champion is filtered out.
+    expect(sub.options.map((o) => o.value).sort())
+      .toEqual(["srd-2024_college-of-lore", "srd-2024_college-of-valor"]);
+  });
+
+  it("marks the synthesized pick resolved when ClassEntry.subclass is set", () => {
+    const ledger = buildDecisionLedger(
+      resolvedBard(5, { slug: "srd-2024_college-of-lore" }), { registry: subRegistry } as never);
+    const sub = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "subclass")!;
+    expect(sub.status).toBe("resolved");
+    expect(sub.selected).toBe("srd-2024_college-of-lore");
+  });
+
+  it("does NOT synthesize before subclass_level (class level 2 < 3)", () => {
+    const ledger = buildDecisionLedger(resolvedBard(2), { registry: subRegistry } as never);
+    const sub = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "subclass");
+    expect(sub).toBeUndefined();
+  });
+
+  it("emits exactly ONE subclass row when the class authors its own select-entity (no duplicate)", () => {
+    // Cleric-shaped: the L3 feature carries the authored subclass select-entity,
+    // so the guarantee must NOT add a second row (mirrors the browse-walker
+    // 'Cleric Subclass' vs 'Cleric Subclasses' dedupe regression case).
+    const authoredFeature = {
+      id: "divine-domain", name: "Divine Domain", description: "Choose a domain.",
+      choices: [{ kind: "select-entity", id: "subclass", count: 1, entity_type: "subclass",
+        where: { parent_class: "self" } }],
+    };
+    const entity = {
+      slug: "srd-2024_cleric", name: "Cleric",
+      skill_choices: { count: 2, from: ["history", "religion"] },
+      subclass_level: 3, subclass_feature_name: "Cleric Subclass",
+      features_by_level: { 3: [authoredFeature] }, starting_equipment: [],
+    };
+    const definition = {
+      name: "T", edition: "2024", race: null, subrace: null, background: null,
+      class: [{ name: "[[cleric]]", level: 3, subclass: null, choices: {} }],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      ability_method: "manual", skills: { proficient: [], expertise: [] },
+      spells: { known: [], overrides: [] }, equipment: [], overrides: {}, origin_choices: {},
+      state: { hp: { current: 1, max: 1, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null,
+        conditions: [], exhaustion: 0, inspiration: 0, feature_uses: {} },
+    } as unknown as ResolvedCharacter["definition"];
+    const cls = { entity, level: 3, subclass: null, choices: {} } as unknown as ResolvedCharacter["classes"][number];
+    const features = [{ feature: authoredFeature, source: { kind: "class", slug: entity.slug, level: 3 } }];
+    const resolved = { definition, race: null, classes: [cls], background: null, feats: [],
+      totalLevel: 3, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+    // A cleric subclass so the authored where-filter has a candidate.
+    const clericSub: RegisteredEntity = { slug: "srd-2024_life-domain", name: "Life Domain",
+      entityType: "subclass", filePath: "life.md",
+      data: { parent_class: "[[SRD 2024/Classes/Cleric]]", features_by_level: {} },
+      compendium: "SRD 2024", readonly: true, homebrew: false };
+    const reg = {
+      search: (_q: string, type: string) => (type === "subclass" ? [clericSub] : []),
+      getByTypeAndSlug: (type: string, slug: string) =>
+        type === "subclass" && slug === clericSub.slug ? clericSub : undefined,
+    };
+    const ledger = buildDecisionLedger(resolved, { registry: reg } as never);
+    const subs = ledger.classes[0].levels.flatMap((l) => l.items).filter((i) => i.key === "subclass");
+    expect(subs).toHaveLength(1);
+    expect(subs[0].featureName).toBe("Divine Domain"); // the authored row, not a synthesized "Cleric Subclass"
+  });
+});

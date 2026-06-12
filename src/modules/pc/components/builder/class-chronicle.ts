@@ -29,6 +29,23 @@ export interface ClassData {
 
 export interface BrowseDecision { level: number; name: string }
 
+/** A class-entity feature as it appears in the per-level arrays the timeline /
+ *  progression render from. Class `features_by_level` is typed inline on
+ *  ClassData; subclass features arrive as the shared `Feature` shape — both
+ *  narrow to this minimal structural view. */
+export interface ChronicleFeature { id?: string; name: string; description?: string; choices?: unknown[] }
+
+/** Structural view of a subclass runtime entity (subclass.types.ts) — only the
+ *  fields the class card consumes when merging granted features. */
+export interface SubclassData {
+  name?: string;
+  features_by_level?: Record<number, ChronicleFeature[]>;
+}
+
+/** One merged-feature entry: the feature plus whether it was granted by the
+ *  picked subclass (true) or the base class (false). */
+export interface MergedFeature { f: ChronicleFeature; fromSubclass: boolean }
+
 export interface ClassChronicleOptions {
   entity: RegisteredEntity;
   /** Scoping level: owned → the class entry's level; browse → 1. */
@@ -38,6 +55,10 @@ export interface ClassChronicleOptions {
   classIndex?: number;
   /** Owned only: a prebuilt ledger (the card stack builds one for all cards). */
   ledger?: DecisionLedger;
+  /** Owned only: the picked subclass's registered entity, when the entry has a
+   *  subclass. Its granted features fold into the card's timeline & progression
+   *  (Fix A). Browse mode stays class-only — never supply this there. */
+  subclassEntity?: RegisteredEntity;
   stateKey: string;
 }
 
@@ -82,6 +103,40 @@ export function collectBrowseDecisions(d: ClassData): BrowseDecision[] {
     out.push({ level: d.subclass_level, name: d.subclass_feature_name ?? "Subclass" });
   }
   return out.sort((a, b) => a.level - b.level);
+}
+
+/** The UNGATED union of a class's and its picked subclass's `features_by_level`,
+ *  keyed by level (every level 1–20 that either grants a feature). Each entry is
+ *  tagged `fromSubclass` so the card can dress subclass-granted features
+ *  distinctly (crimson `.sub`).
+ *
+ *  This is a DIFFERENT projection from the resolver's level-gated merge
+ *  (pc.resolver collectResolvedFeatures, which drops levels above the character
+ *  level): the class card's timeline & progression deliberately show FUTURE
+ *  levels (locked/ahead rows), so this union keeps all levels and lets the
+ *  renderer scope by `level` for display. Pure over (classData, subclassData). */
+export function mergedFeaturesByLevel(
+  classData: ClassData,
+  subclassData: SubclassData | undefined,
+): Record<number, MergedFeature[]> {
+  const out: Record<number, MergedFeature[]> = {};
+  const add = (src: Record<number, ChronicleFeature[]> | undefined, fromSubclass: boolean): void => {
+    for (const [lvlStr, feats] of Object.entries(src ?? {})) {
+      const lvl = Number(lvlStr);
+      const arr = (out[lvl] ??= []);
+      for (const f of feats) arr.push({ f, fromSubclass });
+    }
+  };
+  add(classData.features_by_level, false);
+  add(subclassData?.features_by_level, true);
+  return out;
+}
+
+/** Narrow a subclass RegisteredEntity to the fields the card consumes. The
+ *  registry's `data` (Record<string, unknown>) structurally satisfies the
+ *  all-optional SubclassData view, so no cast is needed. */
+function subclassDataOf(opts: ClassChronicleOptions): SubclassData | undefined {
+  return opts.subclassEntity?.data;
 }
 
 export function renderClassChronicle(host: HTMLElement, ctx: ComponentRenderContext, opts: ClassChronicleOptions): void {
@@ -172,7 +227,7 @@ function renderFold(parent: HTMLElement, ctx: ComponentRenderContext, stateKey: 
 
 function renderFolds(block: HTMLElement, ctx: ComponentRenderContext, d: ClassData, opts: ClassChronicleOptions): void {
   const browse = opts.mode === "browse";
-  renderFold(block, ctx, opts.stateKey, { id: "prog", label: "Progression · Levels 1–20", defaultOpen: false, body: (h) => renderProgression(h, d, opts.level) });
+  renderFold(block, ctx, opts.stateKey, { id: "prog", label: "Progression · Levels 1–20", defaultOpen: false, body: (h) => renderProgression(h, d, opts.level, subclassDataOf(opts)) });
   renderFold(block, ctx, opts.stateKey, { id: "feats", label: "Features by level", right: "filled = gained · hollow = ahead", defaultOpen: browse, body: (h) => renderFeatureTimeline(h, ctx, d, opts) });
   renderFold(block, ctx, opts.stateKey, { id: "equip", label: "Equipment & proficiencies", defaultOpen: false, body: (h) => renderProfsEquipment(h, d) });
 }
@@ -195,7 +250,7 @@ export function tableColumns(table: NonNullable<ClassData["table"]>): { scalars:
   return { scalars, slots };
 }
 
-function renderProgression(host: HTMLElement, d: ClassData, level: number): void {
+function renderProgression(host: HTMLElement, d: ClassData, level: number, subclassData?: SubclassData): void {
   const table = d.table;
   if (!table || !Object.keys(table).length) {
     host.createDiv({ cls: "pc-dstrip-empty", text: "No progression table in this class's data." });
@@ -220,7 +275,7 @@ function renderProgression(host: HTMLElement, d: ClassData, level: number): void
     row.style.gridTemplateColumns = tracks;
     row.createSpan({ cls: "pc-cb-pt-lvl", text: String(lvl) });
     row.createSpan({ cls: "pc-cb-pt-pb", text: `+${r.prof_bonus}` });
-    renderFeatureNames(row.createSpan({ cls: "pc-cb-pt-feat" }), d, lvl, r.feature_ids);
+    renderFeatureNames(row.createSpan({ cls: "pc-cb-pt-feat" }), d, lvl, r.feature_ids, subclassData);
     for (const k of scalars) row.createSpan({ cls: "pc-cb-pt-n", text: String(r.columns?.[k] ?? "—") });
     if (slots.length) {
       const cell = row.createSpan({ cls: "pc-cb-pt-slotrow" });
@@ -233,21 +288,39 @@ function renderProgression(host: HTMLElement, d: ClassData, level: number): void
   }
 }
 
-function renderFeatureNames(cell: HTMLElement, d: ClassData, lvl: number, ids: string[]): void {
-  if (!ids.length) { cell.setText("—"); return; }
+function renderFeatureNames(
+  cell: HTMLElement,
+  d: ClassData,
+  lvl: number,
+  ids: string[],
+  subclassData?: SubclassData,
+): void {
+  const subFeats = subclassData?.features_by_level?.[lvl] ?? [];
+  if (!ids.length && !subFeats.length) { cell.setText("—"); return; }
   const feats = d.features_by_level?.[lvl] ?? [];
-  ids.forEach((id, i) => {
+  let written = 0;
+  ids.forEach((id) => {
     const f = feats.find((x) => x.id === id);
     const name = f?.name ?? humanizeSlug(id);
+    // The class "subclass feature" placeholder (e.g. "Bard Subclass") wears the
+    // crimson `.sub` dress too — it's where the subclass is chosen.
     const isSub = name === (d.subclass_feature_name ?? "");
     const isAsi = /ability score improvement|epic boon/i.test(name);
-    cell.createSpan({ cls: isSub ? "sub" : isAsi ? "asi" : "", text: `${i ? ", " : ""}${name}` });
+    cell.createSpan({ cls: isSub ? "sub" : isAsi ? "asi" : "", text: `${written++ ? ", " : ""}${name}` });
   });
+  // Subclass-granted features (Fix A) append at their levels, crimson `.sub`.
+  for (const f of subFeats) {
+    cell.createSpan({ cls: "sub", text: `${written++ ? ", " : ""}${f.name}` });
+  }
 }
 
 function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d: ClassData, opts: ClassChronicleOptions): void {
-  const all = Object.entries(d.features_by_level ?? {})
-    .flatMap(([lvl, feats]) => feats.map((f) => ({ lvl: Number(lvl), f })))
+  // Merged class + (owned) picked-subclass features, ungated; the scope filter
+  // below applies the level window. Subclass features wear a crimson attribution.
+  const subName = subclassDataOf(opts)?.name ?? opts.subclassEntity?.name;
+  const merged = mergedFeaturesByLevel(d, subclassDataOf(opts));
+  const all = Object.entries(merged)
+    .flatMap(([lvl, entries]) => entries.map((m) => ({ lvl: Number(lvl), f: m.f, fromSubclass: m.fromSubclass })))
     .sort((a, b) => a.lvl - b.lvl);
   if (!all.length) {
     host.createDiv({ cls: "pc-dstrip-empty", text: "No feature data for this class." });
@@ -266,11 +339,14 @@ function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d
     renderFeatureTimeline(host, ctx, d, opts);
   });
   const tl = host.createDiv({ cls: "pc-cb-timeline" });
-  for (const { lvl, f } of scoped) {
+  for (const { lvl, f, fromSubclass } of scoped) {
     const state = lvl === opts.level ? "cur" : lvl < opts.level ? "have" : "locked";
     const e = tl.createDiv({ cls: `pc-cb-tle ${state}` });
     e.createSpan({ cls: "pc-cb-med", text: String(lvl) });
     const n = e.createDiv({ cls: "pc-cb-fn", text: f.name });
+    // Subclass-granted features get a quiet crimson attribution suffix so they
+    // read as "from <Subclass>", distinct from base-class features.
+    if (fromSubclass) n.createSpan({ cls: "sub", text: subName ? ` · ${subName}` : " · Subclass" });
     if ((f.choices?.length ?? 0) > 0) n.createSpan({ cls: "pc-cb-fmeta", text: "▸ decision" });
     if (f.description) {
       const head = firstSentence(f.description);

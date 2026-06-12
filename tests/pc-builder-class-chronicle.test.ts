@@ -6,8 +6,10 @@ import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 import {
   renderClassChronicle,
   collectBrowseDecisions,
+  mergedFeaturesByLevel,
   tableColumns,
   type ClassData,
+  type SubclassData,
 } from "../src/modules/pc/components/builder/class-chronicle";
 import type { DecisionLedger } from "../src/modules/pc/pc.decision-engine";
 
@@ -100,6 +102,33 @@ const mkCtx = (): ComponentRenderContext =>
     editState: null,
     builderUiState: new Map(),
   }) as unknown as ComponentRenderContext;
+
+/** College-of-Lore-shaped subclass data: features at the Bard subclass levels
+ *  (3, 6, 14). Used for the Fix-A merge tests. */
+function loreSubclassData(): SubclassData {
+  return {
+    name: "College of Lore",
+    features_by_level: {
+      3: [{ id: "bonus-proficiencies", name: "Bonus Proficiencies", description: "You gain proficiency with three skills." },
+        { id: "cutting-words", name: "Cutting Words", description: "You can use your wit to distract." }],
+      6: [{ id: "magical-discoveries", name: "Magical Discoveries", description: "You learn two spells." }],
+      14: [{ id: "peerless-skill", name: "Peerless Skill", description: "You can expend a use of Bardic Inspiration." }],
+    },
+  };
+}
+
+function loreSubclassEntity(): RegisteredEntity {
+  return {
+    slug: "srd-2024_college-of-lore",
+    name: "College of Lore",
+    entityType: "subclass",
+    filePath: "Compendium/Subclasses/College of Lore.md",
+    data: loreSubclassData() as unknown as Record<string, unknown>,
+    compendium: "SRD 5.2",
+    readonly: true,
+    homebrew: false,
+  };
+}
 
 /** Minimal Cleric-shaped runtime class entity (mirrors the 2024 class JSON).
  *  Here `subclass_feature_name` ("Cleric Subclass", singular) differs from the
@@ -287,5 +316,96 @@ describe("equipment & proficiencies fold", () => {
       .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment")!;
     expect(equipProp.textContent).toContain("Leather Armor");
     expect(equipProp.textContent).toContain("Dagger");
+  });
+});
+
+// ── Fix A: subclass granted features in the class card ────────────────────────
+
+describe("mergedFeaturesByLevel", () => {
+  it("unions class + subclass features ungated, tagging subclass entries", () => {
+    const merged = mergedFeaturesByLevel(bardData(), loreSubclassData());
+    // L3 carries the class "Bard Subclass" placeholder + the two Lore L3 features.
+    const l3 = merged[3];
+    expect(l3.map((m) => m.f.name)).toEqual(
+      expect.arrayContaining(["Bard Subclass", "Bonus Proficiencies", "Cutting Words"]));
+    expect(l3.find((m) => m.f.name === "Bard Subclass")!.fromSubclass).toBe(false);
+    expect(l3.find((m) => m.f.name === "Cutting Words")!.fromSubclass).toBe(true);
+    // L14 has no class feature but a subclass one — ungated, so it's present.
+    expect(merged[14].map((m) => m.f.name)).toEqual(["Peerless Skill"]);
+    expect(merged[14][0].fromSubclass).toBe(true);
+  });
+
+  it("returns class-only features when no subclass is supplied", () => {
+    const merged = mergedFeaturesByLevel(bardData(), undefined);
+    expect(Object.values(merged).flat().every((m) => !m.fromSubclass)).toBe(true);
+    expect(merged[14]).toBeUndefined(); // class has no L14 feature
+  });
+});
+
+describe("feature timeline — subclass features (owned)", () => {
+  const openFeatures = (c: HTMLElement) => {
+    const fold = [...c.querySelectorAll(".pc-cb-fold-h")].find((h) => h.textContent!.includes("Features by level"))!;
+    (fold as HTMLElement).click();
+  };
+
+  it("folds picked-subclass features into the timeline with a crimson attribution", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), {
+      entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(),
+      subclassEntity: loreSubclassEntity(), stateKey: "t",
+    });
+    openFeatures(c);
+    const tles = [...c.querySelectorAll(".pc-cb-tle")];
+    // Cutting Words (subclass, L3 ≤ 5) is present and wears the .sub attribution.
+    const cutting = tles.find((e) => e.textContent!.includes("Cutting Words"))!;
+    expect(cutting).toBeDefined();
+    const sub = cutting.querySelector(".pc-cb-fn .sub")!;
+    expect(sub.textContent).toContain("College of Lore");
+  });
+
+  it("level-scopes the merged set: subclass features above the level are hidden until show-all", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), {
+      entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(),
+      subclassEntity: loreSubclassEntity(), stateKey: "t",
+    });
+    openFeatures(c);
+    // Peerless Skill (subclass, L14 > 5) is hidden under the level scope…
+    expect([...c.querySelectorAll(".pc-cb-tle")].some((e) => e.textContent!.includes("Peerless Skill"))).toBe(false);
+    // …and revealed (locked) once show-all is toggled.
+    (c.querySelector(".pc-cb-ghost") as HTMLElement).click();
+    const peerless = [...c.querySelectorAll(".pc-cb-tle")].find((e) => e.textContent!.includes("Peerless Skill"))!;
+    expect(peerless).toBeDefined();
+    expect(peerless.classList.contains("locked")).toBe(true);
+  });
+
+  it("browse mode never injects subclass features (no subclassEntity threaded)", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 3, mode: "browse", stateKey: "t" });
+    // features fold is open by default in browse
+    expect([...c.querySelectorAll(".pc-cb-tle")].some((e) => e.textContent!.includes("Cutting Words"))).toBe(false);
+    expect(c.querySelector(".pc-cb-fn .sub")).toBeNull();
+  });
+});
+
+describe("progression — subclass features (owned)", () => {
+  const openProgression = (c: HTMLElement) => {
+    const fold = [...c.querySelectorAll(".pc-cb-fold-h")].find((h) => h.textContent!.includes("Progression"))!;
+    (fold as HTMLElement).click();
+  };
+
+  it("appends subclass feature names into the per-level Features cell with the .sub dress", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), {
+      entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(),
+      subclassEntity: loreSubclassEntity(), stateKey: "t",
+    });
+    openProgression(c);
+    const l3row = [...c.querySelectorAll(".pc-cb-pt-r")]
+      .find((r) => r.querySelector(".pc-cb-pt-lvl")!.textContent === "3")!;
+    const feat = l3row.querySelector(".pc-cb-pt-feat")!;
+    expect(feat.textContent).toContain("Cutting Words");
+    const subSpans = [...feat.querySelectorAll(".sub")].map((s) => s.textContent);
+    expect(subSpans.some((t) => t!.includes("Cutting Words"))).toBe(true);
   });
 });

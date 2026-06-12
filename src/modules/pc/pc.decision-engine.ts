@@ -222,6 +222,29 @@ function buildItem(
   return item;
 }
 
+/** Build the structural subclass-pick DecisionItem (key "subclass"). Unlike a
+ *  generic select-entity it reads/writes ClassEntry.subclass directly (no
+ *  per-level choices map): `selected` comes from `c.subclass`, and the strip's
+ *  writeValue routes it to setSubclass off `choice.entity_type === "subclass"`.
+ *  Shared by the authored path and the Fix-B synthesized guarantee so both
+ *  enumerate the same candidate pool and take the same write path. */
+function buildSubclassItem(
+  choice: Choice,
+  source: FeatureSource,
+  level: number,
+  featureName: string,
+  c: ResolvedCharacter["classes"][number],
+  ctx: DecisionContext,
+  ownerBare: string,
+): DecisionItem {
+  const selected = c.subclass ? c.subclass.slug : undefined;
+  return {
+    key: "subclass", source, level, featureName,
+    choice, options: enumerateOptions(choice, ctx, ownerBare),
+    selected, status: selected ? "resolved" : "unresolved",
+  };
+}
+
 /** Walk every decision definition + persisted selection and collect chosen
  *  proficiencies. Pure; called by recalc. Values are validated against the
  *  decision's option pool — stale slugs (outside `from`) are ignored. */
@@ -383,6 +406,10 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
 
     // Feature-level (class + subclass features already level-gated by the resolver),
     // with the recognizer as fallback for un-annotated decision prose (homebrew).
+    // Track whether an authored subclass select-entity surfaced so the guarantee
+    // below never synthesizes a duplicate (mirrors the browse walker's
+    // collectBrowseDecisions; the 2024 Bard alone lacks the authored choice).
+    let sawAuthoredSubclass = false;
     for (const rf of resolved.features) {
       const src = rf.source;
       if (src.kind !== "class" && src.kind !== "subclass") continue;
@@ -409,17 +436,32 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
       for (const ch of choices) {
         // The subclass decision is structural: it reads/writes ClassEntry.subclass.
         if (ch.kind === "select-entity" && ch.entity_type === "subclass") {
-          const selected = c.subclass ? c.subclass.slug : undefined;
-          const item: DecisionItem = {
-            key: "subclass", source: src, level: lvl, featureName: rf.feature.name,
-            choice: ch, options: enumerateOptions(ch, ctx, ownerBare),
-            selected, status: selected ? "resolved" : "unresolved",
-          };
-          push(lvl, item);
+          sawAuthoredSubclass = true;
+          push(lvl, buildSubclassItem(ch, src, lvl, rf.feature.name, c, ctx, ownerBare));
           continue;
         }
         push(lvl, buildItem(ch, src, lvl, rf.feature.name, readAt(lvl), ctx, ownerBare));
       }
+    }
+
+    // Subclass-pick guarantee (Fix B): when the class declares a subclass_level
+    // that the character has reached but NO authored subclass select-entity was
+    // emitted (the 2024 Bard gap — alone of 12 classes), synthesize the pick off
+    // subclass_level so every owned card offers it. The synthesized choice carries
+    // `where: { parent_class: "self" }`, so enumerateOptions filters registry
+    // subclasses to this class (matchesFilter resolves "self" → ownerBare). It
+    // takes the SAME structural write path as the authored item (key "subclass",
+    // routed to setSubclass by the strip's writeValue). Pure over (resolved, registry).
+    const subclassLevel = (entity as { subclass_level?: number | null }).subclass_level ?? null;
+    if (subclassLevel != null && subclassLevel <= c.level && !sawAuthoredSubclass) {
+      const featureName = (entity as { subclass_feature_name?: string | null }).subclass_feature_name ?? "Subclass";
+      const synthChoice: Choice = {
+        kind: "select-entity", id: "subclass", label: featureName, count: 1,
+        entity_type: "subclass", where: { parent_class: "self" },
+      };
+      push(subclassLevel, buildSubclassItem(
+        synthChoice, { kind: "class", slug: entity.slug, level: subclassLevel },
+        subclassLevel, featureName, c, ctx, ownerBare));
     }
 
     const levels = [...byLevel.entries()]

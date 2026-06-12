@@ -268,6 +268,41 @@ describe("renderDecisionStrip", () => {
     (childRow.querySelectorAll(".pc-bpoints-cell")[0].querySelectorAll("button")[1] as HTMLElement).click();
     expect(setChoice).toHaveBeenCalledWith(0, 4, "feat:asi", { str: 1 });
   });
+
+  // ── synthesized subclass pick (Fix B) routes through setSubclass ──
+  // The engine's guarantee emits a registry-backed subclass select-entity (key
+  // "subclass"); the strip must render its inline candidate table and route a
+  // pick to setSubclass, NOT setChoice (writeValue dispatches on entity_type).
+  it("renders the synthesized subclass pick's candidate table and writes via setSubclass", () => {
+    const c = mountContainer();
+    const setSubclass = vi.fn();
+    const subclassItem = item({
+      key: "subclass", source: { kind: "class" } as never, level: 3, featureName: "Bard Subclass",
+      choice: { kind: "select-entity", id: "subclass", count: 1, entity_type: "subclass",
+        where: { parent_class: "self" } } as never,
+      options: [
+        { value: "srd-2024_college-of-lore", label: "College of Lore",
+          entity: { ...registeredEntity("srd-2024_college-of-lore"), name: "College of Lore", entityType: "subclass" } as never },
+        { value: "srd-2024_college-of-valor", label: "College of Valor",
+          entity: { ...registeredEntity("srd-2024_college-of-valor"), name: "College of Valor", entityType: "subclass" } as never },
+      ],
+      selected: undefined, status: "unresolved",
+    });
+    renderDecisionStrip(c, mkCtx({ setSubclass, setChoice: vi.fn() }), {
+      items: [subclassItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const nest = c.querySelector(".pc-dstrip-nest")!;
+    // ≤12 candidates → inline selection table.
+    expect(nest.querySelector(".pc-btable")).not.toBeNull();
+    expect(nest.querySelector(".pc-dstrip-tlabel")!.textContent).toContain("choose 1");
+    // The Lore row's toggle button selects it; writeValue routes the single pick
+    // through setSubclass (not setChoice).
+    const loreRow = [...nest.querySelectorAll(".pc-btable-row")].find(
+      (r) => r.querySelector(".pc-btable-name")!.textContent === "College of Lore",
+    )!;
+    (loreRow.querySelector(".pc-btoggle") as HTMLElement).click();
+    expect(setSubclass).toHaveBeenCalledWith(0, "srd-2024_college-of-lore");
+  });
 });
 
 describe("domainPill", () => {
