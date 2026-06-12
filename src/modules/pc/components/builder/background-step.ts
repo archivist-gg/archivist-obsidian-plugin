@@ -259,8 +259,11 @@ function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext
   if (!r) return;
   const row = renderStripInfoRow(host, { pill: "Feat", name: "Origin Feat", value: r.feat ? `${r.display} ▸` : r.display });
   if (!r.feat) return;
+  // The whole row toggles the feat block (not just the crimson value); the
+  // .expandable class opts the row into the pointer affordance.
+  row.addClass("expandable");
   let open = false;
-  row.querySelector(".pc-dstrip-val")!.addEventListener("click", () => {
+  row.addEventListener("click", () => {
     if (open) { host.querySelector(".pc-bofeat-expand")?.remove(); open = false; return; }
     const ex = host.createDiv({ cls: "pc-bofeat-expand" });
     row.insertAdjacentElement("afterend", ex);

@@ -232,7 +232,16 @@ describe("renderBackgroundStep — Chronicle composition", () => {
   it("origin-feat info row click expands the feat block beneath it", () => {
     const c = mountContainer();
     renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
-    (c.querySelector(".pc-dstrip-row.info .pc-dstrip-val") as HTMLElement).click();
+    const row = c.querySelector(".pc-dstrip-row.info.expandable") as HTMLElement;
+    expect(row).not.toBeNull();
+    row.click();
+    expect(c.querySelector(".pc-dstrip-row.info + .pc-bofeat-expand")).not.toBeNull();
+  });
+
+  it("origin-feat: clicking the value (inside the row) still expands the feat block", () => {
+    const c = mountContainer();
+    renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
+    (c.querySelector(".pc-dstrip-row.info.expandable .pc-dstrip-val") as HTMLElement).click();
     expect(c.querySelector(".pc-dstrip-row.info + .pc-bofeat-expand")).not.toBeNull();
   });
 

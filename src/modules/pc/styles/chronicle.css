@@ -110,6 +110,8 @@
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-val { color: var(--pc-crimson); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info .pc-dstrip-val { color: var(--pc-crimson); cursor: pointer; }
+/* An expandable info row (e.g. Origin Feat) is clickable across its whole width. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info.expandable { cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-tlabel {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
   letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft); margin-bottom: 5px;
