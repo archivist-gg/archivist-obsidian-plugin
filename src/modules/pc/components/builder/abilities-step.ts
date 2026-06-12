@@ -8,6 +8,7 @@ import {
 } from "./ability-methods";
 import type { PointBuyRule } from "./ability-methods";
 import { abilityBonusBreakdown } from "../../pc.recalc";
+import { clampPopover } from "./popover-clamp";
 
 const ABILITY_LABELS: Record<Ability, string> = {
   str: "STR", dex: "DEX", con: "CON", int: "INT", wis: "WIS", cha: "CHA",
@@ -250,7 +251,7 @@ function openBasePopover(
   // anchor, narrower width) and the pool-list, which the level picker has no
   // analogue for.
   const panel = anchor.createDiv({ cls: "pc-pop pc-base-pop" });
-  panel.createDiv({ cls: "pc-pop-arrow pc-base-pop-arrow" });
+  const arrow = panel.createDiv({ cls: "pc-pop-arrow pc-base-pop-arrow" });
   panel.addEventListener("click", (ev) => ev.stopPropagation());
 
   const commit = (value: number): void => {
@@ -319,6 +320,8 @@ function openBasePopover(
       }
     }
   }
+
+  clampPopover(panel, arrow);
 
   // Dismissal — the conditions-popover idiom: register document-level
   // outside-click + Escape on open, tear down on close. The opening click is

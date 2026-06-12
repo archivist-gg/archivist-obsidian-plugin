@@ -165,6 +165,14 @@ describe("renderAbilitiesStep — tiles", () => {
       expect(col.querySelector(".pc-ab > .pc-ab-score")).not.toBeNull();
     }
   });
+
+  it("jsdom guard: opening a Base popover applies no clamp offset (zero-size rects)", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual" }));
+    (container.querySelector(".pc-base-pop-btn") as HTMLElement).click();
+    const panel = container.querySelector(".pc-base-pop") as HTMLElement;
+    expect(panel.style.marginLeft).toBe("");
+  });
 });
 
 /** ROOT-CAUSE GUARD (smoke r1): the obelisk frame `.pc-ab` is sized
