@@ -93,6 +93,18 @@ function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: Abi
   }
 }
 
+/** The Roll-method pool of six totals. Source of truth is the draft field
+ *  `builder_rolls` (persisted by setBuilderRolls — survives view close/restart);
+ *  the in-memory `builder.abilities.roll` bag is only a transient fallback for a
+ *  render that runs before the field is seeded. Returns [] when neither holds a
+ *  pool (no roll yet). */
+function rollPool(ctx: ComponentRenderContext): number[] {
+  const persisted = ctx.resolved.definition.builder_rolls;
+  if (Array.isArray(persisted) && persisted.length) return [...persisted];
+  const state = ctx.builderUiState?.get("builder.abilities.roll") as { dice: number[][] } | undefined;
+  return (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
+}
+
 /** Allowed Base values per method: point-buy rules constrain by budget;
  *  standard-array offers unused array values (+ the current one); rolled offers
  *  the session pool (Task 11); manual offers 3-20. */
@@ -111,8 +123,7 @@ function baseChoicesFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: 
     return [...new Set(pool)].sort((a, b) => b - a);
   }
   if (method === "rolled") {
-    const state = ctx.builderUiState?.get("builder.abilities.roll") as { dice: number[][] } | undefined;
-    const totals = (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
+    const totals = rollPool(ctx);
     for (const k of ABILITY_KEYS) {
       if (k === ab) continue;
       const i = totals.indexOf(abilities[k]);
@@ -156,8 +167,7 @@ function poolSlotsFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: Ab
   if (method === "standard-array") {
     pool = [...STANDARD_ARRAY];
   } else {
-    const state = ctx.builderUiState?.get("builder.abilities.roll") as { dice: number[][] } | undefined;
-    pool = (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
+    pool = rollPool(ctx);
   }
   // Claim one slot per ability that holds a matching value (first-fit), so
   // duplicates are owned independently. Then label each slot relative to `ab`.
@@ -358,10 +368,16 @@ interface RollState { dice: number[][]; }
 
 function renderRollBar(body: HTMLElement, ctx: ComponentRenderContext): void {
   const bag = ctx.builderUiState;
+  // The POOL's source of truth is the persisted draft field (survives view
+  // close/restart); the bag holds only the transient per-die breakdown for the
+  // dice-chip dress, which is lost on reopen and falls back to bare totals.
+  const persisted = ctx.resolved.definition.builder_rolls;
   const state = bag?.get("builder.abilities.roll") as RollState | undefined;
+  const totals = rollPool(ctx);
+  const hasPool = totals.length > 0;
   const bar = body.createDiv({ cls: "pc-bctx" });
   bar.createSpan({ cls: "pc-bctx-l", text: "Roll" });
-  const btn = bar.createEl("button", { cls: "pc-broll-btn", text: state ? "Re-roll" : "Roll 4d6 × 6" });
+  const btn = bar.createEl("button", { cls: "pc-broll-btn", text: hasPool ? "Re-roll" : "Roll 4d6 × 6" });
   btn.addEventListener("click", () => {
     const dice: number[][] = [];
     for (let i = 0; i < 6; i++) {
@@ -369,18 +385,36 @@ function renderRollBar(body: HTMLElement, ctx: ComponentRenderContext): void {
       set.sort((a, b) => b - a);
       dice.push(set);
     }
+    // Persist the pool (totals) on the draft — the authority the Base popover
+    // reads — then cache the per-die breakdown in the bag for the chip dress.
+    // Re-roll overwrites both. The mutator's onChange re-renders the step.
     bag?.set("builder.abilities.roll", { dice } satisfies RollState);
-    redraw(body, ctx);
+    if (ctx.editState) {
+      // The mutator's onChange drives the builder re-render.
+      ctx.editState.setBuilderRolls(dice.map((r) => r[0] + r[1] + r[2]));
+    } else {
+      // No edit-state host (standalone render) — repaint directly.
+      redraw(body, ctx);
+    }
   });
-  if (!state) {
+  if (!hasPool) {
     bar.createSpan({ cls: "pc-bmeter-t", text: "Roll a pool of six, then assign via the Base dropdowns." });
     return;
   }
   const sets = bar.createDiv({ cls: "pc-broll-sets" });
-  for (const roll of state.dice) {
-    const set = sets.createDiv({ cls: "pc-broll-set" });
-    roll.forEach((d, i) => set.createSpan({ cls: `pc-broll-die${i === roll.length - 1 ? " strike" : ""}`, text: String(d) }));
-    const total = roll[0] + roll[1] + roll[2]; // sorted desc — drop the lowest
-    set.createSpan({ cls: "pc-broll-total", text: String(total) });
+  // Prefer the full per-die breakdown (struck lowest) when the bag still holds
+  // it; after a reopen only the persisted totals remain, so render those bare.
+  if (state) {
+    for (const roll of state.dice) {
+      const set = sets.createDiv({ cls: "pc-broll-set" });
+      roll.forEach((d, i) => set.createSpan({ cls: `pc-broll-die${i === roll.length - 1 ? " strike" : ""}`, text: String(d) }));
+      const total = roll[0] + roll[1] + roll[2]; // sorted desc — drop the lowest
+      set.createSpan({ cls: "pc-broll-total", text: String(total) });
+    }
+  } else {
+    for (const total of persisted ?? totals) {
+      const set = sets.createDiv({ cls: "pc-broll-set" });
+      set.createSpan({ cls: "pc-broll-total", text: String(total) });
+    }
   }
 }

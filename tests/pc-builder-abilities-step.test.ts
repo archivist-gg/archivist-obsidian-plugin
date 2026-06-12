@@ -30,7 +30,7 @@ function ruleBlock(css: string, selectorFragment: string): string {
 function mkCtx(over: {
   method?: string; abilities?: Record<string, number>; editState?: unknown;
   race?: unknown; origin_choices?: Record<string, unknown>;
-  classes?: unknown[]; feats?: unknown[];
+  classes?: unknown[]; feats?: unknown[]; builder_rolls?: number[];
 } = {}): ComponentRenderContext {
   const abilities = over.abilities ?? { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
   return {
@@ -38,6 +38,7 @@ function mkCtx(over: {
       definition: {
         name: "T", edition: "2014", race: null, subrace: null, background: null, class: [],
         abilities, ability_method: over.method ?? "manual",
+        ...(over.builder_rolls ? { builder_rolls: over.builder_rolls } : {}),
         origin_choices: over.origin_choices ?? {},
         skills: { proficient: [], expertise: [] }, spells: { known: [], overrides: [] },
         equipment: [], overrides: {},
@@ -300,6 +301,31 @@ describe("renderAbilitiesStep — roll bar", () => {
     }
   });
 
+  it("rolling persists the pool to the draft via setBuilderRolls (six totals matching the bag)", () => {
+    const container = mountContainer();
+    const bag = new Map<string, unknown>();
+    const setBuilderRolls = vi.fn();
+    const ctx = mkCtx({ method: "rolled", editState: { setBuilderRolls } });
+    (ctx as unknown as { builderUiState: Map<string, unknown> }).builderUiState = bag;
+    renderAbilitiesStep(container, ctx);
+    (container.querySelector(".pc-broll-btn") as HTMLElement).click();
+    expect(setBuilderRolls).toHaveBeenCalledTimes(1);
+    const totals = setBuilderRolls.mock.calls[0][0] as number[];
+    const dice = (bag.get("builder.abilities.roll") as { dice: number[][] }).dice;
+    expect(totals.length).toBe(6);
+    expect(totals).toEqual(dice.map((r) => r[0] + r[1] + r[2]));
+  });
+
+  it("after reopen (persisted pool, NO bag) the button reads Re-roll and renders the totals", () => {
+    const container = mountContainer();
+    // Fresh Map (bag absent) but the draft carries the persisted pool.
+    const ctx = mkCtx({ method: "rolled", builder_rolls: [15, 14, 13, 12, 10, 8] });
+    renderAbilitiesStep(container, ctx);
+    expect((container.querySelector(".pc-broll-btn") as HTMLElement).textContent).toBe("Re-roll");
+    const totals = [...container.querySelectorAll(".pc-broll-total")].map((t) => t.textContent);
+    expect(totals).toEqual(["15", "14", "13", "12", "10", "8"]);
+  });
+
   it("renders rolled results as dice chips with the lowest struck and the kept total", () => {
     const container = mountContainer();
     const bag = new Map<string, unknown>();
@@ -455,6 +481,47 @@ describe("renderAbilitiesStep — pool-mode unassign (picker B-II)", () => {
     btns(container)[0].click(); // str
     expect(container.querySelector(".pc-base-pop")).not.toBeNull();
     expect(container.querySelector(".pc-base-pop .pc-base-unassign")).toBeNull();
+  });
+});
+
+describe("renderAbilitiesStep — rolled pool persists on the draft (SP2 Plan 5)", () => {
+  it("the Base popover draws its pool from the persisted builder_rolls even when the bag is absent", () => {
+    const container = mountContainer();
+    // str took a 15; dex is unassigned. The bag is a FRESH empty Map (the
+    // reopen case) — only the draft's builder_rolls carries the pool.
+    const ctx = mkCtx({
+      method: "rolled",
+      builder_rolls: [16, 15, 14, 12, 10, 8],
+      abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    });
+    renderAbilitiesStep(container, ctx);
+    btns(container)[1].click(); // dex
+    const opts = [...container.querySelectorAll(".pc-base-pop .pc-base-pool-opt")];
+    // The FULL persisted pool is listed (six totals) despite no bag.
+    expect(opts.map((o) => o.textContent?.replace("✓", "").trim())).toEqual(["16", "15", "14", "12", "10", "8"]);
+    // str claimed the 15 → that slot is ghosted `used`/inert in dex's panel.
+    const fifteen = opts.find((o) => o.textContent?.includes("15"))!;
+    expect(fifteen.classList.contains("used")).toBe(true);
+  });
+
+  it("an unassigned value is still offered (free) from the persisted pool after clearing, bag absent", () => {
+    // Models: roll → str took 15 → unassign str (clearAbilityBaseScore wrote 10)
+    // → re-render arrives with str=10 and the bag GONE. The 15 must be free again.
+    const container = mountContainer();
+    const setAbilityBaseScore = vi.fn();
+    const ctx = mkCtx({
+      method: "rolled",
+      builder_rolls: [16, 15, 14, 12, 10, 8],
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, // str just unassigned
+      editState: { setAbilityBaseScore },
+    });
+    renderAbilitiesStep(container, ctx);
+    btns(container)[0].click(); // str — the freed value should be re-offerable
+    const opts = [...container.querySelectorAll(".pc-base-pop .pc-base-pool-opt")];
+    const fifteen = opts.find((o) => o.textContent?.includes("15")) as HTMLElement;
+    expect(fifteen.classList.contains("used")).toBe(false); // free, re-assignable
+    fifteen.click();
+    expect(setAbilityBaseScore).toHaveBeenCalledWith("str", 15);
   });
 });
 

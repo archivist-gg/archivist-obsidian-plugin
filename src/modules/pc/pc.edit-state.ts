@@ -378,6 +378,17 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Persist the Roll-method ability pool (six 4d6-drop-lowest totals) on the
+   *  draft, so it survives view close / Obsidian restart — UI state (the roll
+   *  bar's `builderUiState` bag) cannot. The Abilities step writes this on every
+   *  roll/re-roll (overwriting the prior pool); the Base popover reads its
+   *  assignable pool from here. Removed by `finishBuild`. */
+  setBuilderRolls(values: number[]): void {
+    if (!Array.isArray(values) || !values.every((v) => Number.isFinite(v))) return;
+    this.character.builder_rolls = values.map((v) => Math.round(v));
+    this.onChange();
+  }
+
   // ─── Builder: class entries ────────────────────────────────────────
   addClass(slug: string, level = 1, subclass: string | null = null): void {
     this.character.class.push({
@@ -492,6 +503,10 @@ export class CharacterEditState {
    *  serialized file — a finished character carries no `builder:` line. */
   finishBuild(): void {
     delete this.character.builder;
+    // The persisted Roll pool is a build-only scratch field — drop it too, so a
+    // finished file carries no `builder_rolls:` line (delete, not set-undefined,
+    // so yaml.dump omits it). Mirrors the `builder` flag.
+    delete this.character.builder_rolls;
     this.onChange();
   }
 

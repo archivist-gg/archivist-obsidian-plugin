@@ -96,4 +96,24 @@ describe("characterToYaml", () => {
     delete c.builder;
     expect(characterToYaml(c)).not.toContain("builder:");
   });
+
+  it("round-trips a draft with builder_rolls (the persisted Roll pool), and drops it once cleared", () => {
+    const c = parseMinimal();
+    c.builder = true;
+    c.ability_method = "rolled";
+    c.builder_rolls = [15, 14, 13, 12, 10, 8];
+    const once = characterToYaml(c);
+    expect(once).toContain("builder_rolls:");
+    // Parses straight back to the same array (no key loss, no length pin).
+    const reparsed = parsePC(once);
+    if (!reparsed.success) throw new Error(reparsed.error);
+    expect(reparsed.data.builder_rolls).toEqual([15, 14, 13, 12, 10, 8]);
+    // A second serialize-then-reparse pass is structurally stable.
+    const twice = parsePC(characterToYaml(reparsed.data));
+    if (!twice.success) throw new Error(twice.error);
+    expect(twice.data.builder_rolls).toEqual([15, 14, 13, 12, 10, 8]);
+    // Mirrors finishBuild(): deleting the key removes it from serialization.
+    delete c.builder_rolls;
+    expect(characterToYaml(c)).not.toContain("builder_rolls:");
+  });
 });

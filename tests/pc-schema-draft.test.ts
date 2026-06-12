@@ -35,4 +35,16 @@ describe("characterSchema — draft (class-less) tolerance", () => {
     // No default: a finished/legacy file never gains a builder key on parse.
     if (result.success) expect(result.data.builder).toBeUndefined();
   });
+
+  it("accepts a persisted builder_rolls pool and keeps it on parse", () => {
+    const result = characterSchema.safeParse({ ...draft, ability_method: "rolled", builder_rolls: [15, 14, 13, 12, 10, 8] });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.builder_rolls).toEqual([15, 14, 13, 12, 10, 8]);
+  });
+
+  it("leaves builder_rolls absent (no default) when omitted — existing files don't gain it", () => {
+    const result = characterSchema.safeParse(draft);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.builder_rolls).toBeUndefined();
+  });
 });

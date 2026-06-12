@@ -130,6 +130,12 @@ export interface Character {
   origin_choices?: Record<string, ChoiceValue>;
   abilities: Record<Ability, number>;
   ability_method: AbilityMethod;
+  /** Persisted Roll-method ability pool (six 4d6-drop-lowest totals) while the
+   *  file is a Builder draft. Present only in `rolled` mode during a build so
+   *  the rolled pool survives view close / Obsidian restart (UI state cannot);
+   *  the Abilities step + Base popover read their pool from here. Removed by the
+   *  Builder's Finish action (see finishBuild) — a finished file carries none. */
+  builder_rolls?: number[];
   skills: { proficient: SkillSlug[]; expertise: SkillSlug[] };
   spells: { known: KnownSpellEntry[]; overrides: SpellOverride[]; view?: "by-level" | "table" };
   equipment: EquipmentEntry[];
