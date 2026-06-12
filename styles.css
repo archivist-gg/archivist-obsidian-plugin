@@ -13300,14 +13300,24 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-bctx-l { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-bmeter { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 230px; }
 .archivist-pc-sheet .pc-bmeter-t { font-size: 11px; color: var(--pc-text-muted); white-space: nowrap; }
-.archivist-pc-sheet .pc-bmeter-bar { flex: 1; height: 7px; border-radius: 999px; background: rgba(146, 38, 16, 0.12); overflow: hidden; }
+.archivist-pc-sheet .pc-bmeter-bar { display: flex; flex: 1; height: 7px; border-radius: 999px; background: rgba(146, 38, 16, 0.12); overflow: hidden; }
 .archivist-pc-sheet .pc-bmeter-fill { height: 100%; background: var(--pc-crimson); }
-.archivist-pc-sheet .pc-bcost { display: flex; gap: 7px; flex-wrap: wrap; }
-.archivist-pc-sheet .pc-bcost > span {
-  border: 1px solid var(--pc-tan); border-radius: 3px; padding: 1px 5px;
-  background: rgba(255, 248, 220, 0.6); font-size: 10px; color: var(--pc-text-muted);
+.archivist-pc-sheet .pc-bctx-over { background: rgba(146, 38, 16, 0.04); }
+.archivist-pc-sheet .pc-bover-bang {
+  flex: none; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--pc-crimson); color: var(--pc-parchment-light);
+  font-size: var(--pc-fs-label); font-weight: 700; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.archivist-pc-sheet .pc-bcost-s { color: var(--pc-crimson); font-weight: 700; font-family: var(--pc-font-serif); }
+.archivist-pc-sheet .pc-bmeter-t.over { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bmeter-over { height: 100%; background: #5e1408; }
+.archivist-pc-sheet .pc-bleft-n { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-title); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bleft-l {
+  font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); margin-left: -8px;
+}
+.archivist-pc-sheet .pc-bleft-l.over { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bover-t { font-size: var(--pc-fs-small); font-weight: 700; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-bpool { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .archivist-pc-sheet .pc-bpool-chip {
   border: 1px solid var(--pc-tan); border-radius: 4px; padding: 2px 8px;
@@ -13403,6 +13413,22 @@ body.theme-light .archivist-tag-atk:hover {
   text-align: center; cursor: pointer;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-base-unassign:hover { color: var(--pc-crimson); }
+/* Design D — the cost-bearing point-buy grid. Costs render as a sub-line under
+   each numeral; unaffordable values ghost (opacity, inert) rather than vanish,
+   and a quiet dashed footnote explains the grey. Panel widens so three columns
+   of value+cost cells breathe. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop { width: 148px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.ghost { opacity: 0.35; cursor: default; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.ghost:hover { background: transparent; color: var(--pc-text-soft); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-cost {
+  display: block; font-family: var(--pc-font-sans); font-weight: 600;
+  font-size: var(--pc-fs-tiny); letter-spacing: 0.04em; color: var(--pc-text-muted); margin-top: 1px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.cur .pc-numgrid-cost { color: rgba(253, 241, 220, 0.8); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-note {
+  margin-top: 6px; padding-top: 4px; border-top: 1px dashed var(--pc-tan-muted);
+  font-size: 9px; color: var(--pc-text-muted); text-align: center;
+}
 /* Shared PC select dress: parchment-dressed native <select> used by every
    picker on the sheet + builder surfaces (class-card Lv, abilities Base,
    custom-background borrow-cost + origin-feat, inventory override-actions
