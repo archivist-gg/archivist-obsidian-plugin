@@ -419,7 +419,6 @@
 }
 .archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; max-width: 100%; text-align: center; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-blegend { font-style: italic; font-size: 11px; color: var(--pc-text-muted); margin-top: 10px; }
 .archivist-pc-sheet .pc-baibox {
   border: 1px dashed var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.04);
   padding: 10px 12px; margin-bottom: 12px;

@@ -42,10 +42,6 @@ export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderConte
   else renderMethodBar(body, ctx, method);
 
   renderTiles(body, ctx, method);
-  body.createDiv({
-    cls: "pc-blegend",
-    text: "Tiles show final totals. Species, background, class, and feat bonuses fold in automatically — called out in crimson.",
-  });
 }
 
 function redraw(body: HTMLElement, ctx: ComponentRenderContext): void {
