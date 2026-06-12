@@ -34,6 +34,9 @@ export interface EntityPickerOptions {
   exclude?: Set<string>;
   /** Threads through to renderSelectionTable (race-step semantics). */
   expandSelect?: boolean;
+  /** The chosen entity's row opens by default and always shows (smoke r6) —
+   *  threaded to renderSelectionTable as its resting-default expansion. */
+  defaultExpandSlug?: string;
   renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
 }
 
@@ -89,6 +92,7 @@ export function renderEntityPicker(
       },
       single: true,
       expandSelect: opts.expandSelect,
+      defaultExpandSlug: opts.defaultExpandSlug,
       renderExpand: opts.renderExpand,
     });
   };

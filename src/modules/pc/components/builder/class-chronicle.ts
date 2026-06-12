@@ -60,6 +60,19 @@ export interface ClassChronicleOptions {
    *  (Fix A). Browse mode stays class-only — never supply this there. */
   subclassEntity?: RegisteredEntity;
   stateKey: string;
+  /** Owned-card mode (smoke r6): inline band controls (level select / subclass
+   *  name / remove ghost). Threaded to the block's `bandRight` hook so the band
+   *  is the card's one header — no separate strip above. */
+  bandRight?: (host: HTMLElement) => void;
+  /** Owned-card mode: makes the band the collapse handle. When `collapsed`, the
+   *  block renders only the band (+ controls + chevron); the body unmounts. */
+  collapsible?: boolean;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+  /** Owned-card mode: content rendered at the TOP of the expanded body, inside
+   *  the block frame (the multiclass prereq amber note). Lives in the body hook
+   *  so it unmounts with the rest when the band is collapsed. */
+  pre?: (host: HTMLElement) => void;
 }
 
 const ABILITY_NAME: Record<string, string> = {
@@ -147,12 +160,19 @@ export function renderClassChronicle(host: HTMLElement, ctx: ComponentRenderCont
       "Class",
       d.hit_die ? `Hit Die ${d.hit_die}` : "",
       (d.primary_abilities ?? []).map((a) => ABILITY_NAME[a] ?? a.toUpperCase()).join(" & "),
-      opts.mode === "owned" ? `Level ${opts.level} of 20` : "",
+      // "Level N of 20" is redundant with the owned card's inline LV control
+      // sitting right there in the band (smoke r6) — keep it for browse only.
+      opts.mode === "browse" ? `Level ${opts.level} of 20` : "",
     ].filter(Boolean).join(" · "),
     badge: [d.source, d.edition].filter(Boolean).join(" · ") || undefined,
     flavor: d.description?.trim() ? firstSentence(d.description.trim()) : undefined,
     tiles: classTiles(d),
+    bandRight: opts.bandRight,
+    collapsible: opts.collapsible,
+    collapsed: opts.collapsed,
+    onToggleCollapse: opts.onToggleCollapse,
     body: (block) => {
+      opts.pre?.(block);                           // owned prereq note (unmounts on collapse)
       renderDecisions(block, ctx, d, opts);
       renderFolds(block, ctx, d, opts);            // Tasks 9–10 fill the bodies in
     },

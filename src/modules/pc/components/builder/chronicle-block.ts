@@ -20,6 +20,19 @@ export interface ChronicleBlockOptions {
   pre?: (host: HTMLElement) => void;
   /** Renders everything after the tiles (strip + body sections). */
   body: (host: HTMLElement) => void;
+  /** Owned-card mode (SP2 Plan 5, smoke r6): inline controls on the right of the
+   *  identity band (level select / subclass name / remove ghost). Renders into a
+   *  `.pc-cb-bh-rgt` flex child laid out after the name+sub. The block has no
+   *  separate header strip — this band IS the card header. */
+  bandRight?: (host: HTMLElement) => void;
+  /** When true the band becomes the collapse handle: clicking it (outside the
+   *  controls, which the caller stops-propagation on) fires `onToggleCollapse`,
+   *  and a ▾/▸ chevron renders at the band's far right. */
+  collapsible?: boolean;
+  /** Collapsed state for a collapsible block: flavor, tiles, and body unmount —
+   *  only the band (name + sub + controls + chevron) renders. */
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOptions): HTMLElement {
@@ -27,8 +40,19 @@ export function renderChronicleBlock(parent: HTMLElement, opts: ChronicleBlockOp
   opts.pre?.(block);
   if (opts.badge) block.createSpan({ cls: "pc-cb-badge", text: opts.badge });
   const bh = block.createDiv({ cls: "pc-cb-bh" });
-  bh.createEl("h3", { cls: "pc-cb-name", text: opts.name });
-  bh.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  if (opts.collapsible) bh.addClass("collapsible");
+  const ident = bh.createDiv({ cls: "pc-cb-bh-ident" });
+  ident.createEl("h3", { cls: "pc-cb-name", text: opts.name });
+  ident.createDiv({ cls: "pc-cb-sub", text: opts.sub });
+  if (opts.bandRight) {
+    const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });
+    opts.bandRight(rgt);
+  }
+  if (opts.collapsible) {
+    bh.createSpan({ cls: "pc-cb-bh-chev", text: opts.collapsed ? "▸" : "▾" });
+    bh.addEventListener("click", () => opts.onToggleCollapse?.());
+  }
+  if (opts.collapsed) return block;
   if (opts.flavor) block.createDiv({ cls: "pc-cb-flavor", text: opts.flavor });
   if (opts.tiles.length) {
     const glance = block.createDiv({ cls: "pc-cb-glance" });

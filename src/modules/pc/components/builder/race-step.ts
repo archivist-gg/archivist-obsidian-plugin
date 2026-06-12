@@ -5,7 +5,7 @@ import type { DecisionItem } from "../../pc.decision-engine";
 import { renderEntityPicker } from "./entity-picker";
 import { buildDecisionLedger } from "../../pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
-import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
+import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
 
 // Honest ledger columns for the race picker — size/speed exist in the entity
@@ -68,6 +68,9 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
     onSelect: (slug) => ctx.editState?.setRace(slug),
     columns: RACE_COLUMNS,
     expandSelect: true,
+    // The chosen species' block always shows (smoke r6): its row is the resting
+    // default expansion.
+    defaultExpandSlug: chosen ?? undefined,
     renderExpand: (wrap, e) => {
       // The strip + Decisions tile belong to the STANDING pick only — a freshly-
       // clicked row becomes the pick via onSelect, and the onChange re-render
@@ -76,7 +79,6 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
       const d = e.data as RaceData;
       const ledger = isChosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities }) : null;
       const items = ledger?.origin.filter((i) => i.source.kind === "race") ?? [];
-      const doneN = items.filter((i) => i.status === "resolved").length;
       const dv = d.vision?.darkvision;
       renderChronicleBlock(wrap, {
         name: e.name,
@@ -84,11 +86,12 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
           .filter(Boolean).join(" · "),
         badge: `${d.source ?? ""} · ${d.edition ?? ""}`.replace(/^ · | · $/g, ""),
         flavor: (d.description ?? "").trim() || undefined,
+        // Size / Speed / Darkvision only — the "Decisions" glance tile was dropped
+        // (smoke r6); the decision strip below carries the same count.
         tiles: [
           ...(d.size ? [{ label: "Size", value: cap(d.size) }] : []),
           ...(d.speed?.walk ? [{ label: "Speed", value: String(d.speed.walk), small: "ft." }] : []),
           ...(dv ? [{ label: "Darkvision", value: String(dv), small: "ft." }] : []),
-          ...(isChosen && items.length ? [{ label: "Decisions", value: String(items.length), small: `${doneN} done` }] : []),
         ],
         body: (host) => {
           if (isChosen && (items.length || (d.subraces?.length ?? 0))) {
@@ -104,9 +107,9 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
 }
 
 /** The "Traits" section: serif name + ` ▸ decision` meta when the trait carries
- *  `choices`, first sentence of the description, and a `Read full ▸` link that
- *  toggles the remainder in place. Size/Speed/Darkvision are folded out (they
- *  live in the glance tiles). */
+ *  `choices`, and the COMPLETE description (smoke r6 — no first-sentence truncation
+ *  or Read-full toggle; traits read in full at a glance). Size/Speed/Darkvision
+ *  are folded out (they live in the glance tiles). */
 function renderTraits(host: HTMLElement, d: RaceData): void {
   const traits = (d.traits ?? []).filter((t) => !FOLDED.has(t.name.toLowerCase()));
   if (!traits.length) return;
@@ -115,20 +118,7 @@ function renderTraits(host: HTMLElement, d: RaceData): void {
     const row = host.createDiv({ cls: "pc-cb-trait" });
     const n = row.createDiv({ cls: "pc-cb-trait-n", text: t.name });
     if (t.choices?.length) n.createSpan({ cls: "pc-cb-trait-meta", text: "▸ decision" });
-    const head = firstSentence(t.description);
-    const desc = row.createDiv({ cls: "pc-cb-trait-d", text: head });
-    // trimEnd so a trailing-whitespace-only tail doesn't surface a "Read full"
-    // that reveals nothing but blanks.
-    if (head.length < t.description.trimEnd().length) {
-      const more = desc.createSpan({ cls: "pc-cb-more", text: " Read full ▸" });
-      let open = false;
-      more.addEventListener("click", () => {
-        open = !open;
-        desc.setText(open ? t.description : head);
-        desc.appendChild(more);                             // keep the toggle in the row
-        more.setText(open ? " Show less ▴" : " Read full ▸");
-      });
-    }
+    row.createDiv({ cls: "pc-cb-trait-d", text: t.description });
   }
 }
 

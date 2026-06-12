@@ -218,6 +218,59 @@ describe("renderClassChronicle (browse)", () => {
     expect(c.querySelector(".pc-dstrip-row .pc-dstrip-pill")!.textContent).toBe("L2");
     expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);   // browse = no controls
   });
+
+  it("browse keeps the 'Level N of 20' sub-line segment and passes no band controls", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 3, mode: "browse", stateKey: "t" });
+    expect(c.querySelector(".pc-cb-sub")!.textContent).toContain("Level 3 of 20");
+    // Browse blocks are never collapsible and carry no inline band controls.
+    expect(c.querySelector(".pc-cb-bh.collapsible")).toBeNull();
+    expect(c.querySelector(".pc-cb-bh-rgt")).toBeNull();
+    expect(c.querySelector(".pc-cb-bh-chev")).toBeNull();
+  });
+});
+
+describe("renderClassChronicle (owned band)", () => {
+  it("drops the 'Level N of 20' segment (the inline LV control replaces it)", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(), stateKey: "t" });
+    expect(c.querySelector(".pc-cb-sub")!.textContent).not.toContain("Level 5 of 20");
+    expect(c.querySelector(".pc-cb-sub")!.textContent).toContain("Class");
+  });
+
+  it("renders the bandRight hook into the band's right-side controls and the prereq `pre` into the body", () => {
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), {
+      entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(), stateKey: "t",
+      collapsible: true, collapsed: false,
+      bandRight: (rgt) => rgt.createSpan({ cls: "test-control", text: "LV" }),
+      pre: (host) => host.createDiv({ cls: "test-pre", text: "prereq" }),
+    });
+    expect(c.querySelector(".pc-cb-bh.collapsible .pc-cb-bh-rgt .test-control")).not.toBeNull();
+    expect(c.querySelector(".pc-cb-bh-chev")!.textContent).toBe("▾");
+    // `pre` content lives inside the block body (unmounts on collapse).
+    expect(c.querySelector(".pc-cblock .test-pre")).not.toBeNull();
+  });
+
+  it("collapsed band unmounts tiles/strip/folds and the prereq `pre`; chevron reads closed", () => {
+    const c = mountContainer();
+    let toggled = false;
+    renderClassChronicle(c, mkCtx(), {
+      entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(), stateKey: "t",
+      collapsible: true, collapsed: true,
+      onToggleCollapse: () => { toggled = true; },
+      bandRight: (rgt) => rgt.createSpan({ cls: "test-control", text: "LV" }),
+      pre: (host) => host.createDiv({ cls: "test-pre", text: "prereq" }),
+    });
+    expect(c.querySelector(".pc-cb-glance")).toBeNull();
+    expect(c.querySelector(".pc-cb-fold")).toBeNull();
+    expect(c.querySelector(".test-pre")).toBeNull();
+    // Controls stay rendered while collapsed; chevron closed; band click fires toggle.
+    expect(c.querySelector(".pc-cb-bh-rgt .test-control")).not.toBeNull();
+    expect(c.querySelector(".pc-cb-bh-chev")!.textContent).toBe("▸");
+    (c.querySelector(".pc-cb-bh.collapsible") as HTMLElement).click();
+    expect(toggled).toBe(true);
+  });
 });
 
 describe("tableColumns", () => {

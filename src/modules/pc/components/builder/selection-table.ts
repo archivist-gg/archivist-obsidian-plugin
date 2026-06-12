@@ -35,6 +35,12 @@ export interface SelectionTableOptions {
    *  selected row toggles its expansion only — it never deselects. Supersedes
    *  `single` when both set. */
   expandSelect?: boolean;
+  /** The chosen entity's row is the RESTING default expansion (smoke r6): when
+   *  set and no row is currently expanded, this row opens by default, so the
+   *  chosen race/background block always shows. The user can still solo-expand
+   *  another row (transient swap); re-clicking this row is a no-op (it stays
+   *  open, since it's the resting default). expandSelect-only. */
+  defaultExpandSlug?: string;
   /** Custom expanded-row content; defaults to the inline entity block. */
   renderExpand?: (wrap: HTMLElement, entity: RegisteredEntity) => void;
 }
@@ -63,6 +69,14 @@ export function renderSelectionTable(
     (bag?.get(opts.stateKey) as TableUiState | undefined) ??
     { sortKey: "name", sortDir: "asc", expanded: new Set<string>() };
   bag?.set(opts.stateKey, st);
+
+  // Resting default expansion (smoke r6): when nothing is explicitly expanded,
+  // open the chosen entity's row so its block always shows. Other rows can still
+  // solo-expand transiently; once they collapse (or on a fresh render) this
+  // re-seeds, re-showing the chosen block.
+  if (opts.defaultExpandSlug && !st.expanded.size && opts.candidates.some((e) => e.slug === opts.defaultExpandSlug)) {
+    st.expanded.add(opts.defaultExpandSlug);
+  }
 
   const host = parent.createDiv({ cls: "pc-btable-host" });
   // The built-in Name column is the single fluid track: data columns keep
@@ -140,6 +154,9 @@ export function renderSelectionTable(
     const toggleExpand = (fromClick: boolean): void => {
       const next = tr.nextElementSibling;
       if (next?.classList.contains("pc-btable-expand-row")) {
+        // The resting-default row (chosen race/background) never collapses on
+        // re-click — it's always-shown (smoke r6), so the gesture is a no-op.
+        if (fromClick && opts.defaultExpandSlug === e.slug) return;
         next.remove();
         st.expanded.delete(e.slug);
         tr.classList.remove("pc-row-open");

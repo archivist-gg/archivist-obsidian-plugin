@@ -23,6 +23,19 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh {
   border-bottom: 2px solid #7a200d; padding-bottom: 0.35em; margin-bottom: 0.55em;
 }
+/* Owned-card band (smoke r6): the identity band is the card's one header, with
+   inline controls on the right and a collapse chevron at the far edge. The band
+   row stays a single baseline-aligned line; the ident column flexes. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh.collapsible {
+  display: flex; align-items: center; gap: 11px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-ident { flex: 1 1 auto; min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-rgt {
+  flex: none; display: inline-flex; align-items: center; gap: 11px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-chev {
+  flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); line-height: 1;
+}
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-name {
   font-family: var(--pc-font-serif); color: #7a200d; font-size: var(--pc-fs-big);
   font-weight: 700; letter-spacing: 1px; margin: 0; line-height: 1.15;
@@ -290,18 +303,19 @@
 .archivist-pc-sheet .pc-bcadd-wrap.hero .pc-bcadd { padding: 11px 22px; font-size: var(--pc-fs-heading); letter-spacing: var(--pc-ls-caps-md); }
 .archivist-pc-sheet .pc-bcadd:hover { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); }
 .archivist-pc-sheet .pc-bcstack { display: flex; flex-direction: column; gap: 9px; margin: 0 0 4px; }
+/* The card frame wraps the Chronicle block directly now (smoke r6): the block's
+   identity band is the card header (controls + collapse chevron inline), so the
+   old separate .pc-bccard-h strip is gone. The band controls (.pc-bccard-lvl /
+   -sub / -rm) survive — they render into the block's .pc-cb-bh-rgt. */
 .archivist-pc-sheet .pc-bccard { border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); background: var(--pc-parchment-light); box-shadow: 0 2px 8px rgba(134, 116, 83, 0.18); overflow: hidden; }
-.archivist-pc-sheet .pc-bccard-h { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: rgba(146, 38, 16, 0.07); border-bottom: 1px solid var(--pc-tan-muted); cursor: pointer; }
-.archivist-pc-sheet .pc-bccard-seal { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--pc-crimson); border: 1px solid #7a200d; color: var(--pc-parchment-light); font-size: var(--pc-fs-micro); box-shadow: 0 1px 3px rgba(122, 32, 13, 0.4); }
-.archivist-pc-sheet .pc-bccard-nm { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-title); line-height: 1.1; }
+/* The block inside a card drops its own border/shadow/radius — the card frame
+   already provides them — so the two frames don't double up. */
+.archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
 .archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--pc-tan-muted); border-radius: 5px; background: var(--pc-parchment-light); padding: 2px 5px 2px 8px; }
 .archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-bccard-rgt { margin-left: auto; display: inline-flex; align-items: center; gap: 11px; flex: none; }
 .archivist-pc-sheet .pc-bccard-rm { font-family: var(--pc-font-sans); font-size: 8.5px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
 .archivist-pc-sheet .pc-bccard-rm:hover { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-bccard-chev { flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); }
-.archivist-pc-sheet .pc-bccard-body { padding: 10px 12px 12px; }
 .archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
 .archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
 

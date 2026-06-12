@@ -384,14 +384,22 @@ describe("BuilderView shell", () => {
       const c = {
         ...ctx(),
         activeStepId: "race",
-        resolved: { definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]" } },
+        // The chosen race's block now renders by default (smoke r6), so the
+        // resolved shape needs the engine's `classes`/`race` fields.
+        resolved: {
+          definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]", origin_choices: {}, subrace: null },
+          classes: [], race: { slug: "srd-5e_elf", name: "Elf", choices: [], traits: [] }, background: null, features: [],
+        },
         builderUiState: new Map(),
         core: {
           plugin: {},
-          entities: { search: () => [{
-            slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
-            data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
-          }] },
+          entities: {
+            search: () => [{
+              slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+              data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+            }],
+            getByTypeAndSlug: () => undefined,
+          },
           compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
           modules: { getByEntityType: () => undefined },
         },
@@ -409,14 +417,22 @@ describe("BuilderView shell", () => {
     const root = mountContainer();
     const c = {
       ...ctx(),
-      resolved: { definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]" } },
+      // The chosen race's block now renders by default (smoke r6), so the
+      // resolved shape needs the engine's `classes`/`race` fields.
+      resolved: {
+        definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]", origin_choices: {}, subrace: null },
+        classes: [], race: { slug: "srd-5e_elf", name: "Elf", choices: [], traits: [] }, background: null, features: [],
+      },
       builderUiState: new Map(),
       core: {
         plugin: {},
-        entities: { search: () => [{
-          slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
-          data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
-        }] },
+        entities: {
+          search: () => [{
+            slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+            data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+          }],
+          getByTypeAndSlug: () => undefined,
+        },
         compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
         modules: { getByEntityType: () => undefined },
       },

@@ -305,6 +305,30 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     }
   });
 
+  it("the chosen background's block ALWAYS shows: its row defaults open with nothing expanded (smoke r6)", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
+    // No row explicitly expanded — the resting default must open the chosen row.
+    ctx.builderUiState!.delete("builder.background-picker.table");
+    renderBackgroundStep(c, ctx);
+    expect(c.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    const block = c.querySelector(".pc-btable-expand .pc-cblock")!;
+    expect(block.querySelector(".pc-cb-name")!.textContent).toBe("Criminal");
+    expect(block.querySelector(".pc-dstrip")).not.toBeNull();
+  });
+
+  it("re-clicking the chosen background's resting-default row is a no-op — the block stays shown (smoke r6)", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({ background: "[[srd-2024_criminal]]", resolvedBackground: resolvedCriminal });
+    ctx.builderUiState!.delete("builder.background-picker.table");
+    renderBackgroundStep(c, ctx);
+    const chosenRow = [...c.querySelectorAll<HTMLElement>(".pc-btable-row")]
+      .find((r) => r.querySelector(".pc-btable-name")?.textContent === "Criminal")!;
+    chosenRow.click();
+    expect(c.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    expect(c.querySelector(".pc-btable-expand .pc-cb-name")!.textContent).toBe("Criminal");
+  });
+
   it("origin feat resolves a bare-slug homebrew ref via exact-match", () => {
     const HOMEBREW_FEAT = {
       slug: "my-feat", name: "My Feat", entityType: "feat", filePath: "x",

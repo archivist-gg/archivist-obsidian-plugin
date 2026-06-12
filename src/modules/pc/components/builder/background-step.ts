@@ -65,6 +65,9 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
     onSelect: (slug) => ctx.editState?.setBackground(slug),
     columns: BG_COLUMNS,
     expandSelect: true,
+    // The chosen background's block always shows (smoke r6): its row is the
+    // resting default expansion.
+    defaultExpandSlug: stripSlug(ctx.resolved.definition.background) ?? undefined,
     renderExpand: (wrap, e) => {
       // The strip + origin-feat row belong to the STANDING pick only — a freshly-
       // clicked row becomes the pick via onSelect, and the onChange re-render

@@ -70,10 +70,56 @@ function renderClassCard(
   const open = !collapsed.has(index);
 
   const card = stack.createDiv({ cls: "pc-bccard" });
-  const h = card.createDiv({ cls: "pc-bccard-h" });
-  h.createSpan({ cls: "pc-bccard-seal", text: "✓" });
-  h.createSpan({ cls: "pc-bccard-nm", text: entity?.name ?? humanizeSlug(slug ?? "unknown") });
-  const lvl = h.createDiv({ cls: "pc-bccard-lvl" });
+
+  // No vault data: a bare frame with the level control still usable.
+  if (!entity) {
+    const block = card.createDiv({ cls: "pc-cblock" });
+    const bh = block.createDiv({ cls: "pc-cb-bh" });
+    const ident = bh.createDiv({ cls: "pc-cb-bh-ident" });
+    ident.createEl("h3", { cls: "pc-cb-name", text: humanizeSlug(slug ?? "unknown") });
+    const rgt = bh.createDiv({ cls: "pc-cb-bh-rgt" });
+    renderBandControls(rgt, ctx, entry, index, undefined);
+    block.createDiv({ cls: "pc-dstrip-empty", text: "No class data in your vault for this entry." });
+    return;
+  }
+
+  // Resolve the picked subclass entity once: its name dresses the band controls
+  // here, and the same entity threads into the chronicle so its granted features
+  // fold into the timeline & progression (Fix A).
+  const subSlug = entry.subclass ? stripSlug(entry.subclass) : undefined;
+  const subclassEntity = subSlug ? ctx.core.entities.getByTypeAndSlug("subclass", subSlug) : undefined;
+  const subclassName = entry.subclass ? (subclassEntity?.name ?? humanizeSlug(subSlug ?? "")) : undefined;
+
+  // The Chronicle block IS the card: its identity band is the one header, with
+  // the level select / subclass name / remove ghost inline on its right (smoke
+  // r6). Clicking the band collapses the WHOLE block; the body (prereq note +
+  // strip + folds) unmounts while the band controls stay usable.
+  renderClassChronicle(card, ctx, {
+    entity, level: entry.level, mode: "owned", classIndex: index, ledger,
+    subclassEntity, stateKey: `builder.class-card.${index}`,
+    bandRight: (rgt) => renderBandControls(rgt, ctx, entry, index, subclassName),
+    collapsible: true,
+    collapsed: !open,
+    onToggleCollapse: () => {
+      if (open) collapsed.add(index); else collapsed.delete(index);
+      redraw();
+    },
+    pre: (block) => renderPrereqNote(block, ctx, entity.data, index),
+  });
+}
+
+/** The band's inline controls (smoke r6): the level select, the subclass name
+ *  (italic, when set), and the remove ghost. select/remove stop propagation so a
+ *  click on them never reaches the band's collapse handler — level changes stay
+ *  usable while collapsed, like the old header. */
+function renderBandControls(
+  rgt: HTMLElement,
+  ctx: ComponentRenderContext,
+  entry: { level: number },
+  index: number,
+  subclassName: string | undefined,
+): void {
+  const lvl = rgt.createDiv({ cls: "pc-bccard-lvl" });
   lvl.createSpan({ cls: "pc-bccard-lvl-l", text: "Lv" });
   const sel = lvl.createEl("select", { cls: "pc-bdd" });
   for (let n = 1; n <= 20; n++) {
@@ -82,37 +128,9 @@ function renderClassCard(
   sel.value = String(entry.level);
   sel.addEventListener("click", (ev) => ev.stopPropagation());
   sel.addEventListener("change", () => ctx.editState?.setClassLevel(index, Number(sel.value)));
-  // Resolve the picked subclass entity once: its name dresses the header here,
-  // and the same entity threads into the chronicle so its granted features fold
-  // into the timeline & progression (Fix A).
-  const subSlug = entry.subclass ? stripSlug(entry.subclass) : undefined;
-  const subclassEntity = subSlug ? ctx.core.entities.getByTypeAndSlug("subclass", subSlug) : undefined;
-  if (entry.subclass) {
-    h.createSpan({
-      cls: "pc-bccard-sub",
-      text: subclassEntity?.name ?? humanizeSlug(subSlug ?? ""),
-    });
-  }
-  const rgt = h.createDiv({ cls: "pc-bccard-rgt" });
+  if (subclassName) rgt.createSpan({ cls: "pc-bccard-sub", text: subclassName });
   const rm = rgt.createSpan({ cls: "pc-bccard-rm", text: "remove" });
   rm.addEventListener("click", (ev) => { ev.stopPropagation(); ctx.editState?.removeClass(index); });
-  rgt.createSpan({ cls: "pc-bccard-chev", text: open ? "▾" : "▸" });
-  h.addEventListener("click", () => {
-    if (open) collapsed.add(index); else collapsed.delete(index);
-    redraw();
-  });
-
-  if (!open) return;
-  const cardBody = card.createDiv({ cls: "pc-bccard-body" });
-  if (!entity) {
-    cardBody.createDiv({ cls: "pc-dstrip-empty", text: "No class data in your vault for this entry." });
-    return;
-  }
-  renderPrereqNote(cardBody, ctx, entity.data, index);
-  renderClassChronicle(cardBody, ctx, {
-    entity, level: entry.level, mode: "owned", classIndex: index, ledger,
-    subclassEntity, stateKey: `builder.class-card.${index}`,
-  });
 }
 
 /** Multiclass prerequisites are PERMISSIVE — a quiet amber "!" note, never a

@@ -157,17 +157,24 @@ describe("renderClassStep", () => {
     expect(c.querySelector(".pc-bccard")).toBeNull();
   });
 
-  it("owned: card header carries seal, name, level select, remove, chevron; body hosts the live strip", () => {
+  it("owned: the block's identity band is the card header — name + inline level select + remove + chevron; body hosts the live strip", () => {
     const c = mountContainer();
     const setClassLevel = vi.fn();
     renderClassStep(c, mkCtxWithBard5({ setClassLevel }));
     const card = c.querySelector(".pc-bccard")!;
-    expect(card.querySelector(".pc-bccard-nm")!.textContent).toBe("Bard");
-    const sel = card.querySelector(".pc-bccard-h select") as HTMLSelectElement;
+    // No separate header strip any more — the Chronicle block IS the header.
+    expect(card.querySelector(".pc-bccard-h")).toBeNull();
+    const band = card.querySelector(".pc-cblock .pc-cb-bh.collapsible")!;
+    expect(band.querySelector(".pc-cb-name")!.textContent).toBe("Bard");
+    // Level select lives inline in the band's right-side controls.
+    const sel = band.querySelector(".pc-cb-bh-rgt select") as HTMLSelectElement;
     expect(sel.value).toBe("5");
     sel.value = "6";
     sel.dispatchEvent(new Event("change"));
     expect(setClassLevel).toHaveBeenCalledWith(0, 6);
+    // Remove ghost is in the band too; collapse chevron at the far edge.
+    expect(band.querySelector(".pc-bccard-rm")).not.toBeNull();
+    expect(band.querySelector(".pc-cb-bh-chev")!.textContent).toBe("▾");
     expect(card.querySelector(".pc-cblock .pc-dstrip")).not.toBeNull();
   });
 
@@ -204,15 +211,52 @@ describe("renderClassStep", () => {
     renderClassStep(c, mkCtxWithBard5({ removeClass }));
     (c.querySelector(".pc-bccard-rm") as HTMLElement).click();
     expect(removeClass).toHaveBeenCalledWith(0);
+    // Removing must not have collapsed the card (no collapse flag written).
+    expect((c.querySelector(".pc-bccard") as HTMLElement)).not.toBeNull();
   });
 
-  it("header click collapses the card (body unmounts), state survives in builderUiState", () => {
+  it("the level select does NOT toggle collapse when clicked (stopPropagation)", () => {
     const c = mountContainer();
     const ctx = mkCtxWithBard5({});
     renderClassStep(c, ctx);
-    (c.querySelector(".pc-bccard-h") as HTMLElement).click();
-    expect(c.querySelector(".pc-bccard-body")).toBeNull();
+    const sel = c.querySelector(".pc-cb-bh-rgt select") as HTMLSelectElement;
+    sel.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    // Card stays expanded — clicking the control never reaches the band toggle.
+    expect((ctx.builderUiState!.get("builder.class-cards") as Set<number>).has(0)).toBe(false);
+    expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
+  });
+
+  it("band click collapses the WHOLE block (tiles + strip unmount), state survives in builderUiState", () => {
+    const c = mountContainer();
+    const ctx = mkCtxWithBard5({});
+    renderClassStep(c, ctx);
+    // Expanded: tiles + strip present.
+    expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
+    expect(c.querySelector(".pc-cblock .pc-dstrip")).not.toBeNull();
+    (c.querySelector(".pc-cb-bh.collapsible") as HTMLElement).click();
+    // Collapsed: only the band survives — tiles, strip, and folds unmount.
+    expect(c.querySelector(".pc-cb-glance")).toBeNull();
+    expect(c.querySelector(".pc-cblock .pc-dstrip")).toBeNull();
+    expect(c.querySelector(".pc-cb-fold")).toBeNull();
+    // The band itself (name + chevron) still renders, now reading collapsed.
+    expect(c.querySelector(".pc-cb-name")!.textContent).toBe("Bard");
+    expect(c.querySelector(".pc-cb-bh-chev")!.textContent).toBe("▸");
+    // Collapse persists in the existing builder.class-cards Set.
     expect((ctx.builderUiState!.get("builder.class-cards") as Set<number>).has(0)).toBe(true);
+  });
+
+  it("collapsed card keeps the level control usable (level change without expanding)", () => {
+    const c = mountContainer();
+    const setClassLevel = vi.fn();
+    const ctx = mkCtxWithBard5({ setClassLevel });
+    // Seed the card collapsed.
+    ctx.builderUiState!.set("builder.class-cards", new Set([0]));
+    renderClassStep(c, ctx);
+    expect(c.querySelector(".pc-cb-glance")).toBeNull();      // confirm collapsed
+    const sel = c.querySelector(".pc-cb-bh-rgt select") as HTMLSelectElement;
+    sel.value = "7";
+    sel.dispatchEvent(new Event("change"));
+    expect(setClassLevel).toHaveBeenCalledWith(0, 7);
   });
 
   it("owned: a compact '+ Add another class' ghost renders below the stack", () => {

@@ -170,14 +170,25 @@ describe("renderRaceStep — expanded composition", () => {
     expect([...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toContain("Darkvision");
   });
 
-  it("trait with choices carries the decision meta; Read full expands the rest", () => {
+  it("tiles are Size / Speed / Darkvision only — the Decisions glance tile is dropped (smoke r6)", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const labels = [...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent);
+    expect(labels).toEqual(["Size", "Speed", "Darkvision"]);
+    expect(labels).not.toContain("Decisions");
+    // The strip below still carries the decision count (Tool Proficiency row).
+    expect(c.querySelector(".pc-dstrip")).not.toBeNull();
+  });
+
+  it("trait with choices carries the decision meta; the FULL description renders with no Read-full toggle (smoke r6)", () => {
     const c = mountContainer();
     renderRaceStep(c, mkCtxWithChosenDwarf());
     const t = [...c.querySelectorAll(".pc-cb-trait")].find((x) => x.querySelector(".pc-cb-trait-meta"))!;
-    const more = t.querySelector(".pc-cb-more") as HTMLElement;
-    const before = t.querySelector(".pc-cb-trait-d")!.textContent!.length;
-    more.click();
-    expect(t.querySelector(".pc-cb-trait-d")!.textContent!.length).toBeGreaterThan(before);
+    // The complete multi-sentence description is shown at once.
+    const toolTrait = DWARF_DATA.traits.find((tr) => tr.name === "Tool Proficiency")!;
+    expect(t.querySelector(".pc-cb-trait-d")!.textContent).toBe(toolTrait.description);
+    // No truncation affordance survives in any trait row.
+    expect(c.querySelectorAll(".pc-cb-trait .pc-cb-more").length).toBe(0);
   });
 
   it("subrace chip click writes setSubrace; re-click clears it", () => {
@@ -209,5 +220,30 @@ describe("renderRaceStep — expanded composition", () => {
     expect(expand?.querySelector(".pc-cblock")).not.toBeNull();
     expect(expand?.querySelector(".pc-dstrip")).toBeNull();
     expect(expand?.textContent).not.toContain("Subrace");
+  });
+
+  it("the chosen race's block ALWAYS shows: its row defaults open with nothing expanded (smoke r6)", () => {
+    const container = mountContainer();
+    const ctx = mkCtxWithChosenDwarf();
+    // No row explicitly expanded — the resting default must open the chosen row.
+    ctx.builderUiState!.delete("builder.race-picker.table");
+    renderRaceStep(container, ctx);
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    const block = container.querySelector(".pc-btable-expand .pc-cblock")!;
+    expect(block.querySelector(".pc-cb-name")!.textContent).toBe("Dwarf");
+    expect(block.querySelector(".pc-dstrip")).not.toBeNull();
+  });
+
+  it("re-clicking the chosen race's resting-default row is a no-op — the block stays shown (smoke r6)", () => {
+    const container = mountContainer();
+    const ctx = mkCtxWithChosenDwarf();
+    ctx.builderUiState!.delete("builder.race-picker.table");
+    renderRaceStep(container, ctx);
+    const chosenRow = [...container.querySelectorAll<HTMLElement>(".pc-btable-row")]
+      .find((r) => r.querySelector(".pc-btable-name")?.textContent === "Dwarf")!;
+    chosenRow.click();
+    // Block remains — the chosen row never collapses on re-click.
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    expect(container.querySelector(".pc-btable-expand .pc-cb-name")!.textContent).toBe("Dwarf");
   });
 });
