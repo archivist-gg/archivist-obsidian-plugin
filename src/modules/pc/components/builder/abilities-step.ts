@@ -21,20 +21,27 @@ const ABILITY_LABELS: Record<Ability, string> = {
 export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const method = ctx.resolved.definition.ability_method;
 
-  // Method pills.
+  // Method pills — one tab strip with ✦ Custom as a real sixth tab: when Custom
+  // is active no method pill wears .on, and picking a method clears the custom
+  // flag in the same click. Tab semantics: clicking the active tab is a no-op.
+  const customOn = ctx.builderUiState?.get("builder.abilities.custom") === true;
   const tabs = body.createDiv({ cls: "pc-bmethods" });
   for (const m of ABILITY_METHODS) {
-    const pill = tabs.createEl("button", { cls: `pc-bmtab${m.id === method ? " on" : ""}`, text: m.label });
+    const pill = tabs.createEl("button", { cls: `pc-bmtab${!customOn && m.id === method ? " on" : ""}`, text: m.label });
     if (m.homebrew) pill.createSpan({ cls: "pc-bhb", text: "Homebrew" });
-    pill.addEventListener("click", () => ctx.editState?.setAbilityMethod(m.id));
+    pill.addEventListener("click", () => {
+      if (customOn) ctx.builderUiState?.set("builder.abilities.custom", false);
+      if (m.id !== method) ctx.editState?.setAbilityMethod(m.id);
+      else if (customOn) redraw(body, ctx); // same method re-picked from Custom: no write, repaint locally
+    });
   }
   // ✦ Custom — Plan 6 hand-off; renders the prompt box only.
-  const customOn = ctx.builderUiState?.get("builder.abilities.custom") === true;
   const custom = tabs.createEl("button", { cls: `pc-bmtab ai${customOn ? " on" : ""}` });
   custom.createSpan({ cls: "pc-bmtab-star", text: "✦ " });
   custom.createSpan({ text: "Custom" });
   custom.addEventListener("click", () => {
-    ctx.builderUiState?.set("builder.abilities.custom", !customOn);
+    if (customOn) return;
+    ctx.builderUiState?.set("builder.abilities.custom", true);
     redraw(body, ctx);
   });
 
