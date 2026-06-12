@@ -372,6 +372,92 @@ function btns(container: HTMLElement): HTMLElement[] {
   return [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
 }
 
+describe("renderAbilitiesStep — pool-mode unassign (picker B-II)", () => {
+  it("re-clicking the ✓ current value clears the base (writes 10) and closes the panel", () => {
+    const container = mountContainer();
+    const clearAbilityBaseScore = vi.fn();
+    // str holds an assigned array value (15); dex..cha are the neutral 10.
+    renderAbilitiesStep(container, mkCtx({
+      method: "standard-array",
+      abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      editState: { clearAbilityBaseScore },
+    }));
+    btns(container)[0].click(); // str
+    const opts = [...container.querySelectorAll(".pc-base-pop .pc-base-pool-opt")];
+    const cur = opts.find((o) => o.classList.contains("cur"))!;
+    expect(cur.textContent).toContain("✓");
+    expect(cur.textContent).toContain("15");
+    (cur as HTMLElement).click(); // re-click the current → unassign
+    expect(clearAbilityBaseScore).toHaveBeenCalledWith("str");
+    expect(container.querySelector(".pc-base-pop")).toBeNull();
+  });
+
+  it("the explicit '– Unassign' row shows only when a value is assigned, and clears on click", () => {
+    // Assigned tile (str=15) → row present.
+    const c1 = mountContainer();
+    const clearAbilityBaseScore = vi.fn();
+    renderAbilitiesStep(c1, mkCtx({
+      method: "standard-array",
+      abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      editState: { clearAbilityBaseScore },
+    }));
+    btns(c1)[0].click(); // str
+    const row = c1.querySelector(".pc-base-pop .pc-base-unassign") as HTMLElement;
+    expect(row).not.toBeNull();
+    expect(row.textContent).toContain("Unassign");
+    row.click();
+    expect(clearAbilityBaseScore).toHaveBeenCalledWith("str");
+    expect(c1.querySelector(".pc-base-pop")).toBeNull();
+
+    // Unassigned tile (dex=10, the neutral sentinel) → no row.
+    const c2 = mountContainer();
+    renderAbilitiesStep(c2, mkCtx({
+      method: "standard-array",
+      abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    }));
+    btns(c2)[1].click(); // dex (still neutral 10)
+    expect(c2.querySelector(".pc-base-pop")).not.toBeNull();
+    expect(c2.querySelector(".pc-base-pop .pc-base-unassign")).toBeNull();
+  });
+
+  it("a freed value is selectable from another tile's panel (the slot reads `free` after clearing)", () => {
+    // Before: str owns the 15 → it is `used`/inert in dex's panel.
+    const before = mountContainer();
+    renderAbilitiesStep(before, mkCtx({
+      method: "standard-array",
+      abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    }));
+    btns(before)[1].click(); // dex
+    const usedFifteen = [...before.querySelectorAll(".pc-base-pop .pc-base-pool-opt")]
+      .find((o) => o.textContent?.includes("15"))!;
+    expect(usedFifteen.classList.contains("used")).toBe(true);
+
+    // After clearing str (the re-render writes str back to 10), the 15 is free →
+    // selectable from dex's panel and assigns.
+    const after = mountContainer();
+    const setAbilityBaseScore = vi.fn();
+    renderAbilitiesStep(after, mkCtx({
+      method: "standard-array",
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      editState: { setAbilityBaseScore },
+    }));
+    btns(after)[1].click(); // dex
+    const freeFifteen = [...after.querySelectorAll(".pc-base-pop .pc-base-pool-opt")]
+      .find((o) => o.textContent?.includes("15"))! as HTMLElement;
+    expect(freeFifteen.classList.contains("used")).toBe(false);
+    freeFifteen.click();
+    expect(setAbilityBaseScore).toHaveBeenCalledWith("dex", 15);
+  });
+
+  it("manual mode shows no Unassign row (the tile always holds a value)", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual", abilities: { str: 15, dex: 10, con: 10, int: 10, wis: 10, cha: 10 } }));
+    btns(container)[0].click(); // str
+    expect(container.querySelector(".pc-base-pop")).not.toBeNull();
+    expect(container.querySelector(".pc-base-pop .pc-base-unassign")).toBeNull();
+  });
+});
+
 describe("renderAbilitiesStep — Base popover (picker B-II)", () => {
   it("clicking the Base box opens an anchored parchment panel; clicking the same box again closes it", () => {
     const container = mountContainer();

@@ -136,6 +136,20 @@ function isPoolMethod(method: AbilityMethod): boolean {
   return method === "standard-array" || method === "rolled";
 }
 
+/** The neutral "unassigned" base. `Character.abilities` is `Record<Ability,
+ *  number>` — strictly numeric, with no null arm — so a draft seeds every score
+ *  to 10 (buildDraftCharacter) and "unassigned" is the value 10, the same
+ *  sentinel `builder-view`'s draft-touch test keys on. Unassigning a pool tile
+ *  writes 10 back via `clearAbilityBaseScore`, which frees the value it held. */
+const UNASSIGNED_BASE = 10;
+
+/** A pool tile is "assigned" when it holds a non-neutral value — i.e. a real
+ *  pick the user placed, distinct from the seeded 10. Only then do we offer the
+ *  unassign affordances (re-click ✓ + the explicit row). */
+function isAssigned(ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): boolean {
+  return isPoolMethod(method) && ctx.resolved.definition.abilities[ab] !== UNASSIGNED_BASE;
+}
+
 function poolSlotsFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): PoolSlot[] {
   const abilities = ctx.resolved.definition.abilities;
   let pool: number[];
@@ -228,6 +242,10 @@ function openBasePopover(
     closeBasePopover();
     ctx.editState?.setAbilityBaseScore(ab, value);
   };
+  const clear = (): void => {
+    closeBasePopover();
+    ctx.editState?.clearAbilityBaseScore(ab);
+  };
 
   if (isPoolMethod(method)) {
     panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Assign value" });
@@ -238,7 +256,17 @@ function openBasePopover(
       });
       opt.createSpan({ cls: "pc-base-pool-ck", text: slot.state === "cur" ? "✓" : "" });
       opt.createSpan({ text: String(slot.value) });
-      if (slot.state !== "used") opt.addEventListener("click", () => commit(slot.value));
+      // Re-clicking the ✓ current value unassigns it (toggle semantics, like the
+      // chips idiom everywhere else); free values assign; used values are inert.
+      if (slot.state === "cur") opt.addEventListener("click", () => clear());
+      else if (slot.state === "free") opt.addEventListener("click", () => commit(slot.value));
+    }
+    // An explicit quiet "Unassign" row (discoverability), shown only when this
+    // tile actually holds an assigned pool value (a `cur` slot exists). Freed
+    // values rejoin the pool for other tiles on the per-write re-render.
+    if (isAssigned(ctx, method, ab)) {
+      const un = panel.createDiv({ cls: "pc-base-unassign", text: "– Unassign" });
+      un.addEventListener("click", () => clear());
     }
   } else {
     panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Set value" });

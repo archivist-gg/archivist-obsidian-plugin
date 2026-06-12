@@ -368,6 +368,16 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Clears a BASE ability score back to unassigned. `Character.abilities` is
+   *  `Record<Ability, number>` (no null arm — see pc.schema), so "unassigned" is
+   *  the neutral 10 a fresh draft seeds (buildDraftCharacter), the same sentinel
+   *  the builder's draft-touch test keys on. Used by the Abilities step's pool
+   *  modes to release a value back to the shared pool for other tiles. */
+  clearAbilityBaseScore(ability: Ability): void {
+    this.character.abilities[ability] = 10;
+    this.onChange();
+  }
+
   // ─── Builder: class entries ────────────────────────────────────────
   addClass(slug: string, level = 1, subclass: string | null = null): void {
     this.character.class.push({

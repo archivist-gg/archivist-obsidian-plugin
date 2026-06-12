@@ -369,6 +369,16 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-ck { width: 13px; display: inline-flex; justify-content: center; color: var(--pc-crimson); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt.cur { color: var(--pc-crimson); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt.used { opacity: 0.4; text-decoration: line-through; cursor: default; color: var(--pc-text-muted); }
+/* The quiet "– Unassign" row: a discoverable second affordance (pool modes only,
+   shown only when a value is assigned), kept calm — soft text, dashed rule above,
+   crimson on hover. No accent bars. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-unassign {
+  margin-top: 6px; padding: 4px 6px 0; border-top: 1px dashed var(--pc-tan-muted);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted);
+  text-align: center; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-unassign:hover { color: var(--pc-crimson); }
 /* Shared PC select dress: parchment-dressed native <select> used by every
    picker on the sheet + builder surfaces (class-card Lv, abilities Base,
    custom-background borrow-cost + origin-feat, inventory override-actions

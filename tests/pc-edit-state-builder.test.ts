@@ -111,6 +111,16 @@ describe("CharacterEditState — ability mutators (SP2)", () => {
     expect(es.getCharacter().abilities.str).toBe(10);
     expect(onChange).not.toHaveBeenCalled();
   });
+
+  it("clearAbilityBaseScore resets the BASE score to the neutral 10 sentinel and fires onChange", () => {
+    // abilities is Record<Ability, number> (no null arm), so "unassigned" is 10.
+    const { es, onChange } = makeState(makeChar());
+    es.setAbilityBaseScore("dex" as Ability, 15);
+    es.clearAbilityBaseScore("dex" as Ability);
+    expect(es.getCharacter().abilities.dex).toBe(10);
+    expect(es.getCharacter().overrides.scores).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("CharacterEditState — class-entry mutators (SP2)", () => {
