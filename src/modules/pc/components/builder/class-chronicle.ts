@@ -160,13 +160,14 @@ export function renderClassChronicle(host: HTMLElement, ctx: ComponentRenderCont
 }
 
 function classTiles(d: ClassData): Array<{ label: string; value: string; small?: string }> {
+  // Skills ("2 of 9") and Subclass ("at L3") tiles were dropped (smoke r4): the
+  // same facts live in the decision-strip rows below, so surfacing them atop the
+  // block was redundant. Keep the static identity facts only.
   return [
     ...(d.hit_die ? [{ label: "Hit Die", value: d.hit_die }] : []),
     ...(d.saving_throws?.length ? [{ label: "Saves", value: d.saving_throws.map((s) => s.toUpperCase()).join(" · ") }] : []),
     ...(d.primary_abilities?.length
       ? [{ label: "Primary", value: d.primary_abilities.map((a) => ABILITY_NAME[a] ?? a.toUpperCase()).join(" · ") }] : []),
-    ...(d.skill_choices ? [{ label: "Skills", value: String(d.skill_choices.count), small: `of ${d.skill_choices.from.length}` }] : []),
-    ...(d.subclass_level ? [{ label: "Subclass", value: `at L${d.subclass_level}` }] : []),
     ...(d.spellcasting
       ? [{ label: "Spellcasting", value: d.spellcasting.ability.toUpperCase(), small: d.spellcasting.preparation }] : []),
   ];

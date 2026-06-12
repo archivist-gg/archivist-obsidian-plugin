@@ -210,7 +210,11 @@ describe("renderClassChronicle (browse)", () => {
     renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 1, mode: "browse", stateKey: "t" });
     expect(c.querySelector(".pc-cb-name")!.textContent).toBe("Bard");
     const labels = [...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent);
-    expect(labels).toEqual(expect.arrayContaining(["Hit Die", "Saves", "Primary", "Skills", "Subclass", "Spellcasting"]));
+    // smoke r4: Skills + Subclass tiles dropped — the same facts live in the
+    // decision strip below, so the block-top glance is the static identity set only.
+    expect(labels).toEqual(["Hit Die", "Saves", "Primary", "Spellcasting"]);
+    expect(labels).not.toContain("Skills");
+    expect(labels).not.toContain("Subclass");
     expect(c.querySelector(".pc-dstrip-row .pc-dstrip-pill")!.textContent).toBe("L2");
     expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(0);   // browse = no controls
   });
