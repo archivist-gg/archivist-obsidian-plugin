@@ -108,27 +108,54 @@ function renderClassCard(
   });
 }
 
-/** The band's inline controls (smoke r6/r7): the level select and the remove
- *  control. The subclass name now sits next to the class title in the identity
- *  area (smoke r7 — see renderClassChronicle's `subtitle`), not here. select /
- *  remove stop propagation so a click on them never reaches the band's collapse
- *  handler — level changes stay usable while collapsed, like the old header. */
+/** The band's inline controls (smoke r6/r7; Plan-5 picker A-I): the level
+ *  STEPPER and the remove control. The subclass name now sits next to the class
+ *  title in the identity area (smoke r7 — see renderClassChronicle's
+ *  `subtitle`), not here. Every control stops propagation so a click on it never
+ *  reaches the band's collapse handler — level changes stay usable while
+ *  collapsed, like the old header. */
 function renderBandControls(
   rgt: HTMLElement,
   ctx: ComponentRenderContext,
   entry: { level: number },
   index: number,
 ): void {
-  const lvl = rgt.createDiv({ cls: "pc-bccard-lvl" });
-  lvl.createSpan({ cls: "pc-bccard-lvl-l", text: "Lv" });
-  const sel = lvl.createEl("select", { cls: "pc-bdd" });
-  for (let n = 1; n <= 20; n++) {
-    sel.createEl("option", { text: String(n), attr: { value: String(n) } });
-  }
-  sel.value = String(entry.level);
-  sel.addEventListener("click", (ev) => ev.stopPropagation());
-  sel.addEventListener("change", () => ctx.editState?.setClassLevel(index, Number(sel.value)));
+  renderLevelStepper(rgt, ctx, entry, index);
   renderRemoveControl(rgt, ctx, index);
+}
+
+/** The level picker (picker design A-I): an in-pill `[−] 5 [+]` stepper that
+ *  replaces the native `<select>`. No overlay ever exists, so the OS menu can
+ *  never come back. Clamped 1–20 (− disabled at 1, + at 20); each press writes
+ *  `setClassLevel` immediately — the sheet re-renders per write and the stepper
+ *  rebuilds with the new value, so it stays correct while the card is collapsed.
+ *  All clicks stop propagation so the band's collapse handler never fires. */
+function renderLevelStepper(
+  rgt: HTMLElement,
+  ctx: ComponentRenderContext,
+  entry: { level: number },
+  index: number,
+): void {
+  const level = Math.max(1, Math.min(20, entry.level));
+  const lvl = rgt.createDiv({ cls: "pc-bccard-lvl" });
+  lvl.addEventListener("click", (ev) => ev.stopPropagation());
+  lvl.createSpan({ cls: "pc-bccard-lvl-l", text: "Lv" });
+
+  const minus = lvl.createEl("button", { cls: "pc-bccard-lvl-btn", text: "−" });
+  minus.disabled = level <= 1;
+  minus.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (level > 1) ctx.editState?.setClassLevel(index, level - 1);
+  });
+
+  lvl.createSpan({ cls: "pc-bccard-lvl-v", text: String(level) });
+
+  const plus = lvl.createEl("button", { cls: "pc-bccard-lvl-btn", text: "+" });
+  plus.disabled = level >= 20;
+  plus.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    if (level < 20) ctx.editState?.setClassLevel(index, level + 1);
+  });
 }
 
 /** The remove control (smoke r7): a proper small ghost BUTTON (visible border,
