@@ -297,7 +297,15 @@
 .archivist-pc-sheet .pc-broll-die.strike { text-decoration: line-through; opacity: 0.5; }
 .archivist-pc-sheet .pc-broll-total { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); margin-left: 4px; }
 .archivist-pc-sheet .pc-babrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; justify-items: center; padding: 10px 4px 4px; }
-.archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+/* The obelisk tile `.pc-ab` is sized `width: 100%; max-width: 72px` against its
+   parent (see components.css). On the sheet that parent is `.pc-ab-stack`, which
+   sets `width: 100%` so the frame always reaches its max-width. The builder must
+   mirror that: give the column a defined width that fills the `1fr` grid cell,
+   else it shrink-wraps to its widest child — the crimson "+N background/species"
+   caption — so captioned tiles grow to ~72px while uncaptioned ones collapse to a
+   cramped frame. `min-width: 0` keeps the cell from being forced wider than 1fr;
+   the caption then wraps below WITHOUT widening the frame. */
+.archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
 /* Shared builder dropdown: parchment-dressed native select (class-card Lv +
@@ -317,7 +325,7 @@
 :is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:focus-visible {
   outline: 2px solid var(--pc-crimson); outline-offset: 1px;
 }
-.archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; }
+.archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; max-width: 100%; text-align: center; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
 .archivist-pc-sheet .pc-blegend { font-style: italic; font-size: 11px; color: var(--pc-text-muted); margin-top: 10px; }
 .archivist-pc-sheet .pc-baibox {

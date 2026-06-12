@@ -1,10 +1,31 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderAbilitiesStep } from "../src/modules/pc/components/builder/abilities-step";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
+
+/** Read a PC style file's source so we can pin layout invariants that jsdom
+ *  cannot measure (it does no layout). Resolve from the vitest root (repo root)
+ *  rather than `import.meta.url` — under the jsdom environment a `new URL(…,
+ *  import.meta.url)` resolves against the document base, not the module file. */
+function readPcStyle(name: string): string {
+  return readFileSync(resolve(process.cwd(), "src/modules/pc/styles", name), "utf8");
+}
+
+/** Extract the declaration block (`{ ... }`) of the first rule whose selector
+ *  text contains `selectorFragment`. Returns "" if not found. */
+function ruleBlock(css: string, selectorFragment: string): string {
+  const i = css.indexOf(selectorFragment);
+  if (i < 0) return "";
+  const open = css.indexOf("{", i);
+  const close = css.indexOf("}", open);
+  if (open < 0 || close < 0) return "";
+  return css.slice(open + 1, close);
+}
 
 function mkCtx(over: {
   method?: string; abilities?: Record<string, number>; editState?: unknown;
@@ -78,6 +99,52 @@ describe("renderAbilitiesStep — tiles", () => {
     }));
     const caps = [...container.querySelectorAll(".pc-babcap .pc-bsp")];
     expect(caps.some((c) => c.textContent === "+2 species")).toBe(true);
+  });
+
+  it("every tile column emits the identical structure regardless of the bonus caption", () => {
+    const container = mountContainer();
+    // INT gets a species bonus → a .pc-bsp caption; the other five do not. The
+    // defect was exactly this asymmetry, so exercise the mixed state.
+    renderAbilitiesStep(container, mkCtx({
+      race: { slug: "r", name: "R", ability_score_increases: [{ ability: "int", amount: 2 }] },
+    }));
+    const cols = [...container.querySelectorAll(".pc-babrow > .pc-babcol")];
+    expect(cols.length).toBe(6);
+    // Exactly one column carries a crimson caption span — confirms the fixture
+    // reproduces the mixed (some-captioned, some-not) state.
+    expect(container.querySelectorAll(".pc-babcap .pc-bsp").length).toBe(1);
+    // Each column carries exactly one obelisk tile + Base control + caption slot —
+    // the caption span is the ONLY content that ever differs, so it must not be
+    // what drives tile size. Structure (the size-bearing nodes) is uniform.
+    for (const col of cols) {
+      expect(col.querySelectorAll(":scope > .pc-ab").length).toBe(1);
+      expect(col.querySelectorAll(":scope > .pc-babctl").length).toBe(1);
+      expect(col.querySelectorAll(":scope > .pc-babcap").length).toBe(1);
+      expect(col.querySelector(".pc-ab > .pc-ab-mod")).not.toBeNull();
+      expect(col.querySelector(".pc-ab > .pc-ab-score")).not.toBeNull();
+    }
+  });
+});
+
+/** ROOT-CAUSE GUARD (smoke r1): the obelisk frame `.pc-ab` is sized
+ *  `width: 100%; max-width: 72px; aspect-ratio: …` against its parent. The PC
+ *  sheet wraps it in `.pc-ab-stack { width: 100% }`, so the frame always reaches
+ *  its max-width. The builder's tile column `.pc-babcol` must do the SAME — give
+ *  the column a defined width that fills the grid cell — otherwise it
+ *  shrink-wraps to its widest child (the crimson "+N background" caption), and
+ *  tiles WITHOUT a caption collapse to a cramped frame while captioned ones grow.
+ *  jsdom does no layout, so we pin the fix at the CSS-rule level. */
+describe("renderAbilitiesStep — uniform obelisk tile size (CSS invariant)", () => {
+  it("the tile column fills its grid cell so frame width never tracks caption content", () => {
+    const css = readPcStyle("builder.css");
+    const col = ruleBlock(css, ".pc-babcol");
+    expect(col).toMatch(/width:\s*100%/);
+  });
+
+  it("the sheet's canonical tile wrapper sets the same width:100% the builder mirrors", () => {
+    const css = readPcStyle("components.css");
+    const stack = ruleBlock(css, ".pc-ab-stack");
+    expect(stack).toMatch(/width:\s*100%/);
   });
 });
 
