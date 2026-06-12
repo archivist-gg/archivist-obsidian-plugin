@@ -2,10 +2,17 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle } from "../src/modules/pc/components/builder/decision-strip";
-import type { DecisionItem } from "../src/modules/pc/pc.decision-engine";
+import type { DecisionItem, ResolvedOption } from "../src/modules/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
+
+const registeredEntity = (slug: string): RegisteredEntity =>
+  ({
+    slug, name: slug.toUpperCase(), entityType: "weapon", filePath: `Compendium/${slug}.md`,
+    data: { edition: "2024" }, compendium: "SRD 5.2", readonly: true, homebrew: false,
+  }) as unknown as RegisteredEntity;
 
 const item = (over: Partial<DecisionItem>): DecisionItem =>
   ({
@@ -168,6 +175,61 @@ describe("renderDecisionStrip", () => {
     expect(selChip.textContent).toContain("Drow");
     selChip.click();
     expect(setOriginChoice).toHaveBeenCalledWith("race:elven-lineage", null);
+  });
+
+  // ── Long select-entity lists open a filtered picker modal (smoke r1) ──
+  // A registry-backed select-entity item (no `from`) with many candidates must
+  // NOT splat the full table inline; instead it shows the current picks as
+  // chips + a "Browse all N ▸" ghost. Small lists keep the inline table.
+  const entityOpt = (slug: string): ResolvedOption => ({
+    value: slug, label: slug, entity: registeredEntity(slug),
+  });
+  const bigEntityItem = (count: number, selected: string[] = []): DecisionItem =>
+    item({
+      key: "weapon-mastery", source: { kind: "class" } as never, level: 1,
+      featureName: "Weapon Mastery",
+      choice: { kind: "select-entity", id: "weapon-mastery", count: 3, entity_type: "weapon" } as never,
+      options: Array.from({ length: count }, (_, i) => entityOpt(`w-${i}`)),
+      selected: selected.length ? selected : undefined,
+      status: selected.length >= 3 ? "resolved" : "unresolved",
+    });
+
+  it("a select-entity item with >12 candidates renders chips + Browse ghost, NO inline table", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [bigEntityItem(70, ["w-0", "w-1"])],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const nest = c.querySelector(".pc-dstrip-nest")!;
+    expect(nest.querySelector(".pc-btable")).toBeNull();                 // no inline table
+    expect(nest.querySelector(".pc-dstrip-tlabel")!.textContent).toContain("choose 3");
+    expect(nest.querySelectorAll(".pc-bchoice-chip.sel").length).toBe(2); // current picks as chips
+    const browse = nest.querySelector(".pc-dstrip-browse") as HTMLElement;
+    expect(browse).not.toBeNull();
+    expect(browse.textContent).toContain("Browse all 70");
+  });
+
+  it("a select-entity item with ≤12 candidates still renders the inline table (regression pin)", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [bigEntityItem(12)],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const nest = c.querySelector(".pc-dstrip-nest")!;
+    expect(nest.querySelector(".pc-btable")).not.toBeNull();
+    expect(nest.querySelector(".pc-dstrip-browse")).toBeNull();
+  });
+
+  it("clicking a sel chip in the long-list mode removes that pick (writeValue with reduced array)", () => {
+    const c = mountContainer();
+    const setChoice = vi.fn();
+    renderDecisionStrip(c, mkCtx({ setChoice }), {
+      items: [bigEntityItem(70, ["w-0", "w-1"])],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const chips = [...c.querySelectorAll(".pc-bchoice-chip.sel")] as HTMLElement[];
+    chips[0].click();
+    expect(setChoice).toHaveBeenCalledWith(0, 1, "weapon-mastery", ["w-1"]);
   });
 });
 

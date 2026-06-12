@@ -4,7 +4,7 @@
  * every shared rule is dual-scoped via :is(.archivist-pc-sheet, .archivist-modal).
  * The only unscoped rule is the modal width override below. */
 
-.modal:has(.pc-bclass-modal) { max-width: 680px; width: 680px; }
+.modal:has(:is(.pc-bclass-modal, .pc-bdecide-modal)) { max-width: 680px; width: 680px; }
 
 /* ── Chronicle block shell ── */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cblock {
@@ -119,6 +119,18 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
   font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
 }
+/* Long-list browse ghost (.pc-bcadd idiom): compact dashed, auto-width — NEVER
+   full-width. Opens the filtered picker modal for huge candidate lists. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse {
+  display: inline-block; width: auto; margin-top: 5px;
+  background: transparent; border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700;
+  font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  padding: 5px 14px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse:hover {
+  border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
+}
 
 /* ── Collapsible folds (Progression / Features / Equipment) ── */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold { border-top: 1px solid var(--pc-tan-muted); }
@@ -183,16 +195,25 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqltr { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--pc-tan-muted); display: inline-flex; align-items: center; justify-content: center; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqtext { font-size: var(--pc-fs-body); color: var(--pc-text-primary); line-height: 1.45; }
 
-/* ── Add-Class modal (Task 11) ─ modal-scoped: .pc-bclass-modal beats Obsidian's .modal button ─ */
-.pc-bclass-modal .pc-bcm-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-heading); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); border-bottom: 1px solid var(--pc-tan); padding-bottom: 6px; margin: 0 0 10px; }
-.pc-bclass-modal .pc-bcm-scroll { max-height: 62vh; overflow-y: auto; }
-.pc-bclass-modal .pc-bcm-foot { display: flex; align-items: center; gap: 8px; padding-top: 11px; margin-top: 11px; border-top: 1px solid var(--pc-tan); }
-.pc-bclass-modal .pc-bcm-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
-.pc-bclass-modal .pc-bcm-add { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
-.pc-bclass-modal .pc-bcm-add:hover { background: var(--pc-crimson-light); }
-.pc-bclass-modal .pc-bcm-add:disabled { background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed; }
+/* ── Builder modals (Add-Class + long-list decision picker) ──────────────────
+ * Modal-scoped so .pc-b{class,decide}-modal beats Obsidian's .modal button.
+ * The chrome rules (title / scroll / foot / hint / add) are shared by both
+ * modals via :is(); the claim bar is Add-Class-only; the decide count/Done sit
+ * under .pc-bdecide-modal below. */
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-heading); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); border-bottom: 1px solid var(--pc-tan); padding-bottom: 6px; margin: 0 0 10px; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-scroll { max-height: 62vh; overflow-y: auto; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-foot { display: flex; align-items: center; gap: 8px; padding-top: 11px; margin-top: 11px; border-top: 1px solid var(--pc-tan); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add:hover { background: var(--pc-crimson-light); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add:disabled { background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed; }
 .pc-bclass-modal .pc-bcm-claim { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 13px; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1.5px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 11px 16px; cursor: pointer; }
 .pc-bclass-modal .pc-bcm-claim:hover { background: var(--pc-crimson-light); }
+
+/* Decide-modal footer: live count on the left, crimson Done (close-only) right. */
+.pc-bdecide-modal .pc-bdecide-count { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+.pc-bdecide-modal .pc-bdecide-done { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+.pc-bdecide-modal .pc-bdecide-done:hover { background: var(--pc-crimson-light); }
 
 /* ── SP2 Plan 5: Class step — chosen-class card stack ──────────────────────── */
 .archivist-pc-sheet .pc-bcempty { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-body); color: var(--pc-text-muted); margin: 14px 0 6px; text-align: center; }

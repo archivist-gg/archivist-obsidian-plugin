@@ -1,7 +1,14 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { DecisionItem } from "../../pc.decision-engine";
+import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import { renderSelectionTable } from "./selection-table";
+import { DecisionPickModal } from "./decision-modal";
 import type { Ability } from "../../../../shared/types/choice";
+
+/** Above this many resolved candidates the inline selection table is replaced
+ *  by chips + a "Browse all N ▸" ghost that opens the filtered picker modal
+ *  (smoke r1 — Fighter Weapon Mastery is choose-3-from-~70). */
+const LONG_LIST_THRESHOLD = 12;
 
 /** Canonical toggle semantics shared by every call-site: under the limit
  *  toggle membership; at the limit choose-1 swaps, choose-N refuses. The
@@ -187,6 +194,14 @@ function renderControl(
       nest.createDiv({ cls: "pc-dstrip-empty", text: "No options available in your vault yet." });
       return;
     }
+    // Long candidate lists (e.g. Fighter Weapon Mastery — choose 3 from ~70)
+    // would splat an enormous table into the card. Past the threshold, show the
+    // current picks as removable chips + a ghost that opens the filtered picker
+    // modal instead. Small lists (a class's handful of subclasses) stay inline.
+    if (candidates.length > LONG_LIST_THRESHOLD) {
+      renderLongListBrowse(nest, ctx, item, opts, candidates, selected, need);
+      return;
+    }
     renderSelectionTable(nest, ctx, {
       columns: [],
       candidates,
@@ -221,6 +236,51 @@ function renderControl(
       writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
     });
   }
+}
+
+/** Long-list dress for a registry-backed entity pick: the current picks as
+ *  removable sel chips + a compact dashed ghost (the `.pc-bcadd` idiom, never
+ *  full-width) that opens the filtered picker modal. Removal and modal toggles
+ *  share the same applyChoiceToggle + writeValue path the inline table uses, so
+ *  the sheet re-render rebuilds the strip with the new picks. */
+function renderLongListBrowse(
+  nest: HTMLElement,
+  ctx: ComponentRenderContext,
+  item: DecisionItem,
+  opts: DecisionStripOptions,
+  candidates: RegisteredEntity[],
+  selected: Set<string>,
+  need: number,
+): void {
+  const write = (): void =>
+    writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
+
+  if (selected.size) {
+    const chips = nest.createDiv({ cls: "pc-bchoice-chips" });
+    for (const slug of selected) {
+      const label = candidates.find((e) => e.slug === slug)?.name ?? slug;
+      const chip = chips.createSpan({ cls: "pc-bchoice-chip sel", text: `✓ ${label}` });
+      chip.addEventListener("click", () => {
+        applyChoiceToggle(selected, slug, need);
+        write();
+      });
+    }
+  }
+
+  const browse = nest.createEl("button", {
+    cls: "pc-dstrip-browse",
+    text: `Browse all ${candidates.length} ▸`,
+  });
+  browse.addEventListener("click", () => {
+    new DecisionPickModal(ctx.app, ctx, {
+      title: `${labelOf(item)} — choose ${need}`,
+      need,
+      candidates,
+      initialSelected: [...selected],
+      writeValue: (value) => writeValue(ctx, item, opts, need === 1 ? (value[0] ?? null) : value),
+      stateKey: `${opts.stateKey}.${item.level}.${item.key}.modal`,
+    }).open();
+  });
 }
 
 /** ±-stepper for ability-points: one cell per pool ability, always mounted.
