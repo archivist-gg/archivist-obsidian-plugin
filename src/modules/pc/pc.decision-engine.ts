@@ -140,6 +140,30 @@ function statusOf(choice: Choice, selected: ChoiceValue | undefined): DecisionSt
 
 // ── the engine ─────────────────────────────────────────────────────────────
 
+/** Resolve the registered entity behind a persisted select-entity value (a bare
+ *  slug or a `[[wikilink]]`). Matches the registry's stored slug, the bare slug
+ *  (edition prefix stripped), or a wikilink tail. Returns undefined when no
+ *  entity is registered (a stale/homebrew slug — caller surfaces no children). */
+function resolveEntityRef(
+  ctx: DecisionContext,
+  entityType: string,
+  value: ChoiceValue | undefined,
+): RegisteredEntity | undefined {
+  if (typeof value !== "string" || value.length === 0) return undefined;
+  // Strip a `[[wikilink]]` wrapper WITHOUT slugifying — the stored entity slug
+  // keeps its edition underscore (e.g. "srd-2024_magic-initiate"), which
+  // wikilinkTailSlug would mangle into hyphens.
+  const raw = value.replace(/^\[\[/, "").replace(/\]\]$/, "");
+  const direct = ctx.registry.getByTypeAndSlug(entityType, raw);
+  if (direct) return direct;
+  // Fallback: scan the type's pool by exact slug or bare-slug match (the engine
+  // stores full slugs like "srd-2024_alert" but a value may carry the bare tail).
+  for (const e of ctx.registry.search("", entityType, Number.POSITIVE_INFINITY)) {
+    if (e.slug === raw || bareEntitySlug(e.slug) === raw) return e;
+  }
+  return undefined;
+}
+
 function buildItem(
   choice: Choice,
   source: FeatureSource,
@@ -148,10 +172,17 @@ function buildItem(
   readValue: (id: string) => ChoiceValue | undefined,
   ctx: DecisionContext,
   ownerBare: string,
+  opts?: { keyPrefix?: string; expandFeatChildren?: boolean },
 ): DecisionItem {
-  const selected = readValue(choice.id);
+  const keyPrefix = opts?.keyPrefix ?? "";
+  // `expandFeatChildren` defaults true at the top level; we set it false inside a
+  // feat's own children so a feat-select-entity nested under a feat never grows
+  // grandchildren (cheap infinite-loop guard — real SRD data never nests so).
+  const expandFeatChildren = opts?.expandFeatChildren ?? true;
+  const key = keyPrefix + choice.id;
+  const selected = readValue(key);
   const item: DecisionItem = {
-    key: choice.id, source, level, featureName, choice,
+    key, source, level, featureName, choice,
     options: enumerateOptions(choice, ctx, ownerBare),
     selected, status: statusOf(choice, selected),
   };
@@ -160,7 +191,29 @@ function buildItem(
     const branch: InlineOption | undefined = choice.options.find((o) => o.value === selected);
     if (branch?.choices?.length) {
       item.children = branch.choices.map((c) =>
-        buildItem(c, source, level, featureName, readValue, ctx, ownerBare));
+        buildItem(c, source, level, featureName, readValue, ctx, ownerBare, { keyPrefix, expandFeatChildren }));
+      if (item.status === "resolved" && item.children.some((c) => c.status !== "resolved")) {
+        item.status = "partial";
+      }
+    }
+  }
+  // Chosen-feat children: a selected feat select-entity surfaces the chosen
+  // feat's OWN decisions (its `choices`) as ledger children, namespaced
+  // `feat:<choiceId>` so they never collide with a sibling asi-branch `asi` key.
+  // Scope is exclusive to entity_type "feat": subclass picks merge their
+  // features through the class merge, never grow children here.
+  if (
+    choice.kind === "select-entity" && choice.entity_type === "feat" &&
+    expandFeatChildren && typeof selected === "string"
+  ) {
+    const entity = resolveEntityRef(ctx, "feat", selected);
+    const rawChoices = entity?.data?.choices;
+    const featChoices: Choice[] = Array.isArray(rawChoices) ? (rawChoices as Choice[]) : [];
+    if (featChoices.length) {
+      const childPrefix = `${keyPrefix}feat:`;
+      item.children = featChoices.map((c) =>
+        buildItem(c, source, level, featureName, readValue, ctx, ownerBare,
+          { keyPrefix: childPrefix, expandFeatChildren: false }));
       if (item.status === "resolved" && item.children.some((c) => c.status !== "resolved")) {
         item.status = "partial";
       }

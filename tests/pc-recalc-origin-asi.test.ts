@@ -118,3 +118,76 @@ describe("abilityBonusBreakdown", () => {
     expect(b.con).toEqual({ species: 0, background: 1 });
   });
 });
+
+// ── class chosen-feat ability-points (SP2 Plan 5) ────────────────────────────
+//
+// When the L4 asi-or-feat branch resolves to a feat that carries ability-points
+// (Ability Score Improvement), the allocation is persisted under the namespaced
+// `choices[lvl]["feat:asi"]` key. computeAbilityScores must fold that into the
+// score totals — independently of, and without double-counting, the legacy
+// `choices[lvl].asi` asi-branch fold.
+const ASI_FEAT = {
+  slug: "srd-2024_ability-score-improvement", name: "Ability Score Improvement",
+  choices: [{ kind: "ability-points", id: "asi", points: 2, max_per: 2 }],
+} as never;
+
+function fighterWith(
+  classChoices: Record<number, Record<string, unknown>>,
+  feats: unknown[] = [ASI_FEAT],
+): ResolvedCharacter {
+  const r = resolvedWith({});
+  (r as { feats: unknown[] }).feats = feats;
+  (r as { classes: unknown[] }).classes = [
+    { entity: { slug: "srd-2024_fighter", name: "Fighter" }, level: 4, subclass: null, choices: classChoices },
+  ];
+  return r;
+}
+
+describe("computeAbilityScores — class chosen-feat ability-points", () => {
+  it("folds a chosen ASI feat's feat:asi allocation into the totals", () => {
+    const r = fighterWith({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 1, con: 1 } },
+    });
+    const out = computeAbilityScores(r, {});
+    expect(out.str).toBe(11);
+    expect(out.con).toBe(11);
+    expect(out.dex).toBe(10);
+  });
+
+  it("clamps the feat:asi fold per max_per and total points", () => {
+    // max_per 2, points 2: a hand-edited {str:5} folds to +2 only.
+    const r = fighterWith({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 5 } },
+    });
+    expect(computeAbilityScores(r, {}).str).toBe(12);
+  });
+
+  it("applies the legacy asi-branch fold independently (no double-count, no interference)", () => {
+    // The asi BRANCH (choices[4].asi) and a separate level's feat pick both apply.
+    const r = fighterWith({
+      4: { "asi-or-feat": "asi", asi: { dex: 2 } },
+      8: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { wis: 1, cha: 1 } },
+    });
+    const out = computeAbilityScores(r, {});
+    expect(out.dex).toBe(12); // legacy asi-branch
+    expect(out.wis).toBe(11); // chosen-feat
+    expect(out.cha).toBe(11); // chosen-feat
+  });
+
+  it("does not fold when the chosen feat is not in resolved.feats", () => {
+    const r = fighterWith(
+      { 4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 2 } } },
+      [], // feat unresolved
+    );
+    expect(computeAbilityScores(r, {}).str).toBe(10);
+  });
+
+  it("is unaffected by a feat pick with no feat:asi allocation", () => {
+    const r = fighterWith({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]" },
+    });
+    const out = computeAbilityScores(r, {});
+    expect(out.str).toBe(10);
+    expect(out.con).toBe(10);
+  });
+});

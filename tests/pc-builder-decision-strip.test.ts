@@ -231,6 +231,43 @@ describe("renderDecisionStrip", () => {
     chips[0].click();
     expect(setChoice).toHaveBeenCalledWith(0, 1, "weapon-mastery", ["w-1"]);
   });
+
+  // ── chosen-feat children (SP2 Plan 5) ──
+  // A class-scope feat select-entity with an ability-points child (key
+  // "feat:asi") must render the ±-stepper inside the parent's nest, and a +
+  // click must write the namespaced key through setChoice at the parent's level.
+  it("renders a chosen-feat ability-points child stepper and writes the namespaced feat:asi key", () => {
+    const c = mountContainer();
+    const setChoice = vi.fn();
+    const child = item({
+      key: "feat:asi", source: { kind: "class" } as never, level: 4,
+      featureName: "Ability Score Improvement",
+      choice: { kind: "ability-points", id: "asi", points: 2, max_per: 2 } as never,
+      options: [
+        { value: "str", label: "STR" }, { value: "dex", label: "DEX" }, { value: "con", label: "CON" },
+        { value: "int", label: "INT" }, { value: "wis", label: "WIS" }, { value: "cha", label: "CHA" },
+      ],
+      selected: undefined, status: "unresolved",
+    });
+    const featItem = item({
+      key: "feat", source: { kind: "class" } as never, level: 4, featureName: "Ability Score Improvement",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      options: [], selected: "srd-2024_ability-score-improvement", status: "partial", children: [child],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice }), {
+      items: [featItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    // The child stepper renders inside the parent's nest.
+    const nest = c.querySelector(".pc-dstrip-nest")!;
+    const childRow = [...nest.querySelectorAll(".pc-dstrip-row")].find((r) =>
+      r.querySelector(".pc-bpoints"),
+    )!;
+    expect(childRow).not.toBeUndefined();
+    expect(childRow.querySelectorAll(".pc-bpoints-cell").length).toBe(6);
+    // A + click writes the namespaced key at the feat's level.
+    (childRow.querySelectorAll(".pc-bpoints-cell")[0].querySelectorAll("button")[1] as HTMLElement).click();
+    expect(setChoice).toHaveBeenCalledWith(0, 4, "feat:asi", { str: 1 });
+  });
 });
 
 describe("domainPill", () => {

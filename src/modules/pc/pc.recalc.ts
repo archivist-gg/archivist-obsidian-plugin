@@ -20,6 +20,7 @@ import { computeConditionEffects } from "./pc.conditions";
 import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
 import type {
   ACTerm,
+  ChoiceValue,
   DerivedEquipment,
   DerivedStats,
   ProficiencySet,
@@ -239,8 +240,58 @@ export function speedFromRace(resolved: ResolvedCharacter): number {
 }
 
 /**
+ * Folds class-level CHOSEN-FEAT ability-points into per-ability totals.
+ *
+ * When the L4-style "asi or feat" decision resolves to a feat that carries
+ * `ability-points` choices (e.g. Ability Score Improvement, the epic Boons),
+ * the picker persists the allocation under the namespaced key
+ * `choices[lvl]["feat:" + choice.id]` (the engine's `buildItem` surfaces those
+ * children; see pc.decision-engine.ts). This is disjoint from both the legacy
+ * asi-BRANCH key (`choices[lvl].asi`) and origin ability-points, so no source
+ * double-counts. The chosen feat entity is resolved from `resolved.feats`
+ * (already looked up by the resolver) — no registry needed here.
+ *
+ * Clamps defensively (per-ability max_per, then stops at the points total in
+ * ABILITY_KEYS order), mirroring collectChosenAbilityPoints.
+ */
+export function collectClassFeatAbilityPoints(
+  resolved: ResolvedCharacter,
+): Partial<Record<Ability, number>> {
+  const out: Partial<Record<Ability, number>> = {};
+  const stripRef = (ref: string): string => ref.replace(/^\[\[/, "").replace(/\]\]$/, "");
+  const featBySlug = new Map<string, FeatEntity>();
+  for (const f of resolved.feats) featBySlug.set(f.slug, f);
+
+  for (const c of resolved.classes) {
+    for (const atLevel of Object.values(c.choices)) {
+      const block = atLevel as Record<string, ChoiceValue> | undefined;
+      const featRef = block?.feat;
+      if (typeof featRef !== "string") continue;
+      const feat = featBySlug.get(stripRef(featRef));
+      if (!feat) continue;
+      for (const ch of feat.choices ?? []) {
+        if (ch.kind !== "ability-points") continue;
+        const raw = block[`feat:${ch.id}`];
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+        let left = ch.points;
+        for (const ab of ABILITY_KEYS) {
+          if (ch.pool && !ch.pool.includes(ab)) continue;
+          const v = raw[ab];
+          if (typeof v !== "number" || v <= 0 || left <= 0) continue;
+          const take = Math.min(v, ch.max_per, left);
+          out[ab] = (out[ab] ?? 0) + take;
+          left -= take;
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * Combines racial ASI (from race.ability_score_increases), feat ASI,
- * class-choice ASI (from classes[i].choices[lvl].asi), and user overrides.
+ * class-choice ASI (from classes[i].choices[lvl].asi), chosen-feat ASI
+ * (from classes[i].choices[lvl]["feat:<id>"]), and user overrides.
  * Overrides win; ASI sources sum unconditionally.
  */
 export function computeAbilityScores(
@@ -281,6 +332,14 @@ export function computeAbilityScores(
         }
       }
     }
+  }
+
+  // Class CHOSEN-FEAT ability-points (SP2 Plan 5). Disjoint from the asi-branch
+  // fold above (the `feat:<id>` key never collides with the `asi` branch key).
+  const featPoints = collectClassFeatAbilityPoints(resolved);
+  for (const ab of ABILITY_KEYS) {
+    const v = featPoints[ab];
+    if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
   }
 
   // Feat-granted flat ability bonuses (e.g., "Athlete: +1 STR").

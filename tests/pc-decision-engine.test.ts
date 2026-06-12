@@ -317,3 +317,123 @@ describe("collectChosenProficiencies", () => {
     expect(out.languages).toEqual(["elvish"]);
   });
 });
+
+// ── chosen-feat children (SP2 Plan 5: surface a chosen feat's own decisions) ──
+//
+// When the L4 asi-or-feat branch resolves to a concrete feat, that feat's own
+// `choices` (e.g. Ability Score Improvement's ability-points pick, Magic
+// Initiate's two select-inline picks) must surface as ledger children under the
+// feat select-entity, namespaced `feat:<choiceId>` so they never collide with
+// the asi-branch's literal `asi` key.
+describe("buildDecisionLedger — chosen-feat children", () => {
+  // A feat-aware registry: the engine resolves the chosen feat slug here to read
+  // its `choices`. Keyed by both the registered slug and the bare slug.
+  const feats: RegisteredEntity[] = [
+    { slug: "srd-2024_ability-score-improvement", name: "Ability Score Improvement",
+      entityType: "feat", filePath: "asi.md",
+      data: { choices: [{ kind: "ability-points", id: "asi", points: 2, max_per: 2 }] },
+      compendium: "SRD 2024", readonly: true, homebrew: false },
+    { slug: "srd-2024_magic-initiate", name: "Magic Initiate", entityType: "feat", filePath: "mi.md",
+      data: { choices: [
+        { kind: "select-inline", id: "spell-list", count: 1, options: [
+          { value: "cleric", label: "Cleric" }, { value: "wizard", label: "Wizard" }] },
+        { kind: "select-inline", id: "spellcasting-ability", count: 1, options: [
+          { value: "int", label: "Intelligence" }, { value: "wis", label: "Wisdom" }] },
+      ] },
+      compendium: "SRD 2024", readonly: true, homebrew: false },
+    { slug: "srd-2024_alert", name: "Alert", entityType: "feat", filePath: "al.md",
+      data: { choices: [] }, compendium: "SRD 2024", readonly: true, homebrew: false },
+  ];
+  const featRegistry = {
+    search: (_q: string, type: string) => feats.filter((s) => s.entityType === type),
+    getByTypeAndSlug: (type: string, slug: string) =>
+      feats.find((s) => s.entityType === type && (s.slug === slug || s.slug.endsWith(`_${slug}`))),
+  };
+
+  // The feat branch of the L4 asi-or-feat item.
+  const featBranchChild = (
+    choices: Record<number, Record<string, unknown>>,
+  ) => {
+    const ledger = buildDecisionLedger(resolvedFighter(4, choices), { registry: featRegistry } as never);
+    const aof = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "asi-or-feat")!;
+    return aof.children?.find((c) => c.key === "feat");
+  };
+
+  it("surfaces ONE ability-points child (key feat:asi) for a chosen ASI feat", () => {
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]" },
+    })!;
+    expect(featItem.children).toHaveLength(1);
+    const child = featItem.children![0];
+    expect(child.key).toBe("feat:asi");
+    expect(child.choice.kind).toBe("ability-points");
+    expect((child.choice as { points: number }).points).toBe(2);
+    expect((child.choice as { max_per: number }).max_per).toBe(2);
+  });
+
+  it("downgrades the feat item to partial when the feat child is unresolved", () => {
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]" },
+    })!;
+    // feat:asi has no allocation yet → child unresolved → feat item partial.
+    expect(featItem.children![0].status).toBe("unresolved");
+    expect(featItem.status).toBe("partial");
+  });
+
+  it("resolves the feat item once the namespaced feat:asi allocation is full", () => {
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 2 } },
+    })!;
+    expect(featItem.children![0].status).toBe("resolved");
+    expect(featItem.status).toBe("resolved");
+  });
+
+  it("surfaces Magic Initiate's two select-inline children, namespaced feat:*", () => {
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_magic-initiate]]" },
+    })!;
+    expect(featItem.children).toHaveLength(2);
+    expect(featItem.children!.map((c) => c.key)).toEqual(["feat:spell-list", "feat:spellcasting-ability"]);
+    expect(featItem.children!.every((c) => c.choice.kind === "select-inline")).toBe(true);
+  });
+
+  it("does not collide the chosen-feat asi child with the legacy asi-branch key", () => {
+    // Same level carries BOTH a stale asi-branch allocation AND a feat pick with
+    // its own feat:asi allocation; they must read independently.
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", asi: { dex: 2 },
+        feat: "[[srd-2024_ability-score-improvement]]", "feat:asi": { str: 1, con: 1 } },
+    })!;
+    const child = featItem.children![0];
+    expect(child.selected).toEqual({ str: 1, con: 1 }); // reads feat:asi, NOT the asi-branch dex
+  });
+
+  it("adds no children for an unresolvable feat slug, and does not crash", () => {
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_does-not-exist]]" },
+    })!;
+    expect(featItem.children).toBeUndefined();
+  });
+
+  it("adds no children for a feat whose choices are empty", () => {
+    const featItem = featBranchChild({
+      4: { "asi-or-feat": "feat", feat: "[[srd-2024_alert]]" },
+    })!;
+    expect(featItem.children).toBeUndefined();
+  });
+
+  it("grows NO children for a subclass select-entity pick", () => {
+    // A class feature whose decision is a subclass select-entity must never gain
+    // children even though it is a select-entity — feat scope is exclusive.
+    const subFeature = {
+      id: "subclass-feature", name: "Martial Archetype", description: "Choose a subclass.",
+      choices: [{ kind: "select-entity", id: "subclass", count: 1, entity_type: "subclass" }],
+    };
+    const c = resolvedFighter(4, { 4: {} });
+    (c.classes[0].entity as { features_by_level: Record<number, unknown[]> }).features_by_level[3] = [subFeature];
+    c.features.push({ feature: subFeature, source: { kind: "class", slug: "srd-2024_fighter", level: 3 } } as never);
+    const ledger = buildDecisionLedger(c, { registry: featRegistry } as never);
+    const sub = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "subclass")!;
+    expect(sub.children).toBeUndefined();
+  });
+});
