@@ -722,7 +722,9 @@
       },
       "3": {
         "prof_bonus": 2,
-        "feature_ids": [],
+        "feature_ids": [
+          "bard-subclass"
+        ],
         "columns": {
           "Bardic Die": "D6",
           "Cantrips": "2",
@@ -1058,6 +1060,24 @@
           "id": "jack-of-all-trades",
           "name": "Jack of All Trades",
           "description": "You can add half your Proficiency Bonus (round down) to any ability check you make that uses a skill proficiency you lack and that doesn't otherwise use your Proficiency Bonus.\n\nFor example, if you make a Strength (Athletics) check and lack Athletics proficiency, you can add half your Proficiency Bonus to the check."
+        }
+      ],
+      "3": [
+        {
+          "id": "bard-subclass",
+          "name": "Bard Subclass",
+          "description": "You gain a Bard subclass of your choice. The College of Lore subclass is detailed after this class's description. A subclass is a specialization that grants you features at certain Bard levels. For the rest of your career, you gain each of your subclass's features that are of your Bard level or lower.",
+          "choices": [
+            {
+              "kind": "select-entity",
+              "id": "subclass",
+              "count": 1,
+              "entity_type": "subclass",
+              "where": {
+                "parent_class": "self"
+              }
+            }
+          ]
         }
       ],
       "4": [

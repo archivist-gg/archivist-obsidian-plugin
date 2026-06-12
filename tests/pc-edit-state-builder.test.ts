@@ -85,6 +85,36 @@ describe("CharacterEditState — finishBuild (SP2 Plan 3)", () => {
     expect(es.getCharacter().builder).toBeUndefined();
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  it("also deletes the persisted builder_rolls pool (finished file carries no draft scratch)", () => {
+    const { es } = makeState(makeChar({ builder: true, ability_method: "rolled", builder_rolls: [15, 14, 13, 12, 10, 8] }));
+    expect(es.getCharacter().builder_rolls).toEqual([15, 14, 13, 12, 10, 8]);
+    es.finishBuild();
+    expect(es.getCharacter().builder_rolls).toBeUndefined();
+    expect("builder_rolls" in es.getCharacter()).toBe(false);
+  });
+});
+
+describe("CharacterEditState — setBuilderRolls (SP2 Plan 5)", () => {
+  it("writes the rolled pool onto the draft, rounds, fires onChange", () => {
+    const { es, onChange } = makeState(makeChar({ ability_method: "rolled" }));
+    es.setBuilderRolls([15, 14.6, 13, 12, 10, 8]);
+    expect(es.getCharacter().builder_rolls).toEqual([15, 15, 13, 12, 10, 8]);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("a re-roll overwrites the prior pool", () => {
+    const { es } = makeState(makeChar({ ability_method: "rolled", builder_rolls: [9, 9, 9, 9, 9, 9] }));
+    es.setBuilderRolls([16, 15, 14, 13, 12, 11]);
+    expect(es.getCharacter().builder_rolls).toEqual([16, 15, 14, 13, 12, 11]);
+  });
+
+  it("ignores a non-finite member (no write, no notify)", () => {
+    const { es, onChange } = makeState(makeChar({ ability_method: "rolled" }));
+    es.setBuilderRolls([15, Number.NaN, 13]);
+    expect(es.getCharacter().builder_rolls).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
 
 describe("CharacterEditState — ability mutators (SP2)", () => {
@@ -110,6 +140,16 @@ describe("CharacterEditState — ability mutators (SP2)", () => {
     es.setAbilityBaseScore("str" as Ability, Number.NaN);
     expect(es.getCharacter().abilities.str).toBe(10);
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("clearAbilityBaseScore resets the BASE score to the neutral 10 sentinel and fires onChange", () => {
+    // abilities is Record<Ability, number> (no null arm), so "unassigned" is 10.
+    const { es, onChange } = makeState(makeChar());
+    es.setAbilityBaseScore("dex" as Ability, 15);
+    es.clearAbilityBaseScore("dex" as Ability);
+    expect(es.getCharacter().abilities.dex).toBe(10);
+    expect(es.getCharacter().overrides.scores).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(2);
   });
 });
 

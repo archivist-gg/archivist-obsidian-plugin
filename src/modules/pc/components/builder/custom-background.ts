@@ -3,7 +3,8 @@ import type { Ability } from "../../../../shared/types/choice";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import { ALL_SKILL_SLUGS } from "../../../../shared/types/choice";
-import { renderChoiceCallout, applyChoiceToggle } from "./choice-callout";
+import { renderChoiceCallout } from "./choice-callout";
+import { applyChoiceToggle } from "./decision-strip";
 
 // ── Form state ────────────────────────────────────────────────────────────
 
@@ -325,7 +326,7 @@ function renderBorrow(
     .filter((f): f is { name: string; description: string } => !!f?.name && typeof f.description === "string");
 
   const pick = box.createDiv({ cls: "pc-bfeat-pick" });
-  const select = pick.createEl("select", { cls: "pc-bborrow" });
+  const select = pick.createEl("select", { cls: "pc-bborrow pc-bdd" });
   select.createEl("option", { text: "Choose a feature…", attr: { value: "" } });
   for (const f of features) select.createEl("option", { text: f.name, attr: { value: f.name } });
   if (st.borrowedFeature) select.value = st.borrowedFeature.name;
@@ -414,7 +415,7 @@ function render2024Drawer(
   const featRow = box.createDiv({ cls: "pc-b2024-featrow" });
   featRow.createSpan({ cls: "pc-b2024-featlbl", text: "Origin Feat" });
   const feats = ctx.core.entities.search("", "feat", Number.POSITIVE_INFINITY);
-  const select = featRow.createEl("select", { cls: "pc-b2024-feat" });
+  const select = featRow.createEl("select", { cls: "pc-b2024-feat pc-bdd" });
   select.createEl("option", { text: "None", attr: { value: "" } });
   for (const f of feats) {
     select.createEl("option", { text: f.name, attr: { value: f.slug } });

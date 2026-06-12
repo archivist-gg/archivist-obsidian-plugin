@@ -126,6 +126,41 @@ describe("renderEntityPicker (single-select ledger)", () => {
     expect(rowByName(root, "Elf").querySelector(".col-size")?.textContent).toBe("medium");
   });
 
+  it("defaultExpandSlug opens its row by default when nothing is expanded (smoke r6)", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), {
+      ...baseOpts(), selectedSlug: "srd-2024_human", expandSelect: true, defaultExpandSlug: "srd-2024_human",
+    });
+    expect(root.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    // The expanded block belongs to the default (chosen) row.
+    expect(root.querySelector(".pc-btable-expand .pc-bblock-fallback")?.textContent).toBe("Human");
+  });
+
+  it("defaultExpandSlug yields to an explicitly expanded row, then re-seeds when that one is closed (smoke r6)", () => {
+    const bag = new Map<string, unknown>();
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(bag), {
+      ...baseOpts(), selectedSlug: "srd-2024_human", expandSelect: true, defaultExpandSlug: "srd-2024_human",
+    });
+    // Solo-expand the OTHER row — the default yields (transient swap).
+    rowByName(root, "Elf").click();
+    expect(root.querySelector(".pc-btable-expand .pc-bblock-fallback")?.textContent).toBe("Elf");
+    // Close it: on the next render the resting default (Human) re-seeds.
+    rowByName(root, "Elf").click();
+    const root2 = mountContainer();
+    renderEntityPicker(root2, fakeCtx(bag), {
+      ...baseOpts(), selectedSlug: "srd-2024_human", expandSelect: true, defaultExpandSlug: "srd-2024_human",
+    });
+    expect(root2.querySelector(".pc-btable-expand .pc-bblock-fallback")?.textContent).toBe("Human");
+  });
+
+  it("excluded slugs never render a row", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map()), { ...baseOpts(), exclude: new Set(["srd-5e_elf"]) });
+    const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toEqual(["Human"]);
+  });
+
   it("shows the table's No-matches state when the query matches nothing", () => {
     const root = mountContainer();
     renderEntityPicker(root, fakeCtx(new Map()), baseOpts());

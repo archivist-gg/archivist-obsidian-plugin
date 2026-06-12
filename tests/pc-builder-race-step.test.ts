@@ -70,16 +70,25 @@ describe("renderRaceStep", () => {
 
 // Entity-data shape the picker hands `renderExpand` (carries subraces + a trait
 // choice). The race-block merges traits by `subraces[].slug`; the trait choice
-// is a select-inline (no registry needed to enumerate).
+// is a select-inline (no registry needed to enumerate). Carries the folded
+// Size/Speed/Darkvision traits (Task 6 folds these into glance tiles), a vision
+// block (Darkvision tile + sub-line), and a long-description decision trait.
 const DWARF_DATA = {
-  name: "Dwarf", size: "medium", speed: { walk: 25 },
+  name: "Dwarf", size: "medium", speed: { walk: 25 }, vision: { darkvision: 60 },
+  description: "Dwarves are a stout and hardy folk.",
   subraces: [{ slug: "hill-dwarf", name: "Hill Dwarf" }, { slug: "mountain-dwarf", name: "Mountain Dwarf" }],
-  traits: [{
-    name: "Tool Proficiency",
-    choices: [{ kind: "select-inline", id: "dwarf-tools", count: 1, options: [
-      { value: "smith", label: "Smith's tools" }, { value: "brewer", label: "Brewer's supplies" },
-    ] }],
-  }],
+  traits: [
+    { name: "Size", description: "Your size is Medium." },
+    { name: "Speed", description: "Your base walking speed is 25 feet." },
+    { name: "Darkvision", description: "You can see in dim light within 60 feet." },
+    {
+      name: "Tool Proficiency",
+      description: "You gain proficiency with one artisan's tool of your choice. You can use this tool to craft and repair items. The tool you choose reflects your dwarven heritage.",
+      choices: [{ kind: "select-inline", id: "dwarf-tools", count: 1, options: [
+        { value: "smith", label: "Smith's tools" }, { value: "brewer", label: "Brewer's supplies" },
+      ] }],
+    },
+  ],
 };
 
 const DWARF_ROW: RegisteredEntity = {
@@ -92,11 +101,13 @@ const DWARF_ROW: RegisteredEntity = {
  *  seeded so the dwarf row restores open at render. The fake registry's
  *  getByTypeAndSlug returns undefined — the trait's select-inline needs none. */
 function mkCtxWithChosenDwarf(
-  data: typeof DWARF_DATA,
+  data: typeof DWARF_DATA = DWARF_DATA,
   over: { setSubrace?: unknown; subrace?: string | null } = {},
 ): ComponentRenderContext {
+  const dwarfRow: RegisteredEntity =
+    data === DWARF_DATA ? DWARF_ROW : ({ ...DWARF_ROW, data } as unknown as RegisteredEntity);
   const races: RegisteredEntity[] = [
-    DWARF_ROW,
+    dwarfRow,
     { slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "x", readonly: true,
       homebrew: false, compendium: "SRD 5e", data: { name: "Elf", size: "medium", speed: { walk: 30 } } } as unknown as RegisteredEntity,
   ];
@@ -134,13 +145,107 @@ function expandRowFor(ctx: ComponentRenderContext, slug: string): void {
 }
 
 describe("renderRaceStep — expanded composition", () => {
-  it("chosen race's expanded row shows the subrace callout and racial decision items", () => {
+  it("chosen expansion renders the Chronicle block with strip inside it", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const block = c.querySelector(".pc-btable-expand .pc-cblock")!;
+    expect(block.querySelector(".pc-cb-name")!.textContent).toBe("Dwarf");
+    expect(block.querySelector(".pc-dstrip")).not.toBeNull();          // strip INSIDE the block
+    expect(c.querySelector(".pc-bledger")).toBeNull();                  // old appended ledger gone
+  });
+
+  it("chosen expansion shows the subrace row and racial decision items", () => {
     const container = mountContainer();
-    const ctx = mkCtxWithChosenDwarf(DWARF_DATA);
-    renderRaceStep(container, ctx);
+    renderRaceStep(container, mkCtxWithChosenDwarf());
     expect(container.textContent).toContain("Subrace");
     expect(container.textContent).toContain("Hill Dwarf");
     expect(container.textContent).toContain("Tool Proficiency");
+  });
+
+  it("folds Size/Speed/Darkvision traits into tiles and out of the trait list", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const names = [...c.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent);
+    expect(names).not.toContain("Size");
+    expect(names).not.toContain("Speed");
+    expect(names).not.toContain("Darkvision");
+    expect([...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toContain("Darkvision");
+  });
+
+  it("a decision trait is EXCLUDED from the Traits list — its single home is the strip (smoke r8)", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    // Tool Proficiency carries `choices`, so it never renders as its own trait row.
+    const traitNames = [...c.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent);
+    expect(traitNames).not.toContain("Tool Proficiency");
+    // It lives in the "What you decide" strip instead (named there, once).
+    const strip = c.querySelector(".pc-dstrip")!;
+    expect(strip.textContent).toContain("Tool Proficiency");
+    // The dwarf's only non-folded trait IS the decision one, so with it excluded
+    // the Traits section has nothing to show and the rule never renders.
+    const rules = [...c.querySelectorAll(".pc-cb-sec-l")].map((n) => n.textContent);
+    expect(rules).toContain("What you decide");
+    expect(rules).not.toContain("Traits");
+    // The retired `▸ decision` meta is gone everywhere.
+    expect(c.querySelector(".pc-cb-trait-meta")).toBeNull();
+  });
+
+  it("tiles are Size / Speed / Darkvision only — the Decisions glance tile is dropped (smoke r6)", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    const labels = [...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent);
+    expect(labels).toEqual(["Size", "Speed", "Darkvision"]);
+    expect(labels).not.toContain("Decisions");
+    // The strip below still carries the decision count (Tool Proficiency row).
+    expect(c.querySelector(".pc-dstrip")).not.toBeNull();
+  });
+
+  it("a NON-decision trait shows its FULL description in the Traits list with no Read-full toggle (smoke r6/r8)", () => {
+    const c = mountContainer();
+    // Add a plain trait (no choices) alongside the decision one. The plain trait
+    // stays in the Traits list with its full description; the decision trait does not.
+    const data = {
+      ...DWARF_DATA,
+      traits: [
+        ...DWARF_DATA.traits,
+        { name: "Dwarven Resilience", description: "You have advantage on saving throws against poison, and you have resistance against poison damage." },
+      ],
+    };
+    renderRaceStep(c, mkCtxWithChosenDwarf(data as typeof DWARF_DATA));
+    const t = [...c.querySelectorAll(".pc-cb-trait")].find(
+      (x) => x.querySelector(".pc-cb-trait-n")?.textContent === "Dwarven Resilience",
+    )!;
+    const plain = data.traits.find((tr) => tr.name === "Dwarven Resilience")!;
+    expect(t.querySelector(".pc-cb-trait-d")!.textContent).toBe(plain.description);
+    // No truncation affordance survives in any trait row.
+    expect(c.querySelectorAll(".pc-cb-trait .pc-cb-more").length).toBe(0);
+    // The decision trait is still absent from the Traits list.
+    const names = [...c.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent);
+    expect(names).not.toContain("Tool Proficiency");
+  });
+
+  it("a trait description renders through the markdown path; pipe-table content lands in the .pc-cb-trait-d block (smoke r7)", () => {
+    const c = mountContainer();
+    // A trait whose description carries a markdown pipe table (the Elven-Lineage
+    // shape). The jsdom MarkdownRenderer mock sets textContent = source, so the
+    // table source is present in the container; real Obsidian renders a <table>.
+    const data = {
+      ...DWARF_DATA,
+      traits: [
+        ...DWARF_DATA.traits,
+        {
+          name: "Stonecunning",
+          description: "You gain expertise.\n\n| Tier | Bonus |\n| --- | --- |\n| 1 | +2 |",
+        },
+      ],
+    };
+    renderRaceStep(c, mkCtxWithChosenDwarf(data as typeof DWARF_DATA));
+    const stone = [...c.querySelectorAll(".pc-cb-trait")].find(
+      (t) => t.querySelector(".pc-cb-trait-n")?.textContent === "Stonecunning",
+    )!;
+    const dd = stone.querySelector(".pc-cb-trait-d")!;
+    expect(dd).not.toBeNull();                              // the dress container still exists
+    expect(dd.textContent).toContain("| Tier | Bonus |");   // the pipe table reached the markdown renderer
   });
 
   it("subrace chip click writes setSubrace; re-click clears it", () => {
@@ -163,12 +268,39 @@ describe("renderRaceStep — expanded composition", () => {
     expect(setSubrace).toHaveBeenCalledWith(null);
   });
 
-  it("a non-chosen race's expanded row shows only the entity block (no subrace/decisions)", () => {
+  it("a non-chosen race's expanded row shows the block WITHOUT the strip (no subrace/decisions)", () => {
     const container = mountContainer();
     const ctx = mkCtxWithChosenDwarf(DWARF_DATA); // elf row expanded while dwarf is chosen
     expandRowFor(ctx, "srd-5e_elf");
     renderRaceStep(container, ctx);
     const expand = container.querySelector(".pc-btable-expand");
+    expect(expand?.querySelector(".pc-cblock")).not.toBeNull();
+    expect(expand?.querySelector(".pc-dstrip")).toBeNull();
     expect(expand?.textContent).not.toContain("Subrace");
+  });
+
+  it("the chosen race's block ALWAYS shows: its row defaults open with nothing expanded (smoke r6)", () => {
+    const container = mountContainer();
+    const ctx = mkCtxWithChosenDwarf();
+    // No row explicitly expanded — the resting default must open the chosen row.
+    ctx.builderUiState!.delete("builder.race-picker.table");
+    renderRaceStep(container, ctx);
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    const block = container.querySelector(".pc-btable-expand .pc-cblock")!;
+    expect(block.querySelector(".pc-cb-name")!.textContent).toBe("Dwarf");
+    expect(block.querySelector(".pc-dstrip")).not.toBeNull();
+  });
+
+  it("re-clicking the chosen race's resting-default row is a no-op — the block stays shown (smoke r6)", () => {
+    const container = mountContainer();
+    const ctx = mkCtxWithChosenDwarf();
+    ctx.builderUiState!.delete("builder.race-picker.table");
+    renderRaceStep(container, ctx);
+    const chosenRow = [...container.querySelectorAll<HTMLElement>(".pc-btable-row")]
+      .find((r) => r.querySelector(".pc-btable-name")?.textContent === "Dwarf")!;
+    chosenRow.click();
+    // Block remains — the chosen row never collapses on re-click.
+    expect(container.querySelectorAll(".pc-btable-expand-row").length).toBe(1);
+    expect(container.querySelector(".pc-btable-expand .pc-cb-name")!.textContent).toBe("Dwarf");
   });
 });

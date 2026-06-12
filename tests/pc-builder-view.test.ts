@@ -280,8 +280,8 @@ describe("BuilderView shell", () => {
 
       const bg = railStep(root, "background")!;
       expect(bg.classList.contains("done")).toBe(false);
-      // background is the 4th step → keeps its 1-based number.
-      expect(bg.querySelector(".pc-builder-step-n")?.textContent).toBe("4");
+      // background is the 3rd step → keeps its 1-based number.
+      expect(bg.querySelector(".pc-builder-step-n")?.textContent).toBe("3");
     });
 
     it("abilities shows ✓ when the method is non-manual or any base differs from 10", () => {
@@ -319,7 +319,7 @@ describe("BuilderView shell", () => {
       new BuilderView().render(root, c);
       const ab = railStep(root, "abilities")!;
       expect(ab.classList.contains("done")).toBe(false);
-      expect(ab.querySelector(".pc-builder-step-n")?.textContent).toBe("3");
+      expect(ab.querySelector(".pc-builder-step-n")?.textContent).toBe("4");
     });
 
     it("abilities shows ✓ for a manual spread with any base differing from 10", () => {
@@ -384,14 +384,22 @@ describe("BuilderView shell", () => {
       const c = {
         ...ctx(),
         activeStepId: "race",
-        resolved: { definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]" } },
+        // The chosen race's block now renders by default (smoke r6), so the
+        // resolved shape needs the engine's `classes`/`race` fields.
+        resolved: {
+          definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]", origin_choices: {}, subrace: null },
+          classes: [], race: { slug: "srd-5e_elf", name: "Elf", choices: [], traits: [] }, background: null, features: [],
+        },
         builderUiState: new Map(),
         core: {
           plugin: {},
-          entities: { search: () => [{
-            slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
-            data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
-          }] },
+          entities: {
+            search: () => [{
+              slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+              data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+            }],
+            getByTypeAndSlug: () => undefined,
+          },
           compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
           modules: { getByEntityType: () => undefined },
         },
@@ -409,14 +417,22 @@ describe("BuilderView shell", () => {
     const root = mountContainer();
     const c = {
       ...ctx(),
-      resolved: { definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]" } },
+      // The chosen race's block now renders by default (smoke r6), so the
+      // resolved shape needs the engine's `classes`/`race` fields.
+      resolved: {
+        definition: { name: "Valeria", class: [], race: "[[srd-5e_elf]]", origin_choices: {}, subrace: null },
+        classes: [], race: { slug: "srd-5e_elf", name: "Elf", choices: [], traits: [] }, background: null, features: [],
+      },
       builderUiState: new Map(),
       core: {
         plugin: {},
-        entities: { search: () => [{
-          slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
-          data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
-        }] },
+        entities: {
+          search: () => [{
+            slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
+            data: { name: "Elf", edition: "2014" }, compendium: "SRD 5e", readonly: true, homebrew: false,
+          }],
+          getByTypeAndSlug: () => undefined,
+        },
         compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
         modules: { getByEntityType: () => undefined },
       },
@@ -427,5 +443,129 @@ describe("BuilderView shell", () => {
     const name = root.querySelector(".pc-btable-row .pc-btable-name");
     expect(name?.classList.contains("on")).toBe(true);
     expect(root.querySelector(".pc-btable-row .pc-bname-seal")).not.toBeNull();
+  });
+
+  describe("BuilderView — class step dispatch, Next gating, rail badge", () => {
+    // A registry shaped just enough for the class step + buildDecisionLedger.
+    function classRegistry(): unknown {
+      const classes = [
+        { slug: "bard", name: "Bard", entityType: "class", filePath: "bard.md",
+          data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
+          compendium: "SRD", readonly: true, homebrew: false },
+        { slug: "warlock", name: "Warlock", entityType: "class", filePath: "warlock.md",
+          data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
+          compendium: "SRD", readonly: true, homebrew: false },
+        // The real, compendium-scoped slug shape addClass persists (toRef("srd-2024_bard")).
+        { slug: "srd-2024_bard", name: "Bard", entityType: "class", filePath: "srd-2024_bard.md",
+          data: { hit_die: "d8", primary_abilities: ["cha"], features_by_level: {}, edition: "2024" },
+          compendium: "SRD 2024", readonly: true, homebrew: false },
+      ];
+      const all = [...classes];
+      return {
+        search: (q: string, type: string) =>
+          all.filter((e) => e.entityType === type && e.name.toLowerCase().includes(q.toLowerCase())),
+        getByTypeAndSlug: (type: string, slug: string) =>
+          all.find((e) => e.entityType === type && e.slug === slug),
+      };
+    }
+
+    function classCtx(opts: {
+      activeStepId: string;
+      classes: Array<{ name: string; level: number; subclass?: string | null }>;
+    }): ComponentRenderContext {
+      return {
+        ...ctx(),
+        app: {},
+        activeStepId: opts.activeStepId,
+        resolved: {
+          definition: { name: "Valeria", class: opts.classes },
+          classes: opts.classes.map((c) => ({ entity: null, level: c.level, subclass: null, choices: {} })),
+          features: [],
+        },
+        derived: { totalLevel: 0, proficiencyBonus: 2, scores: {} },
+        editState: { addClass: vi.fn(), removeClass: vi.fn(), setClassLevel: vi.fn() },
+        builderUiState: new Map(),
+        core: {
+          plugin: {},
+          entities: classRegistry(),
+          compendiums: { getAll: () => [{ name: "SRD", description: "", readonly: true, homebrew: false, folderPath: "" }] },
+          modules: { getByEntityType: () => undefined },
+        },
+      } as unknown as ComponentRenderContext;
+    }
+
+    it("class step dispatches to the new card-stack host (old level dropdown gone)", () => {
+      const root = mountContainer();
+      new BuilderView().render(root, classCtx({ activeStepId: "class", classes: [] }));
+      expect(root.querySelector(".pc-bcadd")).not.toBeNull(); // new host
+      expect(root.querySelector(".pc-bclass-level")).toBeNull(); // old level dropdown gone
+    });
+
+    it("Next is disabled with the quiet hint on a class-less Class step", () => {
+      const root = mountContainer();
+      new BuilderView().render(root, classCtx({ activeStepId: "class", classes: [] }));
+      const next = root.querySelector(".pc-builder-next") as HTMLButtonElement;
+      expect(next.disabled).toBe(true);
+      expect(root.querySelector(".pc-builder-foot-hint")!.textContent).toContain("pick a class");
+    });
+
+    it("Next is enabled once a class exists; other steps never gate", () => {
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({ activeStepId: "class", classes: [{ name: "[[bard]]", level: 5 }] }),
+      );
+      expect((root.querySelector(".pc-builder-next") as HTMLButtonElement).disabled).toBe(false);
+      expect(root.querySelector(".pc-builder-foot-hint")).toBeNull();
+
+      const root2 = mountContainer();
+      new BuilderView().render(root2, classCtx({ activeStepId: "race", classes: [] }));
+      expect((root2.querySelector(".pc-builder-next") as HTMLButtonElement).disabled).toBe(false);
+    });
+
+    it("the class rail item carries the classes badge", () => {
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({
+          activeStepId: "race",
+          classes: [{ name: "[[bard]]", level: 4 }, { name: "[[warlock]]", level: 1 }],
+        }),
+      );
+      expect(
+        root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
+      ).toBe("Bard 4 · Warlock 1");
+    });
+
+    it("the badge resolves a real compendium-scoped class ref to its display name", () => {
+      // addClass persists toRef("srd-2024_bard") → [[srd-2024_bard]]. humanizeSlug
+      // can't touch the underscore (would read "Srd 2024_bard 1"), so the badge must
+      // resolve the display name through the registry, exactly like the card header.
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({
+          activeStepId: "race",
+          classes: [{ name: "[[srd-2024_bard]]", level: 1 }],
+        }),
+      );
+      expect(
+        root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
+      ).toBe("Bard 1");
+    });
+
+    it("the badge falls back to humanizeSlug for an unregistered class slug", () => {
+      const root = mountContainer();
+      new BuilderView().render(
+        root,
+        classCtx({
+          activeStepId: "race",
+          classes: [{ name: "[[ranger]]", level: 3 }],
+        }),
+      );
+      expect(
+        root.querySelector('[data-step="class"] .pc-builder-step-badge')!.textContent,
+      ).toBe("Ranger 3");
+    });
   });
 });

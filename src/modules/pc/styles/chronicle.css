@@ -1,0 +1,399 @@
+/* Class Chronicle block + decision strip. Shared between the PC sheet
+ * (.archivist-pc-sheet) and the class-builder modal, which Obsidian portals
+ * to document.body (escaping the sheet scope) carrying .archivist-modal — so
+ * every shared rule is dual-scoped via :is(.archivist-pc-sheet, .archivist-modal).
+ * The only unscoped rule is the modal width override below. */
+
+.modal:has(:is(.pc-bclass-modal, .pc-bdecide-modal)) { max-width: 680px; width: 680px; }
+
+/* ── Chronicle block shell ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cblock {
+  background: #f0ddbd; /* page-tone card, one step darker than --pc-parchment-dark */
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  box-shadow: 0 3px 14px rgba(134, 116, 83, 0.25);
+  padding: 15px 18px 14px;
+  position: relative;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-badge {
+  position: absolute; top: 11px; right: 13px;
+  font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+  font-family: var(--pc-font-sans);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh {
+  border-bottom: 2px solid #7a200d; padding-bottom: 0.35em; margin-bottom: 0.55em;
+}
+/* Owned-card band (smoke r6): the identity band is the card's one header, with
+   inline controls on the right and a collapse chevron at the far edge. The band
+   row stays a single baseline-aligned line; the ident column flexes. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh.collapsible {
+  display: flex; align-items: center; gap: 11px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-ident { flex: 1 1 auto; min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-rgt {
+  flex: none; display: inline-flex; align-items: center; gap: 11px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-chev {
+  flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); line-height: 1;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-name {
+  font-family: var(--pc-font-serif); color: #7a200d; font-size: var(--pc-fs-big);
+  font-weight: 700; letter-spacing: 1px; margin: 0; line-height: 1.15;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub {
+  font-style: italic; font-size: 13px; color: var(--pc-text-primary); margin-top: 2px;
+}
+/* Inline source segment (smoke r8): in owned-card mode the source moves out of
+   the absolute corner badge — which would collide with the band-right LV/REMOVE
+   controls — and rides the sub-line as a quiet trailing run, matching the badge's
+   muted sans dress so it reads as metadata, not part of the italic identity sub. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-src {
+  font-style: normal; font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub-sep { color: rgba(0, 0, 0, 0.4); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
+  font-style: italic; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  color: var(--pc-text-soft); line-height: 1.55; margin: 0.2em 0 0.7em;
+}
+/* glance tiles */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-glance { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tile {
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  background: var(--pc-parchment-light); padding: 5px 10px 6px; min-width: 78px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tl {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-lg); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tv {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary);
+  font-size: 15px; line-height: 1.05; display: flex; align-items: baseline; gap: 5px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
+}
+/* section rule */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec-l {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec-r {
+  margin-left: auto; font-size: 9px; letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted);
+}
+
+/* ── Decision strip (hairline all-around borders — NO side bars) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip { display: flex; flex-direction: column; gap: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row {
+  display: flex; align-items: baseline; gap: 9px; padding: 6px 9px;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); flex-wrap: wrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-pill {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  min-width: 30px; height: 18px; border-radius: 9px; padding: 0 7px;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-name {
+  font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); font-size: var(--pc-fs-body);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
+  margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
+}
+/* Header wrapper (SP2 Plan 5, smoke r5): a 100%-basis flex child that hosts the
+   pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse
+   click + pointer. The nest is a SEPARATE row child below it, so nest clicks
+   never reach this toggle. Layout matches the legacy direct-child row exactly. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head {
+  flex-basis: 100%; display: flex; align-items: baseline; gap: 9px;
+  cursor: pointer; border-radius: var(--pc-radius-sm);
+}
+/* Collapse chevron — fold/card idiom (crimson, ~12px), sits at the far right
+   after the val (which keeps its margin-left:auto, pushing the chevron flush).
+   The head stays click-collapsible (cursor + chevron are the affordance) but
+   does NOT change colour on hover — by user request the row reads quiet. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-chev {
+  flex: none; align-self: center; width: 14px; text-align: center;
+  color: var(--pc-crimson); font-size: 12px; line-height: 1;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; }
+/* resolved */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done { border-color: var(--pc-rarity-uncommon); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-pill {
+  background: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon); color: #fff;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done .pc-dstrip-val { color: var(--pc-rarity-uncommon); }
+/* open (live unresolved) */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open { border-color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open .pc-dstrip-pill {
+  background: var(--pc-amber); border-color: var(--pc-amber); color: var(--pc-parchment-light);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.open .pc-dstrip-val { color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-bang {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; border-radius: 50%; align-self: center;
+  background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700;
+}
+/* browse-required + info */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req { border-color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-pill {
+  background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.req .pc-dstrip-val { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info .pc-dstrip-val { color: var(--pc-crimson); cursor: pointer; }
+/* An expandable info row (e.g. Origin Feat) is clickable across its whole width. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.info.expandable { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-tlabel {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft); margin-bottom: 5px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
+  font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
+}
+/* Decision description (smoke r7): the source feature/trait's own description,
+   rendered as markdown at the TOP of a top-level live row's nest so the row is
+   self-explanatory. Quiet text dress matching `.pc-cb-trait-d`; rendered tables
+   inherit the cast-table idiom below. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc {
+  font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-bottom: 8px;
+}
+/* Long-list browse ghost (.pc-bcadd idiom): compact dashed, auto-width — NEVER
+   full-width. Opens the filtered picker modal for huge candidate lists. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse {
+  display: inline-block; width: auto; margin-top: 5px;
+  background: transparent; border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700;
+  font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  padding: 5px 14px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse:hover {
+  border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
+}
+/* Compact inline variant (smoke r4): once a pick is made, the ghost sits on the
+   chips line as a small "Change ▸" — no top margin, snug padding — so children
+   of a chosen feat follow the selection, not the browse button. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse.compact {
+  margin-top: 0; padding: 3px 9px; align-self: center;
+}
+
+/* ── SP2 Plan 5: nested decisions — flat child group (Variant II sans pathline) ──
+ * Children of a decision render as ONE flat group inside the parent's nest: NO
+ * own border, NO own pill (those stay on the top-level row only). Each child is
+ * a named sub-choice (.pc-dstrip-fcl caps microlabel). Resolved children are
+ * quiet (✓ + receding non-selected chips); the open/partial child wears the
+ * amber tint + "!" disc so the only open work draws the eye. No left/right
+ * border accent bars — state is carried by the tint + amber text + flag. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fgroup {
+  display: flex; flex-direction: column; gap: 9px; margin-top: 8px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fcl {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+  font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc-ok { color: var(--pc-rarity-uncommon); font-size: 10px; }
+/* Resolved child: non-selected chips recede so the picked answer reads quietly. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.quiet .pc-bchoice-chip:not(.sel) { opacity: 0.5; }
+/* Open / partial child: amber tint panel + amber label + "!" disc. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.partial {
+  background: rgba(163, 105, 14, 0.07); border-radius: var(--pc-radius-sm);
+  padding: 7px 9px; margin-left: -9px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.partial .pc-dstrip-fcl { color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc-flag {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 8px; font-weight: 700;
+}
+
+/* ── Collapsible folds (Progression / Features / Equipment) ──
+ * These headers MUST read as clickable: a legible chevron, a warm hover
+ * tint + crimson label, and a roomy hit area. No left/right accent bars. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold { border-top: 1px solid var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h {
+  display: flex; align-items: center; gap: 9px; padding: 11px 8px 10px; cursor: pointer;
+  border-radius: var(--pc-radius-sm); transition: background 0.12s ease;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover { background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover .pc-cb-sec-l { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev {
+  flex: none; width: 14px; text-align: center; color: var(--pc-crimson);
+  font-size: 12px; line-height: 1;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover .pc-cb-fold-chev { color: var(--pc-crimson-light); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-body { padding: 2px 2px 6px; }
+
+/* ── Progression table (1–20, dynamic columns — cast-table idiom) ── */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r { display: grid; gap: 0; align-items: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h { border-bottom: 1px solid var(--pc-tan-muted); align-items: end; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-h > span {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700; padding: 6px 5px 4px; white-space: nowrap;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r > span {
+  padding: 5px; border-bottom: 1px dashed var(--pc-tan-muted); color: var(--pc-text-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r:last-child > span { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-lvl { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-pb { font-family: var(--pc-font-serif); text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat { font-family: var(--pc-font-serif); color: var(--pc-text-primary); white-space: normal; line-height: 1.35; overflow: visible; text-overflow: clip; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat .asi { color: var(--pc-amber); font-style: italic; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-feat .sub { color: var(--pc-crimson); font-weight: 700; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-n { text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slotrow { display: flex; gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slotrow .pc-cb-pt-s { flex: 1; min-width: 0; text-align: center; font-variant-numeric: tabular-nums; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-s.z { color: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-slots-t { display: block; text-align: center; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r.cur > span { background: rgba(146, 38, 16, 0.07); border-bottom-color: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r.cur .pc-cb-pt-lvl { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-pt-r:nth-child(even):not(.cur) > span { background: rgba(232, 213, 176, 0.28); }
+
+/* trait rows + prop lines (race/background/class share these) */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait { padding: 6px 0 8px; border-bottom: 1px dashed var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* Markdown-rendered description dress (smoke r7): trait + decision descriptions
+   now render through the shared markdown path, so their `p`/`table`/`ul` must
+   inherit the quiet dress. Tables follow the progression cast-table idiom (caps
+   muted headers, hairline header underline, dashed zebra rows). Scoped to BOTH
+   the trait-dress and the decision-strip description blocks. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d > p,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc > p {
+  margin: 0 0 0.45em; font-size: inherit; color: inherit; line-height: 1.45;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d > p:last-child,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc > p:last-child { margin-bottom: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d ul,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d ol,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc ul,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc ol { margin: 0.2em 0 0.45em; padding-left: 1.3em; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d table,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc table {
+  border-collapse: collapse; width: 100%; margin: 0.4em 0; font-size: inherit;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d th,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc th {
+  text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--pc-tan-muted);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc td {
+  padding: 5px 8px; border-bottom: 1px dashed var(--pc-tan-muted); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tr:last-child td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tr:last-child td { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tbody tr:nth-child(even) td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tbody tr:nth-child(even) td { background: rgba(232, 213, 176, 0.28); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }
+/* timeline */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-timeline { position: relative; margin-left: 6px; padding-left: 26px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-timeline::before { content: ""; position: absolute; left: 11px; top: 6px; bottom: 6px; width: 2px; background: var(--pc-tan-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle { position: relative; padding: 6px 0 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked { opacity: 0.66; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-med { position: absolute; left: -26px; top: 4px; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--pc-tan-muted); background: #f0ddbd; display: inline-flex; align-items: center; justify-content: center; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); z-index: 1; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.have .pc-cb-med { border-color: #7a200d; background: var(--pc-parchment-light); color: #7a200d; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.cur .pc-cb-med { background: var(--pc-crimson); border-color: #7a200d; color: var(--pc-parchment-light); box-shadow: 0 1px 5px rgba(122, 32, 13, 0.45); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn { color: var(--pc-text-muted); }
+/* Subclass-granted timeline feature: a quiet crimson "· <Subclass>" attribution
+ * on the feature name (no border bars — tint + crimson only). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn .sub { color: var(--pc-crimson); font-weight: 600; font-size: var(--pc-fs-small); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn .sub { color: var(--pc-text-muted); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fmeta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fd { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* scope bar + equipment options */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-scope { display: flex; align-items: baseline; gap: 9px; margin: 2px 0 9px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-scope-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ghost { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt { display: flex; align-items: flex-start; gap: 9px; padding: 7px 10px; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); margin-bottom: 6px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqltr { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--pc-tan-muted); display: inline-flex; align-items: center; justify-content: center; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqtext { font-size: var(--pc-fs-body); color: var(--pc-text-primary); line-height: 1.45; }
+
+/* ── Builder modals (Add-Class + long-list decision picker) ──────────────────
+ * Modal-scoped so .pc-b{class,decide}-modal beats Obsidian's .modal button.
+ * The chrome rules (title / scroll / foot / hint / add) are shared by both
+ * modals via :is(); the claim bar is Add-Class-only; the decide count/Done sit
+ * under .pc-bdecide-modal below. */
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-title { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-heading); color: var(--pc-crimson); text-transform: uppercase; letter-spacing: var(--pc-ls-caps-sm); border-bottom: 1px solid var(--pc-tan); padding-bottom: 6px; margin: 0 0 10px; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-scroll { max-height: 62vh; overflow-y: auto; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-foot { display: flex; align-items: center; gap: 8px; padding-top: 11px; margin-top: 11px; border-top: 1px solid var(--pc-tan); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add:hover { background: var(--pc-crimson-light); }
+:is(.pc-bclass-modal, .pc-bdecide-modal) .pc-bcm-add:disabled { background: transparent; color: var(--pc-text-muted); border-color: var(--pc-tan-muted); cursor: not-allowed; }
+.pc-bclass-modal .pc-bcm-claim { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 13px; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1.5px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 11px 16px; cursor: pointer; }
+.pc-bclass-modal .pc-bcm-claim:hover { background: var(--pc-crimson-light); }
+
+/* Decide-modal footer: live count on the left, crimson Done (close-only) right. */
+.pc-bdecide-modal .pc-bdecide-count { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+.pc-bdecide-modal .pc-bdecide-done { margin-left: auto; background: var(--pc-crimson); color: var(--pc-parchment-light); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 5px 16px; cursor: pointer; }
+.pc-bdecide-modal .pc-bdecide-done:hover { background: var(--pc-crimson-light); }
+
+/* ── SP2 Plan 5: Class step — chosen-class card stack ──────────────────────── */
+.archivist-pc-sheet .pc-bcempty { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-body); color: var(--pc-text-muted); margin: 14px 0 6px; text-align: center; }
+.archivist-pc-sheet .pc-bcadd-wrap { display: flex; margin: 10px 0; }
+.archivist-pc-sheet .pc-bcadd-wrap.hero { justify-content: center; padding: 18px 0 6px; }
+.archivist-pc-sheet .pc-bcadd { background: transparent; border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 7px 16px; cursor: pointer; width: auto; }
+.archivist-pc-sheet .pc-bcadd-wrap.hero .pc-bcadd { padding: 11px 22px; font-size: var(--pc-fs-heading); letter-spacing: var(--pc-ls-caps-md); }
+.archivist-pc-sheet .pc-bcadd:hover { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bcstack { display: flex; flex-direction: column; gap: 9px; margin: 0 0 4px; }
+/* The card frame wraps the Chronicle block directly now (smoke r6): the block's
+   identity band is the card header (controls + collapse chevron inline), so the
+   old separate .pc-bccard-h strip is gone. The band controls (.pc-bccard-lvl /
+   -sub / -rm) survive — they render into the block's .pc-cb-bh-rgt. */
+.archivist-pc-sheet .pc-bccard { border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); background: var(--pc-parchment-light); box-shadow: 0 2px 8px rgba(134, 116, 83, 0.18); overflow: hidden; }
+/* The block inside a card drops its own border/shadow/radius — the card frame
+   already provides them — so the two frames don't double up. */
+.archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
+/* LV control (Plan-5 picker A-II): the PRIMARY level control is a `LV n` pill
+   that opens an anchored parchment popover with a 4×5 numeral grid (1–20) — no
+   native <select>, so the OS menu never draws. The pill keeps the band-control
+   dress, now crimson-edged over the open-row tint (a live, clickable trigger),
+   with a "Lv" cap, the serif value, and a small caret. The popover panel + grid
+   reuse the generic `.pc-pop` / `.pc-numgrid` families (builder.css), shared
+   with the abilities Base picker; only the panel width + anchor offset differ
+   (`.pc-lvl-pop` / `.pc-lvl-grid`). No left/right accent bars. */
+.archivist-pc-sheet .pc-bccard-lvl-anchor { position: relative; flex: none; }
+.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.07); padding: 2px 7px 2px 8px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bccard-lvl-v { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bccard-lvl-cv { color: var(--pc-crimson); font-size: 8px; }
+/* A-II panel: wider than the Base popover's 128px (a 5-wide grid) and anchored to
+   the pill's left edge (left:0), with the caret notch over the trigger. */
+.archivist-pc-sheet .pc-lvl-pop { left: 0; transform: none; width: 198px; }
+.archivist-pc-sheet .pc-lvl-pop .pc-pop-arrow { left: 18px; margin-left: 0; }
+.archivist-pc-sheet .pc-lvl-grid { grid-template-columns: repeat(5, 1fr); }
+.archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
+/* Remove control (smoke r7): a proper small ghost BUTTON in harmony with the
+   `.pc-bcadd` dress (visible border, crimson text, label-size) — never a dotted
+   underline ghost; no left/right accent bars. The two-step confirm swaps it for
+   a crimson-filled Confirm + a quiet Cancel. */
+.archivist-pc-sheet .pc-bccard-rm-wrap { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.archivist-pc-sheet .pc-bccard-rm { background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); color: var(--pc-crimson); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 11px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm:hover { border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bccard-rm-confirm { background: var(--pc-crimson); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); color: var(--pc-parchment-light); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 11px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm-confirm:hover { background: var(--pc-crimson-light); }
+.archivist-pc-sheet .pc-bccard-rm-cancel { background: transparent; border: none; color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 6px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm-cancel:hover { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
+.archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
+
+/* ── Builder footer Next-gate hint + rail class badge (SP2 Plan 5 / Task 13) ── */
+.archivist-pc-sheet .pc-builder-foot-hint { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-label); color: var(--pc-text-muted); margin-left: auto; }
+.archivist-pc-sheet .pc-builder-foot-hint + .pc-builder-next { margin-left: 8px; }
+.archivist-pc-sheet .pc-builder-step-badge { flex-basis: 100%; padding-left: 22px; font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); color: var(--pc-text-muted); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; }
+.archivist-pc-sheet .pc-builder-step { flex-wrap: wrap; }

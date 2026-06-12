@@ -32,6 +32,15 @@ export interface DecisionItem {
   level: number;               // 0 for origin (race/background) decisions
   featureName: string;
   /**
+   * The source feature/trait's own description (race trait, background feature,
+   * class feature) — threaded through from the walk that emits the item so the
+   * decision strip can render it as a quiet markdown block at the top of the
+   * row's nest (smoke r7). Top-level rows only; a child inherits NOTHING from
+   * its parent — it carries the sub-choice option's own `description` (when the
+   * authored InlineOption supplies one) or none.
+   */
+  description?: string;
+  /**
    * When `status === "informational"` this is a placeholder sentinel and MUST
    * NOT be rendered — informational items render from `featureName` only
    * (Task 16 contract). For every other status it is the real choice to render.
@@ -140,6 +149,30 @@ function statusOf(choice: Choice, selected: ChoiceValue | undefined): DecisionSt
 
 // ── the engine ─────────────────────────────────────────────────────────────
 
+/** Resolve the registered entity behind a persisted select-entity value (a bare
+ *  slug or a `[[wikilink]]`). Matches the registry's stored slug, the bare slug
+ *  (edition prefix stripped), or a wikilink tail. Returns undefined when no
+ *  entity is registered (a stale/homebrew slug — caller surfaces no children). */
+function resolveEntityRef(
+  ctx: DecisionContext,
+  entityType: string,
+  value: ChoiceValue | undefined,
+): RegisteredEntity | undefined {
+  if (typeof value !== "string" || value.length === 0) return undefined;
+  // Strip a `[[wikilink]]` wrapper WITHOUT slugifying — the stored entity slug
+  // keeps its edition underscore (e.g. "srd-2024_magic-initiate"), which
+  // wikilinkTailSlug would mangle into hyphens.
+  const raw = value.replace(/^\[\[/, "").replace(/\]\]$/, "");
+  const direct = ctx.registry.getByTypeAndSlug(entityType, raw);
+  if (direct) return direct;
+  // Fallback: scan the type's pool by exact slug or bare-slug match (the engine
+  // stores full slugs like "srd-2024_alert" but a value may carry the bare tail).
+  for (const e of ctx.registry.search("", entityType, Number.POSITIVE_INFINITY)) {
+    if (e.slug === raw || bareEntitySlug(e.slug) === raw) return e;
+  }
+  return undefined;
+}
+
 function buildItem(
   choice: Choice,
   source: FeatureSource,
@@ -148,10 +181,18 @@ function buildItem(
   readValue: (id: string) => ChoiceValue | undefined,
   ctx: DecisionContext,
   ownerBare: string,
+  opts?: { keyPrefix?: string; expandFeatChildren?: boolean; description?: string },
 ): DecisionItem {
-  const selected = readValue(choice.id);
+  const keyPrefix = opts?.keyPrefix ?? "";
+  // `expandFeatChildren` defaults true at the top level; we set it false inside a
+  // feat's own children so a feat-select-entity nested under a feat never grows
+  // grandchildren (cheap infinite-loop guard — real SRD data never nests so).
+  const expandFeatChildren = opts?.expandFeatChildren ?? true;
+  const key = keyPrefix + choice.id;
+  const selected = readValue(key);
   const item: DecisionItem = {
-    key: choice.id, source, level, featureName, choice,
+    key, source, level, featureName, choice,
+    description: opts?.description,
     options: enumerateOptions(choice, ctx, ownerBare),
     selected, status: statusOf(choice, selected),
   };
@@ -160,13 +201,59 @@ function buildItem(
     const branch: InlineOption | undefined = choice.options.find((o) => o.value === selected);
     if (branch?.choices?.length) {
       item.children = branch.choices.map((c) =>
-        buildItem(c, source, level, featureName, readValue, ctx, ownerBare));
+        buildItem(c, source, level, featureName, readValue, ctx, ownerBare, { keyPrefix, expandFeatChildren }));
+      if (item.status === "resolved" && item.children.some((c) => c.status !== "resolved")) {
+        item.status = "partial";
+      }
+    }
+  }
+  // Chosen-feat children: a selected feat select-entity surfaces the chosen
+  // feat's OWN decisions (its `choices`) as ledger children, namespaced
+  // `feat:<choiceId>` so they never collide with a sibling asi-branch `asi` key.
+  // Scope is exclusive to entity_type "feat": subclass picks merge their
+  // features through the class merge, never grow children here.
+  if (
+    choice.kind === "select-entity" && choice.entity_type === "feat" &&
+    expandFeatChildren && typeof selected === "string"
+  ) {
+    const entity = resolveEntityRef(ctx, "feat", selected);
+    const rawChoices = entity?.data?.choices;
+    const featChoices: Choice[] = Array.isArray(rawChoices) ? (rawChoices as Choice[]) : [];
+    if (featChoices.length) {
+      const childPrefix = `${keyPrefix}feat:`;
+      item.children = featChoices.map((c) =>
+        buildItem(c, source, level, featureName, readValue, ctx, ownerBare,
+          { keyPrefix: childPrefix, expandFeatChildren: false }));
       if (item.status === "resolved" && item.children.some((c) => c.status !== "resolved")) {
         item.status = "partial";
       }
     }
   }
   return item;
+}
+
+/** Build the structural subclass-pick DecisionItem (key "subclass"). Unlike a
+ *  generic select-entity it reads/writes ClassEntry.subclass directly (no
+ *  per-level choices map): `selected` comes from `c.subclass`, and the strip's
+ *  writeValue routes it to setSubclass off `choice.entity_type === "subclass"`.
+ *  Shared by the authored path and the Fix-B synthesized guarantee so both
+ *  enumerate the same candidate pool and take the same write path. */
+function buildSubclassItem(
+  choice: Choice,
+  source: FeatureSource,
+  level: number,
+  featureName: string,
+  c: ResolvedCharacter["classes"][number],
+  ctx: DecisionContext,
+  ownerBare: string,
+  description?: string,
+): DecisionItem {
+  const selected = c.subclass ? c.subclass.slug : undefined;
+  return {
+    key: "subclass", source, level, featureName, description,
+    choice, options: enumerateOptions(choice, ctx, ownerBare),
+    selected, status: selected ? "resolved" : "unresolved",
+  };
 }
 
 /** Walk every decision definition + persisted selection and collect chosen
@@ -330,6 +417,10 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
 
     // Feature-level (class + subclass features already level-gated by the resolver),
     // with the recognizer as fallback for un-annotated decision prose (homebrew).
+    // Track whether an authored subclass select-entity surfaced so the guarantee
+    // below never synthesizes a duplicate (mirrors the browse walker's
+    // collectBrowseDecisions; the 2024 Bard alone lacks the authored choice).
+    let sawAuthoredSubclass = false;
     for (const rf of resolved.features) {
       const src = rf.source;
       if (src.kind !== "class" && src.kind !== "subclass") continue;
@@ -356,17 +447,33 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
       for (const ch of choices) {
         // The subclass decision is structural: it reads/writes ClassEntry.subclass.
         if (ch.kind === "select-entity" && ch.entity_type === "subclass") {
-          const selected = c.subclass ? c.subclass.slug : undefined;
-          const item: DecisionItem = {
-            key: "subclass", source: src, level: lvl, featureName: rf.feature.name,
-            choice: ch, options: enumerateOptions(ch, ctx, ownerBare),
-            selected, status: selected ? "resolved" : "unresolved",
-          };
-          push(lvl, item);
+          sawAuthoredSubclass = true;
+          push(lvl, buildSubclassItem(ch, src, lvl, rf.feature.name, c, ctx, ownerBare, rf.feature.description));
           continue;
         }
-        push(lvl, buildItem(ch, src, lvl, rf.feature.name, readAt(lvl), ctx, ownerBare));
+        push(lvl, buildItem(ch, src, lvl, rf.feature.name, readAt(lvl), ctx, ownerBare,
+          { description: rf.feature.description }));
       }
+    }
+
+    // Subclass-pick guarantee (Fix B): when the class declares a subclass_level
+    // that the character has reached but NO authored subclass select-entity was
+    // emitted (the 2024 Bard gap — alone of 12 classes), synthesize the pick off
+    // subclass_level so every owned card offers it. The synthesized choice carries
+    // `where: { parent_class: "self" }`, so enumerateOptions filters registry
+    // subclasses to this class (matchesFilter resolves "self" → ownerBare). It
+    // takes the SAME structural write path as the authored item (key "subclass",
+    // routed to setSubclass by the strip's writeValue). Pure over (resolved, registry).
+    const subclassLevel = (entity as { subclass_level?: number | null }).subclass_level ?? null;
+    if (subclassLevel != null && subclassLevel <= c.level && !sawAuthoredSubclass) {
+      const featureName = (entity as { subclass_feature_name?: string | null }).subclass_feature_name ?? "Subclass";
+      const synthChoice: Choice = {
+        kind: "select-entity", id: "subclass", label: featureName, count: 1,
+        entity_type: "subclass", where: { parent_class: "self" },
+      };
+      push(subclassLevel, buildSubclassItem(
+        synthChoice, { kind: "class", slug: entity.slug, level: subclassLevel },
+        subclassLevel, featureName, c, ctx, ownerBare));
     }
 
     const levels = [...byLevel.entries()]
@@ -380,26 +487,30 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
   const oc = resolved.definition.origin_choices ?? {};
   const originRead = (ns: string) => (id: string): ChoiceValue | undefined => oc[`${ns}:${id}`];
   const pushOrigin = (choices: Choice[] | undefined, ns: "race" | "background",
-    source: FeatureSource, featureName: string, ownerBare: string) => {
+    source: FeatureSource, featureName: string, ownerBare: string, description?: string) => {
     for (const ch of choices ?? []) {
-      origin.push(buildItem(ch, source, 0, featureName, originRead(ns), ctx, ownerBare));
+      origin.push(buildItem(ch, source, 0, featureName, originRead(ns), ctx, ownerBare, { description }));
     }
   };
   if (resolved.race) {
     const bare = bareEntitySlug(resolved.race.slug);
     pushOrigin(resolved.race.choices, "race",
-      { kind: "race", slug: resolved.race.slug }, resolved.race.name ?? "Race", bare);
+      { kind: "race", slug: resolved.race.slug }, resolved.race.name ?? "Race", bare,
+      (resolved.race as { description?: string }).description);
     for (const t of resolved.race.traits ?? []) {
-      pushOrigin(t.choices, "race", { kind: "race", slug: resolved.race.slug }, t.name, bare);
+      pushOrigin(t.choices, "race", { kind: "race", slug: resolved.race.slug }, t.name, bare,
+        (t as { description?: string }).description);
     }
   }
   if (resolved.background) {
     const bare = bareEntitySlug(resolved.background.slug);
     pushOrigin(resolved.background.choices, "background",
-      { kind: "background", slug: resolved.background.slug }, resolved.background.name ?? "Background", bare);
+      { kind: "background", slug: resolved.background.slug }, resolved.background.name ?? "Background", bare,
+      (resolved.background as { description?: string }).description);
     if (resolved.background.feature) {
-      pushOrigin((resolved.background.feature as { choices?: Choice[] }).choices, "background",
-        { kind: "background", slug: resolved.background.slug }, resolved.background.feature.name, bare);
+      pushOrigin((resolved.background.feature as { choices?: Choice[]; description?: string }).choices, "background",
+        { kind: "background", slug: resolved.background.slug }, resolved.background.feature.name, bare,
+        (resolved.background.feature as { description?: string }).description);
     }
   }
 

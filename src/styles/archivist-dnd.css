@@ -1537,6 +1537,19 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-ls-caps-sm: 0.08em;
   --pc-ls-caps-md: 0.14em;
   --pc-radius-sm: 4px;
+  --pc-fs-big: 22px;
+  --pc-fs-mid: 18px;
+  --pc-fs-title: 16px;
+  --pc-fs-tiny: 7.5px;
+  --pc-ls-caps-lg: 0.2em;
+  --pc-radius-md: 6px;
+  --pc-amber: #a3690e;
+  --pc-row-open-bg: rgba(146, 38, 16, 0.04);
+  --pc-rarity-uncommon: #2f6f3a;
+  --pc-space-1: 4px;
+  --pc-space-2: 8px;
+  --pc-space-3: 12px;
+  --pc-space-4: 16px;
 
   background: var(--pc-parchment-light);
   color: var(--pc-text-primary);

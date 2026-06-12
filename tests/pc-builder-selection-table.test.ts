@@ -247,3 +247,68 @@ describe("renderSelectionTable — expandSelect mode", () => {
     expect(container.querySelector(".custom-expand")).toBeTruthy();
   });
 });
+
+// ── smoke r8 Fix 1: the expand-wrap max-width pin re-measures on resize ───────
+// jsdom never lays out, so clientWidth is always 0 — exactly the deferred-view
+// first-paint condition that made the chronicle block render narrow on Obsidian's
+// first open. jsdom can't prove real layout, but it CAN pin the mechanism: the
+// pin is SKIPPED at 0 width (no `max-width: -28px` sliver), and a ResizeObserver
+// is wired to the host so the pin re-applies once the host reports a real width.
+describe("renderSelectionTable — expand max-width re-measures on resize (smoke r8)", () => {
+  class FakeResizeObserver {
+    static last: FakeResizeObserver | null = null;
+    observed: Element[] = [];
+    disconnected = false;
+    constructor(public cb: ResizeObserverCallback) { FakeResizeObserver.last = this; }
+    observe(el: Element): void { this.observed.push(el); }
+    disconnect(): void { this.disconnected = true; }
+    fire(): void { this.cb([], this as unknown as ResizeObserver); }
+  }
+
+  const withWidth = (host: HTMLElement, w: number): void =>
+    Object.defineProperty(host, "clientWidth", { value: w, configurable: true });
+
+  it("at 0 width (deferred paint) leaves max-width unset and observes the host", () => {
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = FakeResizeObserver as unknown as typeof ResizeObserver;
+    try {
+      const container = mountContainer();
+      renderSelectionTable(container, ctxWith(new Map()), {
+        columns: [], candidates: CANDS, stateKey: "t.ro1",
+        selected: new Set(), onToggle: vi.fn(), expandSelect: true,
+        renderExpand: (wrap) => wrap.createDiv({ cls: "custom-expand" }),
+      });
+      (container.querySelector(".pc-btable-row") as HTMLElement).click();
+      const wrap = container.querySelector<HTMLElement>(".pc-btable-expand")!;
+      // No sliver: a 0-width host must NOT pin `max-width: -28px`.
+      expect(wrap.style.maxWidth).toBe("");
+      // The host is being observed so a later layout pass corrects the width.
+      const host = container.querySelector<HTMLElement>(".pc-btable-host")!;
+      expect(FakeResizeObserver.last?.observed).toContain(host);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+
+  it("re-applies the pin when the observer fires with a real width", () => {
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = FakeResizeObserver as unknown as typeof ResizeObserver;
+    try {
+      const container = mountContainer();
+      renderSelectionTable(container, ctxWith(new Map()), {
+        columns: [], candidates: CANDS, stateKey: "t.ro2",
+        selected: new Set(), onToggle: vi.fn(), expandSelect: true,
+        renderExpand: (wrap) => wrap.createDiv({ cls: "custom-expand" }),
+      });
+      (container.querySelector(".pc-btable-row") as HTMLElement).click();
+      const wrap = container.querySelector<HTMLElement>(".pc-btable-expand")!;
+      const host = container.querySelector<HTMLElement>(".pc-btable-host")!;
+      // The workspace lays the leaf out: the host now reports a real width.
+      withWidth(host, 600);
+      FakeResizeObserver.last!.fire();
+      expect(wrap.style.maxWidth).toBe("572px"); // 600 − 28
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+});

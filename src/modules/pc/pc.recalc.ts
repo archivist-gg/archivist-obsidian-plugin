@@ -20,6 +20,7 @@ import { computeConditionEffects } from "./pc.conditions";
 import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
 import type {
   ACTerm,
+  ChoiceValue,
   DerivedEquipment,
   DerivedStats,
   ProficiencySet,
@@ -104,23 +105,62 @@ function subraceAsi(
   return sub?.ability_score_increases ?? [];
 }
 
+/**
+ * Sums the LEGACY class-level ASI-BRANCH allocations (`choices[lvl].asi`) per
+ * ability across every class. This is the path taken when an L4/L8-style
+ * "Ability Score Increase or Feat" decision resolves to the plain +2 ASI branch
+ * rather than a feat. Shared by both `computeAbilityScores`' fold and
+ * `abilityBonusBreakdown`'s `class` bucket so the two reads can never drift.
+ *
+ * Disjoint from chosen-feat ability-points (`choices[lvl]["feat:<id>"]`) and from
+ * origin ability-points — no source double-counts.
+ */
+export function collectClassAsiBranch(
+  resolved: ResolvedCharacter,
+): Partial<Record<Ability, number>> {
+  const out: Partial<Record<Ability, number>> = {};
+  for (const c of resolved.classes) {
+    for (const [, choice] of Object.entries(c.choices)) {
+      const asi = (choice as { asi?: Partial<Record<Ability, number>> })?.asi;
+      if (!asi) continue;
+      for (const ab of ABILITY_KEYS) {
+        const v = asi[ab];
+        if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
+      }
+    }
+  }
+  return out;
+}
+
 /** Per-ability bonus provenance for the builder's obelisk captions:
  *  species = fixed race ASI + subrace fixed ASI + race ability-points choices;
- *  background = background ability-points choices. */
+ *  background = background ability-points choices;
+ *  class = legacy class ASI-BRANCH allocations (the L4 asi-or-feat → asi path);
+ *  feat = class chosen-feat ability-points (the L4 asi-or-feat → feat path) +
+ *         flat feat ability_bonuses (e.g. Athlete +1 STR). All already fold into
+ *         computeAbilityScores totals, so the caption must account for them or a
+ *         tile reads higher than the named sources explain (smoke r1/r5c). */
 export function abilityBonusBreakdown(
   resolved: ResolvedCharacter,
-): Record<Ability, { species: number; background: number }> {
+): Record<Ability, { species: number; background: number; class: number; feat: number }> {
   const race = flattenRaceAsi(resolved.race);
   const origin = collectChosenAbilityPoints(resolved);
   const sub = subraceAsi(resolved);
+  const classAsi = collectClassAsiBranch(resolved);
+  const featPoints = collectClassFeatAbilityPoints(resolved);
 
-  const out = {} as Record<Ability, { species: number; background: number }>;
+  const out = {} as Record<Ability, { species: number; background: number; class: number; feat: number }>;
   for (const ab of ABILITY_KEYS) {
     let species = (race[ab] ?? 0) + (origin.race[ab] ?? 0);
     for (const asi of sub) {
       if (asi.ability === ab && typeof asi.amount === "number") species += asi.amount;
     }
-    out[ab] = { species, background: origin.background[ab] ?? 0 };
+    let feat = featPoints[ab] ?? 0;
+    for (const f of resolved.feats) {
+      const bonus = (f as unknown as { ability_bonuses?: Partial<Record<Ability, number>> }).ability_bonuses?.[ab];
+      if (typeof bonus === "number") feat += bonus;
+    }
+    out[ab] = { species, background: origin.background[ab] ?? 0, class: classAsi[ab] ?? 0, feat };
   }
   return out;
 }
@@ -239,8 +279,59 @@ export function speedFromRace(resolved: ResolvedCharacter): number {
 }
 
 /**
+ * Folds class-level CHOSEN-FEAT ability-points into per-ability totals.
+ *
+ * When the L4-style "asi or feat" decision resolves to a feat that carries
+ * `ability-points` choices (e.g. Ability Score Improvement, the epic Boons),
+ * the picker persists the allocation under the namespaced key
+ * `choices[lvl]["feat:" + choice.id]` (the engine's `buildItem` surfaces those
+ * children; see pc.decision-engine.ts). This is disjoint from both the legacy
+ * asi-BRANCH key (`choices[lvl].asi`) and origin ability-points, so no source
+ * double-counts. The chosen feat entity is resolved from `resolved.feats`
+ * (already looked up by the resolver) — no registry needed here.
+ *
+ * Clamps defensively (per-ability max_per, then stops at the points total in
+ * ABILITY_KEYS order), mirroring collectChosenAbilityPoints.
+ */
+export function collectClassFeatAbilityPoints(
+  resolved: ResolvedCharacter,
+): Partial<Record<Ability, number>> {
+  const out: Partial<Record<Ability, number>> = {};
+  const stripRef = (ref: string): string => ref.replace(/^\[\[/, "").replace(/\]\]$/, "");
+  const featBySlug = new Map<string, FeatEntity>();
+  for (const f of resolved.feats) featBySlug.set(f.slug, f);
+
+  for (const c of resolved.classes) {
+    for (const atLevel of Object.values(c.choices)) {
+      const block = atLevel as Record<string, ChoiceValue> | undefined;
+      if (!block) continue;
+      const featRef = block.feat;
+      if (typeof featRef !== "string") continue;
+      const feat = featBySlug.get(stripRef(featRef));
+      if (!feat) continue;
+      for (const ch of feat.choices ?? []) {
+        if (ch.kind !== "ability-points") continue;
+        const raw = block[`feat:${ch.id}`];
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+        let left = ch.points;
+        for (const ab of ABILITY_KEYS) {
+          if (ch.pool && !ch.pool.includes(ab)) continue;
+          const v = raw[ab];
+          if (typeof v !== "number" || v <= 0 || left <= 0) continue;
+          const take = Math.min(v, ch.max_per, left);
+          out[ab] = (out[ab] ?? 0) + take;
+          left -= take;
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
  * Combines racial ASI (from race.ability_score_increases), feat ASI,
- * class-choice ASI (from classes[i].choices[lvl].asi), and user overrides.
+ * class-choice ASI (from classes[i].choices[lvl].asi), chosen-feat ASI
+ * (from classes[i].choices[lvl]["feat:<id>"]), and user overrides.
  * Overrides win; ASI sources sum unconditionally.
  */
 export function computeAbilityScores(
@@ -271,16 +362,21 @@ export function computeAbilityScores(
     }
   }
 
-  for (const c of resolved.classes) {
-    for (const [, choice] of Object.entries(c.choices)) {
-      const asi = (choice as { asi?: Partial<Record<Ability, number>> })?.asi;
-      if (asi) {
-        for (const ab of ABILITY_KEYS) {
-          const v = asi[ab];
-          if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
-        }
-      }
-    }
+  // Legacy class ASI-BRANCH fold (`choices[lvl].asi`). Extracted into
+  // collectClassAsiBranch so this fold and the breakdown's `class` bucket read
+  // identically and can't drift.
+  const classAsi = collectClassAsiBranch(resolved);
+  for (const ab of ABILITY_KEYS) {
+    const v = classAsi[ab];
+    if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
+  }
+
+  // Class CHOSEN-FEAT ability-points (SP2 Plan 5). Disjoint from the asi-branch
+  // fold above (the `feat:<id>` key never collides with the `asi` branch key).
+  const featPoints = collectClassFeatAbilityPoints(resolved);
+  for (const ab of ABILITY_KEYS) {
+    const v = featPoints[ab];
+    if (typeof v === "number") out[ab] = (out[ab] ?? 0) + v;
   }
 
   // Feat-granted flat ability bonuses (e.g., "Athlete: +1 STR").

@@ -197,6 +197,12 @@ export const characterSchema = z.object({
     cha: z.number().int(),
   }),
   ability_method: z.enum(["standard-array", "point-buy", "archivist-point-buy", "rolled", "manual"]),
+  // Persisted Roll-method ability pool (SP2 Plan 5). NO default — absent on
+  // every existing/finished file and stays absent on save; present only while
+  // the file is an unfinished Builder draft in `rolled` mode. Finish deletes
+  // the key (see finishBuild). Permissive: a plain int array, no length pin
+  // (re-rolls always write six, but legacy/hand-edited files may vary).
+  builder_rolls: z.array(z.number().int()).optional(),
   skills: z.object({
     proficient: z.array(skillEnum).default([]),
     expertise: z.array(skillEnum).default([]),

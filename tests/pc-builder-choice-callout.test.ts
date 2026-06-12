@@ -1,6 +1,13 @@
 /** @vitest-environment jsdom */
+// The decision-ledger/choice-callout renderers were retired in Task 14 (commit
+// ca270c0), but `renderChoiceCallout` survives because custom-background.ts still
+// consumes it directly (a Task-14 deviation). The strip now owns applyChoiceToggle
+// (covered by pc-builder-decision-strip.test.ts), so these slim tests exist solely
+// to guard the surviving renderer's edge paths — the `.inert` missing-option path
+// and the required-but-empty amber `!` flag — which the custom-background form
+// tests only exercise on the happy path.
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderChoiceCallout, applyChoiceToggle } from "../src/modules/pc/components/builder/choice-callout";
+import { renderChoiceCallout } from "../src/modules/pc/components/builder/choice-callout";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -10,38 +17,6 @@ const OPTS = [
   { value: "stealth", label: "Stealth" },
   { value: "arcana", label: "Arcana" },
 ];
-
-describe("applyChoiceToggle", () => {
-  it("toggles membership under the limit", () => {
-    const sel = new Set<string>();
-    applyChoiceToggle(sel, "stealth", 2);
-    expect([...sel]).toEqual(["stealth"]);
-    applyChoiceToggle(sel, "stealth", 2);
-    expect(sel.size).toBe(0);
-  });
-
-  it("choose-1 swaps instead of refusing", () => {
-    const sel = new Set<string>(["athletics"]);
-    applyChoiceToggle(sel, "stealth", 1);
-    expect([...sel]).toEqual(["stealth"]);
-  });
-
-  it("choose-N refuses additions beyond the limit", () => {
-    const sel = new Set<string>(["athletics", "stealth"]);
-    applyChoiceToggle(sel, "arcana", 2);
-    expect(sel.has("arcana")).toBe(false);
-    expect(sel.size).toBe(2);
-  });
-
-  it("choose-0 refuses all additions but still allows removal", () => {
-    const sel = new Set<string>();
-    applyChoiceToggle(sel, "athletics", 0);
-    expect(sel.size).toBe(0);
-    const stale = new Set<string>(["athletics"]);
-    applyChoiceToggle(stale, "athletics", 0);
-    expect(stale.size).toBe(0);
-  });
-});
 
 describe("renderChoiceCallout (N1)", () => {
   it("renders label, Choose-N badge, and one chip per option", () => {

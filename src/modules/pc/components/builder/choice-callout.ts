@@ -1,3 +1,6 @@
+/** Surviving consumer: as of SP2 Plan 5 Task 14 the decision-strip replaced
+ *  every other caller of this renderer; it lives on solely for the inline
+ *  pickers in custom-background.ts. */
 export interface ChoiceCalloutOptions {
   label: string;
   choose: number;
@@ -11,25 +14,11 @@ export interface ChoiceCalloutOptions {
   required?: boolean;
 }
 
-/** Canonical toggle semantics shared by every call-site: under the limit
- *  toggle membership; at the limit choose-1 swaps, choose-N refuses. The
- *  caller owns the Set and re-renders after applying. */
-export function applyChoiceToggle(selected: Set<string>, value: string, choose: number): void {
-  if (selected.has(value)) {
-    selected.delete(value);
-    return;
-  }
-  if (selected.size >= choose) {
-    if (choose !== 1) return;
-    selected.clear();
-  }
-  selected.add(value);
-}
-
 /** N1 treatment (parent spec §8): borderless callout — serif-bold label over
  *  a hairline tan rule with a muted "Choose N" badge; ink-outlined chips,
  *  crimson + ✓ when selected. Pure presentational: clicking a clickable chip
- *  fires onToggle; the caller mutates state (applyChoiceToggle) and redraws. */
+ *  fires onToggle; the caller mutates the Set (see applyChoiceToggle in
+ *  decision-strip.ts) and redraws. */
 export function renderChoiceCallout(parent: HTMLElement, opts: ChoiceCalloutOptions): void {
   const box = parent.createDiv({ cls: "pc-bchoice" });
   const head = box.createDiv({ cls: "pc-bchoice-head" });
