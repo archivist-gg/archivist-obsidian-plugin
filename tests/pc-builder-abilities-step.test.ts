@@ -234,21 +234,46 @@ describe("renderAbilitiesStep — uniform obelisk tile size (CSS invariant)", ()
 });
 
 describe("renderAbilitiesStep — point-buy bar", () => {
-  it("shows spent/left meter for archivist point buy (all-10 = 12 spent, 16 left)", () => {
+  it("shows spent text, meter, and the hero remaining (all-10 archivist = 12 spent, 16 left)", () => {
     const container = mountContainer();
     renderAbilitiesStep(container, mkCtx({ method: "archivist-point-buy" }));
-    const bar = container.querySelector(".pc-bctx");
-    expect(bar?.textContent).toContain("12 of 28 spent");
-    expect(bar?.textContent).toContain("16 left");
-    expect(container.querySelector(".pc-bmeter-fill")).toBeTruthy();
+    const bar = container.querySelector(".pc-bctx")!;
+    expect(bar.textContent).toContain("12 of 28 spent");
+    expect(bar.querySelector(".pc-bleft-n")?.textContent).toBe("16");
+    expect(bar.querySelector(".pc-bleft-l")?.textContent).toBe("left");
+    expect(bar.querySelector(".pc-bmeter-fill")).toBeTruthy();
+    expect(bar.classList.contains("pc-bctx-over")).toBe(false);
+    expect(bar.querySelector(".pc-bover-bang")).toBeNull();
   });
 
-  it("renders the cost legend chips for the active rule", () => {
+  it("renders no cost legend — the score→cost table moved into the Base picker", () => {
     const container = mountContainer();
     renderAbilitiesStep(container, mkCtx({ method: "archivist-point-buy" }));
-    const chips = [...container.querySelectorAll(".pc-bcost > span")];
-    expect(chips.some((c) => c.textContent?.includes("7") && c.textContent?.includes("-1"))).toBe(true);
-    expect(chips.some((c) => c.textContent?.includes("16") && c.textContent?.includes("11"))).toBe(true);
+    expect(container.querySelector(".pc-bcost")).toBeNull();
+    // the dead dress is gone from the stylesheet too, and the meter track can host two segments
+    const css = readPcStyle("builder.css");
+    expect(css).not.toContain("pc-bcost");
+    expect(ruleBlock(css, ".pc-bmeter-bar")).toContain("display: flex");
+  });
+
+  it("over budget: N1 dress — tint class, ! disc, crimson copy, capped fill + overflow segment", () => {
+    const container = mountContainer();
+    // archivist costs: 16→11, 14→7, 9→1, 8→0 ⇒ 11+11+7+1+0+0 = 30 of 28 ⇒ 2 over.
+    renderAbilitiesStep(container, mkCtx({
+      method: "archivist-point-buy",
+      abilities: { str: 16, dex: 16, con: 14, int: 9, wis: 8, cha: 8 },
+    }));
+    const bar = container.querySelector(".pc-bctx")!;
+    expect(bar.classList.contains("pc-bctx-over")).toBe(true);
+    expect(bar.querySelector(".pc-bover-bang")?.textContent).toBe("!");
+    expect(bar.textContent).toContain("30 of 28 spent");
+    expect(bar.querySelector(".pc-bleft-n")?.textContent).toBe("2");
+    expect(bar.querySelector(".pc-bleft-l")?.textContent).toBe("over");
+    expect(bar.querySelector(".pc-bover-t")?.textContent).toContain("lower scores worth 2 points");
+    const fill = bar.querySelector(".pc-bmeter-fill") as HTMLElement;
+    const overSeg = bar.querySelector(".pc-bmeter-over") as HTMLElement;
+    expect(Math.round(parseFloat(fill.style.width))).toBe(93);  // 28/30
+    expect(Math.round(parseFloat(overSeg.style.width))).toBe(7); // 2/30
   });
 
   it("point-buy: the Base popover grid excludes unaffordable values", () => {

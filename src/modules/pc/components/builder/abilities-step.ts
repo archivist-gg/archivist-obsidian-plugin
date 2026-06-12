@@ -326,22 +326,31 @@ function renderPointBuyBar(body: HTMLElement, ctx: ComponentRenderContext, metho
   const abilities = ctx.resolved.definition.abilities;
   const spent = pointBuySpent(rule, abilities);
   const left = pointBuyRemaining(rule, abilities);
-  const bar = body.createDiv({ cls: "pc-bctx" });
+  const over = left < 0;
+  // Design D: one calm line — label · spent · meter · hero remaining. The cost
+  // legend lives in the Base picker now. Over budget wears the N1 idiom: tint +
+  // "!" disc + crimson copy + a darker overflow cap on the meter. No accent bars.
+  const bar = body.createDiv({ cls: `pc-bctx${over ? " pc-bctx-over" : ""}` });
+  if (over) bar.createSpan({ cls: "pc-bover-bang", text: "!" });
   bar.createSpan({ cls: "pc-bctx-l", text: ABILITY_METHODS.find((m) => m.id === method)?.label ?? "" });
 
   const meter = bar.createDiv({ cls: "pc-bmeter" });
-  meter.createSpan({ cls: "pc-bmeter-t", text: `${spent} of ${rule.budget} spent` });
+  meter.createSpan({ cls: `pc-bmeter-t${over ? " over" : ""}`, text: `${spent} of ${rule.budget} spent` });
   const track = meter.createDiv({ cls: "pc-bmeter-bar" });
   const fill = track.createDiv({ cls: "pc-bmeter-fill" });
-  const pct = Math.max(0, Math.min(100, (spent / rule.budget) * 100));
-  fill.style.width = `${pct}%`;
-  meter.createSpan({ cls: "pc-bmeter-t", text: `${left} left` });
+  if (over) {
+    fill.style.width = `${(rule.budget / spent) * 100}%`;
+    const overSeg = track.createDiv({ cls: "pc-bmeter-over" });
+    overSeg.style.width = `${((spent - rule.budget) / spent) * 100}%`;
+  } else {
+    fill.style.width = `${Math.max(0, Math.min(100, (spent / rule.budget) * 100))}%`;
+  }
 
-  const legend = bar.createDiv({ cls: "pc-bcost" });
-  for (let v = rule.min; v <= rule.max; v++) {
-    const chip = legend.createEl("span");
-    chip.createSpan({ cls: "pc-bcost-s", text: String(v) });
-    chip.createSpan({ text: ` ${rule.cost[v]}` });
+  bar.createSpan({ cls: "pc-bleft-n", text: String(Math.abs(left)) });
+  bar.createSpan({ cls: `pc-bleft-l${over ? " over" : ""}`, text: over ? "over" : "left" });
+  if (over) {
+    const n = Math.abs(left);
+    bar.createSpan({ cls: "pc-bover-t", text: `— lower scores worth ${n} point${n === 1 ? "" : "s"} to continue` });
   }
 }
 
