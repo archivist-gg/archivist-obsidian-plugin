@@ -132,6 +132,36 @@
   border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
 }
 
+/* ── SP2 Plan 5: nested decisions — flat child group (Variant II sans pathline) ──
+ * Children of a decision render as ONE flat group inside the parent's nest: NO
+ * own border, NO own pill (those stay on the top-level row only). Each child is
+ * a named sub-choice (.pc-dstrip-fcl caps microlabel). Resolved children are
+ * quiet (✓ + receding non-selected chips); the open/partial child wears the
+ * amber tint + "!" disc so the only open work draws the eye. No left/right
+ * border accent bars — state is carried by the tint + amber text + flag. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fgroup {
+  display: flex; flex-direction: column; gap: 9px; margin-top: 8px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fcl {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+  font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc-ok { color: var(--pc-rarity-uncommon); font-size: 10px; }
+/* Resolved child: non-selected chips recede so the picked answer reads quietly. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.quiet .pc-bchoice-chip:not(.sel) { opacity: 0.5; }
+/* Open / partial child: amber tint panel + amber label + "!" disc. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.partial {
+  background: rgba(163, 105, 14, 0.07); border-radius: var(--pc-radius-sm);
+  padding: 7px 9px; margin-left: -9px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.partial .pc-dstrip-fcl { color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc-flag {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 8px; font-weight: 700;
+}
+
 /* ── Collapsible folds (Progression / Features / Equipment) ──
  * These headers MUST read as clickable: a legible chevron, a warm hover
  * tint + crimson label, and a roomy hit area. No left/right accent bars. */

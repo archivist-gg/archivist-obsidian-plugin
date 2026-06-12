@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle } from "../src/modules/pc/components/builder/decision-strip";
+import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../src/modules/pc/components/builder/decision-strip";
 import type { DecisionItem, ResolvedOption } from "../src/modules/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
@@ -124,7 +124,7 @@ describe("renderDecisionStrip", () => {
     expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Magic Initiate");
   });
 
-  it("renders a live select-inline item's unresolved child inside the parent's nest", () => {
+  it("renders a live select-inline item's unresolved child as a FLAT amber sub-choice (no nested row)", () => {
     const c = mountContainer();
     const child = item({
       key: "drow-spell",
@@ -140,12 +140,18 @@ describe("renderDecisionStrip", () => {
     const parent = item({ status: "resolved", selected: "drow", children: [child] });
     renderDecisionStrip(c, mkCtx(), { items: [parent], pill: domainPill, live: true, stateKey: "t" });
     const nest = c.querySelector(".pc-dstrip-row .pc-dstrip-nest")!;
-    // The child row renders inside the parent's nest, with its own name + control.
-    const childRow = [...nest.querySelectorAll(".pc-dstrip-row")].find((r) =>
-      r.textContent?.includes("Drow Spell"),
-    )!;
-    expect(childRow).not.toBeUndefined();
-    expect(childRow.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+    // The child flattens into the parent's group — NO own border-bearing row, no pill.
+    const group = nest.querySelector(".pc-dstrip-fgroup")!;
+    expect(group.querySelector(".pc-dstrip-row")).toBeNull();
+    expect(group.querySelector(".pc-dstrip-pill")).toBeNull();
+    const fc = group.querySelector(".pc-dstrip-fc")!;
+    // Unresolved → amber partial dress + "!" flag; sub-label names the real
+    // sub-choice (humanized from id "drow-spell"), not the parent featureName.
+    expect(fc.classList.contains("partial")).toBe(true);
+    expect(fc.querySelector(".pc-dstrip-fc-flag")!.textContent).toBe("!");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Drow Spell");
+    expect(fc.textContent).not.toContain("Elven Lineage");
+    expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
   });
 
   it("a missing option renders inert and does not write on click", () => {
@@ -257,16 +263,130 @@ describe("renderDecisionStrip", () => {
     renderDecisionStrip(c, mkCtx({ setChoice }), {
       items: [featItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
     });
-    // The child stepper renders inside the parent's nest.
+    // The child stepper renders inside the parent's nest as a FLAT child — no
+    // nested .pc-dstrip-row border, no own pill; the sub-label reads "Ability
+    // points" (the feat:asi id mapped), not the parent's featureName.
     const nest = c.querySelector(".pc-dstrip-nest")!;
-    const childRow = [...nest.querySelectorAll(".pc-dstrip-row")].find((r) =>
+    const group = nest.querySelector(".pc-dstrip-fgroup")!;
+    expect(group.querySelector(".pc-dstrip-row")).toBeNull();
+    const childFc = [...group.querySelectorAll(".pc-dstrip-fc")].find((r) =>
       r.querySelector(".pc-bpoints"),
     )!;
-    expect(childRow).not.toBeUndefined();
-    expect(childRow.querySelectorAll(".pc-bpoints-cell").length).toBe(6);
+    expect(childFc).not.toBeUndefined();
+    expect(childFc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Ability points");
+    expect(childFc.textContent).not.toContain("Ability Score Improvement");
+    expect(childFc.querySelectorAll(".pc-bpoints-cell").length).toBe(6);
     // A + click writes the namespaced key at the feat's level.
-    (childRow.querySelectorAll(".pc-bpoints-cell")[0].querySelectorAll("button")[1] as HTMLElement).click();
+    (childFc.querySelectorAll(".pc-bpoints-cell")[0].querySelectorAll("button")[1] as HTMLElement).click();
     expect(setChoice).toHaveBeenCalledWith(0, 4, "feat:asi", { str: 1 });
+  });
+
+  // ── Variant II flat-child dress (SP2 Plan 5) ──
+  it("a RESOLVED child renders the quiet dress with a ✓ and KEEPS its chips mounted", () => {
+    const c = mountContainer();
+    const child = item({
+      key: "feat:spell-list",
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-inline", id: "spell-list", count: 1, options: [] } as never,
+      options: [
+        { value: "cleric", label: "Cleric" },
+        { value: "druid", label: "Druid" },
+        { value: "wizard", label: "Wizard" },
+      ],
+      selected: "wizard",
+      status: "resolved",
+    });
+    const parent = item({
+      key: "feat", source: { kind: "class" } as never, level: 4, featureName: "Ability Score Improvement",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      options: [], selected: "srd-2024_magic-initiate", status: "resolved", children: [child],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const fc = c.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc")!;
+    expect(fc.classList.contains("quiet")).toBe(true);
+    expect(fc.classList.contains("partial")).toBe(false);
+    expect(fc.querySelector(".pc-dstrip-fc-flag")).toBeNull();        // no amber "!" when resolved
+    expect(fc.querySelector(".pc-dstrip-fc-ok")!.textContent).toBe("✓");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Spell list");
+    expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(3);   // controls stay mounted
+    expect(fc.querySelector(".pc-bchoice-chip.sel")!.textContent).toContain("Wizard");
+  });
+
+  it("a PARTIAL child renders the amber dress with a '!' flag and a 'k picked' label", () => {
+    const c = mountContainer();
+    const child = item({
+      key: "feat:skills",
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
+      options: [
+        { value: "acrobatics", label: "Acrobatics" },
+        { value: "arcana", label: "Arcana" },
+        { value: "athletics", label: "Athletics" },
+        { value: "stealth", label: "Stealth" },
+      ],
+      selected: ["acrobatics"],
+      status: "partial",
+    });
+    const parent = item({
+      key: "feat", source: { kind: "class" } as never, level: 4, featureName: "Ability Score Improvement",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      options: [], selected: "srd-2024_skilled", status: "partial", children: [child],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const fc = c.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc")!;
+    expect(fc.classList.contains("partial")).toBe(true);
+    expect(fc.querySelector(".pc-dstrip-fc-flag")!.textContent).toBe("!");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Skills — choose 3 · 1 picked");
+    expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(4);
+  });
+
+  it("grandchildren FLATTEN into one group (Skilled-shaped): no nested .pc-dstrip-row borders", () => {
+    const c = mountContainer();
+    // select-inline shape branch → its selected branch carries a skills child.
+    const skills = item({
+      key: "feat:skills",
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
+      options: [
+        { value: "acrobatics", label: "Acrobatics" },
+        { value: "arcana", label: "Arcana" },
+        { value: "stealth", label: "Stealth" },
+      ],
+      selected: ["acrobatics"],
+      status: "partial",
+    });
+    const shape = item({
+      key: "feat:shape",
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-inline", id: "proficiency-shape", count: 1, options: [] } as never,
+      options: [{ value: "three-skills", label: "Three skills" }],
+      selected: "three-skills",
+      status: "partial",
+      children: [skills],
+    });
+    const feat = item({
+      key: "feat", source: { kind: "class" } as never, level: 4, featureName: "Ability Score Improvement",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      options: [], selected: "srd-2024_skilled", status: "partial", children: [shape],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [feat], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    // Exactly one top-level bordered row (the feat parent); zero child borders.
+    expect(c.querySelectorAll(".pc-dstrip-row").length).toBe(1);
+    const group = c.querySelector(".pc-dstrip-fgroup")!;
+    expect(group.querySelector(".pc-dstrip-row")).toBeNull();
+    // Both the shape child AND the grandchild live in the SAME flat group.
+    // humanizeSlug title-cases the unknown id; CSS uppercases it for display.
+    const names = [...group.querySelectorAll(".pc-dstrip-fc-name")].map((n) => n.textContent);
+    expect(names).toContain("Proficiency Shape");
+    expect(names).toContain("Skills — choose 3 · 1 picked");
+    // Only ONE L-pill total (on the top-level row).
+    expect(c.querySelectorAll(".pc-dstrip-pill").length).toBe(1);
   });
 
   // ── synthesized subclass pick (Fix B) routes through setSubclass ──
@@ -346,5 +466,59 @@ describe("applyChoiceToggle", () => {
     const stale = new Set<string>(["athletics"]);
     applyChoiceToggle(stale, "athletics", 0);
     expect(stale.size).toBe(0);
+  });
+});
+
+describe("childLabel", () => {
+  const child = (id: string, over: Partial<DecisionItem> = {}): DecisionItem =>
+    item({
+      key: id,
+      featureName: "Ability Score Improvement",  // inherited name — never the label
+      choice: { kind: "select-inline", id, count: 1, options: [] } as never,
+      options: [],
+      selected: undefined,
+      status: "unresolved",
+      ...over,
+    });
+
+  it("strips a feat: key prefix and special-cases the known ids", () => {
+    // Spec literal case: a feat:asi choice.id → "Ability points" (prefix stripped).
+    expect(childLabel(child("feat:asi", {
+      choice: { kind: "ability-points", id: "feat:asi", points: 2, max_per: 2 } as never,
+    }))).toBe("Ability points");
+    // And the un-prefixed asi id maps the same.
+    expect(childLabel(child("asi", {
+      choice: { kind: "ability-points", id: "asi", points: 2, max_per: 2 } as never,
+    }))).toBe("Ability points");
+    expect(childLabel(child("feat", {
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+    }))).toBe("Feat");
+    expect(childLabel(child("spell-list", {
+      choice: { kind: "select-inline", id: "spell-list", count: 1, options: [] } as never,
+    }))).toBe("Spell list");
+    expect(childLabel(child("spellcasting-ability", {
+      choice: { kind: "select-inline", id: "spellcasting-ability", count: 1, options: [] } as never,
+    }))).toBe("Spellcasting ability");
+  });
+
+  it("falls back to a humanized slug for an unknown id", () => {
+    expect(childLabel(child("eldritch-blessing", {
+      choice: { kind: "select-inline", id: "eldritch-blessing", count: 1, options: [] } as never,
+    }))).toBe("Eldritch Blessing");
+  });
+
+  it("appends the requirement for a multi-pick in progress, bare otherwise", () => {
+    // single-pick → bare label.
+    expect(childLabel(child("spell-list"))).toBe("Spell list");
+    // choose-3, 1 picked → "k picked" suffix.
+    expect(childLabel(child("feat:skills", {
+      choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
+      selected: ["acrobatics"],
+    }))).toBe("Skills — choose 3 · 1 picked");
+    // choose-3, none picked → bare requirement, no "0 picked".
+    expect(childLabel(child("feat:skills", {
+      choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
+      selected: undefined,
+    }))).toBe("Skills — choose 3");
   });
 });

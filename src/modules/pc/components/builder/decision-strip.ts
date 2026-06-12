@@ -3,6 +3,7 @@ import type { DecisionItem } from "../../pc.decision-engine";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";
+import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 import type { Ability } from "../../../../shared/types/choice";
 
 /** Above this many resolved candidates the inline selection table is replaced
@@ -95,8 +96,86 @@ function renderRow(
   if (opts.live) {
     const nest = row.createDiv({ cls: "pc-dstrip-nest" });
     renderControl(nest, ctx, item, opts);
-    if (item.children) for (const child of item.children) renderRow(nest, ctx, child, opts);
+    // SP2 Plan 5 (Variant II sans pathline): children render as a FLAT group
+    // inside the parent's nest — no own borders, no own pills. Each child is a
+    // named sub-choice; grandchildren flatten into the same group with a modest
+    // extra indent. Only the top-level row keeps the perimeter border + L-pill.
+    if (item.children?.length) {
+      const group = nest.createDiv({ cls: "pc-dstrip-fgroup" });
+      for (const child of item.children) renderChildRow(group, ctx, child, opts, 0);
+    }
   }
+}
+
+/** Variant II flat child: a named sub-choice rendered without its own border or
+ *  pill. Resolved children wear the quiet dress (sub-label + ✓ + chips, the
+ *  non-selected chips recede); the open/partial child wears the amber tint +
+ *  "!" disc so the eye lands on the only open work. Grandchildren flatten into
+ *  the same group with a modest extra indent (`depth` drives padding). */
+function renderChildRow(
+  group: HTMLElement,
+  ctx: ComponentRenderContext,
+  item: DecisionItem,
+  opts: DecisionStripOptions,
+  depth: number,
+): void {
+  const done = item.status === "resolved";
+  const fc = group.createDiv({ cls: `pc-dstrip-fc ${done ? "quiet" : "partial"}` });
+  // Grandchildren indent via padding (not margin) so a partial child's tint
+  // panel keeps its -9px left bleed regardless of depth.
+  if (depth > 0) fc.style.paddingLeft = `${depth * 14}px`;
+
+  const label = fc.createDiv({ cls: "pc-dstrip-fcl" });
+  if (!done) label.createSpan({ cls: "pc-dstrip-fc-flag", text: "!" });
+  label.createSpan({ cls: "pc-dstrip-fc-name", text: childLabel(item) });
+  if (done) label.createSpan({ cls: "pc-dstrip-fc-ok", text: "✓" });
+
+  renderControl(fc, ctx, item, opts);
+
+  // Grandchildren flatten into the SAME group (no nested border), one indent
+  // step deeper so the lineage still reads.
+  if (item.children?.length) {
+    for (const grandchild of item.children) renderChildRow(group, ctx, grandchild, opts, depth + 1);
+  }
+}
+
+const CHILD_LABEL_MAP: Record<string, string> = {
+  feat: "Feat",
+  asi: "Ability points",
+  "spell-list": "Spell list",
+  "spellcasting-ability": "Spellcasting ability",
+  skills: "Skills",
+};
+
+/** Presentation-layer sub-choice label for a flat child — names the REAL
+ *  sub-choice from the child's `choice.id`, never the inherited featureName
+ *  (the bug Variant II fixes). Strips a `feat:` key prefix, special-cases the
+ *  known ids, else humanizes the slug. When a multi-pick is in progress the
+ *  requirement is appended per the mockup's Variant II ("Skills — choose 3 ·
+ *  1 picked"); a resolved or single-pick child shows the bare label. */
+export function childLabel(item: DecisionItem): string {
+  const id = (item.choice.id ?? "").replace(/^feat:/, "");
+  const base = CHILD_LABEL_MAP[id] ?? (id ? humanizeSlug(id) : "Choice");
+  // ability-points carries a ±-stepper that shows "N point(s) left" itself —
+  // its `points` is not a "choose N" count, so never suffix it.
+  const need = item.choice.kind === "ability-points" ? 1 : requiredOf(item);
+  if (need <= 1) return base;
+  const have = selectionCountOf(item);
+  return have > 0 && have < need
+    ? `${base} — choose ${need} · ${have} picked`
+    : `${base} — choose ${need}`;
+}
+
+/** Count of picks already made on a child (array length / non-zero allocation
+ *  cells / 1 for a set string) — drives the "k picked" requirement suffix. */
+function selectionCountOf(item: DecisionItem): number {
+  const s = item.selected;
+  if (Array.isArray(s)) return s.length;
+  if (typeof s === "string") return s ? 1 : 0;
+  if (s && typeof s === "object") {
+    return Object.values(s as Record<string, number>).reduce((n, v) => n + (v ?? 0), 0);
+  }
+  return 0;
 }
 
 function statusText(item: DecisionItem): string {
