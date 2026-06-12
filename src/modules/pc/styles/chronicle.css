@@ -359,27 +359,24 @@
 /* The block inside a card drops its own border/shadow/radius — the card frame
    already provides them — so the two frames don't double up. */
 .archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
-/* LV control (Plan-5 picker A-I): the PRIMARY level control is now an in-pill
-   `[−] value [+]` STEPPER — no native <select>, so the OS menu never draws. The
-   pill keeps the band-control dress (tan-muted hairline, parchment, radius); its
-   interior is divided into cells by hairlines (a "Lv" cap, the −/+ buttons, and
-   the serif value), echoing the inventory resource counter. `overflow: hidden`
-   clips the button corners to the pill radius. The value carries the round-7
-   dominant-control size bump (title-size serif). */
-.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; border: 1px solid var(--pc-tan-muted); border-radius: 6px; background: var(--pc-parchment-light); overflow: hidden; }
-.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); padding: 0 7px 0 9px; }
-.archivist-pc-sheet .pc-bccard-lvl-btn {
-  width: 22px; height: 26px; border: none; border-left: 1px solid var(--pc-tan-muted);
-  background: transparent; color: var(--pc-crimson);
-  font-family: var(--pc-font-sans); font-weight: 700; font-size: 14px; line-height: 1;
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;
-}
-.archivist-pc-sheet .pc-bccard-lvl-btn:hover:not(:disabled) { background: rgba(146, 38, 16, 0.07); }
-.archivist-pc-sheet .pc-bccard-lvl-btn:disabled { color: var(--pc-tan-muted); cursor: not-allowed; }
-.archivist-pc-sheet .pc-bccard-lvl-v {
-  font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-title); color: var(--pc-text-primary);
-  min-width: 24px; text-align: center; padding: 0 4px; border-left: 1px solid var(--pc-tan-muted);
-}
+/* LV control (Plan-5 picker A-II): the PRIMARY level control is a `LV n` pill
+   that opens an anchored parchment popover with a 4×5 numeral grid (1–20) — no
+   native <select>, so the OS menu never draws. The pill keeps the band-control
+   dress, now crimson-edged over the open-row tint (a live, clickable trigger),
+   with a "Lv" cap, the serif value, and a small caret. The popover panel + grid
+   reuse the generic `.pc-pop` / `.pc-numgrid` families (builder.css), shared
+   with the abilities Base picker; only the panel width + anchor offset differ
+   (`.pc-lvl-pop` / `.pc-lvl-grid`). No left/right accent bars. */
+.archivist-pc-sheet .pc-bccard-lvl-anchor { position: relative; flex: none; }
+.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.07); padding: 2px 7px 2px 8px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bccard-lvl-v { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bccard-lvl-cv { color: var(--pc-crimson); font-size: 8px; }
+/* A-II panel: wider than the Base popover's 128px (a 5-wide grid) and anchored to
+   the pill's left edge (left:0), with the caret notch over the trigger. */
+.archivist-pc-sheet .pc-lvl-pop { left: 0; transform: none; width: 198px; }
+.archivist-pc-sheet .pc-lvl-pop .pc-pop-arrow { left: 18px; margin-left: 0; }
+.archivist-pc-sheet .pc-lvl-grid { grid-template-columns: repeat(5, 1fr); }
 .archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
 /* Remove control (smoke r7): a proper small ghost BUTTON in harmony with the
    `.pc-bcadd` dress (visible border, crimson text, label-size) — never a dotted

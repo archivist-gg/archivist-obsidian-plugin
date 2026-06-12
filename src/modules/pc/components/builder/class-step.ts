@@ -108,9 +108,9 @@ function renderClassCard(
   });
 }
 
-/** The band's inline controls (smoke r6/r7; Plan-5 picker A-I): the level
- *  STEPPER and the remove control. The subclass name now sits next to the class
- *  title in the identity area (smoke r7 — see renderClassChronicle's
+/** The band's inline controls (smoke r6/r7; Plan-5 picker A-II): the level
+ *  POPOVER pill and the remove control. The subclass name now sits next to the
+ *  class title in the identity area (smoke r7 — see renderClassChronicle's
  *  `subtitle`), not here. Every control stops propagation so a click on it never
  *  reaches the band's collapse handler — level changes stay usable while
  *  collapsed, like the old header. */
@@ -120,42 +120,105 @@ function renderBandControls(
   entry: { level: number },
   index: number,
 ): void {
-  renderLevelStepper(rgt, ctx, entry, index);
+  renderLevelPicker(rgt, ctx, entry, index);
   renderRemoveControl(rgt, ctx, index);
 }
 
-/** The level picker (picker design A-I): an in-pill `[−] 5 [+]` stepper that
- *  replaces the native `<select>`. No overlay ever exists, so the OS menu can
- *  never come back. Clamped 1–20 (− disabled at 1, + at 20); each press writes
- *  `setClassLevel` immediately — the sheet re-renders per write and the stepper
- *  rebuilds with the new value, so it stays correct while the card is collapsed.
- *  All clicks stop propagation so the band's collapse handler never fires. */
-function renderLevelStepper(
+/** The level picker (picker design A-II): a `LV n` pill that opens an anchored
+ *  in-DOM parchment popover with a 4×5 numeral grid (1–20) — no native
+ *  `<select>`, so the OS menu never draws. The current level is stamped crimson;
+ *  selecting writes `setClassLevel(index, n)` and closes. The panel is created
+ *  INSIDE a `position:relative` anchor (no portal), so the builder's per-write
+ *  re-render unmounts it naturally; outside-click + Escape close it with no
+ *  write. Trigger and panel clicks stop propagation so the band's collapse
+ *  handler never fires — the picker works while the card is collapsed, and a
+ *  pick (or dismissal) never toggles the band. */
+function renderLevelPicker(
   rgt: HTMLElement,
   ctx: ComponentRenderContext,
   entry: { level: number },
   index: number,
 ): void {
   const level = Math.max(1, Math.min(20, entry.level));
-  const lvl = rgt.createDiv({ cls: "pc-bccard-lvl" });
-  lvl.addEventListener("click", (ev) => ev.stopPropagation());
-  lvl.createSpan({ cls: "pc-bccard-lvl-l", text: "Lv" });
-
-  const minus = lvl.createEl("button", { cls: "pc-bccard-lvl-btn", text: "−" });
-  minus.disabled = level <= 1;
-  minus.addEventListener("click", (ev) => {
+  const anchor = rgt.createDiv({ cls: "pc-bccard-lvl-anchor" });
+  const btn = anchor.createDiv({ cls: "pc-bccard-lvl" });
+  btn.createSpan({ cls: "pc-bccard-lvl-l", text: "Lv" });
+  btn.createSpan({ cls: "pc-bccard-lvl-v", text: String(level) });
+  btn.createSpan({ cls: "pc-bccard-lvl-cv", text: "▾" });
+  btn.addEventListener("click", (ev) => {
     ev.stopPropagation();
-    if (level > 1) ctx.editState?.setClassLevel(index, level - 1);
+    if (closeLevelPopoverFor(anchor)) return; // re-clicking the open pill closes it
+    openLevelPopover(anchor, btn, ctx, level, index);
   });
+}
 
-  lvl.createSpan({ cls: "pc-bccard-lvl-v", text: String(level) });
+/** Module-level singleton so only one level popover is ever open: opening
+ *  another card's closes the first. The cleanup tears down the document-level
+ *  listeners. Mirrors the Base picker's conditions-popover dismissal idiom. */
+let currentLevelPopover: { anchor: HTMLElement; panel: HTMLElement; cleanup: () => void } | null = null;
 
-  const plus = lvl.createEl("button", { cls: "pc-bccard-lvl-btn", text: "+" });
-  plus.disabled = level >= 20;
-  plus.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    if (level < 20) ctx.editState?.setClassLevel(index, level + 1);
-  });
+function closeLevelPopover(): void {
+  if (!currentLevelPopover) return;
+  currentLevelPopover.cleanup();
+  currentLevelPopover.panel.remove();
+  currentLevelPopover = null;
+}
+
+/** Closes the popover if it belongs to `anchor`, returning whether it did — so a
+ *  click on the same trigger toggles closed instead of reopening. */
+function closeLevelPopoverFor(anchor: HTMLElement): boolean {
+  if (currentLevelPopover?.anchor === anchor) {
+    closeLevelPopover();
+    return true;
+  }
+  closeLevelPopover(); // a different card's popover, if any, also closes
+  return false;
+}
+
+function openLevelPopover(
+  anchor: HTMLElement, trigger: HTMLElement,
+  ctx: ComponentRenderContext, level: number, index: number,
+): void {
+  const panel = anchor.createDiv({ cls: "pc-pop pc-lvl-pop" });
+  panel.createDiv({ cls: "pc-pop-arrow" });
+  panel.addEventListener("click", (ev) => ev.stopPropagation());
+  panel.createDiv({ cls: "pc-pop-h", text: "Set level" });
+
+  const grid = panel.createDiv({ cls: "pc-numgrid pc-lvl-grid" });
+  for (let n = 1; n <= 20; n++) {
+    const cell = grid.createDiv({ cls: `pc-numgrid-c${n === level ? " cur" : ""}`, text: String(n) });
+    cell.addEventListener("click", () => {
+      closeLevelPopover();
+      ctx.editState?.setClassLevel(index, n);
+    });
+  }
+
+  // Dismissal — the conditions-popover idiom (mirrors the Base picker): register
+  // document-level outside-click + Escape on open, tear down on close. The
+  // opening click is still bubbling when this runs, but it targets the trigger
+  // (inside `anchor`), so the `trigger.contains` guard ignores it and the
+  // listener survives the open. A builder re-render unmounts the panel without
+  // calling close, so each handler also bails the moment it leaves the DOM.
+  const onClick = (e: MouseEvent): void => {
+    if (!panel.isConnected) { closeLevelPopover(); return; }
+    if (!(e.target instanceof Node)) return;
+    if (panel.contains(e.target) || trigger.contains(e.target)) return;
+    closeLevelPopover();
+  };
+  const onKey = (e: KeyboardEvent): void => {
+    if (!panel.isConnected) { closeLevelPopover(); return; }
+    if (e.key === "Escape") closeLevelPopover();
+  };
+  activeDocument.addEventListener("click", onClick);
+  activeDocument.addEventListener("keydown", onKey);
+
+  currentLevelPopover = {
+    anchor, panel,
+    cleanup: () => {
+      activeDocument.removeEventListener("click", onClick);
+      activeDocument.removeEventListener("keydown", onKey);
+    },
+  };
 }
 
 /** The remove control (smoke r7): a proper small ghost BUTTON (visible border,

@@ -215,8 +215,13 @@ function openBasePopover(
   ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability,
 ): void {
   const cur = ctx.resolved.definition.abilities[ab];
-  const panel = anchor.createDiv({ cls: "pc-base-pop" });
-  panel.createDiv({ cls: "pc-base-pop-arrow" });
+  // The panel + caret + header + numeral grid share the generic `.pc-pop` /
+  // `.pc-numgrid` families with the class-card level picker (picker A-II); the
+  // `.pc-base-*` co-classes carry only the Base-specific dress (tile-centred
+  // anchor, narrower width) and the pool-list, which the level picker has no
+  // analogue for.
+  const panel = anchor.createDiv({ cls: "pc-pop pc-base-pop" });
+  panel.createDiv({ cls: "pc-pop-arrow pc-base-pop-arrow" });
   panel.addEventListener("click", (ev) => ev.stopPropagation());
 
   const commit = (value: number): void => {
@@ -225,7 +230,7 @@ function openBasePopover(
   };
 
   if (isPoolMethod(method)) {
-    panel.createDiv({ cls: "pc-base-pop-h", text: "Assign value" });
+    panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Assign value" });
     const list = panel.createDiv({ cls: "pc-base-pool-list" });
     for (const slot of poolSlotsFor(ctx, method, ab)) {
       const opt = list.createDiv({
@@ -236,10 +241,10 @@ function openBasePopover(
       if (slot.state !== "used") opt.addEventListener("click", () => commit(slot.value));
     }
   } else {
-    panel.createDiv({ cls: "pc-base-pop-h", text: "Set value" });
-    const grid = panel.createDiv({ cls: "pc-base-numgrid" });
+    panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Set value" });
+    const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
     for (const v of baseChoicesFor(ctx, method, ab)) {
-      const cell = grid.createDiv({ cls: `pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
+      const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
       cell.addEventListener("click", () => commit(v));
     }
   }

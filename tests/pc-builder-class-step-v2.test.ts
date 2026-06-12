@@ -171,7 +171,7 @@ describe("renderClassStep", () => {
     expect(c.querySelector(".pc-bccard")).toBeNull();
   });
 
-  it("owned: the block's identity band is the card header — name + inline level stepper + remove + chevron; body hosts the live strip", () => {
+  it("owned: the block's identity band is the card header — name + inline LV pill + remove + chevron; body hosts the live strip", () => {
     const c = mountContainer();
     const setClassLevel = vi.fn();
     renderClassStep(c, mkCtxWithBard5({ setClassLevel }));
@@ -180,46 +180,83 @@ describe("renderClassStep", () => {
     expect(card.querySelector(".pc-bccard-h")).toBeNull();
     const band = card.querySelector(".pc-cblock .pc-cb-bh.collapsible")!;
     expect(band.querySelector(".pc-cb-name")!.textContent).toBe("Bard");
-    // Level STEPPER (picker A-I) lives inline in the band's right-side controls —
-    // a `[−] value [+]` pill, no native <select>.
-    const lvl = band.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl")!;
+    // Level PILL (picker A-II) lives inline in the band's right-side controls —
+    // a `LV n` trigger over a popover, no native <select> and no stepper buttons.
+    const lvl = band.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl-anchor .pc-bccard-lvl")!;
     expect(lvl.querySelector("select")).toBeNull();
+    expect(lvl.querySelector(".pc-bccard-lvl-btn")).toBeNull();
     expect(lvl.querySelector(".pc-bccard-lvl-v")!.textContent).toBe("5");
-    const [minus, plus] = [...lvl.querySelectorAll(".pc-bccard-lvl-btn")] as HTMLButtonElement[];
-    plus.click();
-    expect(setClassLevel).toHaveBeenLastCalledWith(0, 6);
-    minus.click();
-    expect(setClassLevel).toHaveBeenLastCalledWith(0, 4);
     // Remove ghost is in the band too; collapse chevron at the far edge.
     expect(band.querySelector(".pc-bccard-rm")).not.toBeNull();
     expect(band.querySelector(".pc-cb-bh-chev")!.textContent).toBe("▾");
     expect(card.querySelector(".pc-cblock .pc-dstrip")).not.toBeNull();
   });
 
-  it("the level stepper clamps to 1–20: − disabled at level 1, + disabled at level 20", () => {
-    // Level 1 → minus disabled, plus enabled.
-    const c1 = mountContainer();
-    renderClassStep(c1, mkCtx({
-      classEntries: [{ name: "srd-2024_bard", level: 1 }],
-      entities: [entityOf("srd-2024_bard", "Bard", bardData())],
-    }));
-    const lvl1 = c1.querySelector(".pc-bccard-lvl")!;
-    const [m1, p1] = [...lvl1.querySelectorAll(".pc-bccard-lvl-btn")] as HTMLButtonElement[];
-    expect(lvl1.querySelector(".pc-bccard-lvl-v")!.textContent).toBe("1");
-    expect(m1.disabled).toBe(true);
-    expect(p1.disabled).toBe(false);
+  it("clicking the LV pill opens an anchored parchment popover with a 4×5 grid (1–20), current level stamped crimson", () => {
+    const c = mountContainer();
+    renderClassStep(c, mkCtxWithBard5({}));
+    expect(c.querySelector(".pc-lvl-pop")).toBeNull();
+    (c.querySelector(".pc-bccard-lvl") as HTMLElement).click();
+    const panel = c.querySelector(".pc-bccard-lvl-anchor .pc-lvl-pop")!;
+    expect(panel).not.toBeNull();
+    expect(panel.querySelector(".pc-pop-arrow")).not.toBeNull(); // caret notch
+    // Shared families: the panel is a `.pc-pop`, the grid a `.pc-numgrid`.
+    expect(panel.classList.contains("pc-pop")).toBe(true);
+    const cells = [...panel.querySelectorAll(".pc-numgrid-c")];
+    expect(cells.length).toBe(20);
+    expect(cells.map((x) => x.textContent)).toEqual(
+      Array.from({ length: 20 }, (_, i) => String(i + 1)),
+    );
+    // Current level (5) carries the crimson `.cur` stamp; exactly one cell does.
+    const cur = cells.filter((x) => x.classList.contains("cur"));
+    expect(cur.length).toBe(1);
+    expect(cur[0].textContent).toBe("5");
+  });
 
-    // Level 20 → plus disabled, minus enabled.
+  it("clicking a grid cell writes setClassLevel(0, n) and closes the popover", () => {
+    const c = mountContainer();
+    const setClassLevel = vi.fn();
+    renderClassStep(c, mkCtxWithBard5({ setClassLevel }));
+    (c.querySelector(".pc-bccard-lvl") as HTMLElement).click();
+    const cell = [...c.querySelectorAll(".pc-lvl-pop .pc-numgrid-c")].find((x) => x.textContent === "11") as HTMLElement;
+    cell.click();
+    expect(setClassLevel).toHaveBeenCalledWith(0, 11);
+    // The write's re-render unmounts the panel; the commit also closes it.
+    expect(c.querySelector(".pc-lvl-pop")).toBeNull();
+  });
+
+  it("re-clicking the LV pill toggles the popover closed (with no write)", () => {
+    const c = mountContainer();
+    const setClassLevel = vi.fn();
+    renderClassStep(c, mkCtxWithBard5({ setClassLevel }));
+    const pill = c.querySelector(".pc-bccard-lvl") as HTMLElement;
+    pill.click();
+    expect(c.querySelector(".pc-lvl-pop")).not.toBeNull();
+    pill.click();
+    expect(c.querySelector(".pc-lvl-pop")).toBeNull();
+    expect(setClassLevel).not.toHaveBeenCalled();
+  });
+
+  it("Escape and outside-click close the popover with no write", () => {
+    // Escape.
+    const c1 = mountContainer();
+    const setClassLevel1 = vi.fn();
+    renderClassStep(c1, mkCtxWithBard5({ setClassLevel: setClassLevel1 }));
+    (c1.querySelector(".pc-bccard-lvl") as HTMLElement).click();
+    expect(c1.querySelector(".pc-lvl-pop")).not.toBeNull();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(c1.querySelector(".pc-lvl-pop")).toBeNull();
+    expect(setClassLevel1).not.toHaveBeenCalled();
+
+    // Outside click.
     const c2 = mountContainer();
-    renderClassStep(c2, mkCtx({
-      classEntries: [{ name: "srd-2024_bard", level: 20 }],
-      entities: [entityOf("srd-2024_bard", "Bard", bardData())],
-    }));
-    const lvl2 = c2.querySelector(".pc-bccard-lvl")!;
-    const [m2, p2] = [...lvl2.querySelectorAll(".pc-bccard-lvl-btn")] as HTMLButtonElement[];
-    expect(lvl2.querySelector(".pc-bccard-lvl-v")!.textContent).toBe("20");
-    expect(m2.disabled).toBe(false);
-    expect(p2.disabled).toBe(true);
+    const setClassLevel2 = vi.fn();
+    renderClassStep(c2, mkCtxWithBard5({ setClassLevel: setClassLevel2 }));
+    (c2.querySelector(".pc-bccard-lvl") as HTMLElement).click();
+    expect(c2.querySelector(".pc-lvl-pop")).not.toBeNull();
+    document.body.click();
+    expect(c2.querySelector(".pc-lvl-pop")).toBeNull();
+    expect(setClassLevel2).not.toHaveBeenCalled();
   });
 
   it("owned: the collapsed 'Features by level' fold toggles open (then closed) on header click", () => {
@@ -296,14 +333,19 @@ describe("renderClassStep", () => {
     expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
   });
 
-  it("the level stepper does NOT toggle collapse when its buttons are clicked (stopPropagation)", () => {
+  it("the level pill + popover do NOT toggle collapse (trigger + cell clicks stopPropagation)", () => {
     const c = mountContainer();
     const setClassLevel = vi.fn();
     const ctx = mkCtxWithBard5({ setClassLevel });
     renderClassStep(c, ctx);
-    const plus = [...c.querySelectorAll(".pc-cb-bh-rgt .pc-bccard-lvl-btn")].at(-1) as HTMLButtonElement;
-    plus.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    // The write fired, but the band's collapse handler never did.
+    // Opening the pill must not collapse the band.
+    const pill = c.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl") as HTMLElement;
+    pill.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect((ctx.builderUiState!.get("builder.class-cards") as Set<number>).has(0)).toBe(false);
+    expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
+    // Picking a cell writes the level but still must not collapse the band.
+    const cell = [...c.querySelectorAll(".pc-lvl-pop .pc-numgrid-c")].find((x) => x.textContent === "6") as HTMLElement;
+    cell.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(setClassLevel).toHaveBeenCalledWith(0, 6);
     expect((ctx.builderUiState!.get("builder.class-cards") as Set<number>).has(0)).toBe(false);
     expect(c.querySelector(".pc-cb-glance")).not.toBeNull();
@@ -328,7 +370,7 @@ describe("renderClassStep", () => {
     expect((ctx.builderUiState!.get("builder.class-cards") as Set<number>).has(0)).toBe(true);
   });
 
-  it("collapsed card keeps the level control usable (level change without expanding)", () => {
+  it("collapsed card keeps the level picker usable (open the popover + pick without expanding)", () => {
     const c = mountContainer();
     const setClassLevel = vi.fn();
     const ctx = mkCtxWithBard5({ setClassLevel });
@@ -336,8 +378,9 @@ describe("renderClassStep", () => {
     ctx.builderUiState!.set("builder.class-cards", new Set([0]));
     renderClassStep(c, ctx);
     expect(c.querySelector(".pc-cb-glance")).toBeNull();      // confirm collapsed
-    const plus = [...c.querySelectorAll(".pc-cb-bh-rgt .pc-bccard-lvl-btn")].at(-1) as HTMLButtonElement;
-    plus.click();
+    (c.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl") as HTMLElement).click();
+    const cell = [...c.querySelectorAll(".pc-lvl-pop .pc-numgrid-c")].find((x) => x.textContent === "6") as HTMLElement;
+    cell.click();
     expect(setClassLevel).toHaveBeenCalledWith(0, 6);
   });
 
@@ -371,15 +414,18 @@ describe("renderClassStep", () => {
     expect(c.querySelector(".pc-cb-bh-rgt .pc-bccard-sub")).toBeNull();
   });
 
-  it("the band's LV control is the in-pill stepper shell with the 'Lv' microlabel (picker A-I)", () => {
+  it("the band's LV control is the popover-pill shell with the 'Lv' microlabel + caret (picker A-II)", () => {
     const c = mountContainer();
     renderClassStep(c, mkCtxWithBard5({}));
-    // The LV control lives in the band-right inside the .pc-bccard-lvl shell — now
-    // a stepper, not a <select>. The microlabel reads "Lv".
-    const lvl = c.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl")!;
+    // The LV control lives in the band-right inside a `.pc-bccard-lvl-anchor`
+    // wrapper — now a `LV n ▾` pill that opens a popover, not a <select> or a
+    // stepper. The microlabel reads "Lv" and the trigger carries a caret.
+    const anchor = c.querySelector(".pc-cb-bh-rgt .pc-bccard-lvl-anchor")!;
+    const lvl = anchor.querySelector(".pc-bccard-lvl")!;
     expect(lvl.querySelector(".pc-bccard-lvl-l")!.textContent).toBe("Lv");
+    expect(lvl.querySelector(".pc-bccard-lvl-cv")).not.toBeNull();
     expect(lvl.querySelector("select")).toBeNull();
-    expect(lvl.querySelectorAll(".pc-bccard-lvl-btn").length).toBe(2);
+    expect(lvl.querySelector(".pc-bccard-lvl-btn")).toBeNull();
   });
 
   it("orphan subclasses still get the data-ask callout", () => {
