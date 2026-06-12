@@ -107,18 +107,25 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
   });
 }
 
-/** The "Traits" section: serif name + ` ▸ decision` meta when the trait carries
- *  `choices`, and the COMPLETE description (smoke r6 — no first-sentence truncation
- *  or Read-full toggle; traits read in full at a glance). Size/Speed/Darkvision
- *  are folded out (they live in the glance tiles). */
+/** The "Traits" section: serif name + the COMPLETE description (smoke r6 — no
+ *  first-sentence truncation or Read-full toggle; traits read in full at a glance).
+ *  Size/Speed/Darkvision are folded out (they live in the glance tiles).
+ *
+ *  Decision-bearing traits (those carrying `choices`) are EXCLUDED here (smoke r8):
+ *  since round 7 they ALSO surface in the "What you decide" strip with their full
+ *  description + controls, so listing them again here duplicated the trait. Their
+ *  single home is now the strip; the Traits section keeps only the non-decision
+ *  traits (e.g. Fey Ancestry, Trance). With decision traits gone, no trait carries
+ *  the `▸ decision` meta any more, so that meta is no longer rendered. */
 function renderTraits(host: HTMLElement, ctx: ComponentRenderContext, d: RaceData): void {
-  const traits = (d.traits ?? []).filter((t) => !FOLDED.has(t.name.toLowerCase()));
+  const traits = (d.traits ?? [])
+    .filter((t) => !FOLDED.has(t.name.toLowerCase()))
+    .filter((t) => !t.choices?.length);
   if (!traits.length) return;
   renderSectionRule(host, "Traits", "from the species entry");
   for (const t of traits) {
     const row = host.createDiv({ cls: "pc-cb-trait" });
-    const n = row.createDiv({ cls: "pc-cb-trait-n", text: t.name });
-    if (t.choices?.length) n.createSpan({ cls: "pc-cb-trait-meta", text: "▸ decision" });
+    row.createDiv({ cls: "pc-cb-trait-n", text: t.name });
     // The description renders through the SHARED markdown path (ctx.app threaded,
     // async) so a trait carrying a pipe table — e.g. the Elf's "Elven Lineage"
     // lineage table — shows a real table instead of raw `|...|` text (smoke r7).

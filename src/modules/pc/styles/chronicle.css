@@ -262,7 +262,6 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait { padding: 6px 0 8px; border-bottom: 1px dashed var(--pc-tan-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-meta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
 /* Markdown-rendered description dress (smoke r7): trait + decision descriptions
    now render through the shared markdown path, so their `p`/`table`/`ul` must

@@ -172,6 +172,24 @@ describe("renderRaceStep — expanded composition", () => {
     expect([...c.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toContain("Darkvision");
   });
 
+  it("a decision trait is EXCLUDED from the Traits list — its single home is the strip (smoke r8)", () => {
+    const c = mountContainer();
+    renderRaceStep(c, mkCtxWithChosenDwarf());
+    // Tool Proficiency carries `choices`, so it never renders as its own trait row.
+    const traitNames = [...c.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent);
+    expect(traitNames).not.toContain("Tool Proficiency");
+    // It lives in the "What you decide" strip instead (named there, once).
+    const strip = c.querySelector(".pc-dstrip")!;
+    expect(strip.textContent).toContain("Tool Proficiency");
+    // The dwarf's only non-folded trait IS the decision one, so with it excluded
+    // the Traits section has nothing to show and the rule never renders.
+    const rules = [...c.querySelectorAll(".pc-cb-sec-l")].map((n) => n.textContent);
+    expect(rules).toContain("What you decide");
+    expect(rules).not.toContain("Traits");
+    // The retired `▸ decision` meta is gone everywhere.
+    expect(c.querySelector(".pc-cb-trait-meta")).toBeNull();
+  });
+
   it("tiles are Size / Speed / Darkvision only — the Decisions glance tile is dropped (smoke r6)", () => {
     const c = mountContainer();
     renderRaceStep(c, mkCtxWithChosenDwarf());
@@ -182,15 +200,28 @@ describe("renderRaceStep — expanded composition", () => {
     expect(c.querySelector(".pc-dstrip")).not.toBeNull();
   });
 
-  it("trait with choices carries the decision meta; the FULL description renders with no Read-full toggle (smoke r6)", () => {
+  it("a NON-decision trait shows its FULL description in the Traits list with no Read-full toggle (smoke r6/r8)", () => {
     const c = mountContainer();
-    renderRaceStep(c, mkCtxWithChosenDwarf());
-    const t = [...c.querySelectorAll(".pc-cb-trait")].find((x) => x.querySelector(".pc-cb-trait-meta"))!;
-    // The complete multi-sentence description is shown at once.
-    const toolTrait = DWARF_DATA.traits.find((tr) => tr.name === "Tool Proficiency")!;
-    expect(t.querySelector(".pc-cb-trait-d")!.textContent).toBe(toolTrait.description);
+    // Add a plain trait (no choices) alongside the decision one. The plain trait
+    // stays in the Traits list with its full description; the decision trait does not.
+    const data = {
+      ...DWARF_DATA,
+      traits: [
+        ...DWARF_DATA.traits,
+        { name: "Dwarven Resilience", description: "You have advantage on saving throws against poison, and you have resistance against poison damage." },
+      ],
+    };
+    renderRaceStep(c, mkCtxWithChosenDwarf(data as typeof DWARF_DATA));
+    const t = [...c.querySelectorAll(".pc-cb-trait")].find(
+      (x) => x.querySelector(".pc-cb-trait-n")?.textContent === "Dwarven Resilience",
+    )!;
+    const plain = data.traits.find((tr) => tr.name === "Dwarven Resilience")!;
+    expect(t.querySelector(".pc-cb-trait-d")!.textContent).toBe(plain.description);
     // No truncation affordance survives in any trait row.
     expect(c.querySelectorAll(".pc-cb-trait .pc-cb-more").length).toBe(0);
+    // The decision trait is still absent from the Traits list.
+    const names = [...c.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent);
+    expect(names).not.toContain("Tool Proficiency");
   });
 
   it("a trait description renders through the markdown path; pipe-table content lands in the .pc-cb-trait-d block (smoke r7)", () => {
