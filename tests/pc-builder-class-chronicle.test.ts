@@ -317,16 +317,16 @@ describe("progression table", () => {
 });
 
 describe("feature timeline", () => {
-  it("scopes to the current level with a show-all ghost; medallion states track level", () => {
+  it("defaults to all 20 levels (hollow ahead); the ghost scopes down to the current level", () => {
     const c = mountContainer();
     renderClassChronicle(c, mkCtx(), { entity: bardEntity(), level: 2, mode: "browse", stateKey: "t" });
-    // features fold is open by default in browse
-    expect([...c.querySelectorAll(".pc-cb-tle")].every((e) => !e.classList.contains("locked"))).toBe(true);
-    const ghost = c.querySelector(".pc-cb-ghost") as HTMLElement;
-    ghost.click();
+    // features fold is open by default in browse; ahead levels render locked (hollow)
     expect(c.querySelectorAll(".pc-cb-tle.locked").length).toBeGreaterThan(0);
-    const cur = c.querySelector(".pc-cb-tle.cur .pc-cb-med")!;
-    expect(cur.textContent).toBe("2");
+    expect(c.querySelector(".pc-cb-tle.cur .pc-cb-med")?.textContent).toBe("2");
+    const ghost = c.querySelector(".pc-cb-ghost") as HTMLElement;
+    expect(ghost.textContent).toBe("scope to level 2");
+    ghost.click();
+    expect([...c.querySelectorAll(".pc-cb-tle")].every((e) => !e.classList.contains("locked"))).toBe(true);
   });
 
   it("marks decision-bearing features with the crimson meta", () => {
@@ -446,20 +446,20 @@ describe("feature timeline — subclass features (owned)", () => {
     expect(sub.textContent).toContain("College of Lore");
   });
 
-  it("level-scopes the merged set: subclass features above the level are hidden until show-all", () => {
+  it("merged set defaults to all levels: future subclass features render locked; the ghost scopes them away", () => {
     const c = mountContainer();
     renderClassChronicle(c, mkCtx(), {
       entity: bardEntity(), level: 5, mode: "owned", classIndex: 0, ledger: emptyLedger(),
       subclassEntity: loreSubclassEntity(), stateKey: "t",
     });
     openFeatures(c);
-    // Peerless Skill (subclass, L14 > 5) is hidden under the level scope…
-    expect([...c.querySelectorAll(".pc-cb-tle")].some((e) => e.textContent!.includes("Peerless Skill"))).toBe(false);
-    // …and revealed (locked) once show-all is toggled.
-    (c.querySelector(".pc-cb-ghost") as HTMLElement).click();
+    // Peerless Skill (subclass, L14 > 5) is visible immediately, locked…
     const peerless = [...c.querySelectorAll(".pc-cb-tle")].find((e) => e.textContent!.includes("Peerless Skill"))!;
     expect(peerless).toBeDefined();
     expect(peerless.classList.contains("locked")).toBe(true);
+    // …and hidden once the ghost scopes to the current level.
+    (c.querySelector(".pc-cb-ghost") as HTMLElement).click();
+    expect([...c.querySelectorAll(".pc-cb-tle")].some((e) => e.textContent!.includes("Peerless Skill"))).toBe(false);
   });
 
   it("browse mode never injects subclass features (no subclassEntity threaded)", () => {
