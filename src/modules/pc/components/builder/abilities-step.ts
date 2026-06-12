@@ -55,7 +55,7 @@ export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderConte
 function redraw(body: HTMLElement, ctx: ComponentRenderContext): void {
   // The host renders the step heading into this same body; a local repaint
   // clears only what renderAbilitiesStep owns, leaving the heading intact.
-  for (const child of [...body.children]) {
+  for (const child of Array.from(body.children)) {
     if (!child.classList.contains("pc-builder-step-h")) child.remove();
   }
   renderAbilitiesStep(body, ctx);
