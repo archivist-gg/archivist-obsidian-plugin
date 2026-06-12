@@ -13159,7 +13159,13 @@ body.theme-light .archivist-tag-atk:hover {
   font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label);
   line-height: 1;
 }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* align-items: center so a chip never stretches to the cross-size of a taller
+   sibling on its flex line. The only taller sibling is the compact `Change ▸`
+   ghost (10px uppercase + its padding intrinsically out-measures an 11px chip);
+   default `stretch` made the chips on those long-list rows grow to match it.
+   On lines with chips ONLY (all identical height) centring is a no-op, so this
+   is safe everywhere. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-bchoice-chip {
   border: 1px solid var(--pc-text-primary); border-radius: var(--pc-radius-md);
   padding: 3px 11px; font-size: var(--pc-fs-small); color: var(--pc-text-primary);
@@ -13332,26 +13338,111 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-babcol { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-width: 0; }
 .archivist-pc-sheet .pc-babctl { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .archivist-pc-sheet .pc-babctl-l { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--pc-text-muted); }
-/* Shared builder dropdown: parchment-dressed native select (class-card Lv +
-   abilities Base). The native chrome is suppressed (appearance: none) so the
-   closed control reads as a parchment box; a slim right-pad leaves room for the
-   value to breathe (the adjacent microlabel — Lv / the column cap — gives the
-   context, so no custom caret is needed). Scoped to the sheet + modal so a
-   later modal-hosted select inherits the same dress. */
+
+/* ── Shared in-DOM picker popover (`.pc-pop` + `.pc-numgrid`) ──────────────
+   The parchment chrome both Plan-5 pickers share: the class-card LEVEL picker
+   (chronicle.css, picker A-II) and the abilities BASE picker (B-II, below). The
+   panel is positioned `absolute` inside a `position: relative` anchor, so the
+   builder's per-write re-render unmounts it naturally — no portal. Parchment
+   panel + tan hairline + the conditions-popover shadow + a caret notch carry the
+   affordance; no left/right accent bars. Default anchor offset centres the panel
+   under the trigger (the Base tile); the level picker overrides left/width. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-pop {
+  position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 50;
+  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); padding: 8px 9px; width: 128px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-pop-arrow {
+  position: absolute; bottom: calc(100% - 1px); left: 50%; margin-left: -5px; width: 10px; height: 10px;
+  background: var(--pc-parchment-light); border-left: 1px solid var(--pc-tan); border-top: 1px solid var(--pc-tan);
+  transform: rotate(45deg);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-pop-h {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft);
+  border-bottom: 1px solid var(--pc-tan); padding-bottom: 4px; margin-bottom: 6px; text-align: center;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c {
+  font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); color: var(--pc-text-soft);
+  text-align: center; padding: 4px 0; border: 1px solid transparent; border-radius: 3px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c:hover { background: rgba(146, 38, 16, 0.07); color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-numgrid-c.cur { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-parchment-light); }
+
+/* Base picker (Plan-5 picker B-II): a button-dressed control over the shared
+   `.pc-pop` panel above. Only the Base-specific dress lives here — the relative
+   anchor, the trigger button, and the pool-list (✓ current / ghosted used / the
+   quiet Unassign row), which the level picker has no analogue for. Scoped to the
+   sheet + modal so a modal-hosted builder keeps the dress. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-anchor { position: relative; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  background: var(--pc-parchment-light); padding: 2px 7px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-btn:hover { border-color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-v { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-text-primary); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pop-cv { color: var(--pc-text-muted); font-size: 8px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-list { display: flex; flex-direction: column; gap: 3px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt {
+  display: flex; align-items: center; gap: 7px; padding: 3px 6px; border-radius: var(--pc-radius-sm);
+  cursor: pointer; font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt:not(.used):hover { background: rgba(146, 38, 16, 0.07); color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-ck { width: 13px; display: inline-flex; justify-content: center; color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt.cur { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-pool-opt.used { opacity: 0.4; text-decoration: line-through; cursor: default; color: var(--pc-text-muted); }
+/* The quiet "– Unassign" row: a discoverable second affordance (pool modes only,
+   shown only when a value is assigned), kept calm — soft text, dashed rule above,
+   crimson on hover. No accent bars. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-unassign {
+  margin-top: 6px; padding: 4px 6px 0; border-top: 1px dashed var(--pc-tan-muted);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted);
+  text-align: center; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-base-unassign:hover { color: var(--pc-crimson); }
+/* Shared PC select dress: parchment-dressed native <select> used by every
+   picker on the sheet + builder surfaces (class-card Lv, abilities Base,
+   custom-background borrow-cost + origin-feat, inventory override-actions
+   cost/recovery). All carry the `pc-bdd` class.
+
+   This rule must be COMPLETE: Obsidian's app CSS styles bare `select` with a
+   raised input dress that wins on every property we omit, even though our
+   sheet-scoped selector out-specifies it. Specifically Obsidian sets
+   `box-shadow: var(--input-shadow)` (the off-white drop-shadow box the user
+   saw), `height: var(--input-height)` (a tall 30px input), a tight
+   `line-height`, and `--font-ui-small` sizing — plus on :hover it swaps in
+   `box-shadow: var(--input-shadow-hover)` AND `background-color:
+   var(--dropdown-background-hover)`. None of those were countered before, so
+   Obsidian's chrome bled through. We now explicitly null the shadow, free the
+   height, and pin every box/typographic property — and the hover state kills
+   both the hover shadow and the hover background. The native caret is
+   suppressed (appearance: none); the adjacent microlabel gives context, so no
+   custom caret is drawn. Scoped to the sheet + modal so modal-hosted selects
+   inherit the same dress. */
 :is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd {
   -webkit-appearance: none; appearance: none;
-  background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted);
-  border-radius: var(--pc-radius-sm); padding: 2px 6px;
+  box-shadow: none;
+  height: auto; min-height: 0;
+  line-height: 1.3;
+  background-color: var(--pc-parchment-light); background-image: none;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm);
+  padding: 2px 6px; margin: 0;
   font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body);
   color: var(--pc-text-primary); cursor: pointer;
 }
-:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:hover { border-color: var(--pc-tan); }
+:is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:hover {
+  border-color: var(--pc-tan);
+  box-shadow: none; background-color: var(--pc-parchment-light);
+}
 :is(.archivist-pc-sheet, .archivist-modal) select.pc-bdd:focus-visible {
   outline: 2px solid var(--pc-crimson); outline-offset: 1px;
+  box-shadow: none;
 }
 .archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; max-width: 100%; text-align: center; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-blegend { font-style: italic; font-size: 11px; color: var(--pc-text-muted); margin-top: 10px; }
 .archivist-pc-sheet .pc-baibox {
   border: 1px dashed var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.04);
   padding: 10px 12px; margin-bottom: 12px;
@@ -13596,6 +13687,19 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh {
   border-bottom: 2px solid #7a200d; padding-bottom: 0.35em; margin-bottom: 0.55em;
 }
+/* Owned-card band (smoke r6): the identity band is the card's one header, with
+   inline controls on the right and a collapse chevron at the far edge. The band
+   row stays a single baseline-aligned line; the ident column flexes. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh.collapsible {
+  display: flex; align-items: center; gap: 11px; cursor: pointer;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-ident { flex: 1 1 auto; min-width: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-rgt {
+  flex: none; display: inline-flex; align-items: center; gap: 11px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-bh-chev {
+  flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); line-height: 1;
+}
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-name {
   font-family: var(--pc-font-serif); color: #7a200d; font-size: var(--pc-fs-big);
   font-weight: 700; letter-spacing: 1px; margin: 0; line-height: 1.15;
@@ -13603,6 +13707,15 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub {
   font-style: italic; font-size: 13px; color: var(--pc-text-primary); margin-top: 2px;
 }
+/* Inline source segment (smoke r8): in owned-card mode the source moves out of
+   the absolute corner badge — which would collide with the band-right LV/REMOVE
+   controls — and rides the sub-line as a quiet trailing run, matching the badge's
+   muted sans dress so it reads as metadata, not part of the italic identity sub. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-src {
+  font-style: normal; font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small); font-weight: 500; color: rgba(0, 0, 0, 0.4);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sub-sep { color: rgba(0, 0, 0, 0.4); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-flavor {
   font-style: italic; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
   color: var(--pc-text-soft); line-height: 1.55; margin: 0.2em 0 0.7em;
@@ -13658,6 +13771,22 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-val {
   margin-left: auto; font-size: var(--pc-fs-small); font-weight: 700; white-space: nowrap;
 }
+/* Header wrapper (SP2 Plan 5, smoke r5): a 100%-basis flex child that hosts the
+   pill/bang/name/val/chevron on one baseline-aligned line and owns the collapse
+   click + pointer. The nest is a SEPARATE row child below it, so nest clicks
+   never reach this toggle. Layout matches the legacy direct-child row exactly. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-head {
+  flex-basis: 100%; display: flex; align-items: baseline; gap: 9px;
+  cursor: pointer; border-radius: var(--pc-radius-sm);
+}
+/* Collapse chevron — fold/card idiom (crimson, ~12px), sits at the far right
+   after the val (which keeps its margin-left:auto, pushing the chevron flush).
+   The head stays click-collapsible (cursor + chevron are the affordance) but
+   does NOT change colour on hover — by user request the row reads quiet. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-chev {
+  flex: none; align-self: center; width: 14px; text-align: center;
+  color: var(--pc-crimson); font-size: 12px; line-height: 1;
+}
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-nest { flex-basis: 100%; margin: 7px 0 1px; padding-left: 39px; }
 /* resolved */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-row.done { border-color: var(--pc-rarity-uncommon); }
@@ -13692,6 +13821,13 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-empty {
   font-style: italic; color: var(--pc-text-muted); font-size: var(--pc-fs-small);
 }
+/* Decision description (smoke r7): the source feature/trait's own description,
+   rendered as markdown at the TOP of a top-level live row's nest so the row is
+   self-explanatory. Quiet text dress matching `.pc-cb-trait-d`; rendered tables
+   inherit the cast-table idiom below. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc {
+  font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-bottom: 8px;
+}
 /* Long-list browse ghost (.pc-bcadd idiom): compact dashed, auto-width — NEVER
    full-width. Opens the filtered picker modal for huge candidate lists. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse {
@@ -13704,11 +13840,58 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse:hover {
   border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg);
 }
+/* Compact inline variant (smoke r4): once a pick is made, the ghost sits on the
+   chips line as a small "Change ▸" — no top margin, snug padding — so children
+   of a chosen feat follow the selection, not the browse button. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-browse.compact {
+  margin-top: 0; padding: 3px 9px; align-self: center;
+}
 
-/* ── Collapsible folds (Progression / Features / Equipment) ── */
+/* ── SP2 Plan 5: nested decisions — flat child group (Variant II sans pathline) ──
+ * Children of a decision render as ONE flat group inside the parent's nest: NO
+ * own border, NO own pill (those stay on the top-level row only). Each child is
+ * a named sub-choice (.pc-dstrip-fcl caps microlabel). Resolved children are
+ * quiet (✓ + receding non-selected chips); the open/partial child wears the
+ * amber tint + "!" disc so the only open work draws the eye. No left/right
+ * border accent bars — state is carried by the tint + amber text + flag. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fgroup {
+  display: flex; flex-direction: column; gap: 9px; margin-top: 8px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fcl {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+  font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc-ok { color: var(--pc-rarity-uncommon); font-size: 10px; }
+/* Resolved child: non-selected chips recede so the picked answer reads quietly. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.quiet .pc-bchoice-chip:not(.sel) { opacity: 0.5; }
+/* Open / partial child: amber tint panel + amber label + "!" disc. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.partial {
+  background: rgba(163, 105, 14, 0.07); border-radius: var(--pc-radius-sm);
+  padding: 7px 9px; margin-left: -9px;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc.partial .pc-dstrip-fcl { color: var(--pc-amber); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-fc-flag {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 8px; font-weight: 700;
+}
+
+/* ── Collapsible folds (Progression / Features / Equipment) ──
+ * These headers MUST read as clickable: a legible chevron, a warm hover
+ * tint + crimson label, and a roomy hit area. No left/right accent bars. */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold { border-top: 1px solid var(--pc-tan-muted); }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h { display: flex; align-items: center; gap: 9px; padding: 9px 2px 8px; cursor: pointer; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev { flex: none; width: 11px; color: var(--pc-crimson); font-size: 9px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h {
+  display: flex; align-items: center; gap: 9px; padding: 11px 8px 10px; cursor: pointer;
+  border-radius: var(--pc-radius-sm); transition: background 0.12s ease;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover { background: var(--pc-row-open-bg); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover .pc-cb-sec-l { color: var(--pc-crimson); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-chev {
+  flex: none; width: 14px; text-align: center; color: var(--pc-crimson);
+  font-size: 12px; line-height: 1;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-h:hover .pc-cb-fold-chev { color: var(--pc-crimson-light); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fold-body { padding: 2px 2px 6px; }
 
 /* ── Progression table (1–20, dynamic columns — cast-table idiom) ── */
@@ -13743,8 +13926,40 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait { padding: 6px 0 8px; border-bottom: 1px dashed var(--pc-tan-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait:last-child { border-bottom: none; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-n { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-meta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; white-space: pre-line; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
+/* Markdown-rendered description dress (smoke r7): trait + decision descriptions
+   now render through the shared markdown path, so their `p`/`table`/`ul` must
+   inherit the quiet dress. Tables follow the progression cast-table idiom (caps
+   muted headers, hairline header underline, dashed zebra rows). Scoped to BOTH
+   the trait-dress and the decision-strip description blocks. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d > p,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc > p {
+  margin: 0 0 0.45em; font-size: inherit; color: inherit; line-height: 1.45;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d > p:last-child,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc > p:last-child { margin-bottom: 0; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d ul,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d ol,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc ul,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc ol { margin: 0.2em 0 0.45em; padding-left: 1.3em; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d table,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc table {
+  border-collapse: collapse; width: 100%; margin: 0.4em 0; font-size: inherit;
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d th,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc th {
+  text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--pc-tan-muted);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc td {
+  padding: 5px 8px; border-bottom: 1px dashed var(--pc-tan-muted); color: var(--pc-text-soft);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tr:last-child td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tr:last-child td { border-bottom: none; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d tbody tr:nth-child(even) td,
+:is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc tbody tr:nth-child(even) td { background: rgba(232, 213, 176, 0.28); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-more { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-crimson); cursor: pointer; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop { display: flex; align-items: flex-start; gap: 0.5em; margin: 0.3em 0; font-size: 12.5px; color: var(--pc-text-primary); line-height: 1.5; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-prop-l { font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); flex: none; min-width: 96px; margin-top: 2px; }
@@ -13758,6 +13973,10 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.cur .pc-cb-med { background: var(--pc-crimson); border-color: #7a200d; color: var(--pc-parchment-light); box-shadow: 0 1px 5px rgba(122, 32, 13, 0.45); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn { font-family: var(--pc-font-serif); font-weight: 700; color: #7a200d; font-size: var(--pc-fs-heading); line-height: 1.2; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn { color: var(--pc-text-muted); }
+/* Subclass-granted timeline feature: a quiet crimson "· <Subclass>" attribution
+ * on the feature name (no border bars — tint + crimson only). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fn .sub { color: var(--pc-crimson); font-weight: 600; font-size: var(--pc-fs-small); }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-tle.locked .pc-cb-fn .sub { color: var(--pc-text-muted); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fmeta { font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-crimson); margin-left: 6px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-fd { font-size: 11.5px; color: var(--pc-text-soft); line-height: 1.45; margin-top: 2px; }
 /* scope bar + equipment options */
@@ -13796,18 +14015,44 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-bcadd-wrap.hero .pc-bcadd { padding: 11px 22px; font-size: var(--pc-fs-heading); letter-spacing: var(--pc-ls-caps-md); }
 .archivist-pc-sheet .pc-bcadd:hover { border-color: var(--pc-crimson); color: var(--pc-crimson); background: var(--pc-row-open-bg); }
 .archivist-pc-sheet .pc-bcstack { display: flex; flex-direction: column; gap: 9px; margin: 0 0 4px; }
+/* The card frame wraps the Chronicle block directly now (smoke r6): the block's
+   identity band is the card header (controls + collapse chevron inline), so the
+   old separate .pc-bccard-h strip is gone. The band controls (.pc-bccard-lvl /
+   -sub / -rm) survive — they render into the block's .pc-cb-bh-rgt. */
 .archivist-pc-sheet .pc-bccard { border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); background: var(--pc-parchment-light); box-shadow: 0 2px 8px rgba(134, 116, 83, 0.18); overflow: hidden; }
-.archivist-pc-sheet .pc-bccard-h { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: rgba(146, 38, 16, 0.07); border-bottom: 1px solid var(--pc-tan-muted); cursor: pointer; }
-.archivist-pc-sheet .pc-bccard-seal { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--pc-crimson); border: 1px solid #7a200d; color: var(--pc-parchment-light); font-size: var(--pc-fs-micro); box-shadow: 0 1px 3px rgba(122, 32, 13, 0.4); }
-.archivist-pc-sheet .pc-bccard-nm { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-title); line-height: 1.1; }
-.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--pc-tan-muted); border-radius: 5px; background: var(--pc-parchment-light); padding: 2px 5px 2px 8px; }
+/* The block inside a card drops its own border/shadow/radius — the card frame
+   already provides them — so the two frames don't double up. */
+.archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
+/* LV control (Plan-5 picker A-II): the PRIMARY level control is a `LV n` pill
+   that opens an anchored parchment popover with a 4×5 numeral grid (1–20) — no
+   native <select>, so the OS menu never draws. The pill keeps the band-control
+   dress, now crimson-edged over the open-row tint (a live, clickable trigger),
+   with a "Lv" cap, the serif value, and a small caret. The popover panel + grid
+   reuse the generic `.pc-pop` / `.pc-numgrid` families (builder.css), shared
+   with the abilities Base picker; only the panel width + anchor offset differ
+   (`.pc-lvl-pop` / `.pc-lvl-grid`). No left/right accent bars. */
+.archivist-pc-sheet .pc-bccard-lvl-anchor { position: relative; flex: none; }
+.archivist-pc-sheet .pc-bccard-lvl { flex: none; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.07); padding: 2px 7px 2px 8px; cursor: pointer; }
 .archivist-pc-sheet .pc-bccard-lvl-l { font-family: var(--pc-font-sans); font-size: var(--pc-fs-tiny); font-weight: 700; letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-bccard-lvl-v { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-bccard-lvl-cv { color: var(--pc-crimson); font-size: 8px; }
+/* A-II panel: wider than the Base popover's 128px (a 5-wide grid) and anchored to
+   the pill's left edge (left:0), with the caret notch over the trigger. */
+.archivist-pc-sheet .pc-lvl-pop { left: 0; transform: none; width: 198px; }
+.archivist-pc-sheet .pc-lvl-pop .pc-pop-arrow { left: 18px; margin-left: 0; }
+.archivist-pc-sheet .pc-lvl-grid { grid-template-columns: repeat(5, 1fr); }
 .archivist-pc-sheet .pc-bccard-sub { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); white-space: nowrap; }
-.archivist-pc-sheet .pc-bccard-rgt { margin-left: auto; display: inline-flex; align-items: center; gap: 11px; flex: none; }
-.archivist-pc-sheet .pc-bccard-rm { font-family: var(--pc-font-sans); font-size: 8.5px; font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-muted); text-decoration: underline dotted; cursor: pointer; }
-.archivist-pc-sheet .pc-bccard-rm:hover { color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-bccard-chev { flex: none; color: var(--pc-crimson); font-size: var(--pc-fs-small); }
-.archivist-pc-sheet .pc-bccard-body { padding: 10px 12px 12px; }
+/* Remove control (smoke r7): a proper small ghost BUTTON in harmony with the
+   `.pc-bcadd` dress (visible border, crimson text, label-size) — never a dotted
+   underline ghost; no left/right accent bars. The two-step confirm swaps it for
+   a crimson-filled Confirm + a quiet Cancel. */
+.archivist-pc-sheet .pc-bccard-rm-wrap { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.archivist-pc-sheet .pc-bccard-rm { background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); color: var(--pc-crimson); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 11px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm:hover { border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
+.archivist-pc-sheet .pc-bccard-rm-confirm { background: var(--pc-crimson); border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); color: var(--pc-parchment-light); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 11px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm-confirm:hover { background: var(--pc-crimson-light); }
+.archivist-pc-sheet .pc-bccard-rm-cancel { background: transparent; border: none; color: var(--pc-text-muted); font-family: var(--pc-font-sans); font-weight: 700; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; padding: 4px 6px; cursor: pointer; }
+.archivist-pc-sheet .pc-bccard-rm-cancel:hover { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-bcprereq { display: flex; align-items: flex-start; gap: 7px; background: rgba(163, 105, 14, 0.07); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 6px 10px; margin: 0 0 9px; font-size: 10.5px; color: var(--pc-text-soft); line-height: 1.45; }
 .archivist-pc-sheet .pc-bcprereq-bang { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 50%; background: var(--pc-amber); color: var(--pc-parchment-light); font-size: 9px; font-weight: 700; margin-top: 1px; }
 
