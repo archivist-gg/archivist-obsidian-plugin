@@ -23,7 +23,7 @@ export function clampPopover(panel: HTMLElement, arrow?: HTMLElement | null): vo
   const r = panel.getBoundingClientRect();
   if (r.width === 0) return;
   const bounds = panel.closest(".pc-bccard, .archivist-modal, .archivist-pc-sheet")?.getBoundingClientRect();
-  const dx = clampDx(r.left, r.right, bounds ? bounds.left : 0, bounds ? bounds.right : window.innerWidth);
+  const dx = clampDx(r.left, r.right, bounds ? bounds.left : 0, bounds ? bounds.right : activeWindow.innerWidth);
   if (!dx) return;
   panel.style.marginLeft = `${dx}px`;
   // The caret is absolute INSIDE the panel, so it shifted too — translate it
