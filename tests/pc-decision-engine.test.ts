@@ -676,4 +676,25 @@ describe("equipment synthesis (structured)", () => {
     const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
     expect(item.children ?? []).toHaveLength(0);
   });
+
+  it("resolves an `any-armor` grant to an armor select-entity with NO armor_category restriction", () => {
+    // "any-armor" is a named vocabulary term: the child must match ALL armor,
+    // not heavy-only. The fix omits `where` so enumerateOptions returns all of
+    // entity_type "armor" (an absent filter = all-of-type).
+    const c = resolvedFighter(1, { 1: { "equipment-0": "option-0" } });
+    (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+      { kind: "choice", options: [
+        { label: "Any armor", grants: [{ category: "any-armor" }] },
+        { label: "155 GP", grants: [{ gold: 155 }] },
+      ] },
+    ];
+    const ledger = buildDecisionLedger(c, { registry } as never);
+    const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
+    expect(item.children).toHaveLength(1);
+    const child = item.children![0];
+    expect(child.choice.kind).toBe("select-entity");
+    expect((child.choice as { entity_type: string }).entity_type).toBe("armor");
+    // No class restriction — the player can pick any armor, not heavy-only.
+    expect((child.choice as { where?: { armor_category?: string } }).where?.armor_category).toBeUndefined();
+  });
 });

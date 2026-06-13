@@ -113,15 +113,31 @@ export const __matchesFilterForTest = matchesFilter;
  *  Weapons filter by weapon_category; armor by armor_category; "shield" → an
  *  armor entity in the shield class. The "shield" branch is tested BEFORE the
  *  generic "armor" branch because a shield is an armor entity_type but a
- *  distinct category. */
+ *  distinct category.
+ *
+ *  Grant-category vocabulary (Task E1 authors within this; stay inside it):
+ *    - `simple-weapon`, `martial-weapon` — `*-melee-*`/`*-ranged-*` variants
+ *      COLLAPSE to weapon_category only (the engine has no melee/ranged axis,
+ *      so `martial-melee-weapon` matches both martial-melee AND martial-ranged).
+ *    - `light-armor`, `medium-armor`, `heavy-armor` — class-restricted armor.
+ *    - `any-armor` (or a bare `armor`) — ALL armor, no class restriction.
+ *    - `shield` — shields only.
+ *  Unknown/unrecognized category falls through to a simple-weapon filter (v1
+ *  default); authors should stay within the vocabulary above. */
 function categoryToEntitySelect(category: string, id: string): Choice {
   const c = category.toLowerCase();
   if (c === "shield") {
     return { kind: "select-entity", id, label: "Choose a shield", count: 1, entity_type: "armor", where: { armor_category: "shield" } };
   }
   if (c.includes("armor")) {
-    return { kind: "select-entity", id, label: "Choose armor", count: 1, entity_type: "armor",
-      where: { armor_category: c.includes("light") ? "light" : c.includes("medium") ? "medium" : "heavy" } };
+    // Only set armor_category when a specific class is named. For "any-armor"
+    // (or a bare "armor") emit a select-entity with NO `where` so enumerateOptions
+    // returns ALL armor of the type (an absent filter = all-of-type).
+    const klass: "light" | "medium" | "heavy" | null =
+      c.includes("light") ? "light" : c.includes("medium") ? "medium" : c.includes("heavy") ? "heavy" : null;
+    return klass
+      ? { kind: "select-entity", id, label: `Choose ${klass} armor`, count: 1, entity_type: "armor", where: { armor_category: klass } }
+      : { kind: "select-entity", id, label: "Choose armor", count: 1, entity_type: "armor" };
   }
   const wc: "simple" | "martial" = c.includes("martial") ? "martial" : "simple";
   return { kind: "select-entity", id, label: `Choose a ${c.replace(/-/g, " ")}`, count: 1, entity_type: "weapon", where: { weapon_category: wc } };
