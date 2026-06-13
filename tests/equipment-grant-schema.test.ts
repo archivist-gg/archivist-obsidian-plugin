@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { startingEquipmentEntrySchema, startingGoldSchema } from "../src/shared/schemas/equipment-grant-schema";
 import { classEntitySchema } from "../src/modules/class/class.schema";
+import { backgroundEntitySchema } from "../src/modules/background/background.schema";
 
 describe("equipment-grant schema", () => {
   it("accepts a choice entry with itemized + category + gold grants", () => {
@@ -51,5 +52,24 @@ describe("class schema with structured equipment", () => {
     });
     expect(parsed.starting_equipment[0].kind).toBe("choice");
     expect(parsed.starting_gold?.fixed).toBe(155);
+  });
+});
+
+describe("background schema with structured equipment", () => {
+  const base = {
+    slug: "acolyte", name: "Acolyte", edition: "2024", source: "SRD", description: "",
+    skill_proficiencies: [], tool_proficiencies: [], language_proficiencies: [],
+    feature: { name: "F", description: "F" }, ability_score_increases: null,
+    origin_feat: null, suggested_characteristics: null,
+  };
+  it("parses package-vs-gold structured equipment", () => {
+    const parsed = backgroundEntitySchema.parse({
+      ...base,
+      equipment: [{ kind: "choice", options: [
+        { label: "Calligrapher's Supplies, Holy Symbol, 8 GP", grants: [{ item: "calligraphers-supplies" }, { item: "holy-symbol" }, { gold: 8 }] },
+        { label: "Gold only", grants: [{ gold: 50 }] },
+      ] }],
+    });
+    expect((parsed.equipment[0] as { kind: string }).kind).toBe("choice");
   });
 });

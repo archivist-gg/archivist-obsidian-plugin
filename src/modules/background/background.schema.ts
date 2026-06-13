@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { choiceSchema } from "../../shared/schemas/choice-schema";
+import { startingEquipmentEntrySchema } from "../../shared/schemas/equipment-grant-schema";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const editionEnum = z.enum(["2014", "2024"]);
@@ -29,18 +30,6 @@ const langProfSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
-const equipmentEntrySchema = z.union([
-  z.object({ item: z.string().min(1), quantity: z.number().int().positive() }),
-  z.object({
-    kind: z.literal("currency"),
-    gp: z.number().nonnegative().optional(),
-    sp: z.number().nonnegative().optional(),
-    cp: z.number().nonnegative().optional(),
-    pp: z.number().nonnegative().optional(),
-    ep: z.number().nonnegative().optional(),
-  }),
-]);
-
 const suggestedCharSchema = z.object({
   personality_traits: z.record(z.string(), z.string()).optional(),
   ideals: z.record(z.string(), z.object({
@@ -61,7 +50,7 @@ export const backgroundEntitySchema = z.object({
   skill_proficiencies: z.array(skillEnum),
   tool_proficiencies: z.array(toolProfSchema),
   language_proficiencies: z.array(langProfSchema),
-  equipment: z.array(equipmentEntrySchema),
+  equipment: z.array(startingEquipmentEntrySchema),
   feature: z.object({
     name: z.string().min(1),
     description: z.string().min(1),

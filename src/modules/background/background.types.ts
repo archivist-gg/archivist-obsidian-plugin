@@ -1,6 +1,7 @@
 import type { Ability, SkillSlug, Choice } from "../../shared/types";
 import type { Edition } from "../class/class.types";
 import type { Resource } from "../../shared/types/resource";
+import type { StartingEquipmentEntry } from "../../shared/types/equipment-grant";
 
 export type BackgroundToolProficiency =
   | { kind: "fixed"; items: string[] }
@@ -9,10 +10,6 @@ export type BackgroundToolProficiency =
 export type BackgroundLanguageProficiency =
   | { kind: "fixed"; languages: string[] }
   | { kind: "choice"; count: number; from: string | string[] };
-
-export type BackgroundEquipmentEntry =
-  | { item: string; quantity: number }
-  | { kind: "currency"; gp?: number; sp?: number; cp?: number; pp?: number; ep?: number };
 
 export interface SuggestedCharacteristics {
   personality_traits?: Record<string, string>;
@@ -30,7 +27,7 @@ export interface BackgroundEntity {
   skill_proficiencies: SkillSlug[];
   tool_proficiencies: BackgroundToolProficiency[];
   language_proficiencies: BackgroundLanguageProficiency[];
-  equipment: BackgroundEquipmentEntry[];
+  equipment: StartingEquipmentEntry[];
   feature: { name: string; description: string; resources?: Resource[] };
   ability_score_increases: { pool: Ability[] } | null;
   origin_feat: string | null;
