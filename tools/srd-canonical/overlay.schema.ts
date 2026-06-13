@@ -2,6 +2,7 @@ import { z } from "zod";
 import { resourceSchema } from "../../src/shared/schemas/resource-schema";
 import { choiceSchema } from "../../src/shared/schemas/choice-schema";
 import { featureEffectSchema } from "../../src/shared/schemas/feature-effect-schema";
+import { startingEquipmentEntrySchema, startingGoldSchema } from "../../src/shared/schemas/equipment-grant-schema";
 
 const actionCost = z.enum(["action", "bonus-action", "reaction", "free", "special"]);
 const recharge = z.enum(["short-rest", "long-rest", "dawn", "dusk", "turn", "round", "custom"]);
@@ -32,15 +33,10 @@ const skillEnum = z.enum([
   "sleight-of-hand", "stealth", "survival",
 ]);
 
-const startingEquipmentEntrySchema = z.union([
-  z.object({ kind: z.literal("fixed"), items: z.array(z.string().min(1)).nonempty() }),
-  z.object({ kind: z.literal("choice"), options: z.array(z.string().min(1)).nonempty() }),
-  z.object({ kind: z.literal("gold"), amount: z.number().int().positive() }),
-]);
-
 const classOverrideSchema = z.object({
   skill_choices: z.object({ count: z.number().int().positive(), from: z.array(skillEnum).nonempty() }).optional(),
   starting_equipment: z.array(startingEquipmentEntrySchema).nonempty().optional(),
+  starting_gold: startingGoldSchema.optional(),
   subclass_level: z.number().int().min(1).max(20).optional(),
   subclass_feature_name: z.string().min(1).optional(),
   choices: z.array(choiceSchema).optional(),
@@ -48,6 +44,13 @@ const classOverrideSchema = z.object({
 
 const entityChoicesSchema = z.object({
   choices: z.array(choiceSchema).optional(),
+}).strict();
+
+// Background entity-level override: mirrors entityChoicesSchema's `choices`
+// plus a structured starting `equipment` package (override beats prose-derived).
+const backgroundOverrideSchema = z.object({
+  choices: z.array(choiceSchema).optional(),
+  equipment: z.array(startingEquipmentEntrySchema).optional(),
 }).strict();
 
 const entityEffectsSchema = z.object({
@@ -64,7 +67,7 @@ export const overlaySchema = z.object({
   optional_feature_slugs: z.partialRecord(optionalFeatureKind, z.array(z.string())).optional(),
   classes: z.record(z.string(), classOverrideSchema).optional(),
   races: z.record(z.string(), entityChoicesSchema).optional(),
-  backgrounds: z.record(z.string(), entityChoicesSchema).optional(),
+  backgrounds: z.record(z.string(), backgroundOverrideSchema).optional(),
   optional_features: z.record(z.string(), entityEffectsSchema).optional(),
   feats: z.record(z.string(), entityEffectsSchema).optional(),
 });

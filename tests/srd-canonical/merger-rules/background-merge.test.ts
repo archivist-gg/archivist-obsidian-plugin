@@ -120,7 +120,8 @@ describe("backgroundMergeRule", () => {
     }
   });
 
-  it("emits equipment as array of items + currency entries", () => {
+  it("emits prose equipment as a single display-only fixed entry (grants empty, seeds nothing)", () => {
+    const desc = "A holy symbol, a prayer book, 5 sticks of incense, vestments, a set of common clothes, and a pouch containing 15 gp";
     const canonical: CanonicalEntry = {
       slug: "srd-5e_acolyte",
       edition: "2014",
@@ -131,11 +132,7 @@ describe("backgroundMergeRule", () => {
         desc: "x",
         document: { key: "srd-2014", name: "SRD 5.1" },
         benefits: [
-          {
-            name: "Equipment",
-            desc: "A holy symbol, a prayer book, 5 sticks of incense, vestments, a set of common clothes, and a pouch containing 15 gp",
-            type: "equipment",
-          },
+          { name: "Equipment", desc, type: "equipment" },
           { name: "Feature", desc: "F.", type: "feature" },
         ],
       } as never,
@@ -144,11 +141,48 @@ describe("backgroundMergeRule", () => {
       overlay: null,
     };
     const out = toBackgroundCanonical(canonical);
-    expect(out.equipment.length).toBeGreaterThan(2);
-    const currency = out.equipment.find((e) => "kind" in e && e.kind === "currency");
-    expect(currency).toBeDefined();
-    if (currency && "kind" in currency && currency.kind === "currency") {
-      expect(currency.gp).toBe(15);
+    // No overlay → prose fallback: one fixed entry carrying the prose as a
+    // display label with no grants (so it shows but seeds nothing).
+    expect(out.equipment.length).toBe(1);
+    const entry = out.equipment[0];
+    expect(entry.kind).toBe("fixed");
+    if (entry.kind === "fixed") {
+      expect(entry.label).toBe(desc);
+      expect(entry.grants).toEqual([]);
+    }
+  });
+
+  it("overlay backgrounds.equipment overrides the prose-derived fallback", () => {
+    const canonical: CanonicalEntry = {
+      slug: "srd-2024_acolyte",
+      edition: "2024",
+      kind: "background",
+      base: {
+        key: "srd-2024_acolyte",
+        name: "Acolyte",
+        desc: "x",
+        document: { key: "srd-2024", name: "SRD 5.2" },
+        benefits: [
+          { name: "Equipment", desc: "Some prose equipment, 8 gp", type: "equipment" },
+          { name: "Feature", desc: "F.", type: "feature" },
+        ],
+      } as never,
+      structured: null,
+      activation: null,
+      overlay: {
+        backgrounds: {
+          acolyte: {
+            equipment: [{ kind: "fixed", grants: [{ item: "holy-symbol" }, { gold: 8 }] }],
+          },
+        },
+      } as never,
+    };
+    const out = toBackgroundCanonical(canonical);
+    expect(out.equipment.length).toBe(1);
+    const entry = out.equipment[0];
+    expect(entry.kind).toBe("fixed");
+    if (entry.kind === "fixed") {
+      expect(entry.grants).toEqual([{ item: "holy-symbol" }, { gold: 8 }]);
     }
   });
 

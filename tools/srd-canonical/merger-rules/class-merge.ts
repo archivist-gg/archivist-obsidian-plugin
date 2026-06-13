@@ -4,7 +4,7 @@ import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
 import type { Choice } from "../../../src/shared/types/choice";
-import type { StartingEquipmentEntry } from "../../../src/shared/types/equipment-grant";
+import type { StartingEquipmentEntry, StartingGold } from "../../../src/shared/types/equipment-grant";
 
 /**
  * ClassCanonical mirrors the runtime ClassEntity shape (src/modules/class/class.schema.ts)
@@ -23,6 +23,7 @@ export interface ClassCanonical {
   proficiencies: ClassProficiencies;
   skill_choices: { count: number; from: SkillSlug[] };
   starting_equipment: StartingEquipmentEntry[];
+  starting_gold?: StartingGold;
   spellcasting: SpellcastingConfig | null;
   subclass_level: number;
   subclass_feature_name: string;
@@ -372,6 +373,7 @@ export type FeatureOverlayMap = Record<
 export interface ClassOverride {
   skill_choices?: { count: number; from: SkillSlug[] };
   starting_equipment?: StartingEquipmentEntry[];
+  starting_gold?: StartingGold;
   subclass_level?: number;
   subclass_feature_name?: string;
   choices?: Choice[];
@@ -641,6 +643,7 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
   // over values derived from Open5e prose / defaults.
   if (classOverride?.skill_choices) out.skill_choices = classOverride.skill_choices;
   if (classOverride?.starting_equipment) out.starting_equipment = classOverride.starting_equipment;
+  if (classOverride?.starting_gold) out.starting_gold = classOverride.starting_gold;
 
   return out;
 }

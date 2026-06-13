@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { startingEquipmentEntrySchema, startingGoldSchema } from "../src/shared/schemas/equipment-grant-schema";
 import { classEntitySchema } from "../src/modules/class/class.schema";
 import { backgroundEntitySchema } from "../src/modules/background/background.schema";
+import { overlaySchema } from "../tools/srd-canonical/overlay.schema";
 
 describe("equipment-grant schema", () => {
   it("accepts a choice entry with itemized + category + gold grants", () => {
@@ -71,5 +72,21 @@ describe("background schema with structured equipment", () => {
       ] }],
     });
     expect((parsed.equipment[0] as { kind: string }).kind).toBe("choice");
+  });
+});
+
+describe("overlay schema structured equipment", () => {
+  it("accepts structured class starting_equipment + starting_gold and background equipment", () => {
+    const parsed = overlaySchema.parse({
+      classes: { fighter: {
+        starting_equipment: [{ kind: "choice", options: [{ label: "Chain Mail", grants: [{ item: "chain-mail" }, { gold: 4 }] }] }],
+        starting_gold: { fixed: 155 },
+      } },
+      backgrounds: { acolyte: {
+        equipment: [{ kind: "fixed", grants: [{ item: "holy-symbol" }, { gold: 8 }] }],
+      } },
+    });
+    expect(parsed.classes?.fighter.starting_gold?.fixed).toBe(155);
+    expect(parsed.backgrounds?.acolyte.equipment?.[0].kind).toBe("fixed");
   });
 });

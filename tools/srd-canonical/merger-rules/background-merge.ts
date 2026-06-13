@@ -4,6 +4,7 @@ import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
 import type { Choice } from "../../../src/shared/types/choice";
+import type { StartingEquipmentEntry } from "../../../src/shared/types/equipment-grant";
 import { bareSlug } from "./class-merge";
 
 type Ability = "str" | "dex" | "con" | "int" | "wis" | "cha";
@@ -21,10 +22,6 @@ type LangProf =
   | { kind: "fixed"; languages: string[] }
   | { kind: "choice"; count: number; from: string | string[] };
 
-type EquipmentEntry =
-  | { item: string; quantity: number }
-  | { kind: "currency"; gp?: number; sp?: number; cp?: number; pp?: number; ep?: number };
-
 interface SuggestedCharacteristics {
   personality_traits?: Record<string, string>;
   ideals?: Record<string, { name?: string; desc: string; alignment?: string }>;
@@ -41,7 +38,7 @@ export interface BackgroundCanonical {
   skill_proficiencies: SkillSlug[];
   tool_proficiencies: ToolProf[];
   language_proficiencies: LangProf[];
-  equipment: EquipmentEntry[];
+  equipment: StartingEquipmentEntry[];
   feature: { name: string; description: string; resources?: Resource[]; choices?: Choice[] };
   ability_score_increases: { pool: Ability[] } | null;
   origin_feat: string | null;
@@ -102,7 +99,7 @@ export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonica
   // pickOverlay now returns { background_features, backgrounds }; unpack both.
   const ov = entry.overlay as {
     background_features: Record<string, { resources?: Resource[]; choices?: Choice[] }> | null;
-    backgrounds: Record<string, { choices?: Choice[] }> | null;
+    backgrounds: Record<string, { choices?: Choice[]; equipment?: StartingEquipmentEntry[] }> | null;
   } | null;
   const overlaid = ov?.background_features?.[slugifyName(base.name as string)];
   const bgOverride = ov?.backgrounds?.[bareSlug(entry.slug)];
@@ -112,7 +109,7 @@ export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonica
   let skillProfs: SkillSlug[] = [];
   const toolProfs: ToolProf[] = [];
   const langProfs: LangProf[] = [];
-  let equipment: EquipmentEntry[] = [];
+  let equipment: StartingEquipmentEntry[] = [];
   let feature: { name: string; description: string; resources?: Resource[]; choices?: Choice[] } = { name: "", description: "" };
   let suggestedCharacteristics: SuggestedCharacteristics | null = null;
   let asi: { pool: Ability[] } | null = null;
@@ -199,6 +196,10 @@ export function toBackgroundCanonical(entry: CanonicalEntry): BackgroundCanonica
     ...(bgOverride?.choices ? { choices: bgOverride.choices } : {}),
   };
 
+  // Entity-level overlay equipment (structured grants) takes precedence over the
+  // prose-derived display fallback, mirroring class-merge's starting_equipment.
+  if (bgOverride?.equipment) out.equipment = bgOverride.equipment;
+
   return out;
 }
 
@@ -237,43 +238,15 @@ function parseLangProf(desc: string): LangProf | null {
   return { kind: "fixed", languages: items };
 }
 
-function parseEquipment(desc: string): EquipmentEntry[] {
+function parseEquipment(desc: string): StartingEquipmentEntry[] {
   if (!desc) return [];
-  const out: EquipmentEntry[] = [];
-  // Strip leading "*Choose A or B:*" prose for 2024 entries.
-  const cleaned = desc.replace(/^\s*\*?Choose\s+[AB]\s+or\s+[AB]:?\*?\s*/i, "");
-  const lines = cleaned.split(",").map(s => s.trim()).filter(Boolean);
-  for (const raw of lines) {
-    const line = raw.replace(/^and\s+/i, "").trim();
-    const gpMatch = /(\d+)\s*gp\b/i.exec(line);
-    const spMatch = /(\d+)\s*sp\b/i.exec(line);
-    const cpMatch = /(\d+)\s*cp\b/i.exec(line);
-    if (gpMatch || spMatch || cpMatch) {
-      const c: { kind: "currency"; gp?: number; sp?: number; cp?: number } = { kind: "currency" };
-      if (gpMatch) c.gp = Number(gpMatch[1]);
-      if (spMatch) c.sp = Number(spMatch[1]);
-      if (cpMatch) c.cp = Number(cpMatch[1]);
-      out.push(c);
-      continue;
-    }
-    let quantity = 1;
-    let item = line;
-    const qtyParen = /\((\d+)(?:\s+\w+)?\)/.exec(line);
-    if (qtyParen) {
-      quantity = Number(qtyParen[1]);
-      item = line.replace(qtyParen[0], "").trim();
-    } else {
-      const qtyLead = /^(\d+)\s+/.exec(line);
-      if (qtyLead) {
-        quantity = Number(qtyLead[1]);
-        item = line.replace(qtyLead[0], "").trim();
-      }
-    }
-    item = item.replace(/^(a|an|the)\s+/i, "").trim();
-    if (!item) continue;
-    out.push({ item: item.toLowerCase().replace(/\s+/g, "-"), quantity });
-  }
-  return out;
+  // Prose fallback: preserve the original benefit text for DISPLAY only
+  // (grants empty → seeds nothing). The authored overlay `backgrounds:`
+  // equipment overrides this with structured grants; only un-annotated
+  // backgrounds fall here. Mirrors class-merge's parseStartingEquipment.
+  const label = desc.trim();
+  if (!label) return [];
+  return [{ kind: "fixed", label, grants: [] }];
 }
 
 function parseAbilityPool(desc: string): Ability[] {
