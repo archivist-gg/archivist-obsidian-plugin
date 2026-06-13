@@ -219,9 +219,13 @@ describe("buildDecisionLedger — decision descriptions (smoke r7)", () => {
 describe("buildDecisionLedger — starting equipment", () => {
   it("synthesizes an equipment-0 decision from a choice entry; ignores fixed entries", () => {
     const c = resolvedFighter(1);
+    // Structured shape (Task B3): each option carries a label + grants.
     (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
-      { kind: "choice", options: ["(a) X", "(b) Y"] },
-      { kind: "fixed", items: ["A pack"] },
+      { kind: "choice", options: [
+        { label: "(a) X", grants: [{ item: "x" }] },
+        { label: "(b) Y", grants: [{ gold: 10 }] },
+      ] },
+      { kind: "fixed", grants: [{ item: "pack" }] },
     ];
     const ledger = buildDecisionLedger(c, { registry } as never);
     const items = ledger.classes[0].levels.flatMap(l => l.items);
@@ -628,5 +632,48 @@ describe("matchesFilter weapon/armor category", () => {
     expect(__matchesFilterForTest(ent({ category: "heavy" }), { armor_category: "heavy" }, "x")).toBe(true);
     expect(__matchesFilterForTest(ent({ category: "shield" }), { armor_category: "shield" }, "x")).toBe(true);
     expect(__matchesFilterForTest(ent({ category: "light" }), { armor_category: "heavy" }, "x")).toBe(false);
+  });
+});
+
+// ── Task B3: structured equipment synthesis + nested category picks ──────────
+// The equipment block reads the STRUCTURED shape: each EquipmentOption.label
+// drives the select-inline row, and a `{ category }` grant on an option becomes
+// a nested select-entity child revealed (buildItem's select-inline child rule)
+// when that option is selected. Weapons → entity_type "weapon" + weapon_category;
+// armor → entity_type "armor" + armor_category; "shield" → armor shield.
+describe("equipment synthesis (structured)", () => {
+  it("synthesizes a select-inline with a nested category child on the chosen option", () => {
+    // option-0 is selected so its nested category grant reveals as a child.
+    const c = resolvedFighter(1, { 1: { "equipment-0": "option-0" } });
+    (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+      { kind: "choice", options: [
+        { label: "A martial weapon + shield", grants: [{ category: "martial-weapon" }, { item: "shield" }] },
+        { label: "155 GP", grants: [{ gold: 155 }] },
+      ] },
+    ];
+    const ledger = buildDecisionLedger(c, { registry } as never);
+    const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
+    expect(item.choice.kind).toBe("select-inline");
+    expect(item.options.map((o) => o.label)).toEqual(["A martial weapon + shield", "155 GP"]);
+    // The chosen option (option-0) reveals exactly one nested category child;
+    // the `{ item }` grant is NOT a decision, only `{ category }` is.
+    expect(item.children).toHaveLength(1);
+    const child = item.children![0];
+    expect(child.choice.kind).toBe("select-entity");
+    expect((child.choice as { entity_type: string }).entity_type).toBe("weapon");
+    expect((child.choice as { where?: { weapon_category?: string } }).where?.weapon_category).toBe("martial");
+  });
+
+  it("reveals no children when the option carries no category grant (gold only)", () => {
+    const c = resolvedFighter(1, { 1: { "equipment-0": "option-1" } });
+    (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+      { kind: "choice", options: [
+        { label: "A martial weapon + shield", grants: [{ category: "martial-weapon" }, { item: "shield" }] },
+        { label: "155 GP", grants: [{ gold: 155 }] },
+      ] },
+    ];
+    const ledger = buildDecisionLedger(c, { registry } as never);
+    const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
+    expect(item.children ?? []).toHaveLength(0);
   });
 });

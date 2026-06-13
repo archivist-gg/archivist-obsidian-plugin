@@ -109,6 +109,24 @@ function matchesFilter(e: RegisteredEntity, where: EntityFilter, ownerBare: stri
 /** Test-only export of {@link matchesFilter} (Task B2). */
 export const __matchesFilterForTest = matchesFilter;
 
+/** Map a starting-equipment category grant to a nested select-entity child.
+ *  Weapons filter by weapon_category; armor by armor_category; "shield" → an
+ *  armor entity in the shield class. The "shield" branch is tested BEFORE the
+ *  generic "armor" branch because a shield is an armor entity_type but a
+ *  distinct category. */
+function categoryToEntitySelect(category: string, id: string): Choice {
+  const c = category.toLowerCase();
+  if (c === "shield") {
+    return { kind: "select-entity", id, label: "Choose a shield", count: 1, entity_type: "armor", where: { armor_category: "shield" } };
+  }
+  if (c.includes("armor")) {
+    return { kind: "select-entity", id, label: "Choose armor", count: 1, entity_type: "armor",
+      where: { armor_category: c.includes("light") ? "light" : c.includes("medium") ? "medium" : "heavy" } };
+  }
+  const wc: "simple" | "martial" = c.includes("martial") ? "martial" : "simple";
+  return { kind: "select-entity", id, label: `Choose a ${c.replace(/-/g, " ")}`, count: 1, entity_type: "weapon", where: { weapon_category: wc } };
+}
+
 function enumerateOptions(choice: Choice, ctx: DecisionContext, ownerBare: string): ResolvedOption[] {
   switch (choice.kind) {
     case "select-inline":
@@ -413,8 +431,11 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
         "Proficiencies", readAt(1), ctx, ownerBare));
     }
 
-    // Entity-level: starting-equipment choices (recorded for the Equipment step;
-    // the minimal Class-step host doesn't render these — Plan 5 does).
+    // Entity-level: starting-equipment choices (the Equipment step renders +
+    // seeds these). Each option's label drives the .pc-cb-eqopt row; a
+    // `{category}` grant on an option becomes a nested select-entity child that
+    // is revealed when that option is selected (buildItem's select-inline child
+    // rule), so the player picks the concrete weapon/armor.
     if (classIndex === 0) {
       // `equipment-{i}`/`option-{j}` keys are positional and assume stable
       // starting_equipment order (canonical SRD data); Plan 5 revisits if the
@@ -423,7 +444,12 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
         if (eq.kind !== "choice") return;
         const ch: Choice = {
           kind: "select-inline", id: `equipment-${i}`, label: "Starting Equipment", count: 1,
-          options: eq.options.map((opt, j) => ({ value: `option-${j}`, label: opt })),
+          options: eq.options.map((opt, j) => ({
+            value: `option-${j}`,
+            label: opt.label,
+            choices: opt.grants.flatMap((g, k) =>
+              "category" in g && g.category ? [categoryToEntitySelect(g.category, `equipment-${i}-opt-${j}-cat-${k}`)] : []),
+          })),
         };
         push(1, buildItem(ch, { kind: "class", slug: entity.slug, level: 1 }, 1,
           "Starting Equipment", readAt(1), ctx, ownerBare));
