@@ -565,8 +565,14 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Greataxe, 4 Handaxes, Explorer's Pack, and 15 GP"
-          - "(B) 75 GP"
+          - label: "Greataxe, 4 Handaxes, Explorer's Pack, and 15 GP"
+            grants:
+              - { item: greataxe }
+              - { item: handaxe, qty: 4 }
+              - { gold: 15 }
+          - label: "75 GP"
+            grants: [{ gold: 75 }]
+    starting_gold: { fixed: 75 }
   bard:
     subclass_feature_name: Bard Subclass
     skill_choices:
@@ -575,8 +581,14 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Leather Armor, 2 Daggers, Musical Instrument of your choice, Entertainer's Pack, and 19 GP"
-          - "(B) 90 GP"
+          - label: "Leather Armor, 2 Daggers, Musical Instrument of your choice, Entertainer's Pack, and 19 GP"
+            grants:
+              - { item: leather-armor }
+              - { item: dagger, qty: 2 }
+              - { gold: 19 }
+          - label: "90 GP"
+            grants: [{ gold: 90 }]
+    starting_gold: { fixed: 90 }
   cleric:
     subclass_feature_name: Cleric Subclass
     skill_choices:
@@ -585,8 +597,15 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Chain Shirt, Shield, Mace, Holy Symbol, Priest's Pack, and 7 GP"
-          - "(B) 110 GP"
+          - label: "Chain Shirt, Shield, Mace, Holy Symbol, Priest's Pack, and 7 GP"
+            grants:
+              - { item: chain-shirt }
+              - { item: shield }
+              - { item: mace }
+              - { gold: 7 }
+          - label: "110 GP"
+            grants: [{ gold: 110 }]
+    starting_gold: { fixed: 110 }
   druid:
     subclass_feature_name: Druid Subclass
     skill_choices:
@@ -595,8 +614,16 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer's Pack, Herbalism Kit, and 9 GP"
-          - "(B) 50 GP"
+          - label: "Leather Armor, Shield, Sickle, Druidic Focus (Quarterstaff), Explorer's Pack, Herbalism Kit, and 9 GP"
+            grants:
+              - { item: leather-armor }
+              - { item: shield }
+              - { item: sickle }
+              - { item: quarterstaff }
+              - { gold: 9 }
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
+    starting_gold: { fixed: 50 }
   fighter:
     subclass_feature_name: Fighter Subclass
     skill_choices:
@@ -605,9 +632,23 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Chain Mail, Greatsword, Flail, 8 Javelins, Dungeoneer's Pack, and 4 GP"
-          - "(B) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Dungeoneer's Pack, and 11 GP"
-          - "(C) 155 GP"
+          - label: "Chain Mail, Greatsword, Flail, 8 Javelins, Dungeoneer's Pack, and 4 GP"
+            grants:
+              - { item: chain-mail }
+              - { item: greatsword }
+              - { item: flail }
+              - { item: javelin, qty: 8 }
+              - { gold: 4 }
+          - label: "Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Dungeoneer's Pack, and 11 GP"
+            grants:
+              - { item: studded-leather-armor }
+              - { item: scimitar }
+              - { item: shortsword }
+              - { item: longbow }
+              - { gold: 11 }
+          - label: "155 GP"
+            grants: [{ gold: 155 }]
+    starting_gold: { fixed: 155 }
   monk:
     subclass_feature_name: Monk Subclass
     skill_choices:
@@ -616,8 +657,14 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Spear, 5 Daggers, Artisan's Tools or Musical Instrument chosen for the tool proficiency, Explorer's Pack, and 11 GP"
-          - "(B) 50 GP"
+          - label: "Spear, 5 Daggers, Artisan's Tools or Musical Instrument chosen for the tool proficiency, Explorer's Pack, and 11 GP"
+            grants:
+              - { item: spear }
+              - { item: dagger, qty: 5 }
+              - { gold: 11 }
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
+    starting_gold: { fixed: 50 }
   paladin:
     subclass_feature_name: Paladin Subclass
     skill_choices:
@@ -626,8 +673,16 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Chain Mail, Shield, Longsword, 6 Javelins, Holy Symbol, Priest's Pack, and 9 GP"
-          - "(B) 150 GP"
+          - label: "Chain Mail, Shield, Longsword, 6 Javelins, Holy Symbol, Priest's Pack, and 9 GP"
+            grants:
+              - { item: chain-mail }
+              - { item: shield }
+              - { item: longsword }
+              - { item: javelin, qty: 6 }
+              - { gold: 9 }
+          - label: "150 GP"
+            grants: [{ gold: 150 }]
+    starting_gold: { fixed: 150 }
   ranger:
     subclass_feature_name: Ranger Subclass
     skill_choices:
@@ -636,8 +691,16 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer's Pack, and 7 GP"
-          - "(B) 150 GP"
+          - label: "Studded Leather Armor, Scimitar, Shortsword, Longbow, 20 Arrows, Quiver, Druidic Focus (sprig of mistletoe), Explorer's Pack, and 7 GP"
+            grants:
+              - { item: studded-leather-armor }
+              - { item: scimitar }
+              - { item: shortsword }
+              - { item: longbow }
+              - { gold: 7 }
+          - label: "150 GP"
+            grants: [{ gold: 150 }]
+    starting_gold: { fixed: 150 }
   rogue:
     subclass_feature_name: Rogue Subclass
     skill_choices:
@@ -646,8 +709,16 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Leather Armor, 2 Daggers, Shortsword, Shortbow, 20 Arrows, Quiver, Thieves' Tools, Burglar's Pack, and 8 GP"
-          - "(B) 100 GP"
+          - label: "Leather Armor, 2 Daggers, Shortsword, Shortbow, 20 Arrows, Quiver, Thieves' Tools, Burglar's Pack, and 8 GP"
+            grants:
+              - { item: leather-armor }
+              - { item: dagger, qty: 2 }
+              - { item: shortsword }
+              - { item: shortbow }
+              - { gold: 8 }
+          - label: "100 GP"
+            grants: [{ gold: 100 }]
+    starting_gold: { fixed: 100 }
   sorcerer:
     subclass_feature_name: Sorcerer Subclass
     skill_choices:
@@ -656,8 +727,14 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer's Pack, and 28 GP"
-          - "(B) 50 GP"
+          - label: "Spear, 2 Daggers, Arcane Focus (crystal), Dungeoneer's Pack, and 28 GP"
+            grants:
+              - { item: spear }
+              - { item: dagger, qty: 2 }
+              - { gold: 28 }
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
+    starting_gold: { fixed: 50 }
   warlock:
     subclass_feature_name: Warlock Subclass
     skill_choices:
@@ -666,8 +743,15 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar's Pack, and 15 GP"
-          - "(B) 100 GP"
+          - label: "Leather Armor, Sickle, 2 Daggers, Arcane Focus (orb), Book (occult lore), Scholar's Pack, and 15 GP"
+            grants:
+              - { item: leather-armor }
+              - { item: sickle }
+              - { item: dagger, qty: 2 }
+              - { gold: 15 }
+          - label: "100 GP"
+            grants: [{ gold: 100 }]
+    starting_gold: { fixed: 100 }
   wizard:
     subclass_feature_name: Wizard Subclass
     skill_choices:
@@ -676,8 +760,14 @@ classes:
     starting_equipment:
       - kind: choice
         options:
-          - "(A) 2 Daggers, Arcane Focus (Quarterstaff), Robe, Spellbook, Scholar's Pack, and 5 GP"
-          - "(B) 55 GP"
+          - label: "2 Daggers, Arcane Focus (Quarterstaff), Robe, Spellbook, Scholar's Pack, and 5 GP"
+            grants:
+              - { item: dagger, qty: 2 }
+              - { item: quarterstaff }
+              - { gold: 5 }
+          - label: "55 GP"
+            grants: [{ gold: 55 }]
+    starting_gold: { fixed: 55 }
 
 race_traits:
   # Dragonborn (2024) -- Breath Weapon: uses = Proficiency Bonus, regain on a
@@ -1018,6 +1108,13 @@ optional_feature_slugs:
 # ===================================================================
 backgrounds:
   acolyte:
+    equipment:
+      - kind: choice
+        options:
+          - label: "Calligrapher's Supplies, Book (Prayers), Holy Symbol, 10 sheets Parchment, Robe, and 8 GP"
+            grants: [{ gold: 8 }]
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
     choices:
       - kind: ability-points
         id: abilities
@@ -1025,6 +1122,15 @@ backgrounds:
         max_per: 2
         pool: [int, wis, cha]
   criminal:
+    equipment:
+      - kind: choice
+        options:
+          - label: "2 Daggers, Thieves' Tools, Crowbar, 2 Pouches, Traveler's Clothes, and 16 GP"
+            grants:
+              - { item: dagger, qty: 2 }
+              - { gold: 16 }
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
     choices:
       - kind: ability-points
         id: abilities
@@ -1032,6 +1138,15 @@ backgrounds:
         max_per: 2
         pool: [dex, con, int]
   sage:
+    equipment:
+      - kind: choice
+        options:
+          - label: "Quarterstaff, Calligrapher's Supplies, Book (History), 8 sheets Parchment, Robe, and 8 GP"
+            grants:
+              - { item: quarterstaff }
+              - { gold: 8 }
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
     choices:
       - kind: ability-points
         id: abilities
@@ -1039,6 +1154,16 @@ backgrounds:
         max_per: 2
         pool: [con, int, wis]
   soldier:
+    equipment:
+      - kind: choice
+        options:
+          - label: "Spear, Shortbow, 20 Arrows, Gaming Set (Dice Set), Healer's Kit, Quiver, Traveler's Clothes, and 14 GP"
+            grants:
+              - { item: spear }
+              - { item: shortbow }
+              - { gold: 14 }
+          - label: "50 GP"
+            grants: [{ gold: 50 }]
     choices:
       - kind: ability-points
         id: abilities
