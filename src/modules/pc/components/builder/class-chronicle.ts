@@ -366,7 +366,10 @@ function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d
   }
   const bag = ctx.builderUiState;
   const key = `${opts.stateKey}.showall`;
-  const showAll = (bag?.get(key) as boolean | undefined) ?? false;
+  // Default = the Chronicle-mockup presentation: every level listed, hollow
+  // medallions marking levels ahead. The ghost still scopes to gained-only,
+  // and an explicit choice in the bag wins per card.
+  const showAll = (bag?.get(key) as boolean | undefined) ?? true;
   const scoped = showAll ? all : all.filter((e) => e.lvl <= opts.level);
   const scope = host.createDiv({ cls: "pc-cb-scope" });
   scope.createSpan({ cls: "pc-cb-scope-l", text: showAll ? "All 20 levels" : `Through level ${opts.level}` });

@@ -165,6 +165,14 @@ describe("renderAbilitiesStep — tiles", () => {
       expect(col.querySelector(".pc-ab > .pc-ab-score")).not.toBeNull();
     }
   });
+
+  it("jsdom guard: opening a Base popover applies no clamp offset (zero-size rects)", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx({ method: "manual" }));
+    (container.querySelector(".pc-base-pop-btn") as HTMLElement).click();
+    const panel = container.querySelector(".pc-base-pop") as HTMLElement;
+    expect(panel.style.marginLeft).toBe("");
+  });
 });
 
 /** ROOT-CAUSE GUARD (smoke r1): the obelisk frame `.pc-ab` is sized
@@ -234,34 +242,102 @@ describe("renderAbilitiesStep — uniform obelisk tile size (CSS invariant)", ()
 });
 
 describe("renderAbilitiesStep — point-buy bar", () => {
-  it("shows spent/left meter for archivist point buy (all-10 = 12 spent, 16 left)", () => {
+  it("shows spent text, meter, and the hero remaining (all-10 archivist = 12 spent, 16 left)", () => {
     const container = mountContainer();
     renderAbilitiesStep(container, mkCtx({ method: "archivist-point-buy" }));
-    const bar = container.querySelector(".pc-bctx");
-    expect(bar?.textContent).toContain("12 of 28 spent");
-    expect(bar?.textContent).toContain("16 left");
-    expect(container.querySelector(".pc-bmeter-fill")).toBeTruthy();
+    const bar = container.querySelector(".pc-bctx")!;
+    expect(bar.textContent).toContain("12 of 28 spent");
+    expect(bar.querySelector(".pc-bleft-n")?.textContent).toBe("16");
+    expect(bar.querySelector(".pc-bleft-l")?.textContent).toBe("left");
+    expect(bar.querySelector(".pc-bmeter-fill")).toBeTruthy();
+    expect(bar.classList.contains("pc-bctx-over")).toBe(false);
+    expect(bar.querySelector(".pc-bover-bang")).toBeNull();
   });
 
-  it("renders the cost legend chips for the active rule", () => {
+  it("renders no cost legend — the score→cost table moved into the Base picker", () => {
     const container = mountContainer();
     renderAbilitiesStep(container, mkCtx({ method: "archivist-point-buy" }));
-    const chips = [...container.querySelectorAll(".pc-bcost > span")];
-    expect(chips.some((c) => c.textContent?.includes("7") && c.textContent?.includes("-1"))).toBe(true);
-    expect(chips.some((c) => c.textContent?.includes("16") && c.textContent?.includes("11"))).toBe(true);
+    expect(container.querySelector(".pc-bcost")).toBeNull();
+    // the dead dress is gone from the stylesheet too, and the meter track can host two segments
+    const css = readPcStyle("builder.css");
+    expect(css).not.toContain("pc-bcost");
+    expect(ruleBlock(css, ".pc-bmeter-bar")).toContain("display: flex");
   });
 
-  it("point-buy: the Base popover grid excludes unaffordable values", () => {
+  it("over budget: N1 dress — tint class, ! disc, crimson copy, capped fill + overflow segment", () => {
     const container = mountContainer();
-    // 15/15/15/8/8/8 = 27 spent on standard point buy → int has no headroom.
+    // archivist costs: 16→11, 14→7, 9→1, 8→0 ⇒ 11+11+7+1+0+0 = 30 of 28 ⇒ 2 over.
+    renderAbilitiesStep(container, mkCtx({
+      method: "archivist-point-buy",
+      abilities: { str: 16, dex: 16, con: 14, int: 9, wis: 8, cha: 8 },
+    }));
+    const bar = container.querySelector(".pc-bctx")!;
+    expect(bar.classList.contains("pc-bctx-over")).toBe(true);
+    expect(bar.querySelector(".pc-bover-bang")?.textContent).toBe("!");
+    expect(bar.textContent).toContain("30 of 28 spent");
+    expect(bar.querySelector(".pc-bleft-n")?.textContent).toBe("2");
+    expect(bar.querySelector(".pc-bleft-l")?.textContent).toBe("over");
+    expect(bar.querySelector(".pc-bover-t")?.textContent).toContain("lower scores worth 2 points");
+    const fill = bar.querySelector(".pc-bmeter-fill") as HTMLElement;
+    const overSeg = bar.querySelector(".pc-bmeter-over") as HTMLElement;
+    expect(Math.round(parseFloat(fill.style.width))).toBe(93);  // 28/30
+    expect(Math.round(parseFloat(overSeg.style.width))).toBe(7); // 2/30
+  });
+
+  it("point-buy: the grid shows the full range, ghosting unaffordable values with costs in place", () => {
+    const container = mountContainer();
+    // 15/15/15/8/8/8 = 27 spent on standard point buy → int (8) has no headroom.
     renderAbilitiesStep(container, mkCtx({
       method: "point-buy",
       abilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
     }));
     const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
     btns[3].click(); // ABILITY_KEYS order str,dex,con,int,wis,cha → int
-    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")].map((c) => c.textContent);
-    expect(cells).toEqual(["8"]);
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")];
+    expect(cells.map((c) => c.querySelector(".pc-numgrid-v")?.textContent))
+      .toEqual(["8", "9", "10", "11", "12", "13", "14", "15"]);
+    expect(cells.filter((c) => c.classList.contains("ghost")).map((c) => c.querySelector(".pc-numgrid-v")?.textContent))
+      .toEqual(["9", "10", "11", "12", "13", "14", "15"]);
+    expect(cells[0].querySelector(".pc-numgrid-cost")?.textContent).toBe("0");
+    expect(cells[7].querySelector(".pc-numgrid-cost")?.textContent).toBe("9");
+    expect(container.querySelector(".pc-base-pop-h")?.textContent).toBe("Set value · 0 pts left");
+    expect(container.querySelector(".pc-base-pop-note")?.textContent).toBe("greyed = not enough points");
+  });
+
+  it("point-buy: ghost cells are inert, live cells commit", () => {
+    const container = mountContainer();
+    const setAbilityBaseScore = vi.fn();
+    renderAbilitiesStep(container, mkCtx({
+      method: "point-buy",
+      abilities: { str: 15, dex: 15, con: 15, int: 8, wis: 8, cha: 8 },
+      editState: { setAbilityBaseScore },
+    }));
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[3].click();
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")] as HTMLElement[];
+    cells.find((c) => c.classList.contains("ghost"))!.click();
+    expect(setAbilityBaseScore).not.toHaveBeenCalled();
+    cells[0].click(); // "8" — the current, affordable value
+    expect(setAbilityBaseScore).toHaveBeenCalledWith("int", 8);
+  });
+
+  it("archivist over-budget arrival: header reads N over; lower picks stay live; true minus on the refund", () => {
+    const container = mountContainer();
+    // 30 of 28 spent (2 over). For str (16, cost 11): others = 19 → affordable = cost ≤ 9 → 7..15.
+    renderAbilitiesStep(container, mkCtx({
+      method: "archivist-point-buy",
+      abilities: { str: 16, dex: 16, con: 14, int: 9, wis: 8, cha: 8 },
+    }));
+    const btns = [...container.querySelectorAll(".pc-babctl .pc-base-pop-btn")] as HTMLElement[];
+    btns[0].click(); // str
+    expect(container.querySelector(".pc-base-pop-h")?.textContent).toBe("Set value · 2 over");
+    const cells = [...container.querySelectorAll(".pc-base-pop .pc-base-numgrid-c")];
+    // 7..15 all land at/under budget; 16 is the current value — .cur, never ghosted.
+    expect(cells.filter((c) => c.classList.contains("ghost")).length).toBe(0);
+    expect(cells.find((c) => c.classList.contains("cur"))?.querySelector(".pc-numgrid-v")?.textContent).toBe("16");
+    expect(cells[0].querySelector(".pc-numgrid-cost")?.textContent).toBe("−1");
+    // nothing ghosted ⇒ no footnote
+    expect(container.querySelector(".pc-base-pop-note")).toBeNull();
   });
 
   it("renders no context bar for the manual method", () => {
@@ -585,15 +661,62 @@ describe("renderAbilitiesStep — Base popover (picker B-II)", () => {
   });
 });
 
-describe("renderAbilitiesStep — custom (Plan 6 hand-off)", () => {
-  it("toggling the ✦ Custom tab shows the inert Inquiry prompt box", () => {
+describe("renderAbilitiesStep — custom tab (Plan 6 hand-off)", () => {
+  it("selecting ✦ Custom shows the inert Inquiry box and takes the .on dress exclusively", () => {
     const container = mountContainer();
-    renderAbilitiesStep(container, mkCtx());
+    renderAbilitiesStep(container, mkCtx()); // method = manual
     expect(container.querySelector(".pc-baibox")).toBeNull();
     (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
     const box = container.querySelector(".pc-baibox");
     expect(box).not.toBeNull();
-    const btn = box!.querySelector("button") as HTMLButtonElement;
-    expect(btn.disabled).toBe(true);
+    expect((box!.querySelector("button") as HTMLButtonElement).disabled).toBe(true);
+    // one strip, one active tab: Custom wears .on, no method pill does
+    expect(container.querySelector(".pc-bmtab.ai")?.classList.contains("on")).toBe(true);
+    expect([...container.querySelectorAll(".pc-bmtab:not(.ai)")].every((p) => !p.classList.contains("on"))).toBe(true);
+  });
+
+  it("tabs don't toggle off: re-clicking the active ✦ Custom keeps the box", () => {
+    const container = mountContainer();
+    renderAbilitiesStep(container, mkCtx());
+    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
+    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
+    expect(container.querySelector(".pc-baibox")).not.toBeNull();
+    expect(container.querySelector(".pc-bmtab.ai")?.classList.contains("on")).toBe(true);
+  });
+
+  it("re-picking the current method leaves Custom: box gone, pill .on restored, no mutator write", () => {
+    const container = mountContainer();
+    const setAbilityMethod = vi.fn();
+    renderAbilitiesStep(container, mkCtx({ editState: { setAbilityMethod } })); // method = manual
+    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
+    const manual = [...container.querySelectorAll(".pc-bmtab")].find((t) => t.textContent === "Manual") as HTMLElement;
+    manual.click();
+    expect(setAbilityMethod).not.toHaveBeenCalled();
+    expect(container.querySelector(".pc-baibox")).toBeNull();
+    expect([...container.querySelectorAll(".pc-bmtab")].find((t) => t.textContent === "Manual")?.classList.contains("on")).toBe(true);
+  });
+
+  it("picking a different method from Custom clears the flag and writes setAbilityMethod", () => {
+    const container = mountContainer();
+    const setAbilityMethod = vi.fn();
+    const ctx = mkCtx({ editState: { setAbilityMethod } });
+    renderAbilitiesStep(container, ctx);
+    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
+    const pill = [...container.querySelectorAll(".pc-bmtab")].find((t) => t.textContent?.includes("Standard Array")) as HTMLElement;
+    pill.click();
+    expect(setAbilityMethod).toHaveBeenCalledWith("standard-array");
+    expect((ctx.builderUiState as unknown as Map<string, unknown>).get("builder.abilities.custom")).toBe(false);
+  });
+
+  it("local repaint preserves host-owned children (the step heading survives entering Custom)", () => {
+    // Mirror production: the host renders the step heading into the SAME body
+    // before calling renderAbilitiesStep. Entering Custom triggers a local
+    // repaint, which must not destroy that host-owned heading.
+    const container = mountContainer();
+    container.createDiv({ cls: "pc-builder-step-h", text: "Abilities" });
+    renderAbilitiesStep(container, mkCtx());
+    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
+    expect(container.querySelector(".pc-builder-step-h")?.textContent).toBe("Abilities");
+    expect(container.querySelector(".pc-baibox")).not.toBeNull();
   });
 });

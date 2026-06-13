@@ -8,6 +8,7 @@ import {
 } from "./ability-methods";
 import type { PointBuyRule } from "./ability-methods";
 import { abilityBonusBreakdown } from "../../pc.recalc";
+import { clampPopover } from "./popover-clamp";
 
 const ABILITY_LABELS: Record<Ability, string> = {
   str: "STR", dex: "DEX", con: "CON", int: "INT", wis: "WIS", cha: "CHA",
@@ -21,20 +22,27 @@ const ABILITY_LABELS: Record<Ability, string> = {
 export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const method = ctx.resolved.definition.ability_method;
 
-  // Method pills.
+  // Method pills — one tab strip with ✦ Custom as a real sixth tab: when Custom
+  // is active no method pill wears .on, and picking a method clears the custom
+  // flag in the same click. Tab semantics: clicking the active tab is a no-op.
+  const customOn = ctx.builderUiState?.get("builder.abilities.custom") === true;
   const tabs = body.createDiv({ cls: "pc-bmethods" });
   for (const m of ABILITY_METHODS) {
-    const pill = tabs.createEl("button", { cls: `pc-bmtab${m.id === method ? " on" : ""}`, text: m.label });
+    const pill = tabs.createEl("button", { cls: `pc-bmtab${!customOn && m.id === method ? " on" : ""}`, text: m.label });
     if (m.homebrew) pill.createSpan({ cls: "pc-bhb", text: "Homebrew" });
-    pill.addEventListener("click", () => ctx.editState?.setAbilityMethod(m.id));
+    pill.addEventListener("click", () => {
+      if (customOn) ctx.builderUiState?.set("builder.abilities.custom", false);
+      if (m.id !== method) ctx.editState?.setAbilityMethod(m.id);
+      else if (customOn) redraw(body, ctx); // same method re-picked from Custom: no write, repaint locally
+    });
   }
   // ✦ Custom — Plan 6 hand-off; renders the prompt box only.
-  const customOn = ctx.builderUiState?.get("builder.abilities.custom") === true;
   const custom = tabs.createEl("button", { cls: `pc-bmtab ai${customOn ? " on" : ""}` });
   custom.createSpan({ cls: "pc-bmtab-star", text: "✦ " });
   custom.createSpan({ text: "Custom" });
   custom.addEventListener("click", () => {
-    ctx.builderUiState?.set("builder.abilities.custom", !customOn);
+    if (customOn) return;
+    ctx.builderUiState?.set("builder.abilities.custom", true);
     redraw(body, ctx);
   });
 
@@ -45,7 +53,11 @@ export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderConte
 }
 
 function redraw(body: HTMLElement, ctx: ComponentRenderContext): void {
-  body.empty();
+  // The host renders the step heading into this same body; a local repaint
+  // clears only what renderAbilitiesStep owns, leaving the heading intact.
+  for (const child of Array.from(body.children)) {
+    if (!child.classList.contains("pc-builder-step-h")) child.remove();
+  }
   renderAbilitiesStep(body, ctx);
 }
 
@@ -101,13 +113,11 @@ function rollPool(ctx: ComponentRenderContext): number[] {
   return (state?.dice ?? []).map((r) => r[0] + r[1] + r[2]);
 }
 
-/** Allowed Base values per method: point-buy rules constrain by budget;
- *  standard-array offers unused array values (+ the current one); rolled offers
- *  the session pool (Task 11); manual offers 3-20. */
+/** Allowed Base values per non-point-buy method: standard-array offers unused
+ *  array values (+ the current one); rolled offers the session pool (Task 11);
+ *  manual offers 3-20. */
 function baseChoicesFor(ctx: ComponentRenderContext, method: AbilityMethod, ab: Ability): number[] {
   const abilities = ctx.resolved.definition.abilities;
-  const rule = POINT_BUY_RULES[method];
-  if (rule) return allowedScores(rule, abilities, ab);
   if (method === "standard-array") {
     const used = ABILITY_KEYS.filter((k) => k !== ab).map((k) => abilities[k]);
     const pool = [...STANDARD_ARRAY];
@@ -241,7 +251,7 @@ function openBasePopover(
   // anchor, narrower width) and the pool-list, which the level picker has no
   // analogue for.
   const panel = anchor.createDiv({ cls: "pc-pop pc-base-pop" });
-  panel.createDiv({ cls: "pc-pop-arrow pc-base-pop-arrow" });
+  const arrow = panel.createDiv({ cls: "pc-pop-arrow pc-base-pop-arrow" });
   panel.addEventListener("click", (ev) => ev.stopPropagation());
 
   const commit = (value: number): void => {
@@ -275,13 +285,43 @@ function openBasePopover(
       un.addEventListener("click", () => clear());
     }
   } else {
-    panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Set value" });
-    const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
-    for (const v of baseChoicesFor(ctx, method, ab)) {
-      const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
-      cell.addEventListener("click", () => commit(v));
+    const rule = POINT_BUY_RULES[method];
+    if (rule) {
+      // Design D: the score→cost table lives here, at the point of spend. The
+      // FULL range renders; values `allowedScores` can't afford ghost out (the
+      // current value is always live — it's where you are, and re-committing it
+      // is harmless). Any live pick lands the budget at or under target, which
+      // is also the ladder out of an over-budget arrival.
+      const left = pointBuyRemaining(rule, ctx.resolved.definition.abilities);
+      panel.createDiv({
+        cls: "pc-pop-h pc-base-pop-h",
+        text: left < 0 ? `Set value · ${-left} over` : `Set value · ${left} pt${left === 1 ? "" : "s"} left`,
+      });
+      const affordable = new Set(allowedScores(rule, ctx.resolved.definition.abilities, ab));
+      const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
+      let anyGhost = false;
+      for (let v = rule.min; v <= rule.max; v++) {
+        const isCur = v === cur;
+        const ghost = !isCur && !affordable.has(v);
+        anyGhost = anyGhost || ghost;
+        const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${isCur ? " cur" : ""}${ghost ? " ghost" : ""}` });
+        cell.createSpan({ cls: "pc-numgrid-v", text: String(v) });
+        // True minus on the dump-stat refund, not a hyphen.
+        cell.createSpan({ cls: "pc-numgrid-cost", text: String(rule.cost[v]).replace("-", "−") });
+        if (!ghost) cell.addEventListener("click", () => commit(v));
+      }
+      if (anyGhost) panel.createDiv({ cls: "pc-base-pop-note", text: "greyed = not enough points" });
+    } else {
+      panel.createDiv({ cls: "pc-pop-h pc-base-pop-h", text: "Set value" });
+      const grid = panel.createDiv({ cls: "pc-numgrid pc-base-numgrid" });
+      for (const v of baseChoicesFor(ctx, method, ab)) {
+        const cell = grid.createDiv({ cls: `pc-numgrid-c pc-base-numgrid-c${v === cur ? " cur" : ""}`, text: String(v) });
+        cell.addEventListener("click", () => commit(v));
+      }
     }
   }
+
+  clampPopover(panel, arrow);
 
   // Dismissal — the conditions-popover idiom: register document-level
   // outside-click + Escape on open, tear down on close. The opening click is
@@ -326,22 +366,31 @@ function renderPointBuyBar(body: HTMLElement, ctx: ComponentRenderContext, metho
   const abilities = ctx.resolved.definition.abilities;
   const spent = pointBuySpent(rule, abilities);
   const left = pointBuyRemaining(rule, abilities);
-  const bar = body.createDiv({ cls: "pc-bctx" });
+  const over = left < 0;
+  // Design D: one calm line — label · spent · meter · hero remaining. The cost
+  // legend lives in the Base picker now. Over budget wears the N1 idiom: tint +
+  // "!" disc + crimson copy + a darker overflow cap on the meter. No accent bars.
+  const bar = body.createDiv({ cls: `pc-bctx${over ? " pc-bctx-over" : ""}` });
+  if (over) bar.createSpan({ cls: "pc-bover-bang", text: "!" });
   bar.createSpan({ cls: "pc-bctx-l", text: ABILITY_METHODS.find((m) => m.id === method)?.label ?? "" });
 
   const meter = bar.createDiv({ cls: "pc-bmeter" });
-  meter.createSpan({ cls: "pc-bmeter-t", text: `${spent} of ${rule.budget} spent` });
+  meter.createSpan({ cls: `pc-bmeter-t${over ? " over" : ""}`, text: `${spent} of ${rule.budget} spent` });
   const track = meter.createDiv({ cls: "pc-bmeter-bar" });
   const fill = track.createDiv({ cls: "pc-bmeter-fill" });
-  const pct = Math.max(0, Math.min(100, (spent / rule.budget) * 100));
-  fill.style.width = `${pct}%`;
-  meter.createSpan({ cls: "pc-bmeter-t", text: `${left} left` });
+  if (over) {
+    fill.style.width = `${(rule.budget / spent) * 100}%`;
+    const overSeg = track.createDiv({ cls: "pc-bmeter-over" });
+    overSeg.style.width = `${((spent - rule.budget) / spent) * 100}%`;
+  } else {
+    fill.style.width = `${Math.max(0, Math.min(100, (spent / rule.budget) * 100))}%`;
+  }
 
-  const legend = bar.createDiv({ cls: "pc-bcost" });
-  for (let v = rule.min; v <= rule.max; v++) {
-    const chip = legend.createEl("span");
-    chip.createSpan({ cls: "pc-bcost-s", text: String(v) });
-    chip.createSpan({ text: ` ${rule.cost[v]}` });
+  bar.createSpan({ cls: "pc-bleft-n", text: String(Math.abs(left)) });
+  bar.createSpan({ cls: `pc-bleft-l${over ? " over" : ""}`, text: over ? "over" : "left" });
+  if (over) {
+    const n = Math.abs(left);
+    bar.createSpan({ cls: "pc-bover-t", text: `— lower scores worth ${n} point${n === 1 ? "" : "s"} to continue` });
   }
 }
 

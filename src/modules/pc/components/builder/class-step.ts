@@ -4,6 +4,7 @@ import { stripSlug } from "../../pc.resolver";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 import { AddClassModal } from "./class-modal";
 import { renderClassChronicle, type ClassData } from "./class-chronicle";
+import { clampPopover } from "./popover-clamp";
 
 const ABILITY_NAME: Record<string, string> = {
   str: "Strength", dex: "Dexterity", con: "Constitution", int: "Intelligence", wis: "Wisdom", cha: "Charisma",
@@ -180,7 +181,7 @@ function openLevelPopover(
   ctx: ComponentRenderContext, level: number, index: number,
 ): void {
   const panel = anchor.createDiv({ cls: "pc-pop pc-lvl-pop" });
-  panel.createDiv({ cls: "pc-pop-arrow" });
+  const arrow = panel.createDiv({ cls: "pc-pop-arrow" });
   panel.addEventListener("click", (ev) => ev.stopPropagation());
   panel.createDiv({ cls: "pc-pop-h", text: "Set level" });
 
@@ -192,6 +193,8 @@ function openLevelPopover(
       ctx.editState?.setClassLevel(index, n);
     });
   }
+
+  clampPopover(panel, arrow);
 
   // Dismissal — the conditions-popover idiom (mirrors the Base picker): register
   // document-level outside-click + Escape on open, tear down on close. The
