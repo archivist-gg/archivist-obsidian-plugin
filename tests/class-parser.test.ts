@@ -18,7 +18,7 @@ skill_choices:
   count: 4
   from: [stealth, deception, investigation, sleight-of-hand]
 starting_equipment:
-  - { kind: fixed, items: [leather-armor] }
+  - { kind: fixed, label: leather armor, grants: [{ item: leather-armor }] }
 spellcasting: null
 subclass_level: 3
 subclass_feature_name: "Roguish Archetype"

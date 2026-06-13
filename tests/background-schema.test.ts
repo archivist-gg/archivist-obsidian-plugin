@@ -10,7 +10,7 @@ const minimalBackground = {
   skill_proficiencies: ["insight", "religion"],
   tool_proficiencies: [],
   language_proficiencies: [{ kind: "choice", count: 2, from: "any" }],
-  equipment: [{ item: "holy-symbol", quantity: 1 }, { kind: "currency", gp: 15 }],
+  equipment: [{ kind: "fixed", label: "holy symbol and pouch", grants: [{ item: "holy-symbol" }, { gold: 15 }] }],
   feature: { name: "Shelter of the Faithful", description: "Perform rites." },
   ability_score_increases: null,
   origin_feat: null,

@@ -16,7 +16,7 @@ const minimalClass = {
     tools: { fixed: ["thieves-tools"] },
   },
   skill_choices: { count: 4, from: ["stealth", "deception"] },
-  starting_equipment: [{ kind: "fixed", items: ["leather-armor"] }],
+  starting_equipment: [{ kind: "fixed", label: "leather armor", grants: [{ item: "leather-armor" }] }],
   spellcasting: null,
   subclass_level: 3,
   subclass_feature_name: "Roguish Archetype",

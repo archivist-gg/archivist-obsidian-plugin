@@ -18,8 +18,11 @@ skill_choices:
   count: 2
   from: [athletics, intimidation, perception, survival]
 starting_equipment:
-  - { kind: choice, options: [forged-greatsword, reinforced-warhammer] }
-  - { kind: fixed, items: [explorers-pack] }
+  - kind: choice
+    options:
+      - { label: a forged greatsword, grants: [{ item: forged-greatsword }] }
+      - { label: a reinforced warhammer, grants: [{ item: reinforced-warhammer }] }
+  - { kind: fixed, label: an explorer's pack, grants: [{ item: explorers-pack }] }
   - { kind: gold, amount: 75 }
 spellcasting: null
 subclass_level: 3

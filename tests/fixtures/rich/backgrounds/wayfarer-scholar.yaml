@@ -9,10 +9,13 @@ tool_proficiencies:
 language_proficiencies:
   - { kind: choice, count: 2, from: "any" }
 equipment:
-  - { item: traveling-satchel, quantity: 1 }
-  - { item: ink-pot, quantity: 1 }
-  - { item: quill, quantity: 3 }
-  - { kind: currency, gp: 10 }
+  - kind: fixed
+    label: a scholar's traveling kit
+    grants:
+      - { item: traveling-satchel }
+      - { item: ink-pot }
+      - { item: quill, qty: 3 }
+      - { gold: 10 }
 feature:
   name: "Rumor Weaver"
   description: "Invented — you hear useful rumors faster than other travelers."
