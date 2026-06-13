@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { startingEquipmentEntrySchema, startingGoldSchema } from "../src/shared/schemas/equipment-grant-schema";
+import { classEntitySchema } from "../src/modules/class/class.schema";
 
 describe("equipment-grant schema", () => {
   it("accepts a choice entry with itemized + category + gold grants", () => {
@@ -30,5 +31,25 @@ describe("equipment-grant schema", () => {
 
   it("rejects an unknown grant key", () => {
     expect(() => startingEquipmentEntrySchema.parse({ kind: "fixed", grants: [{ nonsense: 1 }] })).toThrow();
+  });
+});
+
+describe("class schema with structured equipment", () => {
+  const base = {
+    slug: "x", name: "X", edition: "2024", source: "SRD", description: "",
+    hit_die: "d10", primary_abilities: ["str"], saving_throws: ["str", "con"],
+    proficiencies: { armor: [], weapons: { categories: ["martial"] } },
+    skill_choices: { count: 2, from: ["athletics", "history"] },
+    spellcasting: null, subclass_level: 3, subclass_feature_name: "Subclass",
+    weapon_mastery: null, epic_boon_level: null, table: {}, features_by_level: {}, resources: [],
+  };
+  it("parses structured starting_equipment + starting_gold", () => {
+    const parsed = classEntitySchema.parse({
+      ...base,
+      starting_equipment: [{ kind: "choice", options: [{ label: "Chain Mail", grants: [{ item: "chain-mail" }, { gold: 4 }] }] }],
+      starting_gold: { fixed: 155 },
+    });
+    expect(parsed.starting_equipment[0].kind).toBe("choice");
+    expect(parsed.starting_gold?.fixed).toBe(155);
   });
 });

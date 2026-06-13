@@ -1,4 +1,6 @@
 import type { Feature, Choice, Ability, SkillSlug, Resource } from "../../shared/types";
+import type { StartingEquipmentEntry, StartingGold } from "../../shared/types/equipment-grant";
+export type { StartingEquipmentEntry, StartingGold } from "../../shared/types/equipment-grant";
 
 export type Edition = "2014" | "2024";
 export type ArmorCategory = "light" | "medium" | "heavy" | "shield";
@@ -25,11 +27,6 @@ export interface SkillChoices {
   count: number;
   from: SkillSlug[];
 }
-
-export type StartingEquipmentEntry =
-  | { kind: "choice"; options: string[] }
-  | { kind: "fixed"; items: string[] }
-  | { kind: "gold"; amount: number };
 
 export type SpellcastingPreparation = "known" | "prepared" | "ritual" | "spontaneous";
 
@@ -64,6 +61,7 @@ export interface ClassEntity {
   proficiencies: ClassProficiencies;
   skill_choices: SkillChoices;
   starting_equipment: StartingEquipmentEntry[];
+  starting_gold?: StartingGold;
   spellcasting: SpellcastingConfig | null;
   subclass_level: number;
   subclass_feature_name: string;

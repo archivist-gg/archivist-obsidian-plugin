@@ -4,6 +4,7 @@ import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
 import type { Resource } from "../../../src/shared/types/resource";
 import type { Choice } from "../../../src/shared/types/choice";
+import type { StartingEquipmentEntry } from "../../../src/shared/types/equipment-grant";
 
 /**
  * ClassCanonical mirrors the runtime ClassEntity shape (src/modules/class/class.schema.ts)
@@ -46,11 +47,6 @@ interface ClassProficiencies {
   weapons: { fixed?: string[]; categories?: WeaponCategory[] };
   tools?: { fixed: string[] };
 }
-
-type StartingEquipmentEntry =
-  | { kind: "fixed"; items: string[] }
-  | { kind: "choice"; options: string[] }
-  | { kind: "gold"; amount: number };
 
 interface SpellcastingConfig {
   ability: Ability;
@@ -349,7 +345,10 @@ function parseStartingEquipment(features: Open5eClassFeature[]): StartingEquipme
     if (cleaned.length > 0) items.push(cleaned);
   }
   if (items.length === 0) return [];
-  return [{ kind: "fixed", items }];
+  // Prose fallback: preserve the lines for DISPLAY only (grants empty → seeds
+  // nothing). SRD classes are fully authored in the overlay, which overrides
+  // this; only un-annotated homebrew falls here.
+  return [{ kind: "fixed", label: items.join(", "), grants: [] }];
 }
 
 /**

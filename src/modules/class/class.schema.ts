@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { featureSchema } from "../../shared/schemas/feature-schema";
 import { resourceSchema } from "../../shared/schemas/resource-schema";
+import { startingEquipmentEntrySchema, startingGoldSchema } from "../../shared/schemas/equipment-grant-schema";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const skillEnum = z.enum([
@@ -35,12 +36,6 @@ const toolProficiencySchema = z.object({
 }).refine((t) => (t.fixed?.length ?? 0) > 0 || t.choice !== undefined, {
   message: "tool proficiency must declare fixed or choice",
 });
-
-const startingEquipmentEntrySchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("choice"), options: z.array(z.string()).nonempty() }),
-  z.object({ kind: z.literal("fixed"), items: z.array(z.string()).nonempty() }),
-  z.object({ kind: z.literal("gold"), amount: z.number().positive() }),
-]);
 
 const spellcastingSchema = z.object({
   ability: abilityEnum,
@@ -80,6 +75,7 @@ export const classEntitySchema = z.object({
     from: z.array(skillEnum).nonempty(),
   }),
   starting_equipment: z.array(startingEquipmentEntrySchema),
+  starting_gold: startingGoldSchema.optional(),
   spellcasting: spellcastingSchema.nullable(),
   subclass_level: z.number().int().positive(),
   subclass_feature_name: z.string().min(1),
