@@ -17,6 +17,11 @@ const ENUMERATE_LIMIT = 10_000;
 
 export interface BrowseModeOptions {
   filters: FilterState;
+  /** When set, the "+ Add" handler tags each added item with this provenance
+   *  string via `addItem(slug, { granted_by })` (e.g. "builder:gold-buy" so the
+   *  Equipment step can sum/clear gold-bought gear). Omit (the default) for the
+   *  inventory Add drawer — items are added with no provenance, unchanged. */
+  addProvenance?: string;
 }
 
 export class BrowseMode implements SheetComponent {
@@ -50,7 +55,7 @@ export class BrowseMode implements SheetComponent {
       const registry = (ctx.core?.entities as EntityRegistry | undefined) ?? null;
       for (const v of filtered) {
         const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
-        drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry);
+        drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry, this.opts.addProvenance);
       }
     }
   }
@@ -67,6 +72,7 @@ function drawBrowseRow(
   app: App,
   expanded: Set<string>,
   registry: EntityRegistry | null,
+  addProvenance?: string,
 ): void {
   host.empty();
   const key = browseKey(v);
@@ -74,8 +80,8 @@ function drawBrowseRow(
   renderBrowseRow(host, v, editState, app, isExpanded, () => {
     if (expanded.has(key)) expanded.delete(key);
     else expanded.add(key);
-    drawBrowseRow(host, v, editState, app, expanded, registry);
-  });
+    drawBrowseRow(host, v, editState, app, expanded, registry, addProvenance);
+  }, addProvenance);
   if (isExpanded) {
     // Pass editState: null so renderRowExpand skips the PC-actions strip
     // (Equip / Attune / Remove are inventory-row concerns, not browse-mode).
@@ -96,6 +102,7 @@ function renderBrowseRow(
   _app: App,
   isExpanded: boolean,
   onToggle: () => void,
+  addProvenance?: string,
 ): void {
   const row = parent.createDiv({ cls: "pc-inv-row" });
   if (isExpanded) row.classList.add("expanded", "pc-row-open");
@@ -126,7 +133,9 @@ function renderBrowseRow(
     add.addEventListener("click", (ev) => {
       ev.stopPropagation();
       const slug = v.entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
-      if (slug) editState.addItem(slug);
+      // Backward-compatible: with no addProvenance (the inventory Add drawer),
+      // this is addItem(slug, {}) — no granted_by, unchanged behavior.
+      if (slug) editState.addItem(slug, addProvenance ? { granted_by: addProvenance } : {});
     });
   }
 

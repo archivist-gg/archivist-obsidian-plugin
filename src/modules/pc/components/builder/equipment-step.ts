@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { StartingEquipmentEntry, EquipmentGrant } from "../../../../shared/types/equipment-grant";
+import type { StartingEquipmentEntry, EquipmentGrant, StartingGold } from "../../../../shared/types/equipment-grant";
 import type { ChoiceValue } from "../../pc.types";
 import type { DecisionItem, DecisionLedger } from "../../pc.decision-engine";
 import { buildDecisionLedger, bareEntitySlug } from "../../pc.decision-engine";
@@ -7,6 +7,7 @@ import { renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
 import { InventoryList } from "../inventory/inventory-list";
 import { CurrencyStrip } from "../inventory/currency-strip";
+import { BrowseMode } from "../inventory/browse-mode";
 import { resolveGrants, type GrantedEntry, type SeedRegistry } from "../../builder/equipment-seed";
 
 type Mode = "starting" | "gold" | "empty";
@@ -240,11 +241,91 @@ function renderInventoryPanel(body: HTMLElement, ctx: ComponentRenderContext): v
   new CurrencyStrip().render(body, ctx);
 }
 
-// ── Buy with Gold (placeholder — Task C3 replaces) ───────────────────────────
+// ── Buy with Gold ────────────────────────────────────────────────────────────
 
+/** The starting-gold budget. `fixed` gp (2024) wins; else a 2014 `dice` roll
+ *  uses its AVERAGE (×multiplier, e.g. "5d4" × 10 = 125; no Roll/Average toggle
+ *  yet — deferred). If neither is set, fall back to the largest gold-only option
+ *  in the class's starting_equipment (the 2024 "take gold instead" branch). */
+function startingBudget(ctx: ComponentRenderContext): number {
+  const cls = ctx.resolved.classes?.[0]?.entity as
+    | { starting_gold?: StartingGold; starting_equipment?: StartingEquipmentEntry[] }
+    | undefined;
+  const sg = cls?.starting_gold;
+  if (sg?.fixed != null) return sg.fixed;
+  if (sg?.dice) {
+    const m = sg.dice.match(/^(\d+)d(\d+)$/);
+    if (m) {
+      const n = Number(m[1]);
+      const d = Number(m[2]);
+      return Math.floor(n * ((d + 1) / 2) * (sg.multiplier ?? 1));
+    }
+  }
+  // Fallback: the largest gold-only option in starting_equipment.
+  let max = 0;
+  for (const eq of cls?.starting_equipment ?? []) {
+    if (eq.kind !== "choice") continue;
+    for (const opt of eq.options) {
+      const g = goldOf(opt.grants);
+      if (g > max) max = g;
+    }
+  }
+  return max;
+}
+
+/** Read an item entity's gp price from the registry. The runtime gear data
+ *  carries a `cost` field (number or numeric string like "50.00"); it is absent
+ *  on virtually all entities today, so this returns 0 for most — the spent-sum
+ *  degrades gracefully (the meter shows the full budget remaining). */
+function itemCost(reg: { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined, slug: string): number {
+  const raw = reg?.getBySlug?.(slug)?.data?.cost;
+  const n = typeof raw === "string" ? Number.parseFloat(raw) : raw;
+  return typeof n === "number" && Number.isFinite(n) ? n : 0;
+}
+
+/** Buy-with-Gold mode: a starting-gold budget meter (real .pc-bctx idiom) over
+ *  the live compendium browse table whose "+ Add" tags each item
+ *  `builder:gold-buy`. Spent gp is the sum of those items' costs; the remaining
+ *  budget is mirrored into `currency.gp` (equality-guarded so the
+ *  setCurrency→onChange→re-render converges instead of looping). */
 function renderBuyWithGold(body: HTMLElement, ctx: ComponentRenderContext): void {
-  void ctx;
-  body.createDiv({ cls: "pc-bclass-orphan", text: "Buy with Gold — arriving in the next task." });
+  const def = ctx.resolved.definition;
+  const budget = startingBudget(ctx);
+  const reg = ctx.core?.entities as { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined;
+
+  let spent = 0;
+  for (const e of def.equipment ?? []) {
+    if (e.granted_by !== "builder:gold-buy") continue;
+    const slug = e.item.match(/^\[\[(.+)\]\]$/)?.[1];
+    if (slug) spent += itemCost(reg, slug);
+  }
+  const remaining = Math.max(0, budget - spent);
+  const over = spent > budget;
+
+  const bar = body.createDiv({ cls: `pc-bctx${over ? " pc-bctx-over" : ""}` });
+  bar.createSpan({ cls: "pc-bctx-l", text: "Starting Gold" });
+  const meter = bar.createDiv({ cls: "pc-bmeter" });
+  meter.createSpan({ cls: `pc-bmeter-t${over ? " over" : ""}`, text: `${spent} of ${budget} gp spent` });
+  const track = meter.createDiv({ cls: "pc-bmeter-bar" });
+  const fill = track.createDiv({ cls: "pc-bmeter-fill" });
+  fill.style.width = `${budget ? Math.min(100, (spent / budget) * 100) : 0}%`;
+  bar.createSpan({ cls: "pc-bleft-n", text: String(remaining) });
+  bar.createSpan({ cls: `pc-bleft-l${over ? " over" : ""}`, text: "left" });
+
+  // Keep currency.gp in sync with the remaining budget. Equality-guarded so the
+  // setCurrency→onChange→full re-render converges (no loop), same pattern as the
+  // starting-mode syncStartingEquipment no-op guard. setBuilderEquipmentMode
+  // already cleared builder:starting gear on the switch into gold, so there is
+  // no starting-mode/gold-mode gp conflict to reconcile here.
+  if ((def.currency?.gp ?? 0) !== remaining) ctx.editState?.setCurrency("gp", remaining);
+
+  // The live compendium browse table; its "+ Add" tags items builder:gold-buy.
+  new BrowseMode({
+    filters: { status: "all", types: new Set(), rarities: new Set(), search: "" },
+    addProvenance: "builder:gold-buy",
+  }).render(body, ctx);
+
+  renderInventoryPanel(body, ctx);
 }
 
 // ── seed registry adapter ────────────────────────────────────────────────────

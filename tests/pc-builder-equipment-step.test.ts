@@ -164,4 +164,20 @@ describe("renderEquipmentStep", () => {
     const picker = c.querySelector(".pc-btable-host, .pc-dstrip-browse, .pc-dstrip-nest");
     expect(picker).toBeTruthy();
   });
+
+  it("Buy with Gold shows a gold meter from starting_gold.fixed", () => {
+    const c = mountContainer();
+    const classEntity = {
+      slug: "srd-2024_fighter", name: "Fighter",
+      starting_equipment: [], starting_gold: { fixed: 155 },
+    };
+    const x = ctx({
+      mode: "gold",
+      classes: [{ entity: classEntity, level: 1, subclass: null, choices: { 1: {} } }],
+    });
+    renderEquipmentStep(c, x);
+    // The starting-gold budget meter renders (real .pc-bctx idiom) and shows 155.
+    expect(c.querySelector(".pc-bctx")).not.toBeNull();
+    expect(c.textContent).toContain("155");
+  });
 });

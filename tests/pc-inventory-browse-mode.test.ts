@@ -71,7 +71,21 @@ describe("BrowseMode", () => {
     new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
       .render(root, ctxWithRegistry(reg, { addItem }));
     (root.querySelector(".pc-inv-add-mini") as HTMLElement).click();
-    expect(addItem).toHaveBeenCalledWith("longsword");
+    // With no addProvenance (the inventory Add drawer's default), the handler
+    // passes an empty options object — no granted_by, unchanged behavior.
+    expect(addItem).toHaveBeenCalledWith("longsword", {});
+  });
+
+  it("addProvenance tags + Add with granted_by", () => {
+    const reg = new Map<string, { entityType: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", data: { name: "Longsword" } }],
+    ]);
+    const addItem = vi.fn();
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" }, addProvenance: "builder:gold-buy" })
+      .render(root, ctxWithRegistry(reg, { addItem }));
+    (root.querySelector(".pc-inv-add-mini") as HTMLElement).click();
+    expect(addItem).toHaveBeenCalledWith("longsword", { granted_by: "builder:gold-buy" });
   });
 
   it("clicking a row expands it inline (sibling .pc-inv-expand appears)", () => {
@@ -121,7 +135,7 @@ describe("BrowseMode", () => {
     new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
       .render(root, ctxWithRegistry(reg, { addItem }));
     (root.querySelector(".pc-inv-add-mini") as HTMLElement).click();
-    expect(addItem).toHaveBeenCalledWith("longsword");
+    expect(addItem).toHaveBeenCalledWith("longsword", {});
     expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(0);
   });
 
