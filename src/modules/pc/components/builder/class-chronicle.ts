@@ -426,7 +426,8 @@ export function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
         row.createSpan({ cls: "pc-cb-eqtext", text: opt.label });
       });
     } else if (eq.kind === "fixed") {
-      prop(host, "Equipment", eq.label ?? eq.grants.map(grantLabel).join(", "));
+      const text = eq.label ?? eq.grants.map(grantLabel).join(", ");
+      if (text) prop(host, "Equipment", text);
     } else {
       prop(host, "Gold", `${eq.amount} GP`);
     }

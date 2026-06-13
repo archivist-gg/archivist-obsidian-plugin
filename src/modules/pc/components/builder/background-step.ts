@@ -293,7 +293,8 @@ function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: Back
     else if (e.kind === "fixed") eqLines.push(e.label ?? e.grants.map(grantLabel).join(", "));
     else eqLines.push(`${e.amount} GP`);
   }
-  if (eqLines.length) prop(host, "Equipment", eqLines.join("; "));
+  const eqText = eqLines.filter(Boolean).join("; ");
+  if (eqText) prop(host, "Equipment", eqText);
   if (d.feature?.description && d.feature.description !== NO_DESC) {
     const row = host.createDiv({ cls: "pc-cb-trait" });
     row.createDiv({ cls: "pc-cb-trait-n", text: d.feature.name });

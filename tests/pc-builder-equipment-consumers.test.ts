@@ -33,6 +33,16 @@ describe("class chronicle equipment fold (structured)", () => {
     expect(equipProp.textContent).toContain("Dagger ×2");
   });
 
+  it("renders NO Equipment prop for a fixed entry with no label and empty grants", () => {
+    const c = mountContainer();
+    renderProfsEquipment(c, {
+      starting_equipment: [{ kind: "fixed", grants: [] }],
+    } as never);
+    const equipProp = [...c.querySelectorAll(".pc-cb-prop")]
+      .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment");
+    expect(equipProp).toBeUndefined();
+  });
+
   it("renders a gold entry as the Gold prop", () => {
     const c = mountContainer();
     renderProfsEquipment(c, {
