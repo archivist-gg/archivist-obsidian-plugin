@@ -52,6 +52,10 @@ const equipmentEntrySchema = z.object({
   slot: slotEnum.nullable().optional(),
   overrides: equipmentEntryOverridesSchema.optional(),
   state: equipmentEntryStateSchema.optional(),
+  // Build-only provenance for Equipment-step-seeded gear (e.g. "builder:starting",
+  // "builder:gold-buy"). Permissive plain string; stripped by finishBuild so a
+  // finished file never carries it.
+  granted_by: z.string().optional(),
 });
 
 const characterOverridesSchema = z.object({
@@ -203,6 +207,10 @@ export const characterSchema = z.object({
   // the key (see finishBuild). Permissive: a plain int array, no length pin
   // (re-rolls always write six, but legacy/hand-edited files may vary).
   builder_rolls: z.array(z.number().int()).optional(),
+  // Persisted Equipment-step mode (SP2). NO default — absent on every
+  // existing/finished file and stays absent on save; present only while the file
+  // is an unfinished Builder draft. Finish deletes the key (see finishBuild).
+  builder_equipment_mode: z.enum(["starting", "gold", "empty"]).optional(),
   skills: z.object({
     proficient: z.array(skillEnum).default([]),
     expertise: z.array(skillEnum).default([]),

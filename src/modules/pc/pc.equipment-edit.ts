@@ -101,11 +101,12 @@ function findOccupant(
 export function addItem(
   character: Character,
   slug: string,
-  opts: { equipped?: boolean; slot?: SlotKey | null },
+  opts: { equipped?: boolean; slot?: SlotKey | null; granted_by?: string },
   _registry?: EntityRegistry,
 ): void {
   const entry: EquipmentEntry = { item: `[[${slug}]]`, equipped: !!opts.equipped };
   if (opts.slot) entry.slot = opts.slot;
+  if (opts.granted_by) entry.granted_by = opts.granted_by;
   character.equipment.push(entry);
 }
 

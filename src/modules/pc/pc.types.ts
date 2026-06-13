@@ -76,6 +76,12 @@ export type EquipmentEntry =
       slot?: SlotKey | null;
       overrides?: EquipmentEntryOverrides;
       state?: EquipmentEntryState;
+      /** Build-only provenance tag for gear the Builder's Equipment step seeded
+       *  on the character's behalf (e.g. `"builder:starting"`, `"builder:gold-buy"`).
+       *  Lets the step reconcile its own grants on re-pick / mode-switch without
+       *  touching hand-managed entries. Stripped by finishBuild — absent on every
+       *  finished file. */
+      granted_by?: string;
     };
 
 export type PassiveKind = "perception" | "investigation" | "insight";
@@ -136,6 +142,11 @@ export interface Character {
    *  the Abilities step + Base popover read their pool from here. Removed by the
    *  Builder's Finish action (see finishBuild) — a finished file carries none. */
   builder_rolls?: number[];
+  /** Persisted Equipment-step mode while the file is a Builder draft: "starting"
+   *  takes the class/background starting-gear grants, "gold" buys with rolled
+   *  starting gold, "empty" begins with nothing. Present only during a build;
+   *  removed by the Builder's Finish action (see finishBuild). */
+  builder_equipment_mode?: "starting" | "gold" | "empty";
   skills: { proficient: SkillSlug[]; expertise: SkillSlug[] };
   spells: { known: KnownSpellEntry[]; overrides: SpellOverride[]; view?: "by-level" | "table" };
   equipment: EquipmentEntry[];

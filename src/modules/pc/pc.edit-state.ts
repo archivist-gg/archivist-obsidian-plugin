@@ -1,6 +1,7 @@
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { EntityRegistry } from "../../shared/entities/entity-registry";
-import type { Character, DerivedStats, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
+import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
@@ -507,6 +508,13 @@ export class CharacterEditState {
     // finished file carries no `builder_rolls:` line (delete, not set-undefined,
     // so yaml.dump omits it). Mirrors the `builder` flag.
     delete this.character.builder_rolls;
+    // Strip Equipment-step build-only provenance: each entry's `granted_by` tag
+    // and the persisted mode. A finished file carries no build scaffolding (the
+    // gear itself stays; only the build-time bookkeeping is removed).
+    for (const e of this.character.equipment) {
+      delete (e as { granted_by?: string }).granted_by;
+    }
+    delete this.character.builder_equipment_mode;
     this.onChange();
   }
 
@@ -645,8 +653,49 @@ export class CharacterEditState {
   }
 
   // ─── Equipment ─────────────────────────────────────────────────
-  addItem(slug: string, opts: { equipped?: boolean; slot?: SlotKey | null } = {}): void {
+  addItem(slug: string, opts: { equipped?: boolean; slot?: SlotKey | null; granted_by?: string } = {}): void {
     eq.addItem(this.character, slug, opts, this.registry ?? undefined);
+    this.onChange();
+  }
+
+  // ─── Builder: Equipment step ───────────────────────────────────
+  /** Replace all `builder:starting` provenance entries with `entries` (each
+   *  tagged `builder:starting`) and set `currency.gp` from the summed starting
+   *  gold. Leaves hand-managed (untagged) + `builder:gold-buy` entries untouched.
+   *  Idempotent + resume-safe: NO-OP (skips onChange, returns early) when the
+   *  resulting `builder:starting` set + gp are unchanged, so the Equipment step
+   *  may call it on every render without triggering a re-render loop. */
+  syncStartingEquipment(entries: GrantedEntry[], gold: number): void {
+    const STARTING = "builder:starting";
+    const prevStarting = this.character.equipment.filter((e) => e.granted_by === STARTING);
+    const nextGp = Math.max(0, Math.floor(Number.isFinite(gold) ? gold : 0));
+    // Build the next builder:starting entries from the resolved grants.
+    const nextStarting: EquipmentEntry[] = entries.map((g) => {
+      const entry: EquipmentEntry = { item: `[[${g.slug}]]`, equipped: g.equipped, granted_by: STARTING };
+      if (g.slot) entry.slot = g.slot;
+      if (g.qty > 1) entry.qty = g.qty;
+      return entry;
+    });
+    // No-op guard: compare the serialized prev vs next starting set + gp. The
+    // identity-bearing fields (item/equipped/slot/qty) are normalized into a
+    // stable shape so key order cannot produce a false diff.
+    const serialize = (arr: EquipmentEntry[]): string =>
+      JSON.stringify(arr.map((e) => ({ item: e.item, equipped: e.equipped, slot: e.slot ?? null, qty: e.qty ?? null })));
+    const curGp = this.character.currency?.gp ?? 0;
+    if (serialize(prevStarting) === serialize(nextStarting) && curGp === nextGp) return;
+    this.character.equipment = this.character.equipment.filter((e) => e.granted_by !== STARTING);
+    this.character.equipment.push(...nextStarting);
+    if (!this.character.currency) this.character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
+    this.character.currency.gp = nextGp;
+    this.onChange();
+  }
+
+  /** Persist the Equipment-step mode and enforce exclusivity: switching modes
+   *  drops ALL `builder:*` seeded gear (starting + gold-buy) so the new mode
+   *  starts clean. Untagged (hand-managed) entries survive. */
+  setBuilderEquipmentMode(mode: "starting" | "gold" | "empty"): void {
+    this.character.builder_equipment_mode = mode;
+    this.character.equipment = this.character.equipment.filter((e) => !e.granted_by?.startsWith("builder:"));
     this.onChange();
   }
 
