@@ -159,9 +159,14 @@ function parseToolProfs(raw: string | undefined): ClassEntity["proficiencies"]["
 
 function parseEquipment(raw: string | undefined): StartingEquipmentEntry[] {
   if (!raw) return [];
-  const lines = raw.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("*"));
+  const lines = raw.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("*"))
+    .map((l) => l.replace(/^\*\s*/, "").trim()).filter((l) => l.length > 0);
   if (lines.length === 0) return [];
-  return [{ kind: "fixed", items: lines.map((l) => l.replace(/^\*\s*/, "")) }];
+  // Prose-fallback: display-only. The legacy direct-JSON path can't reliably
+  // resolve free-text equipment to compendium slugs, so we emit a single
+  // fixed entry carrying the joined human label and seed nothing (empty
+  // grants). The canonical overlay carries the real, seedable grants.
+  return [{ kind: "fixed", label: lines.join(", "), grants: [] }];
 }
 
 function parseTable(raw: string | undefined): Record<number, ClassTableRow> {

@@ -23,7 +23,16 @@ describe("normalizeSrdBackground", () => {
     expect(out.data.skill_proficiencies).toContain("religion");
     expect(out.data.language_proficiencies[0]).toMatchObject({ kind: "choice", count: 2, from: "any" });
     expect(out.data.feature.name).toBe("Shelter of the Faithful");
-    expect(out.data.equipment.some((e) => "kind" in e && e.kind === "currency")).toBe(true);
+    // Legacy direct-JSON path emits a single display-only prose-fallback entry:
+    // the parsed items + currency are preserved in the label; grants seed nothing.
+    expect(out.data.equipment).toHaveLength(1);
+    const equip = out.data.equipment[0];
+    expect(equip.kind).toBe("fixed");
+    if (equip.kind === "fixed") {
+      expect(equip.label).toContain("holy symbol");
+      expect(equip.label).toContain("15 gp");
+      expect(equip.grants).toEqual([]);
+    }
   });
 
   it("defaults ASI and origin_feat to null on 2014 data", () => {

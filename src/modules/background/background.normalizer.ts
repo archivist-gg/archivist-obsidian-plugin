@@ -1,9 +1,9 @@
 import type {
   BackgroundEntity,
-  BackgroundEquipmentEntry,
   BackgroundToolProficiency,
   BackgroundLanguageProficiency,
 } from "./background.types";
+import type { StartingEquipmentEntry } from "../../shared/types/equipment-grant";
 import type { SkillSlug } from "../../shared/types";
 import type { Edition } from "../class/class.types";
 import type { NormalizedEntity } from "../class/class.normalizer";
@@ -73,16 +73,19 @@ function parseLanguages(desc: string | undefined): BackgroundLanguageProficiency
   return [{ kind: "choice", count: Number.isFinite(n) && n > 0 ? n : 1, from: "any" }];
 }
 
-function parseEquipment(desc: string | undefined): BackgroundEquipmentEntry[] {
+function parseEquipment(desc: string | undefined): StartingEquipmentEntry[] {
   if (!desc) return [];
-  const items: BackgroundEquipmentEntry[] = [];
-  const lines = desc.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
-  for (const line of lines) {
-    const gpMatch = /(\d+)\s*gp/i.exec(line);
-    if (gpMatch) { items.push({ kind: "currency", gp: Number(gpMatch[1]) }); continue; }
-    items.push({ item: line.toLowerCase().replace(/\s+/g, "-"), quantity: 1 });
-  }
-  return items;
+  const parts = desc.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+  if (parts.length === 0) return [];
+  // Prose-fallback: display-only. The legacy direct-JSON path can't reliably
+  // resolve free-text equipment to compendium slugs, so we collect the parsed
+  // item names and currency into a single human label and seed nothing (empty
+  // grants). The canonical overlay carries the real, seedable grants.
+  const label = parts.map((part) => {
+    const gpMatch = /(\d+)\s*gp/i.exec(part);
+    return gpMatch ? `${gpMatch[1]} gp` : part;
+  }).join(", ");
+  return [{ kind: "fixed", label, grants: [] }];
 }
 
 export function normalizeSrdBackground(
