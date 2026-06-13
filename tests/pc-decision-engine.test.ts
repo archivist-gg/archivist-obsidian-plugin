@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildDecisionLedger, collectChosenProficiencies } from "../src/modules/pc/pc.decision-engine";
+import { buildDecisionLedger, collectChosenProficiencies, __matchesFilterForTest } from "../src/modules/pc/pc.decision-engine";
 import type { ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
 
@@ -602,5 +602,31 @@ describe("buildDecisionLedger — subclass-pick guarantee", () => {
     const subs = ledger.classes[0].levels.flatMap((l) => l.items).filter((i) => i.key === "subclass");
     expect(subs).toHaveLength(1);
     expect(subs[0].featureName).toBe("Divine Domain"); // the authored row, not a synthesized "Cleric Subclass"
+  });
+});
+
+// ── Task B2: matchesFilter weapon/armor category ─────────────────────────────
+// Real entity field names (confirmed in weapon.types.ts / armor.types.ts): BOTH
+// weapons and armor store their class in a `category` field. Weapons use
+// compound lowercase values (e.g. "martial-melee", "simple-ranged"); armor uses
+// plain lowercase values ("light"|"medium"|"heavy"|"shield"). The filter VALUE
+// is plain ("simple"|"martial" / "light"|... ); the engine prefix-matches the
+// weapon category and exact-matches the armor category.
+describe("matchesFilter weapon/armor category", () => {
+  const ent = (data: object): RegisteredEntity =>
+    ({ slug: "x", name: "X", entityType: "weapon", filePath: "x.md", data,
+       compendium: "SRD 2024", readonly: true, homebrew: false } as RegisteredEntity);
+  it("matches martial weapons", () => {
+    // martial-* matches "martial"; simple-* does not.
+    expect(__matchesFilterForTest(ent({ category: "martial-melee" }), { weapon_category: "martial" }, "fighter")).toBe(true);
+    expect(__matchesFilterForTest(ent({ category: "martial-ranged" }), { weapon_category: "martial" }, "fighter")).toBe(true);
+    expect(__matchesFilterForTest(ent({ category: "simple-melee" }), { weapon_category: "martial" }, "fighter")).toBe(false);
+    expect(__matchesFilterForTest(ent({ category: "simple-melee" }), { weapon_category: "simple" }, "fighter")).toBe(true);
+    expect(__matchesFilterForTest(ent({ category: "natural" }), { weapon_category: "martial" }, "fighter")).toBe(false);
+  });
+  it("matches armor by category and shields", () => {
+    expect(__matchesFilterForTest(ent({ category: "heavy" }), { armor_category: "heavy" }, "x")).toBe(true);
+    expect(__matchesFilterForTest(ent({ category: "shield" }), { armor_category: "shield" }, "x")).toBe(true);
+    expect(__matchesFilterForTest(ent({ category: "light" }), { armor_category: "heavy" }, "x")).toBe(false);
   });
 });

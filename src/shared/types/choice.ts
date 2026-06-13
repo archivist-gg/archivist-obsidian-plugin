@@ -26,6 +26,13 @@ export interface EntityFilter {
   category?: string;         // feat category
   parent_class?: "self";
   available_to?: "self";
+  /** Weapon proficiency class. Matched against a weapon entity's compound
+   *  `category` (e.g. "martial-melee") by prefix, so "martial" covers both
+   *  martial-melee and martial-ranged. */
+  weapon_category?: "simple" | "martial";
+  /** Armor proficiency class. Matched against an armor entity's `category`
+   *  field exactly; "shield" selects shields. */
+  armor_category?: "light" | "medium" | "heavy" | "shield";
 }
 
 export interface InlineOption {

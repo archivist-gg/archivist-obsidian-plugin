@@ -9,6 +9,8 @@ const entityFilterSchema = z.object({
   category: z.string().min(1).optional(),
   parent_class: z.literal("self").optional(),
   available_to: z.literal("self").optional(),
+  weapon_category: z.enum(["simple", "martial"]).optional(),
+  armor_category: z.enum(["light", "medium", "heavy", "shield"]).optional(),
 }).strict();
 
 const inlineOptionSchema: z.ZodType<InlineOption> = z.lazy(() => z.object({

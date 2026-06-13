@@ -84,6 +84,18 @@ function matchesFilter(e: RegisteredEntity, where: EntityFilter, ownerBare: stri
   const d = e.data as { feature_type?: string; category?: string; parent_class?: string; available_to?: string[] };
   if (where.feature_type && d.feature_type !== where.feature_type) return false;
   if (where.category && d.category !== where.category) return false;
+  // Weapon class: a weapon entity's `category` is compound (e.g. "martial-melee"),
+  // so "martial"/"simple" prefix-matches both melee and ranged. Case-insensitive
+  // for resilience against authored casing; excludes "natural".
+  if (where.weapon_category) {
+    const cat = (d.category ?? "").toLowerCase();
+    if (!cat.startsWith(`${where.weapon_category}-`) && cat !== where.weapon_category) return false;
+  }
+  // Armor class: an armor entity's `category` holds the class directly
+  // ("light"|"medium"|"heavy"|"shield"); exact (case-insensitive) match.
+  if (where.armor_category) {
+    if ((d.category ?? "").toLowerCase() !== where.armor_category) return false;
+  }
   if (where.parent_class === "self") {
     if (!d.parent_class || wikilinkTailSlug(d.parent_class) !== ownerBare) return false;
   }
@@ -93,6 +105,9 @@ function matchesFilter(e: RegisteredEntity, where: EntityFilter, ownerBare: stri
   }
   return true;
 }
+
+/** Test-only export of {@link matchesFilter} (Task B2). */
+export const __matchesFilterForTest = matchesFilter;
 
 function enumerateOptions(choice: Choice, ctx: DecisionContext, ownerBare: string): ResolvedOption[] {
   switch (choice.kind) {
