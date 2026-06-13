@@ -117,8 +117,11 @@ describe("overlay choices (SP2 Plan 3)", () => {
       classes: { fighter: {
         skill_choices: { count: 2, from: ["acrobatics", "athletics"] },
         starting_equipment: [
-          { kind: "choice", options: ["(a) chain mail", "(b) leather armor, longbow, 20 arrows"] },
-          { kind: "fixed", items: ["a light crossbow and 20 bolts"] },
+          { kind: "choice", options: [
+            { label: "(a) chain mail", grants: [{ item: "chain-mail" }] },
+            { label: "(b) leather armor, longbow, 20 arrows", grants: [{ item: "leather-armor" }, { item: "longbow" }, { item: "arrow", qty: 20 }] },
+          ] },
+          { kind: "fixed", grants: [{ item: "light-crossbow" }, { item: "bolt", qty: 20 }] },
         ],
         subclass_level: 3,
         subclass_feature_name: "Martial Archetype",
