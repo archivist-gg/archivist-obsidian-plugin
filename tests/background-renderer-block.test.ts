@@ -24,8 +24,8 @@ const acolyte: BackgroundEntity = {
   tool_proficiencies: [{ kind: "fixed", items: ["calligrapher's-supplies"] }],
   language_proficiencies: [{ kind: "choice", count: 2, from: "any" }],
   equipment: [
-    { item: "holy-symbol", quantity: 1 },
-    { kind: "currency", gp: 15 },
+    { kind: "fixed", grants: [{ item: "holy-symbol", qty: 1 }] },
+    { kind: "gold", amount: 15 },
   ],
   feature: {
     name: "Shelter of the Faithful",
@@ -91,7 +91,7 @@ describe("renderBackgroundBlock", () => {
     expect(root.textContent).toContain("Choose 2 (any)");
     expect(root.textContent).toContain("Equipment:");
     expect(root.textContent).toContain("Holy Symbol");
-    expect(root.textContent).toContain("15 gp");
+    expect(root.textContent).toContain("15 GP");
     // The feature renders as a named trait-style entry in the parchment idiom.
     const feature = root.querySelector(".race-trait-name");
     expect(feature?.textContent).toBe("Shelter of the Faithful");
@@ -116,9 +116,9 @@ describe("renderBackgroundBlock", () => {
       ],
       language_proficiencies: [{ kind: "choice", count: 1, from: ["draconic", "elvish"] }],
       equipment: [
-        { item: "traveling-satchel", quantity: 1 },
-        { item: "quill", quantity: 3 },
-        { kind: "currency", gp: 10 },
+        { kind: "fixed", grants: [{ item: "traveling-satchel", qty: 1 }] },
+        { kind: "fixed", grants: [{ item: "quill", qty: 3 }] },
+        { kind: "gold", amount: 10 },
       ],
     } as unknown as BackgroundEntity;
     const root = mountContainer();
@@ -127,12 +127,12 @@ describe("renderBackgroundBlock", () => {
     expect(root.textContent).toContain("Choose 1 (Cartographers Tools, Calligraphers Tools)");
     expect(root.textContent).not.toContain("cartographers-tools");
     // (b) equipment quantity branch (×N) humanizes the item slug
-    expect(root.textContent).toContain("Quill (×3)");
+    expect(root.textContent).toContain("Quill ×3");
     expect(root.textContent).not.toContain("traveling-satchel");
     expect(root.textContent).toContain("Traveling Satchel");
-    // (c) language-choice `from` slugs humanized; free-text currency untouched
+    // (c) language-choice `from` slugs humanized; gold amount in GP
     expect(root.textContent).toContain("Choose 1 (Draconic, Elvish)");
-    expect(root.textContent).toContain("10 gp");
+    expect(root.textContent).toContain("10 GP");
   });
 
   it("does not capitalize the letter following an embedded apostrophe in slug labels", async () => {
@@ -144,8 +144,8 @@ describe("renderBackgroundBlock", () => {
       ...acolyte,
       tool_proficiencies: [{ kind: "fixed", items: ["thieves'-tools"] }],
       equipment: [
-        { item: "traveler's-clothes", quantity: 1 },
-        { item: "calligrapher's-supplies", quantity: 1 },
+        { kind: "fixed", grants: [{ item: "traveler's-clothes", qty: 1 }] },
+        { kind: "fixed", grants: [{ item: "calligrapher's-supplies", qty: 1 }] },
       ],
     } as unknown as BackgroundEntity;
     const root = mountContainer();

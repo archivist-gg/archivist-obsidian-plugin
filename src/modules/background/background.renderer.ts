@@ -3,9 +3,9 @@ import type {
   BackgroundEntity,
   BackgroundToolProficiency,
   BackgroundLanguageProficiency,
-  BackgroundEquipmentEntry,
 } from "./background.types";
-import { el, createIconProperty, sourceBadgeText } from "../../shared/rendering/renderer-utils";
+import type { StartingEquipmentEntry } from "../../shared/types/equipment-grant";
+import { el, createIconProperty, sourceBadgeText, grantLabel } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
 /** Capitalize only the first letter of each whitespace-delimited word. Anchoring
@@ -40,21 +40,13 @@ function languageText(l: BackgroundLanguageProficiency): string {
   return `Choose ${l.count} (${from})`;
 }
 
-/** Flatten one equipment entry: either an item line or a currency line. */
-function equipmentText(e: BackgroundEquipmentEntry): string {
-  if ("kind" in e && e.kind === "currency") {
-    const coins: string[] = [];
-    if (e.pp) coins.push(`${e.pp} pp`);
-    if (e.gp) coins.push(`${e.gp} gp`);
-    if (e.ep) coins.push(`${e.ep} ep`);
-    if (e.sp) coins.push(`${e.sp} sp`);
-    if (e.cp) coins.push(`${e.cp} cp`);
-    return coins.join(", ");
-  }
-  // Equipment item names are hyphenated slugs → humanize like the other tokens.
-  const item = e as { item: string; quantity: number };
-  const name = labelCase(item.item);
-  return item.quantity > 1 ? `${name} (×${item.quantity})` : name;
+/** Flatten one structured starting-equipment entry to display text: a choice's
+ *  option labels joined " —or— ", a fixed entry's label (or its humanized
+ *  grants), or a gold amount. */
+function equipmentText(e: StartingEquipmentEntry): string {
+  if (e.kind === "choice") return e.options.map((o) => o.label).join(" —or— ");
+  if (e.kind === "fixed") return e.label ?? e.grants.map(grantLabel).join(", ");
+  return `${e.amount} GP`;
 }
 
 /** The background stat block in the shared parchment-card style. Reuses the

@@ -2,10 +2,11 @@ import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
 import type { DecisionItem, DecisionLedger } from "../../pc.decision-engine";
 import type { Feature } from "../../../../shared/types/feature";
+import type { StartingEquipmentEntry } from "../../../../shared/types/equipment-grant";
 import { recognizeDecision } from "../../decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
-import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 
 /** Structural view of the class runtime entity (class.types.ts). */
 export interface ClassData {
@@ -17,9 +18,7 @@ export interface ClassData {
   spellcasting?: { ability: string; preparation: string; spell_list: string } | null;
   subclass_level?: number | null;
   subclass_feature_name?: string | null;
-  starting_equipment?: Array<
-    { kind: "choice"; options: string[] } | { kind: "fixed"; items: string[] } | { kind: "gold"; amount: number }
-  >;
+  starting_equipment?: StartingEquipmentEntry[];
   table?: Record<number, { prof_bonus: number; columns?: Record<string, string | number>; feature_ids: string[] }>;
   features_by_level?: Record<number, Array<{ id?: string; name: string; description?: string; choices?: unknown[] }>>;
   description?: string;
@@ -408,7 +407,7 @@ function renderFeatureTimeline(host: HTMLElement, ctx: ComponentRenderContext, d
   }
 }
 
-function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
+export function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
   if (d.saving_throws?.length) prop(host, "Saving Throws", d.saving_throws.map((s) => ABILITY_NAME[s] ?? s.toUpperCase()).join(", "));
   const w = d.proficiencies?.weapons;
   const weapons = [...(w?.categories ?? []), ...(w?.fixed ?? [])].map(humanizeSlug).join(", ");
@@ -421,24 +420,13 @@ function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
   }
   for (const eq of d.starting_equipment ?? []) {
     if (eq.kind === "choice") {
-      // 2014 canonical models each pick as a `choice` whose SINGLE option string
-      // bundles all sub-choices inline (e.g. "(a) a greataxe or (b) any martial
-      // melee weapon") — the inline (a)/(b) ARE the option markers, so we render
-      // the full string unbadged. 2024 data uses clean multi-option (A)/(B)
-      // arrays, which keep the lettered-row treatment below.
-      if (eq.options.length === 1) {
+      eq.options.forEach((opt, j) => {
         const row = host.createDiv({ cls: "pc-cb-eqopt" });
-        row.createSpan({ cls: "pc-cb-eqtext", text: eq.options[0] });
-        continue;
-      }
-      for (const optStr of eq.options) {
-        const m = optStr.match(/^\(([A-Za-z])\)\s*(.*)$/);
-        const row = host.createDiv({ cls: "pc-cb-eqopt" });
-        row.createSpan({ cls: "pc-cb-eqltr", text: (m?.[1] ?? "•").toLowerCase() });
-        row.createSpan({ cls: "pc-cb-eqtext", text: m?.[2] ?? optStr });
-      }
+        row.createSpan({ cls: "pc-cb-eqltr", text: String.fromCharCode(97 + j) }); // a, b, c…
+        row.createSpan({ cls: "pc-cb-eqtext", text: opt.label });
+      });
     } else if (eq.kind === "fixed") {
-      prop(host, "Equipment", eq.items.map(humanizeSlug).join(", "));
+      prop(host, "Equipment", eq.label ?? eq.grants.map(grantLabel).join(", "));
     } else {
       prop(host, "Gold", `${eq.amount} GP`);
     }

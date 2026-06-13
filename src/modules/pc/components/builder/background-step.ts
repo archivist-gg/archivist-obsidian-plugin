@@ -3,12 +3,13 @@ import type { RegisteredEntity } from "../../../../shared/entities/entity-regist
 import type { ColSpec } from "./selection-table";
 import type { DecisionItem } from "../../pc.decision-engine";
 import type { BackgroundLanguageProficiency } from "../../../background/background.types";
+import type { StartingEquipmentEntry } from "../../../../shared/types/equipment-grant";
 import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { renderEntityBlock } from "./entity-block";
 import { buildDecisionLedger, wikilinkTailSlug } from "../../pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
-import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
@@ -35,7 +36,7 @@ interface BackgroundData {
   skill_proficiencies?: string[];
   tool_proficiencies?: Array<{ kind: string; items?: string[] }>;
   language_proficiencies?: BackgroundLanguageProficiency[];
-  equipment?: Array<{ item: string; quantity?: number } | { kind: "currency"; gp: number }>;
+  equipment?: StartingEquipmentEntry[];
   feature?: { name: string; description?: string };
   ability_score_increases?: { pool?: string[] } | null;
   origin_feat?: string | null;
@@ -286,11 +287,13 @@ function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: Back
   if (tool) prop(host, "Tool", tool);
   const langs = fixedLanguageNames(d);
   if (langs) prop(host, "Languages", langs);
-  const eq = (d.equipment ?? []).map((x) =>
-    "kind" in x && x.kind === "currency" ? `${x.gp} GP`
-      : `${humanizeSlug((x as { item: string }).item)}${((x as { quantity?: number }).quantity ?? 1) > 1 ? ` ×${(x as { quantity: number }).quantity}` : ""}`,
-  );
-  if (eq.length) prop(host, "Equipment", eq.join(", "));
+  const eqLines: string[] = [];
+  for (const e of d.equipment ?? []) {
+    if (e.kind === "choice") eqLines.push(e.options.map((o) => o.label).join("  —or—  "));
+    else if (e.kind === "fixed") eqLines.push(e.label ?? e.grants.map(grantLabel).join(", "));
+    else eqLines.push(`${e.amount} GP`);
+  }
+  if (eqLines.length) prop(host, "Equipment", eqLines.join("; "));
   if (d.feature?.description && d.feature.description !== NO_DESC) {
     const row = host.createDiv({ cls: "pc-cb-trait" });
     row.createDiv({ cls: "pc-cb-trait-n", text: d.feature.name });

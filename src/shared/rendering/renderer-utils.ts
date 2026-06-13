@@ -12,6 +12,14 @@ export type { FormulaContext };
 export const humanizeSlug = (s: string): string =>
   s.replace(/-/g, " ").replace(/(^|\s)\w/g, (c) => c.toUpperCase());
 
+/** Display string for one starting-equipment grant (renderer-side preview only). */
+export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number }): string {
+  if (g.gold != null) return `${g.gold} GP`;
+  if (g.category) return `a ${humanizeSlug(g.category)}`;
+  const name = humanizeSlug(g.item ?? "");
+  return g.qty && g.qty > 1 ? `${name} ×${g.qty}` : name;
+}
+
 interface ElOptions {
   cls?: string | string[];
   text?: string;

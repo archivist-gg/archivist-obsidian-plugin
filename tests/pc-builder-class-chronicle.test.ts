@@ -42,7 +42,10 @@ function bardData(): ClassData {
     subclass_level: 3,
     subclass_feature_name: "Bard Subclass",
     starting_equipment: [
-      { kind: "choice", options: ["(A) Leather Armor, two Daggers, a Musical Instrument, an Entertainer's Pack, 19 GP", "(B) 90 GP"] },
+      { kind: "choice", options: [
+        { label: "Leather Armor, two Daggers, a Musical Instrument, an Entertainer's Pack, 19 GP", grants: [] },
+        { label: "90 GP", grants: [] },
+      ] },
     ],
     table: {
       1: { prof_bonus: 2, columns: { "Bardic Die": "d6", Cantrips: 2, "Prepared Spells": 4, "1st": 2 }, feature_ids: ["bardic-inspiration", "spellcasting"] },
@@ -372,29 +375,33 @@ describe("equipment & proficiencies fold", () => {
     expect(opts[0].querySelector(".pc-cb-eqltr")!.textContent).toBe("a");
   });
 
-  it("renders 2014 single-bundled-option choices unbadged with the full string", () => {
-    // 2014 canonical models each pick as a `choice` whose ONE option string
-    // bundles all sub-choices inline — the (a)/(b) ARE the option markers.
+  it("badges each structured choice option a, b, c… and renders a fixed entry as the Equipment prop", () => {
+    // Structured equipment: each choice carries an option array with display
+    // labels; the renderer letters them per index (a/b) and the fixed entry's
+    // grants humanize into the Equipment prop.
     const data = bardData();
     data.starting_equipment = [
-      { kind: "choice", options: ["(a) a rapier, (b) a longsword, or (c) any simple weapon"] },
-      { kind: "choice", options: ["(a) a diplomat's pack or (b) an entertainer's pack"] },
-      { kind: "fixed", items: ["leather-armor", "dagger"] },
+      { kind: "choice", options: [
+        { label: "a rapier", grants: [{ item: "rapier" }] },
+        { label: "a longsword", grants: [{ item: "longsword" }] },
+        { label: "any simple weapon", grants: [{ category: "simple-weapon" }] },
+      ] },
+      { kind: "fixed", grants: [{ item: "leather-armor" }, { item: "dagger" }] },
     ];
     const entity = { ...bardEntity(), data: data as unknown as Record<string, unknown> };
     const c = mountContainer();
     renderClassChronicle(c, mkCtx(), { entity, level: 1, mode: "browse", stateKey: "t" });
     openEquipment(c);
     const opts = [...c.querySelectorAll(".pc-cb-eqopt")];
-    expect(opts.length).toBe(2);                                   // one row per single-option choice
-    // no letter badges — the inline markers carry the lettering
-    expect(opts.every((o) => o.querySelector(".pc-cb-eqltr") === null)).toBe(true);
-    // the full bundled string is preserved (leading "(a)" not stripped)
-    expect(opts[0].querySelector(".pc-cb-eqtext")!.textContent)
-      .toBe("(a) a rapier, (b) a longsword, or (c) any simple weapon");
-    expect(opts[1].querySelector(".pc-cb-eqtext")!.textContent)
-      .toBe("(a) a diplomat's pack or (b) an entertainer's pack");
-    // the fixed entry renders as the Equipment prop, not an eqopt row
+    expect(opts.length).toBe(3);                                   // one row per option
+    // each option is lettered a, b, c by index
+    expect(opts[0].querySelector(".pc-cb-eqltr")!.textContent).toBe("a");
+    expect(opts[1].querySelector(".pc-cb-eqltr")!.textContent).toBe("b");
+    expect(opts[2].querySelector(".pc-cb-eqltr")!.textContent).toBe("c");
+    expect(opts[0].querySelector(".pc-cb-eqtext")!.textContent).toBe("a rapier");
+    expect(opts[2].querySelector(".pc-cb-eqtext")!.textContent).toBe("any simple weapon");
+    // the fixed entry renders as the Equipment prop, not an eqopt row, with
+    // grants humanized via grantLabel
     const equipProp = [...c.querySelectorAll(".pc-cb-prop")]
       .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment")!;
     expect(equipProp.textContent).toContain("Leather Armor");

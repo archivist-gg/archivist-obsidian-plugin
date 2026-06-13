@@ -26,9 +26,8 @@ const ACOLYTE_2024_DATA = {
   tool_proficiencies: [{ kind: "fixed", items: ["calligrapher's-supplies"] }],
   language_proficiencies: [],
   equipment: [
-    { item: "holy-symbol", quantity: 1 },
-    { item: "parchment", quantity: 10 },
-    { kind: "currency", gp: 8 },
+    { kind: "fixed", grants: [{ item: "holy-symbol", qty: 1 }, { item: "parchment", qty: 10 }] },
+    { kind: "gold", amount: 8 },
   ],
   feature: { name: "Background Feature", description: "(No description provided.)" },
   ability_score_increases: { pool: ["int", "wis", "cha"] },
