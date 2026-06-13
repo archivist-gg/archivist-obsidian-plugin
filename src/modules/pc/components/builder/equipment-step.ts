@@ -36,6 +36,10 @@ export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderConte
   }
 
   renderStartingChoices(body, ctx);
+  // Runs every render and may fire syncStartingEquipment→onChange→a synchronous
+  // full re-render (re-entrant). Safe: syncStartingEquipment's no-op guard makes
+  // the re-entrant pass a no-op, so recursion self-terminates at depth 2 and the
+  // inner render produces the visible DOM.
   syncFromSelections(ctx);
   renderInventoryPanel(body, ctx);
 }
@@ -245,40 +249,44 @@ function renderBuyWithGold(body: HTMLElement, ctx: ComponentRenderContext): void
 
 // ── seed registry adapter ────────────────────────────────────────────────────
 
+interface BareEntity { fullSlug: string; entityType: string; name: string; packContents?: string[]; }
+
 /** Build the SeedRegistry the seeder needs over `ctx.core.entities`. Resolves a
- *  bare slug ("chain-mail") to its full edition slug + entityType by exact-bare
- *  match across the registry (the registry keys on full slugs like
- *  "srd-2024_chain-mail"). Shields are detected by SLUG/NAME — NOT category: the
- *  real 2024 shield entity carries `category: "heavy"` (and 2014 has no shield
- *  entry), so a category check would never fire and would mis-slot a shield into
- *  the armor slot. Pack contents have no structured field in the runtime data,
- *  so `packContents` is omitted (a resolvable pack item seeds as-is). */
+ *  bare slug ("chain-mail") to its full edition slug + entityType via a
+ *  bare→entity Map built ONCE per call (mirrors the `byBare` idiom in
+ *  `pc.decision-engine.ts`): one bounded `search("", type, …)` per candidate
+ *  type, keyed by `bareEntitySlug(e.slug)` so "{item:'chain-mail'}" resolves to
+ *  "srd-2024_chain-mail". `lookup`/`isShield` are then O(1) per grant (the prior
+ *  code re-scanned the full pools per lookup, twice per armor grant, every
+ *  render). On a bare-slug collision across types the first insert wins, matching
+ *  the prior search order (weapon, then armor, then item). Shields are detected
+ *  by SLUG/NAME — NOT category: the real 2024 shield entity carries
+ *  `category: "heavy"` (and 2014 has no shield entry), so a category check would
+ *  never fire and would mis-slot a shield into the armor slot. Pack contents have
+ *  no structured field in the runtime data, so `packContents` stays undefined
+ *  (forward-compatible; a resolvable pack item seeds as-is). */
 function seedRegistry(ctx: ComponentRenderContext): SeedRegistry {
   const reg = ctx.core.entities;
-  const resolve = (bare: string): { entity: { slug: string; name: string; data?: unknown }; entityType: string } | null => {
-    // Direct hit (already a full slug, or a registry that keys bare).
-    const direct = reg.getBySlug(bare) as { slug: string; name: string; entityType?: string; data?: unknown } | undefined;
-    if (direct) return { entity: direct, entityType: direct.entityType ?? "item" };
-    // Scan each candidate type for an exact bare-slug match.
-    for (const type of ["weapon", "armor", "item"]) {
-      for (const e of reg.search("", type, Number.POSITIVE_INFINITY) as Array<{ slug: string; name: string; entityType?: string; data?: unknown }>) {
-        if (bareEntitySlug(e.slug) === bare) return { entity: e, entityType: e.entityType ?? type };
-      }
+  const byBare = new Map<string, BareEntity>();
+  for (const type of ["weapon", "armor", "item"]) {
+    for (const e of reg.search("", type, Number.POSITIVE_INFINITY) as Array<{ slug: string; name: string; entityType?: string; data?: { packContents?: string[] } }>) {
+      const bare = bareEntitySlug(e.slug);
+      if (byBare.has(bare)) continue; // first-wins across types (weapon → armor → item)
+      byBare.set(bare, { fullSlug: e.slug, entityType: e.entityType ?? type, name: e.name, packContents: e.data?.packContents });
     }
-    return null;
-  };
+  }
 
   return {
     lookup: (bare) => {
-      const r = resolve(bare);
-      if (!r) return null;
-      return { fullSlug: r.entity.slug, entityType: r.entityType };
+      const e = byBare.get(bare);
+      if (!e) return null;
+      return { fullSlug: e.fullSlug, entityType: e.entityType, packContents: e.packContents };
     },
     isShield: (bare) => {
       if (bare === "shield") return true;
-      const r = resolve(bare);
-      if (!r) return false;
-      return r.entity.slug.endsWith("_shield") || r.entity.name === "Shield";
+      const e = byBare.get(bare);
+      if (!e) return false;
+      return e.fullSlug.endsWith("_shield") || e.name === "Shield";
     },
   };
 }
