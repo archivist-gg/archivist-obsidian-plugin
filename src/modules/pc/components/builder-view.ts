@@ -5,6 +5,7 @@ import { renderClassStep } from "./builder/class-step";
 import { renderBackgroundStep } from "./builder/background-step";
 import { renderAbilitiesStep } from "./builder/abilities-step";
 import { renderDetailsStep, getHpSeedChoice } from "./builder/details-step";
+import { renderEquipmentStep } from "./builder/equipment-step";
 import { stripSlug } from "../pc.resolver";
 import { humanizeSlug } from "../../../shared/rendering/renderer-utils";
 
@@ -76,6 +77,8 @@ export class BuilderView implements SheetComponent {
       renderAbilitiesStep(body, ctx);
     } else if (def.id === "background" && ctx.core) {
       renderBackgroundStep(body, ctx);
+    } else if (def.id === "equipment" && ctx.core) {
+      renderEquipmentStep(body, ctx);
     } else if (def.id === "details") {
       renderDetailsStep(body, ctx);
     } else {
