@@ -771,7 +771,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "full",
+      "ability": "cha",
+      "preparation": "known",
+      "spell_list": "bard"
+    },
     "subclass_level": 3,
     "subclass_feature_name": "Bard College",
     "weapon_mastery": null,
@@ -1642,7 +1647,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "full",
+      "ability": "wis",
+      "preparation": "prepared",
+      "spell_list": "cleric"
+    },
     "subclass_level": 1,
     "subclass_feature_name": "Divine Domain",
     "weapon_mastery": null,
@@ -2345,7 +2355,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "full",
+      "ability": "wis",
+      "preparation": "prepared",
+      "spell_list": "druid"
+    },
     "subclass_level": 2,
     "subclass_feature_name": "Druid Circle",
     "weapon_mastery": null,
@@ -4342,7 +4357,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "half",
+      "ability": "cha",
+      "preparation": "prepared",
+      "spell_list": "paladin"
+    },
     "subclass_level": 3,
     "subclass_feature_name": "Sacred Oath",
     "weapon_mastery": null,
@@ -5005,7 +5025,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "half",
+      "ability": "wis",
+      "preparation": "known",
+      "spell_list": "ranger"
+    },
     "subclass_level": 3,
     "subclass_feature_name": "Ranger Archetype",
     "weapon_mastery": null,
@@ -6666,7 +6691,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "full",
+      "ability": "cha",
+      "preparation": "known",
+      "spell_list": "sorcerer"
+    },
     "subclass_level": 1,
     "subclass_feature_name": "Sorcerous Origin",
     "weapon_mastery": null,
@@ -7385,7 +7415,12 @@
         ]
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "pact",
+      "ability": "cha",
+      "preparation": "known",
+      "spell_list": "warlock"
+    },
     "subclass_level": 1,
     "subclass_feature_name": "Otherworldly Patron",
     "weapon_mastery": null,
@@ -8011,7 +8046,12 @@
         "grants": []
       }
     ],
-    "spellcasting": null,
+    "spellcasting": {
+      "caster_type": "full",
+      "ability": "int",
+      "preparation": "prepared",
+      "spell_list": "wizard"
+    },
     "subclass_level": 2,
     "subclass_feature_name": "Arcane Tradition",
     "weapon_mastery": null,

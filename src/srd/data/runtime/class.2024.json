@@ -727,9 +727,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "full",
       "ability": "cha",
-      "preparation": "known",
-      "spell_list": "Bard"
+      "preparation": "prepared",
+      "spell_list": "bard"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Bard Subclass",
@@ -1400,9 +1401,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "full",
       "ability": "wis",
-      "preparation": "known",
-      "spell_list": "Cleric"
+      "preparation": "prepared",
+      "spell_list": "cleric"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Cleric Subclass",
@@ -2092,9 +2094,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "full",
       "ability": "wis",
-      "preparation": "known",
-      "spell_list": "Druid"
+      "preparation": "prepared",
+      "spell_list": "druid"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Druid Subclass",
@@ -4163,9 +4166,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "half",
       "ability": "cha",
-      "preparation": "known",
-      "spell_list": "Paladin"
+      "preparation": "prepared",
+      "spell_list": "paladin"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Paladin Subclass",
@@ -4811,9 +4815,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "half",
       "ability": "wis",
-      "preparation": "known",
-      "spell_list": "Ranger"
+      "preparation": "prepared",
+      "spell_list": "ranger"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Ranger Subclass",
@@ -6110,9 +6115,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "full",
       "ability": "cha",
       "preparation": "known",
-      "spell_list": "Sorcerer"
+      "spell_list": "sorcerer"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Sorcerer Subclass",
@@ -6798,9 +6804,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "pact",
       "ability": "cha",
       "preparation": "known",
-      "spell_list": "Warlock"
+      "spell_list": "warlock"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Warlock Subclass",
@@ -7400,9 +7407,10 @@
       }
     ],
     "spellcasting": {
+      "caster_type": "full",
       "ability": "int",
       "preparation": "prepared",
-      "spell_list": "Wizard"
+      "spell_list": "wizard"
     },
     "subclass_level": 3,
     "subclass_feature_name": "Wizard Subclass",
