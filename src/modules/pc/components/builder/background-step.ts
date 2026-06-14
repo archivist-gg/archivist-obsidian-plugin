@@ -198,8 +198,8 @@ function renderEditionMixBanner(wrap: HTMLElement, ctx: ComponentRenderContext, 
   warn.createSpan({
     cls: "pc-bwarn-t",
     text:
-      `Your species ${race?.name ?? ""} already grants ability increases, and this background grants them too — ` +
-      `more than a standard character. Keep both if your table allows it, or pick a matching-edition background.`,
+      `Your species ${race?.name ?? ""} already grants ability increases, and this background grants them too, ` +
+      `which is more than a standard character. Keep both if your table allows it, or pick a matching-edition background.`,
   });
 }
 
@@ -289,7 +289,7 @@ function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: Back
   if (langs) prop(host, "Languages", langs);
   const eqLines: string[] = [];
   for (const e of d.equipment ?? []) {
-    if (e.kind === "choice") eqLines.push(e.options.map((o) => o.label).join("  —or—  "));
+    if (e.kind === "choice") eqLines.push(e.options.map((o) => o.label).join("  or  "));
     else if (e.kind === "fixed") eqLines.push(e.label ?? e.grants.map(grantLabel).join(", "));
     else eqLines.push(`${e.amount} GP`);
   }

@@ -27,6 +27,6 @@ it("renders the equipment step body (not the placeholder) when active", () => {
     editState: { setBuilderEquipmentMode: () => {} },
     builderUiState: new Map(),
   } as never);
-  expect(c.querySelector(".pc-bseg")).not.toBeNull();
+  expect(c.querySelector(".pc-bmethods")).not.toBeNull();
   expect(c.querySelector(".pc-builder-placeholder")).toBeNull();
 });

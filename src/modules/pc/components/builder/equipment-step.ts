@@ -12,8 +12,9 @@ import { resolveGrants, type GrantedEntry, type SeedRegistry } from "../../build
 
 type Mode = "starting" | "gold" | "empty";
 
-/** SP2 Equipment step (Task C2). Three modes via the `.pc-bseg` segmented
- *  control: Starting Equipment (option rows + nested category pickers, seeded
+/** SP2 Equipment step (Task C2). Three modes via the `.pc-bmtab` pills
+ *  (matching the Abilities step tab idiom): Starting Equipment (option rows +
+ *  nested category pickers, seeded
  *  live into the inventory), Buy with Gold (placeholder until Task C3), and
  *  Start Empty (a quiet note). The Starting mode resolves the chosen options'
  *  grants on every render and reconciles them through `syncStartingEquipment`
@@ -27,7 +28,7 @@ export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderConte
   if (mode === "empty") {
     body.createDiv({
       cls: "pc-bclass-orphan",
-      text: "Starting with no equipment — add gear anytime from the Inventory tab.",
+      text: "Starting with no equipment. Add gear anytime from the Inventory tab.",
     });
     return;
   }
@@ -48,9 +49,9 @@ export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderConte
 // ── mode toggle ──────────────────────────────────────────────────────────────
 
 function renderModeToggle(body: HTMLElement, ctx: ComponentRenderContext, mode: Mode): void {
-  const seg = body.createDiv({ cls: "pc-bseg" });
+  const seg = body.createDiv({ cls: "pc-bmethods" });
   const tab = (m: Mode, label: string): void => {
-    const el = seg.createEl("button", { cls: `pc-bseg-opt${mode === m ? " on" : ""}`, text: label });
+    const el = seg.createEl("button", { cls: `pc-bmtab${mode === m ? " on" : ""}`, text: label });
     el.addEventListener("click", () => {
       if (m !== mode) ctx.editState?.setBuilderEquipmentMode(m);
     });
@@ -116,7 +117,7 @@ function renderSourceChoices(
     const group = body.createDiv({ cls: "pc-cb-eqgroup" });
     entry.options.forEach((opt, j) => {
       const sel = selectedIdx === j;
-      const row = group.createDiv({ cls: `pc-cb-eqopt${sel ? " sel" : ""}` });
+      const row = group.createDiv({ cls: `pc-cb-eqopt interactive${sel ? " sel" : ""}` });
       row.createSpan({ cls: "pc-cb-eqltr", text: letter(j) });
       row.createSpan({ cls: "pc-cb-eqtext", text: opt.label });
       const gold = goldOf(opt.grants);
@@ -238,7 +239,11 @@ function renderInventoryPanel(body: HTMLElement, ctx: ComponentRenderContext): v
   const gp = ctx.resolved.definition.currency?.gp ?? 0;
   renderSectionRule(body, "Starting Inventory", `${equipment.length} item${equipment.length === 1 ? "" : "s"} · ${gp} gp`);
   new InventoryList().render(body, ctx);
-  new CurrencyStrip().render(body, ctx);
+  // Scoped wrapper gives the currency strip clear breathing room below the
+  // inventory list (the shared CurrencyStrip carries no top margin of its own);
+  // the Inventory tab does not render a CurrencyStrip, so this is local.
+  const currency = body.createDiv({ cls: "pc-beq-currency" });
+  new CurrencyStrip().render(currency, ctx);
 }
 
 // ── Buy with Gold ────────────────────────────────────────────────────────────

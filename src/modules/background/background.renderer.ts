@@ -41,10 +41,10 @@ function languageText(l: BackgroundLanguageProficiency): string {
 }
 
 /** Flatten one structured starting-equipment entry to display text: a choice's
- *  option labels joined " —or— ", a fixed entry's label (or its humanized
+ *  option labels joined " or ", a fixed entry's label (or its humanized
  *  grants), or a gold amount. */
 function equipmentText(e: StartingEquipmentEntry): string {
-  if (e.kind === "choice") return e.options.map((o) => o.label).join(" —or— ");
+  if (e.kind === "choice") return e.options.map((o) => o.label).join(" or ");
   if (e.kind === "fixed") return e.label ?? e.grants.map(grantLabel).join(", ");
   return `${e.amount} GP`;
 }

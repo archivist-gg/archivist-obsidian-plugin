@@ -86,8 +86,8 @@ describe("renderEquipmentStep", () => {
   it("renders the 3-way mode toggle with Starting Equipment active", () => {
     const c = mountContainer();
     renderEquipmentStep(c, ctx());
-    expect(c.querySelectorAll(".pc-bseg-opt").length).toBe(3);
-    expect(c.querySelector(".pc-bseg-opt.on")!.textContent).toContain("Starting Equipment");
+    expect(c.querySelectorAll(".pc-bmtab").length).toBe(3);
+    expect(c.querySelector(".pc-bmtab.on")!.textContent).toContain("Starting Equipment");
   });
 
   it("renders each class equipment option as a .pc-cb-eqopt row", () => {
@@ -141,7 +141,7 @@ describe("renderEquipmentStep", () => {
     const c = mountContainer();
     const x = ctx();
     renderEquipmentStep(c, x);
-    const empty = [...c.querySelectorAll(".pc-bseg-opt")].find((b) => b.textContent!.includes("Empty"))!;
+    const empty = [...c.querySelectorAll(".pc-bmtab")].find((b) => b.textContent!.includes("Empty"))!;
     (empty as HTMLElement).click();
     expect((x.editState as { setBuilderEquipmentMode: ReturnType<typeof vi.fn> }).setBuilderEquipmentMode)
       .toHaveBeenCalledWith("empty");

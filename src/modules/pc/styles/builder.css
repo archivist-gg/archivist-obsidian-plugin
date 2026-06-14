@@ -662,7 +662,8 @@
 
 /* ── SP2 Equipment step: interactive bundle option (reuses the chronicle
  *    .pc-cb-eqopt dress; crimson .sel mirrors .pc-bchoice-chip.sel). ── */
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.interactive { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-beq-currency { margin-top: 12px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel { border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel .pc-cb-eqltr { background: var(--pc-crimson); border-color: var(--pc-crimson); color: #fff; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel .pc-cb-eqtext { color: var(--pc-crimson); font-weight: 700; }
