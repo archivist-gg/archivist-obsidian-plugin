@@ -200,4 +200,21 @@ describe("renderEquipmentStep", () => {
     expect(c.querySelector(".pc-bctx")).not.toBeNull();
     expect(c.textContent).toContain("155");
   });
+
+  it("Buy with Gold does NOT crash on old-shape starting equipment (string options)", () => {
+    const c = mountContainer();
+    // No starting_gold, so startingBudget falls through to the gold-only-option
+    // fallback loop, which reads each option's grants. OLD-shape options are plain
+    // strings (no .grants), so an unguarded read would throw. The guard keeps it safe.
+    const classEntity = {
+      slug: "srd-2024_fighter", name: "Fighter",
+      starting_equipment: [{ kind: "choice", options: ["(a) chain mail", "(b) 75 GP"] }],
+      starting_gold: undefined,
+    };
+    const x = ctx({
+      mode: "gold",
+      classes: [{ entity: classEntity, level: 1, subclass: null, choices: { 1: {} } }],
+    });
+    expect(() => renderEquipmentStep(c, x)).not.toThrow();
+  });
 });

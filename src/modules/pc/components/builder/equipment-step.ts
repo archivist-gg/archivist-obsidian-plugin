@@ -292,7 +292,7 @@ function startingBudget(ctx: ComponentRenderContext): number {
   for (const eq of cls?.starting_equipment ?? []) {
     if (eq.kind !== "choice") continue;
     for (const opt of eq.options) {
-      const g = goldOf(opt.grants);
+      const g = goldOf(optGrants(opt));
       if (g > max) max = g;
     }
   }
