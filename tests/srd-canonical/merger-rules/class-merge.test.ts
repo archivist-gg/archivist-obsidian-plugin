@@ -215,10 +215,42 @@ describe("class-merge: Open5e v2 class shape", () => {
         saving_throws: [{ name: "Intelligence" }, { name: "Wisdom" }],
         features: [],
       },
-    })) as { spellcasting: { ability: string; preparation: string; spell_list: string } | null };
+    })) as { spellcasting: { caster_type: string; ability: string; preparation: string; spell_list: string } | null };
     expect(result.spellcasting).not.toBeNull();
     expect(result.spellcasting?.ability).toBe("int");
     expect(result.spellcasting?.spell_list.length).toBeGreaterThan(0);
+    expect(result.spellcasting?.caster_type).toBe("full");
+  });
+
+  it("prefers the overlay spellcasting over the base caster_type-derived fallback", () => {
+    const result = toClassCanonical(baseEntry({
+      slug: "srd-5e_architect",
+      base: {
+        key: "srd_architect",
+        name: "Architect",
+        desc: "",
+        hit_dice: "D8",
+        subclass_of: null,
+        // A DIFFERENT base caster_type than the overlay — overlay must win.
+        caster_type: "FULL",
+        saving_throws: [{ name: "Intelligence" }, { name: "Charisma" }],
+        features: [],
+      },
+      overlay: {
+        classes: {
+          architect: {
+            spellcasting: { caster_type: "third", ability: "cha", preparation: "known", spell_list: "architect" },
+          },
+        },
+      },
+    })) as { spellcasting: { caster_type: string; ability: string; preparation: string; spell_list: string } | null };
+    expect(result.spellcasting).not.toBeNull();
+    expect(result.spellcasting).toEqual({
+      caster_type: "third",
+      ability: "cha",
+      preparation: "known",
+      spell_list: "architect",
+    });
   });
 
   it("attaches overlay choices via class-scoped key, falling back to the bare key (SP2 Plan 3)", () => {

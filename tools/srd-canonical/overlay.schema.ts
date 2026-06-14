@@ -39,6 +39,12 @@ const classOverrideSchema = z.object({
   starting_gold: startingGoldSchema.optional(),
   subclass_level: z.number().int().min(1).max(20).optional(),
   subclass_feature_name: z.string().min(1).optional(),
+  spellcasting: z.object({
+    caster_type: z.enum(["full", "half", "third", "pact"]),
+    ability: z.enum(["str", "dex", "con", "int", "wis", "cha"]),
+    preparation: z.enum(["known", "prepared"]),
+    spell_list: z.string().min(1),
+  }).optional(),
   choices: z.array(choiceSchema).optional(),
 }).strict();
 

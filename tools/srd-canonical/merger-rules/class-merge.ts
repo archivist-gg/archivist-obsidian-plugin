@@ -35,6 +35,7 @@ export interface ClassCanonical {
 }
 
 type Ability = "str" | "dex" | "con" | "int" | "wis" | "cha";
+type CasterType = "full" | "half" | "third" | "pact";
 type SkillSlug =
   | "acrobatics" | "animal-handling" | "arcana" | "athletics" | "deception"
   | "history" | "insight" | "intimidation" | "investigation" | "medicine"
@@ -50,10 +51,9 @@ interface ClassProficiencies {
 }
 
 interface SpellcastingConfig {
+  caster_type: CasterType;
   ability: Ability;
-  preparation: "known" | "prepared" | "ritual" | "spontaneous";
-  cantrip_progression?: Record<string, number>;
-  spells_known_formula?: string;
+  preparation: "known" | "prepared";
   spell_list: string;
 }
 
@@ -178,6 +178,15 @@ const SPELLCASTING_ABILITY_BY_SLUG: Record<string, Ability> = {
   warlock: "cha",
   wizard: "int",
   artificer: "int",
+};
+
+// Open5e caster_type strings → canonical caster_type. (SRD casters are authored
+// via overlays; this is a best-effort fallback for any caster lacking an overlay.)
+const CASTER_TYPE_MAP: Record<string, CasterType | undefined> = {
+  FULL: "full",
+  HALF: "half",
+  THIRD: "third",
+  PACT: "pact",
 };
 
 // ---------------------------------------------------------------------------
@@ -376,6 +385,7 @@ export interface ClassOverride {
   starting_gold?: StartingGold;
   subclass_level?: number;
   subclass_feature_name?: string;
+  spellcasting?: SpellcastingConfig;
   choices?: Choice[];
 }
 
@@ -536,32 +546,33 @@ function buildSpellcasting(
   base: Open5eClassBase,
   canonicalSlug: string,
   structured: Record<string, unknown> | null,
+  overlaySc?: SpellcastingConfig,
 ): SpellcastingConfig | null {
+  // Authored overlay wins — the single source of truth for SRD caster config.
+  if (overlaySc) return { ...overlaySc };
+
   const nameSlug = deriveClassNameSlug(canonicalSlug, base.name);
   const ability = SPELLCASTING_ABILITY_BY_SLUG[nameSlug];
-  const casterType = (base.caster_type ?? "").toUpperCase();
-  const isCaster = ability !== undefined && casterType !== "" && casterType !== "NONE";
+  const rawCaster = (base.caster_type ?? "").toUpperCase();
+  const caster_type = CASTER_TYPE_MAP[rawCaster];
+  const isCaster = ability !== undefined && rawCaster !== "" && rawCaster !== "NONE" && caster_type !== undefined;
+  if (!isCaster || !ability || !caster_type) return null;
 
-  // Prefer structured-rules data when present.
+  // Fallback (no overlay authored). Only known|prepared survive the narrowed
+  // schema; everything is best-effort and superseded by overlays for SRD.
   if (structured && typeof (structured as { spellcasting?: unknown }).spellcasting === "object") {
     const sc = (structured as { spellcasting: { ability?: string; preparation?: string; spell_list?: string } }).spellcasting;
     const rawAbility = sc.ability?.toLowerCase?.();
     const resolvedAbility = (rawAbility && ABILITY_NAME_TO_SLUG[rawAbility]) || ability;
-    if (resolvedAbility) {
-      return {
-        ability: resolvedAbility,
-        preparation: (sc.preparation as SpellcastingConfig["preparation"]) ?? "prepared",
-        spell_list: sc.spell_list ?? base.name,
-      };
-    }
+    const preparation: "known" | "prepared" =
+      sc.preparation === "known" || sc.preparation === "prepared"
+        ? sc.preparation
+        : (nameSlug === "wizard" ? "prepared" : "known");
+    return { caster_type, ability: resolvedAbility, preparation, spell_list: sc.spell_list ?? base.name };
   }
 
-  if (!isCaster || !ability) return null;
-  // Best-effort defaults — a richer pass lives in a future task.
-  const preparation: SpellcastingConfig["preparation"] = nameSlug === "wizard"
-    ? "prepared"
-    : "known";
-  return { ability, preparation, spell_list: base.name };
+  const preparation: "known" | "prepared" = nameSlug === "wizard" ? "prepared" : "known";
+  return { caster_type, ability, preparation, spell_list: base.name };
 }
 
 function buildResources(structured: Record<string, unknown> | null): ResourceOut[] {
@@ -629,7 +640,7 @@ export function toClassCanonical(entry: CanonicalEntry): ClassCanonical {
     proficiencies,
     skill_choices,
     starting_equipment,
-    spellcasting: buildSpellcasting(base, entry.slug, structured),
+    spellcasting: buildSpellcasting(base, entry.slug, structured, classOverride?.spellcasting),
     subclass_level: subclassLevel,
     subclass_feature_name: subclassFeatureName,
     weapon_mastery: null,
