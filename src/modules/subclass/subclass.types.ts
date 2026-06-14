@@ -1,5 +1,5 @@
 import type { Feature, Resource } from "../../shared/types";
-import type { Edition } from "../class/class.types";
+import type { Edition, SpellcastingConfig } from "../class/class.types";
 
 export interface SubclassEntity {
   slug: string;
@@ -8,6 +8,8 @@ export interface SubclassEntity {
   edition: Edition;
   source: string;
   description: string;
+  spellcasting?: SpellcastingConfig | null;
+  table?: Record<number, { columns?: Record<string, string | number> }>;
   features_by_level: Record<number, Feature[]>;
   resources: Resource[];
 }
