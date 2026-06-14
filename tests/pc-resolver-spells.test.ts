@@ -15,7 +15,7 @@ function char(known: Character["spells"]["known"]): Character {
 }
 
 const REG = buildMockRegistry([
-  { slug: "wizard", entityType: "class", data: { slug: "wizard", name: "Wizard", spellcasting: null, table: {}, features_by_level: {} } },
+  { slug: "wizard", entityType: "class", data: { slug: "wizard", name: "Wizard", spellcasting: { caster_type: "full", ability: "int", preparation: "prepared", spell_list: "wizard" }, table: {}, features_by_level: {} } },
   { slug: "fireball", entityType: "spell", data: { name: "Fireball", level: 3, school: "evocation", classes: ["wizard"] } },
   { slug: "fire-bolt", entityType: "spell", data: { name: "Fire Bolt", level: 0, school: "evocation", classes: ["wizard"] } },
 ]);
