@@ -1,9 +1,7 @@
 import type { Ability } from "../../shared/types";
 import type { Edition, KnownSpellEntry } from "./pc.types";
 import { abilityModifier } from "../../shared/dnd/math";
-import type { ClassEntity } from "../class/class.types";
-
-export type CasterType = "full" | "half" | "third" | "pact" | "none";
+import type { ClassEntity, CasterType } from "../class/class.types";
 
 export interface SpellcastingProfile {
   ability: Ability;
@@ -78,7 +76,7 @@ export function normalizeKnownSpell(entry: KnownSpellEntry): NormalizedKnownSpel
 }
 
 export interface CasterClassInput {
-  classSlug: string;
+  casterType: CasterType;
   level: number;
 }
 
@@ -139,6 +137,33 @@ const HALF_CASTER_SLOTS: number[][] = [
   /* 20 */ [4, 3, 3, 3, 2],
 ];
 
+// Dedicated single-class one-third caster table (Eldritch Knight / Arcane Trickster /
+// Architect of Ruin). NOT floor(level/3) of the full table — that is wrong (yields 3
+// first-level slots at L7 instead of the correct 4/2). Index = class level (1..20);
+// spell levels 1..4.
+const THIRD_CASTER_SLOTS: number[][] = [
+  /* 1  */ [0, 0, 0, 0],
+  /* 2  */ [0, 0, 0, 0],
+  /* 3  */ [2, 0, 0, 0],
+  /* 4  */ [3, 0, 0, 0],
+  /* 5  */ [3, 0, 0, 0],
+  /* 6  */ [3, 0, 0, 0],
+  /* 7  */ [4, 2, 0, 0],
+  /* 8  */ [4, 2, 0, 0],
+  /* 9  */ [4, 2, 0, 0],
+  /* 10 */ [4, 3, 0, 0],
+  /* 11 */ [4, 3, 0, 0],
+  /* 12 */ [4, 3, 0, 0],
+  /* 13 */ [4, 3, 2, 0],
+  /* 14 */ [4, 3, 2, 0],
+  /* 15 */ [4, 3, 2, 0],
+  /* 16 */ [4, 3, 3, 0],
+  /* 17 */ [4, 3, 3, 0],
+  /* 18 */ [4, 3, 3, 0],
+  /* 19 */ [4, 3, 3, 1],
+  /* 20 */ [4, 3, 3, 1],
+];
+
 // Warlock Pact Magic: warlock level → { slot level, slot count }.
 const PACT_MAGIC: Array<{ level: number; total: number }> = [
   /* 1  */ { level: 1, total: 1 },
@@ -169,19 +194,15 @@ function rowToRecord(row: number[]): Record<number, number> {
   return out;
 }
 
-export function deriveSpellSlots(classes: CasterClassInput[], edition: Edition): DerivedSpellSlots {
-  let fullLevels = 0, halfLevels = 0, thirdLevels = 0;
-  let warlockLevel = 0;
-  const regular: Array<{ caster: Exclude<CasterType, "none" | "pact">; level: number }> = [];
-
+export function deriveSpellSlots(classes: CasterClassInput[]): DerivedSpellSlots {
+  let fullLevels = 0, halfLevels = 0, thirdLevels = 0, warlockLevel = 0;
+  const regular: Array<{ caster: Exclude<CasterType, "pact">; level: number }> = [];
   for (const c of classes) {
-    const profile = getSpellcastingProfile(c.classSlug, edition);
-    if (!profile) continue;
-    if (profile.casterType === "pact") { warlockLevel += c.level; continue; }
-    regular.push({ caster: profile.casterType, level: c.level });
-    if (profile.casterType === "full") fullLevels += c.level;
-    else if (profile.casterType === "half") halfLevels += c.level;
-    else if (profile.casterType === "third") thirdLevels += c.level;
+    if (c.casterType === "pact") { warlockLevel += c.level; continue; }
+    regular.push({ caster: c.casterType, level: c.level });
+    if (c.casterType === "full") fullLevels += c.level;
+    else if (c.casterType === "half") halfLevels += c.level;
+    else if (c.casterType === "third") thirdLevels += c.level;
   }
 
   let standard: Record<number, number> = {};
@@ -190,21 +211,17 @@ export function deriveSpellSlots(classes: CasterClassInput[], edition: Edition):
     const idx = only.level - 1;
     if (only.caster === "half") {
       if (idx >= 0 && idx < HALF_CASTER_SLOTS.length) standard = rowToRecord(HALF_CASTER_SLOTS[idx]);
+    } else if (only.caster === "third") {
+      if (idx >= 0 && idx < THIRD_CASTER_SLOTS.length) standard = rowToRecord(THIRD_CASTER_SLOTS[idx]);
     } else {
-      // full or third single-class: third casters don't exist in SRD, but if
-      // present they'd use floor(level/3); single full uses its own level.
-      const cl = only.caster === "third" ? Math.floor(only.level / 3) : only.level;
-      if (cl >= 1 && cl <= FULL_CASTER_SLOTS.length) standard = rowToRecord(FULL_CASTER_SLOTS[cl - 1]);
+      if (only.level >= 1 && only.level <= FULL_CASTER_SLOTS.length) standard = rowToRecord(FULL_CASTER_SLOTS[only.level - 1]);
     }
   } else if (regular.length >= 2) {
     const cl = fullLevels + Math.floor(halfLevels / 2) + Math.floor(thirdLevels / 3);
     if (cl >= 1 && cl <= FULL_CASTER_SLOTS.length) standard = rowToRecord(FULL_CASTER_SLOTS[cl - 1]);
   }
 
-  const pact = warlockLevel >= 1 && warlockLevel <= PACT_MAGIC.length
-    ? PACT_MAGIC[warlockLevel - 1]
-    : null;
-
+  const pact = warlockLevel >= 1 && warlockLevel <= PACT_MAGIC.length ? PACT_MAGIC[warlockLevel - 1] : null;
   return { standard, pact };
 }
 
