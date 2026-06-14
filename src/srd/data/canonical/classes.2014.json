@@ -41,19 +41,54 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a greataxe or (b) any martial melee weapon"
+          {
+            "label": "A Greataxe",
+            "grants": [
+              {
+                "item": "greataxe"
+              }
+            ]
+          },
+          {
+            "label": "Any martial melee weapon",
+            "grants": [
+              {
+                "category": "martial-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) two handaxes or (b) any simple weapon"
+          {
+            "label": "Two Handaxes",
+            "grants": [
+              {
+                "item": "handaxe",
+                "qty": 2
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "An explorer's pack and four javelins"
+        "label": "An Explorer's Pack and 4 Javelins",
+        "grants": [
+          {
+            "item": "javelin",
+            "qty": 4
+          }
         ]
       }
     ],
@@ -603,7 +638,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "2d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_bard",
@@ -667,25 +706,68 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a rapier, (b) a longsword, or (c) any simple weapon"
+          {
+            "label": "A Rapier",
+            "grants": [
+              {
+                "item": "rapier"
+              }
+            ]
+          },
+          {
+            "label": "A Longsword",
+            "grants": [
+              {
+                "item": "longsword"
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a diplomat's pack or (b) an entertainer's pack"
+          {
+            "label": "A Diplomat's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Entertainer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a lute or (b) any other musical instrument"
+          {
+            "label": "A Lute",
+            "grants": []
+          },
+          {
+            "label": "Any other musical instrument",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "Leather armor and a dagger"
+        "label": "Leather Armor and a Dagger",
+        "grants": [
+          {
+            "item": "leather"
+          },
+          {
+            "item": "dagger"
+          }
         ]
       }
     ],
@@ -1423,7 +1505,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "5d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_cleric",
@@ -1465,31 +1551,94 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a mace or (b) a warhammer (if proficient)"
+          {
+            "label": "A Mace",
+            "grants": [
+              {
+                "item": "mace"
+              }
+            ]
+          },
+          {
+            "label": "A Warhammer (if proficient)",
+            "grants": [
+              {
+                "item": "warhammer"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) scale mail, (b) leather armor, or (c) chain mail (if proficient)"
+          {
+            "label": "Scale Mail",
+            "grants": [
+              {
+                "item": "scale-mail"
+              }
+            ]
+          },
+          {
+            "label": "Leather Armor",
+            "grants": [
+              {
+                "item": "leather"
+              }
+            ]
+          },
+          {
+            "label": "Chain Mail (if proficient)",
+            "grants": [
+              {
+                "item": "chain-mail"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+          {
+            "label": "A Light Crossbow and 20 Bolts",
+            "grants": [
+              {
+                "item": "crossbow-light"
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a priest's pack or (b) an explorer's pack"
+          {
+            "label": "A Priest's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "A shield and a holy symbol"
+        "label": "A Shield and a Holy Symbol",
+        "grants": [
+          {
+            "category": "shield"
+          }
         ]
       }
     ],
@@ -2084,7 +2233,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "5d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_druid",
@@ -2143,19 +2296,52 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a wooden shield or (b) any simple weapon"
+          {
+            "label": "A Wooden Shield",
+            "grants": [
+              {
+                "category": "shield"
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a scimitar or (b) any simple melee weapon"
+          {
+            "label": "A Scimitar",
+            "grants": [
+              {
+                "item": "scimitar"
+              }
+            ]
+          },
+          {
+            "label": "Any simple melee weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "Leather armor, an explorer's pack, and a druidic focus"
+        "label": "Leather Armor, an Explorer's Pack, and a Druidic Focus",
+        "grants": [
+          {
+            "item": "leather"
+          }
         ]
       }
     ],
@@ -2720,7 +2906,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "2d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_fighter",
@@ -2768,25 +2958,87 @@
       {
         "kind": "choice",
         "options": [
-          "(a) chain mail or (b) leather armor, longbow, and 20 arrows"
+          {
+            "label": "Chain Mail",
+            "grants": [
+              {
+                "item": "chain-mail"
+              }
+            ]
+          },
+          {
+            "label": "Leather Armor, Longbow, and 20 Arrows",
+            "grants": [
+              {
+                "item": "leather"
+              },
+              {
+                "item": "longbow"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a martial weapon and a shield or (b) two martial weapons"
+          {
+            "label": "A martial weapon and a shield",
+            "grants": [
+              {
+                "category": "martial-weapon"
+              },
+              {
+                "category": "shield"
+              }
+            ]
+          },
+          {
+            "label": "Two martial weapons",
+            "grants": [
+              {
+                "category": "martial-weapon"
+              },
+              {
+                "category": "martial-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a light crossbow and 20 bolts or (b) two handaxes"
+          {
+            "label": "A Light Crossbow and 20 Bolts",
+            "grants": [
+              {
+                "item": "crossbow-light"
+              }
+            ]
+          },
+          {
+            "label": "Two Handaxes",
+            "grants": [
+              {
+                "item": "handaxe",
+                "qty": 2
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a dungeoneer's pack or (b) an explorer's pack"
+          {
+            "label": "A Dungeoneer's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       }
     ],
@@ -3325,7 +3577,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "5d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_monk",
@@ -3373,19 +3629,45 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a shortsword or (b) any simple weapon"
+          {
+            "label": "A Shortsword",
+            "grants": [
+              {
+                "item": "shortsword"
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a dungeoneer's pack or (b) an explorer's pack"
+          {
+            "label": "A Dungeoneer's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "10 darts"
+        "label": "10 Darts",
+        "grants": [
+          {
+            "item": "dart",
+            "qty": 10
+          }
         ]
       }
     ],
@@ -3941,7 +4223,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "5d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_paladin",
@@ -3987,25 +4273,72 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a martial weapon and a shield or (b) two martial weapons"
+          {
+            "label": "A martial weapon and a shield",
+            "grants": [
+              {
+                "category": "martial-weapon"
+              },
+              {
+                "category": "shield"
+              }
+            ]
+          },
+          {
+            "label": "Two martial weapons",
+            "grants": [
+              {
+                "category": "martial-weapon"
+              },
+              {
+                "category": "martial-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) five javelins or (b) any simple melee weapon"
+          {
+            "label": "Five Javelins",
+            "grants": [
+              {
+                "item": "javelin",
+                "qty": 5
+              }
+            ]
+          },
+          {
+            "label": "Any simple melee weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a priest's pack or (b) an explorer's pack"
+          {
+            "label": "A Priest's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "Chain mail and a holy symbol"
+        "label": "Chain Mail and a Holy Symbol",
+        "grants": [
+          {
+            "item": "chain-mail"
+          }
         ]
       }
     ],
@@ -4555,7 +4888,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "5d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_ranger",
@@ -4602,25 +4939,69 @@
       {
         "kind": "choice",
         "options": [
-          "(a) scale mail or (b) leather armor"
+          {
+            "label": "Scale Mail",
+            "grants": [
+              {
+                "item": "scale-mail"
+              }
+            ]
+          },
+          {
+            "label": "Leather Armor",
+            "grants": [
+              {
+                "item": "leather"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) two shortswords or (b) two simple melee weapons"
+          {
+            "label": "Two Shortswords",
+            "grants": [
+              {
+                "item": "shortsword",
+                "qty": 2
+              }
+            ]
+          },
+          {
+            "label": "Two simple melee weapons",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              },
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a dungeoneer's pack or (b) an explorer's pack"
+          {
+            "label": "A Dungeoneer's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "A longbow and a quiver of 20 arrows"
+        "label": "A Longbow and a Quiver of 20 Arrows",
+        "grants": [
+          {
+            "item": "longbow"
+          }
         ]
       }
     ],
@@ -5509,7 +5890,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "5d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_rogue",
@@ -5566,25 +5951,73 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a rapier or (b) a shortsword"
+          {
+            "label": "A Rapier",
+            "grants": [
+              {
+                "item": "rapier"
+              }
+            ]
+          },
+          {
+            "label": "A Shortsword",
+            "grants": [
+              {
+                "item": "shortsword"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a shortbow and quiver of 20 arrows or (b) a shortsword"
+          {
+            "label": "A Shortbow and Quiver of 20 Arrows",
+            "grants": [
+              {
+                "item": "shortbow"
+              }
+            ]
+          },
+          {
+            "label": "A Shortsword",
+            "grants": [
+              {
+                "item": "shortsword"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a burglar's pack, (b) a dungeoneer's pack, or (c) an explorer's pack"
+          {
+            "label": "A Burglar's Pack",
+            "grants": []
+          },
+          {
+            "label": "A Dungeoneer's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "Leather armor, two daggers, and thieves' tools"
+        "label": "Leather Armor, Two Daggers, and Thieves' Tools",
+        "grants": [
+          {
+            "item": "leather"
+          },
+          {
+            "item": "dagger",
+            "qty": 2
+          }
         ]
       }
     ],
@@ -6131,7 +6564,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "4d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_sorcerer",
@@ -6174,25 +6611,58 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+          {
+            "label": "A Light Crossbow and 20 Bolts",
+            "grants": [
+              {
+                "item": "crossbow-light"
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a component pouch or (b) an arcane focus"
+          {
+            "label": "A Component Pouch",
+            "grants": []
+          },
+          {
+            "label": "An Arcane Focus",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a dungeoneer's pack or (b) an explorer's pack"
+          {
+            "label": "A Dungeoneer's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "Two daggers"
+        "label": "Two Daggers",
+        "grants": [
+          {
+            "item": "dagger",
+            "qty": 2
+          }
         ]
       }
     ],
@@ -6808,7 +7278,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "3d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_warlock",
@@ -6850,25 +7324,64 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a light crossbow and 20 bolts or (b) any simple weapon"
+          {
+            "label": "A Light Crossbow and 20 Bolts",
+            "grants": [
+              {
+                "item": "crossbow-light"
+              }
+            ]
+          },
+          {
+            "label": "Any simple weapon",
+            "grants": [
+              {
+                "category": "simple-weapon"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a component pouch or (b) an arcane focus"
+          {
+            "label": "A Component Pouch",
+            "grants": []
+          },
+          {
+            "label": "An Arcane Focus",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a scholar's pack or (b) a dungeoneer's pack"
+          {
+            "label": "A Scholar's Pack",
+            "grants": []
+          },
+          {
+            "label": "A Dungeoneer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "Leather armor, any simple weapon, and two daggers"
+        "label": "Leather Armor, Any Simple Weapon, and Two Daggers",
+        "grants": [
+          {
+            "item": "leather"
+          },
+          {
+            "category": "simple-weapon"
+          },
+          {
+            "item": "dagger",
+            "qty": 2
+          }
         ]
       }
     ],
@@ -7401,7 +7914,11 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "4d4",
+      "multiplier": 10
+    }
   },
   {
     "slug": "srd-5e_wizard",
@@ -7444,26 +7961,54 @@
       {
         "kind": "choice",
         "options": [
-          "(a) a quarterstaff or (b) a dagger"
+          {
+            "label": "A Quarterstaff",
+            "grants": [
+              {
+                "item": "quarterstaff"
+              }
+            ]
+          },
+          {
+            "label": "A Dagger",
+            "grants": [
+              {
+                "item": "dagger"
+              }
+            ]
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a component pouch or (b) an arcane focus"
+          {
+            "label": "A Component Pouch",
+            "grants": []
+          },
+          {
+            "label": "An Arcane Focus",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "choice",
         "options": [
-          "(a) a scholar's pack or (b) an explorer's pack"
+          {
+            "label": "A Scholar's Pack",
+            "grants": []
+          },
+          {
+            "label": "An Explorer's Pack",
+            "grants": []
+          }
         ]
       },
       {
         "kind": "fixed",
-        "items": [
-          "A spellbook"
-        ]
+        "label": "A Spellbook",
+        "grants": []
       }
     ],
     "spellcasting": null,
@@ -8001,6 +8546,10 @@
         }
       ]
     },
-    "resources": []
+    "resources": [],
+    "starting_gold": {
+      "dice": "4d4",
+      "multiplier": 10
+    }
   }
 ]

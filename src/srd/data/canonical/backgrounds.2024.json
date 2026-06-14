@@ -20,28 +20,25 @@
     "language_proficiencies": [],
     "equipment": [
       {
-        "item": "(a)-calligrapher's-supplies",
-        "quantity": 1
-      },
-      {
-        "item": "book-(prayers)",
-        "quantity": 1
-      },
-      {
-        "item": "holy-symbol",
-        "quantity": 1
-      },
-      {
-        "item": "parchment",
-        "quantity": 10
-      },
-      {
-        "item": "robe",
-        "quantity": 1
-      },
-      {
-        "kind": "currency",
-        "gp": 8
+        "kind": "choice",
+        "options": [
+          {
+            "label": "Calligrapher's Supplies, Book (Prayers), Holy Symbol, 10 sheets Parchment, Robe, and 8 GP",
+            "grants": [
+              {
+                "gold": 8
+              }
+            ]
+          },
+          {
+            "label": "50 GP",
+            "grants": [
+              {
+                "gold": 50
+              }
+            ]
+          }
+        ]
       }
     ],
     "feature": {
@@ -92,28 +89,29 @@
     "language_proficiencies": [],
     "equipment": [
       {
-        "item": "(a)-2-daggers",
-        "quantity": 1
-      },
-      {
-        "item": "thieves'-tools",
-        "quantity": 1
-      },
-      {
-        "item": "crowbar",
-        "quantity": 1
-      },
-      {
-        "item": "pouches",
-        "quantity": 2
-      },
-      {
-        "item": "traveler's-clothes",
-        "quantity": 1
-      },
-      {
-        "kind": "currency",
-        "gp": 16
+        "kind": "choice",
+        "options": [
+          {
+            "label": "2 Daggers, Thieves' Tools, Crowbar, 2 Pouches, Traveler's Clothes, and 16 GP",
+            "grants": [
+              {
+                "item": "dagger",
+                "qty": 2
+              },
+              {
+                "gold": 16
+              }
+            ]
+          },
+          {
+            "label": "50 GP",
+            "grants": [
+              {
+                "gold": 50
+              }
+            ]
+          }
+        ]
       }
     ],
     "feature": {
@@ -164,28 +162,28 @@
     "language_proficiencies": [],
     "equipment": [
       {
-        "item": "(a)-quarterstaff",
-        "quantity": 1
-      },
-      {
-        "item": "calligrapher's-supplies",
-        "quantity": 1
-      },
-      {
-        "item": "book-(history)",
-        "quantity": 1
-      },
-      {
-        "item": "parchment",
-        "quantity": 8
-      },
-      {
-        "item": "robe",
-        "quantity": 1
-      },
-      {
-        "kind": "currency",
-        "gp": 8
+        "kind": "choice",
+        "options": [
+          {
+            "label": "Quarterstaff, Calligrapher's Supplies, Book (History), 8 sheets Parchment, Robe, and 8 GP",
+            "grants": [
+              {
+                "item": "quarterstaff"
+              },
+              {
+                "gold": 8
+              }
+            ]
+          },
+          {
+            "label": "50 GP",
+            "grants": [
+              {
+                "gold": 50
+              }
+            ]
+          }
+        ]
       }
     ],
     "feature": {
@@ -236,36 +234,31 @@
     "language_proficiencies": [],
     "equipment": [
       {
-        "item": "(a)-spear",
-        "quantity": 1
-      },
-      {
-        "item": "shortbow",
-        "quantity": 1
-      },
-      {
-        "item": "arrows",
-        "quantity": 20
-      },
-      {
-        "item": "gaming-set-(same-as-above)",
-        "quantity": 1
-      },
-      {
-        "item": "healer's-kit",
-        "quantity": 1
-      },
-      {
-        "item": "quiver",
-        "quantity": 1
-      },
-      {
-        "item": "traveler's-clothes",
-        "quantity": 1
-      },
-      {
-        "kind": "currency",
-        "gp": 14
+        "kind": "choice",
+        "options": [
+          {
+            "label": "Spear, Shortbow, 20 Arrows, Gaming Set (Dice Set), Healer's Kit, Quiver, Traveler's Clothes, and 14 GP",
+            "grants": [
+              {
+                "item": "spear"
+              },
+              {
+                "item": "shortbow"
+              },
+              {
+                "gold": 14
+              }
+            ]
+          },
+          {
+            "label": "50 GP",
+            "grants": [
+              {
+                "gold": 50
+              }
+            ]
+          }
+        ]
       }
     ],
     "feature": {
