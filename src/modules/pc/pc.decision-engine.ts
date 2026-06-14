@@ -567,6 +567,25 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
         subclassLevel, featureName, c, ctx, ownerBare));
     }
 
+    // Synthesized pool decisions (Phase 2). Candidates in `pool.available` come
+    // pre-filtered (feature_type + available_to + prereq level) from the
+    // resolver, so we emit them as `from:` and need NO matchesFilter change —
+    // enumerateOptions already resolves a `from` list to options. Each pool
+    // becomes ONE select-entity anchored at pool.anchorLevel and persists to
+    // class[classIndex].choices[anchorLevel][poolId]; the existing requiredCount
+    // /statusOf logic marks it `partial` until `count` picks are made. The
+    // `count < 1` guard omits the decision below the unlock level (count 0).
+    for (const pool of resolved.pools) {
+      if (pool.classIndex !== classIndex || pool.count < 1) continue;
+      const synth: Choice = {
+        kind: "select-entity", id: pool.id, label: pool.label, count: pool.count,
+        entity_type: "optional-feature", from: pool.available.map((e) => e.slug),
+      };
+      push(pool.anchorLevel, buildItem(
+        synth, { kind: "class", slug: entity.slug, level: pool.anchorLevel },
+        pool.anchorLevel, pool.label, readAt(pool.anchorLevel), ctx, ownerBare));
+    }
+
     const levels = [...byLevel.entries()]
       .sort(([a], [b]) => a - b)
       .map(([level, items]) => ({ level, items }));

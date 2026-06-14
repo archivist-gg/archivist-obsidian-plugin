@@ -100,6 +100,7 @@ function mkCtx(opts: {
       definition: { class: opts.classEntries.map((e) => ({ subclass: null, ...e })) },
       classes: resolvedClasses,
       features: [],
+      pools: [],
     },
     derived: { scores: opts.scores ?? {} },
     core: { entities: registry },

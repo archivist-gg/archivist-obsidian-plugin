@@ -71,7 +71,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
       definition,
       classes: classes as never,
       background: (over.background ?? null) as never,
-      race: null, feats: [], totalLevel: 1, features: [], spells: [], state: {} as never,
+      race: null, feats: [], totalLevel: 1, features: [], spells: [], pools: [], state: {} as never,
     } as never,
     derived: {} as never,
     app: {} as never,

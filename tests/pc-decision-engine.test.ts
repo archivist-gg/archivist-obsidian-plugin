@@ -63,7 +63,7 @@ function resolvedFighter(level: number, choices: Record<number, Record<string, u
     .filter(([l]) => Number(l) <= level)
     .flatMap(([l, fs]) => fs.map(f => ({ feature: f, source: { kind: "class", slug: entity.slug, level: Number(l) } })));
   return { definition, race: null, classes: [cls], background: null, feats: [],
-    totalLevel: level, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+    totalLevel: level, features, spells: [], pools: [], state: definition.state } as unknown as ResolvedCharacter;
 }
 
 /**
@@ -110,7 +110,7 @@ function resolvedMulticlass(): ResolvedCharacter {
     { feature: mmFeature, source: { kind: "class", slug: sorcerer.slug, level: 1 } },
   ];
   return { definition, race: null, classes, background: null, feats: [],
-    totalLevel: 2, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+    totalLevel: 2, features, spells: [], pools: [], state: definition.state } as unknown as ResolvedCharacter;
 }
 
 describe("buildDecisionLedger — multiclass routing", () => {
@@ -267,7 +267,7 @@ describe("buildDecisionLedger — recognizer fallback wiring", () => {
       { feature: proseFeature, source: { kind: "class", slug: entity.slug, level: 1 } },
     ];
     return { definition, race: null, classes: [cls], background: null, feats: [],
-      totalLevel: 1, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+      totalLevel: 1, features, spells: [], pools: [], state: definition.state } as unknown as ResolvedCharacter;
   }
 
   it("synthesizes a select-proficiency item for a feature mapped by id", () => {
@@ -533,7 +533,7 @@ describe("buildDecisionLedger — subclass-pick guarantee", () => {
       ? [{ feature: subFeature, source: { kind: "class", slug: entity.slug, level: 3 } }]
       : [];
     return { definition, race: null, classes: [cls], background: null, feats: [],
-      totalLevel: level, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+      totalLevel: level, features, spells: [], pools: [], state: definition.state } as unknown as ResolvedCharacter;
   }
 
   it("synthesizes a subclass pick at subclass_level, filtered by parent_class, unresolved when unset", () => {
@@ -591,7 +591,7 @@ describe("buildDecisionLedger — subclass-pick guarantee", () => {
     const cls = { entity, level: 3, subclass: null, choices: {} } as unknown as ResolvedCharacter["classes"][number];
     const features = [{ feature: authoredFeature, source: { kind: "class", slug: entity.slug, level: 3 } }];
     const resolved = { definition, race: null, classes: [cls], background: null, feats: [],
-      totalLevel: 3, features, spells: [], state: definition.state } as unknown as ResolvedCharacter;
+      totalLevel: 3, features, spells: [], pools: [], state: definition.state } as unknown as ResolvedCharacter;
     // A cleric subclass so the authored where-filter has a candidate.
     const clericSub: RegisteredEntity = { slug: "srd-2024_life-domain", name: "Life Domain",
       entityType: "subclass", filePath: "life.md",
