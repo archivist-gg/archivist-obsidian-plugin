@@ -1,5 +1,6 @@
 import type { Feature, Resource } from "../../shared/types";
 import type { Edition, SpellcastingConfig } from "../class/class.types";
+import type { SelectionPool, PoolGrant, TabDecl } from "../../shared/types/selection-pool";
 
 export interface SubclassEntity {
   slug: string;
@@ -12,4 +13,7 @@ export interface SubclassEntity {
   table?: Record<number, { columns?: Record<string, string | number> }>;
   features_by_level: Record<number, Feature[]>;
   resources: Resource[];
+  selection_pools?: SelectionPool[];
+  pool_grants?: PoolGrant[];
+  tabs?: TabDecl[];
 }

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { featureSchema } from "../../shared/schemas/feature-schema";
 import { resourceSchema } from "../../shared/schemas/resource-schema";
+import { selectionPoolSchema, poolGrantSchema, tabDeclSchema } from "../../shared/schemas/selection-pool-schema";
 
 const editionEnum = z.enum(["2014", "2024"]);
 const wikilinkRegex = /^\[\[[^[\]]+\]\]$/;
@@ -30,4 +31,7 @@ export const subclassEntitySchema = z.object({
   table: z.record(z.string(), subclassTableRowSchema).optional(),
   features_by_level: z.record(z.string(), z.array(featureSchema)),
   resources: z.array(resourceSchema),
+  selection_pools: z.array(selectionPoolSchema).optional(),
+  pool_grants: z.array(poolGrantSchema).optional(),
+  tabs: z.array(tabDeclSchema).optional(),
 });

@@ -25,3 +25,19 @@ describe("subclassEntitySchema", () => {
     expect(subclassEntitySchema.safeParse({ ...minimalSubclass, slug: "" }).success).toBe(false);
   });
 });
+
+describe("subclassEntitySchema — Phase 2 fields", () => {
+  it("accepts pool_grants and tabs", () => {
+    const s = {
+      ...minimalSubclass,
+      pool_grants: [{ pool: "interdict-boons", grants: [{ feature: "[[axiomatic-seals]]", at_level: 7 }] }],
+      tabs: [{ id: "boons", label: "Boons", renders: { pool: "interdict-boons" } }],
+    };
+    const r = subclassEntitySchema.safeParse(s);
+    expect(r.success && (r.data as { pool_grants?: unknown }).pool_grants !== undefined).toBe(true);
+  });
+
+  it("still accepts a subclass with no pool fields", () => {
+    expect(subclassEntitySchema.safeParse(minimalSubclass).success).toBe(true);
+  });
+});
