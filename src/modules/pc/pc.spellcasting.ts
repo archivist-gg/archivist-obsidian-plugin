@@ -2,6 +2,7 @@ import type { Ability } from "../../shared/types";
 import type { KnownSpellEntry, ResolvedClass } from "./pc.types";
 import { abilityModifier } from "../../shared/dnd/math";
 import type { CasterType } from "../class/class.types";
+import { readTableColumn } from "./pc.table-column";
 
 export interface SpellcastingProfile {
   ability: Ability;
@@ -238,22 +239,6 @@ export interface SpellLimit {
   kind: "known" | "prepared";
   cantripsKnown: number | null;     // null = unknown / not shown
   preparedOrKnown: number | null;
-}
-
-function readTableColumn(
-  table: SpellcastingProfile["table"],
-  level: number,
-  keys: string[],
-): number | null {
-  const cols = table?.[level]?.columns;
-  if (!cols) return null;
-  for (const k of keys) {
-    const raw = cols[k];
-    if (raw === undefined || raw === null) continue;
-    const n = typeof raw === "number" ? raw : parseInt(String(raw), 10);
-    if (!Number.isNaN(n)) return n;
-  }
-  return null;
 }
 
 export function computeSpellLimits(inputs: LimitClassInput[]): SpellLimit[] {
