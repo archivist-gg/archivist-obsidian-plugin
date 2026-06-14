@@ -17,7 +17,7 @@ import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } fr
 import { collectChosenProficiencies, collectChosenAbilityPoints } from "./pc.decision-engine";
 import { computeFeatureEffects } from "./pc.feature-effects";
 import { computeConditionEffects } from "./pc.conditions";
-import { getSpellcastingProfile, deriveSpellSlots, computeSpellLimits } from "./pc.spellcasting";
+import { resolveSpellcasting, deriveSpellSlots, computeSpellLimits, type CasterClassInput, type LimitClassInput } from "./pc.spellcasting";
 import type {
   ACTerm,
   ChoiceValue,
@@ -680,12 +680,15 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.darkvision),
   };
 
-  // Spellcasting (per class, multiclass-aware)
-  const edition = resolved.definition.edition;
+  // Spellcasting (per class, multiclass-aware). Data-driven: each class's caster
+  // type / ability / preparation / table come from its (or its subclass's)
+  // spellcasting block via resolveSpellcasting — no hardcoded class knowledge.
   const spellcastingClasses: SpellcastingClassInfo[] = [];
+  const slotInputs: CasterClassInput[] = [];
+  const limitInputs: LimitClassInput[] = [];
   for (const c of resolved.classes) {
     if (!c.entity) continue;
-    const profile = getSpellcastingProfile(c.entity.slug, edition);
+    const profile = resolveSpellcasting(c);
     if (!profile) continue;
     const dc = saveDC(scores[profile.ability], proficiencyBonus) + applied.spell_save_dc;
     const atk = attackBonus(scores[profile.ability], proficiencyBonus) + applied.spell_attack;
@@ -698,6 +701,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       casterType: profile.casterType,
       preparation: profile.preparation,
     });
+    slotInputs.push({ casterType: profile.casterType, level: c.level });
+    limitInputs.push({ classSlug: c.entity.slug, level: c.level, profile, abilityScore: scores[profile.ability] });
   }
 
   // Back-compat single object: first casting class (or null).
@@ -709,20 +714,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       }
     : null;
 
-  const derivedSlots = deriveSpellSlots(
-    resolved.classes.filter((c) => c.entity).map((c) => ({ classSlug: c.entity!.slug, level: c.level })),
-    edition,
-  );
-
-  const spellLimits: SpellLimitInfo[] = computeSpellLimits(
-    resolved.classes.flatMap((c) => {
-      if (!c.entity) return [];
-      const profile = getSpellcastingProfile(c.entity.slug, edition);
-      if (!profile) return [];
-      return [{ classSlug: c.entity.slug, level: c.level, entity: c.entity, abilityScore: scores[profile.ability] }];
-    }),
-    edition,
-  );
+  const derivedSlots = deriveSpellSlots(slotInputs);
+  const spellLimits: SpellLimitInfo[] = computeSpellLimits(limitInputs);
 
   const defenses = {
     resistances: dedupeDefenseList([

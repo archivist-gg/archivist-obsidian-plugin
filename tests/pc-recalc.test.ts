@@ -244,7 +244,7 @@ describe("recalc (end-to-end)", () => {
 
   it("produces spellcasting struct for casting class", () => {
     const wiz = mkClass("wizard", "d6", 5);
-    (wiz.entity as unknown as { spellcasting: unknown }).spellcasting = { ability: "int", preparation: "prepared", spell_list: "wizard" };
+    (wiz.entity as unknown as { spellcasting: unknown }).spellcasting = { caster_type: "full", ability: "int", preparation: "prepared", spell_list: "wizard" };
     const r = withClass(wiz);
     r.definition.abilities = { str: 8, dex: 12, con: 12, int: 18, wis: 12, cha: 10 };
     const d = recalc(r);

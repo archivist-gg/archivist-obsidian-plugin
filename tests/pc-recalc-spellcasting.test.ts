@@ -2,9 +2,15 @@ import { describe, it, expect } from "vitest";
 import { recalc } from "../src/modules/pc/pc.recalc";
 import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
 
+const SC: Record<string, { caster_type: string; ability: string; preparation: string }> = {
+  wizard:  { caster_type: "full", ability: "int", preparation: "prepared" },
+  cleric:  { caster_type: "full", ability: "wis", preparation: "prepared" },
+  warlock: { caster_type: "pact", ability: "cha", preparation: "known" },
+};
 function mkCaster(slug: string, level: number, extra: Record<string, unknown> = {}): ResolvedClass {
+  const sc = SC[slug] ? { ...SC[slug], spell_list: slug } : null;
   return {
-    entity: { slug, name: slug, edition: "2014", hit_die: "d6", primary_abilities: [], saving_throws: [], features_by_level: {}, table: {}, ...extra } as never,
+    entity: { slug, name: slug, edition: "2014", hit_die: "d6", primary_abilities: [], saving_throws: [], features_by_level: {}, table: {}, spellcasting: sc, ...extra } as never,
     level, subclass: null, choices: {},
   };
 }
