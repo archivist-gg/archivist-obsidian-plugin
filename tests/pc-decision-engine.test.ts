@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { buildDecisionLedger, collectChosenProficiencies, __matchesFilterForTest } from "../src/modules/pc/pc.decision-engine";
 import type { ResolvedCharacter } from "../src/modules/pc/pc.types";
 import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
@@ -696,5 +696,74 @@ describe("equipment synthesis (structured)", () => {
     expect((child.choice as { entity_type: string }).entity_type).toBe("armor");
     // No class restriction — the player can pick any armor, not heavy-only.
     expect((child.choice as { where?: { armor_category?: string } }).where?.armor_category).toBeUndefined();
+  });
+});
+
+// ── robustness: old-shape / malformed starting equipment must not crash ──────
+// OLD-shape (option is a plain string) or malformed (an option lacks an array
+// `grants`) starting_equipment must degrade gracefully: the engine synthesizes a
+// valid select-inline with no nested children, never throws, and warns once per
+// degraded class so the regression is surfaced (deduped, not silent).
+describe("equipment synthesis robustness (old-shape / malformed)", () => {
+  it("does NOT throw when a class option is an old-shape string, and warns once", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const c = resolvedFighter(1);
+      (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+        { kind: "choice", options: ["(a) chain mail", "(b) 75 GP"] },
+      ];
+      let ledger!: ReturnType<typeof buildDecisionLedger>;
+      expect(() => { ledger = buildDecisionLedger(c, { registry } as never); }).not.toThrow();
+      // The equipment item still synthesizes as a select-inline with both labels
+      // and NO nested children (a degraded option seeds nothing).
+      const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
+      expect(item.choice.kind).toBe("select-inline");
+      expect(item.options.map((o) => o.label)).toEqual(["(a) chain mail", "(b) 75 GP"]);
+      expect(item.children ?? []).toHaveLength(0);
+      // Surfaced once for this class slug (deduped).
+      const hits = warn.mock.calls.filter(([m]) => typeof m === "string" && m.includes("srd-2024_fighter"));
+      expect(hits.length).toBe(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("does NOT throw when an option object lacks a grants array (malformed)", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const c = resolvedFighter(1, { 1: { "equipment-0": "option-0" } });
+      (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+        { kind: "choice", options: [{ label: "Chain Mail" }, { label: "75 GP", grants: [{ gold: 75 }] }] },
+      ];
+      let ledger!: ReturnType<typeof buildDecisionLedger>;
+      expect(() => { ledger = buildDecisionLedger(c, { registry } as never); }).not.toThrow();
+      const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
+      expect(item.choice.kind).toBe("select-inline");
+      expect(item.options.map((o) => o.label)).toEqual(["Chain Mail", "75 GP"]);
+      expect(item.children ?? []).toHaveLength(0);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("does NOT warn for GOOD new-shape structured equipment", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const c = resolvedFighter(1, { 1: { "equipment-0": "option-0" } });
+      (c.classes[0].entity as { starting_equipment: unknown[] }).starting_equipment = [
+        { kind: "choice", options: [
+          { label: "A martial weapon + shield", grants: [{ category: "martial-weapon" }, { item: "shield" }] },
+          { label: "155 GP", grants: [{ gold: 155 }] },
+        ] },
+      ];
+      const ledger = buildDecisionLedger(c, { registry } as never);
+      const item = ledger.classes[0].levels.flatMap((l) => l.items).find((i) => i.key === "equipment-0")!;
+      // Good data still synthesizes its nested category child — unchanged behavior.
+      expect(item.children).toHaveLength(1);
+      const hits = warn.mock.calls.filter(([m]) => typeof m === "string" && m.includes("srd-2024_fighter"));
+      expect(hits.length).toBe(0);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

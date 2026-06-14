@@ -165,6 +165,26 @@ describe("renderEquipmentStep", () => {
     expect(picker).toBeTruthy();
   });
 
+  it("renders a visible warning + does not crash when class equipment is old-shape", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const c = mountContainer();
+      // OLD-shape options: plain strings instead of { label, grants } objects.
+      const x = ctx({ startingEquipment: [{ kind: "choice", options: ["(a) chain mail", "(b) 75 GP"] }] });
+      expect(() => renderEquipmentStep(c, x)).not.toThrow();
+      // A visible amber notice surfaces the degradation (reuses the .pc-bwarn idiom).
+      expect(c.querySelector(".pc-bwarn")).not.toBeNull();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("does NOT show the degraded-equipment warning for GOOD new-shape equipment", () => {
+    const c = mountContainer();
+    renderEquipmentStep(c, ctx());
+    expect(c.querySelector(".pc-bwarn")).toBeNull();
+  });
+
   it("Buy with Gold shows a gold meter from starting_gold.fixed", () => {
     const c = mountContainer();
     const classEntity = {

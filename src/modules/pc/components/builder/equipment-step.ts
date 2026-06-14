@@ -74,6 +74,20 @@ function renderStartingChoices(body: HTMLElement, ctx: ComponentRenderContext): 
 
   const classEntity = ctx.resolved.classes[0]?.entity ?? null;
   const classEquip = classEntity?.starting_equipment ?? [];
+  const bgSrc = ctx.resolved.background as { starting_equipment?: StartingEquipmentEntry[] } | null;
+  // Surface degraded (old-shape / malformed) starting-equipment data with a
+  // VISIBLE notice so the regression is not silently hidden. Reuses the amber
+  // .pc-bwarn idiom (N1 treatment, no left-border accent).
+  if (hasDegradedEquipment(classEquip) || hasDegradedEquipment(bgSrc?.starting_equipment ?? [])) {
+    const warn = body.createDiv({ cls: "pc-bwarn" });
+    warn.createSpan({ cls: "pc-bwarn-c", text: "!" });
+    warn.createSpan({
+      cls: "pc-bwarn-t",
+      text:
+        "Some starting equipment for this character is in an outdated format and could not be fully loaded. " +
+        "Re-sync the compendium (delete _compendium.md in your vault and reload) to fix it.",
+    });
+  }
   if (hasChoice(classEquip)) {
     renderSectionRule(body, classEntity?.name ?? "Class", "Starting Equipment");
     renderSourceChoices(body, ctx, ledger, {
@@ -115,12 +129,15 @@ function renderSourceChoices(
     const selectedIdx = typeof selected === "string" ? optionIndex(selected) : null;
 
     const group = body.createDiv({ cls: "pc-cb-eqgroup" });
-    entry.options.forEach((opt, j) => {
+    (entry.options as unknown[]).forEach((opt, j) => {
       const sel = selectedIdx === j;
       const row = group.createDiv({ cls: `pc-cb-eqopt interactive${sel ? " sel" : ""}` });
       row.createSpan({ cls: "pc-cb-eqltr", text: letter(j) });
-      row.createSpan({ cls: "pc-cb-eqtext", text: opt.label });
-      const gold = goldOf(opt.grants);
+      // Tolerate OLD-shape (string) and malformed (no grants array) options: the
+      // label is the string itself, and grants degrade to [] (no gold caption,
+      // no nested picker). Never call array methods on a possibly-undefined grants.
+      row.createSpan({ cls: "pc-cb-eqtext", text: optLabel(opt) });
+      const gold = goldOf(optGrants(opt));
       if (gold > 0) row.createSpan({ cls: "pc-cb-eqgold", text: `+${gold} GP` });
       row.addEventListener("click", () => w.writeChoice(key, `option-${j}`));
     });
@@ -208,17 +225,21 @@ function syncFromSelections(ctx: ComponentRenderContext): void {
       const selected = read(`equipment-${i}`);
       const j = typeof selected === "string" ? optionIndex(selected) : null;
       if (j == null) return;
-      const opt = entry.options[j];
+      const opt = (entry.options as unknown[])[j];
       if (!opt) return;
+      // Tolerate OLD-shape / malformed options: grants degrade to [] so a degraded
+      // option seeds nothing (and exposes no category picks) instead of throwing.
+      const grants = optGrants(opt);
       // categoryKeys in the SAME ORDER as the {category} grants on this option.
-      const categoryKeys = opt.grants.flatMap((g, k) =>
-        "category" in g && g.category ? [`equipment-${i}-opt-${j}-cat-${k}`] : []);
+      const categoryKeys = grants.flatMap((g, k) =>
+        g && typeof g === "object" && "category" in g && (g as { category?: string }).category
+          ? [`equipment-${i}-opt-${j}-cat-${k}`] : []);
       const picks: Record<string, string> = {};
       for (const ck of categoryKeys) {
         const v = scope === "class" ? readClassChoice(ctx, ck) : readOriginChoice(ctx, ck);
         if (typeof v === "string" && v) picks[ck] = v;
       }
-      const { entries: e, gold } = resolveGrants(opt.grants, picks, reg, categoryKeys);
+      const { entries: e, gold } = resolveGrants(grants, picks, reg, categoryKeys);
       all.push(...e); totalGold += gold;
     });
   };
@@ -381,6 +402,35 @@ function seedRegistry(ctx: ComponentRenderContext): SeedRegistry {
 
 function hasChoice(entries: StartingEquipmentEntry[]): boolean {
   return entries.some((e) => e.kind === "choice");
+}
+
+/** True when ANY `choice` entry holds a degraded option: an option that is a
+ *  plain string (OLD shape) or an object lacking an array `grants` (malformed).
+ *  Drives the visible amber notice so the degradation is surfaced, not hidden. */
+function hasDegradedEquipment(entries: StartingEquipmentEntry[]): boolean {
+  for (const entry of entries) {
+    if (entry.kind !== "choice") continue;
+    for (const opt of (entry.options as unknown[]) ?? []) {
+      if (typeof opt === "string") return true;
+      if (!(opt && typeof opt === "object" && Array.isArray((opt as { grants?: unknown }).grants))) return true;
+    }
+  }
+  return false;
+}
+
+/** Option label tolerant of OLD shape (a plain string) and malformed objects
+ *  (label is the string itself, or `opt.label`, else ""). */
+function optLabel(opt: unknown): string {
+  return typeof opt === "string" ? opt : ((opt as { label?: string } | null)?.label ?? "");
+}
+
+/** Option grants tolerant of OLD/malformed shape: a string option or an object
+ *  without an array `grants` degrades to [] (never undefined), so callers can
+ *  safely call array methods without a guard. */
+function optGrants(opt: unknown): EquipmentGrant[] {
+  return opt && typeof opt === "object" && Array.isArray((opt as { grants?: unknown }).grants)
+    ? ((opt as { grants: EquipmentGrant[] }).grants)
+    : [];
 }
 
 function goldOf(grants: EquipmentGrant[]): number {

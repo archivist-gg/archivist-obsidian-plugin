@@ -65,6 +65,12 @@ export interface DecisionLedger {
 
 export interface DecisionContext { registry: DecisionRegistry }
 
+/** Module-level dedup set for the degraded-starting-equipment warning: a class
+ *  whose `starting_equipment` is in an outdated/unstructured shape warns ONCE per
+ *  unique slug (not on every builder render), so the regression is surfaced
+ *  without spamming the console. */
+const warnedDegradedEquipment = new Set<string>();
+
 // ── helpers ────────────────────────────────────────────────────────────────
 
 /** "[[SRD 2024/Classes/Fighter]]" → "fighter" (tail segment, slugified). */
@@ -458,15 +464,43 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
       // Equipment step persists these more broadly.
       (entity.starting_equipment ?? []).forEach((eq, i) => {
         if (eq.kind !== "choice") return;
+        // Tolerate OLD-shape (an option is a plain string) and malformed options
+        // (an object without an array `grants`): such options degrade to a label
+        // with no nested children, and never throw. A degraded entry is also
+        // surfaced (warn once per class slug below) so the regression is visible.
+        const options = (eq.options ?? []) as unknown[];
+        let degraded = false;
         const ch: Choice = {
           kind: "select-inline", id: `equipment-${i}`, label: "Starting Equipment", count: 1,
-          options: eq.options.map((opt, j) => ({
-            value: `option-${j}`,
-            label: opt.label,
-            choices: opt.grants.flatMap((g, k) =>
-              "category" in g && g.category ? [categoryToEntitySelect(g.category, `equipment-${i}-opt-${j}-cat-${k}`)] : []),
-          })),
+          options: options.map((opt, j) => {
+            const label = typeof opt === "string"
+              ? opt
+              : ((opt as { label?: string } | null)?.label ?? "");
+            const grants =
+              opt && typeof opt === "object" && Array.isArray((opt as { grants?: unknown }).grants)
+                ? ((opt as { grants: unknown[] }).grants)
+                : [];
+            if (typeof opt === "string" || !(opt && typeof opt === "object" && Array.isArray((opt as { grants?: unknown }).grants))) {
+              degraded = true;
+            }
+            return {
+              value: `option-${j}`,
+              label,
+              choices: grants.flatMap((g, k) =>
+                g && typeof g === "object" && "category" in g && (g as { category?: string }).category
+                  ? [categoryToEntitySelect((g as { category: string }).category, `equipment-${i}-opt-${j}-cat-${k}`)]
+                  : []),
+            } as InlineOption;
+          }),
         };
+        if (degraded && !warnedDegradedEquipment.has(entity.slug)) {
+          warnedDegradedEquipment.add(entity.slug);
+          console.warn(
+            `[archivist] Starting equipment for "${entity.slug}" is in an outdated/unstructured format; ` +
+            "its nested picks and seeding are skipped. Re-sync the compendium " +
+            "(delete _compendium.md and reload) to fix.",
+          );
+        }
         push(1, buildItem(ch, { kind: "class", slug: entity.slug, level: 1 }, 1,
           "Starting Equipment", readAt(1), ctx, ownerBare));
       });
