@@ -2,6 +2,7 @@ import { z } from "zod";
 import { featureSchema } from "../../shared/schemas/feature-schema";
 import { resourceSchema } from "../../shared/schemas/resource-schema";
 import { startingEquipmentEntrySchema, startingGoldSchema } from "../../shared/schemas/equipment-grant-schema";
+import { selectionPoolSchema, poolGrantSchema, tabDeclSchema } from "../../shared/schemas/selection-pool-schema";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const skillEnum = z.enum([
@@ -85,4 +86,7 @@ export const classEntitySchema = z.object({
   table: z.record(z.string(), classTableRowSchema),
   features_by_level: z.record(z.string(), z.array(featureSchema)),
   resources: z.array(resourceSchema),
+  selection_pools: z.array(selectionPoolSchema).optional(),
+  pool_grants: z.array(poolGrantSchema).optional(),
+  tabs: z.array(tabDeclSchema).optional(),
 });

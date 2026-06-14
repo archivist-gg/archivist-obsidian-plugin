@@ -1,6 +1,7 @@
 import type { Feature, Choice, Ability, SkillSlug, Resource } from "../../shared/types";
 import type { StartingEquipmentEntry, StartingGold } from "../../shared/types/equipment-grant";
 export type { StartingEquipmentEntry, StartingGold } from "../../shared/types/equipment-grant";
+import type { SelectionPool, PoolGrant, TabDecl } from "../../shared/types/selection-pool";
 
 export type Edition = "2014" | "2024";
 export type ArmorCategory = "light" | "medium" | "heavy" | "shield";
@@ -70,4 +71,7 @@ export interface ClassEntity {
   table: Record<number, ClassTableRow>;
   features_by_level: Record<number, Feature[]>;
   resources: Resource[];
+  selection_pools?: SelectionPool[];
+  pool_grants?: PoolGrant[];
+  tabs?: TabDecl[];
 }

@@ -69,3 +69,24 @@ describe("classEntitySchema", () => {
     expect(classEntitySchema.safeParse(input).success).toBe(false);
   });
 });
+
+describe("classEntitySchema — selection pools / tabs (Phase 2)", () => {
+  it("accepts selection_pools, pool_grants and tabs", () => {
+    const c = {
+      ...minimalClass,
+      selection_pools: [{
+        id: "interdict-boons", label: "Interdict Boons",
+        source: { entity_type: "optional-feature", where: { feature_type: "interdict-boon", available_to: "self" } },
+        count: { column: "Interdict Boons" }, replaceable: true,
+      }],
+      pool_grants: [{ pool: "interdict-boons", grants: [{ feature: "[[axiomatic-seals]]", at_level: 7 }] }],
+      tabs: [{ id: "boons", label: "Interdict Boons", renders: { pool: "interdict-boons" } }],
+    };
+    const r = classEntitySchema.safeParse(c);
+    expect(r.success && (r.data as { selection_pools?: unknown }).selection_pools !== undefined).toBe(true);
+  });
+
+  it("still accepts a class with no pool fields (all optional)", () => {
+    expect(classEntitySchema.safeParse(minimalClass).success).toBe(true);
+  });
+});
