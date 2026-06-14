@@ -574,6 +574,11 @@ classes:
             grants: [{ gold: 75 }]
     starting_gold: { fixed: 75 }
   bard:
+    spellcasting:
+      caster_type: full
+      ability: cha
+      preparation: prepared
+      spell_list: bard
     subclass_feature_name: Bard Subclass
     skill_choices:
       count: 3
@@ -590,6 +595,11 @@ classes:
             grants: [{ gold: 90 }]
     starting_gold: { fixed: 90 }
   cleric:
+    spellcasting:
+      caster_type: full
+      ability: wis
+      preparation: prepared
+      spell_list: cleric
     subclass_feature_name: Cleric Subclass
     skill_choices:
       count: 2
@@ -607,6 +617,11 @@ classes:
             grants: [{ gold: 110 }]
     starting_gold: { fixed: 110 }
   druid:
+    spellcasting:
+      caster_type: full
+      ability: wis
+      preparation: prepared
+      spell_list: druid
     subclass_feature_name: Druid Subclass
     skill_choices:
       count: 2
@@ -666,6 +681,11 @@ classes:
             grants: [{ gold: 50 }]
     starting_gold: { fixed: 50 }
   paladin:
+    spellcasting:
+      caster_type: half
+      ability: cha
+      preparation: prepared
+      spell_list: paladin
     subclass_feature_name: Paladin Subclass
     skill_choices:
       count: 2
@@ -684,6 +704,11 @@ classes:
             grants: [{ gold: 150 }]
     starting_gold: { fixed: 150 }
   ranger:
+    spellcasting:
+      caster_type: half
+      ability: wis
+      preparation: prepared
+      spell_list: ranger
     subclass_feature_name: Ranger Subclass
     skill_choices:
       count: 3
@@ -720,6 +745,11 @@ classes:
             grants: [{ gold: 100 }]
     starting_gold: { fixed: 100 }
   sorcerer:
+    spellcasting:
+      caster_type: full
+      ability: cha
+      preparation: known
+      spell_list: sorcerer
     subclass_feature_name: Sorcerer Subclass
     skill_choices:
       count: 2
@@ -736,6 +766,11 @@ classes:
             grants: [{ gold: 50 }]
     starting_gold: { fixed: 50 }
   warlock:
+    spellcasting:
+      caster_type: pact
+      ability: cha
+      preparation: known
+      spell_list: warlock
     subclass_feature_name: Warlock Subclass
     skill_choices:
       count: 2
@@ -753,6 +788,11 @@ classes:
             grants: [{ gold: 100 }]
     starting_gold: { fixed: 100 }
   wizard:
+    spellcasting:
+      caster_type: full
+      ability: int
+      preparation: prepared
+      spell_list: wizard
     subclass_feature_name: Wizard Subclass
     skill_choices:
       count: 2

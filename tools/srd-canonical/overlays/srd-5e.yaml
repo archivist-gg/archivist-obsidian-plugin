@@ -703,6 +703,11 @@ classes:
         grants: [{ item: javelin, qty: 4 }]
     starting_gold: { dice: "2d4", multiplier: 10 }
   bard:
+    spellcasting:
+      caster_type: full
+      ability: cha
+      preparation: known
+      spell_list: bard
     subclass_feature_name: Bard College
     starting_equipment:
       - kind: choice
@@ -732,6 +737,11 @@ classes:
         grants: [{ item: leather }, { item: dagger }]
     starting_gold: { dice: "5d4", multiplier: 10 }
   cleric:
+    spellcasting:
+      caster_type: full
+      ability: wis
+      preparation: prepared
+      spell_list: cleric
     subclass_feature_name: Divine Domain
     subclass_level: 1
     starting_equipment:
@@ -769,6 +779,11 @@ classes:
         grants: [{ category: shield }]
     starting_gold: { dice: "5d4", multiplier: 10 }
   druid:
+    spellcasting:
+      caster_type: full
+      ability: wis
+      preparation: prepared
+      spell_list: druid
     subclass_feature_name: Druid Circle
     subclass_level: 2
     starting_equipment:
@@ -842,6 +857,11 @@ classes:
         grants: [{ item: dart, qty: 10 }]
     starting_gold: { dice: "5d4", multiplier: 10 }
   paladin:
+    spellcasting:
+      caster_type: half
+      ability: cha
+      preparation: prepared
+      spell_list: paladin
     subclass_feature_name: Sacred Oath
     starting_equipment:
       - kind: choice
@@ -869,6 +889,11 @@ classes:
         grants: [{ item: chain-mail }]
     starting_gold: { dice: "5d4", multiplier: 10 }
   ranger:
+    spellcasting:
+      caster_type: half
+      ability: wis
+      preparation: known
+      spell_list: ranger
     subclass_feature_name: Ranger Archetype
     starting_equipment:
       - kind: choice
@@ -926,6 +951,11 @@ classes:
         grants: [{ item: leather }, { item: dagger, qty: 2 }]
     starting_gold: { dice: "4d4", multiplier: 10 }
   sorcerer:
+    spellcasting:
+      caster_type: full
+      ability: cha
+      preparation: known
+      spell_list: sorcerer
     subclass_feature_name: Sorcerous Origin
     subclass_level: 1
     starting_equipment:
@@ -955,6 +985,11 @@ classes:
         grants: [{ item: dagger, qty: 2 }]
     starting_gold: { dice: "3d4", multiplier: 10 }
   warlock:
+    spellcasting:
+      caster_type: pact
+      ability: cha
+      preparation: known
+      spell_list: warlock
     subclass_feature_name: Otherworldly Patron
     subclass_level: 1
     starting_equipment:
@@ -984,6 +1019,11 @@ classes:
         grants: [{ item: leather }, { category: simple-weapon }, { item: dagger, qty: 2 }]
     starting_gold: { dice: "4d4", multiplier: 10 }
   wizard:
+    spellcasting:
+      caster_type: full
+      ability: int
+      preparation: prepared
+      spell_list: wizard
     subclass_feature_name: Arcane Tradition
     subclass_level: 2
     starting_equipment:
