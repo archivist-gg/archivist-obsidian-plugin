@@ -15,6 +15,7 @@ import type {
   FeatureSource,
 } from "./pc.types";
 import { normalizeKnownSpell, resolveSpellcasting } from "./pc.spellcasting";
+import { resolveAllPools } from "./pc.pools";
 
 export interface ResolveResult {
   character: ResolvedCharacter;
@@ -95,21 +96,21 @@ export class PCResolver {
       spells.push({ entity, slug: n.slug, classSlug, source: n.source, prepared: prep, alwaysPrepared: n.alwaysPrepared });
     }
 
-    return {
-      character: {
-        definition: character,
-        race,
-        classes,
-        background,
-        feats,
-        totalLevel,
-        features,
-        spells,
-        pools: [],
-        state: character.state,
-      },
-      warnings,
+    const resolvedCharacter: ResolvedCharacter = {
+      definition: character,
+      race,
+      classes,
+      background,
+      feats,
+      totalLevel,
+      features,
+      spells,
+      pools: [],
+      state: character.state,
     };
+    resolvedCharacter.pools = resolveAllPools(resolvedCharacter, this.entities);
+
+    return { character: resolvedCharacter, warnings };
   }
 }
 
