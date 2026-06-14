@@ -21,8 +21,8 @@ function collectTabDecls(resolved: ResolvedCharacter | undefined): TabDecl[] {
   const seen = new Set<string>();
   for (const c of resolved?.classes ?? []) {
     const decls = [
-      ...((c.entity as { tabs?: TabDecl[] } | null)?.tabs ?? []),
-      ...((c.subclass as { tabs?: TabDecl[] } | null)?.tabs ?? []),
+      ...(c.entity?.tabs ?? []),
+      ...(c.subclass?.tabs ?? []),
     ];
     for (const d of decls) {
       if (seen.has(d.id)) continue;
