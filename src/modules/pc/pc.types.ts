@@ -8,6 +8,7 @@ import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";
 import type { Spell } from "../spell/spell.types";
+import type { OptionalFeatureEntity } from "../optional-feature/optional-feature.types";
 
 export type { ConditionSlug } from "./constants/conditions";
 import type { ConditionSlug } from "./constants/conditions";
@@ -194,6 +195,27 @@ export interface ResolvedClass {
   choices: Record<number, LevelChoices>;
 }
 
+export interface ResolvedPoolEntry {
+  slug: string;
+  entity: OptionalFeatureEntity;
+}
+
+/** A materialized selection pool: count from the table column, prereq-filtered
+ *  candidates, player picks (from the choices ledger), and subclass auto-grants. */
+export interface ResolvedPool {
+  id: string;
+  label: string;
+  /** Which resolved class declared this pool (for ledger anchoring + writes). */
+  classIndex: number;
+  /** Picks allowed at the current level (table column value). */
+  count: number;
+  /** Lowest class level where count >= 1 — the stable persistence key level. */
+  anchorLevel: number;
+  selected: ResolvedPoolEntry[];   // player picks, in pick order
+  available: ResolvedPoolEntry[];  // prereq-filtered candidates
+  grants: ResolvedPoolEntry[];     // subclass auto-grants (do not count)
+}
+
 export interface ResolvedCharacter {
   definition: Character;
   race: RaceEntity | null;
@@ -203,6 +225,7 @@ export interface ResolvedCharacter {
   totalLevel: number;
   features: ResolvedFeature[];
   spells: ResolvedSpell[];
+  pools: ResolvedPool[];
   state: CharacterState;
 }
 

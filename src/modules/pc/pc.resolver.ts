@@ -105,6 +105,7 @@ export class PCResolver {
         totalLevel,
         features,
         spells,
+        pools: [],
         state: character.state,
       },
       warnings,
