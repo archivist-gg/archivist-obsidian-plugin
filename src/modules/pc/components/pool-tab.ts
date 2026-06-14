@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { ResolvedPool, ResolvedPoolEntry } from "../pc.types";
+import type { ResolvedPoolEntry } from "../pc.types";
 
 const COST_LABELS: Record<string, string> = {
   action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
@@ -62,7 +62,8 @@ export class PoolTab implements SheetComponent {
       adding = !adding;
       addBtn.toggleClass("open", adding);
       addBtn.setText(adding ? "✓ Done" : "+ Add");
-      adding ? renderAdd() : renderList();
+      if (adding) renderAdd();
+      else renderList();
     });
 
     renderList();
@@ -96,14 +97,14 @@ export class PoolTab implements SheetComponent {
     }
 
     const desc = row.createDiv({ cls: "pc-pool-desc" });
-    desc.style.display = "none";
+    desc.addClass("is-collapsed");
     nameWrap.addEventListener("click", () => {
-      const open = desc.style.display !== "none";
-      if (open) desc.style.display = "none";
-      else {
+      if (!desc.hasClass("is-collapsed")) {
+        desc.addClass("is-collapsed");
+      } else {
         desc.empty();
         desc.setText(e.description ?? "");
-        desc.style.display = "block";
+        desc.removeClass("is-collapsed");
       }
     });
 
