@@ -1,6 +1,12 @@
-import type { FeatureEffect, ActionCost, ResetTrigger } from "../../shared/types";
+import type { FeatureEffect, ActionCost, ResetTrigger, ResourceConsumption } from "../../shared/types";
+import type { Duration } from "../../shared/schemas/duration-schema";
 import type { Edition } from "../class/class.types";
 
+/**
+ * Documentation-only union of the canonical SRD feature types. The
+ * `feature_type` field is now an open string (see {@link OptionalFeatureEntity})
+ * so homebrew categories parse; this union is kept purely as a reference list.
+ */
 export type OptionalFeatureKind =
   | "invocation"        // warlock eldritch invocations
   | "fighting_style"    // fighter / paladin / ranger
@@ -21,7 +27,8 @@ export interface OptionalFeatureEntity {
   name: string;
   edition: Edition;
   source: string;
-  feature_type: OptionalFeatureKind;
+  /** Open string category (e.g. "invocation"); see {@link OptionalFeatureKind} for canonical SRD values. */
+  feature_type: string;
   description: string;
   prerequisites: OptionalFeaturePrerequisite[];
   /** Wikilinks to classes/subclasses that can pick this option. */
@@ -35,4 +42,10 @@ export interface OptionalFeatureEntity {
     max: number | string;       // string for formula (e.g. "{cha_mod}")
     recharge: ResetTrigger;
   } | null;
+  /** Resource cost to use this option (e.g. burn a Seal). */
+  consumes?: ResourceConsumption | null;
+  /** How long the granted effect lasts (rendered as a label in Phase 2). */
+  duration?: Duration | null;
+  /** Always-on marker; renders a "Passive" tag. */
+  passive?: boolean;
 }

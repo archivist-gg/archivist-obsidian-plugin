@@ -1,15 +1,13 @@
 import { z } from "zod";
 import { featureEffectSchema } from "../../shared/schemas/feature-effect-schema";
-import { resetTriggerEnum, actionCostEnum } from "../../shared/schemas/resource-schema";
+import {
+  resetTriggerEnum,
+  actionCostEnum,
+  resourceConsumptionSchema,
+} from "../../shared/schemas/resource-schema";
+import { durationSchema } from "../../shared/schemas/duration-schema";
 
 const editionEnum = z.enum(["2014", "2024"]);
-const featureTypeEnum = z.enum([
-  "invocation",
-  "fighting_style",
-  "metamagic",
-  "maneuver",
-  "infusion",
-]);
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const wikilinkRegex = /^\[\[[^[\]]+\]\]$/;
 
@@ -33,13 +31,16 @@ export const optionalFeatureEntitySchema = z.object({
   name: z.string().min(1),
   edition: editionEnum,
   source: z.string().min(1),
-  feature_type: featureTypeEnum,
+  feature_type: z.string().min(1),
   description: z.string(),
   prerequisites: z.array(prerequisiteSchema),
   available_to: z.array(z.string().regex(wikilinkRegex)),
   effects: z.array(featureEffectSchema),
   action_cost: actionCostEnum.nullable().optional(),
   uses: usesSchema.nullable().optional(),
+  consumes: resourceConsumptionSchema.nullable().optional(),
+  duration: durationSchema.nullable().optional(),
+  passive: z.boolean().optional(),
 });
 
 export type OptionalFeatureSchemaInput = z.input<typeof optionalFeatureEntitySchema>;

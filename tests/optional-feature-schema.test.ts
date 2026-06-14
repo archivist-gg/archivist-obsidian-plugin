@@ -33,9 +33,25 @@ describe("optionalFeatureEntitySchema", () => {
     expect(optionalFeatureEntitySchema.safeParse(fighting).success).toBe(true);
   });
 
-  it("rejects unknown feature_type values", () => {
-    const bad = { ...minimalInvocation, feature_type: "supernatural-quirk" };
+  it("accepts a homebrew feature_type string (enum is now open)", () => {
+    const boon = { ...minimalInvocation, feature_type: "interdict-boon" };
+    expect(optionalFeatureEntitySchema.safeParse(boon).success).toBe(true);
+  });
+
+  it("rejects an empty feature_type", () => {
+    const bad = { ...minimalInvocation, feature_type: "" };
     expect(optionalFeatureEntitySchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("accepts consumes / duration / passive", () => {
+    const boon = {
+      ...minimalInvocation,
+      feature_type: "interdict-boon",
+      consumes: { resource: "seals", amount: 1 },
+      duration: { amount: 1, unit: "minute" },
+      passive: true,
+    };
+    expect(optionalFeatureEntitySchema.safeParse(boon).success).toBe(true);
   });
 
   it("rejects available_to with non-wikilinks", () => {
