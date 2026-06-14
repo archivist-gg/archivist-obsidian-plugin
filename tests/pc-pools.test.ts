@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolvePool, type PoolRegistry } from "../src/modules/pc/pc.pools";
-import type { ResolvedClass } from "../src/modules/pc/pc.types";
+import { resolvePool, resolveAllPools, type PoolRegistry } from "../src/modules/pc/pc.pools";
+import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
 
 function of(slug: string, ft: string, levelMin?: number) {
   return {
@@ -75,5 +75,87 @@ describe("resolvePool", () => {
     ] } as never;
     const r = resolvePool(rc, 0, pool, mkRegistry(boons));
     expect(r.grants.map((e) => e.slug)).toEqual(["hell-mage"]); // at_level 99 excluded
+  });
+  it("resolves picks/grants by bare slug when the registry slug is source-prefixed", () => {
+    // Registry stores the entity under a source-prefixed slug; bareEntitySlug
+    // strips everything up to and including the first "_", so "hb_baleful-glare"
+    // bares to "baleful-glare". A ledger pick of the BARE slug and a subclass
+    // grant via "[[baleful-glare]]" (wikilinkTailSlug → "baleful-glare") must
+    // both resolve back to the prefixed registry entity.
+    const prefixed = of("baleful-glare", "interdict-boon");
+    prefixed.slug = "hb_baleful-glare"; // registry slug only; data.slug stays bare
+    const reg = mkRegistry([prefixed, of("hell-mage", "interdict-boon", 7)]);
+
+    // Pick stored under the bare slug resolves to the prefixed entity.
+    const picked = resolvePool(mkClass(7, { 2: { "interdict-boons": ["baleful-glare"] } }), 0, pool, reg);
+    expect(picked.selected.map((e) => e.slug)).toEqual(["hb_baleful-glare"]);
+
+    // Subclass grant via wikilink resolves to the same prefixed entity.
+    const rc = mkClass(20);
+    rc.subclass = { slug: "asmodeus", pool_grants: [
+      { pool: "interdict-boons", grants: [{ feature: "[[baleful-glare]]", at_level: 1 }] },
+    ] } as never;
+    const granted = resolvePool(rc, 0, pool, reg);
+    expect(granted.grants.map((e) => e.slug)).toEqual(["hb_baleful-glare"]);
+  });
+});
+
+describe("resolveAllPools", () => {
+  // classB's owner + boon, so its pool resolves against a real available_to match.
+  function rogueBoon(slug: string) {
+    const e = of(slug, "ki-art");
+    e.data.available_to = ["[[rogue]]"];
+    return e;
+  }
+
+  it("dedupes a pool declared by both class and subclass, and tags each class's pools with its classIndex", () => {
+    const interdictPool = {
+      id: "interdict-boons", label: "Interdict Boons",
+      source: { entity_type: "optional-feature" as const, where: { feature_type: "interdict-boon", available_to: "self" as const } },
+      count: { column: "Interdict Boons" },
+    };
+    const kiPool = {
+      id: "ki-arts", label: "Ki Arts",
+      source: { entity_type: "optional-feature" as const, where: { feature_type: "ki-art", available_to: "self" as const } },
+      count: { column: "Ki Arts" },
+    };
+
+    // classA (index 0): class entity AND subclass both declare the SAME pool id → dedupe to one.
+    const classA: ResolvedClass = {
+      entity: {
+        slug: "reaver", name: "Reaver",
+        table: { 2: { columns: { "Interdict Boons": 1 }, prof_bonus: 2, feature_ids: [] } },
+        selection_pools: [interdictPool],
+      } as never,
+      level: 7,
+      subclass: { slug: "asmodeus", selection_pools: [interdictPool] } as never,
+      choices: {} as never,
+    };
+
+    // classB (index 1): declares its own, different pool.
+    const classB: ResolvedClass = {
+      entity: {
+        slug: "rogue", name: "Rogue",
+        table: { 3: { columns: { "Ki Arts": 1 }, prof_bonus: 2, feature_ids: [] } },
+        selection_pools: [kiPool],
+      } as never,
+      level: 7,
+      subclass: null,
+      choices: {} as never,
+    };
+
+    const rc = { classes: [classA, classB] } as unknown as ResolvedCharacter;
+    const reg = mkRegistry([...boons, rogueBoon("flurry")]);
+
+    const pools = resolveAllPools(rc, reg);
+
+    // One interdict-boons (deduped across class+subclass) + one ki-arts = 2 total.
+    expect(pools.length).toBe(2);
+    expect(pools.filter((p) => p.id === "interdict-boons").length).toBe(1);
+
+    const interdict = pools.find((p) => p.id === "interdict-boons")!;
+    const ki = pools.find((p) => p.id === "ki-arts")!;
+    expect(interdict.classIndex).toBe(0);
+    expect(ki.classIndex).toBe(1);
   });
 });

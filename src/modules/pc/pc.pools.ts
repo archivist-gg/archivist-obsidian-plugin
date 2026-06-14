@@ -13,18 +13,8 @@ export interface PoolRegistry {
 
 function levelPrereqMax(d: OptionalFeatureEntity): number {
   return (d.prerequisites ?? [])
-    .filter((p) => p.kind === "level")
-    .reduce((m, p) => Math.max(m, (p as { min: number }).min), 0);
-}
-
-function resolveOF(registry: PoolRegistry, slug: string): ResolvedPoolEntry | null {
-  let reg = registry.getByTypeAndSlug("optional-feature", slug);
-  if (!reg) {
-    const want = bareEntitySlug(slug);
-    reg = registry.search("", "optional-feature", Number.POSITIVE_INFINITY)
-      .find((e) => bareEntitySlug(e.slug) === want);
-  }
-  return reg ? { slug: reg.slug, entity: reg.data as unknown as OptionalFeatureEntity } : null;
+    .filter((p): p is { kind: "level"; min: number } => p.kind === "level")
+    .reduce((m, p) => Math.max(m, p.min), 0);
 }
 
 export function resolvePool(
@@ -46,28 +36,36 @@ export function resolvePool(
     if (c != null && c >= 1) { anchorLevel = l; break; }
   }
 
+  // One scan of all optional-features: build the prereq-filtered `available` list
+  // AND a bare-slug → entry map for O(1) pick/grant resolution (mirrors
+  // enumerateOptions' single-scan pattern). The map is built from the FULL scan
+  // (not the prereq-filtered list) so a stored pick or explicit subclass grant
+  // still resolves to its entity even when prereqs would hide it from `available`.
   const ft = pool.source.where.feature_type;
-  const available: ResolvedPoolEntry[] = registry
-    .search("", "optional-feature", Number.POSITIVE_INFINITY)
-    .filter((e) => {
-      const d = e.data as unknown as OptionalFeatureEntity;
-      if (d.feature_type !== ft) return false;
-      if (!(d.available_to ?? []).some((l) => wikilinkTailSlug(l) === ownerBare)) return false;
-      return levelPrereqMax(d) <= level;
-    })
-    .map((e) => ({ slug: e.slug, entity: e.data as unknown as OptionalFeatureEntity }));
+  const all = registry.search("", "optional-feature", Number.POSITIVE_INFINITY);
+  const byBare = new Map<string, ResolvedPoolEntry>();
+  const available: ResolvedPoolEntry[] = [];
+  for (const e of all) {
+    const d = e.data as unknown as OptionalFeatureEntity;
+    const entry: ResolvedPoolEntry = { slug: e.slug, entity: d };
+    byBare.set(bareEntitySlug(e.slug), entry);
+    if (d.feature_type !== ft) continue;
+    if (!(d.available_to ?? []).some((l) => wikilinkTailSlug(l) === ownerBare)) continue;
+    if (levelPrereqMax(d) > level) continue;
+    available.push(entry);
+  }
 
   const raw = (rc.choices[anchorLevel] as Record<string, unknown> | undefined)?.[pool.id];
   const selectedSlugs = Array.isArray(raw) ? (raw as string[]) : typeof raw === "string" ? [raw] : [];
   const selected = selectedSlugs
-    .map((s) => resolveOF(registry, s))
+    .map((s) => byBare.get(bareEntitySlug(s)))
     .filter((e): e is ResolvedPoolEntry => e != null);
 
   const grants = (rc.subclass?.pool_grants ?? [])
     .filter((g) => g.pool === pool.id)
     .flatMap((g) => g.grants)
     .filter((g) => g.at_level <= level)
-    .map((g) => resolveOF(registry, wikilinkTailSlug(g.feature)))
+    .map((g) => byBare.get(wikilinkTailSlug(g.feature)))
     .filter((e): e is ResolvedPoolEntry => e != null);
 
   return { id: pool.id, label: pool.label, classIndex, count, anchorLevel, selected, available, grants };
