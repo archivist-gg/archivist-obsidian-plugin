@@ -73,4 +73,52 @@ describe("PoolTab", () => {
     new PoolTab("nope").render(el, mkCtx(basePool));
     expect(el.querySelector(".pc-empty-line")).not.toBeNull();
   });
+
+  it("at cap: an un-picked candidate's Add button shows 'Full', is disabled, and does not write", () => {
+    const setChoice = vi.fn();
+    const fullPool: ResolvedPool = {
+      id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 1, anchorLevel: 2,
+      selected: [{ slug: "baleful-glare", entity: ofEntity("baleful-glare") as never }],
+      available: [
+        { slug: "baleful-glare", entity: ofEntity("baleful-glare") as never },
+        { slug: "hell-mage", entity: ofEntity("hell-mage") as never },
+      ],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(fullPool, { setChoice }));
+    el.querySelector<HTMLButtonElement>(".pc-pool-addbtn")!.click();
+    const add = el.querySelector<HTMLButtonElement>(".pc-pool-add")!;
+    expect(add.textContent).toBe("Full");
+    expect(add.getAttribute("disabled")).toBe("true");
+    add.click();
+    expect(setChoice).not.toHaveBeenCalled();
+  });
+
+  it("pluralizes the consume label by amount", () => {
+    const pluralPool: ResolvedPool = {
+      id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
+      selected: [
+        { slug: "two-seals", entity: ofEntity("two-seals", { consumes: { resource: "seals", amount: 2 } }) as never },
+        { slug: "one-seal", entity: ofEntity("one-seal", { consumes: { resource: "seals", amount: 1 } }) as never },
+      ],
+      available: [], grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(pluralPool));
+    const labels = [...el.querySelectorAll(".pc-pool-consume")].map((n) => n.textContent);
+    expect(labels).toContain("2 Seals");
+    expect(labels).toContain("1 Seal");
+  });
+
+  it("renders a structured duration label", () => {
+    const durationPool: ResolvedPool = {
+      id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
+      selected: [{ slug: "timed", entity: ofEntity("timed", { duration: { amount: 1, unit: "minute" } }) as never }],
+      available: [], grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(durationPool));
+    expect(el.querySelector(".pc-pool-duration")?.textContent).toContain("1 minute");
+  });
 });

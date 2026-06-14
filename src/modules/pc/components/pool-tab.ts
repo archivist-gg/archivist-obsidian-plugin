@@ -86,9 +86,10 @@ export class PoolTab implements SheetComponent {
     const meta = row.createDiv({ cls: "pc-pool-meta" });
     if (e.action_cost) meta.createSpan({ cls: "pc-pool-cost", text: COST_LABELS[e.action_cost] ?? e.action_cost });
     if (e.consumes?.amount) {
-      const unit = e.consumes.resource ?? e.consumes.column ?? "resource";
-      const label = unit.replace(/s$/, "");
-      meta.createSpan({ cls: "pc-pool-consume", text: `${e.consumes.amount} ${label.charAt(0).toUpperCase()}${label.slice(1)}` });
+      const word = e.consumes.resource ?? e.consumes.column ?? "resource";
+      const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
+      const label = `${display.charAt(0).toUpperCase()}${display.slice(1)}`;
+      meta.createSpan({ cls: "pc-pool-consume", text: `${e.consumes.amount} ${label}` });
     }
     if (e.duration && typeof e.duration === "object") {
       meta.createSpan({ cls: "pc-pool-duration", text: `${e.duration.amount} ${e.duration.unit}` });
