@@ -37,11 +37,12 @@ const toolProficiencySchema = z.object({
   message: "tool proficiency must declare fixed or choice",
 });
 
+const casterTypeEnum = z.enum(["full", "half", "third", "pact"]);
+
 const spellcastingSchema = z.object({
+  caster_type: casterTypeEnum,
   ability: abilityEnum,
-  preparation: z.enum(["known", "prepared", "ritual", "spontaneous"]),
-  cantrip_progression: z.record(z.string(), z.number().int().nonnegative()).optional(),
-  spells_known_formula: z.string().optional(),
+  preparation: z.enum(["known", "prepared"]),
   spell_list: z.string().min(1),
 });
 

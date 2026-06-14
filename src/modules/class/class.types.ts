@@ -28,13 +28,13 @@ export interface SkillChoices {
   from: SkillSlug[];
 }
 
-export type SpellcastingPreparation = "known" | "prepared" | "ritual" | "spontaneous";
+export type CasterType = "full" | "half" | "third" | "pact";
+export type SpellcastingPreparation = "known" | "prepared";
 
 export interface SpellcastingConfig {
+  caster_type: CasterType;
   ability: Ability;
   preparation: SpellcastingPreparation;
-  cantrip_progression?: Record<number, number>;
-  spells_known_formula?: string;
   spell_list: string;
 }
 
