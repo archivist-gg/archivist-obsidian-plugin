@@ -1,14 +1,37 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ComponentRegistry } from "./component-registry";
+import type { ResolvedCharacter } from "../pc.types";
+import type { TabDecl } from "../../../shared/types/selection-pool";
+import { PoolTab } from "./pool-tab";
 
-const TAB_DEF: ReadonlyArray<[type: string, panelId: string, label: string]> = [
-  ["actions-tab",    "panel-actions",    "Actions"],
-  ["spells-tab",     "panel-spells",     "Spells"],
-  ["inventory-tab",  "panel-inventory",  "Inventory"],
-  ["features-tab",   "panel-features",   "Features & Traits"],
-  ["background-tab", "panel-background", "Background"],
-  ["notes-tab",      "panel-notes",      "Notes"],
+// Built-in, always-on tabs. Notes removed in Phase 2.
+const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string }> = [
+  { type: "actions-tab",    panelId: "panel-actions",    label: "Actions" },
+  { type: "spells-tab",     panelId: "panel-spells",     label: "Spells" },
+  { type: "inventory-tab",  panelId: "panel-inventory",  label: "Inventory" },
+  { type: "features-tab",   panelId: "panel-features",   label: "Features & Traits" },
+  { type: "background-tab", panelId: "panel-background", label: "Background" },
 ];
+
+interface BuiltTab { panelId: string; label: string; component: SheetComponent | undefined; }
+
+/** Data-declared tabs from the resolved class/subclass, de-duped by id. */
+function collectTabDecls(resolved: ResolvedCharacter | undefined): TabDecl[] {
+  const out: TabDecl[] = [];
+  const seen = new Set<string>();
+  for (const c of resolved?.classes ?? []) {
+    const decls = [
+      ...((c.entity as { tabs?: TabDecl[] } | null)?.tabs ?? []),
+      ...((c.subclass as { tabs?: TabDecl[] } | null)?.tabs ?? []),
+    ];
+    for (const d of decls) {
+      if (seen.has(d.id)) continue;
+      seen.add(d.id);
+      out.push(d);
+    }
+  }
+  return out;
+}
 
 export class TabsContainer implements SheetComponent {
   readonly type = "tabs-container";
@@ -16,6 +39,17 @@ export class TabsContainer implements SheetComponent {
   constructor(private readonly registry: ComponentRegistry) {}
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const tabs: BuiltTab[] = BUILTIN.map((b) => ({
+      panelId: b.panelId, label: b.label, component: this.registry.get(b.type),
+    }));
+
+    // Dynamic pool tabs: one PoolTab instance per declared tab whose pool resolved.
+    for (const decl of collectTabDecls(ctx.resolved)) {
+      const pool = ctx.resolved?.pools?.find((p) => p.id === decl.renders.pool);
+      if (!pool) continue;
+      tabs.push({ panelId: `panel-pool-${decl.id}`, label: decl.label, component: new PoolTab(decl.renders.pool) });
+    }
+
     const tabBar = el.createDiv({ cls: "pc-tabs-bar" });
     const panels = el.createDiv({ cls: "pc-tab-panels" });
     const buttons: HTMLButtonElement[] = [];
@@ -28,16 +62,15 @@ export class TabsContainer implements SheetComponent {
     // contract, or any direct caller that doesn't care), fall back to the
     // first declared tab.
     const initialActive =
-      ctx.activeTabId && TAB_DEF.some(([, id]) => id === ctx.activeTabId)
+      ctx.activeTabId && tabs.some((t) => t.panelId === ctx.activeTabId)
         ? ctx.activeTabId
-        : TAB_DEF[0][1];
+        : tabs[0].panelId;
 
-    for (const [type, panelId, label] of TAB_DEF) {
+    for (const { panelId, label, component } of tabs) {
       const btn = tabBar.createEl("button", { cls: "pc-tab-btn", text: label, attr: { "data-tab": panelId } });
       const panel = panels.createDiv({ cls: "pc-tab-panel", attr: { id: panelId } });
-      const component = this.registry.get(type);
       if (component) component.render(panel, ctx);
-      else panel.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${type})` });
+      else panel.createDiv({ cls: "pc-empty-line", text: `(No renderer for ${panelId})` });
       buttons.push(btn);
       panelEls.push(panel);
       btn.addEventListener("click", () => {

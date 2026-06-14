@@ -17,16 +17,43 @@ const ctx: ComponentRenderContext = { resolved: {} as ResolvedCharacter, derived
 
 function mkRegistry(): ComponentRegistry {
   const r = new ComponentRegistry();
-  for (const t of ["actions-tab", "spells-tab", "inventory-tab", "features-tab", "background-tab", "notes-tab"]) r.register(new Probe(t));
+  for (const t of ["actions-tab", "spells-tab", "inventory-tab", "features-tab", "background-tab"]) r.register(new Probe(t));
   return r;
 }
 
 describe("TabsContainer", () => {
-  it("renders six tab buttons and six panels", () => {
+  it("renders five built-in tabs and no Notes tab", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, ctx);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(6);
-    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(6);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5);
+    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(5);
+    expect(container.querySelector('.pc-tab-btn[data-tab="panel-notes"]')).toBeNull();
+  });
+  it("appends a dynamic pool tab when a class declares one and the pool resolved", () => {
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{ entity: { tabs: [{ id: "boons", label: "Interdict Boons", renders: { pool: "interdict-boons" } }] }, subclass: null }],
+        pools: [{ id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 1, anchorLevel: 2, selected: [], available: [], grants: [] }],
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(6); // 5 built-ins + 1 pool tab
+    const btn = container.querySelector<HTMLElement>('.pc-tab-btn[data-tab="panel-pool-boons"]');
+    expect(btn?.textContent).toBe("Interdict Boons");
+  });
+  it("does NOT append a declared tab whose pool did not resolve", () => {
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{ entity: { tabs: [{ id: "boons", label: "Boons", renders: { pool: "interdict-boons" } }] }, subclass: null }],
+        pools: [],
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5);
   });
   it("activates the first tab by default when no activeTabId is provided", () => {
     const container = mountContainer();

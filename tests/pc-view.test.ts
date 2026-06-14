@@ -177,10 +177,10 @@ describe("PCSheetView", () => {
     v.setViewData(PC_FILE, true);
     await v.rendered;
 
-    v.contentEl.querySelector<HTMLButtonElement>('.pc-tab-btn[data-tab="panel-notes"]')!.click();
+    v.contentEl.querySelector<HTMLButtonElement>('.pc-tab-btn[data-tab="panel-inventory"]')!.click();
     expect(
       v.contentEl.querySelector<HTMLElement>(".pc-tab-panel.active")?.id,
-    ).toBe("panel-notes");
+    ).toBe("panel-inventory");
 
     // Re-load the same view with fresh data (simulates a file switch).
     v.setViewData(PC_FILE, true);
