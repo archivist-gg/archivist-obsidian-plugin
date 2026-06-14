@@ -14,7 +14,7 @@ import type {
   ResolvedSpell,
   FeatureSource,
 } from "./pc.types";
-import { normalizeKnownSpell, getSpellcastingProfile } from "./pc.spellcasting";
+import { normalizeKnownSpell, resolveSpellcasting } from "./pc.spellcasting";
 
 export interface ResolveResult {
   character: ResolvedCharacter;
@@ -74,9 +74,11 @@ export class PCResolver {
     features.push(...extraFeatures);
 
     // Primary caster slug (for bare-slug spells that don't name their class).
-    const primaryCasterSlug = character.class
-      .map((c) => stripSlug(c.name))
-      .find((slug) => slug && getSpellcastingProfile(slug, character.edition)) ?? null;
+    // Caster-ness is now data-driven (resolveSpellcasting), preserving the
+    // stripped class-ref slug used elsewhere for spell attribution.
+    const primaryCasterSlug = classes
+      .map((c, i) => (c.entity && resolveSpellcasting(c) ? stripSlug(character.class[i].name) : null))
+      .find((slug): slug is string => slug != null) ?? null;
 
     const spells: ResolvedSpell[] = [];
     for (const raw of character.spells.known ?? []) {

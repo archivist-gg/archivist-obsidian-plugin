@@ -1,12 +1,14 @@
 import type { Ability } from "../../shared/types";
-import type { Edition, KnownSpellEntry } from "./pc.types";
+import type { KnownSpellEntry, ResolvedClass } from "./pc.types";
 import { abilityModifier } from "../../shared/dnd/math";
-import type { ClassEntity, CasterType } from "../class/class.types";
+import type { CasterType } from "../class/class.types";
 
 export interface SpellcastingProfile {
   ability: Ability;
-  casterType: Exclude<CasterType, "none">;
+  casterType: CasterType;
   preparation: "known" | "prepared";
+  spellList: string;
+  table: Record<number, { columns?: Record<string, string | number> }>;
 }
 
 function bareSlug(ref: string): string {
@@ -30,28 +32,26 @@ export function baseClassName(ref: string): string {
   return sep >= 0 ? bare.slice(sep + 1) : bare;
 }
 
-// Fixed SRD reference data. `preparation` differs by edition for some classes;
-// `ability` and `casterType` are edition-independent. Spell *access* is not
-// here — it comes from each spell's `classes[]` reverse index.
-const PROFILES: Record<string, {
-  ability: Ability;
-  casterType: Exclude<CasterType, "none">;
-  preparation: { "2014": "known" | "prepared"; "2024": "known" | "prepared" };
-}> = {
-  bard:     { ability: "cha", casterType: "full", preparation: { "2014": "known",    "2024": "prepared" } },
-  cleric:   { ability: "wis", casterType: "full", preparation: { "2014": "prepared", "2024": "prepared" } },
-  druid:    { ability: "wis", casterType: "full", preparation: { "2014": "prepared", "2024": "prepared" } },
-  paladin:  { ability: "cha", casterType: "half", preparation: { "2014": "prepared", "2024": "prepared" } },
-  ranger:   { ability: "wis", casterType: "half", preparation: { "2014": "known",    "2024": "prepared" } },
-  sorcerer: { ability: "cha", casterType: "full", preparation: { "2014": "known",    "2024": "known" } },
-  warlock:  { ability: "cha", casterType: "pact", preparation: { "2014": "known",    "2024": "known" } },
-  wizard:   { ability: "int", casterType: "full", preparation: { "2014": "prepared", "2024": "prepared" } },
-};
-
-export function getSpellcastingProfile(classSlug: string, edition: Edition): SpellcastingProfile | null {
-  const p = PROFILES[baseClassName(classSlug)];
-  if (!p) return null;
-  return { ability: p.ability, casterType: p.casterType, preparation: p.preparation[edition] };
+/**
+ * Data-driven spellcasting profile for a resolved class. Reads the subclass
+ * block if the subclass grants casting (e.g. Architect of Ruin), else the class
+ * block. Known/cantrip columns come from whichever entity grants casting
+ * (subclass table preferred, falling back to the class table). Returns null for
+ * non-casters. No hardcoded class knowledge — everything comes from the data.
+ */
+export function resolveSpellcasting(rc: ResolvedClass): SpellcastingProfile | null {
+  const sub = rc.subclass?.spellcasting ?? null;
+  const cls = rc.entity?.spellcasting ?? null;
+  const sc = sub ?? cls;
+  if (!sc) return null;
+  const table = (sub ? rc.subclass?.table : rc.entity?.table) ?? rc.entity?.table ?? {};
+  return {
+    ability: sc.ability,
+    casterType: sc.caster_type,
+    preparation: sc.preparation,
+    spellList: sc.spell_list,
+    table,
+  };
 }
 
 export interface NormalizedKnownSpell {
@@ -228,7 +228,7 @@ export function deriveSpellSlots(classes: CasterClassInput[]): DerivedSpellSlots
 export interface LimitClassInput {
   classSlug: string;
   level: number;
-  entity: ClassEntity;
+  profile: SpellcastingProfile;
   /** Ability score for this class's spellcasting ability. */
   abilityScore: number;
 }
@@ -240,8 +240,12 @@ export interface SpellLimit {
   preparedOrKnown: number | null;
 }
 
-function readTableColumn(entity: ClassEntity, level: number, keys: string[]): number | null {
-  const cols = entity.table?.[level]?.columns;
+function readTableColumn(
+  table: SpellcastingProfile["table"],
+  level: number,
+  keys: string[],
+): number | null {
+  const cols = table?.[level]?.columns;
   if (!cols) return null;
   for (const k of keys) {
     const raw = cols[k];
@@ -252,24 +256,20 @@ function readTableColumn(entity: ClassEntity, level: number, keys: string[]): nu
   return null;
 }
 
-export function computeSpellLimits(inputs: LimitClassInput[], edition: Edition): SpellLimit[] {
+export function computeSpellLimits(inputs: LimitClassInput[]): SpellLimit[] {
   const out: SpellLimit[] = [];
   for (const i of inputs) {
-    const profile = getSpellcastingProfile(i.classSlug, edition);
-    if (!profile) continue;
-
-    const cantripsKnown = readTableColumn(i.entity, i.level, ["Cantrips Known", "Cantrips"]);
+    const p = i.profile;
+    const cantripsKnown = readTableColumn(p.table, i.level, ["Cantrips Known", "Cantrips"]);
     const mod = abilityModifier(i.abilityScore);
-
     let preparedOrKnown: number | null;
-    if (profile.preparation === "prepared") {
-      const levelTerm = profile.casterType === "half" ? Math.floor(i.level / 2) : i.level;
+    if (p.preparation === "prepared") {
+      const levelTerm = p.casterType === "half" ? Math.floor(i.level / 2) : i.level;
       preparedOrKnown = Math.max(1, mod + levelTerm);
     } else {
-      preparedOrKnown = readTableColumn(i.entity, i.level, ["Spells Known", "Prepared Spells"]);
+      preparedOrKnown = readTableColumn(p.table, i.level, ["Spells Known", "Prepared Spells"]);
     }
-
-    out.push({ classSlug: i.classSlug, kind: profile.preparation, cantripsKnown, preparedOrKnown });
+    out.push({ classSlug: i.classSlug, kind: p.preparation, cantripsKnown, preparedOrKnown });
   }
   return out;
 }
