@@ -529,6 +529,7 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
           push(lvl, {
             key: rf.feature.id ?? rf.feature.name, source: src, level: lvl,
             featureName: rf.feature.name,
+            description: rf.feature.description ?? rf.feature.entries?.join("\n\n"),
             choice: { kind: "select-inline", id: rf.feature.id ?? rf.feature.name, options: [{ value: "_", label: "_" }] },
             options: [], selected: undefined, status: "informational",
           });
@@ -545,6 +546,7 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
           push(lvl, {
             key: rf.feature.id ?? rf.feature.name, source: src, level: lvl,
             featureName: rf.feature.name,
+            description: rf.feature.description ?? rf.feature.entries?.join("\n\n"),
             choice: { kind: "select-inline", id: rf.feature.id ?? rf.feature.name, options: [{ value: "_", label: "_" }] },
             options: [], selected: undefined, status: "informational",
           });

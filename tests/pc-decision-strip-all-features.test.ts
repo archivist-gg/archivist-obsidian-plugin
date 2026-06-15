@@ -51,6 +51,8 @@ describe("decision strip surfaces every gained feature", () => {
     expect(plain).toBeTruthy();
     expect(plain!.status).toBe("informational");
     expect(plain!.level).toBe(1);
+    // the feature's prose is threaded so the card can show it (not just a stub label)
+    expect(plain!.description).toContain("passive perk");
   });
 
   it("still surfaces a real choice feature as a decision (not informational)", () => {
