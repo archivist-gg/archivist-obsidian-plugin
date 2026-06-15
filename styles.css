@@ -12315,6 +12315,15 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-muted);
 }
 
+/* Muted captions for weapon attack metadata: crit range (pc-weapon-crit)
+ * and reroll/attack-rule notes (pc-weapon-note). */
+.archivist-pc-sheet .pc-weapon-crit,
+.archivist-pc-sheet .pc-weapon-note {
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
 /* Inline italic dice tag override inside actions tab */
 .archivist-pc-sheet .pc-actions-tab .archivist-tag-atk,
 .archivist-pc-sheet .pc-actions-tab .archivist-tag-damage,
@@ -13686,7 +13695,8 @@ body.theme-light .archivist-tag-atk:hover {
 
 /* ── SP2 Equipment step: interactive bundle option (reuses the chronicle
  *    .pc-cb-eqopt dress; crimson .sel mirrors .pc-bchoice-chip.sel). ── */
-:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.interactive { cursor: pointer; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-beq-currency { margin-top: 12px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel { border-color: var(--pc-crimson); background: var(--pc-row-open-bg); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel .pc-cb-eqltr { background: var(--pc-crimson); border-color: var(--pc-crimson); color: #fff; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-eqopt.sel .pc-cb-eqtext { color: var(--pc-crimson); font-weight: 700; }

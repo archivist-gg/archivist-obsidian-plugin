@@ -119,6 +119,15 @@
   color: var(--pc-text-muted);
 }
 
+/* Muted captions for weapon attack metadata: crit range (pc-weapon-crit)
+ * and reroll/attack-rule notes (pc-weapon-note). */
+.archivist-pc-sheet .pc-weapon-crit,
+.archivist-pc-sheet .pc-weapon-note {
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
 /* Inline italic dice tag override inside actions tab */
 .archivist-pc-sheet .pc-actions-tab .archivist-tag-atk,
 .archivist-pc-sheet .pc-actions-tab .archivist-tag-damage,
