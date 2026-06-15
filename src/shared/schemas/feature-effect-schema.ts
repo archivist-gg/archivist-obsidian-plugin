@@ -42,4 +42,9 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     base: z.number().int().optional(),
     allow_shield: z.boolean().optional(),
   }),
+  z.object({
+    kind: z.literal("weapon-ability"),
+    ability: z.union([z.enum(["str", "dex", "con", "int", "wis", "cha"]), z.literal("spellcasting")]),
+    weapons: z.union([z.literal("chosen"), z.string(), z.array(z.string())]).optional(),
+  }),
 ]);

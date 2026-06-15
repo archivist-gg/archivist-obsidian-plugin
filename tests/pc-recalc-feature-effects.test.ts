@@ -4,7 +4,7 @@ import type { ResolvedCharacter, ResolvedClass, ResolvedFeature } from "../src/m
 import type { Character } from "../src/modules/pc/pc.types";
 import type { FeatureEffect } from "../src/shared/types/feature-effect";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { STUDDED_LEATHER } from "./fixtures/pc/equipment-fixtures";
+import { STUDDED_LEATHER, CLUB } from "./fixtures/pc/equipment-fixtures";
 
 function mkClass(slug: string, die: string, level: number): ResolvedClass {
   return {
@@ -75,6 +75,21 @@ const registry = () =>
   buildMockRegistry([
     { slug: "studded-leather", entityType: "armor", name: "Studded Leather", data: STUDDED_LEATHER },
   ]);
+
+const registryWithClub = () =>
+  buildMockRegistry([
+    { slug: "club", entityType: "weapon", name: "Club", data: CLUB },
+  ]);
+
+/** Grant simple-weapon proficiency to the (mock) fighter so +prof applies. */
+function withSimpleWeaponProficiency(r: ResolvedCharacter): ResolvedCharacter {
+  for (const c of r.classes) {
+    (c.entity as unknown as { proficiencies?: unknown }).proficiencies = {
+      weapons: { categories: ["simple"] },
+    };
+  }
+  return r;
+}
 
 describe("recalc — feature effects: initiative / HP / speed / senses", () => {
   it("adds initiative-bonus to derived initiative", () => {
@@ -263,5 +278,17 @@ describe("recalc — feature effects: AC", () => {
     r.definition.abilities = { str: 10, dex: 14, con: 10, int: 10, wis: 10, cha: 10 };
     // base 10 + DEX(+2); dex is skipped in the Σ loop, so it is NOT added twice = 12
     expect(recalc(r).ac).toBe(12);
+  });
+});
+
+describe("recalc — feature effects: weapon-ability (Lies / Hexblade)", () => {
+  it("weapon-ability overrides the melee attack ability (Lies → CHA)", () => {
+    const r = withSimpleWeaponProficiency(
+      resolvedWithEquipment([{ kind: "weapon-ability", ability: "cha" }], [{ item: "[[club]]", equipped: true }]),
+    );
+    r.definition.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 18 };
+    // CHA +4 + prof (L1 fighter, simple weapon) +2 = +6
+    const club = recalc(r, registryWithClub()).attacks[0];
+    expect(club.toHit).toBe(6);
   });
 });

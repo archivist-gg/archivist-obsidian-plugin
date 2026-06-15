@@ -648,12 +648,36 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       .map((t) => ({ source: t.label, amount: t.value, kind: "feature" as const }));
   const sumTerms = (terms: ACTerm[]): number => terms.reduce((s, t) => s + t.amount, 0);
 
+  // Resolve the weapon-ability override (Hexblade "Lies", etc.) for attacks.
+  // The fold (computeFeatureEffects) already captured the first concrete-ability
+  // override; a "spellcasting" override is resolved here against the primary
+  // caster ability (the spellcasting block proper is computed below, but the
+  // ability only needs the resolved classes — no slot/DC machinery).
+  let weaponAbility = featureEffects.weaponAbility;
+  const wantsSpellcasting = resolved.features.some((rf) =>
+    (rf.feature.effects ?? []).some((e) => e.kind === "weapon-ability" && e.ability === "spellcasting"));
+  // If both a concrete-ability and a "spellcasting" weapon-ability override exist,
+  // spellcasting wins (overwrites the fold's first-concrete pick). No real feature
+  // combines the two in v1; this just pins the precedence.
+  if (wantsSpellcasting) {
+    let primaryCasterAbility: Ability | null = null;
+    for (const c of resolved.classes) {
+      if (!c.entity) continue;
+      const profile = resolveSpellcasting(c);
+      if (profile) {
+        primaryCasterAbility = profile.ability;
+        break;
+      }
+    }
+    if (primaryCasterAbility) weaponAbility = primaryCasterAbility;
+  }
+
   let derivedEquipment: DerivedEquipment | null = null;
   let acDerived: number;
   let acBreakdownDerived: ACTerm[] = [];
   let acInformationalDerived: InformationalBonus[] = [];
   if (registry) {
-    derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus);
+    derivedEquipment = computeSlotsAndAttacks(resolved, mods, profsForApply, registry, warnings, proficiencyBonus, weaponAbility ?? undefined);
     if (derivedEquipment.equippedSlots.armor) {
       const featTerms = featureAcTermsFor(true);
       acDerived = derivedEquipment.ac + sumTerms(featTerms);

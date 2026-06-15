@@ -23,6 +23,13 @@ export interface FeatureEffectTotals {
   condition_immunities: string[];
   /** skills are kebab-case slugs; saves are canonical ability keys. */
   proficiencies: { skills: string[]; tools: string[]; languages: string[]; saves: Ability[] };
+  /**
+   * v1 global melee-attack ability override (Hexblade "Lies", etc.). The first
+   * `weapon-ability` effect with a concrete ability (not `"spellcasting"`) wins;
+   * `"spellcasting"` is resolved against the caster ability in recalc. `weapons`
+   * scope is parsed but ignored here (global override). null = no override.
+   */
+  weaponAbility: Ability | null;
 }
 
 export function emptyFeatureEffectTotals(): FeatureEffectTotals {
@@ -35,6 +42,7 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     resistances: [],
     condition_immunities: [],
     proficiencies: { skills: [], tools: [], languages: [], saves: [] },
+    weaponAbility: null,
   };
 }
 
@@ -105,6 +113,12 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
     }
     case "ac-bonus":
       out.ac_terms.push({ value: eff.value, requires_armor: eff.requires_armor === true, label });
+      break;
+    case "weapon-ability":
+      // v1: first concrete-ability override with an unscoped/global intent wins.
+      // The "spellcasting" sentinel is resolved in recalc (the fold lacks caster
+      // context); `weapons` scope is carried in the schema but ignored here.
+      if (out.weaponAbility === null && eff.ability !== "spellcasting") out.weaponAbility = eff.ability;
       break;
     default:
       // apply-condition, damage-bonus, and future kinds: not derived-stat effects.

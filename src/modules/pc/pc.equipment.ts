@@ -403,8 +403,12 @@ function hasProperty(weapon: WeaponEntity, prop: string): boolean {
   return weapon.properties.some((p) => p === prop);
 }
 
-function attackAbility(weapon: WeaponEntity, mods: Record<Ability, number>): Ability {
+function attackAbility(weapon: WeaponEntity, mods: Record<Ability, number>, override?: Ability): Ability {
   const isRanged = /ranged/.test(weapon.category);
+  // A weapon-ability override (Hexblade "Lies") governs melee attacks only;
+  // pure ranged weapons keep DEX. Thrown/finesse melee weapons are still melee
+  // and are overridden.
+  if (override && !isRanged) return override;
   if (isRanged) return "dex";
   if (hasProperty(weapon, "finesse")) return mods.dex >= mods.str ? "dex" : "str";
   return "str";
@@ -592,6 +596,7 @@ function computeAttacks(
   warnings: string[],
   proficiencyBonus: number,
   ctx: ConditionContext,
+  weaponAbilityOverride?: Ability,
 ): AttackRow[] {
   const rows: AttackRow[] = [];
   const handedSlots: Array<{ key: "mainhand" | "offhand"; placed: ResolvedEquipped | undefined }> = [
@@ -633,7 +638,7 @@ function computeAttacks(
       warnings.push(`Character not proficient with ${weapon.name}; proficiency bonus excluded.`);
     }
 
-    const ability = attackAbility(weapon, mods);
+    const ability = attackAbility(weapon, mods, weaponAbilityOverride);
     const magic = magicBonusesForWeaponEntry(entry, registry, ctx);
     const ovr = entry.overrides ?? {};
     const displayName = ovr.name ?? magic.itemName ?? weapon.name;
@@ -735,13 +740,14 @@ export function computeSlotsAndAttacks(
   registry: EntityRegistry,
   warnings: string[],
   proficiencyBonus: number,
+  weaponAbilityOverride?: Ability,
 ): DerivedEquipment {
   const equippedSlots = assignSlots(resolved, registry, warnings);
   const overrides = resolved.definition.overrides ?? {};
 
   const acOut = computeAC(equippedSlots, resolved, mods, registry);
   const ctx = buildConditionContext(resolved, equippedSlots);
-  const attacks = computeAttacks(equippedSlots, mods, profs, registry, warnings, proficiencyBonus, ctx);
+  const attacks = computeAttacks(equippedSlots, mods, profs, registry, warnings, proficiencyBonus, ctx, weaponAbilityOverride);
   return {
     ac: acOut.ac,
     acBreakdown: acOut.breakdown,

@@ -23,4 +23,5 @@ export type FeatureEffect =
       value: string;
     }
   | { kind: "ac-bonus"; value: number; requires_armor?: boolean }
-  | { kind: "unarmored-ac"; abilities: Ability[]; base?: number; allow_shield?: boolean };
+  | { kind: "unarmored-ac"; abilities: Ability[]; base?: number; allow_shield?: boolean }
+  | { kind: "weapon-ability"; ability: Ability | "spellcasting"; weapons?: "chosen" | string | string[] };

@@ -45,3 +45,10 @@ describe("featureEffectSchema — unarmored-ac", () => {
     expect(featureEffectSchema.safeParse({ kind: "unarmored-ac", abilities: [], base: 13 }).success).toBe(true);
   });
 });
+
+describe("featureEffectSchema — weapon-ability", () => {
+  it("accepts weapon-ability with ability and weapon scope", () => {
+    expect(featureEffectSchema.safeParse({ kind: "weapon-ability", ability: "cha", weapons: "chosen" }).success).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "weapon-ability", ability: "spellcasting" }).success).toBe(true);
+  });
+});

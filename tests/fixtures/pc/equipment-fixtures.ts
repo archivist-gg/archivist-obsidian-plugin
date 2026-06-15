@@ -43,6 +43,15 @@ export const LONGSWORD: WeaponEntity = {
   properties: ["versatile"],
 };
 
+export const CLUB: WeaponEntity = {
+  name: "Club",
+  slug: "club",
+  edition: "2014",
+  category: "simple-melee",
+  damage: { dice: "1d4", type: "bludgeoning" },
+  properties: ["light"],
+};
+
 export const SHORTSWORD: WeaponEntity = {
   name: "Shortsword",
   slug: "shortsword",
@@ -154,6 +163,7 @@ export function buildEquipmentRegistry(): EntityRegistry {
     { slug: "studded-leather", entityType: "armor", name: "Studded Leather", data: STUDDED_LEATHER },
     { slug: "breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
     { slug: "shield", entityType: "armor", name: "Shield", data: SHIELD },
+    { slug: "club", entityType: "weapon", name: "Club", data: CLUB },
     { slug: "longsword", entityType: "weapon", name: "Longsword", data: LONGSWORD },
     { slug: "shortsword", entityType: "weapon", name: "Shortsword", data: SHORTSWORD },
     { slug: "rapier", entityType: "weapon", name: "Rapier", data: RAPIER },
