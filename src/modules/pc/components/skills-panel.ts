@@ -68,6 +68,17 @@ export class SkillsPanel implements SheetComponent {
           );
         }
       }
+
+      // Structured roll-modifier effects scoped to ability checks. An entry
+      // applies to this row when it is unscoped (all checks) or its scope
+      // matches the skill slug. Order-preserving; one chip per matching entry.
+      for (const rm of ctx.derived.rollModifiers ?? []) {
+        if (rm.roll !== "ability-check") continue;
+        if (rm.scope && rm.scope !== skillSlug) continue;
+        const tag = rm.mode === "advantage" ? "ADV" : "DIS";
+        const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
+        renderConditionTag(row, tag, tip);
+      }
       if (ctx.editState) {
         row.addEventListener("click", () => ctx.editState!.cycleSkill(skillSlug));
         bonusEl.addEventListener("click", (e) => e.stopPropagation());

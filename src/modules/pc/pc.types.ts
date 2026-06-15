@@ -307,6 +307,21 @@ export interface DerivedEquipment {
   attunementLimit: number;
 }
 
+/**
+ * A structured advantage/disadvantage entry surfaced from a `roll-modifier`
+ * feature effect. Order-preserving pass-through list on DerivedStats (no
+ * dedupe/merge) — each entry carries the owning feature's name as `label`
+ * for tooltips. `scope` absent = applies to all rolls of that `roll` type;
+ * `condition` absent = always-on (not situational).
+ */
+export interface RollModifierEntry {
+  mode: "advantage" | "disadvantage";
+  roll: "ability-check" | "saving-throw" | "attack";
+  scope?: string;      // skill slug or ability key; absent = all of that roll type
+  condition?: string;  // situational label; absent = always-on
+  label: string;       // owning feature name (for tooltip)
+}
+
 export interface DerivedStats {
   totalLevel: number;
   proficiencyBonus: number;
@@ -361,6 +376,11 @@ export interface DerivedStats {
   attunementUsed: number;
   attunementLimit: number;
   conditionEffects: ConditionEffects;
+  /**
+   * Structured advantage/disadvantage entries from `roll-modifier` effects.
+   * Order-preserving pass-through (no dedupe/merge); rendered as ADV/DIS chips.
+   */
+  rollModifiers: RollModifierEntry[];
 }
 
 export interface SpellcastingClassInfo {

@@ -78,6 +78,54 @@ describe("SkillsPanel", () => {
   });
 });
 
+describe("SkillsPanel — roll-modifier chips", () => {
+  function ctxWithRollModifiers(rollModifiers: unknown[]): ComponentRenderContext {
+    return {
+      resolved: {} as ResolvedCharacter,
+      derived: {
+        skills: mkSkills({
+          deception: { bonus: 3, proficiency: "proficient", ability: "cha" },
+        }),
+        rollModifiers,
+      } as unknown as DerivedStats,
+      core: {} as never,
+      editState: null,
+    };
+  }
+
+  it("renders an ADV chip on the scoped skill row only", () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithRollModifiers([
+      { mode: "advantage", roll: "ability-check", scope: "deception", label: "Honeyed Tongue" },
+    ]));
+    const decRow = container.querySelector<HTMLElement>('[data-skill="deception"]')!;
+    expect(decRow.querySelector(".pc-cond-tag.pc-cond-tag-adv")?.textContent).toBe("ADV");
+    // A different skill row gets no chip.
+    const stealthRow = container.querySelector<HTMLElement>('[data-skill="stealth"]')!;
+    expect(stealthRow.querySelector(".pc-cond-tag")).toBeNull();
+  });
+
+  it("renders an unscoped ability-check modifier on every skill row", () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithRollModifiers([
+      { mode: "disadvantage", roll: "ability-check", label: "Some Effect" },
+    ]));
+    const rows = container.querySelectorAll(".pc-skill-row");
+    for (const row of rows) {
+      expect(row.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
+    }
+  });
+
+  it("does NOT render attack- or saving-throw-scope modifiers as skill chips", () => {
+    const container = mountContainer();
+    new SkillsPanel().render(container, ctxWithRollModifiers([
+      { mode: "advantage", roll: "attack", label: "Pack Tactics" },
+      { mode: "advantage", roll: "saving-throw", scope: "con", label: "Brave" },
+    ]));
+    expect(container.querySelector(".pc-cond-tag")).toBeNull();
+  });
+});
+
 describe("SkillsPanel — interactive (SP4)", () => {
   function interactiveCtx(skills: Record<string, { bonus: number; proficiency: "none" | "proficient" | "expertise"; ability: string }>) {
     const editState = { cycleSkill: vi.fn() };

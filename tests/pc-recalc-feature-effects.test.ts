@@ -281,6 +281,35 @@ describe("recalc — feature effects: AC", () => {
   });
 });
 
+describe("recalc — feature effects: roll-modifier", () => {
+  it("collects roll-modifier entries with label and condition", () => {
+    const d = recalc(resolvedWith(mkClass("reaver", "d10", 1), [
+      { kind: "roll-modifier", mode: "advantage", roll: "ability-check", scope: "deception" },
+      { kind: "roll-modifier", mode: "advantage", roll: "attack", condition: "in dim light or darkness" },
+    ]));
+    expect(d.rollModifiers).toEqual([
+      { mode: "advantage", roll: "ability-check", scope: "deception", condition: undefined, label: "Effect Source" },
+      { mode: "advantage", roll: "attack", scope: undefined, condition: "in dim light or darkness", label: "Effect Source" },
+    ]);
+  });
+
+  it("preserves order and accepts saving-throw roll (surfaced but not rendered here)", () => {
+    const d = recalc(resolvedWith(mkClass("reaver", "d10", 1), [
+      { kind: "roll-modifier", mode: "disadvantage", roll: "saving-throw", scope: "con" },
+      { kind: "roll-modifier", mode: "advantage", roll: "ability-check" },
+    ]));
+    expect(d.rollModifiers).toEqual([
+      { mode: "disadvantage", roll: "saving-throw", scope: "con", condition: undefined, label: "Effect Source" },
+      { mode: "advantage", roll: "ability-check", scope: undefined, condition: undefined, label: "Effect Source" },
+    ]);
+  });
+
+  it("rollModifiers is an empty list when no roll-modifier effects exist", () => {
+    const d = recalc(resolvedWith(mkClass("reaver", "d10", 1), [{ kind: "ac-bonus", value: 1 }]));
+    expect(d.rollModifiers).toEqual([]);
+  });
+});
+
 describe("recalc — feature effects: weapon-ability (Lies / Hexblade)", () => {
   it("weapon-ability overrides the melee attack ability (Lies → CHA)", () => {
     const r = withSimpleWeaponProficiency(

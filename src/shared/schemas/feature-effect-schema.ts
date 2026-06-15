@@ -47,4 +47,11 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     ability: z.union([z.enum(["str", "dex", "con", "int", "wis", "cha"]), z.literal("spellcasting")]),
     weapons: z.union([z.literal("chosen"), z.string(), z.array(z.string())]).optional(),
   }),
+  z.object({
+    kind: z.literal("roll-modifier"),
+    mode: z.enum(["advantage", "disadvantage"]),
+    roll: z.enum(["ability-check", "saving-throw", "attack"]),
+    scope: z.string().optional(),
+    condition: z.string().optional(),
+  }),
 ]);

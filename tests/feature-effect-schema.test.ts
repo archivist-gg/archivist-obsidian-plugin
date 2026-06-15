@@ -52,3 +52,41 @@ describe("featureEffectSchema — weapon-ability", () => {
     expect(featureEffectSchema.safeParse({ kind: "weapon-ability", ability: "spellcasting" }).success).toBe(true);
   });
 });
+
+describe("featureEffectSchema — roll-modifier", () => {
+  it("accepts roll-modifier with scope (ability-check, no condition)", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "roll-modifier", mode: "advantage", roll: "ability-check", scope: "deception",
+    }).success).toBe(true);
+  });
+
+  it("accepts roll-modifier with condition (attack, no scope)", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "roll-modifier", mode: "disadvantage", roll: "attack", condition: "in dim light or darkness",
+    }).success).toBe(true);
+  });
+
+  it("accepts roll-modifier with neither scope nor condition (saving-throw)", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "roll-modifier", mode: "advantage", roll: "saving-throw",
+    }).success).toBe(true);
+  });
+
+  it("accepts roll-modifier with both scope and condition", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "roll-modifier", mode: "advantage", roll: "ability-check", scope: "stealth", condition: "while in dim light",
+    }).success).toBe(true);
+  });
+
+  it("rejects an unknown mode", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "roll-modifier", mode: "super", roll: "attack",
+    }).success).toBe(false);
+  });
+
+  it("rejects an unknown roll type", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "roll-modifier", mode: "advantage", roll: "initiative",
+    }).success).toBe(false);
+  });
+});

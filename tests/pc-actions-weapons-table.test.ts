@@ -17,6 +17,27 @@ function ctxWithAttacks(attacks: AttackRow[]): ComponentRenderContext {
   };
 }
 
+function ctxWithRollModifiers(
+  attacks: AttackRow[],
+  rollModifiers: unknown[],
+): ComponentRenderContext {
+  return {
+    resolved: { definition: { equipment: [] } } as never,
+    derived: { attacks, rollModifiers } as never,
+    core: { entities: { getBySlug: () => null } } as never,
+    app: {} as never,
+    editState: null,
+  };
+}
+
+const sword = (): AttackRow => ([{
+  id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
+  damageDice: "1d8 + 3", damageType: "slashing",
+  properties: [], proficient: true,
+  breakdown: { toHit: [], damage: [] },
+  informational: [], slotKey: "mainhand",
+}] as unknown as AttackRow[])[0];
+
 describe("WeaponsTable", () => {
   it("renders one row per attack with cost badge defaulting to Action", () => {
     const root = mountContainer();
@@ -149,6 +170,35 @@ describe("WeaponsTable", () => {
     new WeaponsTable().render(root, ctxWithAttacks(attacks));
     expect(root.querySelector("table")).toBeNull();
     expect(root.querySelector(".pc-action-row")?.tagName).toBe("DIV");
+  });
+
+  it("renders an ADV chip in the hit cell for an attack-scope advantage roll-modifier", () => {
+    const root = mountContainer();
+    new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
+      { mode: "advantage", roll: "attack", condition: "in dim light or darkness", label: "Devil's Sight" },
+    ]));
+    const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
+    const adv = hitCell.querySelector(".pc-cond-tag.pc-cond-tag-adv");
+    expect(adv).not.toBeNull();
+    expect(adv?.textContent).toBe("ADV");
+  });
+
+  it("renders a DIS chip for an attack-scope disadvantage roll-modifier", () => {
+    const root = mountContainer();
+    new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
+      { mode: "disadvantage", roll: "attack", label: "Some Curse" },
+    ]));
+    const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
+    expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
+  });
+
+  it("does NOT render a roll-modifier chip scoped to ability-check on the weapon row", () => {
+    const root = mountContainer();
+    new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
+      { mode: "advantage", roll: "ability-check", scope: "deception", label: "Liar" },
+    ]));
+    const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
+    expect(hitCell.querySelector(".pc-cond-tag")).toBeNull();
   });
 
   it("expands as a full-width sibling div carrying the open tint", () => {

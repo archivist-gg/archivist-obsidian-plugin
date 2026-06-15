@@ -1,7 +1,7 @@
 import type { FeatureEffect, SenseType } from "../../shared/types/feature-effect";
 import type { Ability } from "../../shared/types";
 import { ABILITY_KEYS } from "../../shared/dnd/constants";
-import type { ResolvedFeature } from "./pc.types";
+import type { ResolvedFeature, RollModifierEntry } from "./pc.types";
 
 /**
  * Aggregated passive feature effects (effects-application engine).
@@ -30,6 +30,12 @@ export interface FeatureEffectTotals {
    * scope is parsed but ignored here (global override). null = no override.
    */
   weaponAbility: Ability | null;
+  /**
+   * Order-preserving list of structured advantage/disadvantage entries from
+   * `roll-modifier` effects. Pass-through (no dedupe/merge); each entry is
+   * labeled with the owning feature's name.
+   */
+  rollModifiers: RollModifierEntry[];
 }
 
 export function emptyFeatureEffectTotals(): FeatureEffectTotals {
@@ -43,6 +49,7 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     condition_immunities: [],
     proficiencies: { skills: [], tools: [], languages: [], saves: [] },
     weaponAbility: null,
+    rollModifiers: [],
   };
 }
 
@@ -119,6 +126,11 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
       // The "spellcasting" sentinel is resolved in recalc (the fold lacks caster
       // context); `weapons` scope is carried in the schema but ignored here.
       if (out.weaponAbility === null && eff.ability !== "spellcasting") out.weaponAbility = eff.ability;
+      break;
+    case "roll-modifier":
+      // Order-preserving pass-through: one entry per effect, labeled with the
+      // owning feature's name for the chip tooltip. No dedupe/merge.
+      out.rollModifiers.push({ mode: eff.mode, roll: eff.roll, scope: eff.scope, condition: eff.condition, label });
       break;
     default:
       // apply-condition, damage-bonus, and future kinds: not derived-stat effects.

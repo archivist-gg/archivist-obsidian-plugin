@@ -62,6 +62,15 @@ export class WeaponsTable implements SheetComponent {
         if (isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
       }
 
+      // Structured roll-modifier effects scoped to attacks (feature-granted
+      // advantage/disadvantage). Order-preserving; one chip per matching entry.
+      for (const rm of ctx.derived.rollModifiers ?? []) {
+        if (rm.roll !== "attack") continue;
+        const tag = rm.mode === "advantage" ? "ADV" : "DIS";
+        const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
+        renderConditionTag(hitCell, tag, tip);
+      }
+
       // Damage (inline italic; versatile shows both stacked)
       const dmgCell = row.createDiv({ cls: "pc-weapon-damage" });
       renderTextWithInlineTags(

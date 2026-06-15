@@ -821,5 +821,6 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     attunementUsed: derivedEquipment?.attunementUsed ?? 0,
     attunementLimit: derivedEquipment?.attunementLimit ?? (overrides.attunement_limit ?? 3),
     conditionEffects,
+    rollModifiers: featureEffects.rollModifiers,
   };
 }
