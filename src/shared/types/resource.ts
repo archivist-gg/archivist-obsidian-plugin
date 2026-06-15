@@ -3,7 +3,7 @@ export type ActionCost = "action" | "bonus-action" | "reaction" | "free" | "spec
 
 export interface ResourceDie {
   base: string;
-  scaling?: Record<number, string>;
+  scaling?: Record<string, string>;
 }
 
 export interface ResourceRecovery {

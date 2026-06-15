@@ -1,11 +1,12 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { Feature } from "../../../../shared/types/feature";
 import type { FeatureSource } from "../../pc.types";
-import type { Resource, ResourceDie } from "../../../../shared/types/resource";
+import type { Resource } from "../../../../shared/types/resource";
 import { renderChargeBoxes } from "./charge-boxes";
 import { resourceBindings } from "../../pc.resource-seed";
 import { evaluateMaxFormula } from "../../../../shared/dnd/resource-formula";
 import { createIconProperty, renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+import { resolveScalingDie } from "../../../../shared/dnd/resource-die";
 
 const COUNTER_THRESHOLD = 6;
 
@@ -56,7 +57,7 @@ function renderResourceRow(list: HTMLElement, entry: ResourceEntry, ctx: Compone
 
   const row = list.createDiv({ cls: "pc-resource-row" });
   row.createSpan({ cls: "pc-resource-row-name", text: resource.name });
-  if (resource.die) row.createSpan({ cls: "pc-resource-die", text: currentDie(resource.die, ctx.resolved.totalLevel) });
+  if (resource.die) row.createSpan({ cls: "pc-resource-die", text: resolveScalingDie(resource.die, ctx.resolved.totalLevel) });
 
   // Usage tracker — the ONLY place uses are spent. Lives in a `.pc-resource-track`
   // wrapper so the row's expand handler can ignore clicks inside it.
@@ -125,7 +126,7 @@ function renderExpandBlock(
   // icon-property rhythm as an item block's Weight/Cost lines.
   const props = block.createDiv({ cls: "archivist-item-properties" });
   createIconProperty(props, "rotate-ccw", "Recharge:", RESET_LABEL[resource.reset] ?? "Special");
-  if (resource.die) createIconProperty(props, "dices", "Die:", currentDie(resource.die, ctx.resolved.totalLevel));
+  if (resource.die) createIconProperty(props, "dices", "Die:", resolveScalingDie(resource.die, ctx.resolved.totalLevel));
 
   // Description (information only).
   if (feature.description) {
@@ -290,14 +291,4 @@ function formatSourceLabel(source: FeatureSource | undefined): string {
 
 function capitalizeSlug(slug: string): string {
   return slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-}
-
-function currentDie(die: ResourceDie, totalLevel: number): string {
-  let face = die.base;
-  let best = 0;
-  for (const [lvl, f] of Object.entries(die.scaling ?? {})) {
-    const n = Number(lvl);
-    if (n <= totalLevel && n > best) { best = n; face = f; }
-  }
-  return face;
 }
