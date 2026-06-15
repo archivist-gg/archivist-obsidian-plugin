@@ -310,6 +310,34 @@ describe("recalc — feature effects: roll-modifier", () => {
   });
 });
 
+describe("recalc — feature effects: crit-range", () => {
+  it("crit-range lowers the AttackRow critRange", () => {
+    const r = resolvedWithEquipment([{ kind: "crit-range", min_roll: 19 }], [{ item: "[[club]]", equipped: true }]);
+    expect(recalc(r, registryWithClub()).attacks[0].critRange).toBe(19);
+  });
+
+  it("takes the lowest min_roll across multiple weapon/all crit-range effects", () => {
+    const r = resolvedWithEquipment(
+      [{ kind: "crit-range", min_roll: 19 }, { kind: "crit-range", min_roll: 18, applies_to: "all" }],
+      [{ item: "[[club]]", equipped: true }],
+    );
+    expect(recalc(r, registryWithClub()).attacks[0].critRange).toBe(18);
+  });
+
+  it("does NOT lower weapon critRange for a spell-only crit-range", () => {
+    const r = resolvedWithEquipment(
+      [{ kind: "crit-range", min_roll: 19, applies_to: "spell" }],
+      [{ item: "[[club]]", equipped: true }],
+    );
+    expect(recalc(r, registryWithClub()).attacks[0].critRange).toBeUndefined();
+  });
+
+  it("leaves critRange undefined on attacks when no crit-range effect is present", () => {
+    const r = resolvedWithEquipment([], [{ item: "[[club]]", equipped: true }]);
+    expect(recalc(r, registryWithClub()).attacks[0].critRange).toBeUndefined();
+  });
+});
+
 describe("recalc — feature effects: weapon-ability (Lies / Hexblade)", () => {
   it("weapon-ability overrides the melee attack ability (Lies → CHA)", () => {
     const r = withSimpleWeaponProficiency(

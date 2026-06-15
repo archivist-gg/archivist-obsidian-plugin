@@ -36,6 +36,13 @@ export interface FeatureEffectTotals {
    * labeled with the owning feature's name.
    */
   rollModifiers: RollModifierEntry[];
+  /**
+   * Lowest weapon-attack crit threshold (natural roll that scores a critical
+   * hit) granted by `crit-range` effects. Folds via Math.min from init 20, so
+   * 20 = no expansion. spell-only (`applies_to:"spell"`) entries do NOT lower
+   * it. recalc maps this onto each AttackRow as `critRange` only when < 20.
+   */
+  critRange: number;
 }
 
 export function emptyFeatureEffectTotals(): FeatureEffectTotals {
@@ -50,6 +57,7 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     proficiencies: { skills: [], tools: [], languages: [], saves: [] },
     weaponAbility: null,
     rollModifiers: [],
+    critRange: 20,
   };
 }
 
@@ -131,6 +139,11 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
       // Order-preserving pass-through: one entry per effect, labeled with the
       // owning feature's name for the chip tooltip. No dedupe/merge.
       out.rollModifiers.push({ mode: eff.mode, roll: eff.roll, scope: eff.scope, condition: eff.condition, label });
+      break;
+    case "crit-range":
+      // Lowest threshold across weapon/all crit-range effects wins. A spell-only
+      // crit-range does NOT lower the weapon crit threshold (no spell surface here).
+      if ((eff.applies_to ?? "weapon") !== "spell") out.critRange = Math.min(out.critRange, eff.min_roll);
       break;
     default:
       // apply-condition, damage-bonus, and future kinds: not derived-stat effects.

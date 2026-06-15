@@ -708,6 +708,15 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   }
   const ac = overrides.ac ?? acDerived;
 
+  // Crit-range annotation (post-apply): map the folded weapon crit threshold
+  // onto each already-built attack row as display-only metadata. Only when an
+  // effect actually lowered it (< 20) so untouched rows keep `critRange:
+  // undefined` and existing attack snapshots are unaffected. Null-guarded so
+  // the no-equipment / no-registry path is a no-op.
+  if (derivedEquipment && featureEffects.critRange < 20) {
+    derivedEquipment.attacks = derivedEquipment.attacks.map((a) => ({ ...a, critRange: featureEffects.critRange }));
+  }
+
   // Speed
   const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk + featureEffects.speed_walk_bonus;
   const adjustedSpeed = (baseSpeed * conditionEffects.speed_multiplier) - conditionEffects.speed_reduction_ft;

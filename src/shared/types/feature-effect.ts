@@ -31,4 +31,5 @@ export type FeatureEffect =
       roll: "ability-check" | "saving-throw" | "attack";
       scope?: string;
       condition?: string;
-    };
+    }
+  | { kind: "crit-range"; min_roll: number; applies_to?: "weapon" | "spell" | "all"; condition?: string };

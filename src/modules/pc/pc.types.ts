@@ -269,6 +269,12 @@ export interface AttackRow {
    *  two-handed option. The Actions tab renders both lines stacked in the
    *  damage cell instead of emitting a second row. */
   versatile?: { damageDice: string };
+  /** Lowest natural-roll threshold that scores a critical hit on this attack,
+   *  from `crit-range` feature effects (e.g. 19 = "crit on 19–20"). Display-only
+   *  metadata mapped on in recalc; absent (undefined) for the normal 20-only
+   *  crit so untouched attack rows are unchanged. The weapons table renders a
+   *  "crit X–20" caption whenever it is set and < 20. */
+  critRange?: number;
 }
 
 export interface ResolvedEquipped {

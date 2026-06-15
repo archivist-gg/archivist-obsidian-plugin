@@ -54,4 +54,10 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     scope: z.string().optional(),
     condition: z.string().optional(),
   }),
+  z.object({
+    kind: z.literal("crit-range"),
+    min_roll: z.number().int().min(2).max(20),
+    applies_to: z.enum(["weapon", "spell", "all"]).optional(),
+    condition: z.string().optional(),
+  }),
 ]);

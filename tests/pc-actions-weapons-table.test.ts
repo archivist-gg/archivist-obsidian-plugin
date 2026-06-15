@@ -192,6 +192,40 @@ describe("WeaponsTable", () => {
     expect(hitCell.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
   });
 
+  it("renders a crit caption in the damage cell when critRange < 20", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Greatsword", range: "melee 5 ft.", toHit: 6,
+      damageDice: "2d6 + 4", damageType: "slashing",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand", critRange: 19,
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const crit = root.querySelector(".pc-weapon-crit");
+    expect(crit).not.toBeNull();
+    expect(crit?.textContent).toBe("crit 19–20");
+  });
+
+  it("renders no crit caption when critRange is undefined", () => {
+    const root = mountContainer();
+    new WeaponsTable().render(root, ctxWithAttacks([sword()]));
+    expect(root.querySelector(".pc-weapon-crit")).toBeNull();
+  });
+
+  it("renders no crit caption when critRange is exactly 20", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
+      damageDice: "1d8 + 3", damageType: "slashing",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand", critRange: 20,
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    expect(root.querySelector(".pc-weapon-crit")).toBeNull();
+  });
+
   it("does NOT render a roll-modifier chip scoped to ability-check on the weapon row", () => {
     const root = mountContainer();
     new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [

@@ -90,3 +90,29 @@ describe("featureEffectSchema — roll-modifier", () => {
     }).success).toBe(false);
   });
 });
+
+describe("featureEffectSchema — crit-range", () => {
+  it("accepts crit-range with min_roll 19", () => {
+    expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 19 }).success).toBe(true);
+  });
+
+  it("accepts crit-range with applies_to and condition", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "crit-range", min_roll: 18, applies_to: "weapon", condition: "while raging",
+    }).success).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 19, applies_to: "spell" }).success).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 19, applies_to: "all" }).success).toBe(true);
+  });
+
+  it("rejects min_roll below 2", () => {
+    expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 1 }).success).toBe(false);
+  });
+
+  it("rejects min_roll above 20", () => {
+    expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 21 }).success).toBe(false);
+  });
+
+  it("rejects an unknown applies_to", () => {
+    expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 19, applies_to: "ranged" }).success).toBe(false);
+  });
+});

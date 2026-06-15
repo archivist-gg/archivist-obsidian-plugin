@@ -87,6 +87,12 @@ export class WeaponsTable implements SheetComponent {
         renderTextWithInlineTags(`\`damage:${a.versatile.damageDice}\``, dmgCell, false);
         dmgCell.appendText(" two-handed");
       }
+      // Expanded crit threshold caption (e.g. "crit 19–20") from a crit-range
+      // feature effect. Display-only; shown whenever the row carries a lowered
+      // critRange (the recalc fold leaves it undefined at the normal 20).
+      if (a.critRange && a.critRange < 20) {
+        dmgCell.createSpan({ cls: "pc-weapon-crit", text: `crit ${a.critRange}–20` });
+      }
 
       // Click anywhere on the row toggles the expand panel (matches inventory UX).
       // Inner controls (dice tags, etc.) call e.stopPropagation() on their own
