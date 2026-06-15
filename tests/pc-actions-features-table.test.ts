@@ -99,4 +99,43 @@ describe("FeaturesTable", () => {
     expect(expand.classList.contains("pc-open-expand")).toBe(true);
     expect(root.querySelector("table")).toBeNull();
   });
+
+  it("renders an active-buff toggle + duration label on an activatable action-feature and toggles via editState", () => {
+    const root = mountContainer();
+    const toggleActiveBuff = vi.fn();
+    new FeaturesTable().render(root, {
+      ...ctxWithFeatures([
+        {
+          id: "majesty", name: "Infernal Majesty", action: "bonus-action", description: "Aura of dread.",
+          activatable: true, duration: { amount: 1, unit: "minute" }, effects: [{ kind: "ac-bonus", value: 2 }],
+        },
+      ]),
+      editState: { toggleActiveBuff } as never,
+    });
+    const toggle = root.querySelector<HTMLInputElement>(".pc-action-buff-toggle");
+    expect(toggle).not.toBeNull();
+    expect(toggle!.checked).toBe(false);
+    expect(root.querySelector(".pc-action-buff-duration")?.textContent).toContain("1 minute");
+    toggle!.checked = true;
+    toggle!.dispatchEvent(new Event("change"));
+    expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
+  });
+
+  it("reflects an active buff as checked from state.active_buffs", () => {
+    const root = mountContainer();
+    const ctx = ctxWithFeatures([
+      { id: "majesty", name: "Infernal Majesty", action: "bonus-action", description: "...", activatable: true },
+    ]);
+    (ctx.resolved as unknown as { state: { active_buffs: string[] } }).state.active_buffs = ["majesty"];
+    new FeaturesTable().render(root, ctx);
+    expect(root.querySelector<HTMLInputElement>(".pc-action-buff-toggle")!.checked).toBe(true);
+  });
+
+  it("does NOT render a buff toggle on a non-activatable feature", () => {
+    const root = mountContainer();
+    new FeaturesTable().render(root, ctxWithFeatures([
+      { id: "second-wind", name: "Second Wind", action: "bonus-action", description: "Heal 1d10+5" },
+    ]));
+    expect(root.querySelector(".pc-action-buff-toggle")).toBeNull();
+  });
 });

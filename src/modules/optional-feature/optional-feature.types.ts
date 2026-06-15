@@ -48,4 +48,7 @@ export interface OptionalFeatureEntity {
   duration?: Duration | null;
   /** Always-on marker; renders a "Passive" tag. */
   passive?: boolean;
+  /** Phase 3 activatable buffs: when true, the boon's effects fold only while its
+   *  slug is present in `Character.state.active_buffs` (toggled in the PoolTab). */
+  activatable?: boolean;
 }

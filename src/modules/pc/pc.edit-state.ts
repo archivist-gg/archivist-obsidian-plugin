@@ -599,6 +599,19 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Toggle an activatable buff's id/slug in state.active_buffs. While present,
+   *  the matching activatable feature/boon's effects fold in recalc; removing it
+   *  drops the buff. Empties the array back to undefined so a no-buff file carries
+   *  no `active_buffs:` line (delete, not set-[]). Mirrors toggleCondition. */
+  toggleActiveBuff(slug: string): void {
+    const list = (this.character.state.active_buffs ??= []);
+    const i = list.indexOf(slug);
+    if (i >= 0) list.splice(i, 1);
+    else list.push(slug);
+    if (list.length === 0) delete this.character.state.active_buffs;
+    this.onChange();
+  }
+
   setExhaustion(level: number): void {
     if (!Number.isFinite(level)) return;
     this.character.state.exhaustion = Math.max(0, Math.min(6, Math.floor(level)));

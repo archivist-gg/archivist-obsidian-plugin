@@ -123,6 +123,9 @@ const characterStateSchema = z.object({
     used: z.number().int().nonnegative(),
     max:  z.number().int().nonnegative(),
   })).default({}),
+  // Phase 3 activatable buffs: ids/slugs of activatable features/boons that are
+  // currently toggled on. Their effects fold into recalc only while listed here.
+  active_buffs: z.array(z.string()).optional(),
   attuned_items: z.array(z.string()).optional(),
 });
 

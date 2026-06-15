@@ -12,9 +12,14 @@ function ofEntity(slug: string, extra: Record<string, unknown> = {}) {
     description: "desc-" + slug, effects: [], prerequisites: [], available_to: [], ...extra };
 }
 
-function mkCtx(pool: ResolvedPool, editState: Partial<{ setChoice: (...a: unknown[]) => void }> = {}): ComponentRenderContext {
+type EditStub = Partial<{
+  setChoice: (...a: unknown[]) => void;
+  toggleActiveBuff: (slug: string) => void;
+}>;
+
+function mkCtx(pool: ResolvedPool, editState: EditStub = {}, activeBuffs: string[] = []): ComponentRenderContext {
   return {
-    resolved: { pools: [pool] } as unknown as ResolvedCharacter,
+    resolved: { pools: [pool], state: { active_buffs: activeBuffs } } as unknown as ResolvedCharacter,
     derived: {} as never, core: {} as never, app: {} as never,
     editState: editState as never,
   };
@@ -120,5 +125,46 @@ describe("PoolTab", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(durationPool));
     expect(el.querySelector(".pc-pool-duration")?.textContent).toContain("1 minute");
+  });
+
+  const activatablePool: ResolvedPool = {
+    id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
+    selected: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true, duration: { amount: 1, unit: "minute" } }) as never }],
+    available: [], grants: [],
+  };
+
+  it("renders an active-buff toggle on a selected activatable boon (unchecked when off)", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(activatablePool));
+    const toggle = el.querySelector<HTMLInputElement>(".pc-pool-buff-toggle");
+    expect(toggle).not.toBeNull();
+    expect(toggle!.checked).toBe(false);
+  });
+
+  it("toggling on calls toggleActiveBuff with the boon slug", () => {
+    const toggleActiveBuff = vi.fn();
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(activatablePool, { toggleActiveBuff }));
+    const toggle = el.querySelector<HTMLInputElement>(".pc-pool-buff-toggle")!;
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event("change"));
+    expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
+  });
+
+  it("reflects an already-active buff as checked, and toggling off calls toggleActiveBuff with the slug", () => {
+    const toggleActiveBuff = vi.fn();
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(activatablePool, { toggleActiveBuff }, ["majesty"]));
+    const toggle = el.querySelector<HTMLInputElement>(".pc-pool-buff-toggle")!;
+    expect(toggle.checked).toBe(true);
+    toggle.checked = false;
+    toggle.dispatchEvent(new Event("change"));
+    expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
+  });
+
+  it("does NOT render a buff toggle on a non-activatable selected boon", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    expect(el.querySelector(".pc-pool-buff-toggle")).toBeNull();
   });
 });

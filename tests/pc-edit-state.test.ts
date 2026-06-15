@@ -375,6 +375,27 @@ describe("CharacterEditState — conditions", () => {
   });
 });
 
+describe("CharacterEditState — active buffs", () => {
+  it("toggleActiveBuff adds the slug when absent and fires onChange", () => {
+    const { es, char, onChange } = makeState();
+    es.toggleActiveBuff("majesty");
+    expect(char.state.active_buffs).toEqual(["majesty"]);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("toggleActiveBuff removes the slug and clears the array back to undefined when empty", () => {
+    const { es, char } = makeState((c) => { c.state.active_buffs = ["majesty"]; });
+    es.toggleActiveBuff("majesty");
+    expect(char.state.active_buffs).toBeUndefined();
+  });
+
+  it("toggleActiveBuff removing one of several leaves the rest", () => {
+    const { es, char } = makeState((c) => { c.state.active_buffs = ["a", "majesty", "b"]; });
+    es.toggleActiveBuff("majesty");
+    expect(char.state.active_buffs).toEqual(["a", "b"]);
+  });
+});
+
 describe("CharacterEditState — death saves", () => {
   it("toggleDeathSaveSuccess flips that index on the successes mask (0 → 1 → 0)", () => {
     const { es, char } = makeState();

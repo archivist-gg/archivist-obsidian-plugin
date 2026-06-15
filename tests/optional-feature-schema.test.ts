@@ -54,6 +54,19 @@ describe("optionalFeatureEntitySchema", () => {
     expect(optionalFeatureEntitySchema.safeParse(boon).success).toBe(true);
   });
 
+  it("accepts an activatable boon with a structured duration and preserves the flag", () => {
+    const boon = {
+      ...minimalInvocation,
+      feature_type: "interdict-boon",
+      activatable: true,
+      duration: { amount: 10, unit: "minute" },
+      effects: [{ kind: "ac-bonus", value: 2 }],
+    };
+    const parsed = optionalFeatureEntitySchema.safeParse(boon);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toMatchObject({ activatable: true, duration: { amount: 10, unit: "minute" } });
+  });
+
   it("rejects available_to with non-wikilinks", () => {
     const bad = { ...minimalInvocation, available_to: ["warlock"] };
     expect(optionalFeatureEntitySchema.safeParse(bad).success).toBe(false);

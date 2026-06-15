@@ -41,6 +41,9 @@ export const optionalFeatureEntitySchema = z.object({
   consumes: resourceConsumptionSchema.nullable().optional(),
   duration: durationSchema.nullable().optional(),
   passive: z.boolean().optional(),
+  // Phase 3 activatable buffs: an activatable boon folds its effects only while
+  // its slug is present in state.active_buffs (toggled in the PoolTab).
+  activatable: z.boolean().optional(),
 });
 
 export type OptionalFeatureSchemaInput = z.input<typeof optionalFeatureEntitySchema>;

@@ -440,3 +440,42 @@ describe("recalc — feature effects: weapon-ability (Lies / Hexblade)", () => {
     expect(club.toHit).toBe(6);
   });
 });
+
+describe("recalc — activatable buffs (pool boons + state.active_buffs)", () => {
+  /** Resolved character with one selected activatable pool boon carrying an
+   *  ac-bonus effect; `active` controls whether its slug is toggled on. */
+  function resolvedWithActivatableBoon(active: boolean): ResolvedCharacter {
+    const r = emptyResolved();
+    r.classes = [mkClass("reaver", "d10", 1)];
+    r.pools = [
+      {
+        id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 1, anchorLevel: 1,
+        selected: [
+          {
+            slug: "infernal-majesty",
+            entity: {
+              slug: "infernal-majesty", name: "Infernal Majesty", activatable: true,
+              effects: [{ kind: "ac-bonus", value: 2 }],
+            } as never,
+          },
+        ],
+        available: [],
+        grants: [],
+      },
+    ] as never;
+    if (active) r.state.active_buffs = ["infernal-majesty"];
+    return r;
+  }
+
+  it("does NOT raise AC when the boon's slug is absent from state.active_buffs", () => {
+    const d = recalc(resolvedWithActivatableBoon(false));
+    expect(d.ac).toBe(10); // 10 + DEX 0; buff off
+    expect(d.acBreakdown.some((t) => t.kind === "feature")).toBe(false);
+  });
+
+  it("raises AC only when the boon's slug is in state.active_buffs", () => {
+    const d = recalc(resolvedWithActivatableBoon(true));
+    expect(d.ac).toBe(12); // 10 + DEX 0 + 2
+    expect(d.acBreakdown).toContainEqual({ source: "Infernal Majesty", amount: 2, kind: "feature" });
+  });
+});

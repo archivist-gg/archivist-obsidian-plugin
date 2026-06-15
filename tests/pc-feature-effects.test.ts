@@ -138,6 +138,31 @@ describe("computeFeatureEffects", () => {
     ]);
   });
 
+  it("skips activatable feature effects unless the id is active", () => {
+    const feat: ResolvedFeature = {
+      feature: { id: "majesty", name: "Infernal Majesty", activatable: true, effects: [{ kind: "ac-bonus", value: 2 }] } as never,
+      source: { kind: "class", slug: "reaver" } as never,
+    };
+    // Off by default (no opts) and off when the active set lacks the id.
+    expect(computeFeatureEffects([feat]).ac_terms).toEqual([]);
+    expect(computeFeatureEffects([feat], { activeBuffs: new Set<string>() }).ac_terms).toEqual([]);
+    // Folds only when the id is in the active set.
+    expect(computeFeatureEffects([feat], { activeBuffs: new Set(["majesty"]) }).ac_terms).toEqual([
+      { value: 2, requires_armor: false, label: "Infernal Majesty" },
+    ]);
+  });
+
+  it("folds non-activatable feature effects unconditionally (active set irrelevant)", () => {
+    const feat = rf([{ kind: "ac-bonus", value: 1 }], "Shield of Faith");
+    expect(computeFeatureEffects([feat]).ac_terms).toEqual([
+      { value: 1, requires_armor: false, label: "Shield of Faith" },
+    ]);
+    // An empty (or unrelated) active set never suppresses a non-activatable feature.
+    expect(computeFeatureEffects([feat], { activeBuffs: new Set(["other"]) }).ac_terms).toEqual([
+      { value: 1, requires_armor: false, label: "Shield of Faith" },
+    ]);
+  });
+
   it("skips action-time kinds and unknown kinds without throwing", () => {
     const out = computeFeatureEffects([
       rf([

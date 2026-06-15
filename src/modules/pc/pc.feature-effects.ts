@@ -112,9 +112,30 @@ function pushUnique(list: string[], value: string): void {
   if (!list.some((v) => v.trim().toLowerCase() === key)) list.push(value.trim());
 }
 
-export function computeFeatureEffects(features: ResolvedFeature[]): FeatureEffectTotals {
+/**
+ * Optional fold inputs. `activeBuffs` is the set of currently-toggled buff
+ * ids/slugs (from Character.state.active_buffs + selected pool boons). An
+ * `activatable` feature's effects fold ONLY while its id is in this set; a buff
+ * is OFF by default, so callers passing no opts see activatable features fold to
+ * nothing (correct — a buff is off until toggled). Non-activatable features fold
+ * unconditionally regardless of opts.
+ */
+export interface FeatureEffectsOpts {
+  activeBuffs?: Set<string>;
+}
+
+export function computeFeatureEffects(
+  features: ResolvedFeature[],
+  opts?: FeatureEffectsOpts,
+): FeatureEffectTotals {
   const out = emptyFeatureEffectTotals();
   for (const rf of features) {
+    // Activatable buffs fold their effects only while toggled on (their id is in
+    // the active set). Off by default — no opts / not in the set ⇒ skipped.
+    if (rf.feature.activatable === true) {
+      const id = rf.feature.id;
+      if (!id || !opts?.activeBuffs?.has(id)) continue;
+    }
     for (const eff of rf.feature.effects ?? []) {
       applyEffect(out, eff, rf.feature.name ?? "Feature");
     }

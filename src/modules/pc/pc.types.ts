@@ -112,6 +112,9 @@ export interface CharacterState {
   death_saves?: { successes: number; failures: number };
   inspiration: number;
   feature_uses: Record<string, { used: number; max: number }>;
+  /** Phase 3 activatable buffs: ids/slugs of activatable features/boons currently
+   *  toggled on. Their effects fold into recalc only while listed here. */
+  active_buffs?: string[];
   /** @deprecated SP5: moved to Character.currency. Tolerated until Task 4 parser migration strips it. */
   currency?: { cp: number; sp: number; ep: number; gp: number; pp: number };
   /** @deprecated SP5: removed; per-entry attuned flag is canonical. Tolerated until Task 4 parser migration strips it. */

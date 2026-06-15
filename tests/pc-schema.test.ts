@@ -142,6 +142,17 @@ describe("SP4 state additions", () => {
     const parsed = characterSchema.parse(validMinimalCharacter());
     expectTypeOf(parsed.state.conditions).toEqualTypeOf<ConditionSlug[]>();
   });
+
+  it("state.active_buffs accepts a string array of buff slugs", () => {
+    const base = validMinimalCharacter();
+    const parsed = characterSchema.parse({ ...base, state: { ...base.state, active_buffs: ["majesty", "baleful-glare"] } });
+    expect(parsed.state.active_buffs).toEqual(["majesty", "baleful-glare"]);
+  });
+
+  it("state.active_buffs is optional (absent on a minimal character)", () => {
+    const parsed = characterSchema.parse(validMinimalCharacter());
+    expect(parsed.state.active_buffs).toBeUndefined();
+  });
 });
 
 const baseCharacter = {

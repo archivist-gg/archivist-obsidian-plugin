@@ -26,6 +26,7 @@ import type {
   ProficiencySet,
   ResolvedCharacter,
   ResolvedClass,
+  ResolvedFeature,
   CharacterOverrides,
   SpellcastingClassInfo,
   SpellLimitInfo,
@@ -522,8 +523,28 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   // fold into the skill tri below; languages/tools fold into the proficiency set.
   const chosenProfs = collectChosenProficiencies(resolved);
   // Feature-effects pass (effects-application engine): one pure aggregation
-  // over resolved.features; threaded into each stat below, before overrides.
-  const featureEffects = computeFeatureEffects(resolved.features);
+  // over resolved.features + currently-toggled activatable buffs; threaded into
+  // each stat below, before overrides. The active set is the union of toggled
+  // ids/slugs from state.active_buffs; activatable features fold ONLY while their
+  // id is in it (a buff is off by default). Selected activatable pool boons are
+  // surfaced as synthetic ResolvedFeatures (id = the boon slug) so their effects
+  // gate on the same set.
+  const activeBuffs = new Set(resolved.state.active_buffs ?? []);
+  const buffFeatures: ResolvedFeature[] = [];
+  for (const pool of resolved.pools ?? []) {
+    for (const sel of pool.selected ?? []) {
+      const e = sel.entity;
+      if (e?.activatable && (e.effects?.length ?? 0) > 0) {
+        buffFeatures.push({
+          feature: { id: sel.slug, name: e.name, activatable: true, effects: e.effects },
+          // source is inert for the fold; attribute to the pool's owning class
+          // (never a hardcoded class) so the generic engine carries no homebrew name.
+          source: { kind: "class", slug: resolved.classes[pool.classIndex]?.entity?.slug ?? pool.id, level: pool.anchorLevel },
+        });
+      }
+    }
+  }
+  const featureEffects = computeFeatureEffects([...resolved.features, ...buffFeatures], { activeBuffs });
   const profsForApply = computeProficiencies(resolved);
   for (const t of chosenProfs.tools) {
     if (!profsForApply.tools.specific.includes(t)) profsForApply.tools.specific.push(t);

@@ -1,5 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedPoolEntry } from "../pc.types";
+// ComponentRenderContext is imported above; the row helper now receives it so the
+// activatable-buff toggle can read state.active_buffs + call editState.
 
 const COST_LABELS: Record<string, string> = {
   action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
@@ -36,8 +38,8 @@ export class PoolTab implements SheetComponent {
 
     const renderList = (): void => {
       body.empty();
-      for (const entry of pool.selected) this.row(body, entry, false, writeList, selectedSlugs);
-      for (const entry of pool.grants) this.row(body, entry, true, writeList, selectedSlugs);
+      for (const entry of pool.selected) this.row(body, entry, false, writeList, selectedSlugs, ctx);
+      for (const entry of pool.grants) this.row(body, entry, true, writeList, selectedSlugs, ctx);
     };
 
     const renderAdd = (): void => {
@@ -75,6 +77,7 @@ export class PoolTab implements SheetComponent {
     granted: boolean,
     writeList: (next: string[]) => void,
     selectedSlugs: () => string[],
+    ctx: ComponentRenderContext,
   ): void {
     const e = entry.entity;
     const row = parent.createDiv({ cls: "pc-pool-row" });
@@ -94,6 +97,19 @@ export class PoolTab implements SheetComponent {
     }
     if (e.duration && typeof e.duration === "object") {
       meta.createSpan({ cls: "pc-pool-duration", text: `${e.duration.amount} ${e.duration.unit}` });
+    }
+
+    // Activatable buffs: a toggle bound to state.active_buffs (by slug). On = the
+    // boon's effects fold in recalc; toggling writes via editState (same recompute
+    // path as selection/charges) then re-derives. Only on picked (non-granted)
+    // activatable boons. Duration above already renders as a static label.
+    if (!granted && e.activatable) {
+      const active = (ctx.resolved?.state?.active_buffs ?? []).includes(entry.slug);
+      const toggle = meta.createEl("label", { cls: "pc-pool-buff" });
+      const cb = toggle.createEl("input", { cls: "pc-pool-buff-toggle", type: "checkbox" });
+      cb.checked = active;
+      toggle.createSpan({ cls: "pc-pool-buff-label", text: active ? "Active" : "Activate" });
+      cb.addEventListener("change", () => ctx.editState?.toggleActiveBuff(entry.slug));
     }
 
     const desc = row.createDiv({ cls: "pc-pool-desc" });

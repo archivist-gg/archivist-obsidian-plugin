@@ -2,6 +2,7 @@ import type { Choice } from "./choice";
 import type { Resource, ResourceConsumption } from "./resource";
 import type { Attack } from "./attack";
 import type { FeatureEffect } from "./feature-effect";
+import type { Duration } from "../schemas/duration-schema";
 
 /**
  * Recharge / per-day usage limits on a Feature (e.g. monster action).
@@ -32,4 +33,11 @@ export interface Feature {
   sub_features?: Feature[];
   resources?: Resource[];
   recharge?: FeatureRecharge;
+  /** Phase 3 activatable buffs: when true, the feature's effects fold only while
+   *  its `id` is present in `Character.state.active_buffs` (toggled in the UI). */
+  activatable?: boolean;
+  /** Always-on marker; renders a "Passive" tag. */
+  passive?: boolean;
+  /** How long the buff lasts; rendered as a static label (no live countdown). */
+  duration?: Duration;
 }

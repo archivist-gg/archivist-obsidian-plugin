@@ -57,4 +57,22 @@ describe("featureSchema", () => {
       effects: [{ kind: "initiative-bonus", value: 5 }],
     }).success).toBe(true);
   });
+
+  it("accepts an activatable feature with a structured duration and preserves the flags", () => {
+    const parsed = featureSchema.safeParse({
+      id: "majesty",
+      name: "Infernal Majesty",
+      description: "...",
+      activatable: true,
+      passive: false,
+      duration: { amount: 1, unit: "minute" },
+      effects: [{ kind: "ac-bonus", value: 2 }],
+    });
+    expect(parsed.success).toBe(true);
+    expect(parsed.data).toMatchObject({ activatable: true, passive: false, duration: { amount: 1, unit: "minute" } });
+  });
+
+  it("still accepts a plain feature with no activatable/duration flags", () => {
+    expect(featureSchema.safeParse({ name: "Fast Hands", description: "Use bonus action." }).success).toBe(true);
+  });
 });

@@ -47,6 +47,29 @@ export class FeaturesTable implements SheetComponent {
       nameCell.createDiv({ cls: "pc-action-row-name", text: feature.name });
       if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
 
+      // Activatable buff: a toggle bound to state.active_buffs (by feature id) plus
+      // a static duration label. Toggling writes via editState.toggleActiveBuff
+      // (the same recompute path charge spends use). stopPropagation keeps the
+      // toggle click from bubbling into the row-expand handler below. A feature
+      // with no id can't be tracked, so skip the toggle in that case.
+      if (feature.activatable && feature.id) {
+        const buffId = feature.id;
+        const buffWrap = nameCell.createDiv({ cls: "pc-action-buff" });
+        const active = (ctx.resolved.state.active_buffs ?? []).includes(buffId);
+        const label = buffWrap.createEl("label", { cls: "pc-action-buff-control" });
+        const cb = label.createEl("input", { cls: "pc-action-buff-toggle", type: "checkbox" });
+        cb.checked = active;
+        label.createSpan({ cls: "pc-action-buff-text", text: active ? "Active" : "Activate" });
+        label.addEventListener("click", (e) => e.stopPropagation());
+        cb.addEventListener("change", (e) => {
+          e.stopPropagation();
+          ctx.editState?.toggleActiveBuff(buffId);
+        });
+        if (feature.duration && typeof feature.duration === "object") {
+          buffWrap.createSpan({ cls: "pc-action-buff-duration", text: `${feature.duration.amount} ${feature.duration.unit}` });
+        }
+      }
+
       row.createDiv({ cls: "pc-action-range", text: "Self" });
 
       const chgCell = row.createDiv({ cls: "pc-action-charges" });
