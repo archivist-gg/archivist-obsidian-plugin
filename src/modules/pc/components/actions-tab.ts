@@ -5,6 +5,7 @@ import { ItemsTable } from "./actions/items-table";
 import { FeaturesTable } from "./actions/features-table";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
 import { renderResourceList } from "./actions/resource-badge";
+import { resolveScalingDie } from "../../../shared/dnd/resource-die";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
 
 const ACTION_DISABLING_CONDITIONS: ReadonlySet<ConditionSlug> = new Set([
@@ -60,19 +61,25 @@ export class ActionsTab implements SheetComponent {
   }
 }
 
-interface DisplayAttack { name: string; range?: string; toHit?: string; damage?: string; source: string }
+export interface DisplayAttack { name: string; range?: string; toHit?: string; damage?: string; source: string }
 
-function collectFeatureAttacks(resolved: ResolvedCharacter): DisplayAttack[] {
+export function collectFeatureAttacks(resolved: ResolvedCharacter): DisplayAttack[] {
   const out: DisplayAttack[] = [];
   for (const rf of resolved.features) {
     const attacks = (rf.feature as unknown as { attacks?: Array<{ name?: string; range?: string; to_hit?: string; damage?: string }> }).attacks;
     if (!attacks) continue;
+    // A feature that owns a scaling-die resource surfaces that die as the damage
+    // for any attack that omits its own static `damage` (e.g. Reaver Seal
+    // Damage). Static damage always wins. See Phase 3b §6.2. The die is resolved
+    // at totalLevel to match the resource badge (so the two surfaces never desync).
+    const dieRes = (rf.feature.resources ?? []).find((r) => r.die);
+    const scalingDie = dieRes?.die ? resolveScalingDie(dieRes.die, resolved.totalLevel) : undefined;
     for (const a of attacks) {
       out.push({
         name: a.name ?? rf.feature.name,
         range: a.range,
         toHit: a.to_hit,
-        damage: a.damage,
+        damage: a.damage ?? scalingDie,
         source: rf.source.kind === "class" || rf.source.kind === "subclass" ? rf.source.slug : rf.source.kind,
       });
     }
