@@ -821,6 +821,8 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     defenses,
     acBreakdown: acBreakdownDerived,
     acInformational: acInformationalDerived,
+    // Always ≥ 1; non-stacking (Math.max) extra attacks fold in pc.feature-effects.
+    attacksPerAction: 1 + featureEffects.extraAttack,
     attacks: (derivedEquipment?.attacks ?? []).map((a) => ({
       ...a,
       toHit: a.toHit + conditionEffects.d20_test_penalty,

@@ -43,6 +43,13 @@ export interface FeatureEffectTotals {
    * it. recalc maps this onto each AttackRow as `critRange` only when < 20.
    */
   critRange: number;
+  /**
+   * Max extra attacks per Attack action granted by `extra-attack` effects.
+   * Non-stacking (D&D Extra Attack features don't stack): folds via Math.max
+   * from init 0, so 0 = no extra attacks. recalc maps this onto
+   * DerivedStats.attacksPerAction as `1 + extraAttack`.
+   */
+  extraAttack: number;
 }
 
 export function emptyFeatureEffectTotals(): FeatureEffectTotals {
@@ -58,6 +65,7 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     weaponAbility: null,
     rollModifiers: [],
     critRange: 20,
+    extraAttack: 0,
   };
 }
 
@@ -144,6 +152,11 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
       // Lowest threshold across weapon/all crit-range effects wins. A spell-only
       // crit-range does NOT lower the weapon crit threshold (no spell surface here).
       if ((eff.applies_to ?? "weapon") !== "spell") out.critRange = Math.min(out.critRange, eff.min_roll);
+      break;
+    case "extra-attack":
+      // Non-stacking: Extra Attack features don't add together (two count:1
+      // effects → 1 extra attack, not 2). Highest count wins.
+      out.extraAttack = Math.max(out.extraAttack, eff.count);
       break;
     default:
       // apply-condition, damage-bonus, and future kinds: not derived-stat effects.

@@ -29,7 +29,9 @@ export class ActionsTab implements SheetComponent {
       banner.createDiv({ cls: "pc-incapacitated-banner-effect", text: "actions & reactions disabled" });
     }
 
-    root.createEl("h4", { cls: "pc-tab-heading", text: "Attacks" });
+    const attacksPerAction = ctx.derived.attacksPerAction;
+    const attacksHeading = attacksPerAction > 1 ? `Attacks (×${attacksPerAction})` : "Attacks";
+    root.createEl("h4", { cls: "pc-tab-heading", text: attacksHeading });
 
     new WeaponsTable().render(root.createDiv(), ctx);
     new ItemsTable().render(root.createDiv(), ctx);

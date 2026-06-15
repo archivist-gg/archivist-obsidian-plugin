@@ -54,6 +54,7 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     scope: z.string().optional(),
     condition: z.string().optional(),
   }),
+  z.object({ kind: z.literal("extra-attack"), count: z.number().int().positive() }),
   z.object({
     kind: z.literal("crit-range"),
     min_roll: z.number().int().min(2).max(20),

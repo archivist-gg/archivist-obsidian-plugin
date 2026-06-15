@@ -376,6 +376,11 @@ export interface DerivedStats {
   };
   acBreakdown: ACTerm[];
   acInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /**
+   * Attacks per Attack action = 1 + max `extra-attack` effect count. Always ≥ 1
+   * (everyone gets one attack). The Actions "Attacks" heading shows `(×N)` when > 1.
+   */
+  attacksPerAction: number;
   attacks: AttackRow[];
   equippedSlots: EquippedSlots;
   carriedWeight: number;

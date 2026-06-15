@@ -338,6 +338,20 @@ describe("recalc — feature effects: crit-range", () => {
   });
 });
 
+describe("recalc — feature effects: extra-attack", () => {
+  it("extra-attack sets attacksPerAction (1 + max count, non-stacking)", () => {
+    const d = recalc(resolvedWith(mkClass("reaver", "d10", 5), [
+      { kind: "extra-attack", count: 1 }, { kind: "extra-attack", count: 1 },
+    ]));
+    expect(d.attacksPerAction).toBe(2);
+  });
+
+  it("attacksPerAction defaults to 1 when no extra-attack effect is present", () => {
+    const d = recalc(resolvedWith(mkClass("reaver", "d10", 5), [{ kind: "ac-bonus", value: 1 }]));
+    expect(d.attacksPerAction).toBe(1);
+  });
+});
+
 describe("recalc — feature effects: weapon-ability (Lies / Hexblade)", () => {
   it("weapon-ability overrides the melee attack ability (Lies → CHA)", () => {
     const r = withSimpleWeaponProficiency(

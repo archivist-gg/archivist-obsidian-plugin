@@ -32,4 +32,5 @@ export type FeatureEffect =
       scope?: string;
       condition?: string;
     }
-  | { kind: "crit-range"; min_roll: number; applies_to?: "weapon" | "spell" | "all"; condition?: string };
+  | { kind: "crit-range"; min_roll: number; applies_to?: "weapon" | "spell" | "all"; condition?: string }
+  | { kind: "extra-attack"; count: number };

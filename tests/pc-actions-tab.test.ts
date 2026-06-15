@@ -42,6 +42,24 @@ describe("ActionsTab", () => {
     expect(c.querySelectorAll(".pc-action-row").length).toBe(0);
   });
 
+  it("shows the multiplier in the Attacks heading when attacksPerAction > 1", () => {
+    const c = mountContainer();
+    const ctx = ctxFactory([sampleAttack()]);
+    (ctx.derived as DerivedStats).attacksPerAction = 2;
+    new ActionsTab().render(c, ctx);
+    expect([...c.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent)).toContain("Attacks (×2)");
+  });
+
+  it("keeps a plain Attacks heading when attacksPerAction is 1", () => {
+    const c = mountContainer();
+    const ctx = ctxFactory([sampleAttack()]);
+    (ctx.derived as DerivedStats).attacksPerAction = 1;
+    new ActionsTab().render(c, ctx);
+    const headings = [...c.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent);
+    expect(headings).toContain("Attacks");
+    expect(headings).not.toContain("Attacks (×1)");
+  });
+
   it("renders feature attacks below weapon attacks", () => {
     const c = mountContainer();
     const features = [{

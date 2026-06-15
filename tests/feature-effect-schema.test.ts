@@ -91,6 +91,20 @@ describe("featureEffectSchema — roll-modifier", () => {
   });
 });
 
+describe("featureEffectSchema — extra-attack", () => {
+  it("accepts extra-attack with count 1", () => {
+    expect(featureEffectSchema.safeParse({ kind: "extra-attack", count: 1 }).success).toBe(true);
+  });
+
+  it("rejects extra-attack with count 0 (not positive)", () => {
+    expect(featureEffectSchema.safeParse({ kind: "extra-attack", count: 0 }).success).toBe(false);
+  });
+
+  it("rejects extra-attack with a non-integer count", () => {
+    expect(featureEffectSchema.safeParse({ kind: "extra-attack", count: 1.5 }).success).toBe(false);
+  });
+});
+
 describe("featureEffectSchema — crit-range", () => {
   it("accepts crit-range with min_roll 19", () => {
     expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 19 }).success).toBe(true);
