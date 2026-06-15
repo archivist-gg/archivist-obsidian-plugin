@@ -36,3 +36,12 @@ describe("featureEffectSchema — sense (replaces darkvision)", () => {
     expect(featureEffectSchema.safeParse({ kind: "darkvision", range: 60 }).success).toBe(false);
   });
 });
+
+describe("featureEffectSchema — unarmored-ac", () => {
+  it("accepts unarmored-ac with abilities, base and allow_shield", () => {
+    expect(featureEffectSchema.safeParse({ kind: "unarmored-ac", abilities: ["cha"], base: 10, allow_shield: true }).success).toBe(true);
+  });
+  it("accepts unarmored-ac with empty abilities (e.g. base 13)", () => {
+    expect(featureEffectSchema.safeParse({ kind: "unarmored-ac", abilities: [], base: 13 }).success).toBe(true);
+  });
+});

@@ -36,4 +36,10 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     value: z.number().int(),
     requires_armor: z.boolean().optional(),
   }),
+  z.object({
+    kind: z.literal("unarmored-ac"),
+    abilities: z.array(z.enum(["str", "dex", "con", "int", "wis", "cha"])),
+    base: z.number().int().optional(),
+    allow_shield: z.boolean().optional(),
+  }),
 ]);

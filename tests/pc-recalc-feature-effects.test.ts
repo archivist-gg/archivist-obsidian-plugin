@@ -243,4 +243,25 @@ describe("recalc — feature effects: AC", () => {
     r.definition.overrides = { ac: 25 };
     expect(recalc(r, registry()).ac).toBe(25);
   });
+
+  it("unarmored-ac adds Σabilities over base on the no-armor path", () => {
+    const r = resolvedWith(mkClass("reaver", "d10", 1), [{ kind: "unarmored-ac", abilities: ["cha"] }]);
+    r.definition.abilities = { str: 10, dex: 14, con: 10, int: 10, wis: 10, cha: 16 };
+    // 10 + DEX(+2) + CHA(+3) = 15
+    expect(recalc(r).ac).toBe(15);
+  });
+
+  it("unarmored-ac with empty abilities is base + DEX only (explicit base)", () => {
+    const r = resolvedWith(mkClass("reaver", "d10", 1), [{ kind: "unarmored-ac", abilities: [], base: 13 }]);
+    r.definition.abilities = { str: 10, dex: 14, con: 10, int: 10, wis: 10, cha: 10 };
+    // 13 + DEX(+2) = 15 (Draconic-Resilience shape; no extra ability mods)
+    expect(recalc(r).ac).toBe(15);
+  });
+
+  it("unarmored-ac does not double-count DEX when listed in abilities", () => {
+    const r = resolvedWith(mkClass("reaver", "d10", 1), [{ kind: "unarmored-ac", abilities: ["dex"] }]);
+    r.definition.abilities = { str: 10, dex: 14, con: 10, int: 10, wis: 10, cha: 10 };
+    // base 10 + DEX(+2); dex is skipped in the Σ loop, so it is NOT added twice = 12
+    expect(recalc(r).ac).toBe(12);
+  });
 });

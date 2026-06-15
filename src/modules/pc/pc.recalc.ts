@@ -218,6 +218,26 @@ export function unarmoredACBreakdown(
     { source: "DEX modifier", amount: mods.dex, kind: "dex" },
   ];
 
+  // Generic unarmored-ac effect (e.g. Reaver Bravado: 10 + DEX + CHA).
+  // Takes precedence over the legacy unarmored_defense flag scan below.
+  for (const rf of resolved.features) {
+    const eff = (rf.feature.effects ?? []).find((e) => e.kind === "unarmored-ac");
+    if (eff && eff.kind === "unarmored-ac") {
+      const base = eff.base ?? 10;
+      const terms: ACTerm[] = [
+        { source: "Unarmored", amount: base, kind: "unarmored" },
+        { source: "DEX modifier", amount: mods.dex, kind: "dex" },
+      ];
+      let total = base + mods.dex;
+      for (const ab of eff.abilities) {
+        if (ab === "dex") continue; // dex already included
+        terms.push({ source: `${ab.toUpperCase()} modifier (${rf.feature.name ?? "Unarmored"})`, amount: mods[ab], kind: "ability" });
+        total += mods[ab];
+      }
+      return { total, terms };
+    }
+  }
+
   for (const rf of resolved.features) {
     const feat = rf.feature as unknown as { unarmored_defense?: { ability: Ability }; name?: string };
     if (feat.unarmored_defense?.ability) {

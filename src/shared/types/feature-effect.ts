@@ -1,3 +1,5 @@
+import type { Ability } from "./choice";
+
 export type SenseType = "darkvision" | "blindsight" | "tremorsense" | "truesight";
 
 export type FeatureEffect =
@@ -20,4 +22,5 @@ export type FeatureEffect =
       proficiency_type: "skill" | "tool" | "language" | "saving-throw";
       value: string;
     }
-  | { kind: "ac-bonus"; value: number; requires_armor?: boolean };
+  | { kind: "ac-bonus"; value: number; requires_armor?: boolean }
+  | { kind: "unarmored-ac"; abilities: Ability[]; base?: number; allow_shield?: boolean };
