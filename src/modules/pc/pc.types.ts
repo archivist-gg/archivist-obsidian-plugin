@@ -326,8 +326,8 @@ export interface DerivedStats {
     ability: Ability;
   }>;
   passives: { perception: number; investigation: number; insight: number };
-  /** Computed senses: max of race vision and feature-effect darkvision. 0 = none. */
-  senses: { darkvision: number };
+  /** Computed senses: max of race vision and feature-effect sense ranges. 0 = none per type. */
+  senses: Record<import("../../shared/types/feature-effect").SenseType, number>;
   hp: { max: number; current: number; temp: number };
   ac: number;
   speed: number;

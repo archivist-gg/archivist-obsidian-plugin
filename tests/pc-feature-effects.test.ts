@@ -32,13 +32,15 @@ describe("computeFeatureEffects", () => {
     expect(out.speed_walk_bonus).toBe(0);
   });
 
-  it("takes the max darkvision range", () => {
+  it("takes the max range per sense type", () => {
     const out = computeFeatureEffects([
-      rf([{ kind: "darkvision", range: 60 }]),
-      rf([{ kind: "darkvision", range: 120 }]),
-      rf([{ kind: "darkvision", range: 30 }]),
+      rf([{ kind: "sense", type: "darkvision", range: 60 }]),
+      rf([{ kind: "sense", type: "darkvision", range: 120 }]),
+      rf([{ kind: "sense", type: "truesight", range: 30 }]),
     ]);
-    expect(out.darkvision).toBe(120);
+    expect(out.senses.darkvision).toBe(120);
+    expect(out.senses.truesight).toBe(30);
+    expect(out.senses.blindsight).toBe(0);
   });
 
   it("unions resistances case-insensitively, first spelling wins", () => {

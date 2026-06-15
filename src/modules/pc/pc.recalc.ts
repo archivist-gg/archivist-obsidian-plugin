@@ -675,9 +675,12 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   const init = overrides.initiative
     ?? (initiativeBonus(mods.dex, resolved.feats, resolved.definition.edition) + featureEffects.initiative_bonus);
 
-  // Senses: race vision vs feature-effect darkvision — larger wins.
-  const senses = {
-    darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.darkvision),
+  // Senses: race vision vs feature-effect senses — larger wins per type.
+  const senses: DerivedStats["senses"] = {
+    darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.senses.darkvision),
+    blindsight: featureEffects.senses.blindsight,
+    tremorsense: featureEffects.senses.tremorsense,
+    truesight: featureEffects.senses.truesight,
   };
 
   // Spellcasting (per class, multiclass-aware). Data-driven: each class's caster

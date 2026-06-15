@@ -37,7 +37,7 @@ traits:
     description: "Invented — detect electromagnetic disturbances."
     choices: [{ kind: select-proficiency, id: skills, domain: skill, count: 1, from: [perception, insight] }]
     effects:
-      - { kind: darkvision, range: 60 }
+      - { kind: sense, type: darkvision, range: 60 }
   - id: charge-pulse
     name: "Charge Pulse"
     description: "Invented — reaction discharge."

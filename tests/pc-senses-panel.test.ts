@@ -100,12 +100,14 @@ describe("SensesPanel — interactive overrides (SP4c)", () => {
   });
 });
 
-describe("SensesPanel — darkvision", () => {
-  const mkCtx = (senses?: { darkvision: number }): ComponentRenderContext => ({
+describe("SensesPanel — senses", () => {
+  const mkCtx = (senses?: Partial<DerivedStats["senses"]>): ComponentRenderContext => ({
     resolved: {} as ResolvedCharacter,
     derived: {
       passives: { perception: 14, investigation: 10, insight: 11 },
-      ...(senses ? { senses } : {}),
+      ...(senses
+        ? { senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0, ...senses } }
+        : {}),
     } as DerivedStats,
     core: {} as never,
     editState: null,
@@ -134,5 +136,19 @@ describe("SensesPanel — darkvision", () => {
     const container = mountContainer();
     new SensesPanel().render(container, mkCtx(undefined));
     expect(container.querySelectorAll(".pc-sense-row").length).toBe(3);
+  });
+
+  it("renders a non-darkvision sense row and no Darkvision row", () => {
+    const container = mountContainer();
+    new SensesPanel().render(
+      container,
+      mkCtx({ darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 30 }),
+    );
+    const rows = [...container.querySelectorAll(".pc-sense-row")];
+    expect(rows.length).toBe(4);
+    expect(rows[3].querySelector(".pc-sense-name")?.textContent).toBe("Truesight");
+    expect(rows[3].querySelector(".pc-sense-dist")?.textContent).toBe("30 ft.");
+    const names = [...container.querySelectorAll(".pc-sense-name")].map((v) => v.textContent);
+    expect(names).not.toContain("Darkvision");
   });
 });

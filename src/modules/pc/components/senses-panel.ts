@@ -1,11 +1,19 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { PassiveKind } from "../pc.types";
+import type { SenseType } from "../../../shared/types/feature-effect";
 import { numberOverride } from "./edit-primitives";
 
 const PASSIVE_ROWS: ReadonlyArray<[label: string, kind: PassiveKind]> = [
   ["Perception", "perception"],
   ["Investigation", "investigation"],
   ["Insight", "insight"],
+];
+
+const SENSE_ROWS: ReadonlyArray<[label: string, key: SenseType]> = [
+  ["Darkvision", "darkvision"],
+  ["Blindsight", "blindsight"],
+  ["Tremorsense", "tremorsense"],
+  ["Truesight", "truesight"],
 ];
 
 export class SensesPanel implements SheetComponent {
@@ -31,13 +39,15 @@ export class SensesPanel implements SheetComponent {
       }
     }
 
-    // Darkvision (computed: race vision ∨ feature effects). Optional-chained
+    // Senses (computed: race vision ∨ feature effects). Optional-chained
     // because tests cast partial DerivedStats objects.
-    const darkvision = ctx.derived.senses?.darkvision ?? 0;
-    if (darkvision > 0) {
-      const row = list.createDiv({ cls: "pc-sense-row" });
-      row.createSpan({ cls: "pc-sense-name", text: "Darkvision" });
-      row.createSpan({ cls: "pc-sense-dist", text: `${darkvision} ft.` });
+    for (const [label, key] of SENSE_ROWS) {
+      const dist = ctx.derived.senses?.[key] ?? 0;
+      if (dist > 0) {
+        const row = list.createDiv({ cls: "pc-sense-row" });
+        row.createSpan({ cls: "pc-sense-name", text: label });
+        row.createSpan({ cls: "pc-sense-dist", text: `${dist} ft.` });
+      }
     }
   }
 }

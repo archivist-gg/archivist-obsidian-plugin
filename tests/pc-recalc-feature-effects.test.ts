@@ -115,12 +115,12 @@ describe("recalc — feature effects: initiative / HP / speed / senses", () => {
   });
 
   it("senses.darkvision comes from effects when race has none", () => {
-    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "darkvision", range: 60 }]));
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "sense", type: "darkvision", range: 60 }]));
     expect(d.senses.darkvision).toBe(60);
   });
 
   it("senses.darkvision takes the max of race vision and effects", () => {
-    const r = resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "darkvision", range: 60 }]);
+    const r = resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "sense", type: "darkvision", range: 60 }]);
     r.race = { slug: "drow", name: "Drow", speed: { walk: 30 }, vision: { darkvision: 120 } } as never;
     expect(recalc(r).senses.darkvision).toBe(120);
   });
@@ -129,6 +129,12 @@ describe("recalc — feature effects: initiative / HP / speed / senses", () => {
     const r = emptyResolved();
     r.classes = [mkClass("rogue", "d8", 1)];
     expect(recalc(r).senses.darkvision).toBe(0);
+  });
+
+  it("surfaces a non-darkvision sense from effects", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "sense", type: "truesight", range: 30 }]));
+    expect(d.senses.truesight).toBe(30);
+    expect(d.senses.darkvision).toBe(0);
   });
 });
 

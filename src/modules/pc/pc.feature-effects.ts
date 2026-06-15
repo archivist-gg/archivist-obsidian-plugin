@@ -1,4 +1,4 @@
-import type { FeatureEffect } from "../../shared/types/feature-effect";
+import type { FeatureEffect, SenseType } from "../../shared/types/feature-effect";
 import type { Ability } from "../../shared/types";
 import { ABILITY_KEYS } from "../../shared/dnd/constants";
 import type { ResolvedFeature } from "./pc.types";
@@ -6,8 +6,8 @@ import type { ResolvedFeature } from "./pc.types";
 /**
  * Aggregated passive feature effects (effects-application engine).
  * One pure scan over resolved.features[].feature.effects[]. Merge semantics
- * mirror pc.conditions mergePartial: numbers add, darkvision takes max, lists
- * union case-insensitively. apply-condition and damage-bonus are action/attack
+ * mirror pc.conditions mergePartial: numbers add, each sense range takes max,
+ * lists union case-insensitively. apply-condition and damage-bonus are action/attack
  * time and intentionally not aggregated; `while`-gated immune-condition
  * entries are skipped entirely (conditional effects are a named deferral).
  */
@@ -15,8 +15,8 @@ export interface FeatureEffectTotals {
   initiative_bonus: number;
   hp_per_level_bonus: number;
   speed_walk_bonus: number;
-  /** Max darkvision range granted by effects; 0 = none. */
-  darkvision: number;
+  /** Max range per sense type granted by effects; 0 = none for that type. */
+  senses: Record<SenseType, number>;
   /** One term per ac-bonus effect, labeled with the owning feature's name. */
   ac_terms: { value: number; requires_armor: boolean; label: string }[];
   resistances: string[];
@@ -30,7 +30,7 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     initiative_bonus: 0,
     hp_per_level_bonus: 0,
     speed_walk_bonus: 0,
-    darkvision: 0,
+    senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0 },
     ac_terms: [],
     resistances: [],
     condition_immunities: [],
@@ -81,8 +81,8 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
       // Only walk reaches DerivedStats.speed; other modes have no derived surface yet.
       if (eff.mode === "walk") out.speed_walk_bonus += eff.value;
       break;
-    case "darkvision":
-      out.darkvision = Math.max(out.darkvision, eff.range);
+    case "sense":
+      out.senses[eff.type] = Math.max(out.senses[eff.type], eff.range);
       break;
     case "resistance":
       pushUnique(out.resistances, eff.damage_type);

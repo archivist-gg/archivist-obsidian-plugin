@@ -20,6 +20,19 @@ describe("featureEffectSchema — ac-bonus", () => {
 
   it("still accepts the existing kinds (regression)", () => {
     expect(featureEffectSchema.safeParse({ kind: "resistance", damage_type: "Fire" }).success).toBe(true);
-    expect(featureEffectSchema.safeParse({ kind: "darkvision", range: 60 }).success).toBe(true);
+  });
+});
+
+describe("featureEffectSchema — sense (replaces darkvision)", () => {
+  it("accepts each sense type with a range", () => {
+    for (const type of ["darkvision", "blindsight", "tremorsense", "truesight"] as const) {
+      expect(featureEffectSchema.safeParse({ kind: "sense", type, range: 60 }).success).toBe(true);
+    }
+  });
+  it("rejects an unknown sense type", () => {
+    expect(featureEffectSchema.safeParse({ kind: "sense", type: "x-ray", range: 60 }).success).toBe(false);
+  });
+  it("no longer accepts the removed darkvision kind", () => {
+    expect(featureEffectSchema.safeParse({ kind: "darkvision", range: 60 }).success).toBe(false);
   });
 });

@@ -10,7 +10,11 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     mode: z.enum(["walk", "fly", "swim", "climb", "burrow"]),
     value: z.number().int(),
   }),
-  z.object({ kind: z.literal("darkvision"), range: z.number().int().nonnegative() }),
+  z.object({
+    kind: z.literal("sense"),
+    type: z.enum(["darkvision", "blindsight", "tremorsense", "truesight"]),
+    range: z.number().int().nonnegative(),
+  }),
   z.object({
     kind: z.literal("apply-condition"),
     condition: z.string().min(1),
