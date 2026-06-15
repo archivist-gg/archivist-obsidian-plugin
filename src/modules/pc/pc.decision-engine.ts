@@ -534,7 +534,21 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
         }
         choices = recognized ?? undefined;
       }
-      if (!choices?.length) continue;
+      if (!choices?.length) {
+        // No structured/synthesized choice — still surface the feature as an
+        // informational card so EVERY gained feature appears in the per-level strip
+        // (complete view; no silent gaps for plain-flavor features like Blood Price).
+        // Skip synthetic resource-only carriers (entity-level resources, no prose).
+        if (rf.feature.description || rf.feature.entries?.length) {
+          push(lvl, {
+            key: rf.feature.id ?? rf.feature.name, source: src, level: lvl,
+            featureName: rf.feature.name,
+            choice: { kind: "select-inline", id: rf.feature.id ?? rf.feature.name, options: [{ value: "_", label: "_" }] },
+            options: [], selected: undefined, status: "informational",
+          });
+        }
+        continue;
+      }
       for (const ch of choices) {
         // The subclass decision is structural: it reads/writes ClassEntry.subclass.
         if (ch.kind === "select-entity" && ch.entity_type === "subclass") {
