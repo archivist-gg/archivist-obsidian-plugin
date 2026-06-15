@@ -252,6 +252,16 @@ export function collectResolvedFeatures(
         out.push({ feature: feat, source: { kind: "class", slug, level: lvl } satisfies FeatureSource });
       }
     }
+    // Entity-level class resources (declared on the class, not on a feature) —
+    // surfaced so the seed and rest see them like feature-level resources. The
+    // `resources` array is shared with the registry entity (read-only
+    // downstream), so no copy is needed.
+    if (c.entity.resources?.length) {
+      out.push({
+        feature: { name: c.entity.name, resources: c.entity.resources },
+        source: { kind: "class", slug, level: 1 } satisfies FeatureSource,
+      });
+    }
     if (c.subclass) {
       const sSlug = c.subclass.slug;
       const sByLevel = c.subclass.features_by_level ?? {};
@@ -261,6 +271,13 @@ export function collectResolvedFeatures(
         for (const feat of feats0) {
           out.push({ feature: feat, source: { kind: "subclass", slug: sSlug, level: lvl } satisfies FeatureSource });
         }
+      }
+      // Entity-level subclass resources.
+      if (c.subclass.resources?.length) {
+        out.push({
+          feature: { name: c.subclass.name, resources: c.subclass.resources },
+          source: { kind: "subclass", slug: sSlug, level: 1 } satisfies FeatureSource,
+        });
       }
     }
   }
