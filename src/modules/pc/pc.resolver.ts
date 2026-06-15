@@ -49,7 +49,13 @@ export class PCResolver {
         warnings.push(`Slug [[${slug}]] not found in compendium as ${type}.`);
         return null;
       }
-      return reg.data as T;
+      // Custom-created entities (e.g. the custom-background builder) omit `slug`
+      // from their body data — saveEntity generates it for the registration only,
+      // so reg.data.slug is undefined. Backfill the canonical reg.slug so downstream
+      // consumers (bareEntitySlug, FeatureSource.slug) never see undefined. SRD
+      // entities carry a body slug and are returned unchanged.
+      const data = reg.data as { slug?: string };
+      return (data.slug == null ? { ...data, slug: reg.slug } : data) as T;
     };
 
     const race = lookup<RaceEntity>(character.race, "race");

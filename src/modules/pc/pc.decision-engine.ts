@@ -80,8 +80,10 @@ export function wikilinkTailSlug(link: string): string {
   return tail.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-/** "srd-2024_fighter" → "fighter". */
-export function bareEntitySlug(slug: string): string {
+/** "srd-2024_fighter" → "fighter". Tolerates a nullish slug (degrades to "") so a
+ *  malformed entity can't hard-crash the builder; the resolver backfills real slugs. */
+export function bareEntitySlug(slug: string | null | undefined): string {
+  if (!slug) return "";
   const i = slug.indexOf("_");
   return i === -1 ? slug : slug.slice(i + 1);
 }
