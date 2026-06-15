@@ -220,8 +220,11 @@ function renderDecisions(block: HTMLElement, ctx: ComponentRenderContext, d: Cla
     .flatMap((l) => l.items)
     .filter((i) => !i.key.startsWith("equipment-"));
   if (!items.length) return;
-  const done = items.filter((i) => i.status === "resolved").length;
-  renderSectionRule(block, "Decisions", `${items.length} total · ${done} resolved · ${items.length - done} open`);
+  // The strip shows every gained feature (informational cards for plain flavor), but
+  // the header counts only real DECISIONS — informational items need no player input.
+  const decisions = items.filter((i) => i.status !== "informational");
+  const done = decisions.filter((i) => i.status === "resolved").length;
+  renderSectionRule(block, "Decisions", `${decisions.length} decision${decisions.length === 1 ? "" : "s"} · ${done} resolved · ${decisions.length - done} open`);
   renderDecisionStrip(block, ctx, {
     items, pill: (i) => `L${i.level}`, live: true, classIndex: opts.classIndex ?? 0, stateKey: `${opts.stateKey}.strip`,
   });
