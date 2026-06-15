@@ -74,4 +74,21 @@ describe("rest resets feature resources", () => {
       expect(character.state.feature_uses.orphan.used).toBe(1);
     }
   });
+
+  it("a short-rest resource resets on BOTH a short and a long rest (§6.4)", () => {
+    // long rest
+    {
+      const { character, resolved, derived } = setup({ s: { used: 1, max: 1 } }, [feat("s", "S", "short-rest")]);
+      const plan = computeRestPlan(character, resolved, derived, null, "long");
+      applyRestResets(character, resolved, derived, plan, new Set());
+      expect(character.state.feature_uses.s.used).toBe(0);
+    }
+    // short rest
+    {
+      const { character, resolved, derived } = setup({ s: { used: 1, max: 1 } }, [feat("s", "S", "short-rest")]);
+      const plan = computeRestPlan(character, resolved, derived, null, "short");
+      applyRestResets(character, resolved, derived, plan, new Set());
+      expect(character.state.feature_uses.s.used).toBe(0);
+    }
+  });
 });
