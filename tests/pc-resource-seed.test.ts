@@ -105,3 +105,68 @@ describe("seedFeatureUses", () => {
     expect(r.state.feature_uses).toEqual({});
   });
 });
+
+describe("seedFeatureUses — column() from the (sub)class table", () => {
+  it("column('Seals') reads the granting class table at the class level", () => {
+    const r = {
+      totalLevel: 5,
+      classes: [{ entity: { slug: "reaver", table: { 5: { columns: { Seals: 4 } } } }, level: 5 }],
+      features: [{
+        feature: { name: "Baleful Interdict", resources: [{ id: "reaver:seals", name: "Seals", max_formula: "column('Seals')", reset: "long-rest" }] },
+        source: { kind: "class", slug: "reaver", level: 1 },
+      }],
+      state: { feature_uses: {} },
+    } as unknown as ResolvedCharacter;
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses["reaver:seals"].max).toBe(4);
+  });
+
+  it("reads the SUBCLASS table for a subclass-sourced resource", () => {
+    const r = {
+      totalLevel: 5,
+      classes: [{
+        entity: { slug: "reaver", table: { 5: { columns: {} } } },
+        level: 5,
+        subclass: { slug: "architect-of-ruin", table: { 5: { columns: { "Conduit Dice": 2 } } } },
+      }],
+      features: [{
+        feature: { name: "Infernal Conduit", resources: [{ id: "reaver:conduit", name: "Conduit Dice", max_formula: "column('Conduit Dice')", reset: "short-rest" }] },
+        source: { kind: "subclass", slug: "architect-of-ruin", level: 3 },
+      }],
+      state: { feature_uses: {} },
+    } as unknown as ResolvedCharacter;
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses["reaver:conduit"].max).toBe(2);
+  });
+
+  it("binds class_level to the owning class for a subclass-sourced resource", () => {
+    const r = {
+      totalLevel: 9,
+      classes: [
+        { entity: { slug: "fighter" }, level: 4 },
+        { entity: { slug: "reaver" }, level: 5, subclass: { slug: "architect-of-ruin" } },
+      ],
+      features: [{
+        feature: { name: "Sub", resources: [{ id: "sub:res", name: "Sub", max_formula: "class_level", reset: "long-rest" }] },
+        source: { kind: "subclass", slug: "architect-of-ruin", level: 3 },
+      }],
+      state: { feature_uses: {} },
+    } as unknown as ResolvedCharacter;
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses["sub:res"].max).toBe(5); // reaver level, not total 9
+  });
+
+  it("a column-driven max with no table row resolves to 0", () => {
+    const r = {
+      totalLevel: 1,
+      classes: [{ entity: { slug: "reaver" }, level: 1 }],
+      features: [{
+        feature: { name: "X", resources: [{ id: "x", name: "X", max_formula: "column('Seals')", reset: "long-rest" }] },
+        source: { kind: "class", slug: "reaver", level: 1 },
+      }],
+      state: { feature_uses: {} },
+    } as unknown as ResolvedCharacter;
+    seedFeatureUses(r, derived());
+    expect(r.state.feature_uses["x"].max).toBe(0);
+  });
+});
