@@ -5,6 +5,7 @@ import { isValidMaxFormula, evaluateMaxFormula, resolveMaxAt, type FormulaBindin
 const ctx: FormulaBindings = {
   level: 5, class_level: 5, prof: 3,
   str_mod: 1, dex_mod: 2, con_mod: 3, int_mod: 0, wis_mod: 1, cha_mod: 4,
+  columns: {},
 };
 
 describe("isValidMaxFormula", () => {
@@ -71,6 +72,41 @@ describe("DSL extension — division, ceil/floor, parens", () => {
     for (const f of ["level /", "ceil(", "ceil()", "floor level", "( 1 + 2"]) {
       expect(isValidMaxFormula(f)).toBe(false);
     }
+  });
+});
+
+describe("column() accessor", () => {
+  const ctxCols: FormulaBindings = {
+    level: 5, class_level: 5, prof: 3,
+    str_mod: 1, dex_mod: 2, con_mod: 3, int_mod: 0, wis_mod: 1, cha_mod: 4,
+    columns: { Seals: 4, "Seal Damage": 8 },
+  };
+  it("evaluates a column by name", () => {
+    expect(evaluateMaxFormula("column('Seals')", ctxCols)).toBe(4);
+  });
+  it("handles column names with spaces", () => {
+    expect(evaluateMaxFormula("column('Seal Damage')", ctxCols)).toBe(8);
+  });
+  it("unknown column resolves to 0", () => {
+    expect(evaluateMaxFormula("column('Nope')", ctxCols)).toBe(0);
+  });
+  it("composes with arithmetic", () => {
+    expect(evaluateMaxFormula("column('Seals') + 1", ctxCols)).toBe(5);
+    expect(evaluateMaxFormula("column('Seals') * prof", ctxCols)).toBe(12);
+  });
+  it("validates column() permissively (any name via the ZERO map)", () => {
+    expect(isValidMaxFormula("column('Seals')")).toBe(true);
+    expect(isValidMaxFormula("column('Anything At All')")).toBe(true);
+    expect(isValidMaxFormula("column('Seals') * 2")).toBe(true);
+  });
+  it("rejects malformed column usage and bare string literals", () => {
+    expect(isValidMaxFormula("'Seals'")).toBe(false);     // string only valid inside column()
+    expect(isValidMaxFormula("column(Seals)")).toBe(false); // arg must be quoted
+    expect(isValidMaxFormula("column()")).toBe(false);      // arg required
+    expect(isValidMaxFormula("column('a'")).toBe(false);    // unbalanced
+  });
+  it("present-but-zero column evaluates to 0 (indistinguishable from missing, by design)", () => {
+    expect(evaluateMaxFormula("column('Z')", { ...ctxCols, columns: { Z: 0 } })).toBe(0);
   });
 });
 

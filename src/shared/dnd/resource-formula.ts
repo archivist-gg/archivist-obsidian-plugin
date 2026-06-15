@@ -2,9 +2,12 @@
  * Tiny DSL for Resource.max_formula and Resource.recovery[].amount (SP4d). Grammar:
  *   expr   := term (('+' | '-') term)*
  *   term   := factor (('*' | '/') factor)*
- *   factor := number | ident | '{' ident '}' | fn '(' expr ')' | '(' expr ')'
+ *   factor := number | string-arg-only | ident | '{' ident '}' | fn '(' expr ')'
+ *           | "column" '(' string ')' | '(' expr ')'
  *   fn     := 'ceil' | 'floor'
  *   ident  := level | class_level | prof | <abil>_mod
+ * The single-quoted string literal (e.g. 'Seals') is valid ONLY as the
+ * argument to column(...).
  * '*' and '/' bind tighter than '+'/'-'. '/' is real division; wrap in
  * ceil()/floor() for integer results (e.g. "ceil({class_level}/2)").
  * `999` is the at-will sentinel; it evaluates as the literal 999.
@@ -15,6 +18,10 @@ export interface FormulaBindings {
   prof: number;
   str_mod: number; dex_mod: number; con_mod: number;
   int_mod: number; wis_mod: number; cha_mod: number;
+  /** Numeric values of the owning (sub)class table row at the current class
+   *  level, keyed by column name (e.g. "Seals"). Empty when no table/row.
+   *  Read by the `column('Name')` accessor; missing name → 0. */
+  columns: Record<string, number>;
 }
 
 const IDENTS = new Set([
@@ -25,8 +32,10 @@ const FUNCS = new Set(["ceil", "floor"]);
 
 type Tok =
   | { kind: "num"; value: number }
+  | { kind: "str"; value: string }
   | { kind: "id"; name: string }
   | { kind: "fn"; name: "ceil" | "floor" }
+  | { kind: "col" }
   | { kind: "op"; op: "+" | "-" | "*" | "/" }
   | { kind: "lparen" }
   | { kind: "rparen" };
@@ -34,7 +43,7 @@ type Tok =
 function tokenize(input: string): Tok[] | null {
   input = input.trim();
   const tokens: Tok[] = [];
-  const re = /\s*(\{[a-z_]+\}|[a-z_]+|\d+|[+\-*/()])/y;
+  const re = /\s*('[^']*'|\{[a-z_]+\}|[a-z_]+|\d+|[+\-*/()])/y;
   let i = 0;
   while (i < input.length) {
     re.lastIndex = i;
@@ -43,6 +52,7 @@ function tokenize(input: string): Tok[] | null {
     const raw = m[1];
     i = re.lastIndex;
     if (/^\d+$/.test(raw)) tokens.push({ kind: "num", value: parseInt(raw, 10) });
+    else if (raw.startsWith("'")) tokens.push({ kind: "str", value: raw.slice(1, -1) });
     else if (raw === "(") tokens.push({ kind: "lparen" });
     else if (raw === ")") tokens.push({ kind: "rparen" });
     else if (raw === "+" || raw === "-" || raw === "*" || raw === "/") tokens.push({ kind: "op", op: raw });
@@ -50,6 +60,7 @@ function tokenize(input: string): Tok[] | null {
       const braced = raw.startsWith("{");
       const name = braced ? raw.slice(1, -1) : raw;
       if (!braced && FUNCS.has(name)) tokens.push({ kind: "fn", name: name as "ceil" | "floor" });
+      else if (!braced && name === "column") tokens.push({ kind: "col" });
       else if (IDENTS.has(name)) tokens.push({ kind: "id", name });
       else return null;
     }
@@ -79,6 +90,17 @@ function evalTokens(tokens: Tok[], b: FormulaBindings): number | null {
       if (peek()?.kind !== "rparen") return null;
       pos++;
       return t.name === "ceil" ? Math.ceil(inner) : Math.floor(inner);
+    }
+    if (t.kind === "col") {
+      pos++;
+      if (peek()?.kind !== "lparen") return null;
+      pos++;
+      const s = peek();
+      if (!s || s.kind !== "str") return null;
+      pos++;
+      if (peek()?.kind !== "rparen") return null;
+      pos++;
+      return b.columns?.[s.value] ?? 0;
     }
     if (t.kind === "lparen") {
       pos++;
@@ -122,6 +144,7 @@ function evalTokens(tokens: Tok[], b: FormulaBindings): number | null {
 const ZERO: FormulaBindings = {
   level: 1, class_level: 1, prof: 2,
   str_mod: 0, dex_mod: 0, con_mod: 0, int_mod: 0, wis_mod: 0, cha_mod: 0,
+  columns: {},
 };
 
 export function isValidMaxFormula(formula: string): boolean {
