@@ -93,6 +93,29 @@ describe("computeFeatureEffects", () => {
     expect(out.proficiencies.saves).toEqual(["wis"]);
   });
 
+  it("buckets armor and weapon proficiency category effects, lowercased (category form)", () => {
+    // Armor/weapon grants are CATEGORIES, kept as bare lowercase words (no kebab)
+    // so they match the matcher's `.categories` form ("heavy", "martial", "shield").
+    const out = computeFeatureEffects([
+      rf([
+        { kind: "proficiency", proficiency_type: "armor", value: "Heavy" },
+        { kind: "proficiency", proficiency_type: "weapon", value: "Martial" },
+      ]),
+    ]);
+    expect(out.proficiencies.armor).toEqual(["heavy"]);
+    expect(out.proficiencies.weapons).toEqual(["martial"]);
+  });
+
+  it("tracks speed_walk_set as the max of set values, separate from additive bonus", () => {
+    const out = computeFeatureEffects([
+      rf([{ kind: "speed-bonus", mode: "walk", set: true, value: 40 }]),
+      rf([{ kind: "speed-bonus", mode: "walk", set: true, value: 60 }]),
+      rf([{ kind: "speed-bonus", mode: "walk", value: 10 }]),
+    ]);
+    expect(out.speed_walk_set).toBe(60);
+    expect(out.speed_walk_bonus).toBe(10);
+  });
+
   it("collects ac-bonus terms with feature-name labels and gating flag", () => {
     const out = computeFeatureEffects([
       rf([{ kind: "ac-bonus", value: 1, requires_armor: true }], "Defense"),

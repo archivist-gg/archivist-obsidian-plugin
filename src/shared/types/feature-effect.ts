@@ -7,7 +7,7 @@ export type FeatureEffect =
   | { kind: "immune-condition"; condition: string; while?: string }
   | { kind: "resistance"; damage_type: string }
   | { kind: "hp-per-level-bonus"; value: number }
-  | { kind: "speed-bonus"; mode: "walk" | "fly" | "swim" | "climb" | "burrow"; value: number }
+  | { kind: "speed-bonus"; mode: "walk" | "fly" | "swim" | "climb" | "burrow"; value: number; set?: boolean }
   | { kind: "sense"; type: SenseType; range: number }
   | {
       kind: "apply-condition";
@@ -16,10 +16,16 @@ export type FeatureEffect =
       ends_on?: string[];
       save_repeat?: { ability: string; timing: string };
     }
-  | { kind: "damage-bonus"; damage_type: string; amount: string }
+  | {
+      kind: "damage-bonus";
+      damage_type: string;
+      amount: string;
+      applies_to?: "weapon" | "spell" | "all";
+      condition?: string;
+    }
   | {
       kind: "proficiency";
-      proficiency_type: "skill" | "tool" | "language" | "saving-throw";
+      proficiency_type: "skill" | "tool" | "language" | "saving-throw" | "armor" | "weapon";
       value: string;
     }
   | { kind: "ac-bonus"; value: number; requires_armor?: boolean }

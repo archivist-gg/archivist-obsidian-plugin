@@ -4,7 +4,8 @@ import type { ResolvedCharacter, ResolvedClass, ResolvedFeature } from "../src/m
 import type { Character } from "../src/modules/pc/pc.types";
 import type { FeatureEffect } from "../src/shared/types/feature-effect";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { STUDDED_LEATHER, CLUB } from "./fixtures/pc/equipment-fixtures";
+import { STUDDED_LEATHER, CLUB, PLATE, BREASTPLATE, LONGSWORD } from "./fixtures/pc/equipment-fixtures";
+import { isProficientWithArmor, isProficientWithWeapon } from "../src/modules/pc/pc.proficiency-query";
 
 function mkClass(slug: string, die: string, level: number): ResolvedClass {
   return {
@@ -189,6 +190,60 @@ describe("recalc — feature effects: proficiencies", () => {
     ]));
     expect(d.proficiencies.tools.specific).toContain("Thieves' Tools");
     expect(d.proficiencies.languages).toContain("Draconic");
+  });
+
+  it("proficiency armor effect (category) lands in proficiencies.armor.categories", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "proficiency", proficiency_type: "armor", value: "heavy" },
+    ]));
+    // Category form, NOT a per-item slug bucket — this is what the matcher reads.
+    expect(d.proficiencies.armor.categories).toContain("heavy");
+    expect(d.proficiencies.armor.specific).not.toContain("heavy");
+  });
+
+  it("armor 'heavy' grant makes the matcher proficient with a heavy entity (and implies medium/light)", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "proficiency", proficiency_type: "armor", value: "Heavy" },
+    ]));
+    // End-to-end through the real matcher: the grant must drive isProficientWithArmor.
+    expect(isProficientWithArmor(PLATE, d.proficiencies)).toBe(true);          // heavy
+    expect(isProficientWithArmor(BREASTPLATE, d.proficiencies)).toBe(true);    // medium (implied)
+    expect(isProficientWithArmor(STUDDED_LEATHER, d.proficiencies)).toBe(true); // light (implied)
+  });
+
+  it("proficiency weapon effect (category) lands in proficiencies.weapons.categories", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "proficiency", proficiency_type: "weapon", value: "martial" },
+    ]));
+    expect(d.proficiencies.weapons.categories).toContain("martial");
+    expect(d.proficiencies.weapons.specific).not.toContain("martial");
+  });
+
+  it("weapon 'martial' grant makes the matcher proficient with a martial weapon entity", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [
+      { kind: "proficiency", proficiency_type: "weapon", value: "Martial" },
+    ]));
+    expect(isProficientWithWeapon(LONGSWORD, d.proficiencies)).toBe(true); // martial-melee
+    expect(isProficientWithWeapon(CLUB, d.proficiencies)).toBe(false);     // simple-melee — not granted
+  });
+});
+
+describe("recalc — feature effects: speed-bonus set (absolute floor)", () => {
+  it("speed-bonus set yields d.speed >= the set value even on a 25-ft race", () => {
+    const r = resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "speed-bonus", mode: "walk", set: true, value: 60 }]);
+    r.race = { slug: "halfling", name: "Halfling", speed: { walk: 25 } } as never;
+    expect(recalc(r).speed).toBe(60);
+  });
+
+  it("speed-bonus set does NOT lower a higher race speed (floor only)", () => {
+    const r = resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "speed-bonus", mode: "walk", set: true, value: 20 }]);
+    r.race = { slug: "human", name: "Human", speed: { walk: 30 } } as never;
+    expect(recalc(r).speed).toBe(30);
+  });
+
+  it("non-set walk speed-bonus still adds (existing additive behavior unchanged)", () => {
+    const d = recalc(resolvedWith(mkClass("rogue", "d8", 1), [{ kind: "speed-bonus", mode: "walk", value: 10 }]));
+    expect(d.speed).toBe(40); // 30 default + 10
   });
 });
 

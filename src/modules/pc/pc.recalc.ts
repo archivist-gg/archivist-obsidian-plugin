@@ -537,6 +537,16 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   for (const l of featureEffects.proficiencies.languages) {
     if (!profsForApply.languages.includes(l)) profsForApply.languages.push(l);
   }
+  // Effect-granted armor/weapon proficiencies are CATEGORIES ("heavy"/"shield",
+  // "simple"/"martial") — same form class/race/feat grants use — so they must
+  // land in the `.categories` bucket the proficiency-query matcher reads (incl.
+  // the heavy→medium→light implication). `.specific` is per-item slugs only.
+  for (const a of featureEffects.proficiencies.armor) {
+    if (!profsForApply.armor.categories.includes(a)) profsForApply.armor.categories.push(a);
+  }
+  for (const w of featureEffects.proficiencies.weapons) {
+    if (!profsForApply.weapons.categories.includes(w)) profsForApply.weapons.categories.push(w);
+  }
   profsForApply.languages.sort();
   const applied = registry
     ? computeAppliedBonuses(resolved, profsForApply, registry, warnings)
@@ -708,8 +718,11 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   }
   const ac = overrides.ac ?? acDerived;
 
-  // Speed
-  const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk + featureEffects.speed_walk_bonus;
+  // Speed. A `speed-bonus` with `set:true` is an absolute walk FLOOR (e.g.
+  // "your base speed becomes 60"): Math.max against the additive total, so it
+  // raises a slower race but never lowers an already-higher speed.
+  const additiveSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk + featureEffects.speed_walk_bonus;
+  const baseSpeed = Math.max(featureEffects.speed_walk_set, additiveSpeed);
   const adjustedSpeed = (baseSpeed * conditionEffects.speed_multiplier) - conditionEffects.speed_reduction_ft;
   const conditionSpeed = conditionEffects.speed_floor_zero ? 0 : Math.max(0, Math.floor(adjustedSpeed));
   const speed = overrides.speed ?? conditionSpeed;

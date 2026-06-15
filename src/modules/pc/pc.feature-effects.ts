@@ -15,14 +15,27 @@ export interface FeatureEffectTotals {
   initiative_bonus: number;
   hp_per_level_bonus: number;
   speed_walk_bonus: number;
+  /**
+   * Absolute walk-speed FLOOR from `speed-bonus` effects with `set:true` (e.g.
+   * a "base speed becomes 60" feature). Max across all set effects; 0 = none.
+   * recalc applies it as Math.max(set, race + additive bonuses) so it never
+   * lowers an already-higher speed and is independent of the additive bonus.
+   */
+  speed_walk_set: number;
   /** Max range per sense type granted by effects; 0 = none for that type. */
   senses: Record<SenseType, number>;
   /** One term per ac-bonus effect, labeled with the owning feature's name. */
   ac_terms: { value: number; requires_armor: boolean; label: string }[];
   resistances: string[];
   condition_immunities: string[];
-  /** skills are kebab-case slugs; saves are canonical ability keys. */
-  proficiencies: { skills: string[]; tools: string[]; languages: string[]; saves: Ability[] };
+  /**
+   * skills are kebab-case lowercase slugs (matching skill slugs). armor/weapons
+   * are lowercase CATEGORY words ("heavy"/"shield", "simple"/"martial") — the
+   * same form class/race/feat grants use; recalc folds them into the matcher's
+   * `.categories` bucket, NOT `.specific` (which is per-item slugs). tools/languages
+   * keep their display spelling; saves are canonical ability keys.
+   */
+  proficiencies: { skills: string[]; tools: string[]; languages: string[]; saves: Ability[]; armor: string[]; weapons: string[] };
   /**
    * v1 global melee-attack ability override (Hexblade "Lies", etc.). The first
    * `weapon-ability` effect with a concrete ability (not `"spellcasting"`) wins;
@@ -64,11 +77,12 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     initiative_bonus: 0,
     hp_per_level_bonus: 0,
     speed_walk_bonus: 0,
+    speed_walk_set: 0,
     senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0 },
     ac_terms: [],
     resistances: [],
     condition_immunities: [],
-    proficiencies: { skills: [], tools: [], languages: [], saves: [] },
+    proficiencies: { skills: [], tools: [], languages: [], saves: [], armor: [], weapons: [] },
     weaponAbility: null,
     rollModifiers: [],
     critRange: 20,
@@ -118,7 +132,12 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
       break;
     case "speed-bonus":
       // Only walk reaches DerivedStats.speed; other modes have no derived surface yet.
-      if (eff.mode === "walk") out.speed_walk_bonus += eff.value;
+      // `set:true` is an absolute floor (e.g. "base speed becomes 60"), tracked
+      // separately (max) from the additive bonus; recalc Math.max-es the two.
+      if (eff.mode === "walk") {
+        if (eff.set) out.speed_walk_set = Math.max(out.speed_walk_set, eff.value);
+        else out.speed_walk_bonus += eff.value;
+      }
       break;
     case "sense":
       out.senses[eff.type] = Math.max(out.senses[eff.type], eff.range);
@@ -136,6 +155,17 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
         pushUnique(out.proficiencies.tools, eff.value);
       } else if (eff.proficiency_type === "language") {
         pushUnique(out.proficiencies.languages, eff.value);
+      } else if (eff.proficiency_type === "armor") {
+        // Armor/weapon grants are CATEGORIES ("heavy"/"shield", "simple"/"martial"),
+        // not per-item slugs. Stored lowercase (bare word) to match the form
+        // class/race/feat grants use; recalc folds these into
+        // proficiencies.armor.categories, where the matcher compares them against
+        // armor.category (`.specific` is for per-item slugs only).
+        pushUnique(out.proficiencies.armor, eff.value.toLowerCase());
+      } else if (eff.proficiency_type === "weapon") {
+        // Weapon categories ("simple"/"martial") fold into weapons.categories,
+        // matched against weapon.category's base ("martial-melee" → "martial").
+        pushUnique(out.proficiencies.weapons, eff.value.toLowerCase());
       } else {
         const ab = normalizeAbility(eff.value);
         if (ab && !out.proficiencies.saves.includes(ab)) out.proficiencies.saves.push(ab);

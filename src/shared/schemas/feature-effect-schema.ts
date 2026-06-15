@@ -9,6 +9,9 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     kind: z.literal("speed-bonus"),
     mode: z.enum(["walk", "fly", "swim", "climb", "burrow"]),
     value: z.number().int(),
+    // when true, value is an absolute floor (Math.max), not additive; currently
+    // only surfaced for mode:"walk" — other modes have no derived speed yet.
+    set: z.boolean().optional(),
   }),
   z.object({
     kind: z.literal("sense"),
@@ -25,10 +28,19 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
       timing: z.string().min(1),
     }).optional(),
   }),
-  z.object({ kind: z.literal("damage-bonus"), damage_type: z.string().min(1), amount: z.string().min(1) }),
+  z.object({
+    kind: z.literal("damage-bonus"),
+    // intentionally an open string, NOT a damage-type enum: must accept the
+    // literal "chosen" (player-selected damage type at action time) alongside
+    // canonical damage types. Do not tighten to an enum.
+    damage_type: z.string().min(1),
+    amount: z.string().min(1),
+    applies_to: z.enum(["weapon", "spell", "all"]).optional(),
+    condition: z.string().optional(),
+  }),
   z.object({
     kind: z.literal("proficiency"),
-    proficiency_type: z.enum(["skill", "tool", "language", "saving-throw"]),
+    proficiency_type: z.enum(["skill", "tool", "language", "saving-throw", "armor", "weapon"]),
     value: z.string().min(1),
   }),
   z.object({

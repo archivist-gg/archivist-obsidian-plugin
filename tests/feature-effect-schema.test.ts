@@ -170,3 +170,59 @@ describe("featureEffectSchema — attack-rule", () => {
     expect(featureEffectSchema.safeParse({ kind: "attack-rule" }).success).toBe(false);
   });
 });
+
+describe("featureEffectSchema — proficiency armor/weapon", () => {
+  it("accepts proficiency with armor type", () => {
+    expect(featureEffectSchema.safeParse({ kind: "proficiency", proficiency_type: "armor", value: "heavy" }).success).toBe(true);
+  });
+
+  it("accepts proficiency with weapon type", () => {
+    expect(featureEffectSchema.safeParse({ kind: "proficiency", proficiency_type: "weapon", value: "longsword" }).success).toBe(true);
+  });
+
+  it("still accepts the original proficiency types (regression)", () => {
+    for (const proficiency_type of ["skill", "tool", "language", "saving-throw"] as const) {
+      expect(featureEffectSchema.safeParse({ kind: "proficiency", proficiency_type, value: "x" }).success).toBe(true);
+    }
+  });
+
+  it("rejects an unknown proficiency type", () => {
+    expect(featureEffectSchema.safeParse({ kind: "proficiency", proficiency_type: "feat", value: "x" }).success).toBe(false);
+  });
+});
+
+describe("featureEffectSchema — damage-bonus scoping", () => {
+  it("accepts damage-bonus with applies_to, condition, and damage_type 'chosen'", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "damage-bonus", damage_type: "chosen", amount: "1d6", applies_to: "weapon", condition: "while raging",
+    }).success).toBe(true);
+  });
+
+  it("accepts each applies_to scope", () => {
+    for (const applies_to of ["weapon", "spell", "all"] as const) {
+      expect(featureEffectSchema.safeParse({ kind: "damage-bonus", damage_type: "fire", amount: "1d6", applies_to }).success).toBe(true);
+    }
+  });
+
+  it("still accepts the minimal damage-bonus (regression)", () => {
+    expect(featureEffectSchema.safeParse({ kind: "damage-bonus", damage_type: "fire", amount: "1d6" }).success).toBe(true);
+  });
+
+  it("rejects an unknown applies_to", () => {
+    expect(featureEffectSchema.safeParse({ kind: "damage-bonus", damage_type: "fire", amount: "1d6", applies_to: "ranged" }).success).toBe(false);
+  });
+});
+
+describe("featureEffectSchema — speed-bonus set", () => {
+  it("accepts speed-bonus with set true", () => {
+    expect(featureEffectSchema.safeParse({ kind: "speed-bonus", mode: "walk", value: 60, set: true }).success).toBe(true);
+  });
+
+  it("still accepts speed-bonus without set (additive, regression)", () => {
+    expect(featureEffectSchema.safeParse({ kind: "speed-bonus", mode: "walk", value: 10 }).success).toBe(true);
+  });
+
+  it("rejects a non-boolean set", () => {
+    expect(featureEffectSchema.safeParse({ kind: "speed-bonus", mode: "walk", value: 60, set: "yes" }).success).toBe(false);
+  });
+});
