@@ -338,6 +338,28 @@ describe("recalc — feature effects: crit-range", () => {
   });
 });
 
+describe("recalc — feature effects: attack notes (reroll-damage / attack-rule)", () => {
+  it("reroll-damage and attack-rule surface as attack notes", () => {
+    const r = resolvedWithEquipment([
+      { kind: "reroll-damage", max_reroll: 2 }, { kind: "attack-rule", flag: "no-ranged-in-melee-disadvantage" },
+    ], [{ item: "[[club]]", equipped: true }]);
+    expect(recalc(r, registryWithClub()).attacks[0].attackNotes).toEqual(["Reroll 2s", "No disadvantage firing in melee"]);
+  });
+
+  it("once_per_die reroll-damage appends the (once/die) suffix", () => {
+    const r = resolvedWithEquipment(
+      [{ kind: "reroll-damage", max_reroll: 1, once_per_die: true }],
+      [{ item: "[[club]]", equipped: true }],
+    );
+    expect(recalc(r, registryWithClub()).attacks[0].attackNotes).toEqual(["Reroll 1s (once/die)"]);
+  });
+
+  it("leaves attackNotes undefined on attacks when no annotation effect is present", () => {
+    const r = resolvedWithEquipment([], [{ item: "[[club]]", equipped: true }]);
+    expect(recalc(r, registryWithClub()).attacks[0].attackNotes).toBeUndefined();
+  });
+});
+
 describe("recalc — feature effects: extra-attack", () => {
   it("extra-attack sets attacksPerAction (1 + max count, non-stacking)", () => {
     const d = recalc(resolvedWith(mkClass("reaver", "d10", 5), [

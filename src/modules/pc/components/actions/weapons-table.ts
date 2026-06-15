@@ -39,6 +39,12 @@ export class WeaponsTable implements SheetComponent {
       const nameCell = row.createDiv({ cls: "pc-weapon-name" });
       nameCell.createDiv({ cls: "pc-action-row-name", text: a.name });
       if (a.subLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: a.subLabel });
+      // Attack notes (reroll-damage / attack-rule captions) — muted line under
+      // the weapon name. Display-only; joined with " · ". Absent when no
+      // annotation effect mapped a list onto this row.
+      if (a.attackNotes?.length) {
+        nameCell.createDiv({ cls: "pc-weapon-note", text: a.attackNotes.join(" · ") });
+      }
 
       // Range
       row.createDiv({ cls: "pc-weapon-range", text: a.range ?? "" });

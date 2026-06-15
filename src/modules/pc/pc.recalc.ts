@@ -708,15 +708,6 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
   }
   const ac = overrides.ac ?? acDerived;
 
-  // Crit-range annotation (post-apply): map the folded weapon crit threshold
-  // onto each already-built attack row as display-only metadata. Only when an
-  // effect actually lowered it (< 20) so untouched rows keep `critRange:
-  // undefined` and existing attack snapshots are unaffected. Null-guarded so
-  // the no-equipment / no-registry path is a no-op.
-  if (derivedEquipment && featureEffects.critRange < 20) {
-    derivedEquipment.attacks = derivedEquipment.attacks.map((a) => ({ ...a, critRange: featureEffects.critRange }));
-  }
-
   // Speed
   const baseSpeed = speedFromRace(resolved) + applied.speed_bonuses.walk + featureEffects.speed_walk_bonus;
   const adjustedSpeed = (baseSpeed * conditionEffects.speed_multiplier) - conditionEffects.speed_reduction_ft;
@@ -823,9 +814,16 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     acInformational: acInformationalDerived,
     // Always ≥ 1; non-stacking (Math.max) extra attacks fold in pc.feature-effects.
     attacksPerAction: 1 + featureEffects.extraAttack,
+    // Consolidated post-apply over the built attack rows: the d20 condition
+    // penalty (always), plus display-only annotations conditionally spread so
+    // untouched rows keep `critRange`/`attackNotes` ABSENT (not 20 / not []).
+    // crit-range: folded weapon crit threshold, only when an effect lowered it.
+    // attackNotes: reroll-damage / attack-rule captions, only when non-empty.
     attacks: (derivedEquipment?.attacks ?? []).map((a) => ({
       ...a,
       toHit: a.toHit + conditionEffects.d20_test_penalty,
+      ...(featureEffects.critRange < 20 ? { critRange: featureEffects.critRange } : {}),
+      ...(featureEffects.attackNotes.length ? { attackNotes: featureEffects.attackNotes } : {}),
     })),
     equippedSlots: derivedEquipment?.equippedSlots ?? {},
     carriedWeight: derivedEquipment?.carriedWeight ?? 0,

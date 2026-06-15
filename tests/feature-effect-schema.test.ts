@@ -130,3 +130,43 @@ describe("featureEffectSchema — crit-range", () => {
     expect(featureEffectSchema.safeParse({ kind: "crit-range", min_roll: 19, applies_to: "ranged" }).success).toBe(false);
   });
 });
+
+describe("featureEffectSchema — reroll-damage", () => {
+  it("accepts reroll-damage with just max_reroll", () => {
+    expect(featureEffectSchema.safeParse({ kind: "reroll-damage", max_reroll: 2 }).success).toBe(true);
+  });
+
+  it("accepts reroll-damage with optional applies_to and once_per_die", () => {
+    expect(featureEffectSchema.safeParse({
+      kind: "reroll-damage", max_reroll: 1, applies_to: "weapon", once_per_die: true,
+    }).success).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "reroll-damage", max_reroll: 2, applies_to: "spell" }).success).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "reroll-damage", max_reroll: 2, applies_to: "all" }).success).toBe(true);
+  });
+
+  it("rejects reroll-damage with max_reroll 0 (not positive)", () => {
+    expect(featureEffectSchema.safeParse({ kind: "reroll-damage", max_reroll: 0 }).success).toBe(false);
+  });
+
+  it("rejects reroll-damage with a non-integer max_reroll", () => {
+    expect(featureEffectSchema.safeParse({ kind: "reroll-damage", max_reroll: 1.5 }).success).toBe(false);
+  });
+
+  it("rejects reroll-damage with an unknown applies_to", () => {
+    expect(featureEffectSchema.safeParse({ kind: "reroll-damage", max_reroll: 2, applies_to: "ranged" }).success).toBe(false);
+  });
+});
+
+describe("featureEffectSchema — attack-rule", () => {
+  it("accepts attack-rule with the no-ranged-in-melee-disadvantage flag", () => {
+    expect(featureEffectSchema.safeParse({ kind: "attack-rule", flag: "no-ranged-in-melee-disadvantage" }).success).toBe(true);
+  });
+
+  it("rejects attack-rule with an unknown flag", () => {
+    expect(featureEffectSchema.safeParse({ kind: "attack-rule", flag: "fly-faster" }).success).toBe(false);
+  });
+
+  it("rejects attack-rule missing the flag", () => {
+    expect(featureEffectSchema.safeParse({ kind: "attack-rule" }).success).toBe(false);
+  });
+});

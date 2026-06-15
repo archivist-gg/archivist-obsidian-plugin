@@ -61,4 +61,14 @@ export const featureEffectSchema = z.discriminatedUnion("kind", [
     applies_to: z.enum(["weapon", "spell", "all"]).optional(),
     condition: z.string().optional(),
   }),
+  z.object({
+    kind: z.literal("reroll-damage"),
+    max_reroll: z.number().int().positive(),
+    applies_to: z.enum(["weapon", "spell", "all"]).optional(),
+    once_per_die: z.boolean().optional(),
+  }),
+  z.object({
+    kind: z.literal("attack-rule"),
+    flag: z.enum(["no-ranged-in-melee-disadvantage"]),
+  }),
 ]);

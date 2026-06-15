@@ -50,6 +50,13 @@ export interface FeatureEffectTotals {
    * DerivedStats.attacksPerAction as `1 + extraAttack`.
    */
   extraAttack: number;
+  /**
+   * Order-preserving display-only captions surfaced from `reroll-damage` and
+   * `attack-rule` effects (e.g. "Reroll 2s", "No disadvantage firing in melee").
+   * recalc post-applies this list onto each AttackRow as `attackNotes` only when
+   * non-empty, so untouched attack rows keep `attackNotes: undefined`.
+   */
+  attackNotes: string[];
 }
 
 export function emptyFeatureEffectTotals(): FeatureEffectTotals {
@@ -66,6 +73,7 @@ export function emptyFeatureEffectTotals(): FeatureEffectTotals {
     rollModifiers: [],
     critRange: 20,
     extraAttack: 0,
+    attackNotes: [],
   };
 }
 
@@ -157,6 +165,14 @@ function applyEffect(out: FeatureEffectTotals, eff: FeatureEffect, label: string
       // Non-stacking: Extra Attack features don't add together (two count:1
       // effects → 1 extra attack, not 2). Highest count wins.
       out.extraAttack = Math.max(out.extraAttack, eff.count);
+      break;
+    case "reroll-damage":
+      // Display-only caption. v1 does not filter by applies_to (unlike crit-range);
+      // a spell-only reroll still surfaces a note here.
+      out.attackNotes.push(`Reroll ${eff.max_reroll}s${eff.once_per_die ? " (once/die)" : ""}`);
+      break;
+    case "attack-rule":
+      if (eff.flag === "no-ranged-in-melee-disadvantage") out.attackNotes.push("No disadvantage firing in melee");
       break;
     default:
       // apply-condition, damage-bonus, and future kinds: not derived-stat effects.

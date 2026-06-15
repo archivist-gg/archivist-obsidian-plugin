@@ -33,4 +33,6 @@ export type FeatureEffect =
       condition?: string;
     }
   | { kind: "crit-range"; min_roll: number; applies_to?: "weapon" | "spell" | "all"; condition?: string }
-  | { kind: "extra-attack"; count: number };
+  | { kind: "extra-attack"; count: number }
+  | { kind: "reroll-damage"; max_reroll: number; applies_to?: "weapon" | "spell" | "all"; once_per_die?: boolean }
+  | { kind: "attack-rule"; flag: "no-ranged-in-melee-disadvantage" };

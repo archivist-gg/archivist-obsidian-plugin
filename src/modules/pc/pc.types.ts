@@ -275,6 +275,12 @@ export interface AttackRow {
    *  crit so untouched attack rows are unchanged. The weapons table renders a
    *  "crit X–20" caption whenever it is set and < 20. */
   critRange?: number;
+  /** Order-preserving display-only captions from `reroll-damage` / `attack-rule`
+   *  feature effects (e.g. ["Reroll 2s", "No disadvantage firing in melee"]).
+   *  Mapped on in recalc; absent (undefined) when no such effect is present so
+   *  untouched attack rows are unchanged. The weapons table renders these joined
+   *  with " · " as a muted caption under the weapon name. */
+  attackNotes?: string[];
 }
 
 export interface ResolvedEquipped {

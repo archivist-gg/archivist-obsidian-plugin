@@ -226,6 +226,28 @@ describe("WeaponsTable", () => {
     expect(root.querySelector(".pc-weapon-crit")).toBeNull();
   });
 
+  it("renders attackNotes joined with separator as a muted caption under the name", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Greatsword", range: "melee 5 ft.", toHit: 6,
+      damageDice: "2d6 + 4", damageType: "slashing",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [], slotKey: "mainhand",
+      attackNotes: ["Reroll 2s", "No disadvantage firing in melee"],
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const note = root.querySelector(".pc-weapon-name .pc-weapon-note");
+    expect(note).not.toBeNull();
+    expect(note?.textContent).toBe("Reroll 2s · No disadvantage firing in melee");
+  });
+
+  it("renders no attack-note caption when attackNotes is absent", () => {
+    const root = mountContainer();
+    new WeaponsTable().render(root, ctxWithAttacks([sword()]));
+    expect(root.querySelector(".pc-weapon-note")).toBeNull();
+  });
+
   it("does NOT render a roll-modifier chip scoped to ability-check on the weapon row", () => {
     const root = mountContainer();
     new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
