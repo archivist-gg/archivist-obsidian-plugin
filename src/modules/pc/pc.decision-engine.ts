@@ -14,6 +14,9 @@ export interface ResolvedOption {
   value: string;
   label: string;
   entity?: RegisteredEntity;
+  /** The option's own prose (a select-inline InlineOption may supply one — e.g. each
+   *  Combat Mastery describes what it does). Surfaced by the strip near the chips. */
+  description?: string;
   /** True when a `from` slug has no entity behind it — render visible-but-inert. */
   missing?: boolean;
 }
@@ -154,7 +157,7 @@ function categoryToEntitySelect(category: string, id: string): Choice {
 function enumerateOptions(choice: Choice, ctx: DecisionContext, ownerBare: string): ResolvedOption[] {
   switch (choice.kind) {
     case "select-inline":
-      return choice.options.map((o) => ({ value: o.value, label: o.label }));
+      return choice.options.map((o) => ({ value: o.value, label: o.label, description: o.description }));
     case "select-entity": {
       if (choice.from) {
         const byBare = new Map<string, RegisteredEntity>();

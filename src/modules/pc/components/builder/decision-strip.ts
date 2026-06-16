@@ -163,7 +163,6 @@ function renderRow(
     if (!done) head.createSpan({ cls: "pc-dstrip-bang", text: "!" });
     head.createSpan({ cls: "pc-dstrip-name", text: labelOf(item) });
     head.createSpan({ cls: "pc-dstrip-val", text: done ? `✓ ${selectedSummary(item)}` : statusText(item) });
-    head.createSpan({ cls: "pc-dstrip-chev", text: open ? "▾" : "▸" });
     head.addEventListener("click", () => {
       if (open) collapsed.add(rowKey); else collapsed.delete(rowKey);
       draw();
@@ -401,10 +400,18 @@ function renderControl(
       cls: `pc-bchoice-chip${sel ? " sel" : ""}${o.missing ? " inert" : ""}`,
       text: sel ? `✓ ${o.label}` : o.missing ? `${o.label} (missing)` : o.label,
     });
+    // Each option's own prose as a hover tooltip, so the player can preview what an
+    // option does before picking it (the data carries it — it was never surfaced).
+    if (o.description) chip.setAttribute("title", o.description);
     if (!o.missing) chip.addEventListener("click", () => {
       applyChoiceToggle(selected, o.value, need);
       writeValue(ctx, item, opts, need === 1 ? ([...selected][0] ?? null) : [...selected]);
     });
+  }
+  // The selected option's prose, shown beneath the chips, so the pick is
+  // self-explanatory (e.g. the chosen Combat Mastery's effect).
+  for (const o of item.options) {
+    if (selected.has(o.value) && o.description?.trim()) renderDescBlock(nest, ctx, o.description.trim());
   }
 }
 

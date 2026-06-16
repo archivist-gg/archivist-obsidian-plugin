@@ -516,7 +516,7 @@ describe("renderDecisionStrip", () => {
     const liveItem = (over: Partial<DecisionItem> = {}): DecisionItem =>
       item({ status: "resolved", selected: "wood-elf", ...over });
 
-    it("a RESOLVED row is EXPANDED by default — chips mounted, chevron shows ▾", () => {
+    it("a RESOLVED row is EXPANDED by default — chips mounted, no chevron", () => {
       const c = mountContainer();
       renderDecisionStrip(c, mkCtx(), { items: [liveItem()], pill: domainPill, live: true, stateKey: "t" });
       const row = c.querySelector(".pc-dstrip-row")!;
@@ -526,13 +526,11 @@ describe("renderDecisionStrip", () => {
       // header + ✓ summary visible, state class retained.
       expect(row.classList.contains("done")).toBe(true);
       expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Wood Elf");
-      // chevron present and open (▾).
-      const chev = row.querySelector(".pc-dstrip-chev")!;
-      expect(chev).not.toBeNull();
-      expect(chev.textContent).toBe("▾");
+      // no chevron glyph — the clickable head IS the collapse affordance.
+      expect(row.querySelector(".pc-dstrip-chev")).toBeNull();
     });
 
-    it("clicking the head collapses the row — nest/chips gone, header + ✓ + state stay, chevron flips to ▸", () => {
+    it("clicking the head collapses the row — nest/chips gone, header + ✓ + state stay", () => {
       const c = mountContainer();
       renderDecisionStrip(c, mkCtx(), { items: [liveItem()], pill: domainPill, live: true, stateKey: "t" });
       const head = c.querySelector(".pc-dstrip-head") as HTMLElement;
@@ -545,8 +543,8 @@ describe("renderDecisionStrip", () => {
       expect(row.classList.contains("done")).toBe(true);
       expect(row.querySelector(".pc-dstrip-name")!.textContent).toContain("Elven Lineage");
       expect(row.querySelector(".pc-dstrip-val")!.textContent).toContain("Wood Elf");
-      // chevron flipped to ▸.
-      expect(row.querySelector(".pc-dstrip-chev")!.textContent).toBe("▸");
+      // still no chevron glyph.
+      expect(row.querySelector(".pc-dstrip-chev")).toBeNull();
     });
 
     it("a second head click re-expands the row", () => {
@@ -558,7 +556,7 @@ describe("renderDecisionStrip", () => {
       const row = c.querySelector(".pc-dstrip-row")!;
       expect(row.querySelector(".pc-dstrip-nest")).not.toBeNull();
       expect(row.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
-      expect(row.querySelector(".pc-dstrip-chev")!.textContent).toBe("▾");
+      expect(row.querySelector(".pc-dstrip-chev")).toBeNull();
     });
 
     it("collapse state persists across a fresh render with the same ctx (builderUiState)", () => {
@@ -572,7 +570,6 @@ describe("renderDecisionStrip", () => {
       renderDecisionStrip(c2, ctx, { ...opts });
       const row = c2.querySelector(".pc-dstrip-row")!;
       expect(row.querySelector(".pc-dstrip-nest")).toBeNull();        // still collapsed
-      expect(row.querySelector(".pc-dstrip-chev")!.textContent).toBe("▸");
     });
 
     it("clicking a CHIP in the nest does NOT collapse the row (and still writes)", () => {
