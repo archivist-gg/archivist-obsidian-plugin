@@ -93,42 +93,14 @@ function renderRow(
   opts: DecisionStripOptions,
 ): void {
   // Informational: no choice (`choice` is a never-read sentinel — engine Task 16
-  // contract). In the live strip, surface the feature's own prose in a collapsible
-  // nest (default open) so each card explains itself; without prose, or in browse
-  // mode, fall back to the compact "described in the feature text" label.
+  // contract). Just the feature name + its prose, always shown — no toggle, no
+  // label, no chevron. The nest's flex-basis:100% wraps the text onto its own line.
   if (item.status === "informational") {
     const desc = opts.live ? item.description?.trim() : undefined;
-    if (!desc) {
-      const row = root.createDiv({ cls: "pc-dstrip-row info" });
-      row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
-      row.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
-      row.createSpan({ cls: "pc-dstrip-val", text: "described in the feature text" });
-      return;
-    }
-    const bag = ctx.builderUiState;
-    const collapseKey = `${opts.stateKey}.rowsCollapsed`;
-    const collapsed = (bag?.get(collapseKey) as Set<string> | undefined) ?? new Set<string>();
-    bag?.set(collapseKey, collapsed);
-    const rowKey = `${item.level}.${item.key}`;
-    const row = root.createDiv();
-    const draw = (): void => {
-      row.empty();
-      const open = !collapsed.has(rowKey);
-      row.className = "pc-dstrip-row info";
-      const head = row.createDiv({ cls: "pc-dstrip-head" });
-      head.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
-      head.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
-      // The crimson, clickable "described in the feature text" label IS the
-      // expand/collapse cue (existing `.info .pc-dstrip-val` idiom) — NO chevron,
-      // in harmony with the rest of the strip.
-      head.createSpan({ cls: "pc-dstrip-val", text: open ? "hide" : "described in the feature text" });
-      head.addEventListener("click", () => {
-        if (open) collapsed.add(rowKey); else collapsed.delete(rowKey);
-        draw();
-      });
-      if (open) renderDescBlock(row.createDiv({ cls: "pc-dstrip-nest" }), ctx, desc);
-    };
-    draw();
+    const row = root.createDiv({ cls: "pc-dstrip-row info" });
+    row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
+    row.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
+    if (desc) renderDescBlock(row.createDiv({ cls: "pc-dstrip-nest" }), ctx, desc);
     return;
   }
   const done = item.status === "resolved";
