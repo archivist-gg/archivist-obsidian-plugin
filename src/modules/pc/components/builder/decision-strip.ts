@@ -92,15 +92,38 @@ function renderRow(
   item: DecisionItem,
   opts: DecisionStripOptions,
 ): void {
-  // Informational: no choice (`choice` is a never-read sentinel — engine Task 16
-  // contract). Just the feature name + its prose, always shown — no toggle, no
-  // label, no chevron. The nest's flex-basis:100% wraps the text onto its own line.
+  // Informational: no choice to make (`choice` is a never-read sentinel — engine
+  // Task 16 contract), so the block is COLLAPSED by default. Click the header to
+  // reveal the feature's prose; no chevron, no label (per design) — the header's
+  // pointer cursor is the affordance. Without prose, a bare name row.
   if (item.status === "informational") {
     const desc = opts.live ? item.description?.trim() : undefined;
-    const row = root.createDiv({ cls: "pc-dstrip-row info" });
-    row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
-    row.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
-    if (desc) renderDescBlock(row.createDiv({ cls: "pc-dstrip-nest" }), ctx, desc);
+    if (!desc) {
+      const row = root.createDiv({ cls: "pc-dstrip-row info" });
+      row.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
+      row.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
+      return;
+    }
+    const bag = ctx.builderUiState;
+    const expandKey = `${opts.stateKey}.infoExpanded`;
+    const expanded = (bag?.get(expandKey) as Set<string> | undefined) ?? new Set<string>();
+    bag?.set(expandKey, expanded);
+    const rowKey = `${item.level}.${item.key}`;
+    const row = root.createDiv();
+    const draw = (): void => {
+      row.empty();
+      const open = expanded.has(rowKey); // default: absent ⇒ collapsed
+      row.className = "pc-dstrip-row info expandable";
+      const head = row.createDiv({ cls: "pc-dstrip-head" });
+      head.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
+      head.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
+      head.addEventListener("click", () => {
+        if (open) expanded.delete(rowKey); else expanded.add(rowKey);
+        draw();
+      });
+      if (open) renderDescBlock(row.createDiv({ cls: "pc-dstrip-nest" }), ctx, desc);
+    };
+    draw();
     return;
   }
   const done = item.status === "resolved";
