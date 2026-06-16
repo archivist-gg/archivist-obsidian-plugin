@@ -118,7 +118,10 @@ function renderRow(
       const head = row.createDiv({ cls: "pc-dstrip-head" });
       head.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
       head.createSpan({ cls: "pc-dstrip-name", text: item.featureName });
-      head.createSpan({ cls: "pc-dstrip-chev", text: open ? "▾" : "▸" });
+      // The crimson, clickable "described in the feature text" label IS the
+      // expand/collapse cue (existing `.info .pc-dstrip-val` idiom) — NO chevron,
+      // in harmony with the rest of the strip.
+      head.createSpan({ cls: "pc-dstrip-val", text: open ? "hide" : "described in the feature text" });
       head.addEventListener("click", () => {
         if (open) collapsed.add(rowKey); else collapsed.delete(rowKey);
         draw();
