@@ -18,9 +18,12 @@ export interface PoolGrant {
   grants: Array<{ feature: string; at_level: number }>;
 }
 
+/** Presentation hint for a data-declared tab. "text" reserved for later. */
+export type PoolLayout = "spell-like" | "blocks";
+
 /** A data-declared tab that renders a pool (one generic pool-tab per declaration). */
 export interface TabDecl {
   id: string;
   label: string;
-  renders: { pool: string };
+  renders: { pool: string; layout?: PoolLayout };
 }

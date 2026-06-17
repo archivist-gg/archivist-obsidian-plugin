@@ -27,5 +27,8 @@ export const poolGrantSchema = z.object({
 export const tabDeclSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
-  renders: z.object({ pool: z.string().min(1) }),
+  renders: z.object({
+    pool: z.string().min(1),
+    layout: z.enum(["spell-like", "blocks"]).optional(),
+  }),
 });
