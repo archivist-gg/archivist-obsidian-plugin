@@ -9,13 +9,6 @@
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-crimson);
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 9px; cursor: pointer;
 }
-.archivist-pc-sheet .pc-conc-banner {
-  display: flex; align-items: center; gap: var(--pc-space-2);
-  background: var(--pc-parchment-dark); border-left: 3px solid var(--pc-crimson);
-  border-radius: var(--pc-radius-sm); padding: 5px 10px; font-size: var(--pc-fs-body); margin: var(--pc-space-2) 0;
-}
-.archivist-pc-sheet .pc-conc-end { margin-left: auto; color: var(--pc-crimson); font-style: italic; font-family: var(--pc-font-serif); cursor: pointer; }
-
 /* Slot tracker now renders via renderChargeBoxes (.pc-charge-boxes /
    .archivist-toggle-box, styled in components.css + archivist-dnd.css);
    no pip/count/prep-box rules live here anymore. */

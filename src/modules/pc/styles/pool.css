@@ -1,0 +1,23 @@
+/* Pool tabs + the shared active-effects rail. Reuses the Spells prepare-view,
+   blocks, and pc-panel vocabularies; only the genuinely-new bits live here. */
+
+/* Active-effects rail — framed pc-panel tiles (concentration / active boons). */
+.archivist-pc-sheet .pc-ae-rail { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-ae-tile { display: flex; align-items: center; gap: var(--pc-space-3); padding: 6px 10px; }
+.archivist-pc-sheet .pc-ae-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: var(--pc-crimson); flex-shrink: 0; }
+.archivist-pc-sheet .pc-ae-icon svg { width: 18px; height: 18px; }
+.archivist-pc-sheet .pc-ae-text { display: flex; flex-direction: column; gap: 1px; line-height: var(--pc-lh-snug); }
+.archivist-pc-sheet .pc-ae-label { font-family: var(--pc-font-serif); font-size: var(--pc-fs-micro); font-weight: 600; letter-spacing: var(--pc-ls-caps-lg); text-transform: uppercase; color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-ae-name { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-body); color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-ae-end { margin-left: 2px; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-sm); color: var(--pc-crimson); background: transparent; cursor: pointer; line-height: 1; }
+.archivist-pc-sheet .pc-ae-end:hover { background: rgba(146, 38, 16, 0.10); }
+
+/* Inline activatable control on a selected boon (spell-like row + blocks head). */
+.archivist-pc-sheet .pc-pool-active { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; border: 1px solid var(--pc-crimson); border-radius: 20px; padding: 2px 10px; color: var(--pc-crimson); background: transparent; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.archivist-pc-sheet .pc-pool-active.on { color: var(--pc-parchment-light); background: var(--pc-crimson); }
+
+/* blocks layout: a boon as a pc-block card with a controls head (the crimson
+   hairline rule moves from the title onto the head so controls sit beside it). */
+.archivist-pc-sheet .pc-boon-block .pc-block-head { display: flex; align-items: baseline; gap: var(--pc-space-2); border-bottom: 1px solid var(--pc-crimson); margin: 0 0 var(--pc-space-2); padding-bottom: 3px; }
+.archivist-pc-sheet .pc-boon-block .pc-block-head .pc-block-title { border-bottom: none; padding-bottom: 0; margin: 0; flex: 1; min-width: 0; }
+.archivist-pc-sheet .pc-boon-block .pc-block-controls { display: flex; align-items: center; gap: var(--pc-space-2); flex-shrink: 0; }
