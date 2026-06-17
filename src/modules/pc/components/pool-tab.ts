@@ -63,6 +63,19 @@ export class PoolTab implements SheetComponent {
       }
     }
 
+    const stranded = strandedSelections(pool);
+    if (stranded.length) {
+      root.createDiv({ cls: "pc-actions-section-head" }).createSpan({ text: "Selected · prerequisite unmet" });
+      const list = root.createDiv({ cls: "pc-spell-list" });
+      for (const entry of stranded) {
+        this.row(list, entry, {
+          selected: true,
+          atCap,
+          active: activeBuffs.includes(entry.slug),
+        }, pool, ctx);
+      }
+    }
+
     if (pool.grants.length) {
       root.createDiv({ cls: "pc-actions-section-head" }).createSpan({ text: "Granted" });
       const list = root.createDiv({ cls: "pc-spell-list" });
@@ -136,6 +149,11 @@ export class PoolTab implements SheetComponent {
         granted: false, selected: selectedSlugs.has(entry.slug), atCap, active: activeBuffs.includes(entry.slug),
       }, pool, ctx);
     }
+    for (const entry of strandedSelections(pool)) {
+      this.blockCard(root, entry, {
+        granted: false, selected: true, atCap, active: activeBuffs.includes(entry.slug),
+      }, pool, ctx);
+    }
     for (const entry of pool.grants) {
       this.blockCard(root, entry, { granted: true, selected: false, atCap, active: false }, pool, ctx);
     }
@@ -190,6 +208,13 @@ export class PoolTab implements SheetComponent {
 
     if (e.description) section.createEl("p", { cls: "pc-block-description", text: e.description });
   }
+}
+
+/** Selected picks no longer present in `available` (their prereq is now unmet);
+ *  the resolver keeps them in `selected`, so we surface them as removable rows. */
+function strandedSelections(pool: ResolvedPool): ResolvedPoolEntry[] {
+  const avail = new Set(pool.available.map((e) => e.slug));
+  return pool.selected.filter((e) => !avail.has(e.slug));
 }
 
 /** Active-effects rail items: each selected, activatable, currently-on boon. */

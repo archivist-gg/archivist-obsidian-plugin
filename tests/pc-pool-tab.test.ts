@@ -198,3 +198,49 @@ describe("PoolTab — blocks layout", () => {
     expect(el.querySelector(".pc-ae-tile .pc-ae-name")?.textContent).toBe("majesty");
   });
 });
+
+describe("PoolTab — stranded selected picks (prereq now unmet)", () => {
+  // a pool whose only selection is NOT in `available` (its prereq is unmet)
+  const strandedPool: ResolvedPool = {
+    ...basePool, count: 2,
+    selected: [{ slug: "lofty-boon", entity: ofEntity("lofty-boon", { prerequisites: [{ kind: "level", min: 20 }] }) as never }],
+    available: [{ slug: "hell-mage", entity: ofEntity("hell-mage") as never }],
+    grants: [],
+  };
+
+  it("spell-like: renders stranded picks in a 'prerequisite unmet' band", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(strandedPool));
+    const head = [...el.querySelectorAll(".pc-actions-section-head")].find((h) => h.textContent?.toLowerCase().includes("prerequisite"));
+    expect(head).toBeTruthy();
+    expect(el.textContent).toContain("lofty-boon");
+  });
+
+  it("spell-like: the stranded row's box is checked and clicking it removes the pick", () => {
+    const setChoice = vi.fn();
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(strandedPool, { setChoice }));
+    const checked = el.querySelectorAll<HTMLElement>(".archivist-toggle-box.archivist-toggle-box-checked");
+    expect(checked.length).toBe(1); // only the stranded selected pick
+    checked[0].click();
+    expect(setChoice).toHaveBeenCalledWith(0, 2, "interdict-boons", []);
+  });
+
+  it("blocks: renders a stranded pick as a removable card", () => {
+    const setChoice = vi.fn();
+    const el = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el, mkCtx(strandedPool, { setChoice }));
+    expect(el.textContent).toContain("lofty-boon");
+    const box = el.querySelector<HTMLElement>(".pc-boon-block .archivist-toggle-box.archivist-toggle-box-checked");
+    expect(box).not.toBeNull();
+    box!.click();
+    expect(setChoice).toHaveBeenCalledWith(0, 2, "interdict-boons", []);
+  });
+
+  it("does not render a stranded band when every selected pick is in available", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool)); // baleful-glare is selected AND available
+    const head = [...el.querySelectorAll(".pc-actions-section-head")].find((h) => h.textContent?.toLowerCase().includes("prerequisite"));
+    expect(head).toBeUndefined();
+  });
+});
