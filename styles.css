@@ -9674,6 +9674,25 @@ body.theme-light .archivist-tag-atk:hover {
   margin-top: 2px;
 }
 .archivist-pc-sheet .pc-header-actions { display: flex; gap: var(--pc-space-2); }
+/* "Manage & Level Up" gear — outline crimson, inline after the name.
+   Same treatment family as the ☾ short-rest button (.pc-rest-btn). */
+.archivist-pc-sheet .pc-name-row { display: flex; align-items: center; gap: 9px; }
+.archivist-pc-sheet .pc-manage-gear {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--pc-crimson);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-crimson);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-manage-gear:hover { background: rgba(146, 38, 16, 0.10); }
+.archivist-pc-sheet .pc-manage-gear .svg-icon { width: 17px; height: 17px; }
 /* NOTE: `.pc-rest-btn` is styled canonically in rest.css. A stale placeholder
    rule used to live here (from when rest was a disabled "coming soon" button).
    Because rest.css is imported later but never re-declared `opacity`, the old
