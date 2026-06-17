@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { renderCastView } from "./spells/cast-view";
 import { renderPrepareView } from "./spells/prepare-view";
+import { renderActiveEffectsRail } from "./active-effects-rail";
 
 type SpellsMode = "cast" | "prepare";
 
@@ -50,13 +51,14 @@ export class SpellsTab implements SheetComponent {
 
     const conc = ctx.resolved.state.concentration;
     if (conc) {
-      const banner = root.createDiv({ cls: "pc-conc-banner" });
       const concSlug = conc.replace(/^\[\[|\]\]$/g, "");
       const concSpell = ctx.resolved.spells.find((s) => s.slug === concSlug);
-      banner.createSpan({ text: "Concentrating: " });
-      banner.createEl("b", { text: concSpell?.entity.name ?? conc });
-      const end = banner.createSpan({ cls: "pc-conc-end", text: "end ✕" });
-      end.addEventListener("click", () => ctx.editState?.breakConcentration());
+      renderActiveEffectsRail(root, [{
+        label: "Concentration",
+        name: concSpell?.entity.name ?? conc,
+        icon: "brain",
+        onEnd: () => ctx.editState?.breakConcentration(),
+      }]);
     }
 
     if (this.mode === "cast") renderCastView(root, ctx);

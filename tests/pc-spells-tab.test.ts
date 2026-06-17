@@ -59,11 +59,15 @@ describe("SpellsTab", () => {
     expect(segs).toEqual(["Cast", "Manage"]);
   });
 
-  it("shows the concentration banner when concentrating", () => {
+  it("shows a concentration tile (brain) in the active-effects rail when concentrating", () => {
     const c = mountContainer();
     const r = resolved([spell("Hold Person", 2)]);
     (r.state as never as { concentration: string }).concentration = "hold-person";
     new SpellsTab().render(c, { resolved: r, derived: derived(), core: {} as never, app: {} as never, editState: null });
-    expect(c.querySelector(".pc-conc-banner")?.textContent).toContain("Hold Person");
+    const tile = c.querySelector(".pc-ae-tile");
+    expect(tile).not.toBeNull();
+    expect(tile?.textContent).toContain("Hold Person");
+    expect(c.querySelector(".pc-ae-label")?.textContent).toBe("Concentration");
+    expect(c.querySelector(".pc-conc-banner")).toBeNull();
   });
 });
