@@ -95,6 +95,23 @@ describe("CharacterEditState — finishBuild (SP2 Plan 3)", () => {
   });
 });
 
+describe("CharacterEditState — openBuilder (Manage & Level Up)", () => {
+  it("sets the builder draft flag and fires onChange", () => {
+    const { es, onChange } = makeState(makeChar());
+    expect(es.getCharacter().builder).toBeUndefined();
+    es.openBuilder();
+    expect(es.getCharacter().builder).toBe(true);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("is idempotent when already in builder mode (still notifies)", () => {
+    const { es, onChange } = makeState(makeChar({ builder: true }));
+    es.openBuilder();
+    expect(es.getCharacter().builder).toBe(true);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("CharacterEditState — setBuilderRolls (SP2 Plan 5)", () => {
   it("writes the rolled pool onto the draft, rounds, fires onChange", () => {
     const { es, onChange } = makeState(makeChar({ ability_method: "rolled" }));

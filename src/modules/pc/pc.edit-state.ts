@@ -518,6 +518,14 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Reopen the builder over a finished character: re-set the `builder` draft
+   *  flag so the next render shows the Builder shell again. The inverse of
+   *  finishBuild — invoked by the sheet's "Manage & Level Up" gear. */
+  openBuilder(): void {
+    this.character.builder = true;
+    this.onChange();
+  }
+
   // ─── Saves (override mutation) ─────────────────────────────────────
   /**
    * Flip the saving-throw proficient bit against the class-derived baseline.
