@@ -214,6 +214,8 @@ describe("PoolTab — stranded selected picks (prereq now unmet)", () => {
     const head = [...el.querySelectorAll(".pc-actions-section-head")].find((h) => h.textContent?.toLowerCase().includes("prerequisite"));
     expect(head).toBeTruthy();
     expect(el.textContent).toContain("lofty-boon");
+    // the counter stays honest: the stranded pick still counts toward Known X / N
+    expect(el.querySelector(".pc-spell-counts")?.textContent).toContain("1 / 2");
   });
 
   it("spell-like: the stranded row's box is checked and clicking it removes the pick", () => {
@@ -242,5 +244,30 @@ describe("PoolTab — stranded selected picks (prereq now unmet)", () => {
     new PoolTab("interdict-boons").render(el, mkCtx(basePool)); // baleful-glare is selected AND available
     const head = [...el.querySelectorAll(".pc-actions-section-head")].find((h) => h.textContent?.toLowerCase().includes("prerequisite"));
     expect(head).toBeUndefined();
+  });
+
+  it("renders available rows AND a stranded band together (a selection in available + one not)", () => {
+    // hell-mage is selected AND available; lofty-boon is selected but prereq-unmet (stranded)
+    const mixedPool: ResolvedPool = {
+      ...basePool, count: 3,
+      selected: [
+        { slug: "hell-mage", entity: ofEntity("hell-mage") as never },
+        { slug: "lofty-boon", entity: ofEntity("lofty-boon", { prerequisites: [{ kind: "level", min: 20 }] }) as never },
+      ],
+      available: [{ slug: "hell-mage", entity: ofEntity("hell-mage") as never }],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(mixedPool));
+    // both the available row and the stranded row are present...
+    expect(el.textContent).toContain("hell-mage");
+    expect(el.textContent).toContain("lofty-boon");
+    // ...as two distinct bands (a level band for the available pick + the prerequisite-unmet band)
+    const heads = [...el.querySelectorAll(".pc-actions-section-head")].map((h) => h.textContent ?? "");
+    expect(heads.some((t) => t.includes("Level 2"))).toBe(true);
+    expect(heads.some((t) => t.toLowerCase().includes("prerequisite"))).toBe(true);
+    // both selected picks are checked + removable; counter counts both
+    expect(el.querySelectorAll(".archivist-toggle-box.archivist-toggle-box-checked").length).toBe(2);
+    expect(el.querySelector(".pc-spell-counts")?.textContent).toContain("2 / 3");
   });
 });
