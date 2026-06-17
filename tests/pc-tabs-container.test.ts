@@ -124,4 +124,21 @@ describe("TabsContainer", () => {
     expect(onActiveTabChange).toHaveBeenCalledTimes(1);
     expect(onActiveTabChange).toHaveBeenCalledWith("panel-inventory");
   });
+  it("passes the declared layout to the pool tab (blocks renders pc-block)", () => {
+    const dyn: ComponentRenderContext = {
+      ...ctx,
+      resolved: {
+        classes: [{ entity: { tabs: [{ id: "boons", label: "Boons", renders: { pool: "p", layout: "blocks" } }] }, subclass: null }],
+        pools: [{
+          id: "p", label: "Boons", classIndex: 0, count: 1, anchorLevel: 2,
+          selected: [], grants: [],
+          available: [{ slug: "x", entity: { slug: "x", name: "X", description: "dx", prerequisites: [], effects: [], available_to: [] } }],
+        }],
+        state: { active_buffs: [] },
+      } as never,
+    };
+    const container = mountContainer();
+    new TabsContainer(mkRegistry()).render(container, dyn);
+    expect(container.querySelector("#panel-pool-boons .pc-block.pc-boon-block")).not.toBeNull();
+  });
 });

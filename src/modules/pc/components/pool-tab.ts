@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedPool, ResolvedPoolEntry } from "../pc.types";
 import type { OptionalFeatureEntity } from "../../optional-feature/optional-feature.types";
+import type { PoolLayout } from "../../../shared/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 
 const COST_LABELS: Record<string, string> = {
@@ -14,7 +15,7 @@ const COST_LABELS: Record<string, string> = {
  *  The engine is generic — every game-specific string comes from the data. */
 export class PoolTab implements SheetComponent {
   readonly type: string;
-  constructor(private readonly poolId: string) {
+  constructor(private readonly poolId: string, private readonly layout: PoolLayout = "spell-like") {
     this.type = `pool-tab:${poolId}`;
   }
 
@@ -25,7 +26,8 @@ export class PoolTab implements SheetComponent {
       root.createDiv({ cls: "pc-empty-line", text: "No data for this pool." });
       return;
     }
-    this.renderSpellLike(root, pool, ctx);
+    if (this.layout === "blocks") this.renderBlocks(root, pool, ctx);
+    else this.renderSpellLike(root, pool, ctx);
   }
 
   private renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
@@ -121,6 +123,73 @@ export class PoolTab implements SheetComponent {
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
     nameWrap.addEventListener("click", () => toggleDesc(host, e));
   }
+
+  private renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
+    const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
+    renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
+    renderCounter(root, pool);
+
+    const selectedSlugs = new Set(pool.selected.map((e) => e.slug));
+    const atCap = pool.selected.length >= pool.count;
+    for (const entry of pool.available) {
+      this.blockCard(root, entry, {
+        granted: false, selected: selectedSlugs.has(entry.slug), atCap, active: activeBuffs.includes(entry.slug),
+      }, pool, ctx);
+    }
+    for (const entry of pool.grants) {
+      this.blockCard(root, entry, { granted: true, selected: false, atCap, active: false }, pool, ctx);
+    }
+  }
+
+  private blockCard(
+    parent: HTMLElement,
+    entry: ResolvedPoolEntry,
+    opts: { granted: boolean; selected: boolean; atCap: boolean; active: boolean },
+    pool: ResolvedPool,
+    ctx: ComponentRenderContext,
+  ): void {
+    const e = entry.entity;
+    const section = parent.createDiv({ cls: "pc-block pc-boon-block" });
+    const head = section.createDiv({ cls: "pc-block-head" });
+
+    if (!opts.granted) {
+      const locked = !opts.selected && opts.atCap;
+      const box = head.createDiv({
+        cls: `archivist-toggle-box${opts.selected ? " archivist-toggle-box-checked" : ""}${locked ? " pc-box-locked" : ""}`,
+      });
+      if (!locked) {
+        box.addEventListener("click", () => {
+          const cur = pool.selected.map((x) => x.slug);
+          const next = opts.selected ? cur.filter((s) => s !== entry.slug) : [...cur, entry.slug];
+          ctx.editState?.setChoice(pool.classIndex, pool.anchorLevel, pool.id, next);
+        });
+      }
+    }
+
+    head.createEl("h3", { cls: "pc-block-title", text: e.name });
+    const controls = head.createDiv({ cls: "pc-block-controls" });
+    if (opts.granted) controls.createSpan({ cls: "pc-spell-always", text: "granted" });
+    if (!opts.granted && opts.selected && e.activatable) {
+      const actv = controls.createEl("button", {
+        cls: `pc-pool-active${opts.active ? " on" : ""}`,
+        text: opts.active ? "Active" : "Activate",
+      });
+      actv.addEventListener("click", () => ctx.editState?.toggleActiveBuff(entry.slug));
+    }
+
+    const meta = section.createDiv({ cls: "pc-block-meta" });
+    const lvl = boonLevel(e);
+    metaItem(meta, "Level", lvl ? String(lvl) : "—");
+    if (e.action_cost) metaItem(meta, "Cost", COST_LABELS[e.action_cost] ?? e.action_cost);
+    if (e.consumes?.amount) {
+      const word = e.consumes.resource ?? e.consumes.column ?? "resource";
+      const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
+      metaItem(meta, "Cost", `${e.consumes.amount} ${display.charAt(0).toUpperCase()}${display.slice(1)}`);
+    }
+    if (e.passive) metaItem(meta, "Type", "Passive");
+
+    if (e.description) section.createEl("p", { cls: "pc-block-description", text: e.description });
+  }
 }
 
 /** Active-effects rail items: each selected, activatable, currently-on boon. */
@@ -161,6 +230,13 @@ function metaSub(e: OptionalFeatureEntity): string {
     parts.push(`${e.consumes.amount} ${label}`);
   }
   return parts.join(" · ");
+}
+
+/** One crimson-labelled meta item inside a pc-block-meta row. */
+function metaItem(parent: HTMLElement, label: string, value: string): void {
+  const line = parent.createDiv({ cls: "pc-meta-line" });
+  line.createSpan({ cls: "pc-meta-label", text: `${label}: ` });
+  line.createSpan({ cls: "pc-meta-val", text: value });
 }
 
 /** Toggle a plain-text description block below the row (host carries the tint). */

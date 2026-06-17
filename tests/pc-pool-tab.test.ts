@@ -173,3 +173,28 @@ describe("PoolTab — spell-like", () => {
     expect(el.textContent).not.toContain("Interdict Boons"); // pool.label is NOT shown as a heading anymore
   });
 });
+
+describe("PoolTab — blocks layout", () => {
+  it("renders each available boon as a pc-block card with title, meta and description", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el, mkCtx(basePool));
+    const cards = el.querySelectorAll(".pc-block.pc-boon-block");
+    expect(cards.length).toBeGreaterThanOrEqual(2);
+    expect(el.querySelector(".pc-boon-block .pc-block-title")?.textContent).toBeTruthy();
+    expect(el.querySelector(".pc-boon-block .pc-block-meta")).not.toBeNull();
+    expect(el.querySelector(".pc-boon-block .pc-block-description")?.textContent).toContain("desc-");
+  });
+
+  it("blocks layout keeps the toggle box and the active-effects rail", () => {
+    const actPool: ResolvedPool = {
+      ...basePool, count: 2,
+      selected: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true }) as never }],
+      available: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true }) as never }],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons", "blocks").render(el, mkCtx(actPool, {}, ["majesty"]));
+    expect(el.querySelector(".pc-boon-block .archivist-toggle-box")).not.toBeNull();
+    expect(el.querySelector(".pc-ae-tile .pc-ae-name")?.textContent).toBe("majesty");
+  });
+});
