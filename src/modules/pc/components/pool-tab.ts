@@ -1,15 +1,17 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { ResolvedPoolEntry } from "../pc.types";
-// ComponentRenderContext is imported above; the row helper now receives it so the
-// activatable-buff toggle can read state.active_buffs + call editState.
+import type { ResolvedPool, ResolvedPoolEntry } from "../pc.types";
+import type { OptionalFeatureEntity } from "../../optional-feature/optional-feature.types";
+import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 
 const COST_LABELS: Record<string, string> = {
   action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
 };
 
-/** Generic tab that renders one selection pool's picks + grants, with in-place
- *  add/remove writing to the choices ledger. One instance per declared pool
- *  (type = `pool-tab:<id>`); constructed by TabsContainer, not registered. */
+/** Generic tab that renders one selection pool, reusing the Spells "Prepare"
+ *  vocabulary: an active-effects rail, an "X / N" counter, level bands, and
+ *  per-row toggle boxes that add/remove via the choices ledger. One instance
+ *  per declared pool (type = `pool-tab:<id>`); constructed by TabsContainer.
+ *  The engine is generic — every game-specific string comes from the data. */
 export class PoolTab implements SheetComponent {
   readonly type: string;
   constructor(private readonly poolId: string) {
@@ -17,120 +19,158 @@ export class PoolTab implements SheetComponent {
   }
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const root = el.createDiv({ cls: "pc-tab-body" });
     const pool = ctx.resolved?.pools?.find((p) => p.id === this.poolId);
     if (!pool) {
-      el.createDiv({ cls: "pc-empty-line", text: "No data for this pool." });
+      root.createDiv({ cls: "pc-empty-line", text: "No data for this pool." });
       return;
     }
+    this.renderSpellLike(root, pool, ctx);
+  }
 
-    const head = el.createDiv({ cls: "pc-pool-head" });
-    head.createSpan({ cls: "pc-pool-count", text: `${pool.label} ${pool.selected.length} / ${pool.count}` });
-    const addBtn = head.createEl("button", { cls: "pc-pool-addbtn", text: "+ Add" });
+  private renderSpellLike(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
+    const activeBuffs = ctx.resolved?.state?.active_buffs ?? [];
+    renderActiveEffectsRail(root, activeItems(pool, activeBuffs, ctx));
+    renderCounter(root, pool);
 
-    const body = el.createDiv({ cls: "pc-pool-body" });
-    let adding = false;
+    const selectedSlugs = new Set(pool.selected.map((e) => e.slug));
+    const atCap = pool.selected.length >= pool.count;
 
-    const selectedSlugs = (): string[] => pool.selected.map((e) => e.slug);
+    const byLevel = new Map<number, ResolvedPoolEntry[]>();
+    for (const entry of pool.available) {
+      const lvl = boonLevel(entry.entity);
+      (byLevel.get(lvl) ?? byLevel.set(lvl, []).get(lvl)!).push(entry);
+    }
+    const levels = [...byLevel.keys()].sort((a, b) => a - b);
+    const ungrouped = levels.length === 1 && levels[0] === 0;
 
-    const writeList = (next: string[]): void => {
-      ctx.editState?.setChoice(pool.classIndex, pool.anchorLevel, pool.id, next);
-    };
-
-    const renderList = (): void => {
-      body.empty();
-      for (const entry of pool.selected) this.row(body, entry, false, writeList, selectedSlugs, ctx);
-      for (const entry of pool.grants) this.row(body, entry, true, writeList, selectedSlugs, ctx);
-    };
-
-    const renderAdd = (): void => {
-      body.empty();
-      const picked = new Set(selectedSlugs());
-      const atCap = pool.selected.length >= pool.count;
-      const candidates = pool.available.filter((e) => !picked.has(e.slug));
-      if (!candidates.length) {
-        body.createDiv({ cls: "pc-empty-line", text: "No more options available." });
-        return;
+    for (const lvl of levels) {
+      const entries = byLevel.get(lvl)!;
+      if (!ungrouped) {
+        const head = root.createDiv({ cls: "pc-actions-section-head" });
+        head.createSpan({ text: lvl === 0 ? "Any Level" : `Level ${lvl}` });
+        head.createSpan({ cls: "pc-actions-section-count", text: `${entries.length} ${entries.length === 1 ? "option" : "options"}` });
       }
-      for (const entry of candidates) {
-        const row = body.createDiv({ cls: "pc-pool-add-row" });
-        row.createSpan({ cls: "pc-pool-name", text: entry.entity.name });
-        const add = row.createEl("button", { cls: "pc-pool-add", text: atCap ? "Full" : "+ Add" });
-        if (atCap) add.setAttribute("disabled", "true");
-        else add.addEventListener("click", () => writeList([...selectedSlugs(), entry.slug]));
+      const list = root.createDiv({ cls: "pc-spell-list" });
+      for (const entry of entries) {
+        this.row(list, entry, {
+          selected: selectedSlugs.has(entry.slug),
+          atCap,
+          active: activeBuffs.includes(entry.slug),
+        }, pool, ctx);
       }
-    };
+    }
 
-    addBtn.addEventListener("click", () => {
-      adding = !adding;
-      addBtn.toggleClass("open", adding);
-      addBtn.setText(adding ? "✓ Done" : "+ Add");
-      if (adding) renderAdd();
-      else renderList();
-    });
-
-    renderList();
+    if (pool.grants.length) {
+      root.createDiv({ cls: "pc-actions-section-head" }).createSpan({ text: "Granted" });
+      const list = root.createDiv({ cls: "pc-spell-list" });
+      for (const entry of pool.grants) this.grantedRow(list, entry);
+    }
   }
 
   private row(
     parent: HTMLElement,
     entry: ResolvedPoolEntry,
-    granted: boolean,
-    writeList: (next: string[]) => void,
-    selectedSlugs: () => string[],
+    opts: { selected: boolean; atCap: boolean; active: boolean },
+    pool: ResolvedPool,
     ctx: ComponentRenderContext,
   ): void {
     const e = entry.entity;
-    const row = parent.createDiv({ cls: "pc-pool-row" });
+    const host = parent.createDiv({ cls: "pc-spell-prep-row-host" });
+    const row = host.createDiv({ cls: "pc-spell-prep-row" });
 
-    const nameWrap = row.createDiv({ cls: "pc-pool-namewrap" });
-    nameWrap.createSpan({ cls: "pc-pool-name", text: e.name });
-    if (e.passive) nameWrap.createSpan({ cls: "pc-pool-passive", text: "Passive" });
-    if (granted) nameWrap.createSpan({ cls: "pc-pool-granted", text: "Granted" });
-
-    const meta = row.createDiv({ cls: "pc-pool-meta" });
-    if (e.action_cost) meta.createSpan({ cls: "pc-pool-cost", text: COST_LABELS[e.action_cost] ?? e.action_cost });
-    if (e.consumes?.amount) {
-      const word = e.consumes.resource ?? e.consumes.column ?? "resource";
-      const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
-      const label = `${display.charAt(0).toUpperCase()}${display.slice(1)}`;
-      meta.createSpan({ cls: "pc-pool-consume", text: `${e.consumes.amount} ${label}` });
-    }
-    if (e.duration && typeof e.duration === "object") {
-      meta.createSpan({ cls: "pc-pool-duration", text: `${e.duration.amount} ${e.duration.unit}` });
-    }
-
-    // Activatable buffs: a toggle bound to state.active_buffs (by slug). On = the
-    // boon's effects fold in recalc; toggling writes via editState (same recompute
-    // path as selection/charges) then re-derives. Only on picked (non-granted)
-    // activatable boons. Duration above already renders as a static label.
-    if (!granted && e.activatable) {
-      const active = (ctx.resolved?.state?.active_buffs ?? []).includes(entry.slug);
-      const toggle = meta.createEl("label", { cls: "pc-pool-buff" });
-      const cb = toggle.createEl("input", { cls: "pc-pool-buff-toggle", type: "checkbox" });
-      cb.checked = active;
-      toggle.createSpan({ cls: "pc-pool-buff-label", text: active ? "Active" : "Activate" });
-      cb.addEventListener("change", () => ctx.editState?.toggleActiveBuff(entry.slug));
-    }
-
-    const desc = row.createDiv({ cls: "pc-pool-desc" });
-    desc.addClass("is-collapsed");
-    nameWrap.addEventListener("click", () => {
-      if (!desc.hasClass("is-collapsed")) {
-        desc.addClass("is-collapsed");
-      } else {
-        desc.empty();
-        desc.setText(e.description ?? "");
-        desc.removeClass("is-collapsed");
-      }
+    const locked = !opts.selected && opts.atCap;
+    const box = row.createDiv({
+      cls: `archivist-toggle-box${opts.selected ? " archivist-toggle-box-checked" : ""}${locked ? " pc-box-locked" : ""}`,
     });
-
-    if (!granted) {
-      const rm = row.createEl("button", { cls: "pc-pool-remove", text: "✕" });
-      let armed = false;
-      rm.addEventListener("click", () => {
-        if (!armed) { armed = true; rm.addClass("armed"); rm.setText("Remove?"); return; }
-        writeList(selectedSlugs().filter((s) => s !== entry.slug));
+    if (!locked) {
+      box.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const cur = pool.selected.map((x) => x.slug);
+        const next = opts.selected ? cur.filter((s) => s !== entry.slug) : [...cur, entry.slug];
+        ctx.editState?.setChoice(pool.classIndex, pool.anchorLevel, pool.id, next);
       });
     }
+
+    const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
+    nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
+    const sub = metaSub(e);
+    if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    nameWrap.addEventListener("click", () => toggleDesc(host, e));
+
+    if (opts.selected && e.activatable) {
+      const actv = row.createEl("button", {
+        cls: `pc-pool-active${opts.active ? " on" : ""}`,
+        text: opts.active ? "Active" : "Activate",
+      });
+      actv.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        ctx.editState?.toggleActiveBuff(entry.slug);
+      });
+    }
+  }
+
+  private grantedRow(parent: HTMLElement, entry: ResolvedPoolEntry): void {
+    const e = entry.entity;
+    const host = parent.createDiv({ cls: "pc-spell-prep-row-host" });
+    const row = host.createDiv({ cls: "pc-spell-prep-row" });
+    const nameWrap = row.createDiv({ cls: "pc-spell-namewrap" });
+    nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
+    nameWrap.createSpan({ cls: "pc-spell-always", text: "granted" });
+    const sub = metaSub(e);
+    if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
+    nameWrap.addEventListener("click", () => toggleDesc(host, e));
+  }
+}
+
+/** Active-effects rail items: each selected, activatable, currently-on boon. */
+function activeItems(pool: ResolvedPool, activeBuffs: string[], ctx: ComponentRenderContext): ActiveEffectItem[] {
+  return pool.selected
+    .filter((e) => e.entity.activatable && activeBuffs.includes(e.slug))
+    .map((e) => ({
+      label: "Active boon",
+      name: e.entity.name,
+      onEnd: () => ctx.editState?.toggleActiveBuff(e.slug),
+    }));
+}
+
+/** "Known X / N" counter; crimson .over when selections exceed the cap. */
+function renderCounter(parent: HTMLElement, pool: ResolvedPool): void {
+  const counts = parent.createDiv({ cls: "pc-spell-counts" });
+  counts.appendText("Known ");
+  const b = counts.createEl("b", { text: `${pool.selected.length} / ${pool.count}` });
+  if (pool.selected.length > pool.count) b.classList.add("over");
+}
+
+/** Max level prereq (mirrors pc.pools.ts); 0 when there is no level prereq. */
+function boonLevel(e: OptionalFeatureEntity): number {
+  return (e.prerequisites ?? [])
+    .filter((p): p is { kind: "level"; min: number } => p.kind === "level")
+    .reduce((m, p) => Math.max(m, p.min), 0);
+}
+
+/** Italic meta sub-line: "Passive", action cost, and consume cost. */
+function metaSub(e: OptionalFeatureEntity): string {
+  const parts: string[] = [];
+  if (e.passive) parts.push("Passive");
+  if (e.action_cost) parts.push(COST_LABELS[e.action_cost] ?? e.action_cost);
+  if (e.consumes?.amount) {
+    const word = e.consumes.resource ?? e.consumes.column ?? "resource";
+    const display = e.consumes.amount === 1 ? word.replace(/s$/, "") : word;
+    const label = `${display.charAt(0).toUpperCase()}${display.slice(1)}`;
+    parts.push(`${e.consumes.amount} ${label}`);
+  }
+  return parts.join(" · ");
+}
+
+/** Toggle a plain-text description block below the row (host carries the tint). */
+function toggleDesc(host: HTMLElement, e: OptionalFeatureEntity): void {
+  const existing = host.querySelector(":scope > .pc-spell-expand");
+  if (existing) {
+    existing.remove();
+    host.classList.remove("pc-open-expand");
+  } else {
+    host.createDiv({ cls: "pc-spell-expand" }).setText(e.description ?? "");
+    host.classList.add("pc-open-expand");
   }
 }

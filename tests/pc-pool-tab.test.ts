@@ -8,8 +8,10 @@ import type { ResolvedCharacter, ResolvedPool } from "../src/modules/pc/pc.types
 beforeAll(() => installObsidianDomHelpers());
 
 function ofEntity(slug: string, extra: Record<string, unknown> = {}) {
-  return { slug, name: slug, edition: "2014", source: "hb", feature_type: "interdict-boon",
-    description: "desc-" + slug, effects: [], prerequisites: [], available_to: [], ...extra };
+  return {
+    slug, name: slug, edition: "2014", source: "hb", feature_type: "interdict-boon",
+    description: "desc-" + slug, effects: [], prerequisites: [{ kind: "level", min: 2 }], available_to: [], ...extra,
+  };
 }
 
 type EditStub = Partial<{
@@ -29,48 +31,133 @@ const basePool: ResolvedPool = {
   id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
   selected: [{ slug: "baleful-glare", entity: ofEntity("baleful-glare", { action_cost: "action", consumes: { resource: "seals", amount: 1 } }) as never }],
   available: [
-    { slug: "baleful-glare", entity: ofEntity("baleful-glare") as never },
+    { slug: "baleful-glare", entity: ofEntity("baleful-glare", { action_cost: "action", consumes: { resource: "seals", amount: 1 } }) as never },
     { slug: "hell-mage", entity: ofEntity("hell-mage") as never },
   ],
   grants: [{ slug: "axiomatic-seals", entity: ofEntity("axiomatic-seals", { passive: true }) as never }],
 };
 
-describe("PoolTab", () => {
-  it("renders a counter, selected rows, and granted rows", () => {
+describe("PoolTab — spell-like", () => {
+  it("renders a 'Known X / N' counter", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(basePool));
-    expect(el.querySelector(".pc-pool-count")?.textContent).toContain("1 / 2");
-    expect(el.querySelectorAll(".pc-pool-row").length).toBe(2); // 1 selected + 1 grant
+    expect(el.querySelector(".pc-spell-counts")?.textContent).toContain("1 / 2");
+  });
+
+  it("groups candidates into a level band and renders a row per available boon", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    expect(el.querySelector(".pc-actions-section-head")?.textContent).toContain("Level 2");
+    // 2 available + 1 granted = 3 rows
+    expect(el.querySelectorAll(".pc-spell-prep-row").length).toBe(3);
     expect(el.textContent).toContain("baleful-glare");
-    expect(el.textContent).toContain("axiomatic-seals");
+    expect(el.textContent).toContain("hell-mage");
   });
 
-  it("tags a granted/passive row and shows seal cost on the selected row", () => {
+  it("checks the toggle box of an already-selected boon and leaves others unchecked", () => {
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(basePool));
-    expect(el.querySelector(".pc-pool-passive")?.textContent).toMatch(/passive/i);
-    expect(el.textContent).toContain("1 Seal");
+    const checked = el.querySelectorAll(".archivist-toggle-box.archivist-toggle-box-checked");
+    expect(checked.length).toBe(1); // only baleful-glare (the grant has no toggle box)
   });
 
-  it("two-tap remove writes the filtered array to the ledger", () => {
+  it("clicking an unselected boon's box appends it to the ledger", () => {
     const setChoice = vi.fn();
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(basePool, { setChoice }));
-    const rm = el.querySelector<HTMLButtonElement>(".pc-pool-remove")!;
-    rm.click(); // arm
-    rm.click(); // confirm
+    // hell-mage row is the 2nd available; find its box (not checked)
+    const boxes = el.querySelectorAll<HTMLElement>(".pc-spell-list .archivist-toggle-box");
+    const unchecked = [...boxes].find((b) => !b.classList.contains("archivist-toggle-box-checked"))!;
+    unchecked.click();
+    expect(setChoice).toHaveBeenCalledWith(0, 2, "interdict-boons", ["baleful-glare", "hell-mage"]);
+  });
+
+  it("clicking a selected boon's box removes it from the ledger", () => {
+    const setChoice = vi.fn();
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool, { setChoice }));
+    const checked = el.querySelector<HTMLElement>(".archivist-toggle-box.archivist-toggle-box-checked")!;
+    checked.click();
     expect(setChoice).toHaveBeenCalledWith(0, 2, "interdict-boons", []);
   });
 
-  it("opening Add lists not-yet-picked candidates; adding appends to the ledger", () => {
+  it("at cap, unselected boxes are locked and do not write", () => {
     const setChoice = vi.fn();
+    const fullPool: ResolvedPool = {
+      ...basePool, count: 1,
+      selected: [{ slug: "baleful-glare", entity: ofEntity("baleful-glare") as never }],
+      grants: [],
+    };
     const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(basePool, { setChoice }));
-    el.querySelector<HTMLButtonElement>(".pc-pool-addbtn")!.click();
-    const addRows = el.querySelectorAll(".pc-pool-add-row");
-    expect(addRows.length).toBe(1); // hell-mage only (baleful-glare already picked)
-    el.querySelector<HTMLButtonElement>(".pc-pool-add")!.click();
-    expect(setChoice).toHaveBeenCalledWith(0, 2, "interdict-boons", ["baleful-glare", "hell-mage"]);
+    new PoolTab("interdict-boons").render(el, mkCtx(fullPool, { setChoice }));
+    const locked = el.querySelector<HTMLElement>(".archivist-toggle-box.pc-box-locked")!;
+    expect(locked).not.toBeNull();
+    locked.click();
+    expect(setChoice).not.toHaveBeenCalled();
+  });
+
+  it("shows the consume cost in the row's meta sub-line", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    expect(el.textContent).toContain("1 Seal");
+  });
+
+  it("clicking a name expands a plain-text description", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    const nameWrap = el.querySelector<HTMLElement>(".pc-spell-namewrap")!;
+    nameWrap.click();
+    expect(el.querySelector(".pc-spell-expand")?.textContent).toContain("desc-");
+  });
+
+  it("renders a granted row tagged 'granted' with no toggle box", () => {
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(basePool));
+    const grantHead = [...el.querySelectorAll(".pc-actions-section-head")].find((h) => h.textContent?.includes("Granted"));
+    expect(grantHead).toBeTruthy();
+    expect(el.querySelector(".pc-spell-always")?.textContent).toMatch(/granted/i);
+  });
+
+  it("marks the counter .over when selections exceed the cap", () => {
+    const overPool: ResolvedPool = {
+      ...basePool, count: 1,
+      selected: [
+        { slug: "a", entity: ofEntity("a") as never },
+        { slug: "b", entity: ofEntity("b") as never },
+      ],
+      available: [], grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(overPool));
+    expect(el.querySelector(".pc-spell-counts b.over")).not.toBeNull();
+  });
+
+  it("renders an inline Active control on a selected activatable boon and toggles it", () => {
+    const toggleActiveBuff = vi.fn();
+    const actPool: ResolvedPool = {
+      ...basePool, count: 2,
+      selected: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true }) as never }],
+      available: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true }) as never }],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(actPool, { toggleActiveBuff }));
+    const actv = el.querySelector<HTMLButtonElement>(".pc-pool-active")!;
+    expect(actv.textContent).toBe("Activate");
+    actv.click();
+    expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
+  });
+
+  it("shows an active boon in the active-effects rail", () => {
+    const actPool: ResolvedPool = {
+      ...basePool, count: 2,
+      selected: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true }) as never }],
+      available: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true }) as never }],
+      grants: [],
+    };
+    const el = mountContainer();
+    new PoolTab("interdict-boons").render(el, mkCtx(actPool, {}, ["majesty"]));
+    expect(el.querySelector(".pc-ae-tile .pc-ae-name")?.textContent).toBe("majesty");
   });
 
   it("renders an empty-state when the pool id is unknown", () => {
@@ -79,92 +166,10 @@ describe("PoolTab", () => {
     expect(el.querySelector(".pc-empty-line")).not.toBeNull();
   });
 
-  it("at cap: an un-picked candidate's Add button shows 'Full', is disabled, and does not write", () => {
-    const setChoice = vi.fn();
-    const fullPool: ResolvedPool = {
-      id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 1, anchorLevel: 2,
-      selected: [{ slug: "baleful-glare", entity: ofEntity("baleful-glare") as never }],
-      available: [
-        { slug: "baleful-glare", entity: ofEntity("baleful-glare") as never },
-        { slug: "hell-mage", entity: ofEntity("hell-mage") as never },
-      ],
-      grants: [],
-    };
-    const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(fullPool, { setChoice }));
-    el.querySelector<HTMLButtonElement>(".pc-pool-addbtn")!.click();
-    const add = el.querySelector<HTMLButtonElement>(".pc-pool-add")!;
-    expect(add.textContent).toBe("Full");
-    expect(add.getAttribute("disabled")).toBe("true");
-    add.click();
-    expect(setChoice).not.toHaveBeenCalled();
-  });
-
-  it("pluralizes the consume label by amount", () => {
-    const pluralPool: ResolvedPool = {
-      id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
-      selected: [
-        { slug: "two-seals", entity: ofEntity("two-seals", { consumes: { resource: "seals", amount: 2 } }) as never },
-        { slug: "one-seal", entity: ofEntity("one-seal", { consumes: { resource: "seals", amount: 1 } }) as never },
-      ],
-      available: [], grants: [],
-    };
-    const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(pluralPool));
-    const labels = [...el.querySelectorAll(".pc-pool-consume")].map((n) => n.textContent);
-    expect(labels).toContain("2 Seals");
-    expect(labels).toContain("1 Seal");
-  });
-
-  it("renders a structured duration label", () => {
-    const durationPool: ResolvedPool = {
-      id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
-      selected: [{ slug: "timed", entity: ofEntity("timed", { duration: { amount: 1, unit: "minute" } }) as never }],
-      available: [], grants: [],
-    };
-    const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(durationPool));
-    expect(el.querySelector(".pc-pool-duration")?.textContent).toContain("1 minute");
-  });
-
-  const activatablePool: ResolvedPool = {
-    id: "interdict-boons", label: "Interdict Boons", classIndex: 0, count: 2, anchorLevel: 2,
-    selected: [{ slug: "majesty", entity: ofEntity("majesty", { activatable: true, duration: { amount: 1, unit: "minute" } }) as never }],
-    available: [], grants: [],
-  };
-
-  it("renders an active-buff toggle on a selected activatable boon (unchecked when off)", () => {
-    const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(activatablePool));
-    const toggle = el.querySelector<HTMLInputElement>(".pc-pool-buff-toggle");
-    expect(toggle).not.toBeNull();
-    expect(toggle!.checked).toBe(false);
-  });
-
-  it("toggling on calls toggleActiveBuff with the boon slug", () => {
-    const toggleActiveBuff = vi.fn();
-    const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(activatablePool, { toggleActiveBuff }));
-    const toggle = el.querySelector<HTMLInputElement>(".pc-pool-buff-toggle")!;
-    toggle.checked = true;
-    toggle.dispatchEvent(new Event("change"));
-    expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
-  });
-
-  it("reflects an already-active buff as checked, and toggling off calls toggleActiveBuff with the slug", () => {
-    const toggleActiveBuff = vi.fn();
-    const el = mountContainer();
-    new PoolTab("interdict-boons").render(el, mkCtx(activatablePool, { toggleActiveBuff }, ["majesty"]));
-    const toggle = el.querySelector<HTMLInputElement>(".pc-pool-buff-toggle")!;
-    expect(toggle.checked).toBe(true);
-    toggle.checked = false;
-    toggle.dispatchEvent(new Event("change"));
-    expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
-  });
-
-  it("does NOT render a buff toggle on a non-activatable selected boon", () => {
+  it("has no reaver/boon literals leaking into rendered text beyond the data", () => {
+    // genericity smoke: the component must not invent labels; it only echoes data.
     const el = mountContainer();
     new PoolTab("interdict-boons").render(el, mkCtx(basePool));
-    expect(el.querySelector(".pc-pool-buff-toggle")).toBeNull();
+    expect(el.textContent).not.toContain("Interdict Boons"); // pool.label is NOT shown as a heading anymore
   });
 });
