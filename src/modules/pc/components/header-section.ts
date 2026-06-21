@@ -1,3 +1,4 @@
+import { setIcon } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ComponentRegistry } from "./component-registry";
 import type { ResolvedCharacter } from "../pc.types";
@@ -20,7 +21,14 @@ export class HeaderSection implements SheetComponent {
     avatar.createDiv({ cls: "pc-avatar-placeholder" });
 
     const identity = root.createDiv({ cls: "pc-identity" });
-    identity.createEl("h1", { cls: "pc-name", text: ctx.resolved.definition.name });
+    const nameRow = identity.createDiv({ cls: "pc-name-row" });
+    nameRow.createEl("h1", { cls: "pc-name", text: ctx.resolved.definition.name });
+    const gear = nameRow.createEl("button", {
+      cls: "pc-manage-gear",
+      attr: { "aria-label": "Manage & Level Up", title: "Manage & Level Up" },
+    });
+    setIcon(gear, "settings");
+    gear.addEventListener("click", () => ctx.editState?.openBuilder());
     identity.createDiv({ cls: "pc-subtitle", text: buildSubtitle(ctx.resolved) });
 
     const right = root.createDiv({ cls: "pc-hero-right" });

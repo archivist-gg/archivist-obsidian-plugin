@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { HeaderSection, buildSubtitle } from "../src/modules/pc/components/header-section";
 import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
@@ -90,5 +90,22 @@ describe("HeaderSection", () => {
     expect(missings.some((t) => t?.includes("No renderer for ac-shield"))).toBe(true);
     expect(missings.some((t) => t?.includes("No renderer for hit-dice-widget"))).toBe(true);
     expect(container.querySelector(".pc-hero-right .probe-hp-widget")).not.toBeNull();
+  });
+
+  it("renders a Manage & Level Up gear that reopens the builder on click", () => {
+    const container = mountContainer();
+    const registry = registryWith(["ac-shield", "hp-widget", "hit-dice-widget"]);
+    const openBuilder = vi.fn();
+    const ctx = { ...fakeCtx(BASE_RESOLVED), editState: { openBuilder } as never };
+    new HeaderSection(registry).render(container, ctx);
+
+    const gear = container.querySelector(".pc-name-row .pc-manage-gear") as HTMLButtonElement | null;
+    expect(gear).not.toBeNull();
+    expect(gear!.getAttribute("aria-label")).toBe("Manage & Level Up");
+    // name still lives inside the new row
+    expect(container.querySelector(".pc-name-row .pc-name")?.textContent).toBe("Grendal the Wary");
+
+    gear!.click();
+    expect(openBuilder).toHaveBeenCalledTimes(1);
   });
 });
