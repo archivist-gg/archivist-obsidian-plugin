@@ -716,11 +716,13 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
       acInformationalDerived = derivedEquipment.acInformational;
     } else {
       const { total: unarmored, terms: unarmoredTerms } = unarmoredACBreakdown(resolved, mods, warnings);
-      // Pull only additive contributions (item bonuses + per-entry overrides);
-      // armor/shield/dex are skipped because no armor is equipped and the
-      // unarmored base already incorporates DEX (and class unarmored defense).
+      // Pull additive contributions that stand alone without body armor: item
+      // bonuses, per-entry overrides, AND a shield (RAW: a shield grants +2 even
+      // when unarmored). The `armor`/`dex` terms are skipped — there's no body
+      // armor, and the unarmored base already incorporates DEX (and class
+      // unarmored defense).
       const additive = derivedEquipment.acBreakdown.filter(
-        (b) => b.kind === "item" || b.kind === "override",
+        (b) => b.kind === "item" || b.kind === "override" || b.kind === "shield",
       );
       const featTerms = featureAcTermsFor(false);
       const additiveSum = additive.reduce((sum, b) => sum + b.amount, 0);

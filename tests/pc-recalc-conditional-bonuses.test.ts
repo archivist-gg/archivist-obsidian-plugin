@@ -139,12 +139,11 @@ describe("AC with conditional item bonuses", () => {
     // because the shield slot is filled, so the +2 must NOT be applied.
     const sources = d.acBreakdown.map((t) => t.source);
     expect(sources).not.toContain("Bracers of Defense");
-    // Pre-existing recalc behavior (independent of Tasks 8-11): the
-    // unarmored-AC fallback path filters acBreakdown to {item, override}
-    // only, so the regular shield's +2 base AC is dropped when no armor is
-    // worn. AC = 10 + 1 DEX = 11. If/when that path is fixed, this becomes
-    // 13 (10 + 1 + 2 shield); update accordingly.
-    expect(d.ac).toBe(11);
+    // The shield's +2 base AC now applies even with no body armor (RAW: a
+    // shield grants +2 whenever wielded; the unarmored-AC path no longer drops
+    // the shield term). AC = 10 + 1 DEX + 2 shield = 13. The Bracers' conditional
+    // +2 is still correctly skipped because the shield slot is filled (above).
+    expect(d.ac).toBe(13);
   });
 
   it("Arrow-Catching Shield surfaces +2 vs ranged as informational", () => {

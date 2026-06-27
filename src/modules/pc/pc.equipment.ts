@@ -241,6 +241,32 @@ function isTwoHanded(weapon: WeaponEntity): boolean {
   return weapon.properties.some((p) => p === "two_handed");
 }
 
+/** The ArmorEntity whose `ac` block governs a slot: the entity itself when it is
+ *  armor, or — for a magic item whose `base_item` points at armor — the resolved
+ *  base armor. Lets AC read off magic armor/shields (Adamantine, +N, etc.) whose
+ *  own entity has no `ac` block. */
+function effectiveArmor(
+  entity: ArmorEntity | WeaponEntity | ItemEntity | null | undefined,
+  registry: EntityRegistry,
+): ArmorEntity | null {
+  if (isArmorEntity(entity)) return entity;
+  if (isItemEntity(entity) && typeof entity.base_item === "string") {
+    const base = resolveBaseItem(entity.base_item, registry);
+    if (base?.entityType === "armor") return base.data as unknown as ArmorEntity;
+  }
+  return null;
+}
+
+/** Is this armor a shield? Robust to the real SRD-2024 data, where the Shield
+ *  entity carries `category: "heavy"` rather than `"shield"`, so slot routing
+ *  cannot rely on category alone (mirrors the builder's name/slug isShield). */
+function isShieldArmor(armor: ArmorEntity): boolean {
+  if (armor.category === "shield") return true;
+  const slug = (armor.slug ?? "").toLowerCase();
+  if (slug === "shield" || slug.endsWith("_shield") || slug.endsWith("-shield")) return true;
+  return (armor.name ?? "").trim().toLowerCase() === "shield";
+}
+
 function defaultSlotForType(
   entityType: string | null,
   entity: ArmorEntity | WeaponEntity | ItemEntity | null,
@@ -248,8 +274,7 @@ function defaultSlotForType(
 ): SlotKey | null {
   if (entityType === "weapon") return "mainhand";
   if (entityType === "armor") {
-    if (entity && "category" in entity && entity.category === "shield") return "shield";
-    return "armor";
+    return isArmorEntity(entity) && isShieldArmor(entity) ? "shield" : "armor";
   }
   // Magic items with a base_item pointing to a known weapon/armor route to
   // the matching slot so they participate in attack rows / AC.
@@ -258,7 +283,7 @@ function defaultSlotForType(
     if (base?.entityType === "weapon") return "mainhand";
     if (base?.entityType === "armor") {
       const armorData = base.data as unknown as ArmorEntity;
-      return armorData.category === "shield" ? "shield" : "armor";
+      return isShieldArmor(armorData) ? "shield" : "armor";
     }
   }
   return null;
@@ -327,13 +352,15 @@ function computeAC(
   const breakdown: ACTerm[] = [];
   const armorSlot = equippedSlots.armor;
   const armorEntity = armorSlot?.entity ?? null;
+  const armor = effectiveArmor(armorEntity, registry);
 
   let ac = 10;
-  if (armorEntity && isArmorEntity(armorEntity)) {
-    ac = armorEntity.ac.base + (armorEntity.ac.flat ?? 0);
-    breakdown.push({ source: armorEntity.name, amount: armorEntity.ac.base + (armorEntity.ac.flat ?? 0), kind: "armor" });
-    if (armorEntity.ac.add_dex) {
-      const dexCap = armorEntity.ac.dex_max ?? Number.POSITIVE_INFINITY;
+  if (armor) {
+    const armorBase = armor.ac.base + (armor.ac.flat ?? 0);
+    ac = armorBase;
+    breakdown.push({ source: armorEntity?.name ?? armor.name, amount: armorBase, kind: "armor" });
+    if (armor.ac.add_dex) {
+      const dexCap = armor.ac.dex_max ?? Number.POSITIVE_INFINITY;
       const dexAdd = Math.min(mods.dex, dexCap);
       ac += dexAdd;
       const capped = mods.dex > dexCap;
@@ -358,10 +385,11 @@ function computeAC(
   const main = equippedSlots.mainhand?.entity;
   const mainIsTwoHanded = main && isWeaponEntity(main) && isTwoHanded(main);
   const shieldEntity = equippedSlots.shield?.entity ?? null;
-  if (shieldEntity && isArmorEntity(shieldEntity) && !mainIsTwoHanded) {
-    const n = shieldEntity.ac.base + (shieldEntity.ac.flat ?? 0);
+  const shield = effectiveArmor(shieldEntity, registry);
+  if (shield && !mainIsTwoHanded) {
+    const n = shield.ac.base + (shield.ac.flat ?? 0);
     ac += n;
-    breakdown.push({ source: shieldEntity.name, amount: n, kind: "shield" });
+    breakdown.push({ source: shieldEntity?.name ?? shield.name, amount: n, kind: "shield" });
   }
 
   // Equipped+attuned items.bonuses.ac (AC-bonus magic items).

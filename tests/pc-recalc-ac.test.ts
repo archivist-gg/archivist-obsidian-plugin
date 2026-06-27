@@ -2,11 +2,13 @@ import { describe, it, expect } from "vitest";
 import { recalc } from "../src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter, ResolvedFeature } from "../src/modules/pc/pc.types";
 import type { ItemEntity } from "../src/modules/item/item.types";
+import type { ArmorEntity } from "../src/modules/armor/armor.types";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {
   PLATE,
   STUDDED_LEATHER,
   CLOAK_OF_PROTECTION,
+  BREASTPLATE,
 } from "./fixtures/pc/equipment-fixtures";
 
 // Magic-item AC fixtures local to this file. Bracers/Ring of Protection are
@@ -177,5 +179,95 @@ describe("recalc — magic-item AC bonuses (Bug A)", () => {
     const d = recalc(mkResolved(c), buildRegistry());
 
     expect(d.ac).toBe(25);
+  });
+});
+
+describe("recalc — AC for magic armor and shields (base_item dereference)", () => {
+  // All cases use the base fighter (DEX 10 → +0, no unarmored-defense feature).
+
+  // Mirrors the real SRD-2024 data: the Shield entity is categorized "heavy",
+  // NOT "shield", so slot routing cannot rely on category alone.
+  const SHIELD_HEAVY: ArmorEntity = {
+    name: "Shield",
+    slug: "shield",
+    category: "heavy",
+    ac: { base: 2, flat: 0, add_dex: false, add_con: false, add_wis: false },
+  };
+  // Magic armor: AC lives on the base_item; the item itself has no `ac` block.
+  const ADAMANTINE_BREASTPLATE: ItemEntity = {
+    name: "Adamantine Armor (Breastplate)",
+    slug: "adamantine-armor-breastplate",
+    type: "armor",
+    rarity: "uncommon",
+    base_item: "breastplate",
+    attunement: false,
+  };
+  const BREASTPLATE_PLUS_3: ItemEntity = {
+    name: "Breastplate (+3)",
+    slug: "breastplate-3",
+    type: "armor",
+    rarity: "very rare",
+    base_item: "breastplate",
+    bonuses: { ac: 3 },
+    attunement: false,
+  };
+  const SHIELD_PLUS_1: ItemEntity = {
+    name: "Shield +1",
+    slug: "shield-plus-1",
+    type: "armor",
+    rarity: "uncommon",
+    base_item: "shield",
+    bonuses: { ac: 1 },
+    attunement: false,
+  };
+
+  function buildArmorRegistry() {
+    return buildMockRegistry([
+      { slug: "breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
+      { slug: "plate", entityType: "armor", name: "Plate", data: PLATE },
+      { slug: "shield", entityType: "armor", name: "Shield", data: SHIELD_HEAVY },
+      { slug: "adamantine-armor-breastplate", entityType: "item", name: "Adamantine Armor (Breastplate)", data: ADAMANTINE_BREASTPLATE },
+      { slug: "breastplate-3", entityType: "item", name: "Breastplate (+3)", data: BREASTPLATE_PLUS_3 },
+      { slug: "shield-plus-1", entityType: "item", name: "Shield +1", data: SHIELD_PLUS_1 },
+    ]);
+  }
+
+  it("magic body armor with no bonus reads its base armor's AC (Adamantine Breastplate → 14)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[adamantine-armor-breastplate]]", equipped: true }];
+    const d = recalc(mkResolved(c), buildArmorRegistry());
+    expect(d.ac).toBe(14); // base 14 + min(DEX 0, dex_max 2)
+  });
+
+  it("magic body armor +N stacks its bonus on the base armor's AC (Breastplate +3 → 17)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[breastplate-3]]", equipped: true }];
+    const d = recalc(mkResolved(c), buildArmorRegistry());
+    expect(d.ac).toBe(17); // 14 base + 0 DEX + 3 magic
+  });
+
+  it("a base shield categorized 'heavy' (real 2024 data) routes to the shield slot and adds +2 (→ 12)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[shield]]", equipped: true }];
+    const d = recalc(mkResolved(c), buildArmorRegistry());
+    expect(d.ac).toBe(12); // 10 unarmored + 2 shield
+    expect(d.acBreakdown.some((t) => t.kind === "shield")).toBe(true);
+  });
+
+  it("a magic shield reads its base shield AC and stacks its bonus (Shield +1 → 13)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[shield-plus-1]]", equipped: true }];
+    const d = recalc(mkResolved(c), buildArmorRegistry());
+    expect(d.ac).toBe(13); // 10 unarmored + 2 base shield + 1 magic
+  });
+
+  it("body armor and a shield stack (Plate 18 + Shield 2 → 20)", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[plate]]", equipped: true },
+      { item: "[[shield]]", equipped: true },
+    ];
+    const d = recalc(mkResolved(c), buildArmorRegistry());
+    expect(d.ac).toBe(20); // plate 18 + shield 2 (DEX irrelevant on heavy)
   });
 });
