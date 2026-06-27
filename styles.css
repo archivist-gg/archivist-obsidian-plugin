@@ -9605,7 +9605,6 @@ body.theme-light .archivist-tag-atk:hover {
   padding: var(--pc-space-3) var(--pc-space-4);
   margin: var(--pc-space-3) var(--pc-space-4) 0;
   background: #fff6e0;
-  border-left: 3px solid var(--pc-crimson);
   font-size: var(--pc-fs-body);
   border-radius: var(--pc-radius-sm);
 }
