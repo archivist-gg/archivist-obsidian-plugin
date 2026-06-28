@@ -100,6 +100,39 @@ describe("resolvePool", () => {
   });
 });
 
+describe("pool_grants — class + subclass merge", () => {
+  it("resolves a class-declared grant (not only subclass)", () => {
+    const rc = mkClass(20);
+    rc.entity = { ...rc.entity, pool_grants: [
+      { pool: "interdict-boons", grants: [{ feature: "[[hell-mage]]", at_level: 1 }] },
+    ] } as never;
+    const r = resolvePool(rc, 0, pool, mkRegistry(boons));
+    expect(r.grants.map((e) => e.slug)).toContain("hell-mage");
+  });
+
+  it("dedupes a feature granted by both class and subclass", () => {
+    const rc = mkClass(20);
+    rc.entity = { ...rc.entity, pool_grants: [
+      { pool: "interdict-boons", grants: [{ feature: "[[hell-mage]]", at_level: 1 }] },
+    ] } as never;
+    rc.subclass = { slug: "asmodeus", pool_grants: [
+      { pool: "interdict-boons", grants: [{ feature: "[[hell-mage]]", at_level: 1 }] },
+    ] } as never;
+    const r = resolvePool(rc, 0, pool, mkRegistry(boons));
+    expect(r.grants.filter((e) => e.slug === "hell-mage")).toHaveLength(1);
+  });
+
+  it("drops a selected feature that is also granted (granted wins, no pick consumed)", () => {
+    const rc = mkClass(20, { 2: { "interdict-boons": ["hell-mage"] } });
+    rc.entity = { ...rc.entity, pool_grants: [
+      { pool: "interdict-boons", grants: [{ feature: "[[hell-mage]]", at_level: 1 }] },
+    ] } as never;
+    const r = resolvePool(rc, 0, pool, mkRegistry(boons));
+    expect(r.grants.map((e) => e.slug)).toContain("hell-mage");
+    expect(r.selected.map((e) => e.slug)).not.toContain("hell-mage");
+  });
+});
+
 describe("resolveAllPools", () => {
   // classB's owner + boon, so its pool resolves against a real available_to match.
   function rogueBoon(slug: string) {
