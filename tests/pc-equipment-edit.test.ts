@@ -148,3 +148,27 @@ describe("unattuneItem", () => {
     expect(c.equipment[0].attuned).toBe(false);
   });
 });
+
+describe("equipItem write-path parity (A1)", () => {
+  it("routes magic armor (base_item) to the armor slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[adamantine-breastplate]]", equipped: false }];
+    const r = equipItem(c, 0, reg);
+    expect(r.kind).toBe("ok");
+    expect(c.equipment[0].slot).toBe("armor");
+  });
+
+  it("routes a category:'heavy' Shield to the shield slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[heavy-shield]]", equipped: false }];
+    equipItem(c, 0, reg);
+    expect(c.equipment[0].slot).toBe("shield");
+  });
+
+  it("resolves a vault-path wikilink to write the armor slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[SRD 2024/Armor/Breastplate]]", equipped: false }];
+    equipItem(c, 0, reg);
+    expect(c.equipment[0].slot).toBe("armor");
+  });
+});

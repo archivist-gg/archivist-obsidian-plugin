@@ -157,6 +157,32 @@ export const WAND_OF_FIREBALLS: ItemEntity = {
   attunement: { required: true },
 };
 
+// Magic armor via base_item (mirrors SRD-2024 Adamantine Armor / +N breastplates).
+export const ADAMANTINE_BREASTPLATE: ItemEntity = {
+  name: "Adamantine Armor (Breastplate)",
+  slug: "adamantine-breastplate",
+  type: "armor",
+  rarity: "uncommon",
+  base_item: "breastplate",
+  attunement: false,
+};
+export const BREASTPLATE_PLUS_3: ItemEntity = {
+  name: "Breastplate (+3)",
+  slug: "breastplate-3",
+  type: "armor",
+  rarity: "very rare",
+  base_item: "breastplate",
+  bonuses: { ac: 3 },
+  attunement: false,
+};
+// SRD-2024-style shield whose category is "heavy", caught by name/slug not category.
+export const HEAVY_SHIELD: ArmorEntity = {
+  name: "Shield",
+  slug: "heavy-shield",
+  category: "heavy",
+  ac: { base: 0, flat: 2, add_dex: false, add_con: false, add_wis: false },
+};
+
 export function buildEquipmentRegistry(): EntityRegistry {
   return buildMockRegistry([
     { slug: "plate", entityType: "armor", name: "Plate", data: PLATE },
@@ -181,5 +207,10 @@ export function buildEquipmentRegistry(): EntityRegistry {
     },
     { slug: "headband-of-intellect", entityType: "item", name: "Headband of Intellect", data: HEADBAND_OF_INTELLECT },
     { slug: "wand-of-fireballs", entityType: "item", name: "Wand of Fireballs", data: WAND_OF_FIREBALLS },
+    { slug: "adamantine-breastplate", entityType: "item", name: "Adamantine Armor (Breastplate)", data: ADAMANTINE_BREASTPLATE },
+    { slug: "breastplate-3", entityType: "item", name: "Breastplate (+3)", data: BREASTPLATE_PLUS_3 },
+    { slug: "heavy-shield", entityType: "armor", name: "Shield", data: HEAVY_SHIELD },
+    // vault-path resolution target: same Breastplate under its compendium-prefixed slug
+    { slug: "srd-2024_breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
   ]);
 }
