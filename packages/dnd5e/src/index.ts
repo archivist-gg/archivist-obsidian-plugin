@@ -5,5 +5,7 @@ export { enrichMonster } from "./monster/monster.enrichment";
 export { monsterInputSchema } from "./monster/monster.ai-schema";
 export { monsterCodec } from "./monster/monster.codec";
 export type { MonsterRaw } from "./monster/monster.codec";
+export { resolveMonster } from "./monster/monster.resolve";
+export { monsterEntityType } from "./monster/monster.entity-type";
 export * from "./inline-tag-parser";
 export * from "./srd-store";
