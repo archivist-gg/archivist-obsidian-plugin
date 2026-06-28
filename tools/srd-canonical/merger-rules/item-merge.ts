@@ -672,6 +672,30 @@ function setBonusField(
   }
 }
 
+/** Structural equality for two conditions: same `kind` and (when present) same `value`. */
+function conditionsEqual(a: Condition, b: Condition): boolean {
+  if (a.kind !== b.kind) return false;
+  const av = (a as { value?: unknown }).value;
+  const bv = (b as { value?: unknown }).value;
+  return av === bv;
+}
+
+/**
+ * Collapse the impossible melee+ranged attack-type pair. `when[]` entries are
+ * AND-combined, so a bonus gated on BOTH `{on_attack_type:melee}` AND
+ * `{on_attack_type:ranged}` can never apply (an attack is one or the other).
+ * Such a bonus actually applies to every attack, so the attack-type gate is
+ * vacuous: drop ALL `on_attack_type` conditions (preserving any others). A
+ * single attack-type condition (melee-only or ranged-only) is a real,
+ * satisfiable gate and is left untouched.
+ */
+function collapseAttackTypeTautology(when: Condition[]): Condition[] {
+  const hasMelee = when.some((c) => c.kind === "on_attack_type" && c.value === "melee");
+  const hasRanged = when.some((c) => c.kind === "on_attack_type" && c.value === "ranged");
+  if (hasMelee && hasRanged) return when.filter((c) => c.kind !== "on_attack_type");
+  return when;
+}
+
 function wrap(
   value: number,
   when: Condition[],
@@ -690,9 +714,16 @@ function wrap(
       `[item-merge] ${slug}: ${field} value mismatch — keeping existing ${existing.value}, dropping new ${value}`,
     );
   }
+  // Merge with STRUCTURAL dedup (reference-equal `includes` never dedupes the
+  // freshly-built condition objects coming from foundry-effects).
   const merged: Condition[] = [...existing.when];
-  for (const c of when) if (!merged.includes(c)) merged.push(c);
-  return { value: existing.value, when: merged };
+  for (const c of when) {
+    if (!merged.some((m) => conditionsEqual(m, c))) merged.push(c);
+  }
+  const collapsed = collapseAttackTypeTautology(merged);
+  // An empty gate means the bonus always applies → serialize as a flat number.
+  if (collapsed.length === 0) return existing.value;
+  return { value: existing.value, when: collapsed };
 }
 
 /**
