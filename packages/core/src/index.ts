@@ -1,1 +1,2 @@
-export const CONVENTION_VERSION = "1.0";
+export * from "./contracts";
+export { parseContainer } from "./container";
