@@ -12,7 +12,8 @@ import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { renderMonsterBlock } from "./monster.renderer";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
 import { MonsterModal } from "./monster.modal";
-import { generateMonsterTool } from "./monster.ai-tools";
+import { monsterGeneratable } from "@archivist/dnd5e";
+import { generatableToSdkTool } from "@archivist/generators";
 
 // TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
 // so modules don't need to reach into src/main for the concrete class.
@@ -60,16 +61,22 @@ class MonsterModule implements ArchivistModule {
   }
 
   registerAITools(registry: AIToolRegistry): void {
+    // Monster's generate tool now comes from the dnd5e pack's Generatable via
+    // the generic Generatable→SDK mapping, retiring the hand-written
+    // generateMonsterTool. The mapper derives the name from the Generatable's
+    // type, so it stays `generate_monster` — prompt/renderer references that key
+    // off that name are unchanged.
+    const sdkTool = generatableToSdkTool(monsterGeneratable);
     registry.register({
-      name: generateMonsterTool.name,
-      description: generateMonsterTool.description,
-      schema: generateMonsterTool.inputSchema,
+      name: sdkTool.name,
+      description: sdkTool.description,
+      schema: sdkTool.inputSchema,
       execute: (input: unknown) => {
-        const args = input as Parameters<typeof generateMonsterTool.handler>[0];
-        return generateMonsterTool.handler(args, {});
+        const args = input as Parameters<typeof sdkTool.handler>[0];
+        return sdkTool.handler(args, {});
       },
     });
-    registry.registerSdkTool?.(generateMonsterTool);
+    registry.registerSdkTool?.(sdkTool);
   }
 
   getInsertModal(): ModalConstructor {

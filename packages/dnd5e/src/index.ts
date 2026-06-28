@@ -8,5 +8,6 @@ export type { MonsterRaw } from "./monster/monster.codec";
 export { resolveMonster } from "./monster/monster.resolve";
 export { monsterEntityType } from "./monster/monster.entity-type";
 export { monsterGeneratable } from "./monster/monster.generatable";
+export { dnd5ePack } from "./pack";
 export * from "./inline-tag-parser";
 export * from "./srd-store";

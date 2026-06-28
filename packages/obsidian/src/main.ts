@@ -47,7 +47,7 @@ import {
 import { confirm as confirmModal } from "./modules/inquiry/shared/modals/ConfirmModal";
 
 // SRD & entities
-import { SrdStore } from "@archivist/dnd5e";
+import { SrdStore, dnd5ePack } from "@archivist/dnd5e";
 import { EntityRegistry, createArchivist, CONVENTION_VERSION } from "@archivist/core";
 import type { Archivist, EntityType } from "@archivist/core";
 
@@ -197,7 +197,14 @@ export default class ArchivistPlugin extends Plugin {
         mod.registerAITools(aiToolRegistry);
       }
       if (mod.codeBlockType && mod.parseYaml) {
-        legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse
+        // Monster is the first entity owned by a real pack: its EntityType
+        // (codec + resolve) comes from dnd5ePack, so it's excluded from the
+        // legacy adapter's parse bridge. Every other type still bridges through
+        // the legacy adapter. Presentation (render/edit/insert) stays in
+        // obsidian for ALL types, monster included.
+        if (mod.codeBlockType !== "monster") {
+          legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse
+        }
         this.presentation.set(mod.codeBlockType, {
           // Bridge 2: presentation render/edit/insert
           render: mod.render?.bind(mod),
@@ -206,6 +213,11 @@ export default class ArchivistPlugin extends Plugin {
         });
       }
     }
+    // Register the real dnd5e pack before the legacy strangler pack so its
+    // EntityTypes own the types it declares (monster). Registration is
+    // last-write-wins per type; monster is de-listed from the legacy pack
+    // above, so there is no conflict either way.
+    this.archivist.registerPack(dnd5ePack);
     this.archivist.registerPack({
       id: "legacy",
       version: "0",
