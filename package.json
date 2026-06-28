@@ -17,6 +17,7 @@
     "test:watch": "vitest --exclude 'tests/inquiry/**'",
     "migrate-formula-tags": "tsx scripts/migrate-formula-tags.ts"
   },
+  "workspaces": ["packages/*"],
   "keywords": [],
   "author": "Shinoobi",
   "license": "AGPL-3.0",

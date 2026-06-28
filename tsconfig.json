@@ -1,24 +1,8 @@
 {
-  "compilerOptions": {
-    "baseUrl": ".",
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "module": "ESNext",
-    "target": "ES6",
-    "allowJs": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "importHelpers": true,
-    "isolatedModules": true,
-    "strictNullChecks": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "lib": ["DOM", "ES5", "ES6", "ES7"],
-    "outDir": "./dist",
-    "paths": {
-      "@/*": ["src/*"]
-    }
-  },
-  "include": ["src/**/*.ts", "tools/**/*"],
-  "exclude": ["node_modules", "tests", "src/inquiry/main.reference.ts"]
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/dnd5e" },
+    { "path": "packages/generators" }
+  ]
 }

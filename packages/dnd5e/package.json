@@ -1,0 +1,7 @@
+{
+  "name": "@archivist/dnd5e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" }
+}

@@ -1,6 +1,12 @@
 node_modules/
 main.js
 *.js.map
+
+# tsc -b composite build artifacts for workspace packages
+# (esbuild bundles from src/ directly; dist/ + tsbuildinfo are not consumed)
+packages/*/dist/
+*.tsbuildinfo
+
 data.json
 src/data/srd/index.generated.ts
 .superpowers/
