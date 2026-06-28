@@ -69,6 +69,31 @@ describe("equipItem", () => {
     const r = equipItem(c, 1, reg);
     expect(r.kind).toBe("conflict");
   });
+
+  // FIX 1: a two-handed weapon can only occupy the mainhand. When the mainhand
+  // is held by a 1H weapon it must surface a conflict (NOT silently route to
+  // offhand), and equipping a shield while a 2H weapon is held conflicts on it.
+  it("two-handed weapon while mainhand occupied → conflict on mainhand (not routed to offhand)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[longsword]]", equipped: true, slot: "mainhand" }, { item: "[[greatsword]]" }];
+    const r = equipItem(c, 1, reg);
+    expect(r.kind).toBe("conflict");
+    if (r.kind === "conflict") expect(r.slot).toBe("mainhand");
+    expect(c.equipment[1].equipped).toBeFalsy();
+    expect(c.equipment[1].slot).toBeUndefined();
+  });
+
+  it("shield while a two-handed weapon holds the mainhand → conflict on the 2H weapon", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[greatsword]]", equipped: true, slot: "mainhand" }, { item: "[[shield]]" }];
+    const r = equipItem(c, 1, reg);
+    expect(r.kind).toBe("conflict");
+    if (r.kind === "conflict") {
+      expect(r.withIndex).toBe(0);
+      expect(r.slot).toBe("mainhand");
+    }
+    expect(c.equipment[1].equipped).toBeFalsy();
+  });
 });
 
 describe("attuneItem", () => {

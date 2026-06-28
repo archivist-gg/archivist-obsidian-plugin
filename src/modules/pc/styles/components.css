@@ -620,6 +620,8 @@
   color: var(--pc-text-soft);
   max-width: 100%;
   white-space: nowrap;
+  /* Anchor for the absolutely-positioned situational stat tooltip. */
+  position: relative;
 }
 .archivist-pc-sheet .pc-save-chip b {
   font-weight: 600;
@@ -740,7 +742,7 @@
   grid-template-rows: repeat(2, 1fr);
   gap: 8px;
 }
-.archivist-pc-sheet .pc-stats-tile { text-align: center; padding: 10px 6px; }
+.archivist-pc-sheet .pc-stats-tile { text-align: center; padding: 10px 6px; position: relative; }
 .archivist-pc-sheet .pc-stats-tile-lbl {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-micro);
@@ -1631,6 +1633,7 @@
  * the AC tooltip and the attack table (and future save/spell/speed tooltips). */
 .pc-situational-row { display: flex; gap: var(--pc-space-1); font-style: italic; opacity: 0.85; padding: 0.1em 0; }
 .pc-situational-amount { font-variant-numeric: tabular-nums; }
+.pc-situational-field { color: var(--pc-text-muted); font-size: var(--pc-fs-label); font-style: italic; }
 .pc-situational-condition { color: var(--pc-text-muted); font-size: var(--pc-fs-label); }
 .pc-situational-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
 

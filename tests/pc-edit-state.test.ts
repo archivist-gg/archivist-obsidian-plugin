@@ -829,7 +829,7 @@ describe("CharacterEditState — equipItemWithSwap (Task 3)", () => {
     const c = baseChar();
     const es = makeES(c);
     const res = es.equipItemWithSwap(1);
-    expect(res.unequipped).toBe("Adamantine Armor (Breastplate)");
+    expect(res.unequipped).toEqual(["Adamantine Armor (Breastplate)"]);
     expect(c.equipment[0].equipped).toBe(false);   // occupant unequipped
     expect(c.equipment[1].equipped).toBe(true);     // incoming equipped
     expect(c.equipment[1].slot).toBe("armor");
@@ -843,5 +843,51 @@ describe("CharacterEditState — equipItemWithSwap (Task 3)", () => {
     const res = es.equipItemWithSwap(1);
     expect(res.unequipped).toBeUndefined();
     expect(c.equipment[1].equipped).toBe(true);
+  });
+
+  // ─── FIX 1: two-handed weapon swap routing ──────────────────────────
+  it("2H weapon while a 1H weapon holds the mainhand → 2H to mainhand, 1H unequipped, never offhand", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[longsword]]", equipped: true, slot: "mainhand" },
+      { item: "[[greatsword]]", equipped: false },
+    ];
+    const es = makeES(c);
+    const res = es.equipItemWithSwap(1);
+    expect(c.equipment[1].equipped).toBe(true);
+    expect(c.equipment[1].slot).toBe("mainhand");
+    expect(c.equipment[1].slot).not.toBe("offhand");
+    expect(c.equipment[0].equipped).toBe(false);
+    expect(res.unequipped).toEqual(expect.arrayContaining(["Longsword"]));
+  });
+
+  it("2H weapon while a shield is equipped → 2H to mainhand, shield unequipped", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[shield]]", equipped: true, slot: "shield" },
+      { item: "[[greatsword]]", equipped: false },
+    ];
+    const es = makeES(c);
+    const res = es.equipItemWithSwap(1);
+    expect(c.equipment[1].equipped).toBe(true);
+    expect(c.equipment[1].slot).toBe("mainhand");
+    expect(c.equipment[0].equipped).toBe(false);
+    expect(res.unequipped).toEqual(expect.arrayContaining(["Shield"]));
+  });
+
+  it("2H weapon while BOTH a mainhand weapon AND a shield are equipped → both unequipped, 2H to mainhand", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[longsword]]", equipped: true, slot: "mainhand" },
+      { item: "[[shield]]", equipped: true, slot: "shield" },
+      { item: "[[greatsword]]", equipped: false },
+    ];
+    const es = makeES(c);
+    const res = es.equipItemWithSwap(2);
+    expect(c.equipment[2].equipped).toBe(true);
+    expect(c.equipment[2].slot).toBe("mainhand");
+    expect(c.equipment[0].equipped).toBe(false);
+    expect(c.equipment[1].equipped).toBe(false);
+    expect(res.unequipped).toEqual(expect.arrayContaining(["Longsword", "Shield"]));
   });
 });

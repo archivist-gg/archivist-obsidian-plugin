@@ -28,14 +28,21 @@ function resolveSlot(
   if (entry.slot) return { slot: entry.slot, entity };
   let slot = defaultSlotForType(entityType, entity, registry);
   if (slot === "mainhand") {
-    const mainOccupied = character.equipment.some((e, i) => {
-      if (i === index || !e.equipped) return false;
-      if (e.slot === "mainhand") return true;
-      if (e.slot) return false;
-      const { entity: oe, entityType: oet } = resolveEntityForEntry(e.item, registry);
-      return defaultSlotForType(oet, oe, registry) === "mainhand";
-    });
-    if (mainOccupied) slot = "offhand";
+    // A two-handed weapon can ONLY occupy the mainhand — never fall back to the
+    // offhand when the mainhand is taken. Surface the conflict (handled by
+    // equipItem) so the swap path can free the mainhand instead of silently
+    // dropping the 2H weapon into the offhand alongside the existing weapon.
+    const twoHandedWeapon = !!entity && isWeaponEntity(entity) && isTwoHanded(entity);
+    if (!twoHandedWeapon) {
+      const mainOccupied = character.equipment.some((e, i) => {
+        if (i === index || !e.equipped) return false;
+        if (e.slot === "mainhand") return true;
+        if (e.slot) return false;
+        const { entity: oe, entityType: oet } = resolveEntityForEntry(e.item, registry);
+        return defaultSlotForType(oet, oe, registry) === "mainhand";
+      });
+      if (mainOccupied) slot = "offhand";
+    }
   }
   return { slot, entity };
 }
@@ -96,6 +103,18 @@ export function equipItem(
   if (slot === "mainhand" && entity && isWeaponEntity(entity) && isTwoHanded(entity)) {
     const shieldHolder = findOccupant(character, "shield", registry, index);
     if (shieldHolder !== null) return { kind: "conflict", withIndex: shieldHolder, slot: "shield" };
+  }
+  // Reverse direction: equipping a shield while a two-handed weapon holds the
+  // mainhand is a single-occupancy conflict on the 2H weapon (a shield cannot
+  // be wielded alongside a two-handed weapon).
+  if (slot === "shield") {
+    const mainHolder = findOccupant(character, "mainhand", registry, index);
+    if (mainHolder !== null) {
+      const { entity: mainEntity } = resolveEntityForEntry(character.equipment[mainHolder].item, registry);
+      if (mainEntity && isWeaponEntity(mainEntity) && isTwoHanded(mainEntity)) {
+        return { kind: "conflict", withIndex: mainHolder, slot: "mainhand" };
+      }
+    }
   }
   entry.equipped = true;
   entry.slot = slot;

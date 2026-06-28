@@ -58,6 +58,16 @@ const rodOfFocusedCasting: ItemEntity = {
   },
 };
 
+const tomeOfWardedMind: ItemEntity = {
+  name: "Tome of the Warded Mind",
+  slug: "tome-of-warded-mind",
+  rarity: "rare",
+  attunement: { required: true },
+  bonuses: {
+    spell_save_dc: { value: 1, when: [{ kind: "is_concentrating" }] },
+  },
+};
+
 function buildRegistry() {
   return buildMockRegistry([
     { slug: "studded-leather", entityType: "armor", name: "Studded Leather", data: STUDDED_LEATHER },
@@ -70,6 +80,7 @@ function buildRegistry() {
     { slug: "cloak-of-protection", entityType: "item", name: "Cloak of Protection", data: cloakOfProtection },
     { slug: "amulet-vs-spells", entityType: "item", name: "Amulet of Spell Warding", data: amuletVsSpells },
     { slug: "rod-of-focused-casting", entityType: "item", name: "Rod of Focused Casting", data: rodOfFocusedCasting },
+    { slug: "tome-of-warded-mind", entityType: "item", name: "Tome of the Warded Mind", data: tomeOfWardedMind },
   ]);
 }
 
@@ -375,6 +386,29 @@ describe("Informational slice partition (saves / spell / speed)", () => {
         (i) => i.field === "spell_attack" || i.field === "spell_save_dc",
       ),
     ).toBe(true);
+    // Not the other two slices.
+    expect(d.savesInformational).toHaveLength(0);
+    expect(d.speedInformational).toHaveLength(0);
+  });
+
+  it("routes a conditional spell_save_dc bonus into spellcastingInformational", () => {
+    const c = baseChar();
+    c.equipment = [
+      // spell_save_dc +1 while concentrating (Tier-4 informational).
+      { item: "[[tome-of-warded-mind]]", equipped: true, attuned: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    expect(d.spellcastingInformational).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "spell_save_dc",
+          source: "Tome of the Warded Mind",
+          value: 1,
+          conditions: [{ kind: "is_concentrating" }],
+        }),
+      ]),
+    );
     // Not the other two slices.
     expect(d.savesInformational).toHaveLength(0);
     expect(d.speedInformational).toHaveLength(0);

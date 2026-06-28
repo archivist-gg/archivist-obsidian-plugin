@@ -75,7 +75,7 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
       void unequipWithAttunementCheck(ctx.app, editState, ctx.entry, i);
     } else {
       const res = editState.equipItemWithSwap(i);
-      if (res.unequipped) new Notice(`Unequipped ${res.unequipped} (slot occupied).`);
+      if (res.unequipped?.length) new Notice(`Unequipped ${res.unequipped.join(", ")} (slot occupied).`);
     }
   });
 

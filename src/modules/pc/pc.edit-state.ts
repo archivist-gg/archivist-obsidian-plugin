@@ -733,24 +733,50 @@ export class CharacterEditState {
     return r;
   }
 
-  /** Equip with swap: if the target single-occupancy slot is taken, unequip the
-   *  occupant first, then equip. Returns the unequipped occupant's display name
-   *  (for the caller to surface in a Notice), or {} if nothing was swapped. The
-   *  Notice itself is fired by the UI call sites — edit-state stays runtime-free
-   *  so node tests can exercise it without importing obsidian. */
-  equipItemWithSwap(index: number): { unequipped?: string } {
+  /** Equip with swap: if the target single-occupancy slot(s) are taken, unequip
+   *  each conflicting occupant in turn, then equip. A single equip can produce a
+   *  CHAIN of conflicts (e.g. a two-handed weapon conflicts with both a held
+   *  mainhand weapon AND a shield), so this loops — unequip → re-equip — until
+   *  the incoming item is placed or a small iteration cap trips (infinite-loop
+   *  guard). Returns the display names of ALL unequipped occupants (for the UI
+   *  to surface in a Notice), or {} when nothing was swapped.
+   *
+   *  Honesty contract: names are only returned when the incoming item actually
+   *  ends up equipped. If the chain can't resolve (cap hit / unresolvable), the
+   *  partial unequips are rolled back to a true no-op and {} is returned, so the
+   *  Notice can never claim a swap that didn't happen. The Notice itself is fired
+   *  by the UI call sites — edit-state stays runtime-free so node tests can
+   *  exercise it without importing obsidian. */
+  equipItemWithSwap(index: number): { unequipped?: string[] } {
     if (!this.registry) return {};
-    const r = eq.equipItem(this.character, index, this.registry);
-    if (r.kind === "ok") { this.onChange(); return {}; }
-    // conflict — swap the occupant out, then equip the incoming entry.
-    const occ = this.character.equipment[r.withIndex];
-    const name = occ.overrides?.name
-      ?? resolveEntityForEntry(occ.item, this.registry).entity?.name
-      ?? occ.item;
-    eq.unequipItem(this.character, r.withIndex);
-    eq.equipItem(this.character, index, this.registry);
+    // Snapshot equipped/slot so the chain can be rolled back to a true no-op if
+    // it fails to resolve.
+    const snapshot = this.character.equipment.map((e) => ({ equipped: e.equipped, slot: e.slot }));
+    const names: string[] = [];
+    let r = eq.equipItem(this.character, index, this.registry);
+    let guard = 0;
+    while (r.kind === "conflict" && guard < 3) {
+      guard++;
+      const occ = this.character.equipment[r.withIndex];
+      const name = occ.overrides?.name
+        ?? resolveEntityForEntry(occ.item, this.registry).entity?.name
+        ?? occ.item;
+      eq.unequipItem(this.character, r.withIndex);
+      names.push(name);
+      r = eq.equipItem(this.character, index, this.registry);
+    }
+    if (r.kind !== "ok") {
+      // Unresolvable — restore the snapshot so we don't leave occupants stranded
+      // and report nothing so the Notice never lies.
+      this.character.equipment.forEach((e, i) => {
+        e.equipped = snapshot[i].equipped;
+        if (snapshot[i].slot === undefined) delete e.slot;
+        else e.slot = snapshot[i].slot;
+      });
+      return {};
+    }
     this.onChange();
-    return { unequipped: name };
+    return names.length > 0 ? { unequipped: names } : {};
   }
 
   unequipItem(index: number): void {

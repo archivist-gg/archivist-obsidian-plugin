@@ -135,7 +135,9 @@ export class WeaponsTable implements SheetComponent {
       const info = a.informational;
       if (info && info.length > 0) {
         const sub = list.createDiv({ cls: "pc-attack-row-situational" });
-        renderSituationalRows(sub, info);
+        renderSituationalRows(sub, info, {
+          fieldLabel: (f) => (f === "weapon_attack" ? "to hit" : f === "weapon_damage" ? "dmg" : ""),
+        });
       }
     }
   }

@@ -88,6 +88,18 @@ describe("SpellsTab", () => {
     expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
   });
 
+  it("attaches NO popover when spellcastingInformational is explicitly empty ([])", () => {
+    const c = mountContainer();
+    new SpellsTab().render(c, {
+      resolved: resolved([spell("Magic Missile", 1)]),
+      derived: derived({ spellcastingInformational: [] as never }),
+      core: {} as never, app: {} as never, editState: null,
+    });
+    const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
+    dcRow.dispatchEvent(new Event("mouseenter"));
+    expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+
   it("shows a concentration tile (brain) in the active-effects rail when concentrating", () => {
     const c = mountContainer();
     const r = resolved([spell("Hold Person", 2)]);

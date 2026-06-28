@@ -177,7 +177,7 @@ function handleToggleClick(ctx: InventoryRowCtx): void {
     void unequipWithAttunementCheck(ctx.app, ctx.editState, ctx.entry, ctx.resolved.index);
   } else {
     const res = ctx.editState.equipItemWithSwap(ctx.resolved.index);
-    if (res.unequipped) new Notice(`Unequipped ${res.unequipped} (slot occupied).`);
+    if (res.unequipped?.length) new Notice(`Unequipped ${res.unequipped.join(", ")} (slot occupied).`);
   }
 }
 
