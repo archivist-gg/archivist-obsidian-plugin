@@ -48,7 +48,17 @@ import { confirm as confirmModal } from "./modules/inquiry/shared/modals/Confirm
 
 // SRD & entities
 import { SrdStore } from "./shared/ai/srd-store";
-import { EntityRegistry } from "@archivist/core";
+import { EntityRegistry, createArchivist, CONVENTION_VERSION } from "@archivist/core";
+import type { Archivist, EntityType } from "@archivist/core";
+
+// Strangler adapter: kernel + presentation bridges + Obsidian ports
+import { PresentationRegistry } from "./adapter/presentation-registry";
+import { moduleToEntityType } from "./adapter/legacy-adapter";
+import {
+  makeVaultStoragePort,
+  makeRegistryContentPort,
+  makeNoticeSink,
+} from "./adapter/obsidian-ports";
 import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
@@ -89,6 +99,11 @@ export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
   entityRegistry: EntityRegistry | null = null;
   compendiumManager: CompendiumManager | null = null;
+  /** Core kernel (strangler). Parses entity docs via registered packs; the
+   *  legacy CoreAPI (`this.core`) still serves not-yet-migrated modules. */
+  archivist!: Archivist;
+  /** DOM-facing render/edit/insert callbacks keyed by code-block type. */
+  presentation!: PresentationRegistry;
   inquiry: InquiryModule | null = null;
   /** Exposed for InquiryModule.ArchivistHostPlugin hook so the in-process
    *  MCP server can consume module-contributed SDK tools without having
@@ -141,6 +156,18 @@ export default class ArchivistPlugin extends Plugin {
       aiTools: aiToolRegistry,
     };
 
+    // --- new core wiring (strangler) ---
+    // The kernel parses entity docs via registered packs; the presentation
+    // registry holds modules' DOM render/edit callbacks. Built here, populated
+    // during the module loop below. The legacy CoreAPI (`this.core`) keeps
+    // serving not-yet-migrated modules.
+    this.archivist = createArchivist({
+      storage: makeVaultStoragePort(this.app.vault),
+      content: makeRegistryContentPort(this.entityRegistry),
+      notify: makeNoticeSink(),
+    });
+    this.presentation = new PresentationRegistry();
+
     // Instantiate and register modules. `InquiryArchivistModule` owns the
     // Claudian chat engine; other modules are shared singletons.
     const inquiryArchivistModule = new InquiryArchivistModule();
@@ -162,13 +189,29 @@ export default class ArchivistPlugin extends Plugin {
       pcModule,
     ];
 
+    const legacyEntityTypes: EntityType[] = [];
     for (const mod of this.moduleList) {
       moduleRegistry.register(mod);
-      mod.register(this.core);
+      mod.register(this.core); // Bridge 3: legacy CoreAPI still served
       if (mod.registerAITools) {
         mod.registerAITools(aiToolRegistry);
       }
+      if (mod.codeBlockType && mod.parseYaml) {
+        legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse
+        this.presentation.set(mod.codeBlockType, {
+          // Bridge 2: presentation render/edit/insert
+          render: mod.render?.bind(mod),
+          renderEditMode: mod.renderEditMode?.bind(mod),
+          getInsertModal: mod.getInsertModal?.bind(mod),
+        });
+      }
     }
+    this.archivist.registerPack({
+      id: "legacy",
+      version: "0",
+      conventionVersion: CONVENTION_VERSION,
+      entityTypes: legacyEntityTypes,
+    });
 
     // Expose the collected SDK tools so InquiryModule can hand them to
     // createArchivistMcpServer without importing each module's ai-tools
@@ -403,9 +446,11 @@ export default class ArchivistPlugin extends Plugin {
     if (!codeBlockType || !entityType || !mod.parseYaml || !mod.render) return;
 
     const supportsColumns = mod.supportsColumns === true;
+    // Presentation bridge: render/edit callbacks for this code-block type.
+    const pres = this.presentation.get(codeBlockType);
 
-    // Render via the module API. Returns the appended node so callers that
-    // must swap it (column-toggle) can do so cheaply.
+    // Render via the presentation registry. Returns the appended node so
+    // callers that must swap it (column-toggle) can do so cheaply.
     const renderViaModule = (data: unknown, columns: number, doc: Document): HTMLElement | null => {
       const scratch = doc.createElement("div");
       const ctx: RenderContext = {
@@ -413,16 +458,19 @@ export default class ArchivistPlugin extends Plugin {
         ctx: null,
         ...(supportsColumns ? { columns } : {}),
       };
-      const appended = mod.render!(scratch, data, ctx);
+      const appended = pres?.render?.(scratch, data, ctx);
       const node = appended ?? (scratch.lastElementChild as HTMLElement | null);
       if (node && node.parentElement === scratch) scratch.removeChild(node);
       return node;
     };
 
     this.registerMarkdownCodeBlockProcessor(codeBlockType, (source, el, ctx) => {
-      const result = mod.parseYaml!(source);
-      if (!result.success) {
-        el.appendChild(createErrorBlock(result.error, source));
+      // Kernel parse: behavior-identical to mod.parseYaml(source) — the legacy
+      // adapter's doc.parse runs mod.parseYaml over doc.body (= source).
+      const et = this.archivist.getEntityType(codeBlockType);
+      const result = et?.doc?.parse({ type: codeBlockType, frontmatter: {}, body: source, raw: source });
+      if (!result || !result.success) {
+        el.appendChild(createErrorBlock(result ? result.error : "no codec", source));
         return;
       }
 
@@ -483,7 +531,7 @@ export default class ArchivistPlugin extends Plugin {
         // `plugin` / `ctx` from the EditContext and invoke `onExit` when
         // they need to restore the view-mode render without a content
         // change (e.g. cancel with no edits).
-        mod.renderEditMode?.(el, result.data, {
+        pres?.renderEditMode?.(el, result.data, {
           plugin: this,
           ctx,
           source,
