@@ -38,7 +38,6 @@ interface ProficienciesForQuery {
   tools: ProficiencySet;
 }
 
-// TODO(SP6+): wire item.grants.senses through DerivedStats.senses + SensesPanel
 export function emptyAppliedBonuses(): AppliedBonuses {
   return {
     ability_bonuses: {},
@@ -49,6 +48,7 @@ export function emptyAppliedBonuses(): AppliedBonuses {
     spell_save_dc: 0,
     defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [] },
     informational: [],
+    senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0 },
   };
 }
 
@@ -138,6 +138,17 @@ export function computeAppliedBonuses(
     item.immune?.forEach((s) => out.defenses.immunities.push(s));
     item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
     item.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
+
+    // Item-granted senses (e.g. Goggles of Night → darkvision 60). Per-type
+    // max so multiple sense items don't stack; recalc further maxes these
+    // against race vision + feature-effect senses.
+    const gs = item.grants?.senses;
+    if (gs) {
+      if (typeof gs.darkvision === "number") out.senses.darkvision = Math.max(out.senses.darkvision, gs.darkvision);
+      if (typeof gs.blindsight === "number") out.senses.blindsight = Math.max(out.senses.blindsight, gs.blindsight);
+      if (typeof gs.tremorsense === "number") out.senses.tremorsense = Math.max(out.senses.tremorsense, gs.tremorsense);
+      if (typeof gs.truesight === "number") out.senses.truesight = Math.max(out.senses.truesight, gs.truesight);
+    }
 
     const b = item.bonuses;
     if (!b) continue;

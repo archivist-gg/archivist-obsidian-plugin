@@ -183,6 +183,17 @@ export const HEAVY_SHIELD: ArmorEntity = {
   ac: { base: 0, flat: 2, add_dex: false, add_con: false, add_wis: false },
 };
 
+// Item that grants a sense (darkvision 60) — folds into derived senses when
+// equipped-and-active. No attunement required.
+export const GOGGLES_OF_NIGHT: ItemEntity = {
+  name: "Goggles of Night",
+  slug: "goggles-of-night",
+  type: "wondrous",
+  rarity: "uncommon",
+  grants: { senses: { darkvision: 60 } },
+  attunement: false,
+};
+
 export function buildEquipmentRegistry(): EntityRegistry {
   return buildMockRegistry([
     { slug: "plate", entityType: "armor", name: "Plate", data: PLATE },
@@ -210,6 +221,7 @@ export function buildEquipmentRegistry(): EntityRegistry {
     { slug: "adamantine-breastplate", entityType: "item", name: "Adamantine Armor (Breastplate)", data: ADAMANTINE_BREASTPLATE },
     { slug: "breastplate-3", entityType: "item", name: "Breastplate (+3)", data: BREASTPLATE_PLUS_3 },
     { slug: "heavy-shield", entityType: "armor", name: "Shield", data: HEAVY_SHIELD },
+    { slug: "goggles-of-night", entityType: "item", name: "Goggles of Night", data: GOGGLES_OF_NIGHT },
     // vault-path resolution target: same Breastplate under its compendium-prefixed slug
     { slug: "srd-2024_breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
   ]);
