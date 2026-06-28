@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSrdFeat } from "../src/modules/feat/feat.normalizer";
+import { normalizeSrdFeat } from "../packages/obsidian/src/modules/feat/feat.normalizer";
 
 const minimalGrappler = {
   name: "Grappler",

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { collectResolvedFeatures, collectChosenGrantedFeatures } from "../src/modules/pc/pc.resolver";
-import type { FeatEntity } from "../src/modules/feat/feat.types";
+import { collectResolvedFeatures, collectChosenGrantedFeatures } from "../packages/obsidian/src/modules/pc/pc.resolver";
+import type { FeatEntity } from "../packages/obsidian/src/modules/feat/feat.types";
 
 const noRegistry = { getByTypeAndSlug: () => undefined };
 

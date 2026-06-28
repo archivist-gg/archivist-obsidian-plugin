@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { InventoryTab } from "../src/modules/pc/components/inventory-tab";
+import { InventoryTab } from "../packages/obsidian/src/modules/pc/components/inventory-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

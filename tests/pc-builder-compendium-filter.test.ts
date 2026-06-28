@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import {
   allTicked, matchesTicked, renderCompendiumFilter, sourceTagCls, renderSourceTag,
-} from "../src/modules/pc/components/builder/compendium-filter";
+} from "../packages/obsidian/src/modules/pc/components/builder/compendium-filter";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { Compendium } from "../src/shared/entities/compendium-manager";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import type { Compendium } from "../packages/obsidian/src/shared/entities/compendium-manager";
+import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

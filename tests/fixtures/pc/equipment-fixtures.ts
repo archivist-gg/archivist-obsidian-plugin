@@ -1,8 +1,8 @@
-import { EntityRegistry } from "../../../src/shared/entities/entity-registry";
+import { EntityRegistry } from "../../../packages/obsidian/src/shared/entities/entity-registry";
 import { buildMockRegistry } from "./mock-entity-registry";
-import type { ArmorEntity } from "../../../src/modules/armor/armor.types";
-import type { WeaponEntity } from "../../../src/modules/weapon/weapon.types";
-import type { ItemEntity } from "../../../src/modules/item/item.types";
+import type { ArmorEntity } from "../../../packages/obsidian/src/modules/armor/armor.types";
+import type { WeaponEntity } from "../../../packages/obsidian/src/modules/weapon/weapon.types";
+import type { ItemEntity } from "../../../packages/obsidian/src/modules/item/item.types";
 
 export const PLATE: ArmorEntity = {
   name: "Plate",

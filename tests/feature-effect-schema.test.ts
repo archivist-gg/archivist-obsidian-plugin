@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { featureEffectSchema } from "../src/shared/schemas/feature-effect-schema";
+import { featureEffectSchema } from "../packages/obsidian/src/shared/schemas/feature-effect-schema";
 
 describe("featureEffectSchema — ac-bonus", () => {
   it("accepts ac-bonus with requires_armor", () => {

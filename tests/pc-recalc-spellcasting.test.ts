@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const SC: Record<string, { caster_type: string; ability: string; preparation: string }> = {
   wizard:  { caster_type: "full", ability: "int", preparation: "prepared" },

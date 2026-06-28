@@ -8,16 +8,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, it, expect, beforeAll } from "vitest";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import { readNumericBonus } from "../src/modules/item/item.bonuses";
-import type { ItemEntity } from "../src/modules/item/item.types";
-import type { ConditionContext } from "../src/modules/item/item.conditions.types";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import { readNumericBonus } from "../packages/obsidian/src/modules/item/item.bonuses";
+import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
+import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
 import type {
   Character,
   ResolvedCharacter,
   ResolvedFeature,
   ResolvedClass,
-} from "../src/modules/pc/pc.types";
+} from "../packages/obsidian/src/modules/pc/pc.types";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {
   STUDDED_LEATHER,
@@ -272,7 +272,7 @@ describe("recalc against bundle conditional bonuses", () => {
   let bundle2014: Array<ItemEntity & { slug: string }>;
 
   beforeAll(() => {
-    const file = path.resolve(__dirname, "../src/srd/data/runtime/item.2014.json");
+    const file = path.resolve(__dirname, "../packages/obsidian/src/srd/data/runtime/item.2014.json");
     bundle2014 = JSON.parse(fs.readFileSync(file, "utf8")) as Array<ItemEntity & { slug: string }>;
   });
 

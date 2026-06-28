@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect } from "vitest";
-import { setDamageTypeIcon, hasDamageTypeIcon } from "../src/modules/pc/assets/spell-icons";
+import { setDamageTypeIcon, hasDamageTypeIcon } from "../packages/obsidian/src/modules/pc/assets/spell-icons";
 
 describe("setDamageTypeIcon", () => {
   it("mounts an <svg> for a known damage type", () => {

@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderAbilitiesStep } from "../src/modules/pc/components/builder/abilities-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import { renderAbilitiesStep } from "../packages/obsidian/src/modules/pc/components/builder/abilities-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -13,7 +13,7 @@ beforeAll(() => installObsidianDomHelpers());
  *  rather than `import.meta.url` — under the jsdom environment a `new URL(…,
  *  import.meta.url)` resolves against the document base, not the module file. */
 function readPcStyle(name: string): string {
-  return readFileSync(resolve(process.cwd(), "src/modules/pc/styles", name), "utf8");
+  return readFileSync(resolve(process.cwd(), "packages/obsidian/src/modules/pc/styles", name), "utf8");
 }
 
 /** Extract the declaration block (`{ ... }`) of the first rule whose selector

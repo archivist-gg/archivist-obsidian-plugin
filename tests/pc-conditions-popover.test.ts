@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi, afterEach } from "vitest";
-import { openConditionsPopover, closeConditionsPopover } from "../src/modules/pc/components/conditions-popover";
+import { openConditionsPopover, closeConditionsPopover } from "../packages/obsidian/src/modules/pc/components/conditions-popover";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

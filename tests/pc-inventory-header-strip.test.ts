@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { HeaderStrip } from "../src/modules/pc/components/inventory/header-strip";
+import { HeaderStrip } from "../packages/obsidian/src/modules/pc/components/inventory/header-strip";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

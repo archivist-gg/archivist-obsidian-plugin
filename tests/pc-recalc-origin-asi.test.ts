@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { collectChosenAbilityPoints } from "../src/modules/pc/pc.decision-engine";
-import { computeAbilityScores, abilityBonusBreakdown } from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter } from "../src/modules/pc/pc.types";
+import { collectChosenAbilityPoints } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
+import { computeAbilityScores, abilityBonusBreakdown } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function resolvedWith(over: Record<string, unknown>): ResolvedCharacter {
   return {

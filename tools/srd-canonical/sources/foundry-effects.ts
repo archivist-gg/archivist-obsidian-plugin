@@ -7,7 +7,7 @@
 import type {
   BonusFieldPath,
   Condition,
-} from "../../../src/modules/item/item.conditions.types";
+} from "../../../packages/obsidian/src/modules/item/item.conditions.types";
 
 export interface FoundryChange {
   key: string;

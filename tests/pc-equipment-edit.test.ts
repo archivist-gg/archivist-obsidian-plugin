@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   addItem, removeItem, equipItem, unequipItem, attuneItem, unattuneItem,
   setCharges, setCurrency, type EquipResult, type AttuneResult,
-} from "../src/modules/pc/pc.equipment-edit";
+} from "../packages/obsidian/src/modules/pc/pc.equipment-edit";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
-import type { Character } from "../src/modules/pc/pc.types";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const reg = buildEquipmentRegistry();
 

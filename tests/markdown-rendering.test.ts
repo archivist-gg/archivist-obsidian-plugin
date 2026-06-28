@@ -8,7 +8,7 @@ vi.mock("obsidian", () => ({
   Notice: vi.fn(),
 }));
 
-import { appendMarkdownText, convert5eToolsTags } from "../src/shared/rendering/renderer-utils";
+import { appendMarkdownText, convert5eToolsTags } from "../packages/obsidian/src/shared/rendering/renderer-utils";
 
 // --- appendMarkdownText (DOM) ---
 

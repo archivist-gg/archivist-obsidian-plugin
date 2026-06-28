@@ -13,7 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       obsidian: path.resolve(__dirname, "tests/__mocks__/obsidian.ts"),
-      "@": path.resolve(__dirname, "src"),
+      "@": path.resolve(__dirname, "packages/obsidian/src"),
     },
   },
   assetsInclude: ["**/*.md"],

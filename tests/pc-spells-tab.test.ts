@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { SpellsTab } from "../src/modules/pc/components/spells-tab";
+import { SpellsTab } from "../packages/obsidian/src/modules/pc/components/spells-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { DerivedStats, ResolvedCharacter, ResolvedSpell, SpellcastingClassInfo } from "../src/modules/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter, ResolvedSpell, SpellcastingClassInfo } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

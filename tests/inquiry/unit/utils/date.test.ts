@@ -1,4 +1,4 @@
-import { formatDurationMmSs, getTodayDate } from '../../../src/utils/date';
+import { formatDurationMmSs, getTodayDate } from '../../../packages/obsidian/src/utils/date';
 
 describe('getTodayDate', () => {
   it('returns readable date with ISO suffix', () => {

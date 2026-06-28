@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { iconForEntity } from "../src/modules/pc/components/inventory/icon-mapping";
-import type { ResolvedEquipped } from "../src/modules/pc/pc.types";
+import { iconForEntity } from "../packages/obsidian/src/modules/pc/components/inventory/icon-mapping";
+import type { ResolvedEquipped } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const eq = (entity: object | null, entityType: string | null = null): ResolvedEquipped =>
   ({ index: 0, entity: entity as never, entityType, entry: {} as never } as ResolvedEquipped);

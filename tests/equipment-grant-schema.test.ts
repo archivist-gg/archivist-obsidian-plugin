@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { startingEquipmentEntrySchema, startingGoldSchema } from "../src/shared/schemas/equipment-grant-schema";
-import { classEntitySchema } from "../src/modules/class/class.schema";
-import { backgroundEntitySchema } from "../src/modules/background/background.schema";
+import { startingEquipmentEntrySchema, startingGoldSchema } from "../packages/obsidian/src/shared/schemas/equipment-grant-schema";
+import { classEntitySchema } from "../packages/obsidian/src/modules/class/class.schema";
+import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
 import { overlaySchema } from "../tools/srd-canonical/overlay.schema";
 
 describe("equipment-grant schema", () => {

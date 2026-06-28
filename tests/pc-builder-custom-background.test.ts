@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   buildCustomBackgroundData,
   emptyCustomBackgroundState,
-} from "../src/modules/pc/components/builder/custom-background";
-import { backgroundEntitySchema } from "../src/modules/background/background.schema";
+} from "../packages/obsidian/src/modules/pc/components/builder/custom-background";
+import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
 
 describe("buildCustomBackgroundData", () => {
   it("assembles a valid background entity from the form state", () => {

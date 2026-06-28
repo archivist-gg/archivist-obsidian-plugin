@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeOptionalFeature } from "../src/modules/optional-feature/optional-feature.normalizer";
+import { normalizeOptionalFeature } from "../packages/obsidian/src/modules/optional-feature/optional-feature.normalizer";
 
 describe("normalizeOptionalFeature", () => {
   it("normalizes an invocation from external structured input", () => {

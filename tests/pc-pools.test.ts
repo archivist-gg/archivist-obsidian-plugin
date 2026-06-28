@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolvePool, resolveAllPools, type PoolRegistry } from "../src/modules/pc/pc.pools";
-import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
+import { resolvePool, resolveAllPools, type PoolRegistry } from "../packages/obsidian/src/modules/pc/pc.pools";
+import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function of(slug: string, ft: string, levelMin?: number) {
   return {

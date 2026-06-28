@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseItem } from "../src/modules/item/item.parser";
+import { parseItem } from "../packages/obsidian/src/modules/item/item.parser";
 
 describe("parseItem", () => {
   it("parses a minimal item (name only)", () => {

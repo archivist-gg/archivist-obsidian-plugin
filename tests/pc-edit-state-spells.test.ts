@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
-import { parsePC } from "../src/modules/pc/pc.parser";
-import type { Character, DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
+import { parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
+import type { Character, DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const YAML = [
   "name: Mage", "edition: '2014'", "race: null", "subrace: null", "background: null",

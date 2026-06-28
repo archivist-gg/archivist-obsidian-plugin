@@ -1,6 +1,6 @@
 import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
-import type { CastingOption } from "../../../src/modules/spell/spell.types";
+import type { CastingOption } from "../../../packages/obsidian/src/modules/spell/spell.types";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { flattenEntries } from "./condition-merge";
 

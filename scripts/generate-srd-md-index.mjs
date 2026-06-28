@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-const ROOT = resolve(process.cwd(), "src", "data", "srd");
+const ROOT = resolve(process.cwd(), "packages", "obsidian", "src", "data", "srd");
 const TYPES = ["classes", "races", "subclasses", "backgrounds", "feats"];
 const OUT_FILE = resolve(ROOT, "index.generated.ts");
 

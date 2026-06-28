@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
-import { buildDecisionLedger } from "../src/modules/pc/pc.decision-engine";
+import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
+import { buildDecisionLedger } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import type { Character } from "../src/modules/pc/pc.types";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 // Every gained class/subclass feature should surface in the per-level strip — as a
 // choice if it has one, otherwise as an "informational" card — so the builder shows

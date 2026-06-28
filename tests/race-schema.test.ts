@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { raceEntitySchema } from "../src/modules/race/race.schema";
+import { raceEntitySchema } from "../packages/obsidian/src/modules/race/race.schema";
 
 const minimalRace = {
   slug: "dwarf",

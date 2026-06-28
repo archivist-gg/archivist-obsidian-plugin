@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { toggleSpellBlock } from "../src/modules/pc/components/spells/spell-block-expand";
-import type { ResolvedSpell } from "../src/modules/pc/pc.types";
+import { toggleSpellBlock } from "../packages/obsidian/src/modules/pc/components/spells/spell-block-expand";
+import type { ResolvedSpell } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { tabDeclSchema } from "../src/shared/schemas/selection-pool-schema";
+import { tabDeclSchema } from "../packages/obsidian/src/shared/schemas/selection-pool-schema";
 
 describe("tabDeclSchema.renders.layout", () => {
   it("accepts a layout hint", () => {

@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderMarkdownDescription } from "../src/shared/rendering/markdown-description";
+import { renderMarkdownDescription } from "../packages/obsidian/src/shared/rendering/markdown-description";
 
 // Minimal Obsidian MarkdownRenderer mock: builds DOM nodes via createElement
 // to mirror what the production code does — no innerHTML.

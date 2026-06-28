@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderResourceList } from "../src/modules/pc/components/actions/resource-badge";
+import { renderResourceList } from "../packages/obsidian/src/modules/pc/components/actions/resource-badge";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

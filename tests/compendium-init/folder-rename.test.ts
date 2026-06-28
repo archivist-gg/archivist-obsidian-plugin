@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renameFolder } from "../../src/shared/compendium-init/folder-rename";
+import { renameFolder } from "../../packages/obsidian/src/shared/compendium-init/folder-rename";
 import type { Vault } from "obsidian";
 
 interface RenameCall {

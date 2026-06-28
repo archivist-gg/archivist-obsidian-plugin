@@ -1,9 +1,9 @@
 // tests/pc-proficiency-query.test.ts
 
 import { describe, it, expect } from "vitest";
-import { isProficientWithWeapon, isProficientWithArmor } from "../src/modules/pc/pc.proficiency-query";
-import type { ArmorEntity } from "../src/modules/armor/armor.types";
-import type { WeaponEntity } from "../src/modules/weapon/weapon.types";
+import { isProficientWithWeapon, isProficientWithArmor } from "../packages/obsidian/src/modules/pc/pc.proficiency-query";
+import type { ArmorEntity } from "../packages/obsidian/src/modules/armor/armor.types";
+import type { WeaponEntity } from "../packages/obsidian/src/modules/weapon/weapon.types";
 
 const longsword: WeaponEntity = {
   name: "Longsword", slug: "longsword", edition: "2014", category: "martial-melee",

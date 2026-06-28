@@ -2,7 +2,7 @@ import {
   BUILT_IN_COMMANDS,
   detectBuiltInCommand,
   getBuiltInCommandsForDropdown,
-} from '../../../../src/core/commands/builtInCommands';
+} from '../../../../packages/obsidian/src/core/commands/builtInCommands';
 
 describe('builtInCommands', () => {
   describe('detectBuiltInCommand', () => {

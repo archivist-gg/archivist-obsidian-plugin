@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderActiveEffectsRail } from "../src/modules/pc/components/active-effects-rail";
+import { renderActiveEffectsRail } from "../packages/obsidian/src/modules/pc/components/active-effects-rail";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

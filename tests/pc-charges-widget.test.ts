@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { renderChargesWidget } from "../src/modules/pc/components/charges-widget";
+import { renderChargesWidget } from "../packages/obsidian/src/modules/pc/components/charges-widget";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

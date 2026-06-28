@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect } from "vitest";
-import { armorModule } from "../src/modules/armor/armor.module";
+import { armorModule } from "../packages/obsidian/src/modules/armor/armor.module";
 import { PLATE } from "./fixtures/armor";
 
 describe("armorModule integration", () => {

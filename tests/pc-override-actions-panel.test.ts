@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderOverrideActionsPanel } from "../src/modules/pc/components/inventory/override-actions-panel";
+import { renderOverrideActionsPanel } from "../packages/obsidian/src/modules/pc/components/inventory/override-actions-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { EquipmentEntry } from "../src/modules/pc/pc.types";
+import type { EquipmentEntry } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,8 +1,8 @@
 // tests/pc-recalc-proficiency.test.ts
 
 import { describe, it, expect } from "vitest";
-import { computeProficiencies } from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter } from "../src/modules/pc/pc.types";
+import { computeProficiencies } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function makeResolved(overrides: Partial<ResolvedCharacter>): ResolvedCharacter {
   return {

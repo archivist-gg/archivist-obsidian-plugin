@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseSubclass } from "../src/modules/subclass/subclass.parser";
+import { parseSubclass } from "../packages/obsidian/src/modules/subclass/subclass.parser";
 
 const yaml = `
 slug: thief

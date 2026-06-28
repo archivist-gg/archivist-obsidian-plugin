@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
+import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import type { Character } from "../src/modules/pc/pc.types";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function char(known: Character["spells"]["known"]): Character {
   return {

@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { SensesPanel } from "../src/modules/pc/components/senses-panel";
+import { SensesPanel } from "../packages/obsidian/src/modules/pc/components/senses-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -2,8 +2,8 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { renderClassStub } from "../src/modules/class/class.renderer";
-import type { ClassEntity } from "../src/modules/class/class.types";
+import { renderClassStub } from "../packages/obsidian/src/modules/class/class.renderer";
+import type { ClassEntity } from "../packages/obsidian/src/modules/class/class.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

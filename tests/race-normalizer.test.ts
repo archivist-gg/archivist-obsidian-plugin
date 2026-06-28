@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSrdRace } from "../src/modules/race/race.normalizer";
+import { normalizeSrdRace } from "../packages/obsidian/src/modules/race/race.normalizer";
 
 const minimalOpen5eDwarf = {
   name: "Dwarf",

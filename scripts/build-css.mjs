@@ -13,11 +13,11 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const CLAUDIAN_STYLE_DIR = join(ROOT, 'src', 'modules', 'inquiry', 'style');
-const DND_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-dnd.css');
-const EDIT_CSS_FILE = join(ROOT, 'src', 'styles', 'archivist-edit.css');
-const LAYOUT_OVERRIDES_FILE = join(ROOT, 'src', 'styles', 'archivist-layout-overrides.css');
-const PC_STYLE_DIR = join(ROOT, 'src', 'modules', 'pc', 'styles');
+const CLAUDIAN_STYLE_DIR = join(ROOT, 'packages', 'obsidian', 'src','modules', 'inquiry', 'style');
+const DND_CSS_FILE = join(ROOT, 'packages', 'obsidian', 'src','styles', 'archivist-dnd.css');
+const EDIT_CSS_FILE = join(ROOT, 'packages', 'obsidian', 'src','styles', 'archivist-edit.css');
+const LAYOUT_OVERRIDES_FILE = join(ROOT, 'packages', 'obsidian', 'src','styles', 'archivist-layout-overrides.css');
+const PC_STYLE_DIR = join(ROOT, 'packages', 'obsidian', 'src','modules', 'pc', 'styles');
 const PC_INDEX_FILE = join(PC_STYLE_DIR, 'index.css');
 const OUTPUT = join(ROOT, 'styles.css');
 const INDEX_FILE = join(CLAUDIAN_STYLE_DIR, 'index.css');

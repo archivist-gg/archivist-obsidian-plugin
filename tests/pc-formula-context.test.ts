@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { resolveTag } from "../src/shared/dnd/formula-tags";
-import { buildFormulaContext } from "../src/modules/pc/pc.formula-context";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import { resolveTag } from "../packages/obsidian/src/shared/dnd/formula-tags";
+import { buildFormulaContext } from "../packages/obsidian/src/modules/pc/pc.formula-context";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 
 const registry = buildEquipmentRegistry();

@@ -13,17 +13,17 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { parseArmor } from "../../src/modules/armor/armor.parser";
-import { parseBackground } from "../../src/modules/background/background.parser";
-import { parseClass } from "../../src/modules/class/class.parser";
-import { parseFeat } from "../../src/modules/feat/feat.parser";
-import { parseItem } from "../../src/modules/item/item.parser";
-import { parseMonster } from "../../src/modules/monster/monster.parser";
-import { parseOptionalFeature } from "../../src/modules/optional-feature/optional-feature.parser";
-import { parseRace } from "../../src/modules/race/race.parser";
-import { parseSpell } from "../../src/modules/spell/spell.parser";
-import { parseSubclass } from "../../src/modules/subclass/subclass.parser";
-import { parseWeapon } from "../../src/modules/weapon/weapon.parser";
+import { parseArmor } from "../../packages/obsidian/src/modules/armor/armor.parser";
+import { parseBackground } from "../../packages/obsidian/src/modules/background/background.parser";
+import { parseClass } from "../../packages/obsidian/src/modules/class/class.parser";
+import { parseFeat } from "../../packages/obsidian/src/modules/feat/feat.parser";
+import { parseItem } from "../../packages/obsidian/src/modules/item/item.parser";
+import { parseMonster } from "../../packages/obsidian/src/modules/monster/monster.parser";
+import { parseOptionalFeature } from "../../packages/obsidian/src/modules/optional-feature/optional-feature.parser";
+import { parseRace } from "../../packages/obsidian/src/modules/race/race.parser";
+import { parseSpell } from "../../packages/obsidian/src/modules/spell/spell.parser";
+import { parseSubclass } from "../../packages/obsidian/src/modules/subclass/subclass.parser";
+import { parseWeapon } from "../../packages/obsidian/src/modules/weapon/weapon.parser";
 
 const BUNDLE_ROOT = path.resolve(__dirname, "../../.compendium-bundle");
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { computeConditionEffects } from "../src/modules/pc/pc.conditions";
-import type { CharacterState, ConditionEffects } from "../src/modules/pc/pc.types";
-import type { Ability } from "../src/shared/types";
+import { computeConditionEffects } from "../packages/obsidian/src/modules/pc/pc.conditions";
+import type { CharacterState, ConditionEffects } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { Ability } from "../packages/obsidian/src/shared/types";
 
 const ZERO_SCORES: Record<Ability, number> = {
   str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10,

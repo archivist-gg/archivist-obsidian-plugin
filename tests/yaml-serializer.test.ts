@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { editableToYaml } from "../src/modules/monster/monster.yaml-serializer";
-import { monsterToEditable } from "../src/modules/monster/monster.edit-state";
-import type { Monster } from "../src/modules/monster/monster.types";
+import { editableToYaml } from "../packages/obsidian/src/modules/monster/monster.yaml-serializer";
+import { monsterToEditable } from "../packages/obsidian/src/modules/monster/monster.edit-state";
+import type { Monster } from "../packages/obsidian/src/modules/monster/monster.types";
 import * as yaml from "js-yaml";
 
 const GOBLIN: Monster = {

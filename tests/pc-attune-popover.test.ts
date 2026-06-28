@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { showAttunePopover } from "../src/modules/pc/components/inventory/attune-popover";
+import { showAttunePopover } from "../packages/obsidian/src/modules/pc/components/inventory/attune-popover";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ResolvedEquipped } from "../src/modules/pc/pc.types";
+import type { ResolvedEquipped } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

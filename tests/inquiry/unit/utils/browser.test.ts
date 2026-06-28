@@ -2,7 +2,7 @@ import {
   appendBrowserContext,
   type BrowserSelectionContext,
   formatBrowserContext,
-} from '../../../src/utils/browser';
+} from '../../../packages/obsidian/src/utils/browser';
 
 describe('formatBrowserContext', () => {
   it('formats browser selection as XML', () => {

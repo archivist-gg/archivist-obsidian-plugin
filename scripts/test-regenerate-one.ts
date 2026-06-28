@@ -1,7 +1,7 @@
 // scripts/test-regenerate-one.ts
 
 import * as fs from "fs";
-import { convertDescToTags } from "../src/shared/dnd/srd-tag-converter";
+import { convertDescToTags } from "../packages/obsidian/src/shared/dnd/srd-tag-converter";
 
 const file = process.argv[2] || "/Users/shinoobi/w/archivist/server/data/srd/monsters/knight.json";
 const json = JSON.parse(fs.readFileSync(file, "utf-8"));

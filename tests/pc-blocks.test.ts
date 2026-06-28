@@ -1,13 +1,13 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ClassBlock, resolveFeatureDescription } from "../src/modules/pc/blocks/class-block";
-import { SubclassBlock } from "../src/modules/pc/blocks/subclass-block";
-import { RaceBlock } from "../src/modules/pc/blocks/race-block";
-import { BackgroundBlock } from "../src/modules/pc/blocks/background-block";
-import { FeatBlock } from "../src/modules/pc/blocks/feat-block";
+import { ClassBlock, resolveFeatureDescription } from "../packages/obsidian/src/modules/pc/blocks/class-block";
+import { SubclassBlock } from "../packages/obsidian/src/modules/pc/blocks/subclass-block";
+import { RaceBlock } from "../packages/obsidian/src/modules/pc/blocks/race-block";
+import { BackgroundBlock } from "../packages/obsidian/src/modules/pc/blocks/background-block";
+import { FeatBlock } from "../packages/obsidian/src/modules/pc/blocks/feat-block";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

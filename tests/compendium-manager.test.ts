@@ -5,8 +5,8 @@ import {
   parseCompendiumMetadata,
   generateCompendiumMetadata,
   CompendiumManager,
-} from "../src/shared/entities/compendium-manager";
-import { EntityRegistry } from "../src/shared/entities/entity-registry";
+} from "../packages/obsidian/src/shared/entities/compendium-manager";
+import { EntityRegistry } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 // ---------------------------------------------------------------------------
 // parseCompendiumMetadata

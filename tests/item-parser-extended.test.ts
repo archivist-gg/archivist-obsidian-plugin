@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseItem } from "../src/modules/item/item.parser";
+import { parseItem } from "../packages/obsidian/src/modules/item/item.parser";
 
 describe("parseItem — legacy backward compatibility", () => {
   it("parses prose-only magic item (existing compendium shape)", () => {

@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderPCSheet } from "../src/modules/pc/pc.sheet";
-import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
-import { BuilderView } from "../src/modules/pc/components/builder-view";
+import { renderPCSheet } from "../packages/obsidian/src/modules/pc/pc.sheet";
+import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
+import { BuilderView } from "../packages/obsidian/src/modules/pc/components/builder-view";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

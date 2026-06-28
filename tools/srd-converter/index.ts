@@ -3,12 +3,12 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
 import { loadConfig, type ConverterConfig } from "./config";
-import { normalizeSrdClass, type Open5eClassJson } from "../../src/modules/class/class.normalizer";
-import { normalizeSrdRace, type Open5eRaceJson } from "../../src/modules/race/race.normalizer";
-import { normalizeSrdSubclass, type Open5eArchetypeJson } from "../../src/modules/subclass/subclass.normalizer";
-import { normalizeSrdBackground, type Open5eBackgroundJson } from "../../src/modules/background/background.normalizer";
-import { normalizeSrdFeat, type Open5eFeatJson } from "../../src/modules/feat/feat.normalizer";
-import type { NormalizedEntity } from "../../src/modules/class/class.normalizer";
+import { normalizeSrdClass, type Open5eClassJson } from "../../packages/obsidian/src/modules/class/class.normalizer";
+import { normalizeSrdRace, type Open5eRaceJson } from "../../packages/obsidian/src/modules/race/race.normalizer";
+import { normalizeSrdSubclass, type Open5eArchetypeJson } from "../../packages/obsidian/src/modules/subclass/subclass.normalizer";
+import { normalizeSrdBackground, type Open5eBackgroundJson } from "../../packages/obsidian/src/modules/background/background.normalizer";
+import { normalizeSrdFeat, type Open5eFeatJson } from "../../packages/obsidian/src/modules/feat/feat.normalizer";
+import type { NormalizedEntity } from "../../packages/obsidian/src/modules/class/class.normalizer";
 
 const INVALID_FILENAME_CHARS = /[/:*?"<>|\\]/g;
 

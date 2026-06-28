@@ -1,13 +1,13 @@
 import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
-import type { Attack } from "../../../src/shared/types/attack";
-import type { Feature, FeatureRecharge } from "../../../src/shared/types/feature";
+import type { Attack } from "../../../packages/obsidian/src/shared/types/attack";
+import type { Feature, FeatureRecharge } from "../../../packages/obsidian/src/shared/types/feature";
 import {
   convertDescToTags,
   type ConversionContext,
   type ConverterAbilities,
-} from "../../../src/shared/dnd/srd-tag-converter";
+} from "../../../packages/obsidian/src/shared/dnd/srd-tag-converter";
 
 interface Open5eDamageType {
   key: string;

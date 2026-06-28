@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { BackgroundTab } from "../src/modules/pc/components/background-tab";
-import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
+import { BackgroundTab } from "../packages/obsidian/src/modules/pc/components/background-tab";
+import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { SheetComponent, ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

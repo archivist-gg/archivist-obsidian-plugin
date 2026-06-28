@@ -1,11 +1,11 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderPCSheet, renderPCSheetError } from "../src/modules/pc/pc.sheet";
-import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
+import { renderPCSheet, renderPCSheetError } from "../packages/obsidian/src/modules/pc/pc.sheet";
+import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { SheetComponent, ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
-import type { CoreAPI } from "../src/core/module-api";
+import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -88,7 +88,7 @@ describe("renderPCSheetError", () => {
 
 describe("buildSubtitle (V7)", () => {
   it("does NOT include alignment even when set", async () => {
-    const { buildSubtitle } = await import("../src/modules/pc/components/header-section");
+    const { buildSubtitle } = await import("../packages/obsidian/src/modules/pc/components/header-section");
     const r = {
       race: { name: "Human" },
       classes: [{ entity: { name: "Artificer" }, level: 13, subclass: null, choices: {} }],

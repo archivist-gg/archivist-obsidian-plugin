@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import * as env from '../../../src/utils/env';
+import * as env from '../../../packages/obsidian/src/utils/env';
 
 const {
   cliPathRequiresNode,
@@ -1181,7 +1181,7 @@ describe('getExtraBinaryPaths (Windows branches)', () => {
     Object.defineProperty(process, 'platform', { value: 'win32', writable: true });
     // Dynamic require needed to re-evaluate module with mocked platform
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require('../../../src/utils/env');
+    return require('../../../packages/obsidian/src/utils/env');
   }
 
   it('includes APPDATA npm path when APPDATA is set', () => {
@@ -1345,7 +1345,7 @@ describe('Obsidian CLI path integration', () => {
     Object.defineProperty(process, 'execPath', { value: execPath, configurable: true });
     // Dynamic require needed to re-evaluate module with mocked platform/execPath
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require('../../../src/utils/env');
+    return require('../../../packages/obsidian/src/utils/env');
   }
 
   it('uses the top-level app bundle binary dir on macOS helper processes', () => {

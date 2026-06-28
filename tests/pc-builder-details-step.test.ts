@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDetailsStep } from "../src/modules/pc/components/builder/details-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import { renderDetailsStep } from "../packages/obsidian/src/modules/pc/components/builder/details-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

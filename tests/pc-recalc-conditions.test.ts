@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
 
 // Minimal resolved-character helper. Builds the smallest object recalc()
 // will accept; tests mutate state.conditions / state.exhaustion / overrides

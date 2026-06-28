@@ -12,14 +12,14 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { extractPCCodeBlock, parsePC } from "../src/modules/pc/pc.parser";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import { parseEntityFile } from "../src/shared/entities/entity-vault-store";
+import { extractPCCodeBlock, parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
+import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import { parseEntityFile } from "../packages/obsidian/src/shared/entities/entity-vault-store";
 import {
   EntityRegistry,
   type RegisteredEntity,
-} from "../src/shared/entities/entity-registry";
+} from "../packages/obsidian/src/shared/entities/entity-registry";
 
 const BUNDLE_ROOT = path.resolve(__dirname, "../.compendium-bundle");
 const SRD_5E_ROOT = path.join(BUNDLE_ROOT, "SRD 5e");

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractPCCodeBlock, spliceCodeBlock } from "../src/modules/pc/pc.parser";
+import { extractPCCodeBlock, spliceCodeBlock } from "../packages/obsidian/src/modules/pc/pc.parser";
 
 const FILE = [
   "---",

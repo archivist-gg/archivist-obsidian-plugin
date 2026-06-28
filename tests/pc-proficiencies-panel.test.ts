@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ProficienciesPanel, aggregateProficiencies } from "../src/modules/pc/components/proficiencies-panel";
+import { ProficienciesPanel, aggregateProficiencies } from "../packages/obsidian/src/modules/pc/components/proficiencies-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

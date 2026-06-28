@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { createExpandState } from "../src/modules/pc/components/actions/row-expand";
+import { createExpandState } from "../packages/obsidian/src/modules/pc/components/actions/row-expand";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

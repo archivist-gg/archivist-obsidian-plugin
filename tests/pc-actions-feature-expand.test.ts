@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderFeatureExpand } from "../src/modules/pc/components/actions/feature-expand";
+import { renderFeatureExpand } from "../packages/obsidian/src/modules/pc/components/actions/feature-expand";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { Feature } from "../src/shared/types/feature";
+import type { Feature } from "../packages/obsidian/src/shared/types/feature";
 
 beforeAll(() => installObsidianDomHelpers());
 

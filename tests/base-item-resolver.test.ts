@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   resolveBaseItem,
   resolveBaseItemOfType,
-} from "../src/shared/entities/base-item-resolver";
+} from "../packages/obsidian/src/shared/entities/base-item-resolver";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { EntityRegistry } from "../src/shared/entities/entity-registry";
+import { EntityRegistry } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 describe("resolveBaseItem", () => {
   it("resolves a vault-path wikilink to the SRD-5e prefixed slug", () => {

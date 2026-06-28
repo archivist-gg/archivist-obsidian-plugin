@@ -4,7 +4,7 @@ import {
   getActionDescription,
   getActionPattern,
   matchesRulePattern,
-} from '../../../../src/core/security/ApprovalManager';
+} from '../../../../packages/obsidian/src/core/security/ApprovalManager';
 
 describe('getActionPattern', () => {
   it('extracts command from Bash tool input', () => {

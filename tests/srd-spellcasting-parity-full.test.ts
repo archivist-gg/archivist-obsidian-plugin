@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
-import cls2014 from "../src/srd/data/runtime/class.2014.json";
-import cls2024 from "../src/srd/data/runtime/class.2024.json";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
+import cls2014 from "../packages/obsidian/src/srd/data/runtime/class.2014.json";
+import cls2024 from "../packages/obsidian/src/srd/data/runtime/class.2024.json";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Full SRD spellcasting-parity REGRESSION GUARD (plan correction W1, Task 10).

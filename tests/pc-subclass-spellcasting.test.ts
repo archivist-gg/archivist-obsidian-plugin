@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { subclassEntitySchema } from "../src/modules/subclass/subclass.schema";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
+import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
 
 describe("subclass schema — spellcasting", () => {
   it("accepts a third-caster subclass with a known/cantrip table", () => {

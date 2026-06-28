@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { NotesTab } from "../src/modules/pc/components/notes-tab";
+import { NotesTab } from "../packages/obsidian/src/modules/pc/components/notes-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

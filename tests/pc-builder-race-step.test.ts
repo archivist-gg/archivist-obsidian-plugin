@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderRaceStep } from "../src/modules/pc/components/builder/race-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderRaceStep } from "../packages/obsidian/src/modules/pc/components/builder/race-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

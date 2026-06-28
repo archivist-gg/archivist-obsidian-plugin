@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runMigration } from "../../src/shared/compendium-init/migration";
+import { runMigration } from "../../packages/obsidian/src/shared/compendium-init/migration";
 import type { Vault } from "obsidian";
 
 interface VaultState {

@@ -2,9 +2,9 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { renderACTooltip } from "../src/modules/pc/components/ac-tooltip";
+import { renderACTooltip } from "../packages/obsidian/src/modules/pc/components/ac-tooltip";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import type { ACTerm } from "../src/modules/pc/pc.types";
+import type { ACTerm } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -37,7 +37,7 @@ describe("AC tooltip CSS (parchment styling)", () => {
   // dark text). Plain Obsidian theme variables (--background-primary, etc.)
   // resolve to dark in dark mode, producing a near-invisible dark-on-dark
   // tooltip. Assert the CSS rule pulls from --pc-* tokens instead.
-  const cssPath = resolve(__dirname, "../src/modules/pc/styles/components.css");
+  const cssPath = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles/components.css");
   const css = readFileSync(cssPath, "utf8");
   // Extract the .pc-ac-tooltip block (top-level rule, NOT the -row/-total
   // descendants). Match `.pc-ac-tooltip {` followed by everything up to the

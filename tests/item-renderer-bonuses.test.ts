@@ -2,8 +2,8 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { renderItemMechanicalSummary } from "../src/modules/item/item.renderer";
-import type { ItemEntity } from "../src/modules/item/item.types";
+import { renderItemMechanicalSummary } from "../packages/obsidian/src/modules/item/item.renderer";
+import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

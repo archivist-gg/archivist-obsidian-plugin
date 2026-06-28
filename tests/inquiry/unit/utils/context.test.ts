@@ -6,7 +6,7 @@ import {
   formatCurrentNote,
   stripCurrentNoteContext,
   XML_CONTEXT_PATTERN,
-} from '../../../src/utils/context';
+} from '../../../packages/obsidian/src/utils/context';
 
 describe('formatCurrentNote', () => {
   it('formats note path in XML tags', () => {

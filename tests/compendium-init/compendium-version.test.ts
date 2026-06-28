@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   getInstalledCompendiumVersion,
   compareWithBundle,
-} from "../../src/shared/compendium-init/compendium-version";
+} from "../../packages/obsidian/src/shared/compendium-init/compendium-version";
 import type { Vault } from "obsidian";
 
 interface MockVault {

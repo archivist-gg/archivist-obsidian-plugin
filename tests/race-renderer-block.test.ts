@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderRaceBlock } from "../src/modules/race/race.renderer";
+import { renderRaceBlock } from "../packages/obsidian/src/modules/race/race.renderer";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { RaceEntity } from "../src/modules/race/race.types";
+import type { RaceEntity } from "../packages/obsidian/src/modules/race/race.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

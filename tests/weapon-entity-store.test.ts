@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 
 import { describe, it, expect } from "vitest";
-import { weaponModule } from "../src/modules/weapon/weapon.module";
+import { weaponModule } from "../packages/obsidian/src/modules/weapon/weapon.module";
 import { LONGSWORD } from "./fixtures/weapon";
 
 describe("weaponModule integration", () => {

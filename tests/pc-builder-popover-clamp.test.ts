@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect } from "vitest";
-import { clampDx } from "../src/modules/pc/components/builder/popover-clamp";
+import { clampDx } from "../packages/obsidian/src/modules/pc/components/builder/popover-clamp";
 
 describe("clampDx — horizontal popover clamp math", () => {
   it("returns 0 when the panel fits within bounds", () => {

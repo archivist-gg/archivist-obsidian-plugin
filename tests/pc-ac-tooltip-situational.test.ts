@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
-import { renderACTooltip } from "../src/modules/pc/components/ac-tooltip";
+import { renderACTooltip } from "../packages/obsidian/src/modules/pc/components/ac-tooltip";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import type { InformationalBonus } from "../src/modules/item/item.conditions.types";
+import type { InformationalBonus } from "../packages/obsidian/src/modules/item/item.conditions.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

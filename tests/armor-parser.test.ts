@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseArmor } from "../src/modules/armor/armor.parser";
+import { parseArmor } from "../packages/obsidian/src/modules/armor/armor.parser";
 import { PLATE, BREASTPLATE, SHIELD, MAGE_ARMOR } from "./fixtures/armor";
 
 describe("parseArmor", () => {

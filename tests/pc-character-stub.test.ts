@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { buildDraftCharacter, buildDraftFileBody } from "../src/modules/pc/builder/character-stub";
-import { characterSchema } from "../src/modules/pc/pc.schema";
-import { extractPCCodeBlock, parsePC } from "../src/modules/pc/pc.parser";
+import { buildDraftCharacter, buildDraftFileBody } from "../packages/obsidian/src/modules/pc/builder/character-stub";
+import { characterSchema } from "../packages/obsidian/src/modules/pc/pc.schema";
+import { extractPCCodeBlock, parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
 
 describe("character-stub", () => {
   it("buildDraftCharacter produces a schema-valid class-less draft", () => {

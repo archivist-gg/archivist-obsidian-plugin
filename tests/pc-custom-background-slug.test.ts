@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
-import { buildDecisionLedger, bareEntitySlug } from "../src/modules/pc/pc.decision-engine";
+import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
+import { buildDecisionLedger, bareEntitySlug } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import type { Character } from "../src/modules/pc/pc.types";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 // Regression: selecting a CUSTOM background in the builder crashed the whole step
 // with `TypeError: Cannot read properties of undefined (reading 'indexOf')` at

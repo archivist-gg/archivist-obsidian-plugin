@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { recognizeDecision } from "../src/modules/pc/decision-recognizer";
+import { recognizeDecision } from "../packages/obsidian/src/modules/pc/decision-recognizer";
 
 describe("recognizeDecision (homebrew fallback)", () => {
   it("maps ability-score-improvement by id", () => {

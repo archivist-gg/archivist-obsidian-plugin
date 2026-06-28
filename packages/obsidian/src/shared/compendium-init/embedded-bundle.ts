@@ -1,4 +1,4 @@
-import bundleJson from "../../../.compendium-bundle/index.json";
+import bundleJson from "../../../../../.compendium-bundle/index.json";
 
 /**
  * Bundle of vault MD files emitted by `tools/srd-canonical/`. esbuild inlines

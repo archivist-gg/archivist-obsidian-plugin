@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { ItemsTable } from "../src/modules/pc/components/actions/items-table";
+import { ItemsTable } from "../packages/obsidian/src/modules/pc/components/actions/items-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 
 beforeAll(() => installObsidianDomHelpers());
 

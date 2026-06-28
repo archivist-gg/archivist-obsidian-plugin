@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { computeRestPlan, applyRestResets } from "../src/modules/pc/pc.rest";
-import type { Character, ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
+import { computeRestPlan, applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
+import type { Character, ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function feat(id: string, name: string, reset: string) {
   return { feature: { name, resources: [{ id, name, max_formula: "1", reset }] }, source: { kind: "class", slug: "x", level: 1 } };

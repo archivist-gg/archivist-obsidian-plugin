@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { buildDecisionLedger } from "../src/modules/pc/pc.decision-engine";
-import type { ResolvedCharacter, ResolvedPool } from "../src/modules/pc/pc.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { buildDecisionLedger } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
+import type { ResolvedCharacter, ResolvedPool } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 /** Registry over a set of optional-feature slugs. `enumerateOptions` resolves a
  *  `from` list via getByTypeAndSlug (with a search-based bare-slug fallback), so

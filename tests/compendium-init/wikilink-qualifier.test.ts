@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { qualifyWikilinks } from "../../src/shared/compendium-init/wikilink-qualifier";
+import { qualifyWikilinks } from "../../packages/obsidian/src/shared/compendium-init/wikilink-qualifier";
 import type { Vault } from "obsidian";
 
 interface VaultFixture {

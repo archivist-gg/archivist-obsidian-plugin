@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { BuilderView } from "../src/modules/pc/components/builder-view";
+import { BuilderView } from "../packages/obsidian/src/modules/pc/components/builder-view";
 
 beforeAll(() => installObsidianDomHelpers());
 

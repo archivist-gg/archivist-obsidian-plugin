@@ -1,6 +1,6 @@
 // tests/item-conditions-schema.test.ts
 import { describe, it, expect } from "vitest";
-import { itemEntitySchema } from "../src/modules/item/item.schema";
+import { itemEntitySchema } from "../packages/obsidian/src/modules/item/item.schema";
 
 const baseItem = { name: "Test Item", rarity: "uncommon" };
 

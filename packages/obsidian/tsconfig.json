@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": { "@/*": ["src/*"] }
+  },
+  "references": [
+    { "path": "../core" },
+    { "path": "../dnd5e" },
+    { "path": "../generators" }
+  ],
+  "include": ["src/**/*.ts"]
+}

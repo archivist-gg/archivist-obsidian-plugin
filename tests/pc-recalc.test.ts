@@ -8,9 +8,9 @@ import {
   initiativeBonus,
   speedFromRace,
   computeAbilityScores,
-} from "../src/modules/pc/pc.recalc";
-import type { ResolvedCharacter, ResolvedClass } from "../src/modules/pc/pc.types";
-import type { RaceEntity } from "../src/modules/race/race.types";
+} from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { RaceEntity } from "../packages/obsidian/src/modules/race/race.types";
 
 describe("parseDieSize", () => {
   it("parses d-prefixed string", () => expect(parseDieSize("d8")).toBe(8));

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as yaml from "js-yaml";
-import { weaponEntitySchema } from "../src/modules/weapon/weapon.schema";
+import { weaponEntitySchema } from "../packages/obsidian/src/modules/weapon/weapon.schema";
 import { LONGSWORD, DAGGER, LONGBOW, NET, LANCE } from "./fixtures/weapon";
 
 function parse(src: string) {

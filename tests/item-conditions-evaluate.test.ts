@@ -1,8 +1,8 @@
 // tests/item-conditions-evaluate.test.ts
 import { describe, it, expect } from "vitest";
-import { evaluateCondition } from "../src/modules/item/item.conditions";
-import { evaluateConditions } from "../src/modules/item/item.conditions";
-import type { ConditionContext } from "../src/modules/item/item.conditions.types";
+import { evaluateCondition } from "../packages/obsidian/src/modules/item/item.conditions";
+import { evaluateConditions } from "../packages/obsidian/src/modules/item/item.conditions";
+import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
 
 function ctx(over: Partial<ConditionContext> = {}): ConditionContext {
   return {

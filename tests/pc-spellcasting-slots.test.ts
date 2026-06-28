@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveSpellSlots } from "../src/modules/pc/pc.spellcasting";
+import { deriveSpellSlots } from "../packages/obsidian/src/modules/pc/pc.spellcasting";
 
 describe("deriveSpellSlots — dedicated third caster (bug fix)", () => {
   it("single third-caster matches the Eldritch Knight/Arcane Trickster/Architect table", () => {

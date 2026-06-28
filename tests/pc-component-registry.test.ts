@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
+import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import type {
   SheetComponent,
   ComponentRenderContext,
-} from "../src/modules/pc/components/component.types";
+} from "../packages/obsidian/src/modules/pc/components/component.types";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

@@ -1,4 +1,4 @@
-import { patchSetMaxListenersForElectron } from '../../../src/utils/electronCompat';
+import { patchSetMaxListenersForElectron } from '../../../packages/obsidian/src/utils/electronCompat';
 
 describe('patchSetMaxListenersForElectron', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

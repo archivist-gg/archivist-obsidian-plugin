@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { computeRestPlan, applyRestResets } from "../src/modules/pc/pc.rest";
+import { computeRestPlan, applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
 import { clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
-import type { Character } from "../src/modules/pc/pc.types";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function warlock(usedPact: number): Character {
   return {

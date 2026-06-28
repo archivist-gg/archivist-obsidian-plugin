@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import * as yaml from "js-yaml";
-import { characterToYaml } from "../src/modules/pc/pc.yaml-serializer";
-import { parsePC } from "../src/modules/pc/pc.parser";
-import type { Character } from "../src/modules/pc/pc.types";
+import { characterToYaml } from "../packages/obsidian/src/modules/pc/pc.yaml-serializer";
+import { parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const MINIMAL_YAML = [
   "name: Grendal",

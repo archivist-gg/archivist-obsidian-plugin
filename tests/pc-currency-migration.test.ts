@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { parsePC } from "../src/modules/pc/pc.parser";
-import { characterToYaml } from "../src/modules/pc/pc.yaml-serializer";
+import { parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
+import { characterToYaml } from "../packages/obsidian/src/modules/pc/pc.yaml-serializer";
 
 const baseYaml = `
 name: T

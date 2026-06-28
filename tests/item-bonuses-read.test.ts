@@ -1,10 +1,10 @@
 // tests/item-bonuses-read.test.ts
 import { describe, it, expect } from "vitest";
-import { readNumericBonus } from "../src/modules/item/item.bonuses";
-import type { ConditionContext } from "../src/modules/item/item.conditions.types";
-import { computeSlotsAndAttacks } from "../src/modules/pc/pc.equipment";
-import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
-import type { ItemEntity } from "../src/modules/item/item.types";
+import { readNumericBonus } from "../packages/obsidian/src/modules/item/item.bonuses";
+import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
+import { computeSlotsAndAttacks } from "../packages/obsidian/src/modules/pc/pc.equipment";
+import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
 import { LONGSWORD } from "./fixtures/pc/equipment-fixtures";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 

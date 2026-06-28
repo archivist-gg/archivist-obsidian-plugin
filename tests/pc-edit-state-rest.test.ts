@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED, MONK_6_DRAINED,
   clone, fakeResolved, fakeDerived,

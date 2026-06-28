@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSrdSubclass } from "../src/modules/subclass/subclass.normalizer";
+import { normalizeSrdSubclass } from "../packages/obsidian/src/modules/subclass/subclass.normalizer";
 
 const minimalArchetype = {
   name: "Thief",

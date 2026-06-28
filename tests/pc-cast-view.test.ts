@@ -1,13 +1,13 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderCastView } from "../src/modules/pc/components/spells/cast-view";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedSpell, DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
-import { toggleSpellBlock } from "../src/modules/pc/components/spells/spell-block-expand";
+import { renderCastView } from "../packages/obsidian/src/modules/pc/components/spells/cast-view";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedSpell, DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import { toggleSpellBlock } from "../packages/obsidian/src/modules/pc/components/spells/spell-block-expand";
 
 // Stub the block renderer so the expand wiring can be asserted without the async spell-block render.
-vi.mock("../src/modules/pc/components/spells/spell-block-expand", () => ({ toggleSpellBlock: vi.fn() }));
+vi.mock("../packages/obsidian/src/modules/pc/components/spells/spell-block-expand", () => ({ toggleSpellBlock: vi.fn() }));
 
 beforeAll(() => installObsidianDomHelpers());
 

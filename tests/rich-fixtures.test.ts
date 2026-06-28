@@ -2,11 +2,11 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
-import { classEntitySchema } from "../src/modules/class/class.schema";
-import { raceEntitySchema } from "../src/modules/race/race.schema";
-import { subclassEntitySchema } from "../src/modules/subclass/subclass.schema";
-import { backgroundEntitySchema } from "../src/modules/background/background.schema";
-import { featEntitySchema } from "../src/modules/feat/feat.schema";
+import { classEntitySchema } from "../packages/obsidian/src/modules/class/class.schema";
+import { raceEntitySchema } from "../packages/obsidian/src/modules/race/race.schema";
+import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
+import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
+import { featEntitySchema } from "../packages/obsidian/src/modules/feat/feat.schema";
 
 function loadFixture(relPath: string): unknown {
   const p = path.resolve(__dirname, "fixtures", "rich", relPath);

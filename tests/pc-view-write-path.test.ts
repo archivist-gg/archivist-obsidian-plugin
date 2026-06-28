@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { PCSheetView } from "../src/modules/pc/pc.view";
-import { PCModule } from "../src/modules/pc/pc.module";
+import { PCSheetView } from "../packages/obsidian/src/modules/pc/pc.view";
+import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { GRENDAL_AFFLICTED_MD } from "./fixtures/pc/grendal-the-wary-afflicted";
@@ -13,7 +13,7 @@ import {
   SURE_STEP,
   LONGSWORD,
 } from "./fixtures/pc/grendal-the-wary";
-import type { CoreAPI } from "../src/core/module-api";
+import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
 import { WorkspaceLeaf } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readTableColumn } from "../src/modules/pc/pc.table-column";
+import { readTableColumn } from "../packages/obsidian/src/modules/pc/pc.table-column";
 
 const table = {
   2: { columns: { "Interdict Boons": 1, "Cantrips": "2" } },

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import cls2014 from "../src/srd/data/runtime/class.2014.json";
-import cls2024 from "../src/srd/data/runtime/class.2024.json";
+import cls2014 from "../packages/obsidian/src/srd/data/runtime/class.2014.json";
+import cls2024 from "../packages/obsidian/src/srd/data/runtime/class.2024.json";
 
 type Sc = { caster_type: string; ability: string; preparation: string; spell_list: string } | null;
 type Cls = { slug: string; name: string; spellcasting: Sc };

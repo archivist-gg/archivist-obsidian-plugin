@@ -1,13 +1,13 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { renderRowExpand } from "../src/modules/pc/components/inventory/inventory-row-expand";
+import { renderRowExpand } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-row-expand";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { App } from "obsidian";
-import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
-vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
+vi.mock("../packages/obsidian/src/modules/inquiry/shared/modals/ConfirmModal", () => ({
   confirm: confirmMock,
   confirmDelete: vi.fn().mockResolvedValue(true),
 }));

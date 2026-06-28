@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { resolveSpellcasting } from "../src/modules/pc/pc.spellcasting";
-import type { ResolvedClass } from "../src/modules/pc/pc.types";
+import { resolveSpellcasting } from "../packages/obsidian/src/modules/pc/pc.spellcasting";
+import type { ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
 
 // Minimal ResolvedClass builder; only the fields resolveSpellcasting reads matter.
 const rc = (over: Record<string, unknown>): ResolvedClass =>

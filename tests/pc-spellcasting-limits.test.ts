@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeSpellLimits, type LimitClassInput, type SpellcastingProfile } from "../src/modules/pc/pc.spellcasting";
+import { computeSpellLimits, type LimitClassInput, type SpellcastingProfile } from "../packages/obsidian/src/modules/pc/pc.spellcasting";
 
 const profile = (over: Partial<SpellcastingProfile> = {}): SpellcastingProfile =>
   ({ ability: "int", casterType: "full", preparation: "prepared", spellList: "wizard", table: {}, ...over });

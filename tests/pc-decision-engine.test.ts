@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { buildDecisionLedger, collectChosenProficiencies, __matchesFilterForTest } from "../src/modules/pc/pc.decision-engine";
-import type { ResolvedCharacter } from "../src/modules/pc/pc.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { buildDecisionLedger, collectChosenProficiencies, __matchesFilterForTest } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
+import type { ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 const styles: RegisteredEntity[] = [
   { slug: "archery", name: "Archery", entityType: "optional-feature", filePath: "a.md",

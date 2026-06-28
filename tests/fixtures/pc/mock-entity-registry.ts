@@ -1,4 +1,4 @@
-import { EntityRegistry, type RegisteredEntity } from "../../../src/shared/entities/entity-registry";
+import { EntityRegistry, type RegisteredEntity } from "../../../packages/obsidian/src/shared/entities/entity-registry";
 
 export function buildMockRegistry(
   entries: Array<Partial<RegisteredEntity> & { slug: string; entityType: string; data: unknown }>,

@@ -4,7 +4,7 @@ import {
   hitDiceSizeFromCreatureSize, hpFromHitDice, savingThrow, skillBonus,
   passivePerception, attackBonus, saveDC, abilityNameToKey, parseHitDiceFormula,
   passive,
-} from "../src/shared/dnd/math";
+} from "../packages/obsidian/src/shared/dnd/math";
 
 describe("abilityModifier", () => {
   it("score 10 -> +0", () => expect(abilityModifier(10)).toBe(0));

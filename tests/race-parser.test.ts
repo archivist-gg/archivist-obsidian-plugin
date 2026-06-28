@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseRace } from "../src/modules/race/race.parser";
+import { parseRace } from "../packages/obsidian/src/modules/race/race.parser";
 
 const yaml = `
 slug: dwarf

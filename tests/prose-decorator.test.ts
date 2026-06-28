@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { decorateProseDice } from "../src/shared/rendering/prose-decorator";
+import { decorateProseDice } from "../packages/obsidian/src/shared/rendering/prose-decorator";
 
 describe("decorateProseDice", () => {
   it("wraps a bare 1d6", () => {

@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
+import { SkillsPanel } from "../packages/obsidian/src/modules/pc/components/skills-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
-import type { SkillSlug } from "../src/shared/types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { SkillSlug } from "../packages/obsidian/src/shared/types";
 
 beforeAll(() => installObsidianDomHelpers());
 

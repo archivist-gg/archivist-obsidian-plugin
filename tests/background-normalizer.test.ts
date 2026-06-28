@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeSrdBackground } from "../src/modules/background/background.normalizer";
+import { normalizeSrdBackground } from "../packages/obsidian/src/modules/background/background.normalizer";
 
 const minimalAcolyte = {
   name: "Acolyte",

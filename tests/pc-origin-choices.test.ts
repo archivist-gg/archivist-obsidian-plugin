@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { characterSchema } from "../src/modules/pc/pc.schema";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
-import type { Character } from "../src/modules/pc/pc.types";
+import { characterSchema } from "../packages/obsidian/src/modules/pc/pc.schema";
+import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 // The schema requires `state.hp`; this is the smallest input it accepts.
 const minimal = {

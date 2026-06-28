@@ -1,5 +1,5 @@
 // tests/fixtures/pc/rest-fixtures.ts
-import type { Character } from "../../../src/modules/pc/pc.types";
+import type { Character } from "../../../packages/obsidian/src/modules/pc/pc.types";
 
 /** Helper: clone a fixture so mutations in tests don't leak. */
 export function clone<T>(x: T): T {

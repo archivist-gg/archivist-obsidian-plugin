@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { computeAppliedBonuses, computeSlotsAndAttacks } from "../src/modules/pc/pc.equipment";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import type { Character, ResolvedCharacter } from "../src/modules/pc/pc.types";
-import type { ItemEntity } from "../src/modules/item/item.types";
-import type { WeaponEntity } from "../src/modules/weapon/weapon.types";
-import type { ArmorEntity } from "../src/modules/armor/armor.types";
+import { computeAppliedBonuses, computeSlotsAndAttacks } from "../packages/obsidian/src/modules/pc/pc.equipment";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
+import type { WeaponEntity } from "../packages/obsidian/src/modules/weapon/weapon.types";
+import type { ArmorEntity } from "../packages/obsidian/src/modules/armor/armor.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 

@@ -1,5 +1,5 @@
-import type { ToolCallInfo } from '../../../src/core/types/tools';
-import { diffFromToolInput,extractDiffData } from '../../../src/utils/diff';
+import type { ToolCallInfo } from '../../../packages/obsidian/src/core/types/tools';
+import { diffFromToolInput,extractDiffData } from '../../../packages/obsidian/src/utils/diff';
 
 /** Helper to create a ToolCallInfo for testing. */
 function makeToolCall(name: string, input: Record<string, unknown>): ToolCallInfo {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { seedFeatureUses } from "../src/modules/pc/pc.resource-seed";
-import type { ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
+import { seedFeatureUses } from "../packages/obsidian/src/modules/pc/pc.resource-seed";
+import type { ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function derived(over: Partial<DerivedStats> = {}): DerivedStats {
   return {

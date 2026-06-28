@@ -3,16 +3,16 @@ import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 import {
   openDefenseTypePopover,
   closeDefenseTypePopover,
-} from "../src/modules/pc/components/defense-type-popover";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+} from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
+import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { DAMAGE_TYPES } from "../src/shared/dnd/constants";
+import { DAMAGE_TYPES } from "../packages/obsidian/src/shared/dnd/constants";
 import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,
-} from "../src/modules/pc/constants/conditions";
+} from "../packages/obsidian/src/modules/pc/constants/conditions";
 import { FIGHTER_5_CLERIC_3, clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { App } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());

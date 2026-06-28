@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parsePC } from "../src/modules/pc/pc.parser";
+import { parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
 
 const BASE = [
   "name: Mage", "edition: '2014'", "race: null", "subrace: null", "background: null",

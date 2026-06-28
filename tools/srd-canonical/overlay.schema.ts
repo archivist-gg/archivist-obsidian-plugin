@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { resourceSchema } from "../../src/shared/schemas/resource-schema";
-import { choiceSchema } from "../../src/shared/schemas/choice-schema";
-import { featureEffectSchema } from "../../src/shared/schemas/feature-effect-schema";
-import { startingEquipmentEntrySchema, startingGoldSchema } from "../../src/shared/schemas/equipment-grant-schema";
+import { resourceSchema } from "../../packages/obsidian/src/shared/schemas/resource-schema";
+import { choiceSchema } from "../../packages/obsidian/src/shared/schemas/choice-schema";
+import { featureEffectSchema } from "../../packages/obsidian/src/shared/schemas/feature-effect-schema";
+import { startingEquipmentEntrySchema, startingGoldSchema } from "../../packages/obsidian/src/shared/schemas/equipment-grant-schema";
 
 const actionCost = z.enum(["action", "bonus-action", "reaction", "free", "special"]);
 const recharge = z.enum(["short-rest", "long-rest", "dawn", "dusk", "turn", "round", "custom"]);

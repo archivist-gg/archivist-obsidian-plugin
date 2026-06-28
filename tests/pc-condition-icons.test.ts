@@ -5,8 +5,8 @@ import {
   EXHAUSTION_ICON,
   setConditionIcon,
   setExhaustionIcon,
-} from "../src/modules/pc/assets/condition-icons";
-import { CONDITION_SLUGS } from "../src/modules/pc/constants/conditions";
+} from "../packages/obsidian/src/modules/pc/assets/condition-icons";
+import { CONDITION_SLUGS } from "../packages/obsidian/src/modules/pc/constants/conditions";
 
 describe("condition-icons", () => {
   it("exports one SVG string per condition slug", () => {

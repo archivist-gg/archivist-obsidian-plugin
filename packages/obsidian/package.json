@@ -1,0 +1,10 @@
+{
+  "name": "@archivist/obsidian",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@archivist/core": "*",
+    "@archivist/dnd5e": "*",
+    "@archivist/generators": "*"
+  }
+}

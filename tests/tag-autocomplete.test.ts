@@ -1,7 +1,7 @@
 // tests/tag-autocomplete.test.ts
 
 import { describe, it, expect } from "vitest";
-import { buildTagOptions } from "../src/shared/edit/tag-autocomplete";
+import { buildTagOptions } from "../packages/obsidian/src/shared/edit/tag-autocomplete";
 
 describe("buildTagOptions", () => {
   const abilities = { str: 16, dex: 14, con: 13, int: 10, wis: 12, cha: 8 };

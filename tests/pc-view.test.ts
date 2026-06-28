@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { PCSheetView, VIEW_TYPE_PC } from "../src/modules/pc/pc.view";
-import { PCModule } from "../src/modules/pc/pc.module";
+import { PCSheetView, VIEW_TYPE_PC } from "../packages/obsidian/src/modules/pc/pc.view";
+import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import type { CoreAPI } from "../src/core/module-api";
+import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
 import { WorkspaceLeaf } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());

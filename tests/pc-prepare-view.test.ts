@@ -2,9 +2,9 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { renderPrepareView } from "../src/modules/pc/components/spells/prepare-view";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedSpell } from "../src/modules/pc/pc.types";
+import { renderPrepareView } from "../packages/obsidian/src/modules/pc/components/spells/prepare-view";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedSpell } from "../packages/obsidian/src/modules/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 const REG = buildMockRegistry([{ slug: "fireball", entityType: "spell", data: { name: "Fireball", level: 3, classes: ["wizard"] } }]);

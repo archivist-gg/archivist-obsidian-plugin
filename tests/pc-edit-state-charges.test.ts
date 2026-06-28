@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
-import type { Character } from "../src/modules/pc/pc.types";
+import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
+import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 
 function baseChar(): Character {
   return {

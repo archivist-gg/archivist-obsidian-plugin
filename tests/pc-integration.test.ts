@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { PCSheetView } from "../src/modules/pc/pc.view";
-import { PCModule } from "../src/modules/pc/pc.module";
+import { PCSheetView } from "../packages/obsidian/src/modules/pc/pc.view";
+import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {
@@ -18,12 +18,12 @@ import {
   LONGSWORD,
   CLOAK_OF_PROTECTION,
 } from "./fixtures/pc/equipment-fixtures";
-import { extractPCCodeBlock, parsePC } from "../src/modules/pc/pc.parser";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
-import { recalc } from "../src/modules/pc/pc.recalc";
+import { extractPCCodeBlock, parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
+import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
+import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import { WorkspaceLeaf } from "obsidian";
-import type { CoreAPI } from "../src/core/module-api";
-import type { EntityRegistry } from "../src/shared/entities/entity-registry";
+import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
+import type { EntityRegistry } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

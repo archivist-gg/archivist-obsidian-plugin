@@ -1,4 +1,4 @@
-import { appendCanvasContext, type CanvasSelectionContext,formatCanvasContext } from '../../../src/utils/canvas';
+import { appendCanvasContext, type CanvasSelectionContext,formatCanvasContext } from '../../../packages/obsidian/src/utils/canvas';
 
 describe('canvas utilities', () => {
   describe('formatCanvasContext', () => {

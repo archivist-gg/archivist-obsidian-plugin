@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
+import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
 
 function mkEntities(map: Record<string, Record<string, unknown>[]>) {
   return {

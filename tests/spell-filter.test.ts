@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { castTimeCategory, rangeCategory } from "../src/modules/pc/components/spells/spell-filter";
+import { castTimeCategory, rangeCategory } from "../packages/obsidian/src/modules/pc/components/spells/spell-filter";
 
 describe("castTimeCategory", () => {
   it("maps the standard tokens", () => {
@@ -27,8 +27,8 @@ describe("rangeCategory", () => {
   });
 });
 
-import { castTimeRank, rangeSortValue, compareCandidates } from "../src/modules/pc/components/spells/spell-filter";
-import type { SpellCandidate } from "../src/modules/pc/components/spells/spell-access";
+import { castTimeRank, rangeSortValue, compareCandidates } from "../packages/obsidian/src/modules/pc/components/spells/spell-filter";
+import type { SpellCandidate } from "../packages/obsidian/src/modules/pc/components/spells/spell-access";
 
 const cand = (over: Partial<SpellCandidate> & { entity?: object } = {}): SpellCandidate => ({
   slug: over.slug ?? "s", name: over.name ?? "Zed", level: over.level ?? 1,
@@ -71,7 +71,7 @@ describe("compareCandidates", () => {
   });
 });
 
-import { defaultFilters, matchesFilters, activeFacetCount, resetFacets } from "../src/modules/pc/components/spells/spell-filter";
+import { defaultFilters, matchesFilters, activeFacetCount, resetFacets } from "../packages/obsidian/src/modules/pc/components/spells/spell-filter";
 
 const spell = (e: object): SpellCandidate => ({ slug: "x", name: "X", level: (e as { level?: number }).level ?? 1, entity: e as never });
 

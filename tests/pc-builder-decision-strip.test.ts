@@ -1,11 +1,11 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../src/modules/pc/components/builder/decision-strip";
-import { DecisionPickModal } from "../src/modules/pc/components/builder/decision-modal";
-import type { DecisionItem, ResolvedOption } from "../src/modules/pc/pc.decision-engine";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../packages/obsidian/src/modules/pc/components/builder/decision-strip";
+import { DecisionPickModal } from "../packages/obsidian/src/modules/pc/components/builder/decision-modal";
+import type { DecisionItem, ResolvedOption } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ITEM_ACTIONS, findItemAction, type ItemAction } from "../src/modules/item/item.actions-map";
+import { ITEM_ACTIONS, findItemAction, type ItemAction } from "../packages/obsidian/src/modules/item/item.actions-map";
 
 describe("ITEM_ACTIONS curated map", () => {
   it("includes wand-of-fireballs with 7 charges and dawn 1d6+1 recovery", () => {
@@ -76,8 +76,8 @@ describe("ITEM_ACTIONS curated map", () => {
   );
 });
 
-import { resolveItemAction } from "../src/modules/item/item.actions-map";
-import type { EquipmentEntry } from "../src/modules/pc/pc.types";
+import { resolveItemAction } from "../packages/obsidian/src/modules/item/item.actions-map";
+import type { EquipmentEntry } from "../packages/obsidian/src/modules/pc/pc.types";
 
 describe("resolveItemAction priority", () => {
   it("returns null when no override and slug not in map", () => {
