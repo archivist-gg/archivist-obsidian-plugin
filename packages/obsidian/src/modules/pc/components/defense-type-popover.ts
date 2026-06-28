@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "./component.types";
-import { DAMAGE_TYPES } from "../../../shared/dnd/constants";
+import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "../constants/conditions";
 import { clampPopoverToViewport } from "./popover-utils";
 import {

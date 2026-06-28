@@ -1,6 +1,6 @@
 import type { CharacterState, Edition, ConditionEffects } from "./pc.types";
 import type { ConditionSlug } from "./constants/conditions";
-import type { Ability } from "../../shared/types";
+import type { Ability } from "@archivist/dnd5e";
 
 type PartialConditionEffect = Omit<Partial<ConditionEffects>, "sources">;
 

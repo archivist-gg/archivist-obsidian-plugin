@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { StartingEquipmentEntry, EquipmentGrant, StartingGold } from "../../../../shared/types/equipment-grant";
+import type { StartingEquipmentEntry, EquipmentGrant, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
 import type { ChoiceValue } from "../../pc.types";
 import type { DecisionItem, DecisionLedger } from "../../pc.decision-engine";
 import { buildDecisionLedger, bareEntitySlug } from "../../pc.decision-engine";

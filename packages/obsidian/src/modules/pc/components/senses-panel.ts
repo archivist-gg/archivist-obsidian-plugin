@@ -1,6 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { PassiveKind } from "../pc.types";
-import type { SenseType } from "../../../shared/types/feature-effect";
+import type { SenseType } from "@archivist/dnd5e/types/feature-effect";
 import { numberOverride } from "./edit-primitives";
 
 const PASSIVE_ROWS: ReadonlyArray<[label: string, kind: PassiveKind]> = [

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { detectFormula, resolveFormulaTag } from "../packages/obsidian/src/shared/dnd/formula-tags";
-import type { Abilities } from "../packages/obsidian/src/shared/types/abilities";
+import { detectFormula, resolveFormulaTag } from "@archivist/dnd5e/dnd/formula-tags";
+import type { Abilities } from "@archivist/dnd5e/types/abilities";
 
 describe("detectFormula", () => {
   it("detects ability name in atk tag", () => {

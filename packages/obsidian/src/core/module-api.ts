@@ -1,9 +1,9 @@
 import type { App, Editor } from "obsidian";
 import type { EntityRegistry } from "@archivist/core";
 import type { CompendiumManager } from "../shared/entities/compendium-manager";
-import type { SrdStore } from "../shared/ai/srd-store";
+import type { SrdStore } from "@archivist/dnd5e";
 import type { ModuleRegistry } from "./module-registry";
-import type { ParseResult } from "../shared/parsers/yaml-utils";
+import type { ParseResult } from "@archivist/core";
 
 export type { ParseResult };
 

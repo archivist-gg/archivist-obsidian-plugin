@@ -1,5 +1,5 @@
 import type { RaceEntity, AbilityScoreIncrease, Size } from "./race.types";
-import type { Feature, Ability } from "../../shared/types";
+import type { Feature, Ability } from "@archivist/dnd5e";
 import type { Edition } from "../class/class.types";
 import type { NormalizedEntity } from "../class/class.normalizer";
 

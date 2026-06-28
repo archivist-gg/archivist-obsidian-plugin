@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { resourceSchema } from "../../packages/obsidian/src/shared/schemas/resource-schema";
-import { choiceSchema } from "../../packages/obsidian/src/shared/schemas/choice-schema";
-import { featureEffectSchema } from "../../packages/obsidian/src/shared/schemas/feature-effect-schema";
-import { startingEquipmentEntrySchema, startingGoldSchema } from "../../packages/obsidian/src/shared/schemas/equipment-grant-schema";
+import { resourceSchema } from "@archivist/dnd5e/schemas/resource-schema";
+import { choiceSchema } from "@archivist/dnd5e/schemas/choice-schema";
+import { featureEffectSchema } from "@archivist/dnd5e/schemas/feature-effect-schema";
+import { startingEquipmentEntrySchema, startingGoldSchema } from "@archivist/dnd5e/schemas/equipment-grant-schema";
 
 const actionCost = z.enum(["action", "bonus-action", "reaction", "free", "special"]);
 const recharge = z.enum(["short-rest", "long-rest", "dawn", "dusk", "turn", "round", "custom"]);

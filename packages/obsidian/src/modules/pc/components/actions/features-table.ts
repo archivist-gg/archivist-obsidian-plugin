@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import type { Feature } from "../../../../shared/types/feature";
+import type { Feature } from "@archivist/dnd5e/types/feature";
 import type { FeatureSource } from "../../pc.types";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";

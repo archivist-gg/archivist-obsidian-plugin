@@ -1,6 +1,6 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { searchSrdInput, getSrdEntityInput } from "./srd-schema";
-import type { SrdStore } from "./srd-store";
+import type { SrdStore } from "@archivist/dnd5e";
 
 export function createSrdTools(store: SrdStore) {
   const searchSrdTool = tool(

@@ -1,5 +1,5 @@
-import type { Monster } from "../monster.types";
-import type { Abilities } from "../../../shared/types";
+import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import type { Abilities } from "@archivist/dnd5e";
 import type { EditableMonster } from "../monster.edit-state";
 
 /**

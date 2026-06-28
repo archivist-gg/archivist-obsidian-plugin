@@ -1,6 +1,6 @@
 import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { formatModifier } from "../../../shared/dnd/math";
+import { formatModifier } from "@archivist/dnd5e/dnd/math";
 import { numberOverride } from "./edit-primitives";
 
 /**

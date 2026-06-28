@@ -4,7 +4,7 @@ import type { RaceEntity } from "../race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "../background/background.types";
 import type { FeatEntity } from "../feat/feat.types";
-import type { Feature, Choice } from "../../shared/types";
+import type { Feature, Choice } from "@archivist/dnd5e";
 import type { Spell } from "../spell/spell.types";
 import type {
   Character,

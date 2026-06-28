@@ -1,4 +1,4 @@
-import type { Abilities, AC, HP, Speed, Feature } from "../../shared/types";
+import type { Abilities, AC, HP, Speed, Feature } from "../types";
 
 export interface Monster {
   name: string;

@@ -1,5 +1,5 @@
 import type { SubclassEntity } from "./subclass.types";
-import type { Feature } from "../../shared/types";
+import type { Feature } from "@archivist/dnd5e";
 import type { Edition } from "../class/class.types";
 import type { NormalizedEntity } from "../class/class.normalizer";
 import { classSlugify } from "../class/class.normalizer";

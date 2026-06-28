@@ -7,7 +7,7 @@ import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
 // invoked deep in the inquiry chat UI (MessageRenderer / ToolCallRenderer)
 // which does not yet receive a ModuleRegistry handle; threading one through
 // without a broader inquiry-side refactor is outside Task 13 scope.
-import { parseMonster } from "../../../../monster/monster.parser";
+import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseSpell } from "../../../../spell/spell.parser";
 import { parseItem } from "../../../../item/item.parser";
 import { renderMonsterBlock } from "../../../../monster/monster.renderer";

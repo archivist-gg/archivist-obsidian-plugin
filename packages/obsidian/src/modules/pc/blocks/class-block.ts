@@ -1,7 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
 import type { ClassEntity } from "../../class/class.types";
 import type { ResolvedClass } from "../pc.types";
-import type { Feature } from "../../../shared/types";
+import type { Feature } from "@archivist/dnd5e";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class ClassBlock implements SheetComponent {

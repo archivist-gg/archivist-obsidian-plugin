@@ -1,6 +1,6 @@
-import type { Ability } from "../../shared/types";
+import type { Ability } from "@archivist/dnd5e";
 import type { KnownSpellEntry, ResolvedClass } from "./pc.types";
-import { abilityModifier } from "../../shared/dnd/math";
+import { abilityModifier } from "@archivist/dnd5e/dnd/math";
 import type { CasterType } from "../class/class.types";
 import { readTableColumn } from "./pc.table-column";
 

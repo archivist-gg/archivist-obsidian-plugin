@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseTagTerms, normalizeTagType } from "../packages/obsidian/src/shared/dnd/tag-grammar";
+import { parseTagTerms, normalizeTagType } from "@archivist/dnd5e/dnd/tag-grammar";
 
 describe("normalizeTagType", () => {
   it("maps canonical and alias forms", () => {

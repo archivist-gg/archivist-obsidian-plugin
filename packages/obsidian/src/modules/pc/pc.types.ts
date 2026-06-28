@@ -1,4 +1,4 @@
-import type { Ability, SkillSlug, Feature } from "../../shared/types";
+import type { Ability, SkillSlug, Feature } from "@archivist/dnd5e";
 import type { ClassEntity } from "../class/class.types";
 import type { RaceEntity } from "../race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";
@@ -357,7 +357,7 @@ export interface DerivedStats {
   }>;
   passives: { perception: number; investigation: number; insight: number };
   /** Computed senses: max of race vision and feature-effect sense ranges. 0 = none per type. */
-  senses: Record<import("../../shared/types/feature-effect").SenseType, number>;
+  senses: Record<import("@archivist/dnd5e/types/feature-effect").SenseType, number>;
   hp: { max: number; current: number; temp: number };
   ac: number;
   speed: number;

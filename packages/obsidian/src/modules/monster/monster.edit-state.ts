@@ -1,6 +1,6 @@
-import type { Monster } from "./monster.types";
-import type { Abilities } from "../../shared/types";
-import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "../../shared/dnd/constants";
+import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import type { Abilities } from "@archivist/dnd5e";
+import { SKILL_ABILITY, STANDARD_SENSES, ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
 import {
   abilityModifier,
   proficiencyBonusFromCR,
@@ -11,7 +11,7 @@ import {
   hpFromHitDice,
   parseHitDiceFormula,
   hitDiceSizeFromCreatureSize,
-} from "../../shared/dnd/math";
+} from "@archivist/dnd5e/dnd/math";
 import { editableToYaml } from "./monster.yaml-serializer";
 
 // -----------------------------------------------------------------------------

@@ -1,10 +1,10 @@
-import { abilityModifier } from "../../shared/dnd/math";
-import { toStringSafe } from "../../shared/parsers/yaml-utils";
+import { abilityModifier } from "../dnd/math";
+import { toStringSafe } from "@archivist/core";
 import {
   convertDescToTags,
   detectSpellcastingAbility,
   type ActionCategory,
-} from "../../shared/dnd/srd-tag-converter";
+} from "../dnd/srd-tag-converter";
 import type { Monster } from "./monster.types";
 
 // -----------------------------------------------------------------------------

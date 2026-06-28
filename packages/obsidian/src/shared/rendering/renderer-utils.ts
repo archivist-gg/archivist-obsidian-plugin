@@ -1,8 +1,8 @@
 import { setIcon, Notice } from "obsidian";
-import { parseInlineTag } from "./inline-tag-parser";
+import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
-import type { FormulaContext } from "../types";
-import { detectFormula, resolveFormulaTag } from "../dnd/formula-tags";
+import type { FormulaContext } from "@archivist/dnd5e";
+import { detectFormula, resolveFormulaTag } from "@archivist/dnd5e/dnd/formula-tags";
 import { decorateProseDice } from "./prose-decorator";
 
 export type { FormulaContext };

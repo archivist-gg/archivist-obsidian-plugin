@@ -1,8 +1,8 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist/core";
 import type { DecisionItem, DecisionLedger } from "../../pc.decision-engine";
-import type { Feature } from "../../../../shared/types/feature";
-import type { StartingEquipmentEntry } from "../../../../shared/types/equipment-grant";
+import type { Feature } from "@archivist/dnd5e/types/feature";
+import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
 import { recognizeDecision } from "../../decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";

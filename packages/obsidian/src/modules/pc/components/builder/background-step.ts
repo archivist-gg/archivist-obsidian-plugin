@@ -3,7 +3,7 @@ import type { RegisteredEntity } from "@archivist/core";
 import type { ColSpec } from "./selection-table";
 import type { DecisionItem } from "../../pc.decision-engine";
 import type { BackgroundLanguageProficiency } from "../../../background/background.types";
-import type { StartingEquipmentEntry } from "../../../../shared/types/equipment-grant";
+import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
 import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { renderEntityBlock } from "./entity-block";

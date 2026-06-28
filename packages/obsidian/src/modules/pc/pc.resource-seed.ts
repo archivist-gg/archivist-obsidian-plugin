@@ -1,5 +1,5 @@
 import type { ResolvedCharacter, DerivedStats, FeatureSource } from "./pc.types";
-import { evaluateMaxFormula, resolveMaxAt, type FormulaBindings } from "../../shared/dnd/resource-formula";
+import { evaluateMaxFormula, resolveMaxAt, type FormulaBindings } from "@archivist/dnd5e/dnd/resource-formula";
 import { numericColumnsAt } from "./pc.table-column";
 
 /** Build the DSL bindings for a resource granted via `source`. `class_level`

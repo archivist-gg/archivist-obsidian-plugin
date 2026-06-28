@@ -1,4 +1,4 @@
-import type { Feature, Ability, Speed, Choice } from "../../shared/types";
+import type { Feature, Ability, Speed, Choice } from "@archivist/dnd5e";
 import type { Edition } from "../class/class.types";
 
 export type Size = "tiny" | "small" | "medium" | "large" | "huge";

@@ -1,5 +1,5 @@
 import type { BackgroundEntity } from "./background.types";
-import { ParseResult, parseYaml } from "../../shared/parsers/yaml-utils";
+import { ParseResult, parseYaml } from "@archivist/core";
 import { backgroundEntitySchema } from "./background.schema";
 
 export function parseBackground(source: string): ParseResult<BackgroundEntity> {

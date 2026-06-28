@@ -1,30 +1,30 @@
 // src/srd/data/runtime/ holds canonical-pipeline runtime JSON output (not a
 // code module); these permanent data imports live outside shared/ by design.
 // Source: tools/srd-canonical/ pipeline (Open5e + 5etools merged).
-import monsters2014 from "../../srd/data/runtime/monster.2014.json";
-import monsters2024 from "../../srd/data/runtime/monster.2024.json";
-import spells2014 from "../../srd/data/runtime/spell.2014.json";
-import spells2024 from "../../srd/data/runtime/spell.2024.json";
-import items2014 from "../../srd/data/runtime/item.2014.json";
-import items2024 from "../../srd/data/runtime/item.2024.json";
-import armor2014 from "../../srd/data/runtime/armor.2014.json";
-import armor2024 from "../../srd/data/runtime/armor.2024.json";
-import weapons2014 from "../../srd/data/runtime/weapon.2014.json";
-import weapons2024 from "../../srd/data/runtime/weapon.2024.json";
-import feats2014 from "../../srd/data/runtime/feat.2014.json";
-import feats2024 from "../../srd/data/runtime/feat.2024.json";
-import conditions2014 from "../../srd/data/runtime/condition.2014.json";
-import conditions2024 from "../../srd/data/runtime/condition.2024.json";
-import classes2014 from "../../srd/data/runtime/class.2014.json";
-import classes2024 from "../../srd/data/runtime/class.2024.json";
-import subclasses2014 from "../../srd/data/runtime/subclass.2014.json";
-import subclasses2024 from "../../srd/data/runtime/subclass.2024.json";
-import backgrounds2014 from "../../srd/data/runtime/background.2014.json";
-import backgrounds2024 from "../../srd/data/runtime/background.2024.json";
-import races2014 from "../../srd/data/runtime/race.2014.json";
-import races2024 from "../../srd/data/runtime/race.2024.json";
-import optionalFeatures2014 from "../../srd/data/runtime/optional-feature.2014.json";
-import optionalFeatures2024 from "../../srd/data/runtime/optional-feature.2024.json";
+import monsters2014 from "./srd/data/runtime/monster.2014.json";
+import monsters2024 from "./srd/data/runtime/monster.2024.json";
+import spells2014 from "./srd/data/runtime/spell.2014.json";
+import spells2024 from "./srd/data/runtime/spell.2024.json";
+import items2014 from "./srd/data/runtime/item.2014.json";
+import items2024 from "./srd/data/runtime/item.2024.json";
+import armor2014 from "./srd/data/runtime/armor.2014.json";
+import armor2024 from "./srd/data/runtime/armor.2024.json";
+import weapons2014 from "./srd/data/runtime/weapon.2014.json";
+import weapons2024 from "./srd/data/runtime/weapon.2024.json";
+import feats2014 from "./srd/data/runtime/feat.2014.json";
+import feats2024 from "./srd/data/runtime/feat.2024.json";
+import conditions2014 from "./srd/data/runtime/condition.2014.json";
+import conditions2024 from "./srd/data/runtime/condition.2024.json";
+import classes2014 from "./srd/data/runtime/class.2014.json";
+import classes2024 from "./srd/data/runtime/class.2024.json";
+import subclasses2014 from "./srd/data/runtime/subclass.2014.json";
+import subclasses2024 from "./srd/data/runtime/subclass.2024.json";
+import backgrounds2014 from "./srd/data/runtime/background.2014.json";
+import backgrounds2024 from "./srd/data/runtime/background.2024.json";
+import races2014 from "./srd/data/runtime/race.2014.json";
+import races2024 from "./srd/data/runtime/race.2024.json";
+import optionalFeatures2014 from "./srd/data/runtime/optional-feature.2014.json";
+import optionalFeatures2024 from "./srd/data/runtime/optional-feature.2024.json";
 
 export interface SrdEntity {
   slug: string;

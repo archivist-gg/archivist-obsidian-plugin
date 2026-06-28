@@ -1,5 +1,5 @@
 import type { OptionalFeatureEntity } from "./optional-feature.types";
-import { ParseResult, parseYaml } from "../../shared/parsers/yaml-utils";
+import { ParseResult, parseYaml } from "@archivist/core";
 import { optionalFeatureEntitySchema } from "./optional-feature.schema";
 
 export function parseOptionalFeature(source: string): ParseResult<OptionalFeatureEntity> {

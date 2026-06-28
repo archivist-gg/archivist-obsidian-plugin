@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { featureSchema } from "../../shared/schemas/feature-schema";
-import { choiceSchema } from "../../shared/schemas/choice-schema";
+import { featureSchema } from "@archivist/dnd5e/schemas/feature-schema";
+import { choiceSchema } from "@archivist/dnd5e/schemas/choice-schema";
 
 const abilityEnum = z.enum(["str", "dex", "con", "int", "wis", "cha"]);
 const editionEnum = z.enum(["2014", "2024"]);

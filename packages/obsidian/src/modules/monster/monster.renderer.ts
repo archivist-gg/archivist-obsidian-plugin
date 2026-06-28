@@ -1,15 +1,15 @@
-import { Monster } from "./monster.types";
-import type { Feature, FeatureRecharge } from "../../shared/types";
-import type { Attack } from "../../shared/types/attack";
-import { abilityModifier, formatModifier } from "../../shared/dnd/math";
+import { Monster } from "@archivist/dnd5e/monster/monster.types";
+import type { Feature, FeatureRecharge } from "@archivist/dnd5e";
+import type { Attack } from "@archivist/dnd5e/types/attack";
+import { abilityModifier, formatModifier } from "@archivist/dnd5e/dnd/math";
 import {
   el,
   createSvgBar,
   createPropertyLine,
   renderTextWithInlineTags,
 } from "../../shared/rendering/renderer-utils";
-import type { FormulaContext } from "../../shared/types";
-import { proficiencyBonusFromCR } from "../../shared/dnd/math";
+import type { FormulaContext } from "@archivist/dnd5e";
+import { proficiencyBonusFromCR } from "@archivist/dnd5e/dnd/math";
 
 function capitalizeWords(str: string): string {
   return str.replace(/\b\w/g, (c) => c.toUpperCase());

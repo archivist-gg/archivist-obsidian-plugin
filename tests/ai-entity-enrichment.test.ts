@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { enrichMonster } from "../packages/obsidian/src/modules/monster/monster.enrichment";
+import { enrichMonster } from "@archivist/dnd5e/monster/monster.enrichment";
 import { enrichSpell } from "../packages/obsidian/src/modules/spell/spell.enrichment";
 import { enrichItem } from "../packages/obsidian/src/modules/item/item.enrichment";
 

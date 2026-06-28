@@ -1,5 +1,5 @@
-import type { FeatureEffect, ActionCost, ResetTrigger, ResourceConsumption } from "../../shared/types";
-import type { Duration } from "../../shared/schemas/duration-schema";
+import type { FeatureEffect, ActionCost, ResetTrigger, ResourceConsumption } from "@archivist/dnd5e";
+import type { Duration } from "@archivist/dnd5e/schemas/duration-schema";
 import type { Edition } from "../class/class.types";
 
 /**

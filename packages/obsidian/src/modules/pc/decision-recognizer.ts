@@ -1,5 +1,5 @@
-import type { Feature } from "../../shared/types/feature";
-import type { Choice } from "../../shared/types/choice";
+import type { Feature } from "@archivist/dnd5e/types/feature";
+import type { Choice } from "@archivist/dnd5e/types/choice";
 
 // Prose that signals a player decision. Tuned: bare "select"/"pick" produce
 // too many false positives; these three forms are the reliable signals.

@@ -1,7 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedPool, ResolvedPoolEntry } from "../pc.types";
 import type { OptionalFeatureEntity } from "../../optional-feature/optional-feature.types";
-import type { PoolLayout } from "../../../shared/types/selection-pool";
+import type { PoolLayout } from "@archivist/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 
 const COST_LABELS: Record<string, string> = {

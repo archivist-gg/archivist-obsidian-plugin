@@ -272,7 +272,7 @@ describe("recalc against bundle conditional bonuses", () => {
   let bundle2014: Array<ItemEntity & { slug: string }>;
 
   beforeAll(() => {
-    const file = path.resolve(__dirname, "../packages/obsidian/src/srd/data/runtime/item.2014.json");
+    const file = path.resolve(__dirname, "../packages/dnd5e/src/srd/data/runtime/item.2014.json");
     bundle2014 = JSON.parse(fs.readFileSync(file, "utf8")) as Array<ItemEntity & { slug: string }>;
   });
 

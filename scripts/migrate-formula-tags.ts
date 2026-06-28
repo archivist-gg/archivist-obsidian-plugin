@@ -3,7 +3,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as yaml from "js-yaml";
-import { convertDescToTags } from "../packages/obsidian/src/shared/dnd/srd-tag-converter";
+import { convertDescToTags } from "@archivist/dnd5e/dnd/srd-tag-converter";
 
 interface MonsterStatBlock {
   abilities?: { str?: number; dex?: number; con?: number; int?: number; wis?: number; cha?: number };

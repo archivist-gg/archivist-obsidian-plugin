@@ -1,6 +1,6 @@
-import type { Ability } from "../../../../shared/types/choice";
+import type { Ability } from "@archivist/dnd5e/types/choice";
 import type { AbilityMethod } from "../../pc.types";
-import { ABILITY_KEYS } from "../../../../shared/dnd/constants";
+import { ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
 
 /** SP2 §7 Step 3 — the ability-score method registry. The ✦ Custom (Inquiry)
  *  tab is rendered by the step itself (Plan-6 hand-off), not listed here. */

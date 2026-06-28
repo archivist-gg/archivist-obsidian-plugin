@@ -7,7 +7,7 @@ import type ArchivistPlugin from "../../../main";
 // inquiry/shared/modals into a top-level shared/modals tree so cross-module
 // reuse doesn't reach into a sibling module.
 import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
-import { ALL_SECTIONS } from "../../../shared/dnd/constants";
+import { ALL_SECTIONS } from "@archivist/dnd5e/dnd/constants";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";
 import { createSpinButtons } from "../../../shared/edit/spin-buttons";
 import {

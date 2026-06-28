@@ -2,10 +2,10 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
-import { choiceSchema } from "../../packages/obsidian/src/shared/schemas/choice-schema";
+import { choiceSchema } from "@archivist/dnd5e/schemas/choice-schema";
 import { DECISION_SIGNAL } from "../../packages/obsidian/src/modules/pc/decision-recognizer";
 
-const RUNTIME = path.resolve(__dirname, "../../packages/obsidian/src/srd/data/runtime");
+const RUNTIME = path.resolve(__dirname, "../../packages/dnd5e/src/srd/data/runtime");
 const EDITIONS = ["2014", "2024"] as const;
 const KINDS = ["class", "subclass", "race", "feat", "background"] as const;
 

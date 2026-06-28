@@ -7,8 +7,8 @@ import type {
   ParseResult,
   RenderContext,
 } from "../../core/module-api";
-import type { Monster } from "./monster.types";
-import { parseMonster } from "./monster.parser";
+import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { renderMonsterBlock } from "./monster.renderer";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
 import { MonsterModal } from "./monster.modal";

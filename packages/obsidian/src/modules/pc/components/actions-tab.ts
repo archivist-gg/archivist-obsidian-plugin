@@ -5,7 +5,7 @@ import { ItemsTable } from "./actions/items-table";
 import { FeaturesTable } from "./actions/features-table";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
 import { renderResourceList } from "./actions/resource-badge";
-import { resolveScalingDie } from "../../../shared/dnd/resource-die";
+import { resolveScalingDie } from "@archivist/dnd5e/dnd/resource-die";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
 
 const ACTION_DISABLING_CONDITIONS: ReadonlySet<ConditionSlug> = new Set([

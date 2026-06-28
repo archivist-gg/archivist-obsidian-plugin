@@ -1,5 +1,5 @@
 import type { Vault } from "obsidian";
-import { SRD_MD_ENTRIES } from "../../data/srd/index.generated";
+import { SRD_MD_ENTRIES } from "@archivist/dnd5e/data-srd/index.generated";
 import { TYPE_FOLDER_MAP } from "./entity-vault-store";
 
 const INVALID_FILENAME_CHARS = /[/:*?"<>|\\]/g;

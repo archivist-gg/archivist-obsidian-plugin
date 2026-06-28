@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getChallengeRatingXP, getProficiencyBonus, parseCR } from "../packages/obsidian/src/modules/monster/monster.enrichment";
+import { getChallengeRatingXP, getProficiencyBonus, parseCR } from "@archivist/dnd5e/monster/monster.enrichment";
 
 describe("getChallengeRatingXP", () => {
   it("returns 10 for CR 0", () => {

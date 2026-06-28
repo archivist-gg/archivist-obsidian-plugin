@@ -3,7 +3,7 @@ import {
   selectionPoolSchema,
   poolGrantSchema,
   tabDeclSchema,
-} from "../packages/obsidian/src/shared/schemas/selection-pool-schema";
+} from "@archivist/dnd5e/schemas/selection-pool-schema";
 
 const pool = {
   id: "interdict-boons",

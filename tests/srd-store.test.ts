@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { SrdStore } from "../packages/obsidian/src/shared/ai/srd-store";
-import type { SrdDataSources } from "../packages/obsidian/src/shared/ai/srd-store";
+import { SrdStore } from "@archivist/dnd5e";
+import type { SrdDataSources } from "@archivist/dnd5e";
 
 // ---------------------------------------------------------------------------
 // Test fixtures -- small representative data for each entity type

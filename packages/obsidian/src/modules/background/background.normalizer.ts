@@ -3,8 +3,8 @@ import type {
   BackgroundToolProficiency,
   BackgroundLanguageProficiency,
 } from "./background.types";
-import type { StartingEquipmentEntry } from "../../shared/types/equipment-grant";
-import type { SkillSlug } from "../../shared/types";
+import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
+import type { SkillSlug } from "@archivist/dnd5e";
 import type { Edition } from "../class/class.types";
 import type { NormalizedEntity } from "../class/class.normalizer";
 

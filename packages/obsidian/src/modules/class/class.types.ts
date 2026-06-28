@@ -1,7 +1,7 @@
-import type { Feature, Choice, Ability, SkillSlug, Resource } from "../../shared/types";
-import type { StartingEquipmentEntry, StartingGold } from "../../shared/types/equipment-grant";
-export type { StartingEquipmentEntry, StartingGold } from "../../shared/types/equipment-grant";
-import type { SelectionPool, PoolGrant, TabDecl } from "../../shared/types/selection-pool";
+import type { Feature, Choice, Ability, SkillSlug, Resource } from "@archivist/dnd5e";
+import type { StartingEquipmentEntry, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
+export type { StartingEquipmentEntry, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
+import type { SelectionPool, PoolGrant, TabDecl } from "@archivist/dnd5e/types/selection-pool";
 
 export type Edition = "2014" | "2024";
 export type ArmorCategory = "light" | "medium" | "heavy" | "shield";

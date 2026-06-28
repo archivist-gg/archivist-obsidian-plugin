@@ -4,7 +4,7 @@ import type {
   BackgroundToolProficiency,
   BackgroundLanguageProficiency,
 } from "./background.types";
-import type { StartingEquipmentEntry } from "../../shared/types/equipment-grant";
+import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
 import { el, createIconProperty, sourceBadgeText, grantLabel } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 

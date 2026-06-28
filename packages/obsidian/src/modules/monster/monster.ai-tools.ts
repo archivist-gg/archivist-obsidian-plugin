@@ -1,6 +1,6 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
-import { monsterInputSchema } from "./monster.ai-schema";
-import { enrichMonster } from "./monster.enrichment";
+import { monsterInputSchema } from "@archivist/dnd5e/monster/monster.ai-schema";
+import { enrichMonster } from "@archivist/dnd5e/monster/monster.enrichment";
 
 export const generateMonsterTool = tool(
   "generate_monster",

@@ -1,5 +1,5 @@
 import type { ClassEntity, ClassTableRow, StartingEquipmentEntry, Edition } from "./class.types";
-import type { Feature, SkillSlug, Ability } from "../../shared/types";
+import type { Feature, SkillSlug, Ability } from "@archivist/dnd5e";
 
 export interface Open5eClassJson {
   name: string;

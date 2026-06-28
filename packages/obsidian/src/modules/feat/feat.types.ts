@@ -1,6 +1,6 @@
-import type { Choice, Ability, FeatCategory, FeatureEffect } from "../../shared/types";
+import type { Choice, Ability, FeatCategory, FeatureEffect } from "@archivist/dnd5e";
 import type { Edition } from "../class/class.types";
-import type { Resource } from "../../shared/types/resource";
+import type { Resource } from "@archivist/dnd5e/types/resource";
 
 export type FeatPrerequisite =
   | { kind: "ability"; ability: Ability; min: number }

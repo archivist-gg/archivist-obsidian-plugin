@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
-import type { Feature } from "../../../shared/types";
+import type { Feature } from "@archivist/dnd5e";
 import { resolveFeatureDescription } from "./class-block";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 

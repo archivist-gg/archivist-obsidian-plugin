@@ -1,6 +1,6 @@
 import type { RegisteredEntity } from "@archivist/core";
 import type { ResolvedCharacter, ResolvedClass, ResolvedPool, ResolvedPoolEntry } from "./pc.types";
-import type { SelectionPool } from "../../shared/types/selection-pool";
+import type { SelectionPool } from "@archivist/dnd5e/types/selection-pool";
 import type { OptionalFeatureEntity } from "../optional-feature/optional-feature.types";
 import { readTableColumn } from "./pc.table-column";
 import { bareEntitySlug, wikilinkTailSlug } from "./pc.decision-engine";

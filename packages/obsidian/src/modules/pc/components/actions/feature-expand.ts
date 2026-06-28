@@ -1,5 +1,5 @@
-import type { Feature } from "../../../../shared/types/feature";
-import type { Attack, AttackRange } from "../../../../shared/types/attack";
+import type { Feature } from "@archivist/dnd5e/types/feature";
+import type { Attack, AttackRange } from "@archivist/dnd5e/types/attack";
 
 /**
  * Renders the inner content of a FeaturesTable expand row: feature title,

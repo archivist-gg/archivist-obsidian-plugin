@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import type { ResolvedCharacter, ResolvedClass, ResolvedFeature } from "../packages/obsidian/src/modules/pc/pc.types";
 import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
-import type { FeatureEffect } from "../packages/obsidian/src/shared/types/feature-effect";
+import type { FeatureEffect } from "@archivist/dnd5e/types/feature-effect";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { STUDDED_LEATHER, CLUB, PLATE, BREASTPLATE, LONGSWORD } from "./fixtures/pc/equipment-fixtures";
 import { isProficientWithArmor, isProficientWithWeapon } from "../packages/obsidian/src/modules/pc/pc.proficiency-query";

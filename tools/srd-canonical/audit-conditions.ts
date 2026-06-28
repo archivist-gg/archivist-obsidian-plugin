@@ -161,7 +161,7 @@ function readBundleItems(file: string): AuditItem[] {
 
 // CLI entrypoint.
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const root = path.resolve(__dirname, "../../packages/obsidian/src/srd/data/runtime");
+  const root = path.resolve(__dirname, "../../packages/dnd5e/src/srd/data/runtime");
   const input: AuditInput = {
     items2014: readBundleItems(path.join(root, "item.2014.json")),
     items2024: readBundleItems(path.join(root, "item.2024.json")),

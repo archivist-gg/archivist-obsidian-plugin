@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import cls24 from "../packages/obsidian/src/srd/data/runtime/class.2024.json";
-import cls14 from "../packages/obsidian/src/srd/data/runtime/class.2014.json";
-import items24 from "../packages/obsidian/src/srd/data/runtime/item.2024.json";
-import weap24 from "../packages/obsidian/src/srd/data/runtime/weapon.2024.json";
-import arm24 from "../packages/obsidian/src/srd/data/runtime/armor.2024.json";
-import items14 from "../packages/obsidian/src/srd/data/runtime/item.2014.json";
-import weap14 from "../packages/obsidian/src/srd/data/runtime/weapon.2014.json";
-import arm14 from "../packages/obsidian/src/srd/data/runtime/armor.2014.json";
+import cls24 from "../packages/dnd5e/src/srd/data/runtime/class.2024.json";
+import cls14 from "../packages/dnd5e/src/srd/data/runtime/class.2014.json";
+import items24 from "../packages/dnd5e/src/srd/data/runtime/item.2024.json";
+import weap24 from "../packages/dnd5e/src/srd/data/runtime/weapon.2024.json";
+import arm24 from "../packages/dnd5e/src/srd/data/runtime/armor.2024.json";
+import items14 from "../packages/dnd5e/src/srd/data/runtime/item.2014.json";
+import weap14 from "../packages/dnd5e/src/srd/data/runtime/weapon.2014.json";
+import arm14 from "../packages/dnd5e/src/srd/data/runtime/armor.2014.json";
 
 // Runtime slugs are edition-prefixed (e.g. `srd-2024_chain-mail`, `srd-5e_battleaxe`).
 // Authored {item} grants reference the BARE slug (`chain-mail`), so we compare on

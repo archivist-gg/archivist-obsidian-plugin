@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resourceSchema } from "../packages/obsidian/src/shared/schemas/resource-schema";
+import { resourceSchema } from "@archivist/dnd5e/schemas/resource-schema";
 
 describe("resourceSchema scales_at + consumes", () => {
   it("accepts a resource with scales_at and consumes", () => {

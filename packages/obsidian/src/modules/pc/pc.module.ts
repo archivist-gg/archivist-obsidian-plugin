@@ -12,7 +12,7 @@ import { HpWidget } from "./components/hp-widget";
 import { HitDiceWidget } from "./components/hit-dice-widget";
 import { AbilityRow } from "./components/ability-row";
 import { SaveChip } from "./components/save-chip";
-import { ABILITY_KEYS } from "../../shared/dnd/constants";
+import { ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
 import { StatsTiles } from "./components/stats-tiles";
 import { DefensesConditionsPanel } from "./components/defenses-conditions-panel";
 import { SensesPanel } from "./components/senses-panel";

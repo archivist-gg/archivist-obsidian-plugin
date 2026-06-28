@@ -1,6 +1,6 @@
 import type { MonsterEditState } from "../monster.edit-state";
-import { ABILITY_KEYS, ABILITY_NAMES } from "../../../shared/dnd/constants";
-import { formatModifier, savingThrow } from "../../../shared/dnd/math";
+import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist/dnd5e/dnd/constants";
+import { formatModifier, savingThrow } from "@archivist/dnd5e/dnd/math";
 import { wireOverride } from "../../../shared/edit/override-system";
 import { createCollapsible } from "../../../shared/edit/collapsible";
 import { type DomRefs, getAbilityScore, updateSaveToggle } from "./types";

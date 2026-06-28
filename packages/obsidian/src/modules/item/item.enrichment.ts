@@ -1,7 +1,7 @@
 import {
   convertDescToTags,
   STATIC_FALLBACK_CONTEXT,
-} from "../../shared/dnd/srd-tag-converter";
+} from "@archivist/dnd5e/dnd/srd-tag-converter";
 import type { Item } from "./item.types";
 
 export function enrichItem(

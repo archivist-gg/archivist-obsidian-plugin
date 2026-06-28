@@ -1,4 +1,4 @@
-import type { Ability, SkillSlug } from "../../shared/types";
+import type { Ability, SkillSlug } from "@archivist/dnd5e";
 import type { EntityRegistry } from "@archivist/core";
 import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { GrantedEntry } from "./builder/equipment-seed";

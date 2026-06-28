@@ -1,7 +1,7 @@
 import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { createSrdTools } from "./srd-tools";
-import type { SrdStore } from "./srd-store";
+import type { SrdStore } from "@archivist/dnd5e";
 import type { CompendiumManager } from "../entities/compendium-manager";
 
 // Pull the exact shape `createSdkMcpServer` accepts for its `tools` param

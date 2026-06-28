@@ -1,5 +1,5 @@
 import type { RaceEntity } from "./race.types";
-import { ParseResult, parseYaml } from "../../shared/parsers/yaml-utils";
+import { ParseResult, parseYaml } from "@archivist/core";
 import { raceEntitySchema } from "./race.schema";
 
 export function parseRace(source: string): ParseResult<RaceEntity> {

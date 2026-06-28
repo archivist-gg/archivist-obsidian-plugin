@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseMonster } from "../packages/obsidian/src/modules/monster/monster.parser";
+import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 
 describe("parseMonster", () => {
   it("parses a minimal monster (name only)", () => {

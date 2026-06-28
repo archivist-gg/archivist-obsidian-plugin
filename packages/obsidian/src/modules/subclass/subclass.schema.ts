@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { featureSchema } from "../../shared/schemas/feature-schema";
-import { resourceSchema } from "../../shared/schemas/resource-schema";
-import { selectionPoolSchema, poolGrantSchema, tabDeclSchema } from "../../shared/schemas/selection-pool-schema";
+import { featureSchema } from "@archivist/dnd5e/schemas/feature-schema";
+import { resourceSchema } from "@archivist/dnd5e/schemas/resource-schema";
+import { selectionPoolSchema, poolGrantSchema, tabDeclSchema } from "@archivist/dnd5e/schemas/selection-pool-schema";
 
 const editionEnum = z.enum(["2014", "2024"]);
 const wikilinkRegex = /^\[\[[^[\]]+\]\]$/;

@@ -24,7 +24,7 @@ import { pcModule } from "./modules/pc/pc.module";
 import { armorModule } from "./modules/armor/armor.module";
 import { weaponModule } from "./modules/weapon/weapon.module";
 
-import { parseInlineTag } from "./shared/rendering/inline-tag-parser";
+import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
 import { createErrorBlock } from "./shared/rendering/renderer-utils";
 
@@ -47,7 +47,7 @@ import {
 import { confirm as confirmModal } from "./modules/inquiry/shared/modals/ConfirmModal";
 
 // SRD & entities
-import { SrdStore } from "./shared/ai/srd-store";
+import { SrdStore } from "@archivist/dnd5e";
 import { EntityRegistry, createArchivist, CONVENTION_VERSION } from "@archivist/core";
 import type { Archivist, EntityType } from "@archivist/core";
 

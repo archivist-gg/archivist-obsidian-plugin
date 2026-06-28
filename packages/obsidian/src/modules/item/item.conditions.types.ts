@@ -3,7 +3,7 @@
 // Type-only module: condition discriminated union and the supporting shapes
 // used by the evaluator, accessor, and renderer. No runtime exports here.
 
-import type { Ability } from "../../shared/types";
+import type { Ability } from "@archivist/dnd5e";
 import type { EquippedSlots, ClassEntry } from "../pc/pc.types";
 
 // --------------------------------------------------------------------------

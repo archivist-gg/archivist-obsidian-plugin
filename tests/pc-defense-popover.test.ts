@@ -6,7 +6,7 @@ import {
 } from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { DAMAGE_TYPES } from "../packages/obsidian/src/shared/dnd/constants";
+import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
 import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,

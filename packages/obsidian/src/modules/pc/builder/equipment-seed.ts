@@ -1,4 +1,4 @@
-import type { EquipmentGrant } from "../../../shared/types/equipment-grant";
+import type { EquipmentGrant } from "@archivist/dnd5e/types/equipment-grant";
 import type { SlotKey } from "../pc.types";
 
 export interface GrantedEntry { slug: string; qty: number; equipped: boolean; slot: SlotKey | null; }

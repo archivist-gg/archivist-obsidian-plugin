@@ -4,7 +4,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 // TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
 // modules don't reach across into src/main for the concrete class.
 import type ArchivistPlugin from "../../../main";
-import type { Monster } from "../monster.types";
+import type { Monster } from "@archivist/dnd5e/monster/monster.types";
 import { MonsterEditState } from "../monster.edit-state";
 import { renderSideButtons } from "../../../shared/edit/side-buttons";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";

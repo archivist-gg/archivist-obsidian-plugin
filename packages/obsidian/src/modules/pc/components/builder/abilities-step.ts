@@ -1,7 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { Ability } from "../../../../shared/types/choice";
+import type { Ability } from "@archivist/dnd5e/types/choice";
 import type { AbilityMethod } from "../../pc.types";
-import { ABILITY_KEYS } from "../../../../shared/dnd/constants";
+import { ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
 import {
   ABILITY_METHODS, POINT_BUY_RULES, STANDARD_ARRAY, allowedScores,
   pointBuySpent, pointBuyRemaining,

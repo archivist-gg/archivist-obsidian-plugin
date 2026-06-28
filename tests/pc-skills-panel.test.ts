@@ -4,7 +4,7 @@ import { SkillsPanel } from "../packages/obsidian/src/modules/pc/components/skil
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
-import type { SkillSlug } from "../packages/obsidian/src/shared/types";
+import type { SkillSlug } from "@archivist/dnd5e";
 
 beforeAll(() => installObsidianDomHelpers());
 

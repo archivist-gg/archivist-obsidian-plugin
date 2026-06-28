@@ -9,8 +9,8 @@ import {
   DAMAGE_TYPES,
   DAMAGE_NONMAGICAL_VARIANTS,
   CONDITIONS,
-} from "../../../shared/dnd/constants";
-import { passivePerception } from "../../../shared/dnd/math";
+} from "@archivist/dnd5e/dnd/constants";
+import { passivePerception } from "@archivist/dnd5e/dnd/math";
 import { createSearchableTagSelect } from "../../../shared/edit/searchable-tag-select";
 import { createCollapsible } from "../../../shared/edit/collapsible";
 import { type DomRefs, formatXP, getAbilityScore } from "./types";

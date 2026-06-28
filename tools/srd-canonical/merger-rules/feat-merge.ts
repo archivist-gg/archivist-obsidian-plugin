@@ -2,8 +2,8 @@ import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import { rewriteCrossRefs } from "../cross-ref-map";
 import { slugifyName } from "../sources/slug-normalize";
-import type { Resource } from "../../../packages/obsidian/src/shared/types/resource";
-import type { Choice } from "../../../packages/obsidian/src/shared/types/choice";
+import type { Resource } from "@archivist/dnd5e/types/resource";
+import type { Choice } from "@archivist/dnd5e/types/choice";
 
 export type FeatPrerequisite =
   | { kind: "level"; min: number }

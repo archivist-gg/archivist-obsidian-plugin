@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseInlineTag } from "../packages/obsidian/src/shared/rendering/inline-tag-parser";
+import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
 
 describe("parseInlineTag", () => {
   it("parses a roll tag (alias -> dice)", () => {

@@ -1,5 +1,5 @@
 import { MarkdownRenderer, Component, type App } from "obsidian";
-import { parseInlineTag } from "./inline-tag-parser";
+import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
 import { convert5eToolsTags, renderStatBlockTag } from "./renderer-utils";
 
 /**

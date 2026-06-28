@@ -1,5 +1,5 @@
 import type { WeaponEntity, WeaponProperty } from "./weapon.types";
-import { ParseResult, parseYaml } from "../../shared/parsers/yaml-utils";
+import { ParseResult, parseYaml } from "@archivist/core";
 import { weaponEntitySchema } from "./weapon.schema";
 
 const KNOWN_KEYS = new Set([

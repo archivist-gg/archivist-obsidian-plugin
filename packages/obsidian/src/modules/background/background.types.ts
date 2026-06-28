@@ -1,7 +1,7 @@
-import type { Ability, SkillSlug, Choice } from "../../shared/types";
+import type { Ability, SkillSlug, Choice } from "@archivist/dnd5e";
 import type { Edition } from "../class/class.types";
-import type { Resource } from "../../shared/types/resource";
-import type { StartingEquipmentEntry } from "../../shared/types/equipment-grant";
+import type { Resource } from "@archivist/dnd5e/types/resource";
+import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
 
 export type BackgroundToolProficiency =
   | { kind: "fixed"; items: string[] }

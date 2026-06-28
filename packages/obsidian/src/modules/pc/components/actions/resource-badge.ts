@@ -1,12 +1,12 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { Feature } from "../../../../shared/types/feature";
+import type { Feature } from "@archivist/dnd5e/types/feature";
 import type { FeatureSource } from "../../pc.types";
-import type { Resource } from "../../../../shared/types/resource";
+import type { Resource } from "@archivist/dnd5e/types/resource";
 import { renderChargeBoxes } from "./charge-boxes";
 import { resourceBindings } from "../../pc.resource-seed";
-import { evaluateMaxFormula } from "../../../../shared/dnd/resource-formula";
+import { evaluateMaxFormula } from "@archivist/dnd5e/dnd/resource-formula";
 import { createIconProperty, renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
-import { resolveScalingDie } from "../../../../shared/dnd/resource-die";
+import { resolveScalingDie } from "@archivist/dnd5e/dnd/resource-die";
 
 const COUNTER_THRESHOLD = 6;
 

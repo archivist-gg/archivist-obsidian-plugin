@@ -1,6 +1,6 @@
-import type { FeatureEffect, SenseType } from "../../shared/types/feature-effect";
-import type { Ability } from "../../shared/types";
-import { ABILITY_KEYS } from "../../shared/dnd/constants";
+import type { FeatureEffect, SenseType } from "@archivist/dnd5e/types/feature-effect";
+import type { Ability } from "@archivist/dnd5e";
+import { ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
 import type { ResolvedFeature, RollModifierEntry } from "./pc.types";
 
 /**

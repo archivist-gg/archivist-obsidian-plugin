@@ -1,5 +1,5 @@
 // Reuse the existing shared Ability type rather than redeclaring it.
-export type { Ability } from "../../shared/types/choice";
+export type { Ability } from "@archivist/dnd5e/types/choice";
 
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 export type ArmorCategory =
