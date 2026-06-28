@@ -390,6 +390,12 @@ export interface DerivedStats {
   };
   acBreakdown: ACTerm[];
   acInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /** Situational saving-throw bonuses (e.g. +1 vs spells) for save tooltips. */
+  savesInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /** Situational spell attack / save-DC bonuses for spellcasting tooltips. */
+  spellcastingInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /** Situational speed bonuses (e.g. swim while underwater) for speed tooltips. */
+  speedInformational: import("../item/item.conditions.types").InformationalBonus[];
   /**
    * Attacks per Attack action = 1 + max `extra-attack` effect count. Always ≥ 1
    * (everyone gets one attack). The Actions "Attacks" heading shows `(×N)` when > 1.

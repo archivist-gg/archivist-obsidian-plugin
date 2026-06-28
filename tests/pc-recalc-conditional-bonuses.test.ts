@@ -32,6 +32,32 @@ import {
   cloakOfProtection,
 } from "./__fixtures__/items-conditional";
 
+// Minimal conditional fixtures for the informational-slice partition tests
+// (Task 7). Each carries a Tier-2+ `when` condition that routes the bonus to
+// `informational` (not the flat/applied path):
+//   - `vs_spell_save`    (Tier 2) → saving_throws is situational vs spells.
+//   - `is_concentrating` (Tier 4) → spell_attack is situational while casting.
+// Per item.conditions.ts, both kinds return "informational" in v1.
+const amuletVsSpells: ItemEntity = {
+  name: "Amulet of Spell Warding",
+  slug: "amulet-vs-spells",
+  rarity: "rare",
+  attunement: { required: true },
+  bonuses: {
+    saving_throws: { value: 1, when: [{ kind: "vs_spell_save" }] },
+  },
+};
+
+const rodOfFocusedCasting: ItemEntity = {
+  name: "Rod of Focused Casting",
+  slug: "rod-of-focused-casting",
+  rarity: "rare",
+  attunement: { required: true },
+  bonuses: {
+    spell_attack: { value: 1, when: [{ kind: "is_concentrating" }] },
+  },
+};
+
 function buildRegistry() {
   return buildMockRegistry([
     { slug: "studded-leather", entityType: "armor", name: "Studded Leather", data: STUDDED_LEATHER },
@@ -42,6 +68,8 @@ function buildRegistry() {
     { slug: "sun-blade", entityType: "item", name: "Sun Blade", data: sunBlade },
     { slug: "cloak-of-the-manta-ray", entityType: "item", name: "Cloak of the Manta Ray", data: cloakOfTheMantaRay },
     { slug: "cloak-of-protection", entityType: "item", name: "Cloak of Protection", data: cloakOfProtection },
+    { slug: "amulet-vs-spells", entityType: "item", name: "Amulet of Spell Warding", data: amuletVsSpells },
+    { slug: "rod-of-focused-casting", entityType: "item", name: "Rod of Focused Casting", data: rodOfFocusedCasting },
   ]);
 }
 
@@ -265,6 +293,91 @@ describe("Speed with conditional item bonuses", () => {
     // Walk speed stays at the default 30; the conditional underwater swim
     // bonus does not bleed into the headline walk number.
     expect(d.speed).toBe(30);
+  });
+});
+
+describe("Informational slice partition (saves / spell / speed)", () => {
+  it("routes a conditional speed bonus into speedInformational only", () => {
+    const c = baseChar();
+    c.equipment = [
+      // Cloak of the Manta Ray: swim +60 when underwater (Tier-3 informational).
+      { item: "[[cloak-of-the-manta-ray]]", equipped: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    // Lands in its own slice...
+    expect(d.speedInformational.length).toBeGreaterThan(0);
+    expect(d.speedInformational).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "speed.swim",
+          source: "Cloak of the Manta Ray",
+          value: 60,
+          conditions: [{ kind: "underwater" }],
+        }),
+      ]),
+    );
+    expect(d.speedInformational.every((i) => i.field.startsWith("speed."))).toBe(true);
+    // ...and NOT the other two.
+    expect(d.savesInformational).toHaveLength(0);
+    expect(d.spellcastingInformational).toHaveLength(0);
+  });
+
+  it("routes a conditional saving-throw bonus into savesInformational only (flat save stays out)", () => {
+    const c = baseChar();
+    c.equipment = [
+      // Conditional save (vs spells) → informational.
+      { item: "[[amulet-vs-spells]]", equipped: true, attuned: true },
+      // Flat +1 saving_throws → applied, must NOT appear in the slice.
+      { item: "[[cloak-of-protection]]", equipped: true, attuned: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    // Exactly the conditional one lands in the slice.
+    expect(d.savesInformational).toEqual([
+      expect.objectContaining({
+        field: "saving_throws",
+        source: "Amulet of Spell Warding",
+        value: 1,
+        conditions: [{ kind: "vs_spell_save" }],
+      }),
+    ]);
+    // Negative: the flat Cloak of Protection +1 is applied, not informational.
+    expect(
+      d.savesInformational.some((i) => i.source === "Cloak of Protection"),
+    ).toBe(false);
+    // And the flat bonus genuinely reached the headline save (proves flat path).
+    expect(d.saves.str.bonus).toBe(1); // STR 10 → +0 mod, no prof, +1 flat cloak.
+
+    // Not the other two slices.
+    expect(d.spellcastingInformational).toHaveLength(0);
+    expect(d.speedInformational).toHaveLength(0);
+  });
+
+  it("routes a conditional spell-attack bonus into spellcastingInformational only", () => {
+    const c = baseChar();
+    c.equipment = [
+      // spell_attack +1 while concentrating (Tier-4 informational).
+      { item: "[[rod-of-focused-casting]]", equipped: true, attuned: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    expect(d.spellcastingInformational).toEqual([
+      expect.objectContaining({
+        field: "spell_attack",
+        source: "Rod of Focused Casting",
+        value: 1,
+        conditions: [{ kind: "is_concentrating" }],
+      }),
+    ]);
+    expect(
+      d.spellcastingInformational.every(
+        (i) => i.field === "spell_attack" || i.field === "spell_save_dc",
+      ),
+    ).toBe(true);
+    // Not the other two slices.
+    expect(d.savesInformational).toHaveLength(0);
+    expect(d.speedInformational).toHaveLength(0);
   });
 });
 

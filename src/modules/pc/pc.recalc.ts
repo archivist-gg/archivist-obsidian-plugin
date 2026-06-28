@@ -573,6 +573,19 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     ? computeAppliedBonuses(resolved, profsForApply, registry, warnings)
     : emptyAppliedBonuses();
 
+  // Partition the non-AC situational bonuses already collected in
+  // `applied.informational` into per-stat slices for UI tooltips (Task 7).
+  // (AC informational rides a separate path via derivedEquipment.acInformational.)
+  const savesInformational = applied.informational.filter(
+    (i) => i.field === "saving_throws",
+  );
+  const spellcastingInformational = applied.informational.filter(
+    (i) => i.field === "spell_attack" || i.field === "spell_save_dc",
+  );
+  const speedInformational = applied.informational.filter((i) =>
+    i.field.startsWith("speed."),
+  );
+
   // Ability scores: base computation, then apply Pass A bonus first, then
   // static (only when it raises the score), then user overrides win.
   const baseScores = computeAbilityScores(resolved, overrides);
@@ -848,6 +861,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     defenses,
     acBreakdown: acBreakdownDerived,
     acInformational: acInformationalDerived,
+    savesInformational,
+    spellcastingInformational,
+    speedInformational,
     // Always ≥ 1; non-stacking (Math.max) extra attacks fold in pc.feature-effects.
     attacksPerAction: 1 + featureEffects.extraAttack,
     // Consolidated post-apply over the built attack rows: the d20 condition
