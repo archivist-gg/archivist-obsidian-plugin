@@ -194,6 +194,18 @@ export const GOGGLES_OF_NIGHT: ItemEntity = {
   attunement: false,
 };
 
+// Item whose resistance is a per-instance chosen damage type. The item entity
+// carries no intrinsic `resist`; the player/GM picks the type via
+// EquipmentEntry.overrides.resist. Requires attunement.
+export const ARMOR_OF_RESISTANCE: ItemEntity = {
+  name: "Armor of Resistance (Breastplate)",
+  slug: "armor-of-resistance",
+  type: "armor",
+  rarity: "rare",
+  base_item: "breastplate",
+  attunement: { required: true },
+};
+
 export function buildEquipmentRegistry(): EntityRegistry {
   return buildMockRegistry([
     { slug: "plate", entityType: "armor", name: "Plate", data: PLATE },
@@ -222,6 +234,7 @@ export function buildEquipmentRegistry(): EntityRegistry {
     { slug: "breastplate-3", entityType: "item", name: "Breastplate (+3)", data: BREASTPLATE_PLUS_3 },
     { slug: "heavy-shield", entityType: "armor", name: "Shield", data: HEAVY_SHIELD },
     { slug: "goggles-of-night", entityType: "item", name: "Goggles of Night", data: GOGGLES_OF_NIGHT },
+    { slug: "armor-of-resistance", entityType: "item", name: "Armor of Resistance (Breastplate)", data: ARMOR_OF_RESISTANCE },
     // vault-path resolution target: same Breastplate under its compendium-prefixed slug
     { slug: "srd-2024_breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
   ]);

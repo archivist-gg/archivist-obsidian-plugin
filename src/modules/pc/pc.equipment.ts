@@ -139,6 +139,14 @@ export function computeAppliedBonuses(
     item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
     item.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
 
+    // Per-instance chosen defenses (e.g. Armor of Resistance → resist a chosen
+    // damage type). These ride the same isAttunedActive + entityType==="item"
+    // gate as the item's intrinsic defenses above.
+    entry.overrides?.resist?.forEach((s) => out.defenses.resistances.push(s));
+    entry.overrides?.immune?.forEach((s) => out.defenses.immunities.push(s));
+    entry.overrides?.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
+    entry.overrides?.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
+
     // Item-granted senses (e.g. Goggles of Night → darkvision 60). Per-type
     // max so multiple sense items don't stack; recalc further maxes these
     // against race vision + feature-effect senses.

@@ -1015,3 +1015,21 @@ describe("item-granted senses", () => {
     expect(d.senses.darkvision).toBe(120);
   });
 });
+
+describe("per-entry resistance override", () => {
+  const reg = buildEquipmentRegistry();
+
+  it("adds overrides.resist to derived defenses", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[armor-of-resistance]]", equipped: true, attuned: true, slot: "armor", overrides: { resist: ["fire"] } }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.defenses.resistances).toContain("fire");
+  });
+
+  it("contributes nothing when no resist override is set", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[armor-of-resistance]]", equipped: true, attuned: true, slot: "armor" }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.defenses.resistances).not.toContain("fire");
+  });
+});

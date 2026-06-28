@@ -59,6 +59,10 @@ export interface EquipmentEntryOverrides {
   ac_bonus?: number;
   action?: "action" | "bonus-action" | "reaction" | "free" | "special";
   range?: string;
+  resist?: string[];
+  immune?: string[];
+  vulnerable?: string[];
+  condition_immune?: string[];
 }
 
 export interface EquipmentEntryState {
