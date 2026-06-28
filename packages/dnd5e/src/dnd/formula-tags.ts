@@ -1,4 +1,4 @@
-// src/shared/dnd/formula-tags.ts
+// packages/dnd5e/src/dnd/formula-tags.ts
 
 import type { FormulaRef } from "../inline-tag-parser";
 import type { Abilities } from "../types/abilities";

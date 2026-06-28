@@ -1,6 +1,7 @@
 import { Monster } from "./monster.types";
 import type { Attack, Feature, FeatureRecharge } from "../types";
-import { ParseResult, parseYaml, toStringSafe } from "@archivist/core";
+import type { ParseResult } from "@archivist/core";
+import { parseYaml, toStringSafe } from "@archivist/core";
 
 const VALID_RECHARGE_TYPES: ReadonlySet<FeatureRecharge["type"]> = new Set([
   "recharge_on_roll",

@@ -8,7 +8,7 @@ import {
 import type { Monster } from "./monster.types";
 
 // -----------------------------------------------------------------------------
-// CR / XP / proficiency-bonus tables (formerly src/ai/validation/cr-xp-mapping.ts)
+// CR / XP / proficiency-bonus tables
 // -----------------------------------------------------------------------------
 
 export const CR_TO_XP: Record<string, number> = {
@@ -49,8 +49,7 @@ export function getProficiencyBonus(cr: string): number {
 }
 
 // -----------------------------------------------------------------------------
-// Monster enrichment (formerly the monster-specific portion of
-// src/ai/validation/entity-enrichment.ts)
+// Monster enrichment
 // -----------------------------------------------------------------------------
 
 export function enrichMonster(
