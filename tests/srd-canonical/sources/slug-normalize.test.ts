@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { slugifyName } from "../../../tools/srd-canonical/sources/slug-normalize";
+import { slugifyName } from "../../../packages/dnd5e/tools/srd-canonical/sources/slug-normalize";
 
 describe("slugifyName", () => {
   it("lowercase + hyphenates spaces", () => {

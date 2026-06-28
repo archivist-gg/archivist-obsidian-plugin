@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import { toCreatureCanonical } from "../../../tools/srd-canonical/merger-rules/creature-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toCreatureCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/creature-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 // Aboleth shape, modeled on real Open5e v2 (2024) data — primary damage in
 // damage_*; the SRD 2024 cache often puts primary in extra_damage_* but for

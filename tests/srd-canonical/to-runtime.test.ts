@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { projectToRuntime } from "../../tools/srd-canonical/to-runtime";
+import { projectToRuntime } from "../../packages/dnd5e/tools/srd-canonical/to-runtime";
 
 describe("projectToRuntime", () => {
   it("drops unknown fields for items but preserves description (AI consumption)", () => {

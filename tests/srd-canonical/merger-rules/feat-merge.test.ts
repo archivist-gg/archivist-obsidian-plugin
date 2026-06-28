@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { featMergeRule, toFeatCanonical } from "../../../tools/srd-canonical/merger-rules/feat-merge";
-import type { Overlay } from "../../../tools/srd-canonical/overlay.schema";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { featMergeRule, toFeatCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/feat-merge";
+import type { Overlay } from "../../../packages/dnd5e/tools/srd-canonical/overlay.schema";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 describe("featMergeRule", () => {
   it("produces canonical Feat from Open5e-only entry (Alert, no prereq, Origin)", () => {

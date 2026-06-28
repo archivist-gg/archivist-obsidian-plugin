@@ -6,7 +6,7 @@ archivist-type: pc
 
 Mechanical-only sheet derived from `~/Documents/V/PlayerCharacters/Grendal.md`,
 with wikilinks rewritten to the canonical bundle's namespaced slugs (the form
-emitted by `tools/srd-canonical/`). All narrative prose has been stripped.
+emitted by `packages/dnd5e/tools/srd-canonical/`). All narrative prose has been stripped.
 
 ```pc
 name: Grendal the Wary

@@ -1,4 +1,4 @@
-// tools/srd-canonical/audit-merger-gaps.ts
+// packages/dnd5e/tools/srd-canonical/audit-merger-gaps.ts
 //
 // Diff Open5e vs 5etools per-field for canonical magic items. Produces a
 // gap report partitioned into material/informational/symmetric sections.
@@ -9,7 +9,7 @@
 // canonical values only.
 //
 // Run after `npm run build:srd-canonical` (or after the cache is fresh):
-//   npx tsx tools/srd-canonical/audit-merger-gaps.ts
+//   npx tsx packages/dnd5e/tools/srd-canonical/audit-merger-gaps.ts
 
 export type FieldType = "string" | "number" | "cost" | "boolean";
 

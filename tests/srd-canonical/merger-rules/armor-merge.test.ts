@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toArmorCanonical } from "../../../tools/srd-canonical/merger-rules/armor-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toArmorCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/armor-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 const baseEntry = (base: Record<string, unknown>): CanonicalEntry => ({
   slug: "srd-5e_breastplate",

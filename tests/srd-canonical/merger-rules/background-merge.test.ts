@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toBackgroundCanonical } from "../../../tools/srd-canonical/merger-rules/background-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toBackgroundCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/background-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 describe("backgroundMergeRule", () => {
   it("produces canonical Background from Open5e v2 benefits[] (Acolyte, 2014)", () => {

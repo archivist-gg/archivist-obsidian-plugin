@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import {
   CURATED_ITEM_CONDITIONS,
   type ConditionPerField,
-} from "../../../tools/srd-canonical/data/item-conditions";
+} from "../../../packages/dnd5e/tools/srd-canonical/data/item-conditions";
 
 const VALID_EDITIONS = ["srd-5e_", "srd-2024_"];
 const VALID_FIELDS = new Set([

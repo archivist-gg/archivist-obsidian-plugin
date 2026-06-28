@@ -46,14 +46,19 @@ export function loadConfig(): CanonicalBuildConfig {
     );
   }
 
-  const repoRoot = path.resolve(__dirname, "..", "..");
+  // __dirname = packages/dnd5e/tools/srd-canonical
+  const dnd5ePkg = path.resolve(__dirname, "..", "..");             // packages/dnd5e
+  const repoRoot = path.resolve(__dirname, "..", "..", "..", ".."); // true repo root
   return {
     open5eApi: "https://api.open5e.com/v2",
     open5eCacheDir: path.join(__dirname, ".cache", "open5e"),
     structuredRulesPath,
     overlayDir: path.join(__dirname, "overlays"),
-    canonicalOutDir: path.join(repoRoot, "src", "srd", "data", "canonical"),
-    runtimeOutDir: path.join(repoRoot, "src", "srd", "data", "runtime"),
+    // Canonical + runtime SRD JSON live inside the dnd5e package.
+    canonicalOutDir: path.join(dnd5ePkg, "src", "srd", "data", "canonical"),
+    runtimeOutDir: path.join(dnd5ePkg, "src", "srd", "data", "runtime"),
+    // The vault bundle MUST stay at the true repo root: the round-trip corpus
+    // and the in-vault bootstrap both read .compendium-bundle/ from there.
     bundleOutDir: path.join(repoRoot, ".compendium-bundle"),
     editions,
     refreshOpen5e: has("--refresh-open5e"),

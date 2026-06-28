@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rewriteCrossRefs } from "../../tools/srd-canonical/cross-ref-map";
+import { rewriteCrossRefs } from "../../packages/dnd5e/tools/srd-canonical/cross-ref-map";
 
 describe("rewriteCrossRefs", () => {
   it("rewrites @spell to compendium-qualified wikilink", () => {

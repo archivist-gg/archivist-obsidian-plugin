@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { readOpen5eKind, deriveSlugSet } from "../../../tools/srd-canonical/sources/open-srd";
+import { readOpen5eKind, deriveSlugSet } from "../../../packages/dnd5e/tools/srd-canonical/sources/open-srd";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";

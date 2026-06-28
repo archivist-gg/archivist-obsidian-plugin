@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isEmpty } from "../../tools/srd-canonical/audit-merger-gaps";
+import { isEmpty } from "../../packages/dnd5e/tools/srd-canonical/audit-merger-gaps";
 
 describe("isEmpty", () => {
   it("string: null/undefined/empty-string are empty", () => {
@@ -31,7 +31,7 @@ describe("isEmpty", () => {
   });
 });
 
-import { classifyGap } from "../../tools/srd-canonical/audit-merger-gaps";
+import { classifyGap } from "../../packages/dnd5e/tools/srd-canonical/audit-merger-gaps";
 
 describe("classifyGap", () => {
   it("both empty → both-empty", () => {
@@ -67,7 +67,7 @@ describe("classifyGap", () => {
   });
 });
 
-import { FIELD_PAIRINGS } from "../../tools/srd-canonical/audit-merger-gaps";
+import { FIELD_PAIRINGS } from "../../packages/dnd5e/tools/srd-canonical/audit-merger-gaps";
 
 describe("FIELD_PAIRINGS", () => {
   it("has expected material fields", () => {
@@ -150,7 +150,7 @@ describe("FIELD_PAIRINGS extractors", () => {
   });
 });
 
-import { joinSources } from "../../tools/srd-canonical/audit-merger-gaps";
+import { joinSources } from "../../packages/dnd5e/tools/srd-canonical/audit-merger-gaps";
 
 describe("joinSources", () => {
   it("matches by slug across the two sources", () => {
@@ -189,7 +189,7 @@ describe("joinSources", () => {
   });
 });
 
-import { auditPair, partitionFindings, type Finding } from "../../tools/srd-canonical/audit-merger-gaps";
+import { auditPair, partitionFindings, type Finding } from "../../packages/dnd5e/tools/srd-canonical/audit-merger-gaps";
 
 describe("auditPair", () => {
   it("emits a Finding per FIELD_PAIRINGS entry", () => {
@@ -241,7 +241,7 @@ describe("partitionFindings", () => {
   });
 });
 
-import { renderMarkdown } from "../../tools/srd-canonical/audit-merger-gaps";
+import { renderMarkdown } from "../../packages/dnd5e/tools/srd-canonical/audit-merger-gaps";
 
 describe("renderMarkdown", () => {
   it("emits 3 sections (material, informational, symmetric) and a summary table", () => {

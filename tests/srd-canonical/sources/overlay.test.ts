@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loadOverlay } from "../../../tools/srd-canonical/sources/overlay";
+import { loadOverlay } from "../../../packages/dnd5e/tools/srd-canonical/sources/overlay";
 import * as path from "node:path";
 
 describe("loadOverlay", () => {

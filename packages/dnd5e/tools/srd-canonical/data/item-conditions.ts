@@ -1,4 +1,4 @@
-// tools/srd-canonical/data/item-conditions.ts
+// packages/dnd5e/tools/srd-canonical/data/item-conditions.ts
 //
 // Curated mapping of (edition-prefixed item slug → bonus field → Condition[])
 // for SRD magic items whose conditional language was manually verified
@@ -7,12 +7,12 @@
 //
 // Originally seeded from git commit c8c7436 (scripts/augment/condition-map.ts)
 // after the legacy importer was retired on 2026-05-02. Grown via the audit
-// pipeline at tools/srd-canonical/audit-conditions.ts.
+// pipeline at packages/dnd5e/tools/srd-canonical/audit-conditions.ts.
 
 import type {
   BonusFieldPath,
   Condition,
-} from "../../../packages/obsidian/src/modules/item/item.conditions.types";
+} from "../../../../obsidian/src/modules/item/item.conditions.types";
 
 export type ConditionPerField = Partial<Record<BonusFieldPath, Condition[]>>;
 

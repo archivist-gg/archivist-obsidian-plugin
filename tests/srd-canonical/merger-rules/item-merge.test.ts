@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../tools/srd-canonical/merger-rules/item-merge";
-import { baseItemFromStructured, cpToGpString, entriesToProse } from "../../../tools/srd-canonical/merger-rules/item-merge";
-import { mapDmgTypeCode } from "../../../tools/srd-canonical/merger-rules/item-merge";
-import { mapPropertyTags } from "../../../tools/srd-canonical/merger-rules/item-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toItemCanonical, enrichItemsWithVariantBonuses } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/item-merge";
+import { baseItemFromStructured, cpToGpString, entriesToProse } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/item-merge";
+import { mapDmgTypeCode } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/item-merge";
+import { mapPropertyTags } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/item-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 function makeEntry(overrides: { base?: Record<string, unknown>; structured?: Record<string, unknown> }): CanonicalEntry {
   return {

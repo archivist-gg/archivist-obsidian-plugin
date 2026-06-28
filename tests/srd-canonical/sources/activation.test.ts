@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readActivationData } from "../../../tools/srd-canonical/sources/activation";
+import { readActivationData } from "../../../packages/dnd5e/tools/srd-canonical/sources/activation";
 import * as path from "node:path";
 
 const fixtureRoot = path.resolve(__dirname, "../fixtures/structured-rules");

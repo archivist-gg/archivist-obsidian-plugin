@@ -3,7 +3,7 @@
  * schema, without running the full canonical build. Exits nonzero if either
  * overlay fails schema validation.
  *
- * Run: npx tsx tools/srd-canonical/validate-overlays.ts
+ * Run: npx tsx packages/dnd5e/tools/srd-canonical/validate-overlays.ts
  */
 import * as path from "node:path";
 import { loadOverlay } from "./sources/overlay";

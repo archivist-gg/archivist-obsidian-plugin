@@ -4,8 +4,8 @@ import {
   enrichItemsWithFoundryEffects,
   enrichItemsWithCuratedConditions,
   type ItemCanonical,
-} from "../../../tools/srd-canonical/merger-rules/item-merge";
-import type { FoundryItem } from "../../../tools/srd-canonical/sources/foundry-items";
+} from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/item-merge";
+import type { FoundryItem } from "../../../packages/dnd5e/tools/srd-canonical/sources/foundry-items";
 
 function flat(name: string, slug: string, bonuses: ItemCanonical["bonuses"]): ItemCanonical {
   return {

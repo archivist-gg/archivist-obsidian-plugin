@@ -1,11 +1,11 @@
-// tools/srd-canonical/audit-conditions.ts
+// packages/dnd5e/tools/srd-canonical/audit-conditions.ts
 //
 // One-shot worklist generator. Walks every magic item in the runtime bundle,
 // classifies coverage, and writes audit-conditions.report.md (gitignored).
 // Run after the canonical pipeline:
 //
 //   STRUCTURED_RULES_PATH=... npm run build:srd-canonical
-//   npx tsx tools/srd-canonical/audit-conditions.ts
+//   npx tsx packages/dnd5e/tools/srd-canonical/audit-conditions.ts
 //
 // Edit data/item-conditions.ts to add curated entries; re-run to see the
 // "needs review" count drop.

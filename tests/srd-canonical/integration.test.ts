@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { mergeKind } from "../../tools/srd-canonical/merger";
-import { raceMergeRule, toRaceCanonical } from "../../tools/srd-canonical/merger-rules/race-merge";
-import { featMergeRule, toFeatCanonical } from "../../tools/srd-canonical/merger-rules/feat-merge";
-import { mergeOptionalFeatures } from "../../tools/srd-canonical/merger-rules/optional-feature-merge";
-import { rewriteCrossRefs } from "../../tools/srd-canonical/cross-ref-map";
-import { projectToRuntime } from "../../tools/srd-canonical/to-runtime";
-import { expandVariants, type BaseItem, type VariantRule } from "../../tools/srd-canonical/expand-variants";
-import { slugifyName } from "../../tools/srd-canonical/sources/slug-normalize";
+import { mergeKind } from "../../packages/dnd5e/tools/srd-canonical/merger";
+import { raceMergeRule, toRaceCanonical } from "../../packages/dnd5e/tools/srd-canonical/merger-rules/race-merge";
+import { featMergeRule, toFeatCanonical } from "../../packages/dnd5e/tools/srd-canonical/merger-rules/feat-merge";
+import { mergeOptionalFeatures } from "../../packages/dnd5e/tools/srd-canonical/merger-rules/optional-feature-merge";
+import { rewriteCrossRefs } from "../../packages/dnd5e/tools/srd-canonical/cross-ref-map";
+import { projectToRuntime } from "../../packages/dnd5e/tools/srd-canonical/to-runtime";
+import { expandVariants, type BaseItem, type VariantRule } from "../../packages/dnd5e/tools/srd-canonical/expand-variants";
+import { slugifyName } from "../../packages/dnd5e/tools/srd-canonical/sources/slug-normalize";
 
 describe("pipeline integration", () => {
   it("races: Dwarf flows from Open5e → CanonicalEntry → RaceCanonical → runtime projection", () => {
@@ -81,7 +81,7 @@ describe("pipeline integration", () => {
 
   // Variant-pipeline dedup against Open5e canonical-name slugs (I5).
   //
-  // The dedup logic itself lives in tools/srd-canonical/index.ts:main(): after
+  // The dedup logic itself lives in packages/dnd5e/tools/srd-canonical/index.ts:main(): after
   // the Open5e magicitems merge produces canonical entries with names like
   // "Flame Tongue (Longsword)", the variant pipeline emits parallel entries
   // ("Flame Tongue Longsword") that slugify to the same key. The Open5e form

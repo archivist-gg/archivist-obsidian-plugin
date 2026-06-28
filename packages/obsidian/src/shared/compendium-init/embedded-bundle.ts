@@ -1,7 +1,7 @@
 import bundleJson from "../../../../../.compendium-bundle/index.json";
 
 /**
- * Bundle of vault MD files emitted by `tools/srd-canonical/`. esbuild inlines
+ * Bundle of vault MD files emitted by `packages/dnd5e/tools/srd-canonical/`. esbuild inlines
  * this JSON at build time, so it ships embedded inside `main.js`.
  *
  * Keys are paths like `"SRD 5e/Spells/Fireball.md"` — they include the

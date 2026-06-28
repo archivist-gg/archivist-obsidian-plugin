@@ -1,6 +1,6 @@
 // tests/srd-canonical/audit-conditions.test.ts
 import { describe, it, expect } from "vitest";
-import { computeAuditReport, type AuditInput } from "../../tools/srd-canonical/audit-conditions";
+import { computeAuditReport, type AuditInput } from "../../packages/dnd5e/tools/srd-canonical/audit-conditions";
 
 const SAMPLE_INPUT: AuditInput = {
   items2014: [

@@ -18,7 +18,7 @@ const ASI_OR_FEAT: Choice = {
 /** id/name-slug → synthesized decision. Keep small and justified: this only
  *  serves un-annotated homebrew (the coverage gate keeps SRD authored).
  *  These shapes intentionally mirror the canonical authored overlay entries in
- *  `tools/srd-canonical/overlays/*.yaml`; keep them in sync. */
+ *  `packages/dnd5e/tools/srd-canonical/overlays/*.yaml`; keep them in sync. */
 const TABLE: Record<string, Choice[]> = {
   "ability-score-improvement": [ASI_OR_FEAT],
   "expertise": [{ kind: "select-proficiency", id: "expertise", count: 2, domain: "skill", from_proficient: true, expertise: true }],

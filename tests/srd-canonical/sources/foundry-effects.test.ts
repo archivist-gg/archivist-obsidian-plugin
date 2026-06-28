@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   translateFoundryChanges,
   type FoundryChange,
-} from "../../../tools/srd-canonical/sources/foundry-effects";
+} from "../../../packages/dnd5e/tools/srd-canonical/sources/foundry-effects";
 
 describe("translateFoundryChanges", () => {
   let stderr: ReturnType<typeof vi.spyOn>;

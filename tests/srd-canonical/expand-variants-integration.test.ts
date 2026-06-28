@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { expandVariants, type BaseItem, type VariantRule } from "../../tools/srd-canonical/expand-variants";
+import { expandVariants, type BaseItem, type VariantRule } from "../../packages/dnd5e/tools/srd-canonical/expand-variants";
 
 describe("expand-variants integration shapes", () => {
   it("produces base_item wikilinks under the Weapons sub-folder", () => {

@@ -1,11 +1,11 @@
 import type { MergeRule, CanonicalEntry } from "../merger";
 import type { Overlay } from "../overlay.schema";
 import type { StructuredEntry } from "../sources/structured-rules";
-import type { OptionalFeatureEntity } from "../../../packages/obsidian/src/modules/optional-feature/optional-feature.types";
+import type { OptionalFeatureEntity } from "../../../../obsidian/src/modules/optional-feature/optional-feature.types";
 import {
   normalizeOptionalFeature,
   type StructuredOptionalFeatureInput,
-} from "../../../packages/obsidian/src/modules/optional-feature/optional-feature.normalizer";
+} from "../../../../obsidian/src/modules/optional-feature/optional-feature.normalizer";
 import { slugifyName } from "../sources/slug-normalize";
 
 export const optionalFeatureMergeRule: MergeRule = {

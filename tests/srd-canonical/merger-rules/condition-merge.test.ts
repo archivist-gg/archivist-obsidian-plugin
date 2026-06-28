@@ -3,9 +3,9 @@ import {
   toConditionCanonical,
   buildConditionsFromStructured,
   flattenEntries,
-} from "../../../tools/srd-canonical/merger-rules/condition-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
-import { readStructuredRules } from "../../../tools/srd-canonical/sources/structured-rules";
+} from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/condition-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
+import { readStructuredRules } from "../../../packages/dnd5e/tools/srd-canonical/sources/structured-rules";
 
 describe("conditionMergeRule", () => {
   it("produces canonical Condition for Prone (pass-through Open5e)", () => {

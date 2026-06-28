@@ -1,4 +1,4 @@
-// tools/srd-canonical/sources/foundry-effects.ts
+// packages/dnd5e/tools/srd-canonical/sources/foundry-effects.ts
 //
 // Translate Foundry-effect changes into typed bonus contributions.
 // Pure function — no I/O. The merger reconciler consumes these and
@@ -7,7 +7,7 @@
 import type {
   BonusFieldPath,
   Condition,
-} from "../../../packages/obsidian/src/modules/item/item.conditions.types";
+} from "../../../../obsidian/src/modules/item/item.conditions.types";
 
 export interface FoundryChange {
   key: string;

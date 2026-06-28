@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toWeaponCanonical } from "../../../tools/srd-canonical/merger-rules/weapon-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toWeaponCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/weapon-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 // Open5e v2 weapon raw shape (subset that the merger reads).
 const longsword2014 = {

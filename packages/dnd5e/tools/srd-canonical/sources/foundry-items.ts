@@ -1,4 +1,4 @@
-// tools/srd-canonical/sources/foundry-items.ts
+// packages/dnd5e/tools/srd-canonical/sources/foundry-items.ts
 //
 // Read foundry-items.json from the local structured-rules dump and index
 // by slugified name + source, filtered to a single edition. The merger

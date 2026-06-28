@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toSubclassCanonical } from "../../../tools/srd-canonical/merger-rules/subclass-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toSubclassCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/subclass-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 // Mirrors the actual Open5e v2 classes-endpoint shape: subclass_of is an
 // OBJECT { name, key }, and features carry feature_type + gained_at[].

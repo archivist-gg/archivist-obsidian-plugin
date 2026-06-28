@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { mergeKind, type MergeRule } from "../../tools/srd-canonical/merger";
+import { mergeKind, type MergeRule } from "../../packages/dnd5e/tools/srd-canonical/merger";
 
 const rule: MergeRule = {
   kind: "feat",

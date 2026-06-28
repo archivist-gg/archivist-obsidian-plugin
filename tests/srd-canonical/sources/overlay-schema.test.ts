@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { overlaySchema } from "../../../tools/srd-canonical/overlay.schema";
+import { overlaySchema } from "../../../packages/dnd5e/tools/srd-canonical/overlay.schema";
 
 describe("overlaySchema", () => {
   it("accepts class_features with action economy", () => {

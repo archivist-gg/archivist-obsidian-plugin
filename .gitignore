@@ -17,7 +17,7 @@ docs/superpowers/
 CLAUDE.md
 AGENTS.md
 test-vault/
-tools/srd-canonical/.cache/
+packages/dnd5e/tools/srd-canonical/.cache/
 
 # Loose MD files under .compendium-bundle/ are regenerable from index.json,
 # which IS committed because esbuild inlines it into main.js. Keeping the
@@ -25,6 +25,6 @@ tools/srd-canonical/.cache/
 .compendium-bundle/*/
 
 # audit work product (regenerated each run; not tracked)
-tools/srd-canonical/audit-conditions.report.md
-tools/srd-canonical/audit-merger-gaps.report.md
+packages/dnd5e/tools/srd-canonical/audit-conditions.report.md
+packages/dnd5e/tools/srd-canonical/audit-merger-gaps.report.md
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { writeMd, writeCompendiumIndex } from "../../tools/srd-canonical/to-md";
+import { writeMd, writeCompendiumIndex } from "../../packages/dnd5e/tools/srd-canonical/to-md";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";

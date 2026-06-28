@@ -6,7 +6,7 @@ import type {
   BonusFieldPath,
   Condition,
   ConditionalBonus,
-} from "../../../packages/obsidian/src/modules/item/item.conditions.types";
+} from "../../../../obsidian/src/modules/item/item.conditions.types";
 import type { FoundryItem } from "../sources/foundry-items";
 import {
   translateFoundryChanges,

@@ -1,6 +1,6 @@
 // src/srd/data/runtime/ holds canonical-pipeline runtime JSON output (not a
 // code module); these permanent data imports live outside shared/ by design.
-// Source: tools/srd-canonical/ pipeline (Open5e + 5etools merged).
+// Source: packages/dnd5e/tools/srd-canonical/ pipeline (Open5e + 5etools merged).
 import monsters2014 from "./srd/data/runtime/monster.2014.json";
 import monsters2024 from "./srd/data/runtime/monster.2024.json";
 import spells2014 from "./srd/data/runtime/spell.2014.json";

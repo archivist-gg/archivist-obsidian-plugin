@@ -4,7 +4,7 @@ import * as path from "node:path";
 import {
   readFoundryItemsIndex,
   type FoundryItemsIndex,
-} from "../../../tools/srd-canonical/sources/foundry-items";
+} from "../../../packages/dnd5e/tools/srd-canonical/sources/foundry-items";
 
 const FIXTURE_DIR = path.resolve(__dirname, "../../__fixtures__");
 

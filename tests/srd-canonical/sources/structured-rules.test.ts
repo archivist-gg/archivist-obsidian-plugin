@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { readStructuredRules } from "../../../tools/srd-canonical/sources/structured-rules";
-import { mergeKind, type MergeRule } from "../../../tools/srd-canonical/merger";
+import { readStructuredRules } from "../../../packages/dnd5e/tools/srd-canonical/sources/structured-rules";
+import { mergeKind, type MergeRule } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 import * as path from "node:path";
 
 const fixtureRoot = path.resolve(__dirname, "../fixtures/structured-rules");

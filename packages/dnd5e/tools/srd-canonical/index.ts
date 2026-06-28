@@ -385,8 +385,11 @@ async function main() {
 
     // Compendium index per edition (single _compendium.md at the bundle root).
     const compendium = edition === "2014" ? "SRD 5e" : "SRD 2024";
-    const manifest = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "..", "manifest.json"), "utf8")) as { version: string };
-    writeCompendiumIndex(path.join(cfg.bundleOutDir, compendium), compendium, edition, manifest.version);
+    // Version stamp is sourced from the dnd5e package's own package.json — a
+    // package-local artifact — so the generator never reaches into the obsidian
+    // plugin manifest.
+    const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "..", "..", "package.json"), "utf8")) as { version: string };
+    writeCompendiumIndex(path.join(cfg.bundleOutDir, compendium), compendium, edition, pkg.version);
     console.log(`[canonical] ${edition} wrote _compendium.md`);
   }
 

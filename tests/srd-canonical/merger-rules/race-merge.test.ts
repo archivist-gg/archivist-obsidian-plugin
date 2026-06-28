@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toRaceCanonical } from "../../../tools/srd-canonical/merger-rules/race-merge";
-import type { CanonicalEntry } from "../../../tools/srd-canonical/merger";
+import { toRaceCanonical } from "../../../packages/dnd5e/tools/srd-canonical/merger-rules/race-merge";
+import type { CanonicalEntry } from "../../../packages/dnd5e/tools/srd-canonical/merger";
 
 const baseEntry = (overrides: Partial<CanonicalEntry> & { base: unknown }): CanonicalEntry => ({
   slug: overrides.slug ?? "srd-5e_dwarf",

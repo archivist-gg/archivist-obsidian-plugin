@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { expandVariants } from "../../tools/srd-canonical/expand-variants";
+import { expandVariants } from "../../packages/dnd5e/tools/srd-canonical/expand-variants";
 
 describe("expandVariants", () => {
   it("expands a +1 Weapon rule across all SRD base weapons", () => {
