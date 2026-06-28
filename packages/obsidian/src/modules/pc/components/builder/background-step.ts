@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import type { ColSpec } from "./selection-table";
 import type { DecisionItem } from "../../pc.decision-engine";
 import type { BackgroundLanguageProficiency } from "../../../background/background.types";

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { renderEntityBlock } from "../packages/obsidian/src/modules/pc/components/builder/entity-block";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 import {
   renderClassChronicle,
   collectBrowseDecisions,

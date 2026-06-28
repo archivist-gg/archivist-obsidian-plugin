@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import { renderSourceTag } from "./compendium-filter";
 import { renderEntityBlock } from "./entity-block";
 

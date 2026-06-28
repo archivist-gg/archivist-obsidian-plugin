@@ -48,7 +48,7 @@ import { confirm as confirmModal } from "./modules/inquiry/shared/modals/Confirm
 
 // SRD & entities
 import { SrdStore } from "./shared/ai/srd-store";
-import { EntityRegistry } from "./shared/entities/entity-registry";
+import { EntityRegistry } from "@archivist/core";
 import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";

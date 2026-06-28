@@ -1,6 +1,6 @@
 import { Modal, type App } from "obsidian";
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import {
   allTicked, matchesTicked, renderCompendiumFilter,
   type CompendiumTickState,

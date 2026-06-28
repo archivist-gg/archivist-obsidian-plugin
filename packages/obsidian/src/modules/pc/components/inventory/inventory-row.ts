@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
-import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import { resolveBaseItem } from "../../../../shared/entities/base-item-resolver";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";

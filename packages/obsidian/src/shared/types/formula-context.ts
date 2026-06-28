@@ -1,5 +1,5 @@
 import type { Abilities } from "./abilities";
-import type { EntityRegistry } from "../entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 
 export interface FormulaContext {
   abilities: Abilities;

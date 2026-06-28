@@ -6,7 +6,7 @@ import { raceModule } from "../packages/obsidian/src/modules/race/race.module";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

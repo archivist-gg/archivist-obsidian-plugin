@@ -1,4 +1,4 @@
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";

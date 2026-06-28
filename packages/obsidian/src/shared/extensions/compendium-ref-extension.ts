@@ -11,8 +11,8 @@ import { setIcon, Notice, MarkdownView, type WorkspaceLeaf, type App, type Plugi
 import type { ModuleRegistry } from "../../core/module-registry";
 import type { ArchivistModule, EditContext, RenderContext } from "../../core/module-api";
 import { renderSideButtons } from "../edit/side-buttons";
-import { EntityRegistry } from "../entities/entity-registry";
-import type { RegisteredEntity } from "../entities/entity-registry";
+import { EntityRegistry } from "@archivist/core";
+import type { RegisteredEntity } from "@archivist/core";
 import * as yaml from "js-yaml";
 
 // ---------------------------------------------------------------------------

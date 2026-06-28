@@ -1,4 +1,4 @@
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import type { ClassEntity } from "../class/class.types";
 import type { RaceEntity } from "../race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";

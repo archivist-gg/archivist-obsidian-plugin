@@ -1,5 +1,5 @@
 // src/modules/pc/pc.rest.ts
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import type { Character, DerivedStats, ResolvedCharacter } from "./pc.types";
 
 function resolveItemName(
@@ -10,7 +10,7 @@ function resolveItemName(
   const ref = entry.item.match(/^\[\[(.+?)\]\]$/);
   const slug = ref ? ref[1] : entry.item;
   // `EntityRegistry.getBySlug(slug): RegisteredEntity | undefined` — `RegisteredEntity`
-  // has `name: string`. See `src/shared/entities/entity-registry.ts`.
+  // has `name: string`. See `@archivist/core` (packages/core/src/entity-registry.ts).
   return registry.getBySlug(slug)?.name;
 }
 

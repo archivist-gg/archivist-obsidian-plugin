@@ -1,7 +1,7 @@
 import { Notice } from "obsidian";
 import type { Ability } from "../../../../shared/types/choice";
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import { ALL_SKILL_SLUGS } from "../../../../shared/types/choice";
 import { renderChoiceCallout } from "./choice-callout";
 import { applyChoiceToggle } from "./decision-strip";

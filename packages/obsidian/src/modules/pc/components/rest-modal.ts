@@ -2,7 +2,7 @@
 import { Modal, type App } from "obsidian";
 import type { DerivedStats, ResolvedCharacter } from "../pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
-import type { EntityRegistry } from "../../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import {
   computeRestPlan,
   type RestCategoryId,

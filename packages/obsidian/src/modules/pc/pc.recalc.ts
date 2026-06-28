@@ -12,7 +12,7 @@ import { ABILITY_KEYS, SKILL_ABILITY, ALL_SKILLS } from "../../shared/dnd/consta
 import type { Ability, SkillSlug } from "../../shared/types";
 import type { FeatEntity } from "../feat/feat.types";
 import type { RaceEntity } from "../race/race.types";
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
 import { collectChosenProficiencies, collectChosenAbilityPoints } from "./pc.decision-engine";
 import { computeFeatureEffects } from "./pc.feature-effects";

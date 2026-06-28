@@ -2,7 +2,7 @@ import type { Choice, InlineOption, EntityFilter, Ability } from "../../shared/t
 import { ALL_SKILL_SLUGS } from "../../shared/types/choice";
 import { ABILITY_KEYS } from "../../shared/dnd/constants";
 import type { ResolvedCharacter, ChoiceValue, FeatureSource } from "./pc.types";
-import type { RegisteredEntity } from "../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import { recognizeDecision } from "./decision-recognizer";
 
 export interface DecisionRegistry {

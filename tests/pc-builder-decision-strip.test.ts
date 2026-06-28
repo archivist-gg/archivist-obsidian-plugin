@@ -5,7 +5,7 @@ import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle,
 import { DecisionPickModal } from "../packages/obsidian/src/modules/pc/components/builder/decision-modal";
 import type { DecisionItem, ResolvedOption } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

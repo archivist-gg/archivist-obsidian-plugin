@@ -19,7 +19,7 @@ import { parseEntityFile } from "../packages/obsidian/src/shared/entities/entity
 import {
   EntityRegistry,
   type RegisteredEntity,
-} from "../packages/obsidian/src/shared/entities/entity-registry";
+} from "@core/entity-registry";
 
 const BUNDLE_ROOT = path.resolve(__dirname, "../.compendium-bundle");
 const SRD_5E_ROOT = path.join(BUNDLE_ROOT, "SRD 5e");

@@ -1,4 +1,4 @@
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import { resolveBaseItem } from "../../shared/entities/base-item-resolver";
 import type { Ability } from "../../shared/types";
 import type { ItemEntity } from "../item/item.types";

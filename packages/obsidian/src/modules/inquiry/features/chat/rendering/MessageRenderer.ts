@@ -11,7 +11,7 @@ import { replaceImageEmbedsWithHtml } from '../../../utils/imageEmbed';
 import { createOwlIcon } from '../../../../../shared/ui/owl-icon';
 import { findRewindContext } from '../rewind';
 import { replaceDndCodeFences, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
-import type { EntityRegistry } from '../../../../../shared/entities/entity-registry';
+import type { EntityRegistry } from "@archivist/core";
 import {
   renderStoredAsyncSubagent,
   renderStoredSubagent,

@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import type { DecisionItem, DecisionLedger } from "../../pc.decision-engine";
 import type { Feature } from "../../../../shared/types/feature";
 import type { StartingEquipmentEntry } from "../../../../shared/types/equipment-grant";

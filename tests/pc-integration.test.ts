@@ -23,7 +23,7 @@ import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import { WorkspaceLeaf } from "obsidian";
 import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
-import type { EntityRegistry } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { EntityRegistry } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

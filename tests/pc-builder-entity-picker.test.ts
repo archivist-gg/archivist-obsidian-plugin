@@ -4,7 +4,7 @@ import { renderEntityPicker } from "../packages/obsidian/src/modules/pc/componen
 import type { ColSpec } from "../packages/obsidian/src/modules/pc/components/builder/selection-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

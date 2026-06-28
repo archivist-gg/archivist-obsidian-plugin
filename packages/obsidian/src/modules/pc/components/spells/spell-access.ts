@@ -1,4 +1,4 @@
-import type { EntityRegistry, RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
 import type { Spell } from "../../../spell/spell.types";
 import { baseClassName } from "../../pc.spellcasting";
 

@@ -12,7 +12,7 @@ import { Notice } from "obsidian";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderCustomBackgroundRow } from "../packages/obsidian/src/modules/pc/components/builder/custom-background";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

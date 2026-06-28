@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import { setIcon, Notice } from "obsidian";
 
-import type { EntityRegistry, RegisteredEntity } from "../../../../../shared/entities/entity-registry";
+import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
 // TODO(phase1): replace the six cross-module parser/renderer imports below
 // with module-registry dispatch. Deferred because renderDndEntityBlock is
 // invoked deep in the inquiry chat UI (MessageRenderer / ToolCallRenderer)

@@ -1,6 +1,6 @@
 import * as yaml from "js-yaml";
 import type { CoreAPI, RenderContext } from "../../../../core/module-api";
-import type { RegisteredEntity } from "../../../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 
 /** Render a registered entity's real stat block via its owning module — the
  *  same dispatch compendium-ref-extension uses (yaml.dump → parseYaml →

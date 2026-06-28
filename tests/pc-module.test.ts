@@ -3,7 +3,7 @@ import { WorkspaceLeaf } from "obsidian";
 import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { VIEW_TYPE_PC } from "../packages/obsidian/src/modules/pc/pc.view";
 import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
-import { EntityRegistry } from "../packages/obsidian/src/shared/entities/entity-registry";
+import { EntityRegistry } from "@core/entity-registry";
 
 // Fake host plugin that satisfies the subset of the interface PCModule exercises.
 // `register(cb)` stores the uninstaller so afterEach() can tear the monkey-patch

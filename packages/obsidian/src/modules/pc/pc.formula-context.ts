@@ -1,4 +1,4 @@
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import type { FormulaContext } from "../../shared/types/formula-context";
 import type { DerivedStats, ResolvedCharacter } from "./pc.types";
 

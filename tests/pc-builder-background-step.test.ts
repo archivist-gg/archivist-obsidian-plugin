@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderBackgroundStep } from "../packages/obsidian/src/modules/pc/components/builder/background-step";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

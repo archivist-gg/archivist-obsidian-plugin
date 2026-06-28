@@ -1,5 +1,5 @@
 import type { App, Editor } from "obsidian";
-import type { EntityRegistry } from "../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import type { CompendiumManager } from "../shared/entities/compendium-manager";
 import type { SrdStore } from "../shared/ai/srd-store";
 import type { ModuleRegistry } from "./module-registry";

@@ -5,7 +5,7 @@ import {
 } from "../packages/obsidian/src/modules/pc/components/builder/compendium-filter";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { Compendium } from "../packages/obsidian/src/shared/entities/compendium-manager";
-import type { RegisteredEntity } from "../packages/obsidian/src/shared/entities/entity-registry";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 

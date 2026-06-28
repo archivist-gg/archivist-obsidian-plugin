@@ -1,4 +1,4 @@
-import type { RegisteredEntity } from "../../shared/entities/entity-registry";
+import type { RegisteredEntity } from "@archivist/core";
 import type { ResolvedCharacter, ResolvedClass, ResolvedPool, ResolvedPoolEntry } from "./pc.types";
 import type { SelectionPool } from "../../shared/types/selection-pool";
 import type { OptionalFeatureEntity } from "../optional-feature/optional-feature.types";

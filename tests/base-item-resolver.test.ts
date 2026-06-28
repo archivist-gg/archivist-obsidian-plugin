@@ -4,7 +4,7 @@ import {
   resolveBaseItemOfType,
 } from "../packages/obsidian/src/shared/entities/base-item-resolver";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { EntityRegistry } from "../packages/obsidian/src/shared/entities/entity-registry";
+import { EntityRegistry } from "@core/entity-registry";
 
 describe("resolveBaseItem", () => {
   it("resolves a vault-path wikilink to the SRD-5e prefixed slug", () => {

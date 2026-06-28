@@ -7,7 +7,7 @@ import { renderArmorBlock } from "../../../armor/armor.renderer";
 import type { WeaponEntity } from "../../../weapon/weapon.types";
 import type { ArmorEntity } from "../../../armor/armor.types";
 import type { Item } from "../../../item/item.types";
-import type { EntityRegistry } from "../../../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import { requiresAttunement } from "./requires-attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";

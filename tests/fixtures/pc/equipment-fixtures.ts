@@ -1,4 +1,4 @@
-import { EntityRegistry } from "../../../packages/obsidian/src/shared/entities/entity-registry";
+import { EntityRegistry } from "@core/entity-registry";
 import { buildMockRegistry } from "./mock-entity-registry";
 import type { ArmorEntity } from "../../../packages/obsidian/src/modules/armor/armor.types";
 import type { WeaponEntity } from "../../../packages/obsidian/src/modules/weapon/weapon.types";

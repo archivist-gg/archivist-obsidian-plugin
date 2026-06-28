@@ -1,5 +1,5 @@
 import type { Ability, SkillSlug } from "../../shared/types";
-import type { EntityRegistry } from "../../shared/entities/entity-registry";
+import type { EntityRegistry } from "@archivist/core";
 import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "./pc.types";
 import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "./constants/conditions";
