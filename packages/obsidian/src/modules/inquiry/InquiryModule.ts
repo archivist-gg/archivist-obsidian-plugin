@@ -55,7 +55,7 @@ import {
 } from './utils/sdkSession';
 import type { CompendiumManager } from '../../shared/entities/compendium-manager';
 import { CompendiumSelectModal, CreateCompendiumModal } from '../../shared/entities/compendium-modal';
-import { createArchivistMcpServer } from '../../shared/ai/mcp-server';
+import { createArchivistMcpServer } from '@archivist/generators';
 import type { SrdStore } from '@archivist/dnd5e';
 import type { McpSdkServerConfigWithInstance } from '@anthropic-ai/claude-agent-sdk';
 import { FileSystemAdapter } from 'obsidian';
@@ -300,7 +300,12 @@ export class InquiryModule {
       const host = this.plugin as ArchivistHostPlugin;
       this.createArchivistMcpServerInstance = () => createArchivistMcpServer(
         srdStore,
-        host.compendiumManager,
+        host.compendiumManager
+          ? {
+              create: (name, description, homebrew, isReadonly) =>
+                host.compendiumManager!.create(name, description, homebrew, isReadonly ?? false),
+            }
+          : undefined,
         host.getModuleSdkTools?.() ?? [],
       );
     }

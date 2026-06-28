@@ -2,7 +2,7 @@ import { createSdkMcpServer, tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { createSrdTools } from "./srd-tools";
 import type { SrdStore } from "@archivist/dnd5e";
-import type { CompendiumManager } from "../entities/compendium-manager";
+import type { CompendiumWritePort } from "./compendium-write-port";
 
 // Pull the exact shape `createSdkMcpServer` accepts for its `tools` param
 // straight from the SDK's declared signature. This avoids both the `any[]`
@@ -23,7 +23,7 @@ type SdkMcpServerToolsParam = NonNullable<
  */
 export function createArchivistMcpServer(
   srdStore: SrdStore,
-  compendiumManager?: CompendiumManager,
+  write?: CompendiumWritePort,
   moduleSdkTools: unknown[] = [],
 ) {
   const { searchSrdTool, getSrdEntityTool } = createSrdTools(srdStore);
@@ -38,7 +38,7 @@ export function createArchivistMcpServer(
     getSrdEntityTool,
   ];
 
-  if (compendiumManager) {
+  if (write) {
     const createCompendiumTool = tool(
       "create_compendium",
       "Create a new compendium for organizing D&D entities",
@@ -53,7 +53,7 @@ export function createArchivistMcpServer(
         const isReadonly = readonly === true;
         const isHomebrew = homebrew !== false;
         try {
-          await compendiumManager.create(name, desc, isHomebrew, isReadonly);
+          await write.create(name, desc, isHomebrew, isReadonly);
           return {
             content: [{ type: "text" as const, text: JSON.stringify({ success: true, name, description: desc, readonly: isReadonly, homebrew: isHomebrew }) }],
           };
