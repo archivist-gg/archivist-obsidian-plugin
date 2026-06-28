@@ -4,7 +4,7 @@ import { renderConditionTag } from "../condition-tag";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
-import { conditionsToText } from "../../../item/item.conditions";
+import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
 
 const attackDisSources = new Set([
@@ -131,15 +131,11 @@ export class WeaponsTable implements SheetComponent {
       }
 
       // Situational sub-line — full-width sibling div (was a colspan row).
+      // Inner rows are rendered by the shared situational-rows helper.
       const info = a.informational;
       if (info && info.length > 0) {
         const sub = list.createDiv({ cls: "pc-attack-row-situational" });
-        for (const i of info) {
-          const line = sub.createDiv({ cls: "pc-attack-row-situational-line" });
-          line.createSpan({
-            text: `${i.source}: ${formatSigned(i.value)} ${fieldLabel(i.field)} ${conditionsToText(i.conditions)}`,
-          });
-        }
+        renderSituationalRows(sub, info);
       }
     }
   }
@@ -153,12 +149,6 @@ export class WeaponsTable implements SheetComponent {
 
 function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
-}
-
-function fieldLabel(field: string): string {
-  if (field === "weapon_attack") return "to hit";
-  if (field === "weapon_damage") return "dmg";
-  return field;
 }
 
 function findEntryForAttack(ctx: ComponentRenderContext, a: AttackRow): EquipmentEntry | null {
