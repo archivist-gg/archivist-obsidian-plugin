@@ -129,19 +129,19 @@ describe("renderRowExpand", () => {
     expect(labels.some((l) => l?.includes("attune"))).toBe(true);
   });
 
-  it("clicking Equip calls editState.equipItem with the entry index", () => {
+  it("clicking Equip calls editState.equipItemWithSwap with the entry index", () => {
     const { entry, resolved } = make(
       "[[longsword]]",
       { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } },
       { entityType: "weapon" },
     );
-    const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
-    const editState = { equipItem, unequipItem: vi.fn(), removeItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn() };
+    const equipItemWithSwap = vi.fn().mockReturnValue({});
+    const editState = { equipItemWithSwap, unequipItem: vi.fn(), removeItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn() };
     const root = mountContainer();
     renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never });
     const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("equip")) as HTMLElement;
     eqBtn.click();
-    expect(equipItem).toHaveBeenCalledWith(5); // resolved.index
+    expect(equipItemWithSwap).toHaveBeenCalledWith(5); // resolved.index
   });
 
   describe("Unequip + attunement flow", () => {

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+import { CharacterEditState, type EditStateContext } from "../src/modules/pc/pc.edit-state";
 import { parsePC } from "../src/modules/pc/pc.parser";
+import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import type { Character, DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
 
 const MINIMAL_YAML = [
@@ -799,5 +800,48 @@ describe("CharacterEditState — skill bonus override (SP4c)", () => {
     const { es, char } = makeState((c) => { c.overrides.skills = { athletics: { bonus: 12 } }; });
     es.cycleSkill("athletics");
     expect(char.overrides.skills?.athletics?.bonus).toBe(12);
+  });
+});
+
+describe("CharacterEditState — equipItemWithSwap (Task 3)", () => {
+  const reg = buildEquipmentRegistry();
+  const baseChar = (): Character => ({
+    name: "T", edition: "2024", race: null, subrace: null, background: null,
+    class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    ability_method: "manual",
+    skills: { proficient: [], expertise: [] },
+    spells: { known: [], overrides: [] },
+    equipment: [
+      { item: "[[adamantine-breastplate]]", equipped: true, slot: "armor" },
+      { item: "[[breastplate-3]]", equipped: false },
+    ],
+    overrides: {},
+    state: { hp: { current: 10, max: 10, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 0, exhaustion: 0, feature_uses: {} },
+  });
+
+  // equipItemWithSwap never calls getContext, so a bare stub is safe. The real
+  // 4-arg constructor is (character, getContext, onChange, registry).
+  const makeES = (c: Character) =>
+    new CharacterEditState(c, () => ({}) as unknown as EditStateContext, () => {}, reg);
+
+  it("swaps the armor occupant and reports its name", () => {
+    const c = baseChar();
+    const es = makeES(c);
+    const res = es.equipItemWithSwap(1);
+    expect(res.unequipped).toBe("Adamantine Armor (Breastplate)");
+    expect(c.equipment[0].equipped).toBe(false);   // occupant unequipped
+    expect(c.equipment[1].equipped).toBe(true);     // incoming equipped
+    expect(c.equipment[1].slot).toBe("armor");
+  });
+
+  it("returns {} (no swap) when the slot is free", () => {
+    const c = baseChar();
+    c.equipment[0].equipped = false;
+    c.equipment[0].slot = undefined;
+    const es = makeES(c);
+    const res = es.equipItemWithSwap(1);
+    expect(res.unequipped).toBeUndefined();
+    expect(c.equipment[1].equipped).toBe(true);
   });
 });

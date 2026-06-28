@@ -5,6 +5,7 @@ import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "./constants/conditions";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
+import { resolveEntityForEntry } from "./pc.slotting";
 import { computeRestPlan, applyRestResets, type RestCategoryId } from "./pc.rest";
 
 export interface EditStateContext {
@@ -730,6 +731,26 @@ export class CharacterEditState {
     const r = eq.equipItem(this.character, index, this.registry);
     if (r.kind === "ok") this.onChange();
     return r;
+  }
+
+  /** Equip with swap: if the target single-occupancy slot is taken, unequip the
+   *  occupant first, then equip. Returns the unequipped occupant's display name
+   *  (for the caller to surface in a Notice), or {} if nothing was swapped. The
+   *  Notice itself is fired by the UI call sites — edit-state stays runtime-free
+   *  so node tests can exercise it without importing obsidian. */
+  equipItemWithSwap(index: number): { unequipped?: string } {
+    if (!this.registry) return {};
+    const r = eq.equipItem(this.character, index, this.registry);
+    if (r.kind === "ok") { this.onChange(); return {}; }
+    // conflict — swap the occupant out, then equip the incoming entry.
+    const occ = this.character.equipment[r.withIndex];
+    const name = occ.overrides?.name
+      ?? resolveEntityForEntry(occ.item, this.registry).entity?.name
+      ?? occ.item;
+    eq.unequipItem(this.character, r.withIndex);
+    eq.equipItem(this.character, index, this.registry);
+    this.onChange();
+    return { unequipped: name };
   }
 
   unequipItem(index: number): void {
