@@ -2,6 +2,8 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { renderCastView } from "./spells/cast-view";
 import { renderPrepareView } from "./spells/prepare-view";
 import { renderActiveEffectsRail } from "./active-effects-rail";
+import { attachStatTooltip } from "./stat-tooltip";
+import { renderSituationalRows } from "./situational-rows";
 
 type SpellsMode = "cast" | "prepare";
 
@@ -40,6 +42,16 @@ export class SpellsTab implements SheetComponent {
       dcRow.createEl("b", { text: `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}` });
       if (casters.length > 1) dcRow.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
     });
+
+    // Situational spell-attack / save-DC bonuses surface in a hover popover on
+    // the DC row, attached only when the slice is non-empty.
+    const spellInfo = ctx.derived.spellcastingInformational ?? [];
+    if (spellInfo.length > 0) {
+      attachStatTooltip(dcRow, (host) => {
+        host.createDiv({ cls: "pc-stat-tooltip-title", text: "Spell — situational" });
+        renderSituationalRows(host, spellInfo);
+      });
+    }
 
     // Cast / Prepare(Manage) segmented toggle.
     const secondLabel = casters.some((c) => c.preparation === "prepared") ? "Prepare" : "Manage";

@@ -1634,6 +1634,22 @@
 .pc-situational-condition { color: var(--pc-text-muted); font-size: var(--pc-fs-label); }
 .pc-situational-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
 
+/* Stat hover popover — saves / spell / speed situational bonuses. Attached by
+ * attachStatTooltip() on mouseenter; shares the AC tooltip's parchment look so
+ * the dark --pc-text-primary content stays readable in Obsidian dark mode. */
+.pc-stat-tooltip {
+  position: absolute;
+  z-index: 100;
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: 0.5em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  min-width: 180px;
+}
+.pc-stat-tooltip-title { font-weight: 600; margin-bottom: 0.3em; }
+
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }
 .pc-charges-current { cursor: pointer; font-weight: 600; }

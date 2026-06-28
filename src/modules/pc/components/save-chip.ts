@@ -3,6 +3,8 @@ import type { Ability } from "../../../shared/types";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { renderConditionTag } from "./condition-tag";
 import { numberOverride } from "./edit-primitives";
+import { attachStatTooltip } from "./stat-tooltip";
+import { renderSituationalRows } from "./situational-rows";
 
 /**
  * Save chip rendered beneath each ability cartouche. Reads the ability-save's
@@ -39,6 +41,18 @@ export class SaveChip implements SheetComponent {
     const overrides = ctx.resolved.definition?.overrides?.saves;
     const profOverridden = overrides?.[ability]?.proficient !== undefined;
     const bonusOverridden = overrides?.[ability]?.bonus !== undefined;
+
+    // Situational saving-throw bonuses (e.g. conditional item boosts) surface in
+    // a hover popover. Saves render as per-ability chips with no single "all
+    // saves" container, so the global savesInformational slice attaches to each
+    // chip. Coexists with the per-chip exhaustion setTooltip on bonusEl below.
+    const savesInfo = ctx.derived.savesInformational ?? [];
+    if (savesInfo.length > 0) {
+      attachStatTooltip(chip, (host) => {
+        host.createDiv({ cls: "pc-stat-tooltip-title", text: "Saves — situational" });
+        renderSituationalRows(host, savesInfo);
+      });
+    }
 
     const ce = ctx.derived.conditionEffects;
     if (ce) {
