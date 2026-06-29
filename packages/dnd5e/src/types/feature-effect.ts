@@ -30,7 +30,9 @@ export type FeatureEffect =
     }
   | { kind: "ac-bonus"; value: number; requires_armor?: boolean }
   | { kind: "unarmored-ac"; abilities: Ability[]; base?: number; allow_shield?: boolean }
-  | { kind: "weapon-ability"; ability: Ability | "spellcasting"; weapons?: "chosen" | string | string[] }
+  // `weapons` recognises the sentinel "chosen" (the wielder's chosen weapon) as
+  // well as explicit weapon slug(s); both are plain strings at runtime.
+  | { kind: "weapon-ability"; ability: Ability | "spellcasting"; weapons?: string | string[] }
   | {
       kind: "roll-modifier";
       mode: "advantage" | "disadvantage";

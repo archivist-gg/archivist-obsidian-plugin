@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "noEmit": true, "rootDir": "tools" },
+  "references": [{ "path": "./tsconfig.json" }, { "path": "../core" }],
+  "include": ["tools/**/*.ts", "tools/**/*.json"]
+}

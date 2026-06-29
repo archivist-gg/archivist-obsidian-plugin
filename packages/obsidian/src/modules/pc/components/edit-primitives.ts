@@ -27,7 +27,7 @@ export interface InlineInputOpts {
 }
 
 export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): void {
-  const doc = valueEl.ownerDocument ?? document;
+  const doc = valueEl.ownerDocument ?? activeDocument;
   const parent = valueEl.parentElement;
   if (!parent) return;
 
@@ -130,13 +130,13 @@ export function numberOverride(valueEl: HTMLElement, opts: NumberOverrideOpts): 
   });
 
   if (opts.isOverridden()) {
-    const mark = (valueEl.ownerDocument ?? document).createElement("span");
+    const mark = (valueEl.ownerDocument ?? activeDocument).createElement("span");
     mark.className = "archivist-override-mark";
     mark.textContent = "*";
     mark.title = "Manual override — click to remove and use the auto-calculated value";
     mark.addEventListener("click", (e) => {
       e.stopPropagation();
-      const win = (valueEl.ownerDocument ?? document).defaultView ?? window;
+      const win = (valueEl.ownerDocument ?? activeDocument).defaultView ?? activeWindow;
       if (win.confirm("Clear this manual override and revert to the auto-calculated value?")) {
         opts.onClear();
       }

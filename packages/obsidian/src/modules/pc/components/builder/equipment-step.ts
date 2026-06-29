@@ -21,7 +21,7 @@ type Mode = "starting" | "gold" | "empty";
  *  (no-op guarded, so it never loops), then renders the live inventory panel. */
 export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const def = ctx.resolved.definition;
-  const mode: Mode = (def.builder_equipment_mode as Mode | undefined) ?? "starting";
+  const mode: Mode = (def.builder_equipment_mode) ?? "starting";
 
   renderModeToggle(body, ctx, mode);
 
@@ -70,7 +70,6 @@ function renderModeToggle(body: HTMLElement, ctx: ComponentRenderContext, mode: 
  *  rest of the builder uses. */
 function renderStartingChoices(body: HTMLElement, ctx: ComponentRenderContext): void {
   const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities });
-  const def = ctx.resolved.definition;
 
   const classEntity = ctx.resolved.classes[0]?.entity ?? null;
   const classEquip = classEntity?.starting_equipment ?? [];

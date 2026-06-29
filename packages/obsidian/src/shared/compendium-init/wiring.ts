@@ -1,16 +1,19 @@
-import { type Vault, TFolder } from "obsidian";
+import { type Vault, type FileManager, TFolder } from "obsidian";
 import { initializeCompendium } from "./init";
 import { embeddedBundle, splitBundleByCompendium } from "./embedded-bundle";
 
 export interface CompendiumWiringOptions {
   vault: Vault;
+  /** Used to trash the legacy SRD folder via the user's deletion preference. */
+  fileManager: FileManager;
   /** Vault-relative folder that contains all compendiums (e.g. "Compendium"). */
   rootFolder: string;
   /** Plugin manifest version — written to `_compendium.md` and used to
    *  detect upgrade-vs-up-to-date on subsequent loads. */
   pluginVersion: string;
   /** When true, removes `<rootFolder>/SRD` before copying the new editions.
-   *  Skip-migration shortcut: any user edits there are gone. */
+   *  Skip-migration shortcut: any user edits there are moved to trash (per the
+   *  user's "Deleted files" setting), not permanently destroyed. */
   removeLegacySrdFolder: boolean;
 }
 
@@ -31,7 +34,9 @@ export async function bootstrapCompendiums(opts: CompendiumWiringOptions): Promi
     const legacyPath = `${opts.rootFolder}/SRD`;
     const legacy = opts.vault.getAbstractFileByPath(legacyPath);
     if (legacy instanceof TFolder) {
-      await opts.vault.delete(legacy, true);
+      // Trash (don't permanently delete) so the user can recover the legacy
+      // folder per their Obsidian "Deleted files" preference.
+      await opts.fileManager.trashFile(legacy);
       legacySrdRemoved = true;
     }
   }

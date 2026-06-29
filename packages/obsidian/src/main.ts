@@ -206,10 +206,16 @@ export default class ArchivistPlugin extends Plugin {
           legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse
         }
         this.presentation.set(mod.codeBlockType, {
-          // Bridge 2: presentation render/edit/insert
-          render: mod.render?.bind(mod),
-          renderEditMode: mod.renderEditMode?.bind(mod),
-          getInsertModal: mod.getInsertModal?.bind(mod),
+          // Bridge 2: presentation render/edit/insert. Arrow wrappers capture
+          // the loop-local `mod` (each entry dispatches to its own module) and
+          // preserve `this` exactly like `.bind(mod)` did — but without the
+          // `any` return that `Function.prototype.bind` yields under this
+          // tsconfig (no strictBindCallApply). Absent methods stay absent.
+          render: mod.render ? (el, data, ctx) => mod.render?.(el, data, ctx) : undefined,
+          renderEditMode: mod.renderEditMode
+            ? (el, data, ctx) => { mod.renderEditMode?.(el, data, ctx); }
+            : undefined,
+          getInsertModal: mod.getInsertModal ? () => mod.getInsertModal?.() ?? null : undefined,
         });
       }
     }
@@ -407,10 +413,11 @@ export default class ArchivistPlugin extends Plugin {
 
     // Canonical pipeline bootstrap: delete the legacy `Compendium/SRD/` folder,
     // then copy the embedded `SRD 5e/` and `SRD 2024/` bundles into the vault.
-    const n = new Notice("Archivist: setting up SRD compendiums...", 0);
+    const n = new Notice("Archivist: setting up srd compendiums...", 0);
     try {
       const result = await bootstrapCompendiums({
         vault: this.app.vault,
+        fileManager: this.app.fileManager,
         rootFolder: this.settings.compendiumRoot,
         pluginVersion: this.manifest.version,
         removeLegacySrdFolder: true,

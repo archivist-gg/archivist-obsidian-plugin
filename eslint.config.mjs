@@ -41,7 +41,15 @@ export default defineConfig([
     },
     languageOptions: {
       parser: tsparser,
-      parserOptions: { project: "./tsconfig.json" },
+      parserOptions: {
+        project: [
+          "./packages/core/tsconfig.json",
+          "./packages/dnd5e/tsconfig.json",
+          "./packages/dnd5e/tsconfig.tools.json",
+          "./packages/generators/tsconfig.json",
+          "./packages/obsidian/tsconfig.json",
+        ],
+      },
     },
     rules: {
       "no-undef": "off",
@@ -64,7 +72,7 @@ export default defineConfig([
   // the Obsidian plugin runtime and do not apply to Node CLI tools that run
   // outside Obsidian.
   {
-    files: ["tools/**/*.ts"],
+    files: ["packages/dnd5e/tools/**/*.ts"],
     rules: {
       "no-console": "off",
       "obsidianmd/rule-custom-message": "off",

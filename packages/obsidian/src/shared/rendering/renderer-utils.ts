@@ -2,7 +2,7 @@ import { setIcon, Notice } from "obsidian";
 import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
 import type { FormulaContext } from "@archivist/dnd5e";
-import { detectFormula, resolveFormulaTag } from "@archivist/dnd5e/dnd/formula-tags";
+import { normalizeTagType, parseTagTerms, resolveTag } from "@archivist/dnd5e/dnd/formula-tags";
 import { decorateProseDice } from "./prose-decorator";
 
 export type { FormulaContext };
@@ -184,10 +184,20 @@ function resolveTagContent(
   monsterCtx?: FormulaContext,
 ): string {
   if (!monsterCtx) return content;
-  const formula = detectFormula(tagType, content);
-  if (!formula) return content;
-  const resolved = resolveFormulaTag(tagType, content, monsterCtx.abilities, monsterCtx.proficiencyBonus);
-  // resolveFormulaTag for dc returns "DC N" but STAT_TAG_CONFIGS.dc.format already prepends "DC ",
+  // Guard (replaces the deprecated detectFormula): only resolve ability-bearing
+  // formula tags. Non-formula tags — dice, invalid, and literal-/slug-only
+  // content with no ability term — pass through unchanged, exactly as before.
+  const canonical = normalizeTagType(tagType);
+  if (!canonical || canonical === "dice") return content;
+  const parsed = parseTagTerms(content);
+  if ("error" in parsed || !parsed.abilityTerm) return content;
+  // Resolve with abilities + PB only (no compendium), matching the previous
+  // resolveFormulaTag contract where [[slug]] terms stay unresolved.
+  const resolved = resolveTag(tagType, content, {
+    abilities: monsterCtx.abilities,
+    proficiencyBonus: monsterCtx.proficiencyBonus,
+  }).display;
+  // resolveTag for dc returns "DC N" but STAT_TAG_CONFIGS.dc.format already prepends "DC ",
   // so strip the prefix to avoid "DC DC N".
   if (tagType === "dc" && resolved.startsWith("DC ")) {
     return resolved.slice(3);

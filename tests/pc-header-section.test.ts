@@ -101,7 +101,7 @@ describe("HeaderSection", () => {
 
     const gear = container.querySelector(".pc-name-row .pc-manage-gear") as HTMLButtonElement | null;
     expect(gear).not.toBeNull();
-    expect(gear!.getAttribute("aria-label")).toBe("Manage & Level Up");
+    expect(gear!.getAttribute("aria-label")).toBe("Manage & level up");
     // name still lives inside the new row
     expect(container.querySelector(".pc-name-row .pc-name")?.textContent).toBe("Grendal the Wary");
 

@@ -3,7 +3,7 @@ export const CONVENTION_VERSION = "1.0";
 export interface EntityDoc { type: string; frontmatter: Record<string, unknown>; body: string; raw: string; }
 export type ParseResult<T> = { success: true; data: T } | { success: false; error: string };
 
-export interface ContentLookupPort { lookup(type: string, slug: string): unknown | undefined; }
+export interface ContentLookupPort { lookup(type: string, slug: string): unknown; }
 export type ResolveContext = ContentLookupPort;
 export interface ContentSource { list(): EntityDoc[] | Promise<EntityDoc[]>; }
 
@@ -52,5 +52,5 @@ export interface Archivist {
   getEntityType(type: string): EntityType | undefined;
   parseContainer(text: string): ParseResult<EntityDoc>;
   resolve(doc: EntityDoc): ParseResult<unknown>;
-  lookup(type: string, slug: string): unknown | undefined;
+  lookup(type: string, slug: string): unknown;
 }

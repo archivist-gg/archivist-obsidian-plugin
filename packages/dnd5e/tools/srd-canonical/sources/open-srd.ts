@@ -10,7 +10,7 @@ export type Open5eKind =
 export interface Open5eEntry {
   key: string;
   name: string;
-  document?: { key: string; name: string };
+  activeDocument?: { key: string; name: string };
   [key: string]: unknown;
 }
 

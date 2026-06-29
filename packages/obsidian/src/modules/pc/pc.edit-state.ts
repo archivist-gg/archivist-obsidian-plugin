@@ -428,7 +428,10 @@ export class CharacterEditState {
     const entity = this.registry?.getByTypeAndSlug("class", slug) as { data?: { hit_die?: unknown } } | undefined;
     const raw = entity?.data?.hit_die;
     if (raw == null) return null;
-    const n = typeof raw === "number" ? raw : parseInt(String(raw).replace(/^d/i, ""), 10);
+    const n =
+      typeof raw === "number" ? raw
+      : typeof raw === "string" ? parseInt(raw.replace(/^d/i, ""), 10)
+      : NaN;
     return Number.isFinite(n) && n > 0 ? `d${n}` : null;
   }
 
@@ -560,7 +563,8 @@ export class CharacterEditState {
   clearSaveProficientOverride(ability: Ability): void {
     const saves = this.character.overrides.saves;
     if (!saves || !saves[ability]) { this.onChange(); return; }
-    const { proficient: _prof, ...rest } = saves[ability]!;
+    const rest = { ...saves[ability] };
+    delete rest.proficient;
     if (Object.keys(rest).length === 0) {
       delete saves[ability];
     } else {
@@ -587,7 +591,8 @@ export class CharacterEditState {
   clearSaveBonusOverride(ability: Ability): void {
     const saves = this.character.overrides.saves;
     if (!saves || !saves[ability]) { this.onChange(); return; }
-    const { bonus: _bonus, ...rest } = saves[ability]!;
+    const rest = { ...saves[ability] };
+    delete rest.bonus;
     if (Object.keys(rest).length === 0) {
       delete saves[ability];
     } else {

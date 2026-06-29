@@ -25,12 +25,12 @@ export class RestButtons {
     this.shortBtn = wrap.createEl("button", {
       cls: "pc-rest-btn pc-rest-btn--short",
       text: "☾",
-      attr: { "aria-label": "short rest" },
+      attr: { "aria-label": "Short rest" },
     });
     this.longBtn = wrap.createEl("button", {
       cls: "pc-rest-btn pc-rest-btn--long",
       text: "★",
-      attr: { "aria-label": "long rest" },
+      attr: { "aria-label": "Long rest" },
     });
 
     this.shortBtn.addEventListener("click", () => this.open("short"));
@@ -60,8 +60,8 @@ export class RestButtons {
   private refreshDisabledState(): void {
     // Only the open-modal lock disables — see class JSDoc for rationale.
     this.shortBtn.disabled = this.modalOpen;
-    this.shortBtn.title = "short rest";
+    this.shortBtn.title = "Short rest";
     this.longBtn.disabled = this.modalOpen;
-    this.longBtn.title = "long rest";
+    this.longBtn.title = "Long rest";
   }
 }

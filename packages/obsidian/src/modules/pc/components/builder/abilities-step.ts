@@ -68,9 +68,9 @@ function renderCustomBox(body: HTMLElement): void {
     cls: "pc-baibox-b",
     text: "Describe a scoring method to Archivist Inquiry — it becomes a reusable tab here, exactly like Archivist Point Buy.",
   });
-  const btn = box.createEl("button", { cls: "pc-baibtn", text: "✦ Ask Archivist Inquiry" });
+  const btn = box.createEl("button", { cls: "pc-baibtn", text: "✦ ask archivist inquiry" });
   btn.disabled = true;
-  btn.title = "Arrives with the Inquiry hand-off (Plan 6).";
+  btn.title = "Arrives with the inquiry hand-off (plan 6).";
 }
 
 function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod): void {

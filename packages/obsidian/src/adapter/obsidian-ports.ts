@@ -10,18 +10,25 @@ import type {
 /** Bridge: vault-backed StoragePort for the kernel. */
 export function makeVaultStoragePort(vault: Vault): StoragePort {
   return {
-    async listFolder(folder) {
+    // These three reads are synchronous against the vault API, so they are not
+    // `async` (no `await` in the body — require-await). They still satisfy the
+    // Promise-returning StoragePort contract by returning resolved/rejected
+    // promises directly; `read`'s not-found case stays a rejected promise
+    // (identical to the previous `async … throw`).
+    listFolder(folder) {
       const f = vault.getFolderByPath(folder);
-      if (!f) return [];
-      return f.children.map((c): EntryRef => ({
-        kind: "children" in c ? "folder" : "file",
-        path: c.path,
-        name: c.name,
-      }));
+      if (!f) return Promise.resolve<EntryRef[]>([]);
+      return Promise.resolve(
+        f.children.map((c): EntryRef => ({
+          kind: "children" in c ? "folder" : "file",
+          path: c.path,
+          name: c.name,
+        })),
+      );
     },
-    async read(path) {
+    read(path) {
       const f = vault.getFileByPath(path);
-      if (!f) throw new Error(`Not found: ${path}`);
+      if (!f) return Promise.reject(new Error(`Not found: ${path}`));
       return vault.read(f);
     },
     async write(path, text) {
@@ -32,8 +39,8 @@ export function makeVaultStoragePort(vault: Vault): StoragePort {
     async ensureFolder(path) {
       if (!vault.getFolderByPath(path)) await vault.createFolder(path);
     },
-    async exists(path) {
-      return vault.getAbstractFileByPath(path) != null;
+    exists(path) {
+      return Promise.resolve(vault.getAbstractFileByPath(path) != null);
     },
   };
 }

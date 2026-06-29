@@ -25,7 +25,7 @@ export class HeaderSection implements SheetComponent {
     nameRow.createEl("h1", { cls: "pc-name", text: ctx.resolved.definition.name });
     const gear = nameRow.createEl("button", {
       cls: "pc-manage-gear",
-      attr: { "aria-label": "Manage & Level Up", title: "Manage & Level Up" },
+      attr: { "aria-label": "Manage & level up", title: "Manage & level up" },
     });
     setIcon(gear, "settings");
     gear.addEventListener("click", () => ctx.editState?.openBuilder());

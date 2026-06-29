@@ -11,7 +11,10 @@ import type {
 
 export interface FoundryChange {
   key: string;
-  mode: "ADD" | "OVERRIDE" | "DOWNGRADE" | "UPGRADE" | "MULTIPLY" | "CUSTOM" | string;
+  // Foundry CONST.ACTIVE_EFFECT_MODES key — one of
+  // ADD | OVERRIDE | DOWNGRADE | UPGRADE | MULTIPLY | CUSTOM, or an unknown
+  // future mode. Only "ADD" is supported by the reconciler (see below).
+  mode: string;
   value: number | string;
 }
 

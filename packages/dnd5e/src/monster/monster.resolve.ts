@@ -10,7 +10,13 @@ export function resolveMonster(
   raw: MonsterRaw,
   _ctx: ResolveContext,
 ): MonsterRaw & { proficiency_bonus: number; xp: number } {
-  const cr = String(raw.cr ?? "0");
+  // `raw` is Record<string, unknown>, so narrow `cr` to a stringifiable
+  // primitive rather than risk an object's "[object Object]" stringification.
+  const crValue = raw.cr;
+  const cr =
+    typeof crValue === "string" ? crValue
+    : typeof crValue === "number" ? String(crValue)
+    : "0";
   return {
     ...raw,
     proficiency_bonus: getProficiencyBonus(cr),

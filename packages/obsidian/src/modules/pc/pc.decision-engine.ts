@@ -495,7 +495,7 @@ export function buildDecisionLedger(resolved: ResolvedCharacter, ctx: DecisionCo
                 g && typeof g === "object" && "category" in g && (g as { category?: string }).category
                   ? [categoryToEntitySelect((g as { category: string }).category, `equipment-${i}-opt-${j}-cat-${k}`)]
                   : []),
-            } as InlineOption;
+            };
           }),
         };
         if (degraded && !warnedDegradedEquipment.has(entity.slug)) {

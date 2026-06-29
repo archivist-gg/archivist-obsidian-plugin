@@ -1,4 +1,4 @@
-import type { Feature, Choice, Ability, SkillSlug, Resource } from "@archivist/dnd5e";
+import type { Feature, Ability, SkillSlug, Resource } from "@archivist/dnd5e";
 import type { StartingEquipmentEntry, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
 export type { StartingEquipmentEntry, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
 import type { SelectionPool, PoolGrant, TabDecl } from "@archivist/dnd5e/types/selection-pool";
