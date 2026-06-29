@@ -38,8 +38,9 @@ export function renderFeatureCard(
 
   // Text textarea
   const textArea = card.createEl("textarea", { cls: "archivist-feat-text-input" });
-  textArea.value = feature.entries.join("\n");
-  textArea.rows = Math.max(2, feature.entries.join("\n").split("\n").length);
+  const entries = feature.entries ?? [];
+  textArea.value = entries.join("\n");
+  textArea.rows = Math.max(2, entries.join("\n").split("\n").length);
   textArea.addEventListener("input", () => {
     feature.entries = textArea.value.split("\n");
     state.updateField(sectionKey, getFeatures(state.current, sectionKey));

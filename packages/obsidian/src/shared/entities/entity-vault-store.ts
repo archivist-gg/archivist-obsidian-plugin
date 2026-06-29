@@ -149,7 +149,7 @@ export function parseEntityFile(content: string): EntityNote | null {
   return {
     slug,
     name,
-    entityType,
+    entityType: String(entityType),
     compendium,
     data,
   };
@@ -210,7 +210,7 @@ export function parseEntityFrontmatter(content: string): EntityNote | null {
   return {
     slug,
     name,
-    entityType,
+    entityType: String(entityType),
     compendium,
     data: (data && typeof data === "object" ? data : {}) as Record<string, unknown>,
   };

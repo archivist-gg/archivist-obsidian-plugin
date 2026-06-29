@@ -373,7 +373,7 @@ export class MonsterEditState {
   get hasPendingChanges(): boolean { return this._hasPendingChanges; }
 
   updateField(field: string, value: unknown): void {
-    setNestedField(this._current, field, value);
+    setNestedField(this._current as unknown as Record<string, unknown>, field, value);
     this._current = recalculate(this._current, field);
     this._hasPendingChanges = true;
     this.onChange(this);
@@ -397,7 +397,7 @@ export class MonsterEditState {
 
   setOverride(field: string, value: number): void {
     this._current.overrides.add(field);
-    setNestedField(this._current, field, value);
+    setNestedField(this._current as unknown as Record<string, unknown>, field, value);
     this._hasPendingChanges = true;
     this.onChange(this);
   }
@@ -413,8 +413,8 @@ export class MonsterEditState {
     if (!this._current.activeSections.includes(section)) {
       this._current.activeSections.push(section);
       const key = sectionToMonsterKey(section);
-      if (key && !(this._current as Record<string, unknown>)[key]) {
-        (this._current as Record<string, unknown>)[key] = [];
+      if (key && !(this._current as unknown as Record<string, unknown>)[key]) {
+        (this._current as unknown as Record<string, unknown>)[key] = [];
       }
       this._hasPendingChanges = true;
       this.onChange(this);
@@ -424,26 +424,26 @@ export class MonsterEditState {
   removeSection(section: string): void {
     this._current.activeSections = this._current.activeSections.filter(s => s !== section);
     // Clear the feature data so the section is not serialized on save
-    if ((this._current as Record<string, unknown>)[section] !== undefined) {
-      (this._current as Record<string, unknown>)[section] = [];
+    if ((this._current as unknown as Record<string, unknown>)[section] !== undefined) {
+      (this._current as unknown as Record<string, unknown>)[section] = [];
     }
     this._hasPendingChanges = true;
     this.onChange(this);
   }
 
   addFeature(sectionKey: string): void {
-    const features = (this._current as Record<string, unknown>)[sectionKey] as Array<{name: string; entries: string[]}> | undefined;
+    const features = (this._current as unknown as Record<string, unknown>)[sectionKey] as Array<{name: string; entries: string[]}> | undefined;
     if (features) {
       features.push({ name: "New Feature", entries: [""] });
     } else {
-      (this._current as Record<string, unknown>)[sectionKey] = [{ name: "New Feature", entries: [""] }];
+      (this._current as unknown as Record<string, unknown>)[sectionKey] = [{ name: "New Feature", entries: [""] }];
     }
     this._hasPendingChanges = true;
     this.onChange(this);
   }
 
   removeFeature(sectionKey: string, index: number): void {
-    const features = (this._current as Record<string, unknown>)[sectionKey] as Array<unknown> | undefined;
+    const features = (this._current as unknown as Record<string, unknown>)[sectionKey] as Array<unknown> | undefined;
     if (features && index >= 0 && index < features.length) {
       features.splice(index, 1);
       this._hasPendingChanges = true;
