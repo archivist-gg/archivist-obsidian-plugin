@@ -495,7 +495,9 @@ export class InputController {
         if (planContent) {
           state.pendingNewSessionPlan = null;
           await conversationController.createNew();
-          (this.deps.getInputEl() as HTMLTextAreaElement).value = planContent;
+          // NOTE(inquiry): RichInput is a contentEditable div — assigning .value is a no-op
+          // (an ignored expando never read back; sendMessage() reads richInput.serialize().text),
+          // so this pre-population is latently broken. Fix when inquiry is un-deferred.
           this.sendMessage().catch(() => {
             // sendMessage() handles its own errors internally; this prevents
             // unhandled rejection if an unexpected error slips through.
