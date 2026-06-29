@@ -1286,7 +1286,7 @@ export class ClaudianService {
       });
     }
 
-    async function* messageGenerator() {
+    async function* messageGenerator(): AsyncGenerator<SDKUserMessage> {
       await Promise.resolve(); // keep async generator signature for yield* compatibility
       yield {
         type: 'user',
@@ -1294,6 +1294,7 @@ export class ClaudianService {
           role: 'user',
           content,
         },
+        parent_tool_use_id: null,
       };
     }
 

@@ -7,7 +7,7 @@ import type { ChatMessage, ClaudeModel, Conversation, EffortLevel, PermissionMod
 import { DEFAULT_CLAUDE_MODELS, DEFAULT_EFFORT_LEVEL, getContextWindowSize, isAdaptiveThinkingModel } from '../../../core/types';
 import { t } from '../../../i18n';
 import type InquiryModule from '../../../InquiryModule';
-import { EntityAutocompleteDropdown } from '../../../shared/components/EntityAutocompleteDropdown';
+import { EntityAutocompleteDropdown, type EntityRegistryLike } from '../../../shared/components/EntityAutocompleteDropdown';
 import { SlashCommandDropdown } from '../../../shared/components/SlashCommandDropdown';
 import { getEnhancedPath } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
@@ -562,7 +562,7 @@ export function initializeTabUI(
     tab.ui.entityAutocomplete = new EntityAutocompleteDropdown(
       dom.inputContainerEl,
       dom.richInput,
-      plugin.entityRegistry,
+      plugin.entityRegistry as EntityRegistryLike,
       (entityType: string, name: string) => {
         dom.richInput.insertEntityChip(entityType, name);
       },

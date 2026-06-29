@@ -41,7 +41,7 @@ interface EntityRegistryEntry {
   slug: string;
   name: string;
   entityType: string;
-  source: string;
+  source: 'srd' | 'custom';
 }
 
 interface EntityRegistryLike {

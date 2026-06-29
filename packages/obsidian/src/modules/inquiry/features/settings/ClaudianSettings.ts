@@ -110,7 +110,6 @@ export class ClaudianSettingTab extends PluginSettingTab {
     super(app, hostPlugin);
     this.plugin = inquiryModule;
     this.hostPlugin = hostPlugin;
-    this.name = "Archivist";
   }
 
   private normalizeModelVariantSettings(): void {

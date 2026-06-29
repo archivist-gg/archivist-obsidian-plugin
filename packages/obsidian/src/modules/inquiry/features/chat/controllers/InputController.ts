@@ -495,7 +495,7 @@ export class InputController {
         if (planContent) {
           state.pendingNewSessionPlan = null;
           await conversationController.createNew();
-          this.deps.getInputEl().value = planContent;
+          (this.deps.getInputEl() as HTMLTextAreaElement).value = planContent;
           this.sendMessage().catch(() => {
             // sendMessage() handles its own errors internally; this prevents
             // unhandled rejection if an unexpected error slips through.

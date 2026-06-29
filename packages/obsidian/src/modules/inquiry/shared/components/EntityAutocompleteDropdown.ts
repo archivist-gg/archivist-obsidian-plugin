@@ -113,7 +113,7 @@ interface EntityRegistryEntry {
   source: 'srd' | 'custom';
 }
 
-interface EntityRegistryLike {
+export interface EntityRegistryLike {
   search(query: string, entityType: string | undefined, limit: number): EntityRegistryEntry[];
 }
 

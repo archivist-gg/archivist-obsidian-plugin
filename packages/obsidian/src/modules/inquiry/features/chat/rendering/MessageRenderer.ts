@@ -324,7 +324,7 @@ export class MessageRenderer {
       renderStoredToolCall(contentEl, toolCall, this.dndCopyAndSaveCallback);
     }
     // Render D&D entity block as a sibling AFTER the tool call collapsible
-    renderDndEntityAfterToolCall(contentEl, toolCall, this.dndCopyAndSaveCallback, this.plugin.entityRegistry, this.app, this.dndUpdateCallback);
+    renderDndEntityAfterToolCall(contentEl, toolCall, this.dndCopyAndSaveCallback, this.plugin.entityRegistry as EntityRegistry | null, this.app, this.dndUpdateCallback);
   }
 
   private renderTaskSubagent(

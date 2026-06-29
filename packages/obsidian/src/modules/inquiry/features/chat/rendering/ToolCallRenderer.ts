@@ -24,6 +24,8 @@ import type { ToolCallInfo } from '../../../core/types';
 import { appendSvg, MCP_ICON_SVG } from '../../../shared/icons';
 import { setupCollapsible } from './collapsible';
 import { renderDndEntityBlock, type CopyAndSaveCallback, type UpdateEntityCallback } from './DndEntityRenderer';
+// Re-export so `rendering/index.ts` can surface the type from this module.
+export type { CopyAndSaveCallback } from './DndEntityRenderer';
 import type { App } from 'obsidian';
 import type { EntityRegistry } from "@archivist/core";
 import { parseDndCodeFence } from './dndCodeFence';

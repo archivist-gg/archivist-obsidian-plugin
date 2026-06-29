@@ -1,4 +1,4 @@
-import type { Options } from '@anthropic-ai/claude-agent-sdk';
+import type { Options, SDKAssistantMessage, SDKMessage } from '@anthropic-ai/claude-agent-sdk';
 import { query as agentQuery } from '@anthropic-ai/claude-agent-sdk';
 
 import { createCustomSpawnFunction } from '../../../core/agent/customSpawn';
@@ -160,13 +160,16 @@ export class InstructionRefineService {
   }
 
   /** Extracts text content from SDK message. */
-  private extractTextFromMessage(message: { type: string; message?: { content?: Array<{ type: string; text?: string }> } }): string {
+  private extractTextFromMessage(message: SDKMessage): string {
     if (message.type !== 'assistant' || !message.message?.content) {
       return '';
     }
 
     return message.message.content
-      .filter((block): block is { type: 'text'; text: string } => block.type === 'text' && !!block.text)
+      .filter(
+        (block): block is Extract<SDKAssistantMessage['message']['content'][number], { type: 'text' }> =>
+          block.type === 'text' && !!block.text
+      )
       .map(block => block.text)
       .join('');
   }

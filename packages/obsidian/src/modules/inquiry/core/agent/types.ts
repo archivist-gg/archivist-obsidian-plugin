@@ -5,7 +5,7 @@
 import type { SDKMessage, SDKUserMessage } from '@anthropic-ai/claude-agent-sdk';
 
 import type { SystemPromptSettings } from '../prompts/mainAgent';
-import type { ClaudeModel, EffortLevel, PermissionMode, StreamChunk } from '../types';
+import type { ClaudeModel, EffortLevel, ImageMediaType, PermissionMode, StreamChunk } from '../types';
 
 export interface TextContentBlock {
   type: 'text';
@@ -16,7 +16,8 @@ export interface ImageContentBlock {
   type: 'image';
   source: {
     type: 'base64';
-    media_type: string;
+    // Match the SDK's Base64ImageSource literal union (= ImageMediaType).
+    media_type: ImageMediaType;
     data: string;
   };
 }

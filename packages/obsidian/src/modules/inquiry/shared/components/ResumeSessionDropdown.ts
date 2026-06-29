@@ -16,7 +16,9 @@ export interface ResumeSessionDropdownCallbacks {
 
 export class ResumeSessionDropdown {
   private containerEl: HTMLElement;
-  private inputEl: HTMLTextAreaElement;
+  // Only used for add/removeEventListener('input'); the chat input is a
+  // contentEditable RichInput div (HTMLElement), not a textarea.
+  private inputEl: HTMLElement;
   private dropdownEl: HTMLElement;
   private callbacks: ResumeSessionDropdownCallbacks;
   private conversations: ConversationMeta[];
@@ -26,7 +28,7 @@ export class ResumeSessionDropdown {
 
   constructor(
     containerEl: HTMLElement,
-    inputEl: HTMLTextAreaElement,
+    inputEl: HTMLElement,
     conversations: ConversationMeta[],
     currentConversationId: string | null,
     callbacks: ResumeSessionDropdownCallbacks
