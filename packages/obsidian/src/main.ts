@@ -488,19 +488,26 @@ export default class ArchivistPlugin extends Plugin {
       // Kernel parse: behavior-identical to mod.parseYaml(source) — the legacy
       // adapter's doc.parse runs mod.parseYaml over doc.body (= source).
       const et = this.archivist.getEntityType(codeBlockType);
-      const result = et?.doc?.parse({ type: codeBlockType, frontmatter: {}, body: source, raw: source });
-      if (!result || !result.success) {
-        el.appendChild(createErrorBlock(result ? result.error : "no codec", source));
+      // CODEC output feeds edit-mode + compendium-save (lossless, authored
+      // structure only). The resolved output feeds the VIEW render (adds
+      // light view-derived fields, e.g. monster proficiency_bonus). If
+      // resolve throws/fails, view falls back to the codec data.
+      const codecResult = et?.doc?.parse({ type: codeBlockType, frontmatter: {}, body: source, raw: source });
+      if (!codecResult || !codecResult.success) {
+        el.appendChild(createErrorBlock(codecResult ? codecResult.error : "no codec", source));
         return;
       }
+      const resolvedResult = this.archivist.resolve({ type: codeBlockType, frontmatter: {}, body: source, raw: source });
+      const viewData = resolvedResult.success ? resolvedResult.data : codecResult.data;
 
       let isEditMode = false;
       // `columns` only meaningful for modules that opt in; others pin to 1.
+      // `columns` is an AUTHORED structural field — read from the codec.
       const initialColumns = supportsColumns
-        ? ((result.data as { columns?: number }).columns ?? 1)
+        ? ((codecResult.data as { columns?: number }).columns ?? 1)
         : 1;
       let columns = initialColumns;
-      let rendered = renderViaModule(result.data, columns, el.doc);
+      let rendered = renderViaModule(viewData, columns, el.doc);
       if (rendered) el.appendChild(rendered);
 
       // Side buttons container
@@ -536,7 +543,7 @@ export default class ArchivistPlugin extends Plugin {
           if (child !== sideBtns) child.remove();
         });
         isEditMode = false;
-        rendered = renderViaModule(result.data, columns, el.doc);
+        rendered = renderViaModule(viewData, columns, el.doc);
         if (rendered) el.insertBefore(rendered, sideBtns);
         sideBtns.removeClass("always-visible");
         updateSideButtons();
@@ -551,7 +558,7 @@ export default class ArchivistPlugin extends Plugin {
         // `plugin` / `ctx` from the EditContext and invoke `onExit` when
         // they need to restore the view-mode render without a content
         // change (e.g. cancel with no edits).
-        pres?.renderEditMode?.(el, result.data, {
+        pres?.renderEditMode?.(el, codecResult.data, {
           plugin: this,
           ctx,
           source,
@@ -565,7 +572,7 @@ export default class ArchivistPlugin extends Plugin {
         const saveToComp = async (comp: { name: string }) => {
           try {
             const registered = await this.compendiumManager!.saveEntity(
-              comp.name, entityType, result.data as Record<string, unknown>,
+              comp.name, entityType, codecResult.data as Record<string, unknown>,
             );
             const sectionInfo = ctx.getSectionInfo(el);
             if (sectionInfo) {
@@ -609,7 +616,7 @@ export default class ArchivistPlugin extends Plugin {
           onColumnToggle: () => {
             if (!supportsColumns) return;
             columns = columns === 1 ? 2 : 1;
-            const newRendered = renderViaModule(result.data, columns, el.doc);
+            const newRendered = renderViaModule(viewData, columns, el.doc);
             if (newRendered && rendered) {
               rendered.replaceWith(newRendered);
               rendered = newRendered;

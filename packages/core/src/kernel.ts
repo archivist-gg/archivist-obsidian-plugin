@@ -22,8 +22,12 @@ export function createArchivist(opts: {
       if (!et.doc) return { success: false, error: `Entity type "${doc.type}" has no codec` };
       const parsed = et.doc.parse(doc);
       if (!parsed.success) return parsed;
-      const data = et.resolve ? et.resolve(parsed.data, opts.content) : parsed.data;
-      return { success: true, data };
+      if (!et.resolve) return { success: true, data: parsed.data };
+      try {
+        return { success: true, data: et.resolve(parsed.data, opts.content) };
+      } catch (e) {
+        return { success: false, error: (e as Error).message };
+      }
     },
     lookup(type, slug) { return opts.content.lookup(type, slug); },
   };
