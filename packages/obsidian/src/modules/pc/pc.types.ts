@@ -313,7 +313,7 @@ export interface AppliedBonuses {
   spell_save_dc: number;
   defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] };
   informational: import("../item/item.conditions.types").InformationalBonus[];
-  senses: Record<import("../../shared/types/feature-effect").SenseType, number>;
+  senses: Record<import("@archivist/dnd5e/types/feature-effect").SenseType, number>;
 }
 
 export interface DerivedEquipment {
