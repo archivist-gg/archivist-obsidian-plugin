@@ -12,7 +12,7 @@
 import type {
   BonusFieldPath,
   Condition,
-} from "../../../../obsidian/src/modules/item/item.conditions.types";
+} from "@archivist/dnd5e/types/item-conditions.types";
 
 export type ConditionPerField = Partial<Record<BonusFieldPath, Condition[]>>;
 

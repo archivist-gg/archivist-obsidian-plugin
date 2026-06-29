@@ -1,5 +1,5 @@
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { OptionalFeatureEntity } from "./optional-feature.types";
+import type { OptionalFeatureEntity } from "@archivist/dnd5e/types/optional-feature.types";
 import { parseOptionalFeature } from "./optional-feature.parser";
 import { renderOptionalFeatureStub } from "./optional-feature.renderer";
 

@@ -1,13 +1,5 @@
-export interface CastingOption {
-  type: string;
-  damage_roll?: string;
-  target_count?: number;
-  duration?: string;
-  range?: number;
-  concentration?: boolean;
-  shape_size?: number;
-  desc?: string;
-}
+import type { CastingOption } from "@archivist/dnd5e/types/casting-option";
+export type { CastingOption };
 
 export interface Spell {
   name: string;

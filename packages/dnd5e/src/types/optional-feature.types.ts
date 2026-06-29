@@ -1,6 +1,7 @@
-import type { FeatureEffect, ActionCost, ResetTrigger, ResourceConsumption } from "@archivist/dnd5e";
-import type { Duration } from "@archivist/dnd5e/schemas/duration-schema";
-import type { Edition } from "../class/class.types";
+import type { FeatureEffect } from "./feature-effect";
+import type { ActionCost, ResetTrigger, ResourceConsumption } from "./resource";
+import type { Duration } from "../schemas/duration-schema";
+import type { Edition } from "./edition";
 
 /**
  * Documentation-only union of the canonical SRD feature types. The

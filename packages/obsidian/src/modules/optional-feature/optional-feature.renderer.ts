@@ -1,4 +1,4 @@
-import type { OptionalFeatureEntity, OptionalFeaturePrerequisite } from "./optional-feature.types";
+import type { OptionalFeatureEntity, OptionalFeaturePrerequisite } from "@archivist/dnd5e/types/optional-feature.types";
 import type { RenderContext } from "../../core/module-api";
 
 function describePrerequisite(p: OptionalFeaturePrerequisite): string {
