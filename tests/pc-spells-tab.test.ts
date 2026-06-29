@@ -59,6 +59,47 @@ describe("SpellsTab", () => {
     expect(segs).toEqual(["Cast", "Manage"]);
   });
 
+  it("shows a situational popover on hover over the DC row when the spell slice is non-empty", () => {
+    const c = mountContainer();
+    new SpellsTab().render(c, {
+      resolved: resolved([spell("Magic Missile", 1)]),
+      derived: derived({
+        spellcastingInformational: [
+          { field: "spell_attack", source: "Rod of the Pact Keeper", value: 1, conditions: [{ kind: "raw", text: "while attuned" }] },
+        ] as never,
+      }),
+      core: {} as never, app: {} as never, editState: null,
+    });
+    const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
+    dcRow.dispatchEvent(new Event("mouseenter"));
+    const tip = dcRow.querySelector(".pc-stat-tooltip");
+    expect(tip).not.toBeNull();
+    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("Spell — situational");
+    const rows = tip!.querySelectorAll(".pc-situational-row");
+    expect(rows.length).toBe(1);
+    expect(rows[0].textContent).toContain("Rod of the Pact Keeper");
+  });
+
+  it("attaches NO popover when the spell slice is absent (situational-free character)", () => {
+    const c = mountContainer();
+    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), core: {} as never, app: {} as never, editState: null });
+    const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
+    dcRow.dispatchEvent(new Event("mouseenter"));
+    expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+
+  it("attaches NO popover when spellcastingInformational is explicitly empty ([])", () => {
+    const c = mountContainer();
+    new SpellsTab().render(c, {
+      resolved: resolved([spell("Magic Missile", 1)]),
+      derived: derived({ spellcastingInformational: [] as never }),
+      core: {} as never, app: {} as never, editState: null,
+    });
+    const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
+    dcRow.dispatchEvent(new Event("mouseenter"));
+    expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+
   it("shows a concentration tile (brain) in the active-effects rail when concentrating", () => {
     const c = mountContainer();
     const r = resolved([spell("Hold Person", 2)]);

@@ -3,6 +3,7 @@ import type { ArmorEntity } from "../armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";
 import type { Character, EquipmentEntry, SlotKey } from "./pc.types";
+import { resolveEntityForEntry, defaultSlotForType, isWeaponEntity } from "./pc.slotting";
 
 export type EquipResult =
   | { kind: "ok" }
@@ -12,49 +13,8 @@ export type AttuneResult =
   | { kind: "ok" }
   | { kind: "rejected"; reason: "limit-reached" };
 
-function unwrapSlug(item: string): string | null {
-  const m = item.match(/^\[\[(.+)\]\]$/);
-  return m ? m[1] : null;
-}
-
-function lookupEntityType(
-  item: string,
-  registry?: EntityRegistry,
-): { entity: ArmorEntity | WeaponEntity | ItemEntity | null; entityType: string | null } {
-  const slug = unwrapSlug(item);
-  if (!slug || !registry) return { entity: null, entityType: null };
-  const found = registry.getBySlug(slug);
-  if (!found) return { entity: null, entityType: null };
-  return {
-    entity: found.data as unknown as ArmorEntity | WeaponEntity | ItemEntity,
-    entityType: found.entityType,
-  };
-}
-
-function isWeaponData(e: unknown): e is WeaponEntity {
-  if (!e || typeof e !== "object") return false;
-  return "damage" in e && "category" in e;
-}
-
-function isArmorData(e: unknown): e is ArmorEntity {
-  if (!e || typeof e !== "object") return false;
-  return "ac" in e && !("damage" in e);
-}
-
 function isTwoHanded(w: WeaponEntity): boolean {
   return w.properties.some((p) => p === "two_handed");
-}
-
-function defaultSlot(
-  entityType: string | null,
-  entity: ArmorEntity | WeaponEntity | ItemEntity | null,
-): SlotKey | null {
-  if (entityType === "weapon") return "mainhand";
-  if (entityType === "armor") {
-    if (entity && isArmorData(entity) && entity.category === "shield") return "shield";
-    return "armor";
-  }
-  return null;
 }
 
 function resolveSlot(
@@ -63,17 +23,26 @@ function resolveSlot(
   registry?: EntityRegistry,
 ): { slot: SlotKey | null; entity: ArmorEntity | WeaponEntity | ItemEntity | null } {
   const entry = character.equipment[index];
-  if (entry.slot) return { slot: entry.slot, entity: lookupEntityType(entry.item, registry).entity };
-  const { entity, entityType } = lookupEntityType(entry.item, registry);
-  let slot = defaultSlot(entityType, entity);
+  if (!registry) return { slot: entry.slot ?? null, entity: null };
+  const { entity, entityType } = resolveEntityForEntry(entry.item, registry);
+  if (entry.slot) return { slot: entry.slot, entity };
+  let slot = defaultSlotForType(entityType, entity, registry);
   if (slot === "mainhand") {
-    const mainOccupied = character.equipment.some(
-      (e, i) =>
-        i !== index
-        && e.equipped
-        && (e.slot === "mainhand" || (!e.slot && lookupEntityType(e.item, registry).entityType === "weapon")),
-    );
-    if (mainOccupied) slot = "offhand";
+    // A two-handed weapon can ONLY occupy the mainhand — never fall back to the
+    // offhand when the mainhand is taken. Surface the conflict (handled by
+    // equipItem) so the swap path can free the mainhand instead of silently
+    // dropping the 2H weapon into the offhand alongside the existing weapon.
+    const twoHandedWeapon = !!entity && isWeaponEntity(entity) && isTwoHanded(entity);
+    if (!twoHandedWeapon) {
+      const mainOccupied = character.equipment.some((e, i) => {
+        if (i === index || !e.equipped) return false;
+        if (e.slot === "mainhand") return true;
+        if (e.slot) return false;
+        const { entity: oe, entityType: oet } = resolveEntityForEntry(e.item, registry);
+        return defaultSlotForType(oet, oe, registry) === "mainhand";
+      });
+      if (mainOccupied) slot = "offhand";
+    }
   }
   return { slot, entity };
 }
@@ -84,15 +53,15 @@ function findOccupant(
   registry?: EntityRegistry,
   excludeIndex?: number,
 ): number | null {
+  if (!registry) return null;
   for (let i = 0; i < character.equipment.length; i++) {
     if (i === excludeIndex) continue;
     const e = character.equipment[i];
     if (!e.equipped) continue;
     if (e.slot === slot) return i;
     if (!e.slot) {
-      const { entityType, entity } = lookupEntityType(e.item, registry);
-      const ds = defaultSlot(entityType, entity);
-      if (ds === slot) return i;
+      const { entity, entityType } = resolveEntityForEntry(e.item, registry);
+      if (defaultSlotForType(entityType, entity, registry) === slot) return i;
     }
   }
   return null;
@@ -131,9 +100,21 @@ export function equipItem(
   if (occupant !== null) {
     return { kind: "conflict", withIndex: occupant, slot };
   }
-  if (slot === "mainhand" && entity && isWeaponData(entity) && isTwoHanded(entity)) {
+  if (slot === "mainhand" && entity && isWeaponEntity(entity) && isTwoHanded(entity)) {
     const shieldHolder = findOccupant(character, "shield", registry, index);
     if (shieldHolder !== null) return { kind: "conflict", withIndex: shieldHolder, slot: "shield" };
+  }
+  // Reverse direction: equipping a shield while a two-handed weapon holds the
+  // mainhand is a single-occupancy conflict on the 2H weapon (a shield cannot
+  // be wielded alongside a two-handed weapon).
+  if (slot === "shield") {
+    const mainHolder = findOccupant(character, "mainhand", registry, index);
+    if (mainHolder !== null) {
+      const { entity: mainEntity } = resolveEntityForEntry(character.equipment[mainHolder].item, registry);
+      if (mainEntity && isWeaponEntity(mainEntity) && isTwoHanded(mainEntity)) {
+        return { kind: "conflict", withIndex: mainHolder, slot: "mainhand" };
+      }
+    }
   }
   entry.equipped = true;
   entry.slot = slot;

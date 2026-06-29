@@ -2,6 +2,8 @@ import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { formatModifier } from "@archivist/dnd5e/dnd/math";
 import { numberOverride } from "./edit-primitives";
+import { attachStatTooltip } from "./stat-tooltip";
+import { renderSituationalRows } from "./situational-rows";
 
 /**
  * Right side of the stats band: four bordered tiles in a 2×2 grid.
@@ -46,6 +48,16 @@ export class StatsTiles implements SheetComponent {
         onSet: (n) => ctx.editState!.setSpeedOverride(n),
         onClear: () => ctx.editState!.clearSpeedOverride(),
         min: 0, max: 240,
+      });
+    }
+
+    // Situational speed bonuses (e.g. conditional item boosts) surface in a
+    // hover popover. Coexists with the speed condition-reduction text below.
+    const speedInfo = ctx.derived.speedInformational ?? [];
+    if (speedInfo.length > 0) {
+      attachStatTooltip(speedTile, (host) => {
+        host.createDiv({ cls: "pc-stat-tooltip-title", text: "Speed — situational" });
+        renderSituationalRows(host, speedInfo);
       });
     }
 

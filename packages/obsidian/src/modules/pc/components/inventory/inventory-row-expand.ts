@@ -1,4 +1,4 @@
-import type { App } from "obsidian";
+import { Notice, type App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { renderItemBlock } from "../../../item/item.renderer";
@@ -74,7 +74,8 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
     if (ctx.entry.equipped) {
       void unequipWithAttunementCheck(ctx.app, editState, ctx.entry, i);
     } else {
-      editState.equipItem(i);
+      const res = editState.equipItemWithSwap(i);
+      if (res.unequipped?.length) new Notice(`Unequipped ${res.unequipped.join(", ")} (slot occupied).`);
     }
   });
 

@@ -8463,19 +8463,7 @@
       ]
     },
     "bonuses": {
-      "spell_attack": {
-        "value": 2,
-        "when": [
-          {
-            "kind": "on_attack_type",
-            "value": "melee"
-          },
-          {
-            "kind": "on_attack_type",
-            "value": "ranged"
-          }
-        ]
-      },
+      "spell_attack": 2,
       "spell_save_dc": 2
     }
   },
@@ -9535,19 +9523,7 @@
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
-      "spell_attack": {
-        "value": 2,
-        "when": [
-          {
-            "kind": "on_attack_type",
-            "value": "melee"
-          },
-          {
-            "kind": "on_attack_type",
-            "value": "ranged"
-          }
-        ]
-      }
+      "spell_attack": 2
     },
     "attached_spells": {
       "charges": {
@@ -9632,19 +9608,7 @@
     "bonuses": {
       "weapon_attack": 2,
       "weapon_damage": 2,
-      "spell_attack": {
-        "value": 2,
-        "when": [
-          {
-            "kind": "on_attack_type",
-            "value": "melee"
-          },
-          {
-            "kind": "on_attack_type",
-            "value": "ranged"
-          }
-        ]
-      }
+      "spell_attack": 2
     },
     "attached_spells": {
       "charges": {
@@ -9837,19 +9801,7 @@
       ]
     },
     "bonuses": {
-      "spell_attack": {
-        "value": 2,
-        "when": [
-          {
-            "kind": "on_attack_type",
-            "value": "melee"
-          },
-          {
-            "kind": "on_attack_type",
-            "value": "ranged"
-          }
-        ]
-      }
+      "spell_attack": 2
     },
     "charges": {
       "max": 7
@@ -9881,19 +9833,7 @@
       "required": true
     },
     "bonuses": {
-      "spell_attack": {
-        "value": 2,
-        "when": [
-          {
-            "kind": "on_attack_type",
-            "value": "melee"
-          },
-          {
-            "kind": "on_attack_type",
-            "value": "ranged"
-          }
-        ]
-      }
+      "spell_attack": 2
     },
     "charges": {
       "max": 6

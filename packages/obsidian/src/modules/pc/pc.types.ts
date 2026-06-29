@@ -59,6 +59,10 @@ export interface EquipmentEntryOverrides {
   ac_bonus?: number;
   action?: "action" | "bonus-action" | "reaction" | "free" | "special";
   range?: string;
+  resist?: string[];
+  immune?: string[];
+  vulnerable?: string[];
+  condition_immune?: string[];
 }
 
 export interface EquipmentEntryState {
@@ -309,6 +313,7 @@ export interface AppliedBonuses {
   spell_save_dc: number;
   defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] };
   informational: import("../item/item.conditions.types").InformationalBonus[];
+  senses: Record<import("../../shared/types/feature-effect").SenseType, number>;
 }
 
 export interface DerivedEquipment {
@@ -385,6 +390,12 @@ export interface DerivedStats {
   };
   acBreakdown: ACTerm[];
   acInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /** Situational saving-throw bonuses (e.g. +1 vs spells) for save tooltips. */
+  savesInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /** Situational spell attack / save-DC bonuses for spellcasting tooltips. */
+  spellcastingInformational: import("../item/item.conditions.types").InformationalBonus[];
+  /** Situational speed bonuses (e.g. swim while underwater) for speed tooltips. */
+  speedInformational: import("../item/item.conditions.types").InformationalBonus[];
   /**
    * Attacks per Attack action = 1 + max `extra-attack` effect count. Always ≥ 1
    * (everyone gets one attack). The Actions "Attacks" heading shows `(×N)` when > 1.

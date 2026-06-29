@@ -55,18 +55,40 @@ export function resolvePool(
     available.push(entry);
   }
 
-  const raw = (rc.choices[anchorLevel] as Record<string, unknown> | undefined)?.[pool.id];
-  const selectedSlugs = Array.isArray(raw) ? (raw as string[]) : typeof raw === "string" ? [raw] : [];
-  const selected = selectedSlugs
-    .map((s) => byBare.get(bareEntitySlug(s)))
-    .filter((e): e is ResolvedPoolEntry => e != null);
-
-  const grants = (rc.subclass?.pool_grants ?? [])
+  // pool_grants authoring (class OR subclass frontmatter):
+  //   pool_grants:
+  //     - pool: <pool id from selection_pools>
+  //       grants:
+  //         - feature: "[[boon-slug]]"
+  //           at_level: 3
+  // Granted picks render in the pool tab's "Granted" section and do NOT count
+  // toward the pool's pick budget. Class- and subclass-declared grants merge;
+  // duplicates (same feature) collapse to one; a feature that is both granted
+  // and manually selected shows only as granted (granted wins, no pick consumed).
+  const grantDecls = [
+    ...(rc.entity?.pool_grants ?? []),
+    ...(rc.subclass?.pool_grants ?? []),
+  ];
+  const grantsRaw = grantDecls
     .filter((g) => g.pool === pool.id)
     .flatMap((g) => g.grants)
     .filter((g) => g.at_level <= level)
     .map((g) => byBare.get(wikilinkTailSlug(g.feature)))
     .filter((e): e is ResolvedPoolEntry => e != null);
+  const grantedBare = new Set<string>();
+  const grants = grantsRaw.filter((e) => {
+    const key = bareEntitySlug(e.slug);
+    if (grantedBare.has(key)) return false;
+    grantedBare.add(key);
+    return true;
+  });
+
+  const raw = (rc.choices[anchorLevel] as Record<string, unknown> | undefined)?.[pool.id];
+  const selectedSlugs = Array.isArray(raw) ? (raw as string[]) : typeof raw === "string" ? [raw] : [];
+  const selected = selectedSlugs
+    .map((s) => byBare.get(bareEntitySlug(s)))
+    .filter((e): e is ResolvedPoolEntry => e != null)
+    .filter((e) => !grantedBare.has(bareEntitySlug(e.slug)));
 
   return { id: pool.id, label: pool.label, classIndex, count, anchorLevel, selected, available, grants };
 }

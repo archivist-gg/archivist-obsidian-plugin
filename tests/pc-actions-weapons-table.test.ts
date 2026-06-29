@@ -73,6 +73,29 @@ describe("WeaponsTable", () => {
     expect(dmgCell).toContain("1d10 + 3");
   });
 
+  it("renders the field label (to hit / dmg) on weapon situational rows", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Frost Brand", range: "melee 5 ft.", toHit: 6,
+      damageDice: "1d8 + 4", damageType: "slashing",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [
+        { source: "Frost Brand", value: 1, field: "weapon_attack", conditions: [{ kind: "vs_creature_type", value: "fire" }] },
+        { source: "Frost Brand", value: 2, field: "weapon_damage", conditions: [{ kind: "vs_creature_type", value: "fire" }] },
+      ],
+      slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const sub = root.querySelector(".pc-attack-row-situational");
+    expect(sub).not.toBeNull();
+    const text = sub?.textContent ?? "";
+    expect(text).toContain("to hit");
+    expect(text).toContain("dmg");
+    // The label is its own span between the amount and the condition.
+    expect(sub?.querySelector(".pc-situational-field")).not.toBeNull();
+  });
+
   it("preserves situational sub-line when informational present", () => {
     const root = mountContainer();
     const attacks = [{

@@ -573,6 +573,19 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     ? computeAppliedBonuses(resolved, profsForApply, registry, warnings)
     : emptyAppliedBonuses();
 
+  // Partition the non-AC situational bonuses already collected in
+  // `applied.informational` into per-stat slices for UI tooltips (Task 7).
+  // (AC informational rides a separate path via derivedEquipment.acInformational.)
+  const savesInformational = applied.informational.filter(
+    (i) => i.field === "saving_throws",
+  );
+  const spellcastingInformational = applied.informational.filter(
+    (i) => i.field === "spell_attack" || i.field === "spell_save_dc",
+  );
+  const speedInformational = applied.informational.filter((i) =>
+    i.field.startsWith("speed."),
+  );
+
   // Ability scores: base computation, then apply Pass A bonus first, then
   // static (only when it raises the score), then user overrides win.
   const baseScores = computeAbilityScores(resolved, overrides);
@@ -757,10 +770,10 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
 
   // Senses: race vision vs feature-effect senses — larger wins per type.
   const senses: DerivedStats["senses"] = {
-    darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.senses.darkvision),
-    blindsight: featureEffects.senses.blindsight,
-    tremorsense: featureEffects.senses.tremorsense,
-    truesight: featureEffects.senses.truesight,
+    darkvision: Math.max(resolved.race?.vision?.darkvision ?? 0, featureEffects.senses.darkvision, applied.senses.darkvision),
+    blindsight: Math.max(featureEffects.senses.blindsight, applied.senses.blindsight),
+    tremorsense: Math.max(featureEffects.senses.tremorsense, applied.senses.tremorsense),
+    truesight: Math.max(featureEffects.senses.truesight, applied.senses.truesight),
   };
 
   // Spellcasting (per class, multiclass-aware). Data-driven: each class's caster
@@ -848,6 +861,9 @@ export function recalc(resolved: ResolvedCharacter, registry?: EntityRegistry): 
     defenses,
     acBreakdown: acBreakdownDerived,
     acInformational: acInformationalDerived,
+    savesInformational,
+    spellcastingInformational,
+    speedInformational,
     // Always ≥ 1; non-stacking (Math.max) extra attacks fold in pc.feature-effects.
     attacksPerAction: 1 + featureEffects.extraAttack,
     // Consolidated post-apply over the built attack rows: the d20 condition

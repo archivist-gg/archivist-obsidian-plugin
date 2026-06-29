@@ -979,3 +979,57 @@ describe("magic weapon overrides (name / damage type / properties)", () => {
     expect(d.attacks[0].properties).toEqual(["versatile"]); // base Longsword's
   });
 });
+
+describe("item-granted senses", () => {
+  const reg = buildEquipmentRegistry();
+
+  it("folds Goggles of Night darkvision into derived senses", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[goggles-of-night]]", equipped: true }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.senses.darkvision).toBe(60);
+  });
+
+  it("does not contribute when unequipped", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[goggles-of-night]]", equipped: false }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.senses.darkvision).toBe(0);
+  });
+
+  it("race darkvision 60 + goggles 60 → 60 (max, no stacking)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[goggles-of-night]]", equipped: true }];
+    const r = mkResolved(c);
+    r.race = { slug: "drow", name: "Drow", speed: { walk: 30 }, vision: { darkvision: 60 } } as never;
+    const d = recalc(r, reg);
+    expect(d.senses.darkvision).toBe(60);
+  });
+
+  it("race darkvision 120 + goggles 60 → 120 (race wins)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[goggles-of-night]]", equipped: true }];
+    const r = mkResolved(c);
+    r.race = { slug: "drow", name: "Drow", speed: { walk: 30 }, vision: { darkvision: 120 } } as never;
+    const d = recalc(r, reg);
+    expect(d.senses.darkvision).toBe(120);
+  });
+});
+
+describe("per-entry resistance override", () => {
+  const reg = buildEquipmentRegistry();
+
+  it("adds overrides.resist to derived defenses", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[armor-of-resistance]]", equipped: true, attuned: true, slot: "armor", overrides: { resist: ["fire"] } }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.defenses.resistances).toContain("fire");
+  });
+
+  it("contributes nothing when no resist override is set", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[armor-of-resistance]]", equipped: true, attuned: true, slot: "armor" }];
+    const d = recalc(mkResolved(c), reg);
+    expect(d.defenses.resistances).not.toContain("fire");
+  });
+});

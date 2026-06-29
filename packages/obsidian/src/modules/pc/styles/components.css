@@ -620,6 +620,8 @@
   color: var(--pc-text-soft);
   max-width: 100%;
   white-space: nowrap;
+  /* Anchor for the absolutely-positioned situational stat tooltip. */
+  position: relative;
 }
 .archivist-pc-sheet .pc-save-chip b {
   font-weight: 600;
@@ -740,7 +742,7 @@
   grid-template-rows: repeat(2, 1fr);
   gap: 8px;
 }
-.archivist-pc-sheet .pc-stats-tile { text-align: center; padding: 10px 6px; }
+.archivist-pc-sheet .pc-stats-tile { text-align: center; padding: 10px 6px; position: relative; }
 .archivist-pc-sheet .pc-stats-tile-lbl {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-micro);
@@ -1626,12 +1628,30 @@
 .pc-ac-tooltip-row.is-greyed { opacity: 0.5; }
 .pc-ac-tooltip-override { font-weight: 600; color: var(--pc-crimson); }
 .pc-ac-tooltip-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
-.pc-ac-tooltip-row--situational { font-style: italic; opacity: 0.85; }
-.pc-ac-tooltip-row--situational .pc-ac-tooltip-condition {
-  color: var(--pc-text-muted);
-  font-size: var(--pc-fs-label);
-  margin-left: var(--pc-space-1);
+
+/* Shared situational-bonus rows — rendered by renderSituationalRows() across
+ * the AC tooltip and the attack table (and future save/spell/speed tooltips). */
+.pc-situational-row { display: flex; gap: var(--pc-space-1); font-style: italic; opacity: 0.85; padding: 0.1em 0; }
+.pc-situational-amount { font-variant-numeric: tabular-nums; }
+.pc-situational-field { color: var(--pc-text-muted); font-size: var(--pc-fs-label); font-style: italic; }
+.pc-situational-condition { color: var(--pc-text-muted); font-size: var(--pc-fs-label); }
+.pc-situational-divider { color: var(--pc-text-muted); font-size: var(--pc-fs-label); text-align: center; margin: 0.2em 0; }
+
+/* Stat hover popover — saves / spell / speed situational bonuses. Attached by
+ * attachStatTooltip() on mouseenter; shares the AC tooltip's parchment look so
+ * the dark --pc-text-primary content stays readable in Obsidian dark mode. */
+.pc-stat-tooltip {
+  position: absolute;
+  z-index: 100;
+  background: var(--pc-parchment-light);
+  color: var(--pc-text-primary);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  padding: 0.5em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  min-width: 180px;
 }
+.pc-stat-tooltip-title { font-weight: 600; margin-bottom: 0.3em; }
 
 .pc-charges-widget { display: inline-flex; flex-direction: column; align-items: center; }
 .pc-charges-stepper { display: inline-flex; gap: 0.2em; align-items: center; }

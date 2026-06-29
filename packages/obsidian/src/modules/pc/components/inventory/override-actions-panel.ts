@@ -1,5 +1,6 @@
 import type { EquipmentEntry } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
+import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
 
 export interface OverrideActionsPanelOpts {
   entry: EquipmentEntry;
@@ -35,6 +36,21 @@ export function renderOverrideActionsPanel(parent: HTMLElement, opts: OverrideAc
   rangeInput.value = opts.entry.overrides?.range ?? "";
   rangeInput.addEventListener("change", () => {
     opts.editState.setEquipmentOverride(opts.entryIndex, { range: rangeInput.value || undefined });
+  });
+
+  // Resistance (per-instance chosen damage type, e.g. Armor of Resistance).
+  // Option values are normalized to lowercase tokens (the canonical form stored
+  // in overrides.resist); display text keeps the capitalized DAMAGE_TYPES label.
+  const resistLabel = grid.createEl("label", { text: "Resistance" });
+  const resistSel = resistLabel.createEl("select", { cls: "pc-bdd" });
+  resistSel.setAttribute("data-field", "resist");
+  resistSel.createEl("option", { text: "—", attr: { value: "" } });
+  for (const dt of DAMAGE_TYPES) resistSel.createEl("option", { text: dt, attr: { value: dt.toLowerCase() } });
+  resistSel.value = opts.entry.overrides?.resist?.[0] ?? "";
+  resistSel.addEventListener("change", () => {
+    opts.editState.setEquipmentOverride(opts.entryIndex, {
+      resist: resistSel.value ? [resistSel.value] : undefined,
+    });
   });
 
   // Max charges

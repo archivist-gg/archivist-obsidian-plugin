@@ -69,6 +69,31 @@ describe("equipItem", () => {
     const r = equipItem(c, 1, reg);
     expect(r.kind).toBe("conflict");
   });
+
+  // FIX 1: a two-handed weapon can only occupy the mainhand. When the mainhand
+  // is held by a 1H weapon it must surface a conflict (NOT silently route to
+  // offhand), and equipping a shield while a 2H weapon is held conflicts on it.
+  it("two-handed weapon while mainhand occupied → conflict on mainhand (not routed to offhand)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[longsword]]", equipped: true, slot: "mainhand" }, { item: "[[greatsword]]" }];
+    const r = equipItem(c, 1, reg);
+    expect(r.kind).toBe("conflict");
+    if (r.kind === "conflict") expect(r.slot).toBe("mainhand");
+    expect(c.equipment[1].equipped).toBeFalsy();
+    expect(c.equipment[1].slot).toBeUndefined();
+  });
+
+  it("shield while a two-handed weapon holds the mainhand → conflict on the 2H weapon", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[greatsword]]", equipped: true, slot: "mainhand" }, { item: "[[shield]]" }];
+    const r = equipItem(c, 1, reg);
+    expect(r.kind).toBe("conflict");
+    if (r.kind === "conflict") {
+      expect(r.withIndex).toBe(0);
+      expect(r.slot).toBe("mainhand");
+    }
+    expect(c.equipment[1].equipped).toBeFalsy();
+  });
 });
 
 describe("attuneItem", () => {
@@ -146,5 +171,29 @@ describe("unattuneItem", () => {
     c.equipment = [{ item: "[[cloak-of-protection]]", equipped: true, attuned: true }];
     unattuneItem(c, 0);
     expect(c.equipment[0].attuned).toBe(false);
+  });
+});
+
+describe("equipItem write-path parity (A1)", () => {
+  it("routes magic armor (base_item) to the armor slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[adamantine-breastplate]]", equipped: false }];
+    const r = equipItem(c, 0, reg);
+    expect(r.kind).toBe("ok");
+    expect(c.equipment[0].slot).toBe("armor");
+  });
+
+  it("routes a category:'heavy' Shield to the shield slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[heavy-shield]]", equipped: false }];
+    equipItem(c, 0, reg);
+    expect(c.equipment[0].slot).toBe("shield");
+  });
+
+  it("resolves a vault-path wikilink to write the armor slot", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[SRD 2024/Armor/Breastplate]]", equipped: false }];
+    equipItem(c, 0, reg);
+    expect(c.equipment[0].slot).toBe("armor");
   });
 });

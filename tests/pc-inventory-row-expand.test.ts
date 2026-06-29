@@ -12,6 +12,7 @@ vi.mock("../packages/obsidian/src/modules/inquiry/shared/modals/ConfirmModal", (
   confirmDelete: vi.fn().mockResolvedValue(true),
 }));
 
+const NoticeMock = vi.hoisted(() => vi.fn());
 vi.mock("obsidian", () => ({
   MarkdownRenderer: {
     render: async (_app: unknown, md: string, parent: HTMLElement) => {
@@ -23,6 +24,7 @@ vi.mock("obsidian", () => ({
   },
   setIcon: vi.fn(),
   Component: class {},
+  Notice: NoticeMock,
 }));
 
 beforeAll(() => installObsidianDomHelpers());
@@ -129,19 +131,36 @@ describe("renderRowExpand", () => {
     expect(labels.some((l) => l?.includes("attune"))).toBe(true);
   });
 
-  it("clicking Equip calls editState.equipItem with the entry index", () => {
+  it("clicking Equip calls editState.equipItemWithSwap with the entry index", () => {
     const { entry, resolved } = make(
       "[[longsword]]",
       { name: "Longsword", category: "martial-melee", damage: { dice: "1d8", type: "slashing" } },
       { entityType: "weapon" },
     );
-    const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
-    const editState = { equipItem, unequipItem: vi.fn(), removeItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn() };
+    const equipItemWithSwap = vi.fn().mockReturnValue({});
+    const editState = { equipItemWithSwap, unequipItem: vi.fn(), removeItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn() };
     const root = mountContainer();
     renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never });
     const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("equip")) as HTMLElement;
     eqBtn.click();
-    expect(equipItem).toHaveBeenCalledWith(5); // resolved.index
+    expect(equipItemWithSwap).toHaveBeenCalledWith(5); // resolved.index
+  });
+
+  it("fires a Notice listing all swapped-out occupants when equipItemWithSwap reports names", () => {
+    NoticeMock.mockClear();
+    const { entry, resolved } = make(
+      "[[greatsword]]",
+      { name: "Greatsword", category: "martial-melee", damage: { dice: "2d6", type: "slashing" }, properties: ["two_handed"] },
+      { entityType: "weapon" },
+    );
+    const equipItemWithSwap = vi.fn().mockReturnValue({ unequipped: ["Longsword", "Shield"] });
+    const editState = { equipItemWithSwap, unequipItem: vi.fn(), removeItem: vi.fn(), attuneItem: vi.fn(), unattuneItem: vi.fn() };
+    const root = mountContainer();
+    renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never });
+    const eqBtn = [...root.querySelectorAll(".pc-inv-action")].find((b) => b.textContent?.toLowerCase().includes("equip")) as HTMLElement;
+    eqBtn.click();
+    expect(NoticeMock).toHaveBeenCalledTimes(1);
+    expect(NoticeMock).toHaveBeenCalledWith("Unequipped Longsword, Shield (slot occupied).");
   });
 
   describe("Unequip + attunement flow", () => {

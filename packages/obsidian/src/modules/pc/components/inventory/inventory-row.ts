@@ -1,4 +1,4 @@
-import type { App } from "obsidian";
+import { Notice, type App } from "obsidian";
 import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import type { EntityRegistry } from "@archivist/core";
@@ -176,7 +176,8 @@ function handleToggleClick(ctx: InventoryRowCtx): void {
   if (ctx.entry.equipped) {
     void unequipWithAttunementCheck(ctx.app, ctx.editState, ctx.entry, ctx.resolved.index);
   } else {
-    ctx.editState.equipItem(ctx.resolved.index);
+    const res = ctx.editState.equipItemWithSwap(ctx.resolved.index);
+    if (res.unequipped?.length) new Notice(`Unequipped ${res.unequipped.join(", ")} (slot occupied).`);
   }
 }
 

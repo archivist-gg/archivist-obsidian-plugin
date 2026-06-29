@@ -110,15 +110,15 @@ describe("InventoryRow", () => {
     expect(onToggle).toHaveBeenCalledWith(0); // index = 0
   });
 
-  it("clicking the toggle column calls editState.equipItem and stops propagation (no expand)", () => {
+  it("clicking the toggle column calls editState.equipItemWithSwap and stops propagation (no expand)", () => {
     const it = make("[[longsword]]", { entity: { name: "Longsword" }, entityType: "weapon" });
     const onToggle = vi.fn();
-    const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
-    const editState = { equipItem, unequipItem: vi.fn() };
+    const equipItemWithSwap = vi.fn().mockReturnValue({});
+    const editState = { equipItemWithSwap, unequipItem: vi.fn() };
     const root = mountContainer();
     new InventoryRow().render(root, { ...it, app: {} as never, editState: editState as never, onToggle });
     (root.querySelector(".pc-inv-toggle") as HTMLElement).click();
-    expect(equipItem).toHaveBeenCalledWith(0);
+    expect(equipItemWithSwap).toHaveBeenCalledWith(0);
     expect(onToggle).not.toHaveBeenCalled();
   });
 

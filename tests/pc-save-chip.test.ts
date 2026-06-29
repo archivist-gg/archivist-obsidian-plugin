@@ -90,6 +90,53 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
   });
 });
 
+describe("SaveChip — situational saves tooltip (Task 9)", () => {
+  function ctxWithSavesInfo(info?: unknown): ComponentRenderContext {
+    return {
+      derived: {
+        saves: { str: { bonus: 3, proficient: true } },
+        ...(info !== undefined ? { savesInformational: info } : {}),
+      },
+      resolved: {
+        classes: [{ entity: { saving_throws: ["str"] } }],
+        definition: { overrides: { saves: undefined } },
+      },
+      editState: null,
+    } as unknown as ComponentRenderContext;
+  }
+
+  it("shows a situational popover on hover over the save chip when the slice is non-empty", () => {
+    const root = mountContainer();
+    new SaveChip("str").render(root, ctxWithSavesInfo([
+      { field: "saving_throws", source: "Ring of Protection", value: 1, conditions: [{ kind: "raw", text: "while attuned" }] },
+    ]));
+    const chip = root.querySelector<HTMLElement>(".pc-save-chip")!;
+    chip.dispatchEvent(new Event("mouseenter"));
+    const tip = chip.querySelector(".pc-stat-tooltip");
+    expect(tip).not.toBeNull();
+    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("Saves — situational");
+    const rows = tip!.querySelectorAll(".pc-situational-row");
+    expect(rows.length).toBe(1);
+    expect(rows[0].textContent).toContain("Ring of Protection");
+  });
+
+  it("attaches NO popover when the saves slice is absent (situational-free character)", () => {
+    const root = mountContainer();
+    new SaveChip("str").render(root, ctxWithSavesInfo(undefined));
+    const chip = root.querySelector<HTMLElement>(".pc-save-chip")!;
+    chip.dispatchEvent(new Event("mouseenter"));
+    expect(chip.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+
+  it("attaches NO popover when the saves slice is empty", () => {
+    const root = mountContainer();
+    new SaveChip("str").render(root, ctxWithSavesInfo([]));
+    const chip = root.querySelector<HTMLElement>(".pc-save-chip")!;
+    chip.dispatchEvent(new Event("mouseenter"));
+    expect(chip.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+});
+
 describe("SaveChip — bonus override split-click (SP4c)", () => {
   function ctxWith(opts: { overrideProf?: boolean; overrideBonus?: number; bonus?: number } = {}) {
     const editState = {

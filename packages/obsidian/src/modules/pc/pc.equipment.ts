@@ -14,7 +14,6 @@ import type {
   ResolvedCharacter,
   ResolvedEquipped,
   ProficiencySet,
-  SlotKey,
 } from "./pc.types";
 import { readNumericBonus } from "../item/item.bonuses";
 import type {
@@ -22,6 +21,10 @@ import type {
   BonusFieldPath,
   InformationalBonus,
 } from "../item/item.conditions.types";
+import {
+  resolveEntityForEntry, effectiveArmor, defaultSlotForType,
+  isWeaponEntity, isItemEntity,
+} from "./pc.slotting";
 
 const ABILITY_KEYS: readonly Ability[] = ["str", "dex", "con", "int", "wis", "cha"];
 
@@ -35,7 +38,6 @@ interface ProficienciesForQuery {
   tools: ProficiencySet;
 }
 
-// TODO(SP6+): wire item.grants.senses through DerivedStats.senses + SensesPanel
 export function emptyAppliedBonuses(): AppliedBonuses {
   return {
     ability_bonuses: {},
@@ -46,38 +48,13 @@ export function emptyAppliedBonuses(): AppliedBonuses {
     spell_save_dc: 0,
     defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [] },
     informational: [],
+    senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0 },
   };
 }
 
 function unwrapSlug(item: string): string | null {
   const m = item.match(/^\[\[(.+)\]\]$/);
   return m ? m[1] : null;
-}
-
-// Resolve an equipment entry's `item` wikilink (or bare slug) through the
-// shared `resolveBaseItem` helper so vault-path wikilinks
-// (e.g. `[[SRD 5e/Magic Items/Defender (Longsword)]]`), alias wikilinks, AND
-// compendium-prefixed slugs all resolve consistently — matching the behavior
-// of `computeCarriedWeight` and the inventory row helpers. Returns the same
-// `{ entity, entityType }` shape the rest of this module expects.
-//
-// Registry stores data as Record<string, unknown>; the entityType
-// discriminator narrows the runtime type, but TS can't follow it. Cleaner
-// registry typing is an SP6+ refactor.
-function resolveEquipmentEntity(
-  entry: EquipmentEntry,
-  registry: EntityRegistry,
-): { entity: ArmorEntity | WeaponEntity | ItemEntity | null; entityType: string | null } {
-  const found = resolveBaseItem(entry.item, registry);
-  if (!found) return { entity: null, entityType: null };
-  return {
-    entity: found.data as unknown as ArmorEntity | WeaponEntity | ItemEntity,
-    entityType: found.entityType,
-  };
-}
-
-function isItemEntity(e: unknown): e is ItemEntity {
-  return !!e && typeof e === "object" && "rarity" in e;
 }
 
 function isAttunedActive(entry: EquipmentEntry, entity: ItemEntity | ArmorEntity | WeaponEntity | null): boolean {
@@ -145,7 +122,7 @@ export function computeAppliedBonuses(
   const ctx = buildConditionContext(resolved, {});
 
   for (const entry of equipment) {
-    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
+    const { entity, entityType } = resolveEntityForEntry(entry.item, registry);
 
     if (!entity) {
       const slug = unwrapSlug(entry.item);
@@ -161,6 +138,25 @@ export function computeAppliedBonuses(
     item.immune?.forEach((s) => out.defenses.immunities.push(s));
     item.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
     item.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
+
+    // Per-instance chosen defenses (e.g. Armor of Resistance → resist a chosen
+    // damage type). These ride the same isAttunedActive + entityType==="item"
+    // gate as the item's intrinsic defenses above.
+    entry.overrides?.resist?.forEach((s) => out.defenses.resistances.push(s));
+    entry.overrides?.immune?.forEach((s) => out.defenses.immunities.push(s));
+    entry.overrides?.vulnerable?.forEach((s) => out.defenses.vulnerabilities.push(s));
+    entry.overrides?.condition_immune?.forEach((s) => out.defenses.condition_immunities.push(s));
+
+    // Item-granted senses (e.g. Goggles of Night → darkvision 60). Per-type
+    // max so multiple sense items don't stack; recalc further maxes these
+    // against race vision + feature-effect senses.
+    const gs = item.grants?.senses;
+    if (gs) {
+      if (typeof gs.darkvision === "number") out.senses.darkvision = Math.max(out.senses.darkvision, gs.darkvision);
+      if (typeof gs.blindsight === "number") out.senses.blindsight = Math.max(out.senses.blindsight, gs.blindsight);
+      if (typeof gs.tremorsense === "number") out.senses.tremorsense = Math.max(out.senses.tremorsense, gs.tremorsense);
+      if (typeof gs.truesight === "number") out.senses.truesight = Math.max(out.senses.truesight, gs.truesight);
+    }
 
     const b = item.bonuses;
     if (!b) continue;
@@ -226,67 +222,8 @@ export function computeAppliedBonuses(
 // (Task 6: slot assignment only; AC + attack rows stubbed for Tasks 7/8.)
 // ─────────────────────────────────────────────────────────────
 
-function isWeaponEntity(e: unknown): e is WeaponEntity {
-  if (!e || typeof e !== "object") return false;
-  if (!("damage" in e) || !("category" in e)) return false;
-  const cat = (e as { category: unknown }).category;
-  return typeof cat === "string" && /melee|ranged/.test(cat);
-}
-
-function isArmorEntity(e: unknown): e is ArmorEntity {
-  return !!e && typeof e === "object" && "ac" in e && "category" in e && !("damage" in e);
-}
-
 function isTwoHanded(weapon: WeaponEntity): boolean {
   return weapon.properties.some((p) => p === "two_handed");
-}
-
-/** The ArmorEntity whose `ac` block governs a slot: the entity itself when it is
- *  armor, or — for a magic item whose `base_item` points at armor — the resolved
- *  base armor. Lets AC read off magic armor/shields (Adamantine, +N, etc.) whose
- *  own entity has no `ac` block. */
-function effectiveArmor(
-  entity: ArmorEntity | WeaponEntity | ItemEntity | null | undefined,
-  registry: EntityRegistry,
-): ArmorEntity | null {
-  if (isArmorEntity(entity)) return entity;
-  if (isItemEntity(entity) && typeof entity.base_item === "string") {
-    const base = resolveBaseItem(entity.base_item, registry);
-    if (base?.entityType === "armor") return base.data as unknown as ArmorEntity;
-  }
-  return null;
-}
-
-/** Is this armor a shield? Robust to the real SRD-2024 data, where the Shield
- *  entity carries `category: "heavy"` rather than `"shield"`, so slot routing
- *  cannot rely on category alone (mirrors the builder's name/slug isShield). */
-function isShieldArmor(armor: ArmorEntity): boolean {
-  if (armor.category === "shield") return true;
-  const slug = (armor.slug ?? "").toLowerCase();
-  if (slug === "shield" || slug.endsWith("_shield") || slug.endsWith("-shield")) return true;
-  return (armor.name ?? "").trim().toLowerCase() === "shield";
-}
-
-function defaultSlotForType(
-  entityType: string | null,
-  entity: ArmorEntity | WeaponEntity | ItemEntity | null,
-  registry: EntityRegistry,
-): SlotKey | null {
-  if (entityType === "weapon") return "mainhand";
-  if (entityType === "armor") {
-    return isArmorEntity(entity) && isShieldArmor(entity) ? "shield" : "armor";
-  }
-  // Magic items with a base_item pointing to a known weapon/armor route to
-  // the matching slot so they participate in attack rows / AC.
-  if (entityType === "item" && isItemEntity(entity) && typeof entity.base_item === "string") {
-    const base = resolveBaseItem(entity.base_item, registry);
-    if (base?.entityType === "weapon") return "mainhand";
-    if (base?.entityType === "armor") {
-      const armorData = base.data as unknown as ArmorEntity;
-      return isShieldArmor(armorData) ? "shield" : "armor";
-    }
-  }
-  return null;
 }
 
 function assignSlots(
@@ -301,7 +238,7 @@ function assignSlots(
   for (let i = 0; i < eq.length; i++) {
     const entry = eq[i];
     if (!entry.equipped || !entry.slot) continue;
-    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
+    const { entity, entityType } = resolveEntityForEntry(entry.item, registry);
     if (slots[entry.slot]) {
       warnings.push(`${entry.slot} slot conflict: ${entry.item} ignored (already taken).`);
       continue;
@@ -314,7 +251,7 @@ function assignSlots(
   for (let i = 0; i < eq.length; i++) {
     const entry = eq[i];
     if (!entry.equipped || entry.slot) continue;
-    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
+    const { entity, entityType } = resolveEntityForEntry(entry.item, registry);
     if (!entity || !entityType) continue;
 
     const defaultSlot = defaultSlotForType(entityType, entity, registry);
@@ -396,7 +333,7 @@ function computeAC(
   const acInformational: InformationalBonus[] = [];
   const acCtx = buildConditionContext(resolved, equippedSlots);
   for (const entry of resolved.definition.equipment ?? []) {
-    const { entity, entityType } = resolveEquipmentEntity(entry, registry);
+    const { entity, entityType } = resolveEntityForEntry(entry.item, registry);
     if (!entity || entityType !== "item") continue;
     if (!isAttunedActive(entry, entity)) continue;
     const item = entity as ItemEntity;
@@ -480,7 +417,7 @@ function magicBonusesForWeaponEntry(
   propertiesOverride?: string[];
   informational: InformationalBonus[];
 } {
-  const { entity } = resolveEquipmentEntity(entry, registry);
+  const { entity } = resolveEntityForEntry(entry.item, registry);
   const ovr = entry.overrides ?? {};
   const entryAttack = typeof ovr.bonus === "number" ? ovr.bonus : 0;
   const entryDamage = typeof ovr.damage_bonus === "number" ? ovr.damage_bonus : 0;
@@ -743,7 +680,7 @@ function computeCarriedWeight(
     if (!found) continue;
     // Registry stores `data` as Record<string, unknown>; the entityType
     // discriminator on the registered entity narrows the runtime type, but
-    // TS can't follow it. Same pattern as `resolveEquipmentEntity` above.
+    // TS can't follow it. Same pattern as `resolveEntityForEntry` (pc.slotting).
     // All three entity types declare `weight?: number | string`, so direct
     // field access is type-safe (no inline `unknown` cast needed) once
     // narrowed.

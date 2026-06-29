@@ -3,7 +3,8 @@
   display: flex; flex-wrap: wrap; gap: var(--pc-space-3); align-items: baseline;
   justify-content: space-between; margin-bottom: var(--pc-space-2);
 }
-.archivist-pc-sheet .pc-spell-dc-row { font-size: var(--pc-fs-body); color: var(--pc-text-soft); }
+/* position: relative anchors the absolutely-positioned situational stat tooltip. */
+.archivist-pc-sheet .pc-spell-dc-row { font-size: var(--pc-fs-body); color: var(--pc-text-soft); position: relative; }
 .archivist-pc-sheet .pc-spell-dc-row b { color: var(--pc-text-primary); }
 .archivist-pc-sheet .pc-spell-viewtoggle {
   font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-crimson);

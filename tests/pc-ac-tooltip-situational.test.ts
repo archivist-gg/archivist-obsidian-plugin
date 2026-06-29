@@ -21,7 +21,7 @@ describe("AC tooltip situational section", () => {
       overridden: false,
       informational: [],
     });
-    expect(parent.querySelector(".pc-ac-tooltip-row--situational")).toBeNull();
+    expect(parent.querySelector(".pc-situational-row")).toBeNull();
   });
 
   it("renders a situational row when informational has entries", () => {
@@ -39,7 +39,7 @@ describe("AC tooltip situational section", () => {
       overridden: false,
       informational,
     });
-    const sit = parent.querySelector(".pc-ac-tooltip-row--situational");
+    const sit = parent.querySelector(".pc-situational-row");
     expect(sit).not.toBeNull();
     expect(sit!.textContent).toContain("Arrow-Catching Shield");
     expect(sit!.textContent).toContain("vs ranged attacks");
@@ -57,7 +57,7 @@ describe("AC tooltip situational section", () => {
       overridden: false,
       informational,
     });
-    const rows = parent.querySelectorAll(".pc-ac-tooltip-row--situational");
+    const rows = parent.querySelectorAll(".pc-situational-row");
     expect(rows.length).toBe(2);
     expect(rows[0].textContent).toContain("A");
     expect(rows[1].textContent).toContain("B");

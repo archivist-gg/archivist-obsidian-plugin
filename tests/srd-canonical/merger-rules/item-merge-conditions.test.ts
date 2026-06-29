@@ -116,6 +116,63 @@ describe("enrichItemsWithFoundryEffects", () => {
     enrichItemsWithFoundryEffects(items, new Map());
     expect(items[0].bonuses?.ac).toBe(1);
   });
+
+  it("collapses msak+rsak spell_attack to a FLAT bonus (melee+ranged tautology)", () => {
+    // Robe of the Archmagi / Staff of the Magi: +2 to all spell attacks.
+    // Foundry emits two changes — msak (melee) and rsak (ranged) — each a
+    // spell_attack contribution gated on a different attack type. A bonus
+    // that applies to both melee AND ranged applies to every attack, so the
+    // gate is vacuous and the result must be a flat number.
+    const items: ItemCanonical[] = [flat("Robe of the Archmagi", "srd-5e_robe-of-the-archmagi", undefined)];
+    const foundry = new Map<string, FoundryItem>([
+      ["robe-of-the-archmagi", {
+        name: "Robe of the Archmagi",
+        source: "DMG",
+        effects: [{ changes: [
+          { key: "system.bonuses.msak.attack", mode: "ADD", value: "+ 2" },
+          { key: "system.bonuses.rsak.attack", mode: "ADD", value: "+ 2" },
+        ] }],
+      }],
+    ]);
+    enrichItemsWithFoundryEffects(items, foundry);
+    expect(typeof items[0].bonuses?.spell_attack).toBe("number");
+    expect(items[0].bonuses?.spell_attack).toBe(2);
+  });
+
+  it("keeps a SINGLE msak.attack as a conditional bonus (melee-only is possible)", () => {
+    const items: ItemCanonical[] = [flat("Melee-Only Spell Item", "srd-5e_melee-only-spell-item", undefined)];
+    const foundry = new Map<string, FoundryItem>([
+      ["melee-only-spell-item", {
+        name: "Melee-Only Spell Item",
+        source: "DMG",
+        effects: [{ changes: [
+          { key: "system.bonuses.msak.attack", mode: "ADD", value: "+ 1" },
+        ] }],
+      }],
+    ]);
+    enrichItemsWithFoundryEffects(items, foundry);
+    expect(items[0].bonuses?.spell_attack).toEqual({
+      value: 1,
+      when: [{ kind: "on_attack_type", value: "melee" }],
+    });
+  });
+
+  it("collapses mwak+rwak weapon_attack to a FLAT bonus (same tautology, weapon field)", () => {
+    const items: ItemCanonical[] = [flat("All-Attacks Weapon", "srd-5e_all-attacks-weapon", undefined)];
+    const foundry = new Map<string, FoundryItem>([
+      ["all-attacks-weapon", {
+        name: "All-Attacks Weapon",
+        source: "DMG",
+        effects: [{ changes: [
+          { key: "system.bonuses.mwak.attack", mode: "ADD", value: "+ 2" },
+          { key: "system.bonuses.rwak.attack", mode: "ADD", value: "+ 2" },
+        ] }],
+      }],
+    ]);
+    enrichItemsWithFoundryEffects(items, foundry);
+    expect(typeof items[0].bonuses?.weapon_attack).toBe("number");
+    expect(items[0].bonuses?.weapon_attack).toBe(2);
+  });
 });
 
 describe("enrichItemsWithCuratedConditions", () => {
