@@ -74,7 +74,7 @@ export function enrichMonster(
   } as Monster & { xp?: number; proficiency_bonus?: number };
 
   // Safety net: convert any plain-English mechanics to backtick formula tags
-  convertMonsterEntries(enriched, cr);
+  convertMonsterEntries(enriched as Monster & Record<string, unknown>, cr);
 
   return enriched;
 }
@@ -94,7 +94,9 @@ export function convertMonsterEntries(
   if (!abilities) return;
 
   const profBonus = getProficiencyBonus(cr);
-  const spellAbility = detectSpellcastingAbility(monster.traits);
+  const spellAbility = detectSpellcastingAbility(
+    (monster.traits ?? []).map((f) => ({ name: f.name, entries: f.entries ?? [] })),
+  );
 
   for (const [key, category] of MONSTER_SECTIONS) {
     const features = monster[key];
