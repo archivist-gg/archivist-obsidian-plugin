@@ -1,12 +1,5 @@
 import * as yaml from "js-yaml";
-
-export type ParseResult<T> = {
-  success: true;
-  data: T;
-} | {
-  success: false;
-  error: string;
-};
+import type { ParseResult } from "./contracts";
 
 export function parseYaml<T>(source: string, requiredFields: string[]): ParseResult<T> {
   try {
