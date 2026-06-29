@@ -89,7 +89,8 @@ export class BuilderView implements SheetComponent {
     const foot = main.createDiv({ cls: "pc-builder-foot" });
     const idx = BUILDER_STEPS.findIndex((s) => s.id === activeStep);
     if (idx > 0) {
-      const back = foot.createEl("button", { cls: "pc-builder-back", text: "◂ back" });
+      // eslint-disable-next-line obsidianmd/ui/sentence-case -- button label; leading glyph misleads the rule into lowercasing the first word
+      const back = foot.createEl("button", { cls: "pc-builder-back", text: "◂ Back" });
       back.addEventListener("click", () => this.goTo(BUILDER_STEPS[idx - 1].id, el, ctx));
     }
     if (idx < BUILDER_STEPS.length - 1) {
@@ -112,7 +113,8 @@ export class BuilderView implements SheetComponent {
       // hard requirement, so gate Finish on it with a title hint rather than
       // letting the user finish into a class-less, unusable sheet.
       const classed = (ctx.resolved.definition?.class?.length ?? 0) > 0;
-      const finish = foot.createEl("button", { cls: "pc-builder-finish", text: "✓ finish & open sheet" });
+      // eslint-disable-next-line obsidianmd/ui/sentence-case -- button label; leading glyph misleads the rule into lowercasing the first word
+      const finish = foot.createEl("button", { cls: "pc-builder-finish", text: "✓ Finish & open sheet" });
       finish.disabled = !classed;
       if (!classed) finish.title = "Pick a class before finishing.";
       finish.addEventListener("click", () => {

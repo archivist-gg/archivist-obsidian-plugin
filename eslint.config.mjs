@@ -16,6 +16,16 @@ const restrictedDisableRules = [
   "@microsoft/sdl/no-eval",
   "@microsoft/sdl/no-inner-html",
   "import/no-nodejs-modules",
+  // sentence-case is the one rule we deliberately permit disabling inline (for
+  // legitimate proper nouns / acronyms in UI copy). `no-restricted-disable`
+  // matches rule IDs with gitignore semantics (the `ignore` package), where
+  // `obsidianmd/*` excludes the `obsidianmd/ui` *parent* and gitignore cannot
+  // re-include a child of an excluded directory — so a bare
+  // `!obsidianmd/ui/sentence-case` is inert. Re-include the `ui` dir, re-exclude
+  // its rules, then re-include only sentence-case; every other obsidianmd/ui/*
+  // rule (sentence-case-json, sentence-case-locale-module, …) stays restricted.
+  "!obsidianmd/ui",
+  "obsidianmd/ui/*",
   "!obsidianmd/ui/sentence-case",
 ];
 

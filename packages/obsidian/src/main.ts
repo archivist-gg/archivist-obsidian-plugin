@@ -413,7 +413,8 @@ export default class ArchivistPlugin extends Plugin {
 
     // Canonical pipeline bootstrap: delete the legacy `Compendium/SRD/` folder,
     // then copy the embedded `SRD 5e/` and `SRD 2024/` bundles into the vault.
-    const n = new Notice("Archivist: setting up srd compendiums...", 0);
+    // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper noun: "SRD" is an acronym (System Reference Document)
+    const n = new Notice("Archivist: setting up SRD compendiums...", 0);
     try {
       const result = await bootstrapCompendiums({
         vault: this.app.vault,
