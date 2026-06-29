@@ -1,3 +1,7 @@
+import type { ArmorEntity } from "../../../armor/armor.types";
+import type { WeaponEntity } from "../../../weapon/weapon.types";
+import type { ItemEntity } from "../../../item/item.types";
+
 /**
  * `entity.attunement` can be:
  *   - undefined / false / ""           → not required
@@ -7,14 +11,16 @@
  *   - { required: false }               → not required (structured)
  *
  * This predicate normalizes all five shapes into a single boolean.
+ *
+ * Accepts any equipped entity. Only items model `attunement`; armor and
+ * weapons never require attunement in this domain, so they short-circuit to
+ * `false` via the property-presence narrow below.
  */
 
-interface MaybeAttunement {
-  attunement?: boolean | string | { required?: boolean; restriction?: string } | undefined;
-}
-
-export function requiresAttunement(entity: MaybeAttunement | null): boolean {
-  if (!entity) return false;
+export function requiresAttunement(
+  entity: ArmorEntity | WeaponEntity | ItemEntity | null,
+): boolean {
+  if (!entity || !("attunement" in entity)) return false;
   const a = entity.attunement;
   if (a === true) return true;
   if (typeof a === "string") return a.length > 0;

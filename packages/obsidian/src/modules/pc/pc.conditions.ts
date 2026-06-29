@@ -221,14 +221,14 @@ function mergePartial(out: ConditionEffects, partial: PartialConditionEffect): v
     const v = partial[k];
     if (typeof v === "boolean") {
       // Boolean flags OR together.
-      (out as Record<string, unknown>)[k] = (out as Record<string, boolean>)[k] || v;
+      (out as unknown as Record<string, unknown>)[k] = (out as unknown as Record<string, boolean>)[k] || v;
     } else if (typeof v === "number") {
       // Numeric: speed_multiplier and hp_max_multiplier MIN (smaller wins);
       // d20_test_penalty and speed_reduction_ft ADD (more penalty wins).
       if (k === "speed_multiplier" || k === "hp_max_multiplier") {
-        (out as Record<string, number>)[k] = Math.min((out as Record<string, number>)[k], v);
+        (out as unknown as Record<string, number>)[k] = Math.min((out as unknown as Record<string, number>)[k], v);
       } else {
-        (out as Record<string, number>)[k] = (out as Record<string, number>)[k] + v;
+        (out as unknown as Record<string, number>)[k] = (out as unknown as Record<string, number>)[k] + v;
       }
     }
   }

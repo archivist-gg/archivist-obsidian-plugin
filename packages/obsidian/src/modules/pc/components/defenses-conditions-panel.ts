@@ -117,9 +117,7 @@ export class DefensesConditionsPanel implements SheetComponent {
         setConditionIcon(iconWrap, c);
         chip.createSpan({ cls: "pc-cond-chip-label", text: CONDITION_DISPLAY_NAMES[c] });
         if (ce) {
-          const source = ce.sources.find((s) =>
-            s.condition === c || (c === "exhaustion" && s.condition === "exhaustion")
-          );
+          const source = ce.sources.find((s) => s.condition === c);
           if (source && source.effects.length > 0) {
             setTooltip(chip, source.effects.join("\n"));
           }
