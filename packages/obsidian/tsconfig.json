@@ -11,5 +11,5 @@
     { "path": "../dnd5e" },
     { "path": "../generators" }
   ],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.json"]
 }
