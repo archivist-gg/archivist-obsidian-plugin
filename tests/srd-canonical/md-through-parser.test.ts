@@ -19,7 +19,7 @@ import { parseClass } from "../../packages/obsidian/src/modules/class/class.pars
 import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
 import { parseItem } from "../../packages/obsidian/src/modules/item/item.parser";
 import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
-import { parseOptionalFeature } from "../../packages/obsidian/src/modules/optional-feature/optional-feature.parser";
+import { parseOptionalFeature } from "@archivist/dnd5e/optional-feature/optional-feature.parser";
 import { parseRace } from "@archivist/dnd5e/race/race.parser";
 import { parseSpell } from "../../packages/obsidian/src/modules/spell/spell.parser";
 import { parseSubclass } from "../../packages/obsidian/src/modules/subclass/subclass.parser";
