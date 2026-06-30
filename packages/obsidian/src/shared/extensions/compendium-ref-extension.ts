@@ -12,7 +12,7 @@ import type { ModuleRegistry } from "../../core/module-registry";
 import type { ArchivistModule, EditContext, RenderContext } from "../../core/module-api";
 import { renderSideButtons } from "../edit/side-buttons";
 import { EntityRegistry } from "@archivist/core";
-import type { RegisteredEntity } from "@archivist/core";
+import type { RegisteredEntity, Archivist, EntityDoc } from "@archivist/core";
 import * as yaml from "js-yaml";
 
 // ---------------------------------------------------------------------------
@@ -29,6 +29,12 @@ let moduleRegistry: ModuleRegistry | null = null;
 
 export function setCompendiumRefModuleRegistry(registry: ModuleRegistry): void {
   moduleRegistry = registry;
+}
+
+let archivistRef: Archivist | null = null;
+
+export function setCompendiumRefArchivist(archivist: Archivist): void {
+  archivistRef = archivist;
 }
 
 /**
@@ -89,11 +95,29 @@ interface EntityLike {
 }
 
 /**
+ * Strangler parse step (0c.1a D6): route the entity YAML through the kernel
+ * codec when the registered pack owns an EntityType for `entityType`, else
+ * fall back to the module's legacy `parseYaml`. For a ported type the codec's
+ * `doc.parse` is the same normalizer the module's `parseYaml` already wraps, so
+ * this migration is behaviour-neutral on ported types and a pure fallback on
+ * un-ported ones. The ref VIEW reads codec output (NOT `resolve()`) — a known
+ * fence-vs-ref VIEW divergence left for 0c.1b to revisit.
+ */
+function parseViaKernelOrModule(entityType: string, yamlStr: string, mod: ArchivistModule) {
+  const et = archivistRef?.getEntityType(entityType);
+  if (et?.doc) {
+    const doc: EntityDoc = { type: entityType, frontmatter: {}, body: yamlStr, raw: yamlStr };
+    return et.doc.parse(doc);
+  }
+  return mod.parseYaml!(yamlStr);
+}
+
+/**
  * Parse the entity YAML via the owning module and render a view-mode stat
  * block. Returns the rendered HTMLElement, or null when no module is
  * registered for the entity type or the parse/render fails.
  */
-function renderEntityViaModule(
+export function renderEntityViaModule(
   entity: EntityLike,
   host: HTMLElement,
   columns: number | undefined,
@@ -102,7 +126,7 @@ function renderEntityViaModule(
   if (!mod?.parseYaml || !mod.render) return null;
 
   const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
-  const result = mod.parseYaml(yamlStr);
+  const result = parseViaKernelOrModule(entity.entityType, yamlStr, mod);
   if (!result.success) return null;
 
   const ctx: RenderContext = {
@@ -325,7 +349,7 @@ class CompendiumRefWidget extends WidgetType {
     };
 
     const yamlStr = yaml.dump(entity.data, { lineWidth: -1 });
-    const result = mod.parseYaml(yamlStr);
+    const result = parseViaKernelOrModule(entity.entityType, yamlStr, mod);
     if (!result.success) return;
 
     const editCtx: EditContext = {

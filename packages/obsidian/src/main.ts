@@ -40,6 +40,7 @@ import {
   setCompendiumRefRegistry,
   setCompendiumRefPlugin,
   setCompendiumRefModuleRegistry,
+  setCompendiumRefArchivist,
   setCompendiumRefConfirmFn,
   parseCompendiumRef,
   renderCompendiumRefReadingMode,
@@ -234,6 +235,10 @@ export default class ArchivistPlugin extends Plugin {
       conventionVersion: CONVENTION_VERSION,
       entityTypes: legacyEntityTypes,
     });
+    // Strangler (0c.1a D6): hand the compendium-ref view/edit path the kernel
+    // so it routes parse through the pack codec for ported types (monster),
+    // falling back to mod.parseYaml for un-ported ones.
+    setCompendiumRefArchivist(this.archivist);
 
     // Expose the collected SDK tools so InquiryModule can hand them to
     // createArchivistMcpServer without importing each module's ai-tools
