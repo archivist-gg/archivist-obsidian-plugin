@@ -16,7 +16,7 @@ import * as path from "node:path";
 import { parseArmor } from "../../packages/obsidian/src/modules/armor/armor.parser";
 import { parseBackground } from "@archivist/dnd5e/background/background.parser";
 import { parseClass } from "../../packages/obsidian/src/modules/class/class.parser";
-import { parseFeat } from "../../packages/obsidian/src/modules/feat/feat.parser";
+import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
 import { parseItem } from "../../packages/obsidian/src/modules/item/item.parser";
 import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseOptionalFeature } from "../../packages/obsidian/src/modules/optional-feature/optional-feature.parser";

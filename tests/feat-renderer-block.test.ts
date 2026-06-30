@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { renderFeatBlock } from "../packages/obsidian/src/modules/feat/feat.renderer";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { FeatEntity } from "../packages/obsidian/src/modules/feat/feat.types";
+import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -10,7 +10,7 @@ import {
 } from "@archivist/dnd5e/dnd/math";
 import { ABILITY_KEYS, SKILL_ABILITY, ALL_SKILLS } from "@archivist/dnd5e/dnd/constants";
 import type { Ability, SkillSlug } from "@archivist/dnd5e";
-import type { FeatEntity } from "../feat/feat.types";
+import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 import type { EntityRegistry } from "@archivist/core";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";

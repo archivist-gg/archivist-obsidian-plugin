@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { FeatEntity } from "./feat.types";
-import { parseFeat } from "./feat.parser";
+import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
+import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
 import { renderFeatBlock } from "./feat.renderer";
 
 class FeatModule implements ArchivistModule {

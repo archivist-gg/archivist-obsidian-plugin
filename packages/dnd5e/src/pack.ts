@@ -3,6 +3,7 @@ import { CONVENTION_VERSION } from "@archivist/core";
 import { monsterEntityType } from "./monster/monster.entity-type";
 import { raceEntityType } from "./race/race.entity-type";
 import { backgroundEntityType } from "./background/background.entity-type";
+import { featEntityType } from "./feat/feat.entity-type";
 
 /**
  * The real `dnd5e` SystemPack. It owns the parse/resolve/generate contract for
@@ -17,5 +18,5 @@ export const dnd5ePack: SystemPack = {
   id: "dnd5e",
   version: "0.1.0",
   conventionVersion: CONVENTION_VERSION,
-  entityTypes: [monsterEntityType, raceEntityType, backgroundEntityType],
+  entityTypes: [monsterEntityType, raceEntityType, backgroundEntityType, featEntityType],
 };

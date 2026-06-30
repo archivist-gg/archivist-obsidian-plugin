@@ -1,5 +1,5 @@
 import type { Choice, Ability, FeatCategory, FeatureEffect } from "@archivist/dnd5e";
-import type { Edition } from "../class/class.types";
+import type { Edition } from "@archivist/dnd5e/types/edition";
 import type { Resource } from "@archivist/dnd5e/types/resource";
 
 export type FeatPrerequisite =

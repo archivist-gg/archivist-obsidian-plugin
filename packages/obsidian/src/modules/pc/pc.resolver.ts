@@ -3,7 +3,7 @@ import type { ClassEntity } from "../class/class.types";
 import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
-import type { FeatEntity } from "../feat/feat.types";
+import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 import type { Feature, Choice } from "@archivist/dnd5e";
 import type { Spell } from "../spell/spell.types";
 import type {
