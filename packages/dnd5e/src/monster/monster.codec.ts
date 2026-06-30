@@ -1,33 +1,24 @@
 import yaml from "js-yaml";
 import type { DocCodec, EntityDoc, ParseResult } from "@archivist/core";
+import type { Monster } from "./monster.types";
+import { parseMonster } from "./monster.parser";
 
-export type MonsterRaw = Record<string, unknown>;
+/** Deprecated alias kept for the barrel re-export (`index.ts:7`) + `monster.resolve.ts:2`. */
+export type MonsterRaw = Monster; // N2: mandatory, not conditional
 
 /**
- * INTENTIONAL raw passthrough codec.
- *
- * `parse`/`serialize` are a semantically lossless round-trip: the YAML body is
- * decoded to a plain object and re-encoded as-is. This codec deliberately drops
- * nothing and normalizes nothing — display- and edit-mode normalization (e.g.
- * coercing/canonicalizing fields) is owned by the renderer / `parseMonster`,
- * not by the codec layer.
- *
- * Future entity codecs should make a conscious choice between this
- * raw-passthrough contract and a normalizing contract, rather than copying this
- * one by default.
+ * Normalizing codec (0c.1a B8). `parse` delegates to `parseMonster`, which maps
+ * the `legendary` alias and extracts Legendary-Resistance from trait text into the
+ * canonical `legendary_resistance` field. This canonicalization is intended and
+ * persists on save (B3); resolve-derived PB/XP are NOT added here. `serialize` stays
+ * `yaml.dump` (the edit-save path uses obsidian's separate `editableToYaml` — document
+ * that two-serializer split here; gate (d) Step 6 verifies `yaml.dump` round-trips).
  */
-export const monsterCodec: DocCodec<MonsterRaw> = {
-  parse(doc: EntityDoc): ParseResult<MonsterRaw> {
-    try {
-      const obj = yaml.load(doc.body);
-      if (!obj || typeof obj !== "object") return { success: false, error: "monster body is not a mapping" };
-      if (!(obj as Record<string, unknown>).name) return { success: false, error: "monster requires a name" };
-      return { success: true, data: obj as MonsterRaw };
-    } catch (e) {
-      return { success: false, error: (e as Error).message };
-    }
+export const monsterCodec: DocCodec<Monster> = {
+  parse(doc: EntityDoc): ParseResult<Monster> {
+    return parseMonster(doc.body);
   },
-  serialize(raw: MonsterRaw): string {
-    return yaml.dump(raw, { lineWidth: -1, sortKeys: false });
+  serialize(monster: Monster): string {
+    return yaml.dump(monster, { lineWidth: -1, sortKeys: false });
   },
 };

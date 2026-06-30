@@ -189,6 +189,15 @@ export default class ArchivistPlugin extends Plugin {
       pcModule,
     ];
 
+    // Types whose parse contract is owned by a real pack (their EntityType
+    // carries a `doc` codec) are de-listed from the legacy adapter's parse
+    // bridge. Derived from `dnd5ePack` so the set tracks the pack automatically
+    // as entity types migrate off the legacy adapter — today it resolves to
+    // exactly `{"monster"}`, matching the prior literal guard. Presentation
+    // (render/edit/insert) stays in obsidian for ALL types, monster included.
+    const packParsedTypes = new Set(
+      dnd5ePack.entityTypes.filter((et) => et.doc).map((et) => et.type),
+    );
     const legacyEntityTypes: EntityType[] = [];
     for (const mod of this.moduleList) {
       moduleRegistry.register(mod);
@@ -197,12 +206,7 @@ export default class ArchivistPlugin extends Plugin {
         mod.registerAITools(aiToolRegistry);
       }
       if (mod.codeBlockType && mod.parseYaml) {
-        // Monster is the first entity owned by a real pack: its EntityType
-        // (codec + resolve) comes from dnd5ePack, so it's excluded from the
-        // legacy adapter's parse bridge. Every other type still bridges through
-        // the legacy adapter. Presentation (render/edit/insert) stays in
-        // obsidian for ALL types, monster included.
-        if (mod.codeBlockType !== "monster") {
+        if (!packParsedTypes.has(mod.codeBlockType)) {
           legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse
         }
         this.presentation.set(mod.codeBlockType, {
