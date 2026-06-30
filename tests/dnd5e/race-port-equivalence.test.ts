@@ -75,7 +75,7 @@ describe("race port equivalence", () => {
     if (!parsed.success) return;
     const host = document.createElement("div");
     const ctx = { plugin: undefined, ctx: null } as unknown as RenderContext;
-    expect(() => raceModule.render?.(host, parsed.data, ctx)).not.toThrow();
+    expect(() => raceModule.render(host, parsed.data, ctx)).not.toThrow();
   });
 
   // (d) parse-idempotence: parse(serialize(parse(x))) deep-equals parse(x)

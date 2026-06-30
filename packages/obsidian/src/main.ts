@@ -193,9 +193,11 @@ export default class ArchivistPlugin extends Plugin {
     // Types whose parse contract is owned by a real pack (their EntityType
     // carries a `doc` codec) are de-listed from the legacy adapter's parse
     // bridge. Derived from `dnd5ePack` so the set tracks the pack automatically
-    // as entity types migrate off the legacy adapter — today it resolves to
-    // exactly `{"monster"}`, matching the prior literal guard. Presentation
-    // (render/edit/insert) stays in obsidian for ALL types, monster included.
+    // as entity types migrate off the legacy adapter — currently the 9 ported
+    // types (monster, race, background, feat, optional-feature, armor, weapon,
+    // class, subclass); un-ported types (spell, item, pc, npc, encounter) still
+    // bridge through the legacy adapter. Presentation (render/edit/insert) stays
+    // in obsidian for ALL types, ported included.
     const packParsedTypes = new Set(
       dnd5ePack.entityTypes.filter((et) => et.doc).map((et) => et.type),
     );
@@ -225,8 +227,8 @@ export default class ArchivistPlugin extends Plugin {
       }
     }
     // Register the real dnd5e pack before the legacy strangler pack so its
-    // EntityTypes own the types it declares (monster). Registration is
-    // last-write-wins per type; monster is de-listed from the legacy pack
+    // EntityTypes own the types it declares. Registration is last-write-wins
+    // per type; the pack-declared types are de-listed from the legacy pack
     // above, so there is no conflict either way.
     this.archivist.registerPack(dnd5ePack);
     this.archivist.registerPack({
