@@ -1,7 +1,7 @@
 import type { Ability } from "@archivist/dnd5e";
 import type { KnownSpellEntry, ResolvedClass } from "./pc.types";
 import { abilityModifier } from "@archivist/dnd5e/dnd/math";
-import type { CasterType } from "../class/class.types";
+import type { CasterType } from "@archivist/dnd5e/class/class.types";
 import { readTableColumn } from "./pc.table-column";
 
 export interface SpellcastingProfile {

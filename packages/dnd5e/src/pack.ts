@@ -7,6 +7,7 @@ import { featEntityType } from "./feat/feat.entity-type";
 import { optionalFeatureEntityType } from "./optional-feature/optional-feature.entity-type";
 import { armorEntityType } from "./armor/armor.entity-type";
 import { weaponEntityType } from "./weapon/weapon.entity-type";
+import { classEntityType } from "./class/class.entity-type";
 
 /**
  * The real `dnd5e` SystemPack. It owns the parse/resolve/generate contract for
@@ -21,5 +22,5 @@ export const dnd5ePack: SystemPack = {
   id: "dnd5e",
   version: "0.1.0",
   conventionVersion: CONVENTION_VERSION,
-  entityTypes: [monsterEntityType, raceEntityType, backgroundEntityType, featEntityType, optionalFeatureEntityType, armorEntityType, weaponEntityType],
+  entityTypes: [monsterEntityType, raceEntityType, backgroundEntityType, featEntityType, optionalFeatureEntityType, armorEntityType, weaponEntityType, classEntityType],
 };

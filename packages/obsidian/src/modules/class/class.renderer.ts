@@ -1,4 +1,4 @@
-import type { ClassEntity } from "./class.types";
+import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
 import type { RenderContext } from "../../core/module-api";
 import {
   el,

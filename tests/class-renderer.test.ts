@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { renderClassStub } from "../packages/obsidian/src/modules/class/class.renderer";
-import type { ClassEntity } from "../packages/obsidian/src/modules/class/class.types";
+import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,6 +1,6 @@
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { ClassEntity } from "./class.types";
-import { parseClass } from "./class.parser";
+import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
+import { parseClass } from "@archivist/dnd5e/class/class.parser";
 import { renderClassStub } from "./class.renderer";
 
 class ClassModule implements ArchivistModule {

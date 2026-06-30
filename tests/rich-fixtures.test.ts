@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
-import { classEntitySchema } from "../packages/obsidian/src/modules/class/class.schema";
+import { classEntitySchema } from "@archivist/dnd5e/class/class.schema";
 import { raceEntitySchema } from "@archivist/dnd5e/race/race.schema";
 import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
 import { backgroundEntitySchema } from "@archivist/dnd5e/background/background.schema";

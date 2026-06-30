@@ -1,5 +1,5 @@
 import type { EntityRegistry } from "@archivist/core";
-import type { ClassEntity } from "../class/class.types";
+import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
 import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 import type { SubclassEntity } from "../subclass/subclass.types";
 import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";

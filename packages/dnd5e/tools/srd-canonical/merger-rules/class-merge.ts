@@ -7,7 +7,7 @@ import type { Choice } from "@archivist/dnd5e/types/choice";
 import type { StartingEquipmentEntry, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
 
 /**
- * ClassCanonical mirrors the runtime ClassEntity shape (src/modules/class/class.schema.ts)
+ * ClassCanonical mirrors the runtime ClassEntity shape (packages/dnd5e/src/class/class.schema.ts)
  * so the emitted YAML in `.compendium-bundle/SRD 5e/Classes/*.md` parses through
  * `parseClass` without a translation layer.
  */
