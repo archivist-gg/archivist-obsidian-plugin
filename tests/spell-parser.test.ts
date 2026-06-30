@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseSpell } from "../packages/obsidian/src/modules/spell/spell.parser";
+import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
 
 describe("parseSpell", () => {
   it("parses a minimal spell (name only)", () => {

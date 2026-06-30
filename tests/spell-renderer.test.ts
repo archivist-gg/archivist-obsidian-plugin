@@ -49,7 +49,7 @@ vi.mock("obsidian", () => ({
 }));
 
 import { renderSpellBlock } from "../packages/obsidian/src/modules/spell/spell.renderer";
-import type { Spell } from "../packages/obsidian/src/modules/spell/spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 
 const fireball: Spell = {
   name: "Fireball",

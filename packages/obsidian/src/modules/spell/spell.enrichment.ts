@@ -2,7 +2,7 @@ import {
   convertDescToTags,
   STATIC_FALLBACK_CONTEXT,
 } from "@archivist/dnd5e/dnd/srd-tag-converter";
-import type { Spell } from "./spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 
 export function enrichSpell(raw: Record<string, unknown>): Spell {
   const duration = raw.duration as string | undefined;

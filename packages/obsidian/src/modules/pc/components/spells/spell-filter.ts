@@ -1,5 +1,5 @@
 import type { SpellCandidate } from "./spell-access";
-import type { Spell } from "../../../spell/spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 import { abbrAbility } from "./spell-display";
 
 export type SourceCat = "2014" | "2024";

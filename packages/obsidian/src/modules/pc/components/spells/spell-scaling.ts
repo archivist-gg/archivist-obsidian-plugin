@@ -1,4 +1,4 @@
-import type { Spell } from "../../../spell/spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 
 /** A spell repeats under higher levels only if it has a real upcast benefit. */
 export function spellScales(spell: Spell): boolean {

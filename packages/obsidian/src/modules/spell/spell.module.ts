@@ -8,8 +8,8 @@ import type {
   ParseResult,
   RenderContext,
 } from "../../core/module-api";
-import type { Spell } from "./spell.types";
-import { parseSpell } from "./spell.parser";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
+import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
 import { renderSpellBlock } from "./spell.renderer";
 import { renderSpellEditMode } from "./spell.edit-render";
 import { SpellModal } from "./spell.modal";

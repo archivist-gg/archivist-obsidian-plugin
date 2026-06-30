@@ -21,7 +21,7 @@ import { parseItem } from "../../packages/obsidian/src/modules/item/item.parser"
 import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseOptionalFeature } from "@archivist/dnd5e/optional-feature/optional-feature.parser";
 import { parseRace } from "@archivist/dnd5e/race/race.parser";
-import { parseSpell } from "../../packages/obsidian/src/modules/spell/spell.parser";
+import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
 import { parseSubclass } from "@archivist/dnd5e/subclass/subclass.parser";
 import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
 

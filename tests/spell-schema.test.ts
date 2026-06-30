@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { spellInputSchema } from "../packages/obsidian/src/modules/spell/spell.ai-schema";
-import { spellEntitySchema } from "../packages/obsidian/src/modules/spell/spell.schema";
-import type { Spell } from "../packages/obsidian/src/modules/spell/spell.types";
+import { spellEntitySchema } from "@archivist/dnd5e/spell/spell.schema";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 
 describe("spellInputSchema", () => {
   it("validates a valid spell", () => {

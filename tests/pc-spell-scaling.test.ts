@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { spellScales, spellEffectAtSlot, upcastLevelsFor } from "../packages/obsidian/src/modules/pc/components/spells/spell-scaling";
-import type { Spell } from "../packages/obsidian/src/modules/spell/spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 
 const mm2024: Spell = {
   name: "Magic Missile", level: 1,

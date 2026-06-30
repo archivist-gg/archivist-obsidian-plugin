@@ -7,7 +7,7 @@ import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";
-import type { Spell } from "../spell/spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 import type { OptionalFeatureEntity } from "@archivist/dnd5e/types/optional-feature.types";
 
 export type { ConditionSlug } from "./constants/conditions";

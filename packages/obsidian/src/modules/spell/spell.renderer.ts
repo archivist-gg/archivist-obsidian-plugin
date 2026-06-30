@@ -1,5 +1,5 @@
 import { setIcon, type App, Component } from "obsidian";
-import { Spell } from "./spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 import {
   el,
   createIconProperty,

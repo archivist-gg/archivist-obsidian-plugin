@@ -1,5 +1,5 @@
 import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
-import type { Spell } from "../../../spell/spell.types";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 import { baseClassName } from "../../pc.spellcasting";
 
 export interface SpellCandidate {
