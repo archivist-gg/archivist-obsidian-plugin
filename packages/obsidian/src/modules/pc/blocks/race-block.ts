@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
-import type { RaceEntity } from "../../race/race.types";
+import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 import type { Feature } from "@archivist/dnd5e";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 

@@ -3,7 +3,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
 import { classEntitySchema } from "../packages/obsidian/src/modules/class/class.schema";
-import { raceEntitySchema } from "../packages/obsidian/src/modules/race/race.schema";
+import { raceEntitySchema } from "@archivist/dnd5e/race/race.schema";
 import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
 import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
 import { featEntitySchema } from "../packages/obsidian/src/modules/feat/feat.schema";

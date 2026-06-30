@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { renderRaceBlock } from "../packages/obsidian/src/modules/race/race.renderer";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { RaceEntity } from "../packages/obsidian/src/modules/race/race.types";
+import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

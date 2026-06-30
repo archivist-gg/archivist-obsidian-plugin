@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { RaceEntity } from "./race.types";
-import { parseRace } from "./race.parser";
+import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
+import { parseRace } from "@archivist/dnd5e/race/race.parser";
 import { renderRaceBlock } from "./race.renderer";
 
 class RaceModule implements ArchivistModule {
