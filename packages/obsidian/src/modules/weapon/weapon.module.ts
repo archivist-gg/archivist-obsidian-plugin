@@ -1,6 +1,6 @@
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { WeaponEntity } from "./weapon.types";
-import { parseWeapon } from "./weapon.parser";
+import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
+import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
 import { renderWeaponBlock } from "./weapon.renderer";
 
 class WeaponModule implements ArchivistModule {

@@ -3,7 +3,7 @@ import { computeAppliedBonuses, computeSlotsAndAttacks } from "../packages/obsid
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
-import type { WeaponEntity } from "../packages/obsidian/src/modules/weapon/weapon.types";
+import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";

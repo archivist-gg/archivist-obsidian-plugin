@@ -1,5 +1,5 @@
 import type { Ability, ArmorCategory } from "@archivist/dnd5e/armor/armor.types";
-import type { WeaponCategory, WeaponEntity } from "../weapon/weapon.types";
+import type { WeaponCategory, WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { ConditionalBonus } from "./item.conditions.types";
 
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */

@@ -56,7 +56,11 @@
     "./types/item-conditions.types": "./src/types/item-conditions.types.ts",
     "./types/optional-feature.types": "./src/types/optional-feature.types.ts",
     "./types/resource": "./src/types/resource.ts",
-    "./types/selection-pool": "./src/types/selection-pool.ts"
+    "./types/selection-pool": "./src/types/selection-pool.ts",
+    "./weapon/weapon.codec": "./src/weapon/weapon.codec.ts",
+    "./weapon/weapon.parser": "./src/weapon/weapon.parser.ts",
+    "./weapon/weapon.schema": "./src/weapon/weapon.schema.ts",
+    "./weapon/weapon.types": "./src/weapon/weapon.types.ts"
   },
   "dependencies": {
     "@archivist/core": "*",

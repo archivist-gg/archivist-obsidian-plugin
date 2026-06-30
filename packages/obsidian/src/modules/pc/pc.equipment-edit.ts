@@ -1,6 +1,6 @@
 import type { EntityRegistry } from "@archivist/core";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
-import type { WeaponEntity } from "../weapon/weapon.types";
+import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { ItemEntity } from "../item/item.types";
 import type { Character, EquipmentEntry, SlotKey } from "./pc.types";
 import { resolveEntityForEntry, defaultSlotForType, isWeaponEntity } from "./pc.slotting";
