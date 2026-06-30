@@ -6,7 +6,7 @@ import { renderWeaponBlock } from "../../../weapon/weapon.renderer";
 import { renderArmorBlock } from "../../../armor/armor.renderer";
 import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
-import type { Item } from "../../../item/item.types";
+import type { Item } from "@archivist/dnd5e/item/item.types";
 import type { EntityRegistry } from "@archivist/core";
 import { requiresAttunement } from "./requires-attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";

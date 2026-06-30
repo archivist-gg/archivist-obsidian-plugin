@@ -8,8 +8,8 @@ import type {
   ParseResult,
   RenderContext,
 } from "../../core/module-api";
-import type { Item } from "./item.types";
-import { parseItem } from "./item.parser";
+import type { Item } from "@archivist/dnd5e/item/item.types";
+import { parseItem } from "@archivist/dnd5e/item/item.parser";
 import { renderItemBlock } from "./item.renderer";
 import { renderItemEditMode } from "./item.edit-render";
 import { ItemModal } from "./item.modal";

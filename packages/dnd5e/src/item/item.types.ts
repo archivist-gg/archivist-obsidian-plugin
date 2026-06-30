@@ -1,6 +1,6 @@
 import type { Ability, ArmorCategory } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponCategory, WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
-import type { ConditionalBonus } from "./item.conditions.types";
+import type { ConditionalBonus } from "@archivist/dnd5e/types/item-conditions.types";
 
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 export type ItemRarity =

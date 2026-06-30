@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { renderItemMechanicalSummary } from "../packages/obsidian/src/modules/item/item.renderer";
-import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

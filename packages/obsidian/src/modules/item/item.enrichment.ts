@@ -2,7 +2,7 @@ import {
   convertDescToTags,
   STATIC_FALLBACK_CONTEXT,
 } from "@archivist/dnd5e/dnd/srd-tag-converter";
-import type { Item } from "./item.types";
+import type { Item } from "@archivist/dnd5e/item/item.types";
 
 export function enrichItem(
   raw: Record<string, unknown>,

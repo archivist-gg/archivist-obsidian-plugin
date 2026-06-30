@@ -1,6 +1,6 @@
 import type { EntityRegistry } from "@archivist/core";
 import { resolveBaseItem } from "../../shared/entities/base-item-resolver";
-import type { ItemEntity } from "../item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { SlotKey } from "./pc.types";

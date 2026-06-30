@@ -10,7 +10,7 @@ import * as path from "node:path";
 import { describe, it, expect, beforeAll } from "vitest";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import { readNumericBonus } from "../packages/obsidian/src/modules/item/item.bonuses";
-import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
 import type {
   Character,

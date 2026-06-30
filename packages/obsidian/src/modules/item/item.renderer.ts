@@ -1,4 +1,4 @@
-import { Item, ItemEntity } from "./item.types";
+import { Item, ItemEntity } from "@archivist/dnd5e/item/item.types";
 import type { ConditionalBonus } from "./item.conditions.types";
 import {
   el,

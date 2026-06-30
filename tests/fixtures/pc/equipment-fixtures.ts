@@ -2,7 +2,7 @@ import { EntityRegistry } from "@core/entity-registry";
 import { buildMockRegistry } from "./mock-entity-registry";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
-import type { ItemEntity } from "../../../packages/obsidian/src/modules/item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 
 export const PLATE: ArmorEntity = {
   name: "Plate",

@@ -1,6 +1,6 @@
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
-import type { ItemEntity } from "../../../item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 
 /**
  * `entity.attunement` can be:

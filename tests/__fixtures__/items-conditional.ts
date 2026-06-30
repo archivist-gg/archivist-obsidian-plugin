@@ -4,7 +4,7 @@
 // tests. Kept small and focused - each fixture exercises a different
 // condition shape.
 
-import type { ItemEntity } from "../../packages/obsidian/src/modules/item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 
 export const bracersOfDefense: ItemEntity = {
   name: "Bracers of Defense",

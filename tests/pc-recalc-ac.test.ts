@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter, ResolvedFeature } from "../packages/obsidian/src/modules/pc/pc.types";
-import type { ItemEntity } from "../packages/obsidian/src/modules/item/item.types";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {

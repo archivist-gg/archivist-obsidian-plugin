@@ -9,7 +9,7 @@ import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
 // without a broader inquiry-side refactor is outside Task 13 scope.
 import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
-import { parseItem } from "../../../../item/item.parser";
+import { parseItem } from "@archivist/dnd5e/item/item.parser";
 import { renderMonsterBlock } from "../../../../monster/monster.renderer";
 import { renderSpellBlock } from "../../../../spell/spell.renderer";
 import { renderItemBlock } from "../../../../item/item.renderer";

@@ -4,7 +4,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 // TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
 // modules don't reach across into src/main for the concrete class.
 import type ArchivistPlugin from "../../main";
-import type { Item } from "./item.types";
+import type { Item } from "@archivist/dnd5e/item/item.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";
 import { showCompendiumPicker } from "../../shared/edit/compendium-picker";

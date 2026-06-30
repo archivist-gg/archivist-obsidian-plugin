@@ -17,7 +17,7 @@ import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
 import { parseBackground } from "@archivist/dnd5e/background/background.parser";
 import { parseClass } from "@archivist/dnd5e/class/class.parser";
 import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
-import { parseItem } from "../../packages/obsidian/src/modules/item/item.parser";
+import { parseItem } from "@archivist/dnd5e/item/item.parser";
 import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseOptionalFeature } from "@archivist/dnd5e/optional-feature/optional-feature.parser";
 import { parseRace } from "@archivist/dnd5e/race/race.parser";

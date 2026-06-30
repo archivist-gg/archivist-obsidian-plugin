@@ -193,9 +193,9 @@ export default class ArchivistPlugin extends Plugin {
     // Types whose parse contract is owned by a real pack (their EntityType
     // carries a `doc` codec) are de-listed from the legacy adapter's parse
     // bridge. Derived from `dnd5ePack` so the set tracks the pack automatically
-    // as entity types migrate off the legacy adapter — currently the 10 ported
+    // as entity types migrate off the legacy adapter — currently the 11 ported
     // types (monster, race, background, feat, optional-feature, armor, weapon,
-    // class, subclass, spell); un-ported types (item, pc, npc, encounter) still
+    // class, subclass, spell, item); un-ported types (pc, npc, encounter) still
     // bridge through the legacy adapter. Presentation (render/edit/insert) stays
     // in obsidian for ALL types, ported included.
     const packParsedTypes = new Set(

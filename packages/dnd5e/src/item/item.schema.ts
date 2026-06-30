@@ -4,7 +4,7 @@ import { z } from "zod";
 // Condition schemas - discriminated union with recursive any_of.
 // --------------------------------------------------------------------------
 
-import type { Condition } from "./item.conditions.types";
+import type { Condition } from "@archivist/dnd5e/types/item-conditions.types";
 
 const tier1Conditions = [
   z.object({ kind: z.literal("no_armor") }),
