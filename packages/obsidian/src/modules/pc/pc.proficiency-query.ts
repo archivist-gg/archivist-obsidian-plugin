@@ -1,6 +1,6 @@
 // src/modules/pc/pc.proficiency-query.ts
 
-import type { ArmorEntity } from "../armor/armor.types";
+import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "../weapon/weapon.types";
 import type { ProficiencySet } from "./pc.types";
 

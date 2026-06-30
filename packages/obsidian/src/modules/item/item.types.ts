@@ -1,4 +1,4 @@
-import type { Ability, ArmorCategory } from "../armor/armor.types";
+import type { Ability, ArmorCategory } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponCategory, WeaponEntity } from "../weapon/weapon.types";
 import type { ConditionalBonus } from "./item.conditions.types";
 

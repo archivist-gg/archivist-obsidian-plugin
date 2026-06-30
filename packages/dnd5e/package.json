@@ -5,6 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./armor/armor.codec": "./src/armor/armor.codec.ts",
+    "./armor/armor.parser": "./src/armor/armor.parser.ts",
+    "./armor/armor.schema": "./src/armor/armor.schema.ts",
+    "./armor/armor.types": "./src/armor/armor.types.ts",
     "./background/background.codec": "./src/background/background.codec.ts",
     "./background/background.parser": "./src/background/background.parser.ts",
     "./background/background.schema": "./src/background/background.schema.ts",

@@ -2,7 +2,7 @@
 
 import { describe, it, expect } from "vitest";
 import { isProficientWithWeapon, isProficientWithArmor } from "../packages/obsidian/src/modules/pc/pc.proficiency-query";
-import type { ArmorEntity } from "../packages/obsidian/src/modules/armor/armor.types";
+import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "../packages/obsidian/src/modules/weapon/weapon.types";
 
 const longsword: WeaponEntity = {

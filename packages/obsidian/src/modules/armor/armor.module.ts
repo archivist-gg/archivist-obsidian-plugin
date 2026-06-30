@@ -1,6 +1,6 @@
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { ArmorEntity } from "./armor.types";
-import { parseArmor } from "./armor.parser";
+import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
+import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
 import { renderArmorBlock } from "./armor.renderer";
 
 class ArmorModule implements ArchivistModule {

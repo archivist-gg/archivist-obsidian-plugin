@@ -1,6 +1,6 @@
 import { EntityRegistry } from "@core/entity-registry";
 import { buildMockRegistry } from "./mock-entity-registry";
-import type { ArmorEntity } from "../../../packages/obsidian/src/modules/armor/armor.types";
+import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "../../../packages/obsidian/src/modules/weapon/weapon.types";
 import type { ItemEntity } from "../../../packages/obsidian/src/modules/item/item.types";
 

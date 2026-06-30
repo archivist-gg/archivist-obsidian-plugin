@@ -13,7 +13,7 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { parseArmor } from "../../packages/obsidian/src/modules/armor/armor.parser";
+import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
 import { parseBackground } from "@archivist/dnd5e/background/background.parser";
 import { parseClass } from "../../packages/obsidian/src/modules/class/class.parser";
 import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";

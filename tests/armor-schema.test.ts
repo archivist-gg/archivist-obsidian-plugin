@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as yaml from "js-yaml";
-import { armorEntitySchema } from "../packages/obsidian/src/modules/armor/armor.schema";
+import { armorEntitySchema } from "@archivist/dnd5e/armor/armor.schema";
 import {
   PLATE,
   BREASTPLATE,
