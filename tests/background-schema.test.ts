@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
+import { backgroundEntitySchema } from "@archivist/dnd5e/background/background.schema";
 
 const minimalBackground = {
   slug: "acolyte",

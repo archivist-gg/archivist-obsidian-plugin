@@ -5,6 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./background/background.codec": "./src/background/background.codec.ts",
+    "./background/background.parser": "./src/background/background.parser.ts",
+    "./background/background.schema": "./src/background/background.schema.ts",
+    "./background/background.types": "./src/background/background.types.ts",
     "./data-srd/index.generated": "./src/data-srd/index.generated.ts",
     "./dnd/constants": "./src/dnd/constants.ts",
     "./dnd/formula-tags": "./src/dnd/formula-tags.ts",

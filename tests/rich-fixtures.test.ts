@@ -5,7 +5,7 @@ import * as yaml from "js-yaml";
 import { classEntitySchema } from "../packages/obsidian/src/modules/class/class.schema";
 import { raceEntitySchema } from "@archivist/dnd5e/race/race.schema";
 import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
-import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
+import { backgroundEntitySchema } from "@archivist/dnd5e/background/background.schema";
 import { featEntitySchema } from "../packages/obsidian/src/modules/feat/feat.schema";
 
 function loadFixture(relPath: string): unknown {

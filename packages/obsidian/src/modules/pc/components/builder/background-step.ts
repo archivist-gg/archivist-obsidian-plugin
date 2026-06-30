@@ -2,7 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist/core";
 import type { ColSpec } from "./selection-table";
 import type { DecisionItem } from "../../pc.decision-engine";
-import type { BackgroundLanguageProficiency } from "../../../background/background.types";
+import type { BackgroundLanguageProficiency } from "@archivist/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
 import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";

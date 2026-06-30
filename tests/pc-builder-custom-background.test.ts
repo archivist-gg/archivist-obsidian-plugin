@@ -3,7 +3,7 @@ import {
   buildCustomBackgroundData,
   emptyCustomBackgroundState,
 } from "../packages/obsidian/src/modules/pc/components/builder/custom-background";
-import { backgroundEntitySchema } from "../packages/obsidian/src/modules/background/background.schema";
+import { backgroundEntitySchema } from "@archivist/dnd5e/background/background.schema";
 
 describe("buildCustomBackgroundData", () => {
   it("assembles a valid background entity from the form state", () => {

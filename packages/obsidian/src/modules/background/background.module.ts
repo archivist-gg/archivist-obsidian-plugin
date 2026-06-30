@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { BackgroundEntity } from "./background.types";
-import { parseBackground } from "./background.parser";
+import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
+import { parseBackground } from "@archivist/dnd5e/background/background.parser";
 import { renderBackgroundBlock } from "./background.renderer";
 
 class BackgroundModule implements ArchivistModule {

@@ -14,7 +14,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 import { parseArmor } from "../../packages/obsidian/src/modules/armor/armor.parser";
-import { parseBackground } from "../../packages/obsidian/src/modules/background/background.parser";
+import { parseBackground } from "@archivist/dnd5e/background/background.parser";
 import { parseClass } from "../../packages/obsidian/src/modules/class/class.parser";
 import { parseFeat } from "../../packages/obsidian/src/modules/feat/feat.parser";
 import { parseItem } from "../../packages/obsidian/src/modules/item/item.parser";
