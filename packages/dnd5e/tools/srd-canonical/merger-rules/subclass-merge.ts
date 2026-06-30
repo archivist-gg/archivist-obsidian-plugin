@@ -21,7 +21,7 @@ interface Open5eClassFeature {
 
 /**
  * SubclassCanonical mirrors the runtime SubclassEntity shape
- * (src/modules/subclass/subclass.schema.ts) so the emitted YAML in
+ * (packages/dnd5e/src/subclass/subclass.schema.ts) so the emitted YAML in
  * `.compendium-bundle/<compendium>/Subclasses/*.md` parses through
  * `parseSubclass` without a translation layer.
  */

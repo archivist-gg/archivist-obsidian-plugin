@@ -22,7 +22,7 @@ import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseOptionalFeature } from "@archivist/dnd5e/optional-feature/optional-feature.parser";
 import { parseRace } from "@archivist/dnd5e/race/race.parser";
 import { parseSpell } from "../../packages/obsidian/src/modules/spell/spell.parser";
-import { parseSubclass } from "../../packages/obsidian/src/modules/subclass/subclass.parser";
+import { parseSubclass } from "@archivist/dnd5e/subclass/subclass.parser";
 import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
 
 const BUNDLE_ROOT = path.resolve(__dirname, "../../.compendium-bundle");

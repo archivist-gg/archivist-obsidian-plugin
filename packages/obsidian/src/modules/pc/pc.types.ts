@@ -1,7 +1,7 @@
 import type { Ability, SkillSlug, Feature } from "@archivist/dnd5e";
 import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
 import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
-import type { SubclassEntity } from "../subclass/subclass.types";
+import type { SubclassEntity } from "@archivist/dnd5e/subclass/subclass.types";
 import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
 import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";

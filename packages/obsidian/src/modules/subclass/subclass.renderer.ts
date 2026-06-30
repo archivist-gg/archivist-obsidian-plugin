@@ -1,4 +1,4 @@
-import type { SubclassEntity } from "./subclass.types";
+import type { SubclassEntity } from "@archivist/dnd5e/subclass/subclass.types";
 import type { RenderContext } from "../../core/module-api";
 
 export function renderSubclassStub(el: HTMLElement, data: SubclassEntity, _ctx: RenderContext): HTMLElement {

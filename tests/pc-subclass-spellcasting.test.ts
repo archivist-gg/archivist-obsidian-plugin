@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
+import { subclassEntitySchema } from "@archivist/dnd5e/subclass/subclass.schema";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import type { ResolvedCharacter, ResolvedClass } from "../packages/obsidian/src/modules/pc/pc.types";
 

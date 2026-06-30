@@ -4,7 +4,7 @@ import * as path from "node:path";
 import * as yaml from "js-yaml";
 import { classEntitySchema } from "@archivist/dnd5e/class/class.schema";
 import { raceEntitySchema } from "@archivist/dnd5e/race/race.schema";
-import { subclassEntitySchema } from "../packages/obsidian/src/modules/subclass/subclass.schema";
+import { subclassEntitySchema } from "@archivist/dnd5e/subclass/subclass.schema";
 import { backgroundEntitySchema } from "@archivist/dnd5e/background/background.schema";
 import { featEntitySchema } from "@archivist/dnd5e/feat/feat.schema";
 

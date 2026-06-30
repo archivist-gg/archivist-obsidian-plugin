@@ -1,6 +1,6 @@
 import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
-import type { SubclassEntity } from "./subclass.types";
-import { parseSubclass } from "./subclass.parser";
+import type { SubclassEntity } from "@archivist/dnd5e/subclass/subclass.types";
+import { parseSubclass } from "@archivist/dnd5e/subclass/subclass.parser";
 import { renderSubclassStub } from "./subclass.renderer";
 
 class SubclassModule implements ArchivistModule {
