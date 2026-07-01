@@ -137,9 +137,12 @@ All four run under the single local gate:
 npm run check   ==   npm run typecheck && npm run lint && npm run test
 ```
 
-There is deliberately **no CI workflow**. This branch is unmerged and unpushed
-by design, so a GitHub Actions gate would have nothing to run against. `npm run
-check` is *the* gate — run it before every commit; it must exit 0 end to end.
+There is deliberately **no CI *validation* workflow**. This branch is unmerged
+and unpushed by design, so a GitHub Actions gate would have nothing to run
+against. (The one Actions workflow that does exist, `.github/workflows/release.yml`,
+is a tag-triggered release/CD job that only builds the plugin artifacts — it runs
+`npm run build`, never `typecheck`/`lint`/`test`/`check`.) `npm run check` is
+*the* gate — run it before every commit; it must exit 0 end to end.
 
 ---
 
