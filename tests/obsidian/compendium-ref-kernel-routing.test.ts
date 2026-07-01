@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   renderEntityViaModule,
   setCompendiumRefArchivist,
@@ -59,6 +59,17 @@ describe("compendium-ref kernel routing (0c.1a D6)", () => {
     renderedData = undefined;
     setCompendiumRefArchivist(fakeArchivist);
     setCompendiumRefModuleRegistry(makeModuleRegistry());
+  });
+
+  afterEach(() => {
+    // Hardening (0d/E3): restore the module-level singletons to their initial
+    // (unset) state so this file's fakes can't leak into another test file that
+    // imports compendium-ref-extension without setting them. The setters are
+    // typed for live wiring (non-null); the null-cast mirrors the module init
+    // (`let archivistRef: Archivist | null = null`) and matches this file's
+    // existing `as unknown as` style.
+    setCompendiumRefArchivist(null as unknown as Archivist);
+    setCompendiumRefModuleRegistry(null as unknown as ModuleRegistry);
   });
 
   it("routes a ported type (monster) through the kernel codec", () => {

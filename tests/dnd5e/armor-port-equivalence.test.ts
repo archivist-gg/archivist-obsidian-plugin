@@ -54,7 +54,13 @@ describe("armor port equivalence", () => {
     for (const f of files) cases.push({ name: `${dir}/${f}`, body: bodyFromMd(readFileSync(join(dir, f), "utf8")) });
   }
 
-  it("has corpus coverage", () => { expect(cases.length).toBeGreaterThan(0); });
+  it("has per-corpus coverage (each SRD edition dir non-empty)", () => {
+    for (const dir of SRD_DIRS) {
+      let n = 0;
+      try { n = readdirSync(dir).filter((f) => f.endsWith(".md")).length; } catch { /* dir may not exist */ }
+      expect(n, `empty SRD corpus dir: ${dir}`).toBeGreaterThan(0);
+    }
+  });
   it("has mandatory non-canonical fixtures", () => { expect(NON_CANONICAL.length).toBeGreaterThan(0); }); // N3
 
   // (a1) parse-data equivalence — THE load-bearing check: codec.parse(doc) deep-equals legacy parseArmor(body)
