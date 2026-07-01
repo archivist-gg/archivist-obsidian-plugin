@@ -18,4 +18,15 @@ describe("B7 pack→SDK generation bridge", () => {
   it("includes monster (present since Plan A)", () => {
     expect(generatables.map((g) => g.type)).toContain("monster");
   });
+
+  it("spell maps to generate_spell with a {type,data} envelope", async () => {
+    const g = dnd5ePack.entityTypes.find((et) => et.type === "spell")?.generatable;
+    expect(g).toBeDefined();
+    const sdk = generatableToSdkTool(g!);
+    expect(sdk.name).toBe("generate_spell");
+    const res = await sdk.handler({ spell: { name: "Light", level: 0 } }, {});
+    const parsed = JSON.parse(res.content[0].text);
+    expect(parsed.type).toBe("spell");
+    expect(parsed.data).toBeDefined();
+  });
 });

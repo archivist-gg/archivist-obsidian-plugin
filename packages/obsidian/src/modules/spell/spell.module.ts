@@ -1,6 +1,5 @@
 import type { App } from "obsidian";
 import type {
-  AIToolRegistry,
   ArchivistModule,
   CoreAPI,
   EditContext,
@@ -13,7 +12,6 @@ import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
 import { renderSpellBlock } from "./spell.renderer";
 import { renderSpellEditMode } from "./spell.edit-render";
 import { SpellModal } from "./spell.modal";
-import { generateSpellTool } from "./spell.ai-tools";
 
 // TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
 // so modules don't need to reach into src/main for the concrete class.
@@ -71,19 +69,6 @@ class SpellModule implements ArchivistModule {
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderSpellEditMode>[2];
     renderSpellEditMode(spell, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
-  }
-
-  registerAITools(registry: AIToolRegistry): void {
-    registry.register({
-      name: generateSpellTool.name,
-      description: generateSpellTool.description,
-      schema: generateSpellTool.inputSchema,
-      execute: (input: unknown) => {
-        const args = input as Parameters<typeof generateSpellTool.handler>[0];
-        return generateSpellTool.handler(args, {});
-      },
-    });
-    registry.registerSdkTool?.(generateSpellTool);
   }
 
   getInsertModal(): ModalConstructor {

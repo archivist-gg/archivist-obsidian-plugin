@@ -7,7 +7,7 @@ import type { RenderContext } from "../../packages/obsidian/src/core/module-api"
 import { spellCodec } from "@archivist/dnd5e/spell/spell.codec";
 import { parseSpell } from "@archivist/dnd5e/spell/spell.parser"; // moved parser (post-move path)
 import { spellModule } from "../../packages/obsidian/src/modules/spell/spell.module"; // (a2) uses the module's real render (B1)
-import { enrichSpell } from "../../packages/obsidian/src/modules/spell/spell.enrichment";
+import { enrichSpell } from "@archivist/dnd5e/spell/spell.enrichment";
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Spells"));
 
