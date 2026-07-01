@@ -1,9 +1,7 @@
 import { Notice, WorkspaceLeaf } from "obsidian";
 import type { App, ViewState } from "obsidian";
 import { around } from "monkey-around";
-import type { ArchivistModule, CoreAPI, ParseResult } from "../../core/module-api";
-import type { Character } from "./pc.types";
-import { parsePC } from "./pc.parser";
+import type { CoreAPI } from "../../core/module-api";
 import { PCResolver } from "./pc.resolver";
 import { ComponentRegistry } from "./components/component-registry";
 import { HeaderSection } from "./components/header-section";
@@ -48,10 +46,8 @@ interface HostPlugin {
   settings: { playerCharactersFolder?: string };
 }
 
-export class PCModule implements ArchivistModule {
+export class PCModule {
   readonly id = "pc";
-  readonly codeBlockType = "pc";
-  readonly entityType = "pc";
 
   core: CoreAPI | null = null;
   registry: ComponentRegistry = new ComponentRegistry();
@@ -113,10 +109,6 @@ export class PCModule implements ArchivistModule {
     } catch (e) {
       new Notice(`Failed to create character: ${e instanceof Error ? e.message : String(e)}`);
     }
-  }
-
-  parseYaml(source: string): ParseResult<Character> {
-    return parsePC(source);
   }
 
   isInPCFolder(filePath: string, configured: string | undefined): boolean {
@@ -225,4 +217,4 @@ export class PCModule implements ArchivistModule {
   }
 }
 
-export const pcModule: ArchivistModule = new PCModule();
+export const pcModule = new PCModule();

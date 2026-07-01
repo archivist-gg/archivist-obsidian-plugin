@@ -48,12 +48,11 @@ import { confirm as confirmModal } from "./modules/inquiry/shared/modals/Confirm
 // SRD & entities
 import { SrdStore, dnd5ePack } from "@archivist/dnd5e";
 import { generatableToSdkTool } from "@archivist/generators";
-import { EntityRegistry, createArchivist, CONVENTION_VERSION } from "@archivist/core";
-import type { Archivist, EntityType } from "@archivist/core";
+import { EntityRegistry, createArchivist } from "@archivist/core";
+import type { Archivist } from "@archivist/core";
 
 // Strangler adapter: kernel + presentation bridges + Obsidian ports
 import { PresentationRegistry } from "./adapter/presentation-registry";
-import { moduleToEntityType } from "./adapter/legacy-adapter";
 import {
   makeVaultStoragePort,
   makeRegistryContentPort,
@@ -177,36 +176,20 @@ export default class ArchivistPlugin extends Plugin {
       optionalFeatureModule,
       armorModule,
       weaponModule,
-      pcModule,
     ];
 
-    // Types whose parse contract is owned by a real pack (their EntityType
-    // carries a `doc` codec) are de-listed from the legacy adapter's parse
-    // bridge. Derived from `dnd5ePack` so the set tracks the pack automatically
-    // as entity types migrate off the legacy adapter — currently the 11 ported
-    // types (monster, race, background, feat, optional-feature, armor, weapon,
-    // class, subclass, spell, item). `pc` is the sole remaining type that still
-    // bridges through the legacy adapter (Bridge 1) for its parse; npc and
-    // encounter are generatable-only pack members with no `doc`, so they are
-    // naturally excluded here regardless. Presentation (render/edit/insert)
-    // stays in obsidian for ALL types, ported included.
-    const packParsedTypes = new Set(
-      dnd5ePack.entityTypes.filter((et) => et.doc).map((et) => et.type),
-    );
-    const legacyEntityTypes: EntityType[] = [];
+    // Instantiate and register modules through the legacy module system
+    // (Bridge 3) and the presentation registry (Bridge 2). pc is wired
+    // separately below (0e removed its Bridge-1 tenancy and took it out of
+    // this loop). npc/encounter are generatable-only pack members (no module).
     for (const mod of this.moduleList) {
       moduleRegistry.register(mod);
       mod.register(this.core); // Bridge 3: legacy CoreAPI still served
       if (mod.codeBlockType && mod.parseYaml) {
-        if (!packParsedTypes.has(mod.codeBlockType)) {
-          legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse
-        }
         this.presentation.set(mod.codeBlockType, {
           // Bridge 2: presentation render/edit/insert. Arrow wrappers capture
-          // the loop-local `mod` (each entry dispatches to its own module) and
-          // preserve `this` exactly like `.bind(mod)` did — but without the
-          // `any` return that `Function.prototype.bind` yields under this
-          // tsconfig (no strictBindCallApply). Absent methods stay absent.
+          // the loop-local `mod` and preserve `this` without the `any` return
+          // that `.bind` yields under this tsconfig. Absent methods stay absent.
           render: mod.render ? (el, data, ctx) => mod.render?.(el, data, ctx) : undefined,
           renderEditMode: mod.renderEditMode
             ? (el, data, ctx) => { mod.renderEditMode?.(el, data, ctx); }
@@ -215,17 +198,13 @@ export default class ArchivistPlugin extends Plugin {
         });
       }
     }
-    // Register the real dnd5e pack before the legacy strangler pack so its
-    // EntityTypes own the types it declares. Registration is last-write-wins
-    // per type; the pack-declared types are de-listed from the legacy pack
-    // above, so there is no conflict either way.
+    // Register the real dnd5e pack (the only pack now — the legacy strangler
+    // pack was removed with Bridge 1 in 0e).
     this.archivist.registerPack(dnd5ePack);
-    this.archivist.registerPack({
-      id: "legacy",
-      version: "0",
-      conventionVersion: CONVENTION_VERSION,
-      entityTypes: legacyEntityTypes,
-    });
+    // Direct composition: pc is a stateful-app, not a registry tenant (0e).
+    // Wired outside the ArchivistModule loop; retains CoreAPI service access
+    // until the Bridge 3 teardown in 0f.
+    pcModule.register(this.core);
     // B7 generation bridge: register one SDK generate-tool per pack Generatable.
     // The pack owns the generate contract; the generic mapper turns each
     // Generatable into an SDK tool with no domain knowledge. This replaces the
