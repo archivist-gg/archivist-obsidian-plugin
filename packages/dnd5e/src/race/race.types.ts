@@ -1,4 +1,4 @@
-import type { Feature, Ability, Speed, Choice } from "../types";
+import type { Feature, Ability, Speed, Choice } from "@archivist/dnd5e";
 import type { Edition } from "@archivist/dnd5e/types/edition";
 
 export type Size = "tiny" | "small" | "medium" | "large" | "huge";
