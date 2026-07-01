@@ -72,22 +72,15 @@ import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 import type { InquiryModule } from "./modules/inquiry/InquiryModule";
 
 /**
- * In-memory AI tool registry. Modules push both a structured definition and
- * a raw SDK-tool handle during `register()`; the MCP server wiring reads
- * `getAllSdkTools()` to assemble the tool list for `createSdkMcpServer`.
+ * In-memory AI tool registry. The generation bridge pushes one raw SDK-tool
+ * handle per pack Generatable; the MCP server wiring reads `getAllSdkTools()`
+ * to assemble the tool list for `createSdkMcpServer`.
  */
 function createAIToolRegistry(): Required<AIToolRegistry> {
-  const tools: import("./core/module-api").AIToolDefinition[] = [];
   const sdkTools: unknown[] = [];
   return {
-    register(toolDef): void {
-      tools.push(toolDef);
-    },
     registerSdkTool(sdkTool): void {
       sdkTools.push(sdkTool);
-    },
-    getAll() {
-      return tools.slice();
     },
     getAllSdkTools() {
       return sdkTools.slice();
@@ -202,9 +195,6 @@ export default class ArchivistPlugin extends Plugin {
     for (const mod of this.moduleList) {
       moduleRegistry.register(mod);
       mod.register(this.core); // Bridge 3: legacy CoreAPI still served
-      if (mod.registerAITools) {
-        mod.registerAITools(aiToolRegistry);
-      }
       if (mod.codeBlockType && mod.parseYaml) {
         if (!packParsedTypes.has(mod.codeBlockType)) {
           legacyEntityTypes.push(moduleToEntityType(mod)); // Bridge 1: kernel parse

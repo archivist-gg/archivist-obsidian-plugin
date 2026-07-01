@@ -16,10 +16,10 @@ type SdkMcpServerToolsParam = NonNullable<
  * Build the in-process MCP server the inquiry chat uses for D&D tools.
  *
  * `moduleSdkTools` is the list of module-contributed SDK tool handles
- * (output of `tool()` from @anthropic-ai/claude-agent-sdk, collected by
- * main.ts from each ArchivistModule via `registerSdkTool`). The shared
- * tree no longer reaches into `src/modules/*` to import individual tools;
- * instead, callers pass in whatever the module registry has accumulated.
+ * (output of `tool()` from @anthropic-ai/claude-agent-sdk, registered by
+ * the generation bridge (one per pack Generatable) via `registerSdkTool`).
+ * The shared tree no longer reaches into `src/modules/*` to import individual
+ * tools; instead, callers pass in whatever the registry has accumulated.
  */
 export function createArchivistMcpServer(
   srdStore: SrdStore,

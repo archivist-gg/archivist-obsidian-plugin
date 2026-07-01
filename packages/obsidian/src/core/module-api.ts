@@ -30,29 +30,10 @@ export interface EditContext extends RenderContext {
   onReplaceRef?: (newRefText: string) => void;
 }
 
-/**
- * A tool entry in the AI-tool registry.
- *
- * Modules register two parallel shapes:
- *   - `definition` — structured metadata (name/description/schema/execute)
- *     useful for generic listing / dispatch.
- *   - `sdkTool` — opaque value accepted by `createSdkMcpServer({ tools })`.
- *     Held as `unknown` so the shared registry doesn't pull in the SDK type.
- */
-export interface AIToolDefinition {
-  name: string;
-  description: string;
-  schema: unknown;
-  execute: (input: unknown) => Promise<unknown>;
-}
-
 export interface AIToolRegistry {
-  register(tool: AIToolDefinition): void;
   /** Register the raw SDK-tool handle (output of `tool()` from
    *  @anthropic-ai/claude-agent-sdk). Used by mcp-server wiring. */
   registerSdkTool?(sdkTool: unknown): void;
-  /** Retrieve all structured definitions. */
-  getAll?(): AIToolDefinition[];
   /** Retrieve all raw SDK-tool handles for passing to createSdkMcpServer. */
   getAllSdkTools?(): unknown[];
 }
@@ -89,8 +70,6 @@ export interface ArchivistModule {
   render?(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement | void;
   /** Render edit mode UI. Only if module supports editing. */
   renderEditMode?(el: HTMLElement, data: unknown, ctx: EditContext): void;
-  /** Register AI generation tools with the tool registry. */
-  registerAITools?(registry: AIToolRegistry): void;
   /** Return modal constructor for "Insert Entity" command. */
   getInsertModal?(): ModalConstructor | null;
   /** Tear down: called on plugin unload. */
