@@ -20,5 +20,3 @@ export const itemInputSchema = z.object({
   recharge: z.string().optional(),
   curse: z.boolean().optional(),
 });
-
-export const itemToolInput = { item: itemInputSchema };

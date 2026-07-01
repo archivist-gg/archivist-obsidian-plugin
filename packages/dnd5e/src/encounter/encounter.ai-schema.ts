@@ -26,5 +26,3 @@ export const encounterOutputSchema = z.object({
     difficulty_rating: z.string(),
   }),
 });
-
-export const encounterToolInput = { encounter: encounterInputSchema };

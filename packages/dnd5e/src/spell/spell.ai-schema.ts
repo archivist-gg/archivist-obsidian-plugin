@@ -19,5 +19,3 @@ export const spellInputSchema = z.object({
   ritual: z.boolean().optional(),
   concentration: z.boolean().optional(),
 });
-
-export const spellToolInput = { spell: spellInputSchema };

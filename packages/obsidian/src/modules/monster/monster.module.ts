@@ -20,12 +20,9 @@ import type ArchivistPlugin from "../../main";
  * The monster module.
  *
  * This module is the self-contained home for every monster-specific
- * concern: YAML parsing, read-mode rendering, edit-mode UI, AI-tool
- * registration, and the "Insert monster" modal.
- *
- * Not yet wired into the plugin — Task 12 replaces the direct imports
- * in `main.ts` / `compendium-ref-extension.ts` with registry dispatch
- * that flows through `register()` here.
+ * concern: YAML parsing, read-mode rendering, edit-mode UI, and the
+ * "Insert monster" modal. (AI generation is owned by the dnd5e pack's
+ * `monsterGeneratable` + the generation bridge, not this module.)
  */
 class MonsterModule implements ArchivistModule {
   readonly id = "monster";

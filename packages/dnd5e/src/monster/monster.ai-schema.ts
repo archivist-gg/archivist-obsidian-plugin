@@ -67,5 +67,3 @@ export const monsterInputSchema = z.object({
   legendary_action_uses: z.number().optional(),
   legendary_resistance: z.number().optional(),
 });
-
-export const monsterToolInput = { monster: monsterInputSchema };

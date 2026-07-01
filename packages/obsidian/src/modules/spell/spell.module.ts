@@ -21,12 +21,9 @@ import type ArchivistPlugin from "../../main";
  * The spell module.
  *
  * This module is the self-contained home for every spell-specific
- * concern: YAML parsing, read-mode rendering, edit-mode UI, AI-tool
- * registration, and the "Insert spell" modal.
- *
- * Not yet wired into the plugin — Task 12 replaces the direct imports
- * in `main.ts` / `compendium-ref-extension.ts` with registry dispatch
- * that flows through `register()` here.
+ * concern: YAML parsing, read-mode rendering, edit-mode UI, and the
+ * "Insert spell" modal. (AI generation is owned by the dnd5e pack's
+ * `spellGeneratable` + the generation bridge, not this module.)
  */
 class SpellModule implements ArchivistModule {
   readonly id = "spell";

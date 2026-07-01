@@ -185,9 +185,11 @@ export default class ArchivistPlugin extends Plugin {
     // bridge. Derived from `dnd5ePack` so the set tracks the pack automatically
     // as entity types migrate off the legacy adapter — currently the 11 ported
     // types (monster, race, background, feat, optional-feature, armor, weapon,
-    // class, subclass, spell, item); un-ported types (pc, npc, encounter) still
-    // bridge through the legacy adapter. Presentation (render/edit/insert) stays
-    // in obsidian for ALL types, ported included.
+    // class, subclass, spell, item). `pc` is the sole remaining type that still
+    // bridges through the legacy adapter (Bridge 1) for its parse; npc and
+    // encounter are generatable-only pack members with no `doc`, so they are
+    // naturally excluded here regardless. Presentation (render/edit/insert)
+    // stays in obsidian for ALL types, ported included.
     const packParsedTypes = new Set(
       dnd5ePack.entityTypes.filter((et) => et.doc).map((et) => et.type),
     );

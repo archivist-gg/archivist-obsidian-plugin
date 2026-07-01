@@ -21,12 +21,9 @@ import type ArchivistPlugin from "../../main";
  * The item module.
  *
  * This module is the self-contained home for every item-specific
- * concern: YAML parsing, read-mode rendering, edit-mode UI, AI-tool
- * registration, and the "Insert item" modal.
- *
- * Not yet wired into the plugin — Task 12 replaces the direct imports
- * in `main.ts` / `compendium-ref-extension.ts` with registry dispatch
- * that flows through `register()` here.
+ * concern: YAML parsing, read-mode rendering, edit-mode UI, and the
+ * "Insert item" modal. (AI generation is owned by the dnd5e pack's
+ * `itemGeneratable` + the generation bridge, not this module.)
  */
 class ItemModule implements ArchivistModule {
   readonly id = "item";
