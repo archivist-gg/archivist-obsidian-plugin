@@ -49,6 +49,7 @@ import { confirm as confirmModal } from "./modules/inquiry/shared/modals/Confirm
 
 // SRD & entities
 import { SrdStore, dnd5ePack } from "@archivist/dnd5e";
+import { generatableToSdkTool } from "@archivist/generators";
 import { EntityRegistry, createArchivist, CONVENTION_VERSION } from "@archivist/core";
 import type { Archivist, EntityType } from "@archivist/core";
 
@@ -237,6 +238,15 @@ export default class ArchivistPlugin extends Plugin {
       conventionVersion: CONVENTION_VERSION,
       entityTypes: legacyEntityTypes,
     });
+    // B7 generation bridge: register one SDK generate-tool per pack Generatable.
+    // The pack owns the generate contract; the generic mapper turns each
+    // Generatable into an SDK tool with no domain knowledge. This replaces the
+    // per-module manual registerSdkTool calls (retired type-by-type this phase).
+    for (const et of dnd5ePack.entityTypes) {
+      if (et.generatable) {
+        aiToolRegistry.registerSdkTool(generatableToSdkTool(et.generatable));
+      }
+    }
     // Strangler (0c.1a D6): hand the compendium-ref view/edit path the kernel
     // so it routes parse through the pack codec for ported types (monster),
     // falling back to mod.parseYaml for un-ported ones.
