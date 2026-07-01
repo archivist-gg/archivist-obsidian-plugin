@@ -1,6 +1,5 @@
 import type { App } from "obsidian";
 import type {
-  AIToolRegistry,
   ArchivistModule,
   CoreAPI,
   EditContext,
@@ -13,7 +12,6 @@ import { parseItem } from "@archivist/dnd5e/item/item.parser";
 import { renderItemBlock } from "./item.renderer";
 import { renderItemEditMode } from "./item.edit-render";
 import { ItemModal } from "./item.modal";
-import { generateItemTool } from "./item.ai-tools";
 
 // TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
 // so modules don't need to reach into src/main for the concrete class.
@@ -71,19 +69,6 @@ class ItemModule implements ArchivistModule {
     const plugin = ctx.plugin as ArchivistPlugin;
     const mdCtx = ctx.ctx as Parameters<typeof renderItemEditMode>[2];
     renderItemEditMode(item, el, mdCtx, plugin, ctx.onExit, ctx.compendium, ctx.onReplaceRef);
-  }
-
-  registerAITools(registry: AIToolRegistry): void {
-    registry.register({
-      name: generateItemTool.name,
-      description: generateItemTool.description,
-      schema: generateItemTool.inputSchema,
-      execute: (input: unknown) => {
-        const args = input as Parameters<typeof generateItemTool.handler>[0];
-        return generateItemTool.handler(args, {});
-      },
-    });
-    registry.registerSdkTool?.(generateItemTool);
   }
 
   getInsertModal(): ModalConstructor {

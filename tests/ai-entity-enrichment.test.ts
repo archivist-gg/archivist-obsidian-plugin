@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { enrichMonster } from "@archivist/dnd5e/monster/monster.enrichment";
 import { enrichSpell } from "@archivist/dnd5e/spell/spell.enrichment";
-import { enrichItem } from "../packages/obsidian/src/modules/item/item.enrichment";
+import { enrichItem } from "@archivist/dnd5e/item/item.enrichment";
 
 describe("enrichMonster — backtick tag conversion", () => {
   it("converts plain English attack and damage to ability-linked tags", () => {

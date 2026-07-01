@@ -29,4 +29,15 @@ describe("B7 pack→SDK generation bridge", () => {
     expect(parsed.type).toBe("spell");
     expect(parsed.data).toBeDefined();
   });
+
+  it("item maps to generate_item with a {type,data} envelope", async () => {
+    const g = dnd5ePack.entityTypes.find((et) => et.type === "item")?.generatable;
+    expect(g).toBeDefined();
+    const sdk = generatableToSdkTool(g!);
+    expect(sdk.name).toBe("generate_item");
+    const res = await sdk.handler({ item: { name: "Cloak", type: "wondrous", rarity: "rare" } }, {});
+    const parsed = JSON.parse(res.content[0].text);
+    expect(parsed.type).toBe("item");
+    expect(parsed.data).toBeDefined();
+  });
 });

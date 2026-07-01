@@ -7,7 +7,7 @@ import type { RenderContext } from "../../packages/obsidian/src/core/module-api"
 import { itemCodec } from "@archivist/dnd5e/item/item.codec";
 import { parseItem } from "@archivist/dnd5e/item/item.parser"; // moved parser (post-move path)
 import { itemModule } from "../../packages/obsidian/src/modules/item/item.module"; // (a2) uses the module's real render (B1)
-import { enrichItem } from "../../packages/obsidian/src/modules/item/item.enrichment";
+import { enrichItem } from "@archivist/dnd5e/item/item.enrichment";
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Magic Items"));
 
