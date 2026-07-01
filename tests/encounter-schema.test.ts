@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { encounterInputSchema, encounterOutputSchema } from "../packages/obsidian/src/modules/encounter/encounter.ai-schema";
+import { encounterInputSchema, encounterOutputSchema } from "@archivist/dnd5e/encounter/encounter.ai-schema";
 
 describe("encounterInputSchema", () => {
   it("validates valid encounter input", () => {

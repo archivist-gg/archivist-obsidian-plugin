@@ -11,8 +11,6 @@ import { ModuleRegistry } from "./core/module-registry";
 import { monsterModule } from "./modules/monster/monster.module";
 import { spellModule } from "./modules/spell/spell.module";
 import { itemModule } from "./modules/item/item.module";
-import { npcModule } from "./modules/npc/npc.module";
-import { encounterModule } from "./modules/encounter/encounter.module";
 import { InquiryArchivistModule } from "./modules/inquiry/inquiry.module";
 import { classModule } from "./modules/class/class.module";
 import { raceModule } from "./modules/race/race.module";
@@ -177,8 +175,6 @@ export default class ArchivistPlugin extends Plugin {
       monsterModule,
       spellModule,
       itemModule,
-      npcModule,
-      encounterModule,
       inquiryArchivistModule,
       classModule,
       raceModule,

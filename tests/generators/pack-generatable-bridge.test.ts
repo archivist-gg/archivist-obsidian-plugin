@@ -40,4 +40,23 @@ describe("B7 pack→SDK generation bridge", () => {
     expect(parsed.type).toBe("item");
     expect(parsed.data).toBeDefined();
   });
+
+  it("npc + encounter map to identity-enrich generate tools", async () => {
+    for (const t of ["npc", "encounter"] as const) {
+      const g = dnd5ePack.entityTypes.find((et) => et.type === t)?.generatable;
+      expect(g).toBeDefined();
+      const sdk = generatableToSdkTool(g!);
+      expect(sdk.name).toBe(`generate_${t}`);
+      const input = t === "npc" ? { role: "guard" } : { party_size: 4, party_level: 5, difficulty: "medium" };
+      const res = await sdk.handler({ [t]: input }, {});
+      const parsed = JSON.parse(res.content[0].text);
+      expect(parsed.type).toBe(t);
+      expect(parsed.data).toEqual(input); // identity enrich
+    }
+  });
+
+  it("pack exposes exactly the 5 generate-capable types in pack order", () => {
+    expect(dnd5ePack.entityTypes.filter((et) => et.generatable).map((et) => et.type))
+      .toEqual(["monster", "spell", "item", "npc", "encounter"]);
+  });
 });

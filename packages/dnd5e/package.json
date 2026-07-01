@@ -25,6 +25,7 @@
     "./dnd/resource-formula": "./src/dnd/resource-formula.ts",
     "./dnd/srd-tag-converter": "./src/dnd/srd-tag-converter.ts",
     "./dnd/tag-grammar": "./src/dnd/tag-grammar.ts",
+    "./encounter/encounter.ai-schema": "./src/encounter/encounter.ai-schema.ts",
     "./feat/feat.codec": "./src/feat/feat.codec.ts",
     "./feat/feat.parser": "./src/feat/feat.parser.ts",
     "./feat/feat.schema": "./src/feat/feat.schema.ts",
