@@ -8,7 +8,6 @@ import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc
 import type { RegisteredEntity } from "@core/entity-registry";
 import { dnd5ePack } from "@archivist/dnd5e";
 import { setEntityPresenters, setEntityPresenterKernel } from "../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
-import type { EntityPresenter } from "../packages/obsidian/src/shared/rendering/entity-presenter";
 import type { Archivist } from "@archivist/core";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -52,14 +51,9 @@ const gnome: RegisteredEntity = {
 const packKernel = {
   getEntityType: (t: string) => dnd5ePack.entityTypes.find((e) => e.type === t),
 } as unknown as Archivist;
-// T1 wrapper (raceModule is still an ArchivistModule until T2):
-const racePresenter: EntityPresenter = {
-  type: "race",
-  render: (el, d, c) => raceModule.render!(el, d, c),
-};
 beforeEach(() => {
   setEntityPresenterKernel(packKernel);
-  setEntityPresenters(new Map([["race", racePresenter]]));
+  setEntityPresenters(new Map([["race", raceModule]]));
 });
 afterEach(() => {
   setEntityPresenters(new Map());

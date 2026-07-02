@@ -1,5 +1,5 @@
 import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
-import type { RenderContext } from "../../core/module-api";
+import type { RenderContext } from "../../shared/rendering/entity-presenter";
 import {
   el,
   renderTextWithInlineTags,

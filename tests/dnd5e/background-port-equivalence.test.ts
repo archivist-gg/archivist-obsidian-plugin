@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
-import type { RenderContext } from "../../packages/obsidian/src/core/module-api";
+import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
 import { backgroundCodec } from "@archivist/dnd5e/background/background.codec";
 import { parseBackground } from "@archivist/dnd5e/background/background.parser"; // moved parser (post-move path)
 import { backgroundModule } from "../../packages/obsidian/src/modules/background/background.module"; // (a2) uses the module's real render (B1)

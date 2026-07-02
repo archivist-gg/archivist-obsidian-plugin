@@ -55,7 +55,7 @@ import {
   makeRegistryContentPort,
   makeNoticeSink,
 } from "./adapter/obsidian-ports";
-import type { EntityPresenter, EditContext } from "./shared/rendering/entity-presenter";
+import type { EntityPresenter } from "./shared/rendering/entity-presenter";
 import {
   setEntityPresenters,
   setEntityPresenterKernel,
@@ -152,9 +152,9 @@ export default class ArchivistPlugin extends Plugin {
 
     // --- new core wiring (strangler) ---
     // The kernel parses entity docs via registered packs; the presenter map
-    // holds modules' DOM render/edit callbacks. The map is built during the
-    // module loop below. The legacy CoreAPI (`this.core`) keeps serving
-    // not-yet-migrated modules.
+    // holds each entity type's DOM render/edit callbacks. The map is built from
+    // the direct presenter list below. The legacy CoreAPI (`this.core`) keeps
+    // serving not-yet-migrated modules (inquiry + pc).
     this.archivist = createArchivist({
       storage: makeVaultStoragePort(this.app.vault),
       content: makeRegistryContentPort(this.entityRegistry),
@@ -162,53 +162,34 @@ export default class ArchivistPlugin extends Plugin {
     });
 
     // Instantiate and register modules. `InquiryArchivistModule` owns the
-    // Claudian chat engine; other modules are shared singletons.
+    // Claudian chat engine; the 11 entity types are native EntityPresenters
+    // (0f/T2) and no longer ArchivistModules — only inquiry (and pc, wired
+    // separately below) still rides the legacy module loop.
     const inquiryArchivistModule = new InquiryArchivistModule();
-    this.moduleList = [
-      monsterModule,
-      spellModule,
-      itemModule,
-      inquiryArchivistModule,
-      classModule,
-      raceModule,
-      subclassModule,
-      backgroundModule,
-      featModule,
-      optionalFeatureModule,
-      armorModule,
-      weaponModule,
-    ];
+    this.moduleList = [inquiryArchivistModule];
 
-    // Instantiate and register modules through the legacy module system
-    // (Bridge 3) and derive an EntityPresenter map from them (Bridge 2 was
-    // deleted in 0f/T1). pc is wired separately below (0e removed its Bridge-1
-    // tenancy and took it out of this loop). npc/encounter are generatable-only
+    // The 11 entity presenters: how each authored type is DRAWN. Keyed by
+    // `type` into the presenter map the shared dispatch reads (D3/D4).
+    const presenterList: EntityPresenter[] = [
+      monsterModule, spellModule, itemModule, classModule, raceModule,
+      subclassModule, backgroundModule, featModule, optionalFeatureModule,
+      armorModule, weaponModule,
+    ];
+    this.presenters = new Map(presenterList.map((p) => [p.type, p]));
+
+    // Register the remaining ArchivistModules through the legacy module system
+    // (Bridge 3 now serves inquiry + pc only). pc is wired separately below
+    // (0e removed its Bridge-1 tenancy). npc/encounter are generatable-only
     // pack members (no module).
     for (const mod of this.moduleList) {
       moduleRegistry.register(mod);
-      mod.register(this.core); // Bridge 3: legacy CoreAPI still served
-      if (mod.entityType && mod.render) {
-        // T1 shim: derive an EntityPresenter view of the legacy module. The
-        // guard skips inquiry (no entityType/render). Deleted in T2 when the
-        // modules become native presenters.
-        this.presenters.set(mod.entityType, {
-          type: mod.entityType,
-          ...(mod.supportsColumns !== undefined ? { supportsColumns: mod.supportsColumns } : {}),
-          render: (el, data, ctx) => mod.render!(el, data, ctx),
-          ...(mod.renderEditMode
-            ? { renderEditMode: (el: HTMLElement, data: unknown, ctx2: EditContext) => { mod.renderEditMode!(el, data, ctx2); } }
-            : {}),
-          ...(mod.getInsertModal
-            ? { getInsertModal: () => mod.getInsertModal!() ?? null }
-            : {}),
-        });
-      }
+      mod.register(this.core);
     }
-    // Inject the derived presenter map + kernel + plugin into the shared
-    // dispatch (D2). Placement is a few lines after where the old
-    // setCompendiumRef* setters sat: the map is built in the loop above and the
-    // kernel is `this.archivist`. Nothing renders during onload between these
-    // points, so the ordering is non-observable (spec D4).
+    // Inject the presenter map + kernel + plugin into the shared dispatch
+    // (D2). Placement is a few lines after where the old setCompendiumRef*
+    // setters sat: the map is built from presenterList above and the kernel is
+    // `this.archivist`. Nothing renders during onload between these points, so
+    // the ordering is non-observable (spec D4).
     setEntityPresenters(this.presenters);
     setEntityPresenterPlugin(this);
     setEntityPresenterKernel(this.archivist);
@@ -241,13 +222,11 @@ export default class ArchivistPlugin extends Plugin {
       await this.inquiry.init();
     }
 
-    // Register a markdown code-block processor for each module that declares
-    // a `codeBlockType`. The shared helper handles view/edit toggling, side
-    // buttons, compendium save, and (for monster) the column toggle.
-    for (const mod of this.moduleList) {
-      if (mod.codeBlockType && mod.parseYaml) {
-        this.registerEntityCodeBlock(mod);
-      }
+    // Register a markdown code-block processor for each entity presenter. The
+    // shared helper handles view/edit toggling, side buttons, compendium save,
+    // and (for monster) the column toggle.
+    for (const p of presenterList) {
+      this.registerEntityCodeBlock(p);
     }
 
     // Inline tag post-processor
@@ -344,13 +323,13 @@ export default class ArchivistPlugin extends Plugin {
       spell: "Insert spell block",
       item: "Insert magic item block",
     };
-    for (const mod of this.moduleList) {
-      const ModalCtor = mod.getInsertModal?.();
+    for (const p of presenterList) {
+      const ModalCtor = p.getInsertModal?.();
       if (!ModalCtor) continue;
-      const defaultLabel = `Insert ${mod.id} block`;
+      const defaultLabel = `Insert ${p.type} block`;
       this.addCommand({
-        id: `insert-${mod.id}`,
-        name: INSERT_COMMAND_LABELS[mod.id] ?? defaultLabel,
+        id: `insert-${p.type}`,
+        name: INSERT_COMMAND_LABELS[p.type] ?? defaultLabel,
         editorCallback: (editor) => {
           // ModalConstructor's return type already exposes `open(): void`, so
           // no cast is needed.
@@ -449,25 +428,22 @@ export default class ArchivistPlugin extends Plugin {
   }
 
   /**
-   * Register a markdown code-block processor for an entity module.
+   * Register a markdown code-block processor for an entity presenter.
    *
-   * Handles the shared scaffolding all three entity modules (monster, spell,
-   * item) use today: initial view render, side buttons (edit/save/
-   * compendium/delete/column-toggle), edit-mode toggle, and save-to-
-   * compendium flow. Module-specific behavior (parser, renderer, edit-mode
-   * UI, whether the column toggle is shown) is supplied by the module.
+   * Handles the shared scaffolding every entity presenter uses: initial view
+   * render, side buttons (edit/save/compendium/delete/column-toggle), edit-mode
+   * toggle, and save-to-compendium flow. Presenter-specific behavior (renderer,
+   * edit-mode UI, whether the column toggle is shown) is supplied by the
+   * presenter; parsing is the kernel's job (codec + resolve() below).
    */
-  private registerEntityCodeBlock(mod: ArchivistModule): void {
-    const codeBlockType = mod.codeBlockType;
-    const entityType = mod.entityType;
-    if (!codeBlockType || !entityType || !mod.parseYaml || !mod.render) return;
+  private registerEntityCodeBlock(presenter: EntityPresenter): void {
+    const codeBlockType = presenter.type;
+    const entityType = presenter.type;
+    const supportsColumns = presenter.supportsColumns === true;
+    const pres = presenter;
 
-    const supportsColumns = mod.supportsColumns === true;
-    // Presenter for this entity type: render/edit callbacks.
-    const pres = this.presenters.get(codeBlockType);
-
-    // Render via the presentation registry. Returns the appended node so
-    // callers that must swap it (column-toggle) can do so cheaply.
+    // Render via the presenter. Returns the appended node so callers that
+    // must swap it (column-toggle) can do so cheaply.
     const renderViaModule = (data: unknown, columns: number, doc: Document): HTMLElement | null => {
       const scratch = doc.createElement("div");
       const ctx: RenderContext = {
@@ -475,7 +451,7 @@ export default class ArchivistPlugin extends Plugin {
         ctx: null,
         ...(supportsColumns ? { columns } : {}),
       };
-      const appended = pres?.render?.(scratch, data, ctx);
+      const appended = pres.render(scratch, data, ctx);
       const node = appended ?? (scratch.lastElementChild as HTMLElement | null);
       if (node && node.parentElement === scratch) scratch.removeChild(node);
       return node;
@@ -551,11 +527,11 @@ export default class ArchivistPlugin extends Plugin {
         // Clear view mode content
         rendered?.remove();
         sideBtns.addClass("always-visible");
-        // Delegate to the module's edit-mode renderer. The modules read
-        // `plugin` / `ctx` from the EditContext and invoke `onExit` when
-        // they need to restore the view-mode render without a content
-        // change (e.g. cancel with no edits).
-        pres?.renderEditMode?.(el, codecResult.data, {
+        // Delegate to the presenter's edit-mode renderer. The presenter reads
+        // `plugin` / `ctx` from the EditContext and invokes `onExit` when it
+        // needs to restore the view-mode render without a content change
+        // (e.g. cancel with no edits). Only monster/spell/item define it.
+        pres.renderEditMode?.(el, codecResult.data, {
           plugin: this,
           ctx,
           source,

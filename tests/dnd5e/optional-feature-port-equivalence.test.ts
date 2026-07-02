@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
-import type { RenderContext } from "../../packages/obsidian/src/core/module-api";
+import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
 import { optionalFeatureCodec } from "@archivist/dnd5e/optional-feature/optional-feature.codec";
 import { parseOptionalFeature } from "@archivist/dnd5e/optional-feature/optional-feature.parser"; // moved parser (post-move path)
 import { optionalFeatureModule } from "../../packages/obsidian/src/modules/optional-feature/optional-feature.module"; // (a2) uses the module's real render (B1)

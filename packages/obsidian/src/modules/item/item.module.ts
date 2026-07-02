@@ -1,43 +1,27 @@
 import type { App } from "obsidian";
 import type {
-  ArchivistModule,
-  CoreAPI,
   EditContext,
+  EntityPresenter,
   ModalConstructor,
-  ParseResult,
   RenderContext,
-} from "../../core/module-api";
+} from "../../shared/rendering/entity-presenter";
 import type { Item } from "@archivist/dnd5e/item/item.types";
-import { parseItem } from "@archivist/dnd5e/item/item.parser";
 import { renderItemBlock } from "./item.renderer";
 import { renderItemEditMode } from "./item.edit-render";
 import { ItemModal } from "./item.modal";
 
-// TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
-// so modules don't need to reach into src/main for the concrete class.
+// The plugin cast below is the documented accepted seam (convention doc §6 /
+// 0f spec §0.2): RenderContext.plugin stays `unknown`; edit renderers cast to
+// the concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../main";
 
 /**
- * The item module.
- *
- * This module is the self-contained home for every item-specific
- * concern: YAML parsing, read-mode rendering, edit-mode UI, and the
- * "Insert item" modal. (AI generation is owned by the dnd5e pack's
- * `itemGeneratable` + the generation bridge, not this module.)
+ * The item presenter: how an item is DRAWN — read-mode block, edit-mode UI,
+ * and the "Insert item" modal. Parsing lives in the dnd5e pack codec; AI
+ * generation lives in the pack's `itemGeneratable` + generation bridge.
  */
-class ItemModule implements ArchivistModule {
-  readonly id = "item";
-  readonly codeBlockType = "item";
-  readonly entityType = "item";
-
-  register(_core: CoreAPI): void {
-    // No-op: item module is stateless; all wiring happens via the
-    // generic code-block processor and compendium-ref registry lookups.
-  }
-
-  parseYaml(source: string): ParseResult<Item> {
-    return parseItem(source);
-  }
+class ItemModule implements EntityPresenter {
+  readonly type = "item";
 
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const item = data as Item;
@@ -69,11 +53,8 @@ class ItemModule implements ArchivistModule {
   }
 
   getInsertModal(): ModalConstructor {
-    // ItemModal's `(app, editor)` constructor satisfies ModalConstructor's
-    // `new (app, ...never[]) => { open(): void }` shape directly — the rest
-    // parameter is contravariant so any stricter tuple is assignable.
     return ItemModal;
   }
 }
 
-export const itemModule: ArchivistModule = new ItemModule();
+export const itemModule: EntityPresenter = new ItemModule();

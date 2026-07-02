@@ -1,43 +1,27 @@
 import type {
-  ArchivistModule,
-  CoreAPI,
   EditContext,
+  EntityPresenter,
   ModalConstructor,
-  ParseResult,
   RenderContext,
-} from "../../core/module-api";
+} from "../../shared/rendering/entity-presenter";
 import type { Monster } from "@archivist/dnd5e/monster/monster.types";
-import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { renderMonsterBlock } from "./monster.renderer";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
 import { MonsterModal } from "./monster.modal";
 
-// TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
-// so modules don't need to reach into src/main for the concrete class.
+// The plugin cast below is the documented accepted seam (convention doc §6 /
+// 0f spec §0.2): RenderContext.plugin stays `unknown`; edit renderers cast to
+// the concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../main";
 
 /**
- * The monster module.
- *
- * This module is the self-contained home for every monster-specific
- * concern: YAML parsing, read-mode rendering, edit-mode UI, and the
- * "Insert monster" modal. (AI generation is owned by the dnd5e pack's
- * `monsterGeneratable` + the generation bridge, not this module.)
+ * The monster presenter: how a monster is DRAWN — read-mode block, edit-mode
+ * UI, and the "Insert monster" modal. Parsing lives in the dnd5e pack codec;
+ * AI generation lives in the pack's `monsterGeneratable` + generation bridge.
  */
-class MonsterModule implements ArchivistModule {
-  readonly id = "monster";
-  readonly codeBlockType = "monster";
-  readonly entityType = "monster";
+class MonsterModule implements EntityPresenter {
+  readonly type = "monster";
   readonly supportsColumns = true;
-
-  register(_core: CoreAPI): void {
-    // No-op: monster module is stateless; all wiring happens via the
-    // generic code-block processor and compendium-ref registry lookups.
-  }
-
-  parseYaml(source: string): ParseResult<Monster> {
-    return parseMonster(source);
-  }
 
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const monster = data as Monster;
@@ -55,11 +39,8 @@ class MonsterModule implements ArchivistModule {
   }
 
   getInsertModal(): ModalConstructor {
-    // MonsterModal's `(app, editor)` constructor satisfies ModalConstructor's
-    // `new (app, ...never[]) => { open(): void }` shape directly — the rest
-    // parameter is contravariant so any stricter tuple is assignable.
     return MonsterModal;
   }
 }
 
-export const monsterModule: ArchivistModule = new MonsterModule();
+export const monsterModule: EntityPresenter = new MonsterModule();

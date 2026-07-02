@@ -1,43 +1,27 @@
 import type { App } from "obsidian";
 import type {
-  ArchivistModule,
-  CoreAPI,
   EditContext,
+  EntityPresenter,
   ModalConstructor,
-  ParseResult,
   RenderContext,
-} from "../../core/module-api";
+} from "../../shared/rendering/entity-presenter";
 import type { Spell } from "@archivist/dnd5e/spell/spell.types";
-import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
 import { renderSpellBlock } from "./spell.renderer";
 import { renderSpellEditMode } from "./spell.edit-render";
 import { SpellModal } from "./spell.modal";
 
-// TODO(phase1): narrow RenderContext.plugin to a typed host-plugin handle
-// so modules don't need to reach into src/main for the concrete class.
+// The plugin cast below is the documented accepted seam (convention doc §6 /
+// 0f spec §0.2): RenderContext.plugin stays `unknown`; edit renderers cast to
+// the concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../main";
 
 /**
- * The spell module.
- *
- * This module is the self-contained home for every spell-specific
- * concern: YAML parsing, read-mode rendering, edit-mode UI, and the
- * "Insert spell" modal. (AI generation is owned by the dnd5e pack's
- * `spellGeneratable` + the generation bridge, not this module.)
+ * The spell presenter: how a spell is DRAWN — read-mode block, edit-mode UI,
+ * and the "Insert spell" modal. Parsing lives in the dnd5e pack codec; AI
+ * generation lives in the pack's `spellGeneratable` + generation bridge.
  */
-class SpellModule implements ArchivistModule {
-  readonly id = "spell";
-  readonly codeBlockType = "spell";
-  readonly entityType = "spell";
-
-  register(_core: CoreAPI): void {
-    // No-op: spell module is stateless; all wiring happens via the
-    // generic code-block processor and compendium-ref registry lookups.
-  }
-
-  parseYaml(source: string): ParseResult<Spell> {
-    return parseSpell(source);
-  }
+class SpellModule implements EntityPresenter {
+  readonly type = "spell";
 
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     const spell = data as Spell;
@@ -69,11 +53,8 @@ class SpellModule implements ArchivistModule {
   }
 
   getInsertModal(): ModalConstructor {
-    // SpellModal's `(app, editor)` constructor satisfies ModalConstructor's
-    // `new (app, ...never[]) => { open(): void }` shape directly — the rest
-    // parameter is contravariant so any stricter tuple is assignable.
     return SpellModal;
   }
 }
 
-export const spellModule: ArchivistModule = new SpellModule();
+export const spellModule: EntityPresenter = new SpellModule();

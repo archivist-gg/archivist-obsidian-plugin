@@ -1,18 +1,9 @@
-import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
+import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
-import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
 import { renderArmorBlock } from "./armor.renderer";
 
-class ArmorModule implements ArchivistModule {
-  readonly id = "armor";
-  readonly codeBlockType = "armor";
-  readonly entityType = "armor";
-
-  register(_core: CoreAPI): void {}
-
-  parseYaml(source: string): ParseResult<ArmorEntity> {
-    return parseArmor(source);
-  }
+class ArmorModule implements EntityPresenter {
+  readonly type = "armor";
 
   render(el: HTMLElement, data: unknown, _ctx: RenderContext): HTMLElement {
     const armor = data as ArmorEntity;
@@ -22,4 +13,4 @@ class ArmorModule implements ArchivistModule {
   }
 }
 
-export const armorModule: ArchivistModule = new ArmorModule();
+export const armorModule: EntityPresenter = new ArmorModule();

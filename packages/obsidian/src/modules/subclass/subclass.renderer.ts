@@ -1,5 +1,5 @@
 import type { SubclassEntity } from "@archivist/dnd5e/subclass/subclass.types";
-import type { RenderContext } from "../../core/module-api";
+import type { RenderContext } from "../../shared/rendering/entity-presenter";
 
 export function renderSubclassStub(el: HTMLElement, data: SubclassEntity, _ctx: RenderContext): HTMLElement {
   const container = el.createDiv({ cls: "archivist-subclass-stub" });

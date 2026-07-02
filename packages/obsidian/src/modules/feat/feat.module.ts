@@ -1,19 +1,10 @@
 import type { App } from "obsidian";
-import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
+import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
 import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
-import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
 import { renderFeatBlock } from "./feat.renderer";
 
-class FeatModule implements ArchivistModule {
-  readonly id = "feat";
-  readonly codeBlockType = "feat";
-  readonly entityType = "feat";
-
-  register(_core: CoreAPI): void {}
-
-  parseYaml(source: string): ParseResult<FeatEntity> {
-    return parseFeat(source);
-  }
+class FeatModule implements EntityPresenter {
+  readonly type = "feat";
 
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     // Stable wrapper held by the host; the async renderer fills it as a child
@@ -34,4 +25,4 @@ class FeatModule implements ArchivistModule {
   }
 }
 
-export const featModule: ArchivistModule = new FeatModule();
+export const featModule: EntityPresenter = new FeatModule();

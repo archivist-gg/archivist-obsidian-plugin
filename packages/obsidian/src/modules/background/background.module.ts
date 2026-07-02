@@ -1,19 +1,10 @@
 import type { App } from "obsidian";
-import type { ArchivistModule, CoreAPI, ParseResult, RenderContext } from "../../core/module-api";
+import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
 import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
-import { parseBackground } from "@archivist/dnd5e/background/background.parser";
 import { renderBackgroundBlock } from "./background.renderer";
 
-class BackgroundModule implements ArchivistModule {
-  readonly id = "background";
-  readonly codeBlockType = "background";
-  readonly entityType = "background";
-
-  register(_core: CoreAPI): void {}
-
-  parseYaml(source: string): ParseResult<BackgroundEntity> {
-    return parseBackground(source);
-  }
+class BackgroundModule implements EntityPresenter {
+  readonly type = "background";
 
   render(el: HTMLElement, data: unknown, ctx: RenderContext): HTMLElement {
     // Stable wrapper held by the host; the async renderer fills it as a child
@@ -34,4 +25,4 @@ class BackgroundModule implements ArchivistModule {
   }
 }
 
-export const backgroundModule: ArchivistModule = new BackgroundModule();
+export const backgroundModule: EntityPresenter = new BackgroundModule();

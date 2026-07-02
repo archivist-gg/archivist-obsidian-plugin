@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
-import type { RenderContext } from "../../packages/obsidian/src/core/module-api";
+import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
 import { weaponCodec } from "@archivist/dnd5e/weapon/weapon.codec";
 import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser"; // moved parser (post-move path)
 import { weaponModule } from "../../packages/obsidian/src/modules/weapon/weapon.module"; // (a2) uses the module's real render (B1)
