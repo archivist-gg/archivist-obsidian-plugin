@@ -12,8 +12,9 @@ for an unfinished migration.
 
 The short version: content lives in Markdown files, a small framework (`core`)
 parses and dispatches those files, a system pack (`dnd5e`) supplies all the D&D
-knowledge, a headless generator layer (`generators`) produces new content with
-an LLM, and the Obsidian plugin (`obsidian`) wires it all together and draws the
+knowledge, a headless generator layer (`generators`) can produce new content with
+an LLM (now a dormant library — it has no in-plugin consumer; see §2), and the
+Obsidian plugin (`obsidian`) wires the framework and pack together and draws the
 UI. Dependencies only ever point *inward*, and that direction is enforced by
 tooling, not by convention alone.
 
@@ -75,7 +76,7 @@ Archivist is an npm workspace of four packages. Confirmed names, from each
 | ---------------------- | --------------------------------------------------------------------------------------------- |
 | `@archivist/core`      | Framework: the container format, contracts, the kernel, the entity registry, and the ports.   |
 | `@archivist/dnd5e`     | The system pack: schemas, parsers, codecs, rules, and the SRD content.                         |
-| `@archivist/generators`| Headless MCP server + AI generation tools.                                                     |
+| `@archivist/generators`| Headless MCP server + AI generation tools. *Dormant — no in-plugin consumer (see §2).*      |
 | `@archivist/obsidian`  | The Obsidian plugin: composition root + renderer.                                              |
 
 The dependency arrows point strictly inward:
@@ -94,10 +95,20 @@ The dependency arrows point strictly inward:
   they are not separate packages and not separate layers.
 - `generators` depends on `core` and `dnd5e`. It is headless (no Obsidian
   imports): an MCP server that exposes the pack's generatable entity types as AI
-  tools.
+  tools. **It is currently a dormant library with no in-plugin consumer.** The
+  Obsidian plugin does not depend on it — `packages/obsidian/package.json` lists
+  only `@archivist/core` and `@archivist/dnd5e`, and nothing under
+  `packages/obsidian/src` imports from it. In-plugin AI generation was removed
+  when the in-process chat sidebar was deleted, so no `obsidian` code path reaches
+  `generators` any more. It still builds and remains a valid inward-pointing layer
+  (kept in the `tsc -b` project graph and the lint globs); it is being kept in
+  place pending extraction to its own repository in a future phase. Dormant, not
+  deleted or broken.
 - `obsidian` is the composition root and the renderer. It is the only package
   permitted to import all of the others, because it is where everything is wired
-  together and drawn to the screen.
+  together and drawn to the screen. (In practice it currently imports only `core`
+  and `dnd5e`; it is *permitted* to import `generators` too, but does not — see the
+  dormancy note above.)
 
 The one arrow that must never exist:
 
@@ -276,29 +287,17 @@ current wiring is legible.
   `CoreAPI` + `ArchivistModule.register` module system is deleted. Nothing
   registers through a module registry any more: the 11 authored types are wired
   as presenters (above), `pc` is composed directly via a typed `PCServices`
-  bundle (§4), the inquiry chat engine is constructed directly
-  (`new InquiryModule(...)`), and the AI generate-tools are registered by a
-  generic pack-driven loop in the composition root rather than per module. A grep
+  bundle (§4), and the `dnd5e` pack is registered once with the kernel
+  (`archivist.registerPack(dnd5ePack)` in `main.ts`). The composition root also
+  injects the shared `ConfirmModal` into the compendium-ref extension, adds the
+  `ArchivistSettingTab`, and registers one markdown code-block processor per
+  presenter. No AI generate-tools are registered: the plugin no longer hosts an
+  in-process generator (see §2). A grep
   for `ArchivistModule`, `PresentationRegistry`, or `CoreAPI` across
   `packages/*/src` returns zero, and a planted arch test
   ([`tests/arch/no-module-system.test.ts`](../../tests/arch/no-module-system.test.ts))
   pins the three deleted bridge files (and asserts no source references their
   import paths).
-
-### Accepted inquiry divergence
-
-One deliberate shortcut is recorded here so it is not "discovered" later as a
-bug.
-[`DndEntityRenderer`](../../packages/obsidian/src/modules/inquiry/features/chat/rendering/DndEntityRenderer.ts)
-(the chat renderer for generated entities) calls `parseMonster`, `parseSpell`,
-and `parseItem` from `@archivist/dnd5e` **directly**, bypassing the kernel and
-`resolve`. This is harmless in practice: the only type with a `resolve` is
-`monster`, and its `resolve` only derives proficiency bonus / XP — values that
-are already baked into the authored or generated `.md` the renderer is showing.
-So skipping `resolve` changes nothing visible here. Routing this renderer through
-the shared presenter dispatch belongs to a separate inquiry un-defer effort (its
-own future project, not a numbered phase of this arc); the direct-parse path is
-an accepted divergence, not an oversight.
 
 ### Accepted permanent states
 
@@ -316,11 +315,12 @@ future reader does not "fix" them by mistake:
 - **`pc` has no pack codec.** The player character is a stateful `TextFileView`
   app, not an authored stat block; it stays off the pack/codec model by decision
   (0e). See §4.
-- **`ConfirmModal` lives under `modules/inquiry/shared/modals/`** and is imported
-  cross-module (by `main.ts`, `pc`'s unequip flow, and the monster actions
-  editor). Promoting it to a top-level `shared/modals/` tree is ordinary
-  housekeeping, not part of this arc's scope; its current home is an accepted
-  state.
+- **`ConfirmModal` lives at the top-level
+  [`shared/modals/ConfirmModal.ts`](../../packages/obsidian/src/shared/modals/ConfirmModal.ts)**
+  and is imported cross-module (by `main.ts`, `pc`'s unequip flow, and the monster
+  actions editor). It is a plain shared modal with no dependency on any entity
+  module — its former chat-specific i18n/CSS coupling was severed when it was
+  moved out of the (now-deleted) chat sidebar module. This is its permanent home.
 
 ---
 
