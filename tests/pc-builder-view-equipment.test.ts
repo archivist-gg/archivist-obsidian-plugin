@@ -22,7 +22,7 @@ it("renders the equipment step body (not the placeholder) when active", () => {
       background: null,
     },
     derived: { totalLevel: 0, proficiencyBonus: 2 },
-    core: { entities: { search: () => [], getBySlug: () => null, getByTypeAndSlug: () => undefined } },
+    services: { entities: { search: () => [], getBySlug: () => null, getByTypeAndSlug: () => undefined } },
     app: {},
     editState: { setBuilderEquipmentMode: () => {} },
     builderUiState: new Map(),

@@ -18,7 +18,7 @@ function weaponEntity(slug: string): RegisteredEntity {
 
 function mkCtx(): ComponentRenderContext {
   return {
-    core: {
+    services: {
       compendiums: {
         getAll: () => [
           { name: "SRD 5.2", description: "", readonly: true, homebrew: false, folderPath: "" },

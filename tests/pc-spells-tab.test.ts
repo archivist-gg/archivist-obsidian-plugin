@@ -28,13 +28,13 @@ function derived(over: Partial<DerivedStats> = {}): DerivedStats {
 describe("SpellsTab", () => {
   it("shows empty state for non-caster", () => {
     const c = mountContainer();
-    new SpellsTab().render(c, { resolved: resolved([]), derived: derived({ spellcastingClasses: [] }), core: {} as never, app: {} as never, editState: null });
+    new SpellsTab().render(c, { resolved: resolved([]), derived: derived({ spellcastingClasses: [] }), services: {} as never, app: {} as never, editState: null });
     expect(c.querySelector(".pc-spells-empty-title")?.textContent).toBe("No Spellcasting");
   });
 
   it("renders DC header, the Cast/Prepare toggle, and Cast view by default", () => {
     const c = mountContainer();
-    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), core: {} as never, app: {} as never, editState: null });
+    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), services: {} as never, app: {} as never, editState: null });
     expect(c.querySelector(".pc-spell-dc-row")?.textContent).toContain("15");
     const segs = [...c.querySelectorAll(".pc-mode-seg")].map((s) => s.textContent);
     expect(segs).toEqual(["Cast", "Prepare"]);
@@ -45,7 +45,7 @@ describe("SpellsTab", () => {
   it("clicking Prepare switches to the prepare view (counters visible)", () => {
     const c = mountContainer();
     const tab = new SpellsTab();
-    const ctx = { resolved: resolved([spell("Magic Missile", 1)]), derived: derived({ spellLimits: [{ classSlug: "wizard", kind: "prepared", cantripsKnown: 5, preparedOrKnown: 8 } as never] }), core: {} as never, app: {} as never, editState: null };
+    const ctx = { resolved: resolved([spell("Magic Missile", 1)]), derived: derived({ spellLimits: [{ classSlug: "wizard", kind: "prepared", cantripsKnown: 5, preparedOrKnown: 8 } as never] }), services: {} as never, app: {} as never, editState: null };
     tab.render(c, ctx);
     (c.querySelector(".pc-mode-seg:nth-child(2)") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(c.querySelector(".pc-spell-counts")).not.toBeNull();
@@ -54,7 +54,7 @@ describe("SpellsTab", () => {
   it("labels the second mode Manage for a known caster", () => {
     const c = mountContainer();
     const known: SpellcastingClassInfo = { ...wizardClass, classSlug: "sorcerer", className: "Sorcerer", ability: "cha", preparation: "known" };
-    new SpellsTab().render(c, { resolved: resolved([]), derived: derived({ spellcastingClasses: [known] }), core: {} as never, app: {} as never, editState: null });
+    new SpellsTab().render(c, { resolved: resolved([]), derived: derived({ spellcastingClasses: [known] }), services: {} as never, app: {} as never, editState: null });
     const segs = [...c.querySelectorAll(".pc-mode-seg")].map((s) => s.textContent);
     expect(segs).toEqual(["Cast", "Manage"]);
   });
@@ -68,7 +68,7 @@ describe("SpellsTab", () => {
           { field: "spell_attack", source: "Rod of the Pact Keeper", value: 1, conditions: [{ kind: "raw", text: "while attuned" }] },
         ] as never,
       }),
-      core: {} as never, app: {} as never, editState: null,
+      services: {} as never, app: {} as never, editState: null,
     });
     const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
     dcRow.dispatchEvent(new Event("mouseenter"));
@@ -82,7 +82,7 @@ describe("SpellsTab", () => {
 
   it("attaches NO popover when the spell slice is absent (situational-free character)", () => {
     const c = mountContainer();
-    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), core: {} as never, app: {} as never, editState: null });
+    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), services: {} as never, app: {} as never, editState: null });
     const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
     dcRow.dispatchEvent(new Event("mouseenter"));
     expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
@@ -93,7 +93,7 @@ describe("SpellsTab", () => {
     new SpellsTab().render(c, {
       resolved: resolved([spell("Magic Missile", 1)]),
       derived: derived({ spellcastingInformational: [] as never }),
-      core: {} as never, app: {} as never, editState: null,
+      services: {} as never, app: {} as never, editState: null,
     });
     const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
     dcRow.dispatchEvent(new Event("mouseenter"));
@@ -104,7 +104,7 @@ describe("SpellsTab", () => {
     const c = mountContainer();
     const r = resolved([spell("Hold Person", 2)]);
     (r.state as never as { concentration: string }).concentration = "hold-person";
-    new SpellsTab().render(c, { resolved: r, derived: derived(), core: {} as never, app: {} as never, editState: null });
+    new SpellsTab().render(c, { resolved: r, derived: derived(), services: {} as never, app: {} as never, editState: null });
     const tile = c.querySelector(".pc-ae-tile");
     expect(tile).not.toBeNull();
     expect(tile?.textContent).toContain("Hold Person");

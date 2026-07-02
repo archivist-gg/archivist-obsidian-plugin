@@ -51,7 +51,7 @@ export function renderDecisionPickBody(
     (bag?.get(opts.stateKey) as PickUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
-  const compendiums = ctx.core.compendiums.getAll();
+  const compendiums = ctx.services.compendiums.getAll();
   if (!st.ticked) st.ticked = allTicked(compendiums);
 
   // Const-indirection so the sentence-case UI lint (bare-literal only) leaves

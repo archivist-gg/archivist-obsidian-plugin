@@ -22,7 +22,7 @@ type EditStub = Partial<{
 function mkCtx(pool: ResolvedPool, editState: EditStub = {}, activeBuffs: string[] = []): ComponentRenderContext {
   return {
     resolved: { pools: [pool], state: { active_buffs: activeBuffs } } as unknown as ResolvedCharacter,
-    derived: {} as never, core: {} as never, app: {} as never,
+    derived: {} as never, services: {} as never, app: {} as never,
     editState: editState as never,
   };
 }

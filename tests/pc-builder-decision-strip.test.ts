@@ -32,7 +32,7 @@ const item = (over: Partial<DecisionItem>): DecisionItem =>
   }) as DecisionItem;
 
 const mkCtx = (editState: Record<string, unknown> = {}): ComponentRenderContext =>
-  ({ resolved: { definition: {} }, derived: {}, core: { entities: {} }, editState, builderUiState: new Map() }) as unknown as ComponentRenderContext;
+  ({ resolved: { definition: {} }, derived: {}, services: { entities: {} }, editState, builderUiState: new Map() }) as unknown as ComponentRenderContext;
 
 describe("renderDecisionStrip", () => {
   it("unresolved row wears the open dress with chips mounted", () => {

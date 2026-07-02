@@ -192,7 +192,7 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     if (state.moreOpen) renderMorePanel(panelHost, state, draw);
 
     const known = knownSet();
-    const cands = classSpellCandidates(ctx.core.entities, classSlugs, maxLevel, new Set(), state.showAll, state.query)
+    const cands = classSpellCandidates(ctx.services.entities, classSlugs, maxLevel, new Set(), state.showAll, state.query)
       .filter((c) => matchesFilters(c, state))
       .sort((a, b) => compareCandidates(a, b, state.sortKey, state.sortDir))
       .slice(0, 300);

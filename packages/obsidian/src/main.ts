@@ -127,13 +127,15 @@ export default class ArchivistPlugin extends Plugin {
     this.srdStore.loadFromBundledJson();
 
     // Initialize entity registry and compendium manager
-    this.entityRegistry = new EntityRegistry();
-    this.compendiumManager = new CompendiumManager(
-      this.entityRegistry,
+    const entityRegistry = new EntityRegistry();
+    this.entityRegistry = entityRegistry;
+    const compendiumManager = new CompendiumManager(
+      entityRegistry,
       this.app.vault,
       this.app.fileManager,
       this.settings.compendiumRoot,
     );
+    this.compendiumManager = compendiumManager;
     setCompendiumRefRegistry(this.entityRegistry);
     setCompendiumRefPlugin(this);
     setCompendiumRefConfirmFn((app, message, confirmLabel) => confirmModal(app, message, confirmLabel ?? "OK"));
@@ -144,8 +146,8 @@ export default class ArchivistPlugin extends Plugin {
     this.core = {
       plugin: this,
       modules: moduleRegistry,
-      entities: this.entityRegistry,
-      compendiums: this.compendiumManager,
+      entities: entityRegistry,
+      compendiums: compendiumManager,
       srd: this.srdStore,
       aiTools: aiToolRegistry,
     };
@@ -197,9 +199,9 @@ export default class ArchivistPlugin extends Plugin {
     // pack was removed with Bridge 1 in 0e).
     this.archivist.registerPack(dnd5ePack);
     // Direct composition: pc is a stateful-app, not a registry tenant (0e).
-    // Wired outside the ArchivistModule loop; retains CoreAPI service access
-    // until the Bridge 3 teardown in 0f.
-    pcModule.register(this.core);
+    // Wired outside the ArchivistModule loop with a typed PCServices bundle;
+    // no CoreAPI (Bridge 3 now serves inquiry only).
+    pcModule.init({ plugin: this, entities: entityRegistry, compendiums: compendiumManager });
     // B7 generation bridge: register one SDK generate-tool per pack Generatable.
     // The pack owns the generate contract; the generic mapper turns each
     // Generatable into an SDK tool with no domain knowledge. This replaces the

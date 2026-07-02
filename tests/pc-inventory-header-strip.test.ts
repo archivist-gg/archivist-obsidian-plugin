@@ -10,7 +10,7 @@ function makeCtx(): ComponentRenderContext {
   return {
     resolved: { definition: { equipment: [], currency: { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 } } } as never,
     derived: { attunementUsed: 0, attunementLimit: 3 } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

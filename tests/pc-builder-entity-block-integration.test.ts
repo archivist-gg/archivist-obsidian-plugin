@@ -62,7 +62,7 @@ afterEach(() => {
 
 function pickerCtx(bag: Map<string, unknown>): ComponentRenderContext {
   return {
-    core: {
+    services: {
       plugin: { app: {} },
       entities: { search: (_q: string, type: string) => (type === "race" ? [gnome] : []) },
       compendiums: { getAll: () => [

@@ -115,7 +115,7 @@ function actionsTabCtxWith(effects: Partial<ConditionEffects>): ComponentRenderC
       attacks: [],
       conditionEffects: { ...ZERO_EFFECTS, ...effects },
     } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

@@ -13,7 +13,7 @@ import {
   SURE_STEP,
   LONGSWORD,
 } from "./fixtures/pc/grendal-the-wary";
-import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
+import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import { WorkspaceLeaf } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -70,7 +70,7 @@ const PC_FILE = [
 async function bootView(): Promise<{ view: PCSheetView; mod: PCModule }> {
   const mod = new PCModule();
   const entities = buildMockRegistry([{ slug: "bladesworn", entityType: "class", data: BLADESWORN }]);
-  mod.register({ entities } as unknown as CoreAPI);
+  mod.init({ entities } as unknown as PCServices);
   const view = new PCSheetView(new WorkspaceLeaf(), mod);
   view.setViewData(PC_FILE, true);
   await view.rendered;
@@ -135,7 +135,7 @@ describe("PCSheetView — write path on afflicted state", () => {
       { slug: "sure-step", entityType: "feat", data: SURE_STEP },
       { slug: "longsword", entityType: "item", data: LONGSWORD },
     ]);
-    mod.register({ entities } as unknown as CoreAPI);
+    mod.init({ entities } as unknown as PCServices);
     const view = new PCSheetView(new WorkspaceLeaf(), mod);
     view.setViewData(GRENDAL_AFFLICTED_MD, true);
     await view.rendered;

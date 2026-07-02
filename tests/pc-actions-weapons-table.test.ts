@@ -11,7 +11,7 @@ function ctxWithAttacks(attacks: AttackRow[]): ComponentRenderContext {
   return {
     resolved: { definition: { equipment: [] } } as never,
     derived: { attacks } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };
@@ -24,7 +24,7 @@ function ctxWithRollModifiers(
   return {
     resolved: { definition: { equipment: [] } } as never,
     derived: { attacks, rollModifiers } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

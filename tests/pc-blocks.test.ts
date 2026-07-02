@@ -46,7 +46,7 @@ function mkResolved(): ResolvedCharacter {
 const ctx = (): ComponentRenderContext => ({
   resolved: mkResolved(),
   derived: {} as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 });
 

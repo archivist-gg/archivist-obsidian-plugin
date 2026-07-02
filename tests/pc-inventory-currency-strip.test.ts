@@ -9,7 +9,7 @@ beforeAll(() => installObsidianDomHelpers());
 function makeCtx(currency: { pp?: number; gp?: number; ep?: number; sp?: number; cp?: number }): ComponentRenderContext {
   return {
     resolved: { definition: { currency } } as never,
-    derived: {} as never, core: {} as never, app: {} as never, editState: null,
+    derived: {} as never, services: {} as never, app: {} as never, editState: null,
   };
 }
 

@@ -14,7 +14,7 @@ function ctxWithFeatures(features: object[], featureUses: Record<string, { used:
       state: { feature_uses: featureUses },
     } as never,
     derived: { attacks: [] } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

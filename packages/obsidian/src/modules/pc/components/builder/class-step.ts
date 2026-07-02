@@ -35,7 +35,7 @@ function drawStep(root: HTMLElement, ctx: ComponentRenderContext, redraw: () => 
     return;
   }
   const stack = root.createDiv({ cls: "pc-bcstack" });
-  const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities });
+  const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities });
   classes.forEach((_, i) => renderClassCard(stack, ctx, ledger, i, redraw));
   renderAddButton(root, ctx, false);
 }
@@ -64,7 +64,7 @@ function renderClassCard(
 ): void {
   const entry = (ctx.resolved.definition.class ?? [])[index];
   const slug = stripSlug(entry.name);
-  const entity = slug ? ctx.core.entities.getByTypeAndSlug("class", slug) : undefined;
+  const entity = slug ? ctx.services.entities.getByTypeAndSlug("class", slug) : undefined;
   const bag = ctx.builderUiState;
   const collapsed = (bag?.get("builder.class-cards") as Set<number> | undefined) ?? new Set<number>();
   bag?.set("builder.class-cards", collapsed);
@@ -88,7 +88,7 @@ function renderClassCard(
   // here, and the same entity threads into the chronicle so its granted features
   // fold into the timeline & progression (Fix A).
   const subSlug = entry.subclass ? stripSlug(entry.subclass) : undefined;
-  const subclassEntity = subSlug ? ctx.core.entities.getByTypeAndSlug("subclass", subSlug) : undefined;
+  const subclassEntity = subSlug ? ctx.services.entities.getByTypeAndSlug("subclass", subSlug) : undefined;
   const subclassName = entry.subclass ? (subclassEntity?.name ?? humanizeSlug(subSlug ?? "")) : undefined;
 
   // The Chronicle block IS the card: its identity band is the one header, with
@@ -274,11 +274,11 @@ function renderOrphanSubclasses(body: HTMLElement, ctx: ComponentRenderContext):
   // when a homebrew class's display name ≠ slug. Keep the name tail as a
   // secondary alias since a subclass may also link the display name.
   const classSlugs = new Set<string>();
-  for (const c of ctx.core.entities.search("", "class", Number.POSITIVE_INFINITY)) {
+  for (const c of ctx.services.entities.search("", "class", Number.POSITIVE_INFINITY)) {
     classSlugs.add(bareEntitySlug(c.slug));
     classSlugs.add(wikilinkTailSlug(`[[${c.name}]]`));
   }
-  const orphans = ctx.core.entities
+  const orphans = ctx.services.entities
     .search("", "subclass", Number.POSITIVE_INFINITY)
     .filter((s) => {
       const pc = (s.data as { parent_class?: string }).parent_class;

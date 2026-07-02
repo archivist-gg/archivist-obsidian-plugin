@@ -61,7 +61,7 @@ export function renderEntityPicker(
     (bag?.get(opts.stateKey) as PickerUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
-  const compendiums = ctx.core.compendiums.getAll();
+  const compendiums = ctx.services.compendiums.getAll();
   if (!st.ticked) st.ticked = allTicked(compendiums);
 
   const root = parent.createDiv({ cls: "pc-bpicker" });
@@ -78,7 +78,7 @@ export function renderEntityPicker(
     tableHost.empty();
     renderCompendiumFilter(filterHost, compendiums, st.ticked!, draw);
 
-    const cands = ctx.core.entities
+    const cands = ctx.services.entities
       .search(st.query, opts.entityType, Number.POSITIVE_INFINITY)
       .filter((e) => matchesTicked(e, st.ticked!))
       .filter((e) => !opts.exclude?.has(e.slug));

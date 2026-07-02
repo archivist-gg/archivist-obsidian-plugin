@@ -19,7 +19,7 @@ const ctxFactory = (attacks: AttackRow[], features: ResolvedCharacter["features"
     feats: [], totalLevel: 1, features, state: {} as never,
   } as unknown as ResolvedCharacter,
   derived: { attacks } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 });
 

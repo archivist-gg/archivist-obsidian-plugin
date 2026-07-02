@@ -96,7 +96,7 @@ export class ItemsTable implements SheetComponent {
           entry: r.entry,
           resolved: { index: r.index, entity: r.entity as never, entityType: r.entityType, entry: r.entry },
           app: ctx.app, editState: ctx.editState,
-          registry: ctx.core?.entities ?? null,
+          registry: ctx.services?.entities ?? null,
         });
       }
     }
@@ -109,7 +109,7 @@ function collectRows(ctx: ComponentRenderContext): RowData[] {
     .map((entry, index) => {
       const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
       if (!slug) return null;
-      const reg = ctx.core?.entities as { getBySlug?: (s: string) => { entityType?: string; data?: object } | null } | undefined;
+      const reg = ctx.services?.entities as { getBySlug?: (s: string) => { entityType?: string; data?: object } | null } | undefined;
       const found = reg?.getBySlug?.(slug);
       const entityType = found?.entityType ?? null;
       // Skip weapons + armor — those go in the Weapons table, or surface in expand

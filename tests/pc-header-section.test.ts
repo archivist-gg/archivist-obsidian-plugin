@@ -37,7 +37,7 @@ const BASE_RESOLVED: ResolvedCharacter = {
 const fakeCtx = (resolved: ResolvedCharacter): ComponentRenderContext => ({
   resolved,
   derived: { hp: { max: resolved.state.hp.max, current: resolved.state.hp.current, temp: resolved.state.hp.temp } } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 });
 

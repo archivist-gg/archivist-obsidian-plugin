@@ -12,7 +12,7 @@ const ctx: ComponentRenderContext = {
   derived: {
     passives: { perception: 14, investigation: 10, insight: 11 },
   } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 };
 
@@ -109,7 +109,7 @@ describe("SensesPanel — senses", () => {
         ? { senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0, ...senses } }
         : {}),
     } as DerivedStats,
-    core: {} as never,
+    services: {} as never,
     editState: null,
   });
 

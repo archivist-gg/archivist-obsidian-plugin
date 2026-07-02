@@ -103,7 +103,7 @@ function mkCtx(opts: {
       pools: [],
     },
     derived: { scores: opts.scores ?? {} },
-    core: { entities: registry },
+    services: { entities: registry },
     editState: {
       addClass: opts.overrides?.addClass ?? vi.fn(),
       removeClass: opts.overrides?.removeClass ?? vi.fn(),

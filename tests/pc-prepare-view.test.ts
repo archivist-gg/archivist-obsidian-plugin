@@ -21,7 +21,7 @@ function ctx(spells: ResolvedSpell[], editState: unknown, preparation: "prepared
       derivedSpellSlots: { 1: 4, 3: 2 }, pactMagic: null,
       spellLimits: [{ classSlug: "wizard", kind: "prepared", cantripsKnown: 5, preparedOrKnown: 8 }],
     } as never,
-    core: { entities: REG } as never, app: {} as never, editState: editState as never,
+    services: { entities: REG } as never, app: {} as never, editState: editState as never,
   };
 }
 

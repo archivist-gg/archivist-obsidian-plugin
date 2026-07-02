@@ -75,7 +75,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
     } as never,
     derived: {} as never,
     app: {} as never,
-    core: { entities: makeRegistry(pool) } as never,
+    services: { entities: makeRegistry(pool) } as never,
     editState: { setChoice, setOriginChoice, syncStartingEquipment, setBuilderEquipmentMode, setCurrency,
       addItem: vi.fn(), removeItem: vi.fn() } as never,
     builderUiState: new Map(),

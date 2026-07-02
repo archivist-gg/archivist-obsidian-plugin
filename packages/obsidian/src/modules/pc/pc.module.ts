@@ -1,7 +1,7 @@
 import { Notice, WorkspaceLeaf } from "obsidian";
-import type { App, ViewState } from "obsidian";
+import type { ViewState } from "obsidian";
 import { around } from "monkey-around";
-import type { CoreAPI } from "../../core/module-api";
+import type { PCServices, HostPlugin } from "./pc.services";
 import { PCResolver } from "./pc.resolver";
 import { ComponentRegistry } from "./components/component-registry";
 import { HeaderSection } from "./components/header-section";
@@ -32,24 +32,10 @@ import { FeatBlock } from "./blocks/feat-block";
 import { PCSheetView, VIEW_TYPE_PC } from "./pc.view";
 import { buildDraftFileBody } from "./builder/character-stub";
 
-interface HostPlugin {
-  _loaded?: boolean;
-  registerView: (type: string, factory: (leaf: WorkspaceLeaf) => PCSheetView) => void;
-  register: (cb: () => void) => void;
-  addCommand?: (cmd: { id: string; name: string; callback: () => void | Promise<void> }) => void;
-  addRibbonIcon?: (icon: string, title: string, callback: () => void | Promise<void>) => void;
-  app: App & {
-    metadataCache: {
-      getCache: (path: string) => { frontmatter?: Record<string, unknown> } | null;
-    };
-  };
-  settings: { playerCharactersFolder?: string };
-}
-
 export class PCModule {
   readonly id = "pc";
 
-  core: CoreAPI | null = null;
+  services: PCServices | null = null;
   registry: ComponentRegistry = new ComponentRegistry();
   resolver: PCResolver | null = null;
 
@@ -58,12 +44,12 @@ export class PCModule {
   // Keyed by `leaf.id || file.path`, matching the Kanban/Excalidraw pattern.
   fileModes: Record<string, string> = {};
 
-  register(core: CoreAPI): void {
-    this.core = core;
-    this.resolver = new PCResolver(core.entities);
+  init(services: PCServices): void {
+    this.services = services;
+    this.resolver = new PCResolver(services.entities);
     this.wireComponents();
 
-    const plugin = core.plugin as HostPlugin | null;
+    const plugin = services.plugin;
     if (!plugin?.registerView || !plugin?.register) return;
 
     plugin.registerView(VIEW_TYPE_PC, (leaf) => new PCSheetView(leaf, this));

@@ -17,7 +17,7 @@ const races: RegisteredEntity[] = [
 
 function fakeCtx(bag: Map<string, unknown>): ComponentRenderContext {
   return {
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (q: string, type: string) =>

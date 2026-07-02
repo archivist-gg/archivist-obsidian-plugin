@@ -40,7 +40,7 @@ function withDefenses(over: Partial<{
   const ctx: ComponentRenderContext = {
     resolved,
     derived: derived as never,
-    core: {} as never,
+    services: {} as never,
     app: {} as App,
     editState,
   };

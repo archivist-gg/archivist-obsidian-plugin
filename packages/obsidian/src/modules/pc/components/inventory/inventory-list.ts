@@ -65,7 +65,7 @@ function drawRow(
     resolved: item.resolved,
     app: ctx.app,
     editState: ctx.editState,
-    registry: ctx.core?.entities ?? null,
+    registry: ctx.services?.entities ?? null,
     onToggle,
     expanded: isExpanded,
   });
@@ -75,7 +75,7 @@ function drawRow(
       resolved: item.resolved,
       app: ctx.app,
       editState: ctx.editState,
-      registry: ctx.core?.entities ?? null,
+      registry: ctx.services?.entities ?? null,
       onAttuneConflict,
     });
   }
@@ -92,10 +92,10 @@ function collectItems(ctx: ComponentRenderContext): VisibleEntry[] {
 function resolveEquipment(entry: EquipmentEntry, index: number, ctx: ComponentRenderContext): ResolvedEquipped {
   const slug = parseSlug(entry.item);
   if (!slug) return { index, entity: null, entityType: null, entry };
-  // CoreAPI.entities is the EntityRegistry directly (see src/core/module-api.ts:103
-  // and src/modules/pc/pc.equipment.ts:55 which calls registry.getBySlug). No
+  // PCServices.entities is the EntityRegistry directly (see
+  // src/modules/pc/pc.equipment.ts:55 which calls registry.getBySlug). No
   // `.registry` sublevel — getBySlug lives on entities itself.
-  const reg = (ctx.core?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null | undefined } | undefined);
+  const reg = (ctx.services?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null | undefined } | undefined);
   const found = reg?.getBySlug?.(slug);
   if (!found) return { index, entity: null, entityType: null, entry };
   return { index, entity: (found.data ?? {}) as never, entityType: found.entityType ?? null, entry };

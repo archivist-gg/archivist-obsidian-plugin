@@ -59,7 +59,7 @@ function mkCtx(over: { saveEntity?: ReturnType<typeof vi.fn>; setBackground?: Re
       race: null, background: null, classes: [], features: [],
     },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) =>

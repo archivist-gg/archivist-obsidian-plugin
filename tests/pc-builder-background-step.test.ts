@@ -108,7 +108,7 @@ function mkCtx(over: {
       classes: [], features: [],
     },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) =>
@@ -285,7 +285,7 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     } as unknown as RegisteredEntity;
     const c = mountContainer();
     const ctx = mkCtxWithChosenAcolyte2024();
-    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+    (ctx.services.entities as { search: unknown }).search = (_q: string, type: string) =>
       type === "background" ? BACKGROUNDS : type === "feat" ? [MAGIC_INITIATE_FEAT] : [];
     const prev = (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat;
     (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = "[[SRD 2024/Feats/Magic Initiate (Cleric)]]";
@@ -335,7 +335,7 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     } as unknown as RegisteredEntity;
     const c = mountContainer();
     const ctx = mkCtxWithChosenAcolyte2024();
-    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+    (ctx.services.entities as { search: unknown }).search = (_q: string, type: string) =>
       type === "background" ? BACKGROUNDS : type === "feat" ? [HOMEBREW_FEAT] : [];
     const prev = (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat;
     (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = "[[my-feat]]";

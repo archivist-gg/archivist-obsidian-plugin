@@ -1,12 +1,12 @@
 import type { App } from "obsidian";
-import type { CoreAPI } from "../../../core/module-api";
+import type { PCServices } from "../pc.services";
 import type { ResolvedCharacter, DerivedStats } from "../pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
 
 export interface ComponentRenderContext {
   resolved: ResolvedCharacter;
   derived: DerivedStats;
-  core: CoreAPI;
+  services: PCServices;
   /** Obsidian App handle. Components needing Modals/Notice should use this
    *  rather than `window`/`activeWindow`, since Electron's renderer blocks
    *  native `window.prompt`/`alert`/`confirm` at runtime. */

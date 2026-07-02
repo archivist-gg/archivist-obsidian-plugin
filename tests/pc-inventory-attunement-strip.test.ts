@@ -29,7 +29,7 @@ function ctxWithAttuned(attuned: Array<{ name: string; rarity: string }>): Compo
   return {
     resolved: { definition: { equipment } } as never,
     derived: { attunementUsed: attuned.length, attunementLimit: 3 } as never,
-    core: {
+    services: {
       entities: {
         getBySlug: (slug: string) => {
           const idx = Number(slug.split("-")[1]);

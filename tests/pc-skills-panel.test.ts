@@ -32,7 +32,7 @@ const ctx: ComponentRenderContext = {
       perception: { bonus: 2, proficiency: "none", ability: "wis" },
     }),
   } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 };
 
@@ -88,7 +88,7 @@ describe("SkillsPanel — roll-modifier chips", () => {
         }),
         rollModifiers,
       } as unknown as DerivedStats,
-      core: {} as never,
+      services: {} as never,
       editState: null,
     };
   }

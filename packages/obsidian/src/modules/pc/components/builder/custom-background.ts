@@ -222,11 +222,11 @@ function renderForm(
   const create = foot.createEl("button", { cls: "pc-bcreate", text: "Create & use" });
   create.disabled = !data;
   create.addEventListener("click", () => {
-    const homebrew = ctx.core.compendiums.getAll().find((c: { homebrew?: boolean }) => c.homebrew);
+    const homebrew = ctx.services.compendiums.getAll().find((c: { homebrew?: boolean }) => c.homebrew);
     const built = buildCustomBackgroundData(st, editionOf(ctx));
     if (!homebrew || !built) return;
     void (
-      ctx.core.compendiums as unknown as {
+      ctx.services.compendiums as unknown as {
         saveEntity(comp: string, type: string, d: Record<string, unknown>): Promise<{ slug: string }>;
       }
     )
@@ -319,7 +319,7 @@ function renderBorrow(
   st: CustomBackgroundState,
   redraw: () => void,
 ): void {
-  const backgrounds = ctx.core.entities.search("", "background", Number.POSITIVE_INFINITY);
+  const backgrounds = ctx.services.entities.search("", "background", Number.POSITIVE_INFINITY);
   // Every background's feature, as {name, description} options keyed by name.
   const features = backgrounds
     .map((e: RegisteredEntity) => (e.data as { feature?: { name?: string; description?: string } }).feature)
@@ -414,7 +414,7 @@ function render2024Drawer(
   // ── Origin feat: a simple select over registry feats, "None" by default.
   const featRow = box.createDiv({ cls: "pc-b2024-featrow" });
   featRow.createSpan({ cls: "pc-b2024-featlbl", text: "Origin Feat" });
-  const feats = ctx.core.entities.search("", "feat", Number.POSITIVE_INFINITY);
+  const feats = ctx.services.entities.search("", "feat", Number.POSITIVE_INFINITY);
   const select = featRow.createEl("select", { cls: "pc-b2024-feat pc-bdd" });
   select.createEl("option", { text: "None", attr: { value: "" } });
   for (const f of feats) {

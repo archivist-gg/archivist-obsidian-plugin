@@ -18,7 +18,7 @@ class Probe implements SheetComponent {
 const ctx: ComponentRenderContext = {
   resolved: {} as ResolvedCharacter,
   derived: {} as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 };
 

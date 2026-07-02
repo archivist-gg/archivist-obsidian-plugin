@@ -69,7 +69,7 @@ function renderModeToggle(body: HTMLElement, ctx: ComponentRenderContext, mode: 
  *  `select-entity` children render through the SAME decision-strip picker the
  *  rest of the builder uses. */
 function renderStartingChoices(body: HTMLElement, ctx: ComponentRenderContext): void {
-  const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities });
+  const ledger = buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities });
 
   const classEntity = ctx.resolved.classes[0]?.entity ?? null;
   const classEquip = classEntity?.starting_equipment ?? [];
@@ -316,7 +316,7 @@ function itemCost(reg: { getBySlug?: (s: string) => { data?: { cost?: number | s
 function renderBuyWithGold(body: HTMLElement, ctx: ComponentRenderContext): void {
   const def = ctx.resolved.definition;
   const budget = startingBudget(ctx);
-  const reg = ctx.core?.entities as { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined;
+  const reg = ctx.services?.entities as { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined;
 
   let spent = 0;
   for (const e of def.equipment ?? []) {
@@ -357,7 +357,7 @@ function renderBuyWithGold(body: HTMLElement, ctx: ComponentRenderContext): void
 
 interface BareEntity { fullSlug: string; entityType: string; name: string; packContents?: string[]; }
 
-/** Build the SeedRegistry the seeder needs over `ctx.core.entities`. Resolves a
+/** Build the SeedRegistry the seeder needs over `ctx.services.entities`. Resolves a
  *  bare slug ("chain-mail") to its full edition slug + entityType via a
  *  bare→entity Map built ONCE per call (mirrors the `byBare` idiom in
  *  `pc.decision-engine.ts`): one bounded `search("", type, …)` per candidate
@@ -372,7 +372,7 @@ interface BareEntity { fullSlug: string; entityType: string; name: string; packC
  *  no structured field in the runtime data, so `packContents` stays undefined
  *  (forward-compatible; a resolvable pack item seeds as-is). */
 function seedRegistry(ctx: ComponentRenderContext): SeedRegistry {
-  const reg = ctx.core.entities;
+  const reg = ctx.services.entities;
   const byBare = new Map<string, BareEntity>();
   for (const type of ["weapon", "armor", "item"]) {
     for (const e of reg.search("", type, Number.POSITIVE_INFINITY) as Array<{ slug: string; name: string; entityType?: string; data?: { packContents?: string[] } }>) {

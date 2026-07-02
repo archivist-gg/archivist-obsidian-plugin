@@ -53,7 +53,7 @@ export class BuilderView implements SheetComponent {
               .map((c) => {
                 const slug = stripSlug(c.name);
                 const name =
-                  (slug && ctx.core?.entities.getByTypeAndSlug("class", slug)?.name) ??
+                  (slug && ctx.services?.entities.getByTypeAndSlug("class", slug)?.name) ??
                   humanizeSlug(slug ?? "?");
                 return `${name} ${c.level}`;
               })
@@ -69,15 +69,15 @@ export class BuilderView implements SheetComponent {
     const body = main.createDiv({ cls: "pc-builder-body", attr: { "data-step": activeStep } });
     const def = BUILDER_STEPS.find((s) => s.id === activeStep)!;
     body.createDiv({ cls: "pc-builder-step-h", text: def.label });
-    if (def.id === "race" && ctx.core) {
+    if (def.id === "race" && ctx.services) {
       renderRaceStep(body, ctx);
-    } else if (def.id === "class" && ctx.core) {
+    } else if (def.id === "class" && ctx.services) {
       renderClassStep(body, ctx);
-    } else if (def.id === "abilities" && ctx.core) {
+    } else if (def.id === "abilities" && ctx.services) {
       renderAbilitiesStep(body, ctx);
-    } else if (def.id === "background" && ctx.core) {
+    } else if (def.id === "background" && ctx.services) {
       renderBackgroundStep(body, ctx);
-    } else if (def.id === "equipment" && ctx.core) {
+    } else if (def.id === "equipment" && ctx.services) {
       renderEquipmentStep(body, ctx);
     } else if (def.id === "details") {
       renderDetailsStep(body, ctx);

@@ -33,7 +33,7 @@ function ctx(known: string[] = [], editState: object = { addKnownSpell: vi.fn(),
   return {
     resolved: { spells: known.map((slug) => ({ slug })) } as never,
     derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 1: 4, 2: 3 }, pactMagic: null } as never,
-    core: { entities: REG } as never, app: {} as never, editState: editState as never,
+    services: { entities: REG } as never, app: {} as never, editState: editState as never,
   };
 }
 

@@ -39,7 +39,7 @@ export class AttunementStrip implements SheetComponent {
 
 function collectAttuned(ctx: ComponentRenderContext): ResolvedEquipped[] {
   const equipment = ctx.resolved.definition.equipment ?? [];
-  const reg = ctx.core?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null } | undefined;
+  const reg = ctx.services?.entities as { getBySlug?: (slug: string) => { entityType?: string; data?: object } | null } | undefined;
   const out: ResolvedEquipped[] = [];
   equipment.forEach((entry, index) => {
     if (!entry.attuned) return;

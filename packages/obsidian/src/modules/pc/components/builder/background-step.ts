@@ -76,7 +76,7 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
       // composes them on the restore pass (by then it IS the chosen background).
       const chosen = e.slug === stripSlug(ctx.resolved.definition.background);
       const d = e.data as BackgroundData;
-      const ledger = chosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities }) : null;
+      const ledger = chosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
       const items = ledger?.origin.filter((i) => i.source.kind === "background") ?? [];
       const ofeat = chosen ? resolveOriginFeat(ctx, e) : null;
       renderChronicleBlock(wrap, {
@@ -218,7 +218,7 @@ function resolveOriginFeat(
   // ("alert"). `wikilinkTailSlug` also yields the bare slug for slug-style refs
   // ("[[my-feat]]" → "my-feat"), so it handles both shapes.
   const slug = wikilinkTailSlug(ref);
-  const feats = ctx.core.entities.search("", "feat", Number.POSITIVE_INFINITY);
+  const feats = ctx.services.entities.search("", "feat", Number.POSITIVE_INFINITY);
   // Prefer an EXACT full-slug match (covers bare-slug homebrew refs like
   // "[[my-feat]]"), so a homebrew "homebrew_alert" can't shadow "srd-2024_alert"
   // via the loose tail match. Fall back to the suffix match for compendium feats

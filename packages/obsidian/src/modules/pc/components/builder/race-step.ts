@@ -78,7 +78,7 @@ export function renderRaceStep(body: HTMLElement, ctx: ComponentRenderContext): 
       // composes them on the restore pass (by then it IS the chosen race).
       const isChosen = e.slug === stripSlug(ctx.resolved.definition.race);
       const d = e.data as RaceData;
-      const ledger = isChosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.core.entities }) : null;
+      const ledger = isChosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
       const items = ledger?.origin.filter((i) => i.source.kind === "race") ?? [];
       const dv = d.vision?.darkvision;
       renderChronicleBlock(wrap, {

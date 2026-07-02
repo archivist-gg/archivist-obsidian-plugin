@@ -18,7 +18,7 @@ function mkCtx(over: { race?: string | null; editState?: unknown } = {}): Compon
   return {
     resolved: { definition: { race: over.race ?? null, subrace: null, origin_choices: {}, class: [] }, race: null, background: null, classes: [], features: [] },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: { search: (_q: string, type: string) => (type === "race" ? RACES : []), getByTypeAndSlug: () => undefined },
       compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
@@ -123,7 +123,7 @@ function mkCtxWithChosenDwarf(
       race: resolvedRace, background: null, classes: [], features: [],
     },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) => (type === "race" ? races : []),

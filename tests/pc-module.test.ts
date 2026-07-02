@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { WorkspaceLeaf } from "obsidian";
 import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { VIEW_TYPE_PC } from "../packages/obsidian/src/modules/pc/pc.view";
-import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
+import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import { EntityRegistry } from "@core/entity-registry";
 
 // Fake host plugin that satisfies the subset of the interface PCModule exercises.
@@ -62,19 +62,19 @@ describe("PCModule", () => {
     expect(m.id).toBe("pc");
   });
 
-  it("register() assigns core, resolver; component registry exists", () => {
+  it("init() assigns services, resolver; component registry exists", () => {
     const m = new PCModule();
-    const core = { entities: new EntityRegistry() } as unknown as CoreAPI;
-    m.register(core);
-    expect(m.core).toBe(core);
+    const services = { entities: new EntityRegistry() } as unknown as PCServices;
+    m.init(services);
+    expect(m.services).toBe(services);
     expect(m.resolver).not.toBeNull();
     expect(m.registry.size()).toBeGreaterThan(0);
   });
 
   it("wireComponents registers all 29 components", () => {
     const m = new PCModule();
-    const core = { entities: new EntityRegistry() } as unknown as CoreAPI;
-    m.register(core);
+    const services = { entities: new EntityRegistry() } as unknown as PCServices;
+    m.init(services);
     expect(m.registry.size()).toBe(29);
     for (const type of [
       "header-section", "ac-shield", "hp-widget", "hit-dice-widget",
@@ -108,7 +108,7 @@ describe("PCModule", () => {
   it("interceptor rewrites setViewState markdown → pc when frontmatter matches", async () => {
     const m = new PCModule();
     const host = makeHost();
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     const leaf = new WorkspaceLeaf();
     await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/Grendal.md" }, active: true });
@@ -123,7 +123,7 @@ describe("PCModule", () => {
   it("interceptor passes through files without archivist-type: pc frontmatter", async () => {
     const m = new PCModule();
     const host = makeHost({ "archivist-type": "monster" });
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     const leaf = new WorkspaceLeaf();
     await leaf.setViewState({ type: "markdown", state: { file: "PlayerCharacters/not-a-pc.md" } });
@@ -137,7 +137,7 @@ describe("PCModule", () => {
   it("interceptor passes through files outside the PC folder", async () => {
     const m = new PCModule();
     const host = makeHost();
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     const leaf = new WorkspaceLeaf();
     await leaf.setViewState({ type: "markdown", state: { file: "Daily/Note.md" } });
@@ -151,7 +151,7 @@ describe("PCModule", () => {
   it("interceptor passes through non-markdown view types unchanged", async () => {
     const m = new PCModule();
     const host = makeHost();
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     const leaf = new WorkspaceLeaf();
     await leaf.setViewState({ type: "canvas", state: { file: "PlayerCharacters/Grendal.md" } });
@@ -168,7 +168,7 @@ describe("PCModule", () => {
     // so the interceptor passes the call through instead of re-swapping.
     const m = new PCModule();
     const host = makeHost();
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     const leaf = new WorkspaceLeaf();
     (leaf as unknown as { id: string }).id = "leaf-1";
@@ -191,7 +191,7 @@ describe("PCModule", () => {
   it("detach patch clears the fileModes entry so a reopened leaf re-swaps", async () => {
     const m = new PCModule();
     const host = makeHost();
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     const leaf = new WorkspaceLeaf();
     (leaf as unknown as { id: string }).id = "leaf-1";
@@ -212,7 +212,7 @@ describe("PCModule", () => {
   it("interceptor uninstalls cleanly on plugin teardown", async () => {
     const m = new PCModule();
     const host = makeHost();
-    m.register({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as CoreAPI);
+    m.init({ entities: new EntityRegistry(), plugin: host.plugin } as unknown as PCServices);
 
     host.teardown();
 

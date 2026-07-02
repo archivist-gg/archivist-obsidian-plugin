@@ -24,7 +24,7 @@ function ctxWithRegistry(registry: Map<string, { entityType: string; data: { nam
   return {
     resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], spells: [], state: c.state } as ResolvedCharacter,
     derived: { ac: 0, acBreakdown: [], attacks: [], equippedSlots: {} as EquippedSlots, carriedWeight: 0, attunementUsed: 0, attunementLimit: 3 } as DerivedStats,
-    core: {
+    services: {
       entities: {
         getBySlug: (slug: string) => registry.get(slug) ?? null,
         // Real EntityRegistry has no `getAllByType` — closest API is `search(query, entityType, limit)`

@@ -123,7 +123,7 @@ export class WeaponsTable implements SheetComponent {
         if (entry && resolved) {
           renderInventoryRowExpand(inner, {
             entry, resolved, app: ctx.app, editState: ctx.editState,
-            registry: ctx.core?.entities ?? null,
+            registry: ctx.services?.entities ?? null,
           });
         } else {
           inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
@@ -165,7 +165,7 @@ function findResolvedForAttack(ctx: ComponentRenderContext, a: AttackRow): Resol
   if (!entry) return null;
   const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
   if (!slug) return null;
-  const reg = ctx.core?.entities as { getBySlug?: (s: string) => { entityType?: string; data?: object } | null } | undefined;
+  const reg = ctx.services?.entities as { getBySlug?: (s: string) => { entityType?: string; data?: object } | null } | undefined;
   const found = reg?.getBySlug?.(slug);
   if (!found) return null;
   const idx = ctx.resolved.definition.equipment?.indexOf(entry) ?? -1;

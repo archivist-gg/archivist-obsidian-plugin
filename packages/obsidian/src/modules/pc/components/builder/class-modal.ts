@@ -75,7 +75,7 @@ export function renderAddClassBody(
       },
     });
     const foot = host.createDiv({ cls: "pc-bcm-foot" });
-    const name = highlighted ? (ctx.core.entities.getByTypeAndSlug("class", highlighted)?.name ?? highlighted) : null;
+    const name = highlighted ? (ctx.services.entities.getByTypeAndSlug("class", highlighted)?.name ?? highlighted) : null;
     if (!name) foot.createSpan({ cls: "pc-bcm-hint", text: "Click a class to read it — adding is explicit." });
     const add = foot.createEl("button", { cls: "pc-bcm-add", text: name ? `Add ${name} to your character ▸` : "Add a class ▸" });
     add.disabled = !highlighted;

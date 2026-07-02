@@ -27,7 +27,7 @@ function ctx(
       mods: { str: 1, dex: 2, con: 3, int: 0, wis: 1, cha: 4 },
       derivedSpellSlots: extra.derivedSpellSlots,
     } as never,
-    core: {} as never,
+    services: {} as never,
     app: {} as never,
     editState: editState as never,
   };

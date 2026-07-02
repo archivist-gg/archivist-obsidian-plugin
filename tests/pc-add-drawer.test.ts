@@ -20,7 +20,7 @@ function ctx(addKnownSpell = vi.fn()): ComponentRenderContext {
   return {
     resolved: { spells: [] } as never,
     derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 3: 1 }, pactMagic: null } as never,
-    core: { entities: REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
+    services: { entities: REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
   };
 }
 

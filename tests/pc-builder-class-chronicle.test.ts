@@ -121,7 +121,7 @@ const mkCtx = (): ComponentRenderContext =>
   ({
     resolved: { definition: {} },
     derived: {},
-    core: { entities: {} },
+    services: { entities: {} },
     editState: null,
     builderUiState: new Map(),
   }) as unknown as ComponentRenderContext;

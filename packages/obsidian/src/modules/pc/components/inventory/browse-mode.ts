@@ -52,7 +52,7 @@ export class BrowseMode implements SheetComponent {
       // Expand state is per-render (closure scoped), keyed by slug since
       // browse-mode rows all share `index: -1` from the registry sweep.
       const expanded = new Set<string>();
-      const registry = (ctx.core?.entities as EntityRegistry | undefined) ?? null;
+      const registry = (ctx.services?.entities as EntityRegistry | undefined) ?? null;
       for (const v of filtered) {
         const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
         drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry, this.opts.addProvenance);
@@ -155,9 +155,9 @@ function capitalize(s: string): string {
 }
 
 function collectCompendiumItems(ctx: ComponentRenderContext): VisibleEntry[] {
-  // CoreAPI.entities IS the EntityRegistry directly. The registry has no
+  // PCServices.entities IS the EntityRegistry directly. The registry has no
   // `getAllByType`; the closest enumeration is `search("", type, limit)`.
-  const reg = ctx.core?.entities as
+  const reg = ctx.services?.entities as
     | {
         search?: (
           query: string,

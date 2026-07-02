@@ -11,7 +11,7 @@ function ctx(opts: { entries: object[]; entityForSlug: (slug: string) => object 
   return {
     resolved: { definition: { equipment: opts.entries } } as never,
     derived: { attacks: [] } as never,
-    core: { entities: { getBySlug: (slug: string) => {
+    services: { entities: { getBySlug: (slug: string) => {
       const data = opts.entityForSlug(slug);
       return data ? { entityType: "item", data } : null;
     } } } as never,

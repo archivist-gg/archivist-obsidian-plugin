@@ -48,7 +48,7 @@ function mkCtx(over: {
     },
     // Real DerivedStats fields are `scores` (final totals) + `mods`.
     derived: { scores: abilities, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 } },
-    core: { plugin: {}, entities: { search: () => [] }, compendiums: { getAll: () => [] }, modules: { getByEntityType: () => undefined } },
+    services: { plugin: {}, entities: { search: () => [] }, compendiums: { getAll: () => [] }, modules: { getByEntityType: () => undefined } },
     editState: over.editState ?? null,
     builderUiState: new Map(),
   } as unknown as ComponentRenderContext;

@@ -87,7 +87,7 @@ export class PCSheetView extends TextFileView {
     if (clear) this.contentEl.empty();
 
     const gen = ++this.renderGeneration;
-    const plugin = this.mod.core?.plugin as { compendiumsReady?: Promise<void> } | null;
+    const plugin = this.mod.services?.plugin as { compendiumsReady?: Promise<void> } | null;
     const ready = plugin?.compendiumsReady ?? Promise.resolve();
 
     // On cold start the compendium is still loading when this view mounts, so
@@ -220,13 +220,13 @@ export class PCSheetView extends TextFileView {
   }
 
   private renderSheet(warnings: string[]): void {
-    if (!this.character || !this.derived || !this.mod.core) return;
+    if (!this.character || !this.derived || !this.mod.services) return;
     renderPCSheet({
       root: this.contentEl,
       resolved: this.character,
       derived: this.derived,
       registry: this.mod.registry,
-      core: this.mod.core,
+      services: this.mod.services,
       app: this.app,
       editState: this.editState,
       warnings,

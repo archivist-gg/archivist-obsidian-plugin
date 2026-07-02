@@ -43,7 +43,7 @@ function classEntity(slug: string): RegisteredEntity {
 function mkCtxWithClasses(slugs: string[]): ComponentRenderContext {
   const entities = slugs.map(classEntity);
   return {
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (q: string, type: string) =>

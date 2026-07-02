@@ -22,7 +22,7 @@ import { extractPCCodeBlock, parsePC } from "../packages/obsidian/src/modules/pc
 import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import { WorkspaceLeaf } from "obsidian";
-import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
+import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import type { EntityRegistry } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -52,7 +52,7 @@ function buildGrendalRegistry(): EntityRegistry {
 function boot(): { view: PCSheetView; mod: PCModule } {
   const mod = new PCModule();
   const entities = buildGrendalRegistry();
-  mod.register({ entities } as unknown as CoreAPI);
+  mod.init({ entities } as unknown as PCServices);
   return { view: new PCSheetView(new WorkspaceLeaf(), mod), mod };
 }
 

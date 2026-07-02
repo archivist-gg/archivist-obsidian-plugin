@@ -1,5 +1,5 @@
 import type { App } from "obsidian";
-import type { CoreAPI } from "../../core/module-api";
+import type { PCServices } from "./pc.services";
 import type { ComponentRegistry } from "./components/component-registry";
 import type { ComponentRenderContext } from "./components/component.types";
 import type { ResolvedCharacter, DerivedStats } from "./pc.types";
@@ -11,7 +11,7 @@ export interface RenderSheetOptions {
   derived: DerivedStats;
   registry: ComponentRegistry;
   editState: CharacterEditState | null;
-  core: CoreAPI;
+  services: PCServices;
   app: App;
   warnings: string[];
   /** Active tab to restore on this render (lifted up to PCSheetView so it
@@ -34,7 +34,7 @@ export interface RenderSheetOptions {
  * a banner at the very top.
  */
 export function renderPCSheet(opts: RenderSheetOptions): void {
-  const { root, resolved, derived, registry, core, app, warnings } = opts;
+  const { root, resolved, derived, registry, services, app, warnings } = opts;
   const prevScroll = root.scrollTop;
   root.empty();
   const sheet = root.createDiv({ cls: "archivist-pc-sheet" });
@@ -53,7 +53,7 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
   const ctx: ComponentRenderContext = {
     resolved,
     derived,
-    core,
+    services,
     app,
     editState: opts.editState,
     activeTabId: opts.activeTabId,

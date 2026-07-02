@@ -21,7 +21,7 @@ function opts(classLen: number, warnings: string[] = [], builder?: boolean) {
     derived: { totalLevel: 0, proficiencyBonus: 2, hp: { max: 0 } },
     registry: reg,
     editState: null,
-    core: {
+    services: {
       plugin: {},
       entities: { search: () => [] },
       compendiums: { getAll: () => [] },
