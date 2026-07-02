@@ -1,34 +1,12 @@
-import type { App, Editor } from "obsidian";
 import type { EntityRegistry } from "@archivist/core";
 import type { CompendiumManager } from "../shared/entities/compendium-manager";
 import type { SrdStore } from "@archivist/dnd5e";
 import type { ModuleRegistry } from "./module-registry";
 import type { ParseResult } from "@archivist/core";
+import type { RenderContext, EditContext, ModalConstructor } from "../shared/rendering/entity-presenter";
 
 export type { ParseResult };
-
-export interface RenderContext {
-  plugin: unknown;
-  ctx: unknown;
-  /** Optional column layout hint. Modules that declare `supportsColumns`
-   *  on their ArchivistModule entry read this; others ignore it. */
-  columns?: number;
-}
-
-export interface EditContext extends RenderContext {
-  source: string;
-  /** Called by the module's edit-mode renderer to exit back to view mode
-   *  when no content change triggers Obsidian to re-render the block
-   *  (e.g. cancel with no edits, save with identical YAML). */
-  onExit?: () => void;
-  /** Optional compendium provenance when editing a {{type:slug}} ref from
-   *  compendium-ref-extension. Present for compendium-sourced blocks, absent
-   *  when editing an inline code-fence. */
-  compendium?: { slug: string; compendium: string; readonly: boolean };
-  /** Replace the {{type:slug}} text in the host document. Provided by the
-   *  compendium-ref caller; unused by the standard code-block processor. */
-  onReplaceRef?: (newRefText: string) => void;
-}
+export type { RenderContext, EditContext, ModalConstructor };
 
 export interface AIToolRegistry {
   /** Register the raw SDK-tool handle (output of `tool()` from
@@ -37,17 +15,6 @@ export interface AIToolRegistry {
   /** Retrieve all raw SDK-tool handles for passing to createSdkMcpServer. */
   getAllSdkTools?(): unknown[];
 }
-
-/**
- * The constructor shape a module's "Insert entity" modal must satisfy.
- *
- * Every insert modal in the codebase takes `(app: App, editor: Editor)` and
- * inherits `open(): void` from Obsidian's `Modal`. Typing the contract with
- * those exact parameters lets concrete `Modal` subclasses be returned from
- * `getInsertModal()` without a cast, and lets the insert-command dispatcher
- * construct them directly.
- */
-export type ModalConstructor = new (app: App, editor: Editor) => { open(): void };
 
 export interface ArchivistModule {
   /** Unique module identifier */

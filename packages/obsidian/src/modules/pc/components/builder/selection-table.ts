@@ -212,7 +212,7 @@ export function renderSelectionTable(
         }
       }
       if (opts.renderExpand) opts.renderExpand(wrap, e);
-      else renderEntityBlock(wrap, e, ctx.core);
+      else renderEntityBlock(wrap, e);
       // Selection rides the user's expand gesture — never the redraw-restore path.
       if (fromClick && opts.expandSelect && !opts.selected.has(e.slug)) opts.onToggle(e.slug);
     };

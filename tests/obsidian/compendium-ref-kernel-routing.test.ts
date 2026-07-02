@@ -1,88 +1,84 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
-  renderEntityViaModule,
-  setCompendiumRefArchivist,
-  setCompendiumRefModuleRegistry,
-} from "../../packages/obsidian/src/shared/extensions/compendium-ref-extension";
+  renderRegisteredEntity,
+  setEntityPresenterKernel,
+  setEntityPresenters,
+} from "../../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
+import type { EntityPresenter } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
 import type { Archivist } from "@archivist/core";
-import type { ModuleRegistry } from "../../packages/obsidian/src/core/module-registry";
 
 // ---------------------------------------------------------------------------
-// 0c.1a D6 behaviour-neutrality: the shared compendium-ref parse helper routes
-// through the kernel codec when the pack owns an EntityType for the entity, and
-// falls back to `mod.parseYaml` otherwise. We assert REAL routing by tracking
-// which parser's output the renderer actually received — not by spying on a
-// mock-of-a-mock.
+// 0f D2 behaviour pins: dispatch is presenter-lookup-first and kernel-only.
+// (a) a ported type routes through the kernel codec (identity-checked);
+// (b) a codec-less type returns null WITHOUT throwing even when a presenter
+//     exists (the doc null-guard — npc/encounter shape);
+// (c) an unknown type with no presenter returns null (lookup-first).
+// The 0c.1a "falls back to mod.parseYaml" assertion is retired by spec D8.3:
+// that path was deleted (all 11 authored types own codecs since 0c.1b).
 // ---------------------------------------------------------------------------
 
-// Distinct sentinel objects so identity (not just shape) proves provenance.
 const KERNEL_DATA = { from: "kernel-codec" };
-const MODULE_DATA = { from: "module-parseYaml" };
 
-/** Fake Archivist: owns "monster" (ported), does NOT own "spell" (un-ported). */
+/** Fake kernel: owns "monster" (codec) and "npc" (generatable-only, NO doc). */
 const fakeArchivist = {
   getEntityType(type: string) {
     if (type === "monster") {
       return {
         type,
-        doc: {
-          parse: () => ({ success: true, data: KERNEL_DATA }),
-          serialize: () => "",
-        },
+        doc: { parse: () => ({ success: true, data: KERNEL_DATA }), serialize: () => "" },
       };
     }
+    if (type === "npc") return { type }; // no doc — generate-only shape
     return undefined;
   },
 } as unknown as Archivist;
 
-/** Captures the `data` argument the module renderer was handed. */
 let renderedData: unknown;
 
-function makeModuleRegistry(): ModuleRegistry {
-  const mod = {
-    id: "stub",
-    parseYaml: () => ({ success: true, data: MODULE_DATA }),
-    render: (_el: HTMLElement, data: unknown) => {
+function makePresenters(): Map<string, EntityPresenter> {
+  const monster: EntityPresenter = {
+    type: "monster",
+    render: (_el, data) => {
       renderedData = data;
-      // Return a truthy fake node so renderEntityViaModule short-circuits
-      // before touching host.lastElementChild (no DOM in this env).
       return { tag: "rendered" } as unknown as HTMLElement;
     },
   };
-  return {
-    getByEntityType: () => mod,
-  } as unknown as ModuleRegistry;
+  // npc gets a presenter TOO, so the codec-less case exercises the doc
+  // null-guard rather than the presenter-lookup miss.
+  const npc: EntityPresenter = { type: "npc", render: () => undefined };
+  return new Map([
+    ["monster", monster],
+    ["npc", npc],
+  ]);
 }
 
-describe("compendium-ref kernel routing (0c.1a D6)", () => {
+describe("presenter dispatch routing (0f D2)", () => {
   beforeEach(() => {
     renderedData = undefined;
-    setCompendiumRefArchivist(fakeArchivist);
-    setCompendiumRefModuleRegistry(makeModuleRegistry());
+    setEntityPresenterKernel(fakeArchivist);
+    setEntityPresenters(makePresenters());
   });
 
   afterEach(() => {
-    // Hardening (0d/E3): restore the module-level singletons to their initial
-    // (unset) state so this file's fakes can't leak into another test file that
-    // imports compendium-ref-extension without setting them. The setters are
-    // typed for live wiring (non-null); the null-cast mirrors the module init
-    // (`let archivistRef: Archivist | null = null`) and matches this file's
-    // existing `as unknown as` style.
-    setCompendiumRefArchivist(null as unknown as Archivist);
-    setCompendiumRefModuleRegistry(null as unknown as ModuleRegistry);
+    setEntityPresenterKernel(null as unknown as Archivist);
+    setEntityPresenters(new Map());
   });
 
   it("routes a ported type (monster) through the kernel codec", () => {
     const host = {} as unknown as HTMLElement;
-    renderEntityViaModule({ entityType: "monster", data: { name: "Goblin" } }, host, undefined);
-    // Identity check: data came from the kernel codec's parse, not parseYaml.
+    renderRegisteredEntity({ entityType: "monster", data: { name: "Goblin" } }, host, undefined);
     expect(renderedData).toBe(KERNEL_DATA);
   });
 
-  it("falls back to mod.parseYaml for an un-ported type (spell)", () => {
+  it("returns null (no throw) for a codec-less type even with a presenter (npc)", () => {
     const host = {} as unknown as HTMLElement;
-    renderEntityViaModule({ entityType: "spell", data: { name: "Fireball" } }, host, undefined);
-    // Identity check: data came from the module's parseYaml fallback.
-    expect(renderedData).toBe(MODULE_DATA);
+    const out = renderRegisteredEntity({ entityType: "npc", data: { name: "Bandit" } }, host, undefined);
+    expect(out).toBeNull();
+  });
+
+  it("returns null (no throw) for an unknown type with no presenter", () => {
+    const host = {} as unknown as HTMLElement;
+    const out = renderRegisteredEntity({ entityType: "mystery", data: {} }, host, undefined);
+    expect(out).toBeNull();
   });
 });

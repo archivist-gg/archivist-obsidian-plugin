@@ -272,7 +272,7 @@ function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext
     if (open) { host.querySelector(".pc-bofeat-expand")?.remove(); open = false; return; }
     const ex = host.createDiv({ cls: "pc-bofeat-expand" });
     row.insertAdjacentElement("afterend", ex);
-    renderEntityBlock(ex, r.feat!, ctx.core);
+    renderEntityBlock(ex, r.feat!);
     open = true;
   });
 }

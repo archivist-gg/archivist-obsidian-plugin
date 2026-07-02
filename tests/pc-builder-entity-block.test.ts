@@ -1,8 +1,13 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { renderEntityBlock } from "../packages/obsidian/src/modules/pc/components/builder/entity-block";
+import {
+  setEntityPresenters,
+  setEntityPresenterKernel,
+} from "../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
+import type { EntityPresenter } from "../packages/obsidian/src/shared/rendering/entity-presenter";
+import type { Archivist } from "@archivist/core";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { CoreAPI } from "../packages/obsidian/src/core/module-api";
 import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -12,34 +17,59 @@ const entity: RegisteredEntity = {
   data: { name: "Test Feat" }, compendium: "SRD 5e", readonly: true, homebrew: false,
 };
 
-function coreWith(mod: unknown): CoreAPI {
-  return { plugin: {}, modules: { getByEntityType: () => mod } } as unknown as CoreAPI;
+const okKernel = {
+  getEntityType: (type: string) => ({
+    type,
+    doc: { parse: () => ({ success: true, data: {} }), serialize: () => "" },
+  }),
+} as unknown as Archivist;
+
+const failKernel = {
+  getEntityType: (type: string) => ({
+    type,
+    doc: { parse: () => ({ success: false, error: "nope" }), serialize: () => "" },
+  }),
+} as unknown as Archivist;
+
+function presenterMap(render: EntityPresenter["render"]): Map<string, EntityPresenter> {
+  return new Map([["feat", { type: "feat", render }]]);
 }
 
+afterEach(() => {
+  setEntityPresenters(new Map());
+  setEntityPresenterKernel(null as unknown as Archivist);
+});
+
 describe("renderEntityBlock", () => {
-  it("dispatches to the owning module's render", () => {
+  it("dispatches to the owning presenter's render", () => {
+    setEntityPresenterKernel(okKernel);
+    setEntityPresenters(presenterMap((el) => el.createDiv({ cls: "fake-block", text: "rendered" })));
     const root = mountContainer();
-    const mod = {
-      parseYaml: (src: string) => ({ success: true, data: { src } }),
-      render: (el: HTMLElement) => el.createDiv({ cls: "fake-block", text: "rendered" }),
-    };
-    renderEntityBlock(root, entity, coreWith(mod));
+    renderEntityBlock(root, entity);
     expect(root.querySelector(".fake-block")?.textContent).toBe("rendered");
   });
 
-  it("falls back to a plain name line when no module is registered", () => {
+  it("falls back to a plain name line when no presenter is registered", () => {
+    setEntityPresenterKernel(okKernel);
+    setEntityPresenters(new Map());
     const root = mountContainer();
-    renderEntityBlock(root, entity, coreWith(undefined));
+    renderEntityBlock(root, entity);
     expect(root.querySelector(".pc-bblock-fallback")?.textContent).toBe("Test Feat");
   });
 
-  it("falls back when the module's parse fails", () => {
+  it("falls back when the codec parse fails", () => {
+    setEntityPresenterKernel(failKernel);
+    setEntityPresenters(presenterMap(() => { throw new Error("must not be called"); }));
     const root = mountContainer();
-    const mod = {
-      parseYaml: () => ({ success: false, error: "nope" }),
-      render: () => { throw new Error("must not be called"); },
-    };
-    renderEntityBlock(root, entity, coreWith(mod));
+    renderEntityBlock(root, entity);
+    expect(root.querySelector(".pc-bblock-fallback")?.textContent).toBe("Test Feat");
+  });
+
+  it("falls back to the name line when the presenter's render throws synchronously", () => {
+    setEntityPresenterKernel(okKernel);
+    setEntityPresenters(presenterMap(() => { throw new Error("boom"); }));
+    const root = mountContainer();
+    renderEntityBlock(root, entity);
     expect(root.querySelector(".pc-bblock-fallback")?.textContent).toBe("Test Feat");
   });
 });
