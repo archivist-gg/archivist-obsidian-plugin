@@ -1,12 +1,14 @@
 # Layered pack architecture
 
 This document describes how Archivist is structured after the layered-pack
-refactor (phases 0a–0d). It is a maintainer's guide to the *current* state, not
+refactor (phases 0a–0e). It is a maintainer's guide to the *current* state, not
 a roadmap: where the code still carries scaffolding from the migration, that
 scaffolding is recorded honestly here so the next person does not mistake it for
-the intended end state. The one remaining piece of intended-but-not-yet-done
-work — porting `pc` and tearing the strangler down — is called out explicitly
-and deferred to phase **0e**.
+the intended end state. Phase **0e** removed the kernel-parse bridge and
+de-registered `pc` from the module system. The remaining intended-but-not-yet-done
+work — tearing the last two strangler bridges down, along with `pc`'s residual
+`CoreAPI` coupling and the inquiry direct-parse divergence — is called out
+explicitly and deferred to phase **0f**.
 
 The short version: content lives in Markdown files, a small framework (`core`)
 parses and dispatches those files, a system pack (`dnd5e`) supplies all the D&D
@@ -159,9 +161,12 @@ populated.
   pack `EntityType`; `monster` additionally has a `resolve`; the generatable ones
   additionally have a `generatable`.
 - **Stateful app** — `pc` (the player character). It is an interactive,
-  stateful surface rather than a static authored block, and it has **not** been
-  ported to a pack codec yet. It is still served by the legacy module system (see
-  §6). This is the single largest remaining strangler user.
+  stateful `TextFileView` app rather than a static authored block, and it has
+  **not** been ported to a pack codec (no pack membership, no `doc` codec). As of
+  0e it is **directly wired** in the composition root — invoked outside the module
+  loop rather than registered through the module system — but it still reads
+  `CoreAPI` services; that residual coupling is torn down in **0f** (see §6). This
+  is the single largest remaining strangler user.
 - **Generate-only** — `npc` and `encounter`. These exist purely to be generated:
   their pack `EntityType` carries a `generatable` and **no `doc`**. There is no
   authored/edited on-disk form to parse, so there is no codec.
@@ -245,19 +250,11 @@ and derivation authoritative.
 The plugin has been migrated onto the pack/kernel model incrementally, using the
 strangler-fig pattern: new machinery grows around the old, and the old is removed
 type by type. That migration is **not finished**, and the plugin still ships
-three bridges. They are intentional, minimized, and slated for teardown in
-**phase 0e (PC port + strangler teardown)**. Do not remove or "clean up" any of
-them casually — `pc` still depends on them.
-
-- **Bridge 1 — kernel parse.**
-  [`adapter/legacy-adapter.ts`](../../packages/obsidian/src/adapter/legacy-adapter.ts)'s
-  `moduleToEntityType` wraps a legacy module's `parseYaml` as a core
-  `EntityType.doc.parse`, and `main.ts` registers those wrapped types as a pack
-  with id `"legacy"`. Because the 11 ported types are de-listed from this pack
-  (their real `dnd5e` `EntityType` carries a `doc`, so `packParsedTypes` excludes
-  them), and because `npc`/`encounter` have no `parseYaml` at all, **Bridge 1
-  serves exactly one type's parse today: `pc`.** Its `serialize` is intentionally
-  unimplemented and throws — the legacy adapter is a read-only bridge.
+two bridges (a third — a kernel-parse adapter — was removed in 0e, when `pc` was
+also de-registered from the module system). They are intentional, minimized, and
+slated for teardown in **phase 0f (final strangler teardown)**. Do not remove or
+"clean up" either of them casually — code-block rendering and `pc`'s residual
+`CoreAPI` access still depend on them.
 
 - **Bridge 2 — presentation.**
   [`adapter/presentation-registry.ts`](../../packages/obsidian/src/adapter/presentation-registry.ts)'s
@@ -271,10 +268,14 @@ them casually — `pc` still depends on them.
 - **Bridge 3 — the module system.**
   [`core/module-api.ts`](../../packages/obsidian/src/core/module-api.ts)'s
   `CoreAPI` + `ArchivistModule.register` is the original plugin module system,
-  and **all 13 modules still register through it** on load (`monster`, `spell`,
+  and **12 modules still register through it** on load (`monster`, `spell`,
   `item`, `inquiry`, `class`, `race`, `subclass`, `background`, `feat`,
-  `optional-feature`, `armor`, `weapon`, `pc`). The kernel and the legacy
-  `CoreAPI` currently run side by side.
+  `optional-feature`, `armor`, `weapon`). The kernel and the legacy `CoreAPI`
+  currently run side by side. `pc` is no longer one of these registered modules:
+  0e took it out of the module loop and **wired it directly** in the composition
+  root, but it still calls `pcModule.register(core)` to read `CoreAPI` services,
+  so it remains a Bridge-3 consumer even though it is not a module-registry
+  tenant. Cutting that last coupling is the terminal step of **0f**.
 
 ### Accepted inquiry divergence
 
@@ -287,8 +288,8 @@ and `parseItem` from `@archivist/dnd5e` **directly**, bypassing the kernel and
 `monster`, and its `resolve` only derives proficiency bonus / XP — values that
 are already baked into the authored or generated `.md` the renderer is showing.
 So skipping `resolve` changes nothing visible here. Routing this renderer through
-proper registry dispatch is deferred to an inquiry un-defer; the direct-parse
-path is an accepted divergence, not an oversight.
+proper registry dispatch is deferred to the inquiry un-defer in **0f**; the
+direct-parse path is an accepted divergence, not an oversight.
 
 ---
 
@@ -302,7 +303,10 @@ path is an accepted divergence, not an oversight.
 - A pack contributes one `EntityType` per type: `{ type, doc?, resolve?,
   generatable? }`. Codecs normalize but never persist enrich-derived fields.
 - Three archetypes: authored stat blocks (11 ported, on codecs), the stateful
-  `pc` app (still module-based), and generate-only `npc`/`encounter`.
-- The strangler is real and minimized: Bridge 1 (parse) now serves only `pc`,
-  Bridge 2 (presentation) serves everything, Bridge 3 (modules) hosts all 13.
-  Full teardown — starting with the `pc` port — is phase **0e**.
+  `pc` app (directly wired, not a pack codec — still reads `CoreAPI`), and
+  generate-only `npc`/`encounter`.
+- The strangler is real and minimized: Bridge 2 (presentation) serves every
+  code-block type, Bridge 3 (modules) hosts 12 modules. (A third, kernel-parse
+  bridge was removed in 0e, when `pc` was de-registered from the module system.)
+  Full teardown of the last two bridges — and `pc`'s residual `CoreAPI` coupling —
+  is phase **0f**.
