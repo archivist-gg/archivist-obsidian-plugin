@@ -3,9 +3,6 @@ import type ArchivistPlugin from "../main";
 
 /**
  * Settings tab for D&D Content configuration.
- *
- * Chat/inquiry settings are managed by InquiryModule and appear in a
- * separate "Archivist Inquiry" settings tab.
  */
 export class ArchivistSettingTab extends PluginSettingTab {
   plugin: ArchivistPlugin;
@@ -18,11 +15,6 @@ export class ArchivistSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
-
-    containerEl.createEl("p", {
-      text: "Chat and AI settings are in the separate archivist inquiry settings tab (registered by inquirymodule).",
-      cls: "setting-item-description",
-    });
 
     new Setting(containerEl)
       .setName("Campaign root directory")

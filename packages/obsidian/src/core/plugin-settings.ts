@@ -1,8 +1,5 @@
 /**
- * Archivist D&D settings.
- *
- * Chat/inquiry settings are owned by InquiryModule (ClaudianSettings)
- * and surfaced through its own settings tab.
+ * D&D-content settings for the Archivist plugin.
  */
 export interface ArchivistSettings {
   compendiumRoot: string;

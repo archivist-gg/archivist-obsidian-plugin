@@ -60,6 +60,7 @@ import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/
 // Settings
 import type { ArchivistSettings } from "./core/plugin-settings";
 import { DEFAULT_SETTINGS } from "./core/plugin-settings";
+import { ArchivistSettingTab } from "./core/settings-tab";
 
 // Inquiry (Claudian chat engine): constructed directly in onload (0f).
 import { InquiryModule } from "./modules/inquiry/InquiryModule";
@@ -176,6 +177,9 @@ export default class ArchivistPlugin extends Plugin {
     // createArchivistMcpServer without importing each module's ai-tools
     // directly (closes the shared/ → modules/ import edge from mcp-server).
     this.getModuleSdkTools = () => aiToolRegistry.getAllSdkTools();
+
+    // Register the D&D settings tab.
+    this.addSettingTab(new ArchivistSettingTab(this.app, this));
 
     // Inquiry (Claudian chat engine): constructed directly by the composition
     // root (0f — the module system is gone). The plugin field exists for the
