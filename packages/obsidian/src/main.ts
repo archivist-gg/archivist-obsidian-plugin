@@ -1,17 +1,9 @@
 import { Plugin, Notice, setIcon } from "obsidian";
 
-// Module-based registration
-import type {
-  AIToolRegistry,
-  ArchivistModule,
-  CoreAPI,
-  RenderContext,
-} from "./core/module-api";
-import { ModuleRegistry } from "./core/module-registry";
+// Entity module presenters
 import { monsterModule } from "./modules/monster/monster.module";
 import { spellModule } from "./modules/spell/spell.module";
 import { itemModule } from "./modules/item/item.module";
-import { InquiryArchivistModule } from "./modules/inquiry/inquiry.module";
 import { classModule } from "./modules/class/class.module";
 import { raceModule } from "./modules/race/race.module";
 import { subclassModule } from "./modules/subclass/subclass.module";
@@ -55,7 +47,7 @@ import {
   makeRegistryContentPort,
   makeNoticeSink,
 } from "./adapter/obsidian-ports";
-import type { EntityPresenter } from "./shared/rendering/entity-presenter";
+import type { EntityPresenter, RenderContext } from "./shared/rendering/entity-presenter";
 import {
   setEntityPresenters,
   setEntityPresenterKernel,
@@ -69,16 +61,15 @@ import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/
 import type { ArchivistSettings } from "./core/plugin-settings";
 import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 
-// Inquiry (Claudian chat engine) — type only; instance is created by the
-// InquiryArchivistModule wrapper during its register() call.
-import type { InquiryModule } from "./modules/inquiry/InquiryModule";
+// Inquiry (Claudian chat engine): constructed directly in onload (0f).
+import { InquiryModule } from "./modules/inquiry/InquiryModule";
 
-/**
- * In-memory AI tool registry. The generation bridge pushes one raw SDK-tool
- * handle per pack Generatable; the MCP server wiring reads `getAllSdkTools()`
- * to assemble the tool list for `createSdkMcpServer`.
- */
-function createAIToolRegistry(): Required<AIToolRegistry> {
+/** In-memory SDK-tool registry (B7 generation bridge → MCP server wiring). */
+interface AIToolRegistry {
+  registerSdkTool(sdkTool: unknown): void;
+  getAllSdkTools(): unknown[];
+}
+function createAIToolRegistry(): AIToolRegistry {
   const sdkTools: unknown[] = [];
   return {
     registerSdkTool(sdkTool): void {
@@ -94,8 +85,7 @@ export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
   entityRegistry: EntityRegistry | null = null;
   compendiumManager: CompendiumManager | null = null;
-  /** Core kernel (strangler). Parses entity docs via registered packs; the
-   *  legacy CoreAPI (`this.core`) still serves not-yet-migrated modules. */
+  /** Core kernel. Parses entity docs via registered packs. */
   archivist!: Archivist;
   /** DOM-facing presenters keyed by entity type. */
   private presenters = new Map<string, EntityPresenter>();
@@ -111,8 +101,6 @@ export default class ArchivistPlugin extends Plugin {
   compendiumsReady: Promise<void>;
   private resolveCompendiumsReady!: () => void;
   private srdStore: SrdStore | null = null;
-  private moduleList: ArchivistModule[] = [];
-  private core: CoreAPI | null = null;
 
   constructor(app: ConstructorParameters<typeof Plugin>[0], manifest: ConstructorParameters<typeof Plugin>[1]) {
     super(app, manifest);
@@ -123,8 +111,9 @@ export default class ArchivistPlugin extends Plugin {
     await this.loadSettings();
 
     // Initialize SRD store with bundled JSON data
-    this.srdStore = new SrdStore();
-    this.srdStore.loadFromBundledJson();
+    const srdStore = new SrdStore();
+    srdStore.loadFromBundledJson();
+    this.srdStore = srdStore;
 
     // Initialize entity registry and compendium manager
     const entityRegistry = new EntityRegistry();
@@ -140,35 +129,17 @@ export default class ArchivistPlugin extends Plugin {
     setCompendiumRefPlugin(this);
     setCompendiumRefConfirmFn((app, message, confirmLabel) => confirmModal(app, message, confirmLabel ?? "OK"));
 
-    // Initialize module registry + AI-tool registry and assemble core API
-    const moduleRegistry = new ModuleRegistry();
+    // In-memory SDK-tool registry (fed by the B7 generation bridge below).
     const aiToolRegistry = createAIToolRegistry();
-    this.core = {
-      plugin: this,
-      modules: moduleRegistry,
-      entities: entityRegistry,
-      compendiums: compendiumManager,
-      srd: this.srdStore,
-      aiTools: aiToolRegistry,
-    };
 
-    // --- new core wiring (strangler) ---
-    // The kernel parses entity docs via registered packs; the presenter map
-    // holds each entity type's DOM render/edit callbacks. The map is built from
-    // the direct presenter list below. The legacy CoreAPI (`this.core`) keeps
-    // serving not-yet-migrated modules (inquiry + pc).
+    // Core kernel wiring. The kernel parses entity docs via registered packs;
+    // the presenter map (built from the direct presenter list below) holds each
+    // entity type's DOM render/edit callbacks.
     this.archivist = createArchivist({
       storage: makeVaultStoragePort(this.app.vault),
       content: makeRegistryContentPort(this.entityRegistry),
       notify: makeNoticeSink(),
     });
-
-    // Instantiate and register modules. `InquiryArchivistModule` owns the
-    // Claudian chat engine; the 11 entity types are native EntityPresenters
-    // (0f/T2) and no longer ArchivistModules — only inquiry (and pc, wired
-    // separately below) still rides the legacy module loop.
-    const inquiryArchivistModule = new InquiryArchivistModule();
-    this.moduleList = [inquiryArchivistModule];
 
     // The 11 entity presenters: how each authored type is DRAWN. Keyed by
     // `type` into the presenter map the shared dispatch reads (D3/D4).
@@ -179,14 +150,6 @@ export default class ArchivistPlugin extends Plugin {
     ];
     this.presenters = new Map(presenterList.map((p) => [p.type, p]));
 
-    // Register the remaining ArchivistModules through the legacy module system
-    // (Bridge 3 now serves inquiry + pc only). pc is wired separately below
-    // (0e removed its Bridge-1 tenancy). npc/encounter are generatable-only
-    // pack members (no module).
-    for (const mod of this.moduleList) {
-      moduleRegistry.register(mod);
-      mod.register(this.core);
-    }
     // Inject the presenter map + kernel + plugin into the shared dispatch
     // (D2). Placement is a few lines after where the old setCompendiumRef*
     // setters sat: the map is built from presenterList above and the kernel is
@@ -198,9 +161,8 @@ export default class ArchivistPlugin extends Plugin {
     // Register the real dnd5e pack (the only pack now — the legacy strangler
     // pack was removed with Bridge 1 in 0e).
     this.archivist.registerPack(dnd5ePack);
-    // Direct composition: pc is a stateful-app, not a registry tenant (0e).
-    // Wired outside the ArchivistModule loop with a typed PCServices bundle;
-    // no CoreAPI (Bridge 3 now serves inquiry only).
+    // Direct composition: pc is a stateful-app, wired with a typed PCServices
+    // bundle (0e) — not a registry tenant, and no longer via any module system.
     pcModule.init({ plugin: this, entities: entityRegistry, compendiums: compendiumManager });
     // B7 generation bridge: register one SDK generate-tool per pack Generatable.
     // The pack owns the generate contract; the generic mapper turns each
@@ -216,13 +178,11 @@ export default class ArchivistPlugin extends Plugin {
     // directly (closes the shared/ → modules/ import edge from mcp-server).
     this.getModuleSdkTools = () => aiToolRegistry.getAllSdkTools();
 
-    // Inquiry is instantiated inside InquiryArchivistModule.register(); hoist
-    // it onto the plugin so legacy callers that still read `plugin.inquiry`
-    // keep working, then drive its async init here.
-    this.inquiry = inquiryArchivistModule.getInquiry();
-    if (this.inquiry) {
-      await this.inquiry.init();
-    }
+    // Inquiry (Claudian chat engine): constructed directly by the composition
+    // root (0f — the module system is gone). The plugin field exists for the
+    // unload teardown below, not for legacy readers (there are none).
+    this.inquiry = new InquiryModule(this, this.app, entityRegistry, srdStore);
+    await this.inquiry.init();
 
     // Register a markdown code-block processor for each entity presenter. The
     // shared helper handles view/edit toggling, side buttons, compendium save,
@@ -351,20 +311,11 @@ export default class ArchivistPlugin extends Plugin {
   }
 
   onunload(): void {
-    // Obsidian's Plugin base class types `onunload()` as `void`, so we
-    // fire-and-forget the async teardown. Any destroy() rejections are
-    // logged but cannot block the unload path.
-    void this.teardownModules();
-  }
-
-  private async teardownModules(): Promise<void> {
-    for (const mod of this.moduleList) {
-      try {
-        await mod.destroy?.();
-      } catch (e) {
-        console.error(`[archivist] module ${mod.id} destroy() failed:`, e);
-      }
-    }
+    // Fire-and-forget async teardown (Obsidian types onunload as void);
+    // rejections are logged but cannot block the unload path.
+    void this.inquiry?.destroy().catch((e: unknown) => {
+      console.error("[archivist] inquiry destroy() failed:", e);
+    });
   }
 
   async loadSettings(): Promise<void> {
