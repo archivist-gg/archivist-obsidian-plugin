@@ -8,8 +8,7 @@
   },
   "references": [
     { "path": "../core" },
-    { "path": "../dnd5e" },
-    { "path": "../generators" }
+    { "path": "../dnd5e" }
   ],
   "include": ["src/**/*.ts", "src/**/*.json"]
 }

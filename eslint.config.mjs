@@ -30,7 +30,7 @@ const restrictedDisableRules = [
   "!obsidianmd/ui/sentence-case",
 ];
 
-// The five package tsconfigs the type-aware parser already loads. Reused by the
+// The four package tsconfigs the type-aware parser already loads. Reused by the
 // import/no-restricted-paths TS resolver so it can follow the `@archivist/*`
 // package `exports` subpaths (the node resolver cannot, which would let the
 // dependency-arrow rule silently under-enforce).
@@ -38,7 +38,6 @@ const tsconfigProjects = [
   "./packages/core/tsconfig.json",
   "./packages/dnd5e/tsconfig.json",
   "./packages/dnd5e/tsconfig.tools.json",
-  "./packages/generators/tsconfig.json",
   "./packages/obsidian/tsconfig.json",
 ];
 
@@ -80,11 +79,11 @@ export default defineConfig([
       "@eslint-community/eslint-comments/no-unused-disable": "error",
     },
   },
-  // Enforce the layered dependency arrows (core ← dnd5e ← generators). obsidian
+  // Enforce the layered dependency arrows (core ← dnd5e). obsidian
   // may import any package, so it has no zone and is intentionally OUTSIDE this
   // block's scope: the TS `import/resolver` lives here too (it is a global
   // `settings` key shared by every eslint-plugin-import rule), and scoping it to
-  // the three layered packages keeps obsidian's `import/no-extraneous-dependencies`
+  // the two remaining layered packages (core, dnd5e) keeps obsidian's `import/no-extraneous-dependencies`
   // behaviour exactly as it was before the resolver existed. `packages/dnd5e/**`
   // also covers dnd5e/tools/**. The parser/project come from the `**/*.ts` block
   // above (flat config merges languageOptions across matching blocks).
@@ -92,7 +91,6 @@ export default defineConfig([
     files: [
       "packages/core/**/*.ts",
       "packages/dnd5e/**/*.ts",
-      "packages/generators/**/*.ts",
     ],
     plugins: {
       // obsidianmd's recommended config already registers `import` (its copy
@@ -107,7 +105,7 @@ export default defineConfig([
       "import/resolver": {
         typescript: {
           project: tsconfigProjects,
-          // Five project tsconfigs is intentional (one per package); silence the
+          // Four project tsconfigs is intentional (one per package); silence the
           // resolver's perf hint about consolidating into a single tsconfig.
           noWarnOnMultipleProjects: true,
         },
@@ -129,12 +127,6 @@ export default defineConfig([
               from: "./packages",
               except: ["./dnd5e", "./core"],
               message: "dnd5e may import only @archivist/core",
-            },
-            {
-              target: "./packages/generators",
-              from: "./packages",
-              except: ["./generators", "./core", "./dnd5e"],
-              message: "generators may import only core + dnd5e",
             },
           ],
         },

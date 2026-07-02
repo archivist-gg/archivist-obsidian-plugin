@@ -16,7 +16,6 @@ const SRC_ROOTS = [
   "packages/core/src",
   "packages/dnd5e/src",
   "packages/obsidian/src",
-  "packages/generators/src",
 ];
 
 const BANNED = [/core\/module-api/i, /core\/module-registry/i, /adapter\/presentation-registry/i];

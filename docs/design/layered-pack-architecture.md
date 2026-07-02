@@ -12,11 +12,12 @@ for an unfinished migration.
 
 The short version: content lives in Markdown files, a small framework (`core`)
 parses and dispatches those files, a system pack (`dnd5e`) supplies all the D&D
-knowledge, a headless generator layer (`generators`) can produce new content with
-an LLM (now a dormant library — it has no in-plugin consumer; see §2), and the
-Obsidian plugin (`obsidian`) wires the framework and pack together and draws the
-UI. Dependencies only ever point *inward*, and that direction is enforced by
-tooling, not by convention alone.
+knowledge (a headless generator layer that can produce new content with an LLM
+was **extracted to its own standalone repo, `archivist-generators`**, and no
+longer ships in this workspace; see §2), and the Obsidian plugin (`obsidian`)
+wires the framework and pack together and draws the UI. Dependencies only ever
+point *inward*, and that direction is enforced by tooling, not by convention
+alone.
 
 ---
 
@@ -67,24 +68,23 @@ Three properties are load-bearing and worth stating plainly:
 
 ---
 
-## 2. The four layers and their dependency arrows
+## 2. The three layers and their dependency arrows
 
-Archivist is an npm workspace of four packages. Confirmed names, from each
+Archivist is an npm workspace of three packages. Confirmed names, from each
 `package.json`:
 
 | Package                | Role                                                                                          |
 | ---------------------- | --------------------------------------------------------------------------------------------- |
 | `@archivist/core`      | Framework: the container format, contracts, the kernel, the entity registry, and the ports.   |
 | `@archivist/dnd5e`     | The system pack: schemas, parsers, codecs, rules, and the SRD content.                         |
-| `@archivist/generators`| Headless MCP server + AI generation tools. *Dormant — no in-plugin consumer (see §2).*      |
 | `@archivist/obsidian`  | The Obsidian plugin: composition root + renderer.                                              |
 
 The dependency arrows point strictly inward:
 
 ```
-@archivist/core  ←  @archivist/dnd5e  ←  @archivist/generators
-        ▲                  ▲                     ▲
-        └──────────────────┴─────────────────────┘
+@archivist/core  ←  @archivist/dnd5e
+        ▲                  ▲
+        └──────────────────┘
                    @archivist/obsidian
 ```
 
@@ -93,22 +93,13 @@ The dependency arrows point strictly inward:
 - `dnd5e` depends only on `core`. It is where every piece of system knowledge
   lives. **The 2014 and 2024 rules are editions *within* this single pack** —
   they are not separate packages and not separate layers.
-- `generators` depends on `core` and `dnd5e`. It is headless (no Obsidian
-  imports): an MCP server that exposes the pack's generatable entity types as AI
-  tools. **It is currently a dormant library with no in-plugin consumer.** The
-  Obsidian plugin does not depend on it — `packages/obsidian/package.json` lists
-  only `@archivist/core` and `@archivist/dnd5e`, and nothing under
-  `packages/obsidian/src` imports from it. In-plugin AI generation was removed
-  when the in-process chat sidebar was deleted, so no `obsidian` code path reaches
-  `generators` any more. It still builds and remains a valid inward-pointing layer
-  (kept in the `tsc -b` project graph and the lint globs); it is being kept in
-  place pending extraction to its own repository in a future phase. Dormant, not
-  deleted or broken.
+- The generator layer was **extracted to the standalone repo
+  `archivist-generators` (2026-07-02)**; it is headless and self-contained,
+  consuming the pack contracts by structural copy. The plugin no longer contains
+  it.
 - `obsidian` is the composition root and the renderer. It is the only package
   permitted to import all of the others, because it is where everything is wired
-  together and drawn to the screen. (In practice it currently imports only `core`
-  and `dnd5e`; it is *permitted* to import `generators` too, but does not — see the
-  dormancy note above.)
+  together and drawn to the screen. (It imports both `core` and `dnd5e`.)
 
 The one arrow that must never exist:
 
@@ -125,10 +116,9 @@ The dependency direction is enforced by four independent mechanisms, all bundled
 behind a single command:
 
 1. **eslint `import/no-restricted-paths`** —
-   [`eslint.config.mjs:117`](../../eslint.config.mjs) declares one zone per
-   package. `core` may import only itself; `dnd5e` may import only `core`;
-   `generators` may import only `core` and `dnd5e`. A forbidden import is an
-   `error`, not a warning.
+   [`eslint.config.mjs:115`](../../eslint.config.mjs) declares one zone per
+   package. `core` may import only itself; `dnd5e` may import only `core`. A
+   forbidden import is an `error`, not a warning.
 2. **`eslint-import-resolver-typescript`** — configured in the same block's
    `settings["import/resolver"]`, it teaches eslint to follow the `@archivist/*`
    package exports/subpaths, so `import/no-restricted-paths` correctly attributes
@@ -244,8 +234,9 @@ Each optional slot has a precise job:
   }
   ```
 
-  This is what the generator layer turns into an AI tool (see §2), and `enrich`
-  is where a raw LLM payload is filled out into a complete entity.
+  This is what the generator layer (now the standalone `archivist-generators`
+  repo; see §2) turns into an AI tool, and `enrich` is where a raw LLM payload is
+  filled out into a complete entity.
 
 **The one persistence rule:** the codec normalizes on save, but it must **never
 persist enrich-derived fields.** A `serialize` writes the authored/normalized
@@ -328,7 +319,7 @@ future reader does not "fix" them by mistake:
 
 - Content is `.md`; `parseContainer` reads optional frontmatter + one typed code
   block into an `EntityDoc`.
-- Four packages, arrows inward, `dnd5e` never imports `obsidian`; the arrows are
+- Three packages, arrows inward, `dnd5e` never imports `obsidian`; the arrows are
   enforced by eslint + TS resolver + a planted arch test + `tsc -b`, all behind
   `npm run check` (the single local gate — no CI, by design).
 - A pack contributes one `EntityType` per type: `{ type, doc?, resolve?,
