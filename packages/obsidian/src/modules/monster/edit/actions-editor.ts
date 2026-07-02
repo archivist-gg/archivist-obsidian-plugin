@@ -4,9 +4,7 @@ import type { MonsterEditState } from "../monster.edit-state";
 // 0f spec §0.2): EditContext.plugin stays `unknown`; edit renderers recover the
 // concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../../main";
-// ConfirmModal deliberately lives in inquiry/shared/modals and is imported
-// cross-module — accepted state, see docs/design/layered-pack-architecture.md §6.
-import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
+import { confirm as confirmModal } from "../../../shared/modals/ConfirmModal";
 import { ALL_SECTIONS } from "@archivist/dnd5e/dnd/constants";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";
 import { createSpinButtons } from "../../../shared/edit/spin-buttons";

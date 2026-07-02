@@ -33,7 +33,7 @@ import {
   parseCompendiumRef,
   renderCompendiumRefReadingMode,
 } from "./shared/extensions/compendium-ref-extension";
-import { confirm as confirmModal } from "./modules/inquiry/shared/modals/ConfirmModal";
+import { confirm as confirmModal } from "./shared/modals/ConfirmModal";
 
 // SRD & entities
 import { SrdStore, dnd5ePack } from "@archivist/dnd5e";

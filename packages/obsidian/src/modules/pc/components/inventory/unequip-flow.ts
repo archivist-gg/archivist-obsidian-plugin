@@ -1,7 +1,7 @@
 import type { App } from "obsidian";
 import type { CharacterEditState } from "../../pc.edit-state";
 import type { EquipmentEntry } from "../../pc.types";
-import { confirm as confirmModal } from "../../../inquiry/shared/modals/ConfirmModal";
+import { confirm as confirmModal } from "../../../../shared/modals/ConfirmModal";
 
 /**
  * Unequip an item, asking the user to also unattune if it's currently attuned.

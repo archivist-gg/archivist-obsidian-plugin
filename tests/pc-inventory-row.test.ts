@@ -6,7 +6,7 @@ import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { EquipmentEntry, ResolvedEquipped } from "../packages/obsidian/src/modules/pc/pc.types";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
-vi.mock("../packages/obsidian/src/modules/inquiry/shared/modals/ConfirmModal", () => ({
+vi.mock("../packages/obsidian/src/shared/modals/ConfirmModal", () => ({
   confirm: confirmMock,
   confirmDelete: vi.fn().mockResolvedValue(true),
 }));

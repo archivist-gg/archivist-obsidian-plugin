@@ -369,10 +369,9 @@ class CompendiumRefWidget extends WidgetType {
 // Confirm dialog host hook
 // ---------------------------------------------------------------------------
 //
-// `shared/extensions/` cannot import the inquiry module's ConfirmModal
-// directly without breaking the shared-tree invariant. `main.ts` injects a
-// confirm-dialog implementation at plugin load via the setter below; when
-// unwired, the delete flow silently no-ops.
+// `shared/extensions/` must not import a modal from a module (the shared-tree
+// invariant). `main.ts` injects a confirm-dialog implementation at plugin load
+// via the setter below; when unwired, the delete flow silently no-ops.
 
 type ConfirmFn = (app: App, message: string, confirmLabel?: string) => Promise<boolean>;
 let confirmFnRef: ConfirmFn | null = null;
