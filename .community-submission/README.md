@@ -19,7 +19,7 @@ Staged material for submitting Archivist to the [obsidianmd/obsidian-releases](h
   "id": "archivist-gg",
   "name": "Archivist",
   "author": "Shinoobi",
-  "description": "D&D 5e toolkit: AI agent for monsters, spells, items, and NPCs; parchment stat blocks; inline dice tags; full SRD compendium.",
+  "description": "D&D 5e/2024 toolkit: parchment stat blocks from YAML code blocks, inline dice tags, a full SRD compendium, homebrew compendiums, and player-character sheets.",
   "repo": "archivist-gg/archivist-obsidian-plugin"
 }
 ```
@@ -44,7 +44,7 @@ Confirm before opening the PR:
 
 A plugin called `archivist-importer` ("Archivist Importer" by Archivist AI) is already in the marketplace. It imports vault files into an unrelated "Archivist" web app. Reviewers may ask about potential user confusion. If pushed on this, be ready to:
 
-- Emphasize the different scope ("Archivist" = full D&D toolkit with stat blocks, dice, and chat; "Archivist Importer" = exporter for a different service).
+- Emphasize the different scope ("Archivist" = full D&D toolkit with stat blocks and dice; "Archivist Importer" = exporter for a different service).
 - Offer an alternative display name if needed (e.g. "Archivist Codex").
 
 The id `archivist-gg` is distinct and safe.

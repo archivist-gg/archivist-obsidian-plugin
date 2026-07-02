@@ -3,7 +3,7 @@
   "name": "Archivist",
   "version": "0.2.24",
   "minAppVersion": "1.7.2",
-  "description": "D&D 5e toolkit: AI agent for monsters, spells, items, and NPCs; parchment stat blocks; inline dice tags; full SRD compendium.",
+  "description": "D&D 5e/2024 toolkit: parchment stat blocks from YAML code blocks, inline dice tags, a full SRD compendium, homebrew compendiums, and player-character sheets.",
   "author": "Shinoobi",
   "authorUrl": "https://github.com/archivist-gg",
   "isDesktopOnly": true

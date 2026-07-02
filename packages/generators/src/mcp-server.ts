@@ -13,7 +13,7 @@ type SdkMcpServerToolsParam = NonNullable<
 >;
 
 /**
- * Build the in-process MCP server the inquiry chat uses for D&D tools.
+ * Build the in-process MCP server that exposes the D&D tools (SRD lookup plus any registered generation tools).
  *
  * `moduleSdkTools` is the list of module-contributed SDK tool handles
  * (output of `tool()` from @anthropic-ai/claude-agent-sdk, registered by
