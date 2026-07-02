@@ -37,7 +37,6 @@ import { confirm as confirmModal } from "./shared/modals/ConfirmModal";
 
 // SRD & entities
 import { SrdStore, dnd5ePack } from "@archivist/dnd5e";
-import { generatableToSdkTool } from "@archivist/generators";
 import { EntityRegistry, createArchivist } from "@archivist/core";
 import type { Archivist } from "@archivist/core";
 
@@ -62,26 +61,6 @@ import type { ArchivistSettings } from "./core/plugin-settings";
 import { DEFAULT_SETTINGS } from "./core/plugin-settings";
 import { ArchivistSettingTab } from "./core/settings-tab";
 
-// Inquiry (Claudian chat engine): constructed directly in onload (0f).
-import { InquiryModule } from "./modules/inquiry/InquiryModule";
-
-/** In-memory SDK-tool registry (B7 generation bridge → MCP server wiring). */
-interface AIToolRegistry {
-  registerSdkTool(sdkTool: unknown): void;
-  getAllSdkTools(): unknown[];
-}
-function createAIToolRegistry(): AIToolRegistry {
-  const sdkTools: unknown[] = [];
-  return {
-    registerSdkTool(sdkTool): void {
-      sdkTools.push(sdkTool);
-    },
-    getAllSdkTools() {
-      return sdkTools.slice();
-    },
-  };
-}
-
 export default class ArchivistPlugin extends Plugin {
   settings: ArchivistSettings = { ...DEFAULT_SETTINGS };
   entityRegistry: EntityRegistry | null = null;
@@ -90,11 +69,6 @@ export default class ArchivistPlugin extends Plugin {
   archivist!: Archivist;
   /** DOM-facing presenters keyed by entity type. */
   private presenters = new Map<string, EntityPresenter>();
-  inquiry: InquiryModule | null = null;
-  /** Exposed for InquiryModule.ArchivistHostPlugin hook so the in-process
-   *  MCP server can consume module-contributed SDK tools without having
-   *  to import each module directly. */
-  getModuleSdkTools: (() => unknown[]) | null = null;
   /** Resolves once initializeCompendiums() finishes (or fails — it resolves
    *  in finally so consumers can proceed against whatever state the registry
    *  ended up in). Views that render entity references must await this before
@@ -130,9 +104,6 @@ export default class ArchivistPlugin extends Plugin {
     setCompendiumRefPlugin(this);
     setCompendiumRefConfirmFn((app, message, confirmLabel) => confirmModal(app, message, confirmLabel ?? "OK"));
 
-    // In-memory SDK-tool registry (fed by the B7 generation bridge below).
-    const aiToolRegistry = createAIToolRegistry();
-
     // Core kernel wiring. The kernel parses entity docs via registered packs;
     // the presenter map (built from the direct presenter list below) holds each
     // entity type's DOM render/edit callbacks.
@@ -164,28 +135,9 @@ export default class ArchivistPlugin extends Plugin {
     // Direct composition: pc is a stateful-app, wired with a typed PCServices
     // bundle (0e) — not a registry tenant, and no longer via any module system.
     pcModule.init({ plugin: this, entities: entityRegistry, compendiums: compendiumManager });
-    // B7 generation bridge: register one SDK generate-tool per pack Generatable.
-    // The pack owns the generate contract; the generic mapper turns each
-    // Generatable into an SDK tool with no domain knowledge. This replaces the
-    // per-module manual registerSdkTool calls (retired type-by-type this phase).
-    for (const et of dnd5ePack.entityTypes) {
-      if (et.generatable) {
-        aiToolRegistry.registerSdkTool(generatableToSdkTool(et.generatable));
-      }
-    }
-    // Expose the collected SDK tools so InquiryModule can hand them to
-    // createArchivistMcpServer without importing each module's ai-tools
-    // directly (closes the shared/ → modules/ import edge from mcp-server).
-    this.getModuleSdkTools = () => aiToolRegistry.getAllSdkTools();
 
     // Register the D&D settings tab.
     this.addSettingTab(new ArchivistSettingTab(this.app, this));
-
-    // Inquiry (Claudian chat engine): constructed directly by the composition
-    // root (0f — the module system is gone). The plugin field exists for the
-    // unload teardown below, not for legacy readers (there are none).
-    this.inquiry = new InquiryModule(this, this.app, entityRegistry, srdStore);
-    await this.inquiry.init();
 
     // Register a markdown code-block processor for each entity presenter. The
     // shared helper handles view/edit toggling, side buttons, compendium save,
@@ -304,20 +256,10 @@ export default class ArchivistPlugin extends Plugin {
       });
     }
 
-    // Settings tab is registered by InquiryModule (unified D&D + Inquiry settings)
-
     // Initialize compendiums after vault index is ready (avoids race conditions
     // where getAbstractFileByPath returns null for folders that exist on disk)
     this.app.workspace.onLayoutReady(() => {
       void this.initializeCompendiums();
-    });
-  }
-
-  onunload(): void {
-    // Fire-and-forget async teardown (Obsidian types onunload as void);
-    // rejections are logged but cannot block the unload path.
-    void this.inquiry?.destroy().catch((e: unknown) => {
-      console.error("[archivist] inquiry destroy() failed:", e);
     });
   }
 

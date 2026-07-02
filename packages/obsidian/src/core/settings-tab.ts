@@ -16,17 +16,6 @@ export class ArchivistSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    new Setting(containerEl)
-      .setName("Campaign root directory")
-      .setDesc("Scope AI vault access to this directory. Leave as / for entire vault.")
-      .addText((text) =>
-        text.setPlaceholder("/").setValue(this.plugin.settings.ttrpgRootDir)
-          .onChange(async (value) => {
-            this.plugin.settings.ttrpgRootDir = value || "/";
-            await this.plugin.saveSettings();
-          }),
-      );
-
     new Setting(containerEl).setName("Entity compendium").setHeading();
 
     new Setting(containerEl)

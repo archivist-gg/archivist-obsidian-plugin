@@ -13,10 +13,10 @@
     "build:srd-canonical:refresh": "tsx packages/dnd5e/tools/srd-canonical/index.ts --refresh-open5e",
     "lint": "eslint 'packages/obsidian/src/**/*.ts' 'packages/{core,dnd5e,generators}/src/**/*.ts' 'packages/dnd5e/tools/**/*.ts'",
     "lint:fix": "eslint 'packages/obsidian/src/**/*.ts' 'packages/{core,dnd5e,generators}/src/**/*.ts' 'packages/dnd5e/tools/**/*.ts' --fix",
-    "test": "vitest run --exclude 'tests/inquiry/**'",
+    "test": "vitest run",
     "check": "npm run typecheck && npm run lint && npm run test",
     "typecheck": "tsc -b --force && tsc -p packages/dnd5e/tsconfig.tools.json",
-    "test:watch": "vitest --exclude 'tests/inquiry/**'",
+    "test:watch": "vitest",
     "migrate-formula-tags": "tsx scripts/migrate-formula-tags.ts"
   },
   "workspaces": [
@@ -49,10 +49,8 @@
     "vitest": "^4.1.2"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.86",
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.38.6",
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "js-yaml": "^4.1.0",
     "monkey-around": "^3.0.0",
     "tslib": "^2.7.0",

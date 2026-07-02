@@ -3,14 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.86",
     "@archivist/core": "*",
     "@archivist/dnd5e": "*",
-    "@archivist/generators": "*",
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.38.6",
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "js-yaml": "^4.1.0",
     "monkey-around": "^3.0.0",
     "zod": "^4.3.6"
