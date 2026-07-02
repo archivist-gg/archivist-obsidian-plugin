@@ -141,7 +141,7 @@ describe("renderCustomBackgroundRow", () => {
     expect(st.extras.length).toBe(2);
   });
 
-  it("feature seg toggle: Borrow shows a select; Write shows name+textarea; ✦ Ask Inquiry is disabled", () => {
+  it("feature seg toggle: Borrow shows a select; Write shows name+textarea", () => {
     const container = mountContainer();
     const ctx = mkCtx();
     renderCustomBackgroundRow(container, ctx);
@@ -150,10 +150,6 @@ describe("renderCustomBackgroundRow", () => {
     expect(segs.map((s) => s.textContent)).toContain("Borrow");
     // Default mode = Borrow → a select of existing backgrounds' features.
     expect(container.querySelector("select.pc-bborrow")).not.toBeNull();
-    // ✦ Ask Inquiry seg carries the Plan-6 disabled marker + title hint.
-    const inquiry = segs.find((s) => s.textContent?.includes("Inquiry"))!;
-    expect(inquiry.classList.contains("disabled")).toBe(true);
-    expect(inquiry.getAttribute("title")?.length).toBeGreaterThan(0);
     // Switch to Write → name + textarea inputs replace the select.
     segs.find((s) => s.textContent === "Write your own")!.click();
     expect(container.querySelector("select.pc-bborrow")).toBeNull();

@@ -14,7 +14,7 @@ export interface CustomBackgroundState {
   skills: string[];
   /** Exactly 2 mixed tool/language entries. */
   extras: Array<{ kind: "tool" | "language"; value: string }>;
-  featureMode: "borrow" | "write" | "inquiry";
+  featureMode: "borrow" | "write";
   /** borrow */
   borrowedFeature: { name: string; description: string } | null;
   /** write */
@@ -288,15 +288,11 @@ function renderFeatureSection(
   box.createDiv({ cls: "pc-bfeat-label", text: "Feature" });
 
   const seg = box.createDiv({ cls: "pc-bseg" });
-  const mkSeg = (mode: CustomBackgroundState["featureMode"], text: string, disabled = false): void => {
+  const mkSeg = (mode: CustomBackgroundState["featureMode"], text: string): void => {
     const opt = seg.createSpan({
-      cls: `pc-bseg-opt${st.featureMode === mode ? " on" : ""}${disabled ? " disabled" : ""}`,
+      cls: `pc-bseg-opt${st.featureMode === mode ? " on" : ""}`,
       text,
     });
-    if (disabled) {
-      opt.setAttribute("title", "Archivist inquiry generates a feature — coming in a later release.");
-      return;
-    }
     opt.addEventListener("click", () => {
       st.featureMode = mode;
       redraw();
@@ -304,7 +300,6 @@ function renderFeatureSection(
   };
   mkSeg("borrow", "Borrow");
   mkSeg("write", "Write your own");
-  mkSeg("inquiry", "✦ Ask Inquiry", true);
 
   if (st.featureMode === "borrow") {
     renderBorrow(box, ctx, st, redraw);

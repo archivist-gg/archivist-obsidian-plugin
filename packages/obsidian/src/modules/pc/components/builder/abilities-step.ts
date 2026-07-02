@@ -22,33 +22,17 @@ const ABILITY_LABELS: Record<Ability, string> = {
 export function renderAbilitiesStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const method = ctx.resolved.definition.ability_method;
 
-  // Method pills — one tab strip with ✦ Custom as a real sixth tab: when Custom
-  // is active no method pill wears .on, and picking a method clears the custom
-  // flag in the same click. Tab semantics: clicking the active tab is a no-op.
-  const customOn = ctx.builderUiState?.get("builder.abilities.custom") === true;
+  // Method pills — one tab strip. Clicking the active tab is a no-op.
   const tabs = body.createDiv({ cls: "pc-bmethods" });
   for (const m of ABILITY_METHODS) {
-    const pill = tabs.createEl("button", { cls: `pc-bmtab${!customOn && m.id === method ? " on" : ""}`, text: m.label });
+    const pill = tabs.createEl("button", { cls: `pc-bmtab${m.id === method ? " on" : ""}`, text: m.label });
     if (m.homebrew) pill.createSpan({ cls: "pc-bhb", text: "Homebrew" });
     pill.addEventListener("click", () => {
-      if (customOn) ctx.builderUiState?.set("builder.abilities.custom", false);
       if (m.id !== method) ctx.editState?.setAbilityMethod(m.id);
-      else if (customOn) redraw(body, ctx); // same method re-picked from Custom: no write, repaint locally
     });
   }
-  // ✦ Custom — Plan 6 hand-off; renders the prompt box only.
-  const custom = tabs.createEl("button", { cls: `pc-bmtab ai${customOn ? " on" : ""}` });
-  custom.createSpan({ cls: "pc-bmtab-star", text: "✦ " });
-  custom.createSpan({ text: "Custom" });
-  custom.addEventListener("click", () => {
-    if (customOn) return;
-    ctx.builderUiState?.set("builder.abilities.custom", true);
-    redraw(body, ctx);
-  });
 
-  if (customOn) renderCustomBox(body);
-  else renderMethodBar(body, ctx, method);
-
+  renderMethodBar(body, ctx, method);
   renderTiles(body, ctx, method);
 }
 
@@ -59,20 +43,6 @@ function redraw(body: HTMLElement, ctx: ComponentRenderContext): void {
     if (!child.classList.contains("pc-builder-step-h")) child.remove();
   }
   renderAbilitiesStep(body, ctx);
-}
-
-function renderCustomBox(body: HTMLElement): void {
-  const box = body.createDiv({ cls: "pc-baibox" });
-  box.createDiv({ cls: "pc-baibox-t", text: "Custom scoring method" });
-  box.createDiv({
-    cls: "pc-baibox-b",
-    text: "Describe a scoring method to Archivist Inquiry — it becomes a reusable tab here, exactly like Archivist Point Buy.",
-  });
-  // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper nouns: "Archivist" (product), "Inquiry" (feature)
-  const btn = box.createEl("button", { cls: "pc-baibtn", text: "✦ Ask Archivist Inquiry" });
-  btn.disabled = true;
-  // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper nouns: "Inquiry" (feature), "Plan 6" (milestone label)
-  btn.title = "Arrives with the Inquiry hand-off (Plan 6).";
 }
 
 function renderTiles(body: HTMLElement, ctx: ComponentRenderContext, method: AbilityMethod): void {

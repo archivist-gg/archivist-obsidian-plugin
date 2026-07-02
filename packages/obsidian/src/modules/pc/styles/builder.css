@@ -262,8 +262,6 @@
   background: var(--pc-parchment-light, rgba(255, 248, 220, 0.7)); cursor: pointer;
 }
 .archivist-pc-sheet .pc-bmtab.on { background: var(--pc-crimson); color: var(--pc-parchment-light, #fdf1dc); border-color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-bmtab.ai { border-style: dashed; border-color: var(--pc-crimson); display: inline-flex; align-items: center; gap: 6px; }
-.archivist-pc-sheet .pc-bmtab-star { font-size: 11px; }
 .archivist-pc-sheet .pc-bhb {
   font-size: 7.5px; letter-spacing: 0.08em; border-radius: 6px; padding: 0 5px; margin-left: 6px;
   background: rgba(146, 38, 16, 0.12); color: var(--pc-crimson);
@@ -445,17 +443,6 @@
 }
 .archivist-pc-sheet .pc-babcap { min-height: 13px; font-size: 10px; max-width: 100%; text-align: center; }
 .archivist-pc-sheet .pc-bsp { color: var(--pc-crimson); font-weight: 700; }
-.archivist-pc-sheet .pc-baibox {
-  border: 1px dashed var(--pc-crimson); border-radius: 5px; background: rgba(146, 38, 16, 0.04);
-  padding: 10px 12px; margin-bottom: 12px;
-}
-.archivist-pc-sheet .pc-baibox-t { font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); }
-.archivist-pc-sheet .pc-baibox-b { font-size: 11px; color: var(--pc-text-muted); margin: 4px 0 8px; }
-.archivist-pc-sheet .pc-baibtn {
-  background: var(--pc-crimson); color: #fdf1dc; border: none; border-radius: 4px;
-  padding: 6px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;
-}
-.archivist-pc-sheet .pc-baibtn:disabled { opacity: 0.55; }
 
 /* ── Background step (SP2 Plan 4) ──────────────────────────────────────── */
 /* Edition-mix banner: a permissive amber note above the chosen background's
