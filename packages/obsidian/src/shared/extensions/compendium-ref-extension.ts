@@ -139,7 +139,7 @@ class CompendiumRefWidget extends WidgetType {
     return container;
   }
 
-  /** Render entity data into a stat block element via the module registry. */
+  /** Render entity data into a stat block element via the shared presenter dispatch. */
   private renderEntityBlock(entity: EntityLike, host: HTMLElement, columns?: number): HTMLElement | null {
     // Scratch element: have the module render into a throwaway container so
     // we can return (and reposition) the produced node. The widget decides
@@ -446,7 +446,7 @@ export const compendiumRefPlugin = ViewPlugin.fromClass(
 );
 
 /**
- * Module-registry dispatch used by Reading-mode compendium-ref rendering.
+ * Presenter dispatch used by Reading-mode compendium-ref rendering.
  * Exposed here (rather than duplicated in main.ts) so both the CM6 widget
  * and the reading-mode post-processor use the same code path.
  */

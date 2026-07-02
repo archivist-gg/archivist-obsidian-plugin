@@ -1,8 +1,9 @@
 import * as yaml from "js-yaml";
 import { setIcon, Notice } from "obsidian";
 import type { MarkdownPostProcessorContext } from "obsidian";
-// TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
-// modules don't reach across into src/main for the concrete class.
+// The plugin type below is the documented accepted seam (convention doc §6 /
+// 0f spec §0.2): EditContext.plugin stays `unknown`; edit renderers recover the
+// concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../main";
 import type { Item } from "@archivist/dnd5e/item/item.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";

@@ -1,11 +1,11 @@
 import { setIcon } from "obsidian";
 import type { MonsterEditState } from "../monster.edit-state";
-// TODO(phase1): narrow EditContext.plugin to a typed host-plugin handle so
-// modules don't reach across into src/main for the concrete class.
+// The plugin type below is the documented accepted seam (convention doc §6 /
+// 0f spec §0.2): EditContext.plugin stays `unknown`; edit renderers recover the
+// concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../../main";
-// TODO(phase1): promote ConfirmModal (and other generic dialogs) out of
-// inquiry/shared/modals into a top-level shared/modals tree so cross-module
-// reuse doesn't reach into a sibling module.
+// ConfirmModal deliberately lives in inquiry/shared/modals and is imported
+// cross-module — accepted state, see docs/design/layered-pack-architecture.md §6.
 import { confirm as confirmModal } from "../../inquiry/shared/modals/ConfirmModal";
 import { ALL_SECTIONS } from "@archivist/dnd5e/dnd/constants";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";

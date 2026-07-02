@@ -41,7 +41,7 @@ import { generatableToSdkTool } from "@archivist/generators";
 import { EntityRegistry, createArchivist } from "@archivist/core";
 import type { Archivist } from "@archivist/core";
 
-// Strangler adapter: kernel + Obsidian ports
+// Kernel + Obsidian ports + presenter dispatch wiring
 import {
   makeVaultStoragePort,
   makeRegistryContentPort,
@@ -158,8 +158,7 @@ export default class ArchivistPlugin extends Plugin {
     setEntityPresenters(this.presenters);
     setEntityPresenterPlugin(this);
     setEntityPresenterKernel(this.archivist);
-    // Register the real dnd5e pack (the only pack now — the legacy strangler
-    // pack was removed with Bridge 1 in 0e).
+    // Register the real dnd5e pack: the only pack the kernel knows.
     this.archivist.registerPack(dnd5ePack);
     // Direct composition: pc is a stateful-app, wired with a typed PCServices
     // bundle (0e) — not a registry tenant, and no longer via any module system.
@@ -204,7 +203,7 @@ export default class ArchivistPlugin extends Plugin {
     });
 
     // Compendium ref post-processor for Reading mode ({{type:slug}} -> rendered stat block).
-    // Dispatches rendering through the module registry via
+    // Dispatches rendering through the shared presenter dispatch via
     // renderCompendiumRefReadingMode so this post-processor has no per-entity-type
     // knowledge.
     this.registerMarkdownPostProcessor((el) => {
@@ -411,8 +410,8 @@ export default class ArchivistPlugin extends Plugin {
     };
 
     this.registerMarkdownCodeBlockProcessor(codeBlockType, (source, el, ctx) => {
-      // Kernel parse: behavior-identical to mod.parseYaml(source) — the legacy
-      // adapter's doc.parse runs mod.parseYaml over doc.body (= source).
+      // Kernel parse: the pack codec parses the code-block source directly
+      // (body === source for a fenced entity block).
       const et = this.archivist.getEntityType(codeBlockType);
       // CODEC output feeds edit-mode + compendium-save (lossless, authored
       // structure only). The resolved output feeds the VIEW render (adds

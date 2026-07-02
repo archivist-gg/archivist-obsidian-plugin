@@ -2,11 +2,13 @@ import type { App } from "obsidian";
 import { setIcon, Notice } from "obsidian";
 
 import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
-// TODO(phase1): replace the six cross-module parser/renderer imports below
-// with module-registry dispatch. Deferred because renderDndEntityBlock is
-// invoked deep in the inquiry chat UI (MessageRenderer / ToolCallRenderer)
-// which does not yet receive a ModuleRegistry handle; threading one through
-// without a broader inquiry-side refactor is outside Task 13 scope.
+// Accepted divergence: the six cross-module parser/renderer imports below are
+// called directly rather than through the shared presenter dispatch, because
+// renderDndEntityBlock is invoked deep in the inquiry chat UI (MessageRenderer /
+// ToolCallRenderer), which does not receive a presenter-dispatch handle.
+// Routing it through the dispatch belongs to the separate inquiry un-defer
+// effort (its own future project, not a numbered phase of this arc). See
+// docs/design/layered-pack-architecture.md §6.
 import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
 import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
 import { parseItem } from "@archivist/dnd5e/item/item.parser";

@@ -25,7 +25,6 @@ export interface EditContext extends RenderContext {
 
 /**
  * The constructor shape a presenter's "Insert entity" modal must satisfy.
- * (Same contract as before the teardown — see the original module-api doc.)
  */
 export type ModalConstructor = new (app: App, editor: Editor) => { open(): void };
 

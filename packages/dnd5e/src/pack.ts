@@ -17,11 +17,11 @@ import { encounterEntityType } from "./encounter/encounter.entity-type";
 /**
  * The real `dnd5e` SystemPack. It owns the parse/resolve/generate contract for
  * D&D 5e entity types via their {@link EntityType} definitions; presentation
- * (renderer/edit/modal) stays in the obsidian package. Registered ahead of the
- * legacy strangler pack so its EntityTypes win for any type it declares.
+ * (renderer/edit/modal) stays in the obsidian package. It is the only pack the
+ * kernel registers.
  *
- * Currently exposes the monster vertical slice (Plan A); further entity types
- * migrate off the legacy adapter by appending their EntityType here.
+ * All 11 authored types are ported, plus the two generate-only types (npc and
+ * encounter); a new entity type joins by appending its EntityType here.
  */
 export const dnd5ePack: SystemPack = {
   id: "dnd5e",

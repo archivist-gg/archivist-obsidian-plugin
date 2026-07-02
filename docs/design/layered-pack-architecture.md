@@ -1,14 +1,14 @@
 # Layered pack architecture
 
 This document describes how Archivist is structured after the layered-pack
-refactor (phases 0a–0e). It is a maintainer's guide to the *current* state, not
-a roadmap: where the code still carries scaffolding from the migration, that
-scaffolding is recorded honestly here so the next person does not mistake it for
-the intended end state. Phase **0e** removed the kernel-parse bridge and
-de-registered `pc` from the module system. The remaining intended-but-not-yet-done
-work — tearing the last two strangler bridges down, along with `pc`'s residual
-`CoreAPI` coupling and the inquiry direct-parse divergence — is called out
-explicitly and deferred to phase **0f**.
+refactor (phases 0a–0f). It is a maintainer's guide to the *current* state, not
+a roadmap. The incremental strangler migration that carried the plugin onto the
+pack/kernel model is **complete**: all three bridges are torn down (the
+kernel-parse bridge in **0e**, and the presentation registry and the module
+system in **0f**), and no migration scaffolding remains. What *does* remain is a
+small set of deliberate, permanent design compromises — accepted states, not
+deferred work — recorded honestly in §6 so the next person does not mistake them
+for an unfinished migration.
 
 The short version: content lives in Markdown files, a small framework (`core`)
 parses and dispatches those files, a system pack (`dnd5e`) supplies all the D&D
@@ -162,11 +162,12 @@ populated.
   additionally have a `generatable`.
 - **Stateful app** — `pc` (the player character). It is an interactive,
   stateful `TextFileView` app rather than a static authored block, and it has
-  **not** been ported to a pack codec (no pack membership, no `doc` codec). As of
-  0e it is **directly wired** in the composition root — invoked outside the module
-  loop rather than registered through the module system — but it still reads
-  `CoreAPI` services; that residual coupling is torn down in **0f** (see §6). This
-  is the single largest remaining strangler user.
+  **not** been ported to a pack codec (no pack membership, no `doc` codec — an
+  accepted state, see §6). It is **directly wired** in the composition root: the
+  root calls `pcModule.init(services)` with a typed
+  `PCServices { plugin, entities, compendiums }` bundle, so `pc` depends only on
+  the concrete registries it needs — no `CoreAPI` (that service facade was
+  deleted in **0f**), no module system, no pack.
 - **Generate-only** — `npc` and `encounter`. These exist purely to be generated:
   their pack `EntityType` carries a `generatable` and **no `doc`**. There is no
   authored/edited on-disk form to parse, so there is no codec.
@@ -245,37 +246,44 @@ and derivation authoritative.
 
 ---
 
-## 6. Current strangler state (honest record)
+## 6. Strangler teardown record (history)
 
-The plugin has been migrated onto the pack/kernel model incrementally, using the
-strangler-fig pattern: new machinery grows around the old, and the old is removed
-type by type. That migration is **not finished**, and the plugin still ships
-two bridges (a third — a kernel-parse adapter — was removed in 0e, when `pc` was
-also de-registered from the module system). They are intentional, minimized, and
-slated for teardown in **phase 0f (final strangler teardown)**. Do not remove or
-"clean up" either of them casually — code-block rendering and `pc`'s residual
-`CoreAPI` access still depend on them.
+The plugin was migrated onto the pack/kernel model incrementally, using the
+strangler-fig pattern: new machinery grew around the old, and the old was removed
+type by type. That migration is now **finished** — all three bridges have been
+torn down. This section is a history of that teardown, kept so the shape of the
+current wiring is legible.
 
-- **Bridge 2 — presentation.**
-  [`adapter/presentation-registry.ts`](../../packages/obsidian/src/adapter/presentation-registry.ts)'s
-  `PresentationRegistry` holds each module's DOM-facing callbacks (`render`,
-  `renderEditMode`, `getInsertModal`) keyed by code-block type. Parsing was moved
-  into the kernel, but **rendering, edit mode, and the insert modal for ALL
-  code-block types — the ported types included — still flow through this
-  registry.** The pack owns *what an entity is*; obsidian still owns *how it is
-  drawn*.
-
-- **Bridge 3 — the module system.**
-  [`core/module-api.ts`](../../packages/obsidian/src/core/module-api.ts)'s
-  `CoreAPI` + `ArchivistModule.register` is the original plugin module system,
-  and **12 modules still register through it** on load (`monster`, `spell`,
-  `item`, `inquiry`, `class`, `race`, `subclass`, `background`, `feat`,
-  `optional-feature`, `armor`, `weapon`). The kernel and the legacy `CoreAPI`
-  currently run side by side. `pc` is no longer one of these registered modules:
-  0e took it out of the module loop and **wired it directly** in the composition
-  root, but it still calls `pcModule.register(core)` to read `CoreAPI` services,
-  so it remains a Bridge-3 consumer even though it is not a module-registry
-  tenant. Cutting that last coupling is the terminal step of **0f**.
+- **Bridge 1 — kernel parse (removed in 0e).** A kernel-parse adapter once
+  wrapped the old per-module YAML parse path. It was deleted when parsing moved
+  wholesale into the kernel; `pc` was de-registered from the module system in the
+  same phase.
+- **Bridge 2 — presentation registry (removed in 0f).** The old
+  `PresentationRegistry` held each module's DOM callbacks keyed by code-block
+  type. It is gone: each authored type now ships a native `EntityPresenter`
+  (defined by
+  [`shared/rendering/entity-presenter.ts`](../../packages/obsidian/src/shared/rendering/entity-presenter.ts))
+  — a `{ type, render, renderEditMode?, getInsertModal? }` contract. The 11
+  presenters are collected into a plain `Map<type, EntityPresenter>` in the
+  composition root and injected into one shared dispatch
+  ([`shared/rendering/entity-presenter-dispatch.ts`](../../packages/obsidian/src/shared/rendering/entity-presenter-dispatch.ts)).
+  Three callers consume that dispatch: the CM6 compendium-ref widget, the
+  reading-mode post-processor helper (`renderCompendiumRefReadingMode`), and the
+  `pc` builder's entity-block. The code-block processor instead consumes the
+  presenter contract directly, so it keeps the kernel-parse + `resolve()`
+  pipeline (codec output feeds edit-mode/save, resolved output feeds the view).
+- **Bridge 3 — the module system (removed in 0f).** The original
+  `CoreAPI` + `ArchivistModule.register` module system is deleted. Nothing
+  registers through a module registry any more: the 11 authored types are wired
+  as presenters (above), `pc` is composed directly via a typed `PCServices`
+  bundle (§4), the inquiry chat engine is constructed directly
+  (`new InquiryModule(...)`), and the AI generate-tools are registered by a
+  generic pack-driven loop in the composition root rather than per module. A grep
+  for `ArchivistModule`, `PresentationRegistry`, or `CoreAPI` across
+  `packages/*/src` returns zero, and a planted arch test
+  ([`tests/arch/no-module-system.test.ts`](../../tests/arch/no-module-system.test.ts))
+  pins the three deleted bridge files (and asserts no source references their
+  import paths).
 
 ### Accepted inquiry divergence
 
@@ -288,8 +296,31 @@ and `parseItem` from `@archivist/dnd5e` **directly**, bypassing the kernel and
 `monster`, and its `resolve` only derives proficiency bonus / XP — values that
 are already baked into the authored or generated `.md` the renderer is showing.
 So skipping `resolve` changes nothing visible here. Routing this renderer through
-proper registry dispatch is deferred to the inquiry un-defer in **0f**; the
-direct-parse path is an accepted divergence, not an oversight.
+the shared presenter dispatch belongs to a separate inquiry un-defer effort (its
+own future project, not a numbered phase of this arc); the direct-parse path is
+an accepted divergence, not an oversight.
+
+### Accepted permanent states
+
+These are settled design decisions, not migration debt. They are listed so a
+future reader does not "fix" them by mistake:
+
+- **`RenderContext.plugin` is typed `unknown`.** The presenter contract
+  ([`shared/rendering/entity-presenter.ts`](../../packages/obsidian/src/shared/rendering/entity-presenter.ts))
+  keeps the host-plugin handle deliberately untyped rather than exposing a
+  structural host-plugin interface that would balloon as modules reach for more
+  of the plugin. The seven module-side edit/presenter files that need the
+  concrete class recover it with a type-only
+  `import type ArchivistPlugin from ".../main"` (a compile-time-only edge, erased
+  from the emitted JS). This is a deliberate compromise, not deferred work.
+- **`pc` has no pack codec.** The player character is a stateful `TextFileView`
+  app, not an authored stat block; it stays off the pack/codec model by decision
+  (0e). See §4.
+- **`ConfirmModal` lives under `modules/inquiry/shared/modals/`** and is imported
+  cross-module (by `main.ts`, `pc`'s unequip flow, and the monster actions
+  editor). Promoting it to a top-level `shared/modals/` tree is ordinary
+  housekeeping, not part of this arc's scope; its current home is an accepted
+  state.
 
 ---
 
@@ -303,10 +334,9 @@ direct-parse path is an accepted divergence, not an oversight.
 - A pack contributes one `EntityType` per type: `{ type, doc?, resolve?,
   generatable? }`. Codecs normalize but never persist enrich-derived fields.
 - Three archetypes: authored stat blocks (11 ported, on codecs), the stateful
-  `pc` app (directly wired, not a pack codec — still reads `CoreAPI`), and
-  generate-only `npc`/`encounter`.
-- The strangler is real and minimized: Bridge 2 (presentation) serves every
-  code-block type, Bridge 3 (modules) hosts 12 modules. (A third, kernel-parse
-  bridge was removed in 0e, when `pc` was de-registered from the module system.)
-  Full teardown of the last two bridges — and `pc`'s residual `CoreAPI` coupling —
-  is phase **0f**.
+  `pc` app (directly wired via a typed `PCServices` bundle — no pack codec, no
+  `CoreAPI`), and generate-only `npc`/`encounter`.
+- The strangler migration is complete: all three bridges are torn down — the
+  kernel-parse bridge in 0e, the presentation registry and the module system in
+  0f. Rendering now flows through the native `EntityPresenter` contract plus one
+  shared dispatch; a few permanent accepted states are recorded in §6.
