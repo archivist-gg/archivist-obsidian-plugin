@@ -84,7 +84,7 @@
     "./weapon/weapon.types": "./src/weapon/weapon.types.ts"
   },
   "dependencies": {
-    "@archivist/core": "*",
+    "@archivist/core": "file:../../../archivist-core",
     "js-yaml": "^4.1.0",
     "zod": "^4.3.6"
   }

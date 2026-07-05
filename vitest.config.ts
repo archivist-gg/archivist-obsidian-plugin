@@ -13,7 +13,7 @@ export default defineConfig({
   resolve: {
     alias: {
       obsidian: path.resolve(__dirname, "tests/__mocks__/obsidian.ts"),
-      "@core": path.resolve(__dirname, "packages/core/src"),
+      "@core": path.resolve(__dirname, "../archivist-core/src"),
       "@": path.resolve(__dirname, "packages/obsidian/src"),
     },
   },

@@ -10,7 +10,7 @@ function resolveItemName(
   const ref = entry.item.match(/^\[\[(.+?)\]\]$/);
   const slug = ref ? ref[1] : entry.item;
   // `EntityRegistry.getBySlug(slug): RegisteredEntity | undefined` — `RegisteredEntity`
-  // has `name: string`. See `@archivist/core` (packages/core/src/entity-registry.ts).
+  // has `name: string`. See `@archivist/core`'s entity-registry.
   return registry.getBySlug(slug)?.name;
 }
 

@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "composite": true, "rootDir": "src", "outDir": "dist" },
-  "references": [{ "path": "../core" }],
+  "references": [{ "path": "../../../archivist-core" }],
   "include": ["src/**/*.ts", "src/**/*.json"]
 }

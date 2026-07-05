@@ -32,9 +32,8 @@ the generator) can open and edit. Two parts of that file matter:
 - **A single typed fenced code block** whose *info string* is the entity type
   and whose body carries the entity's data.
 
-Both are handled by `parseContainer` in
-[`packages/core/src/container.ts`](../../packages/core/src/container.ts). The
-grammar is deliberately tiny:
+Both are handled by `parseContainer` in `@archivist/core`'s `container.ts` (now
+in the sibling `archivist-core` repo). The grammar is deliberately tiny:
 
 ```
 FRONTMATTER_RE = /^---\n([\s\S]*?)\n---\n?/      // optional
@@ -116,9 +115,9 @@ The dependency direction is enforced by four independent mechanisms, all bundled
 behind a single command:
 
 1. **eslint `import/no-restricted-paths`** —
-   [`eslint.config.mjs:115`](../../eslint.config.mjs) declares one zone per
-   package. `core` may import only itself; `dnd5e` may import only `core`. A
-   forbidden import is an `error`, not a warning.
+   [`eslint.config.mjs`](../../eslint.config.mjs) declares the surviving layered
+   zone: `dnd5e` may import only `@archivist/core` (now an external package,
+   resolved from its own repo). A forbidden import is an `error`, not a warning.
 2. **`eslint-import-resolver-typescript`** — configured in the same block's
    `settings["import/resolver"]`, it teaches eslint to follow the `@archivist/*`
    package exports/subpaths, so `import/no-restricted-paths` correctly attributes
@@ -126,10 +125,11 @@ behind a single command:
    package rather than treating it as an opaque module.
 3. **The planted architecture test** —
    [`tests/arch/dependency-arrows.test.ts`](../../tests/arch/dependency-arrows.test.ts)
-   writes a probe file into `packages/core/src` that imports from
-   `@archivist/dnd5e`, runs eslint over it programmatically, and asserts the
-   `import/no-restricted-paths` rule fires. This guards the *guard*: if the eslint
-   zone or resolver ever silently stops working, this test goes red.
+   writes a probe file into `packages/dnd5e/src` that imports from
+   `@archivist/obsidian`, runs eslint over it programmatically, and asserts the
+   `import/no-restricted-paths` rule fires (the `dnd5e→obsidian` arrow). This
+   guards the *guard*: if the eslint zone or resolver ever silently stops working,
+   this test goes red.
 4. **Cross-package `tsc -b`** — the `typecheck` script runs a composite,
    project-referenced build across all packages, so an illegal or missing
    cross-package dependency also fails the type checker.
@@ -181,7 +181,7 @@ The generatable set is therefore **five** types across two archetypes: `monster`
 ## 5. The pack EntityType recipe
 
 Everything the pack contributes about a type is one `EntityType` object.
-From [`packages/core/src/contracts.ts`](../../packages/core/src/contracts.ts):
+From `@archivist/core`'s `contracts.ts` (now in the sibling `archivist-core` repo):
 
 ```ts
 interface EntityType {

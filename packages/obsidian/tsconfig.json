@@ -7,7 +7,7 @@
     "paths": { "@/*": ["src/*"] }
   },
   "references": [
-    { "path": "../core" },
+    { "path": "../../../archivist-core" },
     { "path": "../dnd5e" }
   ],
   "include": ["src/**/*.ts", "src/**/*.json"]

@@ -1,7 +1,7 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/core" },
+    { "path": "../archivist-core" },
     { "path": "packages/dnd5e" },
     { "path": "packages/obsidian" }
   ]

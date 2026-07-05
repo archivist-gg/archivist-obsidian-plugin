@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": { "noEmit": true, "rootDir": "tools" },
-  "references": [{ "path": "./tsconfig.json" }, { "path": "../core" }],
+  "references": [{ "path": "./tsconfig.json" }, { "path": "../../../archivist-core" }],
   "include": ["tools/**/*.ts", "tools/**/*.json"]
 }
