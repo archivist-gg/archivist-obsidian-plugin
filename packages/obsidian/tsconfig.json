@@ -8,7 +8,7 @@
   },
   "references": [
     { "path": "../../../archivist-core" },
-    { "path": "../dnd5e" }
+    { "path": "../../../archivist-dnd5e" }
   ],
   "include": ["src/**/*.ts", "src/**/*.json"]
 }

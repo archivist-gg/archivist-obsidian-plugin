@@ -2,7 +2,6 @@ import tsparser from "@typescript-eslint/parser";
 import { defineConfig } from "eslint/config";
 import obsidianmd from "eslint-plugin-obsidianmd";
 import comments from "@eslint-community/eslint-plugin-eslint-comments";
-import importPlugin from "eslint-plugin-import";
 
 // Rules the Obsidian Review Bot forbids disabling via inline directives.
 const restrictedDisableRules = [
@@ -30,13 +29,10 @@ const restrictedDisableRules = [
   "!obsidianmd/ui/sentence-case",
 ];
 
-// The three package tsconfigs the type-aware parser already loads. Reused by the
-// import/no-restricted-paths TS resolver so it can follow the `@archivist/*`
-// package `exports` subpaths (the node resolver cannot, which would let the
-// dependency-arrow rule silently under-enforce).
+// The obsidian package tsconfig the type-aware parser loads (it is the global
+// `**/*.ts` block's `project`). dnd5e is now an external repo, so its tsconfigs
+// no longer participate in the plugin's lint.
 const tsconfigProjects = [
-  "./packages/dnd5e/tsconfig.json",
-  "./packages/dnd5e/tsconfig.tools.json",
   "./packages/obsidian/tsconfig.json",
 ];
 
@@ -76,71 +72,6 @@ export default defineConfig([
         ...restrictedDisableRules,
       ],
       "@eslint-community/eslint-comments/no-unused-disable": "error",
-    },
-  },
-  // Enforce the layered dependency arrows (dnd5e must import only @archivist/core,
-  // which is now an external package). obsidian may import any package, so it has
-  // no zone and is intentionally OUTSIDE this block's scope: the TS
-  // `import/resolver` lives here too (it is a global `settings` key shared by every
-  // eslint-plugin-import rule), and scoping it to the one remaining in-repo layered
-  // package (dnd5e) keeps obsidian's `import/no-extraneous-dependencies`
-  // behaviour exactly as it was before the resolver existed. `packages/dnd5e/**`
-  // also covers dnd5e/tools/**. The parser/project come from the `**/*.ts` block
-  // above (flat config merges languageOptions across matching blocks).
-  {
-    files: [
-      "packages/dnd5e/**/*.ts",
-    ],
-    plugins: {
-      // obsidianmd's recommended config already registers `import` (its copy
-      // resolves to this same module instance), so re-registering with the same
-      // object is a no-op for flat config rather than a "Cannot redefine plugin"
-      // error. Registering it here keeps the dependency-arrow rule self-contained.
-      import: importPlugin,
-    },
-    settings: {
-      // The TS resolver follows `@archivist/*` package exports/subpaths so
-      // import/no-restricted-paths can tell which package an import targets.
-      "import/resolver": {
-        typescript: {
-          project: tsconfigProjects,
-          // Three project tsconfigs is intentional (one per in-repo package);
-          // silence the resolver's perf hint about consolidating into a single tsconfig.
-          noWarnOnMultipleProjects: true,
-        },
-      },
-    },
-    rules: {
-      "import/no-restricted-paths": [
-        "error",
-        {
-          zones: [
-            {
-              target: "./packages/dnd5e",
-              from: "./packages",
-              except: ["./dnd5e", "./core"],
-              message: "dnd5e may import only @archivist/core",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  // Dev CLI tools: progress logging to stdout/stderr is intended behaviour, so
-  // narrow the no-console rule here rather than littering the code with
-  // forbidden eslint-disable comments. `no-console` remains enforced
-  // everywhere else (in obsidianmd's recommended config it is implemented via
-  // `obsidianmd/rule-custom-message`, which wraps `no-console`).
-  // Node-side rules (fetch, popout-window document reference, etc.) target
-  // the Obsidian plugin runtime and do not apply to Node CLI tools that run
-  // outside Obsidian.
-  {
-    files: ["packages/dnd5e/tools/**/*.ts"],
-    rules: {
-      "no-console": "off",
-      "obsidianmd/rule-custom-message": "off",
-      "obsidianmd/prefer-active-doc": "off",
-      "no-restricted-globals": "off",
     },
   },
 ]);

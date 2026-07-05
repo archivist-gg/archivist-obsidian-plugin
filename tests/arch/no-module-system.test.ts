@@ -13,7 +13,6 @@ const DELETED = [
 ];
 
 const SRC_ROOTS = [
-  "packages/dnd5e/src",
   "packages/obsidian/src",
 ];
 
