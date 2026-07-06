@@ -3,7 +3,7 @@ import type { ResolvedSpell } from "../../pc.types";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { renderAddDrawer } from "./add-drawer";
 import { editionTag } from "./spell-display";
-import { baseClassName } from "../../pc.spellcasting";
+import { baseClassName } from "@archivist/dnd5e/class/class.slug";
 
 // Ephemeral Prepare-list filters. Module-scoped but reset at the top of
 // renderPrepareView on every full re-render (see §5.1). 0 = cantrip.

@@ -5,7 +5,7 @@ import type { EntityRegistry } from "@archivist/core";
 import { resolveBaseItem } from "../../../../shared/entities/base-item-resolver";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
-import { requiresAttunement } from "./requires-attunement";
+import { requiresAttunement } from "@archivist/dnd5e/item/item.attunement";
 import { prettifyName } from "./filter-state";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 

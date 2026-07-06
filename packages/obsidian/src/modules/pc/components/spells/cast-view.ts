@@ -1,9 +1,9 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "../../pc.types";
 import { renderChargeBoxes } from "../actions/charge-boxes";
-import { spellEffectAtSlot, upcastLevelsFor } from "./spell-scaling";
+import { spellEffectAtSlot, upcastLevelsFor } from "@archivist/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
-import { baseClassName } from "../../pc.spellcasting";
+import { baseClassName } from "@archivist/dnd5e/class/class.slug";
 import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
 

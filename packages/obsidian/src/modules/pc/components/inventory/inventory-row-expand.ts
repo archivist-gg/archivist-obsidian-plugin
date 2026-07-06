@@ -8,7 +8,7 @@ import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
 import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
 import type { Item } from "@archivist/dnd5e/item/item.types";
 import type { EntityRegistry } from "@archivist/core";
-import { requiresAttunement } from "./requires-attunement";
+import { requiresAttunement } from "@archivist/dnd5e/item/item.attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
 

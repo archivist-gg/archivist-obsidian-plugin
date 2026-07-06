@@ -1,5 +1,5 @@
 import type { ResolvedSpell, SpellLimitInfo } from "../../pc.types";
-import { baseClassName } from "../../pc.spellcasting";
+import { baseClassName } from "@archivist/dnd5e/class/class.slug";
 
 const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", constitution: "CON", intelligence: "INT", wisdom: "WIS", charisma: "CHA" };
 

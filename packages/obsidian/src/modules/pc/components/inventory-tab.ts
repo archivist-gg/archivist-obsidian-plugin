@@ -5,7 +5,7 @@ import { HeaderStrip } from "./inventory/header-strip";
 import { AttuneConflictModal } from "./inventory/attune-conflict-modal";
 import { AttunePickerModal } from "./inventory/attune-picker-modal";
 import { showAttunePopover } from "./inventory/attune-popover";
-import { requiresAttunement } from "./inventory/requires-attunement";
+import { requiresAttunement } from "@archivist/dnd5e/item/item.attunement";
 import { InventoryToolbar, type ToolbarMode } from "./inventory/inventory-toolbar";
 import { InventoryFilters } from "./inventory/inventory-filters";
 import { InventoryList } from "./inventory/inventory-list";

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classSpellCandidates } from "../packages/obsidian/src/modules/pc/components/spells/spell-access";
+import { classSpellCandidates } from "@archivist/dnd5e/spell/spell.access";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
 const REG = buildMockRegistry([
