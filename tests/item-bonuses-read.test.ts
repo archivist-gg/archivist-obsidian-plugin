@@ -1,6 +1,6 @@
 // tests/item-bonuses-read.test.ts
 import { describe, it, expect } from "vitest";
-import { readNumericBonus } from "../packages/obsidian/src/modules/item/item.bonuses";
+import { readNumericBonus } from "@archivist/dnd5e/item/item.bonuses";
 import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
 import { computeSlotsAndAttacks } from "../packages/obsidian/src/modules/pc/pc.equipment";
 import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";

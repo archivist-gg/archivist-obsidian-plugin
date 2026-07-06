@@ -4,14 +4,39 @@ import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 import type { SubclassEntity } from "@archivist/dnd5e/subclass/subclass.types";
 import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
 import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
-import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
-import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
-import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 import type { OptionalFeatureEntity } from "@archivist/dnd5e/types/optional-feature.types";
 
 export type { ConditionSlug } from "./constants/conditions";
 import type { ConditionSlug } from "./constants/conditions";
+
+// ─────────────────────────────────────────────────────────────
+// PC-domain type nucleus — relocated to @archivist/dnd5e (3C-R Phase 1).
+// Imported locally (the stay-behind Character/Resolved*/Derived* defs below
+// reference these) and re-exported so intra-plugin consumers stay unchanged.
+// ─────────────────────────────────────────────────────────────
+import type {
+  EquippedSlots,
+  ClassEntry,
+  EquipmentEntry,
+  EquipmentEntryOverrides,
+  EquipmentEntryState,
+  SlotKey,
+  ResolvedEquipped,
+  LevelChoices,
+  ChoiceValue,
+} from "@archivist/dnd5e/pc/pc.types";
+export type {
+  EquippedSlots,
+  ClassEntry,
+  EquipmentEntry,
+  EquipmentEntryOverrides,
+  EquipmentEntryState,
+  SlotKey,
+  ResolvedEquipped,
+  LevelChoices,
+  ChoiceValue,
+};
 
 // ─────────────────────────────────────────────────────────────
 // Definition (parsed from YAML; slugs unresolved)
@@ -20,20 +45,6 @@ import type { ConditionSlug } from "./constants/conditions";
 export type Edition = "2014" | "2024";
 
 export type AbilityMethod = "standard-array" | "point-buy" | "archivist-point-buy" | "rolled" | "manual";
-
-/** A persisted decision value: entity slug / inline value (string), multi-select
- *  slugs (string[]), or an ability-points allocation. Stale/odd legacy values
- *  survive parsing (schema is permissive); readers narrow defensively. */
-export type ChoiceValue = string | string[] | Partial<Record<Ability, number>>;
-
-export type LevelChoices = Record<string, ChoiceValue>;
-
-export interface ClassEntry {
-  name: string;                        // "[[rogue]]" or "rogue"
-  level: number;
-  subclass: string | null;             // "[[soulknife]]" or null
-  choices: Record<number, LevelChoices>;
-}
 
 export interface SpellOverride {
   slug: string;
@@ -48,46 +59,6 @@ export interface KnownSpellObject {
   always_prepared?: boolean;
 }
 export type KnownSpellEntry = string | KnownSpellObject;
-
-export type SlotKey = "mainhand" | "offhand" | "armor" | "shield";
-
-export interface EquipmentEntryOverrides {
-  name?: string;
-  bonus?: number;
-  damage_bonus?: number;
-  extra_damage?: string;
-  ac_bonus?: number;
-  action?: "action" | "bonus-action" | "reaction" | "free" | "special";
-  range?: string;
-  resist?: string[];
-  immune?: string[];
-  vulnerable?: string[];
-  condition_immune?: string[];
-}
-
-export interface EquipmentEntryState {
-  charges?: { current: number; max: number };
-  recovery?: { amount: string; reset: "dawn" | "short" | "long" | "special" };
-  depletion_risk?: { trigger: string; roll: string; threshold: number; effect: string };
-}
-
-export type EquipmentEntry =
-  | {
-      item: string;
-      equipped?: boolean;
-      attuned?: boolean;
-      qty?: number;
-      notes?: string;
-      slot?: SlotKey | null;
-      overrides?: EquipmentEntryOverrides;
-      state?: EquipmentEntryState;
-      /** Build-only provenance tag for gear the Builder's Equipment step seeded
-       *  on the character's behalf (e.g. `"builder:starting"`, `"builder:gold-buy"`).
-       *  Lets the step reconcile its own grants on re-pick / mode-switch without
-       *  touching hand-managed entries. Stripped by finishBuild — absent on every
-       *  finished file. */
-      granted_by?: string;
-    };
 
 export type PassiveKind = "perception" | "investigation" | "insight";
 
@@ -262,7 +233,7 @@ export interface AttackRow {
   properties: string[];
   proficient: boolean;
   breakdown: { toHit: ACTerm[]; damage: ACTerm[] };
-  informational?: import("../item/item.conditions.types").InformationalBonus[];
+  informational?: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   /** Hand slot the attack came from. Used by Actions tab to find the
    *  originating equipment entry for the row-expand panel. */
   slotKey?: "mainhand" | "offhand";
@@ -290,20 +261,6 @@ export interface AttackRow {
   attackNotes?: string[];
 }
 
-export interface ResolvedEquipped {
-  index: number;
-  entity: ArmorEntity | WeaponEntity | ItemEntity | null;
-  entityType: string | null;
-  entry: EquipmentEntry;
-}
-
-export interface EquippedSlots {
-  mainhand?: ResolvedEquipped;
-  offhand?: ResolvedEquipped;
-  armor?: ResolvedEquipped;
-  shield?: ResolvedEquipped;
-}
-
 export interface AppliedBonuses {
   ability_bonuses: Partial<Record<Ability, number>>;
   ability_statics: Partial<Record<Ability, number>>;
@@ -312,14 +269,14 @@ export interface AppliedBonuses {
   spell_attack: number;
   spell_save_dc: number;
   defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] };
-  informational: import("../item/item.conditions.types").InformationalBonus[];
+  informational: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   senses: Record<import("@archivist/dnd5e/types/feature-effect").SenseType, number>;
 }
 
 export interface DerivedEquipment {
   ac: number;
   acBreakdown: ACTerm[];
-  acInformational: import("../item/item.conditions.types").InformationalBonus[];
+  acInformational: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   attacks: AttackRow[];
   equippedSlots: EquippedSlots;
   carriedWeight: number;
@@ -389,13 +346,13 @@ export interface DerivedStats {
     condition_immunities: string[];
   };
   acBreakdown: ACTerm[];
-  acInformational: import("../item/item.conditions.types").InformationalBonus[];
+  acInformational: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   /** Situational saving-throw bonuses (e.g. +1 vs spells) for save tooltips. */
-  savesInformational: import("../item/item.conditions.types").InformationalBonus[];
+  savesInformational: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   /** Situational spell attack / save-DC bonuses for spellcasting tooltips. */
-  spellcastingInformational: import("../item/item.conditions.types").InformationalBonus[];
+  spellcastingInformational: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   /** Situational speed bonuses (e.g. swim while underwater) for speed tooltips. */
-  speedInformational: import("../item/item.conditions.types").InformationalBonus[];
+  speedInformational: import("@archivist/dnd5e/item/item.conditions.types").InformationalBonus[];
   /**
    * Attacks per Attack action = 1 + max `extra-attack` effect count. Always ≥ 1
    * (everyone gets one attack). The Actions "Attacks" heading shows `(×N)` when > 1.

@@ -15,7 +15,7 @@ import type {
   ResolvedEquipped,
   ProficiencySet,
 } from "./pc.types";
-import { readNumericBonus } from "../item/item.bonuses";
+import { readNumericBonus } from "@archivist/dnd5e/item/item.bonuses";
 import type {
   ConditionContext,
   BonusFieldPath,

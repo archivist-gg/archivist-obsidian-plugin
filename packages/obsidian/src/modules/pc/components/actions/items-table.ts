@@ -4,7 +4,7 @@ import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
-import { resolveItemAction } from "../../../item/item.actions-map";
+import { resolveItemAction } from "@archivist/dnd5e/item/item.actions-map";
 
 interface RowData {
   index: number;
