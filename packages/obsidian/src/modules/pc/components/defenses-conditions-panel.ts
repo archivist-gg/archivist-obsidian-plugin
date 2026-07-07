@@ -3,7 +3,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { openConditionsPopover } from "./conditions-popover";
 import { openDefenseTypePopover, type DefenseKind } from "./defense-type-popover";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
-import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
+import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist/dnd5e/pc/conditions.constants";
 
 const DEFENSE_ROWS: ReadonlyArray<[label: string, key: DefenseKind]> = [
   ["Damage Resistances", "resistances"],

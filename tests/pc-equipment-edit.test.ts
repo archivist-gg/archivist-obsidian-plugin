@@ -4,7 +4,7 @@ import {
   setCharges, setCurrency, type EquipResult, type AttuneResult,
 } from "../packages/obsidian/src/modules/pc/pc.equipment-edit";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
-import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { Character } from "@archivist/dnd5e/pc/pc.types";
 
 const reg = buildEquipmentRegistry();
 

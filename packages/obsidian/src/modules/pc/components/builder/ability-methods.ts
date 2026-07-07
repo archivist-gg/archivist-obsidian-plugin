@@ -1,5 +1,5 @@
 import type { Ability } from "@archivist/dnd5e/types/choice";
-import type { AbilityMethod } from "../../pc.types";
+import type { AbilityMethod } from "@archivist/dnd5e/pc/pc.types";
 import { ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
 
 /** SP2 §7 Step 3 — the ability-score method registry. */

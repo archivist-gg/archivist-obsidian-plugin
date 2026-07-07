@@ -4,7 +4,7 @@ import { ProficienciesPanel } from "../packages/obsidian/src/modules/pc/componen
 import { aggregateProficiencies } from "@archivist/dnd5e/pc/pc.proficiencies";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

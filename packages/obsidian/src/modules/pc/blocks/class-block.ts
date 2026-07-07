@@ -1,6 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
 import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
-import type { ResolvedClass } from "../pc.types";
+import type { ResolvedClass } from "@archivist/dnd5e/pc/pc.types";
 import type { Feature } from "@archivist/dnd5e";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 

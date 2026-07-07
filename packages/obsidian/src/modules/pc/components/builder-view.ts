@@ -6,7 +6,7 @@ import { renderBackgroundStep } from "./builder/background-step";
 import { renderAbilitiesStep } from "./builder/abilities-step";
 import { renderDetailsStep, getHpSeedChoice } from "./builder/details-step";
 import { renderEquipmentStep } from "./builder/equipment-step";
-import { stripSlug } from "../pc.resolver";
+import { stripSlug } from "@archivist/dnd5e/pc/pc.resolver";
 import { humanizeSlug } from "../../../shared/rendering/renderer-utils";
 
 /** The full-screen Character Builder shell. Rendered by renderPCSheet in place

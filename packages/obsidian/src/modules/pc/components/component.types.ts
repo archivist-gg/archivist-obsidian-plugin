@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { PCServices } from "../pc.services";
-import type { ResolvedCharacter, DerivedStats } from "../pc.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
 
 export interface ComponentRenderContext {

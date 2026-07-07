@@ -1,4 +1,4 @@
-import type { ACTerm } from "../pc.types";
+import type { ACTerm } from "@archivist/dnd5e/pc/pc.types";
 import type { InformationalBonus } from "../../item/item.conditions.types";
 import { renderSituationalRows } from "./situational-rows";
 

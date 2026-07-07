@@ -8,7 +8,7 @@ import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { renderEntityBlock } from "./entity-block";
 import { buildDecisionLedger, wikilinkTailSlug } from "@archivist/dnd5e/pc/pc.decision-engine";
-import { stripSlug } from "../../pc.resolver";
+import { stripSlug } from "@archivist/dnd5e/pc/pc.resolver";
 import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";

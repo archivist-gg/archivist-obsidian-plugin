@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import type { EntityRegistry } from "@archivist/core";
 import { visibleItems, type FilterState, type VisibleEntry } from "./filter-state";

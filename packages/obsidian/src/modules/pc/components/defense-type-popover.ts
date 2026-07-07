@@ -1,6 +1,6 @@
 import type { ComponentRenderContext } from "./component.types";
 import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
-import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "../constants/conditions";
+import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "@archivist/dnd5e/pc/conditions.constants";
 import { clampPopoverToViewport } from "./popover-utils";
 import {
   cycleAction,

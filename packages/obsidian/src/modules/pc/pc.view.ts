@@ -1,11 +1,12 @@
 import { TextFileView, type WorkspaceLeaf } from "obsidian";
 import { renderPCSheet, renderPCSheetError } from "./pc.sheet";
-import { extractPCCodeBlock, parsePC, spliceCodeBlock } from "./pc.parser";
-import { recalc } from "./pc.recalc";
+import { extractPCCodeBlock, spliceCodeBlock } from "./pc.parser";
+import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
+import { recalc } from "@archivist/dnd5e/pc/pc.recalc";
 import { seedFeatureUses } from "./pc.resource-seed";
 import { CharacterEditState } from "./pc.edit-state";
 import type { PCModule } from "./pc.module";
-import type { ResolvedCharacter, DerivedStats } from "./pc.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
 
 export const VIEW_TYPE_PC = "archivist-pc-sheet";
 

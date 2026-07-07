@@ -20,7 +20,7 @@
  *             `Weapon (longsword)` still resolves to a sword icon.
  */
 
-import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 
 export function iconForEntity(
   resolved: ResolvedEquipped,

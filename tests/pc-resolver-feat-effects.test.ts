@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { collectResolvedFeatures, collectChosenGrantedFeatures } from "../packages/obsidian/src/modules/pc/pc.resolver";
+import { collectResolvedFeatures, collectChosenGrantedFeatures } from "@archivist/dnd5e/pc/pc.resolver";
 import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 
 const noRegistry = { getByTypeAndSlug: () => undefined };

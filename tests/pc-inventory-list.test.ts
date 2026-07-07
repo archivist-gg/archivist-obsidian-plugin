@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { InventoryList } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-list";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

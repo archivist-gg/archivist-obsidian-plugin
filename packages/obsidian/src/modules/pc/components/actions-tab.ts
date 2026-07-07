@@ -1,12 +1,12 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { ResolvedCharacter } from "../pc.types";
+import type { ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 import { WeaponsTable } from "./actions/weapons-table";
 import { ItemsTable } from "./actions/items-table";
 import { FeaturesTable } from "./actions/features-table";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
 import { renderResourceList } from "./actions/resource-badge";
 import { resolveScalingDie } from "@archivist/dnd5e/dnd/resource-die";
-import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "../constants/conditions";
+import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist/dnd5e/pc/conditions.constants";
 
 const ACTION_DISABLING_CONDITIONS: ReadonlySet<ConditionSlug> = new Set([
   "incapacitated", "paralyzed", "petrified", "stunned", "unconscious",

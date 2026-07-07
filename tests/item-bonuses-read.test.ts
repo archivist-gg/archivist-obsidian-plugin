@@ -2,8 +2,8 @@
 import { describe, it, expect } from "vitest";
 import { readNumericBonus } from "@archivist/dnd5e/item/item.bonuses";
 import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
-import { computeSlotsAndAttacks } from "../packages/obsidian/src/modules/pc/pc.equipment";
-import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import { computeSlotsAndAttacks } from "@archivist/dnd5e/pc/pc.equipment";
+import type { Character, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
 import { LONGSWORD } from "./fixtures/pc/equipment-fixtures";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";

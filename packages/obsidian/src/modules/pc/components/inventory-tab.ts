@@ -1,6 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { FilterState, VisibleEntry } from "./inventory/filter-state";
-import type { EquipmentEntry, ResolvedEquipped } from "../pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 import { HeaderStrip } from "./inventory/header-strip";
 import { AttuneConflictModal } from "./inventory/attune-conflict-modal";
 import { AttunePickerModal } from "./inventory/attune-picker-modal";

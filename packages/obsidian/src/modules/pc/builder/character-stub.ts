@@ -2,7 +2,7 @@ import * as yaml from "js-yaml";
 import { slugify } from "../../../shared/entities/entity-vault-store";
 import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
 import { characterToYaml } from "../pc.yaml-serializer";
-import type { Character } from "../pc.types";
+import type { Character } from "@archivist/dnd5e/pc/pc.types";
 
 /** A schema-valid, class-less draft character to start a build from. */
 export function buildDraftCharacter(name: string, edition: "2014" | "2024" = "2014"): Character {

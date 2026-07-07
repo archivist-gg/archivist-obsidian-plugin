@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { ResolvedPool, ResolvedPoolEntry } from "../pc.types";
+import type { ResolvedPool, ResolvedPoolEntry } from "@archivist/dnd5e/pc/pc.types";
 import type { OptionalFeatureEntity } from "@archivist/dnd5e/types/optional-feature.types";
 import { levelPrereqMax } from "@archivist/dnd5e/pc/pc.pools";
 import type { PoolLayout } from "@archivist/dnd5e/types/selection-pool";

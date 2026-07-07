@@ -1,4 +1,5 @@
 import * as yaml from "js-yaml";
+import { slugify } from "@archivist/dnd5e/entities/slug";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -29,20 +30,10 @@ export const TYPE_FOLDER_MAP: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// slugify
+// slugify — moved to @archivist/dnd5e/entities/slug; re-exported here so the
+// existing consumers (compendium-manager, character-stub, tests) are unchanged.
 // ---------------------------------------------------------------------------
-/**
- * Converts a display name to a URL/file-safe kebab-case slug.
- * "Ancient Red Dragon" -> "ancient-red-dragon"
- */
-export function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "") // strip non-alphanumeric (except spaces & hyphens)
-    .replace(/[\s]+/g, "-")        // spaces to hyphens
-    .replace(/-{2,}/g, "-")        // collapse multiple hyphens
-    .replace(/^-+|-+$/g, "");      // trim leading/trailing hyphens
-}
+export { slugify };
 
 // ---------------------------------------------------------------------------
 // ensureUniqueSlug

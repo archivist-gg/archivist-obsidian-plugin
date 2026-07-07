@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import type { EquipmentEntry } from "../../pc.types";
+import type { EquipmentEntry } from "@archivist/dnd5e/pc/pc.types";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { createExpandState } from "./row-expand";

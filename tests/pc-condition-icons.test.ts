@@ -6,7 +6,7 @@ import {
   setConditionIcon,
   setExhaustionIcon,
 } from "../packages/obsidian/src/modules/pc/assets/condition-icons";
-import { CONDITION_SLUGS } from "../packages/obsidian/src/modules/pc/constants/conditions";
+import { CONDITION_SLUGS } from "@archivist/dnd5e/pc/conditions.constants";
 
 describe("condition-icons", () => {
   it("exports one SVG string per condition slug", () => {

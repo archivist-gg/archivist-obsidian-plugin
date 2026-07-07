@@ -4,7 +4,7 @@ import type { ColSpec } from "./selection-table";
 import type { DecisionItem } from "@archivist/dnd5e/pc/pc.decision-engine";
 import { renderEntityPicker } from "./entity-picker";
 import { buildDecisionLedger } from "@archivist/dnd5e/pc/pc.decision-engine";
-import { stripSlug } from "../../pc.resolver";
+import { stripSlug } from "@archivist/dnd5e/pc/pc.resolver";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";

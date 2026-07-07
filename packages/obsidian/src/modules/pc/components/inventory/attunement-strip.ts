@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import type { ResolvedEquipped } from "../../pc.types";
+import type { ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 import { renderMedallion } from "./attune-medallion";
 
 export interface AttunementStripOptions {

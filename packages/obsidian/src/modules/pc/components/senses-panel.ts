@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import type { PassiveKind } from "../pc.types";
+import type { PassiveKind } from "@archivist/dnd5e/pc/pc.types";
 import type { SenseType } from "@archivist/dnd5e/types/feature-effect";
 import { numberOverride } from "./edit-primitives";
 

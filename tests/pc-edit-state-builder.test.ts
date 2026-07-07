@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
-import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { Character } from "@archivist/dnd5e/pc/pc.types";
 import type { Ability } from "@archivist/dnd5e";
 
 function makeChar(overrides: Record<string, unknown> = {}): Character {

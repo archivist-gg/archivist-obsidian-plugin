@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { visibleItems, type FilterState } from "../packages/obsidian/src/modules/pc/components/inventory/filter-state";
-import type { EquipmentEntry, ResolvedEquipped } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 
 const e = (
   item: string,

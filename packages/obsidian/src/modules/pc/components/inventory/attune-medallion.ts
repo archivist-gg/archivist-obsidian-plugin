@@ -1,4 +1,4 @@
-import type { ResolvedEquipped } from "../../pc.types";
+import type { ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 

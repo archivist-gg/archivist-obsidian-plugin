@@ -1,6 +1,7 @@
 // tests/pc-rest.test.ts
 import { describe, it, expect } from "vitest";
-import { computeRestPlan, applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
+import { computeRestPlan } from "@archivist/dnd5e/pc/pc.rest";
+import { applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
 import {
   FIGHTER_5_CLERIC_3, WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED,
   clone, fakeResolved, fakeDerived,

@@ -4,7 +4,7 @@ import { HeaderSection, buildSubtitle } from "../packages/obsidian/src/modules/p
 import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

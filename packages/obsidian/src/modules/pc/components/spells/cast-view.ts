@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { ResolvedSpell } from "../../pc.types";
+import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
 import { renderChargeBoxes } from "../actions/charge-boxes";
 import { spellEffectAtSlot, upcastLevelsFor } from "@archivist/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";

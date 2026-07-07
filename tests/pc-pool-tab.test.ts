@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll, vi } from "vitest";
 import { PoolTab } from "../packages/obsidian/src/modules/pc/components/pool-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { ResolvedCharacter, ResolvedPool } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ResolvedCharacter, ResolvedPool } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

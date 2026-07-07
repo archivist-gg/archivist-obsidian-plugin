@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { collectFeatureAttacks } from "../packages/obsidian/src/modules/pc/components/actions-tab";
-import type { ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 
 function resolved(features: object[], totalLevel: number): ResolvedCharacter {
   return { totalLevel, features } as unknown as ResolvedCharacter;

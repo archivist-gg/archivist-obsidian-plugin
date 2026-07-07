@@ -1,5 +1,5 @@
 import { Notice, type App } from "obsidian";
-import type { EquipmentEntry, ResolvedEquipped } from "../../pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { renderItemBlock } from "../../../item/item.renderer";
 import { renderWeaponBlock } from "../../../weapon/weapon.renderer";

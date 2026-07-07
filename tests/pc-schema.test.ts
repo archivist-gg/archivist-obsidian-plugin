@@ -1,6 +1,6 @@
 import { describe, it, expect, expectTypeOf } from "vitest";
 import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
-import type { ConditionSlug } from "../packages/obsidian/src/modules/pc/constants/conditions";
+import type { ConditionSlug } from "@archivist/dnd5e/pc/conditions.constants";
 
 const minimalValid = {
   name: "Grendal",

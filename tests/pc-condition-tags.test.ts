@@ -6,7 +6,7 @@ import { SkillsPanel } from "../packages/obsidian/src/modules/pc/components/skil
 import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
 import { HpWidget } from "../packages/obsidian/src/modules/pc/components/hp-widget";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { ConditionEffects } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ConditionEffects } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

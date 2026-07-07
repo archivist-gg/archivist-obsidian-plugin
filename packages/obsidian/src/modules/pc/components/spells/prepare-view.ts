@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { ResolvedSpell } from "../../pc.types";
+import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { renderAddDrawer } from "./add-drawer";
 import { editionTag } from "./spell-display";

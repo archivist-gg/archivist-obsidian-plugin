@@ -10,7 +10,7 @@ import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
 import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,
-} from "../packages/obsidian/src/modules/pc/constants/conditions";
+} from "@archivist/dnd5e/pc/conditions.constants";
 import { FIGHTER_5_CLERIC_3, clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { App } from "obsidian";

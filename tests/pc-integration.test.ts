@@ -18,9 +18,10 @@ import {
   LONGSWORD,
   CLOAK_OF_PROTECTION,
 } from "./fixtures/pc/equipment-fixtures";
-import { extractPCCodeBlock, parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
-import { PCResolver } from "../packages/obsidian/src/modules/pc/pc.resolver";
-import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
+import { extractPCCodeBlock } from "../packages/obsidian/src/modules/pc/pc.parser";
+import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
+import { PCResolver } from "@archivist/dnd5e/pc/pc.resolver";
+import { recalc } from "@archivist/dnd5e/pc/pc.recalc";
 import { WorkspaceLeaf } from "obsidian";
 import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import type { EntityRegistry } from "@core/entity-registry";

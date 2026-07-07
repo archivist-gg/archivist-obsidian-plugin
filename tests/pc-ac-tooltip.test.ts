@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderACTooltip } from "../packages/obsidian/src/modules/pc/components/ac-tooltip";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import type { ACTerm } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ACTerm } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

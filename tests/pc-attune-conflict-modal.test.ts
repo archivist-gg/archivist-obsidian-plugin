@@ -32,7 +32,7 @@ vi.mock("obsidian", async () => {
 import { AttuneConflictModal } from "../packages/obsidian/src/modules/pc/components/inventory/attune-conflict-modal";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import type { App } from "obsidian";
-import type { ResolvedEquipped } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

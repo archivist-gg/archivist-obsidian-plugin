@@ -1,7 +1,7 @@
 import { setIcon } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ComponentRegistry } from "./component-registry";
-import type { ResolvedCharacter } from "../pc.types";
+import type { ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 import { RestButtons } from "./rest-buttons";
 
 /**

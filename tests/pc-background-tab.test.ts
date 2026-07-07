@@ -4,7 +4,7 @@ import { BackgroundTab } from "../packages/obsidian/src/modules/pc/components/ba
 import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

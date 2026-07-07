@@ -7,7 +7,7 @@ import { BackgroundBlock } from "../packages/obsidian/src/modules/pc/blocks/back
 import { FeatBlock } from "../packages/obsidian/src/modules/pc/blocks/feat-block";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

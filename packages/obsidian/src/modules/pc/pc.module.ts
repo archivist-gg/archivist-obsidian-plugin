@@ -2,7 +2,7 @@ import { Notice, WorkspaceLeaf } from "obsidian";
 import type { ViewState } from "obsidian";
 import { around } from "monkey-around";
 import type { PCServices, HostPlugin } from "./pc.services";
-import { PCResolver } from "./pc.resolver";
+import { PCResolver } from "@archivist/dnd5e/pc/pc.resolver";
 import { ComponentRegistry } from "./components/component-registry";
 import { HeaderSection } from "./components/header-section";
 import { AcShield } from "./components/ac-shield";
