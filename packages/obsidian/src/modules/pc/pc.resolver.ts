@@ -14,8 +14,8 @@ import type {
   ResolvedSpell,
   FeatureSource,
 } from "./pc.types";
-import { normalizeKnownSpell, resolveSpellcasting } from "./pc.spellcasting";
-import { resolveAllPools } from "./pc.pools";
+import { normalizeKnownSpell, resolveSpellcasting } from "@archivist/dnd5e/pc/pc.spellcasting";
+import { resolveAllPools } from "@archivist/dnd5e/pc/pc.pools";
 
 export interface ResolveResult {
   character: ResolvedCharacter;

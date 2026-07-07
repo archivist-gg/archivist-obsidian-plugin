@@ -5,7 +5,7 @@ import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 import type { FeatureEffect } from "@archivist/dnd5e/types/feature-effect";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { STUDDED_LEATHER, CLUB, PLATE, BREASTPLATE, LONGSWORD } from "./fixtures/pc/equipment-fixtures";
-import { isProficientWithArmor, isProficientWithWeapon } from "../packages/obsidian/src/modules/pc/pc.proficiency-query";
+import { isProficientWithArmor, isProficientWithWeapon } from "@archivist/dnd5e/pc/pc.proficiency-query";
 
 function mkClass(slug: string, die: string, level: number): ResolvedClass {
   return {

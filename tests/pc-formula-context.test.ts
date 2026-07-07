@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveTag } from "@archivist/dnd5e/dnd/formula-tags";
-import { buildFormulaContext } from "../packages/obsidian/src/modules/pc/pc.formula-context";
+import { buildFormulaContext } from "@archivist/dnd5e/pc/pc.formula-context";
 import { recalc } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import type { Character, ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";

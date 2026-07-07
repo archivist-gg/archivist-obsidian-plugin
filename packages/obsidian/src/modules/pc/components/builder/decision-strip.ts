@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { DecisionItem } from "../../pc.decision-engine";
+import type { DecisionItem } from "@archivist/dnd5e/pc/pc.decision-engine";
 import type { RegisteredEntity } from "@archivist/core";
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";

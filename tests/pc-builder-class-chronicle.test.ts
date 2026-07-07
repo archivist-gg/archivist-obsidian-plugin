@@ -11,7 +11,7 @@ import {
   type ClassData,
   type SubclassData,
 } from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
-import type { DecisionLedger } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
+import type { DecisionLedger } from "@archivist/dnd5e/pc/pc.decision-engine";
 
 const emptyLedger = (): DecisionLedger => ({ classes: [], origin: [] });
 

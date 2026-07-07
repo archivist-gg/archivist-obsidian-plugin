@@ -1,6 +1,6 @@
 import * as yaml from "js-yaml";
 import type { ParseResult } from "@archivist/core";
-import { characterSchema } from "./pc.schema";
+import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
 import type { Character } from "./pc.types";
 
 export interface ExtractedCodeBlock {

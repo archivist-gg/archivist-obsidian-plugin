@@ -1,27 +1,5 @@
-export type ConditionSlug =
-  | "blinded" | "charmed" | "deafened" | "frightened" | "grappled"
-  | "incapacitated" | "invisible" | "paralyzed" | "petrified" | "poisoned"
-  | "prone" | "restrained" | "stunned" | "unconscious";
-
-export const CONDITION_SLUGS = [
-  "blinded", "charmed", "deafened", "frightened", "grappled",
-  "incapacitated", "invisible", "paralyzed", "petrified", "poisoned",
-  "prone", "restrained", "stunned", "unconscious",
-] as const satisfies readonly ConditionSlug[];
-
-export const CONDITION_DISPLAY_NAMES: Record<ConditionSlug, string> = {
-  blinded: "Blinded",
-  charmed: "Charmed",
-  deafened: "Deafened",
-  frightened: "Frightened",
-  grappled: "Grappled",
-  incapacitated: "Incapacitated",
-  invisible: "Invisible",
-  paralyzed: "Paralyzed",
-  petrified: "Petrified",
-  poisoned: "Poisoned",
-  prone: "Prone",
-  restrained: "Restrained",
-  stunned: "Stunned",
-  unconscious: "Unconscious",
-};
+// Condition slugs/labels — relocated to @archivist/dnd5e/pc/conditions.constants
+// (3C-R Phase 3a). Value+type re-export shim so existing `../constants/conditions`
+// consumers (runtime CONDITION_SLUGS/CONDITION_DISPLAY_NAMES + type ConditionSlug) stay unchanged.
+export { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "@archivist/dnd5e/pc/conditions.constants";
+export type { ConditionSlug } from "@archivist/dnd5e/pc/conditions.constants";

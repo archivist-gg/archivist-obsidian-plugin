@@ -1,6 +1,6 @@
 import * as yaml from "js-yaml";
 import { slugify } from "../../../shared/entities/entity-vault-store";
-import { characterSchema } from "../pc.schema";
+import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
 import { characterToYaml } from "../pc.yaml-serializer";
 import type { Character } from "../pc.types";
 

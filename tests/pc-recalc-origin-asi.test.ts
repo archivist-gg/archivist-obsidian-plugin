@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { collectChosenAbilityPoints } from "../packages/obsidian/src/modules/pc/pc.decision-engine";
+import { collectChosenAbilityPoints } from "@archivist/dnd5e/pc/pc.decision-engine";
 import { computeAbilityScores, abilityBonusBreakdown } from "../packages/obsidian/src/modules/pc/pc.recalc";
 import type { ResolvedCharacter } from "../packages/obsidian/src/modules/pc/pc.types";
 

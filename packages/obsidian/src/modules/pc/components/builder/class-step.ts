@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import { buildDecisionLedger, type DecisionLedger, wikilinkTailSlug, bareEntitySlug } from "../../pc.decision-engine";
+import { buildDecisionLedger, type DecisionLedger, wikilinkTailSlug, bareEntitySlug } from "@archivist/dnd5e/pc/pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 import { AddClassModal } from "./class-modal";

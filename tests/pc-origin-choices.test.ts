@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { characterSchema } from "../packages/obsidian/src/modules/pc/pc.schema";
+import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import type { Character } from "../packages/obsidian/src/modules/pc/pc.types";
 

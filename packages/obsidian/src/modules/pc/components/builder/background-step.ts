@@ -1,13 +1,13 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist/core";
 import type { ColSpec } from "./selection-table";
-import type { DecisionItem } from "../../pc.decision-engine";
+import type { DecisionItem } from "@archivist/dnd5e/pc/pc.decision-engine";
 import type { BackgroundLanguageProficiency } from "@archivist/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist/dnd5e/types/equipment-grant";
 import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { renderEntityBlock } from "./entity-block";
-import { buildDecisionLedger, wikilinkTailSlug } from "../../pc.decision-engine";
+import { buildDecisionLedger, wikilinkTailSlug } from "@archivist/dnd5e/pc/pc.decision-engine";
 import { stripSlug } from "../../pc.resolver";
 import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";

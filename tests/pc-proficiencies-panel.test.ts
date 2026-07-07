@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ProficienciesPanel, aggregateProficiencies } from "../packages/obsidian/src/modules/pc/components/proficiencies-panel";
+import { ProficienciesPanel } from "../packages/obsidian/src/modules/pc/components/proficiencies-panel";
+import { aggregateProficiencies } from "@archivist/dnd5e/pc/pc.proficiencies";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, DerivedStats } from "../packages/obsidian/src/modules/pc/pc.types";

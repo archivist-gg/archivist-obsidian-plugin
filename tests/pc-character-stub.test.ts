@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildDraftCharacter, buildDraftFileBody } from "../packages/obsidian/src/modules/pc/builder/character-stub";
-import { characterSchema } from "../packages/obsidian/src/modules/pc/pc.schema";
+import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
 import { extractPCCodeBlock, parsePC } from "../packages/obsidian/src/modules/pc/pc.parser";
 
 describe("character-stub", () => {

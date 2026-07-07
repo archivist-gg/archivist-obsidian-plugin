@@ -14,10 +14,10 @@ import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
 import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
 import type { EntityRegistry } from "@archivist/core";
 import { computeAppliedBonuses, computeSlotsAndAttacks, emptyAppliedBonuses } from "./pc.equipment";
-import { collectChosenProficiencies, collectChosenAbilityPoints } from "./pc.decision-engine";
-import { computeFeatureEffects } from "./pc.feature-effects";
-import { computeConditionEffects } from "./pc.conditions";
-import { resolveSpellcasting, deriveSpellSlots, computeSpellLimits, type CasterClassInput, type LimitClassInput } from "./pc.spellcasting";
+import { collectChosenProficiencies, collectChosenAbilityPoints } from "@archivist/dnd5e/pc/pc.decision-engine";
+import { computeFeatureEffects } from "@archivist/dnd5e/pc/pc.feature-effects";
+import { computeConditionEffects } from "@archivist/dnd5e/pc/pc.conditions";
+import { resolveSpellcasting, deriveSpellSlots, computeSpellLimits, type CasterClassInput, type LimitClassInput } from "@archivist/dnd5e/pc/pc.spellcasting";
 import type {
   ACTerm,
   ChoiceValue,

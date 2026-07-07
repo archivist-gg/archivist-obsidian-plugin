@@ -1,6 +1,6 @@
 import type { ResolvedCharacter, DerivedStats, FeatureSource } from "./pc.types";
 import { evaluateMaxFormula, resolveMaxAt, type FormulaBindings } from "@archivist/dnd5e/dnd/resource-formula";
-import { numericColumnsAt } from "./pc.table-column";
+import { numericColumnsAt } from "@archivist/dnd5e/pc/pc.table-column";
 
 /** Build the DSL bindings for a resource granted via `source`. `class_level`
  *  is the character's level in the granting class; for a `subclass` source it

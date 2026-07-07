@@ -1,6 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedPool, ResolvedPoolEntry } from "../pc.types";
 import type { OptionalFeatureEntity } from "@archivist/dnd5e/types/optional-feature.types";
+import { levelPrereqMax } from "@archivist/dnd5e/pc/pc.pools";
 import type { PoolLayout } from "@archivist/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
 
@@ -40,7 +41,7 @@ export class PoolTab implements SheetComponent {
 
     const byLevel = new Map<number, ResolvedPoolEntry[]>();
     for (const entry of pool.available) {
-      const lvl = boonLevel(entry.entity);
+      const lvl = levelPrereqMax(entry.entity);
       (byLevel.get(lvl) ?? byLevel.set(lvl, []).get(lvl)!).push(entry);
     }
     const levels = [...byLevel.keys()].sort((a, b) => a - b);
@@ -196,7 +197,7 @@ export class PoolTab implements SheetComponent {
     }
 
     const meta = section.createDiv({ cls: "pc-block-meta" });
-    const lvl = boonLevel(e);
+    const lvl = levelPrereqMax(e);
     metaItem(meta, "Level", lvl ? String(lvl) : "—");
     if (e.action_cost) metaItem(meta, "Cost", COST_LABELS[e.action_cost] ?? e.action_cost);
     if (e.consumes?.amount) {
@@ -234,13 +235,6 @@ function renderCounter(parent: HTMLElement, pool: ResolvedPool): void {
   counts.appendText("Known ");
   const b = counts.createEl("b", { text: `${pool.selected.length} / ${pool.count}` });
   if (pool.selected.length > pool.count) b.classList.add("over");
-}
-
-/** Max level prereq (mirrors pc.pools.ts); 0 when there is no level prereq. */
-function boonLevel(e: OptionalFeatureEntity): number {
-  return (e.prerequisites ?? [])
-    .filter((p): p is { kind: "level"; min: number } => p.kind === "level")
-    .reduce((m, p) => Math.max(m, p.min), 0);
 }
 
 /** Italic meta sub-line: "Passive", action cost, and consume cost. */
