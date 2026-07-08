@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import { PCModule } from "../src/modules/pc/pc.module";
-import { VIEW_TYPE_PC } from "../src/modules/pc/pc.view";
+import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
+import { VIEW_TYPE_PC } from "../packages/obsidian/src/modules/pc/pc.view";
 
 // createNewCharacter is private; cast to reach it directly. This is the lightest
-// way to exercise the real method without standing up a full CoreAPI just to
-// drive it through the registered command callback.
+// way to exercise the real method without standing up a full PCServices bundle
+// just to drive it through the registered command callback.
 type CreateNew = { createNewCharacter: (plugin: unknown) => Promise<void> };
 
 // A fake host plugin. NOTE: `metadataCache` is omitted entirely — if

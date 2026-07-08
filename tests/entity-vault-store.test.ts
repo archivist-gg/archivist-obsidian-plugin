@@ -6,8 +6,8 @@ import {
   parseEntityFrontmatter,
   parseEntityFile,
   TYPE_FOLDER_MAP,
-} from "../src/shared/entities/entity-vault-store";
-import type { EntityNote } from "../src/shared/entities/entity-vault-store";
+} from "../packages/obsidian/src/shared/entities/entity-vault-store";
+import type { EntityNote } from "../packages/obsidian/src/shared/entities/entity-vault-store";
 
 // ---------------------------------------------------------------------------
 // slugify

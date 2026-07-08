@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { ItemsTable } from "../src/modules/pc/components/actions/items-table";
+import { ItemsTable } from "../packages/obsidian/src/modules/pc/components/actions/items-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -11,7 +11,7 @@ function ctx(opts: { entries: object[]; entityForSlug: (slug: string) => object 
   return {
     resolved: { definition: { equipment: opts.entries } } as never,
     derived: { attacks: [] } as never,
-    core: { entities: { getBySlug: (slug: string) => {
+    services: { entities: { getBySlug: (slug: string) => {
       const data = opts.entityForSlug(slug);
       return data ? { entityType: "item", data } : null;
     } } } as never,

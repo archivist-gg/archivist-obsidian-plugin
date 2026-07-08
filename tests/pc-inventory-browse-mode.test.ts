@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { BrowseMode } from "../src/modules/pc/components/inventory/browse-mode";
+import { BrowseMode } from "../packages/obsidian/src/modules/pc/components/inventory/browse-mode";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -24,7 +24,7 @@ function ctxWithRegistry(registry: Map<string, { entityType: string; data: { nam
   return {
     resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], spells: [], state: c.state } as ResolvedCharacter,
     derived: { ac: 0, acBreakdown: [], attacks: [], equippedSlots: {} as EquippedSlots, carriedWeight: 0, attunementUsed: 0, attunementLimit: 3 } as DerivedStats,
-    core: {
+    services: {
       entities: {
         getBySlug: (slug: string) => registry.get(slug) ?? null,
         // Real EntityRegistry has no `getAllByType` — closest API is `search(query, entityType, limit)`

@@ -1,0 +1,15 @@
+{
+  "name": "@archivist/obsidian",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@archivist/core": "file:../../../archivist-core",
+    "@archivist/dnd5e": "file:../../../archivist-dnd5e",
+    "@codemirror/language": "^6.12.3",
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.38.6",
+    "js-yaml": "^4.1.0",
+    "monkey-around": "^3.0.0",
+    "zod": "^4.3.6"
+  }
+}

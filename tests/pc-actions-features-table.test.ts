@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { FeaturesTable } from "../src/modules/pc/components/actions/features-table";
+import { FeaturesTable } from "../packages/obsidian/src/modules/pc/components/actions/features-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -14,7 +14,7 @@ function ctxWithFeatures(features: object[], featureUses: Record<string, { used:
       state: { feature_uses: featureUses },
     } as never,
     derived: { attacks: [] } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

@@ -1,13 +1,13 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderCastView } from "../src/modules/pc/components/spells/cast-view";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedSpell, DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
-import { toggleSpellBlock } from "../src/modules/pc/components/spells/spell-block-expand";
+import { renderCastView } from "../packages/obsidian/src/modules/pc/components/spells/cast-view";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedSpell, DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
+import { toggleSpellBlock } from "../packages/obsidian/src/modules/pc/components/spells/spell-block-expand";
 
 // Stub the block renderer so the expand wiring can be asserted without the async spell-block render.
-vi.mock("../src/modules/pc/components/spells/spell-block-expand", () => ({ toggleSpellBlock: vi.fn() }));
+vi.mock("../packages/obsidian/src/modules/pc/components/spells/spell-block-expand", () => ({ toggleSpellBlock: vi.fn() }));
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -25,7 +25,7 @@ function ctxFor(spells: ResolvedSpell[], editState: unknown = null): ComponentRe
     spellcastingClasses: [{ classSlug: "wizard", className: "Wizard", ability: "int", saveDC: 15, attackBonus: 7, casterType: "full", preparation: "prepared" }],
     derivedSpellSlots: { 1: 4, 2: 3 }, pactMagic: null, spellLimits: [],
   } as unknown as DerivedStats;
-  return { resolved, derived, core: {} as never, app: {} as never, editState: editState as never };
+  return { resolved, derived, services: {} as never, app: {} as never, editState: editState as never };
 }
 
 describe("renderCastView", () => {
@@ -143,7 +143,7 @@ function ctxForPact(spells: ResolvedSpell[], editState: unknown = null): Compone
     spellcastingClasses: [{ classSlug: "warlock", className: "Warlock", ability: "cha", saveDC: 13, attackBonus: 5, casterType: "pact", preparation: "known" }],
     derivedSpellSlots: {}, pactMagic: { level: 1, total: 1 }, spellLimits: [],
   } as unknown as DerivedStats;
-  return { resolved, derived, core: {} as never, app: {} as never, editState: editState as never };
+  return { resolved, derived, services: {} as never, app: {} as never, editState: editState as never };
 }
 
 describe("renderCastView — pact casters", () => {
@@ -178,7 +178,7 @@ function knownCtx(spells: ResolvedSpell[]): ComponentRenderContext {
     spellcastingClasses: [{ classSlug: "sorcerer", className: "Sorcerer", ability: "cha", saveDC: 14, attackBonus: 6, casterType: "full", preparation: "known" }],
     derivedSpellSlots: { 1: 4, 2: 3 }, pactMagic: null, spellLimits: [],
   } as unknown as DerivedStats;
-  return { resolved, derived, core: {} as never, app: {} as never, editState: null as never };
+  return { resolved, derived, services: {} as never, app: {} as never, editState: null as never };
 }
 function sorcSp(name: string, level: number, prepared: boolean): ResolvedSpell {
   return { entity: { name, level } as never, slug: name.toLowerCase().replace(/\s+/g, "-"),

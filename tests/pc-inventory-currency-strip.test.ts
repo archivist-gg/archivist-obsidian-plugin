@@ -1,15 +1,15 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { CurrencyStrip } from "../src/modules/pc/components/inventory/currency-strip";
+import { CurrencyStrip } from "../packages/obsidian/src/modules/pc/components/inventory/currency-strip";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
 function makeCtx(currency: { pp?: number; gp?: number; ep?: number; sp?: number; cp?: number }): ComponentRenderContext {
   return {
     resolved: { definition: { currency } } as never,
-    derived: {} as never, core: {} as never, app: {} as never, editState: null,
+    derived: {} as never, services: {} as never, app: {} as never, editState: null,
   };
 }
 

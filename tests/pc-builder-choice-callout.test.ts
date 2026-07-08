@@ -7,7 +7,7 @@
 // and the required-but-empty amber `!` flag — which the custom-background form
 // tests only exercise on the happy path.
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderChoiceCallout } from "../src/modules/pc/components/builder/choice-callout";
+import { renderChoiceCallout } from "../packages/obsidian/src/modules/pc/components/builder/choice-callout";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

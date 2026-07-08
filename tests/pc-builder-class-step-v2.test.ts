@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderClassStep } from "../src/modules/pc/components/builder/class-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
-import type { ClassData } from "../src/modules/pc/components/builder/class-chronicle";
+import { renderClassStep } from "../packages/obsidian/src/modules/pc/components/builder/class-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
+import type { ClassData } from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -103,7 +103,7 @@ function mkCtx(opts: {
       pools: [],
     },
     derived: { scores: opts.scores ?? {} },
-    core: { entities: registry },
+    services: { entities: registry },
     editState: {
       addClass: opts.overrides?.addClass ?? vi.fn(),
       removeClass: opts.overrides?.removeClass ?? vi.fn(),

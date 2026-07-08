@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { isValidMaxFormula, evaluateMaxFormula, resolveMaxAt, type FormulaBindings }
-  from "../src/shared/dnd/resource-formula";
+  from "@archivist/dnd5e/dnd/resource-formula";
 
 const ctx: FormulaBindings = {
   level: 5, class_level: 5, prof: 3,

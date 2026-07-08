@@ -8,16 +8,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, it, expect, beforeAll } from "vitest";
-import { recalc } from "../src/modules/pc/pc.recalc";
-import { readNumericBonus } from "../src/modules/item/item.bonuses";
-import type { ItemEntity } from "../src/modules/item/item.types";
-import type { ConditionContext } from "../src/modules/item/item.conditions.types";
+import { recalc } from "@archivist/dnd5e/pc/pc.recalc";
+import { readNumericBonus } from "@archivist/dnd5e/item/item.bonuses";
+import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
+import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
 import type {
   Character,
   ResolvedCharacter,
   ResolvedFeature,
   ResolvedClass,
-} from "../src/modules/pc/pc.types";
+} from "@archivist/dnd5e/pc/pc.types";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {
   STUDDED_LEATHER,
@@ -32,6 +32,42 @@ import {
   cloakOfProtection,
 } from "./__fixtures__/items-conditional";
 
+// Minimal conditional fixtures for the informational-slice partition tests
+// (Task 7). Each carries a Tier-2+ `when` condition that routes the bonus to
+// `informational` (not the flat/applied path):
+//   - `vs_spell_save`    (Tier 2) → saving_throws is situational vs spells.
+//   - `is_concentrating` (Tier 4) → spell_attack is situational while casting.
+// Per item.conditions.ts, both kinds return "informational" in v1.
+const amuletVsSpells: ItemEntity = {
+  name: "Amulet of Spell Warding",
+  slug: "amulet-vs-spells",
+  rarity: "rare",
+  attunement: { required: true },
+  bonuses: {
+    saving_throws: { value: 1, when: [{ kind: "vs_spell_save" }] },
+  },
+};
+
+const rodOfFocusedCasting: ItemEntity = {
+  name: "Rod of Focused Casting",
+  slug: "rod-of-focused-casting",
+  rarity: "rare",
+  attunement: { required: true },
+  bonuses: {
+    spell_attack: { value: 1, when: [{ kind: "is_concentrating" }] },
+  },
+};
+
+const tomeOfWardedMind: ItemEntity = {
+  name: "Tome of the Warded Mind",
+  slug: "tome-of-warded-mind",
+  rarity: "rare",
+  attunement: { required: true },
+  bonuses: {
+    spell_save_dc: { value: 1, when: [{ kind: "is_concentrating" }] },
+  },
+};
+
 function buildRegistry() {
   return buildMockRegistry([
     { slug: "studded-leather", entityType: "armor", name: "Studded Leather", data: STUDDED_LEATHER },
@@ -42,6 +78,9 @@ function buildRegistry() {
     { slug: "sun-blade", entityType: "item", name: "Sun Blade", data: sunBlade },
     { slug: "cloak-of-the-manta-ray", entityType: "item", name: "Cloak of the Manta Ray", data: cloakOfTheMantaRay },
     { slug: "cloak-of-protection", entityType: "item", name: "Cloak of Protection", data: cloakOfProtection },
+    { slug: "amulet-vs-spells", entityType: "item", name: "Amulet of Spell Warding", data: amuletVsSpells },
+    { slug: "rod-of-focused-casting", entityType: "item", name: "Rod of Focused Casting", data: rodOfFocusedCasting },
+    { slug: "tome-of-warded-mind", entityType: "item", name: "Tome of the Warded Mind", data: tomeOfWardedMind },
   ]);
 }
 
@@ -139,12 +178,11 @@ describe("AC with conditional item bonuses", () => {
     // because the shield slot is filled, so the +2 must NOT be applied.
     const sources = d.acBreakdown.map((t) => t.source);
     expect(sources).not.toContain("Bracers of Defense");
-    // Pre-existing recalc behavior (independent of Tasks 8-11): the
-    // unarmored-AC fallback path filters acBreakdown to {item, override}
-    // only, so the regular shield's +2 base AC is dropped when no armor is
-    // worn. AC = 10 + 1 DEX = 11. If/when that path is fixed, this becomes
-    // 13 (10 + 1 + 2 shield); update accordingly.
-    expect(d.ac).toBe(11);
+    // The shield's +2 base AC now applies even with no body armor (RAW: a
+    // shield grants +2 whenever wielded; the unarmored-AC path no longer drops
+    // the shield term). AC = 10 + 1 DEX + 2 shield = 13. The Bracers' conditional
+    // +2 is still correctly skipped because the shield slot is filled (above).
+    expect(d.ac).toBe(13);
   });
 
   it("Arrow-Catching Shield surfaces +2 vs ranged as informational", () => {
@@ -269,11 +307,119 @@ describe("Speed with conditional item bonuses", () => {
   });
 });
 
+describe("Informational slice partition (saves / spell / speed)", () => {
+  it("routes a conditional speed bonus into speedInformational only", () => {
+    const c = baseChar();
+    c.equipment = [
+      // Cloak of the Manta Ray: swim +60 when underwater (Tier-3 informational).
+      { item: "[[cloak-of-the-manta-ray]]", equipped: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    // Lands in its own slice...
+    expect(d.speedInformational.length).toBeGreaterThan(0);
+    expect(d.speedInformational).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "speed.swim",
+          source: "Cloak of the Manta Ray",
+          value: 60,
+          conditions: [{ kind: "underwater" }],
+        }),
+      ]),
+    );
+    expect(d.speedInformational.every((i) => i.field.startsWith("speed."))).toBe(true);
+    // ...and NOT the other two.
+    expect(d.savesInformational).toHaveLength(0);
+    expect(d.spellcastingInformational).toHaveLength(0);
+  });
+
+  it("routes a conditional saving-throw bonus into savesInformational only (flat save stays out)", () => {
+    const c = baseChar();
+    c.equipment = [
+      // Conditional save (vs spells) → informational.
+      { item: "[[amulet-vs-spells]]", equipped: true, attuned: true },
+      // Flat +1 saving_throws → applied, must NOT appear in the slice.
+      { item: "[[cloak-of-protection]]", equipped: true, attuned: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    // Exactly the conditional one lands in the slice.
+    expect(d.savesInformational).toEqual([
+      expect.objectContaining({
+        field: "saving_throws",
+        source: "Amulet of Spell Warding",
+        value: 1,
+        conditions: [{ kind: "vs_spell_save" }],
+      }),
+    ]);
+    // Negative: the flat Cloak of Protection +1 is applied, not informational.
+    expect(
+      d.savesInformational.some((i) => i.source === "Cloak of Protection"),
+    ).toBe(false);
+    // And the flat bonus genuinely reached the headline save (proves flat path).
+    expect(d.saves.str.bonus).toBe(1); // STR 10 → +0 mod, no prof, +1 flat cloak.
+
+    // Not the other two slices.
+    expect(d.spellcastingInformational).toHaveLength(0);
+    expect(d.speedInformational).toHaveLength(0);
+  });
+
+  it("routes a conditional spell-attack bonus into spellcastingInformational only", () => {
+    const c = baseChar();
+    c.equipment = [
+      // spell_attack +1 while concentrating (Tier-4 informational).
+      { item: "[[rod-of-focused-casting]]", equipped: true, attuned: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    expect(d.spellcastingInformational).toEqual([
+      expect.objectContaining({
+        field: "spell_attack",
+        source: "Rod of Focused Casting",
+        value: 1,
+        conditions: [{ kind: "is_concentrating" }],
+      }),
+    ]);
+    expect(
+      d.spellcastingInformational.every(
+        (i) => i.field === "spell_attack" || i.field === "spell_save_dc",
+      ),
+    ).toBe(true);
+    // Not the other two slices.
+    expect(d.savesInformational).toHaveLength(0);
+    expect(d.speedInformational).toHaveLength(0);
+  });
+
+  it("routes a conditional spell_save_dc bonus into spellcastingInformational", () => {
+    const c = baseChar();
+    c.equipment = [
+      // spell_save_dc +1 while concentrating (Tier-4 informational).
+      { item: "[[tome-of-warded-mind]]", equipped: true, attuned: true },
+    ];
+    const d = recalc(mkResolved(c), buildRegistry());
+
+    expect(d.spellcastingInformational).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          field: "spell_save_dc",
+          source: "Tome of the Warded Mind",
+          value: 1,
+          conditions: [{ kind: "is_concentrating" }],
+        }),
+      ]),
+    );
+    // Not the other two slices.
+    expect(d.savesInformational).toHaveLength(0);
+    expect(d.speedInformational).toHaveLength(0);
+  });
+});
+
 describe("recalc against bundle conditional bonuses", () => {
   let bundle2014: Array<ItemEntity & { slug: string }>;
 
   beforeAll(() => {
-    const file = path.resolve(__dirname, "../src/srd/data/runtime/item.2014.json");
+    const file = path.resolve(__dirname, "../../archivist-dnd5e/src/srd/data/runtime/item.2014.json");
     bundle2014 = JSON.parse(fs.readFileSync(file, "utf8")) as Array<ItemEntity & { slug: string }>;
   });
 

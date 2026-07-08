@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { PCSheetView } from "../src/modules/pc/pc.view";
-import { PCModule } from "../src/modules/pc/pc.module";
+import { PCSheetView } from "../packages/obsidian/src/modules/pc/pc.view";
+import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {
@@ -18,12 +18,13 @@ import {
   LONGSWORD,
   CLOAK_OF_PROTECTION,
 } from "./fixtures/pc/equipment-fixtures";
-import { extractPCCodeBlock, parsePC } from "../src/modules/pc/pc.parser";
-import { PCResolver } from "../src/modules/pc/pc.resolver";
-import { recalc } from "../src/modules/pc/pc.recalc";
+import { extractPCCodeBlock } from "../packages/obsidian/src/modules/pc/pc.parser";
+import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
+import { PCResolver } from "@archivist/dnd5e/pc/pc.resolver";
+import { recalc } from "@archivist/dnd5e/pc/pc.recalc";
 import { WorkspaceLeaf } from "obsidian";
-import type { CoreAPI } from "../src/core/module-api";
-import type { EntityRegistry } from "../src/shared/entities/entity-registry";
+import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
+import type { EntityRegistry } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -52,7 +53,7 @@ function buildGrendalRegistry(): EntityRegistry {
 function boot(): { view: PCSheetView; mod: PCModule } {
   const mod = new PCModule();
   const entities = buildGrendalRegistry();
-  mod.register({ entities } as unknown as CoreAPI);
+  mod.init({ entities } as unknown as PCServices);
   return { view: new PCSheetView(new WorkspaceLeaf(), mod), mod };
 }
 

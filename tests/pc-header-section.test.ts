@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { HeaderSection, buildSubtitle } from "../src/modules/pc/components/header-section";
-import { ComponentRegistry } from "../src/modules/pc/components/component-registry";
+import { HeaderSection, buildSubtitle } from "../packages/obsidian/src/modules/pc/components/header-section";
+import { ComponentRegistry } from "../packages/obsidian/src/modules/pc/components/component-registry";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { SheetComponent, ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
+import type { SheetComponent, ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -37,7 +37,7 @@ const BASE_RESOLVED: ResolvedCharacter = {
 const fakeCtx = (resolved: ResolvedCharacter): ComponentRenderContext => ({
   resolved,
   derived: { hp: { max: resolved.state.hp.max, current: resolved.state.hp.current, temp: resolved.state.hp.temp } } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 });
 
@@ -101,7 +101,7 @@ describe("HeaderSection", () => {
 
     const gear = container.querySelector(".pc-name-row .pc-manage-gear") as HTMLButtonElement | null;
     expect(gear).not.toBeNull();
-    expect(gear!.getAttribute("aria-label")).toBe("Manage & Level Up");
+    expect(gear!.getAttribute("aria-label")).toBe("Manage & level up");
     // name still lives inside the new row
     expect(container.querySelector(".pc-name-row .pc-name")?.textContent).toBe("Grendal the Wary");
 

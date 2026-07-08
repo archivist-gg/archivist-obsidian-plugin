@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderBackgroundStep } from "../src/modules/pc/components/builder/background-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderBackgroundStep } from "../packages/obsidian/src/modules/pc/components/builder/background-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -108,7 +108,7 @@ function mkCtx(over: {
       classes: [], features: [],
     },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) =>
@@ -285,7 +285,7 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     } as unknown as RegisteredEntity;
     const c = mountContainer();
     const ctx = mkCtxWithChosenAcolyte2024();
-    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+    (ctx.services.entities as { search: unknown }).search = (_q: string, type: string) =>
       type === "background" ? BACKGROUNDS : type === "feat" ? [MAGIC_INITIATE_FEAT] : [];
     const prev = (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat;
     (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = "[[SRD 2024/Feats/Magic Initiate (Cleric)]]";
@@ -335,7 +335,7 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     } as unknown as RegisteredEntity;
     const c = mountContainer();
     const ctx = mkCtxWithChosenAcolyte2024();
-    (ctx.core.entities as { search: unknown }).search = (_q: string, type: string) =>
+    (ctx.services.entities as { search: unknown }).search = (_q: string, type: string) =>
       type === "background" ? BACKGROUNDS : type === "feat" ? [HOMEBREW_FEAT] : [];
     const prev = (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat;
     (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = "[[my-feat]]";

@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionPickBody } from "../src/modules/pc/components/builder/decision-modal";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderDecisionPickBody } from "../packages/obsidian/src/modules/pc/components/builder/decision-modal";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -18,7 +18,7 @@ function weaponEntity(slug: string): RegisteredEntity {
 
 function mkCtx(): ComponentRenderContext {
   return {
-    core: {
+    services: {
       compendiums: {
         getAll: () => [
           { name: "SRD 5.2", description: "", readonly: true, homebrew: false, folderPath: "" },

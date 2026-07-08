@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import {
   conditionToText,
   conditionsToText,
-} from "../src/modules/item/item.conditions";
+} from "../packages/obsidian/src/modules/item/item.conditions";
 
 describe("conditionToText", () => {
   it.each([

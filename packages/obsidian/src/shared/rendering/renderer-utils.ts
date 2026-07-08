@@ -1,0 +1,419 @@
+import { setIcon, Notice } from "obsidian";
+import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
+import { renderInlineTag } from "./inline-tag-renderer";
+import type { FormulaContext } from "@archivist/dnd5e";
+import { normalizeTagType, parseTagTerms, resolveTag } from "@archivist/dnd5e/dnd/formula-tags";
+import { convert5eToolsTags } from "@archivist/dnd5e/dnd/prose-tags";
+
+export type { FormulaContext };
+
+/** "sleight-of-hand" → "Sleight Of Hand". Apostrophe-safe: only capitalizes
+ *  after start-of-string or whitespace, never after `'`. */
+export const humanizeSlug = (s: string): string =>
+  s.replace(/-/g, " ").replace(/(^|\s)\w/g, (c) => c.toUpperCase());
+
+/** Display string for one starting-equipment grant (renderer-side preview only). */
+export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number }): string {
+  if (g.gold != null) return `${g.gold} GP`;
+  if (g.category) return `a ${humanizeSlug(g.category)}`;
+  const name = humanizeSlug(g.item ?? "");
+  return g.qty && g.qty > 1 ? `${name} ×${g.qty}` : name;
+}
+
+interface ElOptions {
+  cls?: string | string[];
+  text?: string;
+  attr?: Record<string, string>;
+  parent?: HTMLElement;
+}
+
+export function el(tag: string, opts?: ElOptions): HTMLElement {
+  const doc = opts?.parent?.doc ?? activeDocument;
+  const element = doc.createElement(tag);
+  if (opts) {
+    if (opts.cls) {
+      if (Array.isArray(opts.cls)) {
+        element.addClasses(opts.cls);
+      } else {
+        // Obsidian's addClass passes the string to classList.add as ONE
+        // token, so a CSS-idiomatic "a b" string throws InvalidCharacterError
+        // at runtime (createEl is lenient — it assigns className — but
+        // addClass is not). Tokenize here so multi-class strings are valid.
+        element.addClasses(opts.cls.split(/\s+/).filter(Boolean));
+      }
+    }
+    if (opts.text) {
+      element.textContent = opts.text;
+    }
+    if (opts.attr) {
+      for (const [key, value] of Object.entries(opts.attr)) {
+        element.setAttribute(key, value);
+      }
+    }
+    if (opts.parent) {
+      opts.parent.appendChild(element);
+    }
+  }
+  return element;
+}
+
+export function createSvgBar(parent: HTMLElement): SVGElement {
+  const ns = "http://www.w3.org/2000/svg";
+  const doc = parent.ownerDocument ?? activeDocument;
+  const svg = doc.createElementNS(ns, "svg");
+  svg.setAttribute("class", "stat-block-bar");
+  svg.setAttribute("height", "5");
+  svg.setAttribute("width", "100%");
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.setAttribute("viewBox", "0 0 400 5");
+
+  const polyline = doc.createElementNS(ns, "polyline");
+  polyline.setAttribute("points", "0,0 400,2.5 0,5");
+  svg.appendChild(polyline);
+
+  parent.appendChild(svg);
+  return svg;
+}
+
+export function createPropertyLine(
+  parent: HTMLElement,
+  label: string,
+  value: string,
+  isLast?: boolean,
+): HTMLElement {
+  const line = el("div", {
+    cls: isLast ? ["property-line", "last"] : "property-line",
+    parent,
+  });
+  el("h4", { text: label, parent: line });
+  el("p", { text: value, parent: line });
+  return line;
+}
+
+export function createIconProperty(
+  parent: HTMLElement,
+  iconName: string,
+  label: string,
+  value: string,
+): HTMLElement {
+  const line = el("div", { cls: "archivist-property-line-icon", parent });
+
+  const iconSpan = el("span", { cls: "archivist-property-icon", parent: line });
+  setIcon(iconSpan, iconName);
+
+  el("span", { cls: "archivist-property-label", text: label, parent: line });
+  el("span", { cls: "archivist-property-value", text: value, parent: line });
+
+  return line;
+}
+
+/**
+ * Configuration for stat block inline tag rendering.
+ * Each tag type maps to an icon, CSS class, display formatter, and rollability.
+ */
+interface StatTagConfig {
+  iconName: string;
+  cssClass: string;
+  format: (content: string) => string;
+  rollable: boolean;
+}
+
+const STAT_TAG_CONFIGS: Record<string, StatTagConfig> = {
+  dice: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  roll: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  d: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  damage: { iconName: "dices", cssClass: "archivist-stat-tag-damage", format: (c) => c, rollable: true },
+  atk: { iconName: "swords", cssClass: "archivist-stat-tag-atk", format: (c) => `${c} to hit`, rollable: true },
+  dc: { iconName: "shield", cssClass: "archivist-stat-tag-dc", format: (c) => `DC ${c}`, rollable: false },
+  mod: { iconName: "dices", cssClass: "archivist-stat-tag-dice", format: (c) => c, rollable: true },
+  check: { iconName: "shield", cssClass: "archivist-stat-tag-dc", format: (c) => c, rollable: false },
+};
+
+/**
+ * Convert an inline tag's content to a valid dice notation string for the Dice Roller API.
+ * - dice: pass through as-is
+ * - damage: strip trailing damage type text (e.g. "3d8 fire" -> "3d8")
+ * - atk: convert modifier to d20 roll (e.g. "+7 to hit" -> "1d20+7")
+ * - mod: convert modifier to d20 roll (e.g. "+5" -> "1d20+5")
+ * Appends |render to force 3D dice rendering.
+ */
+export function extractDiceNotation(tag: { type: string; content: string }): string | null {
+  switch (tag.type) {
+    case "dice":
+      return tag.content;
+    case "damage": {
+      const diceMatch = tag.content.match(/^([\dd+\-*/() ]+)/i);
+      return diceMatch ? diceMatch[1].trim() : null;
+    }
+    case "atk":
+    case "mod": {
+      const modMatch = tag.content.match(/([+-]?\d+)/);
+      return modMatch ? `1d20${modMatch[1].startsWith("-") || modMatch[1].startsWith("+") ? "" : "+"}${modMatch[1]}` : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Roll dice with 3D rendering.
+ * Uses getRoller then roll(true) to force the 3D animation path.
+ * A fresh roller has hasRunOnce=false, so shouldRender alone won't
+ * trigger 3D — the explicit true argument bypasses that guard.
+ */
+interface DiceRollerApi {
+  getRoller(notation: string, context: string, opts: { shouldRender: boolean }): { roll: (render: boolean) => Promise<void> } | null;
+}
+
+export async function rollDiceWithRender(api: unknown, notation: string): Promise<void> {
+  const diceApi = api as DiceRollerApi;
+  const roller = diceApi.getRoller(notation, "", { shouldRender: true });
+  if (roller) {
+    await roller.roll(true);
+  }
+}
+
+/**
+ * Resolve formula content for a tag when monster context is available.
+ * Returns the resolved content suitable for the tag's format function,
+ * or the original content if no formula is detected or no context is provided.
+ */
+function resolveTagContent(
+  tagType: string,
+  content: string,
+  monsterCtx?: FormulaContext,
+): string {
+  if (!monsterCtx) return content;
+  // Guard (replaces the deprecated detectFormula): only resolve ability-bearing
+  // formula tags. Non-formula tags — dice, invalid, and literal-/slug-only
+  // content with no ability term — pass through unchanged, exactly as before.
+  const canonical = normalizeTagType(tagType);
+  if (!canonical || canonical === "dice") return content;
+  const parsed = parseTagTerms(content);
+  if ("error" in parsed || !parsed.abilityTerm) return content;
+  // Resolve with abilities + PB only (no compendium), matching the previous
+  // resolveFormulaTag contract where [[slug]] terms stay unresolved.
+  const resolved = resolveTag(tagType, content, {
+    abilities: monsterCtx.abilities,
+    proficiencyBonus: monsterCtx.proficiencyBonus,
+  }).display;
+  // resolveTag for dc returns "DC N" but STAT_TAG_CONFIGS.dc.format already prepends "DC ",
+  // so strip the prefix to avoid "DC DC N".
+  if (tagType === "dc" && resolved.startsWith("DC ")) {
+    return resolved.slice(3);
+  }
+  return resolved;
+}
+
+/**
+ * Render an inline tag for use inside stat blocks.
+ * Displays Lucide icons, dashed underlines, and dispatches click-to-roll events
+ * matching the Archivist app's parchment-themed annotation style.
+ *
+ * When monsterCtx is provided, formula tags (e.g. `atk:DEX`, `dc:WIS`, `damage:1d6+STR`)
+ * are resolved to concrete values using the monster's ability scores and proficiency bonus.
+ */
+export function renderStatBlockTag(
+  tag: { type: string; content: string },
+  monsterCtx?: FormulaContext,
+  doc: Document = activeDocument,
+): HTMLElement {
+  const config = STAT_TAG_CONFIGS[tag.type];
+  const span = doc.createElement("span");
+
+  if (!config) {
+    span.textContent = tag.content;
+    return span;
+  }
+
+  // Resolve formula tags (e.g. atk:DEX -> +4) when monster context is available
+  const resolvedContent = resolveTagContent(tag.type, tag.content, monsterCtx);
+  const resolvedTag = { type: tag.type, content: resolvedContent };
+
+  span.addClasses(["archivist-stat-tag", config.cssClass]);
+
+  const iconEl = doc.createElement("span");
+  iconEl.addClass("archivist-stat-tag-icon");
+  setIcon(iconEl, config.iconName);
+  span.appendChild(iconEl);
+
+  const textEl = doc.createElement("span");
+  textEl.textContent = config.format(resolvedContent);
+  span.appendChild(textEl);
+
+  if (config.rollable) {
+    span.setAttribute("data-dice-notation", resolvedContent);
+    span.setAttribute("data-dice-type", tag.type);
+    span.setAttribute("title", `${config.format(resolvedContent)} -- Click to roll`);
+    span.addEventListener("click", () => {
+      void (async () => {
+        const api = (span.win as unknown as { DiceRoller?: unknown }).DiceRoller;
+        if (api) {
+          const notation = extractDiceNotation(resolvedTag);
+          if (notation) {
+            try {
+              await rollDiceWithRender(api, notation);
+            } catch {
+              new Notice(`Could not roll: ${resolvedContent}`);
+            }
+          }
+        } else {
+          new Notice('Install the "dice roller" plugin from community plugins to roll dice.');
+        }
+      })();
+    });
+  } else {
+    span.setAttribute("title", config.format(resolvedContent));
+  }
+
+  return span;
+}
+
+/**
+ * Append text to a parent element, parsing inline markdown into proper DOM elements.
+ * Supports: ***bold italic***, **bold**, *italic*, _italic_, ~~strikethrough~~, [text](url)
+ * Plain text without markdown is appended as regular text nodes.
+ */
+export function appendMarkdownText(text: string, parent: HTMLElement): void {
+  const doc = parent.ownerDocument ?? activeDocument;
+  const regex = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|(?<![a-zA-Z0-9])_([^_]+)_(?![a-zA-Z0-9])|~~(.+?)~~|\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parent.appendChild(doc.createTextNode(text.slice(lastIndex, match.index)));
+    }
+
+    if (match[1] !== undefined) {
+      const strong = doc.createElement("strong");
+      const em = doc.createElement("em");
+      em.textContent = match[1];
+      strong.appendChild(em);
+      parent.appendChild(strong);
+    } else if (match[2] !== undefined) {
+      const strong = doc.createElement("strong");
+      strong.textContent = match[2];
+      parent.appendChild(strong);
+    } else if (match[3] !== undefined) {
+      const em = doc.createElement("em");
+      em.textContent = match[3];
+      parent.appendChild(em);
+    } else if (match[4] !== undefined) {
+      const em = doc.createElement("em");
+      em.textContent = match[4];
+      parent.appendChild(em);
+    } else if (match[5] !== undefined) {
+      const del = doc.createElement("del");
+      del.textContent = match[5];
+      parent.appendChild(del);
+    } else if (match[6] !== undefined) {
+      const rawUrl = match[7];
+      const safe = /^(https?:|mailto:|#)/i.test(rawUrl);
+      if (!safe) {
+        // Degrade to plain text, no anchor for dangerous schemes
+        parent.appendChild(doc.createTextNode(match[6]));
+      } else {
+        const a = doc.createElement("a");
+        a.textContent = match[6];
+        a.href = rawUrl;
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener");
+        parent.appendChild(a);
+      }
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parent.appendChild(doc.createTextNode(text.slice(lastIndex)));
+  }
+}
+
+/**
+ * Render text that may contain inline tags like `roll:2d6+3` or `dc:15`.
+ * Inside stat blocks, tags render as subtle inline text matching the parchment theme.
+ * Outside stat blocks (body text), tags render as colorful pill badges.
+ *
+ * When monsterCtx is provided, formula tags (e.g. `atk:DEX`) are resolved to
+ * concrete values. Only monster stat blocks should pass this parameter.
+ */
+export function renderTextWithInlineTags(
+  text: string,
+  parent: HTMLElement,
+  statBlockMode = true,
+  monsterCtx?: FormulaContext,
+): void {
+  // Convert any 5etools {@...} tags to backtick format before processing
+  const converted = convert5eToolsTags(text);
+
+  // Match backtick-wrapped tags: `type:content`
+  const regex = /`([^`]+)`/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(converted)) !== null) {
+    // Append any plain text (with markdown) before this match
+    if (match.index > lastIndex) {
+      appendMarkdownText(converted.slice(lastIndex, match.index), parent);
+    }
+
+    const tagText = match[1];
+    const parsed = parseInlineTag(tagText);
+    const parentDoc = parent.ownerDocument ?? activeDocument;
+    if (parsed) {
+      if (statBlockMode) {
+        parent.appendChild(renderStatBlockTag(parsed, monsterCtx, parentDoc));
+      } else {
+        parent.appendChild(renderInlineTag(parsed, parentDoc));
+      }
+    } else {
+      // Not a valid tag, render as code
+      const code = parentDoc.createElement("code");
+      code.textContent = tagText;
+      parent.appendChild(code);
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  // Append any remaining plain text (with markdown)
+  if (lastIndex < converted.length) {
+    appendMarkdownText(converted.slice(lastIndex), parent);
+  }
+}
+
+/**
+ * Map the body-only `edition` (or `source`) field to a user-friendly badge
+ * label. The canonical pipeline writes "SRD 5.1" / "SRD 5.2" to source and
+ * "2014" / "2024" to edition; users see "SRD 5e" / "SRD 2024" everywhere
+ * else, so we surface that.
+ */
+export function sourceBadgeText(entity: { source?: string; edition?: string }): string | null {
+  if (entity.edition === "2014") return "SRD 5e";
+  if (entity.edition === "2024") return "SRD 2024";
+  if (entity.source === "SRD 5.1") return "SRD 5e";
+  if (entity.source === "SRD 5.2") return "SRD 2024";
+  return entity.source ?? null;
+}
+
+export function createErrorBlock(
+  error: string,
+  rawSource: string,
+): HTMLElement {
+  const block = el("div", { cls: "archivist-error-block" });
+
+  const banner = el("div", { cls: "archivist-error-banner", parent: block });
+  const iconSpan = el("span", { cls: "archivist-error-icon", parent: banner });
+  setIcon(iconSpan, "alert-triangle");
+  el("span", { text: error, parent: banner });
+
+  el("pre", {
+    cls: "archivist-error-source",
+    text: rawSource,
+    parent: block,
+  });
+
+  return block;
+}

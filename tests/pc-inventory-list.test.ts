@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { InventoryList } from "../src/modules/pc/components/inventory/inventory-list";
+import { InventoryList } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-list";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { Character, ResolvedCharacter, DerivedStats, EquippedSlots } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -36,9 +36,9 @@ function ctx(c: Character): ComponentRenderContext {
       equippedSlots: {} as EquippedSlots,
       carriedWeight: 0, attunementUsed: 0, attunementLimit: 3,
     } as DerivedStats,
-    // Production registry path: ctx.core.entities.getBySlug(...)
-    // (CoreAPI.entities is the EntityRegistry directly — no `.registry` sublevel.)
-    core: { entities: { getBySlug: () => null } } as never,
+    // Production registry path: ctx.services.entities.getBySlug(...)
+    // (PCServices.entities is the EntityRegistry directly — no `.registry` sublevel.)
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };
@@ -95,7 +95,7 @@ describe("InventoryList", () => {
     const root = mountContainer();
     new InventoryList().render(root, {
       ...ctx(c),
-      core: { entities: { getBySlug: (slug: string) => slug === "longsword" ? { entityType: "item", data: longsword } : null } } as never,
+      services: { entities: { getBySlug: (slug: string) => slug === "longsword" ? { entityType: "item", data: longsword } : null } } as never,
     });
     const name = root.querySelector(".pc-inv-name");
     expect(name?.textContent).toBe("Longsword of Sharpness");

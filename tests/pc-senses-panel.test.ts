@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { SensesPanel } from "../src/modules/pc/components/senses-panel";
+import { SensesPanel } from "../packages/obsidian/src/modules/pc/components/senses-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -12,7 +12,7 @@ const ctx: ComponentRenderContext = {
   derived: {
     passives: { perception: 14, investigation: 10, insight: 11 },
   } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 };
 
@@ -109,7 +109,7 @@ describe("SensesPanel — senses", () => {
         ? { senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0, ...senses } }
         : {}),
     } as DerivedStats,
-    core: {} as never,
+    services: {} as never,
     editState: null,
   });
 

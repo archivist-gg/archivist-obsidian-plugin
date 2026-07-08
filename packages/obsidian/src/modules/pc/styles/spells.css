@@ -1,0 +1,221 @@
+/* PC Spells tab. Reuses tokens; mirrors .pc-actions-* vocabulary. */
+.archivist-pc-sheet .pc-spell-header {
+  display: flex; flex-wrap: wrap; gap: var(--pc-space-3); align-items: baseline;
+  justify-content: space-between; margin-bottom: var(--pc-space-2);
+}
+/* position: relative anchors the absolutely-positioned situational stat tooltip. */
+.archivist-pc-sheet .pc-spell-dc-row { font-size: var(--pc-fs-body); color: var(--pc-text-soft); position: relative; }
+.archivist-pc-sheet .pc-spell-dc-row b { color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-spell-viewtoggle {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-small); color: var(--pc-crimson);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 2px 9px; cursor: pointer;
+}
+/* Slot tracker now renders via renderChargeBoxes (.pc-charge-boxes /
+   .archivist-toggle-box, styled in components.css + archivist-dnd.css);
+   no pip/count/prep-box rules live here anymore. */
+
+/* Spell row: reuse .pc-actions-table styles; add comp + tags. */
+.archivist-pc-sheet .pc-spell-efftag { font-family: var(--pc-font-serif); font-style: italic; font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid var(--pc-tan); border-radius: 8px; padding: 0 6px; margin-right: 3px; }
+.archivist-pc-sheet .pc-spell-mk { font-family: var(--pc-font-serif); font-weight: 700; font-size: var(--pc-fs-small); border: 1px solid var(--pc-tan-muted); border-radius: 3px; padding: 0 4px; color: var(--pc-text-soft); margin-left: 5px; }
+
+/* Filter pills (compact table view) — parchment chips with a crimson active state.
+   Also scoped under .archivist-modal so the add-spell modal's filter bar,
+   "Show all classes" toggle, and "Add" buttons are styled (modals render
+   outside .archivist-pc-sheet). */
+.archivist-pc-sheet .pc-spell-filters, .archivist-modal .pc-spell-filters { display: flex; flex-wrap: wrap; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-filter, .archivist-modal .pc-spell-filter { padding: 3px 10px; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: 12px; font-size: var(--pc-fs-small); color: var(--pc-text-soft); cursor: pointer; }
+.archivist-pc-sheet .pc-spell-filter.active, .archivist-modal .pc-spell-filter.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
+
+.archivist-pc-sheet .pc-spell-addbtn {
+  font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-crimson);
+  border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 5px 14px;
+  display: inline-block; margin-top: var(--pc-space-3); cursor: pointer; font-size: var(--pc-fs-body); background: transparent;
+}
+/* Open state: the button toggles the add-spell drawer in place of the prepared list. */
+.archivist-pc-sheet .pc-spell-addbtn.open { background: var(--pc-crimson); border-style: solid; border-color: var(--pc-crimson); color: var(--pc-white); }
+.archivist-pc-sheet .pc-spell-limit-warn { color: var(--pc-crimson); font-size: var(--pc-fs-small); font-style: italic; margin-left: var(--pc-space-2); }
+
+/* Add-spell modal list rows */
+.archivist-modal .pc-spell-pick-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 4px 6px; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-modal .pc-spell-pick-name { flex: 1; font-family: var(--pc-font-serif); font-weight: 700; }
+.archivist-modal .pc-spell-pick-meta { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
+
+/* Two-mode segmented toggle */
+.archivist-pc-sheet .pc-spell-modetoggle { display: inline-flex; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); overflow: hidden; }
+.archivist-pc-sheet .pc-mode-seg { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); padding: 4px 14px; background: transparent; color: var(--pc-text-soft); border: none; cursor: pointer; }
+.archivist-pc-sheet .pc-mode-seg.active { background: var(--pc-crimson); color: var(--pc-white); }
+
+/* Spell list + rows */
+.archivist-pc-sheet .pc-spell-list { margin-bottom: var(--pc-space-2); }
+/* Block-level host: the expanded reference block mounts here (sibling of the
+   flex row) so it stacks BELOW the row. The dashed separator lives on the host
+   so the row + its expanded block read as one unit above the line. */
+.archivist-pc-sheet .pc-spell-prep-row-host { display: block; border-bottom: 1px dashed var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-prep-row { display: flex; align-items: center; gap: var(--pc-space-2); padding: 6px 4px; }
+.archivist-pc-sheet .pc-spell-namewrap { flex: 1; cursor: pointer; }
+.archivist-pc-sheet .pc-spell-name { font-family: var(--pc-font-serif); }
+.archivist-pc-sheet .pc-spell-sub { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; }
+
+/* Prepare counters, locked box, always tag, remove */
+.archivist-pc-sheet .pc-spell-prep-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pc-space-3); flex-wrap: wrap; margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-counts { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-spell-counts b { color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-spell-counts b.over { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-box-locked { opacity: 0.55; cursor: default; }
+.archivist-pc-sheet .pc-spell-always { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); color: var(--pc-text-muted); font-style: italic; margin-left: 6px; }
+.archivist-pc-sheet .pc-spell-remove { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); color: var(--pc-text-muted); background: transparent; border: 1px solid transparent; border-radius: 12px; padding: 2px 8px; cursor: pointer; }
+.archivist-pc-sheet .pc-spell-remove:hover, .archivist-pc-sheet .pc-spell-remove.armed { color: var(--pc-crimson); border-color: var(--pc-tan-muted); }
+
+/* Inline add drawer */
+.archivist-pc-sheet .pc-spell-adddrawer { background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin: var(--pc-space-2) 0; }
+
+/* Inline spell block under a row */
+/* white-space: normal re-establishes wrapping for the block — the add-drawer
+   mounts it inside a table <td> that sets white-space: nowrap, which would
+   otherwise leak into the spell prose and run it off the card. */
+.archivist-pc-sheet .pc-spell-expand { margin: 2px 0 8px var(--pc-space-4); white-space: normal; }
+/* Cast-table expansion row: block sits flush under its spell (no extra top gap). */
+.archivist-pc-sheet .pc-spell-expand-row { padding: 0 8px 10px; }
+.archivist-pc-sheet .pc-spell-empty-row { font-size: var(--pc-fs-small); color: var(--pc-text-muted); font-style: italic; padding: 4px; }
+
+/* ── Cast table ───────────────────────────────────────── */
+.archivist-pc-sheet .pc-spell-sec { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--pc-tan-muted); padding: var(--pc-space-3) 2px var(--pc-space-1); margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-sec-label { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; color: var(--pc-text-soft); font-weight: 700; }
+.archivist-pc-sheet .pc-spell-slots { display: flex; align-items: center; gap: var(--pc-space-1); }
+.archivist-pc-sheet .pc-spell-slots-label { font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); margin-right: var(--pc-space-1); }
+
+.archivist-pc-sheet .pc-spell-cast-table { display: flex; flex-direction: column; margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-cast-head,
+.archivist-pc-sheet .pc-spell-cast-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1.4fr) 64px 72px 56px minmax(0, 1.2fr) minmax(80px, .8fr);
+  gap: 8px;
+  align-items: start;
+}
+/* The underline is ONE continuous line on the head container (matching the
+   full-width row separators), not a per-cell border that the grid gap would
+   break into segments. Labels bottom-align so they sit just above the line
+   even when a header (HIT / DC) wraps to two lines. Header cells carry no
+   horizontal padding so each label sits flush-left with its column's body
+   values (the row cells have no h-padding either). */
+.archivist-pc-sheet .pc-spell-cast-head {
+  align-items: end;
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-spell-cast-head > .pc-spell-cast-hcell {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 0 4px;
+}
+.archivist-pc-sheet .pc-spell-cast-row {
+  padding: 8px 0; border-bottom: 1px dashed var(--pc-tan-muted);
+  font-size: var(--pc-fs-body); color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-spell-cast-row.pc-row-open { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-cast-row > * { min-width: 0; }
+/* No trailing separator under the last entry of each level group. */
+.archivist-pc-sheet .pc-spell-cast-table > *:last-child { border-bottom: none; }
+
+.archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
+.archivist-pc-sheet .pc-spell-castbtn:hover { background: var(--pc-crimson-light); }
+.archivist-pc-sheet .pc-spell-castbtn.disabled { background: var(--pc-tan-muted); cursor: default; }
+.archivist-pc-sheet .pc-spell-atwill { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--pc-text-soft); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 4px 6px; white-space: nowrap; }
+
+.archivist-pc-sheet .pc-spell-namecell { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-nl { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-spell-cast-table .pc-spell-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-spell-cr { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 3px; border: 1px solid var(--pc-tan-muted); font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-spell-cr.c { color: var(--pc-crimson); border-color: var(--pc-crimson-light); }
+.archivist-pc-sheet .pc-spell-school { font-size: var(--pc-fs-label); color: var(--pc-text-muted); font-style: italic; margin-top: 3px; }
+.archivist-pc-sheet .pc-spell-up { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; color: var(--pc-crimson); background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: 9px; padding: 0 6px; }
+
+.archivist-pc-sheet .pc-spell-time, .archivist-pc-sheet .pc-spell-range { font-weight: 700; color: var(--pc-text-primary); white-space: nowrap; }
+.archivist-pc-sheet .pc-spell-hitdc { text-align: center; white-space: nowrap; }
+.archivist-pc-sheet .pc-spell-hitdc-ab { display: block; font-size: var(--pc-fs-label); letter-spacing: .06em; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spell-hitdc-v { font-weight: 700; color: var(--pc-text-primary); }
+
+/* effcell stays a table-cell (no display:flex) so its dashed row-border lines up
+   with the other columns; the chip + type word stack as content-width block-flex children. */
+.archivist-pc-sheet .pc-spell-eff { display: flex; width: fit-content; align-items: center; gap: 5px; margin-bottom: 3px; font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-text-primary); border: 1px solid var(--pc-tan); border-radius: 6px; padding: 2px 9px; background: var(--pc-parchment-light); }
+.archivist-pc-sheet .pc-spell-dtype { display: flex; width: fit-content; align-items: center; gap: 4px; font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-spell-dtype-icon { display: inline-flex; width: 13px; height: 13px; flex-shrink: 0; }
+.archivist-pc-sheet .pc-spell-dtype-icon svg { width: 100%; height: 100%; fill: currentColor; }
+.archivist-pc-sheet .pc-spell-dtype-icon.dmg { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-spell-comp { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spell-dur { color: var(--pc-text-soft); }
+
+/* ── Source tag (Cast + Prepare + Add) ────────────────── */
+.archivist-pc-sheet .pc-spell-srctag { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; color: var(--pc-text-soft); margin-left: 5px; }
+.archivist-pc-sheet .pc-spell-srctag.e2014 { color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spell-srctag.e2024 { color: #1f3f7a; }
+/* Prepare list: source tag is a quiet grey label — not bold, no edition color. */
+.archivist-pc-sheet .pc-spell-prep-row .pc-spell-srctag,
+.archivist-pc-sheet .pc-spell-prep-row .pc-spell-srctag.e2014,
+.archivist-pc-sheet .pc-spell-prep-row .pc-spell-srctag.e2024 { font-weight: 400; color: var(--pc-text-muted); }
+
+/* ── Prepare filter bar ───────────────────────────────── */
+.archivist-pc-sheet .pc-spell-filterbar { display: flex; flex-wrap: wrap; gap: var(--pc-space-3); align-items: center; background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-fgroup { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.archivist-pc-sheet .pc-spell-flabel { flex: 0 0 auto; font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted); white-space: nowrap; }
+.archivist-pc-sheet .pc-spell-fchips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1 1 0; min-width: 0; }
+.archivist-pc-sheet .pc-spell-fchip { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); padding: 3px 11px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan); border-radius: 12px; color: var(--pc-text-soft); cursor: pointer; }
+.archivist-pc-sheet .pc-spell-fchip.active { background: var(--pc-crimson); color: var(--pc-white); border-color: var(--pc-crimson); }
+
+/* ── Add drawer: themed search + toggle ───────────────── */
+.archivist-pc-sheet .pc-spell-search { font-family: var(--pc-font-sans); font-size: var(--pc-fs-body); padding: 7px 12px; background: var(--pc-parchment-light); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); min-width: 220px; outline: none; box-shadow: none; }
+.archivist-pc-sheet .pc-spell-search::placeholder { color: var(--pc-text-muted); -webkit-text-fill-color: var(--pc-text-muted); }
+/* Override Obsidian's built-in input :hover (grey form-field highlight) and :focus
+   (box-shadow/outline ring + text recolor) so the search box keeps the parchment
+   look and dark text in every state. */
+.archivist-pc-sheet .pc-spell-search:hover,
+.archivist-pc-sheet .pc-spell-search:focus,
+.archivist-pc-sheet .pc-spell-search:focus-visible { background: var(--pc-parchment-light); border-color: var(--pc-tan-muted); color: var(--pc-text-primary); -webkit-text-fill-color: var(--pc-text-primary); caret-color: var(--pc-crimson); outline: none; box-shadow: none; }
+.archivist-pc-sheet .pc-add-toggle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--pc-tan-muted); background: var(--pc-parchment-light); color: var(--pc-crimson); font-size: 15px; line-height: 1; cursor: pointer; flex-shrink: 0; }
+.archivist-pc-sheet .pc-add-toggle.on { background: var(--pc-crimson); border-color: var(--pc-crimson); color: var(--pc-white); }
+
+/* ── Add drawer: flat sortable table ──────────────────── */
+.archivist-pc-sheet .pc-spell-addbar-top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-addbar-primary { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pc-space-3); }
+.archivist-pc-sheet .pc-spell-morebtn { font-family: var(--pc-font-serif); font-style: italic; color: var(--pc-crimson); border: 1px dashed var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: 4px 11px; background: transparent; cursor: pointer; font-size: var(--pc-fs-body); display: inline-flex; align-items: center; gap: 5px; }
+.archivist-pc-sheet .pc-spell-morebadge { background: var(--pc-crimson); color: var(--pc-white); border-radius: 9px; font-size: var(--pc-fs-micro); font-weight: 700; padding: 0 6px; }
+.archivist-pc-sheet .pc-spell-resetbtn { font-size: var(--pc-fs-small); color: var(--pc-text-soft); border: 1px solid transparent; border-radius: var(--pc-radius-md); padding: 4px 10px; background: transparent; cursor: pointer; }
+.archivist-pc-sheet .pc-spell-resetbtn:hover { color: var(--pc-crimson); border-color: var(--pc-tan-muted); }
+.archivist-pc-sheet .pc-spell-morepanel { margin-top: var(--pc-space-2); background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md); padding: var(--pc-space-3); display: flex; flex-direction: column; gap: var(--pc-space-2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04); }
+.archivist-pc-sheet .pc-spell-morepanel .pc-spell-flabel { min-width: 88px; }
+.archivist-pc-sheet .pc-spell-fchip.tog { border-style: dashed; }
+
+/* The content column (.pc-content) is size-contained, so a nowrap table whose
+   columns out-measure the column can't stretch it — it would bleed past the
+   drawer's right border. Bound the table to the drawer and let it scroll. */
+.archivist-pc-sheet .pc-add-tablehost { overflow-x: auto; min-width: 0; }
+/* Grid "table": all columns fixed-width so header + every row share one track
+   set; the row width is intrinsic (sum of columns) and the .pc-add-tablehost
+   scrolls horizontally when it out-measures the content column. */
+.archivist-pc-sheet .pc-spell-add-table { display: flex; flex-direction: column; width: max-content; min-width: 100%; margin-top: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spell-add-head,
+.archivist-pc-sheet .pc-spell-add-row {
+  display: grid;
+  grid-template-columns: 30px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase; color: var(--pc-text-muted); font-weight: 700;
+  padding: 6px 8px 4px; border-bottom: 1px solid var(--pc-tan-muted); white-space: nowrap;
+}
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.sortable { cursor: pointer; }
+.archivist-pc-sheet .pc-spell-add-head > .pc-add-th.ctr { text-align: center; }
+.archivist-pc-sheet .pc-spell-add-table .pc-add-sortarr { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-spell-add-row > * { padding: 7px 8px; border-bottom: 1px dashed var(--pc-tan-muted); font-size: var(--pc-fs-body); color: var(--pc-text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.archivist-pc-sheet .pc-spell-add-row.pc-row-open > * { border-bottom-color: transparent; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row:last-child > * { border-bottom: none; }
+.archivist-pc-sheet .pc-spell-add-table .pc-spell-add-row { cursor: pointer; }
+/* No hover background on list rows — per request (no row hover anywhere). */
+.archivist-pc-sheet .pc-spell-add-table .pc-add-name { font-family: var(--pc-font-serif); font-style: italic; font-weight: 700; color: var(--pc-text-primary); }
+.archivist-pc-sheet .pc-spell-add-table .pc-add-name.on { color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-spell-add-table .col-school { font-style: italic; color: var(--pc-text-muted); }
+.archivist-pc-sheet .pc-spell-add-table .col-damage { color: var(--pc-crimson); }
+/* Concentration / Ritual now ride as small badges beside the name (cols dropped). */
+.archivist-pc-sheet .pc-spell-add-table .col-name .pc-spell-cr { width: 15px; height: 15px; margin-left: 5px; vertical-align: middle; }
+
+/* All columns always render; the table host (.pc-add-tablehost) scrolls
+   horizontally when it out-measures the content column. No responsive hiding. */

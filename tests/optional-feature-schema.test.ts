@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { optionalFeatureEntitySchema } from "../src/modules/optional-feature/optional-feature.schema";
+import { optionalFeatureEntitySchema } from "@archivist/dnd5e/optional-feature/optional-feature.schema";
 
 const minimalInvocation = {
   slug: "agonizing-blast",

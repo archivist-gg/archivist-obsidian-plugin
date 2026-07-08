@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderStandardActionsList } from "../src/modules/pc/components/actions/standard-actions-list";
+import { renderStandardActionsList } from "../packages/obsidian/src/modules/pc/components/actions/standard-actions-list";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

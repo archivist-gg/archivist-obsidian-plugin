@@ -1,12 +1,12 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { InventoryRow } from "../src/modules/pc/components/inventory/inventory-row";
+import { InventoryRow } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-row";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import type { EquipmentEntry, ResolvedEquipped } from "../src/modules/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
-vi.mock("../src/modules/inquiry/shared/modals/ConfirmModal", () => ({
+vi.mock("../packages/obsidian/src/shared/modals/ConfirmModal", () => ({
   confirm: confirmMock,
   confirmDelete: vi.fn().mockResolvedValue(true),
 }));
@@ -110,15 +110,15 @@ describe("InventoryRow", () => {
     expect(onToggle).toHaveBeenCalledWith(0); // index = 0
   });
 
-  it("clicking the toggle column calls editState.equipItem and stops propagation (no expand)", () => {
+  it("clicking the toggle column calls editState.equipItemWithSwap and stops propagation (no expand)", () => {
     const it = make("[[longsword]]", { entity: { name: "Longsword" }, entityType: "weapon" });
     const onToggle = vi.fn();
-    const equipItem = vi.fn().mockReturnValue({ kind: "ok" });
-    const editState = { equipItem, unequipItem: vi.fn() };
+    const equipItemWithSwap = vi.fn().mockReturnValue({});
+    const editState = { equipItemWithSwap, unequipItem: vi.fn() };
     const root = mountContainer();
     new InventoryRow().render(root, { ...it, app: {} as never, editState: editState as never, onToggle });
     (root.querySelector(".pc-inv-toggle") as HTMLElement).click();
-    expect(equipItem).toHaveBeenCalledWith(0);
+    expect(equipItemWithSwap).toHaveBeenCalledWith(0);
     expect(onToggle).not.toHaveBeenCalled();
   });
 

@@ -1,9 +1,12 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderSelectionTable, type ColSpec } from "../src/modules/pc/components/builder/selection-table";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
+import { renderSelectionTable, type ColSpec } from "../packages/obsidian/src/modules/pc/components/builder/selection-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
+import { setEntityPresenters, setEntityPresenterKernel } from "../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
+import type { EntityPresenter } from "../packages/obsidian/src/shared/rendering/entity-presenter";
+import type { Archivist } from "@archivist/core";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -20,15 +23,27 @@ const CAT_COL: ColSpec = {
   render: (cell, e) => { cell.setText(String(e.data.category)); },
 };
 
+const okKernel = {
+  getEntityType: (type: string) => ({
+    type,
+    doc: { parse: () => ({ success: true, data: {} }), serialize: () => "" },
+  }),
+} as unknown as Archivist;
+const featPresenter: EntityPresenter = {
+  type: "feat",
+  render: (el) => el.createDiv({ cls: "fake-block" }),
+};
+beforeEach(() => {
+  setEntityPresenterKernel(okKernel);
+  setEntityPresenters(new Map([["feat", featPresenter]]));
+});
+afterEach(() => {
+  setEntityPresenters(new Map());
+  setEntityPresenterKernel(null as unknown as Archivist);
+});
+
 function ctxWith(bag: Map<string, unknown>): ComponentRenderContext {
-  const blockModule = {
-    parseYaml: () => ({ success: true, data: {} }),
-    render: (el: HTMLElement) => el.createDiv({ cls: "fake-block" }),
-  };
-  return {
-    core: { plugin: {}, modules: { getByEntityType: () => blockModule } },
-    builderUiState: bag,
-  } as unknown as ComponentRenderContext;
+  return { builderUiState: bag } as unknown as ComponentRenderContext;
 }
 
 describe("renderSelectionTable", () => {

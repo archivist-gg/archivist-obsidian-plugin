@@ -1,4 +1,4 @@
-import { EntityRegistry, type RegisteredEntity } from "../../../src/shared/entities/entity-registry";
+import { EntityRegistry, type RegisteredEntity } from "@core/entity-registry";
 
 export function buildMockRegistry(
   entries: Array<Partial<RegisteredEntity> & { slug: string; entityType: string; data: unknown }>,

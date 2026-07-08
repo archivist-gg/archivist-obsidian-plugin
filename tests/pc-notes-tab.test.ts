@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { NotesTab } from "../src/modules/pc/components/notes-tab";
+import { NotesTab } from "../packages/obsidian/src/modules/pc/components/notes-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -21,7 +21,7 @@ function mkResolved(notes?: string): ResolvedCharacter {
 }
 
 function mkCtx(notes?: string): ComponentRenderContext {
-  return { resolved: mkResolved(notes), derived: {} as DerivedStats, core: {} as never, editState: null };
+  return { resolved: mkResolved(notes), derived: {} as DerivedStats, services: {} as never, editState: null };
 }
 
 describe("NotesTab", () => {

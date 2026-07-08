@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { renderAddDrawer } from "../src/modules/pc/components/spells/add-drawer";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import { renderAddDrawer } from "../packages/obsidian/src/modules/pc/components/spells/add-drawer";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
-vi.mock("../src/modules/spell/spell.renderer", () => ({
+vi.mock("../packages/obsidian/src/modules/spell/spell.renderer", () => ({
   renderSpellBlock: vi.fn(() => Promise.resolve(document.createElement("div"))),
 }));
 
@@ -20,7 +20,7 @@ function ctx(addKnownSpell = vi.fn()): ComponentRenderContext {
   return {
     resolved: { spells: [] } as never,
     derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 3: 1 }, pactMagic: null } as never,
-    core: { entities: REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
+    services: { entities: REG } as never, app: {} as never, editState: { addKnownSpell, removeKnownSpell: vi.fn() } as never,
   };
 }
 

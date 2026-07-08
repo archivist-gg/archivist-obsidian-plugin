@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { initializeCompendium } from "../../src/shared/compendium-init/init";
+import { initializeCompendium } from "../../packages/obsidian/src/shared/compendium-init/init";
 import type { Vault } from "obsidian";
 
 interface MockVault {

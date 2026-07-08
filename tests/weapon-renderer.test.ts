@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from "vitest";
-import { renderWeaponBlock } from "../src/modules/weapon/weapon.renderer";
-import { parseWeapon } from "../src/modules/weapon/weapon.parser";
+import { renderWeaponBlock } from "../packages/obsidian/src/modules/weapon/weapon.renderer";
+import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
 import { LONGSWORD, DAGGER, NET, LANCE } from "./fixtures/weapon";
 
 beforeEach(() => {

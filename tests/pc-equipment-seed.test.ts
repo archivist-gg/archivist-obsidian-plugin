@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveGrants, type SeedRegistry } from "../src/modules/pc/builder/equipment-seed";
+import { resolveGrants, type SeedRegistry } from "../packages/obsidian/src/modules/pc/builder/equipment-seed";
 
 const reg: SeedRegistry = {
   lookup: (bare) => {

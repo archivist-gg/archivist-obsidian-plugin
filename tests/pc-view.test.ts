@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { PCSheetView, VIEW_TYPE_PC } from "../src/modules/pc/pc.view";
-import { PCModule } from "../src/modules/pc/pc.module";
+import { PCSheetView, VIEW_TYPE_PC } from "../packages/obsidian/src/modules/pc/pc.view";
+import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import type { CoreAPI } from "../src/core/module-api";
+import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import { WorkspaceLeaf } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -46,9 +46,9 @@ const PC_FILE = [
 function bootModule(): PCModule {
   const m = new PCModule();
   const entities = buildMockRegistry([{ slug: "bladesworn", entityType: "class", data: BLADESWORN }]);
-  // PCModule.register() wires all sheet components; no `core.plugin` means
+  // PCModule.init() wires all sheet components; no `services.plugin` means
   // the file-open listener setup is skipped (tests run without a full host).
-  m.register({ entities } as unknown as CoreAPI);
+  m.init({ entities } as unknown as PCServices);
   return m;
 }
 
@@ -95,7 +95,7 @@ describe("PCSheetView", () => {
     let resolveReady!: () => void;
     const readyPromise = new Promise<void>((r) => { resolveReady = r; });
     const m = bootModule();
-    m.core = { ...m.core!, plugin: { compendiumsReady: readyPromise } } as typeof m.core;
+    m.services = { ...m.services!, plugin: { compendiumsReady: readyPromise } } as typeof m.services;
     const v = new PCSheetView(new WorkspaceLeaf(), m);
     v.setViewData(PC_FILE, true);
     // Synchronously: only the shim is rendered; resolver.resolve() has NOT run

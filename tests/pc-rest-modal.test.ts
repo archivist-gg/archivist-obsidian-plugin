@@ -21,8 +21,8 @@ vi.mock("obsidian", async () => {
   };
 });
 
-import { RestModal } from "../src/modules/pc/components/rest-modal";
-import { CharacterEditState } from "../src/modules/pc/pc.edit-state";
+import { RestModal } from "../packages/obsidian/src/modules/pc/components/rest-modal";
+import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import {
   WIZARD_5_WOUNDED, BARBARIAN_6_EXHAUSTED, MONK_6_DRAINED, PC_WITH_MAGIC_ITEMS,

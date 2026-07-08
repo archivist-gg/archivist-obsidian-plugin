@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseFeat } from "../src/modules/feat/feat.parser";
+import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
 
 const yaml = `
 slug: alert

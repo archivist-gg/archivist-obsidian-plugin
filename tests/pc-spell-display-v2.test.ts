@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   compactCastingTime, formatRange, abbrAbility, hitDcDescriptor, effectDescriptor, editionTag,
-} from "../src/modules/pc/components/spells/spell-display";
-import type { ResolvedSpell } from "../src/modules/pc/pc.types";
+} from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
+import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
 
 function sp(extra: Partial<ResolvedSpell["entity"]>): ResolvedSpell {
   return { entity: { name: "X", level: 1, ...extra } as never, slug: "x",

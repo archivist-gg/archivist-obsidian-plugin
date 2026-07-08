@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseWeapon } from "../src/modules/weapon/weapon.parser";
+import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
 import { LONGSWORD, DAGGER, LONGBOW, NET, LANCE } from "./fixtures/weapon";
 
 describe("parseWeapon — canonical YAML", () => {

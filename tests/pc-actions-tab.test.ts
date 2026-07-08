@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ActionsTab } from "../src/modules/pc/components/actions-tab";
+import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter, AttackRow } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter, AttackRow } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -19,7 +19,7 @@ const ctxFactory = (attacks: AttackRow[], features: ResolvedCharacter["features"
     feats: [], totalLevel: 1, features, state: {} as never,
   } as unknown as ResolvedCharacter,
   derived: { attacks } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 });
 

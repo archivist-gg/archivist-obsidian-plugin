@@ -1,11 +1,11 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../src/modules/pc/components/builder/decision-strip";
-import { DecisionPickModal } from "../src/modules/pc/components/builder/decision-modal";
-import type { DecisionItem, ResolvedOption } from "../src/modules/pc/pc.decision-engine";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderDecisionStrip, renderStripInfoRow, domainPill, applyChoiceToggle, childLabel } from "../packages/obsidian/src/modules/pc/components/builder/decision-strip";
+import { DecisionPickModal } from "../packages/obsidian/src/modules/pc/components/builder/decision-modal";
+import type { DecisionItem, ResolvedOption } from "@archivist/dnd5e/pc/pc.decision-engine";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -32,7 +32,7 @@ const item = (over: Partial<DecisionItem>): DecisionItem =>
   }) as DecisionItem;
 
 const mkCtx = (editState: Record<string, unknown> = {}): ComponentRenderContext =>
-  ({ resolved: { definition: {} }, derived: {}, core: { entities: {} }, editState, builderUiState: new Map() }) as unknown as ComponentRenderContext;
+  ({ resolved: { definition: {} }, derived: {}, services: { entities: {} }, editState, builderUiState: new Map() }) as unknown as ComponentRenderContext;
 
 describe("renderDecisionStrip", () => {
   it("unresolved row wears the open dress with chips mounted", () => {

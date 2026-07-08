@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { InventoryFilters } from "../src/modules/pc/components/inventory/inventory-filters";
+import { InventoryFilters } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-filters";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { FilterState } from "../src/modules/pc/components/inventory/filter-state";
+import type { FilterState } from "../packages/obsidian/src/modules/pc/components/inventory/filter-state";
 
 beforeAll(() => installObsidianDomHelpers());
 

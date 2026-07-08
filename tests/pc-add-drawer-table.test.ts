@@ -2,14 +2,14 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
-import { renderAddDrawer } from "../src/modules/pc/components/spells/add-drawer";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import { renderAddDrawer } from "../packages/obsidian/src/modules/pc/components/spells/add-drawer";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
-vi.mock("../src/modules/spell/spell.renderer", () => ({
+vi.mock("../packages/obsidian/src/modules/spell/spell.renderer", () => ({
   renderSpellBlock: vi.fn(() => Promise.resolve(document.createElement("div"))),
 }));
 
-vi.mock("../src/modules/pc/components/spells/reset-filters-modal", () => ({
+vi.mock("../packages/obsidian/src/modules/pc/components/spells/reset-filters-modal", () => ({
   confirmResetFilters: (_app: unknown, onConfirm: () => void) => onConfirm(),
 }));
 
@@ -33,7 +33,7 @@ function ctx(known: string[] = [], editState: object = { addKnownSpell: vi.fn(),
   return {
     resolved: { spells: known.map((slug) => ({ slug })) } as never,
     derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 1: 4, 2: 3 }, pactMagic: null } as never,
-    core: { entities: REG } as never, app: {} as never, editState: editState as never,
+    services: { entities: REG } as never, app: {} as never, editState: editState as never,
   };
 }
 

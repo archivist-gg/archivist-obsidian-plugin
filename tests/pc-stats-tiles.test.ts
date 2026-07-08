@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { StatsTiles } from "../src/modules/pc/components/stats-tiles";
+import { StatsTiles } from "../packages/obsidian/src/modules/pc/components/stats-tiles";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -48,6 +48,52 @@ describe("StatsTiles", () => {
     const root = mountContainer();
     new StatsTiles().render(root, ctx());
     expect(root.querySelectorAll(".pc-panel.pc-stats-tile").length).toBe(4);
+  });
+});
+
+describe("StatsTiles — situational speed tooltip (Task 9)", () => {
+  function ctxWithSpeedInfo(info?: unknown): ComponentRenderContext {
+    return {
+      derived: {
+        proficiencyBonus: 2,
+        initiative: 0,
+        speed: 30,
+        ...(info !== undefined ? { speedInformational: info } : {}),
+      },
+      resolved: { state: { inspiration: 0 } },
+    } as unknown as ComponentRenderContext;
+  }
+
+  it("shows a situational popover on hover over the speed tile when the slice is non-empty", () => {
+    const root = mountContainer();
+    new StatsTiles().render(root, ctxWithSpeedInfo([
+      { field: "speed.walk", source: "Boots of Speed", value: 10, conditions: [{ kind: "raw", text: "while activated" }] },
+    ]));
+    const speedTile = root.querySelector<HTMLElement>(".pc-stats-tile[data-stat='speed']")!;
+    speedTile.dispatchEvent(new Event("mouseenter"));
+    const tip = speedTile.querySelector(".pc-stat-tooltip");
+    expect(tip).not.toBeNull();
+    expect(tip?.querySelector(".pc-stat-tooltip-title")?.textContent).toBe("Speed — situational");
+    const rows = tip!.querySelectorAll(".pc-situational-row");
+    expect(rows.length).toBe(1);
+    expect(rows[0].textContent).toContain("Boots of Speed");
+    expect(rows[0].textContent).toContain("while activated");
+  });
+
+  it("attaches NO popover when the speed slice is absent (situational-free character)", () => {
+    const root = mountContainer();
+    new StatsTiles().render(root, ctxWithSpeedInfo(undefined));
+    const speedTile = root.querySelector<HTMLElement>(".pc-stats-tile[data-stat='speed']")!;
+    speedTile.dispatchEvent(new Event("mouseenter"));
+    expect(speedTile.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+
+  it("attaches NO popover when the speed slice is empty", () => {
+    const root = mountContainer();
+    new StatsTiles().render(root, ctxWithSpeedInfo([]));
+    const speedTile = root.querySelector<HTMLElement>(".pc-stats-tile[data-stat='speed']")!;
+    speedTile.dispatchEvent(new Event("mouseenter"));
+    expect(speedTile.querySelector(".pc-stat-tooltip")).toBeNull();
   });
 });
 

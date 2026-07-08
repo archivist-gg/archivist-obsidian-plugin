@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 import {
   renderClassChronicle,
   collectBrowseDecisions,
@@ -10,8 +10,8 @@ import {
   tableColumns,
   type ClassData,
   type SubclassData,
-} from "../src/modules/pc/components/builder/class-chronicle";
-import type { DecisionLedger } from "../src/modules/pc/pc.decision-engine";
+} from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
+import type { DecisionLedger } from "@archivist/dnd5e/pc/pc.decision-engine";
 
 const emptyLedger = (): DecisionLedger => ({ classes: [], origin: [] });
 
@@ -121,7 +121,7 @@ const mkCtx = (): ComponentRenderContext =>
   ({
     resolved: { definition: {} },
     derived: {},
-    core: { entities: {} },
+    services: { entities: {} },
     editState: null,
     builderUiState: new Map(),
   }) as unknown as ComponentRenderContext;

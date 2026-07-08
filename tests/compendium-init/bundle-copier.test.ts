@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { copyBundle } from "../../src/shared/compendium-init/bundle-copier";
+import { copyBundle } from "../../packages/obsidian/src/shared/compendium-init/bundle-copier";
 import type { Vault } from "obsidian";
 
 interface MockVault {

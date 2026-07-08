@@ -13,17 +13,17 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { parseArmor } from "../../src/modules/armor/armor.parser";
-import { parseBackground } from "../../src/modules/background/background.parser";
-import { parseClass } from "../../src/modules/class/class.parser";
-import { parseFeat } from "../../src/modules/feat/feat.parser";
-import { parseItem } from "../../src/modules/item/item.parser";
-import { parseMonster } from "../../src/modules/monster/monster.parser";
-import { parseOptionalFeature } from "../../src/modules/optional-feature/optional-feature.parser";
-import { parseRace } from "../../src/modules/race/race.parser";
-import { parseSpell } from "../../src/modules/spell/spell.parser";
-import { parseSubclass } from "../../src/modules/subclass/subclass.parser";
-import { parseWeapon } from "../../src/modules/weapon/weapon.parser";
+import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
+import { parseBackground } from "@archivist/dnd5e/background/background.parser";
+import { parseClass } from "@archivist/dnd5e/class/class.parser";
+import { parseFeat } from "@archivist/dnd5e/feat/feat.parser";
+import { parseItem } from "@archivist/dnd5e/item/item.parser";
+import { parseMonster } from "@archivist/dnd5e/monster/monster.parser";
+import { parseOptionalFeature } from "@archivist/dnd5e/optional-feature/optional-feature.parser";
+import { parseRace } from "@archivist/dnd5e/race/race.parser";
+import { parseSpell } from "@archivist/dnd5e/spell/spell.parser";
+import { parseSubclass } from "@archivist/dnd5e/subclass/subclass.parser";
+import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
 
 const BUNDLE_ROOT = path.resolve(__dirname, "../../.compendium-bundle");
 

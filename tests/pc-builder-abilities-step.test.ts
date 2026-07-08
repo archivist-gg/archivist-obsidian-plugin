@@ -3,8 +3,8 @@ import { describe, it, expect, vi, beforeAll } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderAbilitiesStep } from "../src/modules/pc/components/builder/abilities-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import { renderAbilitiesStep } from "../packages/obsidian/src/modules/pc/components/builder/abilities-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -13,7 +13,7 @@ beforeAll(() => installObsidianDomHelpers());
  *  rather than `import.meta.url` — under the jsdom environment a `new URL(…,
  *  import.meta.url)` resolves against the document base, not the module file. */
 function readPcStyle(name: string): string {
-  return readFileSync(resolve(process.cwd(), "src/modules/pc/styles", name), "utf8");
+  return readFileSync(resolve(process.cwd(), "packages/obsidian/src/modules/pc/styles", name), "utf8");
 }
 
 /** Extract the declaration block (`{ ... }`) of the first rule whose selector
@@ -48,20 +48,19 @@ function mkCtx(over: {
     },
     // Real DerivedStats fields are `scores` (final totals) + `mods`.
     derived: { scores: abilities, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 } },
-    core: { plugin: {}, entities: { search: () => [] }, compendiums: { getAll: () => [] }, modules: { getByEntityType: () => undefined } },
+    services: { plugin: {}, entities: { search: () => [] }, compendiums: { getAll: () => [] }, modules: { getByEntityType: () => undefined } },
     editState: over.editState ?? null,
     builderUiState: new Map(),
   } as unknown as ComponentRenderContext;
 }
 
 describe("renderAbilitiesStep — tabs", () => {
-  it("renders the five method pills plus the ✦ Custom tab, current method dressed .on", () => {
+  it("renders the five method pills, current method dressed .on", () => {
     const container = mountContainer();
     renderAbilitiesStep(container, mkCtx({ method: "point-buy" }));
     const tabs = [...container.querySelectorAll(".pc-bmtab")];
-    expect(tabs.length).toBe(6);
+    expect(tabs.length).toBe(5);
     expect(tabs.find((t) => t.textContent?.includes("Standard Point Buy"))?.classList.contains("on")).toBe(true);
-    expect(container.querySelector(".pc-bmtab.ai")?.textContent).toContain("Custom");
     expect(container.querySelector(".pc-bmtab .pc-bhb")?.textContent).toBe("Homebrew");
   });
 
@@ -658,65 +657,5 @@ describe("renderAbilitiesStep — Base popover (picker B-II)", () => {
     document.body.click(); // outside the panel + trigger
     expect(container.querySelector(".pc-base-pop")).toBeNull();
     expect(setAbilityBaseScore).not.toHaveBeenCalled();
-  });
-});
-
-describe("renderAbilitiesStep — custom tab (Plan 6 hand-off)", () => {
-  it("selecting ✦ Custom shows the inert Inquiry box and takes the .on dress exclusively", () => {
-    const container = mountContainer();
-    renderAbilitiesStep(container, mkCtx()); // method = manual
-    expect(container.querySelector(".pc-baibox")).toBeNull();
-    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
-    const box = container.querySelector(".pc-baibox");
-    expect(box).not.toBeNull();
-    expect((box!.querySelector("button") as HTMLButtonElement).disabled).toBe(true);
-    // one strip, one active tab: Custom wears .on, no method pill does
-    expect(container.querySelector(".pc-bmtab.ai")?.classList.contains("on")).toBe(true);
-    expect([...container.querySelectorAll(".pc-bmtab:not(.ai)")].every((p) => !p.classList.contains("on"))).toBe(true);
-  });
-
-  it("tabs don't toggle off: re-clicking the active ✦ Custom keeps the box", () => {
-    const container = mountContainer();
-    renderAbilitiesStep(container, mkCtx());
-    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
-    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
-    expect(container.querySelector(".pc-baibox")).not.toBeNull();
-    expect(container.querySelector(".pc-bmtab.ai")?.classList.contains("on")).toBe(true);
-  });
-
-  it("re-picking the current method leaves Custom: box gone, pill .on restored, no mutator write", () => {
-    const container = mountContainer();
-    const setAbilityMethod = vi.fn();
-    renderAbilitiesStep(container, mkCtx({ editState: { setAbilityMethod } })); // method = manual
-    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
-    const manual = [...container.querySelectorAll(".pc-bmtab")].find((t) => t.textContent === "Manual") as HTMLElement;
-    manual.click();
-    expect(setAbilityMethod).not.toHaveBeenCalled();
-    expect(container.querySelector(".pc-baibox")).toBeNull();
-    expect([...container.querySelectorAll(".pc-bmtab")].find((t) => t.textContent === "Manual")?.classList.contains("on")).toBe(true);
-  });
-
-  it("picking a different method from Custom clears the flag and writes setAbilityMethod", () => {
-    const container = mountContainer();
-    const setAbilityMethod = vi.fn();
-    const ctx = mkCtx({ editState: { setAbilityMethod } });
-    renderAbilitiesStep(container, ctx);
-    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
-    const pill = [...container.querySelectorAll(".pc-bmtab")].find((t) => t.textContent?.includes("Standard Array")) as HTMLElement;
-    pill.click();
-    expect(setAbilityMethod).toHaveBeenCalledWith("standard-array");
-    expect((ctx.builderUiState as unknown as Map<string, unknown>).get("builder.abilities.custom")).toBe(false);
-  });
-
-  it("local repaint preserves host-owned children (the step heading survives entering Custom)", () => {
-    // Mirror production: the host renders the step heading into the SAME body
-    // before calling renderAbilitiesStep. Entering Custom triggers a local
-    // repaint, which must not destroy that host-owned heading.
-    const container = mountContainer();
-    container.createDiv({ cls: "pc-builder-step-h", text: "Abilities" });
-    renderAbilitiesStep(container, mkCtx());
-    (container.querySelector(".pc-bmtab.ai") as HTMLElement).click();
-    expect(container.querySelector(".pc-builder-step-h")?.textContent).toBe("Abilities");
-    expect(container.querySelector(".pc-baibox")).not.toBeNull();
   });
 });

@@ -18,7 +18,7 @@ vi.mock("obsidian", () => ({
   Component: class {},
 }));
 
-import { renderItemBlock } from "../src/modules/item/item.renderer";
+import { renderItemBlock } from "../packages/obsidian/src/modules/item/item.renderer";
 
 beforeEach(() => {
   document.body.replaceChildren();

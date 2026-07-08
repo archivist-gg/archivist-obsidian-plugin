@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { humanizeSlug } from "../src/shared/rendering/renderer-utils";
+import { humanizeSlug } from "../packages/obsidian/src/shared/rendering/renderer-utils";
 
 describe("humanizeSlug", () => {
   it("capitalizes hyphen tokens without touching apostrophes", () => {

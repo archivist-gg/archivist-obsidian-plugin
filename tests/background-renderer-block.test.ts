@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { renderBackgroundBlock } from "../src/modules/background/background.renderer";
-import { backgroundModule } from "../src/modules/background/background.module";
+import { renderBackgroundBlock } from "../packages/obsidian/src/modules/background/background.renderer";
+import { backgroundModule } from "../packages/obsidian/src/modules/background/background.module";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { BackgroundEntity } from "../src/modules/background/background.types";
+import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,8 +1,13 @@
 node_modules/
 main.js
 *.js.map
+
+# tsc -b composite build artifacts for workspace packages
+# (esbuild bundles from src/ directly; dist/ + tsbuildinfo are not consumed)
+packages/*/dist/
+*.tsbuildinfo
+
 data.json
-src/data/srd/index.generated.ts
 .superpowers/
 docs/superpowers/
 .worktrees/
@@ -11,14 +16,11 @@ docs/superpowers/
 CLAUDE.md
 AGENTS.md
 test-vault/
-tools/srd-canonical/.cache/
 
 # Loose MD files under .compendium-bundle/ are regenerable from index.json,
 # which IS committed because esbuild inlines it into main.js. Keeping the
 # loose files would add ~15MB of duplicated content to the repo.
 .compendium-bundle/*/
 
-# audit work product (regenerated each run; not tracked)
-tools/srd-canonical/audit-conditions.report.md
-tools/srd-canonical/audit-merger-gaps.report.md
-
+.claude/memory/
+.claude/settings.json

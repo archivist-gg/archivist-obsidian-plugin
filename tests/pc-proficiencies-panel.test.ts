@@ -1,9 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ProficienciesPanel, aggregateProficiencies } from "../src/modules/pc/components/proficiencies-panel";
+import { ProficienciesPanel } from "../packages/obsidian/src/modules/pc/components/proficiencies-panel";
+import { aggregateProficiencies } from "@archivist/dnd5e/pc/pc.proficiencies";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -65,7 +66,7 @@ describe("ProficienciesPanel", () => {
   const ctx: ComponentRenderContext = {
     resolved: mkResolved(),
     derived: {} as DerivedStats,
-    core: {} as never,
+    services: {} as never,
     editState: null,
   };
   it("renders four labelled lines", () => {
@@ -86,7 +87,7 @@ describe("ProficienciesPanel", () => {
     r.background = null;
     r.race = null;
     const container = mountContainer();
-    new ProficienciesPanel().render(container, { resolved: r, derived: {} as DerivedStats, core: {} as never, editState: null });
+    new ProficienciesPanel().render(container, { resolved: r, derived: {} as DerivedStats, services: {} as never, editState: null });
     const vals = [...container.querySelectorAll(".pc-prof-vals")].map((v) => v.textContent);
     expect(vals).toEqual(["—", "—", "—", "—"]);
   });

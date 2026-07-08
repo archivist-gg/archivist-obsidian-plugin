@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { HeaderStrip } from "../src/modules/pc/components/inventory/header-strip";
+import { HeaderStrip } from "../packages/obsidian/src/modules/pc/components/inventory/header-strip";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -10,7 +10,7 @@ function makeCtx(): ComponentRenderContext {
   return {
     resolved: { definition: { equipment: [], currency: { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 } } } as never,
     derived: { attunementUsed: 0, attunementLimit: 3 } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

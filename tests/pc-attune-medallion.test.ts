@@ -16,9 +16,9 @@ vi.mock("obsidian", async () => {
   };
 });
 
-import { renderMedallion } from "../src/modules/pc/components/inventory/attune-medallion";
+import { renderMedallion } from "../packages/obsidian/src/modules/pc/components/inventory/attune-medallion";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ResolvedEquipped } from "../src/modules/pc/pc.types";
+import type { ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   ABILITY_METHODS, STANDARD_ARRAY, POINT_BUY_RULES,
   pointBuySpent, pointBuyRemaining, allowedScores,
-} from "../src/modules/pc/components/builder/ability-methods";
+} from "../packages/obsidian/src/modules/pc/components/builder/ability-methods";
 
 const ALL10 = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
 

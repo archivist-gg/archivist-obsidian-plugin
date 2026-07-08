@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderRaceStep } from "../src/modules/pc/components/builder/race-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderRaceStep } from "../packages/obsidian/src/modules/pc/components/builder/race-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -18,7 +18,7 @@ function mkCtx(over: { race?: string | null; editState?: unknown } = {}): Compon
   return {
     resolved: { definition: { race: over.race ?? null, subrace: null, origin_choices: {}, class: [] }, race: null, background: null, classes: [], features: [] },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: { search: (_q: string, type: string) => (type === "race" ? RACES : []), getByTypeAndSlug: () => undefined },
       compendiums: { getAll: () => [{ name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" }] },
@@ -123,7 +123,7 @@ function mkCtxWithChosenDwarf(
       race: resolvedRace, background: null, classes: [], features: [],
     },
     derived: {},
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) => (type === "race" ? races : []),

@@ -1,0 +1,151 @@
+import type { SheetComponent, ComponentRenderContext } from "../component.types";
+import type { Feature } from "@archivist/dnd5e/types/feature";
+import type { FeatureSource } from "@archivist/dnd5e/pc/pc.types";
+import { renderCostBadge, type ActionCost } from "./cost-badge";
+import { renderChargeBoxes } from "./charge-boxes";
+import { createExpandState } from "./row-expand";
+import { renderFeatureExpand } from "./feature-expand";
+
+interface FeatureWithSource { feature: Feature; sourceLabel: string; }
+
+const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> = {
+  "short-rest": "short", "long-rest": "long", "dawn": "dawn", "dusk": "long",
+  "turn": "special", "round": "special", "custom": "special",
+};
+
+export class FeaturesTable implements SheetComponent {
+  readonly type = "features-table";
+  private expand = createExpandState();
+
+  render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    const rows = collectFeatures(ctx);
+    if (rows.length === 0) return;
+
+    const visible = rows.filter(({ feature }) => feature.action && feature.action !== "special");
+    if (visible.length === 0) return;
+
+    const section = el.createDiv({ cls: "pc-actions-section" });
+    const head = section.createDiv({ cls: "pc-actions-section-head" });
+    head.createSpan({ cls: "pc-actions-section-title", text: "Features" });
+    head.createSpan({ cls: "pc-actions-section-count", text: `${visible.length} features` });
+
+    const list = section.createDiv({ cls: "pc-actions-table pc-features-table" });
+
+    for (const { feature, sourceLabel } of visible) {
+      const key = `feature:${feature.id ?? feature.name}`;
+      const row = list.createDiv({ cls: "pc-action-row" });
+      if (this.expand.is(key)) row.classList.add("open", "pc-row-open");
+
+      const cost = feature.action as ActionCost;
+      renderCostBadge(row.createDiv(), cost);
+
+      const ce = ctx.derived.conditionEffects;
+      const isAction = cost === "action" || cost === "reaction" || cost === "bonus-action";
+      if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
+
+      const nameCell = row.createDiv({ cls: "pc-action-namecell" });
+      nameCell.createDiv({ cls: "pc-action-row-name", text: feature.name });
+      if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
+
+      // Activatable buff: a toggle bound to state.active_buffs (by feature id) plus
+      // a static duration label. Toggling writes via editState.toggleActiveBuff
+      // (the same recompute path charge spends use). stopPropagation keeps the
+      // toggle click from bubbling into the row-expand handler below. A feature
+      // with no id can't be tracked, so skip the toggle in that case.
+      if (feature.activatable && feature.id) {
+        const buffId = feature.id;
+        const buffWrap = nameCell.createDiv({ cls: "pc-action-buff" });
+        const active = (ctx.resolved.state.active_buffs ?? []).includes(buffId);
+        const label = buffWrap.createEl("label", { cls: "pc-action-buff-control" });
+        const cb = label.createEl("input", { cls: "pc-action-buff-toggle", type: "checkbox" });
+        cb.checked = active;
+        label.createSpan({ cls: "pc-action-buff-text", text: active ? "Active" : "Activate" });
+        label.addEventListener("click", (e) => e.stopPropagation());
+        cb.addEventListener("change", (e) => {
+          e.stopPropagation();
+          ctx.editState?.toggleActiveBuff(buffId);
+        });
+        if (feature.duration && typeof feature.duration === "object") {
+          buffWrap.createSpan({ cls: "pc-action-buff-duration", text: `${feature.duration.amount} ${feature.duration.unit}` });
+        }
+      }
+
+      row.createDiv({ cls: "pc-action-range", text: "Self" });
+
+      const chgCell = row.createDiv({ cls: "pc-action-charges" });
+      const featureKey = feature.resources?.[0]?.id ?? feature.id;
+      const fu = featureKey ? ctx.resolved.state.feature_uses?.[featureKey] : undefined;
+      if (fu && featureKey) {
+        const reset = feature.resources?.[0]?.reset ?? "long-rest";
+        renderChargeBoxes(chgCell, {
+          used: fu.used,
+          max: fu.max,
+          recovery: { amount: String(fu.max), reset: RESET_TO_RECOVERY[reset] ?? "special" },
+          onExpend: () => ctx.editState?.expendFeatureUse(featureKey),
+          onRestore: () => ctx.editState?.restoreFeatureUse(featureKey),
+        });
+      } else {
+        chgCell.createSpan({ text: "—" });
+      }
+
+      // Click anywhere on the row toggles the expand panel (matches inventory UX).
+      // Charge boxes call e.stopPropagation() so their clicks don't bubble here.
+      row.addEventListener("click", () => {
+        this.expand.toggle(key);
+        el.empty();
+        this.render(el, ctx);
+      });
+
+      if (this.expand.is(key)) {
+        const exp = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
+        const inner = exp.createDiv({ cls: "pc-action-expand-inner" });
+        renderFeatureExpand(inner, feature, sourceLabel);
+      }
+    }
+  }
+}
+
+/**
+ * Normalizes `ctx.resolved.features` into `{ feature, sourceLabel }[]`.
+ *
+ * Production shape is `ResolvedCharacter.features: ResolvedFeature[]`
+ * (each `{ feature: Feature; source: FeatureSource }`). Tests sometimes
+ * pass raw `Feature[]` (no wrapper). We accept both:
+ *   - If an entry has a `feature` property, treat it as ResolvedFeature
+ *     and derive `sourceLabel` from its `source` (FeatureSource).
+ *   - Otherwise, treat the entry itself as a `Feature` and emit
+ *     an empty source label.
+ */
+function collectFeatures(ctx: ComponentRenderContext): FeatureWithSource[] {
+  const features = (ctx.resolved as unknown as {
+    features?: Array<{ feature: Feature; source?: FeatureSource } | Feature>;
+  }).features ?? [];
+  return features.map((entry) => {
+    if (entry && typeof entry === "object" && "feature" in entry) {
+      return { feature: entry.feature, sourceLabel: formatSourceLabel(entry.source) };
+    }
+    return { feature: entry, sourceLabel: "" };
+  });
+}
+
+function formatSourceLabel(source: FeatureSource | undefined): string {
+  if (!source) return "";
+  switch (source.kind) {
+    case "class":
+      return `${capitalizeSlug(source.slug)} ${source.level}`;
+    case "subclass":
+      return `${capitalizeSlug(source.slug)} ${source.level}`;
+    case "race":
+      return capitalizeSlug(source.slug);
+    case "background":
+      return `Background: ${capitalizeSlug(source.slug)}`;
+    case "feat":
+      return `Feat: ${capitalizeSlug(source.slug)}`;
+    default:
+      return "";
+  }
+}
+
+function capitalizeSlug(slug: string): string {
+  return slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}

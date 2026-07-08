@@ -1,9 +1,9 @@
 // scripts/test-regenerate-one.ts
 
 import * as fs from "fs";
-import { convertDescToTags } from "../src/shared/dnd/srd-tag-converter";
+import { convertDescToTags } from "@archivist/dnd5e/dnd/srd-tag-converter";
 
-const file = process.argv[2] || "/Users/shinoobi/w/archivist/server/data/srd/monsters/knight.json";
+const file = process.argv[2] || "data/srd/monsters/knight.json";
 const json = JSON.parse(fs.readFileSync(file, "utf-8"));
 console.log("Monster:", json.name);
 console.log("STR:", json.strength, "DEX:", json.dexterity, "CR:", json.challenge_rating);

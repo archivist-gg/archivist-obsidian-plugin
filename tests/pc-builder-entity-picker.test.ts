@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderEntityPicker } from "../src/modules/pc/components/builder/entity-picker";
-import type { ColSpec } from "../src/modules/pc/components/builder/selection-table";
+import { renderEntityPicker } from "../packages/obsidian/src/modules/pc/components/builder/entity-picker";
+import type { ColSpec } from "../packages/obsidian/src/modules/pc/components/builder/selection-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -17,7 +17,7 @@ const races: RegisteredEntity[] = [
 
 function fakeCtx(bag: Map<string, unknown>): ComponentRenderContext {
   return {
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (q: string, type: string) =>

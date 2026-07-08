@@ -1,12 +1,12 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { SaveChip } from "../src/modules/pc/components/save-chip";
-import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
-import { ActionsTab } from "../src/modules/pc/components/actions-tab";
-import { HpWidget } from "../src/modules/pc/components/hp-widget";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { ConditionEffects } from "../src/modules/pc/pc.types";
+import { SaveChip } from "../packages/obsidian/src/modules/pc/components/save-chip";
+import { SkillsPanel } from "../packages/obsidian/src/modules/pc/components/skills-panel";
+import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
+import { HpWidget } from "../packages/obsidian/src/modules/pc/components/hp-widget";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { ConditionEffects } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -95,7 +95,7 @@ describe("skills-panel — DIS chip", () => {
 
 describe("renderConditionTag — primitive", () => {
   it("renders a tag with the given kind label", async () => {
-    const { renderConditionTag } = await import("../src/modules/pc/components/condition-tag");
+    const { renderConditionTag } = await import("../packages/obsidian/src/modules/pc/components/condition-tag");
     const root = mountContainer();
     renderConditionTag(root, "ADV", "test tooltip");
     const tag = root.querySelector(".pc-cond-tag-adv") as HTMLElement;
@@ -115,7 +115,7 @@ function actionsTabCtxWith(effects: Partial<ConditionEffects>): ComponentRenderC
       attacks: [],
       conditionEffects: { ...ZERO_EFFECTS, ...effects },
     } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };

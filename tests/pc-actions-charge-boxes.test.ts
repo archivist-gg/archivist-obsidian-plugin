@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderChargeBoxes } from "../src/modules/pc/components/actions/charge-boxes";
+import { renderChargeBoxes } from "../packages/obsidian/src/modules/pc/components/actions/charge-boxes";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

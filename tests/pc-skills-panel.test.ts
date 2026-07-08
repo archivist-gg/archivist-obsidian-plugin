@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { SkillsPanel } from "../src/modules/pc/components/skills-panel";
+import { SkillsPanel } from "../packages/obsidian/src/modules/pc/components/skills-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "../src/modules/pc/pc.types";
-import type { SkillSlug } from "../src/shared/types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
+import type { SkillSlug } from "@archivist/dnd5e";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -32,7 +32,7 @@ const ctx: ComponentRenderContext = {
       perception: { bonus: 2, proficiency: "none", ability: "wis" },
     }),
   } as DerivedStats,
-  core: {} as never,
+  services: {} as never,
   editState: null,
 };
 
@@ -88,7 +88,7 @@ describe("SkillsPanel — roll-modifier chips", () => {
         }),
         rollModifiers,
       } as unknown as DerivedStats,
-      core: {} as never,
+      services: {} as never,
       editState: null,
     };
   }

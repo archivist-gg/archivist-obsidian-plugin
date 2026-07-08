@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { featureSchema } from "../src/shared/schemas/feature-schema";
+import { featureSchema } from "@archivist/dnd5e/schemas/feature-schema";
 
 describe("featureSchema", () => {
   it("accepts name + description", () => {

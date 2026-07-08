@@ -14,9 +14,9 @@ vi.mock("obsidian", async () => {
   };
 });
 
-import { AttunementStrip } from "../src/modules/pc/components/inventory/attunement-strip";
+import { AttunementStrip } from "../packages/obsidian/src/modules/pc/components/inventory/attunement-strip";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -29,7 +29,7 @@ function ctxWithAttuned(attuned: Array<{ name: string; rarity: string }>): Compo
   return {
     resolved: { definition: { equipment } } as never,
     derived: { attunementUsed: attuned.length, attunementLimit: 3 } as never,
-    core: {
+    services: {
       entities: {
         getBySlug: (slug: string) => {
           const idx = Number(slug.split("-")[1]);

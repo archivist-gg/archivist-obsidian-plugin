@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { makeInlineInput, numberField, numberOverride } from "../src/modules/pc/components/edit-primitives";
+import { makeInlineInput, numberField, numberOverride } from "../packages/obsidian/src/modules/pc/components/edit-primitives";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,12 +1,14 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderEntityBlock } from "../src/modules/pc/components/builder/entity-block";
-import { renderEntityPicker } from "../src/modules/pc/components/builder/entity-picker";
-import { raceModule } from "../src/modules/race/race.module";
+import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from "vitest";
+import { renderEntityBlock } from "../packages/obsidian/src/modules/pc/components/builder/entity-block";
+import { renderEntityPicker } from "../packages/obsidian/src/modules/pc/components/builder/entity-picker";
+import { raceModule } from "../packages/obsidian/src/modules/race/race.module";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { CoreAPI } from "../src/core/module-api";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
+import { dnd5ePack } from "@archivist/dnd5e";
+import { setEntityPresenters, setEntityPresenterKernel } from "../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
+import type { Archivist } from "@archivist/core";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -46,22 +48,26 @@ const gnome: RegisteredEntity = {
   },
 };
 
-function coreWith(mod: unknown): CoreAPI {
-  return {
-    plugin: { app: {} },
-    modules: { getByEntityType: () => mod },
-  } as unknown as CoreAPI;
-}
+const packKernel = {
+  getEntityType: (t: string) => dnd5ePack.entityTypes.find((e) => e.type === t),
+} as unknown as Archivist;
+beforeEach(() => {
+  setEntityPresenterKernel(packKernel);
+  setEntityPresenters(new Map([["race", raceModule]]));
+});
+afterEach(() => {
+  setEntityPresenters(new Map());
+  setEntityPresenterKernel(null as unknown as Archivist);
+});
 
 function pickerCtx(bag: Map<string, unknown>): ComponentRenderContext {
   return {
-    core: {
+    services: {
       plugin: { app: {} },
       entities: { search: (_q: string, type: string) => (type === "race" ? [gnome] : []) },
       compendiums: { getAll: () => [
         { name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" },
       ] },
-      modules: { getByEntityType: (t: string) => (t === "race" ? raceModule : undefined) },
     },
     builderUiState: bag,
   } as unknown as ComponentRenderContext;
@@ -70,20 +76,10 @@ function pickerCtx(bag: Map<string, unknown>): ComponentRenderContext {
 describe("renderEntityBlock + real race module (integration)", () => {
   it("(a) fills the host with the real race block after a microtask flush", async () => {
     const root = mountContainer();
-    renderEntityBlock(root, gnome, coreWith(raceModule));
+    renderEntityBlock(root, gnome);
     await flush();
     expect(root.querySelector(".archivist-race-block")).not.toBeNull();
     expect(root.querySelector(".archivist-race-block .spell-name")?.textContent).toBe("Gnome");
-  });
-
-  it("(c) shows the .pc-bblock-fallback name line when the module render throws synchronously", () => {
-    const root = mountContainer();
-    const mod = {
-      parseYaml: () => ({ success: true, data: { name: "Gnome" } }),
-      render: () => { throw new Error("boom"); },
-    };
-    renderEntityBlock(root, gnome, coreWith(mod));
-    expect(root.querySelector(".pc-bblock-fallback")?.textContent).toBe("Gnome");
   });
 
   it("(d) surfaces .archivist-block-error when the async block render rejects", async () => {

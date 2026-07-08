@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { spellInputSchema } from "../src/modules/spell/spell.ai-schema";
-import { spellEntitySchema } from "../src/modules/spell/spell.schema";
-import type { Spell } from "../src/modules/spell/spell.types";
+import { spellInputSchema } from "@archivist/dnd5e/spell/spell.ai-schema";
+import { spellEntitySchema } from "@archivist/dnd5e/spell/spell.schema";
+import type { Spell } from "@archivist/dnd5e/spell/spell.types";
 
 describe("spellInputSchema", () => {
   it("validates a valid spell", () => {

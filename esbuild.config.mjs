@@ -3,6 +3,12 @@ import path from "path";
 import process from "process";
 import builtins from "builtin-modules";
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "fs";
+import { fileURLToPath } from "url";
+
+// Absolute path to this config's own directory (the plugin root), independent of
+// the process cwd, so the dedup aliases below always target the PLUGIN's own
+// node_modules.
+const pluginRoot = path.dirname(fileURLToPath(import.meta.url));
 
 // Load .env.local if it exists
 if (existsSync(".env.local")) {
@@ -60,7 +66,7 @@ const copyToObsidian = {
 
 const context = await esbuild.context({
   banner: { js: banner },
-  entryPoints: ["src/main.ts"],
+  entryPoints: ["packages/obsidian/src/main.ts"],
   bundle: true,
   plugins: [copyToObsidian],
   external: [
@@ -86,6 +92,16 @@ const context = await esbuild.context({
   sourcemap: prod ? false : "inline",
   treeShaking: true,
   outfile: "main.js",
+  // Dedup shared runtime deps to the plugin's single node_modules copy. The
+  // extracted @archivist/{dnd5e,core} siblings are consumed via symlink; esbuild
+  // resolves their real path and would otherwise bundle each sibling's OWN
+  // node_modules/{zod,js-yaml} as a duplicate now that npm-workspace hoisting no
+  // longer dedupes them. All three repos declare compatible ranges (zod ^4.3.6,
+  // js-yaml ^4.1.0), so a single bundled copy matches pre-extraction behaviour.
+  alias: {
+    zod: path.resolve(pluginRoot, "node_modules/zod"),
+    "js-yaml": path.resolve(pluginRoot, "node_modules/js-yaml"),
+  },
   loader: {
     ".md": "text",
   },

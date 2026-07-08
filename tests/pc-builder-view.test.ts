@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { BuilderView } from "../src/modules/pc/components/builder-view";
-import { BUILDER_STEPS } from "../src/modules/pc/components/builder-steps";
+import { BuilderView } from "../packages/obsidian/src/modules/pc/components/builder-view";
+import { BUILDER_STEPS } from "../packages/obsidian/src/modules/pc/components/builder-steps";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -127,7 +127,7 @@ describe("BuilderView shell", () => {
       ...ctx(),
       editState: { setRace },
       builderUiState: new Map(),
-      core: {
+      services: {
         plugin: {},
         entities: { search: () => [{
           slug: "srd-5e_elf", name: "Elf", entityType: "race", filePath: "elf.md",
@@ -391,7 +391,7 @@ describe("BuilderView shell", () => {
           classes: [], race: { slug: "srd-5e_elf", name: "Elf", choices: [], traits: [] }, background: null, features: [],
         },
         builderUiState: new Map(),
-        core: {
+        services: {
           plugin: {},
           entities: {
             search: () => [{
@@ -424,7 +424,7 @@ describe("BuilderView shell", () => {
         classes: [], race: { slug: "srd-5e_elf", name: "Elf", choices: [], traits: [] }, background: null, features: [],
       },
       builderUiState: new Map(),
-      core: {
+      services: {
         plugin: {},
         entities: {
           search: () => [{
@@ -485,7 +485,7 @@ describe("BuilderView shell", () => {
         derived: { totalLevel: 0, proficiencyBonus: 2, scores: {} },
         editState: { addClass: vi.fn(), removeClass: vi.fn(), setClassLevel: vi.fn() },
         builderUiState: new Map(),
-        core: {
+        services: {
           plugin: {},
           entities: classRegistry(),
           compendiums: { getAll: () => [{ name: "SRD", description: "", readonly: true, homebrew: false, folderPath: "" }] },

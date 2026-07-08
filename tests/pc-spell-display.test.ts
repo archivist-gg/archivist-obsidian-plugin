@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { castingTimeBadge, componentLetters, effectTags, groupByLevel, slotCells } from "../src/modules/pc/components/spells/spell-display";
-import type { ResolvedSpell } from "../src/modules/pc/pc.types";
+import { castingTimeBadge, componentLetters, effectTags, groupByLevel, slotCells } from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
+import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
 
 const sp = (over: Partial<ResolvedSpell["entity"]> & { name: string }, p: Partial<ResolvedSpell> = {}): ResolvedSpell =>
   ({ entity: over, slug: over.name.toLowerCase(), classSlug: "wizard", source: "class", prepared: true, alwaysPrepared: false, ...p }) as ResolvedSpell;

@@ -29,10 +29,10 @@ vi.mock("obsidian", async () => {
   };
 });
 
-import { AttunePickerModal } from "../src/modules/pc/components/inventory/attune-picker-modal";
+import { AttunePickerModal } from "../packages/obsidian/src/modules/pc/components/inventory/attune-picker-modal";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import type { App } from "obsidian";
-import type { VisibleEntry } from "../src/modules/pc/components/inventory/filter-state";
+import type { VisibleEntry } from "../packages/obsidian/src/modules/pc/components/inventory/filter-state";
 
 beforeAll(() => installObsidianDomHelpers());
 

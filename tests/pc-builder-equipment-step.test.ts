@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderEquipmentStep } from "../src/modules/pc/components/builder/equipment-step";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
+import { renderEquipmentStep } from "../packages/obsidian/src/modules/pc/components/builder/equipment-step";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -75,7 +75,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
     } as never,
     derived: {} as never,
     app: {} as never,
-    core: { entities: makeRegistry(pool) } as never,
+    services: { entities: makeRegistry(pool) } as never,
     editState: { setChoice, setOriginChoice, syncStartingEquipment, setBuilderEquipmentMode, setCurrency,
       addItem: vi.fn(), removeItem: vi.fn() } as never,
     builderUiState: new Map(),

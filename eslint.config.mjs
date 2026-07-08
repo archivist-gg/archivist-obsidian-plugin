@@ -16,7 +16,24 @@ const restrictedDisableRules = [
   "@microsoft/sdl/no-eval",
   "@microsoft/sdl/no-inner-html",
   "import/no-nodejs-modules",
+  // sentence-case is the one rule we deliberately permit disabling inline (for
+  // legitimate proper nouns / acronyms in UI copy). `no-restricted-disable`
+  // matches rule IDs with gitignore semantics (the `ignore` package), where
+  // `obsidianmd/*` excludes the `obsidianmd/ui` *parent* and gitignore cannot
+  // re-include a child of an excluded directory — so a bare
+  // `!obsidianmd/ui/sentence-case` is inert. Re-include the `ui` dir, re-exclude
+  // its rules, then re-include only sentence-case; every other obsidianmd/ui/*
+  // rule (sentence-case-json, sentence-case-locale-module, …) stays restricted.
+  "!obsidianmd/ui",
+  "obsidianmd/ui/*",
   "!obsidianmd/ui/sentence-case",
+];
+
+// The obsidian package tsconfig the type-aware parser loads (it is the global
+// `**/*.ts` block's `project`). dnd5e is now an external repo, so its tsconfigs
+// no longer participate in the plugin's lint.
+const tsconfigProjects = [
+  "./packages/obsidian/tsconfig.json",
 ];
 
 export default defineConfig([
@@ -41,7 +58,9 @@ export default defineConfig([
     },
     languageOptions: {
       parser: tsparser,
-      parserOptions: { project: "./tsconfig.json" },
+      parserOptions: {
+        project: tsconfigProjects,
+      },
     },
     rules: {
       "no-undef": "off",
@@ -53,23 +72,6 @@ export default defineConfig([
         ...restrictedDisableRules,
       ],
       "@eslint-community/eslint-comments/no-unused-disable": "error",
-    },
-  },
-  // Dev CLI tools: progress logging to stdout/stderr is intended behaviour, so
-  // narrow the no-console rule here rather than littering the code with
-  // forbidden eslint-disable comments. `no-console` remains enforced
-  // everywhere else (in obsidianmd's recommended config it is implemented via
-  // `obsidianmd/rule-custom-message`, which wraps `no-console`).
-  // Node-side rules (fetch, popout-window document reference, etc.) target
-  // the Obsidian plugin runtime and do not apply to Node CLI tools that run
-  // outside Obsidian.
-  {
-    files: ["tools/**/*.ts"],
-    rules: {
-      "no-console": "off",
-      "obsidianmd/rule-custom-message": "off",
-      "obsidianmd/prefer-active-doc": "off",
-      "no-restricted-globals": "off",
     },
   },
 ]);

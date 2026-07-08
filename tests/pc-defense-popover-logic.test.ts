@@ -5,7 +5,7 @@ import {
   defenseKindFor,
   type DefenseRowState,
   type TappedPip,
-} from "../src/modules/pc/components/defense-type-popover-logic";
+} from "../packages/obsidian/src/modules/pc/components/defense-type-popover-logic";
 
 describe("cycleAction", () => {
   // Neutral row — tapping any pip is an add-only.

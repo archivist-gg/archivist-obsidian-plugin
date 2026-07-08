@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
-import { InventoryToolbar } from "../src/modules/pc/components/inventory/inventory-toolbar";
+import { InventoryToolbar } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-toolbar";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

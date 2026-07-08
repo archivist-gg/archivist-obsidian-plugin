@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { detectModifiedFiles } from "../../src/shared/compendium-init/modification-detector";
+import { detectModifiedFiles } from "../../packages/obsidian/src/shared/compendium-init/modification-detector";
 import type { Vault } from "obsidian";
 
 interface VaultFixture {

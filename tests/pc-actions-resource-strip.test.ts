@@ -1,8 +1,8 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { renderResourceList } from "../src/modules/pc/components/actions/resource-badge";
+import { renderResourceList } from "../packages/obsidian/src/modules/pc/components/actions/resource-badge";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -27,7 +27,7 @@ function ctx(
       mods: { str: 1, dex: 2, con: 3, int: 0, wis: 1, cha: 4 },
       derivedSpellSlots: extra.derivedSpellSlots,
     } as never,
-    core: {} as never,
+    services: {} as never,
     app: {} as never,
     editState: editState as never,
   };

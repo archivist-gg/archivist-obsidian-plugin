@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as obsidian from "obsidian";
-import { setInventoryIcon, INVENTORY_ICON_KEYS } from "../src/modules/pc/assets/inventory-icons";
+import { setInventoryIcon, INVENTORY_ICON_KEYS } from "../packages/obsidian/src/modules/pc/assets/inventory-icons";
 
 const setIconSpy = vi.spyOn(obsidian, "setIcon");
 

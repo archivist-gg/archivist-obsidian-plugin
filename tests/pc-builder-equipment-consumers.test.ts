@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderProfsEquipment } from "../src/modules/pc/components/builder/class-chronicle";
+import { renderProfsEquipment } from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
 
 beforeAll(() => installObsidianDomHelpers());
 

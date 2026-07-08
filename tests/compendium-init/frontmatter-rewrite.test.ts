@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { rewriteFrontmatter } from "../../src/shared/compendium-init/frontmatter-rewrite";
+import { rewriteFrontmatter } from "../../packages/obsidian/src/shared/compendium-init/frontmatter-rewrite";
 import type { Vault } from "obsidian";
 
 interface VaultFixture {

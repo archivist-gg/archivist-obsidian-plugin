@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { featEntitySchema } from "../src/modules/feat/feat.schema";
+import { featEntitySchema } from "@archivist/dnd5e/feat/feat.schema";
 
 const minimalFeat = {
   slug: "alert",

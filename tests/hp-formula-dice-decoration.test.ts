@@ -43,8 +43,8 @@ beforeAll(() => {
   };
 });
 
-import { renderMonsterBlock } from "../src/modules/monster/monster.renderer";
-import type { Monster } from "../src/modules/monster/monster.types";
+import { renderMonsterBlock } from "../packages/obsidian/src/modules/monster/monster.renderer";
+import type { Monster } from "@archivist/dnd5e/monster/monster.types";
 
 const BASE_MONSTER: Monster = {
   name: "Test Dragon",

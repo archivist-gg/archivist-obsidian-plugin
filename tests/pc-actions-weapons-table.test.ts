@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { WeaponsTable } from "../src/modules/pc/components/actions/weapons-table";
+import { WeaponsTable } from "../packages/obsidian/src/modules/pc/components/actions/weapons-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { AttackRow } from "../src/modules/pc/pc.types";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { AttackRow } from "@archivist/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -11,7 +11,7 @@ function ctxWithAttacks(attacks: AttackRow[]): ComponentRenderContext {
   return {
     resolved: { definition: { equipment: [] } } as never,
     derived: { attacks } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };
@@ -24,7 +24,7 @@ function ctxWithRollModifiers(
   return {
     resolved: { definition: { equipment: [] } } as never,
     derived: { attacks, rollModifiers } as never,
-    core: { entities: { getBySlug: () => null } } as never,
+    services: { entities: { getBySlug: () => null } } as never,
     app: {} as never,
     editState: null,
   };
@@ -71,6 +71,29 @@ describe("WeaponsTable", () => {
     const dmgCell = root.querySelector(".pc-weapon-damage")?.textContent ?? "";
     expect(dmgCell).toContain("1d8 + 3");
     expect(dmgCell).toContain("1d10 + 3");
+  });
+
+  it("renders the field label (to hit / dmg) on weapon situational rows", () => {
+    const root = mountContainer();
+    const attacks = [{
+      id: "0:standard", name: "Frost Brand", range: "melee 5 ft.", toHit: 6,
+      damageDice: "1d8 + 4", damageType: "slashing",
+      properties: [], proficient: true,
+      breakdown: { toHit: [], damage: [] },
+      informational: [
+        { source: "Frost Brand", value: 1, field: "weapon_attack", conditions: [{ kind: "vs_creature_type", value: "fire" }] },
+        { source: "Frost Brand", value: 2, field: "weapon_damage", conditions: [{ kind: "vs_creature_type", value: "fire" }] },
+      ],
+      slotKey: "mainhand",
+    }] as unknown as AttackRow[];
+    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    const sub = root.querySelector(".pc-attack-row-situational");
+    expect(sub).not.toBeNull();
+    const text = sub?.textContent ?? "";
+    expect(text).toContain("to hit");
+    expect(text).toContain("dmg");
+    // The label is its own span between the amount and the condition.
+    expect(sub?.querySelector(".pc-situational-field")).not.toBeNull();
   });
 
   it("preserves situational sub-line when informational present", () => {

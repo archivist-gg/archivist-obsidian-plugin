@@ -1,10 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderAddClassBody } from "../src/modules/pc/components/builder/class-modal";
-import type { ComponentRenderContext } from "../src/modules/pc/components/component.types";
-import type { RegisteredEntity } from "../src/shared/entities/entity-registry";
-import type { ClassData } from "../src/modules/pc/components/builder/class-chronicle";
+import { renderAddClassBody } from "../packages/obsidian/src/modules/pc/components/builder/class-modal";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
+import type { RegisteredEntity } from "@core/entity-registry";
+import type { ClassData } from "../packages/obsidian/src/modules/pc/components/builder/class-chronicle";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -43,7 +43,7 @@ function classEntity(slug: string): RegisteredEntity {
 function mkCtxWithClasses(slugs: string[]): ComponentRenderContext {
   const entities = slugs.map(classEntity);
   return {
-    core: {
+    services: {
       plugin: {},
       entities: {
         search: (q: string, type: string) =>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { backupFiles } from "../../src/shared/compendium-init/backup";
+import { backupFiles } from "../../packages/obsidian/src/shared/compendium-init/backup";
 import type { Vault } from "obsidian";
 
 interface MockState {
