@@ -1,6 +1,6 @@
 // tests/item-conditions-schema.test.ts
 import { describe, it, expect } from "vitest";
-import { itemEntitySchema } from "@archivist/dnd5e/item/item.schema";
+import { itemEntitySchema } from "@archivist-gg/dnd5e/item/item.schema";
 
 const baseItem = { name: "Test Item", rarity: "uncommon" };
 

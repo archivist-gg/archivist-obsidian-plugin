@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveScalingDie } from "@archivist/dnd5e/dnd/resource-die";
+import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 
 describe("resolveScalingDie", () => {
   it("returns base below the first scaling threshold", () => {

@@ -1,5 +1,5 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { aggregateProficiencies } from "@archivist/dnd5e/pc/pc.proficiencies";
+import { aggregateProficiencies } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
 
 export class ProficienciesPanel implements SheetComponent {
   readonly type = "proficiencies-panel";

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { CharacterEditState, type EditStateContext } from "../packages/obsidian/src/modules/pc/pc.edit-state";
-import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
+import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
-import type { Character, DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
+import type { Character, DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const MINIMAL_YAML = [
   "name: Grendal",

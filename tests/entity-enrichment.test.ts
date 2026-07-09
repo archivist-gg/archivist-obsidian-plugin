@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { enrichMonster } from "@archivist/dnd5e/monster/monster.enrichment";
-import { enrichSpell } from "@archivist/dnd5e/spell/spell.enrichment";
-import { enrichItem } from "@archivist/dnd5e/item/item.enrichment";
+import { enrichMonster } from "@archivist-gg/dnd5e/monster/monster.enrichment";
+import { enrichSpell } from "@archivist-gg/dnd5e/spell/spell.enrichment";
+import { enrichItem } from "@archivist-gg/dnd5e/item/item.enrichment";
 
 describe("enrichMonster", () => {
   it("calculates XP from CR", () => {

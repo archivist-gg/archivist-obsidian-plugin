@@ -1,5 +1,5 @@
 // tests/fixtures/pc/rest-fixtures.ts
-import type { Character } from "@archivist/dnd5e/pc/pc.types";
+import type { Character } from "@archivist-gg/dnd5e/pc/pc.types";
 
 /** Helper: clone a fixture so mutations in tests don't leak. */
 export function clone<T>(x: T): T {

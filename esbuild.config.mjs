@@ -93,7 +93,7 @@ const context = await esbuild.context({
   treeShaking: true,
   outfile: "main.js",
   // Dedup shared runtime deps to the plugin's single node_modules copy. The
-  // extracted @archivist/{dnd5e,core} siblings are consumed via symlink; esbuild
+  // extracted @archivist-gg/{dnd5e,core} siblings are consumed via symlink; esbuild
   // resolves their real path and would otherwise bundle each sibling's OWN
   // node_modules/{zod,js-yaml} as a duplicate now that npm-workspace hoisting no
   // longer dedupes them. All three repos declare compatible ranges (zod ^4.3.6,

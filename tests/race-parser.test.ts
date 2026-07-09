@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseRace } from "@archivist/dnd5e/race/race.parser";
+import { parseRace } from "@archivist-gg/dnd5e/race/race.parser";
 
 const yaml = `
 slug: dwarf

@@ -1,5 +1,5 @@
 import type { App, WorkspaceLeaf } from "obsidian";
-import type { EntityRegistry } from "@archivist/core";
+import type { EntityRegistry } from "@archivist-gg/core";
 import type { CompendiumManager } from "../../shared/entities/compendium-manager";
 import type { PCSheetView } from "./pc.view";
 

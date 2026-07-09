@@ -1,9 +1,9 @@
 import { setIcon, Notice } from "obsidian";
-import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
+import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./inline-tag-renderer";
-import type { FormulaContext } from "@archivist/dnd5e";
-import { normalizeTagType, parseTagTerms, resolveTag } from "@archivist/dnd5e/dnd/formula-tags";
-import { convert5eToolsTags } from "@archivist/dnd5e/dnd/prose-tags";
+import type { FormulaContext } from "@archivist-gg/dnd5e";
+import { normalizeTagType, parseTagTerms, resolveTag } from "@archivist-gg/dnd5e/dnd/formula-tags";
+import { convert5eToolsTags } from "@archivist-gg/dnd5e/dnd/prose-tags";
 
 export type { FormulaContext };
 

@@ -1,11 +1,11 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { DecisionItem } from "@archivist/dnd5e/pc/pc.decision-engine";
-import type { RegisteredEntity } from "@archivist/core";
+import type { DecisionItem } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import type { RegisteredEntity } from "@archivist-gg/core";
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
-import type { Ability } from "@archivist/dnd5e/types/choice";
+import type { Ability } from "@archivist-gg/dnd5e/types/choice";
 
 /** Render a decision/trait description as a quiet markdown block (smoke r7) at
  *  the top of a top-level live row's nest. Routes through the SHARED markdown

@@ -2,9 +2,9 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { parseContainer } from "@archivist/core";
-import { monsterCodec, parseMonster } from "@archivist/dnd5e";
-import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import { parseContainer } from "@archivist-gg/core";
+import { monsterCodec, parseMonster } from "@archivist-gg/dnd5e";
+import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { renderMonsterBlock } from "../../packages/obsidian/src/modules/monster/monster.renderer";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers";
 

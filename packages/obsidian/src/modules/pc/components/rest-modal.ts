@@ -1,14 +1,14 @@
 // src/modules/pc/components/rest-modal.ts
 import { Modal, type App } from "obsidian";
-import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
-import type { EntityRegistry } from "@archivist/core";
+import type { EntityRegistry } from "@archivist-gg/core";
 import {
   computeRestPlan,
   type RestCategoryId,
   type RestPlan,
   type RestType,
-} from "@archivist/dnd5e/pc/pc.rest";
+} from "@archivist-gg/dnd5e/pc/pc.rest";
 
 /**
  * Itemized opt-out rest modal. Short rest also exposes the HD-spend strip

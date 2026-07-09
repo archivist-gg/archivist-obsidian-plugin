@@ -1,4 +1,4 @@
-import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
+import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
 
 function buildSubtitle(armor: ArmorEntity): string {
   const parts: string[] = [];

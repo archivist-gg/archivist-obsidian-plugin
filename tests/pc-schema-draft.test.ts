@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
+import { characterSchema } from "@archivist-gg/dnd5e/pc/pc.schema";
 
 describe("characterSchema — draft (class-less) tolerance", () => {
   const draft = {

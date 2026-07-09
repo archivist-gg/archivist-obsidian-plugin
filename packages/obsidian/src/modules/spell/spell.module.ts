@@ -5,7 +5,7 @@ import type {
   ModalConstructor,
   RenderContext,
 } from "../../shared/rendering/entity-presenter";
-import type { Spell } from "@archivist/dnd5e/spell/spell.types";
+import type { Spell } from "@archivist-gg/dnd5e/spell/spell.types";
 import { renderSpellBlock } from "./spell.renderer";
 import { renderSpellEditMode } from "./spell.edit-render";
 import { SpellModal } from "./spell.modal";

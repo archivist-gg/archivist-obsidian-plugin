@@ -3,10 +3,10 @@
 // Presentation-only remnant (3C-R Phase 1): condition → display text. The
 // mechanical evaluators (evaluateCondition / evaluateConditions, plus the
 // private unwrapSlug helper) were relocated to
-// @archivist/dnd5e/item/item.conditions; only the human-facing formatters
+// @archivist-gg/dnd5e/item/item.conditions; only the human-facing formatters
 // stay here in the renderer.
 
-import type { Condition } from "@archivist/dnd5e/types/item-conditions.types";
+import type { Condition } from "@archivist-gg/dnd5e/types/item-conditions.types";
 
 function capitalize(s: string): string {
   return s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);

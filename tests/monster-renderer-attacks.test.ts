@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { renderMonsterBlock } from "../packages/obsidian/src/modules/monster/monster.renderer";
-import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());

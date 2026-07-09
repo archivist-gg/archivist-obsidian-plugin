@@ -1,9 +1,9 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { toggleSpellBlock } from "./spell-block-expand";
 import { renderAddDrawer } from "./add-drawer";
 import { editionTag } from "./spell-display";
-import { baseClassName } from "@archivist/dnd5e/class/class.slug";
+import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 
 // Ephemeral Prepare-list filters. Module-scoped but reset at the top of
 // renderPrepareView on every full re-render (see §5.1). 0 = cantrip.

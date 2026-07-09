@@ -1,5 +1,5 @@
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
+import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import { renderWeaponBlock } from "./weapon.renderer";
 
 class WeaponModule implements EntityPresenter {

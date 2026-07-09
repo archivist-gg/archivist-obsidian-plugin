@@ -1,6 +1,6 @@
 import type { MonsterEditState } from "../monster.edit-state";
-import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist/dnd5e/dnd/constants";
-import { abilityModifier, formatModifier } from "@archivist/dnd5e/dnd/math";
+import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist-gg/dnd5e/dnd/constants";
+import { abilityModifier, formatModifier } from "@archivist-gg/dnd5e/dnd/math";
 import { createSpinButtons } from "../../../shared/edit/spin-buttons";
 import { type DomRefs, getAbilityScore } from "./types";
 

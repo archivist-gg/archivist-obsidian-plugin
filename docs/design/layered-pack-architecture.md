@@ -32,7 +32,7 @@ the generator) can open and edit. Two parts of that file matter:
 - **A single typed fenced code block** whose *info string* is the entity type
   and whose body carries the entity's data.
 
-Both are handled by `parseContainer` in `@archivist/core`'s `container.ts` (now
+Both are handled by `parseContainer` in `@archivist-gg/core`'s `container.ts` (now
 in the sibling `archivist-core` repo). The grammar is deliberately tiny:
 
 ```
@@ -74,17 +74,17 @@ Archivist is an npm workspace of three packages. Confirmed names, from each
 
 | Package                | Role                                                                                          |
 | ---------------------- | --------------------------------------------------------------------------------------------- |
-| `@archivist/core`      | Framework: the container format, contracts, the kernel, the entity registry, and the ports.   |
-| `@archivist/dnd5e`     | The system pack: schemas, parsers, codecs, rules, and the SRD content.                         |
-| `@archivist/obsidian`  | The Obsidian plugin: composition root + renderer.                                              |
+| `@archivist-gg/core`      | Framework: the container format, contracts, the kernel, the entity registry, and the ports.   |
+| `@archivist-gg/dnd5e`     | The system pack: schemas, parsers, codecs, rules, and the SRD content.                         |
+| `@archivist-gg/obsidian`  | The Obsidian plugin: composition root + renderer.                                              |
 
 The dependency arrows point strictly inward:
 
 ```
-@archivist/core  ←  @archivist/dnd5e
+@archivist-gg/core  ←  @archivist-gg/dnd5e
         ▲                  ▲
         └──────────────────┘
-                   @archivist/obsidian
+                   @archivist-gg/obsidian
 ```
 
 - `core` depends on nothing else in the workspace. It knows about containers,
@@ -102,7 +102,7 @@ The dependency arrows point strictly inward:
 
 The one arrow that must never exist:
 
-> **`@archivist/dnd5e` MUST NEVER import `@archivist/obsidian`.**
+> **`@archivist-gg/dnd5e` MUST NEVER import `@archivist-gg/obsidian`.**
 
 The system pack has to stay usable outside Obsidian (that is what makes the
 headless generator layer possible), so it cannot reach "up" into the plugin.
@@ -116,17 +116,17 @@ behind a single command:
 
 1. **eslint `import/no-restricted-paths`** —
    [`eslint.config.mjs`](../../eslint.config.mjs) declares the surviving layered
-   zone: `dnd5e` may import only `@archivist/core` (now an external package,
+   zone: `dnd5e` may import only `@archivist-gg/core` (now an external package,
    resolved from its own repo). A forbidden import is an `error`, not a warning.
 2. **`eslint-import-resolver-typescript`** — configured in the same block's
-   `settings["import/resolver"]`, it teaches eslint to follow the `@archivist/*`
+   `settings["import/resolver"]`, it teaches eslint to follow the `@archivist-gg/*`
    package exports/subpaths, so `import/no-restricted-paths` correctly attributes
-   an import like `@archivist/dnd5e/monster/monster.parser` to the `dnd5e`
+   an import like `@archivist-gg/dnd5e/monster/monster.parser` to the `dnd5e`
    package rather than treating it as an opaque module.
 3. **The planted architecture test** —
    [`tests/arch/dependency-arrows.test.ts`](../../tests/arch/dependency-arrows.test.ts)
    writes a probe file into `packages/dnd5e/src` that imports from
-   `@archivist/obsidian`, runs eslint over it programmatically, and asserts the
+   `@archivist-gg/obsidian`, runs eslint over it programmatically, and asserts the
    `import/no-restricted-paths` rule fires (the `dnd5e→obsidian` arrow). This
    guards the *guard*: if the eslint zone or resolver ever silently stops working,
    this test goes red.
@@ -181,7 +181,7 @@ The generatable set is therefore **five** types across two archetypes: `monster`
 ## 5. The pack EntityType recipe
 
 Everything the pack contributes about a type is one `EntityType` object.
-From `@archivist/core`'s `contracts.ts` (now in the sibling `archivist-core` repo):
+From `@archivist-gg/core`'s `contracts.ts` (now in the sibling `archivist-core` repo):
 
 ```ts
 interface EntityType {

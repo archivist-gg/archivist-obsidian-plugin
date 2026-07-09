@@ -14,7 +14,7 @@ import { pcModule } from "./modules/pc/pc.module";
 import { armorModule } from "./modules/armor/armor.module";
 import { weaponModule } from "./modules/weapon/weapon.module";
 
-import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
+import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
 import { createErrorBlock } from "./shared/rendering/renderer-utils";
 
@@ -36,9 +36,9 @@ import {
 import { confirm as confirmModal } from "./shared/modals/ConfirmModal";
 
 // SRD & entities
-import { SrdStore, dnd5ePack } from "@archivist/dnd5e";
-import { EntityRegistry, createArchivist } from "@archivist/core";
-import type { Archivist } from "@archivist/core";
+import { SrdStore, dnd5ePack } from "@archivist-gg/dnd5e";
+import { EntityRegistry, createArchivist } from "@archivist-gg/core";
+import type { Archivist } from "@archivist-gg/core";
 
 // Kernel + Obsidian ports + presenter dispatch wiring
 import {

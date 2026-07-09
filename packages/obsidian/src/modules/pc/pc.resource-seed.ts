@@ -1,6 +1,6 @@
-import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
-import { evaluateMaxFormula, resolveMaxAt } from "@archivist/dnd5e/dnd/resource-formula";
-import { resourceBindings } from "@archivist/dnd5e/pc/pc.resource-seed";
+import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
+import { evaluateMaxFormula, resolveMaxAt } from "@archivist-gg/dnd5e/dnd/resource-formula";
+import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
 
 /**
  * Seed `resolved.state.feature_uses` from every owned resource's level-resolved

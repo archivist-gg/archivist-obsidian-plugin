@@ -1,14 +1,14 @@
 import { Notice, type App } from "obsidian";
-import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { renderItemBlock } from "../../../item/item.renderer";
 import { renderWeaponBlock } from "../../../weapon/weapon.renderer";
 import { renderArmorBlock } from "../../../armor/armor.renderer";
-import type { WeaponEntity } from "@archivist/dnd5e/weapon/weapon.types";
-import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
-import type { Item } from "@archivist/dnd5e/item/item.types";
-import type { EntityRegistry } from "@archivist/core";
-import { requiresAttunement } from "@archivist/dnd5e/item/item.attunement";
+import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
+import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
+import type { Item } from "@archivist-gg/dnd5e/item/item.types";
+import type { EntityRegistry } from "@archivist-gg/core";
+import { requiresAttunement } from "@archivist-gg/dnd5e/item/item.attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
 

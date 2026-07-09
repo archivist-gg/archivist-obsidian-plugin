@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { createArchivist } from "@archivist/core";
-import type { StoragePort } from "@archivist/core";
-import { dnd5ePack, monsterGeneratable, monsterCodec } from "@archivist/dnd5e";
+import { createArchivist } from "@archivist-gg/core";
+import type { StoragePort } from "@archivist-gg/core";
+import { dnd5ePack, monsterGeneratable, monsterCodec } from "@archivist-gg/dnd5e";
 
 function memStorage(): StoragePort & { files: Record<string, string> } {
   const files: Record<string, string> = {};

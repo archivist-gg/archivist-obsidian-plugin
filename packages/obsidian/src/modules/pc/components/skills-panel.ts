@@ -1,8 +1,8 @@
 import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { ALL_SKILLS } from "@archivist/dnd5e/dnd/constants";
-import { formatModifier } from "@archivist/dnd5e/dnd/math";
-import type { SkillSlug } from "@archivist/dnd5e";
+import { ALL_SKILLS } from "@archivist-gg/dnd5e/dnd/constants";
+import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
+import type { SkillSlug } from "@archivist-gg/dnd5e";
 import { renderConditionTag } from "./condition-tag";
 import { numberOverride } from "./edit-primitives";
 

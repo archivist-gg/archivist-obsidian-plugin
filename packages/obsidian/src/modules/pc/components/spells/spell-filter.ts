@@ -1,8 +1,8 @@
-import type { SpellCandidate } from "@archivist/dnd5e/spell/spell.access";
-import type { Spell } from "@archivist/dnd5e/spell/spell.types";
+import type { SpellCandidate } from "@archivist-gg/dnd5e/spell/spell.access";
+import type { Spell } from "@archivist-gg/dnd5e/spell/spell.types";
 import { abbrAbility } from "./spell-display";
-import { castTimeCategory, rangeCategory } from "@archivist/dnd5e/spell/spell.filter";
-import type { CastTimeCat, RangeCat, SortKey, SortDir } from "@archivist/dnd5e/spell/spell.filter";
+import { castTimeCategory, rangeCategory } from "@archivist-gg/dnd5e/spell/spell.filter";
+import type { CastTimeCat, RangeCat, SortKey, SortDir } from "@archivist-gg/dnd5e/spell/spell.filter";
 
 export type SourceCat = "2014" | "2024";
 

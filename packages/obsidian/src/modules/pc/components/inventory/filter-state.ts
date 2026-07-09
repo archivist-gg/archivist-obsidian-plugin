@@ -1,4 +1,4 @@
-import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 
 export type StatusFilter = "all" | "equipped" | "attuned" | "carried";
 

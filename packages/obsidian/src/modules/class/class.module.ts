@@ -1,5 +1,5 @@
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
+import type { ClassEntity } from "@archivist-gg/dnd5e/class/class.types";
 import { renderClassStub } from "./class.renderer";
 
 class ClassModule implements EntityPresenter {

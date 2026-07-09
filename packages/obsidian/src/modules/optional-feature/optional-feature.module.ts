@@ -1,5 +1,5 @@
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { OptionalFeatureEntity } from "@archivist/dnd5e/types/optional-feature.types";
+import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
 import { renderOptionalFeatureStub } from "./optional-feature.renderer";
 
 class OptionalFeatureModule implements EntityPresenter {

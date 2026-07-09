@@ -4,7 +4,7 @@ import { renderRowExpand } from "../packages/obsidian/src/modules/pc/components/
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { App } from "obsidian";
-import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
 vi.mock("../packages/obsidian/src/shared/modals/ConfirmModal", () => ({

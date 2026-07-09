@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import { createArchivist } from "@archivist/core";
-import { dnd5ePack } from "@archivist/dnd5e";
-import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
+import { createArchivist } from "@archivist-gg/core";
+import { dnd5ePack } from "@archivist-gg/dnd5e";
+import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
 import { renderArmorBlock } from "../../packages/obsidian/src/modules/armor/armor.renderer";
 
 // Second-entity e2e (§9): drive a fixture armor body through ALL layers with NO

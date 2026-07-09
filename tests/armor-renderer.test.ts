@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from "vitest";
 import { renderArmorBlock } from "../packages/obsidian/src/modules/armor/armor.renderer";
-import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
+import { parseArmor } from "@archivist-gg/dnd5e/armor/armor.parser";
 import { PLATE, BREASTPLATE, SHIELD, MAGE_ARMOR } from "./fixtures/armor";
 
 beforeEach(() => {

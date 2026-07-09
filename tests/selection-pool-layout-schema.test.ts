@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { tabDeclSchema } from "@archivist/dnd5e/schemas/selection-pool-schema";
+import { tabDeclSchema } from "@archivist-gg/dnd5e/schemas/selection-pool-schema";
 
 describe("tabDeclSchema.renders.layout", () => {
   it("accepts a layout hint", () => {

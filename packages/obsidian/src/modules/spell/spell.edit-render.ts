@@ -5,7 +5,7 @@ import type { MarkdownPostProcessorContext } from "obsidian";
 // 0f spec §0.2): EditContext.plugin stays `unknown`; edit renderers recover the
 // concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../main";
-import type { Spell } from "@archivist/dnd5e/spell/spell.types";
+import type { Spell } from "@archivist-gg/dnd5e/spell/spell.types";
 import { renderSideButtons } from "../../shared/edit/side-buttons";
 import { createSvgBar } from "../../shared/rendering/renderer-utils";
 import { SaveAsNewModal, CreateCompendiumModal } from "../../shared/entities/compendium-modal";

@@ -1,5 +1,5 @@
 import * as yaml from "js-yaml";
-import type { Archivist, EntityDoc, ParseResult } from "@archivist/core";
+import type { Archivist, EntityDoc, ParseResult } from "@archivist-gg/core";
 import type { EntityPresenter, RenderContext } from "./entity-presenter";
 
 // Module-level refs, injected by main.ts at plugin load (shared/ must not

@@ -1,5 +1,5 @@
 import type { Compendium } from "../../../../shared/entities/compendium-manager";
-import type { RegisteredEntity } from "@archivist/core";
+import type { RegisteredEntity } from "@archivist-gg/core";
 
 /** Ticked-compendium set for the universal pickers. All ticked by default;
  *  unticking a compendium hides its content. Names, not editions: the

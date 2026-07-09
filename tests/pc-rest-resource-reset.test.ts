@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { computeRestPlan } from "@archivist/dnd5e/pc/pc.rest";
+import { computeRestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
-import type { Character, ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
+import type { Character, ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
 function feat(id: string, name: string, reset: string) {
   return { feature: { name, resources: [{ id, name, max_formula: "1", reset }] }, source: { kind: "class", slug: "x", level: 1 } };

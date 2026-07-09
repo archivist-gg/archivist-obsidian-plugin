@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderSpellBlock } from "../../../spell/spell.renderer";
 
 /**

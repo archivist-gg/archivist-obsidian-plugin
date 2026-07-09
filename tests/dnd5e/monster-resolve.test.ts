@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveMonster } from "@archivist/dnd5e";
+import { resolveMonster } from "@archivist-gg/dnd5e";
 
 describe("resolveMonster (light derivation)", () => {
   it("derives proficiency bonus and xp from CR without mutating the raw", () => {

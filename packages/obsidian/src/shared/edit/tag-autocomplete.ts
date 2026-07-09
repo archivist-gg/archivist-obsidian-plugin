@@ -1,9 +1,9 @@
 // Backtick-triggered autocomplete dropdown for formula tags in feature textareas.
 
-import type { Abilities } from "@archivist/dnd5e";
-import { resolveTag } from "@archivist/dnd5e/dnd/formula-tags";
-import { abilityModifier, formatModifier } from "@archivist/dnd5e/dnd/math";
-import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist/dnd5e/dnd/constants";
+import type { Abilities } from "@archivist-gg/dnd5e";
+import { resolveTag } from "@archivist-gg/dnd5e/dnd/formula-tags";
+import { abilityModifier, formatModifier } from "@archivist-gg/dnd5e/dnd/math";
+import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist-gg/dnd5e/dnd/constants";
 
 // Structural host interface: minimal shape of the edit-state object this
 // autocomplete reads from. Kept local so this shared module has no dependency

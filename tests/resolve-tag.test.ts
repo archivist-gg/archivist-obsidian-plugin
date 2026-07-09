@@ -1,7 +1,7 @@
 // tests/resolve-tag.test.ts
 
 import { describe, it, expect, vi } from "vitest";
-import { resolveTag } from "@archivist/dnd5e/dnd/formula-tags";
+import { resolveTag } from "@archivist-gg/dnd5e/dnd/formula-tags";
 
 const CTX = {
   abilities: { str: 16, dex: 14, con: 13, int: 10, wis: 12, cha: 8 },

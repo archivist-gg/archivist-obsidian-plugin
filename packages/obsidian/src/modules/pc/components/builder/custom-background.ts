@@ -1,8 +1,8 @@
 import { Notice } from "obsidian";
-import type { Ability } from "@archivist/dnd5e/types/choice";
+import type { Ability } from "@archivist-gg/dnd5e/types/choice";
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "@archivist/core";
-import { ALL_SKILL_SLUGS } from "@archivist/dnd5e/types/choice";
+import type { RegisteredEntity } from "@archivist-gg/core";
+import { ALL_SKILL_SLUGS } from "@archivist-gg/dnd5e/types/choice";
 import { renderChoiceCallout } from "./choice-callout";
 import { applyChoiceToggle } from "./decision-strip";
 

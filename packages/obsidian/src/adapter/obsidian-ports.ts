@@ -5,7 +5,7 @@ import type {
   NotificationSink,
   EntryRef,
   EntityRegistry,
-} from "@archivist/core";
+} from "@archivist-gg/core";
 
 /** Bridge: vault-backed StoragePort for the kernel. */
 export function makeVaultStoragePort(vault: Vault): StoragePort {

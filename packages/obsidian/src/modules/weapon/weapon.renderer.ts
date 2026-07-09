@@ -1,4 +1,4 @@
-import type { WeaponEntity, WeaponProperty } from "@archivist/dnd5e/weapon/weapon.types";
+import type { WeaponEntity, WeaponProperty } from "@archivist-gg/dnd5e/weapon/weapon.types";
 
 function capitalize(s: string): string {
   return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

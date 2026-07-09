@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as yaml from "js-yaml";
-import { choiceSchema } from "@archivist/dnd5e/schemas/choice-schema";
-import { DECISION_SIGNAL } from "@archivist/dnd5e/pc/decision-recognizer";
+import { choiceSchema } from "@archivist-gg/dnd5e/schemas/choice-schema";
+import { DECISION_SIGNAL } from "@archivist-gg/dnd5e/pc/decision-recognizer";
 
 const RUNTIME = path.resolve(__dirname, "../../../archivist-dnd5e/src/srd/data/runtime");
 const EDITIONS = ["2014", "2024"] as const;

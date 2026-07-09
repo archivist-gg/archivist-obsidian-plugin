@@ -4,8 +4,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import { featCodec } from "@archivist/dnd5e/feat/feat.codec";
-import { parseFeat } from "@archivist/dnd5e/feat/feat.parser"; // moved parser (post-move path)
+import { featCodec } from "@archivist-gg/dnd5e/feat/feat.codec";
+import { parseFeat } from "@archivist-gg/dnd5e/feat/feat.parser"; // moved parser (post-move path)
 import { featModule } from "../../packages/obsidian/src/modules/feat/feat.module"; // (a2) uses the module's real render (B1)
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Feats"));
@@ -96,7 +96,7 @@ describe("feat port equivalence", () => {
 
   // de-list guard: kernel pack declares feat with the PACK codec (not the legacy bridge)
   it("dnd5ePack declares feat with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist/dnd5e"); // S2: barrel, no ./pack subpath
+    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
     expect(dnd5ePack.entityTypes.some((et) => et.type === "feat" && et.doc === featCodec)).toBe(true);
   });
 });

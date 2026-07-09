@@ -1,8 +1,8 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ComponentRegistry } from "./component-registry";
-import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist/dnd5e/dnd/constants";
-import { formatModifier } from "@archivist/dnd5e/dnd/math";
-import type { Ability } from "@archivist/dnd5e";
+import { ABILITY_KEYS, ABILITY_NAMES } from "@archivist-gg/dnd5e/dnd/constants";
+import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
+import type { Ability } from "@archivist-gg/dnd5e";
 import { numberOverride } from "./edit-primitives";
 
 /**

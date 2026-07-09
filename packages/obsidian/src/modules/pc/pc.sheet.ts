@@ -2,7 +2,7 @@ import type { App } from "obsidian";
 import type { PCServices } from "./pc.services";
 import type { ComponentRegistry } from "./components/component-registry";
 import type { ComponentRenderContext } from "./components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "./pc.edit-state";
 
 export interface RenderSheetOptions {

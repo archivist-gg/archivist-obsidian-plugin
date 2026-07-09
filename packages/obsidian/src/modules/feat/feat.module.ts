@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
+import type { FeatEntity } from "@archivist-gg/dnd5e/feat/feat.types";
 import { renderFeatBlock } from "./feat.renderer";
 
 class FeatModule implements EntityPresenter {

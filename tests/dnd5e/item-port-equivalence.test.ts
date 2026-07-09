@@ -4,10 +4,10 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import { itemCodec } from "@archivist/dnd5e/item/item.codec";
-import { parseItem } from "@archivist/dnd5e/item/item.parser"; // moved parser (post-move path)
+import { itemCodec } from "@archivist-gg/dnd5e/item/item.codec";
+import { parseItem } from "@archivist-gg/dnd5e/item/item.parser"; // moved parser (post-move path)
 import { itemModule } from "../../packages/obsidian/src/modules/item/item.module"; // (a2) uses the module's real render (B1)
-import { enrichItem } from "@archivist/dnd5e/item/item.enrichment";
+import { enrichItem } from "@archivist-gg/dnd5e/item/item.enrichment";
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Magic Items"));
 
@@ -109,7 +109,7 @@ describe("item port equivalence", () => {
 
   // de-list guard: kernel pack declares item with the PACK codec (not the legacy bridge)
   it("dnd5ePack declares item with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist/dnd5e"); // S2: barrel, no ./pack subpath
+    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
     expect(dnd5ePack.entityTypes.some((et) => et.type === "item" && et.doc === itemCodec)).toBe(true);
   });
 });

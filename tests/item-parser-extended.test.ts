@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseItem } from "@archivist/dnd5e/item/item.parser";
+import { parseItem } from "@archivist-gg/dnd5e/item/item.parser";
 
 describe("parseItem — legacy backward compatibility", () => {
   it("parses prose-only magic item (existing compendium shape)", () => {

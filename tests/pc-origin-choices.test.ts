@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
+import { characterSchema } from "@archivist-gg/dnd5e/pc/pc.schema";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
-import type { Character } from "@archivist/dnd5e/pc/pc.types";
+import type { Character } from "@archivist-gg/dnd5e/pc/pc.types";
 
 // The schema requires `state.hp`; this is the smallest input it accepts.
 const minimal = {

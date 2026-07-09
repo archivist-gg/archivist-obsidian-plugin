@@ -1,5 +1,5 @@
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { ArmorEntity } from "@archivist/dnd5e/armor/armor.types";
+import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
 import { renderArmorBlock } from "./armor.renderer";
 
 class ArmorModule implements EntityPresenter {

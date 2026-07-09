@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { computeRestPlan } from "@archivist/dnd5e/pc/pc.rest";
+import { computeRestPlan } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { applyRestResets } from "../packages/obsidian/src/modules/pc/pc.rest";
 import { clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
-import type { Character } from "@archivist/dnd5e/pc/pc.types";
+import type { Character } from "@archivist-gg/dnd5e/pc/pc.types";
 
 function warlock(usedPact: number): Character {
   return {

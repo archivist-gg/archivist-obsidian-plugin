@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { NotesTab } from "../packages/obsidian/src/modules/pc/components/notes-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

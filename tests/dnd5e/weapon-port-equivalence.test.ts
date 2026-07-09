@@ -4,8 +4,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import { weaponCodec } from "@archivist/dnd5e/weapon/weapon.codec";
-import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser"; // moved parser (post-move path)
+import { weaponCodec } from "@archivist-gg/dnd5e/weapon/weapon.codec";
+import { parseWeapon } from "@archivist-gg/dnd5e/weapon/weapon.parser"; // moved parser (post-move path)
 import { weaponModule } from "../../packages/obsidian/src/modules/weapon/weapon.module"; // (a2) uses the module's real render (B1)
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Weapons"));
@@ -119,7 +119,7 @@ describe("weapon port equivalence", () => {
 
   // de-list guard: kernel pack declares weapon with the PACK codec (not the legacy bridge)
   it("dnd5ePack declares weapon with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist/dnd5e"); // S2: barrel, no ./pack subpath
+    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
     expect(dnd5ePack.entityTypes.some((et) => et.type === "weapon" && et.doc === weaponCodec)).toBe(true);
   });
 });

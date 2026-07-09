@@ -1,10 +1,10 @@
-import type { Abilities } from "@archivist/dnd5e";
+import type { Abilities } from "@archivist-gg/dnd5e";
 import type { MonsterEditState } from "../monster.edit-state";
-import { ABILITY_KEYS, ALL_SKILLS, SKILL_ABILITY } from "@archivist/dnd5e/dnd/constants";
+import { ABILITY_KEYS, ALL_SKILLS, SKILL_ABILITY } from "@archivist-gg/dnd5e/dnd/constants";
 import {
   abilityModifier, formatModifier,
   savingThrow, skillBonus, passivePerception,
-} from "@archivist/dnd5e/dnd/math";
+} from "@archivist-gg/dnd5e/dnd/math";
 import {
   type DomRefs,
   flashUpdate,

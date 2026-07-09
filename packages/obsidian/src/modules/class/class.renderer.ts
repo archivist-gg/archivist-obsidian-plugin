@@ -1,4 +1,4 @@
-import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
+import type { ClassEntity } from "@archivist-gg/dnd5e/class/class.types";
 import type { RenderContext } from "../../shared/rendering/entity-presenter";
 import {
   el,

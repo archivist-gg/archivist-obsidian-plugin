@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "@archivist/core";
+import type { RegisteredEntity } from "@archivist-gg/core";
 import {
   allTicked, matchesTicked, renderCompendiumFilter,
   type CompendiumTickState,

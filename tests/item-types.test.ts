@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
+import type { ItemEntity } from "@archivist-gg/dnd5e/item/item.types";
 
 // Enumerates every recognised field on ItemEntity.
 // Adding a new field requires updating this list — the discipline catches

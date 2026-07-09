@@ -5,7 +5,7 @@ import type {
   ModalConstructor,
   RenderContext,
 } from "../../shared/rendering/entity-presenter";
-import type { Item } from "@archivist/dnd5e/item/item.types";
+import type { Item } from "@archivist-gg/dnd5e/item/item.types";
 import { renderItemBlock } from "./item.renderer";
 import { renderItemEditMode } from "./item.edit-render";
 import { ItemModal } from "./item.modal";

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createArchivist } from "@archivist/core";
-import { dnd5ePack } from "@archivist/dnd5e";
+import { createArchivist } from "@archivist-gg/core";
+import { dnd5ePack } from "@archivist-gg/dnd5e";
 
 // 0e regression pin: pc is a stateful-app, not a pack entity type. It has no
 // `doc` codec and is not a member of dnd5ePack, so the kernel exposes no "pc"
