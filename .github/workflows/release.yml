@@ -5,6 +5,10 @@ on:
     tags:
       - "*"
 
+concurrency:
+  group: release-${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,11 +20,11 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "20.x"
 
       - name: Build plugin
         run: |
-          npm install
+          npm ci
           npm run build
 
       - name: Create release
@@ -28,7 +32,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
+          if [[ "$TAG_NAME" == *-* ]]; then
+            RELEASE_FLAGS="--prerelease"
+          else
+            RELEASE_FLAGS="--latest"
+          fi
           gh release create "$TAG_NAME" \
             --title="$TAG_NAME" \
-            --draft \
+            --generate-notes \
+            $RELEASE_FLAGS \
             main.js manifest.json styles.css
