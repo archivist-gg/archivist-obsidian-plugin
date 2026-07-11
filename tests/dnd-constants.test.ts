@@ -4,7 +4,7 @@ import {
   CR_PROFICIENCY, CR_XP, SIZE_HIT_DICE, SKILL_ABILITY,
   ALL_CR_VALUES, DAMAGE_TYPES, ABILITY_KEYS,
   DAMAGE_NONMAGICAL_VARIANTS, CONDITIONS,
-} from "@archivist/dnd5e/dnd/constants";
+} from "@archivist-gg/dnd5e/dnd/constants";
 
 describe("CR_PROFICIENCY", () => {
   it("CR 0 through 4 have proficiency +2", () => {

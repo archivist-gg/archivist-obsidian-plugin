@@ -1,5 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
-import { classSpellCandidates, type SpellCandidate } from "@archivist/dnd5e/spell/spell.access";
+import { classSpellCandidates, type SpellCandidate } from "@archivist-gg/dnd5e/spell/spell.access";
 import { renderSpellBlock } from "../../../spell/spell.renderer";
 import { compactCastingTime, formatRange, componentLetters, abbrAbility } from "./spell-display";
 import {
@@ -7,8 +7,8 @@ import {
   activeFacetCount, resetFacets, type ChipItem,
   SOURCES, SCHOOLS, CAST_TIMES, RANGES, DAMAGE_TYPES, SAVES,
 } from "./spell-filter";
-import { compareCandidates } from "@archivist/dnd5e/spell/spell.filter";
-import type { SortKey } from "@archivist/dnd5e/spell/spell.filter";
+import { compareCandidates } from "@archivist-gg/dnd5e/spell/spell.filter";
+import type { SortKey } from "@archivist-gg/dnd5e/spell/spell.filter";
 import { confirmResetFilters } from "./reset-filters-modal";
 
 function ordinal(n: number): string {

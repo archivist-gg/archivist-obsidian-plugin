@@ -4,10 +4,10 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import { spellCodec } from "@archivist/dnd5e/spell/spell.codec";
-import { parseSpell } from "@archivist/dnd5e/spell/spell.parser"; // moved parser (post-move path)
+import { spellCodec } from "@archivist-gg/dnd5e/spell/spell.codec";
+import { parseSpell } from "@archivist-gg/dnd5e/spell/spell.parser"; // moved parser (post-move path)
 import { spellModule } from "../../packages/obsidian/src/modules/spell/spell.module"; // (a2) uses the module's real render (B1)
-import { enrichSpell } from "@archivist/dnd5e/spell/spell.enrichment";
+import { enrichSpell } from "@archivist-gg/dnd5e/spell/spell.enrichment";
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Spells"));
 
@@ -97,7 +97,7 @@ describe("spell port equivalence", () => {
 
   // de-list guard: kernel pack declares spell with the PACK codec (not the legacy bridge)
   it("dnd5ePack declares spell with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist/dnd5e"); // S2: barrel, no ./pack subpath
+    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
     expect(dnd5ePack.entityTypes.some((et) => et.type === "spell" && et.doc === spellCodec)).toBe(true);
   });
 });

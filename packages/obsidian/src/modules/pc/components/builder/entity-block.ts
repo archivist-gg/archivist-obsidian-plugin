@@ -1,4 +1,4 @@
-import type { RegisteredEntity } from "@archivist/core";
+import type { RegisteredEntity } from "@archivist-gg/core";
 import { renderRegisteredEntity } from "../../../../shared/rendering/entity-presenter-dispatch";
 
 /** Render a registered entity's real stat block via the shared presenter

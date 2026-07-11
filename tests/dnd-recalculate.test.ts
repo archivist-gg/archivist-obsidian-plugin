@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { recalculate, monsterToEditable } from "../packages/obsidian/src/modules/monster/monster.edit-state";
-import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 
 const GOBLIN: Monster = {
   name: "Goblin", size: "Small", type: "Humanoid", alignment: "Neutral Evil",

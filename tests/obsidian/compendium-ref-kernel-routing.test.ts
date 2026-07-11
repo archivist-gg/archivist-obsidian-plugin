@@ -5,7 +5,7 @@ import {
   setEntityPresenters,
 } from "../../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
 import type { EntityPresenter } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import type { Archivist } from "@archivist/core";
+import type { Archivist } from "@archivist-gg/core";
 
 // ---------------------------------------------------------------------------
 // 0f D2 behaviour pins: dispatch is presenter-lookup-first and kernel-only.

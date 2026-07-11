@@ -1,11 +1,11 @@
 import { Notice, type App } from "obsidian";
-import type { EquipmentEntry, ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
-import type { EntityRegistry } from "@archivist/core";
-import { resolveBaseItem } from "@archivist/dnd5e/entities/base-item-resolver";
+import type { EntityRegistry } from "@archivist-gg/core";
+import { resolveBaseItem } from "@archivist-gg/dnd5e/entities/base-item-resolver";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
-import { requiresAttunement } from "@archivist/dnd5e/item/item.attunement";
+import { requiresAttunement } from "@archivist-gg/dnd5e/item/item.attunement";
 import { prettifyName } from "./filter-state";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 

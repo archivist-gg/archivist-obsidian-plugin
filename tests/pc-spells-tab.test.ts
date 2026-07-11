@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { SpellsTab } from "../packages/obsidian/src/modules/pc/components/spells-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { DerivedStats, ResolvedCharacter, ResolvedSpell, SpellcastingClassInfo } from "@archivist/dnd5e/pc/pc.types";
+import type { DerivedStats, ResolvedCharacter, ResolvedSpell, SpellcastingClassInfo } from "@archivist-gg/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

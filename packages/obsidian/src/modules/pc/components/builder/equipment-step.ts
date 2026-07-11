@@ -1,8 +1,8 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { StartingEquipmentEntry, EquipmentGrant, StartingGold } from "@archivist/dnd5e/types/equipment-grant";
-import type { ChoiceValue } from "@archivist/dnd5e/pc/pc.types";
-import type { DecisionItem, DecisionLedger } from "@archivist/dnd5e/pc/pc.decision-engine";
-import { buildDecisionLedger, bareEntitySlug } from "@archivist/dnd5e/pc/pc.decision-engine";
+import type { StartingEquipmentEntry, EquipmentGrant, StartingGold } from "@archivist-gg/dnd5e/types/equipment-grant";
+import type { ChoiceValue } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { DecisionItem, DecisionLedger } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { buildDecisionLedger, bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
 import { InventoryList } from "../inventory/inventory-list";

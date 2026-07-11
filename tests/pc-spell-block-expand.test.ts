@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { toggleSpellBlock } from "../packages/obsidian/src/modules/pc/components/spells/spell-block-expand";
-import type { ResolvedSpell } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,5 +1,5 @@
 import * as yaml from "js-yaml";
-import type { Character } from "@archivist/dnd5e/pc/pc.types";
+import type { Character } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const DUMP_OPTS = {
   lineWidth: -1,

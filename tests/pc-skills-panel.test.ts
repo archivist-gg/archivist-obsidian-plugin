@@ -3,8 +3,8 @@ import { describe, it, expect, beforeAll, vi } from "vitest";
 import { SkillsPanel } from "../packages/obsidian/src/modules/pc/components/skills-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
-import type { SkillSlug } from "@archivist/dnd5e";
+import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { SkillSlug } from "@archivist-gg/dnd5e";
 
 beforeAll(() => installObsidianDomHelpers());
 

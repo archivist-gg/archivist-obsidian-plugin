@@ -1,12 +1,12 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { Feature } from "@archivist/dnd5e/types/feature";
-import type { FeatureSource } from "@archivist/dnd5e/pc/pc.types";
-import type { Resource } from "@archivist/dnd5e/types/resource";
+import type { Feature } from "@archivist-gg/dnd5e/types/feature";
+import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderChargeBoxes } from "./charge-boxes";
-import { resourceBindings } from "@archivist/dnd5e/pc/pc.resource-seed";
-import { evaluateMaxFormula } from "@archivist/dnd5e/dnd/resource-formula";
+import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
+import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
 import { createIconProperty, renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
-import { resolveScalingDie } from "@archivist/dnd5e/dnd/resource-die";
+import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 
 const COUNTER_THRESHOLD = 6;
 

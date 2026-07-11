@@ -4,8 +4,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import { armorCodec } from "@archivist/dnd5e/armor/armor.codec";
-import { parseArmor } from "@archivist/dnd5e/armor/armor.parser"; // moved parser (post-move path)
+import { armorCodec } from "@archivist-gg/dnd5e/armor/armor.codec";
+import { parseArmor } from "@archivist-gg/dnd5e/armor/armor.parser"; // moved parser (post-move path)
 import { armorModule } from "../../packages/obsidian/src/modules/armor/armor.module"; // (a2) uses the module's real render (B1)
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Armor"));
@@ -92,7 +92,7 @@ describe("armor port equivalence", () => {
 
   // de-list guard: kernel pack declares armor with the PACK codec (not the legacy bridge)
   it("dnd5ePack declares armor with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist/dnd5e"); // S2: barrel, no ./pack subpath
+    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
     expect(dnd5ePack.entityTypes.some((et) => et.type === "armor" && et.doc === armorCodec)).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { collectResolvedFeatures } from "@archivist/dnd5e/pc/pc.resolver";
+import { collectResolvedFeatures } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { seedFeatureUses } from "../packages/obsidian/src/modules/pc/pc.resource-seed";
-import type { ResolvedCharacter, DerivedStats } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
 function derived(): DerivedStats {
   return { proficiencyBonus: 3, mods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 4 } } as unknown as DerivedStats;

@@ -1,6 +1,6 @@
 import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile } from "obsidian";
 import { setIcon } from "obsidian";
-import { EntityRegistry, RegisteredEntity } from "@archivist/core";
+import { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
 
 const TYPE_PREFIXES: Record<string, string> = {
   monster: "monster",

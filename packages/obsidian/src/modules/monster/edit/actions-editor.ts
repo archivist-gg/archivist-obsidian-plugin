@@ -5,7 +5,7 @@ import type { MonsterEditState } from "../monster.edit-state";
 // concrete plugin class via a type-only import.
 import type ArchivistPlugin from "../../../main";
 import { confirm as confirmModal } from "../../../shared/modals/ConfirmModal";
-import { ALL_SECTIONS } from "@archivist/dnd5e/dnd/constants";
+import { ALL_SECTIONS } from "@archivist-gg/dnd5e/dnd/constants";
 import { createSvgBar } from "../../../shared/rendering/renderer-utils";
 import { createSpinButtons } from "../../../shared/edit/spin-buttons";
 import {

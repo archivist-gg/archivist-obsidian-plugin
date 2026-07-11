@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { extractPCCodeBlock } from "../packages/obsidian/src/modules/pc/pc.parser";
-import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
+import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 
 const VALID_YAML = `
 name: Grendal

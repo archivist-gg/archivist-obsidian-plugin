@@ -13,9 +13,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 
 import { extractPCCodeBlock } from "../packages/obsidian/src/modules/pc/pc.parser";
-import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
-import { PCResolver } from "@archivist/dnd5e/pc/pc.resolver";
-import { recalc } from "@archivist/dnd5e/pc/pc.recalc";
+import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
+import { PCResolver } from "@archivist-gg/dnd5e/pc/pc.resolver";
+import { recalc } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import { parseEntityFile } from "../packages/obsidian/src/shared/entities/entity-vault-store";
 import {
   EntityRegistry,

@@ -4,7 +4,7 @@ import {
   hitDiceSizeFromCreatureSize, hpFromHitDice, savingThrow, skillBonus,
   passivePerception, attackBonus, saveDC, abilityNameToKey, parseHitDiceFormula,
   passive,
-} from "@archivist/dnd5e/dnd/math";
+} from "@archivist-gg/dnd5e/dnd/math";
 
 describe("abilityModifier", () => {
   it("score 10 -> +0", () => expect(abilityModifier(10)).toBe(0));

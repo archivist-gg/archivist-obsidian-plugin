@@ -1,5 +1,5 @@
-import type { Monster } from "@archivist/dnd5e/monster/monster.types";
-import type { Abilities } from "@archivist/dnd5e";
+import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
+import type { Abilities } from "@archivist-gg/dnd5e";
 import type { EditableMonster } from "../monster.edit-state";
 
 /**

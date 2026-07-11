@@ -23,7 +23,7 @@ Coast. This project is unofficial and not affiliated with or endorsed by Wizards
 
 This plugin ships verbatim SRD prose in two places:
 
-- `main.js` — the built plugin bundle embeds SRD prose via the `@archivist/dnd5e`
+- `main.js` — the built plugin bundle embeds SRD prose via the `@archivist-gg/dnd5e`
   dependency, which is compiled into the distributed JavaScript.
 - `.compendium-bundle/index.json` — the tracked verbatim compendium (SRD 5.1 + 5.2),
   inlined into `main.js` at build time.

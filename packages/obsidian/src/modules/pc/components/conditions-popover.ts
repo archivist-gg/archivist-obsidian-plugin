@@ -2,7 +2,7 @@ import type { ComponentRenderContext } from "./component.types";
 import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,
-} from "@archivist/dnd5e/pc/conditions.constants";
+} from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
 import { clampPopoverToViewport } from "./popover-utils";
 

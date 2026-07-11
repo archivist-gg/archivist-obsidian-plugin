@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createArchivist } from "@archivist/core";
-import { dnd5ePack } from "@archivist/dnd5e";
+import { createArchivist } from "@archivist-gg/core";
+import { dnd5ePack } from "@archivist-gg/dnd5e";
 const body = "name: Goblin\ncr: '1/4'\n";
 const doc = { type: "monster", frontmatter: {}, body, raw: body };
 describe("M3 resolve-routing", () => {

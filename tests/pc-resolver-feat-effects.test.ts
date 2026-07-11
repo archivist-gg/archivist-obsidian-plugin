@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { collectResolvedFeatures, collectChosenGrantedFeatures } from "@archivist/dnd5e/pc/pc.resolver";
-import type { FeatEntity } from "@archivist/dnd5e/feat/feat.types";
+import { collectResolvedFeatures, collectChosenGrantedFeatures } from "@archivist-gg/dnd5e/pc/pc.resolver";
+import type { FeatEntity } from "@archivist-gg/dnd5e/feat/feat.types";
 
 const noRegistry = { getByTypeAndSlug: () => undefined };
 

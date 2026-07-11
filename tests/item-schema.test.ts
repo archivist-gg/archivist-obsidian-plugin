@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { itemInputSchema } from "@archivist/dnd5e/item/item.ai-schema";
+import { itemInputSchema } from "@archivist-gg/dnd5e/item/item.ai-schema";
 
 describe("itemInputSchema", () => {
   it("validates a valid item", () => {

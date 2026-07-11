@@ -1,6 +1,6 @@
 // src/modules/pc/pc.rest.ts
-import type { Character, DerivedStats, ResolvedCharacter } from "@archivist/dnd5e/pc/pc.types";
-import type { RestPlan, RestCategoryId } from "@archivist/dnd5e/pc/pc.rest";
+import type { Character, DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { RestPlan, RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
 
 export function applyRestResets(
   character: Character,

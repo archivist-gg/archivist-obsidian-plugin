@@ -1,5 +1,5 @@
 import { setTooltip } from "obsidian";
-import type { Ability } from "@archivist/dnd5e";
+import type { Ability } from "@archivist-gg/dnd5e";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { renderConditionTag } from "./condition-tag";
 import { numberOverride } from "./edit-primitives";

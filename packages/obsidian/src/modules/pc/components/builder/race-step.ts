@@ -1,10 +1,10 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { RegisteredEntity } from "@archivist/core";
+import type { RegisteredEntity } from "@archivist-gg/core";
 import type { ColSpec } from "./selection-table";
-import type { DecisionItem } from "@archivist/dnd5e/pc/pc.decision-engine";
+import type { DecisionItem } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { renderEntityPicker } from "./entity-picker";
-import { buildDecisionLedger } from "@archivist/dnd5e/pc/pc.decision-engine";
-import { stripSlug } from "@archivist/dnd5e/pc/pc.resolver";
+import { buildDecisionLedger } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";

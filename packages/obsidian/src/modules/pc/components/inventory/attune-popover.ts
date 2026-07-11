@@ -1,5 +1,5 @@
-import type { ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
-import { requiresAttunement } from "@archivist/dnd5e/item/item.attunement";
+import type { ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
+import { requiresAttunement } from "@archivist-gg/dnd5e/item/item.attunement";
 
 export interface PopoverOpts {
   anchor: HTMLElement;

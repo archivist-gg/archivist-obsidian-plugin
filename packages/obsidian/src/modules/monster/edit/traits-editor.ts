@@ -1,5 +1,5 @@
 import { setIcon } from "obsidian";
-import type { Feature } from "@archivist/dnd5e";
+import type { Feature } from "@archivist-gg/dnd5e";
 import type { EditableMonster, MonsterEditState } from "../monster.edit-state";
 import { attachTagAutocomplete } from "../../../shared/edit/tag-autocomplete";
 

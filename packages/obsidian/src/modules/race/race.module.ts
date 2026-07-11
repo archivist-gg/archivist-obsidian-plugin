@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { RaceEntity } from "@archivist/dnd5e/race/race.types";
+import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 import { renderRaceBlock } from "./race.renderer";
 
 class RaceModule implements EntityPresenter {

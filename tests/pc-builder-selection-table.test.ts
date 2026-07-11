@@ -6,7 +6,7 @@ import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc
 import type { RegisteredEntity } from "@core/entity-registry";
 import { setEntityPresenters, setEntityPresenterKernel } from "../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
 import type { EntityPresenter } from "../packages/obsidian/src/shared/rendering/entity-presenter";
-import type { Archivist } from "@archivist/core";
+import type { Archivist } from "@archivist-gg/core";
 
 beforeAll(() => installObsidianDomHelpers());
 

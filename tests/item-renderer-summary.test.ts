@@ -49,9 +49,9 @@ vi.mock("obsidian", () => ({
   Component: class {},
 }));
 
-import { parseItem } from "@archivist/dnd5e/item/item.parser";
+import { parseItem } from "@archivist-gg/dnd5e/item/item.parser";
 import { renderItemBlock, renderItemMechanicalSummary } from "../packages/obsidian/src/modules/item/item.renderer";
-import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
+import type { ItemEntity } from "@archivist-gg/dnd5e/item/item.types";
 
 beforeEach(() => {
   document.body.replaceChildren();

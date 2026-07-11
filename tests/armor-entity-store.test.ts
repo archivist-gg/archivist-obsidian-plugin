@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect } from "vitest";
 import { armorModule } from "../packages/obsidian/src/modules/armor/armor.module";
-import { parseArmor } from "@archivist/dnd5e/armor/armor.parser";
+import { parseArmor } from "@archivist-gg/dnd5e/armor/armor.parser";
 import { PLATE } from "./fixtures/armor";
 
 describe("armorModule integration", () => {

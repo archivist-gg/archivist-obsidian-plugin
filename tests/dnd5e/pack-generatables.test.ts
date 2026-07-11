@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { dnd5ePack, monsterGeneratable } from "@archivist/dnd5e";
+import { dnd5ePack, monsterGeneratable } from "@archivist-gg/dnd5e";
 
 describe("dnd5e pack generatables", () => {
   it("exposes exactly the 5 generate-capable types in pack order", () => {

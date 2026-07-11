@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { raceEntitySchema } from "@archivist/dnd5e/race/race.schema";
+import { raceEntitySchema } from "@archivist-gg/dnd5e/race/race.schema";
 
 const minimalRace = {
   slug: "dwarf",

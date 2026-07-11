@@ -9,8 +9,8 @@ import {
 import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 import { setIcon, Notice, MarkdownView, type WorkspaceLeaf, type App, type Plugin } from "obsidian";
 import { renderSideButtons } from "../edit/side-buttons";
-import { EntityRegistry } from "@archivist/core";
-import type { RegisteredEntity } from "@archivist/core";
+import { EntityRegistry } from "@archivist-gg/core";
+import type { RegisteredEntity } from "@archivist-gg/core";
 import type { EditContext } from "../rendering/entity-presenter";
 import { getEntityPresenter, parseRegisteredEntity, renderRegisteredEntity, type EntityLike } from "../rendering/entity-presenter-dispatch";
 import * as yaml from "js-yaml";

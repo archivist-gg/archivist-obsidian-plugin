@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { defaultFilters, matchesFilters, activeFacetCount, resetFacets } from "../packages/obsidian/src/modules/pc/components/spells/spell-filter";
-import type { SpellCandidate } from "@archivist/dnd5e/spell/spell.access";
+import type { SpellCandidate } from "@archivist-gg/dnd5e/spell/spell.access";
 
 const spell = (e: object): SpellCandidate => ({ slug: "x", name: "X", level: (e as { level?: number }).level ?? 1, entity: e as never });
 

@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { BackgroundEntity } from "@archivist/dnd5e/background/background.types";
+import type { BackgroundEntity } from "@archivist-gg/dnd5e/background/background.types";
 import { renderBackgroundBlock } from "./background.renderer";
 
 class BackgroundModule implements EntityPresenter {

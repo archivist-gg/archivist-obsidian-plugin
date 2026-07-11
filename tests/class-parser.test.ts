@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseClass } from "@archivist/dnd5e/class/class.parser";
+import { parseClass } from "@archivist-gg/dnd5e/class/class.parser";
 
 const minimalYaml = `
 slug: rogue

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { choiceSchema } from "@archivist/dnd5e/schemas/choice-schema";
+import { choiceSchema } from "@archivist-gg/dnd5e/schemas/choice-schema";
 
 describe("choiceSchema — four primitives", () => {
   it("accepts select-inline with nested choices and effects", () => {

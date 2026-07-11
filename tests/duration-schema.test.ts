@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { durationSchema } from "@archivist/dnd5e/schemas/duration-schema";
+import { durationSchema } from "@archivist-gg/dnd5e/schemas/duration-schema";
 
 describe("durationSchema", () => {
   it("accepts the instantaneous literal", () => {

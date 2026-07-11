@@ -8,7 +8,7 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { parseInlineTag } from "@archivist/dnd5e/inline-tag-parser";
+import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "../rendering/inline-tag-renderer";
 
 class InlineTagWidget extends WidgetType {

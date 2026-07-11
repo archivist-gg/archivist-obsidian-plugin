@@ -1,6 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
-import { buildDecisionLedger, type DecisionLedger, wikilinkTailSlug, bareEntitySlug } from "@archivist/dnd5e/pc/pc.decision-engine";
-import { stripSlug } from "@archivist/dnd5e/pc/pc.resolver";
+import { buildDecisionLedger, type DecisionLedger, wikilinkTailSlug, bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
 import { AddClassModal } from "./class-modal";
 import { renderClassChronicle, type ClassData } from "./class-chronicle";

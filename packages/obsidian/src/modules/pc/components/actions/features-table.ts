@@ -1,6 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import type { Feature } from "@archivist/dnd5e/types/feature";
-import type { FeatureSource } from "@archivist/dnd5e/pc/pc.types";
+import type { Feature } from "@archivist-gg/dnd5e/types/feature";
+import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { createExpandState } from "./row-expand";

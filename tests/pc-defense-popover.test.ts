@@ -6,11 +6,11 @@ import {
 } from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
+import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
 import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,
-} from "@archivist/dnd5e/pc/conditions.constants";
+} from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { FIGHTER_5_CLERIC_3, clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { App } from "obsidian";

@@ -1,7 +1,7 @@
 // src/modules/item/item.conditions.types.ts
 //
 // Thin re-export shim (3C-R Phase 1). The condition types + conditional-bonus
-// grammar now live in @archivist/dnd5e/item/item.conditions.types (co-located
+// grammar now live in @archivist-gg/dnd5e/item/item.conditions.types (co-located
 // there with the PC-domain nucleus and the mechanical evaluators). This shim
 // re-exports them under the original plugin specifier so the ~all intra-plugin
 // type-consumers (InformationalBonus / ConditionContext / ConditionalBonus /
@@ -21,4 +21,4 @@ export type {
   ConditionOutcome,
   ConditionContext,
   BonusReadResult,
-} from "@archivist/dnd5e/item/item.conditions.types";
+} from "@archivist-gg/dnd5e/item/item.conditions.types";

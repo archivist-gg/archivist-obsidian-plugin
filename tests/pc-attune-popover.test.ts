@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { showAttunePopover } from "../packages/obsidian/src/modules/pc/components/inventory/attune-popover";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ResolvedEquipped } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
 

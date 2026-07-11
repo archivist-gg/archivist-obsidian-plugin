@@ -1,13 +1,13 @@
 import type { ComponentRenderContext } from "../component.types";
-import type { Ability } from "@archivist/dnd5e/types/choice";
-import type { AbilityMethod } from "@archivist/dnd5e/pc/pc.types";
-import { ABILITY_KEYS } from "@archivist/dnd5e/dnd/constants";
+import type { Ability } from "@archivist-gg/dnd5e/types/choice";
+import type { AbilityMethod } from "@archivist-gg/dnd5e/pc/pc.types";
+import { ABILITY_KEYS } from "@archivist-gg/dnd5e/dnd/constants";
 import {
   ABILITY_METHODS, POINT_BUY_RULES, STANDARD_ARRAY, allowedScores,
   pointBuySpent, pointBuyRemaining,
 } from "./ability-methods";
 import type { PointBuyRule } from "./ability-methods";
-import { abilityBonusBreakdown } from "@archivist/dnd5e/pc/pc.recalc";
+import { abilityBonusBreakdown } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import { clampPopover } from "./popover-clamp";
 
 const ABILITY_LABELS: Record<Ability, string> = {

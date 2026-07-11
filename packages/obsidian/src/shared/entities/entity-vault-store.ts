@@ -1,5 +1,5 @@
 import * as yaml from "js-yaml";
-import { slugify } from "@archivist/dnd5e/entities/slug";
+import { slugify } from "@archivist-gg/dnd5e/entities/slug";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,7 +30,7 @@ export const TYPE_FOLDER_MAP: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// slugify — moved to @archivist/dnd5e/entities/slug; re-exported here so the
+// slugify — moved to @archivist-gg/dnd5e/entities/slug; re-exported here so the
 // existing consumers (compendium-manager, character-stub, tests) are unchanged.
 // ---------------------------------------------------------------------------
 export { slugify };

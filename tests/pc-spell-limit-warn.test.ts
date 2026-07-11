@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { preparedWarnings } from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
-import type { ResolvedSpell, SpellLimitInfo } from "@archivist/dnd5e/pc/pc.types";
+import type { ResolvedSpell, SpellLimitInfo } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const sp = (slug: string, classSlug: string, prepared: boolean, level = 1): ResolvedSpell =>
   ({ entity: { name: slug, level }, slug, classSlug, source: "class", prepared, alwaysPrepared: false }) as ResolvedSpell;

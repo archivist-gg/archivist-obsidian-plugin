@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 // Stub the generated index with a tiny two-entry fixture so this test
 // doesn't depend on the prebuild script having run.
-vi.mock("@archivist/dnd5e/data-srd/index.generated", () => ({
+vi.mock("@archivist-gg/dnd5e/data-srd/index.generated", () => ({
   SRD_MD_ENTRIES: [
     { type: "classes", slug: "rogue", name: "Rogue", content: "---\narchivist: true\nentity_type: class\nslug: rogue\n---\n\n```class\nname: Rogue\n```\n" },
     { type: "races", slug: "dwarf", name: "Dwarf", content: "---\narchivist: true\nentity_type: race\nslug: dwarf\n---\n\n```race\nname: Dwarf\n```\n" },

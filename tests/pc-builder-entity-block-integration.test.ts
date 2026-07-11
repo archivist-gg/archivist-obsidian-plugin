@@ -6,9 +6,9 @@ import { raceModule } from "../packages/obsidian/src/modules/race/race.module";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
-import { dnd5ePack } from "@archivist/dnd5e";
+import { dnd5ePack } from "@archivist-gg/dnd5e";
 import { setEntityPresenters, setEntityPresenterKernel } from "../packages/obsidian/src/shared/rendering/entity-presenter-dispatch";
-import type { Archivist } from "@archivist/core";
+import type { Archivist } from "@archivist-gg/core";
 
 beforeAll(() => installObsidianDomHelpers());
 

@@ -1,6 +1,6 @@
 import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { formatModifier } from "@archivist/dnd5e/dnd/math";
+import { formatModifier } from "@archivist-gg/dnd5e/dnd/math";
 import { numberOverride } from "./edit-primitives";
 import { attachStatTooltip } from "./stat-tooltip";
 import { renderSituationalRows } from "./situational-rows";

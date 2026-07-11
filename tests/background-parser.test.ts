@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseBackground } from "@archivist/dnd5e/background/background.parser";
+import { parseBackground } from "@archivist-gg/dnd5e/background/background.parser";
 
 const yaml = `
 slug: acolyte

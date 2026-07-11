@@ -8,16 +8,16 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, it, expect, beforeAll } from "vitest";
-import { recalc } from "@archivist/dnd5e/pc/pc.recalc";
-import { readNumericBonus } from "@archivist/dnd5e/item/item.bonuses";
-import type { ItemEntity } from "@archivist/dnd5e/item/item.types";
+import { recalc } from "@archivist-gg/dnd5e/pc/pc.recalc";
+import { readNumericBonus } from "@archivist-gg/dnd5e/item/item.bonuses";
+import type { ItemEntity } from "@archivist-gg/dnd5e/item/item.types";
 import type { ConditionContext } from "../packages/obsidian/src/modules/item/item.conditions.types";
 import type {
   Character,
   ResolvedCharacter,
   ResolvedFeature,
   ResolvedClass,
-} from "@archivist/dnd5e/pc/pc.types";
+} from "@archivist-gg/dnd5e/pc/pc.types";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import {
   STUDDED_LEATHER,

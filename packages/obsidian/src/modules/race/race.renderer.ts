@@ -1,6 +1,6 @@
 import type { App, Component } from "obsidian";
-import type { RaceEntity, AbilityScoreIncrease, FixedAbilityIncrease } from "@archivist/dnd5e/race/race.types";
-import type { Feature } from "@archivist/dnd5e";
+import type { RaceEntity, AbilityScoreIncrease, FixedAbilityIncrease } from "@archivist-gg/dnd5e/race/race.types";
+import type { Feature } from "@archivist-gg/dnd5e";
 import { el, createIconProperty, sourceBadgeText } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 

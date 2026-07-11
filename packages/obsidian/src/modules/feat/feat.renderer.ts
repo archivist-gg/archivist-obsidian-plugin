@@ -1,5 +1,5 @@
 import type { App, Component } from "obsidian";
-import type { FeatEntity, FeatPrerequisite } from "@archivist/dnd5e/feat/feat.types";
+import type { FeatEntity, FeatPrerequisite } from "@archivist-gg/dnd5e/feat/feat.types";
 import { el, createIconProperty, sourceBadgeText } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 

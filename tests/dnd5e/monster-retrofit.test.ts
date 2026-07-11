@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveMonster, monsterCodec } from "@archivist/dnd5e"; // S3: barrel (no monster/* subpath exports)
+import { resolveMonster, monsterCodec } from "@archivist-gg/dnd5e"; // S3: barrel (no monster/* subpath exports)
 
 const ctx = { lookup: () => undefined } as never; // ResolveContext stub
 

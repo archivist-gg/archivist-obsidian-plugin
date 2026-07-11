@@ -3,7 +3,7 @@ import {
   selectionPoolSchema,
   poolGrantSchema,
   tabDeclSchema,
-} from "@archivist/dnd5e/schemas/selection-pool-schema";
+} from "@archivist-gg/dnd5e/schemas/selection-pool-schema";
 
 const pool = {
   id: "interdict-boons",

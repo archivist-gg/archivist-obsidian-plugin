@@ -1,6 +1,6 @@
 import type { App } from "obsidian";
 import type { CharacterEditState } from "../../pc.edit-state";
-import type { EquipmentEntry } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { confirm as confirmModal } from "../../../../shared/modals/ConfirmModal";
 
 /**

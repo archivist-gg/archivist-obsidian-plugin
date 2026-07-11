@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { buildDraftCharacter, buildDraftFileBody } from "../packages/obsidian/src/modules/pc/builder/character-stub";
-import { characterSchema } from "@archivist/dnd5e/pc/pc.schema";
+import { characterSchema } from "@archivist-gg/dnd5e/pc/pc.schema";
 import { extractPCCodeBlock } from "../packages/obsidian/src/modules/pc/pc.parser";
-import { parsePC } from "@archivist/dnd5e/pc/pc.parser";
+import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 
 describe("character-stub", () => {
   it("buildDraftCharacter produces a schema-valid class-less draft", () => {

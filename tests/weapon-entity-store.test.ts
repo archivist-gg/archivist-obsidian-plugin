@@ -2,7 +2,7 @@
 
 import { describe, it, expect } from "vitest";
 import { weaponModule } from "../packages/obsidian/src/modules/weapon/weapon.module";
-import { parseWeapon } from "@archivist/dnd5e/weapon/weapon.parser";
+import { parseWeapon } from "@archivist-gg/dnd5e/weapon/weapon.parser";
 import { LONGSWORD } from "./fixtures/weapon";
 
 describe("weaponModule integration", () => {

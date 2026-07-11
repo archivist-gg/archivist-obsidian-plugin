@@ -1,7 +1,7 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
-import type { ClassEntity } from "@archivist/dnd5e/class/class.types";
-import type { ResolvedClass } from "@archivist/dnd5e/pc/pc.types";
-import type { Feature } from "@archivist/dnd5e";
+import type { ClassEntity } from "@archivist-gg/dnd5e/class/class.types";
+import type { ResolvedClass } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { Feature } from "@archivist-gg/dnd5e";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class ClassBlock implements SheetComponent {

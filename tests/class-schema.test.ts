@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classEntitySchema } from "@archivist/dnd5e/class/class.schema";
+import { classEntitySchema } from "@archivist-gg/dnd5e/class/class.schema";
 
 const minimalClass = {
   slug: "rogue",

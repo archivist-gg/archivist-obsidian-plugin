@@ -1,12 +1,12 @@
-import type { Ability, SkillSlug } from "@archivist/dnd5e";
-import type { EntityRegistry } from "@archivist/core";
-import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "@archivist/dnd5e/pc/pc.types";
+import type { Ability, SkillSlug } from "@archivist-gg/dnd5e";
+import type { EntityRegistry } from "@archivist-gg/core";
+import type { Character, DerivedStats, EquipmentEntry, EquipmentEntryOverrides, KnownSpellEntry, PassiveKind, ResolvedCharacter, SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { GrantedEntry } from "./builder/equipment-seed";
-import type { ConditionSlug } from "@archivist/dnd5e/pc/conditions.constants";
+import type { ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
-import { resolveEntityForEntry } from "@archivist/dnd5e/pc/pc.slotting";
-import { computeRestPlan, type RestCategoryId } from "@archivist/dnd5e/pc/pc.rest";
+import { resolveEntityForEntry } from "@archivist-gg/dnd5e/pc/pc.slotting";
+import { computeRestPlan, type RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { applyRestResets } from "./pc.rest";
 
 export interface EditStateContext {

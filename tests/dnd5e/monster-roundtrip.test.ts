@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { parseContainer } from "@archivist/core";
-import { monsterCodec } from "@archivist/dnd5e";
+import { parseContainer } from "@archivist-gg/core";
+import { monsterCodec } from "@archivist-gg/dnd5e";
 
 const dirs = ["SRD 5e/Monsters", "SRD 2024/Monsters"].map((d) =>
   path.resolve(__dirname, "../../.compendium-bundle", d));

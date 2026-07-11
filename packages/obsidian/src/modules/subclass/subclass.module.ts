@@ -1,5 +1,5 @@
 import type { EntityPresenter, RenderContext } from "../../shared/rendering/entity-presenter";
-import type { SubclassEntity } from "@archivist/dnd5e/subclass/subclass.types";
+import type { SubclassEntity } from "@archivist-gg/dnd5e/subclass/subclass.types";
 import { renderSubclassStub } from "./subclass.renderer";
 
 class SubclassModule implements EntityPresenter {

@@ -4,8 +4,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: real path (used by monster-render-equivalence.test.ts:9)
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
-import { classCodec } from "@archivist/dnd5e/class/class.codec";
-import { parseClass } from "@archivist/dnd5e/class/class.parser"; // moved parser (post-move path)
+import { classCodec } from "@archivist-gg/dnd5e/class/class.codec";
+import { parseClass } from "@archivist-gg/dnd5e/class/class.parser"; // moved parser (post-move path)
 import { classModule } from "../../packages/obsidian/src/modules/class/class.module"; // (a2) uses the module's real render (B1)
 
 const SRD_DIRS = ["SRD 5e", "SRD 2024"].map((d) => join(".compendium-bundle", d, "Classes"));
@@ -134,7 +134,7 @@ describe("class port equivalence", () => {
 
   // de-list guard: kernel pack declares class with the PACK codec (not the legacy bridge)
   it("dnd5ePack declares class with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist/dnd5e"); // S2: barrel, no ./pack subpath
+    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
     expect(dnd5ePack.entityTypes.some((et) => et.type === "class" && et.doc === classCodec)).toBe(true);
   });
 });

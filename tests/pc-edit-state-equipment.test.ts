@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
-import type { Character } from "@archivist/dnd5e/pc/pc.types";
+import type { Character } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const reg = buildEquipmentRegistry();
 const baseChar = (): Character => ({

@@ -14,7 +14,7 @@ import {
   slugify,
   ensureUniqueSlug,
 } from "./entity-vault-store";
-import type { EntityRegistry, RegisteredEntity } from "@archivist/core";
+import type { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
 
 // ---------------------------------------------------------------------------
 // Compendium interface

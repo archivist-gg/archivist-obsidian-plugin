@@ -1,6 +1,6 @@
-import type { EquipmentEntry } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
-import { DAMAGE_TYPES } from "@archivist/dnd5e/dnd/constants";
+import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
 
 export interface OverrideActionsPanelOpts {
   entry: EquipmentEntry;

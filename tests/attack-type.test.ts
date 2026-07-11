@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Attack } from "@archivist/dnd5e/types/attack";
+import type { Attack } from "@archivist-gg/dnd5e/types/attack";
 
 describe("Attack type extensions for Monster β+", () => {
   it("Attack accepts bonus (fixed to-hit modifier)", () => {

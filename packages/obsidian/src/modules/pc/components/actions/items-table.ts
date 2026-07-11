@@ -1,10 +1,10 @@
 import type { SheetComponent, ComponentRenderContext } from "../component.types";
-import type { EquipmentEntry } from "@archivist/dnd5e/pc/pc.types";
+import type { EquipmentEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
-import { resolveItemAction } from "@archivist/dnd5e/item/item.actions-map";
+import { resolveItemAction } from "@archivist-gg/dnd5e/item/item.actions-map";
 
 interface RowData {
   index: number;

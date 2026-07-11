@@ -4,7 +4,7 @@ import type {
   ModalConstructor,
   RenderContext,
 } from "../../shared/rendering/entity-presenter";
-import type { Monster } from "@archivist/dnd5e/monster/monster.types";
+import type { Monster } from "@archivist-gg/dnd5e/monster/monster.types";
 import { renderMonsterBlock } from "./monster.renderer";
 import { renderMonsterEditMode } from "./edit/monster-edit-render";
 import { MonsterModal } from "./monster.modal";
