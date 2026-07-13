@@ -159,7 +159,7 @@ export function renderExpandBlock(
 }
 
 /** Edition → friendly source-badge label, matching spell/item block badges. */
-function sourceBadgeText(edition: string | undefined): string | null {
+export function sourceBadgeText(edition: string | undefined): string | null {
   if (edition === "2014") return "SRD 5e";
   if (edition === "2024") return "SRD 2024";
   return null;

@@ -8,7 +8,7 @@ import { renderStandardActionsList } from "./actions/standard-actions-list";
 import { renderCostBadge, type ActionCost } from "./actions/cost-badge";
 import { renderChargeBoxes } from "./actions/charge-boxes";
 import { groupFeatures, type FeatureGroupKey } from "./actions/feature-groups";
-import { renderFeatureCard, formatSourceLabel } from "../blocks/feature-card";
+import { renderFeatureCard, formatSourceLabel, sourceBadgeText } from "../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 
@@ -241,10 +241,11 @@ function formatFeatureAttackNote(feature: Feature, totalLevel: number): string |
 }
 
 /**
- * The row title. Normally `feature.name`, but the class-named entity-resource
- * synthetic (`pc.resolver.ts` — a `{ name: className, resources }` wrapper with
- * no action/description/entries) is titled from `resources[0].name` so a Passive
- * row never reads literally "Illrigger".
+ * The row title. Normally `feature.name`, but the entity-named resource synthetic
+ * (`pc.resolver.ts` — a `{ name: entityName, resources }` wrapper with no
+ * action/description/entries, built identically for class AND subclass
+ * entity-level pools) is titled from `resources[0].name` so a Passive row never
+ * reads literally "Illrigger" (class) or "Hellspeaker" (subclass).
  */
 function featureRowTitle(rf: ResolvedFeature, resolved: ResolvedCharacter): string {
   const f = rf.feature;
@@ -255,20 +256,17 @@ function featureRowTitle(rf: ResolvedFeature, resolved: ResolvedCharacter): stri
   return f.name;
 }
 
-/** Detects the class-named entity-resource synthetic: a class-sourced,
+/** Detects the entity-named resource synthetic: a class- or subclass-sourced,
  *  resources-only feature (no action/description/entries) whose name matches one
- *  of the character's class names. */
+ *  of the character's class entity names (`source.kind === "class"`) or subclass
+ *  entity names (`source.kind === "subclass"`). The dnd5e resolver builds the
+ *  identical `{ name, resources }`-only wrapper for both tiers, so both re-title
+ *  from `resources[0].name`. */
 function isClassResourceSynthetic(rf: ResolvedFeature, resolved: ResolvedCharacter): boolean {
   const f = rf.feature;
-  if (rf.source.kind !== "class") return false;
+  if (rf.source.kind !== "class" && rf.source.kind !== "subclass") return false;
   if (f.action || f.description || (f.entries && f.entries.length > 0)) return false;
   if (!f.resources || f.resources.length === 0) return false;
-  return (resolved.classes ?? []).some((c) => c.entity?.name === f.name);
-}
-
-/** Edition → friendly source-badge label, matching spell/item/resource blocks. */
-function sourceBadgeText(edition: string | undefined): string | null {
-  if (edition === "2014") return "SRD 5e";
-  if (edition === "2024") return "SRD 2024";
-  return null;
+  return (resolved.classes ?? []).some((c) =>
+    rf.source.kind === "subclass" ? c.subclass?.name === f.name : c.entity?.name === f.name);
 }

@@ -191,6 +191,39 @@ describe("ActionsTab — grouped structure", () => {
     expect(rowNames(c)).not.toContain("Illrigger");
   });
 
+  it("titles a subclass-named resource synthetic by its resource name, not the subclass name", () => {
+    // The dnd5e resolver builds the identical `{ name, resources }`-only synthetic
+    // for subclass entity-level pools (source.kind === "subclass"), so a subclass
+    // pool must re-title from resources[0].name the same way the class case does.
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([
+      rf({ name: "Hellspeaker", resources: [{ id: "hp", name: "Hellspeaker Pool", max_formula: "2", reset: "long-rest" }] },
+        { source: { kind: "subclass", slug: "hellspeaker", level: 1 } }),
+    ], {
+      classes: [{ subclass: { name: "Hellspeaker", slug: "hellspeaker" }, level: 5 }],
+      featureUses: { hp: { used: 0, max: 2 } },
+    }));
+    expect(rowNames(c)).toContain("Hellspeaker Pool");
+    expect(rowNames(c)).not.toContain("Hellspeaker");
+  });
+
+  it("with BOTH a seeded resource[0] and attacks[], the in-row tracker wins and the attack note is suppressed", () => {
+    // Deferred "die+attack single-slot" precedence (Finding B): the single detail
+    // slot renders the tracker, NEVER the attack note. Locks current behavior so a
+    // future change to that precedence is visible in this test.
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([
+      rf({
+        name: "Interdict Strike", action: "action",
+        resources: [{ id: "is", name: "Interdict", max_formula: "3", reset: "long-rest" }],
+        attacks: [{ name: "Strike", to_hit: "+7", damage: "d10" }],
+      }),
+    ], { featureUses: { is: { used: 1, max: 3 } } }));
+    const row = rowByName(c, "Interdict Strike");
+    expect(row.querySelectorAll(".pc-feature-detail .archivist-toggle-box").length).toBe(3);
+    expect(row.querySelector(".pc-feature-attack-note")).toBeNull();
+  });
+
   it("renders a feature's attack hit/damage in-row (no separate feature-attacks table)", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
