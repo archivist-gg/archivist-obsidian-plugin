@@ -134,23 +134,13 @@ describe("PC end-to-end: Grendal the Wary", () => {
     expect(stackFor("dex")?.classList.contains("prof")).toBe(false);
   });
 
-  it("features tab shows class, subclass (level-filtered), race, feat blocks", async () => {
+  it("has no Features & Traits tab (retired in Phase 2 §3.8)", async () => {
     const { view } = boot();
     await view.setViewData(GRENDAL_MD, true);
-    // Switch to the Features tab; it's not active by default.
-    const featBtn = view.contentEl.querySelector<HTMLButtonElement>(
-      '.pc-tab-btn[data-tab="panel-features"]',
-    )!;
-    featBtn.click();
-    const panel = view.contentEl.querySelector<HTMLElement>("#panel-features")!;
-    expect(panel.querySelector(".pc-class-block")).not.toBeNull();
-    expect(panel.querySelector(".pc-subclass-block")).not.toBeNull();
-    expect(panel.querySelector(".pc-race-block")).not.toBeNull();
-    expect(panel.querySelector(".pc-feat-block")).not.toBeNull();
-    // Level-filter: Extra Attack (L5) present, Relentless (L9) NOT present.
-    const classText = panel.querySelector(".pc-class-block")?.textContent ?? "";
-    expect(classText).toContain("Extra Attack");
-    expect(classText).not.toContain("Relentless");
+    expect(
+      view.contentEl.querySelector('.pc-tab-btn[data-tab="panel-features"]'),
+    ).toBeNull();
+    expect(view.contentEl.querySelector("#panel-features")).toBeNull();
   });
 
   it("background tab renders background block", async () => {

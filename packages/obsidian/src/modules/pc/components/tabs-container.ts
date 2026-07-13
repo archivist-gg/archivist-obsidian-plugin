@@ -9,7 +9,6 @@ const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string }> =
   { type: "actions-tab",    panelId: "panel-actions",    label: "Actions" },
   { type: "spells-tab",     panelId: "panel-spells",     label: "Spells" },
   { type: "inventory-tab",  panelId: "panel-inventory",  label: "Inventory" },
-  { type: "features-tab",   panelId: "panel-features",   label: "Features & Traits" },
   { type: "background-tab", panelId: "panel-background", label: "Background" },
 ];
 

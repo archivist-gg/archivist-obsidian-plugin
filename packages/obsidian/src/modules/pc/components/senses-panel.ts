@@ -49,5 +49,15 @@ export class SensesPanel implements SheetComponent {
         row.createSpan({ cls: "pc-sense-dist", text: `${dist} ft.` });
       }
     }
+
+    // Size — relocated here from the retired race-block (§3.8). Read from the
+    // resolved race via cast (there is no derived.size); rendered only when
+    // present, and last so it never displaces the passive/sense rows.
+    const size = (ctx.resolved?.race as unknown as { size?: string } | undefined)?.size;
+    if (size) {
+      const row = list.createDiv({ cls: "pc-sense-row" });
+      row.createSpan({ cls: "pc-sense-name", text: "Size" });
+      row.createSpan({ cls: "pc-sense-dist", text: size });
+    }
   }
 }

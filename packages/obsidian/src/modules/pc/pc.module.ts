@@ -19,16 +19,11 @@ import { ProficienciesPanel } from "./components/proficiencies-panel";
 import { ActionsTab } from "./components/actions-tab";
 import { SpellsTab } from "./components/spells-tab";
 import { InventoryTab } from "./components/inventory-tab";
-import { FeaturesTab } from "./components/features-tab";
 import { BackgroundTab } from "./components/background-tab";
 import { NotesTab } from "./components/notes-tab";
 import { TabsContainer } from "./components/tabs-container";
 import { BuilderView } from "./components/builder-view";
-import { ClassBlock } from "./blocks/class-block";
-import { SubclassBlock } from "./blocks/subclass-block";
-import { RaceBlock } from "./blocks/race-block";
 import { BackgroundBlock } from "./blocks/background-block";
-import { FeatBlock } from "./blocks/feat-block";
 import { PCSheetView, VIEW_TYPE_PC } from "./pc.view";
 import { buildDraftFileBody } from "./builder/character-stub";
 
@@ -184,16 +179,11 @@ export class PCModule {
     r.register(new SkillsPanel());
     r.register(new ProficienciesPanel());
     // Blocks
-    r.register(new ClassBlock());
-    r.register(new SubclassBlock());
-    r.register(new RaceBlock());
     r.register(new BackgroundBlock());
-    r.register(new FeatBlock());
     // Tabs
     r.register(new ActionsTab());
     r.register(new SpellsTab());
     r.register(new InventoryTab());
-    r.register(new FeaturesTab(r));
     r.register(new BackgroundTab(r));
     r.register(new NotesTab());
     r.register(new TabsContainer(r));
