@@ -8,6 +8,7 @@ import { renderStandardActionsList } from "./actions/standard-actions-list";
 import { renderCostBadge, type ActionCost } from "./actions/cost-badge";
 import { renderChargeBoxes } from "./actions/charge-boxes";
 import { groupFeatures, type FeatureGroupKey } from "./actions/feature-groups";
+import { renderBoonSections } from "./actions/boon-rows";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText } from "../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
@@ -62,7 +63,10 @@ export class ActionsTab implements SheetComponent {
     this.renderGroup(root, "Reactions", groups.reactions, ctx, "reactions");
     this.renderGroup(root, "Passive & Always-Active", groups.passive, ctx, "passive");
 
-    // Interdict Boons section (Task 4) lands here.
+    // ── Interdict Boons sections (#1b) ───────────────────────────────
+    // Selected + granted boons from each resolved pool, read-only (picking
+    // stays on the Interdict Boons pool tab).
+    renderBoonSections(root, ctx);
 
     renderStandardActionsList(root, ctx);
   }
