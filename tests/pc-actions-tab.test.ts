@@ -19,15 +19,19 @@ const ctxFactory = (attacks: AttackRow[], features: ResolvedCharacter["features"
     feats: [], totalLevel: 1, features, state: {} as never,
   } as unknown as ResolvedCharacter,
   derived: { attacks } as DerivedStats,
-  services: {} as never,
+  services: { entities: { getBySlug: () => null } } as never,
+  app: {} as never,
   editState: null,
 });
 
-describe("ActionsTab", () => {
-  it("renders the Attacks heading", () => {
+const headings = (root: HTMLElement): string[] =>
+  [...root.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent ?? "");
+
+describe("ActionsTab — Actions group (#7 attacks heading)", () => {
+  it("renders the Attacks heading atop the Actions group", () => {
     const c = mountContainer();
     new ActionsTab().render(c, ctxFactory([sampleAttack()]));
-    expect([...c.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent)).toContain("Attacks");
+    expect(headings(c)).toContain("Attacks");
   });
 
   it("uses derived.attacks names (no regex on equipment)", () => {
@@ -39,34 +43,53 @@ describe("ActionsTab", () => {
   it("renders no weapon rows when derived.attacks empty", () => {
     const c = mountContainer();
     new ActionsTab().render(c, ctxFactory([]));
-    expect(c.querySelectorAll(".pc-action-row").length).toBe(0);
+    expect(c.querySelectorAll(".pc-weapons-table .pc-action-row").length).toBe(0);
   });
 
-  it("shows the multiplier in the Attacks heading when attacksPerAction > 1", () => {
+  it("shows the multiplier in the Attacks heading when attacksPerAction > 1 (#7)", () => {
     const c = mountContainer();
     const ctx = ctxFactory([sampleAttack()]);
     (ctx.derived as DerivedStats).attacksPerAction = 2;
     new ActionsTab().render(c, ctx);
-    expect([...c.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent)).toContain("Attacks (×2)");
+    expect(headings(c)).toContain("Attacks (×2)");
   });
 
-  it("keeps a plain Attacks heading when attacksPerAction is 1", () => {
+  it("keeps a plain Attacks heading when attacksPerAction is 1 (#7)", () => {
     const c = mountContainer();
     const ctx = ctxFactory([sampleAttack()]);
     (ctx.derived as DerivedStats).attacksPerAction = 1;
     new ActionsTab().render(c, ctx);
-    const headings = [...c.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent);
-    expect(headings).toContain("Attacks");
-    expect(headings).not.toContain("Attacks (×1)");
+    const h = headings(c);
+    expect(h).toContain("Attacks");
+    expect(h).not.toContain("Attacks (×1)");
   });
+});
 
-  it("renders feature attacks below weapon attacks", () => {
+describe("ActionsTab — grouped feature sections", () => {
+  it("renders an action-bucket feature row under the Actions group", () => {
     const c = mountContainer();
     const features = [{
-      feature: { name: "Eldritch Blast", attacks: [{ name: "Eldritch Blast", to_hit: "+5", damage: "1d10 force" }] } as never,
+      feature: { name: "Eldritch Blast", action: "action", description: "A beam of crackling energy." } as never,
       source: { kind: "class", slug: "warlock", level: 1 } as never,
-    }];
+    }] as ResolvedCharacter["features"];
     new ActionsTab().render(c, ctxFactory([], features));
-    expect(c.textContent).toMatch(/Eldritch Blast/);
+    expect([...c.querySelectorAll(".pc-feature-row .pc-action-row-name")].map((n) => n.textContent)).toContain("Eldritch Blast");
+  });
+
+  it("renders a Passive & Always-Active heading for an action-less feature", () => {
+    const c = mountContainer();
+    const features = [{
+      feature: { name: "Darkvision", description: "You can see in the dark." } as never,
+      source: { kind: "race", slug: "elf" } as never,
+    }] as ResolvedCharacter["features"];
+    new ActionsTab().render(c, ctxFactory([], features));
+    expect(headings(c)).toContain("Passive & Always-Active");
+    expect([...c.querySelectorAll(".pc-feature-row .pc-action-row-name")].map((n) => n.textContent)).toContain("Darkvision");
+  });
+
+  it("keeps the standard combat actions reference footer", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, ctxFactory([sampleAttack()]));
+    expect(c.querySelector(".pc-standard-actions-title")?.textContent).toBe("Standard combat actions");
   });
 });
