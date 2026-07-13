@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { FilterState, VisibleEntry } from "./inventory/filter-state";
 import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
@@ -45,6 +46,9 @@ export class InventoryTab implements SheetComponent {
             if (result.kind === "rejected") {
               // Should not happen because picker filtered to non-attuned, but guard anyway.
               openConflictModal(ctx, entryIdx);
+            }
+            if (result.unequipped?.length) {
+              new Notice(`Unequipped ${result.unequipped.join(", ")} (slot occupied).`);
             }
           },
         }).open();
@@ -157,7 +161,10 @@ function openConflictModal(ctx: ComponentRenderContext, incomingIndex: number): 
     incoming,
     onSwap: (swapIndex) => {
       editState.unattuneItem(swapIndex);
-      editState.attuneItem(incomingIndex);
+      const result = editState.attuneItem(incomingIndex);
+      if (result.unequipped?.length) {
+        new Notice(`Unequipped ${result.unequipped.join(", ")} (slot occupied).`);
+      }
     },
   }).open();
 }
