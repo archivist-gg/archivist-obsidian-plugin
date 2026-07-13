@@ -6625,6 +6625,27 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
 
+/* ---------- Passive / always-active tag (badge-column, in place of a cost pill) ----------
+ * Shares the cost-badge pill footprint but reads as a muted outline chip so a
+ * Passive row is visually distinct from an actionable one. */
+.archivist-pc-sheet .pc-passive-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: var(--pc-fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-muted);
+  background: transparent;
+  border: 1px solid var(--pc-tan-muted);
+}
+
 /* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
  * Here we only own the outer flex wrapper that places the pip row next to the
@@ -6702,6 +6723,42 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
+
+/* ---------- Unified feature/passive rows (grouped Actions tab) ----------
+ * Shares the .pc-action-row base (grid/border/hover) but owns a 4-column grid:
+ * [badge] [name] [right detail] [caret]. The detail column takes the leftover
+ * slack so the charge-pip tracker keeps to one line. */
+.archivist-pc-sheet .pc-feature-list .pc-feature-row {
+  grid-template-columns: 56px minmax(0, 1fr) minmax(0, 2fr) 18px;
+}
+.archivist-pc-sheet .pc-feature-detail {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.archivist-pc-sheet .pc-feature-attack-note {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-action-caret {
+  color: var(--pc-text-muted);
+  text-align: center;
+  transition: transform 0.12s ease;
+}
+.archivist-pc-sheet .pc-feature-row.pc-row-open .pc-action-caret { transform: rotate(90deg); }
+
+/* Extra resource tracker line(s) shown inside a feature's expand card. */
+.archivist-pc-sheet .pc-card-resource {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  margin-top: var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-card-resource-name { font-weight: 700; }
 /* Expand block = full-width sibling div under the open row. The open tint comes
    from the shared .pc-open-expand rule (components.css). */
 .archivist-pc-sheet .pc-action-expand { border-bottom: 1px dashed var(--pc-tan-muted); }
