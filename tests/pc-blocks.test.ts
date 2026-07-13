@@ -1,6 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { ClassBlock, resolveFeatureDescription } from "../packages/obsidian/src/modules/pc/blocks/class-block";
+import { ClassBlock } from "../packages/obsidian/src/modules/pc/blocks/class-block";
+import { resolveFeatureDescription } from "../packages/obsidian/src/modules/pc/blocks/feature-card";
 import { SubclassBlock } from "../packages/obsidian/src/modules/pc/blocks/subclass-block";
 import { RaceBlock } from "../packages/obsidian/src/modules/pc/blocks/race-block";
 import { BackgroundBlock } from "../packages/obsidian/src/modules/pc/blocks/background-block";

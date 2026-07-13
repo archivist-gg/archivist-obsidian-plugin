@@ -1,6 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
 import type { Feature } from "@archivist-gg/dnd5e";
-import { resolveFeatureDescription } from "./class-block";
+import { resolveFeatureDescription } from "./feature-card";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 export class SubclassBlock implements SheetComponent {

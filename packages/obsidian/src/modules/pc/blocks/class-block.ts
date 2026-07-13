@@ -1,8 +1,8 @@
 import type { SheetComponent, ComponentRenderContext } from "../components/component.types";
 import type { ClassEntity } from "@archivist-gg/dnd5e/class/class.types";
 import type { ResolvedClass } from "@archivist-gg/dnd5e/pc/pc.types";
-import type { Feature } from "@archivist-gg/dnd5e";
 import { renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
+import { resolveFeatureDescription } from "./feature-card";
 
 export class ClassBlock implements SheetComponent {
   readonly type = "class-block";
@@ -48,27 +48,4 @@ function metaItem(parent: HTMLElement, label: string, value: string) {
   const line = parent.createDiv({ cls: "pc-meta-line" });
   line.createSpan({ cls: "pc-meta-label", text: `${label}: ` });
   line.createSpan({ cls: "pc-meta-val", text: value });
-}
-
-/**
- * If the feature describes a choice and the character recorded a choice value
- * at this level, append a "Chose: …" line after the description. Otherwise
- * return the raw description.
- */
-export function resolveFeatureDescription(feature: Feature, choice: unknown): string {
-  const base = feature.description ?? feature.entries?.join(" ") ?? "";
-  if (!choice || typeof choice !== "object") return base;
-  const parts: string[] = [];
-  const c = choice as Record<string, unknown>;
-  if (Array.isArray(c.skills) && c.skills.length) parts.push(`Skills: ${(c.skills as string[]).map(prettify).join(", ")}`);
-  if (Array.isArray(c.expertise) && c.expertise.length) parts.push(`Expertise: ${(c.expertise as string[]).map(prettify).join(", ")}`);
-  if (Array.isArray(c.languages) && c.languages.length) parts.push(`Languages: ${(c.languages as string[]).map(prettify).join(", ")}`);
-  if (typeof c.feat === "string") parts.push(`Feat: ${prettify(c.feat.replace(/\[\[|\]\]/g, ""))}`);
-  if (typeof c["fighting-style"] === "string") parts.push(`Fighting Style: ${prettify(c["fighting-style"])}`);
-  if (parts.length === 0) return base;
-  return base ? `${base}\n\nChose: ${parts.join("; ")}` : `Chose: ${parts.join("; ")}`;
-}
-
-function prettify(slug: string): string {
-  return slug.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
