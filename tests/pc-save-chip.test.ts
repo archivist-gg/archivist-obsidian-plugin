@@ -8,11 +8,12 @@ beforeAll(() => installObsidianDomHelpers());
 
 describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
   function interactiveCtx(opts: {
-    ability?: "str" | "dex";
+    ability?: "str" | "dex" | "wis" | "cha";
     classSaves?: string[];
     overrideProf?: boolean;
     overrideBonus?: number;
     bonus?: number;
+    rollModifiers?: unknown[];
   } = {}) {
     const editState = {
       toggleSaveProficient: vi.fn(),
@@ -33,7 +34,10 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
     return {
       ability: abl,
       ctx: {
-        derived: { saves: { [abl]: { bonus: opts.bonus ?? 0, proficient: effectiveProf } } },
+        derived: {
+          saves: { [abl]: { bonus: opts.bonus ?? 0, proficient: effectiveProf } },
+          rollModifiers: opts.rollModifiers ?? [],
+        },
         resolved: {
           classes: [{ entity: { saving_throws: classSaves } }],
           definition: { overrides: { saves: Object.keys(overrides).length ? overrides : undefined } },
@@ -87,6 +91,52 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
     directMark.click();
     expect(editState.clearSaveProficientOverride).toHaveBeenCalledWith("str");
     expect(editState.toggleSaveProficient).not.toHaveBeenCalled();
+  });
+
+  describe("save-scoped roll-modifier tags (#11b)", () => {
+    it("renders ADV on a save with a saving-throw advantage roll-modifier (#11b)", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({
+        ability: "wis",
+        rollModifiers: [{ mode: "advantage", roll: "saving-throw", scope: "wis", label: "Dual Mind" }],
+      });
+      new SaveChip("wis").render(root, ctx);
+      const tag = root.querySelector(".pc-cond-tag");
+      expect(tag?.textContent).toContain("ADV");
+    });
+
+    it("does NOT render ADV on a save whose scope doesn't match (roll-modifier)", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({
+        ability: "cha",
+        rollModifiers: [{ mode: "advantage", roll: "saving-throw", scope: "wis", label: "Dual Mind" }],
+      });
+      new SaveChip("cha").render(root, ctx);
+      expect(root.querySelector(".pc-cond-tag")).toBeNull();
+    });
+
+    it("renders a scopeless saving-throw roll-modifier on every save chip", () => {
+      const mods = [{ mode: "disadvantage", roll: "saving-throw", label: "Frightened" }];
+      for (const abl of ["wis", "cha"] as const) {
+        const root = mountContainer();
+        const { ctx } = interactiveCtx({ ability: abl, rollModifiers: mods });
+        new SaveChip(abl).render(root, ctx);
+        expect(root.querySelector(".pc-cond-tag.pc-cond-tag-dis")?.textContent).toBe("DIS");
+      }
+    });
+
+    it("ignores non-saving-throw roll-modifiers on save chips", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({
+        ability: "wis",
+        rollModifiers: [
+          { mode: "advantage", roll: "ability-check", scope: "wis", label: "Perceptive" },
+          { mode: "advantage", roll: "attack", label: "Pack Tactics" },
+        ],
+      });
+      new SaveChip("wis").render(root, ctx);
+      expect(root.querySelector(".pc-cond-tag")).toBeNull();
+    });
   });
 });
 

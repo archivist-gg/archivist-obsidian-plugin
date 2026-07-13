@@ -90,6 +90,18 @@ export class SaveChip implements SheetComponent {
       }
     }
 
+    // Structured roll-modifier effects scoped to saving throws. An entry applies
+    // to this chip when it is unscoped (all saves) or its scope matches this
+    // ability. Order-preserving; one tag per matching entry. Mirrors the
+    // ability-check loop in skills-panel.ts.
+    for (const rm of ctx.derived.rollModifiers ?? []) {
+      if (rm.roll !== "saving-throw") continue;
+      if (rm.scope && rm.scope !== this.ability) continue;
+      const tag = rm.mode === "advantage" ? "ADV" : "DIS";
+      const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
+      renderConditionTag(chip, tag, tip);
+    }
+
     if (ctx.editState) {
       chip.addEventListener("click", () => ctx.editState!.toggleSaveProficient(ability));
       bonusEl.addEventListener("click", (e) => e.stopPropagation());
