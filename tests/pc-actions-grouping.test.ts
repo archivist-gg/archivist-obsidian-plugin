@@ -207,10 +207,10 @@ describe("ActionsTab — grouped structure", () => {
     expect(rowNames(c)).not.toContain("Hellspeaker");
   });
 
-  it("with BOTH a seeded resource[0] and attacks[], the in-row tracker wins and the attack note is suppressed", () => {
-    // Deferred "die+attack single-slot" precedence (Finding B): the single detail
-    // slot renders the tracker, NEVER the attack note. Locks current behavior so a
-    // future change to that precedence is visible in this test.
+  it("with BOTH a seeded resource[0] and attacks[], the tracker renders in-row AND the attack detail in the expand card", () => {
+    // Finding B: the single in-row detail slot holds the tracker, and the attack
+    // note (previously dropped entirely when a tracker won the slot) now moves to
+    // the expand card so nothing is lost.
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
       rf({
@@ -220,8 +220,13 @@ describe("ActionsTab — grouped structure", () => {
       }),
     ], { featureUses: { is: { used: 1, max: 3 } } }));
     const row = rowByName(c, "Interdict Strike");
+    // tracker still wins the single in-row slot
     expect(row.querySelectorAll(".pc-feature-detail .archivist-toggle-box").length).toBe(3);
-    expect(row.querySelector(".pc-feature-attack-note")).toBeNull();
+    expect(row.querySelector(".pc-feature-detail .pc-feature-attack-note")).toBeNull();
+    // the attack detail is now in the expand card (nothing dropped)
+    const expand = row.nextElementSibling as HTMLElement; // the sibling .pc-action-expand
+    expect(expand.querySelector(".pc-feature-card-attack")?.textContent).toContain("+7");
+    expect(expand.querySelector(".pc-feature-card-attack")?.textContent).toContain("d10");
   });
 
   it("renders a feature's attack hit/damage in-row (no separate feature-attacks table)", () => {

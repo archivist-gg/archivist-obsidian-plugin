@@ -159,6 +159,14 @@
   font-size: var(--pc-fs-body);
 }
 .archivist-pc-sheet .pc-card-resource-name { font-weight: 700; }
+/* Attack detail moved into the expand card when a tracker occupied the single
+   in-row detail slot (Finding B). */
+.archivist-pc-sheet .pc-feature-card-attack {
+  margin-top: var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
 /* Expand block = full-width sibling div under the open row. The open tint comes
    from the shared .pc-open-expand rule (components.css). */
 .archivist-pc-sheet .pc-action-expand { border-bottom: 1px dashed var(--pc-tan-muted); }

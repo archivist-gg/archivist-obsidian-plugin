@@ -89,8 +89,9 @@ export class ActionsTab implements SheetComponent {
    * One unified feature/passive row:
    *   [cost badge | pc-passive-tag] · [name (+ source sub-label) · right detail · caret]
    * Right detail is the FIRST resource tracker, else the feature's attack note.
-   * Extra resources render inside the expand card. Click (outside the tracker /
-   * buff toggle) reveals the shared `.archivist-item-block` card.
+   * Extra resources render inside the expand card; when a tracker occupies the
+   * single in-row slot the attack note moves to that card too (Finding B). Click
+   * (outside the tracker / buff toggle) reveals the shared `.archivist-item-block` card.
    */
   private renderFeatureRow(
     list: HTMLElement,
@@ -142,11 +143,14 @@ export class ActionsTab implements SheetComponent {
     }
 
     // Right detail — first resource tracker, else the feature's attack note.
+    // Compute the note ONCE: it renders in-row only when no tracker took the
+    // single detail slot; when a tracker occupies the slot the note moves to the
+    // expand card below (Finding B — the detail is never dropped).
     const detail = row.createDiv({ cls: "pc-feature-detail" });
     const hasTracker = renderFirstResourceTracker(detail, feature, ctx);
-    if (!hasTracker) {
-      const note = formatFeatureAttackNote(feature, ctx.resolved.totalLevel);
-      if (note) detail.createSpan({ cls: "pc-feature-attack-note", text: note });
+    const attackNote = formatFeatureAttackNote(feature, ctx.resolved.totalLevel);
+    if (!hasTracker && attackNote) {
+      detail.createSpan({ cls: "pc-feature-attack-note", text: attackNote });
     }
 
     row.createDiv({ cls: "pc-action-caret", text: "›" });
@@ -164,6 +168,11 @@ export class ActionsTab implements SheetComponent {
       chosenInline: rf.chosenInline,
     });
     for (const res of (feature.resources ?? []).slice(1)) this.renderCardResource(inner, res, ctx);
+    // Finding B: when a tracker occupied the single in-row detail slot, the
+    // feature's attack note lands here in the expand card instead of being lost.
+    if (hasTracker && attackNote) {
+      inner.createDiv({ cls: "pc-feature-card-attack", text: `Attack: ${attackNote}` });
+    }
 
     row.addEventListener("click", (e) => {
       const t = e.target as HTMLElement | null;
