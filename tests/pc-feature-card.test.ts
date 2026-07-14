@@ -2,38 +2,14 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import {
   renderFeatureCard,
-  renderExpandBlock,
   featureCardDescription,
   resolveFeatureDescription,
   formatSourceLabel,
   RESET_LABEL,
 } from "../packages/obsidian/src/modules/pc/blocks/feature-card";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
-
-/** Minimal ctx for the resource-keyed adapter path (totalLevel for die scaling,
- *  feature_uses for recovery lookup, no definition → no edition badge). */
-function ctx(
-  overrides: {
-    totalLevel?: number;
-    featureUses?: Record<string, { used: number; max: number }>;
-    edition?: string;
-    spellSlots?: Record<number, { used: number; total: number }>;
-  } = {},
-): ComponentRenderContext {
-  return {
-    resolved: {
-      totalLevel: overrides.totalLevel ?? 5,
-      definition: overrides.edition ? { edition: overrides.edition } : undefined,
-      state: { feature_uses: overrides.featureUses ?? {}, spell_slots: overrides.spellSlots },
-    } as never,
-    derived: {} as never,
-    services: {} as never,
-    editState: null,
-  };
-}
 
 describe("featureCardDescription — description ?? entries fallback (§3.4)", () => {
   it("prefers an explicit description", () => {
@@ -109,41 +85,6 @@ describe("renderFeatureCard — generalized card", () => {
     const root = mountContainer();
     renderFeatureCard(root, { title: "Pick", chosenInline: [{ label: "A" }] });
     expect(root.querySelector(".archivist-item-description")).toBeTruthy();
-  });
-});
-
-describe("renderExpandBlock — resource-keyed adapter (regression-safe)", () => {
-  it("(d) a resource-keyed card still shows the Recharge line + die", () => {
-    const root = mountContainer();
-    renderExpandBlock(
-      root,
-      { id: "bard:bi", name: "Bardic Inspiration", max_formula: "4", reset: "short-rest", die: { base: "d8" } },
-      { name: "Bardic Inspiration", description: "You can inspire others." },
-      { kind: "class", slug: "bard", level: 1 },
-      ctx(),
-    );
-    // properties container + both icon property-lines present
-    const props = root.querySelector(".archivist-item-properties");
-    expect(props).toBeTruthy();
-    const values = [...root.querySelectorAll(".archivist-property-value")].map((v) => v.textContent);
-    expect(values).toContain("Short Rest"); // RESET_LABEL["short-rest"]
-    expect(values).toContain("d8"); // resolveScalingDie({base:"d8"})
-    // title from resource.name, italic source subtitle from formatSourceLabel
-    expect(root.querySelector(".archivist-item-name")?.textContent).toBe("Bardic Inspiration");
-    expect(root.querySelector(".archivist-item-subtitle")?.textContent).toBe("Bard 1");
-    expect(root.querySelector(".archivist-item-description")?.textContent).toContain("inspire others");
-  });
-
-  it("a resource feature whose prose is in entries (no description) still renders non-empty (fallback in the real path)", () => {
-    const root = mountContainer();
-    renderExpandBlock(
-      root,
-      { id: "r:x", name: "Runic Power", max_formula: "3", reset: "long-rest" },
-      { name: "Runic Power", entries: ["Runes flare with power."] },
-      { kind: "class", slug: "runeknight", level: 3 },
-      ctx(),
-    );
-    expect(root.querySelector(".archivist-item-description")?.textContent).toContain("Runes flare");
   });
 });
 

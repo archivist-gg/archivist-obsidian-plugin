@@ -118,8 +118,7 @@
 /* The charges column gets the lion's share of the leftover width (3fr vs the
    name's 1fr) so the pip tracker has room to stay on one line instead of the
    name column hogging the slack and cramping the pips. */
-.archivist-pc-sheet .pc-items-table .pc-action-row,
-.archivist-pc-sheet .pc-features-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
+.archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
 .archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
@@ -227,37 +226,6 @@
   font-weight: 700;
   color: var(--pc-text-primary);
   margin-bottom: var(--pc-space-1);
-}
-
-/* ---------- Feature expand panel (FeaturesTable expanded row body) ---------- */
-.archivist-pc-sheet .pc-feature-expand-title {
-  font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: var(--pc-fs-body);
-  color: var(--pc-text-primary);
-  margin-bottom: var(--pc-space-1);
-}
-.archivist-pc-sheet .pc-feature-expand-meta {
-  font-family: var(--pc-font-serif);
-  font-style: italic;
-  font-size: var(--pc-fs-small);
-  color: var(--pc-text-muted);
-  margin-bottom: var(--pc-space-2);
-}
-.archivist-pc-sheet .pc-feature-expand-body {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-body);
-  color: var(--pc-text-primary);
-  line-height: var(--pc-lh-body);
-}
-.archivist-pc-sheet .pc-feature-expand-body p { margin: 0 0 var(--pc-space-2); }
-.archivist-pc-sheet .pc-feature-expand-attacks {
-  margin-top: var(--pc-space-2);
-  padding-left: var(--pc-space-2);
-  border-left: 2px solid var(--pc-tan);
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-small);
-  color: var(--pc-text-soft);
 }
 
 /* ---------- Responsive (added in phase 5) ---------- */

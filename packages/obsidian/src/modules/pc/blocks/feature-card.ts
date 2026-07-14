@@ -4,7 +4,6 @@ import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
 import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
-import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { createIconProperty, renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
 
 /**
@@ -129,33 +128,6 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
   if (opts.recovery) {
     renderRecoveryAction(block, opts.recovery.resource, opts.recovery.source, opts.recovery.ctx, opts.recovery.fu);
   }
-}
-
-/**
- * Resource-keyed adapter — builds a {@link FeatureCardOptions} descriptor from a
- * `Resource` + its owning `Feature` and renders the card. Keeps the original
- * `renderExpandBlock(expand, resource, feature, source, ctx)` signature so the
- * resource list (`resource-badge.ts`, retired in Task 3) re-points with a
- * one-line import change. Behavior-identical to the former private helper,
- * except the description now applies the `description ?? entries` fallback.
- */
-export function renderExpandBlock(
-  expand: HTMLElement,
-  resource: Resource,
-  feature: Feature,
-  source: FeatureSource,
-  ctx: ComponentRenderContext,
-): void {
-  const fu = resource.id ? ctx.resolved.state.feature_uses?.[resource.id] : undefined;
-  renderFeatureCard(expand, {
-    title: resource.name,
-    sourceLabel: formatSourceLabel(source),
-    sourceBadge: sourceBadgeText((ctx.resolved as { definition?: { edition?: string } }).definition?.edition),
-    recharge: RESET_LABEL[resource.reset] ?? "Special",
-    die: resource.die ? resolveScalingDie(resource.die, ctx.resolved.totalLevel) : undefined,
-    feature,
-    recovery: resource.recovery?.length ? { resource, source, ctx, fu } : undefined,
-  });
 }
 
 /** Edition → friendly source-badge label, matching spell/item block badges. */
