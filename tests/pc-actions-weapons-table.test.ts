@@ -150,6 +150,11 @@ describe("WeaponsTable", () => {
     expect(dmg.textContent).toContain("2d6 necrotic");
     expect(dmg.textContent).toContain("1d8 necrotic");
     expect(dmg.textContent).not.toContain("Wounding"); // source is NOT inline
+    // ...but the source IS surfaced on each rider chip's hover title.
+    const chips = [...dmg.querySelectorAll(".archivist-tag-damage")] as HTMLElement[];
+    const riderTitles = chips.map((c) => c.title).join(" | ");
+    expect(riderTitles).toContain("Wounding");
+    expect(riderTitles).toContain("Terrorizing Force");
   });
 
   it("clicking a weapon row marks it .pc-row-open (and unmarks on re-click)", () => {

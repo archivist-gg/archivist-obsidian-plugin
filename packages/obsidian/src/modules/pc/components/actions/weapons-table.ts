@@ -89,6 +89,13 @@ export class WeaponsTable implements SheetComponent {
           dmgCell.appendText(" + ");
           const dice = rider.damage_type ? `${rider.amount} ${rider.damage_type}` : rider.amount;
           renderTextWithInlineTags(`\`damage:${dice}\``, dmgCell, false);
+          // Attribute the rider to its source on hover (source is NOT shown
+          // inline — it disambiguates same-type chips, e.g. two necrotic riders).
+          if (rider.source) {
+            const chips = dmgCell.querySelectorAll(".archivist-tag-damage");
+            const chip = chips[chips.length - 1] as HTMLElement | undefined;
+            if (chip) chip.title = chip.title ? `${chip.title} — ${rider.source}` : rider.source;
+          }
         }
       }
       if (a.versatile?.damageDice) {
