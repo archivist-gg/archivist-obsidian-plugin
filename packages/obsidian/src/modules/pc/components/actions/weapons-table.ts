@@ -6,6 +6,7 @@ import { createExpandState } from "./row-expand";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
+import { attachStatTooltip } from "../stat-tooltip";
 
 const attackDisSources = new Set([
   "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
@@ -44,6 +45,16 @@ export class WeaponsTable implements SheetComponent {
       // annotation effect mapped a list onto this row.
       if (a.attackNotes?.length) {
         nameCell.createDiv({ cls: "pc-weapon-note", text: a.attackNotes.join(" · ") });
+      }
+      // 2024 Weapon Mastery — an outline micro-chip on a sub-line inside the
+      // name cell (no 6th grid column). Additive + display-only: the label and
+      // every number come pre-computed on `a.mastery`; hovering the chip opens a
+      // description popover via attachStatTooltip. Absent on untouched rows.
+      if (a.mastery) {
+        const masterySub = nameCell.createDiv({ cls: "pc-weapon-mastery" });
+        const chip = masterySub.createSpan({ cls: "pc-mastery-tag", text: a.mastery.label });
+        const mastery = a.mastery;
+        attachStatTooltip(chip, (host) => renderMasteryTooltip(host, mastery));
       }
 
       // Range
@@ -161,6 +172,17 @@ export class WeaponsTable implements SheetComponent {
 
 function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
+}
+
+/** Render the weapon-mastery hover popover content into a tooltip host: the
+ *  glossary description, plus a derived line ("Save DC 15" / "On-miss damage N")
+ *  when `mastery.derived` carries a computed number. Factored out so the unit
+ *  test can drive it directly; display-only (no derivation happens here). */
+export function renderMasteryTooltip(host: HTMLElement, mastery: NonNullable<AttackRow["mastery"]>): void {
+  host.createDiv({ text: mastery.description });
+  if (mastery.derived) {
+    host.createDiv({ cls: "pc-mastery-derived", text: `${mastery.derived.label} ${mastery.derived.value}` });
+  }
 }
 
 function findEntryForAttack(ctx: ComponentRenderContext, a: AttackRow): EquipmentEntry | null {
