@@ -84,9 +84,12 @@ export class WeaponsTable implements SheetComponent {
         dmgCell,
         false,
       );
-      if (a.extraDamage) {
-        dmgCell.appendText(" + ");
-        renderTextWithInlineTags(`\`damage:${a.extraDamage}\``, dmgCell, false);
+      if (a.damageRiders?.length) {
+        for (const rider of a.damageRiders) {
+          dmgCell.appendText(" + ");
+          const dice = rider.damage_type ? `${rider.amount} ${rider.damage_type}` : rider.amount;
+          renderTextWithInlineTags(`\`damage:${dice}\``, dmgCell, false);
+        }
       }
       if (a.versatile?.damageDice) {
         dmgCell.createEl("br");

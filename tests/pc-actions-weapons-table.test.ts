@@ -130,25 +130,26 @@ describe("WeaponsTable", () => {
     expect(hit?.textContent).toContain("+0");
   });
 
-  it("appends extraDamage to the damage cell when present", () => {
+  it("renders each damageRider as its own damage tag (source not inline)", () => {
     const root = mountContainer();
     const attacks = [{
-      id: "mainhand", name: "Flame Tongue Longsword",
-      range: "melee 5 ft.", toHit: 6, damageDice: "1d8 + 4", damageType: "slashing",
-      extraDamage: "2d6 fire",
+      id: "gs", name: "Greatsword",
+      range: "melee 5 ft.", toHit: 9, damageDice: "2d6+5", damageType: "slashing",
+      damageRiders: [
+        { amount: "2d6", damage_type: "necrotic", source: "Wounding" },
+        { amount: "1d8", damage_type: "necrotic", source: "Terrorizing Force" },
+      ],
       properties: [], proficient: true,
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
     new WeaponsTable().render(root, ctxWithAttacks(attacks));
-    const dmgCell = root.querySelector(".pc-weapon-damage")?.textContent ?? "";
-    expect(dmgCell).toContain("1d8 + 4");
-    expect(dmgCell).toContain("slashing");
-    expect(dmgCell).toContain("2d6 fire");
-    // The extraDamage gets its own click-to-roll tag so it's rollable.
-    const tags = root.querySelectorAll(".pc-weapon-damage .archivist-tag-damage");
-    expect(tags.length).toBe(2);
-    expect(tags[1]?.textContent).toBe("2d6 fire");
+    const dmg = root.querySelector(".pc-weapon-damage")!;
+    // base + two rider chips = 3 rollable damage tags.
+    expect(dmg.querySelectorAll(".archivist-tag-damage").length).toBeGreaterThanOrEqual(3);
+    expect(dmg.textContent).toContain("2d6 necrotic");
+    expect(dmg.textContent).toContain("1d8 necrotic");
+    expect(dmg.textContent).not.toContain("Wounding"); // source is NOT inline
   });
 
   it("clicking a weapon row marks it .pc-row-open (and unmarks on re-click)", () => {
