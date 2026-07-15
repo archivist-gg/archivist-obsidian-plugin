@@ -5647,20 +5647,26 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-charges-current { cursor: pointer; font-weight: 600; }
 .pc-charges-recovery { font-size: 10px; color: var(--text-muted); margin-top: 0.1em; }
 
+/* Shared outline meta-chip family (Phase 2 C3): ADV/DIS/AUTO-FAIL cond-tags and
+   weapon-mastery chips. The base owns the common structural props; each class
+   keeps its own padding/font/case and its color/border variants. */
+.archivist-pc-sheet .pc-meta-chip {
+  display: inline-block;
+  border-radius: 2px;
+  background: transparent;
+  vertical-align: middle;
+  line-height: 1.3;
+  user-select: none;
+}
+
 /* SP4e — condition effect tags (V5 outlined micro-caps; sheet-scoped for token access) */
 .archivist-pc-sheet .pc-cond-tag {
-  display: inline-block;
   padding: 1px 4px;
   margin-left: 5px;
   font-size: var(--pc-fs-micro);
   font-weight: 700;
   letter-spacing: 0.1em;
-  border-radius: 2px;
-  vertical-align: middle;
-  background: transparent;
-  user-select: none;
   text-transform: uppercase;
-  line-height: 1.3;
 }
 .archivist-pc-sheet .pc-cond-tag-dis {
   border: 1px solid var(--pc-crimson);
@@ -5676,6 +5682,24 @@ body.theme-light .archivist-tag-atk:hover {
 }
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
+
+/* Save condition tags on a wrapping sub-line beneath the chip (Phase 2 C1) —
+   the .pc-ab-stack is column-flex, so this sits below .pc-save-chip and wraps
+   within the narrow ability cell instead of overflowing it. */
+.archivist-pc-sheet .pc-save-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  margin-top: 2px;
+}
+/* .pc-cond-tag's inline margin-left (for inline-append in skills/weapons) is
+   wrong in the centered sub-line. */
+.archivist-pc-sheet .pc-save-tags .pc-cond-tag { margin-left: 0; }
+/* Placeholder standing in for the numeric bonus when it's hidden on auto-fail. */
+.archivist-pc-sheet .pc-save-dash { color: var(--pc-text-muted); font-size: var(--pc-fs-small); }
 
 /* SP4e — disabled action rows when Incapacitated */
 .archivist-pc-sheet .pc-row-disabled {
@@ -6608,7 +6632,7 @@ body.theme-light .archivist-tag-atk:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
+  min-width: 52px;
   height: 18px;
   padding: 0 6px;
   border-radius: 9px;
@@ -6624,6 +6648,27 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cost-badge.cost-reaction { background: var(--pc-rarity-rare); }
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
+
+/* ---------- Passive / always-active tag (badge-column, in place of a cost pill) ----------
+ * Shares the cost-badge pill footprint but reads as a muted outline chip so a
+ * Passive row is visually distinct from an actionable one. */
+.archivist-pc-sheet .pc-passive-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: var(--pc-fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md);
+  text-transform: uppercase;
+  line-height: var(--pc-lh-tight);
+  color: var(--pc-text-muted);
+  background: transparent;
+  border: 1px solid var(--pc-tan-muted);
+}
 
 /* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
@@ -6660,11 +6705,10 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 /* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
-.archivist-pc-sheet .pc-actions-section { margin-bottom: var(--pc-space-4); }
 .archivist-pc-sheet .pc-actions-section-head {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
-  color: var(--pc-crimson);
+  color: var(--pc-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--pc-ls-caps-md);
   margin-bottom: var(--pc-space-2);
@@ -6697,16 +6741,65 @@ body.theme-light .archivist-tag-atk:hover {
 /* The charges column gets the lion's share of the leftover width (3fr vs the
    name's 1fr) so the pip tracker has room to stay on one line instead of the
    name column hogging the slack and cramping the pips. */
-.archivist-pc-sheet .pc-items-table .pc-action-row,
-.archivist-pc-sheet .pc-features-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
-.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
+.archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px minmax(0, 3fr); }
+.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
+
+/* ---------- Unified feature/passive rows (grouped Actions tab) ----------
+ * Shares the .pc-action-row base (grid/border/hover) but owns a 4-column grid:
+ * [badge] [name] [right detail] [caret]. The detail column takes the leftover
+ * slack so the charge-pip tracker keeps to one line. */
+.archivist-pc-sheet .pc-feature-list .pc-feature-row {
+  grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
+}
+.archivist-pc-sheet .pc-feature-detail {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.archivist-pc-sheet .pc-feature-attack-note {
+  font-family: var(--pc-font-serif);
+  font-style: italic;
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
+.archivist-pc-sheet .pc-action-caret {
+  color: var(--pc-text-muted);
+  text-align: center;
+  transition: transform 0.12s ease;
+}
+.archivist-pc-sheet .pc-feature-row.pc-row-open .pc-action-caret { transform: rotate(90deg); }
+
+/* Extra resource tracker line(s) shown inside a feature's expand card. */
+.archivist-pc-sheet .pc-card-resource {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  margin-top: var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-body);
+}
+.archivist-pc-sheet .pc-card-resource-name { font-weight: 700; }
+/* Attack detail moved into the expand card when a tracker occupied the single
+   in-row detail slot (Finding B). */
+.archivist-pc-sheet .pc-feature-card-attack {
+  margin-top: var(--pc-space-2);
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+}
 /* Expand block = full-width sibling div under the open row. The open tint comes
    from the shared .pc-open-expand rule (components.css). */
 .archivist-pc-sheet .pc-action-expand { border-bottom: 1px dashed var(--pc-tan-muted); }
-/* No trailing separator under the last entry of each list. */
+/* No trailing separator under the last entry of each list. The last-child rule
+   clears the final element (the last row's hidden expand card, or a trailing
+   situational sub-row when open); the :not(:has()) rule clears the last actual
+   ROW of each sub-group when collapsed — its only later siblings are its own
+   expand card and/or a situational sub-row, never another .pc-action-row — so
+   the dashed separator never lands at the bottom of a sub-group. */
 .archivist-pc-sheet .pc-actions-table > *:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-actions-table > .pc-action-row:not(:has(~ .pc-action-row)) { border-bottom: none; }
 .archivist-pc-sheet .pc-action-row-name {
   font-family: var(--pc-font-serif);
   font-weight: 700;
@@ -6726,6 +6819,29 @@ body.theme-light .archivist-tag-atk:hover {
   font-style: italic;
   font-size: var(--pc-fs-small);
   color: var(--pc-text-muted);
+}
+
+/* 2024 Weapon Mastery — an outline micro-chip (modelled on .pc-cond-tag) on a
+ * sub-line in the weapon name cell. Hovering opens a description popover, so it
+ * carries a help cursor. Proper-noun labels stay in normal case (unlike the
+ * uppercase ADV/DIS cond-tags). */
+.archivist-pc-sheet .pc-weapon-mastery {
+  margin-top: 2px;
+}
+.archivist-pc-sheet .pc-mastery-tag {
+  position: relative;
+  padding: 1px 5px;
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--pc-tan-muted);
+  color: var(--pc-text-muted);
+  cursor: help;
+}
+/* Derived numeric line inside the mastery tooltip host (e.g. "Save DC 15"). */
+.pc-mastery-derived {
+  margin-top: 0.3em;
+  font-weight: 600;
 }
 
 /* Inline italic dice tag override inside actions tab */
@@ -6764,37 +6880,6 @@ body.theme-light .archivist-tag-atk:hover {
   margin-bottom: var(--pc-space-1);
 }
 
-/* ---------- Feature expand panel (FeaturesTable expanded row body) ---------- */
-.archivist-pc-sheet .pc-feature-expand-title {
-  font-family: var(--pc-font-serif);
-  font-weight: 700;
-  font-size: var(--pc-fs-body);
-  color: var(--pc-text-primary);
-  margin-bottom: var(--pc-space-1);
-}
-.archivist-pc-sheet .pc-feature-expand-meta {
-  font-family: var(--pc-font-serif);
-  font-style: italic;
-  font-size: var(--pc-fs-small);
-  color: var(--pc-text-muted);
-  margin-bottom: var(--pc-space-2);
-}
-.archivist-pc-sheet .pc-feature-expand-body {
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-body);
-  color: var(--pc-text-primary);
-  line-height: var(--pc-lh-body);
-}
-.archivist-pc-sheet .pc-feature-expand-body p { margin: 0 0 var(--pc-space-2); }
-.archivist-pc-sheet .pc-feature-expand-attacks {
-  margin-top: var(--pc-space-2);
-  padding-left: var(--pc-space-2);
-  border-left: 2px solid var(--pc-tan);
-  font-family: var(--pc-font-serif);
-  font-size: var(--pc-fs-small);
-  color: var(--pc-text-soft);
-}
-
 /* ---------- Responsive (added in phase 5) ---------- */
 
 @container pc-content (max-width: 499px) {
@@ -6825,6 +6910,16 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-cond-chip {
     padding: 1px 4px;
   }
+}
+
+/* Quiet boon provenance marker (Phase 2 C2) — italic muted text in the detail
+   column, deliberately NOT a chip (distinct from economy pills + meta chips). */
+.archivist-pc-sheet .pc-boon-status {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  font-style: italic;
+  letter-spacing: 0.02em;
 }
 
 

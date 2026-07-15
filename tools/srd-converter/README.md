@@ -26,7 +26,7 @@ bundle under `src/data/srd/`.
 ## Usage
 
 ```bash
-npm run convert-srd                                      # default: 2014, <srd-source-dir>
+npm run convert-srd                                      # default: 2014, ~/w/archivist/server/data/srd/
 npm run convert-srd -- --source-dir /path/to/srd         # override source
 npm run convert-srd -- --edition 2024                    # switch edition
 npm run convert-srd -- --output-dir src/data/srd-2024    # override output

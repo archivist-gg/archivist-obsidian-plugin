@@ -152,3 +152,41 @@ describe("SensesPanel — senses", () => {
     expect(names).not.toContain("Darkvision");
   });
 });
+
+describe("SensesPanel — Size (relocated from race-block, AC-size)", () => {
+  // Size was previously surfaced ONLY by the now-retired race-block; §3.8 moves
+  // it here so retiring that block does not silently drop it. Read from
+  // ctx.resolved.race.size via cast — there is no derived.size.
+  const mkCtx = (size?: string): ComponentRenderContext => ({
+    resolved: (size ? { race: { size } } : {}) as unknown as ResolvedCharacter,
+    derived: { passives: { perception: 14, investigation: 10, insight: 11 } } as DerivedStats,
+    services: {} as never,
+    editState: null,
+  });
+
+  it("renders a Size row reading the resolved race size", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx("Small"));
+    const names = [...container.querySelectorAll(".pc-sense-name")].map((v) => v.textContent);
+    expect(names).toContain("Size");
+    const sizeRow = [...container.querySelectorAll(".pc-sense-row")].find(
+      (r) => r.querySelector(".pc-sense-name")?.textContent === "Size",
+    );
+    expect(sizeRow?.querySelector(".pc-sense-dist")?.textContent).toBe("Small");
+  });
+
+  it("renders no Size row when the resolved race has no size", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx(undefined));
+    expect(container.querySelectorAll(".pc-sense-row").length).toBe(3); // 3 passive rows only
+    const names = [...container.querySelectorAll(".pc-sense-name")].map((v) => v.textContent);
+    expect(names).not.toContain("Size");
+  });
+
+  it("Size row does not displace the first passive row (perception stays first)", () => {
+    const container = mountContainer();
+    new SensesPanel().render(container, mkCtx("Medium"));
+    const first = container.querySelectorAll(".pc-sense-row")[0];
+    expect(first.querySelector(".pc-sense-name")?.textContent).toBe("Perception");
+  });
+});

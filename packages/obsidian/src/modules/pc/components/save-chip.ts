@@ -38,6 +38,12 @@ export class SaveChip implements SheetComponent {
     chip.createEl("b", { text: "SAVE" });
     const bonusEl = chip.createSpan({ cls: "pc-save-bn", text: formatBonus(entry.bonus) });
 
+    // ADV/DIS/AUTO-FAIL tags render on a wrapping sub-line BENEATH the chip (a
+    // sibling in the .pc-ab-stack column) so they never overflow the narrow
+    // ~64px ability cell the way an inline-appended tag did (Image #2).
+    let tagsEl: HTMLElement | null = null;
+    const tags = (): HTMLElement => (tagsEl ??= el.createDiv({ cls: "pc-save-tags" }));
+
     const overrides = ctx.resolved.definition?.overrides?.saves;
     const profOverridden = overrides?.[ability]?.proficient !== undefined;
     const bonusOverridden = overrides?.[ability]?.bonus !== undefined;
@@ -63,13 +69,14 @@ export class SaveChip implements SheetComponent {
 
       if (autofail) {
         bonusEl.classList.add("is-hidden");
+        chip.createSpan({ cls: "pc-save-dash", text: "—" }); // stand-in for the hidden bonus
         const sources = ce.sources
           .filter((s) => {
             const slug = s.condition;
             return slug === "paralyzed" || slug === "petrified" || slug === "stunned" || slug === "unconscious";
           })
           .map((s) => s.condition);
-        renderConditionTag(chip, "AUTO-FAIL", `Auto-fail from ${sources.join(", ") || "condition"}`);
+        renderConditionTag(tags(), "AUTO-FAIL", `Auto-fail from ${sources.join(", ") || "condition"}`);
       } else if (dis) {
         const sources = ce.sources
           .filter((s) => {
@@ -78,7 +85,7 @@ export class SaveChip implements SheetComponent {
             return false;
           })
           .map((s) => s.condition === "exhaustion" ? `exhaustion ${s.level}` : s.condition);
-        renderConditionTag(chip, "DIS", `Disadvantage from ${sources.join(", ")}`);
+        renderConditionTag(tags(), "DIS", `Disadvantage from ${sources.join(", ")}`);
       }
 
       if (ce.d20_test_penalty !== 0 && !autofail) {
@@ -88,6 +95,18 @@ export class SaveChip implements SheetComponent {
           `${formatBonus(baseBonus)} base ${ce.d20_test_penalty < 0 ? "−" : "+"} ${Math.abs(ce.d20_test_penalty)} from exhaustion = ${formatBonus(entry.bonus)}`,
         );
       }
+    }
+
+    // Structured roll-modifier effects scoped to saving throws. An entry applies
+    // to this chip when it is unscoped (all saves) or its scope matches this
+    // ability. Order-preserving; one tag per matching entry. Mirrors the
+    // ability-check loop in skills-panel.ts.
+    for (const rm of ctx.derived.rollModifiers ?? []) {
+      if (rm.roll !== "saving-throw") continue;
+      if (rm.scope && rm.scope !== this.ability) continue;
+      const tag = rm.mode === "advantage" ? "ADV" : "DIS";
+      const tip = rm.condition ? `${rm.label}: ${rm.condition}` : rm.label;
+      renderConditionTag(tags(), tag, tip);
     }
 
     if (ctx.editState) {

@@ -1,0 +1,73 @@
+[
+  {
+    "name": "Potion of Healing",
+    "type": "potion",
+    "rarity": "common",
+    "attunement": false,
+    "entries": [
+      "You regain 2d4 + 2 hit points when you drink this potion. The potion's red liquid glimmers when agitated."
+    ]
+  },
+  {
+    "name": "Bag of Holding",
+    "type": "wondrous item",
+    "rarity": "uncommon",
+    "attunement": false,
+    "entries": [
+      "This bag has an interior space considerably larger than its outside dimensions, roughly 2 feet in diameter at the mouth and 4 feet deep. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. The bag weighs 15 pounds, regardless of its contents. Retrieving an item from the bag requires an action.",
+      "If the bag is overloaded, pierced, or torn, it ruptures and is destroyed, and its contents are scattered in the Astral Plane. If the bag is turned inside out, its contents spill forth, unharmed, but the bag must be put right before it can be used again. Breathing creatures inside the bag can survive up to a number of minutes equal to 10 divided by the number of creatures (minimum 1 minute), after which time they begin to suffocate.",
+      "Placing a bag of holding inside an extradimensional space created by a handy haversack, portable hole, or similar item instantly destroys both items and opens a gate to the Astral Plane."
+    ]
+  },
+  {
+    "name": "Cloak of Protection",
+    "type": "wondrous item",
+    "rarity": "uncommon",
+    "attunement": true,
+    "entries": [
+      "You gain a +1 bonus to AC and saving throws while you wear this cloak."
+    ]
+  },
+  {
+    "name": "+1 Longsword",
+    "type": "weapon",
+    "rarity": "uncommon",
+    "attunement": false,
+    "damage": "1d8 + 1",
+    "damage_type": "slashing",
+    "properties": ["versatile (1d10 + 1)"],
+    "weight": 3,
+    "entries": [
+      "You have a +1 bonus to attack and damage rolls made with this magic weapon."
+    ]
+  },
+  {
+    "name": "Ring of Protection",
+    "type": "ring",
+    "rarity": "rare",
+    "attunement": true,
+    "entries": [
+      "You gain a +1 bonus to AC and saving throws while wearing this ring."
+    ]
+  },
+  {
+    "name": "Immovable Rod",
+    "type": "rod",
+    "rarity": "uncommon",
+    "attunement": false,
+    "weight": 2,
+    "entries": [
+      "This flat iron rod has a button on one end. You can use an action to press the button, which causes the rod to become magically fixed in place. Until you or another creature uses an action to push the button again, the rod doesn't move, even if it is defying gravity. The rod can hold up to 8,000 pounds of weight. More weight causes the rod to deactivate and fall. A creature can use an action to make a DC 30 Strength check, moving the fixed rod up to 10 feet on a success."
+    ]
+  },
+  {
+    "name": "Deck of Many Things",
+    "type": "wondrous item",
+    "rarity": "legendary",
+    "attunement": false,
+    "entries": [
+      "Usually found in a box or pouch, this deck contains a number of cards made of ivory or vellum. Most (75 percent) of these decks have only thirteen cards, but the rest have twenty-two.",
+      "Before you draw a card, you must declare how many cards you intend to draw and then draw them randomly. Any cards drawn in excess of this number have no effect. Otherwise, as soon as you draw a card from the deck, its magic takes effect. You must draw each card no more than 1 hour after the previous draw. If you fail to draw the chosen number, the remaining number of cards fly from the deck on their own and take effect all at once."
+    ]
+  }
+]

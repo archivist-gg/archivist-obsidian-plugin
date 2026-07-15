@@ -92,6 +92,9 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
       if (result.kind === "rejected") {
         ctx.onAttuneConflict?.(i);
       }
+      if (result.unequipped?.length) {
+        new Notice(`Unequipped ${result.unequipped.join(", ")} (slot occupied).`);
+      }
     });
   }
 

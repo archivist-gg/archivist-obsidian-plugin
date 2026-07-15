@@ -1658,20 +1658,26 @@
 .pc-charges-current { cursor: pointer; font-weight: 600; }
 .pc-charges-recovery { font-size: 10px; color: var(--text-muted); margin-top: 0.1em; }
 
+/* Shared outline meta-chip family (Phase 2 C3): ADV/DIS/AUTO-FAIL cond-tags and
+   weapon-mastery chips. The base owns the common structural props; each class
+   keeps its own padding/font/case and its color/border variants. */
+.archivist-pc-sheet .pc-meta-chip {
+  display: inline-block;
+  border-radius: 2px;
+  background: transparent;
+  vertical-align: middle;
+  line-height: 1.3;
+  user-select: none;
+}
+
 /* SP4e — condition effect tags (V5 outlined micro-caps; sheet-scoped for token access) */
 .archivist-pc-sheet .pc-cond-tag {
-  display: inline-block;
   padding: 1px 4px;
   margin-left: 5px;
   font-size: var(--pc-fs-micro);
   font-weight: 700;
   letter-spacing: 0.1em;
-  border-radius: 2px;
-  vertical-align: middle;
-  background: transparent;
-  user-select: none;
   text-transform: uppercase;
-  line-height: 1.3;
 }
 .archivist-pc-sheet .pc-cond-tag-dis {
   border: 1px solid var(--pc-crimson);
@@ -1687,6 +1693,24 @@
 }
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
+
+/* Save condition tags on a wrapping sub-line beneath the chip (Phase 2 C1) —
+   the .pc-ab-stack is column-flex, so this sits below .pc-save-chip and wraps
+   within the narrow ability cell instead of overflowing it. */
+.archivist-pc-sheet .pc-save-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  margin-top: 2px;
+}
+/* .pc-cond-tag's inline margin-left (for inline-append in skills/weapons) is
+   wrong in the centered sub-line. */
+.archivist-pc-sheet .pc-save-tags .pc-cond-tag { margin-left: 0; }
+/* Placeholder standing in for the numeric bonus when it's hidden on auto-fail. */
+.archivist-pc-sheet .pc-save-dash { color: var(--pc-text-muted); font-size: var(--pc-fs-small); }
 
 /* SP4e — disabled action rows when Incapacitated */
 .archivist-pc-sheet .pc-row-disabled {

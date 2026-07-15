@@ -55,6 +55,16 @@ describe("save-chip — AUTO-FAIL rendering", () => {
     expect(root.querySelector(".pc-cond-tag-fail")?.textContent).toBe("AUTO-FAIL");
     expect((root.querySelector(".pc-save-bn") as HTMLElement).classList.contains("is-hidden")).toBe(true);
   });
+  it("on auto-fail shows a — placeholder (separate element) and keeps .pc-save-bn hidden", () => {
+    const root = mountContainer();
+    new SaveChip("str").render(root, ctxWith({
+      save_autofail_str: true,
+      sources: [{ condition: "paralyzed", effects: ["Auto-fail STR/DEX saves."] }],
+    }));
+    expect((root.querySelector(".pc-save-bn") as HTMLElement).classList.contains("is-hidden")).toBe(true);
+    expect(root.querySelector(".pc-save-dash")!.textContent).toBe("—");
+    expect(root.querySelector(".pc-save-tags .pc-cond-tag-fail")).toBeTruthy();
+  });
   it("renders DIS chip when save_disadvantage_dex on the dex chip", () => {
     const root = mountContainer();
     new SaveChip("dex").render(root, ctxWith({
@@ -101,6 +111,14 @@ describe("renderConditionTag — primitive", () => {
     const tag = root.querySelector(".pc-cond-tag-adv") as HTMLElement;
     expect(tag).not.toBeNull();
     expect(tag.textContent).toBe("ADV");
+  });
+  it("renders cond-tags with the shared .pc-meta-chip base alongside .pc-cond-tag", async () => {
+    const { renderConditionTag } = await import("../packages/obsidian/src/modules/pc/components/condition-tag");
+    const root = mountContainer();
+    renderConditionTag(root, "ADV", "x");
+    const tag = root.querySelector(".pc-cond-tag")!;
+    expect(tag.classList.contains("pc-meta-chip")).toBe(true);
+    expect(tag.classList.contains("pc-cond-tag-adv")).toBe(true);
   });
 });
 

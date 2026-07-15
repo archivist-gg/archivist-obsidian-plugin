@@ -790,10 +790,30 @@ export class CharacterEditState {
     this.onChange();
   }
 
-  attuneItem(index: number): eq.AttuneResult {
+  /** Attune an item and, when it lands attuned-but-unequipped, auto-equip it via
+   *  the swap path so attunement implies "in use" (#10). The pure `eq.attuneItem`
+   *  stays node-testable; the swap/rollback semantics come from `equipItemWithSwap`.
+   *
+   *  onChange-exactly-once: `equipItemWithSwap` fires onChange on the success path
+   *  and mutates the entry in place, so after a resolved equip `entry.equipped`
+   *  is true and we must NOT persist again. If the equip could not resolve it
+   *  rolls back WITHOUT firing onChange (entry.equipped stays false), so we
+   *  persist the attune ourselves. The captured `entry` reference is safe: every
+   *  equipment mutation is in place — nothing replaces the array element. */
+  attuneItem(index: number): eq.AttuneResult & { unequipped?: string[] } {
     if (!this.registry) return { kind: "ok" };
     const r = eq.attuneItem(this.character, index, this.registry);
-    if (r.kind === "ok") this.onChange();
+    if (r.kind !== "ok") return r; // rejected/limit — attune unchanged, no persist
+    const entry = this.character.equipment[index];
+    if (entry?.attuned && !entry.equipped) {
+      const swap = this.equipItemWithSwap(index);
+      // equipItemWithSwap fired onChange iff the equip resolved. If it couldn't
+      // (entry still not equipped after the rolled-back chain), persist the
+      // attune ourselves so it isn't lost.
+      if (!entry.equipped) this.onChange();
+      return { ...r, ...swap };
+    }
+    this.onChange();
     return r;
   }
 

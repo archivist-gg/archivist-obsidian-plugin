@@ -71,20 +71,19 @@ describe("PCModule", () => {
     expect(m.registry.size()).toBeGreaterThan(0);
   });
 
-  it("wireComponents registers all 29 components", () => {
+  it("wireComponents registers all 22 components", () => {
     const m = new PCModule();
     const services = { entities: new EntityRegistry() } as unknown as PCServices;
     m.init(services);
-    expect(m.registry.size()).toBe(29);
+    expect(m.registry.size()).toBe(22);
     for (const type of [
       "header-section", "ac-shield", "hp-widget", "hit-dice-widget",
       "save-chip-str", "save-chip-dex", "save-chip-con",
       "save-chip-int", "save-chip-wis", "save-chip-cha",
       "ability-row", "stats-tiles", "defenses-conditions-panel",
       "senses-panel", "skills-panel", "proficiencies-panel",
-      "class-block", "subclass-block", "race-block", "background-block", "feat-block",
       "actions-tab", "spells-tab", "inventory-tab",
-      "features-tab", "background-tab", "notes-tab",
+      "notes-tab",
       "tabs-container", "builder",
     ]) {
       expect(m.registry.has(type)).toBe(true);

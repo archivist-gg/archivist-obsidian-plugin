@@ -119,7 +119,7 @@ behind a single command:
    zone: `dnd5e` may import only `@archivist-gg/core` (now an external package,
    resolved from its own repo). A forbidden import is an `error`, not a warning.
 2. **`eslint-import-resolver-typescript`** — configured in the same block's
-   `settings["import/resolver"]`, it teaches eslint to follow the `@archivist/*`
+   `settings["import/resolver"]`, it teaches eslint to follow the `@archivist-gg/*`
    package exports/subpaths, so `import/no-restricted-paths` correctly attributes
    an import like `@archivist-gg/dnd5e/monster/monster.parser` to the `dnd5e`
    package rather than treating it as an opaque module.

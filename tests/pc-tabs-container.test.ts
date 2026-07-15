@@ -17,17 +17,19 @@ const ctx: ComponentRenderContext = { resolved: {} as ResolvedCharacter, derived
 
 function mkRegistry(): ComponentRegistry {
   const r = new ComponentRegistry();
-  for (const t of ["actions-tab", "spells-tab", "inventory-tab", "features-tab", "background-tab"]) r.register(new Probe(t));
+  for (const t of ["actions-tab", "spells-tab", "inventory-tab"]) r.register(new Probe(t));
   return r;
 }
 
 describe("TabsContainer", () => {
-  it("renders five built-in tabs and no Notes tab", () => {
+  it("renders three built-in tabs and no Notes/Features/Background tab", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, ctx);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5);
-    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(5);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(3);
+    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(3);
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-notes"]')).toBeNull();
+    expect(container.querySelector('.pc-tab-btn[data-tab="panel-features"]')).toBeNull();
+    expect(container.querySelector('.pc-tab-btn[data-tab="panel-background"]')).toBeNull();
   });
   it("appends a dynamic pool tab when a class declares one and the pool resolved", () => {
     const dyn: ComponentRenderContext = {
@@ -39,7 +41,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(6); // 5 built-ins + 1 pool tab
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(4); // 3 built-ins + 1 pool tab
     const btn = container.querySelector<HTMLElement>('.pc-tab-btn[data-tab="panel-pool-boons"]');
     expect(btn?.textContent).toBe("Interdict Boons");
   });
@@ -53,7 +55,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(3);
   });
   it("activates the first tab by default when no activeTabId is provided", () => {
     const container = mountContainer();

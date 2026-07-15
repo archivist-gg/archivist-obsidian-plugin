@@ -22,5 +22,3 @@ test-vault/
 # loose files would add ~15MB of duplicated content to the repo.
 .compendium-bundle/*/
 
-.claude/memory/
-.claude/settings.json

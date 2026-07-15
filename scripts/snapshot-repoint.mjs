@@ -21,7 +21,7 @@ const CORE_PKG = "@archivist-gg/core";
 const DND5E_PKG = "@archivist-gg/dnd5e";
 const CORE_RANGE = "^0.1.0";
 const DND5E_RANGE = "^0.1.0";
-const TARGET_VERSION = "0.2.25";
+const TARGET_VERSION = "0.2.26";
 const MIN_APP = "1.7.2";
 const BACKFILL = { "0.2.24": "1.7.2" };
 

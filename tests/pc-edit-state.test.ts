@@ -891,3 +891,111 @@ describe("CharacterEditState — equipItemWithSwap (Task 3)", () => {
     expect(res.unequipped).toEqual(expect.arrayContaining(["Longsword", "Shield"]));
   });
 });
+
+describe("CharacterEditState — attuneItem auto-equip (Task 4, #10)", () => {
+  const reg = buildEquipmentRegistry();
+  const baseChar = (): Character => ({
+    name: "T", edition: "2024", race: null, subrace: null, background: null,
+    class: [{ name: "fighter", level: 1, subclass: null, choices: {} }],
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    ability_method: "manual",
+    skills: { proficient: [], expertise: [] },
+    spells: { known: [], overrides: [] },
+    equipment: [],
+    overrides: {},
+    state: { hp: { current: 10, max: 10, temp: 0 }, hit_dice: {}, spell_slots: {}, concentration: null, conditions: [], inspiration: 0, exhaustion: 0, feature_uses: {} },
+  });
+
+  // Returns the state plus its onChange spy so the exactly-once persist contract
+  // can be asserted per path.
+  const makeES = (c: Character) => {
+    const onChange = vi.fn();
+    const es = new CharacterEditState(c, () => ({}) as unknown as EditStateContext, onChange, reg);
+    return { es, onChange };
+  };
+
+  it("attuning an unequipped equippable item auto-equips it (free slot → no swap)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[flame-tongue]]", equipped: false }];
+    const { es, onChange } = makeES(c);
+    const result = es.attuneItem(0);
+    expect(result.kind).toBe("ok");
+    expect(c.equipment[0].attuned).toBe(true);
+    expect(c.equipment[0].equipped).toBe(true);
+    expect(c.equipment[0].slot).toBe("mainhand");
+    expect(result.unequipped).toBeUndefined();
+    // equipItemWithSwap persisted on the success path — exactly once.
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("attuning into an occupied slot unequips the occupant and reports its name", () => {
+    // armor-of-resistance (attune-required armor) into the single-occupancy armor
+    // slot already held by adamantine-breastplate → genuine conflict + swap.
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[adamantine-breastplate]]", equipped: true, slot: "armor" },
+      { item: "[[armor-of-resistance]]", equipped: false },
+    ];
+    const { es, onChange } = makeES(c);
+    const result = es.attuneItem(1);
+    expect(result.kind).toBe("ok");
+    expect(c.equipment[1].attuned).toBe(true);
+    expect(c.equipment[1].equipped).toBe(true);
+    expect(c.equipment[1].slot).toBe("armor");
+    expect(c.equipment[0].equipped).toBe(false); // occupant unequipped
+    expect(result.unequipped).toEqual(["Adamantine Armor (Breastplate)"]);
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("attuning a slotless wondrous item (cloak) equips it worn with no slot and no swap", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[cloak-of-protection]]", equipped: false }];
+    const { es, onChange } = makeES(c);
+    const result = es.attuneItem(0);
+    expect(result.kind).toBe("ok");
+    expect(c.equipment[0].attuned).toBe(true);
+    expect(c.equipment[0].equipped).toBe(true);
+    expect(c.equipment[0].slot).toBeUndefined();
+    expect(result.unequipped).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("attune rejected at the limit does NOT equip the item", () => {
+    const c = baseChar();
+    c.equipment = [
+      { item: "[[cloak-of-protection]]", attuned: true, equipped: true },
+      { item: "[[belt-of-hill-giant-strength]]", attuned: true, equipped: true },
+      { item: "[[headband-of-intellect]]", attuned: true, equipped: true },
+      { item: "[[flame-tongue]]", equipped: false }, // 4th → over the default limit of 3
+    ];
+    const { es, onChange } = makeES(c);
+    const result = es.attuneItem(3);
+    expect(result.kind).toBe("rejected");
+    expect(c.equipment[3].attuned).toBeFalsy();
+    expect(c.equipment[3].equipped).toBe(false);
+    expect(result.unequipped).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("attuning an already-equipped item leaves it equipped with no spurious swap", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[flame-tongue]]", equipped: true, slot: "mainhand" }];
+    const { es, onChange } = makeES(c);
+    const result = es.attuneItem(0);
+    expect(result.kind).toBe("ok");
+    expect(c.equipment[0].attuned).toBe(true);
+    expect(c.equipment[0].equipped).toBe(true); // still equipped
+    expect(result.unequipped).toBeUndefined();  // no swap fired
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("unattuneItem never auto-unequips — equipped state is unchanged", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[flame-tongue]]", equipped: true, slot: "mainhand", attuned: true }];
+    const { es } = makeES(c);
+    es.unattuneItem(0);
+    expect(c.equipment[0].attuned).toBe(false);
+    expect(c.equipment[0].equipped).toBe(true); // still equipped
+    expect(c.equipment[0].slot).toBe("mainhand");
+  });
+});
