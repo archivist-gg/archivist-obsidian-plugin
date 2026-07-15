@@ -6,7 +6,7 @@ import { PoolTab } from "./pool-tab";
 
 // Built-in, always-on tabs. Notes removed in Phase 2.
 const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string }> = [
-  { type: "actions-tab",    panelId: "panel-actions",    label: "Actions" },
+  { type: "actions-tab",    panelId: "panel-actions",    label: "Actions & Features" },
   { type: "spells-tab",     panelId: "panel-spells",     label: "Spells" },
   { type: "inventory-tab",  panelId: "panel-inventory",  label: "Inventory" },
   { type: "background-tab", panelId: "panel-background", label: "Background" },

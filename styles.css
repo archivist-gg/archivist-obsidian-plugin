@@ -6608,7 +6608,7 @@ body.theme-light .archivist-tag-atk:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
+  min-width: 52px;
   height: 18px;
   padding: 0 6px;
   border-radius: 9px;
@@ -6632,7 +6632,7 @@ body.theme-light .archivist-tag-atk:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
+  min-width: 52px;
   height: 18px;
   padding: 0 6px;
   border-radius: 9px;
@@ -6685,7 +6685,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-actions-section-head {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
-  color: var(--pc-crimson);
+  color: var(--pc-text-soft);
   text-transform: uppercase;
   letter-spacing: var(--pc-ls-caps-md);
   margin-bottom: var(--pc-space-2);
@@ -6718,8 +6718,8 @@ body.theme-light .archivist-tag-atk:hover {
 /* The charges column gets the lion's share of the leftover width (3fr vs the
    name's 1fr) so the pip tracker has room to stay on one line instead of the
    name column hogging the slack and cramping the pips. */
-.archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px minmax(0, 3fr); }
-.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 56px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
+.archivist-pc-sheet .pc-items-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px minmax(0, 3fr); }
+.archivist-pc-sheet .pc-weapons-table .pc-action-row { grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr); }
 .archivist-pc-sheet .pc-action-range { color: var(--pc-text-soft); white-space: nowrap; }
 .archivist-pc-sheet .pc-action-charges { display: flex; justify-content: flex-start; }
 
@@ -6728,7 +6728,7 @@ body.theme-light .archivist-tag-atk:hover {
  * [badge] [name] [right detail] [caret]. The detail column takes the leftover
  * slack so the charge-pip tracker keeps to one line. */
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
-  grid-template-columns: 56px minmax(0, 1fr) minmax(0, 2fr) 18px;
+  grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
