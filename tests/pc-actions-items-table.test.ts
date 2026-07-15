@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { ItemsTable, renderItemRow } from "../packages/obsidian/src/modules/pc/components/actions/items-table";
+import { renderItemRow } from "../packages/obsidian/src/modules/pc/components/actions/items-table";
 import type { ItemEntry } from "../packages/obsidian/src/modules/pc/components/actions/action-model";
 import type { ItemAction } from "@archivist-gg/dnd5e/item/item.actions-map";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
@@ -10,25 +10,11 @@ import type { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.
 beforeAll(() => installObsidianDomHelpers());
 
 // ─────────────────────────────────────────────────────────────
-// Collection-path ctx (drives the surviving ItemsTable wrapper, which still
-// collects equipped action-bearing items and dispatches to renderItemRow).
-// ─────────────────────────────────────────────────────────────
-function ctx(opts: { entries: object[]; entityForSlug: (slug: string) => object | null; editState?: CharacterEditState | null }): ComponentRenderContext {
-  return {
-    resolved: { definition: { equipment: opts.entries } } as never,
-    derived: { attacks: [] } as never,
-    services: { entities: { getBySlug: (slug: string) => {
-      const data = opts.entityForSlug(slug);
-      return data ? { entityType: "item", data } : null;
-    } } } as never,
-    app: {} as never,
-    editState: opts.editState ?? null,
-  };
-}
-
-// ─────────────────────────────────────────────────────────────
 // Row-only drivers — construct a Task-3 ItemEntry and render it directly,
-// mirroring how the tab (Task 5) dispatches each collected entry.
+// mirroring how the tab (Task 5) dispatches each collected entry. The equipped/
+// action-bearing collection those rows come from is now `buildActionModel`'s
+// `collectItemEntries` (covered by `pc-action-model.test.ts`); the former
+// `ItemsTable` wrapper + its ctx-anchored collector were retired in Task 5.
 // ─────────────────────────────────────────────────────────────
 const WAND_ACTION: ItemAction = { cost: "action", range: "150 ft.", max_charges: 7, recovery: { amount: "1d6+1", reset: "dawn" } };
 
@@ -58,48 +44,6 @@ function renderItems(root: HTMLElement, items: ItemEntry[], c: ComponentRenderCo
   for (const it of items) renderItemRow(list, it, c);
   return list;
 }
-
-describe("ItemsTable — collection wrapper", () => {
-  it("renders only items with a resolved ItemAction (curated or override)", () => {
-    const root = mountContainer();
-    new ItemsTable().render(root, ctx({
-      entries: [
-        { item: "[[wand-of-fireballs]]", equipped: true, attuned: true },
-        { item: "[[mundane-rope]]", equipped: true },
-      ],
-      entityForSlug: (slug) => slug === "wand-of-fireballs"
-        ? { name: "Wand of Fireballs", rarity: "very rare", actions: { cost: "action", range: "150 ft.", max_charges: 7, recovery: { amount: "1d6+1", reset: "dawn" } } }
-        : { name: "Hempen Rope" },
-    }));
-    const rows = root.querySelectorAll(".pc-action-row");
-    expect(rows.length).toBe(1);
-    expect(rows[0].textContent).toContain("Wand of Fireballs");
-  });
-
-  it("renders an action row for a PC equipping a compendium-prefixed wand wikilink", () => {
-    // Regression for CB-4: PC sheets ship `[[srd-5e_wand-of-fireballs]]` but the
-    // curated map keys by bare name; without prefix-stripping the row was missing.
-    const root = mountContainer();
-    new ItemsTable().render(root, ctx({
-      entries: [
-        { item: "[[srd-5e_wand-of-fireballs]]", equipped: true, attuned: true },
-        { item: "[[srd-5e_necklace-of-fireballs]]", equipped: true },
-      ],
-      entityForSlug: (slug) => {
-        if (slug === "srd-5e_wand-of-fireballs") return { name: "Wand of Fireballs", rarity: "very rare" };
-        if (slug === "srd-5e_necklace-of-fireballs") return { name: "Necklace of Fireballs", rarity: "rare" };
-        return null;
-      },
-    }));
-    const rows = root.querySelectorAll(".pc-action-row");
-    expect(rows.length).toBe(2);
-    expect(rows[0].textContent).toContain("Wand of Fireballs");
-    expect(rows[1].textContent).toContain("Necklace of Fireballs");
-    // Wand has 7 charges from the curated map even though entry has no state.charges.
-    const boxes = rows[0].querySelectorAll(".archivist-toggle-box");
-    expect(boxes.length).toBe(7);
-  });
-});
 
 describe("renderItemRow", () => {
   it("renders a .pc-action-row (div) carrying the item name + rarity sub", () => {

@@ -1,4 +1,4 @@
-import type { SheetComponent, ComponentRenderContext } from "../component.types";
+import type { ComponentRenderContext } from "../component.types";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderConditionTag } from "../condition-tag";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
@@ -165,25 +165,6 @@ export function renderWeaponRow(
   dmgCell.querySelectorAll(".archivist-tag").forEach((s) =>
     s.addEventListener("click", (e) => e.stopPropagation()),
   );
-}
-
-/**
- * Thin wrapper kept so the current `actions-tab.ts` (rewired in Task 5) still
- * compiles: renders the section + list scaffold — WITHOUT the former
- * `.pc-actions-section-head` "Weapons — N equipped" block — then dispatches each
- * attack to `renderWeaponRow`. No count, no head; the tab supplies grouping.
- */
-export class WeaponsTable implements SheetComponent {
-  readonly type = "weapons-table";
-
-  render(el: HTMLElement, ctx: ComponentRenderContext): void {
-    const attacks = ctx.derived.attacks ?? [];
-    if (attacks.length === 0) return;
-
-    const section = el.createDiv({ cls: "pc-actions-section" });
-    const list = section.createDiv({ cls: "pc-actions-table pc-weapons-table" });
-    for (const a of attacks) renderWeaponRow(list, a, ctx);
-  }
 }
 
 function formatSigned(n: number): string {

@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedCharacter, ResolvedPool, ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
@@ -9,7 +10,9 @@ import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-f
 beforeAll(() => installObsidianDomHelpers());
 
 // ─────────────────────────────────────────────────────────────
-// Fixtures — a ResolvedCharacter carrying selection pools (§3.6)
+// Fixtures — a ResolvedCharacter carrying selection pools (§3.6). Boons no
+// longer render under a pool-label heading; they file into the economy×source
+// grid model as "boons" sub-groups (Passive/Actions/… ← entity.action_cost).
 // ─────────────────────────────────────────────────────────────
 const entry = (slug: string, entity: Partial<OptionalFeatureEntity> = {}): ResolvedPoolEntry =>
   ({ slug, entity: { slug, name: slug, description: "", edition: "2014", source: "", feature_type: "boon", prerequisites: [], available_to: [], effects: [], ...entity } }) as unknown as ResolvedPoolEntry;
@@ -31,7 +34,7 @@ function renderCtx(pools: ResolvedPool[], opts: RenderOpts = {}): ComponentRende
       state: { feature_uses: {}, active_buffs: opts.activeBuffs ?? [] },
     } as unknown as ResolvedCharacter,
     derived: { attacks: [], attacksPerAction: 1, conditionEffects: undefined } as never,
-    services: { entities: { getBySlug: () => null } } as never,
+    services: { entities: buildMockRegistry([]) } as never,
     app: {} as never,
     editState: (opts.editState ?? null) as never,
   };
@@ -39,24 +42,50 @@ function renderCtx(pools: ResolvedPool[], opts: RenderOpts = {}): ComponentRende
 
 const headings = (root: HTMLElement): string[] =>
   [...root.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent ?? "");
+const subGroupTitles = (root: HTMLElement): string[] =>
+  [...root.querySelectorAll(".pc-actions-section-head .pc-actions-section-title")].map((n) => n.textContent ?? "");
 const boonRows = (root: HTMLElement): HTMLElement[] =>
   [...root.querySelectorAll<HTMLElement>(".pc-boon-row")];
 const boonNames = (root: HTMLElement): string[] =>
   boonRows(root).map((r) => r.querySelector(".pc-action-row-name")?.textContent ?? "");
 const boonRowByName = (root: HTMLElement, name: string): HTMLElement =>
   boonRows(root).find((r) => r.querySelector(".pc-action-row-name")?.textContent === name)!;
+/** The economy `.pc-tab-heading` a given boon row files under. */
+const economyForBoon = (root: HTMLElement, name: string): string => {
+  const list = boonRowByName(root, name).closest(".pc-boons-list")!;
+  let n: Element | null = list.previousElementSibling;
+  while (n && !n.classList.contains("pc-tab-heading")) n = n.previousElementSibling;
+  return n?.textContent ?? "";
+};
 
-describe("ActionsTab — Interdict Boons section (#1b, §3.6)", () => {
-  it("renders selected + granted boons under the pool-label heading", () => {
+describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
+  it("files a free boon under Actions → Boons (NOT under an 'Interdict Boons' head)", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
-      pool({
-        selected: [entry("wrath", { name: "Boon of Wrath", description: "Deal extra damage." })],
-        grants: [entry("sight", { name: "Boon of Sight", description: "See in the dark." })],
-      }),
+      pool({ selected: [entry("wrath", { name: "Boon of Wrath", action_cost: "free", description: "Deal extra damage." })] }),
     ]));
-    expect(headings(c)).toContain("Interdict Boons");
-    expect(boonNames(c)).toEqual(["Boon of Wrath", "Boon of Sight"]);
+    expect(boonNames(c)).toEqual(["Boon of Wrath"]);
+    expect(economyForBoon(c, "Boon of Wrath")).toBe("Actions");
+    expect(subGroupTitles(c)).toContain("Boons");
+    expect(headings(c)).not.toContain("Interdict Boons");
+  });
+
+  it("files a passive boon under Passive & Always-Active → Boons", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([
+      pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true, description: "Always on." })] }),
+    ]));
+    expect(economyForBoon(c, "Boon of Endurance")).toBe("Passive & Always-Active");
+    expect(headings(c)).not.toContain("Interdict Boons");
+  });
+
+  it("files a granted boon (no action_cost) under Passive → Boons", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([
+      pool({ grants: [entry("sight", { name: "Boon of Sight", description: "See in the dark." })] }),
+    ]));
+    expect(boonNames(c)).toEqual(["Boon of Sight"]);
+    expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Always-Active");
   });
 
   it("shows an Active toggle wired to editState for an activatable selected boon", () => {
@@ -105,24 +134,6 @@ describe("ActionsTab — Interdict Boons section (#1b, §3.6)", () => {
     expect(row.querySelector(".archivist-toggle-box")).toBeNull();
   });
 
-  it("renders a grants-only pool (no selections)", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [], grants: [entry("sight", { name: "Boon of Sight" })] }),
-    ]));
-    expect(headings(c)).toContain("Interdict Boons");
-    expect(boonNames(c)).toEqual(["Boon of Sight"]);
-  });
-
-  it("omits a pool with neither selected nor granted members", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ label: "Empty Pool", selected: [], grants: [], available: [entry("x", { name: "Unpicked" })] }),
-    ]));
-    expect(headings(c)).not.toContain("Empty Pool");
-    expect(boonNames(c)).toEqual([]);
-  });
-
   it("clicking a boon row expands the shared .archivist-item-block card with its description", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
@@ -152,18 +163,6 @@ describe("ActionsTab — Interdict Boons section (#1b, §3.6)", () => {
     btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(card.hidden).toBe(true);
     expect(toggleActiveBuff).toHaveBeenCalledWith("wrath");
-  });
-
-  it("renders one section per pool with members, in pool order", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ id: "a", label: "Interdict Boons", selected: [entry("wrath", { name: "Boon of Wrath" })] }),
-      pool({ id: "b", label: "Dark Gifts", grants: [entry("gift", { name: "Gift of Shadow" })] }),
-    ]));
-    const h = headings(c);
-    expect(h).toContain("Interdict Boons");
-    expect(h).toContain("Dark Gifts");
-    expect(boonNames(c)).toEqual(["Boon of Wrath", "Gift of Shadow"]);
   });
 
   it("renders nothing when the character has no pools", () => {

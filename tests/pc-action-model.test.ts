@@ -119,6 +119,33 @@ describe("buildActionModel", () => {
     expect(e.item.entityType).toBe("item");
   });
 
+  it("collects only equipped, action-bearing, non-weapon/armor items (drops the rest; CB-4 prefix)", () => {
+    // Absorbs the coverage of the retired ItemsTable collection wrapper: the
+    // equipped/action-bearing filter + compendium-prefix (`srd-5e_`) stripping.
+    const registry = buildMockRegistry([
+      { slug: "srd-5e_wand-of-fireballs", entityType: "item", data: { name: "Wand of Fireballs", rarity: "very rare" } },
+      { slug: "srd-5e_hempen-rope", entityType: "item", data: { name: "Hempen Rope" } },
+      { slug: "srd-5e_longsword", entityType: "weapon", data: { name: "Longsword" } },
+    ]);
+    const secs = build({
+      equipment: [
+        { item: "[[srd-5e_wand-of-fireballs]]", equipped: true },   // curated action → kept
+        { item: "[[srd-5e_hempen-rope]]", equipped: true },         // no resolved action → dropped
+        { item: "[[srd-5e_wand-of-fireballs]]", equipped: false },  // not equipped → dropped
+        { item: "[[srd-5e_longsword]]", equipped: true },           // weapon entityType → dropped (weapons path)
+      ] as EquipmentEntry[],
+      registry,
+    });
+    const g = sub(secs, "actions", "items");
+    expect(g).toBeDefined();
+    expect(g!.entries).toHaveLength(1);
+    const e = g!.entries[0];
+    if (e.kind !== "item") throw new Error("expected item entry");
+    expect(e.item.entity?.name).toBe("Wand of Fireballs");
+    expect(e.item.index).toBe(0); // ORIGINAL equipment index preserved
+    expect(e.item.action.max_charges).toBe(7); // curated action resolved through the srd-5e_ prefix
+  });
+
   it("files a bonus-action weapon under Bonus Actions → Weapons (not Actions), no ×N count", () => {
     const secs = build({ attacks: [attack({ name: "Dagger", actionCost: "bonus-action" })] });
     expect(sub(secs, "actions", "weapons")).toBeUndefined();

@@ -3,16 +3,16 @@ import type { ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
 
 /**
- * Interdict Boons section on the consolidated Actions tab (spec §3.6 / #1b).
+ * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
  *
- * For each resolved selection pool with **members** (`selected ∪ grants` — a
- * grants-only pool with no selections STILL renders; a pool with neither is
- * OMITTED), emit a `pc-tab-heading` (pool label) and READ-ONLY rows. Picking
- * stays exclusively on the Interdict Boons pool tab; these rows never carry the
- * pool tab's select/deselect toggle-box.
+ * The tab (`actions-tab.ts`) files boons into the economy×source grid model via
+ * `buildActionModel` and dispatches each `boon` entry here — this renderer owns
+ * ONE read-only row (+ its hidden expand card); it emits no head, no count.
+ * Picking stays exclusively on the Interdict Boons pool tab, so these rows never
+ * carry the pool tab's select/deselect toggle-box.
  *
- * Rows reuse the Task-3 unified feature-row grid ([badge][name][detail][caret]),
- * so boon rows visually match the feature rows above them. Right-detail is:
+ * Rows reuse the unified feature-row grid ([badge][name][detail][caret]), so
+ * boon rows visually match the feature rows beside them. Right-detail is:
  *   - selected + activatable → an **Active** toggle (`pc-pool-active`, wired to
  *     `editState.toggleActiveBuff(slug)` — the same control the pool tab uses);
  *   - selected, non-activatable → a `pc-passive-tag` "Boon" label;
@@ -20,18 +20,6 @@ import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
  * Clicking a row (outside the Active toggle) expands the shared
  * `.archivist-item-block` card with the boon's description.
  */
-export function renderBoonSections(root: HTMLElement, ctx: ComponentRenderContext): void {
-  for (const pool of ctx.resolved.pools ?? []) {
-    const members = [...pool.selected, ...pool.grants];
-    if (members.length === 0) continue;
-
-    root.createEl("h4", { cls: "pc-tab-heading", text: pool.label });
-    const list = root.createDiv({ cls: "pc-actions-table pc-feature-list pc-boons-list" });
-    for (const e of pool.selected) renderBoonRow(list, e, "selected", pool.label, ctx);
-    for (const e of pool.grants) renderBoonRow(list, e, "granted", pool.label, ctx);
-  }
-}
-
 export function renderBoonRow(
   list: HTMLElement,
   entry: ResolvedPoolEntry,

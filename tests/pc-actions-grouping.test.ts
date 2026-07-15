@@ -1,6 +1,5 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
-import { groupFeatures } from "../packages/obsidian/src/modules/pc/components/actions/feature-groups";
 import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
@@ -11,58 +10,9 @@ beforeAll(() => installObsidianDomHelpers());
 const rf = (feature: object, extra: Partial<ResolvedFeature> = {}): ResolvedFeature =>
   ({ feature, source: { kind: "class", slug: "fighter", level: 1 }, ...extra }) as unknown as ResolvedFeature;
 
-const groupedChar = (features: ResolvedFeature[]): ResolvedCharacter =>
-  ({ features }) as unknown as ResolvedCharacter;
-
-// ─────────────────────────────────────────────────────────────
-// groupFeatures — pure §3.1 bucket map
-// ─────────────────────────────────────────────────────────────
-describe("groupFeatures — §3.1 bucket map", () => {
-  it("buckets action/free → Actions, bonus-action → Bonus, reaction → Reactions", () => {
-    const g = groupFeatures(groupedChar([
-      rf({ name: "A", action: "action" }),
-      rf({ name: "F", action: "free" }),
-      rf({ name: "B", action: "bonus-action" }),
-      rf({ name: "R", action: "reaction" }),
-    ]));
-    expect(g.actions.map((x) => x.feature.name)).toEqual(["A", "F"]);
-    expect(g.bonus.map((x) => x.feature.name)).toEqual(["B"]);
-    expect(g.reactions.map((x) => x.feature.name)).toEqual(["R"]);
-    expect(g.passive.length).toBe(0);
-  });
-
-  it("buckets special / passive:true / action-absent → Passive", () => {
-    const g = groupFeatures(groupedChar([
-      rf({ name: "S", action: "special" }),
-      rf({ name: "P", passive: true }),
-      rf({ name: "N" }),
-    ]));
-    expect(g.passive.map((x) => x.feature.name)).toEqual(["S", "P", "N"]);
-    expect(g.actions.length + g.bonus.length + g.reactions.length).toBe(0);
-  });
-
-  it("an authored non-special action beats passive:true (goes to its action group)", () => {
-    const g = groupFeatures(groupedChar([rf({ name: "Both", action: "action", passive: true })]));
-    expect(g.actions.map((x) => x.feature.name)).toEqual(["Both"]);
-    expect(g.passive.length).toBe(0);
-  });
-
-  it("skips renderSuppressed synthetics from every bucket", () => {
-    const g = groupFeatures(groupedChar([
-      rf({ name: "Lies", action: "action" }, { renderSuppressed: true }),
-      rf({ name: "Keep", action: "action" }),
-    ]));
-    expect(g.actions.map((x) => x.feature.name)).toEqual(["Keep"]);
-  });
-
-  it("keeps two same-named entries (multiclass) — never dedups by name", () => {
-    const g = groupFeatures(groupedChar([
-      rf({ name: "Extra Attack", action: "action" }),
-      rf({ name: "Extra Attack", action: "action" }),
-    ]));
-    expect(g.actions.length).toBe(2);
-  });
-});
+// The pure §3.1 economy/source bucket map now lives in `action-model.ts` and is
+// exercised by `pc-action-model.test.ts`; this file keeps only the ActionsTab
+// integration coverage of the feature rows the tab still renders directly.
 
 // ─────────────────────────────────────────────────────────────
 // ActionsTab — grouped rows (integration)
@@ -106,18 +56,6 @@ const rowByName = (root: HTMLElement, name: string): HTMLElement =>
   )!;
 
 describe("ActionsTab — grouped structure", () => {
-  it("preserves the #7 'Attacks' heading in the Actions group", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([], { attacks: [{ id: "x", name: "Longsword", toHit: 5, damageDice: "1d8", damageType: "s", properties: [], proficient: true, breakdown: { toHit: [], damage: [] } }] }));
-    expect(headings(c)).toContain("Attacks");
-  });
-
-  it("shows the multiplier '(×N)' on the Actions-group heading (#7 non-regression)", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([], { attacksPerAction: 2 }));
-    expect(headings(c)).toContain("Attacks (×2)");
-  });
-
   it("emits Bonus Actions / Reactions / Passive headings only for non-empty buckets", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([

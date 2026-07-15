@@ -1,9 +1,8 @@
-import type { SheetComponent, ComponentRenderContext } from "../component.types";
+import type { ComponentRenderContext } from "../component.types";
 import type { ItemEntry } from "./action-model";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
-import { resolveItemAction } from "@archivist-gg/dnd5e/item/item.actions-map";
 
 const RARITY_CLASS: Record<string, string> = {
   "common": "rarity-common", "uncommon": "rarity-uncommon", "rare": "rarity-rare",
@@ -94,55 +93,3 @@ export function renderItemRow(
   });
 }
 
-/**
- * Collect equipped, action-bearing, non-weapon/armor items as `ItemEntry[]`.
- *
- * Reconciled per the Task-3 handoff so it carries BOTH the read semantics
- * (equipped, non-weapon/armor) AND the action-skip that `ItemsTable.render`
- * used to apply downstream: items with no resolved action are dropped, and the
- * resolved `ItemAction` rides along on the entry so `renderItemRow` re-derives
- * nothing. The ORIGINAL equipment index is preserved for filter-stable charge
- * write-back. Mirrors `action-model.ts::collectItemEntries`; this ctx-anchored
- * copy exists only for the thin `ItemsTable.render` wrapper below (removed with
- * its collector in Task 5, once the tab drives `buildActionModel`).
- */
-function collectItemEntries(ctx: ComponentRenderContext): ItemEntry[] {
-  const equipment = ctx.resolved.definition.equipment ?? [];
-  const out: ItemEntry[] = [];
-  equipment.forEach((entry, index) => {
-    const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
-    if (!slug) return;
-    const reg = ctx.services?.entities as { getBySlug?: (s: string) => { entityType?: string; data?: ItemEntry["entity"] } | null } | undefined;
-    const found = reg?.getBySlug?.(slug) ?? null;
-    const entityType = found?.entityType ?? null;
-    // Weapons + armor go through the Weapons table / inventory expand.
-    if (entityType === "weapon" || entityType === "armor") return;
-    // Only equipped items surface here.
-    if (!entry.equipped) return;
-    // Items with no activated action are omitted.
-    const action = resolveItemAction(slug, entry);
-    if (!action) return;
-    out.push({ index, entry, entity: found?.data ?? null, entityType, action });
-  });
-  return out;
-}
-
-/**
- * Thin wrapper kept so the current `actions-tab.ts` (rewired in Task 5) still
- * compiles: renders the section + list scaffold — WITHOUT the former
- * `.pc-actions-section-head` "Items — N actions" block — then dispatches each
- * collected `ItemEntry` to `renderItemRow`. No count, no head; the tab supplies
- * grouping.
- */
-export class ItemsTable implements SheetComponent {
-  readonly type = "items-table";
-
-  render(el: HTMLElement, ctx: ComponentRenderContext): void {
-    const items = collectItemEntries(ctx);
-    if (items.length === 0) return;
-
-    const section = el.createDiv({ cls: "pc-actions-section" });
-    const list = section.createDiv({ cls: "pc-actions-table pc-items-table" });
-    for (const item of items) renderItemRow(list, item, ctx);
-  }
-}

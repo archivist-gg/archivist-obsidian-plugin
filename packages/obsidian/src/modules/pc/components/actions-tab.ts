@@ -2,13 +2,13 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ResolvedCharacter, ResolvedFeature } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
-import { WeaponsTable } from "./actions/weapons-table";
-import { ItemsTable } from "./actions/items-table";
+import { renderWeaponRow } from "./actions/weapons-table";
+import { renderItemRow } from "./actions/items-table";
+import { renderBoonRow } from "./actions/boon-rows";
+import { buildActionModel, type EconomyKey, type SourceKey } from "./actions/action-model";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
 import { renderCostBadge, type ActionCost } from "./actions/cost-badge";
 import { renderChargeBoxes } from "./actions/charge-boxes";
-import { groupFeatures, type FeatureGroupKey } from "./actions/feature-groups";
-import { renderBoonSections } from "./actions/boon-rows";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText } from "../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
@@ -42,47 +42,42 @@ export class ActionsTab implements SheetComponent {
       banner.createDiv({ cls: "pc-incapacitated-banner-effect", text: "actions & reactions disabled" });
     }
 
-    const groups = groupFeatures(ctx.resolved);
-
-    // ── Actions group ────────────────────────────────────────────────
-    // The "Attacks (×N)" heading is preserved (#7) and doubles as the Actions
-    // group header, sitting directly above the whole Weapons + Items tables and
-    // this bucket's feature rows.
-    const attacksPerAction = ctx.derived.attacksPerAction;
-    const attacksHeading = attacksPerAction > 1 ? `Attacks (×${attacksPerAction})` : "Attacks";
-    root.createEl("h4", { cls: "pc-tab-heading", text: attacksHeading });
-    new WeaponsTable().render(root.createDiv(), ctx);
-    new ItemsTable().render(root.createDiv(), ctx);
-    if (groups.actions.length > 0) {
-      const list = root.createDiv({ cls: "pc-actions-table pc-feature-list" });
-      for (const rf of groups.actions) this.renderFeatureRow(list, rf, ctx, "actions");
+    // ── Two-level economy × source model (spec §3) ───────────────────
+    // The pure `buildActionModel` categorizer files every playable entry —
+    // weapons, magic items, class/race/background features, feats and boons —
+    // into economy sections (Actions / Bonus / Reactions / Passive), each split
+    // into fixed-order source sub-groups. The tab is now pure layout: emit the
+    // economy heading + each sub-group's head, then dispatch every entry to its
+    // row renderer by `entry.kind` (no re-derivation happens here).
+    //
+    // Per-source grid class — weapons keep the 5-col grid, items the 4-col grid,
+    // everything else the feature grid. A fixed `pc-feature-list` for the
+    // weapon/item sub-groups would collapse their multi-column grids
+    // (actions.css: `.pc-weapons-table`/`.pc-items-table` own the grid), so the
+    // list carries the per-source class.
+    const LIST_CLASS: Record<SourceKey, string> = {
+      weapons: "pc-weapons-table", items: "pc-items-table",
+      "class-features": "pc-feature-list", feats: "pc-feature-list",
+      race: "pc-feature-list", background: "pc-feature-list", boons: "pc-feature-list pc-boons-list",
+    };
+    const model = buildActionModel(ctx.resolved, ctx.derived, ctx.services.entities);
+    for (const section of model) {
+      root.createEl("h4", { cls: "pc-tab-heading", text: section.label });
+      for (const sg of section.subGroups) {
+        const head = root.createDiv({ cls: "pc-actions-section-head" });
+        head.createSpan({ cls: "pc-actions-section-title", text: sg.label });
+        if (sg.count) head.createSpan({ cls: "pc-actions-section-count", text: sg.count });
+        const list = root.createDiv({ cls: `pc-actions-table ${LIST_CLASS[sg.key]}` });
+        for (const e of sg.entries) {
+          if (e.kind === "weapon") renderWeaponRow(list, e.attack, ctx);
+          else if (e.kind === "item") renderItemRow(list, e.item, ctx);
+          else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx);
+          else this.renderFeatureRow(list, e.rf, ctx, section.key); // section.key (EconomyKey) is the bucket
+        }
+      }
     }
 
-    // ── Bonus Actions / Reactions / Passive groups ───────────────────
-    this.renderGroup(root, "Bonus Actions", groups.bonus, ctx, "bonus");
-    this.renderGroup(root, "Reactions", groups.reactions, ctx, "reactions");
-    this.renderGroup(root, "Passive & Always-Active", groups.passive, ctx, "passive");
-
-    // ── Interdict Boons sections (#1b) ───────────────────────────────
-    // Selected + granted boons from each resolved pool, read-only (picking
-    // stays on the Interdict Boons pool tab).
-    renderBoonSections(root, ctx);
-
     renderStandardActionsList(root, ctx);
-  }
-
-  /** A grouped feature section: heading + rows. Omitted when the bucket is empty. */
-  private renderGroup(
-    root: HTMLElement,
-    heading: string,
-    rfs: ResolvedFeature[],
-    ctx: ComponentRenderContext,
-    bucket: FeatureGroupKey,
-  ): void {
-    if (rfs.length === 0) return;
-    root.createEl("h4", { cls: "pc-tab-heading", text: heading });
-    const list = root.createDiv({ cls: "pc-actions-table pc-feature-list" });
-    for (const rf of rfs) this.renderFeatureRow(list, rf, ctx, bucket);
   }
 
   /**
@@ -97,7 +92,7 @@ export class ActionsTab implements SheetComponent {
     list: HTMLElement,
     rf: ResolvedFeature,
     ctx: ComponentRenderContext,
-    bucket: FeatureGroupKey,
+    bucket: EconomyKey,
   ): void {
     const feature = rf.feature;
     const isPassive = bucket === "passive";

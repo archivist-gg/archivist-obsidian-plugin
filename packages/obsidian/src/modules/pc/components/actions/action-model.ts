@@ -104,8 +104,9 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Lift of `groupFeatures`'s economy switch (feature-groups.ts): the single
- * mapping that drives weapons (`actionCost`), items (`ItemAction.cost`),
+ * The single action-economy switch — the sole bucket map for the Actions tab
+ * (it superseded the former `feature-groups.ts::groupFeatures`, retired in
+ * Task 5): drives weapons (`actionCost`), items (`ItemAction.cost`),
  * features/feats (`feature.action`) and boons (`entity.action_cost`) alike.
  *   `action` / `free`  → actions
  *   `bonus-action`     → bonus
@@ -158,16 +159,16 @@ function featureSource(source: ResolvedFeature["source"]): SourceKey {
 // ─────────────────────────────────────────────────────────────
 
 /**
- * Collect equipped, action-bearing items — a port of `items-table.ts`'s
- * `collectRows`, re-anchored on the `EntityRegistry` passed to the builder
- * (rather than a render ctx) and folding in the `resolveItemAction` skip that
- * `ItemsTable.render` applies today (items with no action are dropped).
- * Weapons + armor are excluded (they surface as `weapon` entries / in the
- * inventory expand). The ORIGINAL equipment index is preserved so downstream
- * charge write-back stays filter-stable.
+ * Collect equipped, action-bearing items, re-anchored on the `EntityRegistry`
+ * passed to the builder (rather than a render ctx). Items with no resolved
+ * `ItemAction` are dropped, and weapons + armor are excluded (they surface as
+ * `weapon` entries / in the inventory expand). The ORIGINAL equipment index is
+ * preserved so downstream charge write-back stays filter-stable.
  *
- * NOTE (scope): this DUPLICATES the read for now; `items-table.ts` is untouched
- * in Task 3. Task 4 reconciles the two into a single shared collector.
+ * This is now the SINGLE item collector on the Actions tab: Task 5 wired the
+ * tab to `buildActionModel` and retired the former ctx-anchored duplicate in
+ * `items-table.ts` (whose `ItemsTable` wrapper is gone). `renderItemRow`
+ * consumes the `ItemEntry` produced here with no re-derivation.
  */
 function collectItemEntries(resolved: ResolvedCharacter, registry: EntityRegistry): ItemEntry[] {
   const equipment = resolved.definition.equipment ?? [];
@@ -181,7 +182,7 @@ function collectItemEntries(resolved: ResolvedCharacter, registry: EntityRegistr
     if (entityType === "weapon" || entityType === "armor") return;
     // Only equipped items surface on this tab.
     if (!entry.equipped) return;
-    // Items with no activated action are omitted (mirrors ItemsTable.render).
+    // Items with no activated action are omitted.
     const action = resolveItemAction(slug, entry);
     if (!action) return;
     out.push({
