@@ -6792,8 +6792,14 @@ body.theme-light .archivist-tag-atk:hover {
 /* Expand block = full-width sibling div under the open row. The open tint comes
    from the shared .pc-open-expand rule (components.css). */
 .archivist-pc-sheet .pc-action-expand { border-bottom: 1px dashed var(--pc-tan-muted); }
-/* No trailing separator under the last entry of each list. */
+/* No trailing separator under the last entry of each list. The last-child rule
+   clears the final element (the last row's hidden expand card, or a trailing
+   situational sub-row when open); the :not(:has()) rule clears the last actual
+   ROW of each sub-group when collapsed — its only later siblings are its own
+   expand card and/or a situational sub-row, never another .pc-action-row — so
+   the dashed separator never lands at the bottom of a sub-group. */
 .archivist-pc-sheet .pc-actions-table > *:last-child { border-bottom: none; }
+.archivist-pc-sheet .pc-actions-table > .pc-action-row:not(:has(~ .pc-action-row)) { border-bottom: none; }
 .archivist-pc-sheet .pc-action-row-name {
   font-family: var(--pc-font-serif);
   font-weight: 700;
