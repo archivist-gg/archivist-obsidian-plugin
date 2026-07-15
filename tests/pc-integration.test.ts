@@ -143,17 +143,6 @@ describe("PC end-to-end: Grendal the Wary", () => {
     expect(view.contentEl.querySelector("#panel-features")).toBeNull();
   });
 
-  it("background tab renders background block", async () => {
-    const { view } = boot();
-    await view.setViewData(GRENDAL_MD, true);
-    view.contentEl
-      .querySelector<HTMLButtonElement>('.pc-tab-btn[data-tab="panel-background"]')!
-      .click();
-    const panel = view.contentEl.querySelector<HTMLElement>("#panel-background")!;
-    expect(panel.textContent).toContain("Drifter");
-    expect(panel.textContent).toContain("Wanderer's Way");
-  });
-
   it("no warnings for a valid character (all slugs resolve, race present)", async () => {
     const { view } = boot();
     await view.setViewData(GRENDAL_MD, true);

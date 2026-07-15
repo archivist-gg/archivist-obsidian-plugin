@@ -19,11 +19,9 @@ import { ProficienciesPanel } from "./components/proficiencies-panel";
 import { ActionsTab } from "./components/actions-tab";
 import { SpellsTab } from "./components/spells-tab";
 import { InventoryTab } from "./components/inventory-tab";
-import { BackgroundTab } from "./components/background-tab";
 import { NotesTab } from "./components/notes-tab";
 import { TabsContainer } from "./components/tabs-container";
 import { BuilderView } from "./components/builder-view";
-import { BackgroundBlock } from "./blocks/background-block";
 import { PCSheetView, VIEW_TYPE_PC } from "./pc.view";
 import { buildDraftFileBody } from "./builder/character-stub";
 
@@ -178,13 +176,10 @@ export class PCModule {
     r.register(new SensesPanel());
     r.register(new SkillsPanel());
     r.register(new ProficienciesPanel());
-    // Blocks
-    r.register(new BackgroundBlock());
     // Tabs
     r.register(new ActionsTab());
     r.register(new SpellsTab());
     r.register(new InventoryTab());
-    r.register(new BackgroundTab(r));
     r.register(new NotesTab());
     r.register(new TabsContainer(r));
 
