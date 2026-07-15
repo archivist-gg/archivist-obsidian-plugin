@@ -32,7 +32,7 @@ export function renderBoonSections(root: HTMLElement, ctx: ComponentRenderContex
   }
 }
 
-function renderBoonRow(
+export function renderBoonRow(
   list: HTMLElement,
   entry: ResolvedPoolEntry,
   kind: "selected" | "granted",

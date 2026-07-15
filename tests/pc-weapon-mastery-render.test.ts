@@ -1,7 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import {
-  WeaponsTable,
+  renderWeaponRow,
   renderMasteryTooltip,
 } from "../packages/obsidian/src/modules/pc/components/actions/weapons-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
@@ -18,6 +18,13 @@ function ctxWithAttacks(attacks: AttackRow[]): ComponentRenderContext {
     app: {} as never,
     editState: null,
   };
+}
+
+/** Row-only driver: render each attack into a caller-supplied list, mirroring
+ *  how the tab (Task 5) dispatches to `renderWeaponRow`. */
+function renderWeapons(root: HTMLElement, attacks: AttackRow[], ctx: ComponentRenderContext): void {
+  const list = root.createDiv({ cls: "pc-actions-table pc-weapons-table" });
+  for (const a of attacks) renderWeaponRow(list, a, ctx);
 }
 
 type Mastery = NonNullable<AttackRow["mastery"]>;
@@ -41,7 +48,7 @@ const topple: Mastery = {
 describe("WeaponsTable — 2024 weapon mastery chip", () => {
   it("renders a mastery chip + tooltip for a row with mastery", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithAttacks([rowWithMastery(topple)]));
+    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([rowWithMastery(topple)]));
 
     const chips = root.querySelectorAll(".pc-mastery-tag");
     expect(chips.length).toBe(1);
@@ -59,14 +66,14 @@ describe("WeaponsTable — 2024 weapon mastery chip", () => {
 
   it("renders the mastery chip inside the weapon name cell (no 6th grid column)", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithAttacks([rowWithMastery(topple)]));
+    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([rowWithMastery(topple)]));
     const nameCell = root.querySelector(".pc-weapon-name");
     expect(nameCell?.querySelector(".pc-mastery-tag")).not.toBeNull();
   });
 
   it("renders no chip when mastery is absent", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithAttacks([rowWithMastery(undefined)]));
+    renderWeapons(root, [rowWithMastery(undefined)], ctxWithAttacks([rowWithMastery(undefined)]));
     expect(root.querySelector(".pc-mastery-tag")).toBeNull();
   });
 

@@ -1,11 +1,23 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
-import { WeaponsTable } from "../packages/obsidian/src/modules/pc/components/actions/weapons-table";
+import { renderWeaponRow } from "../packages/obsidian/src/modules/pc/components/actions/weapons-table";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
 
 beforeAll(() => installObsidianDomHelpers());
+
+/**
+ * Task 4: the weapon renderer is now ROW-ONLY. It renders directly into a
+ * caller-provided `list`, one `.pc-action-row` (+ sibling hidden expand) per
+ * attack — no section head, no self-redraw. This helper stands in for the tab
+ * (Task 5) that will dispatch each attack to `renderWeaponRow`.
+ */
+function renderWeapons(root: HTMLElement, attacks: AttackRow[], ctx: ComponentRenderContext): HTMLElement {
+  const list = root.createDiv({ cls: "pc-actions-table pc-weapons-table" });
+  for (const a of attacks) renderWeaponRow(list, a, ctx);
+  return list;
+}
 
 function ctxWithAttacks(attacks: AttackRow[]): ComponentRenderContext {
   return {
@@ -38,7 +50,7 @@ const sword = (): AttackRow => ([{
   informational: [], slotKey: "mainhand",
 }] as unknown as AttackRow[])[0];
 
-describe("WeaponsTable", () => {
+describe("renderWeaponRow", () => {
   it("renders one row per attack with cost badge defaulting to Action", () => {
     const root = mountContainer();
     const attacks = [{
@@ -48,7 +60,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     const rows = root.querySelectorAll(".pc-action-row");
     expect(rows.length).toBe(1);
     expect(rows[0].querySelector(".pc-cost-badge.cost-action")).toBeTruthy();
@@ -67,7 +79,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     const dmgCell = root.querySelector(".pc-weapon-damage")?.textContent ?? "";
     expect(dmgCell).toContain("1d8 + 3");
     expect(dmgCell).toContain("1d10 + 3");
@@ -86,7 +98,7 @@ describe("WeaponsTable", () => {
       ],
       slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     const sub = root.querySelector(".pc-attack-row-situational");
     expect(sub).not.toBeNull();
     const text = sub?.textContent ?? "";
@@ -109,7 +121,7 @@ describe("WeaponsTable", () => {
       }],
       slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-attack-row-situational")).toBeTruthy();
   });
 
@@ -122,7 +134,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     // The atk tag is rolled by the shared inline-tag renderer, which formats
     // the text as "+N to hit" and exposes the raw modifier via data-dice-notation.
     const hit = root.querySelector(".pc-weapon-hit .archivist-tag-atk");
@@ -143,7 +155,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     const dmg = root.querySelector(".pc-weapon-damage")!;
     // base + two rider chips = 3 rollable damage tags.
     expect(dmg.querySelectorAll(".archivist-tag-damage").length).toBeGreaterThanOrEqual(3);
@@ -157,7 +169,7 @@ describe("WeaponsTable", () => {
     expect(riderTitles).toContain("Terrorizing Force");
   });
 
-  it("clicking a weapon row marks it .pc-row-open (and unmarks on re-click)", () => {
+  it("clicking a weapon row toggles .pc-row-open IN PLACE (no container redraw)", () => {
     const root = mountContainer();
     const attacks = [{
       id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
@@ -166,13 +178,23 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
-    const row = () => root.querySelector(".pc-action-row") as HTMLElement;
-    expect(row().classList.contains("pc-row-open")).toBe(false);
-    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(row().classList.contains("pc-row-open")).toBe(true);
-    row().dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(row().classList.contains("pc-row-open")).toBe(false);
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
+    const row = root.querySelector(".pc-action-row") as HTMLElement;
+    const expand = row.nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.classList.contains("pc-action-expand")).toBe(true);
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+    expect(expand.hidden).toBe(true);
+
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    // Same node survived the click → no self-redraw of the container.
+    expect(root.querySelector(".pc-action-row")).toBe(row);
+    expect(row.classList.contains("pc-row-open")).toBe(true);
+    expect(expand.hidden).toBe(false);
+
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root.querySelector(".pc-action-row")).toBe(row);
+    expect(row.classList.contains("pc-row-open")).toBe(false);
+    expect(expand.hidden).toBe(true);
   });
 
   it("renders no situational sub-line when informational is undefined", () => {
@@ -184,7 +206,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: undefined, slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-attack-row-situational")).toBeNull();
   });
 
@@ -196,14 +218,15 @@ describe("WeaponsTable", () => {
       properties: [], proficient: true, breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     expect(root.querySelector("table")).toBeNull();
     expect(root.querySelector(".pc-action-row")?.tagName).toBe("DIV");
   });
 
   it("renders an ADV chip in the hit cell for an attack-scope advantage roll-modifier", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithRollModifiers(attacks, [
       { mode: "advantage", roll: "attack", condition: "in dim light or darkness", label: "Devil's Sight" },
     ]));
     const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
@@ -214,7 +237,8 @@ describe("WeaponsTable", () => {
 
   it("renders a DIS chip for an attack-scope disadvantage roll-modifier", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithRollModifiers(attacks, [
       { mode: "disadvantage", roll: "attack", label: "Some Curse" },
     ]));
     const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
@@ -230,7 +254,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand", critRange: 19,
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     const crit = root.querySelector(".pc-weapon-crit");
     expect(crit).not.toBeNull();
     expect(crit?.textContent).toBe("crit 19–20");
@@ -238,7 +262,8 @@ describe("WeaponsTable", () => {
 
   it("renders no crit caption when critRange is undefined", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithAttacks([sword()]));
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-weapon-crit")).toBeNull();
   });
 
@@ -251,7 +276,7 @@ describe("WeaponsTable", () => {
       breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand", critRange: 20,
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-weapon-crit")).toBeNull();
   });
 
@@ -265,7 +290,7 @@ describe("WeaponsTable", () => {
       informational: [], slotKey: "mainhand",
       attackNotes: ["Reroll 2s", "No disadvantage firing in melee"],
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     const note = root.querySelector(".pc-weapon-name .pc-weapon-note");
     expect(note).not.toBeNull();
     expect(note?.textContent).toBe("Reroll 2s · No disadvantage firing in melee");
@@ -273,20 +298,22 @@ describe("WeaponsTable", () => {
 
   it("renders no attack-note caption when attackNotes is absent", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithAttacks([sword()]));
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
     expect(root.querySelector(".pc-weapon-note")).toBeNull();
   });
 
   it("does NOT render a roll-modifier chip scoped to ability-check on the weapon row", () => {
     const root = mountContainer();
-    new WeaponsTable().render(root, ctxWithRollModifiers([sword()], [
+    const attacks = [sword()];
+    renderWeapons(root, attacks, ctxWithRollModifiers(attacks, [
       { mode: "advantage", roll: "ability-check", scope: "deception", label: "Liar" },
     ]));
     const hitCell = root.querySelector(".pc-weapon-hit") as HTMLElement;
     expect(hitCell.querySelector(".pc-cond-tag")).toBeNull();
   });
 
-  it("expands as a full-width sibling div carrying the open tint", () => {
+  it("expands as a full-width sibling div carrying the open tint (hidden until clicked)", () => {
     const root = mountContainer();
     const attacks = [{
       id: "0:standard", name: "Longsword", range: "melee 5 ft.", toHit: 5,
@@ -294,12 +321,15 @@ describe("WeaponsTable", () => {
       properties: [], proficient: true, breakdown: { toHit: [], damage: [] },
       informational: [], slotKey: "mainhand",
     }] as unknown as AttackRow[];
-    new WeaponsTable().render(root, ctxWithAttacks(attacks));
-    (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    const expand = root.querySelector(".pc-action-expand") as HTMLElement;
+    renderWeapons(root, attacks, ctxWithAttacks(attacks));
+    const expand = root.querySelector(".pc-action-expand") as HTMLElement & { hidden: boolean };
+    // The expand panel exists from the first render, hidden.
     expect(expand).not.toBeNull();
     expect(expand.tagName).toBe("DIV");
     expect(expand.classList.contains("pc-open-expand")).toBe(true);
+    expect(expand.hidden).toBe(true);
+    (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(expand.hidden).toBe(false);
     expect(root.querySelector("table")).toBeNull();
   });
 });
