@@ -81,7 +81,6 @@
 }
 
 /* ---------- Actions-tab table sections (Weapons / Items / Features) ---------- */
-.archivist-pc-sheet .pc-actions-section { margin-bottom: var(--pc-space-4); }
 .archivist-pc-sheet .pc-actions-section-head {
   font-family: var(--pc-font-serif);
   font-size: var(--pc-fs-small);
