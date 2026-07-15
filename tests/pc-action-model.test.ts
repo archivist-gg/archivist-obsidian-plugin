@@ -191,6 +191,13 @@ describe("buildActionModel", () => {
     expect(grant.status).toBe("granted");
   });
 
+  it("files a no-cost boon (no action_cost, passive undefined) under Passive & Always-Active", () => {
+    // Lock the collapsed boonEconomy branch: a boon whose entity carries neither
+    // `action_cost` nor `passive:true` must still fall through to Passive.
+    const secs = build({ pools: [boonPool({ grants: [boonEntry("plain-grant", {})] })] });
+    expect(sub(secs, "passive", "boons")?.entries.length).toBe(1);
+  });
+
   it("skips buildOnly feats (pure ASI) and renderSuppressed features", () => {
     const secs = build({
       features: [

@@ -136,7 +136,9 @@ function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
  * 9 no-cost boons all fall through to Passive).
  */
 function boonEconomy(entity: OptionalFeatureEntity): EconomyKey {
-  return entity.action_cost ? featureEconomy(entity.action_cost) : (entity.passive ? "passive" : "passive");
+  // No action_cost → Passive & Always-Active, whether or not `passive` is flagged
+  // (the no-cost boons all fall through here).
+  return entity.action_cost ? featureEconomy(entity.action_cost) : "passive";
 }
 
 /** Source sub-group for a feature/feat, from its `FeatureSource.kind`. */
@@ -151,7 +153,15 @@ function featureSource(source: ResolvedFeature["source"]): SourceKey {
       return "background";
     case "feat":
       return "feats";
+    default:
+      return assertNever(source);
   }
+}
+
+/** Compile-time exhaustiveness guard: unreachable for a well-typed FeatureSource;
+ *  throws if a new `source.kind` is added without a matching case above. */
+function assertNever(x: never): never {
+  throw new Error(`Unhandled feature source: ${JSON.stringify(x)}`);
 }
 
 // ─────────────────────────────────────────────────────────────
