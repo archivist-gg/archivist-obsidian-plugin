@@ -55,6 +55,16 @@ describe("save-chip — AUTO-FAIL rendering", () => {
     expect(root.querySelector(".pc-cond-tag-fail")?.textContent).toBe("AUTO-FAIL");
     expect((root.querySelector(".pc-save-bn") as HTMLElement).classList.contains("is-hidden")).toBe(true);
   });
+  it("on auto-fail shows a — placeholder (separate element) and keeps .pc-save-bn hidden", () => {
+    const root = mountContainer();
+    new SaveChip("str").render(root, ctxWith({
+      save_autofail_str: true,
+      sources: [{ condition: "paralyzed", effects: ["Auto-fail STR/DEX saves."] }],
+    }));
+    expect((root.querySelector(".pc-save-bn") as HTMLElement).classList.contains("is-hidden")).toBe(true);
+    expect(root.querySelector(".pc-save-dash")!.textContent).toBe("—");
+    expect(root.querySelector(".pc-save-tags .pc-cond-tag-fail")).toBeTruthy();
+  });
   it("renders DIS chip when save_disadvantage_dex on the dex chip", () => {
     const root = mountContainer();
     new SaveChip("dex").render(root, ctxWith({

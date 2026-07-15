@@ -1688,6 +1688,24 @@
 /* Used when the save chip swaps its numeric bonus for an AUTO-FAIL tag. */
 .archivist-pc-sheet .pc-save-bn.is-hidden { display: none; }
 
+/* Save condition tags on a wrapping sub-line beneath the chip (Phase 2 C1) —
+   the .pc-ab-stack is column-flex, so this sits below .pc-save-chip and wraps
+   within the narrow ability cell instead of overflowing it. */
+.archivist-pc-sheet .pc-save-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  margin-top: 2px;
+}
+/* .pc-cond-tag's inline margin-left (for inline-append in skills/weapons) is
+   wrong in the centered sub-line. */
+.archivist-pc-sheet .pc-save-tags .pc-cond-tag { margin-left: 0; }
+/* Placeholder standing in for the numeric bonus when it's hidden on auto-fail. */
+.archivist-pc-sheet .pc-save-dash { color: var(--pc-text-muted); font-size: var(--pc-fs-small); }
+
 /* SP4e — disabled action rows when Incapacitated */
 .archivist-pc-sheet .pc-row-disabled {
   opacity: 0.5;

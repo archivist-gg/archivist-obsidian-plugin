@@ -94,6 +94,20 @@ describe("SaveChip (component) — interactive (SP4 + SP4c)", () => {
   });
 
   describe("save-scoped roll-modifier tags (#11b)", () => {
+    it("renders an ADV tag in the .pc-save-tags sub-line, not inside the nowrap save chip", () => {
+      const root = mountContainer();
+      const { ctx } = interactiveCtx({
+        ability: "cha",
+        rollModifiers: [{ mode: "advantage", roll: "saving-throw", scope: "cha", label: "Heroic Resolve" }],
+      });
+      new SaveChip("cha").render(root, ctx);
+      const chip = root.querySelector(".pc-save-chip")!;
+      const tags = root.querySelector(".pc-save-tags")!;
+      expect(tags).toBeTruthy();
+      expect(chip.querySelector(".pc-cond-tag")).toBeNull();       // NOT inside the chip anymore
+      expect(tags.querySelector(".pc-cond-tag-adv")).toBeTruthy(); // in the sub-line
+    });
+
     it("renders ADV on a save with a saving-throw advantage roll-modifier (#11b)", () => {
       const root = mountContainer();
       const { ctx } = interactiveCtx({
