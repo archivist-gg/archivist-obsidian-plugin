@@ -112,6 +112,14 @@ describe("renderConditionTag — primitive", () => {
     expect(tag).not.toBeNull();
     expect(tag.textContent).toBe("ADV");
   });
+  it("renders cond-tags with the shared .pc-meta-chip base alongside .pc-cond-tag", async () => {
+    const { renderConditionTag } = await import("../packages/obsidian/src/modules/pc/components/condition-tag");
+    const root = mountContainer();
+    renderConditionTag(root, "ADV", "x");
+    const tag = root.querySelector(".pc-cond-tag")!;
+    expect(tag.classList.contains("pc-meta-chip")).toBe(true);
+    expect(tag.classList.contains("pc-cond-tag-adv")).toBe(true);
+  });
 });
 
 function actionsTabCtxWith(effects: Partial<ConditionEffects>): ComponentRenderContext {

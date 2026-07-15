@@ -200,19 +200,13 @@
 }
 .archivist-pc-sheet .pc-mastery-tag {
   position: relative;
-  display: inline-block;
   padding: 1px 5px;
   font-size: var(--pc-fs-small);
   font-weight: 600;
   letter-spacing: 0.02em;
   border: 1px solid var(--pc-tan-muted);
-  border-radius: 2px;
   color: var(--pc-text-muted);
-  background: transparent;
-  vertical-align: middle;
-  line-height: 1.3;
   cursor: help;
-  user-select: none;
 }
 /* Derived numeric line inside the mastery tooltip host (e.g. "Save DC 15"). */
 .pc-mastery-derived {

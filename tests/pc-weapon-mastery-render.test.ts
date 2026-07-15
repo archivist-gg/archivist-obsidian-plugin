@@ -48,7 +48,7 @@ const topple: Mastery = {
 describe("WeaponsTable — 2024 weapon mastery chip", () => {
   it("renders a mastery chip + tooltip for a row with mastery", () => {
     const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([rowWithMastery(topple)]));
+    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([]));
 
     const chips = root.querySelectorAll(".pc-mastery-tag");
     expect(chips.length).toBe(1);
@@ -64,16 +64,23 @@ describe("WeaponsTable — 2024 weapon mastery chip", () => {
     expect(tip?.textContent).toContain("Save DC 15");
   });
 
+  it("renders the mastery chip with the shared .pc-meta-chip base alongside .pc-mastery-tag", () => {
+    const root = mountContainer();
+    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([]));
+    const tag = root.querySelector(".pc-mastery-tag")!;
+    expect(tag.classList.contains("pc-meta-chip")).toBe(true);
+  });
+
   it("renders the mastery chip inside the weapon name cell (no 6th grid column)", () => {
     const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([rowWithMastery(topple)]));
+    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([]));
     const nameCell = root.querySelector(".pc-weapon-name");
     expect(nameCell?.querySelector(".pc-mastery-tag")).not.toBeNull();
   });
 
   it("renders no chip when mastery is absent", () => {
     const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(undefined)], ctxWithAttacks([rowWithMastery(undefined)]));
+    renderWeapons(root, [rowWithMastery(undefined)], ctxWithAttacks([]));
     expect(root.querySelector(".pc-mastery-tag")).toBeNull();
   });
 

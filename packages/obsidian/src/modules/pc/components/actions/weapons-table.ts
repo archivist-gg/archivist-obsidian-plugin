@@ -52,7 +52,7 @@ export function renderWeaponRow(
   // description popover via attachStatTooltip. Absent on untouched rows.
   if (a.mastery) {
     const masterySub = nameCell.createDiv({ cls: "pc-weapon-mastery" });
-    const chip = masterySub.createSpan({ cls: "pc-mastery-tag", text: a.mastery.label });
+    const chip = masterySub.createSpan({ cls: "pc-meta-chip pc-mastery-tag", text: a.mastery.label });
     const mastery = a.mastery;
     attachStatTooltip(chip, (host) => renderMasteryTooltip(host, mastery));
   }

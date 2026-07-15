@@ -19,7 +19,7 @@ export function renderConditionTag(
   tooltip: string,
 ): HTMLElement {
   const el = parent.createSpan({
-    cls: `pc-cond-tag ${KIND_CLASS[kind]}`,
+    cls: `pc-meta-chip pc-cond-tag ${KIND_CLASS[kind]}`,
     text: kind,
   });
   if (tooltip) setTooltip(el, tooltip);
