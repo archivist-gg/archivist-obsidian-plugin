@@ -268,7 +268,12 @@ export function formatSourceLabel(source: FeatureSource | undefined): string {
 }
 
 function capitalizeSlug(slug: string): string {
-  return slug.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+  // Strip a leading compendium namespace ("mcdm_", "srd-2024_", "srd-5e_", …).
+  // The slugify convention removes underscores from names, so the FIRST
+  // underscore is always the namespace separator; a bare (no-namespace) slug
+  // has no underscore and is left untouched.
+  const bare = slug.replace(/^[^_]+_/, "");
+  return bare.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
 }
 
 /**
