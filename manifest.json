@@ -1,7 +1,7 @@
 {
   "id": "archivist-gg",
   "name": "Archivist",
-  "version": "0.2.25",
+  "version": "0.2.26",
   "minAppVersion": "1.7.2",
   "description": "D&D 5e/2024 toolkit: parchment stat blocks from YAML code blocks, inline dice tags, a full SRD compendium, homebrew compendiums, and player-character sheets.",
   "author": "Shinoobi",
