@@ -211,6 +211,14 @@ describe("ActionsTab — grouped structure", () => {
     expect(rowByName(c, "Darkvision").classList.contains("pc-row-disabled")).toBe(false);
   });
 
+  it("does not dim a free-cost feature when actions are disabled (exact-cost rule)", () => {
+    // free → sections into Actions, but a free action is not disabled by
+    // Incapacitated. Dimming keys off the EXACT cost, matching weapons/items/boons.
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })], { actionsDisabled: true }));
+    expect(rowByName(c, "Free Thing").classList.contains("pc-row-disabled")).toBe(false);
+  });
+
   it("shows a passive tag (not a cost badge) on passive rows", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([rf({ name: "Darkvision", passive: true })]));

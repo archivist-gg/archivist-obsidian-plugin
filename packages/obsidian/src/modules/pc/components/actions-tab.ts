@@ -107,9 +107,12 @@ export class ActionsTab implements SheetComponent {
     if (isPassive) badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
     else renderCostBadge(badge, feature.action as ActionCost);
 
-    // Action-economy rows dim when actions are disabled; passives stay live.
+    // Dim only when the EXACT action cost is action/bonus/reaction (free/special/
+    // passive stay live) — one rule across weapons/items/features/boons.
     const ce = ctx.derived.conditionEffects;
-    if (ce && !isPassive && ce.actions_disabled) row.addClass("pc-row-disabled");
+    const cost = feature.action;
+    const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
+    if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
     // Name cell — title, source sub-label, and (optionally) the activatable
     // buff toggle. Toggle wiring is carried verbatim from the retired
