@@ -281,3 +281,13 @@
     padding: 1px 4px;
   }
 }
+
+/* Quiet boon provenance marker (Phase 2 C2) — italic muted text in the detail
+   column, deliberately NOT a chip (distinct from economy pills + meta chips). */
+.archivist-pc-sheet .pc-boon-status {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  color: var(--pc-text-muted);
+  font-style: italic;
+  letter-spacing: 0.02em;
+}

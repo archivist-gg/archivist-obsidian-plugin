@@ -1,6 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
+import { renderCostBadge } from "./cost-badge";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -12,11 +13,16 @@ import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
  * carry the pool tab's select/deselect toggle-box.
  *
  * Rows reuse the unified feature-row grid ([badge][name][detail][caret]), so
- * boon rows visually match the feature rows beside them. Right-detail is:
- *   - selected + activatable → an **Active** toggle (`pc-pool-active`, wired to
- *     `editState.toggleActiveBuff(slug)` — the same control the pool tab uses);
- *   - selected, non-activatable → a `pc-passive-tag` "Boon" label;
- *   - granted → a read-only `pc-passive-tag pc-spell-always` "granted" label.
+ * boon rows visually match the feature rows beside them.
+ *   - Badge = the boon's ECONOMY pill, read from its OWN `action_cost` (a real
+ *     cost → filled `renderCostBadge` pill; special/no-cost → outline "Passive"
+ *     tag), mirroring the feature-row badge rule. The section can't supply this:
+ *     `boonEconomy` collapses free→actions, so a granted Free boon must key its
+ *     FREE pill (and its non-dimming) off the raw `action_cost`, not the bucket.
+ *   - Detail = the provenance/state marker: an **Active** toggle (activatable
+ *     selected — `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
+ *     the same control the pool tab uses) / a quiet `pc-boon-status` "granted"
+ *     marker (granted) / nothing (plain selected).
  * Clicking a row (outside the Active toggle) expands the shared
  * `.archivist-item-block` card with the boon's description.
  */
@@ -32,16 +38,20 @@ export function renderBoonRow(
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row pc-boon-row" });
 
-  // Badge column — a read-only status chip. Granted boons read "granted"
-  // (mirroring the pool tab's `pc-spell-always` marker); a non-activatable
-  // selected boon reads "Boon". An activatable selected boon shows no chip here
-  // (the Active toggle in the detail column is its indicator).
+  // Badge column — the boon's ECONOMY pill, read from its OWN action_cost (NOT
+  // the section: boonEconomy collapses free→actions, so the section can't tell
+  // Free from Action). Mirrors the feature-row badge rule (actions-tab.ts): a
+  // real cost → filled pill; special/no-cost → outline "Passive" tag.
   const badge = row.createDiv({ cls: "pc-feature-badge" });
-  if (kind === "granted") {
-    badge.createDiv({ cls: "pc-passive-tag pc-spell-always", text: "granted" });
-  } else if (!activatable) {
-    badge.createDiv({ cls: "pc-passive-tag", text: "Boon" });
-  }
+  const cost = e.action_cost;
+  if (cost && cost !== "special") renderCostBadge(badge, cost);
+  else badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
+
+  // Incapacitated dimming — keyed off the EXACT cost (action/bonus/reaction dim;
+  // free/special/passive never), matching weapons-table.ts / items-table.ts.
+  const ce = ctx.derived.conditionEffects;
+  const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
+  if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
   // Name cell — name + the pool label as the source/type sub-label.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
@@ -49,7 +59,9 @@ export function renderBoonRow(
   nameCell.createDiv({ cls: "pc-action-row-sub", text: poolLabel });
 
   // Right detail — Active toggle for an activatable selected boon (the pool
-  // tab's `pc-pool-active` button, wired to the same `toggleActiveBuff` action).
+  // tab's `pc-pool-active` button, wired to the same `toggleActiveBuff` action);
+  // a quiet "granted" provenance marker for a granted boon; nothing for a plain
+  // selected boon.
   const detail = row.createDiv({ cls: "pc-feature-detail" });
   if (activatable) {
     const active = (ctx.resolved.state.active_buffs ?? []).includes(entry.slug);
@@ -61,6 +73,10 @@ export function renderBoonRow(
       ev.stopPropagation();
       ctx.editState?.toggleActiveBuff(entry.slug);
     });
+  } else if (kind === "granted") {
+    // Quiet provenance marker (distinct from the economy-pill and meta-chip
+    // families) — a granted boon is auto-on; a plain selected boon shows none.
+    detail.createDiv({ cls: "pc-boon-status", text: "granted" });
   }
 
   row.createDiv({ cls: "pc-action-caret", text: "›" });

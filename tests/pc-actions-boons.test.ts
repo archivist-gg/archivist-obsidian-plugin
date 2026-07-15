@@ -23,6 +23,7 @@ const pool = (over: Partial<ResolvedPool> = {}): ResolvedPool =>
 interface RenderOpts {
   activeBuffs?: string[];
   editState?: object | null;
+  actionsDisabled?: boolean;
 }
 
 function renderCtx(pools: ResolvedPool[], opts: RenderOpts = {}): ComponentRenderContext {
@@ -33,7 +34,10 @@ function renderCtx(pools: ResolvedPool[], opts: RenderOpts = {}): ComponentRende
       totalLevel: 5, features: [], pools,
       state: { feature_uses: {}, active_buffs: opts.activeBuffs ?? [] },
     } as unknown as ResolvedCharacter,
-    derived: { attacks: [], attacksPerAction: 1, conditionEffects: undefined } as never,
+    derived: {
+      attacks: [], attacksPerAction: 1,
+      conditionEffects: opts.actionsDisabled ? { actions_disabled: true, sources: [] } : undefined,
+    } as never,
     services: { entities: buildMockRegistry([]) } as never,
     app: {} as never,
     editState: (opts.editState ?? null) as never,
@@ -112,14 +116,51 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     expect(btn.classList.contains("on")).toBe(true);
   });
 
-  it("shows a 'Boon' tag (no Active toggle) on a non-activatable selected boon", () => {
+  it("shows a 'Passive' tag (no Active toggle, no status marker) on a plain no-cost non-activatable selected boon", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
       pool({ selected: [entry("wrath", { name: "Boon of Wrath" })] }),
     ]));
     const row = boonRowByName(c, "Boon of Wrath");
-    expect(row.querySelector(".pc-passive-tag")?.textContent).toBe("Boon");
+    expect(row.querySelector(".pc-passive-tag")?.textContent).toBe("Passive");
     expect(row.querySelector(".pc-pool-active")).toBeNull();
+    expect(row.querySelector(".pc-boon-status")).toBeNull();
+  });
+
+  it("gives a granted free boon a FREE pill (not ACTION) + a quiet 'granted' marker", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ grants: [entry("red-cant", { name: "Red Cant", action_cost: "free" })] })]));
+    const row = boonRowByName(c, "Red Cant");
+    expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
+    expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull(); // no status-in-badge
+    expect(row.querySelector(".pc-feature-detail .pc-boon-status")!.textContent).toBe("granted");
+  });
+
+  it("gives a selected activatable boon its economy pill + Active toggle (no status marker)", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ selected: [entry("wrath", { name: "Wrath", action_cost: "action", activatable: true })] })]));
+    const row = boonRowByName(c, "Wrath");
+    expect(row.querySelector(".pc-cost-badge.cost-action")).toBeTruthy();
+    expect(row.querySelector(".pc-pool-active")).toBeTruthy();
+    expect(row.querySelector(".pc-boon-status")).toBeNull();
+  });
+
+  it("shows the 'Passive' tag for a special boon and no marker for a plain selected boon", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ selected: [entry("frenzy", { name: "Frenzy", action_cost: "special" })] })]));
+    const row = boonRowByName(c, "Frenzy");
+    expect(row.querySelector(".pc-feature-badge .pc-passive-tag")!.textContent).toBe("Passive");
+    expect(row.querySelector(".pc-cost-badge")).toBeNull();
+    expect(row.querySelector(".pc-boon-status")).toBeNull();
+  });
+
+  it("dims a bonus-action boon when actions are disabled, but not a free boon", () => {
+    const c1 = mountContainer();
+    new ActionsTab().render(c1, renderCtx([pool({ selected: [entry("b", { name: "BA Boon", action_cost: "bonus-action" })] })], { actionsDisabled: true }));
+    expect(boonRowByName(c1, "BA Boon").classList.contains("pc-row-disabled")).toBe(true);
+    const c2 = mountContainer();
+    new ActionsTab().render(c2, renderCtx([pool({ selected: [entry("f", { name: "Free Boon", action_cost: "free" })] })], { actionsDisabled: true }));
+    expect(boonRowByName(c2, "Free Boon").classList.contains("pc-row-disabled")).toBe(false);
   });
 
   it("shows a read-only 'granted' tag (no Active toggle, no select box) on a granted boon", () => {
