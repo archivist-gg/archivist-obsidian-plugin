@@ -58,18 +58,14 @@ describe("ActionsTab — economy sections (Level-1 heads)", () => {
     expect(headings(c)).toContain("Actions");
     expect(headings(c)).not.toContain("Attacks");
     expect(headings(c)).not.toContain("Attacks (×1)");
+    // The passive section is now split onto the Passive & Features tab; the
+    // Actions tab must never render its heading (AC2).
+    expect(headings(c)).not.toContain("Passive & Free Actions");
   });
 
-  it("renders a Passive & Free Actions heading for an action-less feature", () => {
-    const c = mountContainer();
-    const features = [{
-      feature: { name: "Darkvision", description: "You can see in the dark." } as never,
-      source: { kind: "race", slug: "elf" } as never,
-    }] as ResolvedCharacter["features"];
-    new ActionsTab().render(c, ctxFactory({ features }));
-    expect(headings(c)).toContain("Passive & Free Actions");
-    expect([...c.querySelectorAll(".pc-feature-row .pc-action-row-name")].map((n) => n.textContent)).toContain("Darkvision");
-  });
+  // The "Passive & Free Actions" heading + the action-less Darkvision row moved
+  // to tests/pc-passive-features-tab.test.ts (the passive slice now files on the
+  // Passive & Features tab, not here).
 });
 
 describe("ActionsTab — source sub-groups (Level-2 heads)", () => {

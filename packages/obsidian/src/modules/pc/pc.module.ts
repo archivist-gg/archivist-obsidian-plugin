@@ -17,6 +17,7 @@ import { SensesPanel } from "./components/senses-panel";
 import { SkillsPanel } from "./components/skills-panel";
 import { ProficienciesPanel } from "./components/proficiencies-panel";
 import { ActionsTab } from "./components/actions-tab";
+import { PassiveFeaturesTab } from "./components/passive-features-tab";
 import { SpellsTab } from "./components/spells-tab";
 import { InventoryTab } from "./components/inventory-tab";
 import { NotesTab } from "./components/notes-tab";
@@ -178,6 +179,7 @@ export class PCModule {
     r.register(new ProficienciesPanel());
     // Tabs
     r.register(new ActionsTab());
+    r.register(new PassiveFeaturesTab());
     r.register(new SpellsTab());
     r.register(new InventoryTab());
     r.register(new NotesTab());

@@ -32,7 +32,7 @@ export class ActionsTab implements SheetComponent {
     // into economy sections (Actions / Bonus / Reactions / Passive), each split
     // into fixed-order source sub-groups. `renderActionSections` is pure layout.
     const model = buildActionModel(ctx.resolved, ctx.derived, ctx.services.entities);
-    renderActionSections(root, model, ctx);
+    renderActionSections(root, model.filter((s) => s.key !== "passive"), ctx);
 
     renderStandardActionsList(root, ctx);
   }

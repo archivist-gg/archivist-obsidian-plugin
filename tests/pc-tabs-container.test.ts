@@ -17,19 +17,26 @@ const ctx: ComponentRenderContext = { resolved: {} as ResolvedCharacter, derived
 
 function mkRegistry(): ComponentRegistry {
   const r = new ComponentRegistry();
-  for (const t of ["actions-tab", "spells-tab", "inventory-tab"]) r.register(new Probe(t));
+  for (const t of ["actions-tab", "passive-features-tab", "spells-tab", "inventory-tab"]) r.register(new Probe(t));
   return r;
 }
 
 describe("TabsContainer", () => {
-  it("renders three built-in tabs and no Notes/Features/Background tab", () => {
+  it("renders four built-in tabs and no Notes/Features/Background tab", () => {
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, ctx);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(3);
-    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(3);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(4);
+    expect(container.querySelectorAll(".pc-tab-panel").length).toBe(4);
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-notes"]')).toBeNull();
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-features"]')).toBeNull();
     expect(container.querySelector('.pc-tab-btn[data-tab="panel-background"]')).toBeNull();
+    // AC1: the four builtin tabs, in order, with the renamed "Actions" label.
+    const labels = [...container.querySelectorAll(".pc-tab-btn")].slice(0, 4).map((b) => b.textContent);
+    expect(labels).toEqual(["Actions", "Passive & Features", "Spells", "Inventory"]);
+    // The new panel renders a real component (not the "(No renderer…)" fallback).
+    const passivePanel = container.querySelector<HTMLElement>("#panel-passive")!;
+    expect(passivePanel.querySelector(".probe-passive-features-tab")).not.toBeNull();
+    expect(passivePanel.textContent).not.toMatch(/No renderer/);
   });
   it("appends a dynamic pool tab when a class declares one and the pool resolved", () => {
     const dyn: ComponentRenderContext = {
@@ -41,7 +48,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(4); // 3 built-ins + 1 pool tab
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(5); // 4 built-ins + 1 pool tab
     const btn = container.querySelector<HTMLElement>('.pc-tab-btn[data-tab="panel-pool-boons"]');
     expect(btn?.textContent).toBe("Interdict Boons");
   });
@@ -55,7 +62,7 @@ describe("TabsContainer", () => {
     };
     const container = mountContainer();
     new TabsContainer(mkRegistry()).render(container, dyn);
-    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(3);
+    expect(container.querySelectorAll(".pc-tab-btn").length).toBe(4);
   });
   it("activates the first tab by default when no activeTabId is provided", () => {
     const container = mountContainer();
