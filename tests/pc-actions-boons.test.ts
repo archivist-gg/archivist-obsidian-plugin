@@ -63,23 +63,23 @@ const economyForBoon = (root: HTMLElement, name: string): string => {
 };
 
 describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
-  it("files a free boon under Actions → Boons (NOT under an 'Interdict Boons' head)", () => {
+  it("files a free boon under Passive & Free Actions → Boons (NOT under an 'Interdict Boons' head)", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
       pool({ selected: [entry("wrath", { name: "Boon of Wrath", action_cost: "free", description: "Deal extra damage." })] }),
     ]));
     expect(boonNames(c)).toEqual(["Boon of Wrath"]);
-    expect(economyForBoon(c, "Boon of Wrath")).toBe("Actions");
+    expect(economyForBoon(c, "Boon of Wrath")).toBe("Passive & Free Actions");
     expect(subGroupTitles(c)).toContain("Boons");
     expect(headings(c)).not.toContain("Interdict Boons");
   });
 
-  it("files a passive boon under Passive & Always-Active → Boons", () => {
+  it("files a passive boon under Passive & Free Actions → Boons", () => {
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
       pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true, description: "Always on." })] }),
     ]));
-    expect(economyForBoon(c, "Boon of Endurance")).toBe("Passive & Always-Active");
+    expect(economyForBoon(c, "Boon of Endurance")).toBe("Passive & Free Actions");
     expect(headings(c)).not.toContain("Interdict Boons");
   });
 
@@ -89,7 +89,7 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
       pool({ grants: [entry("sight", { name: "Boon of Sight", description: "See in the dark." })] }),
     ]));
     expect(boonNames(c)).toEqual(["Boon of Sight"]);
-    expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Always-Active");
+    expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Free Actions");
   });
 
   it("shows an Active toggle wired to editState for an activatable selected boon", () => {

@@ -60,14 +60,14 @@ describe("ActionsTab — economy sections (Level-1 heads)", () => {
     expect(headings(c)).not.toContain("Attacks (×1)");
   });
 
-  it("renders a Passive & Always-Active heading for an action-less feature", () => {
+  it("renders a Passive & Free Actions heading for an action-less feature", () => {
     const c = mountContainer();
     const features = [{
       feature: { name: "Darkvision", description: "You can see in the dark." } as never,
       source: { kind: "race", slug: "elf" } as never,
     }] as ResolvedCharacter["features"];
     new ActionsTab().render(c, ctxFactory({ features }));
-    expect(headings(c)).toContain("Passive & Always-Active");
+    expect(headings(c)).toContain("Passive & Free Actions");
     expect([...c.querySelectorAll(".pc-feature-row .pc-action-row-name")].map((n) => n.textContent)).toContain("Darkvision");
   });
 });

@@ -64,7 +64,7 @@ describe("ActionsTab — grouped structure", () => {
     ]));
     const h = headings(c);
     expect(h).toContain("Bonus Actions");
-    expect(h).toContain("Passive & Always-Active");
+    expect(h).toContain("Passive & Free Actions");
     expect(h).not.toContain("Reactions"); // empty bucket omitted
   });
 
@@ -212,7 +212,7 @@ describe("ActionsTab — grouped structure", () => {
   });
 
   it("does not dim a free-cost feature when actions are disabled (exact-cost rule)", () => {
-    // free → sections into Actions, but a free action is not disabled by
+    // free → sections into Passive & Free Actions, but a free action is not disabled by
     // Incapacitated. Dimming keys off the EXACT cost, matching weapons/items/boons.
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })], { actionsDisabled: true }));
@@ -238,5 +238,18 @@ describe("ActionsTab — grouped structure", () => {
     toggle!.checked = true;
     toggle!.dispatchEvent(new Event("change"));
     expect(toggleActiveBuff).toHaveBeenCalledWith("majesty");
+  });
+
+  it("gives a free-cost feature a FREE pill (not a Passive tag) under Passive & Free Actions", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })]));
+    const row = rowByName(c, "Free Thing");
+    // Badge is read from the raw cost, so free keeps its filled FREE pill even
+    // though the row now files under the passive section.
+    expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
+    expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull();
+    // And it files under the renamed passive section (no Actions section at all).
+    expect(headings(c)).toContain("Passive & Free Actions");
+    expect(headings(c)).not.toContain("Actions");
   });
 });

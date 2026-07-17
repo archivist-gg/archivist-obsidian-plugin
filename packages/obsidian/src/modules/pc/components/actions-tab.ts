@@ -5,9 +5,9 @@ import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderWeaponRow } from "./actions/weapons-table";
 import { renderItemRow } from "./actions/items-table";
 import { renderBoonRow } from "./actions/boon-rows";
-import { buildActionModel, type EconomyKey, type SourceKey } from "./actions/action-model";
+import { buildActionModel, type SourceKey } from "./actions/action-model";
 import { renderStandardActionsList } from "./actions/standard-actions-list";
-import { renderCostBadge, type ActionCost } from "./actions/cost-badge";
+import { renderCostBadge } from "./actions/cost-badge";
 import { renderChargeBoxes } from "./actions/charge-boxes";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText } from "../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
@@ -72,7 +72,7 @@ export class ActionsTab implements SheetComponent {
           if (e.kind === "weapon") renderWeaponRow(list, e.attack, ctx);
           else if (e.kind === "item") renderItemRow(list, e.item, ctx);
           else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx);
-          else this.renderFeatureRow(list, e.rf, ctx, section.key); // section.key (EconomyKey) is the bucket
+          else this.renderFeatureRow(list, e.rf, ctx);
         }
       }
     }
@@ -92,25 +92,26 @@ export class ActionsTab implements SheetComponent {
     list: HTMLElement,
     rf: ResolvedFeature,
     ctx: ComponentRenderContext,
-    bucket: EconomyKey,
   ): void {
     const feature = rf.feature;
-    const isPassive = bucket === "passive";
     const title = featureRowTitle(rf, ctx.resolved);
     const sourceLabel = formatSourceLabel(rf.source);
 
     const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-    // Badge column — cost badge for action-economy rows, a passive tag otherwise
-    // (cost-badge intentionally NOT overloaded with a "special" pill).
+    // Badge column — read from the feature's OWN action cost, not the section
+    // bucket: a real cost (incl. `free`) → filled cost pill; `special`/absent →
+    // outline "Passive" tag. Mirrors the boon-row/item-row badge rule so all
+    // four row types share one rule (cost-badge is NOT overloaded with a
+    // "special" pill). Keeps the FREE pill distinct inside Passive & Free Actions.
     const badge = row.createDiv({ cls: "pc-feature-badge" });
-    if (isPassive) badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
-    else renderCostBadge(badge, feature.action as ActionCost);
+    const cost = feature.action;
+    if (cost && cost !== "special") renderCostBadge(badge, cost);
+    else badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
 
     // Dim only when the EXACT action cost is action/bonus/reaction (free/special/
     // passive stay live) — one rule across weapons/items/features/boons.
     const ce = ctx.derived.conditionEffects;
-    const cost = feature.action;
     const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
     if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 

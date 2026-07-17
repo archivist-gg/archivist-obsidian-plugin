@@ -17,7 +17,7 @@ import { renderCostBadge } from "./cost-badge";
  *   - Badge = the boon's ECONOMY pill, read from its OWN `action_cost` (a real
  *     cost → filled `renderCostBadge` pill; special/no-cost → outline "Passive"
  *     tag), mirroring the feature-row badge rule. The section can't supply this:
- *     `boonEconomy` collapses free→actions, so a granted Free boon must key its
+ *     `boonEconomy` collapses free→passive, so a granted Free boon must key its
  *     FREE pill (and its non-dimming) off the raw `action_cost`, not the bucket.
  *   - Detail = the provenance/state marker: an **Active** toggle (activatable
  *     selected — `pc-pool-active`, wired to `editState.toggleActiveBuff(slug)`,
@@ -39,9 +39,9 @@ export function renderBoonRow(
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row pc-boon-row" });
 
   // Badge column — the boon's ECONOMY pill, read from its OWN action_cost (NOT
-  // the section: boonEconomy collapses free→actions, so the section can't tell
-  // Free from Action). Mirrors the feature-row badge rule (actions-tab.ts): a
-  // real cost → filled pill; special/no-cost → outline "Passive" tag.
+  // the section: boonEconomy maps free→passive, so the section can't tell Free
+  // from a truly-passive boon). Mirrors the feature-row badge rule (actions-tab.ts):
+  // a real cost → filled pill; special/no-cost → outline "Passive" tag.
   const badge = row.createDiv({ cls: "pc-feature-badge" });
   const cost = e.action_cost;
   if (cost && cost !== "special") renderCostBadge(badge, cost);

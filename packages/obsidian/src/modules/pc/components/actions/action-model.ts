@@ -86,7 +86,7 @@ const ECONOMY_LABEL: Record<EconomyKey, string> = {
   actions: "Actions",
   bonus: "Bonus Actions",
   reactions: "Reactions",
-  passive: "Passive & Always-Active",
+  passive: "Passive & Free Actions",
 };
 
 const SOURCE_LABEL: Record<SourceKey, string> = {
@@ -108,21 +108,20 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
  * (it superseded the former `feature-groups.ts::groupFeatures`, retired in
  * Task 5): drives weapons (`actionCost`), items (`ItemAction.cost`),
  * features/feats (`feature.action`) and boons (`entity.action_cost`) alike.
- *   `action` / `free`  → actions
- *   `bonus-action`     → bonus
- *   `reaction`         → reactions
- *   `special` / absent → passive
+ *   `action`                     → actions
+ *   `bonus-action`               → bonus
+ *   `reaction`                   → reactions
+ *   `free` / `special` / absent  → passive (Passive & Free Actions)
  */
 function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
   switch (action) {
     case "action":
-    case "free":
       return "actions";
     case "bonus-action":
       return "bonus";
     case "reaction":
       return "reactions";
-    // "special", undefined, null → Passive & Always-Active
+    // "free", "special", undefined, null → Passive & Free Actions
     default:
       return "passive";
   }
@@ -130,15 +129,13 @@ function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
 
 /**
  * Boon economy (spec §3): a boon has no synthesized `feature`, so map the
- * OptionalFeatureEntity's `action_cost` through the same vocabulary; when it is
- * absent (or null) the boon is Passive — whether or not `passive === true`
- * (a granted always-on boon like "Red Cant" carries `action_cost:"free"`, the
- * 9 no-cost boons all fall through to Passive).
+ * OptionalFeatureEntity's `action_cost` through the same vocabulary. A free
+ * boon (`action_cost:"free"`, e.g. "Red Cant"/"Bedevil") and a no-cost boon
+ * both land in Passive & Free Actions — `featureEconomy` maps `free`,
+ * `special`, and absent alike to `passive`, so this is a straight pass-through.
  */
 function boonEconomy(entity: OptionalFeatureEntity): EconomyKey {
-  // No action_cost → Passive & Always-Active, whether or not `passive` is flagged
-  // (the no-cost boons all fall through here).
-  return entity.action_cost ? featureEconomy(entity.action_cost) : "passive";
+  return featureEconomy(entity.action_cost);
 }
 
 /** Source sub-group for a feature/feat, from its `FeatureSource.kind`. */
@@ -245,7 +242,7 @@ export function buildActionModel(
     place(featureEconomy(attack.actionCost ?? "action"), "weapons", { kind: "weapon", attack });
   }
 
-  // Items — equipped, action-bearing; economy = resolved cost (free→actions, special→passive).
+  // Items — equipped, action-bearing; economy = resolved cost (free/special → passive).
   for (const item of collectItemEntries(resolved, registry)) {
     place(featureEconomy(item.action.cost), "items", { kind: "item", item });
   }

@@ -156,10 +156,10 @@ describe("buildActionModel", () => {
     expect(g!.entries[0].kind).toBe("weapon");
   });
 
-  it("maps boons by entity.action_cost; free→Actions, bonus/reaction map, special/passive/none→Passive", () => {
+  it("maps boons by entity.action_cost; free/special/passive/none→Passive, bonus/reaction map", () => {
     const pool = boonPool({
       selected: [
-        boonEntry("red-cant", { name: "Red Cant", action_cost: "free" }),         // → Actions
+        boonEntry("red-cant", { name: "Red Cant", action_cost: "free" }),         // → Passive
         boonEntry("shove", { name: "Shove Boon", action_cost: "bonus-action" }),  // → Bonus
         boonEntry("ward", { name: "Ward Boon", action_cost: "reaction" }),        // → Reactions
         boonEntry("special", { name: "Special Boon", action_cost: "special" }),   // → Passive
@@ -170,14 +170,14 @@ describe("buildActionModel", () => {
     });
     const secs = build({ pools: [pool] });
 
-    expect(boonNames(secs, "actions")).toEqual(["Red Cant"]);
+    expect(boonNames(secs, "actions")).toEqual([]);
     expect(boonNames(secs, "bonus")).toEqual(["Shove Boon"]);
     expect(boonNames(secs, "reactions")).toEqual(["Ward Boon"]);
-    // Passive keeps insertion order: selected special/stoic/plain, then the grant.
-    expect(boonNames(secs, "passive")).toEqual(["Special Boon", "Stoic", "Plain Boon", "Granted Gift"]);
+    // Passive keeps insertion order: free red-cant, then special/stoic/plain, then the grant.
+    expect(boonNames(secs, "passive")).toEqual(["Red Cant", "Special Boon", "Stoic", "Plain Boon", "Granted Gift"]);
 
     // status + poolLabel carried on the entry
-    const redCant = sub(secs, "actions", "boons")!.entries[0];
+    const redCant = sub(secs, "passive", "boons")!.entries[0];
     expect(redCant.kind).toBe("boon");
     if (redCant.kind !== "boon") throw new Error("expected boon");
     expect(redCant.status).toBe("selected");
@@ -191,7 +191,7 @@ describe("buildActionModel", () => {
     expect(grant.status).toBe("granted");
   });
 
-  it("files a no-cost boon (no action_cost, passive undefined) under Passive & Always-Active", () => {
+  it("files a no-cost boon (no action_cost, passive undefined) under Passive & Free Actions", () => {
     // Lock the collapsed boonEconomy branch: a boon whose entity carries neither
     // `action_cost` nor `passive:true` must still fall through to Passive.
     const secs = build({ pools: [boonPool({ grants: [boonEntry("plain-grant", {})] })] });
