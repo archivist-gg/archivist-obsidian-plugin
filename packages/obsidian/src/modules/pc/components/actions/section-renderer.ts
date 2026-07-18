@@ -1,6 +1,6 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { Section, SourceKey } from "./action-model";
-import { renderWeaponRow } from "./weapons-table";
+import { renderWeaponsGroup } from "./weapons-table";
 import { renderItemRow } from "./items-table";
 import { renderBoonRow } from "./boon-rows";
 import { renderFeatureRow } from "./feature-rows";
@@ -28,11 +28,17 @@ export function renderActionSections(
       head.createSpan({ cls: "pc-actions-section-title", text: sg.label });
       if (sg.count) head.createSpan({ cls: "pc-actions-section-count", text: sg.count });
       const list = root.createDiv({ cls: `pc-actions-table ${LIST_CLASS[sg.key]}` });
+      if (sg.key === "weapons") {
+        // The weapons sub-group owns a conditional Mastery column + header; the
+        // wrapper does the once-per-group has-mastery scan and header logic so
+        // this dispatcher stays free of weapon internals.
+        renderWeaponsGroup(list, sg.entries, ctx);
+        continue;
+      }
       for (const e of sg.entries) {
-        if (e.kind === "weapon") renderWeaponRow(list, e.attack, ctx);
-        else if (e.kind === "item") renderItemRow(list, e.item, ctx);
+        if (e.kind === "item") renderItemRow(list, e.item, ctx);
         else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx);
-        else renderFeatureRow(list, e.rf, ctx, e.merged);
+        else if (e.kind === "feature") renderFeatureRow(list, e.rf, ctx, e.merged);
       }
     }
   }

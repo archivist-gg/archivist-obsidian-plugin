@@ -1,5 +1,5 @@
 import { Notice, type App } from "obsidian";
-import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { renderItemBlock } from "../../../item/item.renderer";
 import { renderWeaponBlock } from "../../../weapon/weapon.renderer";
@@ -20,6 +20,10 @@ export interface RowExpandCtx {
   /** Optional registry handle. Reserved for future expand-time entity lookups;
    *  currently unused by the renderer itself but accepted for API stability. */
   registry?: EntityRegistry | null;
+  /** 2024 weapon mastery for this attack, threaded ONLY by the Actions-tab
+   *  weapons table so the weapon card shows an in-card mastery section. The
+   *  Inventory-tab + compendium call sites pass none → card renders unchanged. */
+  mastery?: AttackRow["mastery"];
   onAttuneConflict?: (incomingIndex: number) => void;
 }
 
@@ -34,7 +38,7 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
       text: `No compendium entry for "${ctx.entry.item}". Link it as [[slug]] in YAML or remove the row.`,
     });
   } else if (ctx.resolved.entityType === "weapon") {
-    expand.appendChild(renderWeaponBlock(ctx.resolved.entity as WeaponEntity));
+    expand.appendChild(renderWeaponBlock(ctx.resolved.entity as WeaponEntity, ctx.mastery));
   } else if (ctx.resolved.entityType === "armor") {
     expand.appendChild(renderArmorBlock(ctx.resolved.entity as ArmorEntity));
   } else {

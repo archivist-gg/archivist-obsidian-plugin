@@ -946,9 +946,36 @@
   padding: 0.4em 0;
 }
 
-/* Separator only when a following section (description / charges / curse) exists. */
+/* Separator only when a following section (description / charges / curse /
+   weapon mastery) exists. */
 .archivist-item-block .archivist-item-properties:has(+ *) {
   border-bottom: 1px solid #d9c484;
+}
+
+/* 2024 Weapon Mastery in-card section (Actions-tab weapon expand only). Sits
+   AFTER the properties block; the single separator between them is supplied by
+   the :has(+ *) rule above, so this section carries no border of its own (no
+   orphan separator when it is the last child). The heading uses a MIDDLE DOT. */
+.archivist-item-block .archivist-weapon-mastery-section {
+  margin: 0.4em 0 0;
+  padding: 0.4em 0 0;
+}
+.archivist-item-block .archivist-weapon-mastery-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  font-weight: 600;
+  color: #191813;
+}
+.archivist-item-block .archivist-weapon-mastery-dc {
+  font-weight: 700;
+  color: #7a200d;
+}
+.archivist-item-block .archivist-weapon-mastery-desc {
+  margin-top: 0.2em;
+  font-size: 13px;
+  color: #191813;
 }
 
 .archivist-item-block .property-line {
@@ -6821,27 +6848,60 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-muted);
 }
 
-/* 2024 Weapon Mastery — an outline micro-chip (modelled on .pc-cond-tag) on a
- * sub-line in the weapon name cell. Hovering opens a description popover, so it
- * carries a help cursor. Proper-noun labels stay in normal case (unlike the
- * uppercase ADV/DIS cond-tags). */
+/* 2024 Weapon Mastery: a real trailing grid CELL (6th column) on the weapons
+ * table, NOT a hover chip. The label chip stacks over a compact one-line gist
+ * (e.g. "Save DC 13 · on fail: Prone"). The full glossary prose lives in the
+ * row-expand card, so the chip no longer carries a help cursor. */
 .archivist-pc-sheet .pc-weapon-mastery {
-  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
 }
 .archivist-pc-sheet .pc-mastery-tag {
-  position: relative;
   padding: 1px 5px;
   font-size: var(--pc-fs-small);
   font-weight: 600;
   letter-spacing: 0.02em;
   border: 1px solid var(--pc-tan-muted);
   color: var(--pc-text-muted);
-  cursor: help;
 }
-/* Derived numeric line inside the mastery tooltip host (e.g. "Save DC 15"). */
-.pc-mastery-derived {
-  margin-top: 0.3em;
+.archivist-pc-sheet .pc-weapon-mastery-gist {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  line-height: var(--pc-lh-tight);
+  overflow-wrap: anywhere;
+}
+
+/* Labeled header row for a has-mastery weapons group: shares the 6-col grid so
+ * the column labels line up over the rows. The leading cell above the cost
+ * badge is intentionally blank. */
+.archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
+  display: grid;
+  align-items: baseline;
+  gap: var(--pc-space-2);
+  padding: var(--pc-space-1);
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-weapon-header-cell {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-text-muted);
   font-weight: 600;
+  min-width: 0;
+}
+
+/* 6-col has-mastery grid (leading cost + Name + Range + Hit + Damage + Mastery).
+ * Rows without their own mastery still get this template (empty 6th track) so
+ * the whole group's columns stay aligned under the header. The base 5-col grid
+ * above stays for no-mastery groups. */
+.archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
+.archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
+  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
 }
 
 /* Inline italic dice tag override inside actions tab */
@@ -6891,6 +6951,23 @@ body.theme-light .archivist-tag-atk:hover {
     overflow-x: auto;
     max-width: 100%;
   }
+
+  /* Weapons grid at a narrow container: relax the fixed range/hit/damage
+     min-widths (they overflowed a ~296px pane pre-existing) to flexible tracks
+     that shrink/wrap, so nothing overflows or overlaps. The Mastery cell drops
+     to a full-width line below the row (its column header is hidden, the chip
+     self-labels), so its longer gist has room without cramping the row. This
+     covers BOTH the base 5-col and the 6-col has-mastery layouts. */
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row,
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
+    grid-template-columns: 56px minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.6fr) minmax(0, 1fr);
+    gap: var(--pc-space-1);
+  }
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: anywhere; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
 }
 
 /* Below narrow tier: tighten condition-chip gap so more chips
@@ -8015,8 +8092,6 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-bwarn-t {
   font-size: var(--pc-fs-small); line-height: 1.45; color: #7a4a0a; font-family: var(--pc-font-serif);
 }
-/* Origin-feat expand: the click-to-expand block beneath the strip info row. */
-.archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }
 
 /* ── Custom Background: the pinned ✦ Build row + parts-builder form ──
    The row pins above the picker table; clicking unfolds the form host beneath
@@ -8290,7 +8365,22 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
   font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
 }
-/* section rule */
+/* Passive & Features tab: bespoke Race block (D2-2). Reuses the Chronicle block
+   shell + glance tiles + trait rows; only needs bottom spacing to separate it
+   from the grouped passive sections below. The collapse is a self-contained
+   `.hidden` DOM-toggle on `.pc-race-block-body`, hidden via the UA `[hidden]`
+   rule (no display override here, so the attribute keeps working). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-race-block { margin: 0 0 14px; }
+/* Passive & Features tab: bespoke Background block (D2-3(i)). Same shell + prop
+   reference lines as the Race block; a small edition badge sits beside the name,
+   and the origin-feat line reuses the `.pc-cb-prop` row layout. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-background-block { margin: 0 0 14px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ed {
+  margin-left: 8px; font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-flavor { margin: 2px 0 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-origin { color: var(--pc-text-primary); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
   display: flex; align-items: center; gap: 8px;
   border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
