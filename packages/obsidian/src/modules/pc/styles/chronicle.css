@@ -80,6 +80,16 @@
    `.hidden` DOM-toggle on `.pc-race-block-body`, hidden via the UA `[hidden]`
    rule (no display override here, so the attribute keeps working). */
 :is(.archivist-pc-sheet, .archivist-modal) .pc-race-block { margin: 0 0 14px; }
+/* Passive & Features tab: bespoke Background block (D2-3(i)). Same shell + prop
+   reference lines as the Race block; a small edition badge sits beside the name,
+   and the origin-feat line reuses the `.pc-cb-prop` row layout. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-background-block { margin: 0 0 14px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ed {
+  margin-left: 8px; font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-flavor { margin: 2px 0 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-origin { color: var(--pc-text-primary); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
   display: flex; align-items: center; gap: 8px;
   border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;

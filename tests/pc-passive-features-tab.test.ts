@@ -12,6 +12,7 @@ import type {
 } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
 import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
+import type { BackgroundEntity } from "@archivist-gg/dnd5e/background/background.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -49,6 +50,7 @@ interface RenderOpts {
   pools?: ResolvedPool[];
   activeBuffs?: string[];
   race?: RaceEntity | null;
+  background?: BackgroundEntity | null;
 }
 
 // The single reconciled ctx builder: feature-based cases pass `features`
@@ -58,7 +60,7 @@ function renderCtx(features: ResolvedFeature[], opts: RenderOpts = {}): Componen
   return {
     resolved: {
       definition: { equipment: [], edition: "2014" },
-      race: opts.race ?? null, classes: opts.classes ?? [], background: null, feats: [],
+      race: opts.race ?? null, classes: opts.classes ?? [], background: opts.background ?? null, feats: [],
       totalLevel: 5, features, pools: opts.pools ?? [],
       state: { feature_uses: opts.featureUses ?? {}, active_buffs: opts.activeBuffs ?? [] },
     } as unknown as ResolvedCharacter,
@@ -111,6 +113,57 @@ const raceFixture = {
   vision: {}, languages: { fixed: [] }, variant_label: "",
   traits: [{ name: "Dual Mind", description: "You have advantage on Wisdom saving throws." }],
 } as unknown as RaceEntity;
+
+// A 2024 (Soldier-like) background: the generator bakes a placeholder feature
+// `{name:"Background Feature", description:"(No description provided.)"}` and all
+// real grants live as fields (already applied elsewhere) → the Background block
+// REFERENCES them, and the placeholder row is pre-split out of the passive model.
+const bg2024 = {
+  slug: "soldier", name: "Soldier", edition: "2024", source: "", description: "",
+  skill_proficiencies: ["athletics", "intimidation"],
+  tool_proficiencies: [{ kind: "fixed", items: ["gaming-set"] }],
+  language_proficiencies: [],
+  equipment: [{ kind: "gold", amount: 50 }],
+  feature: { name: "Background Feature", description: "(No description provided.)" },
+  ability_score_increases: { pool: ["str", "dex", "con"] },
+  origin_feat: "[[SRD 2024/Feats/Savage Attacker]]",
+  suggested_characteristics: null,
+} as unknown as BackgroundEntity;
+
+// The generator-baked placeholder feature, as it appears in `resolved.features`
+// under the `background` sub-group (which the tab pre-splits out).
+const bgPlaceholderFeat = rf(
+  { name: "Background Feature", description: "(No description provided.)" },
+  { source: { kind: "background", slug: "soldier" } },
+);
+
+// The origin feat once it flows through the feat pipeline (Task 3b) — a
+// feat-sourced feature whose slug matches the background's `origin_feat` ref.
+const savageAttackerFeat = rf(
+  { name: "Savage Attacker" },
+  { source: { kind: "feat", slug: "srd-2024_savage-attacker" } },
+);
+
+// A 2014 background: real `feature` prose, `origin_feat:null`. The block shows
+// the genuine feature prose (NOT suppressed).
+const bg2014 = {
+  slug: "acolyte", name: "Acolyte", edition: "2014", source: "", description: "",
+  skill_proficiencies: ["insight", "religion"],
+  tool_proficiencies: [],
+  language_proficiencies: [{ kind: "choice", count: 2, from: "any" }],
+  equipment: [],
+  feature: {
+    name: "Shelter of the Faithful",
+    description: "As an acolyte, you command the respect of those who share your faith.",
+  },
+  ability_score_increases: null,
+  origin_feat: null,
+  suggested_characteristics: null,
+} as unknown as BackgroundEntity;
+
+const bgBlock = (root: HTMLElement): HTMLElement | null => root.querySelector(".pc-background-block");
+const propLabels = (block: HTMLElement): string[] =>
+  [...block.querySelectorAll(".pc-cb-prop-l")].map((n) => n.textContent ?? "");
 
 describe("PassiveFeaturesTab", () => {
   it("renders the Passive & Free Actions heading and passive/free rows, not the Actions heading", () => {
@@ -175,6 +228,76 @@ describe("PassiveFeaturesTab", () => {
       expect(c.querySelectorAll(".pc-race-block").length).toBe(1);
       expect(headings(c)).not.toContain("Passive & Free Actions");
       expect(c.querySelector(".pc-empty-line")).toBeNull(); // block present → not empty-state
+    });
+  });
+
+  // ── Background block (D2-3(i) pre-split, §4.1) ──────────────────────────────
+  describe("background block", () => {
+    it("suppresses the generator placeholder row and renders ONE reference block for a 2024 background", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
+      // The "Background Feature — (No description provided.)" placeholder is
+      // pre-split out with the `background` sub-group → never a scattered row.
+      expect(rowNames(c)).not.toContain("Background Feature");
+      expect(subGroupTitles(c)).not.toContain("Background");
+      // Exactly one bespoke Background block, showing the background name.
+      const blocks = c.querySelectorAll(".pc-background-block");
+      expect(blocks.length).toBe(1);
+      expect(bgBlock(c)!.textContent).toContain("Soldier");
+    });
+
+    it("shows ability-boost + proficiency reference lines (references applied grants, not re-lists)", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
+      const block = bgBlock(c)!;
+      const labels = propLabels(block);
+      expect(labels).toContain("Ability Scores"); // the granted pool, referenced
+      expect(labels).toContain("Skills");
+      expect(block.textContent).toContain("Athletics");
+      expect(block.textContent).toContain("Intimidation");
+    });
+
+    it("renders 'Origin Feat: <name>' WITHOUT '— see Feats' when no matching feat row is present (pre-3b)", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
+      const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
+      expect(line.textContent).toBe("Origin Feat: Savage Attacker");
+    });
+
+    it("auto-upgrades to 'Origin Feat: <name> — see Feats' once a matching feat feature is present (post-3b)", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 }));
+      const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
+      expect(line.textContent).toBe("Origin Feat: Savage Attacker — see Feats");
+    });
+
+    it("shows the real feature prose (NOT suppressed) for a 2014 background with no origin feat", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([], { background: bg2014 }));
+      const block = bgBlock(c)!;
+      expect(block.textContent).toContain("Shelter of the Faithful");
+      expect(block.textContent).toContain("command the respect");
+      // 2014 → no origin feat line.
+      expect(block.querySelector(".pc-bg-origin")).toBeNull();
+    });
+
+    it("orders the Background block AFTER the Race block and BEFORE the grouped sections", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([passiveFeat], { race: raceFixture, background: bg2024 }));
+      const race = c.querySelector(".pc-race-block")!;
+      const bg = c.querySelector(".pc-background-block")!;
+      const heading = c.querySelector(".pc-tab-heading");
+      // Race precedes Background…
+      expect(race.compareDocumentPosition(bg) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      // …and Background precedes the first grouped-section heading.
+      expect(heading).toBeTruthy();
+      expect(bg.compareDocumentPosition(heading!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it("renders no Background block when there is no background", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([passiveFeat]));
+      expect(c.querySelector(".pc-background-block")).toBeNull();
     });
   });
 
