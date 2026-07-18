@@ -44,6 +44,13 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   const pactClassSlugs = ctx.derived.spellcastingClasses.filter((c) => c.casterType === "pact").map((c) => c.classSlug);
 
   const dcFor = (s: ResolvedSpell): number => {
+    // Feat-granted spells (classSlug null) carry their OWN spellcasting ability;
+    // their DC lives in derived.abilitySpellcasting, not a class. On a non-caster
+    // the class list is empty, so without this branch the DC would fall to 0.
+    if ((s.source === "feat" || s.classSlug == null) && s.ability) {
+      const own = ctx.derived.abilitySpellcasting?.[s.ability]?.saveDC;
+      if (own != null) return own;
+    }
     const cls = ctx.derived.spellcastingClasses.find((c) => baseClassName(c.classSlug) === baseClassName(s.classSlug ?? ""));
     return cls?.saveDC ?? ctx.derived.spellcastingClasses[0]?.saveDC ?? 0;
   };
@@ -83,6 +90,24 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     }
   }
 
+  // ── Feat-granted leveled spells with no owned slot (non-caster free casts) ──
+  // A feat like Magic Initiate grants a level-1 spell to a character who owns no
+  // slot at that level (e.g. a Fighter). It has no slot to spend, so surface it
+  // in its own level section as an always-prepared, free cast (no slot tracker;
+  // the per-long-rest economy is out of scope here). Feat spells at a level the
+  // character DOES own already render in the owned-slot section above.
+  const freeFeat = castable.filter((s) =>
+    s.source === "feat" && (s.entity.level ?? 0) > 0 && !ownedLevels.includes(s.entity.level ?? 0));
+  const freeLevels = [...new Set(freeFeat.map((s) => s.entity.level ?? 0))].sort((a, b) => a - b);
+  for (const lvl of freeLevels) {
+    const head = root.createDiv({ cls: "pc-spell-sec" });
+    head.createSpan({ cls: "pc-spell-sec-label", text: `${ordinal(lvl)} Level` });
+    const body = tableFor(root);
+    for (const s of freeFeat.filter((s) => (s.entity.level ?? 0) === lvl)) {
+      renderRow(body, s, lvl, ctx, dcFor, { free: true });
+    }
+  }
+
   // ── Pact Magic ──
   const pact = ctx.derived.pactMagic;
   if (pact) {
@@ -107,7 +132,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
 
 function renderRow(
   body: HTMLElement, spell: ResolvedSpell, level: number, ctx: ComponentRenderContext,
-  dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean },
+  dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean; free?: boolean },
 ): void {
   const tr = body.createDiv({ cls: "pc-spell-cast-row" });
 
@@ -115,6 +140,10 @@ function renderRow(
   const actTd = tr.createDiv({ cls: "pc-spell-act" });
   if (opts.cantrip) {
     actTd.createSpan({ cls: "pc-spell-atwill", text: "At Will" });
+  } else if (opts.free) {
+    // Feat-granted, always-prepared leveled spell with no class slot: a free
+    // cast, surfaced as an affordance rather than a slot-consuming CAST button.
+    actTd.createSpan({ cls: "pc-spell-atwill pc-spell-free", text: "Free" });
   } else {
     let noSlot: boolean;
     if (opts.pact) {
@@ -137,6 +166,9 @@ function renderRow(
   const nameTd = tr.createDiv({ cls: "pc-spell-namecell" });
   const nl = nameTd.createDiv({ cls: "pc-spell-nl" });
   nl.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
+  // Always-prepared spells (feat grants, domain spells) carry the shared "always"
+  // marker used in the prepare view, so a free feat cast reads as always-ready.
+  if (spell.alwaysPrepared) nl.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.concentration) nl.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });
