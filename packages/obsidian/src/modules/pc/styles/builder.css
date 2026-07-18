@@ -461,8 +461,6 @@
 .archivist-pc-sheet .pc-bwarn-t {
   font-size: var(--pc-fs-small); line-height: 1.45; color: #7a4a0a; font-family: var(--pc-font-serif);
 }
-/* Origin-feat expand: the click-to-expand block beneath the strip info row. */
-.archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }
 
 /* ── Custom Background: the pinned ✦ Build row + parts-builder form ──
    The row pins above the picker table; clicking unfolds the form host beneath

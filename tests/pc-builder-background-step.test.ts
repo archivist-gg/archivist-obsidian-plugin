@@ -215,33 +215,36 @@ describe("renderBackgroundStep", () => {
 // ── Task 7: Chronicle-block composition (tiles, in-block strip, origin feat) ──
 
 describe("renderBackgroundStep — Chronicle composition", () => {
-  it("chosen Acolyte 2024 renders tiles, the in-block strip, and the origin-feat info row", () => {
+  it("chosen Acolyte 2024 renders tiles, the in-block strip, and the origin-feat reference row (F13 guard)", () => {
     const c = mountContainer();
     renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
     const block = c.querySelector(".pc-btable-expand .pc-cblock")!;
+    // F13 guard: for the CHOSEN background the resolver pipeline now owns the
+    // origin feat (real Feats row + the strip reference below name it), so the
+    // redundant "Origin Feat" glance TILE is suppressed — no double-render.
     expect([...block.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toEqual(
-      ["Skills", "Tool", "Ability Points", "Origin Feat"]);
+      ["Skills", "Tool", "Ability Points"]);
     expect(block.querySelector(".pc-dstrip")).not.toBeNull();
     const info = block.querySelector(".pc-dstrip-row.info")!;
-    expect(info.querySelector(".pc-dstrip-val")!.textContent).toContain("▸");
+    // The row is a lightweight NAME reference — the feat name, no "▸" expand affordance.
+    expect(info.querySelector(".pc-dstrip-val")!.textContent).toContain("Alert");
+    expect(info.querySelector(".pc-dstrip-val")!.textContent).not.toContain("▸");
     expect(c.querySelector(".pc-bledger")).toBeNull();
     expect(c.querySelector(".pc-bofeat")).toBeNull();                  // old below-block row gone
   });
 
-  it("origin-feat info row click expands the feat block beneath it", () => {
+  it("F13 guard: the origin-feat reference row is plain — NOT expandable, spawns no feat block", () => {
     const c = mountContainer();
     renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
-    const row = c.querySelector(".pc-dstrip-row.info.expandable") as HTMLElement;
+    const row = c.querySelector(".pc-dstrip-row.info") as HTMLElement;
     expect(row).not.toBeNull();
+    // The pipeline now renders the full feat card (as a Feats row on the sheet);
+    // the builder must NOT re-render it. The row carries no `.expandable` affordance
+    // and clicking it (or its value) spawns no `.pc-bofeat-expand` block.
+    expect(row.classList.contains("expandable")).toBe(false);
     row.click();
-    expect(c.querySelector(".pc-dstrip-row.info + .pc-bofeat-expand")).not.toBeNull();
-  });
-
-  it("origin-feat: clicking the value (inside the row) still expands the feat block", () => {
-    const c = mountContainer();
-    renderBackgroundStep(c, mkCtxWithChosenAcolyte2024());
-    (c.querySelector(".pc-dstrip-row.info.expandable .pc-dstrip-val") as HTMLElement).click();
-    expect(c.querySelector(".pc-dstrip-row.info + .pc-bofeat-expand")).not.toBeNull();
+    (row.querySelector(".pc-dstrip-val") as HTMLElement | null)?.click();
+    expect(c.querySelector(".pc-bofeat-expand")).toBeNull();
   });
 
   it("edition-mix note renders INSIDE the block, above the identity band", () => {
@@ -292,13 +295,10 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     try {
       renderBackgroundStep(c, ctx);
       const info = c.querySelector(".pc-dstrip-row.info")!;
-      // Variant display name (NOT the base "Magic Initiate", NOT the degraded slug).
+      // The lifted resolver keeps the VARIANT display name (NOT the base "Magic
+      // Initiate", NOT the degraded slug) — resolving to the base feat is proven by
+      // the resolver's own unit test; here we assert the builder surfaces the variant.
       expect(info.querySelector(".pc-dstrip-val")!.textContent).toContain("Magic Initiate (Cleric)");
-      // Clicking expands the BASE feat's block.
-      (info.querySelector(".pc-dstrip-val") as HTMLElement).click();
-      const expand = c.querySelector(".pc-bofeat-expand");
-      expect(expand).not.toBeNull();
-      expect(expand!.textContent).toContain("Magic Initiate");
     } finally {
       (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = prev;
     }
