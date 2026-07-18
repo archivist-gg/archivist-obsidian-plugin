@@ -11,6 +11,7 @@ import type {
   ResolvedPoolEntry,
 } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-feature.types";
+import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -47,6 +48,7 @@ interface RenderOpts {
   actionsDisabled?: boolean;
   pools?: ResolvedPool[];
   activeBuffs?: string[];
+  race?: RaceEntity | null;
 }
 
 // The single reconciled ctx builder: feature-based cases pass `features`
@@ -56,7 +58,7 @@ function renderCtx(features: ResolvedFeature[], opts: RenderOpts = {}): Componen
   return {
     resolved: {
       definition: { equipment: [], edition: "2014" },
-      race: null, classes: opts.classes ?? [], background: null, feats: [],
+      race: opts.race ?? null, classes: opts.classes ?? [], background: null, feats: [],
       totalLevel: 5, features, pools: opts.pools ?? [],
       state: { feature_uses: opts.featureUses ?? {}, active_buffs: opts.activeBuffs ?? [] },
     } as unknown as ResolvedCharacter,
@@ -100,6 +102,16 @@ const passiveFeat = rf({ name: "Darkvision" });                 // no action →
 const freeFeat = rf({ name: "Free Thing", action: "free" });    // free → passive section
 const actionFeat = rf({ name: "Smite", action: "action" });     // action → Actions tab
 
+// A race-sourced passive feature — `buildActionModel` files this under the
+// passive "Race" sub-group, which the tab must PRE-SPLIT out (D2-2 / F8).
+const raceFeat = rf({ name: "Dual Mind" }, { source: { kind: "race", slug: "kalashtar", level: 0 } });
+const raceFixture = {
+  slug: "kalashtar", name: "Kalashtar", edition: "2014", source: "", description: "",
+  size: "medium", speed: { walk: 30 }, ability_score_increases: [], age: "", alignment: "",
+  vision: {}, languages: { fixed: [] }, variant_label: "",
+  traits: [{ name: "Dual Mind", description: "You have advantage on Wisdom saving throws." }],
+} as unknown as RaceEntity;
+
 describe("PassiveFeaturesTab", () => {
   it("renders the Passive & Free Actions heading and passive/free rows, not the Actions heading", () => {
     const el = document.createElement("div");
@@ -127,6 +139,43 @@ describe("PassiveFeaturesTab", () => {
     new PassiveFeaturesTab().render(el, renderCtx([actionFeat])); // only an action feature
     expect(el.querySelector(".pc-empty-line")?.textContent).toBe("(No passive or free actions.)");
     expect(el.querySelectorAll(".pc-tab-heading").length).toBe(0);
+  });
+
+  // ── Race block (D2-2 pre-split, §3) ─────────────────────────────────────────
+  describe("race block", () => {
+    it("renders exactly ONE bespoke Race block above the grouped sections when race is present", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([passiveFeat], { race: raceFixture }));
+      const blocks = c.querySelectorAll(".pc-race-block");
+      expect(blocks.length).toBe(1);
+      // Ordered above the grouped passive sections (block precedes the heading).
+      const block = blocks[0] as HTMLElement;
+      const heading = c.querySelector(".pc-tab-heading");
+      expect(heading).toBeTruthy();
+      expect(block.compareDocumentPosition(heading!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it("pre-splits the passive 'Race' sub-group off the tab (block replaces scattered rows)", () => {
+      const c = mountContainer();
+      // A race-sourced passive feature alongside a class-sourced one: only the
+      // Race sub-group is removed; Class features stays.
+      new PassiveFeaturesTab().render(c, renderCtx([passiveFeat, raceFeat], { race: raceFixture }));
+      expect(subGroupTitles(c)).toContain("Class features");
+      expect(subGroupTitles(c)).not.toContain("Race");
+      // "Dual Mind" is no longer a scattered .pc-feature-row (it lives in the block).
+      expect(rowNames(c)).not.toContain("Dual Mind");
+      expect(headings(c)).toContain("Passive & Free Actions");
+    });
+
+    it("drops the passive section left empty after the Race split (no bare heading)", () => {
+      const c = mountContainer();
+      // The ONLY passive content is the race sub-group → after the split the whole
+      // "Passive & Free Actions" section is empty and must not render a bare <h4>.
+      new PassiveFeaturesTab().render(c, renderCtx([raceFeat], { race: raceFixture }));
+      expect(c.querySelectorAll(".pc-race-block").length).toBe(1);
+      expect(headings(c)).not.toContain("Passive & Free Actions");
+      expect(c.querySelector(".pc-empty-line")).toBeNull(); // block present → not empty-state
+    });
   });
 
   // ── Relocated feature cases (from pc-actions-grouping.test.ts) ──────────────

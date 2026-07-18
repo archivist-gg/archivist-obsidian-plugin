@@ -74,7 +74,12 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
   font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
 }
-/* section rule */
+/* Passive & Features tab: bespoke Race block (D2-2). Reuses the Chronicle block
+   shell + glance tiles + trait rows; only needs bottom spacing to separate it
+   from the grouped passive sections below. The collapse is a self-contained
+   `.hidden` DOM-toggle on `.pc-race-block-body`, hidden via the UA `[hidden]`
+   rule (no display override here, so the attribute keeps working). */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-race-block { margin: 0 0 14px; }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
   display: flex; align-items: center; gap: 8px;
   border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
