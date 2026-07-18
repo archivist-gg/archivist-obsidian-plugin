@@ -4,7 +4,7 @@ import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
-import { renderFeatureCard, formatSourceLabel, sourceBadgeText } from "../../blocks/feature-card";
+import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
 
 /** Reset trigger → the charge-box recovery bucket (moved verbatim from actions-tab.ts). */
@@ -20,15 +20,28 @@ const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> =
  * Extra resources render inside the expand card; when a tracker occupies the
  * single in-row slot the attack note moves to that card too (Finding B). Click
  * (outside the tracker / buff toggle) reveals the shared `.archivist-item-block` card.
+ *
+ * `merged` (spec §2 / D2-1): same-parent subclass features collapsed onto this
+ * class-sourced primary. When present the row shows a joined "Illrigger 3 ·
+ * Hellspeaker 3" sub-label, the card body concatenates every feature's prose, and
+ * the card gains each secondary's resource trackers + chosen-inline picks.
  */
 export function renderFeatureRow(
   list: HTMLElement,
   rf: ResolvedFeature,
   ctx: ComponentRenderContext,
+  merged?: ResolvedFeature[],
 ): void {
   const feature = rf.feature;
+  const secondaries = merged ?? [];
   const title = featureRowTitle(rf, ctx.resolved);
-  const sourceLabel = formatSourceLabel(rf.source);
+  // Sub-label joins the primary source with each merged (subclass) source; for a
+  // lone feature this is exactly `formatSourceLabel(rf.source)` (no behavior
+  // change). Empty labels are dropped so the " · " separator never dangles.
+  const sourceLabel = [rf, ...secondaries]
+    .map((r) => formatSourceLabel(r.source))
+    .filter(Boolean)
+    .join(" · ");
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
@@ -92,14 +105,35 @@ export function renderFeatureRow(
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
   expand.hidden = true;
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
+  // Concatenate every feature's `description ?? entries` (blank-line separated)
+  // and pass it as an explicit `description` — this OVERRIDES the per-feature
+  // `feature` fallback at feature-card.ts:111, so no prose is double-rendered.
+  // A lone feature passes `undefined`, keeping the fallback path byte-identical.
+  const mergedDescription = secondaries.length
+    ? [feature, ...secondaries.map((m) => m.feature)]
+        .map((f) => featureCardDescription(f))
+        .filter((d): d is string => Boolean(d && d.trim()))
+        .join("\n\n") || undefined
+    : undefined;
+  // Surface each secondary's chosen-inline picks alongside the primary's.
+  const mergedChosen = [
+    ...(rf.chosenInline ?? []),
+    ...secondaries.flatMap((m) => m.chosenInline ?? []),
+  ];
   renderFeatureCard(inner, {
     title,
     sourceLabel,
     sourceBadge: sourceBadgeText((ctx.resolved as { definition?: { edition?: string } }).definition?.edition),
     feature,
-    chosenInline: rf.chosenInline,
+    description: mergedDescription,
+    chosenInline: mergedChosen,
   });
   for (const res of (feature.resources ?? []).slice(1)) renderCardResource(inner, res, ctx);
+  // Secondary (merged) features' trackers: the in-row tracker only holds the
+  // PRIMARY's first resource, so each secondary's resources surface in the card.
+  for (const m of secondaries) {
+    for (const res of m.feature.resources ?? []) renderCardResource(inner, res, ctx);
+  }
   // Finding B: when a tracker occupied the single in-row detail slot, the
   // feature's attack note lands here in the expand card instead of being lost.
   if (hasTracker && attackNote) {

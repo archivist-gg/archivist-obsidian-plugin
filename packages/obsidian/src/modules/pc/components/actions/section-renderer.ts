@@ -32,7 +32,7 @@ export function renderActionSections(
         if (e.kind === "weapon") renderWeaponRow(list, e.attack, ctx);
         else if (e.kind === "item") renderItemRow(list, e.item, ctx);
         else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx);
-        else renderFeatureRow(list, e.rf, ctx);
+        else renderFeatureRow(list, e.rf, ctx, e.merged);
       }
     }
   }

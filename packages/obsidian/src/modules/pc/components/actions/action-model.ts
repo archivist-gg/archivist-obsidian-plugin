@@ -56,7 +56,7 @@ export interface ItemEntry {
 export type ActionEntry =
   | { kind: "weapon"; attack: AttackRow }
   | { kind: "item"; item: ItemEntry }
-  | { kind: "feature"; rf: ResolvedFeature }
+  | { kind: "feature"; rf: ResolvedFeature; merged?: ResolvedFeature[] }
   | { kind: "boon"; entry: ResolvedPoolEntry; status: "granted" | "selected"; poolLabel: string };
 
 export interface SubGroup {
@@ -204,6 +204,58 @@ function collectItemEntries(resolved: ResolvedCharacter, registry: EntityRegistr
 }
 
 // ─────────────────────────────────────────────────────────────
+// Same-parent class+subclass merge (spec §2 / D2-1)
+// ─────────────────────────────────────────────────────────────
+
+/** Case-insensitive, whitespace-trimmed feature-name key for the merge match. */
+function mergeNameKey(name: string): string {
+  return name.trim().toLowerCase();
+}
+
+/**
+ * Collapse a same-named class feature and its OWN-subclass feature into a single
+ * primary entry (spec §2, D2-1 — "Invoke Hell"). Runs on ONE (economy,
+ * source-display-group) bucket's `ActionEntry[]`, so pairs in different economy
+ * Sections never merge. A class-sourced feature entry is the PRIMARY; each later
+ * subclass-sourced feature entry joins its `merged[]` when ALL hold:
+ *   1. `feature.name` equal (trimmed, case-insensitive),
+ *   2. one entry `source.kind === "class"`, the other `=== "subclass"`,
+ *   3. `` `${classSlug}|${subclassSlug}` `` ∈ `sameParent`.
+ * The `sameParent` join (built from `resolved.classes`) is what pins the merge to
+ * the character's CHOSEN subclass — a flat name scan would wrongly collapse a
+ * cross-class collision (Cleric-class + Paladin-subclass "Channel Divinity").
+ * Both Extra Attack fixtures are `kind:"class"` → condition 2 never fires → they
+ * stay two rows. Supports N≥1 secondaries generically (only 1 occurs for SRD).
+ */
+function mergeFeatureEntries(list: ActionEntry[], sameParent: Set<string>): ActionEntry[] {
+  const consumed = new Set<number>();
+  const out: ActionEntry[] = [];
+  for (let i = 0; i < list.length; i++) {
+    if (consumed.has(i)) continue;
+    const entry = list[i];
+    // Only a class-sourced feature entry can be a merge primary.
+    if (entry.kind !== "feature" || entry.rf.source.kind !== "class") {
+      out.push(entry);
+      continue;
+    }
+    const classSlug = entry.rf.source.slug;
+    const nameKey = mergeNameKey(entry.rf.feature.name);
+    const merged: ResolvedFeature[] = [];
+    for (let j = i + 1; j < list.length; j++) {
+      if (consumed.has(j)) continue;
+      const other = list[j];
+      if (other.kind !== "feature" || other.rf.source.kind !== "subclass") continue;
+      if (mergeNameKey(other.rf.feature.name) !== nameKey) continue;
+      if (!sameParent.has(`${classSlug}|${other.rf.source.slug}`)) continue;
+      merged.push(other.rf);
+      consumed.add(j);
+    }
+    out.push(merged.length ? { kind: "feature", rf: entry.rf, merged } : entry);
+  }
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────
 // The builder
 // ─────────────────────────────────────────────────────────────
 
@@ -260,6 +312,24 @@ export function buildActionModel(
     }
     for (const entry of pool.grants) {
       place(boonEconomy(entry.entity), "boons", { kind: "boon", entry, status: "granted", poolLabel: pool.label });
+    }
+  }
+
+  // Same-parent join set (spec §2): `${class.slug}|${subclass.slug}` for the
+  // character's CHOSEN class→subclass pairs. Null-guarded — unit fixtures omit
+  // `classes`, and a class carrying no chosen subclass yields no pair.
+  const sameParent = new Set<string>();
+  for (const c of resolved.classes ?? []) {
+    const classSlug = c.entity?.slug;
+    const subclassSlug = c.subclass?.slug;
+    if (classSlug && subclassSlug) sameParent.add(`${classSlug}|${subclassSlug}`);
+  }
+  // Per-bucket merge post-pass: collapse a same-named class + its-own-subclass
+  // feature into one entry. Runs within each (economy, source) list only, so a
+  // same-name pair split across economies never merges.
+  for (const sources of buckets.values()) {
+    for (const [source, list] of sources) {
+      sources.set(source, mergeFeatureEntries(list, sameParent));
     }
   }
 

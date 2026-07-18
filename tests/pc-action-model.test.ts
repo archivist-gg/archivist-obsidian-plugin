@@ -53,6 +53,10 @@ const boonPool = (over: Partial<ResolvedPool> = {}): ResolvedPool =>
     anchorLevel: 3, selected: [], available: [], grants: [], ...over,
   }) as ResolvedPool;
 
+/** Minimal same-parent join shape read by the merge post-pass:
+ *  `resolved.classes[].entity.slug` + `.subclass.slug`. */
+type ClassesOpt = Array<{ entity?: { slug?: string }; subclass?: { slug?: string } }>;
+
 interface BuildOpts {
   attacks?: AttackRow[];
   attacksPerAction?: number;
@@ -60,6 +64,7 @@ interface BuildOpts {
   pools?: ResolvedPool[];
   equipment?: EquipmentEntry[];
   registry?: EntityRegistry;
+  classes?: ClassesOpt;
 }
 
 const build = (opts: BuildOpts = {}): Section[] => {
@@ -67,6 +72,7 @@ const build = (opts: BuildOpts = {}): Section[] => {
     definition: { equipment: opts.equipment ?? [] },
     features: opts.features ?? [],
     pools: opts.pools ?? [],
+    classes: opts.classes ?? [],
   } as unknown as ResolvedCharacter;
   const derived = {
     attacks: opts.attacks ?? [],
@@ -80,6 +86,11 @@ const sub = (secs: Section[], eco: EconomyKey, src: SourceKey) =>
   section(secs, eco)?.subGroups.find((g) => g.key === src);
 const boonNames = (secs: Section[], eco: EconomyKey): string[] =>
   (sub(secs, eco, "boons")?.entries ?? []).map((e) => (e.kind === "boon" ? e.entry.entity.name : ""));
+/** Flatten Actions → Class features to just its feature entries (narrowed). */
+const classFeatureEntries = (secs: Section[]) =>
+  (sub(secs, "actions", "class-features")?.entries ?? []).flatMap((e) =>
+    e.kind === "feature" ? [e] : [],
+  );
 
 describe("buildActionModel", () => {
   it("buckets features by economy and source (class feature action→Actions/Class features)", () => {
@@ -227,6 +238,35 @@ describe("buildActionModel", () => {
     const g = sub(secs, "passive", "class-features");
     expect(g!.entries).toHaveLength(2);
     expect(g!.entries.every((e) => e.kind === "feature" && e.rf.feature.name === "Extra Attack")).toBe(true);
+  });
+
+  it("merges a same-parent class+subclass same-name feature into one entry", () => {
+    const model = build({
+      features: [
+        feat("Invoke Hell", "action", { kind: "class", slug: "illrigger", level: 3 }),
+        feat("Invoke Hell", "action", { kind: "subclass", slug: "hellspeaker", level: 3 }),
+      ],
+      classes: [{ entity: { slug: "illrigger" }, subclass: { slug: "hellspeaker" } }],
+    });
+    const entries = classFeatureEntries(model);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].merged).toHaveLength(1);
+    expect(entries[0].merged![0].feature.name).toBe("Invoke Hell");
+    // Primary is the class-sourced entry.
+    expect(entries[0].rf.source.kind).toBe("class");
+  });
+
+  it("does NOT merge a cross-class same-name class+subclass collision", () => {
+    const model = build({
+      features: [
+        feat("Channel Divinity", "action", { kind: "class", slug: "cleric", level: 2 }),
+        feat("Channel Divinity", "action", { kind: "subclass", slug: "oath-of-devotion", level: 3 }),
+      ],
+      // The character's cleric subclass is life-domain, NOT oath-of-devotion — so
+      // the flat name collision must NOT collapse (no shared parentage).
+      classes: [{ entity: { slug: "cleric" }, subclass: { slug: "life-domain" } }],
+    });
+    expect(classFeatureEntries(model)).toHaveLength(2);
   });
 
   it("omits an empty sub-group and a section whose sub-groups are all empty (all-ASI Feats → gone)", () => {
