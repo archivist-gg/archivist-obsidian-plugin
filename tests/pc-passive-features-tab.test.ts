@@ -257,18 +257,18 @@ describe("PassiveFeaturesTab", () => {
       expect(block.textContent).toContain("Intimidation");
     });
 
-    it("renders 'Origin Feat: <name>' WITHOUT '— see Feats' when no matching feat row is present (pre-3b)", () => {
+    it("renders 'Origin Feat: <name>' WITHOUT 'see Feats' when no matching feat row is present (pre-3b)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
       expect(line.textContent).toBe("Origin Feat: Savage Attacker");
     });
 
-    it("auto-upgrades to 'Origin Feat: <name> — see Feats' once a matching feat feature is present (post-3b)", () => {
+    it("auto-upgrades to 'Origin Feat: <name> · see Feats' once a matching feat feature is present (post-3b)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 }));
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
-      expect(line.textContent).toBe("Origin Feat: Savage Attacker — see Feats");
+      expect(line.textContent).toBe("Origin Feat: Savage Attacker · see Feats");
     });
 
     it("shows the real feature prose (NOT suppressed) for a 2014 background with no origin feat", () => {

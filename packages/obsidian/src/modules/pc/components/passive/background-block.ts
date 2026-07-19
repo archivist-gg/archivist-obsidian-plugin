@@ -63,14 +63,14 @@ function originFeatName(ref: string): string {
 }
 
 /**
- * Build-order-aware "— see Feats" gate (spec §4.1, R3-M8). The origin feat only
+ * Build-order-aware "see Feats" gate (spec §4.1, R3-M8). The origin feat only
  * renders as a Feats row once Task 3b wires it into the feat pipeline, so we do a
  * self-adjusting RUNTIME check rather than a hardcoded flag: is there a
  * feat-sourced resolved feature that matches this origin-feat ref? Match by the
  * bare tail slug (`srd-2024_savage-attacker` endsWith `_savage-attacker`), the
  * parenthetical-variant base slug (Magic Initiate (Cleric) → magic-initiate), or
  * the display name. Absent (today) → "Origin Feat: <name>"; present (post-3b) →
- * "… — see Feats", with NO cross-task edit.
+ * "… · see Feats", with NO cross-task edit.
  */
 function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boolean {
   const slug = wikilinkTailSlug(ref);
@@ -138,14 +138,14 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   prop(body, "Tools", fixedToolNames(bg.tool_proficiencies));
   prop(body, "Languages", languageSummary(bg.language_proficiencies));
 
-  // ── Origin Feat line (2024 only). "— see Feats" auto-appends once the feat
+  // ── Origin Feat line (2024 only). "· see Feats" auto-appends once the feat
   //    renders as a Feats row (Task 3b); before that it degrades to the name. ──
   if (bg.origin_feat) {
     const name = originFeatName(bg.origin_feat);
     const seeFeats = originFeatRendersAsRow(ctx, bg.origin_feat);
     body.createDiv({
       cls: "pc-cb-prop pc-bg-origin",
-      text: `Origin Feat: ${name}${seeFeats ? " — see Feats" : ""}`,
+      text: `Origin Feat: ${name}${seeFeats ? " · see Feats" : ""}`,
     });
   }
 
