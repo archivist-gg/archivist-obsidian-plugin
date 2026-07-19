@@ -56,6 +56,18 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     return cls?.saveDC ?? ctx.derived.spellcastingClasses[0]?.saveDC ?? 0;
   };
 
+  // Attack-roll to-hit, mirroring dcFor but reading .attackBonus. Feat-granted or
+  // captured-ability spells (classSlug null) carry their OWN ability; their attack
+  // bonus lives in derived.abilitySpellcasting, not a class.
+  const atkFor = (s: ResolvedSpell): number => {
+    if ((s.source === "feat" || s.classSlug == null) && s.ability) {
+      const own = ctx.derived.abilitySpellcasting?.[s.ability]?.attackBonus;
+      if (own != null) return own;
+    }
+    const cls = ctx.derived.spellcastingClasses.find((c) => baseClassName(c.classSlug) === baseClassName(s.classSlug ?? ""));
+    return cls?.attackBonus ?? ctx.derived.spellcastingClasses[0]?.attackBonus ?? 0;
+  };
+
   // ── Cantrips: At Will, no slots, no button ──
   // Item (scroll) spells never mix into the class/feat sections; they surface in
   // their own "Scrolls & Consumables" section below.
@@ -64,7 +76,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: "Cantrips" });
     const body = tableFor(root);
-    for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, { cantrip: true });
+    for (const s of cantrips) renderRow(body, s, 0, ctx, dcFor, atkFor, { cantrip: true });
   }
 
   // ── Leveled sections: slot boxes + CAST ──
@@ -86,8 +98,8 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     const body = tableFor(root);
     const base = castable.filter((s) => s.source !== "item" && (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
     const upcasts = castable.filter((s) => s.source !== "item" && !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
-    for (const s of base) renderRow(body, s, lvl, ctx, dcFor, {});
-    for (const s of upcasts) renderRow(body, s, lvl, ctx, dcFor, { upcast: true });
+    for (const s of base) renderRow(body, s, lvl, ctx, dcFor, atkFor, {});
+    for (const s of upcasts) renderRow(body, s, lvl, ctx, dcFor, atkFor, { upcast: true });
     if (!base.length && !upcasts.length) {
       body.createDiv({ cls: "pc-spell-empty-row", text: "No spells at this level." });
     }
@@ -107,7 +119,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     head.createSpan({ cls: "pc-spell-sec-label", text: `${ordinal(lvl)} Level` });
     const body = tableFor(root);
     for (const s of freeFeat.filter((s) => (s.entity.level ?? 0) === lvl)) {
-      renderRow(body, s, lvl, ctx, dcFor, { free: true });
+      renderRow(body, s, lvl, ctx, dcFor, atkFor, { free: true });
     }
   }
 
@@ -126,7 +138,7 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     const body = tableFor(root);
     const pactSpells = castable.filter((s) =>
       s.source !== "item" && (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
-    for (const s of pactSpells) renderRow(body, s, pact.level, ctx, dcFor, { pact: true });
+    for (const s of pactSpells) renderRow(body, s, pact.level, ctx, dcFor, atkFor, { pact: true });
     if (!pactSpells.length) {
       body.createDiv({ cls: "pc-spell-empty-row", text: "No spells." });
     }
@@ -142,13 +154,14 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: "Scrolls & Consumables" });
     const body = tableFor(root);
-    for (const s of scrolls) renderRow(body, s, s.entity.level ?? 0, ctx, dcFor, { scroll: true });
+    for (const s of scrolls) renderRow(body, s, s.entity.level ?? 0, ctx, dcFor, atkFor, { scroll: true });
   }
 }
 
 function renderRow(
   body: HTMLElement, spell: ResolvedSpell, level: number, ctx: ComponentRenderContext,
-  dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean; free?: boolean; scroll?: boolean },
+  dcFor: (s: ResolvedSpell) => number, atkFor: (s: ResolvedSpell) => number,
+  opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean; free?: boolean; scroll?: boolean },
 ): void {
   const tr = body.createDiv({ cls: "pc-spell-cast-row" });
 
@@ -220,9 +233,15 @@ function renderRow(
   if (opts.scroll && !spell.ability && spell.entryIndex != null) {
     renderScrollAbilityControl(tr, ctx, spell.entryIndex);
   } else {
+    // This cell serves normal rows AND scroll rows that DO carry an ability (e.g.
+    // a scroll of Fire Bolt \u2192 "Atk +N"). Attack-roll spells show a to-hit bonus,
+    // save spells show the ability + DC, and everything else shows a dash.
     const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
-    const desc = hitDcDescriptor(spell, dcFor(spell));
-    if (desc) {
+    const desc = hitDcDescriptor(spell, dcFor(spell), atkFor(spell));
+    if (desc?.kind === "attack") {
+      hd.createSpan({ cls: "pc-spell-hitdc-ab", text: "Atk" });
+      hd.createSpan({ cls: "pc-spell-hitdc-v", text: `${desc.bonus >= 0 ? "+" : ""}${desc.bonus}` });
+    } else if (desc?.kind === "save") {
       hd.createSpan({ cls: "pc-spell-hitdc-ab", text: desc.ability });
       hd.createSpan({ cls: "pc-spell-hitdc-v", text: `${desc.dc}` });
     } else {

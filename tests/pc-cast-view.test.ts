@@ -76,7 +76,9 @@ describe("renderCastView", () => {
 
   it("shows TIME, RANGE, the save DC, and the damage type from real fields", () => {
     const root = mountContainer();
-    const fb = sp("Scorching Ray", 2, {
+    // A genuine save spell (NOT a curated attack-roll spell) so the Hit/DC cell
+    // renders the save ability + DC rather than an "Atk +N" to-hit.
+    const fb = sp("Burning Hands", 2, {
       casting_time: "action", range: "120 feet",
       saving_throw: { ability: "dexterity" } as never, damage: { types: ["fire"] } as never,
     });
