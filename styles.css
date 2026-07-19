@@ -7521,6 +7521,32 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-comp { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-dur { color: var(--pc-text-soft); }
 
+/* Cast table at a narrow container: the 7-column grid's fixed action / time /
+   range / hit / components tracks sum past a ~296px pane, so mirror the Task M
+   weapons treatment. Hide the column header (it can't map to a reflowed row)
+   and restack each row: the CAST / At Will / Free control on a left rail, the
+   name + effect beside it, and the time / range / hit-DC / components metadata
+   wrapping onto lines below. All tracks are shrinkable so nothing overflows or
+   overlaps. The wide (>=499px) layout is untouched. */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-spell-cast-head { display: none; }
+
+  .archivist-pc-sheet .pc-spell-cast-row {
+    grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--pc-space-1) var(--pc-space-2);
+    align-items: start;
+  }
+  .archivist-pc-sheet .pc-spell-cast-row > * { overflow-wrap: anywhere; }
+
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-act { grid-column: 1; grid-row: 1 / span 2; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-namecell { grid-column: 2 / -1; grid-row: 1; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-effcell { grid-column: 2 / -1; grid-row: 2; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-time { grid-column: 2; grid-row: 3; white-space: normal; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-range { grid-column: 3; grid-row: 3; white-space: normal; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-hitdc { grid-column: 4; grid-row: 3; text-align: left; white-space: normal; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-comp { grid-column: 2 / -1; grid-row: 4; }
+}
+
 /* ── Source tag (Cast + Prepare + Add) ────────────────── */
 .archivist-pc-sheet .pc-spell-srctag { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; color: var(--pc-text-soft); margin-left: 5px; }
 .archivist-pc-sheet .pc-spell-srctag.e2014 { color: var(--pc-text-muted); }
