@@ -317,6 +317,17 @@ function writeValue(
     es.setSubclass(opts.classIndex ?? 0, typeof value === "string" ? value : null);
     return;
   }
+  // An origin-feat's OWN choice (e.g. Magic Initiate's spell picks). The engine
+  // surfaces these into ledger.origin with source.kind "feat" and a "feat:<id>"
+  // key, and the resolver reads them under "background:feat:<id>" via
+  // originRead("background"). So write to that exact origin key. This must sit
+  // BEFORE the race/background branch: routing a feat item through that branch
+  // would double the namespace to "feat:feat:<id>", and falling through to
+  // setChoice would misfile it as a class-slot choice.
+  if (item.source.kind === "feat") {
+    es.setOriginChoice(`background:${item.key}`, value);
+    return;
+  }
   if (item.source.kind === "race" || item.source.kind === "background") {
     es.setOriginChoice(`${item.source.kind}:${item.key}`, value);
     return;

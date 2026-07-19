@@ -47,6 +47,15 @@ const stripSummary = (items: DecisionItem[]): string => {
   return `${items.length} total · ${done} resolved · ${items.length - done} open`;
 };
 
+/** Origin items the background step surfaces as live decision rows: the
+ *  background's OWN choices PLUS the origin feat's own child choices (source
+ *  "feat"). The engine files the feat's picks under "background:feat:<id>", so
+ *  they belong to this step, letting a Magic Initiate origin feat's spell picker
+ *  render here rather than being dropped. Race-source items are handled by the
+ *  race step and are excluded. */
+export const isBackgroundStripItem = (i: DecisionItem): boolean =>
+  i.source.kind === "background" || i.source.kind === "feat";
+
 const NO_DESC = "(No description provided.)";
 
 /** SP2 §1 (Plan 5) — Background step. The chosen background's expanded row
@@ -76,7 +85,7 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
       const chosen = e.slug === stripSlug(ctx.resolved.definition.background);
       const d = e.data as BackgroundData;
       const ledger = chosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
-      const items = ledger?.origin.filter((i) => i.source.kind === "background") ?? [];
+      const items = ledger?.origin.filter(isBackgroundStripItem) ?? [];
       // Shared lifted resolver (R2-m7): the SAME helper the resolver pipeline uses.
       const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null) : null;
       renderChronicleBlock(wrap, {
