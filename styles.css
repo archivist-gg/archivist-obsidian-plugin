@@ -6645,6 +6645,51 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
 
+/* ── P4 · Scroll & unidentified-item inventory treatments (Task 5) ──────────
+   Folded from scratchpad/p4/proposed.css: the chosen variants 1A / 2B / 3A
+   (no glyph) / 4C / 5A. Reuses existing tokens + classes (.pc-meta-chip,
+   .pc-inv-action, --pc-crimson, --pc-text-muted). */
+
+/* 1A · chosen-spell chip on a scroll's inventory sub-line: crimson "arcane" accent. */
+.archivist-pc-sheet .pc-meta-chip.pc-spell-chip {
+  border-color: var(--pc-crimson);
+  color: var(--pc-crimson);
+}
+
+/* 2B · amber "unset" dot + a small inline call-to-action for a scroll needing a spell. */
+.archivist-pc-sheet .pc-unset-dot {
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  background:#c98a1a; margin-right:6px; vertical-align:1px;
+}
+.archivist-pc-sheet .pc-inline-cta {
+  font: inherit; font-size:11px; font-weight:700; cursor:pointer;
+  padding:1px 8px; border-radius:999px; color:var(--pc-crimson);
+  border:1px solid var(--pc-crimson); background:transparent;
+}
+
+/* 3A · unidentified placeholder row (WITHOUT the "?" glyph): muted italic name,
+   dimmed icon. */
+.archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-name {
+  font-style: italic;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-icon { opacity: .5; }
+
+/* 5A · Identify button (reuses .pc-inv-action; crimson accent to signal "reveal"). */
+.archivist-pc-sheet .pc-inv-action.pc-identify {
+  border-color: var(--pc-crimson);
+  color: var(--pc-crimson);
+}
+
+/* 4C · item-block property rows ship unstyled (touching inline spans); give them a
+   clean two-column layout for the scroll Spell / Save DC / Attack rows. */
+.archivist-pc-sheet .archivist-item-property { display: flex; align-items: baseline; gap: 12px; padding: 2px 0; }
+.archivist-pc-sheet .archivist-item-property-label {
+  flex: 0 0 118px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  font-weight: 700; color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .archivist-item-property-value { flex: 1 1 auto; }
+
 
 /* ============================================
    pc/actions.css
@@ -8746,48 +8791,3 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-builder-foot-hint + .pc-builder-next { margin-left: 8px; }
 .archivist-pc-sheet .pc-builder-step-badge { flex-basis: 100%; padding-left: 22px; font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); color: var(--pc-text-muted); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; }
 .archivist-pc-sheet .pc-builder-step { flex-wrap: wrap; }
-
-/* ── P4 · Scroll & unidentified-item inventory treatments (Task 5) ──────────
-   Folded from scratchpad/p4/proposed.css: the chosen variants 1A / 2B / 3A
-   (no glyph) / 4C / 5A. Reuses existing tokens + classes (.pc-meta-chip,
-   .pc-inv-action, --pc-crimson, --pc-text-muted). */
-
-/* 1A · chosen-spell chip on a scroll's inventory sub-line: crimson "arcane" accent. */
-.archivist-pc-sheet .pc-meta-chip.pc-spell-chip {
-  border-color: var(--pc-crimson);
-  color: var(--pc-crimson);
-}
-
-/* 2B · amber "unset" dot + a small inline call-to-action for a scroll needing a spell. */
-.archivist-pc-sheet .pc-unset-dot {
-  display:inline-block; width:8px; height:8px; border-radius:50%;
-  background:#c98a1a; margin-right:6px; vertical-align:1px;
-}
-.archivist-pc-sheet .pc-inline-cta {
-  font: inherit; font-size:11px; font-weight:700; cursor:pointer;
-  padding:1px 8px; border-radius:999px; color:var(--pc-crimson);
-  border:1px solid var(--pc-crimson); background:transparent;
-}
-
-/* 3A · unidentified placeholder row (WITHOUT the "?" glyph): muted italic name,
-   dimmed icon. */
-.archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-name {
-  font-style: italic;
-  color: var(--pc-text-muted);
-}
-.archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-icon { opacity: .5; }
-
-/* 5A · Identify button (reuses .pc-inv-action; crimson accent to signal "reveal"). */
-.archivist-pc-sheet .pc-inv-action.pc-identify {
-  border-color: var(--pc-crimson);
-  color: var(--pc-crimson);
-}
-
-/* 4C · item-block property rows ship unstyled (touching inline spans); give them a
-   clean two-column layout for the scroll Spell / Save DC / Attack rows. */
-.archivist-pc-sheet .archivist-item-property { display: flex; align-items: baseline; gap: 12px; padding: 2px 0; }
-.archivist-pc-sheet .archivist-item-property-label {
-  flex: 0 0 118px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
-  font-weight: 700; color: var(--pc-text-muted);
-}
-.archivist-pc-sheet .archivist-item-property-value { flex: 1 1 auto; }
