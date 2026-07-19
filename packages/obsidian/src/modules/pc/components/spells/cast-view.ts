@@ -6,7 +6,6 @@ import { toggleSpellBlock } from "./spell-block-expand";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
-import { renderScrollAbilityControl } from "../inventory/scroll-spell-picker";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
@@ -226,17 +225,18 @@ function renderRow(
   tr.createDiv({ cls: "pc-spell-range", text: formatRange(spell.entity.range) });
 
   // HIT / DC. A no-ability scroll (no own casting ability + no per-instance
-  // spell_ability) has no DC to show, so it swaps the Hit/DC cell for the shared
-  // INT/WIS/CHA capture control (the same one the inventory row uses). Every
-  // other row keeps the existing descriptor cell (T8 extends this for
-  // attack-roll spells).
-  if (opts.scroll && !spell.ability && spell.entryIndex != null) {
-    renderScrollAbilityControl(tr, ctx, spell.entryIndex);
+  // spell_ability + no character-level spellcasting_ability) has no DC source, so
+  // it shows a small muted, non-interactive "set ability" hint rather than a
+  // fabricated DC 0. The ability is set from the top-of-Spells-tab control
+  // (character-level) or the scroll's per-instance override. Every other row keeps
+  // the existing descriptor cell (T8 extends this for attack-roll spells).
+  const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
+  if (opts.scroll && !spell.ability) {
+    hd.createSpan({ cls: "pc-spell-hitdc-hint", text: "set ability" });
   } else {
     // This cell serves normal rows AND scroll rows that DO carry an ability (e.g.
     // a scroll of Fire Bolt \u2192 "Atk +N"). Attack-roll spells show a to-hit bonus,
     // save spells show the ability + DC, and everything else shows a dash.
-    const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
     const desc = hitDcDescriptor(spell, dcFor(spell), atkFor(spell));
     if (desc?.kind === "attack") {
       hd.createSpan({ cls: "pc-spell-hitdc-ab", text: "Atk" });

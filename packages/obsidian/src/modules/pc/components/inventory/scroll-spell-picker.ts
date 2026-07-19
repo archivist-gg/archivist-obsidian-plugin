@@ -10,8 +10,8 @@ import { DecisionPickModal } from "../builder/decision-modal";
 const ENUMERATE_LIMIT = 10_000;
 
 /** Abilities a no-caster scroll can be cast with (INT/WIS/CHA, the three
- *  spellcasting abilities). Offered by the ability-capture control. */
-const SCROLL_ABILITIES: Ability[] = ["int", "wis", "cha"];
+ *  spellcasting abilities). Offered by the top-of-Spells-tab ability control. */
+export const SCROLL_ABILITIES: Ability[] = ["int", "wis", "cha"];
 
 /** A spell matches its scroll when it sits at the scroll's level AND shares the
  *  character's edition. An edition-less spell (homebrew) is kept so the picker
@@ -84,32 +84,4 @@ export function openScrollSpellPicker(
     },
     stateKey: `scroll-spell.${entryIndex}`,
   }).open();
-}
-
-/**
- * Reusable INT/WIS/CHA capture control for a no-caster scroll. Each pick writes
- * the entry's `overrides.spell_ability` (the resolver then derives the DC via
- * `derived.abilitySpellcasting`). SHARED with the cast-view no-ability affordance
- * (T6): kept dependency-light (ctx + entryIndex). Callers gate WHEN to show it
- * via `characterHasOwnSpellcastingAbility` + the entry's current value.
- */
-export function renderScrollAbilityControl(
-  parent: HTMLElement,
-  ctx: ComponentRenderContext,
-  entryIndex: number,
-  current?: Ability,
-): void {
-  const row = parent.createDiv({ cls: "archivist-item-property pc-scroll-ability" });
-  row.createSpan({ cls: "archivist-item-property-label", text: "Cast using" });
-  const opts = row.createDiv({ cls: "archivist-item-property-value pc-scroll-ability-opts" });
-  for (const ability of SCROLL_ABILITIES) {
-    const btn = opts.createEl("button", {
-      cls: `pc-inline-cta pc-scroll-ability-btn${current === ability ? " active" : ""}`,
-      text: ability.toUpperCase(),
-    });
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      ctx.editState?.setEquipmentOverride(entryIndex, { spell_ability: ability });
-    });
-  }
 }

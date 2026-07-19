@@ -4,6 +4,7 @@ import { renderPrepareView } from "./spells/prepare-view";
 import { renderActiveEffectsRail } from "./active-effects-rail";
 import { attachStatTooltip } from "./stat-tooltip";
 import { renderSituationalRows } from "./situational-rows";
+import { characterHasOwnSpellcastingAbility, SCROLL_ABILITIES } from "./inventory/scroll-spell-picker";
 
 type SpellsMode = "cast" | "prepare";
 
@@ -78,7 +79,36 @@ export class SpellsTab implements SheetComponent {
       }]);
     }
 
-    if (this.mode === "cast") renderCastView(root, ctx);
-    else renderPrepareView(root, ctx);
+    if (this.mode === "cast") {
+      this.renderSpellcastingAbilityControl(root, ctx);
+      renderCastView(root, ctx);
+    } else {
+      renderPrepareView(root, ctx);
+    }
+  }
+
+  /**
+   * Compact "Cast scrolls using" control at the top of the Cast region. Shown ONLY
+   * for a character who casts item (scroll) spells but has NO own class spellcasting
+   * ability, whose scrolls would otherwise be DC-less. Picking INT/WIS/CHA writes
+   * the character-level `overrides.spellcasting_ability` (the resolver's scroll
+   * DC-ability fallback) and reflects the current pick. Reuses the segmented
+   * `pc-spell-modetoggle` / `pc-mode-seg` control (no bespoke pill).
+   */
+  private renderSpellcastingAbilityControl(root: HTMLElement, ctx: ComponentRenderContext): void {
+    const hasScrollSpells = ctx.resolved.spells.some((s) => s.source === "item");
+    if (!hasScrollSpells || characterHasOwnSpellcastingAbility(ctx.derived)) return;
+
+    const current = ctx.resolved.definition.overrides.spellcasting_ability;
+    const row = root.createDiv({ cls: "pc-spellability-set" });
+    row.createSpan({ cls: "pc-spellability-set-label", text: "Cast scrolls using" });
+    const seg = row.createDiv({ cls: "pc-spell-modetoggle" });
+    for (const ability of SCROLL_ABILITIES) {
+      const btn = seg.createEl("button", {
+        cls: `pc-mode-seg${current === ability ? " active" : ""}`,
+        text: ability.toUpperCase(),
+      });
+      btn.addEventListener("click", () => ctx.editState?.setSpellcastingAbility(ability));
+    }
   }
 }

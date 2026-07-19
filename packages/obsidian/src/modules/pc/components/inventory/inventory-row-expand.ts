@@ -14,7 +14,7 @@ import { requiresAttunement } from "@archivist-gg/dnd5e/item/item.attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
 import { isScrollItem, isUnidentifiedPlaceholder } from "./item-predicates";
-import { openScrollSpellPicker, characterHasOwnSpellcastingAbility, renderScrollAbilityControl } from "./scroll-spell-picker";
+import { openScrollSpellPicker } from "./scroll-spell-picker";
 import { openIdentifyPicker } from "./identify-picker-modal";
 import { prettifyName } from "./filter-state";
 
@@ -223,11 +223,6 @@ function renderScrollSpellSection(parent: HTMLElement, ctx: RowExpandCtx, sheet:
       openScrollSpellPicker(sheet, entryIndex, scrollLevel);
     });
   }
-
-  // No-caster ability capture: only when the character has no OWN casting ability
-  // AND this instance has no chosen spell_ability (the resolver would otherwise
-  // leave the scroll DC-less). Shared with T6's cast-view affordance.
-  if (!characterHasOwnSpellcastingAbility(sheet.derived) && !ctx.entry.overrides?.spell_ability) {
-    renderScrollAbilityControl(section, sheet, entryIndex, ctx.entry.overrides?.spell_ability);
-  }
+  // The no-caster casting ability is set once at the top of the Spells tab
+  // (character-level overrides.spellcasting_ability), not per scroll row here.
 }

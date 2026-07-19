@@ -1008,6 +1008,15 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Set the character-level spellcasting ability (the scroll DC-ability fallback
+   *  for a non-caster who holds Spell Scrolls). Writes
+   *  overrides.spellcasting_ability; the resolver derives each scroll's DC via
+   *  derived.abilitySpellcasting. Mirrors the setEquipmentOverride wrapper shape. */
+  setSpellcastingAbility(ability: Ability): void {
+    eq.setSpellcastingAbility(this.character, ability);
+    this.onChange();
+  }
+
   // ─── Known spell list ──────────────────────────────────────────────
   private static bare(ref: string): string {
     const m = ref.match(/^\[\[(.+?)\]\]$/);

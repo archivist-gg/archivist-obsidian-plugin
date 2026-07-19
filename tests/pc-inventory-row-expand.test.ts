@@ -367,7 +367,7 @@ describe("renderRowExpand", () => {
       expect(block?.textContent).toContain("14"); // save DC from derived.abilitySpellcasting
     });
 
-    it("offers the INT/WIS/CHA capture control for a non-caster scroll with no chosen ability", async () => {
+    it("no longer renders the per-scroll INT/WIS/CHA capture control (ability is set at the top of the Spells tab)", async () => {
       const entry: EquipmentEntry = { item: "[[spell-scroll-1st-level]]", overrides: { spell: "srd-2024_cure-wounds" } };
       const resolved = {
         index: 5,
@@ -384,11 +384,10 @@ describe("renderRowExpand", () => {
       const root = mountContainer();
       renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never, sheet });
       await Promise.resolve();
-      expect(root.querySelector(".pc-scroll-ability")).toBeTruthy();
-      const btns = [...root.querySelectorAll(".pc-scroll-ability-btn")].map((b) => b.textContent);
-      expect(btns).toEqual(["INT", "WIS", "CHA"]);
-      (root.querySelector(".pc-scroll-ability-btn") as HTMLElement).click();
-      expect(editState.setEquipmentOverride).toHaveBeenCalledWith(5, { spell_ability: "int" });
+      // The broken per-row capture control is removed.
+      expect(root.querySelector(".pc-scroll-ability")).toBeNull();
+      // The chosen spell still surfaces in the scroll block.
+      expect(root.querySelector(".pc-scroll-spellblock")?.textContent).toContain("Cure Wounds");
     });
 
     it("renders an Identify button for an unidentified placeholder (5A) and keeps the overrides details", () => {

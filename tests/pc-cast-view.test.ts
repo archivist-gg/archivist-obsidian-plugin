@@ -301,22 +301,32 @@ describe("renderCastView · scrolls & consumables", () => {
     expect(expendSlot).not.toHaveBeenCalled();
   });
 
-  it("a no-ability scroll (non-caster) shows the INT/WIS/CHA capture control in place of a DC cell", () => {
+  it("a no-ability scroll (non-caster) shows a muted 'set ability' hint, not the removed per-row capture control", () => {
     const root = mountContainer();
-    const setEquipmentOverride = vi.fn();
     renderCastView(root, ctxForScroll(
       [itemSp("Fireball", 3, 0, { extra: { saving_throw: { ability: "dexterity" } } })], // no ability
-      { setEquipmentOverride, consumeScroll: vi.fn() },
+      { consumeScroll: vi.fn() },
       { spellcastingClasses: [], derivedSpellSlots: {}, abilitySpellcasting: {} },
     ));
     const row = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
-    const control = row.querySelector(".pc-scroll-ability");
-    expect(control).not.toBeNull();
-    // The DC cell is NOT rendered for a no-ability scroll row.
-    expect(row.querySelector(".pc-spell-hitdc")).toBeNull();
-    // Picking WIS writes the per-instance spell_ability on the originating entry.
-    const wis = [...control!.querySelectorAll("button")].find((b) => b.textContent === "WIS")!;
-    wis.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(setEquipmentOverride).toHaveBeenCalledWith(0, { spell_ability: "wis" });
+    // The broken per-row INT/WIS/CHA capture control is gone (moved to the Spells tab).
+    expect(row.querySelector(".pc-scroll-ability")).toBeNull();
+    // A muted, non-interactive hint shows in the Hit/DC cell instead of a fabricated DC 0.
+    const hint = row.querySelector(".pc-spell-hitdc-hint");
+    expect(hint).not.toBeNull();
+    expect(hint?.textContent).toBe("set ability");
+    expect(row.querySelector(".pc-spell-hitdc-v")).toBeNull();
+  });
+
+  it("a scroll WITH a resolved ability shows its DC (no hint)", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 0, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
+      { consumeScroll: vi.fn() },
+    ));
+    const row = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
+    expect(row.querySelector(".pc-spell-hitdc-hint")).toBeNull();
+    // DEX save DC from derived.abilitySpellcasting.int (15).
+    expect(row.querySelector(".pc-spell-hitdc-v")?.textContent).toBe("15");
   });
 });

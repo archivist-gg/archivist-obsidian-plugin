@@ -7467,6 +7467,13 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-mode-seg { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); padding: 4px 14px; background: transparent; color: var(--pc-text-soft); border: none; cursor: pointer; }
 .archivist-pc-sheet .pc-mode-seg.active { background: var(--pc-crimson); color: var(--pc-white); }
 
+/* Top-of-Cast "Cast scrolls using" ability control (non-caster scroll DC fallback).
+   Reuses the segmented pc-mode-seg control; this wrapper only lays out the label +
+   segmented row and wraps rather than overflows at narrow widths. */
+.archivist-pc-sheet .pc-spellability-set { display: flex; flex-wrap: wrap; align-items: center; gap: var(--pc-space-2); margin-bottom: var(--pc-space-2); }
+.archivist-pc-sheet .pc-spellability-set-label { font-size: var(--pc-fs-small); color: var(--pc-text-soft); }
+.archivist-pc-sheet .pc-spellability-set .pc-mode-seg { padding: 4px 12px; }
+
 /* Spell list + rows */
 .archivist-pc-sheet .pc-spell-list { margin-bottom: var(--pc-space-2); }
 /* Block-level host: the expanded reference block mounts here (sibling of the
@@ -7560,6 +7567,9 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-hitdc { text-align: center; white-space: nowrap; }
 .archivist-pc-sheet .pc-spell-hitdc-ab { display: block; font-size: var(--pc-fs-label); letter-spacing: .06em; color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-hitdc-v { font-weight: 700; color: var(--pc-text-primary); }
+/* No-ability scroll: muted, non-interactive hint in the Hit/DC cell (the casting
+   ability is set at the top of the Spells tab, not a fabricated DC 0). */
+.archivist-pc-sheet .pc-spell-hitdc-hint { font-size: var(--pc-fs-label); font-style: italic; color: var(--pc-text-muted); }
 
 /* effcell stays a table-cell (no display:flex) so its dashed row-border lines up
    with the other columns; the chip + type word stack as content-width block-flex children. */

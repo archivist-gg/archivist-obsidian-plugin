@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { SpellsTab } from "../packages/obsidian/src/modules/pc/components/spells-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { DerivedStats, ResolvedCharacter, ResolvedSpell, SpellcastingClassInfo } from "@archivist-gg/dnd5e/pc/pc.types";
@@ -141,6 +141,56 @@ describe("SpellsTab", () => {
     const dcRow = c.querySelector<HTMLElement>(".pc-spell-dc-row")!;
     dcRow.dispatchEvent(new Event("mouseenter"));
     expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
+  });
+
+  it("shows the top-of-Cast 'Cast scrolls using' control for a non-caster holding a scroll and writes overrides.spellcasting_ability on pick (P4)", () => {
+    const c = mountContainer();
+    const scrollSpell: ResolvedSpell = {
+      entity: { name: "Fireball", level: 3 } as never,
+      slug: "fireball", classSlug: null, source: "item", prepared: true, alwaysPrepared: true, entryIndex: 0,
+    };
+    const setSpellcastingAbility = vi.fn();
+    new SpellsTab().render(c, {
+      resolved: resolved([scrollSpell]),
+      derived: derived({ spellcastingClasses: [], derivedSpellSlots: {} }),
+      services: {} as never, app: {} as never, editState: { setSpellcastingAbility } as never,
+    });
+    const ctrl = c.querySelector(".pc-spellability-set");
+    expect(ctrl).not.toBeNull();
+    const btns = [...ctrl!.querySelectorAll(".pc-mode-seg")].map((b) => b.textContent);
+    expect(btns).toEqual(["INT", "WIS", "CHA"]);
+    // The 2nd segmented button (WIS) writes the character-level override.
+    (ctrl!.querySelector(".pc-mode-seg:nth-child(2)") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(setSpellcastingAbility).toHaveBeenCalledWith("wis");
+  });
+
+  it("reflects the current overrides.spellcasting_ability as the active segment", () => {
+    const c = mountContainer();
+    const scrollSpell: ResolvedSpell = {
+      entity: { name: "Fireball", level: 3 } as never,
+      slug: "fireball", classSlug: null, source: "item", prepared: true, alwaysPrepared: true, entryIndex: 0,
+    };
+    const r = resolved([scrollSpell]);
+    (r.definition.overrides as { spellcasting_ability?: string }).spellcasting_ability = "wis";
+    new SpellsTab().render(c, {
+      resolved: r, derived: derived({ spellcastingClasses: [], derivedSpellSlots: {} }),
+      services: {} as never, app: {} as never, editState: { setSpellcastingAbility: vi.fn() } as never,
+    });
+    const active = c.querySelector(".pc-spellability-set .pc-mode-seg.active");
+    expect(active?.textContent).toBe("WIS");
+  });
+
+  it("hides the 'Cast scrolls using' control when the character has its own spellcasting ability", () => {
+    const c = mountContainer();
+    const scrollSpell: ResolvedSpell = {
+      entity: { name: "Fireball", level: 3 } as never,
+      slug: "fireball", classSlug: null, source: "item", prepared: true, alwaysPrepared: true, entryIndex: 0, ability: "int",
+    };
+    new SpellsTab().render(c, {
+      resolved: resolved([scrollSpell]), derived: derived(), // wizard caster present
+      services: {} as never, app: {} as never, editState: null,
+    });
+    expect(c.querySelector(".pc-spellability-set")).toBeNull();
   });
 
   it("shows a concentration tile (brain) in the active-effects rail when concentrating", () => {

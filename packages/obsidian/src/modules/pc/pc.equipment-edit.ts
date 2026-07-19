@@ -1,4 +1,5 @@
 import type { EntityRegistry } from "@archivist-gg/core";
+import type { Ability } from "@archivist-gg/dnd5e";
 import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import type { ItemEntity } from "@archivist-gg/dnd5e/item/item.types";
@@ -211,6 +212,17 @@ export function clearCharges(character: Character, index: number): void {
 export function setCurrency(character: Character, coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
   if (!character.currency) character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
   character.currency[coin] = Math.max(0, Math.floor(value));
+}
+
+/**
+ * Set the character-level spellcasting ability override. This is the DC-ability
+ * fallback for spells that carry no ability of their own (e.g. a Spell Scroll cast
+ * by a non-caster): the resolver reads it after a per-instance spell_ability and
+ * the character's own class ability, then derives the scroll DC via
+ * derived.abilitySpellcasting. Mirrors the pure setEquipmentOverride mutator shape.
+ */
+export function setSpellcastingAbility(character: Character, ability: Ability): void {
+  character.overrides.spellcasting_ability = ability;
 }
 
 export function expendCharge(character: Character, entryIdx: number, defaultMax?: number): void {
