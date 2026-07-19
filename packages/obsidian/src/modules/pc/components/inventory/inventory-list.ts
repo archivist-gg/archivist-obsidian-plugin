@@ -66,6 +66,7 @@ function drawRow(
     app: ctx.app,
     editState: ctx.editState,
     registry: ctx.services?.entities ?? null,
+    sheet: ctx,
     onToggle,
     expanded: isExpanded,
   });
@@ -76,6 +77,7 @@ function drawRow(
       app: ctx.app,
       editState: ctx.editState,
       registry: ctx.services?.entities ?? null,
+      sheet: ctx,
       onAttuneConflict,
     });
   }

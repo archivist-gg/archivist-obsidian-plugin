@@ -192,6 +192,57 @@ describe("InventoryRow", () => {
     });
   });
 
+  describe("scroll + unidentified treatments", () => {
+    it("identified scroll shows the chosen spell as a spell chip in the sub-line (1A)", () => {
+      const it = make("[[spell-scroll-3rd-level]]", {
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", rarity: "uncommon", scroll_level: 3 },
+        entityType: "item",
+        entry: { overrides: { spell: "srd-2024_fireball" } },
+      });
+      const registry = buildMockRegistry([
+        { slug: "srd-2024_fireball", entityType: "spell", data: { name: "Fireball", level: 3 }, name: "Fireball" },
+      ]);
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null, registry });
+      const chip = root.querySelector(".pc-inv-sub .pc-meta-chip.pc-spell-chip");
+      expect(chip).toBeTruthy();
+      expect(chip?.textContent).toContain("Fireball");
+      // an identified scroll has no unset dot / set-spell CTA
+      expect(root.querySelector(".pc-unset-dot")).toBeNull();
+    });
+
+    it("scroll with no chosen spell shows the unset dot + set-spell CTA (2B)", () => {
+      const it = make("[[spell-scroll-3rd-level]]", {
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", rarity: "uncommon", scroll_level: 3 },
+        entityType: "item",
+      });
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null });
+      expect(root.querySelector(".pc-inv-sub .pc-unset-dot")).toBeTruthy();
+      const cta = root.querySelector(".pc-inv-sub .pc-inline-cta");
+      expect(cta).toBeTruthy();
+      expect(cta?.textContent?.toLowerCase()).toContain("set spell");
+      expect(root.querySelector(".pc-spell-chip")).toBeNull();
+    });
+
+    it("unidentified placeholder: muted-name row, masked-category sub, NO ? glyph (3A)", () => {
+      const it = make("[[unidentified-potion]]", {
+        entity: { name: "Unidentified Potion", type: "potion", unidentified: true, masked_category: "potion" },
+        entityType: "item",
+      });
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null });
+      const row = root.querySelector(".pc-inv-row");
+      expect(row?.classList.contains("pc-unidentified")).toBe(true);
+      // 3A is WITHOUT the "?" glyph
+      expect(root.querySelector(".pc-unid-glyph")).toBeNull();
+      expect(root.querySelector(".pc-inv-sub")?.textContent?.toLowerCase()).toContain("potion");
+      // the stat / weight / qty cells are hidden until the item is identified
+      expect(root.querySelector(".pc-inv-stat")?.textContent).toBe("");
+      expect(root.querySelector(".pc-inv-weight")?.textContent).toBe("");
+    });
+  });
+
   it("renders magic weapon damage by joining base_item to weapon entity", () => {
     const longsword = {
       slug: "srd-5e_longsword",

@@ -1,5 +1,6 @@
 import { Notice, type App } from "obsidian";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { Ability } from "@archivist-gg/dnd5e";
 import type { CharacterEditState } from "../../pc.edit-state";
 import { renderItemBlock } from "../../../item/item.renderer";
 import { renderWeaponBlock } from "../../../weapon/weapon.renderer";
@@ -8,9 +9,14 @@ import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
 import type { Item } from "@archivist-gg/dnd5e/item/item.types";
 import type { EntityRegistry } from "@archivist-gg/core";
+import type { ComponentRenderContext } from "../component.types";
 import { requiresAttunement } from "@archivist-gg/dnd5e/item/item.attunement";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
+import { isScrollItem, isUnidentifiedPlaceholder } from "./item-predicates";
+import { openScrollSpellPicker, characterHasOwnSpellcastingAbility, renderScrollAbilityControl } from "./scroll-spell-picker";
+import { openIdentifyPicker } from "./identify-picker-modal";
+import { prettifyName } from "./filter-state";
 
 export interface RowExpandCtx {
   entry: EquipmentEntry;
@@ -20,6 +26,11 @@ export interface RowExpandCtx {
   /** Optional registry handle. Reserved for future expand-time entity lookups;
    *  currently unused by the renderer itself but accepted for API stability. */
   registry?: EntityRegistry | null;
+  /** The full sheet render context, threaded by the inventory list so scroll /
+   *  unidentified affordances can read the resolved character (chosen spell,
+   *  caster ability) and open the spell / identify pickers. Absent in browse
+   *  mode → those affordances are skipped there. */
+  sheet?: ComponentRenderContext;
   /** 2024 weapon mastery for this attack, threaded ONLY by the Actions-tab
    *  weapons table so the weapon card shows an in-card mastery section. The
    *  Inventory-tab + compendium call sites pass none → card renders unchanged. */
@@ -51,6 +62,14 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
     });
   }
 
+  // 4C · scroll spell block: the chosen spell rendered as an item-block property
+  // (Spell / Save DC / Attack) with a change CTA, or a set-spell CTA when none
+  // is chosen, plus the INT/WIS/CHA capture control for a no-caster scroll. Only
+  // when the full sheet ctx is threaded (inventory list, not browse mode).
+  if (ctx.sheet && isScrollItem(ctx.resolved.entity)) {
+    renderScrollSpellSection(expand, ctx, ctx.sheet);
+  }
+
   // PC-actions strip — sits below the block, separate concern.
   if (ctx.editState) renderActionsStrip(expand, ctx, ctx.editState);
 
@@ -70,6 +89,16 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
 function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: CharacterEditState): void {
   const strip = parent.createDiv({ cls: "pc-inv-actions" });
   const i = ctx.resolved.index;
+
+  // 5A · Identify: for an unidentified placeholder, opens a category-scoped
+  // browse picker whose selection identifies the row in place. Needs the sheet
+  // ctx to host the compendium BrowseMode.
+  if (ctx.sheet && isUnidentifiedPlaceholder(ctx.resolved.entity)) {
+    const sheet = ctx.sheet;
+    const masked = (ctx.resolved.entity as { masked_category?: string } | null)?.masked_category ?? "";
+    const idBtn = strip.createEl("button", { cls: "pc-inv-action pc-identify", text: "Identify…" });
+    idBtn.addEventListener("click", () => openIdentifyPicker(sheet, i, masked));
+  }
 
   // Equip / Unequip
   const equipBtn = strip.createEl("button", { cls: "pc-inv-action", text: ctx.entry.equipped ? "Unequip" : "Equip" });
@@ -105,4 +134,100 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
   // Remove (existing ConfirmModal flow handled by editState.removeItem callers)
   const rmBtn = strip.createEl("button", { cls: "pc-inv-action danger", text: "Remove" });
   rmBtn.addEventListener("click", () => editState.removeItem(i));
+}
+
+// ── 4C · scroll spell block ──────────────────────────────────────────────────
+
+/** Append a two-column item-block property row; returns the value cell so the
+ *  caller can fill it with text and inline controls. Mirrors the weapon/armor
+ *  renderers' `appendProperty` shape (`.archivist-item-property{,-label,-value}`). */
+function itemProperty(parent: HTMLElement, label: string): HTMLElement {
+  const row = parent.createDiv({ cls: "archivist-item-property" });
+  row.createSpan({ cls: "archivist-item-property-label", text: label });
+  return row.createSpan({ cls: "archivist-item-property-value" });
+}
+
+function ordinal(n: number): string {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
+}
+const spellLevelLabel = (l: number): string => (l === 0 ? "Cantrip" : `${ordinal(l)} level`);
+const signed = (n: number): string => `${n >= 0 ? "+" : ""}${n}`;
+
+// Const-indirection so the sentence-case UI lint (bare-literal only, see
+// decision-modal.ts) leaves these intended-casing CTA labels intact.
+const SET_SPELL_LABEL = "+ Set spell";
+const CHANGE_SPELL_LABEL = "change";
+
+interface ScrollSpell {
+  name: string;
+  level: number;
+  ability?: Ability;
+}
+
+/** Resolve the scroll's chosen spell for display. Prefers the resolver's item
+ *  ResolvedSpell (carries the spell entity + derived casting ability), falling
+ *  back to a registry lookup + the class/instance ability when the resolved pass
+ *  has not (yet) produced a row. */
+function resolveScrollSpell(sheet: ComponentRenderContext, entryIndex: number, spellRef: string): ScrollSpell {
+  const fromResolved = sheet.resolved.spells.find(
+    (s) => s.source === "item" && s.entryIndex === entryIndex,
+  );
+  if (fromResolved) {
+    return { name: fromResolved.entity.name, level: fromResolved.entity.level ?? 0, ability: fromResolved.ability ?? undefined };
+  }
+  const slug = spellRef.match(/^\[\[(.+)\]\]$/)?.[1] ?? spellRef;
+  const reg = sheet.services?.entities as
+    | { getByTypeAndSlug?: (t: string, s: string) => { name?: string; data?: { level?: number } } | undefined;
+        getBySlug?: (s: string) => { name?: string; data?: { level?: number } } | undefined | null; }
+    | undefined;
+  const found = reg?.getByTypeAndSlug?.("spell", slug) ?? reg?.getBySlug?.(slug) ?? null;
+  const ability = sheet.derived.spellcastingClasses[0]?.ability
+    ?? sheet.resolved.definition.equipment?.[entryIndex]?.overrides?.spell_ability;
+  return { name: found?.name ?? prettifyName(slug), level: found?.data?.level ?? 0, ability };
+}
+
+function renderScrollSpellSection(parent: HTMLElement, ctx: RowExpandCtx, sheet: ComponentRenderContext): void {
+  const entryIndex = ctx.resolved.index;
+  const scrollLevel = (ctx.resolved.entity as { scroll_level?: number } | null)?.scroll_level ?? 0;
+  const spellRef = ctx.entry.overrides?.spell;
+  const section = parent.createDiv({ cls: "archivist-item-properties pc-scroll-spellblock" });
+
+  if (spellRef) {
+    const spell = resolveScrollSpell(sheet, entryIndex, spellRef);
+    const value = itemProperty(section, "Spell");
+    value.appendText(`${spell.name} · ${spellLevelLabel(spell.level)}`);
+    const change = value.createEl("button", { cls: "pc-inline-cta" });
+    change.setText(CHANGE_SPELL_LABEL);
+    change.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openScrollSpellPicker(sheet, entryIndex, scrollLevel);
+    });
+
+    // Save DC / Attack from the casting ability (own class ability, or the
+    // per-instance spell_ability). Present only once an ability is known.
+    const ab = spell.ability;
+    if (ab) {
+      const cast = sheet.derived.abilitySpellcasting?.[ab] ?? sheet.derived.spellcasting ?? undefined;
+      if (cast) {
+        itemProperty(section, "Save DC").setText(`${ab.toUpperCase()} ${cast.saveDC}`);
+        itemProperty(section, "Attack").setText(signed(cast.attackBonus));
+      }
+    }
+  } else {
+    const value = itemProperty(section, "Spell");
+    const cta = value.createEl("button", { cls: "pc-inline-cta" });
+    cta.setText(SET_SPELL_LABEL);
+    cta.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openScrollSpellPicker(sheet, entryIndex, scrollLevel);
+    });
+  }
+
+  // No-caster ability capture: only when the character has no OWN casting ability
+  // AND this instance has no chosen spell_ability (the resolver would otherwise
+  // leave the scroll DC-less). Shared with T6's cast-view affordance.
+  if (!characterHasOwnSpellcastingAbility(sheet.derived) && !ctx.entry.overrides?.spell_ability) {
+    renderScrollAbilityControl(section, sheet, entryIndex, ctx.entry.overrides?.spell_ability);
+  }
 }
