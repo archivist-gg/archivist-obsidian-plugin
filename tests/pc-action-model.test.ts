@@ -157,6 +157,52 @@ describe("buildActionModel", () => {
     expect(e.item.action.max_charges).toBe(7); // curated action resolved through the srd-5e_ prefix
   });
 
+  it("surfaces an uncurated potion under Bonus Actions → Items", () => {
+    const registry = buildMockRegistry([
+      { slug: "srd-2024_potion-of-vitality", entityType: "item", data: { name: "Potion of Vitality", type: "potion" } },
+    ]);
+    const secs = build({
+      equipment: [{ item: "[[srd-2024_potion-of-vitality]]", equipped: true }] as EquipmentEntry[],
+      registry,
+    });
+    expect(sub(secs, "actions", "items")).toBeUndefined();
+    const g = sub(secs, "bonus", "items");
+    expect(g).toBeDefined();
+    expect(g!.entries).toHaveLength(1);
+    const e = g!.entries[0];
+    if (e.kind !== "item") throw new Error("expected item entry");
+    expect(e.item.action.cost).toBe("bonus-action");
+    expect(e.item.entity?.name).toBe("Potion of Vitality");
+  });
+
+  it("keeps an uncurated oil under Actions (not Bonus Actions)", () => {
+    const registry = buildMockRegistry([
+      { slug: "srd-2024_oil-of-etherealness", entityType: "item", data: { name: "Oil of Etherealness", type: "potion" } },
+    ]);
+    const secs = build({
+      equipment: [{ item: "[[srd-2024_oil-of-etherealness]]", equipped: true }] as EquipmentEntry[],
+      registry,
+    });
+    expect(sub(secs, "bonus", "items")).toBeUndefined();
+    const g = sub(secs, "actions", "items");
+    expect(g).toBeDefined();
+    expect(g!.entries).toHaveLength(1);
+  });
+
+  it("does not throw for an equipped item absent from the registry but carrying an action override (found === null)", () => {
+    const registry = buildMockRegistry([]); // slug unregistered → found === null in collectItemEntries
+    const run = () =>
+      build({
+        equipment: [
+          { item: "[[srd-2024_mystery]]", equipped: true, overrides: { action: "action" } },
+        ] as EquipmentEntry[],
+        registry,
+      });
+    expect(run).not.toThrow(); // proves found?.data?.type null-safety
+    const g = sub(run(), "actions", "items");
+    expect(g).toBeDefined();
+  });
+
   it("files a bonus-action weapon under Bonus Actions → Weapons (not Actions), no ×N count", () => {
     const secs = build({ attacks: [attack({ name: "Dagger", actionCost: "bonus-action" })] });
     expect(sub(secs, "actions", "weapons")).toBeUndefined();

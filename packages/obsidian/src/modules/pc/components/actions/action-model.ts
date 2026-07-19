@@ -189,8 +189,10 @@ function collectItemEntries(resolved: ResolvedCharacter, registry: EntityRegistr
     if (entityType === "weapon" || entityType === "armor") return;
     // Only equipped items surface on this tab.
     if (!entry.equipped) return;
-    // Items with no activated action are omitted.
-    const action = resolveItemAction(slug, entry);
+    // Items with no activated action are omitted. `found?.data?.type` feeds the
+    // 2024 potion default (type==="potion" → bonus-action) null-safely: `found`
+    // is nullable (override-only items with no registry entry still surface).
+    const action = resolveItemAction(slug, entry, found?.data?.type);
     if (!action) return;
     out.push({
       index,
