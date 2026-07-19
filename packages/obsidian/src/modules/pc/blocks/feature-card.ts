@@ -47,7 +47,7 @@ export interface FeatureCardRecovery {
 export interface FeatureCardOptions {
   /** Card title — `feature.name`, or `resource.name` when resource-keyed. */
   title: string;
-  /** Obsidian App — required to render descriptions via the shared markdown path. */
+  /** Obsidian App: required to render descriptions via the shared markdown path. */
   app: App;
   /** Italic source subtitle (already formatted via {@link formatSourceLabel}). */
   sourceLabel?: string;
