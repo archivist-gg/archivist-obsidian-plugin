@@ -16,13 +16,13 @@ export class SpellsTab implements SheetComponent {
     el.empty();
     const root = el.createDiv({ cls: "pc-tab-body pc-spells-body" });
     const casters = ctx.derived.spellcastingClasses;
-    // Feat-granted spells (Magic Initiate) carry their own spellcasting ability and
-    // surface even on a class with no spellcasting feature, so the Cast view must
-    // render for them too. Only a character with neither a spellcasting class NOR a
-    // feat spell gets the "No Spellcasting" empty state.
-    const hasFeatSpells = ctx.resolved.spells.some((s) => s.source === "feat");
+    // Feat-granted spells (Magic Initiate) and item-granted spells (Spell Scrolls)
+    // both surface even on a class with no spellcasting feature, so the Cast view
+    // must render for them too. Only a character with neither a spellcasting class
+    // NOR a feat/item spell gets the "No Spellcasting" empty state.
+    const hasGrantedSpells = ctx.resolved.spells.some((s) => s.source === "feat" || s.source === "item");
 
-    if (casters.length === 0 && !hasFeatSpells) {
+    if (casters.length === 0 && !hasGrantedSpells) {
       const empty = root.createDiv({ cls: "pc-spells-empty" });
       empty.createDiv({ cls: "pc-spells-empty-icon", text: "☆" });
       empty.createDiv({ cls: "pc-spells-empty-title", text: "No Spellcasting" });

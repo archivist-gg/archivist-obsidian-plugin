@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   addItem, removeItem, equipItem, unequipItem, attuneItem, unattuneItem,
-  identifyItem, setCharges, setCurrency, type EquipResult, type AttuneResult,
+  identifyItem, consumeScroll, setCharges, setCurrency, type EquipResult, type AttuneResult,
 } from "../packages/obsidian/src/modules/pc/pc.equipment-edit";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
@@ -209,6 +209,64 @@ describe("identifyItem", () => {
     const c = baseChar();
     expect(() => identifyItem(c, 7, "srd_x")).not.toThrow();
     expect(c.equipment).toHaveLength(0);
+  });
+});
+
+// P4 Task 6: casting a scroll CONSUMES the item. Each cast decrements the
+// stack quantity; the last charge removes the entry entirely (a spent scroll
+// leaves the inventory).
+describe("consumeScroll", () => {
+  it("decrements qty when more than one remains", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[spell-scroll-fireball]]", qty: 2 }];
+    consumeScroll(c, 0);
+    expect(c.equipment).toHaveLength(1);
+    expect(c.equipment[0].qty).toBe(1);
+  });
+
+  it("removes the entry when the last one is consumed (qty 1)", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[spell-scroll-fireball]]", qty: 1 }];
+    consumeScroll(c, 0);
+    expect(c.equipment).toHaveLength(0);
+  });
+
+  it("treats a missing qty as 1 and removes the entry", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[spell-scroll-fireball]]" }];
+    consumeScroll(c, 0);
+    expect(c.equipment).toHaveLength(0);
+  });
+
+  it("does not throw on an out-of-range index", () => {
+    const c = baseChar();
+    expect(() => consumeScroll(c, 7)).not.toThrow();
+    expect(c.equipment).toHaveLength(0);
+  });
+
+  it("only touches the targeted entry when several are present", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[a]]" }, { item: "[[spell-scroll-fireball]]", qty: 2 }, { item: "[[c]]" }];
+    consumeScroll(c, 1);
+    expect(c.equipment.map((e) => e.item)).toEqual(["[[a]]", "[[spell-scroll-fireball]]", "[[c]]"]);
+    expect(c.equipment[1].qty).toBe(1);
+  });
+});
+
+describe("CharacterEditState.consumeScroll wrapper", () => {
+  it("delegates to the mutator and fires onChange once", () => {
+    const c = baseChar();
+    c.equipment = [{ item: "[[spell-scroll-fireball]]", qty: 2 }];
+    const onChange = vi.fn();
+    const es = new CharacterEditState(
+      c,
+      () => ({ resolved: {} as never, derived: {} as never }),
+      onChange,
+      reg,
+    );
+    es.consumeScroll(0);
+    expect(c.equipment[0].qty).toBe(1);
+    expect(onChange).toHaveBeenCalledOnce();
   });
 });
 

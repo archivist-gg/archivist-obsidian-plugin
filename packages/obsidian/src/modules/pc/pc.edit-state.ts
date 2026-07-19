@@ -739,6 +739,14 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Consume one use of a scroll/consumable at `entryIndex` (decrement qty, or
+   *  remove the entry when the last one is spent). Casting a scroll spends the
+   *  item rather than a spell slot (see eq.consumeScroll). */
+  consumeScroll(entryIndex: number): void {
+    eq.consumeScroll(this.character, entryIndex);
+    this.onChange();
+  }
+
   equipItem(index: number): eq.EquipResult {
     if (!this.registry) return { kind: "ok" };
     const r = eq.equipItem(this.character, index, this.registry);

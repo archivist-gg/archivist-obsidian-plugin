@@ -57,9 +57,13 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
 
   const addBtn = head.createEl("button", { cls: "pc-spell-addbtn" });
 
-  const presentLevels = [...new Set(ctx.resolved.spells.map((s) => s.entity.level ?? 0))].sort(
-    (a, b) => a - b,
-  );
+  // Item (scroll) spells are managed on the inventory, never in the Prepare list,
+  // so their levels must not seed the Level filter chips either.
+  const presentLevels = [
+    ...new Set(
+      ctx.resolved.spells.filter((s) => s.source !== "item").map((s) => s.entity.level ?? 0),
+    ),
+  ].sort((a, b) => a - b);
 
   // The body shows EITHER the prepared list OR the add-spell drawer; the
   // "+ Add Spells" button toggles between them in place (it replaces the list,
@@ -120,6 +124,8 @@ export function renderPrepareView(root: HTMLElement, ctx: ComponentRenderContext
       drawLevelChips();
       drawClassChips();
       const shown = ctx.resolved.spells.filter((s) => {
+        // Item (scroll) spells never appear as preparable/locked rows here.
+        if (s.source === "item") return false;
         if (levelFilter !== "all" && (s.entity.level ?? 0) !== levelFilter) return false;
         if (classFilter !== "all" && baseClassName(s.classSlug ?? "") !== classFilter) return false;
         return true;

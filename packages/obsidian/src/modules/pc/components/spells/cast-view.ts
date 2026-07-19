@@ -6,6 +6,7 @@ import { toggleSpellBlock } from "./spell-block-expand";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
+import { renderScrollAbilityControl } from "../inventory/scroll-spell-picker";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
@@ -56,7 +57,9 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
   };
 
   // ── Cantrips: At Will, no slots, no button ──
-  const cantrips = castable.filter((s) => (s.entity.level ?? 0) === 0);
+  // Item (scroll) spells never mix into the class/feat sections; they surface in
+  // their own "Scrolls & Consumables" section below.
+  const cantrips = castable.filter((s) => s.source !== "item" && (s.entity.level ?? 0) === 0);
   if (cantrips.length) {
     const head = root.createDiv({ cls: "pc-spell-sec" });
     head.createSpan({ cls: "pc-spell-sec-label", text: "Cantrips" });
@@ -81,8 +84,8 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     });
 
     const body = tableFor(root);
-    const base = castable.filter((s) => (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
-    const upcasts = castable.filter((s) => !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
+    const base = castable.filter((s) => s.source !== "item" && (s.entity.level ?? 0) === lvl && !pactClassSlugs.includes(s.classSlug ?? ""));
+    const upcasts = castable.filter((s) => s.source !== "item" && !pactClassSlugs.includes(s.classSlug ?? "") && upcastLevelsFor(s.entity, ownedLevels).includes(lvl));
     for (const s of base) renderRow(body, s, lvl, ctx, dcFor, {});
     for (const s of upcasts) renderRow(body, s, lvl, ctx, dcFor, { upcast: true });
     if (!base.length && !upcasts.length) {
@@ -122,17 +125,30 @@ export function renderCastView(root: HTMLElement, ctx: ComponentRenderContext): 
     });
     const body = tableFor(root);
     const pactSpells = castable.filter((s) =>
-      (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
+      s.source !== "item" && (s.entity.level ?? 0) > 0 && (pactClassSlugs.length === 0 || pactClassSlugs.includes(s.classSlug ?? "")));
     for (const s of pactSpells) renderRow(body, s, pact.level, ctx, dcFor, { pact: true });
     if (!pactSpells.length) {
       body.createDiv({ cls: "pc-spell-empty-row", text: "No spells." });
     }
   }
+
+  // ── Scrolls & Consumables ──
+  // Item-granted spells (Spell Scrolls) are cast by CONSUMING the item, not by
+  // spending a slot. The T3 segmented dedupe already yields one source:"item"
+  // spell per equipment entry (keyed by entryIndex), so this renders one row per
+  // scroll instance. Cast at the spell's own level (a scroll never upcasts here).
+  const scrolls = castable.filter((s) => s.source === "item");
+  if (scrolls.length) {
+    const head = root.createDiv({ cls: "pc-spell-sec" });
+    head.createSpan({ cls: "pc-spell-sec-label", text: "Scrolls & Consumables" });
+    const body = tableFor(root);
+    for (const s of scrolls) renderRow(body, s, s.entity.level ?? 0, ctx, dcFor, { scroll: true });
+  }
 }
 
 function renderRow(
   body: HTMLElement, spell: ResolvedSpell, level: number, ctx: ComponentRenderContext,
-  dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean; free?: boolean },
+  dcFor: (s: ResolvedSpell) => number, opts: { cantrip?: boolean; upcast?: boolean; pact?: boolean; free?: boolean; scroll?: boolean },
 ): void {
   const tr = body.createDiv({ cls: "pc-spell-cast-row" });
 
@@ -144,6 +160,15 @@ function renderRow(
     // Feat-granted, always-prepared leveled spell with no class slot: a free
     // cast, surfaced as an affordance rather than a slot-consuming CAST button.
     actTd.createSpan({ cls: "pc-spell-atwill pc-spell-free", text: "Free" });
+  } else if (opts.scroll) {
+    // A scroll is cast by CONSUMING the item (one unit / the whole stack's last
+    // unit), never by spending a spell slot. The crimson pill marks the
+    // consumable cost; the click decrements qty / removes the spent scroll.
+    const btn = actTd.createEl("button", { cls: "pc-spell-scroll", text: "Cast (consume)" });
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (spell.entryIndex != null) ctx.editState?.consumeScroll(spell.entryIndex);
+    });
   } else {
     let noSlot: boolean;
     if (opts.pact) {
@@ -187,14 +212,23 @@ function renderRow(
   tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });
   tr.createDiv({ cls: "pc-spell-range", text: formatRange(spell.entity.range) });
 
-  // HIT / DC
-  const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
-  const desc = hitDcDescriptor(spell, dcFor(spell));
-  if (desc) {
-    hd.createSpan({ cls: "pc-spell-hitdc-ab", text: desc.ability });
-    hd.createSpan({ cls: "pc-spell-hitdc-v", text: `${desc.dc}` });
+  // HIT / DC. A no-ability scroll (no own casting ability + no per-instance
+  // spell_ability) has no DC to show, so it swaps the Hit/DC cell for the shared
+  // INT/WIS/CHA capture control (the same one the inventory row uses). Every
+  // other row keeps the existing descriptor cell (T8 extends this for
+  // attack-roll spells).
+  if (opts.scroll && !spell.ability && spell.entryIndex != null) {
+    renderScrollAbilityControl(tr, ctx, spell.entryIndex);
   } else {
-    hd.setText("—");
+    const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
+    const desc = hitDcDescriptor(spell, dcFor(spell));
+    if (desc) {
+      hd.createSpan({ cls: "pc-spell-hitdc-ab", text: desc.ability });
+      hd.createSpan({ cls: "pc-spell-hitdc-v", text: `${desc.dc}` });
+    } else {
+      // U+2014 dash placeholder (escaped so the source carries no literal em dash).
+      hd.setText("\u2014");
+    }
   }
 
   // EFFECT

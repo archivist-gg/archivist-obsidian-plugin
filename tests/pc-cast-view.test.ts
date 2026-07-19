@@ -201,3 +201,120 @@ describe("renderCastView — known casters", () => {
     expect(names).not.toContain("Sleet Storm");
   });
 });
+
+// ---- scrolls & consumables (P4 Task 6) ----
+// An item-granted spell (a Spell Scroll: source "item", carrying entryIndex) is
+// cast by CONSUMING the item, never by spending a slot. It lives ONLY in the
+// "Scrolls & Consumables" section and must not leak into the cantrip/owned/pact
+// sections that filter class + feat spells.
+function itemSp(
+  name: string, level: number, entryIndex: number,
+  opts: { ability?: string; extra?: Partial<ResolvedSpell["entity"]> } = {},
+): ResolvedSpell {
+  return {
+    entity: { name, level, ...opts.extra } as never,
+    slug: name.toLowerCase().replace(/\s+/g, "-"),
+    classSlug: null, source: "item", prepared: true, alwaysPrepared: true,
+    ability: opts.ability as never, entryIndex,
+  };
+}
+function ctxForScroll(spells: ResolvedSpell[], editState: unknown = null, derivedOver: Record<string, unknown> = {}): ComponentRenderContext {
+  const resolved = {
+    definition: { name: "Tordek", edition: "2014", spells: { known: [], overrides: [] }, equipment: [], overrides: {} } as never,
+    state: { spell_slots: {}, spell_slots_pact: undefined, concentration: null } as never,
+    spells,
+  } as unknown as ResolvedCharacter;
+  const derived = {
+    spellcastingClasses: [{ classSlug: "wizard", className: "Wizard", ability: "int", saveDC: 15, attackBonus: 7, casterType: "full", preparation: "prepared" }],
+    derivedSpellSlots: { 1: 4, 2: 3, 3: 2 }, pactMagic: null, spellLimits: [],
+    abilitySpellcasting: { int: { saveDC: 15, attackBonus: 7 } },
+    ...derivedOver,
+  } as unknown as DerivedStats;
+  return { resolved, derived, services: {} as never, app: {} as never, editState: editState as never };
+}
+// Find the .pc-spell-cast-table body that follows the section head whose label matches.
+function sectionTableAfter(root: HTMLElement, label: string): HTMLElement {
+  const sec = [...root.querySelectorAll(".pc-spell-sec")].find(
+    (s) => s.querySelector(".pc-spell-sec-label")?.textContent === label,
+  )!;
+  let el = sec.nextElementSibling;
+  while (el && !el.classList.contains("pc-spell-cast-table")) el = el.nextElementSibling;
+  return el as HTMLElement;
+}
+
+describe("renderCastView · scrolls & consumables", () => {
+  it("renders a Scrolls & Consumables section with the scroll row, without leaking it into the owned-level section", () => {
+    const root = mountContainer();
+    // A Wizard who KNOWS Fireball at L3 and also carries a Fireball scroll (entry 0).
+    renderCastView(root, ctxForScroll([
+      sp("Fireball", 3, { saving_throw: { ability: "dexterity" } } as never),
+      itemSp("Fireball", 3, 0, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } }),
+    ]));
+
+    // The section exists.
+    const labels = [...root.querySelectorAll(".pc-spell-sec-label")].map((l) => l.textContent);
+    expect(labels).toContain("Scrolls & Consumables");
+
+    // The scroll row lives in the Scrolls section, with a "Cast (consume)" action.
+    const scrollBody = sectionTableAfter(root, "Scrolls & Consumables");
+    expect([...scrollBody.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).toContain("Fireball");
+    expect(scrollBody.textContent).toContain("Cast (consume)");
+    expect(scrollBody.querySelector(".pc-spell-scroll")).not.toBeNull();
+
+    // The owned 3rd-level section shows ONLY the class copy, never a second (item) Fireball row.
+    const l3Body = sectionTableAfter(root, "3rd Level");
+    const l3Fireballs = [...l3Body.querySelectorAll(".pc-spell-name")].filter((n) => n.textContent === "Fireball");
+    expect(l3Fireballs.length).toBe(1);
+    expect(l3Body.textContent).not.toContain("Cast (consume)");
+
+    // Exactly one consume action across the whole view.
+    expect([...root.querySelectorAll("button")].filter((b) => b.textContent === "Cast (consume)").length).toBe(1);
+  });
+
+  it("does not leak an item cantrip into the Cantrips section", () => {
+    const root = mountContainer();
+    renderCastView(root, ctxForScroll([
+      sp("Fire Bolt", 0),
+      itemSp("Fire Bolt", 0, 1, { ability: "int" }),
+    ]));
+    const cantripBody = sectionTableAfter(root, "Cantrips");
+    // Only the class cantrip renders under Cantrips (the scroll cantrip is filtered out).
+    expect([...cantripBody.querySelectorAll(".pc-spell-name")].filter((n) => n.textContent === "Fire Bolt").length).toBe(1);
+    expect(cantripBody.textContent).not.toContain("Cast (consume)");
+    // The scroll copy surfaces under Scrolls & Consumables.
+    expect(sectionTableAfter(root, "Scrolls & Consumables").textContent).toContain("Cast (consume)");
+  });
+
+  it("Cast (consume) consumes the scroll by entryIndex and never expends a slot", () => {
+    const root = mountContainer();
+    const consumeScroll = vi.fn();
+    const expendSlot = vi.fn();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
+      { consumeScroll, expendSlot, castSpell: vi.fn(), restoreSlot: vi.fn() },
+    ));
+    const btn = [...root.querySelectorAll("button")].find((b) => b.textContent === "Cast (consume)")!;
+    btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(consumeScroll).toHaveBeenCalledWith(2);
+    expect(expendSlot).not.toHaveBeenCalled();
+  });
+
+  it("a no-ability scroll (non-caster) shows the INT/WIS/CHA capture control in place of a DC cell", () => {
+    const root = mountContainer();
+    const setEquipmentOverride = vi.fn();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 0, { extra: { saving_throw: { ability: "dexterity" } } })], // no ability
+      { setEquipmentOverride, consumeScroll: vi.fn() },
+      { spellcastingClasses: [], derivedSpellSlots: {}, abilitySpellcasting: {} },
+    ));
+    const row = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
+    const control = row.querySelector(".pc-scroll-ability");
+    expect(control).not.toBeNull();
+    // The DC cell is NOT rendered for a no-ability scroll row.
+    expect(row.querySelector(".pc-spell-hitdc")).toBeNull();
+    // Picking WIS writes the per-instance spell_ability on the originating entry.
+    const wis = [...control!.querySelectorAll("button")].find((b) => b.textContent === "WIS")!;
+    wis.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(setEquipmentOverride).toHaveBeenCalledWith(0, { spell_ability: "wis" });
+  });
+});

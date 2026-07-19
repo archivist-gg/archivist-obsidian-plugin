@@ -55,6 +55,26 @@ describe("SpellsTab", () => {
     expect(c.querySelector(".pc-spell-cast-row")?.textContent).toContain("12");
   });
 
+  it("surfaces an item (scroll) spell on a non-caster, not the empty state (P4 T6)", () => {
+    // A non-caster holding a Spell Scroll must still get the Spells section: the
+    // scroll surfaces under Scrolls & Consumables, never the "No Spellcasting"
+    // empty state.
+    const c = mountContainer();
+    const scrollSpell: ResolvedSpell = {
+      entity: { name: "Fireball", level: 3, saving_throw: { ability: "dexterity" } } as never,
+      slug: "fireball", classSlug: null, source: "item", prepared: true, alwaysPrepared: true, ability: "int", entryIndex: 0,
+    };
+    new SpellsTab().render(c, {
+      resolved: resolved([scrollSpell]),
+      derived: derived({ spellcastingClasses: [], derivedSpellSlots: {}, abilitySpellcasting: { int: { saveDC: 15, attackBonus: 7 } } as never }),
+      services: {} as never, app: {} as never, editState: null,
+    });
+    expect(c.querySelector(".pc-spells-empty-title")).toBeNull();
+    const names = [...c.querySelectorAll(".pc-spell-name")].map((e) => e.textContent);
+    expect(names).toContain("Fireball");
+    expect(c.querySelector(".pc-spell-scroll")).not.toBeNull();
+  });
+
   it("renders DC header, the Cast/Prepare toggle, and Cast view by default", () => {
     const c = mountContainer();
     new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), services: {} as never, app: {} as never, editState: null });

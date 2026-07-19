@@ -107,6 +107,21 @@ export function identifyItem(character: Character, index: number, newSlug: strin
   entry.qty = 1;
 }
 
+/**
+ * Consume one use of a scroll (or other single-use consumable) at `entryIndex`.
+ * Casting a scroll spends the physical item, not a spell slot: decrement the
+ * stack quantity, and when the last one is spent remove the entry outright so a
+ * used-up scroll leaves the inventory. A missing `qty` counts as a single item.
+ * Out-of-range indices are a safe no-op (mirrors removeItem).
+ */
+export function consumeScroll(character: Character, entryIndex: number): void {
+  const entry = character.equipment[entryIndex];
+  if (!entry) return;
+  const q = (entry.qty ?? 1) - 1;
+  if (q <= 0) removeItem(character, entryIndex);
+  else entry.qty = q;
+}
+
 export function equipItem(
   character: Character,
   index: number,

@@ -126,6 +126,23 @@ describe("renderPrepareView", () => {
     expect(host.classList.contains("pc-open-expand")).toBe(false);
   });
 
+  it("does not leak an item (scroll) spell into the prepare list or the level filter (P4 T6)", () => {
+    const root = mountContainer();
+    const itemSpell: ResolvedSpell = {
+      entity: { name: "Fireball", level: 3 } as never, slug: "fireball",
+      classSlug: null, source: "item", prepared: true, alwaysPrepared: true, entryIndex: 0,
+    };
+    renderPrepareView(root, ctx([sp("Magic Missile", 1, true), itemSpell], { togglePrepared: vi.fn() }));
+    // The scroll spell never appears as a preparable/locked row.
+    const names = [...root.querySelectorAll(".pc-spell-name")].map((n) => n.textContent);
+    expect(names).toContain("Magic Missile");
+    expect(names).not.toContain("Fireball");
+    // Its (item-only) level is excluded from the Level filter chips too.
+    const chips = [...root.querySelectorAll(".pc-spell-fchip")].map((c) => c.textContent);
+    expect(chips).toContain("1st");
+    expect(chips).not.toContain("3rd");
+  });
+
   it("resets the level filter on a full re-render (no stale filter across characters/modes)", () => {
     const root1 = mountContainer();
     renderPrepareView(root1, ctx([sp("Fire Bolt", 0, true), sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }));
