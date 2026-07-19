@@ -32,6 +32,29 @@ describe("SpellsTab", () => {
     expect(c.querySelector(".pc-spells-empty-title")?.textContent).toBe("No Spellcasting");
   });
 
+  it("surfaces feat-granted spells on a non-caster (Magic Initiate on a Fighter), not the empty state", () => {
+    // A non-caster with NO spellcasting class but a feat-granted spell (Magic
+    // Initiate) must still show the Spells section: the feat cantrip renders with
+    // its OWN-ability DC (from derived.abilitySpellcasting), never the "No
+    // Spellcasting" empty state. Task 3f surfaced this gap in the 3e surfacing.
+    const c = mountContainer();
+    const featCantrip: ResolvedSpell = {
+      entity: { name: "Sacred Flame", level: 0, saving_throw: { ability: "dexterity" } } as never,
+      slug: "srd-2024_sacred-flame", classSlug: null, source: "feat", prepared: true, alwaysPrepared: true, ability: "wis",
+    };
+    new SpellsTab().render(c, {
+      resolved: resolved([featCantrip]),
+      derived: derived({ spellcastingClasses: [], derivedSpellSlots: {}, abilitySpellcasting: { wis: { saveDC: 12, attackBonus: 4 } } as never }),
+      services: {} as never, app: {} as never, editState: null,
+    });
+    expect(c.querySelector(".pc-spells-empty-title")).toBeNull();
+    const names = [...c.querySelectorAll(".pc-spell-name")].map((e) => e.textContent);
+    expect(names).toContain("Sacred Flame");
+    // The feat cantrip carries the always-prepared marker and the own-ability DC.
+    expect(c.querySelector(".pc-spell-always")).not.toBeNull();
+    expect(c.querySelector(".pc-spell-cast-row")?.textContent).toContain("12");
+  });
+
   it("renders DC header, the Cast/Prepare toggle, and Cast view by default", () => {
     const c = mountContainer();
     new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived(), services: {} as never, app: {} as never, editState: null });
