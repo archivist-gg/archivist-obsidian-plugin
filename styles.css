@@ -8613,6 +8613,18 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d table,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc table {
   border-collapse: collapse; width: 100%; margin: 0.4em 0; font-size: inherit;
+  /* Responsive: a wide markdown table (e.g. Elven Lineage) must scroll inside
+     its own box at narrow container-query pane widths instead of forcing the
+     sheet wider. `display: block` is required for `overflow-x` to apply to a
+     table; the internal thead/tbody/tr/th/td keep their table display. */
+  display: block; max-width: 100%; overflow-x: auto;
+}
+/* Same responsive treatment for markdown tables inside PC-sheet item and
+   feature-card blocks (`.archivist-item-block` also dresses feature cards); the
+   global item-note table dress in archivist-dnd.css is left full-width for
+   reading view where there is no narrow container. */
+.archivist-pc-sheet .archivist-item-block table.archivist-table {
+  display: block; max-width: 100%; overflow-x: auto;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d th,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc th {
