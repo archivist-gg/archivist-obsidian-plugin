@@ -84,6 +84,29 @@ export function removeItem(character: Character, index: number): void {
   character.equipment.splice(index, 1);
 }
 
+/**
+ * Identify an item in place: swap the entry's `item` link to `newSlug` and RESET
+ * every per-instance field so the fresh entry is inherently valid. The identified
+ * item lands unequipped/unattuned/slotless, so there is no occupant to invalidate
+ * and no re-validation is needed. Prior overrides/state/notes/provenance all
+ * belonged to the (now discarded) unidentified placeholder, so they are dropped;
+ * quantity is normalized to 1 (there is no stackable concept). Called by the
+ * identify flow after the player picks the item's true identity.
+ */
+export function identifyItem(character: Character, index: number, newSlug: string): void {
+  const entry = character.equipment[index];
+  if (!entry) return;
+  entry.item = `[[${newSlug}]]`;
+  delete entry.overrides;
+  delete entry.state;
+  delete entry.notes;
+  delete entry.granted_by;
+  entry.equipped = false;
+  entry.attuned = false;
+  entry.slot = null;
+  entry.qty = 1;
+}
+
 export function equipItem(
   character: Character,
   index: number,

@@ -732,6 +732,13 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Identify an unidentified item: normalizing-replace the entry at `entryIndex`
+   *  with `newSlug` (resets all per-instance state, see eq.identifyItem). */
+  identifyItem(entryIndex: number, newSlug: string): void {
+    eq.identifyItem(this.character, entryIndex, newSlug);
+    this.onChange();
+  }
+
   equipItem(index: number): eq.EquipResult {
     if (!this.registry) return { kind: "ok" };
     const r = eq.equipItem(this.character, index, this.registry);
