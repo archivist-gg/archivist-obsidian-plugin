@@ -7,6 +7,7 @@ import type {
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 
 /** The generator-baked placeholder every 2024 SRD background carries in place of a
  *  per-feature description (`background-merge.ts`). Detected exactly (name +
@@ -125,7 +126,11 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   //    TOP of the block (R3-M6). The 2024 SRD placeholder is skipped. ──
   const flavor = bg.description?.trim();
   if (flavor && flavor !== NO_DESC) {
-    body.createDiv({ cls: "pc-cb-trait-d pc-bg-flavor", text: flavor });
+    const dd = body.createDiv({ cls: "pc-cb-trait-d pc-bg-flavor" });
+    void renderMarkdownDescription(dd, flavor, ctx.app).catch((err: unknown) => {
+      console.error("[Archivist] background flavor render failed", err);
+      dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+    });
   }
 
   // ── Ability-boost reference: the granted pool (applied totals live in the
@@ -158,7 +163,11 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   if (feat && !isPlaceholder && feat.description?.trim()) {
     const row = body.createDiv({ cls: "pc-cb-trait pc-bg-feature" });
     row.createDiv({ cls: "pc-cb-trait-n", text: feat.name });
-    row.createDiv({ cls: "pc-cb-trait-d", text: feat.description });
+    const dd = row.createDiv({ cls: "pc-cb-trait-d" });
+    void renderMarkdownDescription(dd, feat.description, ctx.app).catch((err: unknown) => {
+      console.error("[Archivist] background feature render failed", err);
+      dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+    });
   }
 
   // Header click toggles the whole body. Stateless `.hidden` flag on the DOM

@@ -122,6 +122,7 @@ export function renderFeatureRow(
   ];
   renderFeatureCard(inner, {
     title,
+    app: ctx.app,
     sourceLabel,
     sourceBadge: sourceBadgeText((ctx.resolved as { definition?: { edition?: string } }).definition?.edition),
     feature,

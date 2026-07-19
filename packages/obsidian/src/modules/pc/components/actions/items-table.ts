@@ -68,7 +68,7 @@ export function renderItemRow(
       onSet: (newUsed) => ctx.editState?.setItemCharges(index, newUsed, max),
     });
   } else {
-    chgCell.createSpan({ text: "—" });
+    chgCell.createSpan({ text: "·" });
   }
 
   // Expand block = a full-width sibling div AFTER the row, rendered once and

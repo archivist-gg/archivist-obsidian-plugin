@@ -88,6 +88,7 @@ export function renderBoonRow(
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
   renderFeatureCard(inner, {
     title: e.name,
+    app: ctx.app,
     sourceLabel: poolLabel,
     sourceBadge: sourceBadgeText((ctx.resolved as { definition?: { edition?: string } }).definition?.edition),
     description: e.description,

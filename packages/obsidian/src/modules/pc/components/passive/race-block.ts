@@ -1,6 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
+import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 
 /**
  * The pseudo-traits surfaced as glance tiles (Size / Speed / Darkvision) and so
@@ -64,8 +65,8 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
     if (small) v.createSpan({ cls: "pc-cb-ts", text: small });
   };
   if (race.size) tile("Size", cap(race.size));
-  // `speed.walk` is optional → null-guard to an em dash rather than "undefined".
-  tile("Speed", race.speed?.walk != null ? String(race.speed.walk) : "—", "ft.");
+  // `speed.walk` is optional → null-guard to a middle dot rather than "undefined".
+  tile("Speed", race.speed?.walk != null ? String(race.speed.walk) : "·", "ft.");
   const darkvision = race.vision?.darkvision;
   if (darkvision) tile("Darkvision", String(darkvision), "ft.");
 
@@ -75,8 +76,18 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
   for (const t of traits) {
     const row = body.createDiv({ cls: "pc-cb-trait pc-race-trait" });
     row.createDiv({ cls: "pc-cb-trait-n", text: t.name });
-    const desc = traitDescription(t);
-    if (desc) row.createDiv({ cls: "pc-cb-trait-d", text: desc });
+    // The description renders through the SHARED markdown path (ctx.app threaded,
+    // async) so a trait carrying a pipe table shows a real table, not raw `|...|`
+    // text. The `.catch` paints a visible error div; the `.pc-cb-trait-d`
+    // container keeps its dress, which the rendered `p`/`table` inherit via CSS.
+    const descText = traitDescription(t);
+    if (descText) {
+      const dd = row.createDiv({ cls: "pc-cb-trait-d" });
+      void renderMarkdownDescription(dd, descText, ctx.app).catch((err: unknown) => {
+        console.error("[Archivist] race trait description render failed", err);
+        dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+      });
+    }
   }
 
   // Header click toggles the whole body (tiles + trait rows). Stateless: the

@@ -93,7 +93,7 @@ describe("ActionsTab — grouped structure", () => {
     const row = rowByName(c, "Turncoat");
     row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     const card = row.nextElementSibling as HTMLElement;
-    expect(card.textContent).toContain("Chose — Lies");
+    expect(card.textContent).toContain("Chose · Lies");
     expect(card.textContent).toContain("use Charisma");
   });
 
