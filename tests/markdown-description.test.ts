@@ -69,6 +69,15 @@ describe("renderMarkdownDescription", () => {
     expect(tables[0].classList.contains("archivist-table")).toBe(true);
   });
 
+  it("normalizes literal backslash-n so an embedded pipe table renders as a real table", async () => {
+    // `dirty` contains the literal two-char sequence backslash+n (no real newlines).
+    const dirty = "Intro.\\n\\n| A | B |\\n|---|---|\\n| 1 | 2 |";
+    await renderMarkdownDescription(parent, dirty);
+    const tables = parent.querySelectorAll("table");
+    expect(tables).toHaveLength(1);
+    expect(tables[0].classList.contains("archivist-table")).toBe(true);
+  });
+
   it("returns silently when markdown is empty", async () => {
     await renderMarkdownDescription(parent, "");
     expect(parent.children.length).toBe(0);

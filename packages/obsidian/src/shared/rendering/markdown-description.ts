@@ -32,7 +32,9 @@ export async function renderMarkdownDescription(
     // and bare prose dice (8d6, 1d6+1) → backtick-wrapped dice tags. The
     // markdown renderer then turns those into <code> elements which the
     // walker below replaces with widgets.
-    const decorated = convert5eToolsTags(markdown);
+    // Defensive: normalize any residual literal `\n` (belt-and-suspenders for A2)
+    // so embedded-JSON and vault-MD descriptions render identically.
+    const decorated = convert5eToolsTags(markdown.replace(/\\n/g, "\n"));
     await MarkdownRenderer.render(app as App, decorated, parent, "", comp);
   }
 
