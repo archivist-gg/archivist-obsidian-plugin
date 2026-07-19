@@ -165,7 +165,12 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     ...Object.keys(ctx.derived.derivedSpellSlots).map(Number),
     ctx.derived.pactMagic?.level ?? 0,
   );
-  const knownSet = () => new Set(ctx.resolved.spells.map((s) => s.slug));
+  // Scroll-granted spells (source:"item") are NOT part of the known/prepared
+  // list, so excluding them keeps a caster's own class spell that they happen
+  // to carry a scroll of ADDABLE here (mirrors prepare-view / cast-view). AC-S4.
+  const knownSet = () => new Set(
+    ctx.resolved.spells.filter((s) => s.source !== "item").map((s) => s.slug),
+  );
 
   // Persistent toolbar shell (search must survive redraws or it loses focus).
   const bar = drawer.createDiv({ cls: "pc-spell-addbar" });
