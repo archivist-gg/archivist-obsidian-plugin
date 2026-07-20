@@ -317,13 +317,43 @@ describe("renderCastView · scrolls & consumables", () => {
       [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
       { consumeScroll, expendSlot: vi.fn(), castSpell: vi.fn(), restoreSlot: vi.fn() },
     ));
+    const scrollRow = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
     const btn = scrollCastBtn(root);
+    // At rest the row carries no arming class.
+    expect(scrollRow.classList.contains("pc-row-arming")).toBe(false);
     click(btn);
     // Armed, not consumed.
     expect(consumeScroll).not.toHaveBeenCalled();
     expect(btn.textContent).toBe("Consume");
     expect(btn.classList.contains("armed")).toBe(true);
+    // The row is flagged arming so CSS can span the confirm across the name column
+    // (the name hides for the confirm instant) instead of overlapping it.
+    expect(scrollRow.classList.contains("pc-row-arming")).toBe(true);
     expect(root.querySelector(".pc-spell-castcancel")).not.toBeNull();
+  });
+
+  it("arming toggles .pc-row-arming across the full lifecycle (rest → arm → cancel → arm → consume)", () => {
+    const root = mountContainer();
+    const consumeScroll = vi.fn();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
+      { consumeScroll },
+    ));
+    const row = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
+    const btn = scrollCastBtn(root);
+    expect(row.classList.contains("pc-row-arming")).toBe(false);
+    // Arm.
+    click(btn);
+    expect(row.classList.contains("pc-row-arming")).toBe(true);
+    // Cancel reverts and removes the class.
+    click(root.querySelector(".pc-spell-castcancel") as HTMLElement);
+    expect(row.classList.contains("pc-row-arming")).toBe(false);
+    // Re-arm, then consume: the class is removed after consuming too.
+    click(btn);
+    expect(row.classList.contains("pc-row-arming")).toBe(true);
+    click(btn);
+    expect(consumeScroll).toHaveBeenCalledWith(2);
+    expect(row.classList.contains("pc-row-arming")).toBe(false);
   });
 
   it("clicking the armed Consume consumes the scroll by entryIndex and never expends a slot", () => {

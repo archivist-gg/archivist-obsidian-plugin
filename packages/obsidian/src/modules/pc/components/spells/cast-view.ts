@@ -191,11 +191,18 @@ function renderRow(
       cancelBtn?.remove();
       cancelBtn = null;
       btn.classList.remove("armed");
+      // Drop the row-level arming flag so the name cell returns and the act cell
+      // shrinks back to its 56px column (see .pc-row-arming rules in spells.css).
+      tr.classList.remove("pc-row-arming");
       btn.setText("CAST");
     };
 
     const arm = (): void => {
       btn.classList.add("armed");
+      // Flag the row so CSS lets the "Consume" confirm span the name column (the
+      // name hides for the confirm instant) instead of overrunning it. "Consume"
+      // is wider than the 56px act column.
+      tr.classList.add("pc-row-arming");
       btn.setText("Consume");
       cancelBtn = actTd.createEl("button", {
         cls: "pc-spell-castcancel", text: "×", attr: { "aria-label": "Cancel", title: "Cancel" },
