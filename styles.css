@@ -6046,6 +6046,32 @@ body.theme-light .archivist-tag-atk:hover {
   gap: 0;
 }
 .archivist-pc-sheet .pc-inv-row-host { display: contents; }
+
+/* ---------- Load more (pagination) ---------- */
+.archivist-pc-sheet .pc-inv-loadmore {
+  display: flex;
+  justify-content: center;
+  padding: var(--pc-space-3) 0 var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-loadmore-btn {
+  padding: 4px 14px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-loadmore-btn:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+
 .archivist-pc-sheet .pc-inv-empty {
   padding: var(--pc-space-4) var(--pc-space-3);
   font-family: var(--pc-font-serif);
