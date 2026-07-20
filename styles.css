@@ -6667,9 +6667,14 @@ body.theme-light .archivist-tag-atk:hover {
   background:#c98a1a; margin-right:6px; vertical-align:1px;
 }
 .archivist-pc-sheet .pc-inline-cta {
-  font: inherit; font-size:11px; font-weight:700; cursor:pointer;
-  padding:1px 8px; border-radius:999px; color:var(--pc-crimson);
+  font: inherit; font-weight:700; cursor:pointer;
+  padding:1px 6px; border-radius:2px; color:var(--pc-crimson);
   border:1px solid var(--pc-crimson); background:transparent;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.archivist-pc-sheet .pc-inline-cta:hover {
+  background:var(--pc-crimson); color:var(--pc-parchment-light);
+  border-color:var(--pc-crimson);
 }
 
 /* D3.1/D3.2 · secondary "change" link on a chosen scroll spell. Dress comes
