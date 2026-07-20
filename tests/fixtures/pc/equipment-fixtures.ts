@@ -235,7 +235,7 @@ export function buildEquipmentRegistry(): EntityRegistry {
     { slug: "heavy-shield", entityType: "armor", name: "Shield", data: HEAVY_SHIELD },
     { slug: "goggles-of-night", entityType: "item", name: "Goggles of Night", data: GOGGLES_OF_NIGHT },
     { slug: "armor-of-resistance", entityType: "item", name: "Armor of Resistance (Breastplate)", data: ARMOR_OF_RESISTANCE },
-    // vault-path resolution target: same Breastplate under its compendium-prefixed slug
-    { slug: "srd-2024_breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
+    // vault-path resolution target: same Breastplate under its type-namespaced compendium slug
+    { slug: "srd-2024_armor_breastplate", entityType: "armor", name: "Breastplate", data: BREASTPLATE },
   ]);
 }
