@@ -336,7 +336,7 @@ describe("renderRowExpand", () => {
       expect(slugs).not.toContain("old-fireball"); // wrong edition
     });
 
-    it("renders the chosen spell as an item-block property with a change CTA + save DC (4C)", async () => {
+    it("renders the chosen spell as an item-block property with a change CTA, no Save DC / Attack (4C)", async () => {
       const entry: EquipmentEntry = { item: "[[spell-scroll-3rd-level]]", overrides: { spell: "srd-2024_fireball" } };
       const resolved = {
         index: 5,
@@ -370,7 +370,11 @@ describe("renderRowExpand", () => {
       expect(change?.classList.contains("pc-inline-cta")).toBe(false);
       expect(change?.classList.contains("pc-spell-remove")).toBe(true);
       expect(change?.classList.contains("pc-spell-change")).toBe(true);
-      expect(block?.textContent).toContain("14"); // save DC from derived.abilitySpellcasting
+      // Save DC / Attack are intentionally NOT shown on the scroll expand — they
+      // surface on the Spells tab where the scroll is cast.
+      expect(labels).not.toContain("Save DC");
+      expect(labels).not.toContain("Attack");
+      expect(block?.textContent).not.toContain("14"); // no save DC row here anymore
     });
 
     it("renders '+ Set spell' as the primary .pc-inline-cta when no spell is chosen (D3.2 keeps the primary CTA heavy)", async () => {

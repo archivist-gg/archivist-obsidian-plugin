@@ -63,9 +63,9 @@ export function renderRowExpand(parent: HTMLElement, ctx: RowExpandCtx): HTMLEle
   }
 
   // 4C · scroll spell block: the chosen spell rendered as an item-block property
-  // (Spell / Save DC / Attack) with a change CTA, or a set-spell CTA when none
-  // is chosen, plus the INT/WIS/CHA capture control for a no-caster scroll. Only
-  // when the full sheet ctx is threaded (inventory list, not browse mode).
+  // (Spell + level) with a change CTA, or a set-spell CTA when none is chosen.
+  // Save DC / Attack live on the Spells tab where the scroll is cast, not here.
+  // Only when the full sheet ctx is threaded (inventory list, not browse mode).
   if (ctx.sheet && isScrollItem(ctx.resolved.entity)) {
     renderScrollSpellSection(expand, ctx, ctx.sheet);
   }
@@ -152,7 +152,6 @@ function ordinal(n: number): string {
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
 }
 const spellLevelLabel = (l: number): string => (l === 0 ? "Cantrip" : `${ordinal(l)} level`);
-const signed = (n: number): string => `${n >= 0 ? "+" : ""}${n}`;
 
 // Const-indirection so the sentence-case UI lint (bare-literal only, see
 // decision-modal.ts) leaves these intended-casing CTA labels intact.
@@ -208,16 +207,9 @@ function renderScrollSpellSection(parent: HTMLElement, ctx: RowExpandCtx, sheet:
       openScrollSpellPicker(sheet, entryIndex, scrollLevel);
     });
 
-    // Save DC / Attack from the casting ability (own class ability, or the
-    // per-instance spell_ability). Present only once an ability is known.
-    const ab = spell.ability;
-    if (ab) {
-      const cast = sheet.derived.abilitySpellcasting?.[ab] ?? sheet.derived.spellcasting ?? undefined;
-      if (cast) {
-        itemProperty(section, "Save DC").setText(`${ab.toUpperCase()} ${cast.saveDC}`);
-        itemProperty(section, "Attack").setText(signed(cast.attackBonus));
-      }
-    }
+    // Save DC / Attack are intentionally NOT shown here — they surface on the
+    // Spells tab, where the scroll is actually cast (the cast row carries the
+    // per-cast DC / attack from the resolved casting ability).
   } else {
     const value = itemProperty(section, "Spell");
     const cta = value.createEl("button", { cls: "pc-inline-cta" });
