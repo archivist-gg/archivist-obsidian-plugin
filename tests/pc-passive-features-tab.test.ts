@@ -161,7 +161,18 @@ const bg2014 = {
   suggested_characteristics: null,
 } as unknown as BackgroundEntity;
 
-const bgBlock = (root: HTMLElement): HTMLElement | null => root.querySelector(".pc-background-block");
+/** The Background section's chronicle card — the `.pc-cblock` inside the expand
+ *  that follows the "Background" `.pc-tab-heading` (Task 5 rehoused the block into
+ *  the section -> row -> expand idiom, so it is no longer a `.pc-background-block`
+ *  standalone card; the chronicle block wears the shared `.pc-cblock` dress, carded
+ *  by the `.pc-action-expand-inner > .pc-cblock` rule). */
+const bgBlock = (root: HTMLElement): HTMLElement | null => {
+  const head = [...root.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Background");
+  const list = head?.nextElementSibling as HTMLElement | null;
+  return list?.querySelector<HTMLElement>(".pc-action-expand-inner > .pc-cblock") ?? null;
+};
+const bgHeading = (root: HTMLElement): HTMLElement | undefined =>
+  [...root.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Background");
 const propLabels = (block: HTMLElement): string[] =>
   [...block.querySelectorAll(".pc-cb-prop-l")].map((n) => n.textContent ?? "");
 
@@ -244,10 +255,32 @@ describe("PassiveFeaturesTab", () => {
       // pre-split out with the `background` sub-group → never a scattered row.
       expect(rowNames(c)).not.toContain("Background Feature");
       expect(subGroupTitles(c)).not.toContain("Background");
-      // Exactly one bespoke Background block, showing the background name.
-      const blocks = c.querySelectorAll(".pc-background-block");
-      expect(blocks.length).toBe(1);
+      // Exactly one Background section (heading + row + carded expand), showing name.
+      const bgHeads = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].filter((h) => h.textContent === "Background");
+      expect(bgHeads.length).toBe(1);
       expect(bgBlock(c)!.textContent).toContain("Soldier");
+    });
+
+    it("defaults COLLAPSED and reveals the carded chronicle block on row click (section -> row -> expand)", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
+      const row = rowByName(c, "Soldier");
+      const expand = row.nextElementSibling as HTMLElement & { hidden: boolean };
+      expect(expand.classList.contains("pc-action-expand")).toBe(true);
+      expect(expand.hidden).toBe(true); // default collapsed, matching the Race block
+      // The full chronicle block sits in the carded slot the container CSS targets.
+      expect(expand.querySelector(".pc-action-expand-inner > .pc-cblock")).toBeTruthy();
+      row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      expect(expand.hidden).toBe(false);
+    });
+
+    it("renders the background description as markdown flavor at the top of the block", () => {
+      const c = mountContainer();
+      const bg = { ...bg2014, description: "A devout servant of a temple." } as unknown as BackgroundEntity;
+      new PassiveFeaturesTab().render(c, renderCtx([], { background: bg }));
+      const flavor = bgBlock(c)!.querySelector(".pc-bg-flavor");
+      expect(flavor).toBeTruthy();
+      expect(flavor!.textContent).toContain("devout servant");
     });
 
     it("shows ability-boost + proficiency reference lines (references applied grants, not re-lists)", () => {
@@ -285,23 +318,24 @@ describe("PassiveFeaturesTab", () => {
       expect(block.querySelector(".pc-bg-origin")).toBeNull();
     });
 
-    it("orders the Background block AFTER the Race section and BEFORE the grouped sections", () => {
+    it("orders the Background section AFTER the Race section and BEFORE the grouped sections", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([passiveFeat], { race: raceFixture, background: bg2024 }));
       const raceHead = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Race")!;
-      const bg = c.querySelector(".pc-background-block")!;
+      const bgHead = bgHeading(c)!;
       const passiveHead = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Passive & Free Actions")!;
       // Race section precedes Background…
-      expect(raceHead.compareDocumentPosition(bg) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(raceHead.compareDocumentPosition(bgHead) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
       // …and Background precedes the grouped-section heading.
       expect(passiveHead).toBeTruthy();
-      expect(bg.compareDocumentPosition(passiveHead) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(bgHead.compareDocumentPosition(passiveHead) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
-    it("renders no Background block when there is no background", () => {
+    it("renders no Background section when there is no background", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([passiveFeat]));
-      expect(c.querySelector(".pc-background-block")).toBeNull();
+      expect(bgHeading(c)).toBeUndefined();
+      expect(bgBlock(c)).toBeNull();
     });
   });
 
