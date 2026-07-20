@@ -69,10 +69,10 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
   const list = parent.createDiv({ cls: "pc-actions-table pc-feature-list" });
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  // Badge column: a race is always-on, so it wears the same outline "Passive"
-  // tag every passive feature row shows (mirrors feature-rows.ts).
-  const badge = row.createDiv({ cls: "pc-feature-badge" });
-  badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
+  // Badge column: kept present-but-empty so the 4-col feature-row grid stays
+  // aligned with its siblings. The redundant "Passive" tag was removed (Task 6):
+  // on the Passive tab every row is passive, so the tag was pure noise.
+  row.createDiv({ cls: "pc-feature-badge" });
 
   // Name cell: the species name, with the size as the quiet sub-label (the same
   // slot feature rows use for their source line). Size sub-label omitted when the

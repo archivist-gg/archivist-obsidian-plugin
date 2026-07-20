@@ -40,12 +40,13 @@ export function renderBoonRow(
 
   // Badge column — the boon's ECONOMY pill, read from its OWN action_cost (NOT
   // the section: boonEconomy maps free→passive, so the section can't tell Free
-  // from a truly-passive boon). Mirrors the feature-row badge rule (actions-tab.ts):
-  // a real cost → filled pill; special/no-cost → outline "Passive" tag.
+  // from a truly-passive boon). Mirrors the feature-row badge rule: a real cost →
+  // filled pill; special/no-cost → an EMPTY badge cell (the redundant "Passive"
+  // tag was removed in Task 6). The cell is still created so the 4-col grid stays
+  // aligned, and a granted Free boon still shows its FREE pill.
   const badge = row.createDiv({ cls: "pc-feature-badge" });
   const cost = e.action_cost;
   if (cost && cost !== "special") renderCostBadge(badge, cost);
-  else badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
 
   // Incapacitated dimming — keyed off the EXACT cost (action/bonus/reaction dim;
   // free/special/passive never), matching weapons-table.ts / items-table.ts.

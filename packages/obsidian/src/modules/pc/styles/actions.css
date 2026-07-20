@@ -25,27 +25,6 @@
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
 
-/* ---------- Passive / always-active tag (badge-column, in place of a cost pill) ----------
- * Shares the cost-badge pill footprint but reads as a muted outline chip so a
- * Passive row is visually distinct from an actionable one. */
-.archivist-pc-sheet .pc-passive-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 9px;
-  font-size: var(--pc-fs-micro);
-  font-weight: 700;
-  letter-spacing: var(--pc-ls-caps-md);
-  text-transform: uppercase;
-  line-height: var(--pc-lh-tight);
-  color: var(--pc-text-muted);
-  background: transparent;
-  border: 1px solid var(--pc-tan-muted);
-}
-
 /* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
  * Here we only own the outer flex wrapper that places the pip row next to the
@@ -128,6 +107,19 @@
  * slack so the charge-pip tracker keeps to one line. */
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
   grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
+}
+/* Passive-tab-scoped gutter tighten (Task 6): the "Passive" tag was removed, so
+ * the badge column no longer needs the 66px it took on the Actions tab — reclaim
+ * ~12px so the name column starts closer to the left. SCOPED to the passive tab
+ * (`.pc-passive-features-tab`) ONLY: the base rule above is SHARED with the
+ * Actions tab (class-features/feats render there too and must stay 66px to align
+ * with weapon/item rows). The first track is a FIXED 54px — NOT auto/min-content
+ * (each row is its own grid → auto would collapse tag-less rows to 0 while a
+ * FREE-pill row keeps 52px → cross-row misalignment) and NOT 40px (the FREE pill
+ * is min-width:52px → would overflow the name column). 54px fits the 52px FREE
+ * pill AND keeps every row aligned. */
+.archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
+  grid-template-columns: 54px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;

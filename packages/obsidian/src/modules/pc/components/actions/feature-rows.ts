@@ -15,7 +15,7 @@ const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> =
 
 /**
  * One unified feature/passive row:
- *   [cost badge | pc-passive-tag] · [name (+ source sub-label) · right detail · caret]
+ *   [cost badge (empty on the Passive tab)] · [name (+ source sub-label) · right detail · caret]
  * Right detail is the FIRST resource tracker, else the feature's attack note.
  * Extra resources render inside the expand card; when a tracker occupies the
  * single in-row slot the attack note moves to that card too (Finding B). Click
@@ -47,13 +47,13 @@ export function renderFeatureRow(
 
   // Badge column — read from the feature's OWN action cost, not the section
   // bucket: a real cost (incl. `free`) → filled cost pill; `special`/absent →
-  // outline "Passive" tag. Mirrors the boon-row/item-row badge rule so all
-  // four row types share one rule (cost-badge is NOT overloaded with a
-  // "special" pill). Keeps the FREE pill distinct inside Passive & Free Actions.
+  // an EMPTY badge cell (no tag). The redundant "Passive" tag was removed
+  // (Task 6): on the Passive tab every row is passive, so the tag was pure
+  // noise. The `.pc-feature-badge` cell is still created so the 4-col grid stays
+  // aligned, and the FREE pill (a real `free` cost) still renders here.
   const badge = row.createDiv({ cls: "pc-feature-badge" });
   const cost = feature.action;
   if (cost && cost !== "special") renderCostBadge(badge, cost);
-  else badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
 
   // Dim only when the EXACT action cost is action/bonus/reaction (free/special/
   // passive stay live) — one rule across weapons/items/features/boons.
