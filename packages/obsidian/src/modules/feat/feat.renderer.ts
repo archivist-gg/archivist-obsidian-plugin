@@ -18,10 +18,15 @@ function labelCase(s: string): string {
   return titleCase(s.replace(/-/g, " "));
 }
 
-/** Slug → display name: drop the compendium prefix, dashes → spaces.
- *  Assumes a single leading `prefix_` underscore segment (e.g. "srd-5e_high-elf"). */
+/** Slug → display name: drop the compendium (and type) prefix, dashes → spaces.
+ *  Arity-robust: strips a `<prefix>_<type>_<name>` (3-part) or legacy
+ *  `<prefix>_<name>` (2-part) slug down to the bare name (e.g. "srd-2024_feat_savage-attacker"
+ *  → "Savage Attacker", "srd-5e_high-elf" → "High Elf"); a bare slug passes through.
+ *  Name-slugs never contain `_`, so `parts.slice(2).join("_")` is the 3-part name. */
 function slugName(slug: string): string {
-  return titleCase(slug.replace(/^[^_]*_/, "").replace(/-/g, " "));
+  const p = slug.split("_");
+  const bare = p.length >= 3 ? p.slice(2).join("_") : p[p.length - 1];
+  return titleCase(bare.replace(/-/g, " "));
 }
 
 function prereqText(p: FeatPrerequisite): string {

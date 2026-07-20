@@ -44,4 +44,15 @@ describe("resolveGrants", () => {
     const { entries } = resolveGrants([{ item: "does-not-exist" }], {}, reg);
     expect(entries.length).toBe(0);
   });
+
+  // Phase-1 slug namespacing (Task 3): a category pick feeds pushFull a full slug,
+  // which strips to a bare name before reg.lookup. It must handle the new 3-part
+  // `<prefix>_<type>_<name>` shape as well as the legacy 2-part form.
+  it("strips a 3-part namespaced category pick down to the bare lookup key", () => {
+    const { entries } = resolveGrants(
+      [{ category: "martial-weapon" }],
+      { "cat-0": "srd-2024_weapon_greatsword" }, reg, ["cat-0"],
+    );
+    expect(entries.map((e) => e.slug)).toContain("srd-2024_greatsword");
+  });
 });
