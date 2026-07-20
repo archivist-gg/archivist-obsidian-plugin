@@ -361,10 +361,37 @@ describe("renderRowExpand", () => {
       expect(block?.textContent).toContain("Fireball");
       const labels = [...root.querySelectorAll(".pc-scroll-spellblock .archivist-item-property-label")].map((l) => l.textContent);
       expect(labels).toContain("Spell");
-      const change = [...root.querySelectorAll(".pc-scroll-spellblock .pc-inline-cta")]
+      // D3.1/D3.2 · the "change" affordance is a QUIET text-link that reuses the
+      // .pc-spell-remove dress + a .pc-spell-change spacing class (left margin,
+      // applied via CSS); it is NOT the heavy .pc-inline-cta primary CTA pill.
+      const change = [...root.querySelectorAll(".pc-scroll-spellblock button")]
         .find((b) => b.textContent?.toLowerCase().includes("change"));
       expect(change).toBeTruthy();
+      expect(change?.classList.contains("pc-inline-cta")).toBe(false);
+      expect(change?.classList.contains("pc-spell-remove")).toBe(true);
+      expect(change?.classList.contains("pc-spell-change")).toBe(true);
       expect(block?.textContent).toContain("14"); // save DC from derived.abilitySpellcasting
+    });
+
+    it("renders '+ Set spell' as the primary .pc-inline-cta when no spell is chosen (D3.2 keeps the primary CTA heavy)", async () => {
+      const entry: EquipmentEntry = { item: "[[spell-scroll-3rd-level]]" };
+      const resolved = {
+        index: 5,
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", scroll_level: 3, description: "A scroll." },
+        entityType: "item",
+        entry,
+      } as ResolvedEquipped;
+      const editState = invEditState();
+      const sheet = sheetCtx({ editState });
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never, sheet });
+      await Promise.resolve();
+      const setBtn = [...root.querySelectorAll(".pc-scroll-spellblock button")]
+        .find((b) => b.textContent?.toLowerCase().includes("set spell"));
+      expect(setBtn).toBeTruthy();
+      // The primary CTA stays the heavy .pc-inline-cta pill (only the secondary
+      // "change" affordance is demoted to the quiet link).
+      expect(setBtn?.classList.contains("pc-inline-cta")).toBe(true);
     });
 
     it("no longer renders the per-scroll INT/WIS/CHA capture control (ability is set at the top of the Spells tab)", async () => {

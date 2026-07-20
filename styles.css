@@ -6650,10 +6650,15 @@ body.theme-light .archivist-tag-atk:hover {
    (no glyph) / 4C / 5A. Reuses existing tokens + classes (.pc-meta-chip,
    .pc-inv-action, --pc-crimson, --pc-text-muted). */
 
-/* 1A · chosen-spell chip on a scroll's inventory sub-line: crimson "arcane" accent. */
+/* 1A · chosen-spell chip on a scroll's inventory sub-line: crimson "arcane"
+   accent. D3.3 · the base `.pc-meta-chip` declares no border-width and no
+   padding, so a bare `border-color` painted nothing. Give it a real border +
+   padding so it reads as a bordered chip, matching `.pc-cond-tag-dis` /
+   `.pc-mastery-tag`. */
 .archivist-pc-sheet .pc-meta-chip.pc-spell-chip {
-  border-color: var(--pc-crimson);
+  border: 1px solid var(--pc-crimson);
   color: var(--pc-crimson);
+  padding: 1px 6px;
 }
 
 /* 2B · amber "unset" dot + a small inline call-to-action for a scroll needing a spell. */
@@ -6667,6 +6672,12 @@ body.theme-light .archivist-tag-atk:hover {
   border:1px solid var(--pc-crimson); background:transparent;
 }
 
+/* D3.1/D3.2 · secondary "change" link on a chosen scroll spell. Dress comes
+   from the reused `.pc-spell-remove` (quiet muted text, transparent border
+   until hover); this only adds left spacing so it detaches from the value and
+   reads lighter than the primary "+ Set spell" `.pc-inline-cta`. */
+.archivist-pc-sheet .pc-spell-change { margin-left: 8px; }
+
 /* 3A · unidentified placeholder row (WITHOUT the "?" glyph): muted italic name,
    dimmed icon. */
 .archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-name {
@@ -6675,10 +6686,14 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-icon { opacity: .5; }
 
-/* 5A · Identify button (reuses .pc-inv-action; crimson accent to signal "reveal"). */
+/* 5A · Identify button (reuses .pc-inv-action; crimson accent to signal "reveal").
+   D4.1 · mirror `.pc-inv-action.danger`: override the border-color ONLY, never
+   `color`. The base `.pc-inv-action` is already crimson text, so a `color`
+   re-declaration here was redundant AND, sitting after the shared `:hover` rule
+   at equal specificity, overrode the hover's parchment text (crimson-on-crimson,
+   invisible label). Dropping it lets the shared `:hover` (white-on-crimson) win. */
 .archivist-pc-sheet .pc-inv-action.pc-identify {
   border-color: var(--pc-crimson);
-  color: var(--pc-crimson);
 }
 
 /* 4C · item-block property rows ship unstyled (touching inline spans); give them a
