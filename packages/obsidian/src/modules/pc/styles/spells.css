@@ -119,11 +119,14 @@
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-castbtn:hover { background: var(--pc-crimson-light); }
 .archivist-pc-sheet .pc-spell-castbtn.disabled { background: var(--pc-tan-muted); cursor: default; }
-/* Cast-view "consume a scroll" cost marker in the .pc-spell-act cell. Mirrors the
-   .pc-spell-atwill pill shape with a crimson (consumable) accent; a button, so it
-   also carries cursor/hover affordances. */
-.archivist-pc-sheet .pc-spell-scroll { font-family: var(--pc-font-sans); display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .02em; color: var(--pc-crimson); background: none; border: 1px solid var(--pc-crimson); cursor: pointer; white-space: nowrap; }
-.archivist-pc-sheet .pc-spell-scroll:hover { background: var(--pc-crimson); color: var(--pc-white); }
+/* Scroll cast: reuse .pc-spell-castbtn (above). The first click ARMS an inline
+   confirm: the button flips to "Consume" (darker, ringed) and a small cancel sits
+   beside it. The act cell flexes so the pair fits the 56px column and wraps if
+   tight. */
+.archivist-pc-sheet .pc-spell-act { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.archivist-pc-sheet .pc-spell-castbtn.armed { background: var(--pc-crimson-light); padding: 5px 8px; box-shadow: 0 0 0 2px var(--pc-parchment-light), 0 0 0 3px var(--pc-crimson); }
+.archivist-pc-sheet .pc-spell-castcancel { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); line-height: 1; color: var(--pc-text-muted); background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); cursor: pointer; }
+.archivist-pc-sheet .pc-spell-castcancel:hover { color: var(--pc-crimson); border-color: var(--pc-tan); }
 .archivist-pc-sheet .pc-spell-atwill { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--pc-text-soft); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 4px 6px; white-space: nowrap; }
 
 .archivist-pc-sheet .pc-spell-namecell { cursor: pointer; }

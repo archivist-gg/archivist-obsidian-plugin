@@ -72,7 +72,10 @@ describe("SpellsTab", () => {
     expect(c.querySelector(".pc-spells-empty-title")).toBeNull();
     const names = [...c.querySelectorAll(".pc-spell-name")].map((e) => e.textContent);
     expect(names).toContain("Fireball");
-    expect(c.querySelector(".pc-spell-scroll")).not.toBeNull();
+    // The scroll surfaces with the shared CAST button (the retired bespoke
+    // .pc-spell-scroll lozenge is gone); a non-caster owns no slot boxes, so this
+    // CAST button is the scroll's consume control.
+    expect(c.querySelector(".pc-spell-castbtn")).not.toBeNull();
   });
 
   it("renders DC header, the Cast/Prepare toggle, and Cast view by default", () => {

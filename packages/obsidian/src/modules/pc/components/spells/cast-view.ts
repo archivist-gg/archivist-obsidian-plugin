@@ -174,12 +174,49 @@ function renderRow(
     actTd.createSpan({ cls: "pc-spell-atwill pc-spell-free", text: "Free" });
   } else if (opts.scroll) {
     // A scroll is cast by CONSUMING the item (one unit / the whole stack's last
-    // unit), never by spending a spell slot. The crimson pill marks the
-    // consumable cost; the click decrements qty / removes the spent scroll.
-    const btn = actTd.createEl("button", { cls: "pc-spell-scroll", text: "Cast (consume)" });
+    // unit), never by spending a spell slot. Reuse the real .pc-spell-castbtn so
+    // the control fits the 56px act column exactly like a real spell row. Because
+    // consuming is destructive, the click ARMS rather than consuming: the button
+    // becomes "Consume" (visibly armed) and a small cancel appears beside it.
+    // Clicking "Consume" consumes; the cancel, a click elsewhere on the sheet, or
+    // a ~4s timeout reverts to CAST without consuming.
+    const btn = actTd.createEl("button", { cls: "pc-spell-castbtn", text: "CAST" });
+    let cancelBtn: HTMLElement | null = null;
+    let timer: number | null = null;
+    let onDocClick: ((e: MouseEvent) => void) | null = null;
+
+    const disarm = (): void => {
+      if (timer != null) { activeWindow.clearTimeout(timer); timer = null; }
+      if (onDocClick) { activeDocument.removeEventListener("click", onDocClick, true); onDocClick = null; }
+      cancelBtn?.remove();
+      cancelBtn = null;
+      btn.classList.remove("armed");
+      btn.setText("CAST");
+    };
+
+    const arm = (): void => {
+      btn.classList.add("armed");
+      btn.setText("Consume");
+      cancelBtn = actTd.createEl("button", {
+        cls: "pc-spell-castcancel", text: "×", attr: { "aria-label": "Cancel", title: "Cancel" },
+      });
+      cancelBtn.addEventListener("click", (e) => { e.stopPropagation(); disarm(); });
+      timer = activeWindow.setTimeout(disarm, 4000);
+      // One-shot revert on any click outside this action cell. Capture phase so it
+      // still fires even when a clicked descendant stops propagation; clicks on our
+      // own button / cancel are handled by their own listeners, so ignore those.
+      onDocClick = (e: MouseEvent) => { if (!actTd.contains(e.target as Node)) disarm(); };
+      activeDocument.addEventListener("click", onDocClick, true);
+    };
+
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (spell.entryIndex != null) ctx.editState?.consumeScroll(spell.entryIndex);
+      if (btn.classList.contains("armed")) {
+        if (spell.entryIndex != null) ctx.editState?.consumeScroll(spell.entryIndex);
+        disarm();
+      } else {
+        arm();
+      }
     });
   } else {
     let noSlot: boolean;
@@ -205,7 +242,9 @@ function renderRow(
   nl.createSpan({ cls: "pc-spell-name", text: spell.entity.name });
   // Always-prepared spells (feat grants, domain spells) carry the shared "always"
   // marker used in the prepare view, so a free feat cast reads as always-ready.
-  if (spell.alwaysPrepared) nl.createSpan({ cls: "pc-spell-always", text: "always" });
+  // A scroll is flagged alwaysPrepared by the resolver only to make it castable;
+  // it is a one-shot consumable, not "always ready", so suppress the marker there.
+  if (spell.alwaysPrepared && !opts.scroll) nl.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.concentration) nl.createSpan({ cls: "pc-spell-cr c", text: "C", attr: { title: "Concentration" } });
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });

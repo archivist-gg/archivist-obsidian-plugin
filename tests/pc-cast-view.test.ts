@@ -244,8 +244,16 @@ function sectionTableAfter(root: HTMLElement, label: string): HTMLElement {
   return el as HTMLElement;
 }
 
+// The scroll cast control in a given section body.
+function scrollCastBtn(root: HTMLElement, label = "Scrolls & Consumables"): HTMLButtonElement {
+  return sectionTableAfter(root, label).querySelector(".pc-spell-castbtn") as HTMLButtonElement;
+}
+function click(el: Element): void {
+  el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+}
+
 describe("renderCastView · scrolls & consumables", () => {
-  it("renders a Scrolls & Consumables section with the scroll row, without leaking it into the owned-level section", () => {
+  it("scroll row reuses the real CAST button (not the retired lozenge) and shows no 'always' marker", () => {
     const root = mountContainer();
     // A Wizard who KNOWS Fireball at L3 and also carries a Fireball scroll (entry 0).
     renderCastView(root, ctxForScroll([
@@ -257,20 +265,35 @@ describe("renderCastView · scrolls & consumables", () => {
     const labels = [...root.querySelectorAll(".pc-spell-sec-label")].map((l) => l.textContent);
     expect(labels).toContain("Scrolls & Consumables");
 
-    // The scroll row lives in the Scrolls section, with a "Cast (consume)" action.
+    // The scroll row lives in the Scrolls section and uses the shared CAST button.
     const scrollBody = sectionTableAfter(root, "Scrolls & Consumables");
+    const scrollRow = scrollBody.querySelector(".pc-spell-cast-row") as HTMLElement;
     expect([...scrollBody.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).toContain("Fireball");
-    expect(scrollBody.textContent).toContain("Cast (consume)");
-    expect(scrollBody.querySelector(".pc-spell-scroll")).not.toBeNull();
+    const castBtn = scrollRow.querySelector(".pc-spell-castbtn") as HTMLElement;
+    expect(castBtn).not.toBeNull();
+    expect(castBtn.textContent).toBe("CAST");
+    // The retired bespoke lozenge and its label are gone everywhere.
+    expect(root.querySelector(".pc-spell-scroll")).toBeNull();
+    expect(root.textContent).not.toContain("Cast (consume)");
+    // A consumable scroll must NOT show the "always" marker (alwaysPrepared is a
+    // resolver castability flag, not an "always ready" claim here).
+    expect(scrollRow.querySelector(".pc-spell-always")).toBeNull();
 
     // The owned 3rd-level section shows ONLY the class copy, never a second (item) Fireball row.
     const l3Body = sectionTableAfter(root, "3rd Level");
     const l3Fireballs = [...l3Body.querySelectorAll(".pc-spell-name")].filter((n) => n.textContent === "Fireball");
     expect(l3Fireballs.length).toBe(1);
-    expect(l3Body.textContent).not.toContain("Cast (consume)");
+  });
 
-    // Exactly one consume action across the whole view.
-    expect([...root.querySelectorAll("button")].filter((b) => b.textContent === "Cast (consume)").length).toBe(1);
+  it("still renders the 'always' marker for a non-scroll always-prepared spell (guard: only scrolls are suppressed)", () => {
+    const root = mountContainer();
+    const domain: ResolvedSpell = {
+      entity: { name: "Bless", level: 1 } as never, slug: "bless",
+      classSlug: "wizard", source: "class", prepared: true, alwaysPrepared: true,
+    };
+    renderCastView(root, ctxForScroll([domain]));
+    const l1Body = sectionTableAfter(root, "1st Level");
+    expect(l1Body.querySelector(".pc-spell-always")).not.toBeNull();
   });
 
   it("does not leak an item cantrip into the Cantrips section", () => {
@@ -282,12 +305,28 @@ describe("renderCastView · scrolls & consumables", () => {
     const cantripBody = sectionTableAfter(root, "Cantrips");
     // Only the class cantrip renders under Cantrips (the scroll cantrip is filtered out).
     expect([...cantripBody.querySelectorAll(".pc-spell-name")].filter((n) => n.textContent === "Fire Bolt").length).toBe(1);
-    expect(cantripBody.textContent).not.toContain("Cast (consume)");
-    // The scroll copy surfaces under Scrolls & Consumables.
-    expect(sectionTableAfter(root, "Scrolls & Consumables").textContent).toContain("Cast (consume)");
+    // Cantrips are At Will (no cast button); the scroll copy carries the CAST button.
+    expect(cantripBody.querySelector(".pc-spell-castbtn")).toBeNull();
+    expect(scrollCastBtn(root)).not.toBeNull();
   });
 
-  it("Cast (consume) consumes the scroll by entryIndex and never expends a slot", () => {
+  it("clicking CAST ARMS the scroll (does not consume): the button becomes Consume and a cancel appears", () => {
+    const root = mountContainer();
+    const consumeScroll = vi.fn();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
+      { consumeScroll, expendSlot: vi.fn(), castSpell: vi.fn(), restoreSlot: vi.fn() },
+    ));
+    const btn = scrollCastBtn(root);
+    click(btn);
+    // Armed, not consumed.
+    expect(consumeScroll).not.toHaveBeenCalled();
+    expect(btn.textContent).toBe("Consume");
+    expect(btn.classList.contains("armed")).toBe(true);
+    expect(root.querySelector(".pc-spell-castcancel")).not.toBeNull();
+  });
+
+  it("clicking the armed Consume consumes the scroll by entryIndex and never expends a slot", () => {
     const root = mountContainer();
     const consumeScroll = vi.fn();
     const expendSlot = vi.fn();
@@ -295,10 +334,50 @@ describe("renderCastView · scrolls & consumables", () => {
       [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
       { consumeScroll, expendSlot, castSpell: vi.fn(), restoreSlot: vi.fn() },
     ));
-    const btn = [...root.querySelectorAll("button")].find((b) => b.textContent === "Cast (consume)")!;
-    btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const btn = scrollCastBtn(root);
+    click(btn); // arm
+    click(btn); // confirm
     expect(consumeScroll).toHaveBeenCalledWith(2);
     expect(expendSlot).not.toHaveBeenCalled();
+    // Reverts to CAST and the cancel is gone after consuming.
+    expect(btn.textContent).toBe("CAST");
+    expect(btn.classList.contains("armed")).toBe(false);
+    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
+  });
+
+  it("clicking the cancel reverts an armed scroll to CAST without consuming", () => {
+    const root = mountContainer();
+    const consumeScroll = vi.fn();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
+      { consumeScroll },
+    ));
+    const btn = scrollCastBtn(root);
+    click(btn); // arm
+    const cancel = root.querySelector(".pc-spell-castcancel") as HTMLElement;
+    click(cancel);
+    expect(consumeScroll).not.toHaveBeenCalled();
+    expect(btn.textContent).toBe("CAST");
+    expect(btn.classList.contains("armed")).toBe(false);
+    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
+  });
+
+  it("clicking elsewhere on the sheet reverts an armed scroll without consuming", () => {
+    const root = mountContainer();
+    const consumeScroll = vi.fn();
+    renderCastView(root, ctxForScroll(
+      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
+      { consumeScroll },
+    ));
+    const btn = scrollCastBtn(root);
+    click(btn); // arm
+    expect(btn.classList.contains("armed")).toBe(true);
+    // A click anywhere outside the action cell reverts it.
+    click(document.body);
+    expect(consumeScroll).not.toHaveBeenCalled();
+    expect(btn.textContent).toBe("CAST");
+    expect(btn.classList.contains("armed")).toBe(false);
+    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
   });
 
   it("a no-ability scroll (non-caster) shows a muted 'set ability' hint, not the removed per-row capture control", () => {
