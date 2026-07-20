@@ -120,6 +120,13 @@ export function renderFeatureRow(
     ...(rf.chosenInline ?? []),
     ...secondaries.flatMap((m) => m.chosenInline ?? []),
   ];
+  // Recovery picker (Arcane Recovery): when the PRIMARY feature owns a resource
+  // that authors a `recovery` array, feed `opts.recovery` so the card renders the
+  // interactive recover-spell-slots picker (`renderRecoveryAction`). Arcane
+  // Recovery is a standalone class feature (never a merged secondary), so scanning
+  // `feature.resources` with `rf.source` is sufficient. Regressed v0.2.26 — the
+  // renderer stayed intact but `opts.recovery` was never populated here.
+  const recoveryRes = (feature.resources ?? []).find((r) => r.recovery?.length && r.id);
   renderFeatureCard(inner, {
     title,
     app: ctx.app,
@@ -128,6 +135,9 @@ export function renderFeatureRow(
     feature,
     description: mergedDescription,
     chosenInline: mergedChosen,
+    recovery: recoveryRes
+      ? { resource: recoveryRes, source: rf.source, ctx, fu: ctx.resolved.state.feature_uses?.[recoveryRes.id] }
+      : undefined,
   });
   for (const res of (feature.resources ?? []).slice(1)) renderCardResource(inner, res, ctx);
   // Secondary (merged) features' trackers: the in-row tracker only holds the
