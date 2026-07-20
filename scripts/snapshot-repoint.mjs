@@ -20,10 +20,13 @@ import { execFileSync } from "node:child_process";
 const CORE_PKG = "@archivist-gg/core";
 const DND5E_PKG = "@archivist-gg/dnd5e";
 const CORE_RANGE = "^0.1.0";
-const DND5E_RANGE = "^0.1.0";
-const TARGET_VERSION = "0.2.25";
+const DND5E_RANGE = "^0.2.0";
+const TARGET_VERSION = "0.3.0";
 const MIN_APP = "1.7.2";
-const BACKFILL = { "0.2.24": "1.7.2" };
+const BACKFILL = {};
+// Expected caret minor per package (from its RANGE), so assertLock validates each
+// against its own published minor (core 0.1.x, dnd5e 0.2.x) instead of a hardcode.
+const caretMinor = (range) => Number(/^\^0\.(\d+)\./.exec(range)?.[1]);
 
 const versionsOnly = process.argv.includes("--versions-only");
 
@@ -62,13 +65,13 @@ function repointDeps() {
 function assertLock() {
   const lock = readJson("package-lock.json");
   const pkgs = lock.packages ?? {};
-  for (const name of [CORE_PKG, DND5E_PKG]) {
+  for (const [name, range] of [[CORE_PKG, CORE_RANGE], [DND5E_PKG, DND5E_RANGE]]) {
     const e = pkgs[`node_modules/${name}`];
     if (!e) throw new Error(`[assert] lock missing node_modules/${name}`);
     if (!/^https:\/\/registry\.npmjs\.org\//.test(e.resolved || "")) throw new Error(`[assert] ${name} not registry-resolved: ${e.resolved}`);
     if (!e.integrity) throw new Error(`[assert] ${name} missing integrity`);
     if (e.link) throw new Error(`[assert] ${name} is still a link`);
-    if (!satisfiesCaret(e.version, 1)) throw new Error(`[assert] ${name}@${e.version} not ⊨ ^0.1.0`);
+    if (!satisfiesCaret(e.version, caretMinor(range))) throw new Error(`[assert] ${name}@${e.version} not ⊨ ${range}`);
   }
   const ws = pkgs["node_modules/@archivist-gg/obsidian"];
   if (!ws || ws.link !== true) throw new Error("[assert] @archivist-gg/obsidian workspace link missing/incorrect");
