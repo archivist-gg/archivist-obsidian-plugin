@@ -1,13 +1,17 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { renderCastView } from "../packages/obsidian/src/modules/pc/components/spells/cast-view";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { ResolvedSpell, DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import { toggleSpellBlock } from "../packages/obsidian/src/modules/pc/components/spells/spell-block-expand";
+import { confirm } from "../packages/obsidian/src/shared/modals/ConfirmModal";
 
 // Stub the block renderer so the expand wiring can be asserted without the async spell-block render.
 vi.mock("../packages/obsidian/src/modules/pc/components/spells/spell-block-expand", () => ({ toggleSpellBlock: vi.fn() }));
+// Stub the confirm popup so the scroll cast flow can be asserted without opening a real modal.
+vi.mock("../packages/obsidian/src/shared/modals/ConfirmModal", () => ({ confirm: vi.fn() }));
+const confirmMock = vi.mocked(confirm);
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -251,8 +255,14 @@ function scrollCastBtn(root: HTMLElement, label = "Scrolls & Consumables"): HTML
 function click(el: Element): void {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 }
+// Drain the microtask queue so the async confirm().then() consume path settles.
+function flush(): Promise<void> {
+  return new Promise((r) => setTimeout(r, 0));
+}
 
 describe("renderCastView · scrolls & consumables", () => {
+  beforeEach(() => confirmMock.mockReset());
+
   it("scroll row reuses the real CAST button (not the retired lozenge) and shows no 'always' marker", () => {
     const root = mountContainer();
     // A Wizard who KNOWS Fireball at L3 and also carries a Fireball scroll (entry 0).
@@ -310,104 +320,66 @@ describe("renderCastView · scrolls & consumables", () => {
     expect(scrollCastBtn(root)).not.toBeNull();
   });
 
-  it("clicking CAST ARMS the scroll (does not consume): the button becomes Consume and a cancel appears", () => {
+  it("clicking CAST opens a consume-confirm popup naming the spell (no inline arm affordance, nothing consumed yet)", async () => {
     const root = mountContainer();
     const consumeScroll = vi.fn();
-    renderCastView(root, ctxForScroll(
+    confirmMock.mockResolvedValue(false); // pretend the user hasn't answered / cancels
+    const ctx = ctxForScroll(
       [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
       { consumeScroll, expendSlot: vi.fn(), castSpell: vi.fn(), restoreSlot: vi.fn() },
-    ));
+    );
+    renderCastView(root, ctx);
     const scrollRow = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
     const btn = scrollCastBtn(root);
-    // At rest the row carries no arming class.
+    // The control stays a plain CAST button — the retired inline arm/cancel is gone.
+    expect(btn.textContent).toBe("CAST");
+    click(btn);
+    // The confirm popup opens with the sheet app, a message naming the spell that
+    // states it consumes + removes the scroll, and a "Consume" confirm label.
+    expect(confirmMock).toHaveBeenCalledTimes(1);
+    const [app, message, confirmLabel] = confirmMock.mock.calls[0];
+    expect(app).toBe(ctx.app);
+    expect(message).toContain("Fireball");
+    expect(message.toLowerCase()).toContain("consume");
+    expect(message.toLowerCase()).toContain("remove");
+    expect(confirmLabel).toBe("Consume");
+    // No inline arm affordance is created and the button label never flips.
+    expect(btn.textContent).toBe("CAST");
+    expect(btn.classList.contains("armed")).toBe(false);
     expect(scrollRow.classList.contains("pc-row-arming")).toBe(false);
-    click(btn);
-    // Armed, not consumed.
+    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
+    // Nothing is consumed until the popup resolves true.
+    await flush();
     expect(consumeScroll).not.toHaveBeenCalled();
-    expect(btn.textContent).toBe("Consume");
-    expect(btn.classList.contains("armed")).toBe(true);
-    // The row is flagged arming so CSS can span the confirm across the name column
-    // (the name hides for the confirm instant) instead of overlapping it.
-    expect(scrollRow.classList.contains("pc-row-arming")).toBe(true);
-    expect(root.querySelector(".pc-spell-castcancel")).not.toBeNull();
   });
 
-  it("arming toggles .pc-row-arming across the full lifecycle (rest → arm → cancel → arm → consume)", () => {
-    const root = mountContainer();
-    const consumeScroll = vi.fn();
-    renderCastView(root, ctxForScroll(
-      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
-      { consumeScroll },
-    ));
-    const row = sectionTableAfter(root, "Scrolls & Consumables").querySelector(".pc-spell-cast-row") as HTMLElement;
-    const btn = scrollCastBtn(root);
-    expect(row.classList.contains("pc-row-arming")).toBe(false);
-    // Arm.
-    click(btn);
-    expect(row.classList.contains("pc-row-arming")).toBe(true);
-    // Cancel reverts and removes the class.
-    click(root.querySelector(".pc-spell-castcancel") as HTMLElement);
-    expect(row.classList.contains("pc-row-arming")).toBe(false);
-    // Re-arm, then consume: the class is removed after consuming too.
-    click(btn);
-    expect(row.classList.contains("pc-row-arming")).toBe(true);
-    click(btn);
-    expect(consumeScroll).toHaveBeenCalledWith(2);
-    expect(row.classList.contains("pc-row-arming")).toBe(false);
-  });
-
-  it("clicking the armed Consume consumes the scroll by entryIndex and never expends a slot", () => {
+  it("confirming the popup consumes the scroll by entryIndex and never expends a slot", async () => {
     const root = mountContainer();
     const consumeScroll = vi.fn();
     const expendSlot = vi.fn();
+    confirmMock.mockResolvedValue(true);
     renderCastView(root, ctxForScroll(
       [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
       { consumeScroll, expendSlot, castSpell: vi.fn(), restoreSlot: vi.fn() },
     ));
-    const btn = scrollCastBtn(root);
-    click(btn); // arm
-    click(btn); // confirm
+    click(scrollCastBtn(root));
+    await flush();
     expect(consumeScroll).toHaveBeenCalledWith(2);
     expect(expendSlot).not.toHaveBeenCalled();
-    // Reverts to CAST and the cancel is gone after consuming.
-    expect(btn.textContent).toBe("CAST");
-    expect(btn.classList.contains("armed")).toBe(false);
-    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
   });
 
-  it("clicking the cancel reverts an armed scroll to CAST without consuming", () => {
+  it("cancelling the popup is a no-op (nothing consumed)", async () => {
     const root = mountContainer();
     const consumeScroll = vi.fn();
+    confirmMock.mockResolvedValue(false);
     renderCastView(root, ctxForScroll(
       [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
       { consumeScroll },
     ));
-    const btn = scrollCastBtn(root);
-    click(btn); // arm
-    const cancel = root.querySelector(".pc-spell-castcancel") as HTMLElement;
-    click(cancel);
+    click(scrollCastBtn(root));
+    await flush();
+    expect(confirmMock).toHaveBeenCalledTimes(1);
     expect(consumeScroll).not.toHaveBeenCalled();
-    expect(btn.textContent).toBe("CAST");
-    expect(btn.classList.contains("armed")).toBe(false);
-    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
-  });
-
-  it("clicking elsewhere on the sheet reverts an armed scroll without consuming", () => {
-    const root = mountContainer();
-    const consumeScroll = vi.fn();
-    renderCastView(root, ctxForScroll(
-      [itemSp("Fireball", 3, 2, { ability: "int", extra: { saving_throw: { ability: "dexterity" } } })],
-      { consumeScroll },
-    ));
-    const btn = scrollCastBtn(root);
-    click(btn); // arm
-    expect(btn.classList.contains("armed")).toBe(true);
-    // A click anywhere outside the action cell reverts it.
-    click(document.body);
-    expect(consumeScroll).not.toHaveBeenCalled();
-    expect(btn.textContent).toBe("CAST");
-    expect(btn.classList.contains("armed")).toBe(false);
-    expect(root.querySelector(".pc-spell-castcancel")).toBeNull();
   });
 
   it("a no-ability scroll (non-caster) shows a muted 'set ability' hint, not the removed per-row capture control", () => {

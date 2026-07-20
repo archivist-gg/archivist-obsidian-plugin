@@ -119,21 +119,10 @@
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-castbtn:hover { background: var(--pc-crimson-light); }
 .archivist-pc-sheet .pc-spell-castbtn.disabled { background: var(--pc-tan-muted); cursor: default; }
-/* Scroll cast: reuse .pc-spell-castbtn (above). The first click ARMS an inline
-   confirm: the button flips to "Consume" (darker, ringed) and a small cancel sits
-   beside it. The act cell flexes so the pair fits the 56px column and wraps if
-   tight. */
+/* Shared cast-cell base for every row's action control (CAST button, At Will /
+   Free pill). Scroll rows reuse the same .pc-spell-castbtn (above); clicking it
+   opens a consume-confirm popup, so no armed / cancel affordance lives inline. */
 .archivist-pc-sheet .pc-spell-act { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.archivist-pc-sheet .pc-spell-castbtn.armed { background: var(--pc-crimson-light); padding: 5px 8px; box-shadow: 0 0 0 2px var(--pc-parchment-light), 0 0 0 3px var(--pc-crimson); }
-.archivist-pc-sheet .pc-spell-castcancel { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; padding: 0; font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); line-height: 1; color: var(--pc-text-muted); background: transparent; border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); cursor: pointer; }
-.archivist-pc-sheet .pc-spell-castcancel:hover { color: var(--pc-crimson); border-color: var(--pc-tan); }
-/* Armed scroll-consume: "Consume" + × out-measure the 56px act column, so while
-   the row is armed (.pc-row-arming, toggled in cast-view) the name cell hides and
-   the act cell spans the act + name columns. The confirm gets the whole name
-   column's width and never overlaps the name (which is absent for the confirm
-   instant); cancel / consume / timeout removes the class and both return. */
-.archivist-pc-sheet .pc-spell-cast-row.pc-row-arming > .pc-spell-namecell { display: none; }
-.archivist-pc-sheet .pc-spell-cast-row.pc-row-arming > .pc-spell-act { grid-column: 1 / 3; flex-wrap: nowrap; }
 .archivist-pc-sheet .pc-spell-atwill { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--pc-text-soft); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 4px 6px; white-space: nowrap; }
 
 .archivist-pc-sheet .pc-spell-namecell { cursor: pointer; }
@@ -178,10 +167,6 @@
 
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-act { grid-column: 1; grid-row: 1 / span 2; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-namecell { grid-column: 2 / -1; grid-row: 1; }
-  /* Armed here: the 52px left rail can't hold "Consume", so span the full first
-     row (the name is hidden by the base .pc-row-arming rule). The effect cell
-     stays on row 2, so nothing overlaps. */
-  .archivist-pc-sheet .pc-spell-cast-row.pc-row-arming > .pc-spell-act { grid-column: 1 / -1; grid-row: 1; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-effcell { grid-column: 2 / -1; grid-row: 2; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-time { grid-column: 2; grid-row: 3; white-space: normal; }
   .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-range { grid-column: 3; grid-row: 3; white-space: normal; }

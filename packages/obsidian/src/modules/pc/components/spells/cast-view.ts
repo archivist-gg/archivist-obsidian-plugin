@@ -6,6 +6,7 @@ import { toggleSpellBlock } from "./spell-block-expand";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
+import { confirm } from "../../../../shared/modals/ConfirmModal";
 
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
@@ -176,54 +177,19 @@ function renderRow(
     // A scroll is cast by CONSUMING the item (one unit / the whole stack's last
     // unit), never by spending a spell slot. Reuse the real .pc-spell-castbtn so
     // the control fits the 56px act column exactly like a real spell row. Because
-    // consuming is destructive, the click ARMS rather than consuming: the button
-    // becomes "Consume" (visibly armed) and a small cancel appears beside it.
-    // Clicking "Consume" consumes; the cancel, a click elsewhere on the sheet, or
-    // a ~4s timeout reverts to CAST without consuming.
+    // consuming is destructive, clicking CAST opens a confirm popup that names the
+    // spell and states it consumes + removes the scroll; confirming consumes the
+    // scroll (removing it from inventory), and cancel does nothing.
     const btn = actTd.createEl("button", { cls: "pc-spell-castbtn", text: "CAST" });
-    let cancelBtn: HTMLElement | null = null;
-    let timer: number | null = null;
-    let onDocClick: ((e: MouseEvent) => void) | null = null;
-
-    const disarm = (): void => {
-      if (timer != null) { activeWindow.clearTimeout(timer); timer = null; }
-      if (onDocClick) { activeDocument.removeEventListener("click", onDocClick, true); onDocClick = null; }
-      cancelBtn?.remove();
-      cancelBtn = null;
-      btn.classList.remove("armed");
-      // Drop the row-level arming flag so the name cell returns and the act cell
-      // shrinks back to its 56px column (see .pc-row-arming rules in spells.css).
-      tr.classList.remove("pc-row-arming");
-      btn.setText("CAST");
-    };
-
-    const arm = (): void => {
-      btn.classList.add("armed");
-      // Flag the row so CSS lets the "Consume" confirm span the name column (the
-      // name hides for the confirm instant) instead of overrunning it. "Consume"
-      // is wider than the 56px act column.
-      tr.classList.add("pc-row-arming");
-      btn.setText("Consume");
-      cancelBtn = actTd.createEl("button", {
-        cls: "pc-spell-castcancel", text: "×", attr: { "aria-label": "Cancel", title: "Cancel" },
-      });
-      cancelBtn.addEventListener("click", (e) => { e.stopPropagation(); disarm(); });
-      timer = activeWindow.setTimeout(disarm, 4000);
-      // One-shot revert on any click outside this action cell. Capture phase so it
-      // still fires even when a clicked descendant stops propagation; clicks on our
-      // own button / cancel are handled by their own listeners, so ignore those.
-      onDocClick = (e: MouseEvent) => { if (!actTd.contains(e.target as Node)) disarm(); };
-      activeDocument.addEventListener("click", onDocClick, true);
-    };
-
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (btn.classList.contains("armed")) {
-        if (spell.entryIndex != null) ctx.editState?.consumeScroll(spell.entryIndex);
-        disarm();
-      } else {
-        arm();
-      }
+      void confirm(
+        ctx.app,
+        `Cast ${spell.entity.name} from the scroll? This consumes the scroll and removes it from your inventory.`,
+        "Consume",
+      ).then((ok) => {
+        if (ok && spell.entryIndex != null) ctx.editState?.consumeScroll(spell.entryIndex);
+      });
     });
   } else {
     let noSlot: boolean;
