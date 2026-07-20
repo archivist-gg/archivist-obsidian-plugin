@@ -225,7 +225,7 @@
 .archivist-pc-sheet .pc-spell-add-head,
 .archivist-pc-sheet .pc-spell-add-row {
   display: grid;
-  grid-template-columns: 30px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
+  grid-template-columns: 44px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
 }
 .archivist-pc-sheet .pc-spell-add-head > .pc-add-th {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
