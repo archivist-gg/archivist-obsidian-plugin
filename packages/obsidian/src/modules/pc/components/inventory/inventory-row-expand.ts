@@ -196,11 +196,10 @@ function renderScrollSpellSection(parent: HTMLElement, ctx: RowExpandCtx, sheet:
     const spell = resolveScrollSpell(sheet, entryIndex, spellRef);
     const value = itemProperty(section, "Spell");
     value.appendText(`${spell.name} · ${spellLevelLabel(spell.level)}`);
-    // Secondary "change" affordance: a QUIET text-link, not a CTA pill. Reuses
-    // the subtle `.pc-spell-remove` dress (muted text, transparent border until
-    // hover) + `.pc-spell-change` for left spacing so it detaches from the value.
-    // It reads clearly lighter than the primary "+ Set spell" `.pc-inline-cta`.
-    const change = value.createEl("button", { cls: "pc-spell-remove pc-spell-change" });
+    // "change" affordance: same `.pc-inv-action` dress as the "+ Set spell" button
+    // (and EQUIP / REMOVE) so it harmonizes with its sibling action buttons; keep
+    // `.pc-spell-change` for the left spacing so it detaches from the value text.
+    const change = value.createEl("button", { cls: "pc-inv-action pc-spell-change" });
     change.setText(CHANGE_SPELL_LABEL);
     change.addEventListener("click", (e) => {
       e.stopPropagation();

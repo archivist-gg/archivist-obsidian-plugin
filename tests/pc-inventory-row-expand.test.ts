@@ -361,14 +361,15 @@ describe("renderRowExpand", () => {
       expect(block?.textContent).toContain("Fireball");
       const labels = [...root.querySelectorAll(".pc-scroll-spellblock .archivist-item-property-label")].map((l) => l.textContent);
       expect(labels).toContain("Spell");
-      // D3.1/D3.2 · the "change" affordance is a QUIET text-link that reuses the
-      // .pc-spell-remove dress + a .pc-spell-change spacing class (left margin,
-      // applied via CSS); it is NOT the heavy .pc-inline-cta primary CTA pill.
+      // The "change" affordance uses the same `.pc-inv-action` dress as the
+      // "+ Set spell" button (and EQUIP / REMOVE) so it harmonizes with its sibling
+      // action buttons; it keeps `.pc-spell-change` for the left spacing and is NOT
+      // the heavy `.pc-inline-cta` pill.
       const change = [...root.querySelectorAll(".pc-scroll-spellblock button")]
         .find((b) => b.textContent?.toLowerCase().includes("change"));
       expect(change).toBeTruthy();
       expect(change?.classList.contains("pc-inline-cta")).toBe(false);
-      expect(change?.classList.contains("pc-spell-remove")).toBe(true);
+      expect(change?.classList.contains("pc-inv-action")).toBe(true);
       expect(change?.classList.contains("pc-spell-change")).toBe(true);
       // Save DC / Attack are intentionally NOT shown on the scroll expand — they
       // surface on the Spells tab where the scroll is cast.
