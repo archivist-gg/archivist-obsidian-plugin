@@ -15,6 +15,22 @@ const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 // treated as "match-all" by `RegisteredEntity.name.includes("")`.
 const ENUMERATE_LIMIT = 10_000;
 
+/** How many rows to show initially, and how many each "Load more" reveals. */
+const PAGE = 50;
+
+/**
+ * Signature for the persisted shown-count, mirroring inventory-list's shownKey
+ * but with a distinct `browse.shown:` prefix — BrowseMode is also mounted by
+ * equipment-step.ts, so a namespaced key avoids colliding with the owned
+ * inventory list. Keyed by the active filters so the count survives sheet
+ * re-renders but resets to PAGE whenever a filter or the search text changes.
+ */
+function browseShownKey(f: FilterState): string {
+  const types = [...f.types].sort().join(",");
+  const rarities = [...f.rarities].sort().join(",");
+  return `browse.shown:${f.status}|${types}|${rarities}|${f.search}`;
+}
+
 export interface BrowseModeOptions {
   filters: FilterState;
   /** When set, the "+ Add" handler tags each added item with this provenance
@@ -50,13 +66,47 @@ export class BrowseMode implements SheetComponent {
     } else {
       const list = root.createDiv({ cls: "pc-inv-list" });
       // Expand state is per-render (closure scoped), keyed by slug since
-      // browse-mode rows all share `index: -1` from the registry sweep.
+      // browse-mode rows all share `index: -1` from the registry sweep. Declared
+      // once here so single-row expand survives load-more repaints.
       const expanded = new Set<string>();
       const registry = (ctx.services?.entities as EntityRegistry | undefined) ?? null;
-      for (const v of filtered) {
-        const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
-        drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry, this.opts.addProvenance);
-      }
+      const addProvenance = this.opts.addProvenance;
+
+      // Shown-count lives in the per-file builderUiState bag (namespaced with a
+      // `browse.shown:` prefix) so it survives whole-sheet re-renders; when the
+      // bag is absent we fall back to a render-scoped local (resets each render).
+      const bag = ctx.builderUiState;
+      const key = browseShownKey(this.opts.filters);
+      const local = { shown: PAGE };
+      const getShown = (): number =>
+        bag ? ((bag.get(key) as number | undefined) ?? PAGE) : local.shown;
+      const setShown = (n: number): void => {
+        if (bag) bag.set(key, n);
+        else local.shown = n;
+      };
+
+      const paint = (): void => {
+        list.empty();
+        const shown = getShown();
+        for (const v of filtered.slice(0, shown)) {
+          const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
+          drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry, addProvenance);
+        }
+        if (filtered.length > shown) {
+          const remaining = filtered.length - shown;
+          const wrap = list.createDiv({ cls: "pc-inv-loadmore" });
+          const btn = wrap.createEl("button", {
+            cls: "pc-inv-loadmore-btn",
+            text: `Load more (${remaining})`,
+          });
+          btn.addEventListener("click", () => {
+            setShown(shown + PAGE);
+            paint();
+          });
+        }
+      };
+
+      paint();
     }
   }
 }
