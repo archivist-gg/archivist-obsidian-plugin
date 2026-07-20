@@ -101,6 +101,16 @@ export class InventoryRow {
 
 function displayName(ctx: InventoryRowCtx): string {
   if (ctx.entry.overrides?.name) return ctx.entry.overrides.name;
+  // P7 F2 · a scroll with a chosen spell reads its identity into the row NAME
+  // ("Scroll of Fireball (3rd Level)") rather than trailing a chip on the
+  // sub-line. Only when no explicit name override wins and the spell + level
+  // both resolve; otherwise fall through to the entity name (no broken name).
+  const spellRef = ctx.entry.overrides?.spell;
+  if (spellRef && isScrollItem(ctx.resolved.entity)) {
+    const level = scrollLevelOf(ctx.resolved.entity);
+    const spellName = scrollSpellName(spellRef, ctx.registry);
+    if (level != null && spellName) return `Scroll of ${spellName} (${scrollLevelLabel(level)})`;
+  }
   const e = ctx.resolved.entity as { name?: string } | null;
   if (e?.name) return e.name;
   return prettifyName(ctx.entry.item);
@@ -145,17 +155,14 @@ function maskedCategoryLabel(entity: InventoryRowCtx["resolved"]["entity"]): str
   return mc ? capitalize(mc) : "Unidentified";
 }
 
-/** Append the scroll's spell affordance to the sub-line: the chosen spell as a
- *  crimson chip (1A) when set, else the amber unset dot + a "+ Set spell" inline
- *  CTA (2B) that opens the spell picker. */
+/** Append the scroll's spell affordance to the sub-line. When a spell is chosen
+ *  it now carries into the row NAME ("Scroll of <spell> (<level>)", see
+ *  `displayName`), so the sub-line adds nothing here (P7 F2, retiring the old
+ *  chip). When unset, it shows the amber unset dot + a "+ Set spell" inline CTA
+ *  (2B) that opens the spell picker. */
 function fillScrollSub(sub: HTMLElement, ctx: InventoryRowCtx): void {
   const spellRef = ctx.entry.overrides?.spell;
-  if (spellRef) {
-    sub.appendText(" · ");
-    const chip = sub.createSpan({ cls: "pc-meta-chip pc-spell-chip" });
-    chip.setText(scrollSpellName(spellRef, ctx.registry));
-    return;
-  }
+  if (spellRef) return;
   sub.appendText(" · ");
   sub.createSpan({ cls: "pc-unset-dot" });
   const cta = sub.createEl("button", { cls: "pc-inline-cta" });
@@ -178,6 +185,20 @@ function scrollSpellName(ref: string, registry: EntityRegistry | null | undefine
 function scrollLevelOf(entity: InventoryRowCtx["resolved"]["entity"]): number | null {
   const lvl = (entity as { scroll_level?: number } | null)?.scroll_level;
   return typeof lvl === "number" ? lvl : null;
+}
+
+function ordinalNum(n: number): string {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
+}
+
+/** Scroll-level label for the display name: 0 → "Cantrip", else the ordinal +
+ *  capital " Level" (e.g. 3 → "3rd Level"), matching the "Scroll of X (3rd Level)"
+ *  naming. Capital "Level" per the user (the expand's `spellLevelLabel` lowercases
+ *  "level" — that surface is unchanged). Null → "" (guarded by the caller). */
+function scrollLevelLabel(level: number | null): string {
+  if (level == null) return "";
+  return level === 0 ? "Cantrip" : `${ordinalNum(level)} Level`;
 }
 
 function keyStat(ctx: InventoryRowCtx): string {

@@ -377,7 +377,7 @@ describe("renderRowExpand", () => {
       expect(block?.textContent).not.toContain("14"); // no save DC row here anymore
     });
 
-    it("renders '+ Set spell' as the primary .pc-inline-cta when no spell is chosen (D3.2 keeps the primary CTA heavy)", async () => {
+    it("renders '+ Set spell' with the EQUIP / REMOVE `.pc-inv-action` dress when no spell is chosen (P7 F1)", async () => {
       const entry: EquipmentEntry = { item: "[[spell-scroll-3rd-level]]" };
       const resolved = {
         index: 5,
@@ -393,9 +393,10 @@ describe("renderRowExpand", () => {
       const setBtn = [...root.querySelectorAll(".pc-scroll-spellblock button")]
         .find((b) => b.textContent?.toLowerCase().includes("set spell"));
       expect(setBtn).toBeTruthy();
-      // The primary CTA stays the heavy .pc-inline-cta pill (only the secondary
-      // "change" affordance is demoted to the quiet link).
-      expect(setBtn?.classList.contains("pc-inline-cta")).toBe(true);
+      // P7 F1 · the expand's set-spell button now reuses the sibling EQUIP / REMOVE
+      // `.pc-inv-action` outline dress instead of the heavy `.pc-inline-cta` pill.
+      expect(setBtn?.classList.contains("pc-inv-action")).toBe(true);
+      expect(setBtn?.classList.contains("pc-inline-cta")).toBe(false);
     });
 
     it("no longer renders the per-scroll INT/WIS/CHA capture control (ability is set at the top of the Spells tab)", async () => {

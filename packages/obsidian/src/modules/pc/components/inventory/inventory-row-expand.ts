@@ -212,7 +212,10 @@ function renderScrollSpellSection(parent: HTMLElement, ctx: RowExpandCtx, sheet:
     // per-cast DC / attack from the resolved casting ability).
   } else {
     const value = itemProperty(section, "Spell");
-    const cta = value.createEl("button", { cls: "pc-inline-cta" });
+    // P7 F1 · reuse the EQUIP / REMOVE dress (`.pc-inv-action`: subtle tan-outline
+    // button that fills crimson on hover) so this set-spell affordance harmonizes
+    // with its sibling action buttons instead of reading as a heavy crimson pill.
+    const cta = value.createEl("button", { cls: "pc-inv-action" });
     cta.setText(SET_SPELL_LABEL);
     cta.addEventListener("click", (e) => {
       e.stopPropagation();
