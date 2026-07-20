@@ -5,6 +5,7 @@ import {
   parseCompendiumMetadata,
   generateCompendiumMetadata,
   CompendiumManager,
+  buildHomebrewSlug,
 } from "../packages/obsidian/src/shared/entities/compendium-manager";
 import { EntityRegistry } from "@core/entity-registry";
 
@@ -168,6 +169,47 @@ describe("generateCompendiumMetadata", () => {
     expect(parsed!.readonly).toBe(original.readonly);
     expect(parsed!.homebrew).toBe(original.homebrew);
     expect(parsed!.folderPath).toBe(original.folderPath);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildHomebrewSlug
+// ---------------------------------------------------------------------------
+describe("buildHomebrewSlug", () => {
+  it("saves a new homebrew entity with a 3-part type-namespaced slug", () => {
+    const slug = buildHomebrewSlug({
+      compendium: "Me",
+      entityType: "item",
+      name: "Cloak of Test",
+    });
+    expect(slug).toBe("me_item_cloak-of-test");
+  });
+
+  it("normalizes the legacy 'magic-item' alias to 'item'", () => {
+    const slug = buildHomebrewSlug({
+      compendium: "Me",
+      entityType: "magic-item",
+      name: "Cloak of Test",
+    });
+    expect(slug).toBe("me_item_cloak-of-test");
+  });
+
+  it("preserves hyphenated canonical types like 'optional-feature'", () => {
+    const slug = buildHomebrewSlug({
+      compendium: "Me",
+      entityType: "optional-feature",
+      name: "Fighting Style",
+    });
+    expect(slug).toBe("me_optional-feature_fighting-style");
+  });
+
+  it("slugifies a multi-word compendium name into the prefix", () => {
+    const slug = buildHomebrewSlug({
+      compendium: "My Homebrew",
+      entityType: "monster",
+      name: "Shadow Goblin",
+    });
+    expect(slug).toBe("my-homebrew_monster_shadow-goblin");
   });
 });
 
@@ -487,10 +529,10 @@ type: humanoid
       expect(result.compendium).toBe("Homebrew");
       expect(result.readonly).toBe(false);
       expect(result.homebrew).toBe(true);
-      expect(result.slug).toBe("homebrew_shadow-goblin");
+      expect(result.slug).toBe("homebrew_monster_shadow-goblin");
 
       // Should be in the registry
-      expect(registry.getBySlug("homebrew_shadow-goblin")).toBeDefined();
+      expect(registry.getBySlug("homebrew_monster_shadow-goblin")).toBeDefined();
 
       // Should have created the file
       expect(vault.create).toHaveBeenCalledWith(

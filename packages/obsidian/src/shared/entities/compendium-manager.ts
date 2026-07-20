@@ -29,6 +29,36 @@ export interface Compendium {
 }
 
 // ---------------------------------------------------------------------------
+// buildHomebrewSlug
+// ---------------------------------------------------------------------------
+
+/**
+ * Mints the base slug for a newly saved homebrew entity, type-namespaced as
+ * `<compendium-prefix>_<entity-type>_<name-slug>` (matching the SRD build-time
+ * generator). The compendium prefix keeps slugs globally unique across
+ * compendiums; the entity-type token disambiguates same-name entities of
+ * different kinds (e.g. the Shield armor vs. the Shield spell). Callers must
+ * still pass the result through `ensureUniqueSlug` to resolve in-compendium
+ * same-type duplicates.
+ *
+ * All live call sites pass a singular canonical presenter `type`
+ * (armor|weapon|item|spell|monster|class|subclass|background|race|feat|
+ * optional-feature|condition). Defensively, the one legacy alias "magic-item"
+ * is normalized to "item", then the token is slugified so it is always
+ * file-safe (slugify preserves hyphens, so "optional-feature" is unchanged).
+ */
+export function buildHomebrewSlug(args: {
+  compendium: string;
+  entityType: string;
+  name: string;
+}): string {
+  const normalizedType =
+    args.entityType === "magic-item" ? "item" : args.entityType;
+  const type = slugify(normalizedType);
+  return `${slugify(args.compendium)}_${type}_${slugify(args.name)}`;
+}
+
+// ---------------------------------------------------------------------------
 // parseCompendiumMetadata
 // ---------------------------------------------------------------------------
 
@@ -304,12 +334,17 @@ export class CompendiumManager {
       throw new Error("Entity data must include a 'name' field");
     }
 
-    // Compendium-prefixed slug: `<compendium-id>_<name-slug>`. The compendium
-    // prefix makes slugs globally unique across compendiums; ensureUniqueSlug
-    // still handles in-compendium duplicates ("Dwarf" + "Dwarf" → "..._dwarf"
-    // and "..._dwarf-custom").
-    const compendiumPrefix = slugify(comp.name);
-    const baseSlug = `${compendiumPrefix}_${slugify(name)}`;
+    // Type-namespaced, compendium-prefixed slug:
+    // `<compendium-id>_<entity-type>_<name-slug>`. The compendium prefix makes
+    // slugs globally unique across compendiums; the entity-type token matches
+    // the SRD generator and disambiguates same-name entities of different kinds.
+    // ensureUniqueSlug still handles in-compendium duplicates ("Dwarf" + "Dwarf"
+    // → "..._race_dwarf" and "..._race_dwarf-custom").
+    const baseSlug = buildHomebrewSlug({
+      compendium: comp.name,
+      entityType,
+      name,
+    });
     const slug = ensureUniqueSlug(baseSlug, this.registry.getAllSlugs());
 
     const typeFolder = TYPE_FOLDER_MAP[entityType] || entityType;
