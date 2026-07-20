@@ -74,12 +74,11 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
   font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
 }
-/* Passive & Features tab: bespoke Race block (D2-2). Reuses the Chronicle block
-   shell + glance tiles + trait rows; only needs bottom spacing to separate it
-   from the grouped passive sections below. The collapse is a self-contained
-   `.hidden` DOM-toggle on `.pc-race-block-body`, hidden via the UA `[hidden]`
-   rule (no display override here, so the attribute keeps working). */
-:is(.archivist-pc-sheet, .archivist-modal) .pc-race-block { margin: 0 0 14px; }
+/* Passive & Features tab: the Race section was rehoused (D7.1) into the native
+   section -> row -> expand idiom (`.pc-tab-heading` + `.pc-feature-row` + row
+   expand). It no longer mints a bespoke `.pc-race-block` chronicle card, so no
+   race-specific shell rule lives here; the glance tiles + trait rows reuse the
+   shared `.pc-cb-glance` / `.pc-cb-trait` dress below inside the row-expand. */
 /* Passive & Features tab: bespoke Background block (D2-3(i)). Same shell + prop
    reference lines as the Race block; a small edition badge sits beside the name,
    and the origin-feat line reuses the `.pc-cb-prop` row layout. */

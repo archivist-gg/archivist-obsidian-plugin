@@ -6,8 +6,9 @@ import { renderBackgroundBlock } from "./passive/background-block";
 
 /**
  * Tab 2 — "Passive & Features". Renders, top to bottom (spec §1.1):
- *   1. the bespoke **Race block** (`renderRaceBlock`, reads `resolved.race`) —
- *      consolidating the scattered per-trait race rows the model used to emit;
+ *   1. the **Race section** (`renderRaceBlock`, reads `resolved.race`): a
+ *      `.pc-tab-heading` + one feature row + row-expand (D7.1), consolidating the
+ *      scattered per-trait race rows the model used to emit;
  *   2. the bespoke **Background block** (`renderBackgroundBlock`, reads
  *      `resolved.background`) — replacing the 2024 "(No description provided.)"
  *      placeholder with a real-content reference block;

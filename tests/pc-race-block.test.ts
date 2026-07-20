@@ -29,18 +29,40 @@ const race = (over: Partial<RaceEntity> = {}): RaceEntity =>
 const ctxWith = (r: RaceEntity | null): ComponentRenderContext =>
   ({ resolved: { race: r } as unknown as ResolvedCharacter } as unknown as ComponentRenderContext);
 
+const headings = (root: HTMLElement): string[] =>
+  [...root.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent ?? "");
 const tileLabels = (root: HTMLElement): string[] =>
   [...root.querySelectorAll(".pc-cb-tile .pc-cb-tl")].map((n) => n.textContent ?? "");
 const traitNames = (root: HTMLElement): string[] =>
   [...root.querySelectorAll(".pc-cb-trait-n")].map((n) => n.textContent ?? "");
 
-describe("renderRaceBlock", () => {
-  it("renders exactly ONE Race block titled 'Race · <species>'", () => {
+describe("renderRaceBlock (section -> row -> expand idiom)", () => {
+  it("renders a 'Race' section heading + one feature row named for the species, NOT the bespoke .pc-race-block card", () => {
     const c = mountContainer();
     renderRaceBlock(c, ctxWith(race()));
-    const blocks = c.querySelectorAll(".pc-race-block");
-    expect(blocks.length).toBe(1);
-    expect(c.querySelector(".pc-race-block .pc-cb-name")?.textContent).toBe("Race · Kalashtar");
+    // The bespoke chronicle card + combined "Race · <name>" header are retired.
+    expect(c.querySelector(".pc-race-block")).toBeNull();
+    expect(c.querySelector(".pc-cb-name")).toBeNull();
+    // A section heading in the shared idiom.
+    expect(headings(c)).toContain("Race");
+    // Exactly one flat feature row, named for the species, with an expand caret.
+    const rows = c.querySelectorAll(".pc-action-row.pc-feature-row");
+    expect(rows.length).toBe(1);
+    const row = rows[0] as HTMLElement;
+    expect(row.querySelector(".pc-action-row-name")?.textContent).toBe("Kalashtar");
+    expect(row.querySelector(".pc-action-caret")).toBeTruthy();
+  });
+
+  it("houses the glance tiles + trait rows inside the row-expand card (not a standalone bordered card)", () => {
+    const c = mountContainer();
+    renderRaceBlock(c, ctxWith(race()));
+    const expand = c.querySelector<HTMLElement>(".pc-action-expand")!;
+    expect(expand).toBeTruthy();
+    expect(expand.querySelector(".pc-cb-glance")).toBeTruthy();
+    expect(expand.querySelector(".pc-cb-trait")).toBeTruthy();
+    // Nothing leaks outside the expand: every tile + trait is a descendant of it.
+    expect(c.querySelector(".pc-cb-tile")!.closest(".pc-action-expand")).toBe(expand);
+    expect(c.querySelector(".pc-cb-trait")!.closest(".pc-action-expand")).toBe(expand);
   });
 
   it("renders a Size tile and a Speed tile, and NO Darkvision tile when vision:{} (F5)", () => {
@@ -59,11 +81,11 @@ describe("renderRaceBlock", () => {
     expect(c.querySelector(".pc-cb-tile .pc-cb-ts")?.textContent).toBeTruthy(); // "ft."
   });
 
-  it("null-guards a missing walking speed (speed:{} → em dash, no crash)", () => {
+  it("null-guards a missing walking speed (speed:{} → middle dot, no crash)", () => {
     const c = mountContainer();
     renderRaceBlock(c, ctxWith(race({ speed: {} })));
     expect(tileLabels(c)).toContain("Speed");
-    // The Speed tile value falls back to a dash rather than "undefined".
+    // The Speed tile value falls back to a middle dot rather than "undefined".
     const speedTile = [...c.querySelectorAll<HTMLElement>(".pc-cb-tile")].find(
       (t) => t.querySelector(".pc-cb-tl")?.textContent === "Speed",
     )!;
@@ -97,22 +119,25 @@ describe("renderRaceBlock", () => {
     expect(traitNames(c)).toContain("Creature Type");
   });
 
-  it("is default-expanded and toggles the body's `hidden` on header click", () => {
+  it("is COLLAPSED by default and toggles the expand's `hidden` on row click (feature-row idiom)", () => {
     const c = mountContainer();
     renderRaceBlock(c, ctxWith(race()));
-    const header = c.querySelector<HTMLElement>(".pc-race-block-head")!;
-    const body = c.querySelector<HTMLElement & { hidden: boolean }>(".pc-race-block-body")!;
-    expect(body.hidden).toBe(false); // default expanded
-    header.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(body.hidden).toBe(true);
-    header.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(body.hidden).toBe(false);
+    const row = c.querySelector<HTMLElement>(".pc-action-row")!;
+    const expand = c.querySelector<HTMLElement & { hidden: boolean }>(".pc-action-expand")!;
+    expect(expand.hidden).toBe(true); // collapsed by default, like sibling feature rows
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(expand.hidden).toBe(false);
+    expect(row.classList.contains("pc-row-open")).toBe(true);
+    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(expand.hidden).toBe(true);
+    expect(row.classList.contains("pc-row-open")).toBe(false);
   });
 
   it("renders nothing when race is null", () => {
     const c = mountContainer();
     renderRaceBlock(c, ctxWith(null));
     expect(c.querySelector(".pc-race-block")).toBeNull();
+    expect(c.querySelector(".pc-action-row")).toBeNull();
     expect(c.childElementCount).toBe(0);
   });
 });

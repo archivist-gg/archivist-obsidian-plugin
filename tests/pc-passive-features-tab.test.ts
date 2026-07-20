@@ -194,18 +194,20 @@ describe("PassiveFeaturesTab", () => {
     expect(el.querySelectorAll(".pc-tab-heading").length).toBe(0);
   });
 
-  // ── Race block (D2-2 pre-split, §3) ─────────────────────────────────────────
+  // ── Race section (D2-2 pre-split, §3; D7.1 section -> row -> expand) ─────────
   describe("race block", () => {
-    it("renders exactly ONE bespoke Race block above the grouped sections when race is present", () => {
+    it("renders exactly ONE 'Race' section (heading + row) above the grouped sections when race is present", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([passiveFeat], { race: raceFixture }));
-      const blocks = c.querySelectorAll(".pc-race-block");
-      expect(blocks.length).toBe(1);
-      // Ordered above the grouped passive sections (block precedes the heading).
-      const block = blocks[0] as HTMLElement;
-      const heading = c.querySelector(".pc-tab-heading");
-      expect(heading).toBeTruthy();
-      expect(block.compareDocumentPosition(heading!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      // The bespoke chronicle card is retired: Race is now a section -> row -> expand.
+      expect(c.querySelector(".pc-race-block")).toBeNull();
+      const raceHeads = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].filter((h) => h.textContent === "Race");
+      expect(raceHeads.length).toBe(1);
+      const raceRow = [...c.querySelectorAll(".pc-feature-row .pc-action-row-name")].find((n) => n.textContent === "Kalashtar");
+      expect(raceRow).toBeTruthy();
+      // Ordered above the grouped "Passive & Free Actions" section (Race heading precedes it).
+      const passiveHead = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Passive & Free Actions")!;
+      expect(raceHeads[0].compareDocumentPosition(passiveHead) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it("pre-splits the passive 'Race' sub-group off the tab (block replaces scattered rows)", () => {
@@ -225,9 +227,11 @@ describe("PassiveFeaturesTab", () => {
       // The ONLY passive content is the race sub-group → after the split the whole
       // "Passive & Free Actions" section is empty and must not render a bare <h4>.
       new PassiveFeaturesTab().render(c, renderCtx([raceFeat], { race: raceFixture }));
-      expect(c.querySelectorAll(".pc-race-block").length).toBe(1);
+      // The Race section (heading + row) is present; the grouped passive section is not.
+      expect([...c.querySelectorAll(".pc-tab-heading")].some((h) => h.textContent === "Race")).toBe(true);
+      expect(c.querySelector(".pc-feature-row .pc-action-row-name")?.textContent).toBe("Kalashtar");
       expect(headings(c)).not.toContain("Passive & Free Actions");
-      expect(c.querySelector(".pc-empty-line")).toBeNull(); // block present → not empty-state
+      expect(c.querySelector(".pc-empty-line")).toBeNull(); // race section present → not empty-state
     });
   });
 
@@ -281,17 +285,17 @@ describe("PassiveFeaturesTab", () => {
       expect(block.querySelector(".pc-bg-origin")).toBeNull();
     });
 
-    it("orders the Background block AFTER the Race block and BEFORE the grouped sections", () => {
+    it("orders the Background block AFTER the Race section and BEFORE the grouped sections", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([passiveFeat], { race: raceFixture, background: bg2024 }));
-      const race = c.querySelector(".pc-race-block")!;
+      const raceHead = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Race")!;
       const bg = c.querySelector(".pc-background-block")!;
-      const heading = c.querySelector(".pc-tab-heading");
-      // Race precedes Background…
-      expect(race.compareDocumentPosition(bg) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-      // …and Background precedes the first grouped-section heading.
-      expect(heading).toBeTruthy();
-      expect(bg.compareDocumentPosition(heading!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      const passiveHead = [...c.querySelectorAll<HTMLElement>(".pc-tab-heading")].find((h) => h.textContent === "Passive & Free Actions")!;
+      // Race section precedes Background…
+      expect(raceHead.compareDocumentPosition(bg) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      // …and Background precedes the grouped-section heading.
+      expect(passiveHead).toBeTruthy();
+      expect(bg.compareDocumentPosition(passiveHead) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it("renders no Background block when there is no background", () => {

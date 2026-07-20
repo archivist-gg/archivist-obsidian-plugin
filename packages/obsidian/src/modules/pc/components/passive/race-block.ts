@@ -28,35 +28,65 @@ function traitDescription(t: Feature): string {
 }
 
 /**
- * The bespoke read-only **Race block** on the Passive & Features tab (spec §3,
- * D2-2). It reads `resolved.race` (`RaceEntity`) DIRECTLY — never the passive
- * action model — so an `action`-cost trait (which files under Actions→Race in the
+ * The read-only **Race** section on the Passive & Features tab (spec §3, D2-2;
+ * D7.1). It reads `resolved.race` (`RaceEntity`) DIRECTLY, never the passive
+ * action model, so an `action`-cost trait (which files under Actions→Race in the
  * model) is still shown here, and the redundant Size/Speed pseudo-trait rows the
  * model would emit are folded into glance tiles instead.
  *
- * Layout: a clickable "Race · <species>" header + chevron over a body of glance
- * tiles (Size, Speed, Darkvision-when-granted) and one row per real trait. The
- * collapse is a self-contained `.hidden` DOM-toggle at the block level — the same
- * state-free idiom feature rows use (`feature-rows.ts`); it does NOT touch
- * `ctx.builderUiState`/`redraw()`, which the stateless tab can't host. Default
- * EXPANDED. Renders nothing when there is no race.
+ * Rehoused (D7.1) into the sheet's native **section → row → expand** idiom, the
+ * exact shape Class Features uses: a `.pc-tab-heading` "Race" heading, then ONE
+ * flat `.pc-action-row.pc-feature-row` (Passive badge + species name + caret) in
+ * a `.pc-feature-list`. Clicking the row reveals the sibling `.pc-action-expand`
+ * card holding the glance tiles (Size / Speed / Darkvision-when-granted) and one
+ * row per real trait: the same content the retired bespoke `.pc-race-block`
+ * chronicle card carried, minus the standalone card chrome and the combined
+ * "Race · <species>" header.
+ *
+ * Collapse is the same self-contained `.hidden` DOM-toggle the feature rows use
+ * (`feature-rows.ts`): the flag lives on the DOM node, reset each render, so it
+ * does NOT touch `ctx.builderUiState`/`redraw()`, which the stateless tab can't
+ * host. Default COLLAPSED, matching the sibling rows. Renders nothing when there
+ * is no race.
  */
 export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext): void {
   const race: RaceEntity | null = ctx.resolved.race;
   if (!race) return;
 
-  const block = parent.createDiv({ cls: "pc-cblock pc-race-block" });
+  // ── Section heading: the shared `.pc-tab-heading` the section renderer emits,
+  //    so "Race" reads as a peer section to the tab's other headings. ──
+  parent.createEl("h4", { cls: "pc-tab-heading", text: "Race" });
 
-  // ── Collapsible header: "Race · <species>" + chevron (default expanded). ──
-  const header = block.createDiv({ cls: "pc-cb-bh collapsible pc-race-block-head" });
-  const ident = header.createDiv({ cls: "pc-cb-bh-ident" });
-  ident.createDiv({ cls: "pc-cb-name", text: `Race · ${race.name}` });
-  const chevron = header.createSpan({ cls: "pc-cb-bh-chev", text: "▾" });
+  // ── Flat feature-row list (one row): the same list container Class Features
+  //    rows live in, so the row inherits the feature-row grid + dress. ──
+  const list = parent.createDiv({ cls: "pc-actions-table pc-feature-list" });
+  const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  const body = block.createDiv({ cls: "pc-race-block-body" });
+  // Badge column: a race is always-on, so it wears the same outline "Passive"
+  // tag every passive feature row shows (mirrors feature-rows.ts).
+  const badge = row.createDiv({ cls: "pc-feature-badge" });
+  badge.createDiv({ cls: "pc-passive-tag", text: "Passive" });
 
-  // ── Glance tiles: Size, Speed (ft.), Darkvision (ft. — only when granted). ──
-  const glance = body.createDiv({ cls: "pc-cb-glance" });
+  // Name cell: the species name, with the size as the quiet sub-label (the same
+  // slot feature rows use for their source line). Size sub-label omitted when the
+  // race carries no size.
+  const nameCell = row.createDiv({ cls: "pc-action-namecell" });
+  nameCell.createDiv({ cls: "pc-action-row-name", text: race.name });
+  if (race.size) nameCell.createDiv({ cls: "pc-action-row-sub", text: cap(race.size) });
+
+  // Detail column kept present-but-empty so the 4-col feature-row grid
+  // (badge | name | detail | caret) stays aligned with its siblings.
+  row.createDiv({ cls: "pc-feature-detail" });
+  row.createDiv({ cls: "pc-action-caret", text: "›" });
+
+  // ── Sibling expand card (hidden until the row is clicked): the glance tiles +
+  //    trait rows moved verbatim off the retired bespoke card. ──
+  const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
+  expand.hidden = true;
+  const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
+
+  // Glance tiles: Size, Speed (ft.), Darkvision (ft., only when granted).
+  const glance = inner.createDiv({ cls: "pc-cb-glance" });
   const tile = (label: string, value: string, small?: string): void => {
     const t = glance.createDiv({ cls: "pc-cb-tile" });
     t.createDiv({ cls: "pc-cb-tl", text: label });
@@ -70,19 +100,19 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
   const darkvision = race.vision?.darkvision;
   if (darkvision) tile("Darkvision", String(darkvision), "ft.");
 
-  // ── Trait rows: every trait that is NOT a size/speed/darkvision pseudo-trait,
-  //    including choice-bearing traits (which the sheet must not hide). ──
+  // Trait rows: every trait that is NOT a size/speed/darkvision pseudo-trait,
+  // including choice-bearing traits (which the sheet must not hide).
   const traits = (race.traits ?? []).filter((t) => !RACE_TILE_FOLD.has(t.name.toLowerCase()));
   for (const t of traits) {
-    const row = body.createDiv({ cls: "pc-cb-trait pc-race-trait" });
-    row.createDiv({ cls: "pc-cb-trait-n", text: t.name });
+    const traitRow = inner.createDiv({ cls: "pc-cb-trait" });
+    traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
     // The description renders through the SHARED markdown path (ctx.app threaded,
     // async) so a trait carrying a pipe table shows a real table, not raw `|...|`
     // text. The `.catch` paints a visible error div; the `.pc-cb-trait-d`
     // container keeps its dress, which the rendered `p`/`table` inherit via CSS.
     const descText = traitDescription(t);
     if (descText) {
-      const dd = row.createDiv({ cls: "pc-cb-trait-d" });
+      const dd = traitRow.createDiv({ cls: "pc-cb-trait-d" });
       void renderMarkdownDescription(dd, descText, ctx.app).catch((err: unknown) => {
         console.error("[Archivist] race trait description render failed", err);
         dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
@@ -90,11 +120,12 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
     }
   }
 
-  // Header click toggles the whole body (tiles + trait rows). Stateless: the
-  // `.hidden` flag lives on the DOM node, reset each render (default expanded).
-  header.addEventListener("click", () => {
-    body.hidden = !body.hidden;
-    chevron.setText(body.hidden ? "▸" : "▾");
-    header.classList.toggle("collapsed", body.hidden);
+  // Row click toggles the sibling expand (tiles + trait rows). Stateless: the
+  // `.hidden` flag lives on the DOM node, reset each render (default collapsed).
+  // Mirrors the feature-row open/close class toggles exactly.
+  row.addEventListener("click", () => {
+    expand.hidden = !expand.hidden;
+    row.classList.toggle("open", !expand.hidden);
+    row.classList.toggle("pc-row-open", !expand.hidden);
   });
 }
