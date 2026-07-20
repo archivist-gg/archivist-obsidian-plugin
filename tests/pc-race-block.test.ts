@@ -40,9 +40,14 @@ describe("renderRaceBlock (section -> row -> expand idiom)", () => {
   it("renders a 'Race' section heading + one feature row named for the species, NOT the bespoke .pc-race-block card", () => {
     const c = mountContainer();
     renderRaceBlock(c, ctxWith(race()));
-    // The bespoke chronicle card + combined "Race · <name>" header are retired.
+    // The bespoke standalone `.pc-race-block` card is retired. The full chronicle
+    // block now renders INSIDE the row-expand, so its `.pc-cb-name` title lives
+    // there (not as a top-level bespoke card, and not combined into a "Race · …"
+    // header — the "Race" section heading and the row are unchanged).
     expect(c.querySelector(".pc-race-block")).toBeNull();
-    expect(c.querySelector(".pc-cb-name")).toBeNull();
+    const cbName = c.querySelector<HTMLElement>(".pc-cb-name");
+    expect(cbName?.textContent).toBe("Kalashtar");
+    expect(cbName?.closest(".pc-action-expand")).toBeTruthy();
     // A section heading in the shared idiom.
     expect(headings(c)).toContain("Race");
     // Exactly one flat feature row, named for the species, with an expand caret.
@@ -81,15 +86,15 @@ describe("renderRaceBlock (section -> row -> expand idiom)", () => {
     expect(c.querySelector(".pc-cb-tile .pc-cb-ts")?.textContent).toBeTruthy(); // "ft."
   });
 
-  it("null-guards a missing walking speed (speed:{} → middle dot, no crash)", () => {
+  it("drops the Speed tile when walking speed is missing (speed:{} → no tile, no 'undefined')", () => {
     const c = mountContainer();
     renderRaceBlock(c, ctxWith(race({ speed: {} })));
-    expect(tileLabels(c)).toContain("Speed");
-    // The Speed tile value falls back to a middle dot rather than "undefined".
-    const speedTile = [...c.querySelectorAll<HTMLElement>(".pc-cb-tile")].find(
-      (t) => t.querySelector(".pc-cb-tl")?.textContent === "Speed",
-    )!;
-    expect(speedTile.querySelector(".pc-cb-tv")?.textContent).not.toContain("undefined");
+    // Each glance tile is conditional now (mirrors the builder's Race step): with
+    // no `walk`, the Speed tile is omitted entirely rather than showing a fallback,
+    // and the sub-line drops the empty speed segment.
+    expect(tileLabels(c)).not.toContain("Speed");
+    // Nothing (tiles or sub-line) leaks the literal string "undefined".
+    expect(c.textContent).not.toContain("undefined");
   });
 
   it("renders BOTH a plain trait AND a choice-bearing trait as rows (choice-bearing NOT hidden — F4)", () => {

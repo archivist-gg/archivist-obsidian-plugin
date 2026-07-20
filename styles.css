@@ -8781,6 +8781,13 @@ body.theme-light .archivist-tag-atk:hover {
 /* The block inside a card drops its own border/shadow/radius — the card frame
    already provides them — so the two frames don't double up. */
 .archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
+/* Same reset for the Passive & Features tab's Race row (race-block.ts): the full
+   chronicle block renders inside the already-padded `.pc-action-expand-inner`, so
+   it sheds its own card chrome (tint / tan border / shadow / padding / margin) to
+   sit FLUSH in the expand — no nested double-card (the shape commit a9e06c2 retired). */
+.archivist-pc-sheet .pc-action-expand-inner > .pc-cblock {
+  border: none; border-radius: 0; box-shadow: none; background: transparent; padding: 0; margin: 0;
+}
 /* LV control (Plan-5 picker A-II): the PRIMARY level control is a `LV n` pill
    that opens an anchored parchment popover with a 4×5 numeral grid (1–20) — no
    native <select>, so the OS menu never draws. The pill keeps the band-control

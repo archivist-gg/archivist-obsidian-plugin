@@ -2,6 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
+import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
 
 /**
  * The pseudo-traits surfaced as glance tiles (Size / Speed / Darkvision) and so
@@ -38,10 +39,16 @@ function traitDescription(t: Feature): string {
  * exact shape Class Features uses: a `.pc-tab-heading` "Race" heading, then ONE
  * flat `.pc-action-row.pc-feature-row` (Passive badge + species name + caret) in
  * a `.pc-feature-list`. Clicking the row reveals the sibling `.pc-action-expand`
- * card holding the glance tiles (Size / Speed / Darkvision-when-granted) and one
- * row per real trait: the same content the retired bespoke `.pc-race-block`
- * chronicle card carried, minus the standalone card chrome and the combined
- * "Race · <species>" header.
+ * card, which fills with the FULL chronicle block — the same
+ * `renderChronicleBlock` shell the builder's Race step renders: identity band
+ * (species name + "Species · Size · Speed · Darkvision" sub-line + "<source> ·
+ * <edition>" corner badge), the flavor paragraph, the glance tiles (Size / Speed
+ * / Darkvision-when-granted), and a "Traits" rule over one row per real trait.
+ * The block's own outer card chrome (tinted background, tan border, box-shadow,
+ * padding) is stripped in CSS (`.pc-action-expand-inner > .pc-cblock`) so it sits
+ * FLUSH in the already-padded expand — no nested double-card. Unlike the builder
+ * it carries NO decision strip / subrace row (those are builder-only, and the
+ * stateless tab has no strip to host them).
  *
  * Collapse is the same self-contained `.hidden` DOM-toggle the feature rows use
  * (`feature-rows.ts`): the flag lives on the DOM node, reset each render, so it
@@ -79,46 +86,64 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
-  // ── Sibling expand card (hidden until the row is clicked): the glance tiles +
-  //    trait rows moved verbatim off the retired bespoke card. ──
+  // ── Sibling expand card (hidden until the row is clicked): the FULL chronicle
+  //    block, its outer card chrome stripped in CSS so it sits flush here. ──
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
   expand.hidden = true;
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
 
-  // Glance tiles: Size, Speed (ft.), Darkvision (ft., only when granted).
-  const glance = inner.createDiv({ cls: "pc-cb-glance" });
-  const tile = (label: string, value: string, small?: string): void => {
-    const t = glance.createDiv({ cls: "pc-cb-tile" });
-    t.createDiv({ cls: "pc-cb-tl", text: label });
-    const v = t.createDiv({ cls: "pc-cb-tv" });
-    v.createSpan({ text: value });
-    if (small) v.createSpan({ cls: "pc-cb-ts", text: small });
-  };
-  if (race.size) tile("Size", cap(race.size));
-  // `speed.walk` is optional → null-guard to a middle dot rather than "undefined".
-  tile("Speed", race.speed?.walk != null ? String(race.speed.walk) : "·", "ft.");
+  // The same `renderChronicleBlock` shell the builder's Race step renders (title
+  // band + sub-line + source badge + flavor + glance tiles + caller body), so the
+  // expand reads as the full race block "with title and everything". The nested
+  // card chrome is stripped by `.pc-action-expand-inner > .pc-cblock` (chronicle.css).
   const darkvision = race.vision?.darkvision;
-  if (darkvision) tile("Darkvision", String(darkvision), "ft.");
-
-  // Trait rows: every trait that is NOT a size/speed/darkvision pseudo-trait,
-  // including choice-bearing traits (which the sheet must not hide).
-  const traits = (race.traits ?? []).filter((t) => !RACE_TILE_FOLD.has(t.name.toLowerCase()));
-  for (const t of traits) {
-    const traitRow = inner.createDiv({ cls: "pc-cb-trait" });
-    traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
-    // The description renders through the SHARED markdown path (ctx.app threaded,
-    // async) so a trait carrying a pipe table shows a real table, not raw `|...|`
-    // text. The `.catch` paints a visible error div; the `.pc-cb-trait-d`
-    // container keeps its dress, which the rendered `p`/`table` inherit via CSS.
-    const descText = traitDescription(t);
-    if (descText) {
-      const dd = traitRow.createDiv({ cls: "pc-cb-trait-d" });
-      void renderMarkdownDescription(dd, descText, ctx.app).catch((err: unknown) => {
-        console.error("[Archivist] race trait description render failed", err);
-        dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
-      });
-    }
-  }
+  renderChronicleBlock(inner, {
+    name: race.name,
+    // Italic sub-line: "Species" plus only the size/speed/darkvision segments the
+    // race actually carries — empties dropped so no "· ·" gaps appear.
+    sub: [
+      "Species",
+      race.size ? cap(race.size) : "",
+      race.speed?.walk != null ? `${race.speed.walk} ft.` : "",
+      darkvision ? `Darkvision ${darkvision} ft.` : "",
+    ].filter(Boolean).join(" · "),
+    // Corner badge "<source> · <edition>", collapsing to undefined when both are
+    // empty (so no bare " · " badge renders).
+    badge: `${race.source} · ${race.edition}`.replace(/^ · | · $/g, "").trim() || undefined,
+    // Flavor paragraph; omitted entirely when the race has no description.
+    flavor: race.description.trim() || undefined,
+    // Glance tiles: Size / Speed / Darkvision — each shown only when granted.
+    tiles: [
+      ...(race.size ? [{ label: "Size", value: cap(race.size) }] : []),
+      ...(race.speed?.walk != null ? [{ label: "Speed", value: String(race.speed.walk), small: "ft." }] : []),
+      ...(darkvision ? [{ label: "Darkvision", value: String(darkvision), small: "ft." }] : []),
+    ],
+    // Body: trait rows under a "Traits" rule — every trait that is NOT a
+    // size/speed/darkvision pseudo-trait, INCLUDING choice-bearing ones (which the
+    // stateless tab must not hide; the narrower RACE_TILE_FOLD keeps them). No
+    // decision strip / subrace row — those are builder-only.
+    body: (host) => {
+      const traits = (race.traits ?? []).filter((t) => !RACE_TILE_FOLD.has(t.name.toLowerCase()));
+      if (!traits.length) return;
+      renderSectionRule(host, "Traits", "from the species entry");
+      for (const t of traits) {
+        const traitRow = host.createDiv({ cls: "pc-cb-trait" });
+        traitRow.createDiv({ cls: "pc-cb-trait-n", text: t.name });
+        // The description renders through the SHARED markdown path (ctx.app threaded,
+        // async) so a trait carrying a pipe table shows a real table, not raw `|...|`
+        // text. The `.catch` paints a visible error div; the `.pc-cb-trait-d`
+        // container keeps its dress, which the rendered `p`/`table` inherit via CSS.
+        const descText = traitDescription(t);
+        if (descText) {
+          const dd = traitRow.createDiv({ cls: "pc-cb-trait-d" });
+          void renderMarkdownDescription(dd, descText, ctx.app).catch((err: unknown) => {
+            console.error("[Archivist] race trait description render failed", err);
+            dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+          });
+        }
+      }
+    },
+  });
 
   // Row click toggles the sibling expand (tiles + trait rows). Stateless: the
   // `.hidden` flag lives on the DOM node, reset each render (default collapsed).
