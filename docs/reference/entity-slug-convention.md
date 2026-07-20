@@ -36,8 +36,10 @@ armor  weapon  item  spell  monster  class  subclass  background  race  feat  op
 
 The type token is **exactly** the value written to the entity's `entity_type`
 frontmatter — the singular canonical kind. Not the plural generator input
-(`classes`/`creatures`/`magicitems`), not `creature`. A build assertion in the
-generator enforces `slug-type-token === entity_type` for every emitted entity.
+(`classes`/`creatures`/`magicitems`), not `creature`. `slug-type-token === entity_type`
+holds **by construction**: the generator's slug builder and the `entity_type` writer
+read the same singular value on each emit path (`build:srd-canonical` computes both from
+one variable, never from two independent sources).
 
 ## Delimiter invariant
 
