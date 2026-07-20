@@ -6039,6 +6039,21 @@ body.theme-light .archivist-tag-atk:hover {
   border-color: rgba(146, 38, 16, 0.4);
 }
 
+/* The scroll SPELL-block affordances ("+ Set spell" / "CHANGE") are SECONDARY to
+   the EQUIP / REMOVE item actions, so they render SMALLER than those. They keep the
+   `.pc-inv-action` outline dress but shed Obsidian's forced ~30px button height (the
+   same override `.pc-inline-cta` uses) and take tighter padding + the 10px label
+   font, so they read as compact inline affordances beside the "Spell" value. Scoped
+   to `.pc-scroll-spellblock` so EQUIP / REMOVE (in `.pc-inv-actions`) stay full size. */
+.archivist-pc-sheet .pc-scroll-spellblock .pc-inv-action {
+  display: inline-block;
+  height: auto;
+  min-height: 0;
+  padding: 3px 9px;
+  font-size: var(--pc-fs-small);
+  line-height: 1.3;
+}
+
 /* ---------- Inventory list container + empty state ---------- */
 .archivist-pc-sheet .pc-inv-list {
   display: flex;
