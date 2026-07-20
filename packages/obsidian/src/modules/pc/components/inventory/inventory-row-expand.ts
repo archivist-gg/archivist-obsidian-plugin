@@ -15,7 +15,7 @@ import { unequipWithAttunementCheck } from "./unequip-flow";
 import { renderOverrideActionsPanel } from "./override-actions-panel";
 import { isScrollItem, isUnidentifiedPlaceholder } from "./item-predicates";
 import { openScrollSpellPicker } from "./scroll-spell-picker";
-import { openIdentifyPicker } from "./identify-picker-modal";
+import { openIdentifyPicker } from "./identify-item-picker";
 import { prettifyName } from "./filter-state";
 
 export interface RowExpandCtx {
@@ -90,9 +90,9 @@ function renderActionsStrip(parent: HTMLElement, ctx: RowExpandCtx, editState: C
   const strip = parent.createDiv({ cls: "pc-inv-actions" });
   const i = ctx.resolved.index;
 
-  // 5A · Identify: for an unidentified placeholder, opens a category-scoped
-  // browse picker whose selection identifies the row in place. Needs the sheet
-  // ctx to host the compendium BrowseMode.
+  // 5A · Identify: for an unidentified placeholder, opens the shared
+  // DecisionPickModal scoped to the placeholder's masked_category; picking a
+  // real item identifies the row in place. Needs the sheet ctx for the registry.
   if (ctx.sheet && isUnidentifiedPlaceholder(ctx.resolved.entity)) {
     const sheet = ctx.sheet;
     const masked = (ctx.resolved.entity as { masked_category?: string } | null)?.masked_category ?? "";

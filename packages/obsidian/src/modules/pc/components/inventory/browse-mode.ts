@@ -22,27 +22,6 @@ export interface BrowseModeOptions {
    *  Equipment step can sum/clear gold-bought gear). Omit (the default) for the
    *  inventory Add drawer — items are added with no provenance, unchanged. */
   addProvenance?: string;
-  /** When set, the row action becomes a picker: clicking it calls `onSelect(slug)`
-   *  (the host closes the drawer) INSTEAD of `editState.addItem`. Used by the
-   *  identify flow to choose an item's true identity. Omit for the normal
-   *  "+ Add" behavior. */
-  onSelect?: (slug: string) => void;
-  /** When set, narrows the browsed candidates to items whose category matches
-   *  this scope: the entity type for weapons/armor, else the item's `type`
-   *  (e.g. "potion", "scroll", "wand"), case-insensitive. Mirrors the
-   *  `masked_category` label carried by an unidentified placeholder so the
-   *  identify picker only surfaces same-category candidates. */
-  categoryScope?: string;
-}
-
-/** Derive the category key used by `categoryScope` and the type filter: the
- *  entity type for weapons/armor, else the item's `type`. Mirrors filter-state's
- *  type derivation so scope + filter agree. */
-function entryCategory(v: VisibleEntry): string {
-  if (v.resolved.entityType === "weapon") return "weapon";
-  if (v.resolved.entityType === "armor") return "armor";
-  const e = v.resolved.entity as { type?: string } | null;
-  return (e?.type ?? "").toLowerCase();
 }
 
 export class BrowseMode implements SheetComponent {
@@ -55,16 +34,12 @@ export class BrowseMode implements SheetComponent {
     const editState = ctx.editState;
 
     const collected = collectCompendiumItems(ctx);
-    // Scope the candidate pool to a single category (identify picker) before the
-    // status/type/rarity/search filters. Absent scope = the full pool, unchanged.
-    const scope = this.opts.categoryScope?.toLowerCase();
-    const candidates = scope ? collected.filter((v) => entryCategory(v) === scope) : collected;
-    const filtered = visibleItems(candidates, this.opts.filters);
+    const filtered = visibleItems(collected, this.opts.filters);
 
     const banner = root.createDiv({ cls: "pc-inv-browse-banner" });
     banner.createSpan({
       cls: "pc-inv-browse-meta",
-      text: `${filtered.length} of ${candidates.length} compendium items shown.`,
+      text: `${filtered.length} of ${collected.length} compendium items shown.`,
     });
 
     if (filtered.length === 0) {
@@ -80,7 +55,7 @@ export class BrowseMode implements SheetComponent {
       const registry = (ctx.services?.entities as EntityRegistry | undefined) ?? null;
       for (const v of filtered) {
         const rowHost = list.createDiv({ cls: "pc-inv-row-host" });
-        drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry, this.opts.addProvenance, this.opts.onSelect);
+        drawBrowseRow(rowHost, v, editState, ctx.app, expanded, registry, this.opts.addProvenance);
       }
     }
   }
@@ -98,7 +73,6 @@ function drawBrowseRow(
   expanded: Set<string>,
   registry: EntityRegistry | null,
   addProvenance?: string,
-  onSelect?: (slug: string) => void,
 ): void {
   host.empty();
   const key = browseKey(v);
@@ -106,8 +80,8 @@ function drawBrowseRow(
   renderBrowseRow(host, v, editState, app, isExpanded, () => {
     if (expanded.has(key)) expanded.delete(key);
     else expanded.add(key);
-    drawBrowseRow(host, v, editState, app, expanded, registry, addProvenance, onSelect);
-  }, addProvenance, onSelect);
+    drawBrowseRow(host, v, editState, app, expanded, registry, addProvenance);
+  }, addProvenance);
   if (isExpanded) {
     // Pass editState: null so renderRowExpand skips the PC-actions strip
     // (Equip / Attune / Remove are inventory-row concerns, not browse-mode).
@@ -129,7 +103,6 @@ function renderBrowseRow(
   isExpanded: boolean,
   onToggle: () => void,
   addProvenance?: string,
-  onSelect?: (slug: string) => void,
 ): void {
   const row = parent.createDiv({ cls: "pc-inv-row" });
   if (isExpanded) row.classList.add("expanded", "pc-row-open");
@@ -154,17 +127,7 @@ function renderBrowseRow(
   row.createDiv({ cls: "pc-inv-weight", text: e?.weight ? `${e.weight} lb` : "—" });
 
   const addCell = row.createDiv();
-  if (onSelect) {
-    // Picker mode (identify flow): the row action selects the item's identity
-    // and the host closes the drawer. Does NOT touch addItem.
-    const select = addCell.createEl("button", { cls: "pc-inv-add-mini" });
-    select.appendText("Select");
-    select.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      const slug = v.entry.item.match(/^\[\[(.+)\]\]$/)?.[1];
-      if (slug) onSelect(slug);
-    });
-  } else if (editState) {
+  if (editState) {
     const add = addCell.createEl("button", { cls: "pc-inv-add-mini" });
     add.appendText("+ Add");
     add.addEventListener("click", (ev) => {
