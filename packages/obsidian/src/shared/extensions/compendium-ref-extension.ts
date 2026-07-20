@@ -69,9 +69,13 @@ export function refreshAllCompendiumRefs(plugin: CompendiumRefHostPlugin | null)
 }
 
 // Re-export parser from its own module (kept separate so tests can import without pulling in CM6/obsidian deps)
-export { parseCompendiumRef } from "./compendium-ref-parser";
+export { parseCompendiumRef, resolveCompendiumRef } from "./compendium-ref-parser";
 export type { CompendiumRef } from "./compendium-ref-parser";
-import { parseCompendiumRef, type CompendiumRef } from "./compendium-ref-parser";
+import {
+  parseCompendiumRef,
+  resolveCompendiumRef,
+  type CompendiumRef,
+} from "./compendium-ref-parser";
 
 // ---------------------------------------------------------------------------
 // CM6 Widget
@@ -101,9 +105,7 @@ class CompendiumRefWidget extends WidgetType {
       return err;
     }
 
-    const entity = ref.entityType
-      ? registryRef.getByTypeAndSlug(ref.entityType, ref.slug)
-      : registryRef.getBySlug(ref.slug);
+    const entity = resolveCompendiumRef(registryRef, ref);
 
     if (!entity) {
       return this.notFoundEl(ref, doc);

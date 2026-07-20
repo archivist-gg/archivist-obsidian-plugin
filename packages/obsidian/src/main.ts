@@ -31,6 +31,7 @@ import {
   setCompendiumRefPlugin,
   setCompendiumRefConfirmFn,
   parseCompendiumRef,
+  resolveCompendiumRef,
   renderCompendiumRefReadingMode,
 } from "./shared/extensions/compendium-ref-extension";
 import { confirm as confirmModal } from "./shared/modals/ConfirmModal";
@@ -185,9 +186,7 @@ export default class ArchivistPlugin extends Plugin {
           }
           const ref = parseCompendiumRef(match[0]);
           if (ref && this.entityRegistry) {
-            const entity = ref.entityType
-              ? this.entityRegistry.getByTypeAndSlug(ref.entityType, ref.slug)
-              : this.entityRegistry.getBySlug(ref.slug);
+            const entity = resolveCompendiumRef(this.entityRegistry, ref);
             if (entity) {
               const wrapper = doc.createElement("div");
               wrapper.classList.add("archivist-compendium-ref");
