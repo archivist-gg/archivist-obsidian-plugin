@@ -192,6 +192,89 @@ describe("InventoryRow", () => {
     });
   });
 
+  describe("scroll + unidentified treatments", () => {
+    it("scroll with a chosen spell names the row 'Scroll of <spell> (<level>)' and drops the sub-line chip (P7 F2)", () => {
+      const it = make("[[spell-scroll-3rd-level]]", {
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", rarity: "uncommon", scroll_level: 3 },
+        entityType: "item",
+        entry: { overrides: { spell: "srd-2024_fireball" } },
+      });
+      const registry = buildMockRegistry([
+        { slug: "srd-2024_fireball", entityType: "spell", data: { name: "Fireball", level: 3 }, name: "Fireball" },
+      ]);
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null, registry });
+      // the spell now carries into the row NAME, not a chip
+      expect(root.querySelector(".pc-inv-name")?.textContent).toBe("Scroll of Fireball (3rd Level)");
+      // the old sub-line chip is gone; the sub-line stays the plain type + rarity
+      expect(root.querySelector(".pc-spell-chip")).toBeNull();
+      const sub = root.querySelector(".pc-inv-sub")?.textContent ?? "";
+      expect(sub).not.toContain("Fireball");
+      // an identified scroll has no unset dot / set-spell CTA either
+      expect(root.querySelector(".pc-unset-dot")).toBeNull();
+      expect(root.querySelector(".pc-inv-sub .pc-inline-cta")).toBeNull();
+    });
+
+    it("cantrip scroll names the row 'Scroll of <spell> (Cantrip)'", () => {
+      const it = make("[[spell-scroll-cantrip]]", {
+        entity: { name: "Spell Scroll (Cantrip)", type: "scroll", rarity: "common", scroll_level: 0 },
+        entityType: "item",
+        entry: { overrides: { spell: "srd-2024_fire-bolt" } },
+      });
+      const registry = buildMockRegistry([
+        { slug: "srd-2024_fire-bolt", entityType: "spell", data: { name: "Fire Bolt", level: 0 }, name: "Fire Bolt" },
+      ]);
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null, registry });
+      expect(root.querySelector(".pc-inv-name")?.textContent).toBe("Scroll of Fire Bolt (Cantrip)");
+    });
+
+    it("an explicit name override still wins over the scroll-spell name", () => {
+      const it = make("[[spell-scroll-3rd-level]]", {
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", rarity: "uncommon", scroll_level: 3 },
+        entityType: "item",
+        entry: { overrides: { name: "Charred Vellum", spell: "srd-2024_fireball" } },
+      });
+      const registry = buildMockRegistry([
+        { slug: "srd-2024_fireball", entityType: "spell", data: { name: "Fireball", level: 3 }, name: "Fireball" },
+      ]);
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null, registry });
+      expect(root.querySelector(".pc-inv-name")?.textContent).toBe("Charred Vellum");
+    });
+
+    it("scroll with no chosen spell shows the unset dot + set-spell CTA (2B)", () => {
+      const it = make("[[spell-scroll-3rd-level]]", {
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", rarity: "uncommon", scroll_level: 3 },
+        entityType: "item",
+      });
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null });
+      expect(root.querySelector(".pc-inv-sub .pc-unset-dot")).toBeTruthy();
+      const cta = root.querySelector(".pc-inv-sub .pc-inline-cta");
+      expect(cta).toBeTruthy();
+      expect(cta?.textContent?.toLowerCase()).toContain("set spell");
+      expect(root.querySelector(".pc-spell-chip")).toBeNull();
+    });
+
+    it("unidentified placeholder: muted-name row, masked-category sub, NO ? glyph (3A)", () => {
+      const it = make("[[unidentified-potion]]", {
+        entity: { name: "Unidentified Potion", type: "potion", unidentified: true, masked_category: "potion" },
+        entityType: "item",
+      });
+      const root = mountContainer();
+      new InventoryRow().render(root, { ...it, app: {} as never, editState: null });
+      const row = root.querySelector(".pc-inv-row");
+      expect(row?.classList.contains("pc-unidentified")).toBe(true);
+      // 3A is WITHOUT the "?" glyph
+      expect(root.querySelector(".pc-unid-glyph")).toBeNull();
+      expect(root.querySelector(".pc-inv-sub")?.textContent?.toLowerCase()).toContain("potion");
+      // the stat / weight / qty cells are hidden until the item is identified
+      expect(root.querySelector(".pc-inv-stat")?.textContent).toBe("");
+      expect(root.querySelector(".pc-inv-weight")?.textContent).toBe("");
+    });
+  });
+
   it("renders magic weapon damage by joining base_item to weapon entity", () => {
     const longsword = {
       slug: "srd-5e_longsword",

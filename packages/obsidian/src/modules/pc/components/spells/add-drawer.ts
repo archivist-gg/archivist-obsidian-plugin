@@ -11,6 +11,30 @@ import { compareCandidates } from "@archivist-gg/dnd5e/spell/spell.filter";
 import type { SortKey } from "@archivist-gg/dnd5e/spell/spell.filter";
 import { confirmResetFilters } from "./reset-filters-modal";
 
+/** How many rows to show initially, and how many each "Load more" reveals. */
+const PAGE = 50;
+
+/**
+ * Signature for the persisted shown-count. Keyed by every facet that changes the
+ * candidate set (query + all-classes + sources/levels + the More-panel facets +
+ * sort) so the count survives whole-sheet re-renders — the drawer is rebuilt with
+ * a fresh `state`, but `ctx.builderUiState` persists — yet resets to PAGE the
+ * moment the user changes a filter, the search text, or the sort. `moreOpen` is
+ * excluded: opening the panel is not a filter. Namespaced `spellsadd.shown:` so
+ * it can never collide with the inventory/browse shown-counts in the same bag.
+ */
+function shownKey(f: FilterState): string {
+  const set = (s: Set<unknown>): string => [...s].map(String).sort().join(",");
+  return [
+    "spellsadd.shown:",
+    f.query, f.showAll ? "1" : "0",
+    set(f.sources), set(f.levels), set(f.schools),
+    set(f.castTimes), set(f.ranges), set(f.damages), set(f.saves),
+    f.concentration ? "1" : "0", f.ritual ? "1" : "0",
+    f.sortKey, f.sortDir,
+  ].join("|");
+}
+
 function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"], v = n % 100;
   return n + (s[(v - 20) % 10] ?? s[v] ?? s[0]);
@@ -165,7 +189,12 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     ...Object.keys(ctx.derived.derivedSpellSlots).map(Number),
     ctx.derived.pactMagic?.level ?? 0,
   );
-  const knownSet = () => new Set(ctx.resolved.spells.map((s) => s.slug));
+  // Scroll-granted spells (source:"item") are NOT part of the known/prepared
+  // list, so excluding them keeps a caster's own class spell that they happen
+  // to carry a scroll of ADDABLE here (mirrors prepare-view / cast-view). AC-S4.
+  const knownSet = () => new Set(
+    ctx.resolved.spells.filter((s) => s.source !== "item").map((s) => s.slug),
+  );
 
   // Persistent toolbar shell (search must survive redraws or it loses focus).
   const bar = drawer.createDiv({ cls: "pc-spell-addbar" });
@@ -178,10 +207,27 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
   const chipsHost = bar.createDiv({ cls: "pc-spell-addbar-primary" });
   const panelHost = bar.createDiv({ cls: "pc-spell-morepanel-host" });
   const tableHost = drawer.createDiv({ cls: "pc-add-tablehost" });
+  // The "Load more" button lives in a dedicated host OUTSIDE .pc-add-tablehost
+  // so it is not swept up in the table's horizontal scroll, and is emptied at
+  // the top of every draw() so it can never accumulate across filter changes.
+  const loadMoreHost = drawer.createDiv({ cls: "pc-spell-add-loadmore-host" });
+
+  // Shown-count lives in the per-file builderUiState bag so it survives the
+  // whole-sheet re-render that any spell edit fires; when the bag is absent we
+  // fall back to a render-scoped local (resets each fresh render).
+  const bag = ctx.builderUiState;
+  const local = { shown: PAGE };
+  const getShown = (): number =>
+    bag ? ((bag.get(shownKey(state)) as number | undefined) ?? PAGE) : local.shown;
+  const setShown = (n: number): void => {
+    if (bag) bag.set(shownKey(state), n);
+    else local.shown = n;
+  };
 
   const draw = (): void => {
     chipsHost.empty();
     tableHost.empty();
+    loadMoreHost.empty();
     allBtn.classList.toggle("active", state.showAll);
     chipGroup(chipsHost, "Source", SOURCES, state.sources, draw);
     chipGroup(chipsHost, "Level", levelItems(maxLevel, state.showAll), state.levels, draw);
@@ -194,11 +240,18 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     if (state.moreOpen) renderMorePanel(panelHost, state, draw);
 
     const known = knownSet();
-    const cands = classSpellCandidates(ctx.services.entities, classSlugs, maxLevel, new Set(), state.showAll, state.query)
+    const all = classSpellCandidates(ctx.services.entities, classSlugs, maxLevel, new Set(), state.showAll, state.query)
       .filter((c) => matchesFilters(c, state))
-      .sort((a, b) => compareCandidates(a, b, state.sortKey, state.sortDir))
-      .slice(0, 300);
-    renderTable(tableHost, cands, state, ctx, known, expanded, draw);
+      .sort((a, b) => compareCandidates(a, b, state.sortKey, state.sortDir));
+    const shown = getShown();
+    renderTable(tableHost, all.slice(0, shown), state, ctx, known, expanded, draw);
+
+    if (all.length > shown) {
+      const remaining = all.length - shown;
+      const wrap = loadMoreHost.createDiv({ cls: "pc-inv-loadmore" });
+      const btn = wrap.createEl("button", { cls: "pc-inv-loadmore-btn", text: `Load more (${remaining})` });
+      btn.addEventListener("click", () => { setShown(shown + PAGE); draw(); });
+    }
   };
 
   search.addEventListener("input", () => { state.query = search.value; draw(); });

@@ -1,12 +1,13 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
 import {
-  renderWeaponRow,
-  renderMasteryTooltip,
+  renderWeaponsGroup,
 } from "../packages/obsidian/src/modules/pc/components/actions/weapons-table";
+import { renderWeaponBlock } from "../packages/obsidian/src/modules/weapon/weapon.renderer";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -20,14 +21,17 @@ function ctxWithAttacks(attacks: AttackRow[]): ComponentRenderContext {
   };
 }
 
-/** Row-only driver: render each attack into a caller-supplied list, mirroring
- *  how the tab (Task 5) dispatches to `renderWeaponRow`. */
-function renderWeapons(root: HTMLElement, attacks: AttackRow[], ctx: ComponentRenderContext): void {
-  const list = root.createDiv({ cls: "pc-actions-table pc-weapons-table" });
-  for (const a of attacks) renderWeaponRow(list, a, ctx);
-}
-
 type Mastery = NonNullable<AttackRow["mastery"]>;
+type WeaponActionEntry = { kind: "weapon"; attack: AttackRow };
+
+/** Group driver: build weapon entries and render the whole sub-group (header +
+ *  rows), mirroring how section-renderer dispatches the weapons sub-group. */
+function renderGroup(root: HTMLElement, attacks: AttackRow[]): HTMLElement {
+  const list = root.createDiv({ cls: "pc-actions-table pc-weapons-table" });
+  const entries: WeaponActionEntry[] = attacks.map((attack) => ({ kind: "weapon", attack }));
+  renderWeaponsGroup(list, entries, ctxWithAttacks(attacks));
+  return list;
+}
 
 const rowWithMastery = (mastery: Mastery | undefined): AttackRow =>
   ({
@@ -41,61 +45,107 @@ const rowWithMastery = (mastery: Mastery | undefined): AttackRow =>
 
 const topple: Mastery = {
   slug: "topple", label: "Topple",
-  description: "On a hit, the target must succeed on a Constitution saving throw or have the Prone condition.",
-  derived: { label: "Save DC", value: 15 },
+  description: "If you hit a creature with this weapon, you can force the creature to make a Constitution saving throw. On a failed save, the creature has the Prone condition.",
+  gist: "on fail: Prone",
+  derived: { label: "Save DC", value: 13 },
 };
 
-describe("WeaponsTable — 2024 weapon mastery chip", () => {
-  it("renders a mastery chip + tooltip for a row with mastery", () => {
+const sap: Mastery = {
+  slug: "sap", label: "Sap",
+  description: "If you hit a creature with this weapon, that creature has Disadvantage on its next attack roll before the start of your next turn.",
+  gist: "on hit: target Disadvantage",
+};
+
+const battleaxe: WeaponEntity = {
+  name: "Battleaxe",
+  category: "martial-melee",
+  damage: { dice: "1d8", type: "slashing" },
+  properties: ["versatile"],
+} as unknown as WeaponEntity;
+
+describe("WeaponsTable · 2024 weapon mastery column (in-block, no hover)", () => {
+  it("renders a labeled header row + a trailing .pc-weapon-mastery CELL over the gist for a has-mastery group", () => {
     const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([]));
+    renderGroup(root, [rowWithMastery(topple)]);
 
-    const chips = root.querySelectorAll(".pc-mastery-tag");
-    expect(chips.length).toBe(1);
-    const chip = chips[0] as HTMLElement;
-    expect(chip.textContent).toContain("Topple");
+    // (a) header row: blank leading cost cell + Name / Range / Hit / Damage / Mastery.
+    const header = root.querySelector(".pc-weapon-header");
+    expect(header).not.toBeNull();
+    expect(header?.classList.contains("has-mastery")).toBe(true);
+    const headerText = header?.textContent ?? "";
+    for (const label of ["Name", "Range", "Hit", "Damage", "Mastery"]) {
+      expect(headerText, label).toContain(label);
+    }
+    // Leading cost cell is blank (no label over the cost badge column).
+    const leadingCell = header?.firstElementChild as HTMLElement;
+    expect(leadingCell?.textContent).toBe("");
 
-    // Tooltip renders lazily on mouseenter.
+    // The row carries the 6-col has-mastery grid template class.
+    const row = root.querySelector(".pc-action-row") as HTMLElement;
+    expect(row.classList.contains("has-mastery")).toBe(true);
+
+    // (a) a REAL trailing grid cell (direct child of the row), NOT a sub-line
+    // inside .pc-weapon-name.
+    const cell = row.querySelector(":scope > .pc-weapon-mastery") as HTMLElement;
+    expect(cell).not.toBeNull();
+    expect(root.querySelector(".pc-weapon-name .pc-weapon-mastery")).toBeNull();
+
+    // Chip stacked over the compact "Save DC 13 · on fail: Prone" line.
+    const chip = cell.querySelector(".pc-mastery-tag") as HTMLElement;
+    expect(chip.textContent).toBe("Topple");
+    expect(chip.classList.contains("pc-meta-chip")).toBe(true);
+    const gist = cell.querySelector(".pc-weapon-mastery-gist") as HTMLElement;
+    expect(gist.textContent).toBe("Save DC 13 · on fail: Prone");
+  });
+
+  it("renders a non-derived mastery gist with no leading derived value", () => {
+    const root = mountContainer();
+    renderGroup(root, [rowWithMastery(sap)]);
+    const gist = root.querySelector(".pc-weapon-mastery-gist") as HTMLElement;
+    expect(gist.textContent).toBe("on hit: target Disadvantage");
+  });
+
+  it("renders NO header + NO Mastery cell for a no-mastery group (unchanged 5-col grid)", () => {
+    const root = mountContainer();
+    renderGroup(root, [rowWithMastery(undefined)]);
+    expect(root.querySelector(".pc-weapon-header")).toBeNull();
+    expect(root.querySelector(".pc-weapon-mastery")).toBeNull();
+    const row = root.querySelector(".pc-action-row") as HTMLElement;
+    expect(row.classList.contains("has-mastery")).toBe(false);
+  });
+
+  it("mounts NO hover tooltip on the mastery chip (attachStatTooltip removed)", () => {
+    const root = mountContainer();
+    renderGroup(root, [rowWithMastery(topple)]);
+    const chip = root.querySelector(".pc-mastery-tag") as HTMLElement;
     expect(root.querySelector(".pc-stat-tooltip")).toBeNull();
     chip.dispatchEvent(new MouseEvent("mouseenter"));
-    const tip = root.querySelector(".pc-stat-tooltip");
-    expect(tip).not.toBeNull();
-    expect(tip?.textContent).toContain("Constitution saving throw");
-    expect(tip?.textContent).toContain("Save DC 15");
+    // No lazy tooltip host is created: the detail now lives in the column + card.
+    expect(root.querySelector(".pc-stat-tooltip")).toBeNull();
   });
 
-  it("renders the mastery chip with the shared .pc-meta-chip base alongside .pc-mastery-tag", () => {
+  it("renders a Weapon Mastery · <Label> in-card section with the Save DC + glossary prose", () => {
+    const block = renderWeaponBlock(battleaxe, topple);
+    const section = block.querySelector(".archivist-weapon-mastery-section") as HTMLElement;
+    expect(section).not.toBeNull();
+    const heading = section.querySelector(".archivist-weapon-mastery-heading")?.textContent ?? "";
+    expect(heading).toContain("Weapon Mastery · Topple");
+    expect(heading).toContain("Save DC 13");
+    expect(section.textContent).toContain("Prone condition");
+  });
+
+  it("renders NO mastery section when renderWeaponBlock is called without a mastery arg", () => {
+    const block = renderWeaponBlock(battleaxe);
+    expect(block.querySelector(".archivist-weapon-mastery-section")).toBeNull();
+  });
+
+  it("emits no em dash (U+2014) in any rendered mastery text", () => {
     const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([]));
-    const tag = root.querySelector(".pc-mastery-tag")!;
-    expect(tag.classList.contains("pc-meta-chip")).toBe(true);
-  });
-
-  it("renders the mastery chip inside the weapon name cell (no 6th grid column)", () => {
-    const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(topple)], ctxWithAttacks([]));
-    const nameCell = root.querySelector(".pc-weapon-name");
-    expect(nameCell?.querySelector(".pc-mastery-tag")).not.toBeNull();
-  });
-
-  it("renders no chip when mastery is absent", () => {
-    const root = mountContainer();
-    renderWeapons(root, [rowWithMastery(undefined)], ctxWithAttacks([]));
-    expect(root.querySelector(".pc-mastery-tag")).toBeNull();
-  });
-
-  it("renderMasteryTooltip writes the description and derived line into the host", () => {
-    installObsidianDomHelpers();
-    const host = document.createElement("div");
-    renderMasteryTooltip(host, topple);
-    expect(host.textContent).toContain("Constitution saving throw");
-    expect(host.querySelector(".pc-mastery-derived")?.textContent).toBe("Save DC 15");
-  });
-
-  it("renderMasteryTooltip omits the derived line when no derived value is present", () => {
-    const host = document.createElement("div");
-    renderMasteryTooltip(host, { slug: "sap", label: "Sap", description: "Disadvantage on its next attack." });
-    expect(host.textContent).toContain("Disadvantage on its next attack.");
-    expect(host.querySelector(".pc-mastery-derived")).toBeNull();
+    renderGroup(root, [rowWithMastery(topple)]);
+    const cell = root.querySelector(".pc-weapon-mastery") as HTMLElement;
+    expect(cell.textContent).not.toContain("—");
+    const block = renderWeaponBlock(battleaxe, topple);
+    const section = block.querySelector(".archivist-weapon-mastery-section") as HTMLElement;
+    expect(section.textContent).not.toContain("—");
   });
 });

@@ -74,7 +74,25 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
   font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
 }
-/* section rule */
+/* Passive & Features tab: the Race section was rehoused (D7.1) into the native
+   section -> row -> expand idiom (`.pc-tab-heading` + `.pc-feature-row` + row
+   expand). It no longer mints a bespoke `.pc-race-block` chronicle card, so no
+   race-specific shell rule lives here; the glance tiles + trait rows reuse the
+   shared `.pc-cb-glance` / `.pc-cb-trait` dress below inside the row-expand. */
+/* Passive & Features tab: the Background section was rehoused (Task 5) into the
+   SAME native section -> row -> expand idiom as Race (`.pc-tab-heading` +
+   `.pc-feature-row` + row expand holding `renderChronicleBlock`). It no longer
+   mints a bespoke `.pc-background-block` chronicle card, so the standalone shell
+   rule below is dead (the block reuses the shared `.pc-cblock` + `.pc-cb-*` dress
+   inside the row-expand, carded by the `.pc-action-expand-inner > .pc-cblock` rule
+   above). The `.pc-bg-flavor` / `.pc-bg-origin` prop dress below is still used. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-background-block { margin: 0 0 14px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ed {
+  margin-left: 8px; font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-flavor { margin: 2px 0 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-origin { color: var(--pc-text-primary); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
   display: flex; align-items: center; gap: 8px;
   border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
@@ -281,6 +299,18 @@
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d table,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc table {
   border-collapse: collapse; width: 100%; margin: 0.4em 0; font-size: inherit;
+  /* Responsive: a wide markdown table (e.g. Elven Lineage) must scroll inside
+     its own box at narrow container-query pane widths instead of forcing the
+     sheet wider. `display: block` is required for `overflow-x` to apply to a
+     table; the internal thead/tbody/tr/th/td keep their table display. */
+  display: block; max-width: 100%; overflow-x: auto;
+}
+/* Same responsive treatment for markdown tables inside PC-sheet item and
+   feature-card blocks (`.archivist-item-block` also dresses feature cards); the
+   global item-note table dress in archivist-dnd.css is left full-width for
+   reading view where there is no narrow container. */
+.archivist-pc-sheet .archivist-item-block table.archivist-table {
+  display: block; max-width: 100%; overflow-x: auto;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d th,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc th {
@@ -359,6 +389,25 @@
 /* The block inside a card drops its own border/shadow/radius — the card frame
    already provides them — so the two frames don't double up. */
 .archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
+/* Passive & Features tab — Race + Background row-expand cards (race-block.ts /
+   background-block.ts): the full chronicle block renders inside the already-padded
+   `.pc-action-expand-inner` and wears the SAME parchment card chrome as the feature
+   card (#11, e.g. Diabolic Contract, an `.archivist-item-block` that self-carries
+   this exact dress) — tinted fill, rounded, soft shadow, NO border. A prior
+   chrome-strip rule (P5) had flattened this to transparent/borderless, LOSING the
+   container; this restores the card. Scoped to the expand's DIRECT `.pc-cblock` so
+   ONLY these two blocks are affected (feature/boon cards use `.archivist-item-block`,
+   item/weapon expands use `.pc-inv-expand`, never `.pc-cblock`). The `0.6em`
+   padding matches the feature card's own inset, so the two read consistently inside
+   the same expand — no ugly double-padding. */
+.archivist-pc-sheet .pc-action-expand-inner > .pc-cblock {
+  background: #f0ddbd;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  padding: 0.6em;
+  margin: 0;
+}
 /* LV control (Plan-5 picker A-II): the PRIMARY level control is a `LV n` pill
    that opens an anchored parchment popover with a 4×5 numeral grid (1–20) — no
    native <select>, so the OS menu never draws. The pill keeps the band-control

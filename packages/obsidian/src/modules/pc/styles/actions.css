@@ -25,27 +25,6 @@
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
 
-/* ---------- Passive / always-active tag (badge-column, in place of a cost pill) ----------
- * Shares the cost-badge pill footprint but reads as a muted outline chip so a
- * Passive row is visually distinct from an actionable one. */
-.archivist-pc-sheet .pc-passive-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 9px;
-  font-size: var(--pc-fs-micro);
-  font-weight: 700;
-  letter-spacing: var(--pc-ls-caps-md);
-  text-transform: uppercase;
-  line-height: var(--pc-lh-tight);
-  color: var(--pc-text-muted);
-  background: transparent;
-  border: 1px solid var(--pc-tan-muted);
-}
-
 /* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
  * Here we only own the outer flex wrapper that places the pip row next to the
@@ -129,6 +108,19 @@
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
   grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
+/* Passive-tab-scoped gutter tighten (Task 6): the "Passive" tag was removed, so
+ * the badge column no longer needs the 66px it took on the Actions tab — reclaim
+ * ~12px so the name column starts closer to the left. SCOPED to the passive tab
+ * (`.pc-passive-features-tab`) ONLY: the base rule above is SHARED with the
+ * Actions tab (class-features/feats render there too and must stay 66px to align
+ * with weapon/item rows). The first track is a FIXED 54px — NOT auto/min-content
+ * (each row is its own grid → auto would collapse tag-less rows to 0 while a
+ * FREE-pill row keeps 52px → cross-row misalignment) and NOT 40px (the FREE pill
+ * is min-width:52px → would overflow the name column). 54px fits the 52px FREE
+ * pill AND keeps every row aligned. */
+.archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
+  grid-template-columns: 54px minmax(0, 1fr) minmax(0, 2fr) 18px;
+}
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
   align-items: center;
@@ -197,27 +189,60 @@
   color: var(--pc-text-muted);
 }
 
-/* 2024 Weapon Mastery — an outline micro-chip (modelled on .pc-cond-tag) on a
- * sub-line in the weapon name cell. Hovering opens a description popover, so it
- * carries a help cursor. Proper-noun labels stay in normal case (unlike the
- * uppercase ADV/DIS cond-tags). */
+/* 2024 Weapon Mastery: a real trailing grid CELL (6th column) on the weapons
+ * table, NOT a hover chip. The label chip stacks over a compact one-line gist
+ * (e.g. "Save DC 13 · on fail: Prone"). The full glossary prose lives in the
+ * row-expand card, so the chip no longer carries a help cursor. */
 .archivist-pc-sheet .pc-weapon-mastery {
-  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
 }
 .archivist-pc-sheet .pc-mastery-tag {
-  position: relative;
   padding: 1px 5px;
   font-size: var(--pc-fs-small);
   font-weight: 600;
   letter-spacing: 0.02em;
   border: 1px solid var(--pc-tan-muted);
   color: var(--pc-text-muted);
-  cursor: help;
 }
-/* Derived numeric line inside the mastery tooltip host (e.g. "Save DC 15"). */
-.pc-mastery-derived {
-  margin-top: 0.3em;
+.archivist-pc-sheet .pc-weapon-mastery-gist {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  line-height: var(--pc-lh-tight);
+  overflow-wrap: anywhere;
+}
+
+/* Labeled header row for a has-mastery weapons group: shares the 6-col grid so
+ * the column labels line up over the rows. The leading cell above the cost
+ * badge is intentionally blank. */
+.archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
+  display: grid;
+  align-items: baseline;
+  gap: var(--pc-space-2);
+  padding: var(--pc-space-1);
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-weapon-header-cell {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-text-muted);
   font-weight: 600;
+  min-width: 0;
+}
+
+/* 6-col has-mastery grid (leading cost + Name + Range + Hit + Damage + Mastery).
+ * Rows without their own mastery still get this template (empty 6th track) so
+ * the whole group's columns stay aligned under the header. The base 5-col grid
+ * above stays for no-mastery groups. */
+.archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
+.archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
+  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
 }
 
 /* Inline italic dice tag override inside actions tab */
@@ -267,6 +292,23 @@
     overflow-x: auto;
     max-width: 100%;
   }
+
+  /* Weapons grid at a narrow container: relax the fixed range/hit/damage
+     min-widths (they overflowed a ~296px pane pre-existing) to flexible tracks
+     that shrink/wrap, so nothing overflows or overlaps. The Mastery cell drops
+     to a full-width line below the row (its column header is hidden, the chip
+     self-labels), so its longer gist has room without cramping the row. This
+     covers BOTH the base 5-col and the 6-col has-mastery layouts. */
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row,
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
+    grid-template-columns: 56px minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.6fr) minmax(0, 1fr);
+    gap: var(--pc-space-1);
+  }
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: anywhere; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
 }
 
 /* Below narrow tier: tighten condition-chip gap so more chips

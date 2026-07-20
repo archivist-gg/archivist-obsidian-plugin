@@ -732,6 +732,21 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Identify an unidentified item: normalizing-replace the entry at `entryIndex`
+   *  with `newSlug` (resets all per-instance state, see eq.identifyItem). */
+  identifyItem(entryIndex: number, newSlug: string): void {
+    eq.identifyItem(this.character, entryIndex, newSlug);
+    this.onChange();
+  }
+
+  /** Consume one use of a scroll/consumable at `entryIndex` (decrement qty, or
+   *  remove the entry when the last one is spent). Casting a scroll spends the
+   *  item rather than a spell slot (see eq.consumeScroll). */
+  consumeScroll(entryIndex: number): void {
+    eq.consumeScroll(this.character, entryIndex);
+    this.onChange();
+  }
+
   equipItem(index: number): eq.EquipResult {
     if (!this.registry) return { kind: "ok" };
     const r = eq.equipItem(this.character, index, this.registry);
@@ -990,6 +1005,15 @@ export class CharacterEditState {
   setSpellsView(mode: "by-level" | "table"): void {
     if (this.character.spells.view === mode) return;
     this.character.spells.view = mode;
+    this.onChange();
+  }
+
+  /** Set the character-level spellcasting ability (the scroll DC-ability fallback
+   *  for a non-caster who holds Spell Scrolls). Writes
+   *  overrides.spellcasting_ability; the resolver derives each scroll's DC via
+   *  derived.abilitySpellcasting. Mirrors the setEquipmentOverride wrapper shape. */
+  setSpellcastingAbility(ability: Ability): void {
+    eq.setSpellcastingAbility(this.character, ability);
     this.onChange();
   }
 

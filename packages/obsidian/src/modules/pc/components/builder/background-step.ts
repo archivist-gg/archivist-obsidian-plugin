@@ -6,9 +6,8 @@ import type { BackgroundLanguageProficiency } from "@archivist-gg/dnd5e/backgrou
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
-import { renderEntityBlock } from "./entity-block";
 import { buildDecisionLedger, wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
-import { stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
+import { resolveOriginFeat, stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
@@ -48,6 +47,15 @@ const stripSummary = (items: DecisionItem[]): string => {
   return `${items.length} total · ${done} resolved · ${items.length - done} open`;
 };
 
+/** Origin items the background step surfaces as live decision rows: the
+ *  background's OWN choices PLUS the origin feat's own child choices (source
+ *  "feat"). The engine files the feat's picks under "background:feat:<id>", so
+ *  they belong to this step, letting a Magic Initiate origin feat's spell picker
+ *  render here rather than being dropped. Race-source items are handled by the
+ *  race step and are excluded. */
+export const isBackgroundStripItem = (i: DecisionItem): boolean =>
+  i.source.kind === "background" || i.source.kind === "feat";
+
 const NO_DESC = "(No description provided.)";
 
 /** SP2 §1 (Plan 5) — Background step. The chosen background's expanded row
@@ -77,21 +85,27 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
       const chosen = e.slug === stripSlug(ctx.resolved.definition.background);
       const d = e.data as BackgroundData;
       const ledger = chosen ? buildDecisionLedger(ctx.resolved, { registry: ctx.services.entities }) : null;
-      const items = ledger?.origin.filter((i) => i.source.kind === "background") ?? [];
-      const ofeat = chosen ? resolveOriginFeat(ctx, e) : null;
+      const items = ledger?.origin.filter(isBackgroundStripItem) ?? [];
+      // Shared lifted resolver (R2-m7): the SAME helper the resolver pipeline uses.
+      const ofeat = chosen ? resolveOriginFeat(ctx.services.entities, d.origin_feat ?? null) : null;
       renderChronicleBlock(wrap, {
         name: e.name,
         sub: backgroundSub(d),
         badge: `${d.source ?? ""} · ${d.edition ?? ""}`.replace(/^ · | · $/g, ""),
         flavor: (d.description ?? "").trim() || undefined,
         pre: chosen ? (host) => renderEditionMixBanner(host, ctx, e) : undefined,
-        tiles: backgroundTiles(d),
+        // F13 guard: for the CHOSEN background the pipeline now owns the origin feat
+        // (Feats row + strip reference below), so suppress the redundant glance tile
+        // — otherwise the feat name would render TWICE in this block. Preview
+        // (non-chosen) rows keep the tile as an at-a-glance summary.
+        tiles: backgroundTiles(d, chosen),
         body: (host) => {
           if (chosen && (items.length || ofeat)) {
             renderSectionRule(host, "What you decide", stripSummary(items));
             renderDecisionStrip(host, ctx, { items, pill: domainPill, live: true, stateKey: "builder.background-strip" });
-            // Append the fixed origin-feat row into the SAME strip root so it sits
-            // beside the decision rows; the feat block expands as its sibling.
+            // Append the fixed origin-feat REFERENCE row into the SAME strip root so
+            // it sits beside the decision rows (F13: reference only — the pipeline
+            // owns the feat's full card, see renderOriginFeatStripRow).
             const strip = host.querySelector<HTMLElement>(".pc-dstrip") ?? host.createDiv({ cls: "pc-dstrip" });
             renderOriginFeatStripRow(strip, ctx, e);
           }
@@ -110,8 +124,14 @@ function backgroundSub(d: BackgroundData): string {
 }
 
 /** Edition-specific glance tiles. 2024: Skills / Tool / Ability Points / Origin
- *  Feat. 2014: Skills / Tool (when present) / Languages / Feature. */
-function backgroundTiles(d: BackgroundData): Array<{ label: string; value: string; small?: string }> {
+ *  Feat. 2014: Skills / Tool (when present) / Languages / Feature.
+ *  `suppressOriginFeat` (F13): drop the 2024 Origin Feat tile for the CHOSEN
+ *  background, whose feat the resolver pipeline now surfaces (Feats row + the
+ *  origin-feat strip reference), so it is not shown twice in one block. */
+function backgroundTiles(
+  d: BackgroundData,
+  suppressOriginFeat = false,
+): Array<{ label: string; value: string; small?: string }> {
   const skills = (d.skill_proficiencies ?? []).map(humanizeSlug).join(", ");
   const tool = fixedToolNames(d);
   const is2024 = !!d.ability_score_increases || (d.choices ?? []).some((c) => c.kind === "ability-points");
@@ -120,7 +140,7 @@ function backgroundTiles(d: BackgroundData): Array<{ label: string; value: strin
       ...(skills ? [{ label: "Skills", value: skills }] : []),
       ...(tool ? [{ label: "Tool", value: tool }] : []),
       ...abilityPointsTile(d),
-      ...originFeatTile(d),
+      ...(suppressOriginFeat ? [] : originFeatTile(d)),
     ];
   }
   const lang = languagesTile(d);
@@ -203,49 +223,6 @@ function renderEditionMixBanner(wrap: HTMLElement, ctx: ComponentRenderContext, 
   });
 }
 
-/** The resolved origin-feat lookup, shared by the tile (display only) and the
- *  strip row (display + the expandable feat block). Returns null when the
- *  background carries no `origin_feat` ref. `display` = variant name ?? feat
- *  name ?? bare slug; `feat` is undefined when the ref doesn't resolve. */
-function resolveOriginFeat(
-  ctx: ComponentRenderContext,
-  e: RegisteredEntity,
-): { feat: RegisteredEntity | undefined; display: string } | null {
-  const ref = (e.data as { origin_feat?: string | null }).origin_feat;
-  if (!ref) return null;
-  // Canonical 2024 backgrounds carry PATH-style wikilinks, e.g.
-  // "[[SRD 2024/Feats/Alert]]" — the tail segment slugified is the bare feat slug
-  // ("alert"). `wikilinkTailSlug` also yields the bare slug for slug-style refs
-  // ("[[my-feat]]" → "my-feat"), so it handles both shapes.
-  const slug = wikilinkTailSlug(ref);
-  const feats = ctx.services.entities.search("", "feat", Number.POSITIVE_INFINITY);
-  // Prefer an EXACT full-slug match (covers bare-slug homebrew refs like
-  // "[[my-feat]]"), so a homebrew "homebrew_alert" can't shadow "srd-2024_alert"
-  // via the loose tail match. Fall back to the suffix match for compendium feats
-  // whose slug is "<compendium>_<bare>". First tail match wins (acceptable).
-  const lookup = (s: string): RegisteredEntity | undefined =>
-    feats.find((f) => f.slug === s) ?? feats.find((f) => f.slug.endsWith(`_${s}`));
-  let feat = lookup(slug);
-  // Variant fallback: canonical 2024 Acolyte/Sage carry parenthesized refs like
-  // "[[SRD 2024/Feats/Magic Initiate (Cleric)]]" whose tail slugifies to
-  // "magic-initiate-cleric", but the only real feat is "srd-2024_magic-initiate".
-  // Strip ONE trailing parenthetical from the RAW tail, re-slugify, and retry —
-  // resolving to the BASE feat while still naming the VARIANT in the display.
-  let variantName: string | undefined;
-  if (!feat) {
-    const rawTail = ref.replace(/^\[\[/, "").replace(/\]\]$/, "").split("/").pop()?.trim() ?? "";
-    const base = rawTail.replace(/\s*\([^()]*\)\s*$/, "").trim();
-    if (base && base !== rawTail) {
-      const baseFeat = lookup(wikilinkTailSlug(`[[${base}]]`));
-      if (baseFeat) {
-        feat = baseFeat;
-        variantName = rawTail; // honest about which variant the background grants
-      }
-    }
-  }
-  return { feat, display: variantName ?? feat?.name ?? slug };
-}
-
 /** Display name for the Origin Feat glance tile — the resolved feat name (or the
  *  parenthesized variant name), falling back to the bare slug. */
 function originFeatDisplayName(ref: string): string {
@@ -256,25 +233,17 @@ function originFeatDisplayName(ref: string): string {
 }
 
 /** 2024 origin feat is FIXED per background — a quiet strip-dressed info row that
- *  names the feat with the feat block expandable beneath it (no selection). The
- *  feat block is inserted as the row's next sibling so the click toggles within
- *  the current render only (renderExpand re-runs on every redraw). */
+ *  NAMES the feat (no selection). F13 guard: the resolver pipeline now OWNS this
+ *  feat — it renders as a real **Feats** row (and its full expandable feat card)
+ *  and applies its effects via `resolved.features`. So the builder shows only a
+ *  lightweight name REFERENCE here and no longer re-renders the whole feat block
+ *  (which would duplicate the pipeline's card). Uses the SAME lifted resolver as
+ *  the sheet (R2-m7), extracting the ref from `e.data.origin_feat`. */
 function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext, e: RegisteredEntity): void {
-  const r = resolveOriginFeat(ctx, e);
+  const ref = (e.data as { origin_feat?: string | null }).origin_feat ?? null;
+  const r = resolveOriginFeat(ctx.services.entities, ref);
   if (!r) return;
-  const row = renderStripInfoRow(host, { pill: "Feat", name: "Origin Feat", value: r.feat ? `${r.display} ▸` : r.display });
-  if (!r.feat) return;
-  // The whole row toggles the feat block (not just the crimson value); the
-  // .expandable class opts the row into the pointer affordance.
-  row.addClass("expandable");
-  let open = false;
-  row.addEventListener("click", () => {
-    if (open) { host.querySelector(".pc-bofeat-expand")?.remove(); open = false; return; }
-    const ex = host.createDiv({ cls: "pc-bofeat-expand" });
-    row.insertAdjacentElement("afterend", ex);
-    renderEntityBlock(ex, r.feat!);
-    open = true;
-  });
+  renderStripInfoRow(host, { pill: "Feat", name: "Origin Feat", value: r.display });
 }
 
 /** The "Proficiencies & starting gear" section: skills, fixed tool, fixed 2014

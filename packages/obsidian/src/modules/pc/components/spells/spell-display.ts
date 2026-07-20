@@ -1,5 +1,7 @@
 import type { ResolvedSpell, SpellLimitInfo } from "@archivist-gg/dnd5e/pc/pc.types";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
+import { bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { ATTACK_ROLL_SPELLS } from "./attack-spells";
 
 const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", constitution: "CON", intelligence: "INT", wisdom: "WIS", charisma: "CHA" };
 
@@ -102,12 +104,23 @@ export function abbrAbility(ability: string): string {
   return ABBR[key] ?? ability.slice(0, 3).toUpperCase();
 }
 
-/** Hit/DC cell data. The model has no per-spell attack field, so only the
- *  save branch exists; DC is the caster class's save DC (from derived). */
-export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number): { ability: string; dc: number } | null {
+/** Discriminated Hit/DC cell data. Attack-roll spells resolve their to-hit with
+ *  a spell ATTACK bonus; save spells show the caster's save DC. */
+export type HitDcDescriptor =
+  | { kind: "attack"; bonus: number }
+  | { kind: "save"; ability: string; dc: number };
+
+/** Hit/DC cell data. A curated attack-roll spell (matched by edition-agnostic
+ *  base slug) shows "Atk +N" from the passed attack bonus; otherwise a spell with
+ *  a saving throw shows the caster's save DC. A spell with neither (e.g. Magic
+ *  Missile's auto-hit) has no to-hit → null. `atk` defaults to 0 when omitted. */
+export function hitDcDescriptor(spell: ResolvedSpell, saveDC: number, atk?: number): HitDcDescriptor | null {
+  if (ATTACK_ROLL_SPELLS.has(bareEntitySlug(spell.slug))) {
+    return { kind: "attack", bonus: atk ?? 0 };
+  }
   const save = spell.entity.saving_throw?.ability;
   if (!save) return null;
-  return { ability: abbrAbility(save), dc: saveDC };
+  return { kind: "save", ability: abbrAbility(save), dc: saveDC };
 }
 
 /** Structured-only effect descriptor. Base damage dice are NOT in the model,

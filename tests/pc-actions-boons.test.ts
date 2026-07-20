@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll, vi } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { ActionsTab } from "../packages/obsidian/src/modules/pc/components/actions-tab";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
@@ -44,97 +44,17 @@ function renderCtx(pools: ResolvedPool[], opts: RenderOpts = {}): ComponentRende
   };
 }
 
-const headings = (root: HTMLElement): string[] =>
-  [...root.querySelectorAll(".pc-tab-heading")].map((n) => n.textContent ?? "");
-const subGroupTitles = (root: HTMLElement): string[] =>
-  [...root.querySelectorAll(".pc-actions-section-head .pc-actions-section-title")].map((n) => n.textContent ?? "");
 const boonRows = (root: HTMLElement): HTMLElement[] =>
   [...root.querySelectorAll<HTMLElement>(".pc-boon-row")];
-const boonNames = (root: HTMLElement): string[] =>
-  boonRows(root).map((r) => r.querySelector(".pc-action-row-name")?.textContent ?? "");
 const boonRowByName = (root: HTMLElement, name: string): HTMLElement =>
   boonRows(root).find((r) => r.querySelector(".pc-action-row-name")?.textContent === name)!;
-/** The economy `.pc-tab-heading` a given boon row files under. */
-const economyForBoon = (root: HTMLElement, name: string): string => {
-  const list = boonRowByName(root, name).closest(".pc-boons-list")!;
-  let n: Element | null = list.previousElementSibling;
-  while (n && !n.classList.contains("pc-tab-heading")) n = n.previousElementSibling;
-  return n?.textContent ?? "";
-};
 
 describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
-  it("files a free boon under Actions → Boons (NOT under an 'Interdict Boons' head)", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("wrath", { name: "Boon of Wrath", action_cost: "free", description: "Deal extra damage." })] }),
-    ]));
-    expect(boonNames(c)).toEqual(["Boon of Wrath"]);
-    expect(economyForBoon(c, "Boon of Wrath")).toBe("Actions");
-    expect(subGroupTitles(c)).toContain("Boons");
-    expect(headings(c)).not.toContain("Interdict Boons");
-  });
-
-  it("files a passive boon under Passive & Always-Active → Boons", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true, description: "Always on." })] }),
-    ]));
-    expect(economyForBoon(c, "Boon of Endurance")).toBe("Passive & Always-Active");
-    expect(headings(c)).not.toContain("Interdict Boons");
-  });
-
-  it("files a granted boon (no action_cost) under Passive → Boons", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ grants: [entry("sight", { name: "Boon of Sight", description: "See in the dark." })] }),
-    ]));
-    expect(boonNames(c)).toEqual(["Boon of Sight"]);
-    expect(economyForBoon(c, "Boon of Sight")).toBe("Passive & Always-Active");
-  });
-
-  it("shows an Active toggle wired to editState for an activatable selected boon", () => {
-    const c = mountContainer();
-    const toggleActiveBuff = vi.fn();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("wrath", { name: "Boon of Wrath", activatable: true })] }),
-    ], { editState: { toggleActiveBuff } }));
-    const row = boonRowByName(c, "Boon of Wrath");
-    const btn = row.querySelector<HTMLButtonElement>(".pc-pool-active");
-    expect(btn).not.toBeNull();
-    expect(btn!.textContent).toBe("Activate");
-    btn!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(toggleActiveBuff).toHaveBeenCalledWith("wrath");
-  });
-
-  it("reflects the on-state ('Active' + .on) when the boon's slug is an active buff", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("wrath", { name: "Boon of Wrath", activatable: true })] }),
-    ], { activeBuffs: ["wrath"] }));
-    const btn = boonRowByName(c, "Boon of Wrath").querySelector<HTMLButtonElement>(".pc-pool-active")!;
-    expect(btn.textContent).toBe("Active");
-    expect(btn.classList.contains("on")).toBe(true);
-  });
-
-  it("shows a 'Passive' tag (no Active toggle, no status marker) on a plain no-cost non-activatable selected boon", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("wrath", { name: "Boon of Wrath" })] }),
-    ]));
-    const row = boonRowByName(c, "Boon of Wrath");
-    expect(row.querySelector(".pc-passive-tag")?.textContent).toBe("Passive");
-    expect(row.querySelector(".pc-pool-active")).toBeNull();
-    expect(row.querySelector(".pc-boon-status")).toBeNull();
-  });
-
-  it("gives a granted free boon a FREE pill (not ACTION) + a quiet 'granted' marker", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([pool({ grants: [entry("red-cant", { name: "Red Cant", action_cost: "free" })] })]));
-    const row = boonRowByName(c, "Red Cant");
-    expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
-    expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull(); // no status-in-badge
-    expect(row.querySelector(".pc-feature-detail .pc-boon-status")!.textContent).toBe("granted");
-  });
+  // The passive/free/special/no-cost boon cases (files-under-Passive, Active
+  // toggle, on-state, Passive tag, granted FREE-pill/marker, read-only granted
+  // tag, expand card, toggle-doesn't-expand) all file under the passive bucket
+  // → they moved to pc-passive-features-tab.test.ts. Only the two clean
+  // action-economy cases (an action boon dims; a bonus boon dims) stay here.
 
   it("gives a selected activatable boon its economy pill + Active toggle (no status marker)", () => {
     const c = mountContainer();
@@ -145,66 +65,21 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     expect(row.querySelector(".pc-boon-status")).toBeNull();
   });
 
-  it("shows the 'Passive' tag for a special boon and no marker for a plain selected boon", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([pool({ selected: [entry("frenzy", { name: "Frenzy", action_cost: "special" })] })]));
-    const row = boonRowByName(c, "Frenzy");
-    expect(row.querySelector(".pc-feature-badge .pc-passive-tag")!.textContent).toBe("Passive");
-    expect(row.querySelector(".pc-cost-badge")).toBeNull();
-    expect(row.querySelector(".pc-boon-status")).toBeNull();
-  });
+  // "shows the 'Passive' tag for a special boon" (special → passive) moved to
+  // pc-passive-features-tab.test.ts.
 
-  it("dims a bonus-action boon when actions are disabled, but not a free boon", () => {
+  it("dims a bonus-action boon when actions are disabled (free-boon split off)", () => {
+    // SPLIT from the old single-tab test: the free-boon half (Free Boon NOT dimmed)
+    // now lives in pc-passive-features-tab.test.ts. A free boon files under the
+    // passive bucket, so only the bonus-action dimming assertion stays here.
     const c1 = mountContainer();
     new ActionsTab().render(c1, renderCtx([pool({ selected: [entry("b", { name: "BA Boon", action_cost: "bonus-action" })] })], { actionsDisabled: true }));
     expect(boonRowByName(c1, "BA Boon").classList.contains("pc-row-disabled")).toBe(true);
-    const c2 = mountContainer();
-    new ActionsTab().render(c2, renderCtx([pool({ selected: [entry("f", { name: "Free Boon", action_cost: "free" })] })], { actionsDisabled: true }));
-    expect(boonRowByName(c2, "Free Boon").classList.contains("pc-row-disabled")).toBe(false);
   });
 
-  it("shows a read-only 'granted' tag (no Active toggle, no select box) on a granted boon", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ grants: [entry("sight", { name: "Boon of Sight", activatable: true })] }),
-    ]));
-    const row = boonRowByName(c, "Boon of Sight");
-    expect(row.textContent).toContain("granted");
-    expect(row.querySelector(".pc-pool-active")).toBeNull();
-    // read-only: never the pool tab's pick/deselect toggle-box
-    expect(row.querySelector(".archivist-toggle-box")).toBeNull();
-  });
-
-  it("clicking a boon row expands the shared .archivist-item-block card with its description", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("wrath", { name: "Boon of Wrath", description: "Deal thunderous extra damage." })] }),
-    ]));
-    const row = boonRowByName(c, "Boon of Wrath");
-    const card = row.nextElementSibling as HTMLElement & { hidden: boolean };
-    expect(card.classList.contains("pc-action-expand")).toBe(true);
-    expect(card.hidden).toBe(true);
-    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(card.hidden).toBe(false);
-    const block = card.querySelector(".archivist-item-block");
-    expect(block).toBeTruthy();
-    expect(block?.textContent).toContain("Boon of Wrath");
-    expect(block?.querySelector(".archivist-item-description")?.textContent).toContain("thunderous extra damage");
-  });
-
-  it("clicking the Active toggle does NOT expand the row's card", () => {
-    const c = mountContainer();
-    const toggleActiveBuff = vi.fn();
-    new ActionsTab().render(c, renderCtx([
-      pool({ selected: [entry("wrath", { name: "Boon of Wrath", activatable: true, description: "x" })] }),
-    ], { editState: { toggleActiveBuff } }));
-    const row = boonRowByName(c, "Boon of Wrath");
-    const card = row.nextElementSibling as HTMLElement & { hidden: boolean };
-    const btn = row.querySelector<HTMLButtonElement>(".pc-pool-active")!;
-    btn.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(card.hidden).toBe(true);
-    expect(toggleActiveBuff).toHaveBeenCalledWith("wrath");
-  });
+  // The read-only 'granted' tag, the boon-row expand card, and the
+  // "Active toggle doesn't expand" cases (all no-cost → passive) moved to
+  // pc-passive-features-tab.test.ts.
 
   it("renders nothing when the character has no pools", () => {
     const c = mountContainer();

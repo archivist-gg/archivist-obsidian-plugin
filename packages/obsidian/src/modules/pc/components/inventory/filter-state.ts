@@ -27,6 +27,17 @@ export function displayName(entry: EquipmentEntry, resolved: ResolvedEquipped): 
   return prettifyName(entry.item);
 }
 
+/** The category key used by the type filter AND the identify picker's category
+ *  scope: the entity type for weapons/armor, else the item's `type` (lowercased).
+ *  One source of truth so the filter and the scope always agree, and every seeded
+ *  `masked_category` (weapon/armor/potion/ring/wand/scroll/wondrous item) maps to
+ *  the same key the candidates carry. */
+export function categoryOf(entityType: string | null | undefined, itemType: string | null | undefined): string {
+  if (entityType === "weapon") return "weapon";
+  if (entityType === "armor") return "armor";
+  return (itemType ?? "").toLowerCase();
+}
+
 export function visibleItems(items: VisibleEntry[], filters: FilterState): VisibleEntry[] {
   const search = filters.search.trim().toLowerCase();
 
@@ -38,9 +49,7 @@ export function visibleItems(items: VisibleEntry[], filters: FilterState): Visib
 
     if (filters.types.size > 0) {
       const e = resolved.entity as { type?: string } | null;
-      const t = resolved.entityType === "weapon" ? "weapon"
-              : resolved.entityType === "armor"  ? "armor"
-              : (e?.type ?? "").toLowerCase();
+      const t = categoryOf(resolved.entityType, e?.type);
       if (!filters.types.has(t)) return false;
     }
 

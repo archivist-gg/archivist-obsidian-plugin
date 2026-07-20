@@ -56,7 +56,9 @@ const rowByName = (root: HTMLElement, name: string): HTMLElement =>
   )!;
 
 describe("ActionsTab — grouped structure", () => {
-  it("emits Bonus Actions / Reactions / Passive headings only for non-empty buckets", () => {
+  it("emits Bonus Actions headings only for non-empty buckets (passive split to the Passive & Features tab)", () => {
+    // SPLIT from the old single-tab test: the passive half (Second Wind → the
+    // "Passive & Free Actions" heading) now lives in pc-passive-features-tab.test.ts.
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
       rf({ name: "Charm", action: "bonus-action" }),
@@ -64,8 +66,8 @@ describe("ActionsTab — grouped structure", () => {
     ]));
     const h = headings(c);
     expect(h).toContain("Bonus Actions");
-    expect(h).toContain("Passive & Always-Active");
     expect(h).not.toContain("Reactions"); // empty bucket omitted
+    expect(h).not.toContain("Passive & Free Actions"); // passive filtered off the Actions tab
   });
 
   it("renders one row per ENTRY, including two same-named entries", () => {
@@ -91,7 +93,7 @@ describe("ActionsTab — grouped structure", () => {
     const row = rowByName(c, "Turncoat");
     row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     const card = row.nextElementSibling as HTMLElement;
-    expect(card.textContent).toContain("Chose — Lies");
+    expect(card.textContent).toContain("Chose · Lies");
     expect(card.textContent).toContain("use Charisma");
   });
 
@@ -117,33 +119,9 @@ describe("ActionsTab — grouped structure", () => {
     expect(card.querySelectorAll(".pc-card-resource .archivist-toggle-box").length).toBe(2);
   });
 
-  it("titles the class-named resource synthetic by its resource name, not the class name", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      rf({ name: "Illrigger", resources: [{ id: "ip", name: "Interdict Points", max_formula: "3", reset: "long-rest" }] }),
-    ], {
-      classes: [{ entity: { name: "Illrigger", slug: "illrigger" }, level: 5 }],
-      featureUses: { ip: { used: 0, max: 3 } },
-    }));
-    expect(rowNames(c)).toContain("Interdict Points");
-    expect(rowNames(c)).not.toContain("Illrigger");
-  });
-
-  it("titles a subclass-named resource synthetic by its resource name, not the subclass name", () => {
-    // The dnd5e resolver builds the identical `{ name, resources }`-only synthetic
-    // for subclass entity-level pools (source.kind === "subclass"), so a subclass
-    // pool must re-title from resources[0].name the same way the class case does.
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      rf({ name: "Hellspeaker", resources: [{ id: "hp", name: "Hellspeaker Pool", max_formula: "2", reset: "long-rest" }] },
-        { source: { kind: "subclass", slug: "hellspeaker", level: 1 } }),
-    ], {
-      classes: [{ subclass: { name: "Hellspeaker", slug: "hellspeaker" }, level: 5 }],
-      featureUses: { hp: { used: 0, max: 2 } },
-    }));
-    expect(rowNames(c)).toContain("Hellspeaker Pool");
-    expect(rowNames(c)).not.toContain("Hellspeaker");
-  });
+  // The two resource-only synthetics ("Interdict Points", "Hellspeaker Pool")
+  // carry no action cost → they file under the passive bucket. Their re-titling
+  // coverage moved to pc-passive-features-tab.test.ts.
 
   it("with BOTH a seeded resource[0] and attacks[], the tracker renders in-row AND the attack detail in the expand card", () => {
     // Finding B: the single in-row detail slot holds the tracker, and the attack
@@ -185,47 +163,25 @@ describe("ActionsTab — grouped structure", () => {
     expect(note).toContain("d10"); // scaling die at L11
   });
 
-  it("clicking a feature row opens the shared .archivist-item-block card; an entries-only feature is non-empty", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([
-      rf({ name: "Fey Ancestry", entries: ["You have advantage on saves against being charmed."] }),
-    ]));
-    const row = rowByName(c, "Fey Ancestry");
-    const card = row.nextElementSibling as HTMLElement & { hidden: boolean };
-    expect(card.classList.contains("pc-action-expand")).toBe(true);
-    expect(card.hidden).toBe(true);
-    row.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(card.hidden).toBe(false);
-    const block = card.querySelector(".archivist-item-block");
-    expect(block).toBeTruthy();
-    expect(block?.querySelector(".archivist-item-description")?.textContent).toContain("advantage on saves");
-  });
+  // "Fey Ancestry" (entries-only, no action cost → passive) and its shared-card
+  // expand coverage moved to pc-passive-features-tab.test.ts.
 
-  it("marks action-economy rows pc-row-disabled when actions are disabled, but not passive rows", () => {
+  it("marks action-economy rows pc-row-disabled when actions are disabled (passive split off)", () => {
+    // SPLIT from the old single-tab test: the passive half (Darkvision NOT dimmed)
+    // now lives in pc-passive-features-tab.test.ts. Darkvision is filtered off the
+    // Actions tab, so only the Smite (action) dimming assertion stays here.
     const c = mountContainer();
     new ActionsTab().render(c, renderCtx([
       rf({ name: "Smite", action: "action" }),
       rf({ name: "Darkvision", passive: true }),
     ], { actionsDisabled: true }));
     expect(rowByName(c, "Smite").classList.contains("pc-row-disabled")).toBe(true);
-    expect(rowByName(c, "Darkvision").classList.contains("pc-row-disabled")).toBe(false);
+    expect(rowNames(c)).not.toContain("Darkvision"); // passive filtered off the Actions tab
   });
 
-  it("does not dim a free-cost feature when actions are disabled (exact-cost rule)", () => {
-    // free → sections into Actions, but a free action is not disabled by
-    // Incapacitated. Dimming keys off the EXACT cost, matching weapons/items/boons.
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })], { actionsDisabled: true }));
-    expect(rowByName(c, "Free Thing").classList.contains("pc-row-disabled")).toBe(false);
-  });
-
-  it("shows a passive tag (not a cost badge) on passive rows", () => {
-    const c = mountContainer();
-    new ActionsTab().render(c, renderCtx([rf({ name: "Darkvision", passive: true })]));
-    const row = rowByName(c, "Darkvision");
-    expect(row.querySelector(".pc-passive-tag")).toBeTruthy();
-    expect(row.querySelector(".pc-cost-badge")).toBeNull();
-  });
+  // "Free Thing" free-dim, the "Darkvision" passive-tag, and the "Free Thing"
+  // FREE-pill cases (all no-cost/free → passive) moved to
+  // pc-passive-features-tab.test.ts.
 
   it("wires the activatable buff toggle on an action-feature via editState", () => {
     const c = mountContainer();

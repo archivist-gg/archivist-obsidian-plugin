@@ -11,6 +11,21 @@ const DEFAULT_FILTERS: FilterState = {
   search: "",
 };
 
+/** How many rows to show initially, and how many each "Load more" reveals. */
+const PAGE = 50;
+
+/**
+ * Signature for the persisted shown-count. Keyed by the active filters so the
+ * count survives inventory mutations (equip / attune / edit re-render the whole
+ * sheet — see pc.sheet.ts root.empty()) but resets to PAGE whenever the user
+ * changes a filter or the search text.
+ */
+function shownKey(f: FilterState): string {
+  const types = [...f.types].sort().join(",");
+  const rarities = [...f.rarities].sort().join(",");
+  return `inventory.shown:${f.status}|${types}|${rarities}|${f.search}`;
+}
+
 export interface InventoryListOptions {
   filters?: FilterState;
   onAttuneConflict?: (incomingIndex: number) => void;
@@ -37,12 +52,44 @@ export class InventoryList implements SheetComponent {
       return;
     }
 
+    // Expanded rows persist across load-more repaints (declared once here).
     const expanded = new Set<number>();
 
-    for (const item of filtered) {
-      const rowHost = root.createDiv({ cls: "pc-inv-row-host" });
-      drawRow(rowHost, item, ctx, expanded, this.opts.onAttuneConflict);
-    }
+    // Shown-count lives in the per-file builderUiState bag so it survives the
+    // whole-sheet re-render fired by any inventory mutation; when the bag is
+    // somehow absent we fall back to a render-scoped local (resets each render).
+    const bag = ctx.builderUiState;
+    const key = shownKey(filters);
+    const local = { shown: PAGE };
+    const getShown = (): number =>
+      bag ? ((bag.get(key) as number | undefined) ?? PAGE) : local.shown;
+    const setShown = (n: number): void => {
+      if (bag) bag.set(key, n);
+      else local.shown = n;
+    };
+
+    const paint = (): void => {
+      root.empty();
+      const shown = getShown();
+      for (const item of filtered.slice(0, shown)) {
+        const rowHost = root.createDiv({ cls: "pc-inv-row-host" });
+        drawRow(rowHost, item, ctx, expanded, this.opts.onAttuneConflict);
+      }
+      if (filtered.length > shown) {
+        const remaining = filtered.length - shown;
+        const wrap = root.createDiv({ cls: "pc-inv-loadmore" });
+        const btn = wrap.createEl("button", {
+          cls: "pc-inv-loadmore-btn",
+          text: `Load more (${remaining})`,
+        });
+        btn.addEventListener("click", () => {
+          setShown(shown + PAGE);
+          paint();
+        });
+      }
+    };
+
+    paint();
   }
 }
 
@@ -66,6 +113,7 @@ function drawRow(
     app: ctx.app,
     editState: ctx.editState,
     registry: ctx.services?.entities ?? null,
+    sheet: ctx,
     onToggle,
     expanded: isExpanded,
   });
@@ -76,6 +124,7 @@ function drawRow(
       app: ctx.app,
       editState: ctx.editState,
       registry: ctx.services?.entities ?? null,
+      sheet: ctx,
       onAttuneConflict,
     });
   }

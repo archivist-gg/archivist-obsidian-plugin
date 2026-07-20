@@ -946,9 +946,36 @@
   padding: 0.4em 0;
 }
 
-/* Separator only when a following section (description / charges / curse) exists. */
+/* Separator only when a following section (description / charges / curse /
+   weapon mastery) exists. */
 .archivist-item-block .archivist-item-properties:has(+ *) {
   border-bottom: 1px solid #d9c484;
+}
+
+/* 2024 Weapon Mastery in-card section (Actions-tab weapon expand only). Sits
+   AFTER the properties block; the single separator between them is supplied by
+   the :has(+ *) rule above, so this section carries no border of its own (no
+   orphan separator when it is the last child). The heading uses a MIDDLE DOT. */
+.archivist-item-block .archivist-weapon-mastery-section {
+  margin: 0.4em 0 0;
+  padding: 0.4em 0 0;
+}
+.archivist-item-block .archivist-weapon-mastery-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  font-weight: 600;
+  color: #191813;
+}
+.archivist-item-block .archivist-weapon-mastery-dc {
+  font-weight: 700;
+  color: #7a200d;
+}
+.archivist-item-block .archivist-weapon-mastery-desc {
+  margin-top: 0.2em;
+  font-size: 13px;
+  color: #191813;
 }
 
 .archivist-item-block .property-line {
@@ -6012,6 +6039,21 @@ body.theme-light .archivist-tag-atk:hover {
   border-color: rgba(146, 38, 16, 0.4);
 }
 
+/* The scroll SPELL-block affordances ("+ Set spell" / "CHANGE") are SECONDARY to
+   the EQUIP / REMOVE item actions, so they render SMALLER than those. They keep the
+   `.pc-inv-action` outline dress but shed Obsidian's forced ~30px button height (the
+   same override `.pc-inline-cta` uses) and take tighter padding + the 10px label
+   font, so they read as compact inline affordances beside the "Spell" value. Scoped
+   to `.pc-scroll-spellblock` so EQUIP / REMOVE (in `.pc-inv-actions`) stay full size. */
+.archivist-pc-sheet .pc-scroll-spellblock .pc-inv-action {
+  display: inline-block;
+  height: auto;
+  min-height: 0;
+  padding: 3px 9px;
+  font-size: var(--pc-fs-small);
+  line-height: 1.3;
+}
+
 /* ---------- Inventory list container + empty state ---------- */
 .archivist-pc-sheet .pc-inv-list {
   display: flex;
@@ -6019,6 +6061,32 @@ body.theme-light .archivist-tag-atk:hover {
   gap: 0;
 }
 .archivist-pc-sheet .pc-inv-row-host { display: contents; }
+
+/* ---------- Load more (pagination) ---------- */
+.archivist-pc-sheet .pc-inv-loadmore {
+  display: flex;
+  justify-content: center;
+  padding: var(--pc-space-3) 0 var(--pc-space-2);
+}
+.archivist-pc-sheet .pc-inv-loadmore-btn {
+  padding: 4px 14px;
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  font-weight: 600;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  color: var(--pc-crimson);
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-inv-loadmore-btn:hover {
+  background: var(--pc-crimson);
+  color: var(--pc-parchment-light);
+  border-color: var(--pc-crimson);
+}
+
 .archivist-pc-sheet .pc-inv-empty {
   padding: var(--pc-space-4) var(--pc-space-3);
   font-family: var(--pc-font-serif);
@@ -6618,6 +6686,82 @@ body.theme-light .archivist-tag-atk:hover {
   .archivist-pc-sheet .pc-inv-filter-group { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; }
 }
 
+/* ── P4 · Scroll & unidentified-item inventory treatments (Task 5) ──────────
+   Folded from scratchpad/p4/proposed.css: the chosen variants 1A / 2B / 3A
+   (no glyph) / 4C / 5A. Reuses existing tokens + classes (.pc-meta-chip,
+   .pc-inv-action, --pc-crimson, --pc-text-muted). */
+
+/* 1A · chosen-spell chip on a scroll's inventory sub-line: crimson "arcane"
+   accent. D3.3 · the base `.pc-meta-chip` declares no border-width and no
+   padding, so a bare `border-color` painted nothing. Give it a real border +
+   padding so it reads as a bordered chip, matching `.pc-cond-tag-dis` /
+   `.pc-mastery-tag`. */
+.archivist-pc-sheet .pc-meta-chip.pc-spell-chip {
+  border: 1px solid var(--pc-crimson);
+  color: var(--pc-crimson);
+  padding: 1px 6px;
+}
+
+/* 2B · amber "unset" dot + a small inline call-to-action for a scroll needing a spell. */
+.archivist-pc-sheet .pc-unset-dot {
+  display:inline-block; width:8px; height:8px; border-radius:50%;
+  background:#c98a1a; margin-right:6px; vertical-align:1px;
+}
+.archivist-pc-sheet .pc-inline-cta {
+  font: inherit; font-weight:700; cursor:pointer;
+  padding:1px 6px; border-radius:2px; color:var(--pc-crimson);
+  border:1px solid var(--pc-crimson); background:transparent;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  /* Match the bordered `.pc-spell-chip` height (17px). The chip is an inline-block
+     `<span>` that pins line-height:1.3 → content 13px + 2px pad + 2px border = 17px.
+     This CTA is a `<button>`, which Obsidian's theme renders `display:inline-flex`
+     with a forced ~30px control height (`--input-height`); line-height alone can't
+     shrink that. So we override the button back to the chip's box: `inline-block` +
+     `height:auto` (drop the forced control height) + `min-height:0`, with the same
+     line-height:1.3 → it now resolves to 17px, exactly like the chip. Declared AFTER
+     `font: inherit` so the font shorthand's line-height longhand doesn't clobber it;
+     vertical-align:middle keeps baseline parity on the .pc-inv-sub line. */
+  display: inline-block; height: auto; min-height: 0;
+  line-height: 1.3; vertical-align: middle;
+}
+.archivist-pc-sheet .pc-inline-cta:hover {
+  background:var(--pc-crimson); color:var(--pc-parchment-light);
+  border-color:var(--pc-crimson);
+}
+
+/* D3.1/D3.2 · secondary "change" link on a chosen scroll spell. Dress comes
+   from the reused `.pc-spell-remove` (quiet muted text, transparent border
+   until hover); this only adds left spacing so it detaches from the value and
+   reads lighter than the primary "+ Set spell" `.pc-inline-cta`. */
+.archivist-pc-sheet .pc-spell-change { margin-left: 8px; }
+
+/* 3A · unidentified placeholder row (WITHOUT the "?" glyph): muted italic name,
+   dimmed icon. */
+.archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-name {
+  font-style: italic;
+  color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .pc-inv-row.pc-unidentified .pc-inv-icon { opacity: .5; }
+
+/* 5A · Identify button (reuses .pc-inv-action; crimson accent to signal "reveal").
+   D4.1 · mirror `.pc-inv-action.danger`: override the border-color ONLY, never
+   `color`. The base `.pc-inv-action` is already crimson text, so a `color`
+   re-declaration here was redundant AND, sitting after the shared `:hover` rule
+   at equal specificity, overrode the hover's parchment text (crimson-on-crimson,
+   invisible label). Dropping it lets the shared `:hover` (white-on-crimson) win. */
+.archivist-pc-sheet .pc-inv-action.pc-identify {
+  border-color: var(--pc-crimson);
+}
+
+/* 4C · item-block property rows ship unstyled (touching inline spans); give them a
+   clean two-column layout for the scroll Spell / Save DC / Attack rows. */
+.archivist-pc-sheet .archivist-item-property { display: flex; align-items: baseline; gap: 12px; padding: 2px 0; }
+.archivist-pc-sheet .archivist-item-property-label {
+  flex: 0 0 118px; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  font-weight: 700; color: var(--pc-text-muted);
+}
+.archivist-pc-sheet .archivist-item-property-value { flex: 1 1 auto; }
+
 
 /* ============================================
    pc/actions.css
@@ -6648,27 +6792,6 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-cost-badge.cost-reaction { background: var(--pc-rarity-rare); }
 .archivist-pc-sheet .pc-cost-badge.cost-free     { background: var(--pc-text-soft); }
 .archivist-pc-sheet .pc-cost-badge.cost-special  { background: var(--pc-text-muted); }
-
-/* ---------- Passive / always-active tag (badge-column, in place of a cost pill) ----------
- * Shares the cost-badge pill footprint but reads as a muted outline chip so a
- * Passive row is visually distinct from an actionable one. */
-.archivist-pc-sheet .pc-passive-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: 9px;
-  font-size: var(--pc-fs-micro);
-  font-weight: 700;
-  letter-spacing: var(--pc-ls-caps-md);
-  text-transform: uppercase;
-  line-height: var(--pc-lh-tight);
-  color: var(--pc-text-muted);
-  background: transparent;
-  border: 1px solid var(--pc-tan-muted);
-}
 
 /* ---------- Charge boxes (legendary-style toggle pips + recovery suffix) ----------
  * The pip visuals live in src/styles/archivist-dnd.css under .archivist-toggle-box.
@@ -6753,6 +6876,19 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
   grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
+/* Passive-tab-scoped gutter tighten (Task 6): the "Passive" tag was removed, so
+ * the badge column no longer needs the 66px it took on the Actions tab — reclaim
+ * ~12px so the name column starts closer to the left. SCOPED to the passive tab
+ * (`.pc-passive-features-tab`) ONLY: the base rule above is SHARED with the
+ * Actions tab (class-features/feats render there too and must stay 66px to align
+ * with weapon/item rows). The first track is a FIXED 54px — NOT auto/min-content
+ * (each row is its own grid → auto would collapse tag-less rows to 0 while a
+ * FREE-pill row keeps 52px → cross-row misalignment) and NOT 40px (the FREE pill
+ * is min-width:52px → would overflow the name column). 54px fits the 52px FREE
+ * pill AND keeps every row aligned. */
+.archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
+  grid-template-columns: 54px minmax(0, 1fr) minmax(0, 2fr) 18px;
+}
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
   align-items: center;
@@ -6821,27 +6957,60 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-muted);
 }
 
-/* 2024 Weapon Mastery — an outline micro-chip (modelled on .pc-cond-tag) on a
- * sub-line in the weapon name cell. Hovering opens a description popover, so it
- * carries a help cursor. Proper-noun labels stay in normal case (unlike the
- * uppercase ADV/DIS cond-tags). */
+/* 2024 Weapon Mastery: a real trailing grid CELL (6th column) on the weapons
+ * table, NOT a hover chip. The label chip stacks over a compact one-line gist
+ * (e.g. "Save DC 13 · on fail: Prone"). The full glossary prose lives in the
+ * row-expand card, so the chip no longer carries a help cursor. */
 .archivist-pc-sheet .pc-weapon-mastery {
-  margin-top: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
 }
 .archivist-pc-sheet .pc-mastery-tag {
-  position: relative;
   padding: 1px 5px;
   font-size: var(--pc-fs-small);
   font-weight: 600;
   letter-spacing: 0.02em;
   border: 1px solid var(--pc-tan-muted);
   color: var(--pc-text-muted);
-  cursor: help;
 }
-/* Derived numeric line inside the mastery tooltip host (e.g. "Save DC 15"). */
-.pc-mastery-derived {
-  margin-top: 0.3em;
+.archivist-pc-sheet .pc-weapon-mastery-gist {
+  font-family: var(--pc-font-serif);
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-soft);
+  line-height: var(--pc-lh-tight);
+  overflow-wrap: anywhere;
+}
+
+/* Labeled header row for a has-mastery weapons group: shares the 6-col grid so
+ * the column labels line up over the rows. The leading cell above the cost
+ * badge is intentionally blank. */
+.archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
+  display: grid;
+  align-items: baseline;
+  gap: var(--pc-space-2);
+  padding: var(--pc-space-1);
+  border-bottom: 1px solid var(--pc-tan-muted);
+}
+.archivist-pc-sheet .pc-weapon-header-cell {
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-label);
+  text-transform: uppercase;
+  letter-spacing: var(--pc-ls-caps-md);
+  color: var(--pc-text-muted);
   font-weight: 600;
+  min-width: 0;
+}
+
+/* 6-col has-mastery grid (leading cost + Name + Range + Hit + Damage + Mastery).
+ * Rows without their own mastery still get this template (empty 6th track) so
+ * the whole group's columns stay aligned under the header. The base 5-col grid
+ * above stays for no-mastery groups. */
+.archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
+.archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
+  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(110px, 1.1fr) minmax(96px, 1.15fr);
 }
 
 /* Inline italic dice tag override inside actions tab */
@@ -6891,6 +7060,23 @@ body.theme-light .archivist-tag-atk:hover {
     overflow-x: auto;
     max-width: 100%;
   }
+
+  /* Weapons grid at a narrow container: relax the fixed range/hit/damage
+     min-widths (they overflowed a ~296px pane pre-existing) to flexible tracks
+     that shrink/wrap, so nothing overflows or overlaps. The Mastery cell drops
+     to a full-width line below the row (its column header is hidden, the chip
+     self-labels), so its longer gist has room without cramping the row. This
+     covers BOTH the base 5-col and the 6-col has-mastery layouts. */
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row,
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row.has-mastery,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header,
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header.has-mastery {
+    grid-template-columns: 56px minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.6fr) minmax(0, 1fr);
+    gap: var(--pc-space-1);
+  }
+  .archivist-pc-sheet .pc-weapons-table .pc-action-row > * { overflow-wrap: anywhere; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-mastery { grid-column: 1 / -1; }
+  .archivist-pc-sheet .pc-weapons-table .pc-weapon-header-mastery { display: none; }
 }
 
 /* Below narrow tier: tighten condition-chip gap so more chips
@@ -7419,6 +7605,10 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-castbtn { font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700; letter-spacing: .06em; color: var(--pc-white); background: var(--pc-crimson); border: none; border-radius: var(--pc-radius-sm); padding: 5px 10px; cursor: pointer; }
 .archivist-pc-sheet .pc-spell-castbtn:hover { background: var(--pc-crimson-light); }
 .archivist-pc-sheet .pc-spell-castbtn.disabled { background: var(--pc-tan-muted); cursor: default; }
+/* Shared cast-cell base for every row's action control (CAST button, At Will /
+   Free pill). Scroll rows reuse the same .pc-spell-castbtn (above); clicking it
+   opens a consume-confirm popup, so no armed / cancel affordance lives inline. */
+.archivist-pc-sheet .pc-spell-act { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .archivist-pc-sheet .pc-spell-atwill { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--pc-text-soft); border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-sm); padding: 4px 6px; white-space: nowrap; }
 
 .archivist-pc-sheet .pc-spell-namecell { cursor: pointer; }
@@ -7443,6 +7633,32 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-dtype-icon.dmg { color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-spell-comp { font-size: var(--pc-fs-small); color: var(--pc-text-muted); }
 .archivist-pc-sheet .pc-spell-dur { color: var(--pc-text-soft); }
+
+/* Cast table at a narrow container: the 7-column grid's fixed action / time /
+   range / hit / components tracks sum past a ~296px pane, so mirror the Task M
+   weapons treatment. Hide the column header (it can't map to a reflowed row)
+   and restack each row: the CAST / At Will / Free control on a left rail, the
+   name + effect beside it, and the time / range / hit-DC / components metadata
+   wrapping onto lines below. All tracks are shrinkable so nothing overflows or
+   overlaps. The wide (>=499px) layout is untouched. */
+@container pc-content (max-width: 499px) {
+  .archivist-pc-sheet .pc-spell-cast-head { display: none; }
+
+  .archivist-pc-sheet .pc-spell-cast-row {
+    grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--pc-space-1) var(--pc-space-2);
+    align-items: start;
+  }
+  .archivist-pc-sheet .pc-spell-cast-row > * { overflow-wrap: anywhere; }
+
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-act { grid-column: 1; grid-row: 1 / span 2; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-namecell { grid-column: 2 / -1; grid-row: 1; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-effcell { grid-column: 2 / -1; grid-row: 2; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-time { grid-column: 2; grid-row: 3; white-space: normal; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-range { grid-column: 3; grid-row: 3; white-space: normal; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-hitdc { grid-column: 4; grid-row: 3; text-align: left; white-space: normal; }
+  .archivist-pc-sheet .pc-spell-cast-row > .pc-spell-comp { grid-column: 2 / -1; grid-row: 4; }
+}
 
 /* ── Source tag (Cast + Prepare + Add) ────────────────── */
 .archivist-pc-sheet .pc-spell-srctag { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: .08em; font-weight: 700; color: var(--pc-text-soft); margin-left: 5px; }
@@ -7495,7 +7711,7 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-spell-add-head,
 .archivist-pc-sheet .pc-spell-add-row {
   display: grid;
-  grid-template-columns: 30px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
+  grid-template-columns: 44px 200px 64px 80px 96px 90px 84px 64px 90px 56px 96px;
 }
 .archivist-pc-sheet .pc-spell-add-head > .pc-add-th {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); letter-spacing: var(--pc-ls-caps-md);
@@ -8015,8 +8231,6 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-bwarn-t {
   font-size: var(--pc-fs-small); line-height: 1.45; color: #7a4a0a; font-family: var(--pc-font-serif);
 }
-/* Origin-feat expand: the click-to-expand block beneath the strip info row. */
-.archivist-pc-sheet .pc-bofeat-expand { padding: 4px 0 2px; }
 
 /* ── Custom Background: the pinned ✦ Build row + parts-builder form ──
    The row pins above the picker table; clicking unfolds the form host beneath
@@ -8290,7 +8504,25 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ts {
   font-family: var(--pc-font-serif); font-weight: 700; font-size: 13px; color: var(--pc-text-soft);
 }
-/* section rule */
+/* Passive & Features tab: the Race section was rehoused (D7.1) into the native
+   section -> row -> expand idiom (`.pc-tab-heading` + `.pc-feature-row` + row
+   expand). It no longer mints a bespoke `.pc-race-block` chronicle card, so no
+   race-specific shell rule lives here; the glance tiles + trait rows reuse the
+   shared `.pc-cb-glance` / `.pc-cb-trait` dress below inside the row-expand. */
+/* Passive & Features tab: the Background section was rehoused (Task 5) into the
+   SAME native section -> row -> expand idiom as Race (`.pc-tab-heading` +
+   `.pc-feature-row` + row expand holding `renderChronicleBlock`). It no longer
+   mints a bespoke `.pc-background-block` chronicle card, so the standalone shell
+   rule below is dead (the block reuses the shared `.pc-cblock` + `.pc-cb-*` dress
+   inside the row-expand, carded by the `.pc-action-expand-inner > .pc-cblock` rule
+   above). The `.pc-bg-flavor` / `.pc-bg-origin` prop dress below is still used. */
+:is(.archivist-pc-sheet, .archivist-modal) .pc-background-block { margin: 0 0 14px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-cb-ed {
+  margin-left: 8px; font-family: var(--pc-font-sans); font-size: 9px; font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase; color: var(--pc-text-muted);
+}
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-flavor { margin: 2px 0 10px; }
+:is(.archivist-pc-sheet, .archivist-modal) .pc-bg-origin { color: var(--pc-text-primary); }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-sec {
   display: flex; align-items: center; gap: 8px;
   border-bottom: 1px solid var(--pc-tan-muted); padding: 8px 0 4px; margin: 14px 0 8px;
@@ -8497,6 +8729,18 @@ body.theme-light .archivist-tag-atk:hover {
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d table,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc table {
   border-collapse: collapse; width: 100%; margin: 0.4em 0; font-size: inherit;
+  /* Responsive: a wide markdown table (e.g. Elven Lineage) must scroll inside
+     its own box at narrow container-query pane widths instead of forcing the
+     sheet wider. `display: block` is required for `overflow-x` to apply to a
+     table; the internal thead/tbody/tr/th/td keep their table display. */
+  display: block; max-width: 100%; overflow-x: auto;
+}
+/* Same responsive treatment for markdown tables inside PC-sheet item and
+   feature-card blocks (`.archivist-item-block` also dresses feature cards); the
+   global item-note table dress in archivist-dnd.css is left full-width for
+   reading view where there is no narrow container. */
+.archivist-pc-sheet .archivist-item-block table.archivist-table {
+  display: block; max-width: 100%; overflow-x: auto;
 }
 :is(.archivist-pc-sheet, .archivist-modal) .pc-cb-trait-d th,
 :is(.archivist-pc-sheet, .archivist-modal) .pc-dstrip-desc th {
@@ -8575,6 +8819,25 @@ body.theme-light .archivist-tag-atk:hover {
 /* The block inside a card drops its own border/shadow/radius — the card frame
    already provides them — so the two frames don't double up. */
 .archivist-pc-sheet .pc-bccard > .pc-cblock { border: none; border-radius: 0; box-shadow: none; }
+/* Passive & Features tab — Race + Background row-expand cards (race-block.ts /
+   background-block.ts): the full chronicle block renders inside the already-padded
+   `.pc-action-expand-inner` and wears the SAME parchment card chrome as the feature
+   card (#11, e.g. Diabolic Contract, an `.archivist-item-block` that self-carries
+   this exact dress) — tinted fill, rounded, soft shadow, NO border. A prior
+   chrome-strip rule (P5) had flattened this to transparent/borderless, LOSING the
+   container; this restores the card. Scoped to the expand's DIRECT `.pc-cblock` so
+   ONLY these two blocks are affected (feature/boon cards use `.archivist-item-block`,
+   item/weapon expands use `.pc-inv-expand`, never `.pc-cblock`). The `0.6em`
+   padding matches the feature card's own inset, so the two read consistently inside
+   the same expand — no ugly double-padding. */
+.archivist-pc-sheet .pc-action-expand-inner > .pc-cblock {
+  background: #f0ddbd;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 4px 24px rgba(134, 116, 83, 0.3), 0 2px 8px rgba(134, 116, 83, 0.2);
+  padding: 0.6em;
+  margin: 0;
+}
 /* LV control (Plan-5 picker A-II): the PRIMARY level control is a `LV n` pill
    that opens an anchored parchment popover with a 4×5 numeral grid (1–20) — no
    native <select>, so the OS menu never draws. The pill keeps the band-control

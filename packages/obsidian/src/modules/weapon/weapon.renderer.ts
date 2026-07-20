@@ -1,4 +1,5 @@
 import type { WeaponEntity, WeaponProperty } from "@archivist-gg/dnd5e/weapon/weapon.types";
+import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
 
 function capitalize(s: string): string {
   return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -21,7 +22,7 @@ function formatProperty(p: WeaponProperty): string {
   return capitalize(p.uid);
 }
 
-export function renderWeaponBlock(weapon: WeaponEntity): HTMLElement {
+export function renderWeaponBlock(weapon: WeaponEntity, mastery?: AttackRow["mastery"]): HTMLElement {
   const doc = activeDocument;
   const wrapper = doc.createElement("div");
   wrapper.className = "archivist-weapon-block-wrapper archivist-item-block-wrapper";
@@ -82,7 +83,43 @@ export function renderWeaponBlock(weapon: WeaponEntity): HTMLElement {
   }
   if (weapon.cost) appendProperty(props, "Cost", weapon.cost);
 
+  // 2024 Weapon Mastery: an in-card section AFTER the properties block, present
+  // only when the Actions-tab weapons table threads a mastery (Inventory/
+  // compendium call sites pass none → byte-identical output to before). The
+  // heading uses a MIDDLE DOT (never an em dash). The single separator between
+  // properties and this section is supplied by the existing
+  // `.archivist-item-properties:has(+ *)` rule, so this section carries no
+  // border of its own (no orphan separator when it is the last child).
+  if (mastery) appendMasterySection(block, mastery);
+
   return wrapper;
+}
+
+function appendMasterySection(block: HTMLElement, mastery: NonNullable<AttackRow["mastery"]>): void {
+  const doc = block.ownerDocument ?? activeDocument;
+  const section = doc.createElement("div");
+  section.className = "archivist-weapon-mastery-section";
+
+  const heading = doc.createElement("div");
+  heading.className = "archivist-weapon-mastery-heading";
+  const label = doc.createElement("span");
+  label.className = "archivist-weapon-mastery-label";
+  label.textContent = `Weapon Mastery · ${mastery.label}`;
+  heading.appendChild(label);
+  if (mastery.derived) {
+    const dc = doc.createElement("span");
+    dc.className = "archivist-weapon-mastery-dc";
+    dc.textContent = `${mastery.derived.label} ${mastery.derived.value}`;
+    heading.appendChild(dc);
+  }
+  section.appendChild(heading);
+
+  const desc = doc.createElement("div");
+  desc.className = "archivist-weapon-mastery-desc";
+  desc.textContent = mastery.description;
+  section.appendChild(desc);
+
+  block.appendChild(section);
 }
 
 function appendProperty(parent: HTMLElement, label: string, value: string): void {

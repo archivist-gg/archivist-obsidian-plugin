@@ -1,15 +1,50 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { AttackRow, EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { ActionEntry } from "./action-model";
 import { renderConditionTag } from "../condition-tag";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
-import { attachStatTooltip } from "../stat-tooltip";
 
 const attackDisSources = new Set([
   "blinded", "frightened", "poisoned", "prone", "restrained", "grappled", "exhaustion",
 ]);
+
+/**
+ * Render the whole weapons sub-group (header + rows) into `list`. The section
+ * renderer stays generic and hands the raw sub-group entries here; all
+ * weapon-specific logic (the once-per-group has-mastery scan, the labeled
+ * header row, threading `hasMastery` into each row) lives in this file.
+ *
+ * When ANY entry carries 2024 weapon mastery, a labeled header row renders
+ * (a blank leading cell over the cost badge, then Name · Range · Hit · Damage ·
+ * Mastery) and every row switches to the 6-col has-mastery grid so the Mastery
+ * column lines up. A group with no mastery renders no header and keeps the
+ * unchanged 5-col grid.
+ */
+export function renderWeaponsGroup(
+  list: HTMLElement,
+  entries: ActionEntry[],
+  ctx: ComponentRenderContext,
+): void {
+  const attacks = entries
+    .filter((e): e is Extract<ActionEntry, { kind: "weapon" }> => e.kind === "weapon")
+    .map((e) => e.attack);
+  const hasMastery = attacks.some((a) => !!a.mastery);
+
+  if (hasMastery) {
+    const header = list.createDiv({ cls: "pc-weapon-header has-mastery" });
+    header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
+    header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
+    header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
+    header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
+    header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
+    header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-mastery", text: "Mastery" });
+  }
+
+  for (const a of attacks) renderWeaponRow(list, a, ctx, hasMastery);
+}
 
 /**
  * Render ONE weapon attack as a `.pc-action-row` (plus its sibling
@@ -19,17 +54,24 @@ const attackDisSources = new Set([
  * actions-tab.ts — so a containing tab (Task 5) can file each row under its own
  * economy×source sub-group without redrawing the whole table.
  *
- * Everything display-only (cost badge, mastery chip + tooltip, range, to-hit /
- * damage inline tags, condition/roll-modifier chips, damage riders, versatile,
- * crit caption, situational sub-line) is preserved verbatim from the former
- * in-loop builder.
+ * Everything display-only (cost badge, range, to-hit / damage inline tags,
+ * condition/roll-modifier chips, damage riders, versatile, crit caption,
+ * situational sub-line) is preserved verbatim from the former in-loop builder.
+ *
+ * `hasMastery` is the group-level flag from `renderWeaponsGroup`: when set, the
+ * row switches to the 6-col has-mastery grid and (for a row that actually has
+ * mastery) renders a real trailing `.pc-weapon-mastery` grid cell. It is
+ * OPTIONAL (defaults false) so existing 3-arg callers keep the unchanged 5-col
+ * grid with no Mastery column.
  */
 export function renderWeaponRow(
   list: HTMLElement,
   a: AttackRow,
   ctx: ComponentRenderContext,
+  hasMastery = false,
 ): void {
   const row = list.createDiv({ cls: "pc-action-row" });
+  if (hasMastery) row.addClass("has-mastery");
 
   // Cost
   const costCell = row.createDiv({ cls: "pc-weapon-cost" });
@@ -45,16 +87,6 @@ export function renderWeaponRow(
   // annotation effect mapped a list onto this row.
   if (a.attackNotes?.length) {
     nameCell.createDiv({ cls: "pc-weapon-note", text: a.attackNotes.join(" · ") });
-  }
-  // 2024 Weapon Mastery — an outline micro-chip on a sub-line inside the
-  // name cell (no 6th grid column). Additive + display-only: the label and
-  // every number come pre-computed on `a.mastery`; hovering the chip opens a
-  // description popover via attachStatTooltip. Absent on untouched rows.
-  if (a.mastery) {
-    const masterySub = nameCell.createDiv({ cls: "pc-weapon-mastery" });
-    const chip = masterySub.createSpan({ cls: "pc-meta-chip pc-mastery-tag", text: a.mastery.label });
-    const mastery = a.mastery;
-    attachStatTooltip(chip, (host) => renderMasteryTooltip(host, mastery));
   }
 
   // Range
@@ -121,6 +153,21 @@ export function renderWeaponRow(
     dmgCell.createSpan({ cls: "pc-weapon-crit", text: `crit ${a.critRange}–20` });
   }
 
+  // 2024 Weapon Mastery: a REAL trailing 6th grid cell (only when the group
+  // carries mastery AND this row has it): the label chip stacked over a compact
+  // one-line summary, e.g. topple "Save DC 13 · on fail: Prone" (the derived
+  // number is dropped for the non-numeric masteries, leaving just the gist).
+  // The full glossary prose lives in the row-expand card (weapon.renderer), not
+  // on hover. Absent (no cell) on rows without mastery, so the column stays
+  // aligned by the has-mastery grid template with an empty 6th track.
+  if (hasMastery && a.mastery) {
+    const masteryCell = row.createDiv({ cls: "pc-weapon-mastery" });
+    masteryCell.createSpan({ cls: "pc-meta-chip pc-mastery-tag", text: a.mastery.label });
+    const d = a.mastery.derived;
+    const gistText = `${d ? `${d.label} ${d.value} · ` : ""}${a.mastery.gist ?? ""}`;
+    masteryCell.createDiv({ cls: "pc-weapon-mastery-gist", text: gistText });
+  }
+
   // Expand block = a full-width sibling div AFTER the row, rendered once and
   // toggled via `hidden` (no container redraw). Built eagerly like the feature
   // rows; the inventory expand is a pure read of the resolved equipment.
@@ -133,6 +180,7 @@ export function renderWeaponRow(
     renderInventoryRowExpand(inner, {
       entry, resolved, app: ctx.app, editState: ctx.editState,
       registry: ctx.services?.entities ?? null,
+      mastery: a.mastery,
     });
   } else {
     inner.createDiv({ cls: "pc-action-row-sub", text: "(no item record for this attack)" });
@@ -169,17 +217,6 @@ export function renderWeaponRow(
 
 function formatSigned(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
-}
-
-/** Render the weapon-mastery hover popover content into a tooltip host: the
- *  glossary description, plus a derived line ("Save DC 15" / "On-miss damage N")
- *  when `mastery.derived` carries a computed number. Factored out so the unit
- *  test can drive it directly; display-only (no derivation happens here). */
-export function renderMasteryTooltip(host: HTMLElement, mastery: NonNullable<AttackRow["mastery"]>): void {
-  host.createDiv({ text: mastery.description });
-  if (mastery.derived) {
-    host.createDiv({ cls: "pc-mastery-derived", text: `${mastery.derived.label} ${mastery.derived.value}` });
-  }
 }
 
 function findEntryForAttack(ctx: ComponentRenderContext, a: AttackRow): EquipmentEntry | null {

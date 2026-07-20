@@ -939,9 +939,36 @@
   padding: 0.4em 0;
 }
 
-/* Separator only when a following section (description / charges / curse) exists. */
+/* Separator only when a following section (description / charges / curse /
+   weapon mastery) exists. */
 .archivist-item-block .archivist-item-properties:has(+ *) {
   border-bottom: 1px solid #d9c484;
+}
+
+/* 2024 Weapon Mastery in-card section (Actions-tab weapon expand only). Sits
+   AFTER the properties block; the single separator between them is supplied by
+   the :has(+ *) rule above, so this section carries no border of its own (no
+   orphan separator when it is the last child). The heading uses a MIDDLE DOT. */
+.archivist-item-block .archivist-weapon-mastery-section {
+  margin: 0.4em 0 0;
+  padding: 0.4em 0 0;
+}
+.archivist-item-block .archivist-weapon-mastery-heading {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  font-weight: 600;
+  color: #191813;
+}
+.archivist-item-block .archivist-weapon-mastery-dc {
+  font-weight: 700;
+  color: #7a200d;
+}
+.archivist-item-block .archivist-weapon-mastery-desc {
+  margin-top: 0.2em;
+  font-size: 13px;
+  color: #191813;
 }
 
 .archivist-item-block .property-line {

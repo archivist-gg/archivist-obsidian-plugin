@@ -1,5 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
+import { type App } from "obsidian";
 import {
   renderFeatureCard,
   featureCardDescription,
@@ -30,20 +31,22 @@ describe("renderFeatureCard — generalized card", () => {
     const root = mountContainer();
     renderFeatureCard(root, {
       title: "Invoke Hell",
+      app: {} as App,
       feature: { name: "Invoke Hell", entries: ["You call upon infernal power.", "The area erupts in flame."] },
     });
     const desc = root.querySelector(".archivist-item-description");
     expect(desc).toBeTruthy();
     expect(desc?.textContent?.trim().length).toBeGreaterThan(0);
     expect(desc?.textContent).toContain("infernal power");
-    // joined paragraphs → one .description-paragraph per entry
-    expect(root.querySelectorAll(".archivist-item-description .description-paragraph").length).toBe(2);
+    // joined paragraphs now render through ONE shared-markdown call → one .description-paragraph
+    expect(root.querySelectorAll(".archivist-item-description .description-paragraph").length).toBe(1);
   });
 
   it("(b) a card with NO Resource renders NO Recharge/Die property-line and NO recovery action", () => {
     const root = mountContainer();
     renderFeatureCard(root, {
       title: "Stonecunning",
+      app: {} as App,
       sourceLabel: "Hill Folk",
       feature: { name: "Stonecunning", description: "You know stone." },
     });
@@ -56,34 +59,36 @@ describe("renderFeatureCard — generalized card", () => {
     expect(root.querySelector(".archivist-item-description")?.textContent).toContain("know stone");
   });
 
-  it("(c) chosenInline renders \"Chose — <label>: <description>\"", () => {
+  it("(c) chosenInline renders \"Chose · <label>: <description>\"", () => {
     const root = mountContainer();
     renderFeatureCard(root, {
       title: "Combat Mastery",
+      app: {} as App,
       feature: { name: "Combat Mastery", description: "Pick a mastery." },
       chosenInline: [{ label: "Lies", description: "use Charisma for melee attack & damage" }],
     });
     const desc = root.querySelector(".archivist-item-description");
-    expect(desc?.textContent).toContain("Chose — Lies: use Charisma for melee attack & damage");
+    expect(desc?.textContent).toContain("Chose · Lies: use Charisma for melee attack & damage");
     // the base description also survives
     expect(desc?.textContent).toContain("Pick a mastery.");
   });
 
-  it("(c') a chosenInline entry with no description renders \"Chose — <label>\" (no trailing colon, no \"undefined\")", () => {
+  it("(c') a chosenInline entry with no description renders \"Chose · <label>\" (no trailing colon, no \"undefined\")", () => {
     const root = mountContainer();
     renderFeatureCard(root, {
       title: "Combat Mastery",
+      app: {} as App,
       chosenInline: [{ label: "Bravado" }],
     });
     const text = root.querySelector(".archivist-item-description")?.textContent ?? "";
-    expect(text).toContain("Chose — Bravado");
-    expect(text).not.toContain("Chose — Bravado:");
+    expect(text).toContain("Chose · Bravado");
+    expect(text).not.toContain("Chose · Bravado:");
     expect(text).not.toContain("undefined");
   });
 
   it("renders a card with only chosenInline (no description) — still gets a description container", () => {
     const root = mountContainer();
-    renderFeatureCard(root, { title: "Pick", chosenInline: [{ label: "A" }] });
+    renderFeatureCard(root, { title: "Pick", app: {} as App, chosenInline: [{ label: "A" }] });
     expect(root.querySelector(".archivist-item-description")).toBeTruthy();
   });
 });

@@ -1,4 +1,5 @@
 import type { EntityRegistry } from "@archivist-gg/core";
+import type { Ability } from "@archivist-gg/dnd5e";
 import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
 import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import type { ItemEntity } from "@archivist-gg/dnd5e/item/item.types";
@@ -82,6 +83,44 @@ export function addItem(
 export function removeItem(character: Character, index: number): void {
   if (index < 0 || index >= character.equipment.length) return;
   character.equipment.splice(index, 1);
+}
+
+/**
+ * Identify an item in place: swap the entry's `item` link to `newSlug` and RESET
+ * every per-instance field so the fresh entry is inherently valid. The identified
+ * item lands unequipped/unattuned/slotless, so there is no occupant to invalidate
+ * and no re-validation is needed. Prior overrides/state/notes/provenance all
+ * belonged to the (now discarded) unidentified placeholder, so they are dropped;
+ * quantity is normalized to 1 (there is no stackable concept). Called by the
+ * identify flow after the player picks the item's true identity.
+ */
+export function identifyItem(character: Character, index: number, newSlug: string): void {
+  const entry = character.equipment[index];
+  if (!entry) return;
+  entry.item = `[[${newSlug}]]`;
+  delete entry.overrides;
+  delete entry.state;
+  delete entry.notes;
+  delete entry.granted_by;
+  entry.equipped = false;
+  entry.attuned = false;
+  entry.slot = null;
+  entry.qty = 1;
+}
+
+/**
+ * Consume one use of a scroll (or other single-use consumable) at `entryIndex`.
+ * Casting a scroll spends the physical item, not a spell slot: decrement the
+ * stack quantity, and when the last one is spent remove the entry outright so a
+ * used-up scroll leaves the inventory. A missing `qty` counts as a single item.
+ * Out-of-range indices are a safe no-op (mirrors removeItem).
+ */
+export function consumeScroll(character: Character, entryIndex: number): void {
+  const entry = character.equipment[entryIndex];
+  if (!entry) return;
+  const q = (entry.qty ?? 1) - 1;
+  if (q <= 0) removeItem(character, entryIndex);
+  else entry.qty = q;
 }
 
 export function equipItem(
@@ -173,6 +212,17 @@ export function clearCharges(character: Character, index: number): void {
 export function setCurrency(character: Character, coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
   if (!character.currency) character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
   character.currency[coin] = Math.max(0, Math.floor(value));
+}
+
+/**
+ * Set the character-level spellcasting ability override. This is the DC-ability
+ * fallback for spells that carry no ability of their own (e.g. a Spell Scroll cast
+ * by a non-caster): the resolver reads it after a per-instance spell_ability and
+ * the character's own class ability, then derives the scroll DC via
+ * derived.abilitySpellcasting. Mirrors the pure setEquipmentOverride mutator shape.
+ */
+export function setSpellcastingAbility(character: Character, ability: Ability): void {
+  character.overrides.spellcasting_ability = ability;
 }
 
 export function expendCharge(character: Character, entryIdx: number, defaultMax?: number): void {

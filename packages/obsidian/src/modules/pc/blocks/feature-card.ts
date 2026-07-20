@@ -4,7 +4,9 @@ import type { FeatureSource } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { Resource } from "@archivist-gg/dnd5e/types/resource";
 import { resourceBindings } from "@archivist-gg/dnd5e/pc/pc.resource-seed";
 import { evaluateMaxFormula } from "@archivist-gg/dnd5e/dnd/resource-formula";
-import { createIconProperty, renderTextWithInlineTags } from "../../../shared/rendering/renderer-utils";
+import { type App } from "obsidian";
+import { createIconProperty } from "../../../shared/rendering/renderer-utils";
+import { renderMarkdownDescription } from "../../../shared/rendering/markdown-description";
 
 /**
  * Shared feature/resource block-card renderer.
@@ -45,6 +47,8 @@ export interface FeatureCardRecovery {
 export interface FeatureCardOptions {
   /** Card title — `feature.name`, or `resource.name` when resource-keyed. */
   title: string;
+  /** Obsidian App: required to render descriptions via the shared markdown path. */
+  app: App;
   /** Italic source subtitle (already formatted via {@link formatSourceLabel}). */
   sourceLabel?: string;
   /** Edition source-badge text (top-right); null/undefined → no badge. */
@@ -58,7 +62,7 @@ export interface FeatureCardOptions {
   /** Source feature; description falls back to `description ?? entries` when
    *  {@link description} is absent (see {@link featureCardDescription}). */
   feature?: Feature;
-  /** Chosen inline picks → "Chose — <label>: <description>" (or "Chose — <label>"). */
+  /** Chosen inline picks → "Chose · <label>: <description>" (or "Chose · <label>"). */
   chosenInline?: FeatureCardChosen[];
   /** Recovery action; present only for resource-keyed cards with a recovery. */
   recovery?: FeatureCardRecovery;
@@ -107,20 +111,29 @@ export function renderFeatureCard(parent: HTMLElement, opts: FeatureCardOptions)
   }
 
   // Description (information only) — `description ?? entries` — plus any chosen
-  // inline picks ("Chose — <label>: <description>") folded onto the card body.
+  // inline picks ("Chose · <label>: <description>") folded onto the card body.
+  // Both flow through the SHARED markdown path (ctx.app threaded, async) so a
+  // description carrying a pipe table renders a real table instead of raw text.
+  // Child divs are created SYNCHRONOUSLY (before firing each async render) so
+  // DOM order is stable regardless of async completion order.
   const description = opts.description ?? featureCardDescription(opts.feature);
   const chosen = opts.chosenInline ?? [];
   if ((description && description.trim()) || chosen.length) {
     const desc = block.createDiv({ cls: "archivist-item-description" });
-    if (description) {
-      for (const para of description.split(/\n{2,}/)) {
-        if (!para.trim()) continue;
-        renderTextWithInlineTags(para, desc.createDiv({ cls: "description-paragraph" }));
-      }
+    if (description && description.trim()) {
+      const dd = desc.createDiv({ cls: "description-paragraph" });
+      void renderMarkdownDescription(dd, description, opts.app).catch((err: unknown) => {
+        console.error("[Archivist] feature-card description render failed", err);
+        dd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+      });
     }
     for (const pick of chosen) {
-      const line = pick.description ? `Chose — ${pick.label}: ${pick.description}` : `Chose — ${pick.label}`;
-      renderTextWithInlineTags(line, desc.createDiv({ cls: "description-paragraph pc-feature-chosen" }));
+      const line = pick.description ? `Chose · ${pick.label}: ${pick.description}` : `Chose · ${pick.label}`;
+      const pd = desc.createDiv({ cls: "description-paragraph pc-feature-chosen" });
+      void renderMarkdownDescription(pd, line, opts.app).catch((err: unknown) => {
+        console.error("[Archivist] feature-card chosen render failed", err);
+        pd.createDiv({ cls: "archivist-block-error", text: `Description failed to render: ${String(err)}` });
+      });
     }
   }
 

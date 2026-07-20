@@ -53,6 +53,10 @@ const boonPool = (over: Partial<ResolvedPool> = {}): ResolvedPool =>
     anchorLevel: 3, selected: [], available: [], grants: [], ...over,
   }) as ResolvedPool;
 
+/** Minimal same-parent join shape read by the merge post-pass:
+ *  `resolved.classes[].entity.slug` + `.subclass.slug`. */
+type ClassesOpt = Array<{ entity?: { slug?: string }; subclass?: { slug?: string } }>;
+
 interface BuildOpts {
   attacks?: AttackRow[];
   attacksPerAction?: number;
@@ -60,6 +64,7 @@ interface BuildOpts {
   pools?: ResolvedPool[];
   equipment?: EquipmentEntry[];
   registry?: EntityRegistry;
+  classes?: ClassesOpt;
 }
 
 const build = (opts: BuildOpts = {}): Section[] => {
@@ -67,6 +72,7 @@ const build = (opts: BuildOpts = {}): Section[] => {
     definition: { equipment: opts.equipment ?? [] },
     features: opts.features ?? [],
     pools: opts.pools ?? [],
+    classes: opts.classes ?? [],
   } as unknown as ResolvedCharacter;
   const derived = {
     attacks: opts.attacks ?? [],
@@ -80,6 +86,11 @@ const sub = (secs: Section[], eco: EconomyKey, src: SourceKey) =>
   section(secs, eco)?.subGroups.find((g) => g.key === src);
 const boonNames = (secs: Section[], eco: EconomyKey): string[] =>
   (sub(secs, eco, "boons")?.entries ?? []).map((e) => (e.kind === "boon" ? e.entry.entity.name : ""));
+/** Flatten Actions → Class features to just its feature entries (narrowed). */
+const classFeatureEntries = (secs: Section[]) =>
+  (sub(secs, "actions", "class-features")?.entries ?? []).flatMap((e) =>
+    e.kind === "feature" ? [e] : [],
+  );
 
 describe("buildActionModel", () => {
   it("buckets features by economy and source (class feature action→Actions/Class features)", () => {
@@ -146,6 +157,52 @@ describe("buildActionModel", () => {
     expect(e.item.action.max_charges).toBe(7); // curated action resolved through the srd-5e_ prefix
   });
 
+  it("surfaces an uncurated potion under Bonus Actions → Items", () => {
+    const registry = buildMockRegistry([
+      { slug: "srd-2024_potion-of-vitality", entityType: "item", data: { name: "Potion of Vitality", type: "potion" } },
+    ]);
+    const secs = build({
+      equipment: [{ item: "[[srd-2024_potion-of-vitality]]", equipped: true }] as EquipmentEntry[],
+      registry,
+    });
+    expect(sub(secs, "actions", "items")).toBeUndefined();
+    const g = sub(secs, "bonus", "items");
+    expect(g).toBeDefined();
+    expect(g!.entries).toHaveLength(1);
+    const e = g!.entries[0];
+    if (e.kind !== "item") throw new Error("expected item entry");
+    expect(e.item.action.cost).toBe("bonus-action");
+    expect(e.item.entity?.name).toBe("Potion of Vitality");
+  });
+
+  it("keeps an uncurated oil under Actions (not Bonus Actions)", () => {
+    const registry = buildMockRegistry([
+      { slug: "srd-2024_oil-of-etherealness", entityType: "item", data: { name: "Oil of Etherealness", type: "potion" } },
+    ]);
+    const secs = build({
+      equipment: [{ item: "[[srd-2024_oil-of-etherealness]]", equipped: true }] as EquipmentEntry[],
+      registry,
+    });
+    expect(sub(secs, "bonus", "items")).toBeUndefined();
+    const g = sub(secs, "actions", "items");
+    expect(g).toBeDefined();
+    expect(g!.entries).toHaveLength(1);
+  });
+
+  it("does not throw for an equipped item absent from the registry but carrying an action override (found === null)", () => {
+    const registry = buildMockRegistry([]); // slug unregistered → found === null in collectItemEntries
+    const run = () =>
+      build({
+        equipment: [
+          { item: "[[srd-2024_mystery]]", equipped: true, overrides: { action: "action" } },
+        ] as EquipmentEntry[],
+        registry,
+      });
+    expect(run).not.toThrow(); // proves found?.data?.type null-safety
+    const g = sub(run(), "actions", "items");
+    expect(g).toBeDefined();
+  });
+
   it("files a bonus-action weapon under Bonus Actions → Weapons (not Actions), no ×N count", () => {
     const secs = build({ attacks: [attack({ name: "Dagger", actionCost: "bonus-action" })] });
     expect(sub(secs, "actions", "weapons")).toBeUndefined();
@@ -156,10 +213,10 @@ describe("buildActionModel", () => {
     expect(g!.entries[0].kind).toBe("weapon");
   });
 
-  it("maps boons by entity.action_cost; free→Actions, bonus/reaction map, special/passive/none→Passive", () => {
+  it("maps boons by entity.action_cost; free/special/passive/none→Passive, bonus/reaction map", () => {
     const pool = boonPool({
       selected: [
-        boonEntry("red-cant", { name: "Red Cant", action_cost: "free" }),         // → Actions
+        boonEntry("red-cant", { name: "Red Cant", action_cost: "free" }),         // → Passive
         boonEntry("shove", { name: "Shove Boon", action_cost: "bonus-action" }),  // → Bonus
         boonEntry("ward", { name: "Ward Boon", action_cost: "reaction" }),        // → Reactions
         boonEntry("special", { name: "Special Boon", action_cost: "special" }),   // → Passive
@@ -170,14 +227,14 @@ describe("buildActionModel", () => {
     });
     const secs = build({ pools: [pool] });
 
-    expect(boonNames(secs, "actions")).toEqual(["Red Cant"]);
+    expect(boonNames(secs, "actions")).toEqual([]);
     expect(boonNames(secs, "bonus")).toEqual(["Shove Boon"]);
     expect(boonNames(secs, "reactions")).toEqual(["Ward Boon"]);
-    // Passive keeps insertion order: selected special/stoic/plain, then the grant.
-    expect(boonNames(secs, "passive")).toEqual(["Special Boon", "Stoic", "Plain Boon", "Granted Gift"]);
+    // Passive keeps insertion order: free red-cant, then special/stoic/plain, then the grant.
+    expect(boonNames(secs, "passive")).toEqual(["Red Cant", "Special Boon", "Stoic", "Plain Boon", "Granted Gift"]);
 
     // status + poolLabel carried on the entry
-    const redCant = sub(secs, "actions", "boons")!.entries[0];
+    const redCant = sub(secs, "passive", "boons")!.entries[0];
     expect(redCant.kind).toBe("boon");
     if (redCant.kind !== "boon") throw new Error("expected boon");
     expect(redCant.status).toBe("selected");
@@ -191,7 +248,7 @@ describe("buildActionModel", () => {
     expect(grant.status).toBe("granted");
   });
 
-  it("files a no-cost boon (no action_cost, passive undefined) under Passive & Always-Active", () => {
+  it("files a no-cost boon (no action_cost, passive undefined) under Passive & Free Actions", () => {
     // Lock the collapsed boonEconomy branch: a boon whose entity carries neither
     // `action_cost` nor `passive:true` must still fall through to Passive.
     const secs = build({ pools: [boonPool({ grants: [boonEntry("plain-grant", {})] })] });
@@ -227,6 +284,35 @@ describe("buildActionModel", () => {
     const g = sub(secs, "passive", "class-features");
     expect(g!.entries).toHaveLength(2);
     expect(g!.entries.every((e) => e.kind === "feature" && e.rf.feature.name === "Extra Attack")).toBe(true);
+  });
+
+  it("merges a same-parent class+subclass same-name feature into one entry", () => {
+    const model = build({
+      features: [
+        feat("Invoke Hell", "action", { kind: "class", slug: "illrigger", level: 3 }),
+        feat("Invoke Hell", "action", { kind: "subclass", slug: "hellspeaker", level: 3 }),
+      ],
+      classes: [{ entity: { slug: "illrigger" }, subclass: { slug: "hellspeaker" } }],
+    });
+    const entries = classFeatureEntries(model);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].merged).toHaveLength(1);
+    expect(entries[0].merged![0].feature.name).toBe("Invoke Hell");
+    // Primary is the class-sourced entry.
+    expect(entries[0].rf.source.kind).toBe("class");
+  });
+
+  it("does NOT merge a cross-class same-name class+subclass collision", () => {
+    const model = build({
+      features: [
+        feat("Channel Divinity", "action", { kind: "class", slug: "cleric", level: 2 }),
+        feat("Channel Divinity", "action", { kind: "subclass", slug: "oath-of-devotion", level: 3 }),
+      ],
+      // The character's cleric subclass is life-domain, NOT oath-of-devotion — so
+      // the flat name collision must NOT collapse (no shared parentage).
+      classes: [{ entity: { slug: "cleric" }, subclass: { slug: "life-domain" } }],
+    });
+    expect(classFeatureEntries(model)).toHaveLength(2);
   });
 
   it("omits an empty sub-group and a section whose sub-groups are all empty (all-ASI Feats → gone)", () => {

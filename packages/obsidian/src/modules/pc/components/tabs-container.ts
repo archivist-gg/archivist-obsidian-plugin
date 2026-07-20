@@ -6,9 +6,10 @@ import { PoolTab } from "./pool-tab";
 
 // Built-in, always-on tabs. Notes removed in Phase 2.
 const BUILTIN: ReadonlyArray<{ type: string; panelId: string; label: string }> = [
-  { type: "actions-tab",    panelId: "panel-actions",    label: "Actions & Features" },
-  { type: "spells-tab",     panelId: "panel-spells",     label: "Spells" },
-  { type: "inventory-tab",  panelId: "panel-inventory",  label: "Inventory" },
+  { type: "actions-tab",           panelId: "panel-actions",   label: "Actions" },
+  { type: "passive-features-tab",  panelId: "panel-passive",   label: "Passive & Features" },
+  { type: "spells-tab",            panelId: "panel-spells",    label: "Spells" },
+  { type: "inventory-tab",         panelId: "panel-inventory", label: "Inventory" },
 ];
 
 interface BuiltTab { panelId: string; label: string; component: SheetComponent | undefined; }

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { castingTimeBadge, componentLetters, effectTags, groupByLevel, slotCells } from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
+import { castingTimeBadge, componentLetters, effectTags, groupByLevel, slotCells, hitDcDescriptor } from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
+import { bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const sp = (over: Partial<ResolvedSpell["entity"]> & { name: string }, p: Partial<ResolvedSpell> = {}): ResolvedSpell =>
@@ -35,5 +36,33 @@ describe("spell-display helpers", () => {
 
   it("slotCells returns used/empty markers for a level", () => {
     expect(slotCells(3, 1)).toEqual([true, false, false]); // total 3, used 1 → [used, empty, empty]
+  });
+});
+
+describe("hitDcDescriptor: attack-roll vs save vs neither", () => {
+  // Real-shaped source-prefixed slugs so bareEntitySlug + the curated-set lookup
+  // are exercised for real (not the bare test slug the sp() helper defaults to).
+  const fireBolt = sp({ name: "Fire Bolt", level: 0, damage: { types: ["fire"] } }, { slug: "srd-2024_fire-bolt" });
+  const magicMissile = sp({ name: "Magic Missile", level: 1, damage: { types: ["force"] } }, { slug: "srd-2024_magic-missile" });
+  const fireball = sp({ name: "Fireball", level: 3, saving_throw: { ability: "dexterity" }, damage: { types: ["fire"] } }, { slug: "srd-2024_fireball" });
+
+  it("shows an attack for a curated attack-roll spell (Fire Bolt), using the passed bonus", () => {
+    expect(hitDcDescriptor(fireBolt, 0, 6)).toEqual({ kind: "attack", bonus: 6 });
+  });
+
+  it("returns null for Magic Missile: auto-hit, not curated, and no save", () => {
+    expect(hitDcDescriptor(magicMissile, 0, 6)).toBeNull();
+  });
+
+  it("still shows a save for Fireball, which has a saving throw", () => {
+    expect(hitDcDescriptor(fireball, 15, 6)).toMatchObject({ kind: "save", ability: "DEX", dc: 15 });
+  });
+
+  it("attack bonus defaults to 0 when no bonus is passed", () => {
+    expect(hitDcDescriptor(fireBolt, 0)).toEqual({ kind: "attack", bonus: 0 });
+  });
+
+  it("bareEntitySlug strips the source prefix so the curated set is edition-agnostic", () => {
+    expect(bareEntitySlug("srd-2024_fire-bolt")).toBe("fire-bolt");
   });
 });

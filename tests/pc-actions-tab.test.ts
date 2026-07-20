@@ -26,11 +26,12 @@ interface CtxOpts {
   equipment?: EquipmentEntry[];
   registry?: EntityRegistry;
   attacksPerAction?: number;
+  classes?: Array<{ entity?: { slug?: string }; subclass?: { slug?: string } }>;
 }
 
 const ctxFactory = (opts: CtxOpts = {}): ComponentRenderContext => ({
   resolved: {
-    definition: { equipment: opts.equipment ?? [] }, race: null, classes: [], background: null,
+    definition: { equipment: opts.equipment ?? [] }, race: null, classes: opts.classes ?? [], background: null,
     feats: [], totalLevel: 1, features: opts.features ?? [], pools: [], state: {} as never,
   } as unknown as ResolvedCharacter,
   derived: { attacks: opts.attacks ?? [], attacksPerAction: opts.attacksPerAction } as DerivedStats,
@@ -58,18 +59,14 @@ describe("ActionsTab — economy sections (Level-1 heads)", () => {
     expect(headings(c)).toContain("Actions");
     expect(headings(c)).not.toContain("Attacks");
     expect(headings(c)).not.toContain("Attacks (×1)");
+    // The passive section is now split onto the Passive & Features tab; the
+    // Actions tab must never render its heading (AC2).
+    expect(headings(c)).not.toContain("Passive & Free Actions");
   });
 
-  it("renders a Passive & Always-Active heading for an action-less feature", () => {
-    const c = mountContainer();
-    const features = [{
-      feature: { name: "Darkvision", description: "You can see in the dark." } as never,
-      source: { kind: "race", slug: "elf" } as never,
-    }] as ResolvedCharacter["features"];
-    new ActionsTab().render(c, ctxFactory({ features }));
-    expect(headings(c)).toContain("Passive & Always-Active");
-    expect([...c.querySelectorAll(".pc-feature-row .pc-action-row-name")].map((n) => n.textContent)).toContain("Darkvision");
-  });
+  // The "Passive & Free Actions" heading + the action-less Darkvision row moved
+  // to tests/pc-passive-features-tab.test.ts (the passive slice now files on the
+  // Passive & Features tab, not here).
 });
 
 describe("ActionsTab — source sub-groups (Level-2 heads)", () => {
@@ -129,6 +126,58 @@ describe("ActionsTab — source sub-groups (Level-2 heads)", () => {
     // The sub-group head reads "Items".
     expect(subGroupTitles(c)).toContain("Items");
     expect(headings(c)).not.toContain("Actions");
+  });
+});
+
+describe("ActionsTab — same-parent class+subclass merge (D2-1)", () => {
+  // The class feature (Illrigger, owns the prose + resource) and its own-subclass
+  // feature (Hellspeaker, adds option prose), both named "Invoke Hell".
+  const invokeHellFeatures = [
+    {
+      feature: { name: "Invoke Hell", action: "action", description: "You unleash the fires of the Nine Hells." },
+      source: { kind: "class", slug: "illrigger", level: 3 },
+    },
+    {
+      feature: { name: "Invoke Hell", action: "action", description: "Hellspeaker: you may instead charm your foe." },
+      source: { kind: "subclass", slug: "hellspeaker", level: 3 },
+    },
+  ] as unknown as ResolvedCharacter["features"];
+
+  it("collapses the same-parent Invoke Hell pair into ONE row with a joined sub-label", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, ctxFactory({
+      features: invokeHellFeatures,
+      classes: [{ entity: { slug: "illrigger" }, subclass: { slug: "hellspeaker" } }],
+    }));
+    // Exactly one merged feature row (not two).
+    expect(c.querySelectorAll(".pc-feature-row").length).toBe(1);
+    expect(c.querySelector(".pc-action-row-name")?.textContent).toBe("Invoke Hell");
+    expect(c.querySelector(".pc-action-row-sub")?.textContent).toBe("Illrigger 3 · Hellspeaker 3");
+    // Files under the Actions economy (both are action-cost).
+    expect(headings(c)).toContain("Actions");
+  });
+
+  it("concatenates both prose bodies into the single expand card", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, ctxFactory({
+      features: invokeHellFeatures,
+      classes: [{ entity: { slug: "illrigger" }, subclass: { slug: "hellspeaker" } }],
+    }));
+    const cards = c.querySelectorAll(".archivist-item-description");
+    expect(cards.length).toBe(1); // one concatenated card, not two
+    const body = cards[0].textContent ?? "";
+    expect(body).toContain("You unleash the fires of the Nine Hells.");
+    expect(body).toContain("Hellspeaker: you may instead charm your foe.");
+  });
+
+  it("does NOT merge a cross-class same-name pair (subclass not the character's)", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, ctxFactory({
+      features: invokeHellFeatures,
+      // Character's illrigger subclass is something else → no shared parentage.
+      classes: [{ entity: { slug: "illrigger" }, subclass: { slug: "painsmith" } }],
+    }));
+    expect(c.querySelectorAll(".pc-feature-row").length).toBe(2);
   });
 });
 

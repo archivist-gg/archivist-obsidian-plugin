@@ -88,6 +88,59 @@ describe("InventoryList", () => {
     expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(2);
   });
 
+  it("caps at 50 rows and shows a Load more button that reveals 50 more", () => {
+    const c = baseChar();
+    // 120 items → 50 shown, Load more (70) → 100 shown, Load more (20) → all 120, button gone.
+    c.equipment = Array.from({ length: 120 }, (_, i) => ({
+      item: `[[item-${String(i).padStart(3, "0")}]]`,
+    }));
+    const root = mountContainer();
+    // builderUiState present so the shown-count persists across the load-more repaints.
+    new InventoryList().render(root, { ...ctx(c), builderUiState: new Map() });
+
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(50);
+    const btn = root.querySelector(".pc-inv-loadmore-btn") as HTMLElement | null;
+    expect(btn).toBeTruthy();
+    expect(btn!.textContent).toBe("Load more (70)");
+
+    btn!.click();
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(100);
+    const btn2 = root.querySelector(".pc-inv-loadmore-btn") as HTMLElement;
+    expect(btn2.textContent).toBe("Load more (20)");
+
+    btn2.click();
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(120);
+    expect(root.querySelector(".pc-inv-loadmore-btn")).toBeNull();
+  });
+
+  it("shown-count survives a re-render for the same filters (persisted in builderUiState)", () => {
+    const c = baseChar();
+    c.equipment = Array.from({ length: 120 }, (_, i) => ({
+      item: `[[item-${String(i).padStart(3, "0")}]]`,
+    }));
+    const bag = new Map<string, unknown>();
+    const root = mountContainer();
+    new InventoryList().render(root, { ...ctx(c), builderUiState: bag });
+    (root.querySelector(".pc-inv-loadmore-btn") as HTMLElement).click();
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(100);
+
+    // Simulate a mutation re-render: same bag + same filters → count is retained.
+    const root2 = mountContainer();
+    new InventoryList().render(root2, { ...ctx(c), builderUiState: bag });
+    expect(root2.querySelectorAll(".pc-inv-row")).toHaveLength(100);
+  });
+
+  it("does not render a Load more button when 50 or fewer items match", () => {
+    const c = baseChar();
+    c.equipment = Array.from({ length: 50 }, (_, i) => ({
+      item: `[[item-${String(i).padStart(3, "0")}]]`,
+    }));
+    const root = mountContainer();
+    new InventoryList().render(root, { ...ctx(c), builderUiState: new Map() });
+    expect(root.querySelectorAll(".pc-inv-row")).toHaveLength(50);
+    expect(root.querySelector(".pc-inv-loadmore-btn")).toBeNull();
+  });
+
   it("uses entity data when registry has a matching slug", () => {
     const c = baseChar();
     c.equipment = [{ item: "[[longsword]]" }];

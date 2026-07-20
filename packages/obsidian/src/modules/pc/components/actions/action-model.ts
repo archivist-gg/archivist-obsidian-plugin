@@ -56,7 +56,7 @@ export interface ItemEntry {
 export type ActionEntry =
   | { kind: "weapon"; attack: AttackRow }
   | { kind: "item"; item: ItemEntry }
-  | { kind: "feature"; rf: ResolvedFeature }
+  | { kind: "feature"; rf: ResolvedFeature; merged?: ResolvedFeature[] }
   | { kind: "boon"; entry: ResolvedPoolEntry; status: "granted" | "selected"; poolLabel: string };
 
 export interface SubGroup {
@@ -86,7 +86,7 @@ const ECONOMY_LABEL: Record<EconomyKey, string> = {
   actions: "Actions",
   bonus: "Bonus Actions",
   reactions: "Reactions",
-  passive: "Passive & Always-Active",
+  passive: "Passive & Free Actions",
 };
 
 const SOURCE_LABEL: Record<SourceKey, string> = {
@@ -108,21 +108,20 @@ const SOURCE_LABEL: Record<SourceKey, string> = {
  * (it superseded the former `feature-groups.ts::groupFeatures`, retired in
  * Task 5): drives weapons (`actionCost`), items (`ItemAction.cost`),
  * features/feats (`feature.action`) and boons (`entity.action_cost`) alike.
- *   `action` / `free`  → actions
- *   `bonus-action`     → bonus
- *   `reaction`         → reactions
- *   `special` / absent → passive
+ *   `action`                     → actions
+ *   `bonus-action`               → bonus
+ *   `reaction`                   → reactions
+ *   `free` / `special` / absent  → passive (Passive & Free Actions)
  */
 function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
   switch (action) {
     case "action":
-    case "free":
       return "actions";
     case "bonus-action":
       return "bonus";
     case "reaction":
       return "reactions";
-    // "special", undefined, null → Passive & Always-Active
+    // "free", "special", undefined, null → Passive & Free Actions
     default:
       return "passive";
   }
@@ -130,15 +129,13 @@ function featureEconomy(action: ActionCost | null | undefined): EconomyKey {
 
 /**
  * Boon economy (spec §3): a boon has no synthesized `feature`, so map the
- * OptionalFeatureEntity's `action_cost` through the same vocabulary; when it is
- * absent (or null) the boon is Passive — whether or not `passive === true`
- * (a granted always-on boon like "Red Cant" carries `action_cost:"free"`, the
- * 9 no-cost boons all fall through to Passive).
+ * OptionalFeatureEntity's `action_cost` through the same vocabulary. A free
+ * boon (`action_cost:"free"`, e.g. "Red Cant"/"Bedevil") and a no-cost boon
+ * both land in Passive & Free Actions — `featureEconomy` maps `free`,
+ * `special`, and absent alike to `passive`, so this is a straight pass-through.
  */
 function boonEconomy(entity: OptionalFeatureEntity): EconomyKey {
-  // No action_cost → Passive & Always-Active, whether or not `passive` is flagged
-  // (the no-cost boons all fall through here).
-  return entity.action_cost ? featureEconomy(entity.action_cost) : "passive";
+  return featureEconomy(entity.action_cost);
 }
 
 /** Source sub-group for a feature/feat, from its `FeatureSource.kind`. */
@@ -192,8 +189,10 @@ function collectItemEntries(resolved: ResolvedCharacter, registry: EntityRegistr
     if (entityType === "weapon" || entityType === "armor") return;
     // Only equipped items surface on this tab.
     if (!entry.equipped) return;
-    // Items with no activated action are omitted.
-    const action = resolveItemAction(slug, entry);
+    // Items with no activated action are omitted. `found?.data?.type` feeds the
+    // 2024 potion default (type==="potion" → bonus-action) null-safely: `found`
+    // is nullable (override-only items with no registry entry still surface).
+    const action = resolveItemAction(slug, entry, found?.data?.type);
     if (!action) return;
     out.push({
       index,
@@ -203,6 +202,58 @@ function collectItemEntries(resolved: ResolvedCharacter, registry: EntityRegistr
       action,
     });
   });
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Same-parent class+subclass merge (spec §2 / D2-1)
+// ─────────────────────────────────────────────────────────────
+
+/** Case-insensitive, whitespace-trimmed feature-name key for the merge match. */
+function mergeNameKey(name: string): string {
+  return name.trim().toLowerCase();
+}
+
+/**
+ * Collapse a same-named class feature and its OWN-subclass feature into a single
+ * primary entry (spec §2, D2-1 — "Invoke Hell"). Runs on ONE (economy,
+ * source-display-group) bucket's `ActionEntry[]`, so pairs in different economy
+ * Sections never merge. A class-sourced feature entry is the PRIMARY; each later
+ * subclass-sourced feature entry joins its `merged[]` when ALL hold:
+ *   1. `feature.name` equal (trimmed, case-insensitive),
+ *   2. one entry `source.kind === "class"`, the other `=== "subclass"`,
+ *   3. `` `${classSlug}|${subclassSlug}` `` ∈ `sameParent`.
+ * The `sameParent` join (built from `resolved.classes`) is what pins the merge to
+ * the character's CHOSEN subclass — a flat name scan would wrongly collapse a
+ * cross-class collision (Cleric-class + Paladin-subclass "Channel Divinity").
+ * Both Extra Attack fixtures are `kind:"class"` → condition 2 never fires → they
+ * stay two rows. Supports N≥1 secondaries generically (only 1 occurs for SRD).
+ */
+function mergeFeatureEntries(list: ActionEntry[], sameParent: Set<string>): ActionEntry[] {
+  const consumed = new Set<number>();
+  const out: ActionEntry[] = [];
+  for (let i = 0; i < list.length; i++) {
+    if (consumed.has(i)) continue;
+    const entry = list[i];
+    // Only a class-sourced feature entry can be a merge primary.
+    if (entry.kind !== "feature" || entry.rf.source.kind !== "class") {
+      out.push(entry);
+      continue;
+    }
+    const classSlug = entry.rf.source.slug;
+    const nameKey = mergeNameKey(entry.rf.feature.name);
+    const merged: ResolvedFeature[] = [];
+    for (let j = i + 1; j < list.length; j++) {
+      if (consumed.has(j)) continue;
+      const other = list[j];
+      if (other.kind !== "feature" || other.rf.source.kind !== "subclass") continue;
+      if (mergeNameKey(other.rf.feature.name) !== nameKey) continue;
+      if (!sameParent.has(`${classSlug}|${other.rf.source.slug}`)) continue;
+      merged.push(other.rf);
+      consumed.add(j);
+    }
+    out.push(merged.length ? { kind: "feature", rf: entry.rf, merged } : entry);
+  }
   return out;
 }
 
@@ -245,7 +296,7 @@ export function buildActionModel(
     place(featureEconomy(attack.actionCost ?? "action"), "weapons", { kind: "weapon", attack });
   }
 
-  // Items — equipped, action-bearing; economy = resolved cost (free→actions, special→passive).
+  // Items — equipped, action-bearing; economy = resolved cost (free/special → passive).
   for (const item of collectItemEntries(resolved, registry)) {
     place(featureEconomy(item.action.cost), "items", { kind: "item", item });
   }
@@ -263,6 +314,24 @@ export function buildActionModel(
     }
     for (const entry of pool.grants) {
       place(boonEconomy(entry.entity), "boons", { kind: "boon", entry, status: "granted", poolLabel: pool.label });
+    }
+  }
+
+  // Same-parent join set (spec §2): `${class.slug}|${subclass.slug}` for the
+  // character's CHOSEN class→subclass pairs. Null-guarded — unit fixtures omit
+  // `classes`, and a class carrying no chosen subclass yields no pair.
+  const sameParent = new Set<string>();
+  for (const c of resolved.classes ?? []) {
+    const classSlug = c.entity?.slug;
+    const subclassSlug = c.subclass?.slug;
+    if (classSlug && subclassSlug) sameParent.add(`${classSlug}|${subclassSlug}`);
+  }
+  // Per-bucket merge post-pass: collapse a same-named class + its-own-subclass
+  // feature into one entry. Runs within each (economy, source) list only, so a
+  // same-name pair split across economies never merges.
+  for (const sources of buckets.values()) {
+    for (const [source, list] of sources) {
+      sources.set(source, mergeFeatureEntries(list, sameParent));
     }
   }
 

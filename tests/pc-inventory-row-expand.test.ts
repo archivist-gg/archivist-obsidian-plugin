@@ -1,9 +1,11 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { renderRowExpand } from "../packages/obsidian/src/modules/pc/components/inventory/inventory-row-expand";
+import { buildScrollSpellCandidates } from "../packages/obsidian/src/modules/pc/components/inventory/scroll-spell-picker";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import type { App } from "obsidian";
+import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const confirmMock = vi.hoisted(() => vi.fn().mockResolvedValue(true));
@@ -25,6 +27,9 @@ vi.mock("obsidian", () => ({
   setIcon: vi.fn(),
   Component: class {},
   Notice: NoticeMock,
+  // The scroll spell picker + identify picker `extends Modal`; the class is only
+  // evaluated at import (never opened in these tests), so a bare stub suffices.
+  Modal: class {},
 }));
 
 beforeAll(() => installObsidianDomHelpers());
@@ -277,5 +282,164 @@ describe("renderRowExpand", () => {
     expect(root.querySelector(".archivist-item-block")).toBeTruthy();
     expect(root.querySelector(".archivist-weapon-block-wrapper")).toBeNull();
     expect(root.querySelector(".archivist-weapon-block")).toBeNull();
+  });
+
+  describe("scroll + unidentified expand", () => {
+    interface SheetOver {
+      edition?: "2014" | "2024";
+      spells?: unknown[];
+      spellcastingClasses?: unknown[];
+      abilitySpellcasting?: Record<string, { saveDC: number; attackBonus: number }>;
+      spellcasting?: unknown;
+      editState?: Record<string, unknown> | null;
+      entities?: unknown;
+    }
+    const sheetCtx = (over: SheetOver): ComponentRenderContext =>
+      ({
+        resolved: {
+          definition: { edition: over.edition ?? "2024", equipment: [] },
+          spells: over.spells ?? [],
+        },
+        derived: {
+          spellcastingClasses: over.spellcastingClasses ?? [],
+          abilitySpellcasting: over.abilitySpellcasting ?? {},
+          spellcasting: over.spellcasting ?? null,
+        },
+        services: {
+          entities: over.entities ?? { getByTypeAndSlug: () => undefined, getBySlug: () => undefined },
+        },
+        app: {} as App,
+        editState: (over.editState ?? null),
+      }) as unknown as ComponentRenderContext;
+
+    const invEditState = () => ({
+      setEquipmentOverride: vi.fn(),
+      identifyItem: vi.fn(),
+      equipItem: vi.fn().mockReturnValue({ kind: "ok" }),
+      equipItemWithSwap: vi.fn().mockReturnValue({}),
+      unequipItem: vi.fn(),
+      removeItem: vi.fn(),
+      attuneItem: vi.fn().mockReturnValue({ kind: "ok" }),
+      unattuneItem: vi.fn(),
+    });
+
+    it("buildScrollSpellCandidates keeps only same-level, edition-matched spells", () => {
+      const reg = buildMockRegistry([
+        { slug: "fireball", entityType: "spell", name: "Fireball", data: { name: "Fireball", level: 3, edition: "2024" } },
+        { slug: "lightning-bolt", entityType: "spell", name: "Lightning Bolt", data: { name: "Lightning Bolt", level: 3, edition: "2024" } },
+        { slug: "magic-missile", entityType: "spell", name: "Magic Missile", data: { name: "Magic Missile", level: 1, edition: "2024" } },
+        { slug: "old-fireball", entityType: "spell", name: "Old Fireball", data: { name: "Old Fireball", level: 3, edition: "2014" } },
+      ]);
+      const slugs = buildScrollSpellCandidates(reg, 3, "2024").map((c) => c.slug).sort();
+      expect(slugs).toEqual(["fireball", "lightning-bolt"]);
+      expect(slugs).not.toContain("magic-missile"); // wrong level
+      expect(slugs).not.toContain("old-fireball"); // wrong edition
+    });
+
+    it("renders the chosen spell as an item-block property with a change CTA, no Save DC / Attack (4C)", async () => {
+      const entry: EquipmentEntry = { item: "[[spell-scroll-3rd-level]]", overrides: { spell: "srd-2024_fireball" } };
+      const resolved = {
+        index: 5,
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", scroll_level: 3, description: "A scroll." },
+        entityType: "item",
+        entry,
+      } as ResolvedEquipped;
+      const editState = invEditState();
+      const sheet = sheetCtx({
+        spells: [{ source: "item", entryIndex: 5, entity: { name: "Fireball", level: 3 }, ability: "int" }],
+        spellcastingClasses: [{ ability: "int" }],
+        abilitySpellcasting: { int: { saveDC: 14, attackBonus: 6 } },
+        spellcasting: { ability: "int", saveDC: 14, attackBonus: 6 },
+        editState,
+      });
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never, sheet });
+      await Promise.resolve();
+      await Promise.resolve();
+      const block = root.querySelector(".pc-scroll-spellblock");
+      expect(block).toBeTruthy();
+      expect(block?.textContent).toContain("Fireball");
+      const labels = [...root.querySelectorAll(".pc-scroll-spellblock .archivist-item-property-label")].map((l) => l.textContent);
+      expect(labels).toContain("Spell");
+      // The "change" affordance uses the same `.pc-inv-action` dress as the
+      // "+ Set spell" button (and EQUIP / REMOVE) so it harmonizes with its sibling
+      // action buttons; it keeps `.pc-spell-change` for the left spacing and is NOT
+      // the heavy `.pc-inline-cta` pill.
+      const change = [...root.querySelectorAll(".pc-scroll-spellblock button")]
+        .find((b) => b.textContent?.toLowerCase().includes("change"));
+      expect(change).toBeTruthy();
+      expect(change?.classList.contains("pc-inline-cta")).toBe(false);
+      expect(change?.classList.contains("pc-inv-action")).toBe(true);
+      expect(change?.classList.contains("pc-spell-change")).toBe(true);
+      // Save DC / Attack are intentionally NOT shown on the scroll expand — they
+      // surface on the Spells tab where the scroll is cast.
+      expect(labels).not.toContain("Save DC");
+      expect(labels).not.toContain("Attack");
+      expect(block?.textContent).not.toContain("14"); // no save DC row here anymore
+    });
+
+    it("renders '+ Set spell' with the EQUIP / REMOVE `.pc-inv-action` dress when no spell is chosen (P7 F1)", async () => {
+      const entry: EquipmentEntry = { item: "[[spell-scroll-3rd-level]]" };
+      const resolved = {
+        index: 5,
+        entity: { name: "Spell Scroll (3rd Level)", type: "scroll", scroll_level: 3, description: "A scroll." },
+        entityType: "item",
+        entry,
+      } as ResolvedEquipped;
+      const editState = invEditState();
+      const sheet = sheetCtx({ editState });
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never, sheet });
+      await Promise.resolve();
+      const setBtn = [...root.querySelectorAll(".pc-scroll-spellblock button")]
+        .find((b) => b.textContent?.toLowerCase().includes("set spell"));
+      expect(setBtn).toBeTruthy();
+      // P7 F1 · the expand's set-spell button now reuses the sibling EQUIP / REMOVE
+      // `.pc-inv-action` outline dress instead of the heavy `.pc-inline-cta` pill.
+      expect(setBtn?.classList.contains("pc-inv-action")).toBe(true);
+      expect(setBtn?.classList.contains("pc-inline-cta")).toBe(false);
+    });
+
+    it("no longer renders the per-scroll INT/WIS/CHA capture control (ability is set at the top of the Spells tab)", async () => {
+      const entry: EquipmentEntry = { item: "[[spell-scroll-1st-level]]", overrides: { spell: "srd-2024_cure-wounds" } };
+      const resolved = {
+        index: 5,
+        entity: { name: "Spell Scroll (1st Level)", type: "scroll", scroll_level: 1 },
+        entityType: "item",
+        entry,
+      } as ResolvedEquipped;
+      const editState = invEditState();
+      const sheet = sheetCtx({
+        spells: [{ source: "item", entryIndex: 5, entity: { name: "Cure Wounds", level: 1 }, ability: undefined }],
+        spellcastingClasses: [], // non-caster
+        editState,
+      });
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never, sheet });
+      await Promise.resolve();
+      // The broken per-row capture control is removed.
+      expect(root.querySelector(".pc-scroll-ability")).toBeNull();
+      // The chosen spell still surfaces in the scroll block.
+      expect(root.querySelector(".pc-scroll-spellblock")?.textContent).toContain("Cure Wounds");
+    });
+
+    it("renders an Identify button for an unidentified placeholder (5A) and keeps the overrides details", () => {
+      const entry: EquipmentEntry = { item: "[[unidentified-potion]]" };
+      const resolved = {
+        index: 5,
+        entity: { name: "Unidentified Potion", type: "potion", unidentified: true, masked_category: "potion", description: "?" },
+        entityType: "item",
+        entry,
+      } as ResolvedEquipped;
+      const editState = invEditState();
+      const sheet = sheetCtx({ editState, entities: { search: () => [], getBySlug: () => null } });
+      const root = mountContainer();
+      renderRowExpand(root, { entry, resolved, app: {} as App, editState: editState as never, sheet });
+      expect(root.querySelector(".pc-inv-action.pc-identify")).toBeTruthy();
+      // The "Action overrides" <details> still renders unchanged.
+      const details = root.querySelector("details.pc-override-actions-details");
+      expect(details).toBeTruthy();
+      expect(details?.querySelector("summary")?.textContent).toBe("Action overrides");
+    });
   });
 });

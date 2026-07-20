@@ -45,11 +45,11 @@ describe("abbrAbility", () => {
 });
 
 describe("hitDcDescriptor", () => {
-  it("returns save ability + DC when the spell has a saving throw", () => {
+  it("returns the save descriptor (ability + DC) when the spell has a saving throw", () => {
     expect(hitDcDescriptor(sp({ saving_throw: { ability: "wisdom" } as never }), 14))
-      .toEqual({ ability: "WIS", dc: 14 });
+      .toEqual({ kind: "save", ability: "WIS", dc: 14 });
   });
-  it("returns null when there is no saving throw (no attack data exists in the model)", () => {
+  it("returns null when the spell has neither a saving throw nor a curated attack roll", () => {
     expect(hitDcDescriptor(sp({}), 14)).toBeNull();
   });
 });
