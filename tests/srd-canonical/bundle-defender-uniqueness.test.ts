@@ -52,7 +52,7 @@ describe("SRD bundle: Defender (Longsword) uniqueness (PC-7 LI-3)", () => {
 
   it("SRD 5e ships exactly one Defender Longsword and it carries the prefixed slug", () => {
     const entries = listDefenderEntries(path.join(BUNDLE_ROOT, "SRD 5e", "Magic Items"));
-    const longswords = entries.filter((e) => e.slug === "srd-5e_defender-longsword");
+    const longswords = entries.filter((e) => e.slug === "srd-5e_item_defender-longsword");
     expect(longswords).toHaveLength(1);
 
     // No bare/unprefixed `defender-longsword` slug should ever ship from the
@@ -63,7 +63,7 @@ describe("SRD bundle: Defender (Longsword) uniqueness (PC-7 LI-3)", () => {
 
   it("SRD 2024 ships exactly one Defender Longsword and it carries the prefixed slug", () => {
     const entries = listDefenderEntries(path.join(BUNDLE_ROOT, "SRD 2024", "Magic Items"));
-    const longswords = entries.filter((e) => e.slug === "srd-2024_defender-longsword");
+    const longswords = entries.filter((e) => e.slug === "srd-2024_item_defender-longsword");
     expect(longswords).toHaveLength(1);
 
     const bareLongswords = entries.filter((e) => e.slug === "defender-longsword");

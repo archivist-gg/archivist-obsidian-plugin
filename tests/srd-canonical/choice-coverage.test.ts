@@ -39,7 +39,14 @@ function collect(kind: string, edition: string): { key: string; bare: string; sc
   const out: ReturnType<typeof collect> = [];
   for (const e of entries) {
     const eslug = (e.slug as string) ?? "";
-    const bareOwner = eslug.includes("_") ? eslug.slice(eslug.indexOf("_") + 1) : eslug;
+    // Arity-robust bare-owner strip: a 3-part namespaced slug
+    // (`<prefix>_<entity_type>_<name>`, e.g. `srd-5e_subclass_champion`) yields
+    // the trailing name; legacy 2-part (`srd-5e_champion`) and bare (`champion`)
+    // slugs yield their last segment. Name-slugs never contain `_`, so the join
+    // is a no-op for the common case and only preserves multi-word names if the
+    // generator ever emitted them. Mirrors the generator's bareSlug fix.
+    const parts = eslug.split("_");
+    const bareOwner = parts.length >= 3 ? parts.slice(2).join("_") : parts[parts.length - 1];
     const push = (f: FeatureLike) => {
       const fslug = f.id ?? (f.name ? slug(f.name) : "?");
       out.push({

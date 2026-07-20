@@ -91,11 +91,11 @@ describe("PC numerical regression — Grendal", () => {
     // a handful something is wrong with the bundle build or the loader.
     expect(registry.count()).toBeGreaterThan(500);
     // The slugs Grendal references must each resolve to a registered entity.
-    expect(registry.getByTypeAndSlug("race", "srd-5e_dwarf")).toBeDefined();
-    expect(registry.getByTypeAndSlug("class", "srd-5e_fighter")).toBeDefined();
-    expect(registry.getByTypeAndSlug("background", "srd-5e_acolyte")).toBeDefined();
-    expect(registry.getByTypeAndSlug("weapon", "srd-5e_longsword")).toBeDefined();
-    expect(registry.getByTypeAndSlug("item", "srd-5e_arrow-catching-shield")).toBeDefined();
+    expect(registry.getByTypeAndSlug("race", "srd-5e_race_dwarf")).toBeDefined();
+    expect(registry.getByTypeAndSlug("class", "srd-5e_class_fighter")).toBeDefined();
+    expect(registry.getByTypeAndSlug("background", "srd-5e_background_acolyte")).toBeDefined();
+    expect(registry.getByTypeAndSlug("weapon", "srd-5e_weapon_longsword")).toBeDefined();
+    expect(registry.getByTypeAndSlug("item", "srd-5e_item_arrow-catching-shield")).toBeDefined();
   });
 
   it("recalcs Grendal to sensible derived stats after canonical bundle is loaded", () => {
@@ -112,9 +112,9 @@ describe("PC numerical regression — Grendal", () => {
     // here makes failures debuggable. Anything left in `warnings` here is an
     // honest gap in the canonical bundle for this PC's references.
     const expectedResolved = [
-      "race=srd-5e_dwarf",
-      "class[0]=srd-5e_fighter",
-      "background=srd-5e_acolyte",
+      "race=srd-5e_race_dwarf",
+      "class[0]=srd-5e_class_fighter",
+      "background=srd-5e_background_acolyte",
     ];
     const failedExpected = expectedResolved.filter((id) =>
       resolved.warnings.some((w) => w.includes(id.split("=")[1]!)),
