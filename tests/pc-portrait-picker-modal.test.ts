@@ -1,5 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { PortraitPickerModal } from "../packages/obsidian/src/modules/pc/components/portrait-picker-modal";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { TFile } from "obsidian";
@@ -208,5 +210,89 @@ describe("PortraitPickerModal crop stage", () => {
     expect(app.vault.createBinary.mock.calls[0][0]).toBe("PlayerCharacters/Portraits/new.png");
     expect(onPick).toHaveBeenCalledTimes(1);
     expect(onPick.mock.calls[0][0].path).toBe("PlayerCharacters/Portraits/new.png");
+  });
+});
+
+function loadCropImage(el: HTMLElement, nw: number, nh: number): HTMLImageElement {
+  const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+  Object.defineProperty(im, "naturalWidth", { value: nw });
+  Object.defineProperty(im, "naturalHeight", { value: nh });
+  im.dispatchEvent(new Event("load"));
+  return im;
+}
+// jsdom lacks PointerEvent; the modal only reads pointerId/clientX/clientY and
+// guards setPointerCapture, so a MouseEvent with the pointer type name works.
+const ptr = (type: string, x: number, y: number) => new MouseEvent(type, { clientX: x, clientY: y });
+const useBtn = (el: HTMLElement) =>
+  [...el.querySelectorAll("button")].find((b) => b.textContent === "Use this framing") as HTMLButtonElement;
+
+// jsdom has no layout (getBoundingClientRect() is all zeros), so these drive
+// the modal's FALLBACK dims derivation: 2000x500 -> height cap 320 gives
+// 1280x320, then the 432 width cap (.pc-portrait-picker-body) re-derives
+// 432x108. The default-cover commit is scale-invariant (regression guard); the
+// dragged commit is the real detector: without the width cap the space is
+// 1280x320 (cover marquee mx=480 side=320) and x would commit as 380/1280.
+describe("PortraitPickerModal crop stage wide-image containment", () => {
+  it("wide image: default framing still commits crop=null (cover)", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    loadCropImage(el, 2000, 500);
+    useBtn(el).click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0][1]).toBeNull();
+  });
+  it("wide image: dragged marquee converts against the CLAMPED dispW=432", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    loadCropImage(el, 2000, 500);
+    const marquee = el.querySelector(".pc-portrait-crop-marquee") as HTMLElement;
+    // Clamped dims 432x108 -> default cover marquee mx=162, my=0, side=108.
+    expect(marquee.style.getPropertyValue("--pc-crop-side")).toBe("108px");
+    expect(marquee.style.getPropertyValue("--pc-crop-mx")).toBe("162px");
+    marquee.dispatchEvent(ptr("pointerdown", 200, 50));
+    marquee.dispatchEvent(ptr("pointermove", 100, 50)); // dx -100 -> mx 62
+    marquee.dispatchEvent(ptr("pointerup", 100, 50));
+    expect(marquee.style.getPropertyValue("--pc-crop-mx")).toBe("62px");
+    useBtn(el).click();
+    await vi.advanceTimersByTimeAsync(10);
+    const crop = onPick.mock.calls[0][1] as { x: number; y: number; size: number };
+    expect(crop.x).toBeCloseTo(62 / 432, 6);
+    expect(crop.y).toBe(0);
+    expect(crop.size).toBeCloseTo(0.25, 6);
+  });
+});
+
+// CSS-source contract (jsdom has no layout; pattern: pc-portrait-crop-render
+// .test.ts). The TS fallback derivation MUST mirror these rules or rendered
+// dims diverge from derived dims and every committed crop fraction is wrong
+// (the P4b framing-defect class): body width 432px == MAX_DISPLAY_WIDTH,
+// max-height 320px == MAX_DISPLAY_HEIGHT.
+describe("portrait picker crop-stage CSS contract", () => {
+  const cssPath = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles/components.css");
+  const ruleOf = (selector: string): string => {
+    const css = readFileSync(cssPath, "utf8");
+    const match = css.match(new RegExp(selector.replace(/[.\\[\]()]/g, "\\$&") + "\\s*\\{([^}]+)\\}"));
+    expect(match, `${selector} rule missing from components.css`).toBeTruthy();
+    return (match as RegExpMatchArray)[1];
+  };
+  it("crop img is capped on BOTH axes (fits inside the modal body)", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-img");
+    expect(body).toMatch(/max-width:\s*100%/);
+    expect(body).toMatch(/max-height:\s*320px/);
+  });
+  it("stage's fit-content is capped so the img's max-width: 100% resolves to the body width", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-stage");
+    expect(body).toMatch(/max-width:\s*100%/);
+  });
+  it("body width matches the TS MAX_DISPLAY_WIDTH fallback (432)", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-picker-body");
+    expect(body).toMatch(/width:\s*432px/);
+  });
+  it("marquee is a circle (border-radius: 50%)", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-marquee");
+    expect(body).toMatch(/border-radius:\s*50%/);
   });
 });

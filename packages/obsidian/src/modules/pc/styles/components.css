@@ -1995,13 +1995,18 @@
   position: relative;
   display: block;
   width: fit-content;
+  /* Cap the img's containing block: without this, fit-content tracks the
+     image's intrinsic width and the img's own max-width: 100% resolves
+     against an uncapped stage. 100% here = the 432px picker body; the TS
+     fallback MAX_DISPLAY_WIDTH mirrors that number (portrait-picker-modal.ts). */
+  max-width: 100%;
   margin: 0 auto;
   overflow: hidden;
   border-radius: var(--pc-radius-sm);
   line-height: 0;
 }
 .pc-portrait-picker .pc-portrait-crop-stage.is-loading .pc-portrait-crop-img { opacity: 0.35; filter: grayscale(30%); }
-.pc-portrait-picker .pc-portrait-crop-img { display: block; width: auto; max-height: 320px; }
+.pc-portrait-picker .pc-portrait-crop-img { display: block; width: auto; max-width: 100%; max-height: 320px; }
 
 .pc-portrait-picker .pc-portrait-crop-marquee {
   position: absolute;
@@ -2012,6 +2017,10 @@
   border: 2px solid var(--pc-parchment-light, #fff9ec);
   outline: 2px solid var(--pc-crimson);
   outline-offset: -1px;
+  /* Circle preview of the (square-encoded) crop: border, outline, and the
+     9999px dim shadow all follow the radius, so the surround gets a circular
+     hole. Storage stays the "x,y,size" square; visual only. */
+  border-radius: 50%;
   box-shadow: 0 0 0 9999px rgba(43, 32, 20, 0.55);
   cursor: move;
   touch-action: none;

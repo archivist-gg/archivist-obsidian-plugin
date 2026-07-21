@@ -17,6 +17,13 @@ const IMPORT_ACCEPT = ".png,.jpg,.jpeg,.webp,.gif,.svg,.avif,.bmp";
 const SEARCH_DEBOUNCE_MS = 150;
 const GRID_CAP = 200;
 const MAX_DISPLAY_HEIGHT = 320;
+// Mirrors `.pc-portrait-picker-body { width: 432px }` (components.css): the
+// crop img/stage `max-width: 100%` caps the RENDERED width at the body width,
+// so the layout-less fallback derivation must cap at the same number or
+// derived dims diverge from rendered dims and every committed crop fraction
+// is wrong (P4b framing lesson, .superpowers/sdd/p4b-framing-debug-report.md).
+// Contract-tested in tests/pc-portrait-picker-modal.test.ts.
+const MAX_DISPLAY_WIDTH = 432;
 const GUARD_MESSAGE = "The view no longer shows this character. Portrait not changed.";
 // #^[]|\:/ plus C0 control characters (deliberately stripped from imported filenames).
 // eslint-disable-next-line no-control-regex -- intentional: sanitizing filesystem-unsafe control chars
@@ -301,7 +308,7 @@ export class PortraitPickerModal extends Modal {
     const body = this.contentEl.createDiv({ cls: "pc-portrait-picker-body" });
     body.createEl("p", {
       cls: "pc-portrait-crop-hint",
-      text: "Drag the square over the part you want · corners resize",
+      text: "Drag the circle over the part you want · corners resize",
     });
 
     const stage = body.createDiv({ cls: "pc-portrait-crop-stage is-loading" });
@@ -349,7 +356,6 @@ export class PortraitPickerModal extends Modal {
     if (!img) return;
     this.cropStageEl?.removeClass("is-loading");
     const nw = img.naturalWidth;
-    const nh = img.naturalHeight;
     if (nw === 0) {
       new Notice("Cannot read this image, using the full picture.");
       this.cropIsFallbackNull = true;
@@ -359,8 +365,9 @@ export class PortraitPickerModal extends Modal {
       this.setUseEnabled(true);
       return;
     }
-    this.dispH = Math.min(nh, MAX_DISPLAY_HEIGHT);
-    this.dispW = (nw * this.dispH) / nh;
+    const dims = this.resolveDisplayedDims(img);
+    this.dispW = dims.w;
+    this.dispH = dims.h;
     const cover = coverCrop(this.dispW, this.dispH);
     this.marquee = { mx: cover.x * this.dispW, my: cover.y * this.dispW, side: cover.size * this.dispW };
     this.cropIsFallbackNull = false;
@@ -371,6 +378,36 @@ export class PortraitPickerModal extends Modal {
   private onCropImageError(): void {
     new Notice("Could not load this image.");
     this.backToGrid();
+  }
+
+  /**
+   * The crop image's displayed dimensions: the SINGLE source of truth for
+   * every marquee computation (init, move clamping, min/max side, commit
+   * conversion). Prefers the MEASURED live layout (real Obsidian), so the
+   * coordinate space is exactly what the user sees and cannot diverge from
+   * the CSS; falls back to deriving what the CSS caps (`max-height: 320px`
+   * plus `max-width: 100%` of the 432px body) produce, for layout-less
+   * environments (jsdom tests) where rects measure 0.
+   */
+  private resolveDisplayedDims(img: HTMLImageElement): { w: number; h: number } {
+    const rect = img.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return { w: rect.width, h: rect.height };
+    let h = Math.min(img.naturalHeight, MAX_DISPLAY_HEIGHT);
+    let w = (img.naturalWidth * h) / img.naturalHeight;
+    if (w > MAX_DISPLAY_WIDTH) {
+      w = MAX_DISPLAY_WIDTH;
+      h = (w * img.naturalHeight) / img.naturalWidth;
+    }
+    return { w, h };
+  }
+
+  /** Re-syncs dispW/dispH from the live image (gesture start + commit). */
+  private refreshDisplayedDims(): void {
+    const img = this.cropImgEl;
+    if (!img || img.naturalWidth === 0) return;
+    const dims = this.resolveDisplayedDims(img);
+    this.dispW = dims.w;
+    this.dispH = dims.h;
   }
 
   private setUseEnabled(enabled: boolean): void {
@@ -392,6 +429,7 @@ export class PortraitPickerModal extends Modal {
 
   private beginMove(e: PointerEvent): void {
     if (!this.marquee) return;
+    this.refreshDisplayedDims();
     try {
       (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     } catch {
@@ -409,6 +447,7 @@ export class PortraitPickerModal extends Modal {
 
   private beginResize(e: PointerEvent, corner: Corner): void {
     if (!this.marquee) return;
+    this.refreshDisplayedDims();
     try {
       (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     } catch {
@@ -463,6 +502,7 @@ export class PortraitPickerModal extends Modal {
 
   private resolveCrop(): CropParams | null {
     if (this.cropIsFallbackNull || !this.marquee || this.dispW <= 0) return null;
+    this.refreshDisplayedDims();
     const params = marqueeToCrop(this.marquee.mx, this.marquee.my, this.marquee.side, this.dispW);
     return isCoverCrop(params, this.dispW, this.dispH) ? null : params;
   }
