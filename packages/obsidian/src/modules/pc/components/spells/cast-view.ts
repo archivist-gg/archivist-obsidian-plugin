@@ -3,6 +3,7 @@ import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderChargeBoxes } from "../actions/charge-boxes";
 import { spellEffectAtSlot, upcastLevelsFor } from "@archivist-gg/dnd5e/spell/spell.scaling";
 import { toggleSpellBlock } from "./spell-block-expand";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
 import { compactCastingTime, formatRange, hitDcDescriptor, effectDescriptor, componentLetters } from "./spell-display";
 import { setDamageTypeIcon, hasDamageTypeIcon } from "../../assets/spell-icons";
@@ -222,15 +223,31 @@ function renderRow(
   if (spell.entity.ritual) nl.createSpan({ cls: "pc-spell-cr", text: "R", attr: { title: "Ritual" } });
   if (opts.upcast) nl.createSpan({ cls: "pc-spell-up", text: `↑ ${ordinal(level)}` });
   if (spell.entity.school) nameTd.createDiv({ cls: "pc-spell-school", text: spell.entity.school });
-  // Expand the reference block as a full-width sibling div BELOW this row.
-  nameTd.addEventListener("click", () => {
-    const next = tr.nextElementSibling;
-    if (next?.classList.contains("pc-spell-expand-row")) { next.remove(); tr.classList.remove("pc-row-open"); return; }
+  // Expand the reference block as a full-width sibling div BELOW this row. Unlike
+  // the other surfaces the block is CREATED on click / REMOVED on re-click, so
+  // D1 re-apply RE-RUNS the creation branch at render (openBlock, below). The
+  // section `level` in the key disambiguates a spell's base row from its upcast
+  // copies (upcast uniqueness).
+  const expandKey = rowExpandKey("spell", "cast", spell.slug, `${level}#${spell.entryIndex ?? ""}`);
+  const openBlock = (): void => {
     tr.classList.add("pc-row-open");
     const expand = body.createDiv({ cls: "pc-spell-expand-row pc-open-expand" });
     tr.after(expand);
     toggleSpellBlock(expand, spell, ctx);
+  };
+  nameTd.addEventListener("click", () => {
+    const next = tr.nextElementSibling;
+    if (next?.classList.contains("pc-spell-expand-row")) {
+      next.remove();
+      tr.classList.remove("pc-row-open");
+      setRowExpanded(ctx, expandKey, false);
+      return;
+    }
+    openBlock();
+    setRowExpanded(ctx, expandKey, true);
   });
+  // Re-apply a persisted open state (created-on-click surface).
+  if (isRowExpanded(ctx, expandKey)) openBlock();
 
   // TIME / RANGE
   tr.createDiv({ cls: "pc-spell-time", text: compactCastingTime(spell.entity.casting_time) });

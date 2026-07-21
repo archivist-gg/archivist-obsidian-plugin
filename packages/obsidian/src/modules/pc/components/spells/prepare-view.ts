@@ -1,6 +1,7 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 import { toggleSpellBlock } from "./spell-block-expand";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderAddDrawer } from "./add-drawer";
 import { editionTag } from "./spell-display";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
@@ -196,14 +197,21 @@ function renderPrepareRow(
   if (tag) name.parentElement!.createSpan({ cls: `pc-spell-srctag ${tag.mod}`, text: tag.label });
   if (spell.alwaysPrepared) name.createSpan({ cls: "pc-spell-always", text: "always" });
   if (spell.entity.school) nameWrap.createDiv({ cls: "pc-spell-sub", text: spell.entity.school });
+  // Prepare-view spells are never scrolls (source "item" is filtered out), so
+  // entryIndex is absent → a stable `<slug>#` tail.
+  const expandKey = rowExpandKey("spell", "prep", `${spell.slug}#${spell.entryIndex ?? ""}`);
   nameWrap.addEventListener("click", () => {
     toggleSpellBlock(host, spell, ctx);
     const open = !!host.querySelector(":scope > .pc-spell-expand");
     // Tint the whole block-level host (row + expanded card) as ONE open unit.
-    // Tinting the row too would double the translucent layer over the row and
-    // make it darker than the expand area, so the host carries the tint alone.
     host.classList.toggle("pc-open-expand", open);
+    setRowExpanded(ctx, expandKey, open);
   });
+  // Re-apply a persisted open state (created-on-click surface).
+  if (isRowExpanded(ctx, expandKey)) {
+    toggleSpellBlock(host, spell, ctx);
+    host.classList.add("pc-open-expand");
+  }
 
   // Remove with inline two-tap confirm
   const rm = row.createEl("button", { cls: "pc-spell-remove", text: "✕" });
