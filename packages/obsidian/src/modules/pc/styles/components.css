@@ -55,10 +55,16 @@
   color: var(--pc-crimson);
   opacity: 0.85;
 }
-/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side). */
+/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side).
+ * max-width: none is load-bearing: Obsidian's app.css sets
+ * `.workspace-leaf-content img:not([width]) { max-width: 100% }`, and max-width
+ * beats width regardless of specificity. Any crop with size < 1 needs
+ * width > 100% (--pc-crop-w = 1/size), so without this the image is clamped
+ * back to the box width and leaves empty parchment bottom/right. */
 .archivist-pc-sheet .pc-avatar.pc-avatar-cropped .pc-avatar-img {
   position: absolute;
   width: calc(var(--pc-crop-w) * 100%);
+  max-width: none;
   height: auto;
   left: calc(var(--pc-crop-x) * -100%);
   top: calc(var(--pc-crop-y) * -100%);

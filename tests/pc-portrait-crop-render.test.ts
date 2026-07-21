@@ -1,5 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { PCSheetView } from "../packages/obsidian/src/modules/pc/pc.view";
 import { PCModule } from "../packages/obsidian/src/modules/pc/pc.module";
 import { renderPCSheet } from "../packages/obsidian/src/modules/pc/pc.sheet";
@@ -127,5 +129,42 @@ describe("builder mini avatar crop rendering", () => {
     expect(av.classList.contains("pc-avatar-cropped")).toBe(true);
     expect(av.style.getPropertyValue("--pc-crop-w")).toBe(String(1 / 0.6));
     expect(av.querySelector("img.pc-avatar-img")).toBeTruthy();
+  });
+});
+
+// P4b T7 framing regression. jsdom has no layout, so this encodes the live
+// numbers as a CSS-source contract (pattern: pc-ac-tooltip.test.ts).
+//
+// Live defect (2026-07-21, vault DnD, Test.md): 681x492 photo, stored crop
+// "0.1680,0.0640,0.6237" -> --pc-crop-w = 1/0.6237 = 160.33% of the 92px
+// avatar box = 147.5px expected img width. Obsidian's app.css rule
+// `.workspace-leaf-content img:not([width]) { max-width: 100% }` clamped the
+// used width to 92.34px (height auto -> 66.71px), leaving ~23px right and
+// ~35px bottom parchment. max-width ALWAYS beats width, whatever the
+// specificity, so every crop with size < 1 breaks unless the crop rule
+// explicitly neutralizes the clamp with `max-width: none`.
+// (Earlier synthetic pass was a blind spot: a tall 400x600 image's full-width
+// square crop has size = 1.0 -> width 100% -> the clamp was exactly inert.)
+describe("cropped avatar CSS neutralizes host img max-width clamp", () => {
+  const stylesDir = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles");
+
+  const cropRuleOf = (file: string, selector: string): string => {
+    const css = readFileSync(resolve(stylesDir, file), "utf8");
+    const match = css.match(new RegExp(selector.replace(/[.\\[\]()]/g, "\\$&") + "\\s*\\{([^}]+)\\}"));
+    expect(match, `${selector} rule missing from ${file}`).toBeTruthy();
+    return (match as RegExpMatchArray)[1];
+  };
+
+  it("header avatar crop rule declares the width upscale AND max-width: none", () => {
+    const body = cropRuleOf("components.css", ".archivist-pc-sheet .pc-avatar.pc-avatar-cropped .pc-avatar-img");
+    // The upscale that the host clamp would defeat: size 0.6237 -> 160.33% > 100%.
+    expect(body).toMatch(/width:\s*calc\(var\(--pc-crop-w\)\s*\*\s*100%\)/);
+    expect(body).toMatch(/max-width:\s*none/);
+  });
+
+  it("builder mini avatar crop rule declares the width upscale AND max-width: none", () => {
+    const body = cropRuleOf("builder.css", ".archivist-pc-sheet .pc-builder-avatar.pc-avatar-cropped .pc-avatar-img");
+    expect(body).toMatch(/width:\s*calc\(var\(--pc-crop-w\)\s*\*\s*100%\)/);
+    expect(body).toMatch(/max-width:\s*none/);
   });
 });
