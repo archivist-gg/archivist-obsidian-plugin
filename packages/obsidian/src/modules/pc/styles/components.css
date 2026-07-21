@@ -1288,7 +1288,7 @@
 /* PC-scoped override mark: replaces the global .archivist-override-mark
    cursor:help (defined in src/styles/archivist-edit.css) with a clickable
    pointer + subtle hover affordance, matched to the PC palette. */
-.archivist-pc-sheet .archivist-override-mark {
+:is(.archivist-pc-sheet, .archivist-modal) .archivist-override-mark {
   cursor: pointer;
   color: var(--pc-crimson, var(--red, #8a2414));
   font-weight: 700;
@@ -1308,7 +1308,7 @@
    Visually minimal so it sits in place of the value text it replaces:
    no native widget chrome (border, background, spinners), just a subtle
    dashed outline that communicates "edit mode" and a solid focus ring. */
-.archivist-pc-sheet input.pc-edit-inline {
+:is(.archivist-pc-sheet, .archivist-modal) input.pc-edit-inline {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
