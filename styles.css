@@ -9206,7 +9206,7 @@ body.theme-light .archivist-tag-atk:hover {
 /* Max HP modal (P5). Frame comes from .archivist-modal; everything here is
    layout + token-mapped typography, scoped under .pc-maxhp-modal.
    NB: --pc-fs-display does not exist in the .archivist-modal token set (it
-   only redeclares a subset of tokens.css's full list) — .pc-maxhp-big uses
+   only redeclares a subset of tokens.css's full list): .pc-maxhp-big uses
    --pc-fs-big instead (same 22px value, present in both scopes). */
 .pc-maxhp-modal { text-align: center; font-family: var(--pc-font-serif); }
 .pc-maxhp-title {

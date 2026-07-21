@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 // Mock Obsidian's Modal with a minimal real class (mirrors pc-rest-modal.test.ts),
 // plus a hoisted instance registry so tests can reach `contentEl` even though
 // the MaxHpModal class itself is not exported (only the three module functions
-// are — see max-hp-modal.ts's Produces contract).
+// are, see max-hp-modal.ts's Produces contract).
 interface MockModalInstance {
   contentEl: HTMLElement;
   onOpen?: () => void;
