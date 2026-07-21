@@ -3,6 +3,7 @@ import type { EquipmentEntry, ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc
 import { InventoryRow } from "./inventory-row";
 import { renderRowExpand } from "./inventory-row-expand";
 import { visibleItems, type FilterState, type VisibleEntry } from "./filter-state";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 const DEFAULT_FILTERS: FilterState = {
   status: "all",
@@ -52,9 +53,6 @@ export class InventoryList implements SheetComponent {
       return;
     }
 
-    // Expanded rows persist across load-more repaints (declared once here).
-    const expanded = new Set<number>();
-
     // Shown-count lives in the per-file builderUiState bag so it survives the
     // whole-sheet re-render fired by any inventory mutation; when the bag is
     // somehow absent we fall back to a render-scoped local (resets each render).
@@ -68,12 +66,28 @@ export class InventoryList implements SheetComponent {
       else local.shown = n;
     };
 
+    // Row expand state (D1): backed onto the same per-view bag as the shown-count
+    // so Equip/Attune/Remove (which re-render the whole sheet) keep the row open;
+    // keyed `inv:<index>:<slug>` (self-healing on index shift). Falls back to a
+    // render-scoped Set when no bag is threaded (legacy/test call sites).
+    const localExpanded = new Set<string>();
+    const expandKeyFor = (item: VisibleEntry): string =>
+      rowExpandKey("inv", item.resolved.index, parseSlug(item.entry.item) ?? "");
+    const isExp = (item: VisibleEntry): boolean =>
+      bag ? isRowExpanded({ builderUiState: bag }, expandKeyFor(item)) : localExpanded.has(expandKeyFor(item));
+    const setExp = (item: VisibleEntry, open: boolean): void => {
+      const k = expandKeyFor(item);
+      if (bag) setRowExpanded({ builderUiState: bag }, k, open);
+      else if (open) localExpanded.add(k);
+      else localExpanded.delete(k);
+    };
+
     const paint = (): void => {
       root.empty();
       const shown = getShown();
       for (const item of filtered.slice(0, shown)) {
         const rowHost = root.createDiv({ cls: "pc-inv-row-host" });
-        drawRow(rowHost, item, ctx, expanded, this.opts.onAttuneConflict);
+        drawRow(rowHost, item, ctx, isExp, setExp, this.opts.onAttuneConflict);
       }
       if (filtered.length > shown) {
         const remaining = filtered.length - shown;
@@ -97,15 +111,15 @@ function drawRow(
   host: HTMLElement,
   item: VisibleEntry,
   ctx: ComponentRenderContext,
-  expanded: Set<number>,
+  isExp: (item: VisibleEntry) => boolean,
+  setExp: (item: VisibleEntry, open: boolean) => void,
   onAttuneConflict?: (incomingIndex: number) => void,
 ): void {
   host.empty();
-  const isExpanded = expanded.has(item.resolved.index);
-  const onToggle = (i: number) => {
-    if (expanded.has(i)) expanded.delete(i);
-    else expanded.add(i);
-    drawRow(host, item, ctx, expanded, onAttuneConflict);
+  const isExpanded = isExp(item);
+  const onToggle = () => {
+    setExp(item, !isExp(item));
+    drawRow(host, item, ctx, isExp, setExp, onAttuneConflict);
   };
   new InventoryRow().render(host, {
     entry: item.entry,
