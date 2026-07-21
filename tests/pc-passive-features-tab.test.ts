@@ -609,3 +609,39 @@ describe("PassiveFeaturesTab", () => {
     });
   });
 });
+
+describe("D1 feature-row expand persistence", () => {
+  it("re-applies a feature row's expanded state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx([passiveFeat]), builderUiState: bag });
+    const row1 = rowByName(c1, "Darkvision");
+    const expand1 = row1.nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand1.hidden).toBe(true);
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(expand1.hidden).toBe(false);
+
+    // Simulated mutation re-render: fresh container, SAME bag → rebuilt expanded.
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx([passiveFeat]), builderUiState: bag });
+    const row2 = rowByName(c2, "Darkvision");
+    const expand2 = row2.nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand2.hidden).toBe(false);
+    expect(row2.classList.contains("pc-row-open")).toBe(true);
+  });
+
+  it("keeps two distinct feature rows independently persisted", () => {
+    const bag = new Map<string, unknown>();
+    const feats = [passiveFeat, rf({ name: "Fey Ancestry" })];
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx(feats), builderUiState: bag });
+    rowByName(c1, "Fey Ancestry").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx(feats), builderUiState: bag });
+    const darkExpand = rowByName(c2, "Darkvision").nextElementSibling as HTMLElement & { hidden: boolean };
+    const feyExpand = rowByName(c2, "Fey Ancestry").nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(feyExpand.hidden).toBe(false); // the one that was opened
+    expect(darkExpand.hidden).toBe(true); // its sibling stays collapsed
+  });
+});
