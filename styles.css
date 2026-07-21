@@ -5866,6 +5866,7 @@ body.theme-light .archivist-tag-atk:hover {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  height: auto;
   gap: 4px;
   margin: 0;
   padding: 0;
