@@ -7,6 +7,8 @@ export interface ArchivistSettings {
   defaultMultiColumn: boolean;
   multiColumnThreshold: number;
   playerCharactersFolder: string;
+  /** Vault folder the portrait picker shows and imports into. Empty = `<playerCharactersFolder>/Portraits`. */
+  portraitsFolder: string;
 }
 
 export const DEFAULT_SETTINGS: ArchivistSettings = {
@@ -15,4 +17,5 @@ export const DEFAULT_SETTINGS: ArchivistSettings = {
   defaultMultiColumn: false,
   multiColumnThreshold: 20,
   playerCharactersFolder: "PlayerCharacters",
+  portraitsFolder: "",
 };

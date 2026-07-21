@@ -42,6 +42,20 @@ export class ArchivistSettingTab extends PluginSettingTab {
           }),
       );
 
+    new Setting(containerEl)
+      .setName("Portraits folder")
+      .setDesc("Vault folder the character portrait picker shows and imports into. Empty uses <player characters folder>/Portraits.")
+      .addText((text) =>
+        text
+          // eslint-disable-next-line obsidianmd/ui/sentence-case -- folder path example, not prose
+          .setPlaceholder("PlayerCharacters/Portraits")
+          .setValue(this.plugin.settings.portraitsFolder)
+          .onChange(async (value) => {
+            this.plugin.settings.portraitsFolder = value;
+            await this.plugin.saveSettings();
+          }),
+      );
+
     new Setting(containerEl).setName("Compendiums").setHeading();
     containerEl.createEl("p", {
       text: 'Compendiums are folders of game entities (monsters, spells, items) stored in your vault. Read-only compendiums cannot be edited; "save as new" will create a copy in a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',
