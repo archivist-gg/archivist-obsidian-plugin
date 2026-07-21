@@ -6848,6 +6848,16 @@ body.theme-light .archivist-tag-atk:hover {
   letter-spacing: var(--pc-ls-caps-md);
   font-weight: 600;
 }
+/* D4 (item #8): SCOPED to the Actions + Passive tabs only (both roots carry
+ * `pc-actions-tab`; pool-tab + spells-prepare heads are NOT under it, so they
+ * keep their own spacing). Sub-section headers gain a small top offset so they
+ * no longer hug the divider/preceding list, and each sub-group list gains a
+ * small bottom margin so the last row no longer hugs what follows (mirrors the
+ * `.pc-spell-cast-table` reference). `.pc-tab-heading:first-child` already zeroes
+ * a tab's first heading, so no double offset lands there. Values may be tuned
+ * +/- one spacing token during the live pass. */
+.archivist-pc-sheet .pc-actions-tab .pc-actions-section-head { margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-actions-tab .pc-actions-table { margin-bottom: var(--pc-space-2); }
 
 /* ---------- Actions-tab lists (Weapons / Items / Features) — grid rows ---------- */
 .archivist-pc-sheet .pc-actions-table { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
@@ -6876,6 +6886,14 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
   grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
+/* D2 (item #5): zero the flex gap the base `.pc-feature-list` (blocks.css) leaks
+ * onto the economy lists. The compound selector (specificity 0,3,0) beats the
+ * base `.pc-feature-list` rule and hits EXACTLY the three live feature-list
+ * constructions (section-renderer, race-block, background-block, incl. the boons
+ * list). Weapons/items lists never carry `.pc-feature-list`, so they are
+ * untouched. Rows stay separated by their own padding + border-bottom, matching
+ * the inventory/spells reference density; the row->expand seam is flush. */
+.archivist-pc-sheet .pc-actions-table.pc-feature-list { gap: 0; }
 /* Passive-tab-scoped gutter tighten (Task 6): the "Passive" tag was removed, so
  * the badge column no longer needs the 66px it took on the Actions tab — reclaim
  * ~12px so the name column starts closer to the left. SCOPED to the passive tab
