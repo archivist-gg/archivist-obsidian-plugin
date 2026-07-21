@@ -491,6 +491,35 @@ describe("CharacterEditState — HP overrides (SP4b)", () => {
   });
 });
 
+describe("rolled HP + HP modifier setters (P5)", () => {
+  it("setRolledHp floors + min-1 and writes overrides.hp.rolled; NO current clamp", () => {
+    const { es, char } = makeState((c) => { c.state.hp.current = 20; });
+    es.setRolledHp(12.9);
+    expect(char.overrides.hp?.rolled).toBe(12);
+    expect(char.state.hp.current).toBe(20); // convention: computed-max drops don't clamp
+  });
+  it("clearRolledHp keeps sibling keys, deletes empty hp object", () => {
+    const { es, char } = makeState();
+    es.setMaxHpOverride(40); es.setRolledHp(20); es.clearRolledHp();
+    expect(char.overrides.hp).toEqual({ max: 40 });
+    es.clearMaxHpOverride();
+    expect(char.overrides.hp).toBeUndefined();
+  });
+  it("setHpModifier truncates, stores negatives, 0 delegates to clear", () => {
+    const { es, char } = makeState();
+    es.setHpModifier(-5.7);
+    expect(char.overrides.hp?.modifier).toBe(-5);
+    es.setHpModifier(0);
+    expect(char.overrides.hp).toBeUndefined();
+  });
+  it("round-trips through toYaml", () => {
+    const { es } = makeState();
+    es.setRolledHp(62); es.setHpModifier(-5);
+    expect(es.toYaml()).toMatch(/rolled: 62/);
+    expect(es.toYaml()).toMatch(/modifier: -5/);
+  });
+});
+
 describe("CharacterEditState — AC overrides (SP4b)", () => {
   it("setAcOverride stores override and clamps to [0, 50]", () => {
     const { es, char, onChange } = makeState();

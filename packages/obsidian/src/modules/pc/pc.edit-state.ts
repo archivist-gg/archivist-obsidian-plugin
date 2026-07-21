@@ -104,6 +104,45 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Record the rolled hit-dice sum (replaces the PHB-average dice component).
+   *  Does NOT clamp current: computed-max drops follow the exhaustion
+   *  convention (tolerated until the next heal). */
+  setRolledHp(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(1, Math.floor(value));
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.rolled = next;
+    this.onChange();
+  }
+
+  clearRolledHp(): void {
+    if (!this.character.overrides.hp) { this.onChange(); return; }
+    delete this.character.overrides.hp.rolled;
+    if (Object.keys(this.character.overrides.hp).length === 0) {
+      delete this.character.overrides.hp;
+    }
+    this.onChange();
+  }
+
+  /** In-game max-HP adjustment (Aid, life drain). 0 clears. No current clamp. */
+  setHpModifier(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.trunc(value);
+    if (next === 0) { this.clearHpModifier(); return; }
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.modifier = next;
+    this.onChange();
+  }
+
+  clearHpModifier(): void {
+    if (!this.character.overrides.hp) { this.onChange(); return; }
+    delete this.character.overrides.hp.modifier;
+    if (Object.keys(this.character.overrides.hp).length === 0) {
+      delete this.character.overrides.hp;
+    }
+    this.onChange();
+  }
+
   // ─── AC ────────────────────────────────────────────────────────────
   setAcOverride(value: number): void {
     if (!Number.isFinite(value)) return;
