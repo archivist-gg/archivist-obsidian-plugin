@@ -5950,6 +5950,7 @@ body.theme-light .archivist-tag-atk:hover {
 }
 
 .pc-portrait-picker .pc-portrait-picker-import .pc-portrait-picker-thumb {
+  background: transparent;
   border-style: dashed;
   color: var(--pc-crimson);
   font-size: 22px;
