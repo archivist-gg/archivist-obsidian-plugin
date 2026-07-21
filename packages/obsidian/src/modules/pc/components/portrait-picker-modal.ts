@@ -503,7 +503,17 @@ export class PortraitPickerModal extends Modal {
   private resolveCrop(): CropParams | null {
     if (this.cropIsFallbackNull || !this.marquee || this.dispW <= 0) return null;
     this.refreshDisplayedDims();
-    const params = marqueeToCrop(this.marquee.mx, this.marquee.my, this.marquee.side, this.dispW);
+    // The img is responsive (max-width: 100%): shrinking the window while the
+    // crop stage is open re-renders it smaller with NO gesture, so the marquee
+    // px (clamped in the old dims space) can sit outside the refreshed space.
+    // Re-clamp before converting, or the stored fractions violate the
+    // x + size <= 1 invariant and parseCropValue silently rejects the crop on
+    // read (rendering cover instead of the chosen framing).
+    const m = this.marquee;
+    m.side = Math.min(m.side, this.dispW, this.dispH);
+    m.mx = clamp(m.mx, 0, this.dispW - m.side);
+    m.my = clamp(m.my, 0, this.dispH - m.side);
+    const params = marqueeToCrop(m.mx, m.my, m.side, this.dispW);
     return isCoverCrop(params, this.dispW, this.dispH) ? null : params;
   }
 

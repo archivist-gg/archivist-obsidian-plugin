@@ -263,6 +263,31 @@ describe("PortraitPickerModal crop stage wide-image containment", () => {
     expect(crop.y).toBe(0);
     expect(crop.size).toBeCloseTo(0.25, 6);
   });
+  it("commit re-clamps a stale out-of-bounds marquee to the refreshed dims (window shrink)", async () => {
+    const onPick = vi.fn();
+    const { modal, el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    loadCropImage(el, 2000, 500); // fallback dims 432x108
+    // A live window shrink re-renders the responsive img smaller with NO
+    // gesture, so the marquee px go stale. jsdom's natural-based fallback
+    // can't reproduce the resize itself, so plant the stale state directly:
+    // marquee px valid only in a larger, pre-shrink space.
+    (modal as unknown as { marquee: { mx: number; my: number; side: number } }).marquee = {
+      mx: 400,
+      my: 60,
+      side: 200,
+    };
+    useBtn(el).click();
+    await vi.advanceTimersByTimeAsync(10);
+    const crop = onPick.mock.calls[0][1] as { x: number; y: number; size: number };
+    // Re-clamped against 432x108: side -> min(200, 432, 108) = 108,
+    // mx -> clamp(400, 0, 324) = 324, my -> clamp(60, 0, 0) = 0.
+    expect(crop.size).toBeCloseTo(108 / 432, 6);
+    expect(crop.x).toBeCloseTo(324 / 432, 6);
+    expect(crop.y).toBe(0);
+    // The stored-value invariant parseCropValue enforces on read.
+    expect(crop.x + crop.size).toBeLessThanOrEqual(1 + 0.005);
+  });
 });
 
 // CSS-source contract (jsdom has no layout; pattern: pc-portrait-crop-render
