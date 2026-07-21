@@ -28,6 +28,15 @@ export function applyRestResets(
       continue;
     }
 
+    if (cat.id === "hp-modifier-reset") {
+      const hp = character.overrides.hp;
+      if (hp?.modifier !== undefined) {
+        delete hp.modifier;
+        if (Object.keys(hp).length === 0) delete character.overrides.hp;
+      }
+      continue;
+    }
+
     if (cat.id === "spell-slots") {
       for (const slot of Object.values(character.state.spell_slots ?? {})) {
         slot.used = 0;

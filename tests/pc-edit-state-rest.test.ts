@@ -35,6 +35,30 @@ describe("CharacterEditState.longRest", () => {
     es.longRest(new Set());
     expect(c.state.concentration).toBeNull();
   });
+
+  it("long rest clears the HP modifier (kept row), guard-safe", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    const { es } = makeState(c);
+    es.setHpModifier(-5);
+    es.longRest(new Set());
+    expect(c.overrides.hp?.modifier).toBeUndefined();
+  });
+
+  it("opt-out keeps the modifier", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    const { es } = makeState(c);
+    es.setHpModifier(-5);
+    es.longRest(new Set(["hp-modifier-reset"]));
+    expect(c.overrides.hp?.modifier).toBe(-5);
+  });
+
+  it("clear keeps sibling override key", () => {
+    const c = clone(FIGHTER_5_CLERIC_3);
+    const { es } = makeState(c);
+    es.setMaxHpOverride(40); es.setHpModifier(3);
+    es.longRest(new Set());
+    expect(c.overrides.hp).toEqual({ max: 40 });
+  });
 });
 
 describe("CharacterEditState.shortRest", () => {
