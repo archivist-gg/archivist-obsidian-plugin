@@ -4,6 +4,7 @@ import type { OptionalFeatureEntity } from "@archivist-gg/dnd5e/types/optional-f
 import { levelPrereqMax } from "@archivist-gg/dnd5e/pc/pc.pools";
 import type { PoolLayout } from "@archivist-gg/dnd5e/types/selection-pool";
 import { renderActiveEffectsRail, type ActiveEffectItem } from "./active-effects-rail";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "./row-expand-state";
 
 const COST_LABELS: Record<string, string> = {
   action: "1 Action", "bonus-action": "1 Bonus Action", reaction: "Reaction", free: "Free", special: "Special",
@@ -80,7 +81,7 @@ export class PoolTab implements SheetComponent {
     if (pool.grants.length) {
       root.createDiv({ cls: "pc-actions-section-head" }).createSpan({ text: "Granted" });
       const list = root.createDiv({ cls: "pc-spell-list" });
-      for (const entry of pool.grants) this.grantedRow(list, entry);
+      for (const entry of pool.grants) this.grantedRow(list, entry, pool, ctx);
     }
   }
 
@@ -112,7 +113,9 @@ export class PoolTab implements SheetComponent {
     nameWrap.createSpan({ cls: "pc-spell-name", text: e.name });
     const sub = metaSub(e);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
-    nameWrap.addEventListener("click", () => toggleDesc(host, e));
+    const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
+    nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
+    if (isRowExpanded(ctx, descKey)) openDesc(host, e);
 
     if (opts.selected && e.activatable) {
       const actv = row.createEl("button", {
@@ -126,7 +129,7 @@ export class PoolTab implements SheetComponent {
     }
   }
 
-  private grantedRow(parent: HTMLElement, entry: ResolvedPoolEntry): void {
+  private grantedRow(parent: HTMLElement, entry: ResolvedPoolEntry, pool: ResolvedPool, ctx: ComponentRenderContext): void {
     const e = entry.entity;
     const host = parent.createDiv({ cls: "pc-spell-prep-row-host" });
     const row = host.createDiv({ cls: "pc-spell-prep-row" });
@@ -135,7 +138,9 @@ export class PoolTab implements SheetComponent {
     nameWrap.createSpan({ cls: "pc-spell-always", text: "granted" });
     const sub = metaSub(e);
     if (sub) nameWrap.createDiv({ cls: "pc-spell-sub", text: sub });
-    nameWrap.addEventListener("click", () => toggleDesc(host, e));
+    const descKey = rowExpandKey("pooldesc", pool.id, entry.slug);
+    nameWrap.addEventListener("click", () => toggleDesc(host, e, ctx, descKey));
+    if (isRowExpanded(ctx, descKey)) openDesc(host, e);
   }
 
   private renderBlocks(root: HTMLElement, pool: ResolvedPool, ctx: ComponentRenderContext): void {
@@ -258,14 +263,21 @@ function metaItem(parent: HTMLElement, label: string, value: string): void {
   line.createSpan({ cls: "pc-meta-val", text: value });
 }
 
-/** Toggle a plain-text description block below the row (host carries the tint). */
-function toggleDesc(host: HTMLElement, e: OptionalFeatureEntity): void {
+/** Create the plain-text description block below the row (host carries the tint). */
+function openDesc(host: HTMLElement, e: OptionalFeatureEntity): void {
+  host.createDiv({ cls: "pc-spell-expand" }).setText(e.description ?? "");
+  host.classList.add("pc-open-expand");
+}
+
+/** Toggle the description block, persisting the open state (D1). */
+function toggleDesc(host: HTMLElement, e: OptionalFeatureEntity, ctx: ComponentRenderContext, key: string): void {
   const existing = host.querySelector(":scope > .pc-spell-expand");
   if (existing) {
     existing.remove();
     host.classList.remove("pc-open-expand");
+    setRowExpanded(ctx, key, false);
   } else {
-    host.createDiv({ cls: "pc-spell-expand" }).setText(e.description ?? "");
-    host.classList.add("pc-open-expand");
+    openDesc(host, e);
+    setRowExpanded(ctx, key, true);
   }
 }

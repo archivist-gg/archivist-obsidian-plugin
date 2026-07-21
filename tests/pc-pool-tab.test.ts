@@ -271,3 +271,22 @@ describe("PoolTab — stranded selected picks (prereq now unmet)", () => {
     expect(el.querySelector(".pc-spell-counts")?.textContent).toContain("2 / 3");
   });
 });
+
+describe("PoolTab — D1 pool-desc expand persistence", () => {
+  // The suite has no `mkPool`/`layout` builders (the brief's assumed names); it
+  // uses the `basePool` const + `mkCtx(pool)` + the default spell-like layout, so
+  // this keeps the SHAPE (click `.pc-spell-namewrap`, shared `bag`, re-render,
+  // assert `.pc-spell-expand` re-appears) and adapts to those actual helpers.
+  it("re-creates an open boon description across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const root1 = mountContainer();
+    new PoolTab("interdict-boons").render(root1, { ...mkCtx(basePool), builderUiState: bag } as never);
+    const name1 = root1.querySelector(".pc-spell-prep-row .pc-spell-namewrap") as HTMLElement;
+    name1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-prep-row-host .pc-spell-expand")).not.toBeNull();
+
+    const root2 = mountContainer();
+    new PoolTab("interdict-boons").render(root2, { ...mkCtx(basePool), builderUiState: bag } as never);
+    expect(root2.querySelector(".pc-spell-prep-row-host .pc-spell-expand")).not.toBeNull();
+  });
+});

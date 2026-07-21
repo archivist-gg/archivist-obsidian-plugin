@@ -645,3 +645,32 @@ describe("D1 feature-row expand persistence", () => {
     expect(darkExpand.hidden).toBe(true); // its sibling stays collapsed
   });
 });
+
+describe("D1 boon-row expand persistence", () => {
+  it("re-applies a boon row's expanded state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const pools = [pool({ selected: [entry("wrath", { name: "Boon of Wrath", description: "x" })] })];
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx([], { pools }), builderUiState: bag });
+    boonRowByName(c1, "Boon of Wrath").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx([], { pools }), builderUiState: bag });
+    const expand = boonRowByName(c2, "Boon of Wrath").nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(false);
+  });
+});
+
+describe("D1 background-block expand persistence", () => {
+  it("re-applies the Background block open state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx([], { background: bg2024 }), builderUiState: bag });
+    rowByName(c1, "Soldier").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx([], { background: bg2024 }), builderUiState: bag });
+    const expand = rowByName(c2, "Soldier").nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(false);
+  });
+});

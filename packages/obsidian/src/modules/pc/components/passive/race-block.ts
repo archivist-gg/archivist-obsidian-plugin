@@ -3,6 +3,7 @@ import type { RaceEntity } from "@archivist-gg/dnd5e/race/race.types";
 import type { Feature } from "@archivist-gg/dnd5e/types/feature";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /**
  * The pseudo-traits surfaced as glance tiles (Size / Speed / Darkvision) and so
@@ -50,11 +51,12 @@ function traitDescription(t: Feature): string {
  * it carries NO decision strip / subrace row (those are builder-only, and the
  * stateless tab has no strip to host them).
  *
- * Collapse is the same self-contained `.hidden` DOM-toggle the feature rows use
- * (`feature-rows.ts`): the flag lives on the DOM node, reset each render, so it
- * does NOT touch `ctx.builderUiState`/`redraw()`, which the stateless tab can't
- * host. Default COLLAPSED, matching the sibling rows. Renders nothing when there
- * is no race.
+ * Collapse is the same `.hidden` DOM-toggle the feature rows use
+ * (`feature-rows.ts`), but the open state is now PERSISTED (P3 D1): it is recorded
+ * in `ctx.builderUiState` under `race:<slug>` and re-applied on render, so a click
+ * survives the whole-sheet re-render every editState mutation fires (previously the
+ * flag lived only on the DOM node and reset each render). Default COLLAPSED,
+ * matching the sibling rows. Renders nothing when there is no race.
  */
 export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext): void {
   const race: RaceEntity | null = ctx.resolved.race;
@@ -88,8 +90,11 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
 
   // ── Sibling expand card (hidden until the row is clicked): the FULL chronicle
   //    block, its outer card chrome stripped in CSS so it sits flush here. ──
+  const expandKey = rowExpandKey("race", race.slug);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
 
   // The same `renderChronicleBlock` shell the builder's Race step renders (title
@@ -145,12 +150,15 @@ export function renderRaceBlock(parent: HTMLElement, ctx: ComponentRenderContext
     },
   });
 
-  // Row click toggles the sibling expand (tiles + trait rows). Stateless: the
-  // `.hidden` flag lives on the DOM node, reset each render (default collapsed).
-  // Mirrors the feature-row open/close class toggles exactly.
+  // Row click toggles the sibling expand (tiles + trait rows). The open state is
+  // persisted in `ctx.builderUiState` under `race:<slug>` (P3 D1) so it survives
+  // the whole-sheet re-render every editState mutation fires. Mirrors the
+  // feature-row open/close class toggles exactly.
   row.addEventListener("click", () => {
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 }

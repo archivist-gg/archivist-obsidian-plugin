@@ -9,6 +9,7 @@ import { wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /** The generator-baked placeholder every 2024 SRD background carries in place of a
  *  per-feature description (`background-merge.ts`). Detected exactly (name +
@@ -121,9 +122,11 @@ function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boole
  * `feature` prose and `origin_feat:null` → the real prose is surfaced (NOT
  * suppressed).
  *
- * Collapse is the same self-contained `.hidden` DOM-toggle the Race/feature rows
- * use (the flag lives on the DOM node, reset each render, so it never touches
- * `ctx.builderUiState`/`redraw()`). Default COLLAPSED, matching the Race block and
+ * Collapse is the same `.hidden` DOM-toggle the Race/feature rows use, but the
+ * open state is now PERSISTED (P3 D1): it is recorded in `ctx.builderUiState` under
+ * `background:<slug>` and re-applied on render, so a click survives the whole-sheet
+ * re-render every editState mutation fires (previously the flag lived only on the
+ * DOM node and reset each render). Default COLLAPSED, matching the Race block and
  * the sibling rows. Renders nothing when there is no background.
  */
 export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderContext): void {
@@ -159,8 +162,11 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
 
   // ── Sibling expand card (hidden until the row is clicked): the FULL chronicle
   //    block, carded by `.pc-action-expand-inner > .pc-cblock` (chronicle.css). ──
+  const expandKey = rowExpandKey("background", bg.slug);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
 
   renderChronicleBlock(inner, {
@@ -233,12 +239,15 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
     },
   });
 
-  // Row click toggles the sibling expand. Stateless: the `.hidden` flag lives on
-  // the DOM node, reset each render (default COLLAPSED). Mirrors the Race /
-  // feature-row open/close class toggles exactly.
+  // Row click toggles the sibling expand. The open state is persisted in
+  // `ctx.builderUiState` under `background:<slug>` (P3 D1) and re-applied on
+  // render, so a click survives the whole-sheet re-render every editState mutation
+  // fires (default COLLAPSED). Mirrors the Race / feature-row toggles exactly.
   row.addEventListener("click", () => {
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 }
