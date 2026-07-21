@@ -42,6 +42,12 @@ export interface ComponentRenderContext {
    * type-narrow their own entry; the view never inspects contents.
    */
   builderUiState?: Map<string, unknown>;
+  /** Resolved portrait image URL for the header avatar, or null/undefined for
+   *  the d20 placeholder icon. */
+  portraitUrl?: string | null;
+  /** Callback fired when the user clicks the header avatar to change the
+   *  portrait. */
+  onOpenPortraitPicker?: () => void;
 }
 
 export interface SheetComponent {

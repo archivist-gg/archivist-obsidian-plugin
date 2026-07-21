@@ -26,6 +26,12 @@ export interface RenderSheetOptions {
   onActiveStepChange?: (stepId: string) => void;
   /** Per-file transient Builder UI state bag (lifted to PCSheetView). */
   builderUiState?: Map<string, unknown>;
+  /** Resolved portrait image URL for the header avatar, or null/undefined for
+   *  the d20 placeholder icon. */
+  portraitUrl?: string | null;
+  /** Callback fired when the user clicks the header avatar to change the
+   *  portrait. */
+  onOpenPortraitPicker?: () => void;
 }
 
 /**
@@ -61,6 +67,8 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     activeStepId: opts.activeStepId,
     onActiveStepChange: opts.onActiveStepChange,
     builderUiState: opts.builderUiState,
+    portraitUrl: opts.portraitUrl,
+    onOpenPortraitPicker: opts.onOpenPortraitPicker,
   };
 
   // Class-less character → render the Builder shell instead of the sheet.

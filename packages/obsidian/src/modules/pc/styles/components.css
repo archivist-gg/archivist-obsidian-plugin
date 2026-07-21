@@ -26,12 +26,33 @@
   flex-wrap: wrap;
 }
 .archivist-pc-sheet .pc-avatar {
-  width: 64px;
-  height: 64px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: var(--pc-parchment-dark);
   border: 2px solid var(--pc-tan);
   flex-shrink: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-avatar:hover { border-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-avatar .pc-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+.archivist-pc-sheet .pc-avatar svg.pc-avatar-icon,
+.archivist-pc-sheet .pc-avatar .pc-avatar-icon {
+  width: 54%;
+  height: 54%;
+  color: var(--pc-crimson);
+  opacity: 0.85;
 }
 .archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
 .archivist-pc-sheet .pc-name {
@@ -1000,6 +1021,7 @@
     gap: var(--pc-space-3);
   }
   .archivist-pc-sheet .pc-name { font-size: var(--pc-fs-display); }
+  .archivist-pc-sheet .pc-avatar { width: 64px; height: 64px; }
 }
 
 /* Widget-mode state outlines — thin border-colour shift only.
