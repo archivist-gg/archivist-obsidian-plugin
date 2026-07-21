@@ -11,6 +11,9 @@ let current: MaxHpModal | null = null;
 /** Open the Max HP modal (no-op without editState, matching popover precedent). */
 export function openMaxHpModal(ctx: ComponentRenderContext): void {
   if (!ctx.editState) return;
+  // Close a stale modal bound to a DIFFERENT character before reusing/opening,
+  // so a split-view click on sheet B never repaints sheet A's open modal.
+  if (current && ctx.editState !== current.openedWith) current.close();
   if (current) { current.updateContext(ctx); return; }
   const modal = new MaxHpModal(ctx.app, ctx, ctx.editState);
   current = modal;

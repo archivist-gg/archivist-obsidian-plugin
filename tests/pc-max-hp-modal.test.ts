@@ -256,6 +256,26 @@ describe("MaxHpModal", () => {
     expect(modalInstances.length).toBe(2);
   });
 
+  it("8b. openMaxHpModal with a DIFFERENT editState closes the stale modal before opening a fresh one (split-view guard)", () => {
+    const es1 = makeEditState();
+    const ctx1 = makeCtx({ breakdown: { final: 50 }, editState: es1 });
+    openMaxHpModal(ctx1);
+    const firstModal = lastModal();
+    expect(firstModal.contentEl.children.length).toBeGreaterThan(0);
+
+    const es2 = makeEditState();
+    const ctx2 = makeCtx({ breakdown: { final: 60 }, editState: es2 });
+    openMaxHpModal(ctx2);
+
+    // A brand-new modal was constructed instead of repainting the stale one.
+    expect(modalInstances.length).toBe(2);
+    expect(firstModal.contentEl.children.length).toBe(0); // stale modal's onClose emptied it
+
+    const secondModal = lastModal();
+    expect(secondModal).not.toBe(firstModal);
+    expect(secondModal.contentEl.querySelector(".pc-maxhp-big")?.textContent).toBe("60");
+  });
+
   it("9. closeMaxHpModal closes and unregisters the singleton (double-call safe)", () => {
     const ctx = makeCtx({ breakdown: { final: 40 } });
     openMaxHpModal(ctx);
