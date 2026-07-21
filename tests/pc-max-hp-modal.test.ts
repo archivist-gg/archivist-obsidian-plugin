@@ -147,6 +147,8 @@ describe("MaxHpModal", () => {
 
     const rolledField = contentEl.querySelectorAll(".pc-maxhp-field")[0];
     expect(rolledField.querySelector(".pc-maxhp-box")?.textContent).toBe("62");
+    // hint reads "average: N" in BOTH states, not just the placeholder state.
+    expect(rolledField.querySelector(".pc-maxhp-field-hint")?.textContent).toBe("average: 70");
     const mark = rolledField.querySelector(".archivist-override-mark") as HTMLElement;
     expect(mark).not.toBeNull();
     mark.click();
