@@ -9211,11 +9211,12 @@ body.theme-light .archivist-tag-atk:hover {
 .pc-maxhp-modal { text-align: center; font-family: var(--pc-font-serif); }
 .pc-maxhp-title {
   display: flex; justify-content: center; align-items: baseline; gap: 8px;
+  margin: 0 0 10px;
   font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--pc-text-primary);
 }
 .pc-maxhp-dice { font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.7; }
-.pc-maxhp-big { font-size: var(--pc-fs-big); font-weight: 700; line-height: 1.15; color: var(--pc-text-primary); }
+.pc-maxhp-big { margin: 0 0 6px; font-size: var(--pc-fs-big); font-weight: 700; line-height: 1.15; color: var(--pc-text-primary); }
 .pc-maxhp-eq { font-size: var(--pc-fs-body); margin: 4px 0 12px; }
 .pc-maxhp-eq.is-greyed { opacity: 0.42; }
 .pc-maxhp-term.is-negative { color: var(--pc-crimson); }
@@ -9228,9 +9229,29 @@ body.theme-light .archivist-tag-atk:hover {
   font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: 0.07em;
   text-transform: uppercase; opacity: 0.65; font-family: var(--pc-font-sans);
 }
+/* Keep the value box centered under its label: the clear mark hangs OUTSIDE
+   the centering flow (absolute, to the right of the box) instead of shifting
+   the box left by half its width. */
+.pc-maxhp-field-val {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.pc-maxhp-field-val .archivist-override-mark {
+  position: absolute; left: 100%; margin-left: 3px;
+}
 .pc-maxhp-box {
   display: inline-block; min-width: 58px; text-align: center;
   font-size: var(--pc-fs-mid); padding: 3px 8px; cursor: pointer;
+  border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light);
+}
+/* The inline input replaces .pc-maxhp-box on click (makeInlineInput copies the
+   box's classes). The shared input.pc-edit-inline base (width 3ch, no border,
+   transparent) outranks .pc-maxhp-box, so re-assert the box metrics at higher
+   specificity to stop the swap from jumping. */
+.pc-maxhp-modal .pc-maxhp-field-val input.pc-edit-inline {
+  width: auto; min-width: 58px; max-width: 84px; box-sizing: border-box;
+  text-align: center; font-size: var(--pc-fs-mid); padding: 3px 8px;
   border: 1px solid var(--pc-tan); border-radius: 4px;
   background: var(--pc-parchment-light);
 }
