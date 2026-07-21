@@ -16,6 +16,17 @@ import {
 import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import { WorkspaceLeaf } from "obsidian";
 
+// Spy on closeMaxHpModal while keeping openMaxHpModal/refreshMaxHpModal real —
+// HpWidget (rendered as part of every sheet render in this file) calls
+// refreshMaxHpModal unconditionally, so it must stay live.
+const closeMaxHpModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/max-hp-modal", async () => {
+  const actual = await vi.importActual<
+    typeof import("../packages/obsidian/src/modules/pc/components/max-hp-modal")
+  >("../packages/obsidian/src/modules/pc/components/max-hp-modal");
+  return { ...actual, closeMaxHpModal: closeMaxHpModalMock };
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BLADESWORN = {
@@ -219,6 +230,18 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     expect(view.lastWrittenData).toBeNull();
     // @ts-expect-error
     expect(view.isDirty).toBe(false);
+  });
+
+  it("onunload closes the Max HP modal (view unload: plugin disable / pane close)", async () => {
+    // setViewData/onLoadFile/clear only cover same-leaf file switches — none of
+    // them fire when the VIEW ITSELF is unloaded (plugin disable, leaf/tab
+    // close, workspace teardown). Without an onunload hook, a modal opened
+    // against this view's editState would survive as a zombie wired to a dead
+    // view.
+    const { view } = await bootView();
+    closeMaxHpModalMock.mockClear();
+    view.onunload();
+    expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
   });
 });
 

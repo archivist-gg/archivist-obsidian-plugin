@@ -214,6 +214,16 @@ export class PCSheetView extends TextFileView {
     this.contentEl.empty();
   }
 
+  onunload(): void {
+    // setViewData/onLoadFile/clear above only cover same-leaf file switches.
+    // None of them fire when the VIEW ITSELF is unloaded (plugin disable,
+    // leaf/tab close, workspace teardown) — Modal.onClose does not fire for
+    // those either, so without this hook a Max HP modal opened against this
+    // view's editState survives as a zombie wired to a dead view.
+    closeMaxHpModal();
+    super.onunload();
+  }
+
   async onOpen(): Promise<void> {
     this.addAction("pencil", "Edit as Markdown", () => {
       void this.switchToMarkdown();
