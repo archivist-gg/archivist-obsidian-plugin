@@ -69,6 +69,15 @@
   left: calc(var(--pc-crop-x) * -100%);
   top: calc(var(--pc-crop-y) * -100%);
   object-fit: unset;
+  /* border-radius: 0 is load-bearing: the base .pc-avatar-img rule sets
+   * border-radius: 50%, which is a harmless circle only while the img is
+   * square (the cover path). A crop makes this img a NON-square rectangle
+   * (width = 1/size of a square box, height auto), so 50% renders it as a
+   * flat ELLIPSE that curves inside the circular host box, leaving parchment
+   * gaps on the sides ("left/right of an oval"). The circular mask must come
+   * solely from the host .pc-avatar (overflow: hidden + border-radius: 50%),
+   * so the img itself is a plain rectangle the host clips to a circle. */
+  border-radius: 0;
 }
 .archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
 .archivist-pc-sheet .pc-name {

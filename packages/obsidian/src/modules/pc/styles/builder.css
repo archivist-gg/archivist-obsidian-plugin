@@ -27,6 +27,11 @@
   left: calc(var(--pc-crop-x) * -100%);
   top: calc(var(--pc-crop-y) * -100%);
   object-fit: unset;
+  /* border-radius: 0 is load-bearing (see the header-avatar crop rule in
+   * components.css): the base .pc-avatar-img border-radius: 50% turns this
+   * NON-square cropped img into an ellipse that leaves parchment gaps; the
+   * circular mask must come from the host box's overflow: hidden alone. */
+  border-radius: 0;
 }
 .archivist-pc-sheet .pc-builder-title {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-heading);

@@ -167,4 +167,25 @@ describe("cropped avatar CSS neutralizes host img max-width clamp", () => {
     expect(body).toMatch(/width:\s*calc\(var\(--pc-crop-w\)\s*\*\s*100%\)/);
     expect(body).toMatch(/max-width:\s*none/);
   });
+
+  // P4b T7 "avatar oval" regression. Live defect (2026-07-22, vault DnD,
+  // Test.md): a WIDE 2816x1536 image, right-border crop "0.4546,0,0.5454" ->
+  // cropped img element measured 169.31px wide x 92.34px tall inside the 92px
+  // avatar box. The base ".pc-avatar-img { border-radius: 50% }" rule (a
+  // harmless circle only while the img is a SQUARE cover) leaked onto this
+  // NON-square cropped img, painting it as a flat ellipse (rx 84.65, ry 46.17)
+  // that curved inside the circular host box -> ~35% parchment crescent on the
+  // side ("left/right of an oval"). The circular mask must come ONLY from the
+  // host box (overflow: hidden + border-radius: 50%), so the cropped img must
+  // neutralize the inherited radius. Center/cover crops were unaffected because
+  // that path keeps the square base img (crop === null, no cropped class).
+  it("header avatar crop rule resets border-radius so the non-square img is not an ellipse", () => {
+    const body = cropRuleOf("components.css", ".archivist-pc-sheet .pc-avatar.pc-avatar-cropped .pc-avatar-img");
+    expect(body).toMatch(/border-radius:\s*0/);
+  });
+
+  it("builder mini avatar crop rule resets border-radius so the non-square img is not an ellipse", () => {
+    const body = cropRuleOf("builder.css", ".archivist-pc-sheet .pc-builder-avatar.pc-avatar-cropped .pc-avatar-img");
+    expect(body).toMatch(/border-radius:\s*0/);
+  });
 });
