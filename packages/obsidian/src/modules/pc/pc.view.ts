@@ -4,10 +4,14 @@ import { extractPCCodeBlock, spliceCodeBlock } from "./pc.parser";
 import { readFrontmatterValue, spliceFrontmatterKey } from "./pc.frontmatter";
 import {
   PORTRAIT_KEY,
+  PORTRAIT_CROP_KEY,
   PORTRAIT_IMAGE_EXTENSIONS,
   normalizeLinkValue,
   wikiLinkFor,
   getPortraitsFolder,
+  parseCropValue,
+  formatCropValue,
+  type CropParams,
 } from "./pc.portrait";
 import { PortraitPickerModal } from "./components/portrait-picker-modal";
 import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
@@ -29,6 +33,7 @@ export class PCSheetView extends TextFileView {
   private codeBlockRange: { startLine: number; endLine: number } | null = null;
   private lastWrittenData: string | null = null;
   private portraitUrl: string | null = null;
+  private portraitCrop: CropParams | null = null;
   private lastWarnings: string[] = [];
   // Track whether editState has been mutated since the file was loaded.
   // Before any mutation, getViewData() returns the raw file bytes so that
@@ -92,6 +97,7 @@ export class PCSheetView extends TextFileView {
     this.editState = null;
     this.codeBlockRange = null;
     this.portraitUrl = null;
+    this.portraitCrop = null;
     this.lastWarnings = [];
     // Reset active tab on file switch — opening a different PC should land
     // the user on Actions, not whatever tab the previous PC happened to be on.
@@ -139,6 +145,7 @@ export class PCSheetView extends TextFileView {
     );
     this.lastWarnings = [...resolveResult.warnings, ...this.derived.warnings];
     this.portraitUrl = this.resolvePortrait();
+    this.portraitCrop = parseCropValue(readFrontmatterValue(this.rawFileData, PORTRAIT_CROP_KEY) ?? "");
     this.renderSheet(this.lastWarnings);
   }
 
@@ -193,6 +200,7 @@ export class PCSheetView extends TextFileView {
     this.lastWrittenData = null;
     this.isDirty = false;
     this.portraitUrl = null;
+    this.portraitCrop = null;
     this.lastWarnings = [];
     this.activeTabId = DEFAULT_ACTIVE_TAB;
     this.activeStepId = null;
@@ -219,6 +227,7 @@ export class PCSheetView extends TextFileView {
     this.lastWrittenData = null;
     this.isDirty = false;
     this.portraitUrl = null;
+    this.portraitCrop = null;
     this.lastWarnings = [];
     this.activeTabId = DEFAULT_ACTIVE_TAB;
     this.activeStepId = null;
@@ -261,6 +270,7 @@ export class PCSheetView extends TextFileView {
       },
       builderUiState: this.builderUiState,
       portraitUrl: this.portraitUrl,
+      portraitCrop: this.portraitCrop,
       onOpenPortraitPicker: () => this.openPortraitPicker(),
     });
   }
@@ -286,21 +296,39 @@ export class PCSheetView extends TextFileView {
     return app.vault.getResourcePath(tfile);
   }
 
-  applyPortrait(link: string | null, preResolvedUrl?: string | null): void {
+  applyPortrait(link: string | null, preResolvedUrl?: string | null, crop?: CropParams | null): void {
+    // Clearing the link always clears the crop too, whatever the caller passed.
+    const effCrop = link === null ? null : crop;
+
     const spliced = spliceFrontmatterKey(this.rawFileData, PORTRAIT_KEY, link);
     if (spliced === null) {
       new Notice("This file has no frontmatter, cannot set a portrait.");
       return;
     }
     this.rawFileData = spliced;
+
+    // The link splice cannot fail once it has already succeeded above, so the
+    // crop splice needs no null-guard of its own.
+    if (effCrop !== undefined) {
+      this.rawFileData = spliceFrontmatterKey(
+        this.rawFileData,
+        PORTRAIT_CROP_KEY,
+        effCrop === null ? null : formatCropValue(effCrop),
+      ) as string;
+    }
+
     // Frontmatter edit shifts every line below it — recompute the pc code
-    // block's line range from the spliced bytes, or the next pc-block splice
-    // would land at stale line numbers and corrupt the file (RISK-1).
+    // block's line range ONCE, from the fully-spliced bytes, or the next
+    // pc-block splice would land at stale line numbers and corrupt the file
+    // (RISK-1).
     const extracted = extractPCCodeBlock(this.rawFileData);
     this.codeBlockRange = extracted
       ? { startLine: extracted.startLine, endLine: extracted.endLine }
       : null;
     this.portraitUrl = preResolvedUrl !== undefined ? preResolvedUrl : this.resolvePortrait();
+    // Re-read crop state from the just-spliced text rather than branching on
+    // `effCrop` locally, so this always reflects what's actually on disk.
+    this.portraitCrop = parseCropValue(readFrontmatterValue(this.rawFileData, PORTRAIT_CROP_KEY) ?? "");
     this.renderSheet(this.lastWarnings);
     this.lastWrittenData = this.getViewData();
     this.requestSave();
@@ -316,14 +344,13 @@ export class PCSheetView extends TextFileView {
     new PortraitPickerModal(this.app, {
       pcFile: file,
       hasPortrait: readFrontmatterValue(this.rawFileData, PORTRAIT_KEY) !== null,
-      // TODO(P4b T5): resolve from real plugin settings; this bridges the
-      // new required option until T5 wires the settings source through.
-      portraitsFolder: getPortraitsFolder(undefined),
+      portraitsFolder: getPortraitsFolder(this.mod.services?.plugin?.settings),
       isCurrentFile: () => this.file?.path === file.path,
-      onPick: (image) => {
+      onPick: (image, crop) => {
         this.applyPortrait(
           wikiLinkFor(app.metadataCache.fileToLinktext(image, file.path)),
           app.vault.getResourcePath(image),
+          crop,
         );
       },
       onRemove: () => this.applyPortrait(null),

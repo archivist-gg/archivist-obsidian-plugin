@@ -284,3 +284,54 @@ describe("PCSheetView — portrait write path (P4)", () => {
     expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
   });
 });
+
+describe("PCSheetView - crop write path (P4b)", () => {
+  it("writes both keys in one save; crop line sits in frontmatter; pc block intact", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]", undefined, { x: 0.2, y: 0.3, size: 0.6 });
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out).toContain('archivist-portrait-crop: "0.2000,0.3000,0.6000"');
+    expect(out.match(/```/g)!.length).toBe(2);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+  it("crop undefined leaves an existing crop line untouched", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[a.png]]", undefined, { x: 0.1, y: 0.1, size: 0.5 });
+    view.applyPortrait("[[b.png]]");
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[b.png]]"');
+    expect(out).toContain('archivist-portrait-crop: "0.1000,0.1000,0.5000"');
+  });
+  it("crop null removes the crop line; link null removes BOTH regardless of crop arg", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[a.png]]", undefined, { x: 0.1, y: 0.1, size: 0.5 });
+    view.applyPortrait("[[a.png]]", undefined, null);
+    expect(view.getViewData()).not.toContain("archivist-portrait-crop");
+    view.applyPortrait("[[a.png]]", undefined, { x: 0.1, y: 0.1, size: 0.5 });
+    view.applyPortrait(null, undefined, { x: 0.9, y: 0.9, size: 0.1 });
+    const out = view.getViewData();
+    expect(out).not.toContain("archivist-portrait");
+  });
+  it("AC8 extended: pc-block edit after portrait+crop write splices correctly", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]", undefined, { x: 0.2, y: 0.3, size: 0.6 });
+    // @ts-expect-error test access
+    view.editState!.setInspiration(4);
+    await Promise.resolve();
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait-crop: "0.2000,0.3000,0.6000"');
+    expect(out).toMatch(/inspiration:\s*4/);
+    expect(out.match(/```/g)!.length).toBe(2);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+  it("portraitCrop state re-read from the spliced file (mock env: parse works without app)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[a.png]]", "app://res/a.png", { x: 0.2, y: 0.3, size: 0.6 });
+    // @ts-expect-error test access
+    expect(view.portraitCrop).toEqual({ x: 0.2, y: 0.3, size: 0.6 });
+    view.applyPortrait(null);
+    // @ts-expect-error test access
+    expect(view.portraitCrop).toBeNull();
+  });
+});

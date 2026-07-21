@@ -14,7 +14,7 @@ export interface HostPlugin {
       getCache: (path: string) => { frontmatter?: Record<string, unknown> } | null;
     };
   };
-  settings: { playerCharactersFolder?: string };
+  settings: { playerCharactersFolder?: string; portraitsFolder?: string };
 }
 
 /** The typed service bundle pc receives from the composition root (0f) —
