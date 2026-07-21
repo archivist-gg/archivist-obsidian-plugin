@@ -34,6 +34,7 @@ export interface FeatureRowOpts {
   merged?: ResolvedFeature[];
   sectionKey?: string;
   entryIdx?: number;
+  passive?: boolean;
 }
 
 export function renderFeatureRow(
@@ -61,15 +62,15 @@ export function renderFeatureRow(
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  // Badge column — read from the feature's OWN action cost, not the section
-  // bucket: a real cost (incl. `free`) → filled cost pill; `special`/absent →
-  // an EMPTY badge cell (no tag). The redundant "Passive" tag was removed
-  // (Task 6): on the Passive tab every row is passive, so the tag was pure
-  // noise. The `.pc-feature-badge` cell is still created so the 4-col grid stays
-  // aligned, and the FREE pill (a real `free` cost) still renders here.
-  const badge = row.createDiv({ cls: "pc-feature-badge" });
+  // D3: the Actions tab keeps the 66px badge column; the Passive tab drops it and
+  // renders the only cost that can occur there (FREE) inline at the start of the
+  // name cell (verified via featureEconomy: free/special/absent bucket to
+  // Passive, and special/absent render no pill).
   const cost = feature.action;
-  if (cost && cost !== "special") renderCostBadge(badge, cost);
+  if (!opts.passive) {
+    const badge = row.createDiv({ cls: "pc-feature-badge" });
+    if (cost && cost !== "special") renderCostBadge(badge, cost);
+  }
 
   // Dim only when the EXACT action cost is action/bonus/reaction (free/special/
   // passive stay live) — one rule across weapons/items/features/boons.
@@ -83,6 +84,11 @@ export function renderFeatureRow(
   // editState.toggleActiveBuff, with a static duration label. stopPropagation
   // keeps the toggle click from bubbling into the row-expand handler.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
+  // D3: on the Passive tab (no badge column) a FREE cost renders inline here at
+  // the start of the name cell; every other passive cost renders no pill.
+  if (opts.passive && cost === "free") {
+    renderCostBadge(nameCell, "free").classList.add("pc-cost-badge-inline");
+  }
   nameCell.createDiv({ cls: "pc-action-row-name", text: title });
   if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
   if (feature.activatable && feature.id) {

@@ -86,4 +86,13 @@ describe("ActionsTab — boons in the economy×source model (§3.6)", () => {
     new ActionsTab().render(c, renderCtx([]));
     expect(boonRows(c)).toEqual([]);
   });
+
+  it("keeps the 4-child badge layout on the Actions tab (D3 is passive-only)", () => {
+    const c = mountContainer();
+    new ActionsTab().render(c, renderCtx([pool({ selected: [entry("wrath", { name: "Wrath", action_cost: "action" })] })]));
+    const row = boonRowByName(c, "Wrath");
+    expect(row.querySelector(".pc-feature-badge")).toBeTruthy();
+    expect(row.childElementCount).toBe(4);
+    expect(row.querySelector(".pc-feature-badge .pc-cost-badge.cost-action")).toBeTruthy();
+  });
 });

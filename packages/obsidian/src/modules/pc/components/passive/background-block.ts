@@ -142,11 +142,10 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   const list = parent.createDiv({ cls: "pc-actions-table pc-feature-list" });
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  // Badge column: kept present-but-empty so the 4-col feature-row grid stays
-  // aligned with its siblings. The redundant "Passive" tag was removed (Task 6):
-  // on the Passive tab every row is passive, so the tag was pure noise (mirrors
+  // D3: the Passive tab dropped the badge column (3-col grid), so this row emits
+  // NO `.pc-feature-badge` cell — its three grid children are nameCell, detail,
+  // and caret, matching the passive feature/boon rows beside it (mirrors
   // race-block.ts).
-  row.createDiv({ cls: "pc-feature-badge" });
 
   // Name cell: the background name, with the edition as the quiet sub-label (the
   // same slot feature rows use for their source line). Sub-label omitted when the
@@ -155,8 +154,8 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   nameCell.createDiv({ cls: "pc-action-row-name", text: bg.name });
   if (bg.edition) nameCell.createDiv({ cls: "pc-action-row-sub", text: String(bg.edition) });
 
-  // Detail column kept present-but-empty so the 4-col feature-row grid
-  // (badge | name | detail | caret) stays aligned with its siblings.
+  // Detail column kept present-but-empty so the 3-col feature-row grid
+  // (name | detail | caret) stays aligned with its siblings.
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 

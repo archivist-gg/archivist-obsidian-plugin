@@ -388,28 +388,24 @@ describe("PassiveFeaturesTab", () => {
       expect(rowByName(c, "Free Thing").classList.contains("pc-row-disabled")).toBe(false);
     });
 
-    it("renders an EMPTY badge cell (no Passive tag, no cost badge) on passive rows", () => {
+    it("drops the badge column (no badge div, 3-col grid) on passive rows", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Darkvision", passive: true })]));
       const row = rowByName(c, "Darkvision");
-      // Task 6: the redundant "Passive" tag was removed — a passive row now shows
-      // an EMPTY badge cell. The cell itself must still exist so the 4-col grid
-      // stays aligned with the FREE-pill rows beside it.
-      const badge = row.querySelector(".pc-feature-badge");
-      expect(badge).toBeTruthy();
-      expect(badge!.childElementCount).toBe(0);
+      // D3: passive rows drop the badge column entirely (3-col grid).
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.childElementCount).toBe(3); // name · detail · caret
       expect(row.querySelector(".pc-passive-tag")).toBeNull();
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
     });
 
-    it("gives a free-cost feature a FREE pill (not a Passive tag) under Passive & Free Actions", () => {
+    it("gives a free-cost feature a FREE pill inline in the name cell under Passive & Free Actions", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })]));
       const row = rowByName(c, "Free Thing");
-      // Badge is read from the raw cost, so free keeps its filled FREE pill even
-      // though the row files under the passive section.
-      expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
-      expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull();
+      // D3: the FREE pill renders inline at the start of the name cell (no badge column).
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.querySelector(".pc-action-namecell > .pc-cost-badge.cost-free.pc-cost-badge-inline")).toBeTruthy();
       expect(headings(c)).toContain("Passive & Free Actions");
       expect(headings(c)).not.toContain("Actions");
     });
@@ -512,16 +508,15 @@ describe("PassiveFeaturesTab", () => {
       expect(btn.classList.contains("on")).toBe(true);
     });
 
-    it("renders an EMPTY badge cell (no Active toggle, no status marker) on a plain no-cost non-activatable selected boon", () => {
+    it("drops the badge column (3-col grid) on a plain no-cost non-activatable selected boon", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("wrath", { name: "Boon of Wrath" })] })],
       }));
       const row = boonRowByName(c, "Boon of Wrath");
-      // Task 6: the "Passive" tag was removed — an empty badge cell remains.
-      const badge = row.querySelector(".pc-feature-badge");
-      expect(badge).toBeTruthy();
-      expect(badge!.childElementCount).toBe(0);
+      // D3: passive rows drop the badge column entirely (3-col grid).
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.childElementCount).toBe(3); // name · detail · caret
       expect(row.querySelector(".pc-passive-tag")).toBeNull();
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(row.querySelector(".pc-pool-active")).toBeNull();
@@ -535,21 +530,22 @@ describe("PassiveFeaturesTab", () => {
       }));
       const row = boonRowByName(c, "Red Cant");
       expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
-      expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull(); // no status-in-badge
+      // D3: no badge column; the FREE pill renders inline in the name cell.
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.querySelector(".pc-action-namecell > .pc-cost-badge.cost-free.pc-cost-badge-inline")).toBeTruthy();
       expect(row.querySelector(".pc-feature-detail .pc-boon-status")!.textContent).toBe("granted");
     });
 
-    it("renders an EMPTY badge cell (no cost badge, no marker) for a special-cost plain selected boon", () => {
+    it("drops the badge column (3-col grid) for a special-cost plain selected boon", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("frenzy", { name: "Frenzy", action_cost: "special" })] })],
       }));
       const row = boonRowByName(c, "Frenzy");
-      // Task 6: `special` cost → empty badge cell (no tag, no cost pill), matching
-      // the passive-feature row treatment.
-      const badge = row.querySelector(".pc-feature-badge");
-      expect(badge).toBeTruthy();
-      expect(badge!.childElementCount).toBe(0);
+      // D3: `special` cost → no badge column and no inline pill (only FREE renders
+      // inline), matching the passive-feature row treatment.
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.childElementCount).toBe(3); // name · detail · caret
       expect(row.querySelector(".pc-passive-tag")).toBeNull();
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(row.querySelector(".pc-boon-status")).toBeNull();
@@ -607,6 +603,35 @@ describe("PassiveFeaturesTab", () => {
       }));
       expect(boonRowByName(c, "Free Boon").classList.contains("pc-row-disabled")).toBe(false);
     });
+  });
+});
+
+describe("D3 passive layout (badge column dropped, FREE inline)", () => {
+  it("a passive feature row has 3 grid children and no badge div", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Darkvision", passive: true })]));
+    const row = rowByName(c, "Darkvision");
+    expect(row.querySelector(".pc-feature-badge")).toBeNull();
+    expect(row.childElementCount).toBe(3);
+  });
+  it("a passive boon row has 3 grid children and no badge div", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([], {
+      pools: [pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true })] })],
+    }));
+    const row = boonRowByName(c, "Boon of Endurance");
+    expect(row.querySelector(".pc-feature-badge")).toBeNull();
+    expect(row.childElementCount).toBe(3);
+  });
+  it("race and background rows have 3 grid children (no badge div)", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([], { race: raceFixture, background: bg2024 }));
+    const raceRow = rowByName(c, "Kalashtar");
+    const bgRow = rowByName(c, "Soldier");
+    expect(raceRow.querySelector(".pc-feature-badge")).toBeNull();
+    expect(raceRow.childElementCount).toBe(3);
+    expect(bgRow.querySelector(".pc-feature-badge")).toBeNull();
+    expect(bgRow.childElementCount).toBe(3);
   });
 });
 

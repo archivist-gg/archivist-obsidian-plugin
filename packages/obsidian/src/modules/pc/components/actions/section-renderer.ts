@@ -20,6 +20,7 @@ export function renderActionSections(
   root: HTMLElement,
   sections: Section[],
   ctx: ComponentRenderContext,
+  passive = false,
 ): void {
   for (const section of sections) {
     root.createEl("h4", { cls: "pc-tab-heading", text: section.label });
@@ -40,8 +41,8 @@ export function renderActionSections(
       const sectionKey = `${section.key}:${sg.key}`;
       sg.entries.forEach((e, entryIdx) => {
         if (e.kind === "item") renderItemRow(list, e.item, ctx);
-        else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx);
-        else if (e.kind === "feature") renderFeatureRow(list, e.rf, ctx, { merged: e.merged, sectionKey, entryIdx });
+        else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx, passive);
+        else if (e.kind === "feature") renderFeatureRow(list, e.rf, ctx, { merged: e.merged, sectionKey, entryIdx, passive });
       });
     }
   }
