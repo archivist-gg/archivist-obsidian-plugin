@@ -5810,6 +5810,30 @@ body.theme-light .archivist-tag-atk:hover {
   }
 }
 
+/* Portrait picker modal */
+.pc-portrait-picker-file-input { display: none; }
+.pc-portrait-picker-actions { display: flex; flex-direction: column; margin-bottom: var(--pc-space-2); }
+.pc-portrait-picker-action,
+.pc-portrait-picker-row {
+  display: flex;
+  align-items: center;
+  gap: var(--pc-space-2);
+  padding: 6px 4px;
+  cursor: pointer;
+  border-bottom: 1px dotted var(--pc-tan-muted);
+}
+.pc-portrait-picker-action:hover,
+.pc-portrait-picker-row:hover { background: var(--pc-row-open-bg); }
+.pc-portrait-picker-row img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--pc-radius-sm);
+  flex-shrink: 0;
+}
+.pc-portrait-picker-list { max-height: 45vh; overflow-y: auto; }
+.pc-portrait-picker-empty { color: var(--pc-text-muted); font-style: italic; }
+
 
 /* ============================================
    pc/blocks.css
