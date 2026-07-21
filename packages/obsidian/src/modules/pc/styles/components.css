@@ -26,6 +26,7 @@
   flex-wrap: wrap;
 }
 .archivist-pc-sheet .pc-avatar {
+  position: relative;
   width: 96px;
   height: 96px;
   border-radius: 50%;
@@ -53,6 +54,15 @@
   height: 54%;
   color: var(--pc-crimson);
   opacity: 0.85;
+}
+/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side). */
+.archivist-pc-sheet .pc-avatar.pc-avatar-cropped .pc-avatar-img {
+  position: absolute;
+  width: calc(var(--pc-crop-w) * 100%);
+  height: auto;
+  left: calc(var(--pc-crop-x) * -100%);
+  top: calc(var(--pc-crop-y) * -100%);
+  object-fit: unset;
 }
 .archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
 .archivist-pc-sheet .pc-name {

@@ -4,6 +4,7 @@
   padding: 9px 14px; border-bottom: 2px solid var(--pc-crimson);
 }
 .archivist-pc-sheet .pc-builder-avatar {
+  position: relative;
   width: 24px; height: 24px; border-radius: 50%;
   background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
@@ -13,6 +14,15 @@
 }
 .archivist-pc-sheet .pc-builder-avatar svg.pc-avatar-icon {
   width: 60%; height: 60%; color: var(--pc-crimson); opacity: 0.85;
+}
+/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side). */
+.archivist-pc-sheet .pc-builder-avatar.pc-avatar-cropped .pc-avatar-img {
+  position: absolute;
+  width: calc(var(--pc-crop-w) * 100%);
+  height: auto;
+  left: calc(var(--pc-crop-x) * -100%);
+  top: calc(var(--pc-crop-y) * -100%);
+  object-fit: unset;
 }
 .archivist-pc-sheet .pc-builder-title {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-heading);
