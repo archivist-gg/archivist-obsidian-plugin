@@ -85,7 +85,17 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   });
   input.addEventListener("keyup", stopProp);
   input.addEventListener("keypress", stopProp);
-  input.addEventListener("blur", () => { if (!done) commit(); });
+  input.addEventListener("blur", () => {
+    if (done) return;
+    // A blur with the value unchanged from what was seeded is not user
+    // intent to commit (e.g. clicking into a placeholder-seeded field and
+    // clicking away without typing). Only commit when the raw value
+    // actually differs from the initial; otherwise cancel so no spurious
+    // onChange/file write happens. Enter always commits unconditionally
+    // (see keydown above) since pressing Enter IS explicit intent.
+    if (input.value !== String(opts.initial)) commit();
+    else cancel();
+  });
 }
 
 export interface NumberFieldOpts {

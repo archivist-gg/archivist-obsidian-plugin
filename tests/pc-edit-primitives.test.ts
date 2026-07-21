@@ -109,14 +109,46 @@ describe("makeInlineInput", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("blur after no input change calls onCommit with the initial value", () => {
+  it("blur with the value UNCHANGED from initial calls onCancel and does NOT call onCommit", () => {
     const root = mountContainer();
     const valueEl = root.createDiv({ text: "10" });
     const onCommit = vi.fn();
-    makeInlineInput(valueEl, { initial: 10, onCommit, onCancel: () => {} });
+    const onCancel = vi.fn();
+    makeInlineInput(valueEl, { initial: 10, onCommit, onCancel });
     const input = root.querySelector<HTMLInputElement>("input")!;
+    // No edit at all: click in, click away.
     input.dispatchEvent(new FocusEvent("blur"));
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    // valueEl restored in place of the input (same cancel path as Escape).
+    expect(root.querySelector("input.pc-edit-inline")).toBeNull();
+    expect(root.querySelector("div")?.textContent).toBe("10");
+  });
+
+  it("blur after typing then reverting the value back to initial also cancels (no spurious commit)", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ text: "10" });
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    makeInlineInput(valueEl, { initial: 10, onCommit, onCancel });
+    const input = root.querySelector<HTMLInputElement>("input")!;
+    input.value = "15";
+    input.value = "10";
+    input.dispatchEvent(new FocusEvent("blur"));
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it("Enter with the value UNCHANGED from initial still commits (explicit intent)", () => {
+    const root = mountContainer();
+    const valueEl = root.createDiv({ text: "10" });
+    const onCommit = vi.fn();
+    const onCancel = vi.fn();
+    makeInlineInput(valueEl, { initial: 10, onCommit, onCancel });
+    const input = root.querySelector<HTMLInputElement>("input")!;
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     expect(onCommit).toHaveBeenCalledWith(10);
+    expect(onCancel).not.toHaveBeenCalled();
   });
 });
 

@@ -218,6 +218,62 @@ describe("MaxHpModal", () => {
     expect(es.setHpModifier).toHaveBeenCalledWith(0);
   });
 
+  it("6b. no-edit blur regression: clicking the placeholder-seeded Override box then blurring WITHOUT typing writes NOTHING (user repro)", () => {
+    const es = makeEditState();
+    const ctx = makeCtx({
+      breakdown: {
+        diceSum: 70, diceSource: "average", averageDiceSum: 70,
+        conMod: 0, conLevels: 0, modifier: null,
+        exhaustionMultiplier: 1, exhaustionLevel: 0,
+        override: null, final: 70, derivedMax: 70,
+      },
+      editState: es,
+    });
+    openMaxHpModal(ctx);
+    const contentEl = lastModal().contentEl;
+    const overrideField = contentEl.querySelectorAll(".pc-maxhp-field")[2] as HTMLElement;
+
+    const overrideBox = overrideField.querySelector(".pc-maxhp-box") as HTMLElement;
+    expect(overrideBox.textContent).toBe("none");
+    overrideBox.click();
+    const overrideInput = overrideField.querySelector("input.pc-edit-inline") as HTMLInputElement;
+    expect(overrideInput).not.toBeNull();
+    // No typing at all: click in, click away.
+    overrideInput.dispatchEvent(new FocusEvent("blur"));
+
+    expect(es.setMaxHpOverride).not.toHaveBeenCalled();
+    // onCancel re-renders the modal, so the field is back to the "none" placeholder.
+    const rerenderedField = contentEl.querySelectorAll(".pc-maxhp-field")[2];
+    expect(rerenderedField.querySelector(".pc-maxhp-box")?.textContent).toBe("none");
+    expect(rerenderedField.querySelector(".pc-maxhp-box")?.classList.contains("is-placeholder")).toBe(true);
+    expect(contentEl.querySelector("input.pc-edit-inline")).toBeNull();
+  });
+
+  it("6c. no-edit blur on the placeholder-seeded Rolled box also writes NOTHING", () => {
+    const es = makeEditState();
+    const ctx = makeCtx({
+      breakdown: {
+        diceSum: 70, diceSource: "average", averageDiceSum: 70,
+        conMod: 0, conLevels: 0, modifier: null,
+        exhaustionMultiplier: 1, exhaustionLevel: 0,
+        override: null, final: 70, derivedMax: 70,
+      },
+      editState: es,
+    });
+    openMaxHpModal(ctx);
+    const contentEl = lastModal().contentEl;
+    const rolledField = contentEl.querySelectorAll(".pc-maxhp-field")[0] as HTMLElement;
+
+    const rolledBox = rolledField.querySelector(".pc-maxhp-box") as HTMLElement;
+    rolledBox.click();
+    const rolledInput = rolledField.querySelector("input.pc-edit-inline") as HTMLInputElement;
+    expect(rolledInput).not.toBeNull();
+    rolledInput.dispatchEvent(new FocusEvent("blur"));
+
+    expect(es.setRolledHp).not.toHaveBeenCalled();
+    expect(contentEl.querySelector("input.pc-edit-inline")).toBeNull();
+  });
+
   it("7. refreshMaxHpModal with the SAME editState re-renders values (84 -> 79 visible)", () => {
     const es = makeEditState();
     const ctx1 = makeCtx({
