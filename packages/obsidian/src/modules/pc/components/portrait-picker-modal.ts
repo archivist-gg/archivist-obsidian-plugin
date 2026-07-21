@@ -390,7 +390,11 @@ export class PortraitPickerModal extends Modal {
 
   private beginMove(e: PointerEvent): void {
     if (!this.marquee) return;
-    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    try {
+      (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    } catch {
+      /* no active pointer: gesture continues via bubbling listeners */
+    }
     this.dragState = {
       kind: "move",
       pointerId: e.pointerId,
@@ -403,7 +407,11 @@ export class PortraitPickerModal extends Modal {
 
   private beginResize(e: PointerEvent, corner: Corner): void {
     if (!this.marquee) return;
-    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    try {
+      (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    } catch {
+      /* no active pointer: gesture continues via bubbling listeners */
+    }
     const { mx, my, side } = this.marquee;
     const anchor = cornerPoint(OPPOSITE_CORNER[corner], mx, my, side);
     const start = cornerPoint(corner, mx, my, side);
