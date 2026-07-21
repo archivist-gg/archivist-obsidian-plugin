@@ -1,6 +1,9 @@
-import { TextFileView, type WorkspaceLeaf } from "obsidian";
+import { Notice, TextFileView, type WorkspaceLeaf } from "obsidian";
 import { renderPCSheet, renderPCSheetError } from "./pc.sheet";
 import { extractPCCodeBlock, spliceCodeBlock } from "./pc.parser";
+import { readFrontmatterValue, spliceFrontmatterKey } from "./pc.frontmatter";
+import { PORTRAIT_KEY, PORTRAIT_IMAGE_EXTENSIONS, normalizeLinkValue, wikiLinkFor } from "./pc.portrait";
+import { PortraitPickerModal } from "./components/portrait-picker-modal";
 import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 import { recalc } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import { seedFeatureUses } from "./pc.resource-seed";
@@ -19,6 +22,8 @@ export class PCSheetView extends TextFileView {
   private editState: CharacterEditState | null = null;
   private codeBlockRange: { startLine: number; endLine: number } | null = null;
   private lastWrittenData: string | null = null;
+  private portraitUrl: string | null = null;
+  private lastWarnings: string[] = [];
   // Track whether editState has been mutated since the file was loaded.
   // Before any mutation, getViewData() returns the raw file bytes so that
   // no-op Obsidian save triggers do not normalize the YAML formatting.
@@ -80,6 +85,8 @@ export class PCSheetView extends TextFileView {
     // stale editState.
     this.editState = null;
     this.codeBlockRange = null;
+    this.portraitUrl = null;
+    this.lastWarnings = [];
     // Reset active tab on file switch — opening a different PC should land
     // the user on Actions, not whatever tab the previous PC happened to be on.
     this.activeTabId = DEFAULT_ACTIVE_TAB;
@@ -124,7 +131,9 @@ export class PCSheetView extends TextFileView {
       () => this.handleChange(),
       this.mod.resolver?.registry ?? null,
     );
-    this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
+    this.lastWarnings = [...resolveResult.warnings, ...this.derived.warnings];
+    this.portraitUrl = this.resolvePortrait();
+    this.renderSheet(this.lastWarnings);
   }
 
   private handleChange(): void {
@@ -147,7 +156,8 @@ export class PCSheetView extends TextFileView {
       // derivation is from the old editState — do not render OR save.
       if (gen !== this.renderGeneration) return;
 
-      this.renderSheet([...resolveResult.warnings, ...this.derived.warnings]);
+      this.lastWarnings = [...resolveResult.warnings, ...this.derived.warnings];
+      this.renderSheet(this.lastWarnings);
     } catch (err) {
       console.error("[pc] handleChange failed — edit was applied to state, persisting anyway:", err);
       const message = err instanceof Error ? err.message : String(err);
@@ -176,6 +186,8 @@ export class PCSheetView extends TextFileView {
     this.codeBlockRange = null;
     this.lastWrittenData = null;
     this.isDirty = false;
+    this.portraitUrl = null;
+    this.lastWarnings = [];
     this.activeTabId = DEFAULT_ACTIVE_TAB;
     this.activeStepId = null;
     this.builderUiState = new Map();
@@ -200,6 +212,8 @@ export class PCSheetView extends TextFileView {
     this.codeBlockRange = null;
     this.lastWrittenData = null;
     this.isDirty = false;
+    this.portraitUrl = null;
+    this.lastWarnings = [];
     this.activeTabId = DEFAULT_ACTIVE_TAB;
     this.activeStepId = null;
     this.builderUiState = new Map();
@@ -240,6 +254,8 @@ export class PCSheetView extends TextFileView {
         this.activeStepId = stepId;
       },
       builderUiState: this.builderUiState,
+      portraitUrl: this.portraitUrl,
+      onOpenPortraitPicker: () => this.openPortraitPicker(),
     });
   }
 
@@ -247,5 +263,61 @@ export class PCSheetView extends TextFileView {
     renderPCSheetError(this.contentEl, message, () => {
       void this.switchToMarkdown();
     });
+  }
+
+  private resolvePortrait(): string | null {
+    const app = this.app as unknown as {
+      metadataCache?: { getFirstLinkpathDest?: (l: string, s: string) => { extension: string } | null };
+      vault?: { getResourcePath?: (f: unknown) => string };
+    };
+    if (!this.file || !app?.metadataCache?.getFirstLinkpathDest || !app?.vault?.getResourcePath) return null;
+    const rawLink = readFrontmatterValue(this.rawFileData, PORTRAIT_KEY);
+    if (!rawLink) return null;
+    const linkpath = normalizeLinkValue(rawLink);
+    if (!linkpath) return null;
+    const tfile = app.metadataCache.getFirstLinkpathDest(linkpath, this.file.path);
+    if (!tfile || !PORTRAIT_IMAGE_EXTENSIONS.has(tfile.extension.toLowerCase())) return null;
+    return app.vault.getResourcePath(tfile);
+  }
+
+  applyPortrait(link: string | null, preResolvedUrl?: string | null): void {
+    const spliced = spliceFrontmatterKey(this.rawFileData, PORTRAIT_KEY, link);
+    if (spliced === null) {
+      new Notice("This file has no frontmatter, cannot set a portrait.");
+      return;
+    }
+    this.rawFileData = spliced;
+    // Frontmatter edit shifts every line below it — recompute the pc code
+    // block's line range from the spliced bytes, or the next pc-block splice
+    // would land at stale line numbers and corrupt the file (RISK-1).
+    const extracted = extractPCCodeBlock(this.rawFileData);
+    this.codeBlockRange = extracted
+      ? { startLine: extracted.startLine, endLine: extracted.endLine }
+      : null;
+    this.portraitUrl = preResolvedUrl !== undefined ? preResolvedUrl : this.resolvePortrait();
+    this.renderSheet(this.lastWarnings);
+    this.lastWrittenData = this.getViewData();
+    this.requestSave();
+  }
+
+  private openPortraitPicker(): void {
+    const file = this.file;
+    if (!file) return;
+    const app = this.app as unknown as {
+      metadataCache: { fileToLinktext: (f: unknown, s: string) => string };
+      vault: { getResourcePath: (f: unknown) => string };
+    };
+    new PortraitPickerModal(this.app, {
+      pcFile: file,
+      hasPortrait: readFrontmatterValue(this.rawFileData, PORTRAIT_KEY) !== null,
+      isCurrentFile: () => this.file?.path === file.path,
+      onPick: (image) => {
+        this.applyPortrait(
+          wikiLinkFor(app.metadataCache.fileToLinktext(image, file.path)),
+          app.vault.getResourcePath(image),
+        );
+      },
+      onRemove: () => this.applyPortrait(null),
+    }).open();
   }
 }

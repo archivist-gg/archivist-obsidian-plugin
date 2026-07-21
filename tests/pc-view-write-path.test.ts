@@ -221,3 +221,66 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     expect(view.isDirty).toBe(false);
   });
 });
+
+describe("PCSheetView — portrait write path (P4)", () => {
+  it("applyPortrait adds the frontmatter line, preserves pc block + tail, and survives a later pc-block edit (AC5)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]");
+    let out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out.startsWith("---\narchivist-type: pc\n")).toBe(true);
+    expect(out).toContain("```pc");
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+    // THE RISK-1 regression: a subsequent pc-block edit must splice at the
+    // recomputed range, not the stale pre-splice line numbers.
+    // @ts-expect-error test access
+    view.editState!.setInspiration(3);
+    await Promise.resolve();
+    out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out).toMatch(/inspiration:\s*3/);
+    expect(out.match(/```/g)!.length).toBe(2);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+  it("applyPortrait(null) removes the line entirely (AC3)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]");
+    view.applyPortrait(null);
+    expect(view.getViewData()).not.toContain("archivist-portrait");
+  });
+  it("keeps the active tab across a portrait write (AC6) and swallows its own save echo", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error test access
+    view.activeTabId = "panel-inventory";
+    view.applyPortrait("[[Art/face.png]]");
+    // @ts-expect-error test access
+    expect(view.activeTabId).toBe("panel-inventory");
+    const echoed = view.getViewData();
+    const hc = vi.spyOn(view as unknown as { handleChange: () => void }, "handleChange");
+    view.setViewData(echoed, false);
+    expect(hc).not.toHaveBeenCalled();
+  });
+  it("resolve path is null-guarded in the mock env: portraitUrl stays null, no throw (F2)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]");
+    // @ts-expect-error test access
+    expect(view.portraitUrl).toBeNull();
+  });
+  it("preResolvedUrl bypasses the read path (import flow, AC2)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/new.png]]", "app://res/Art/new.png");
+    // @ts-expect-error test access
+    expect(view.portraitUrl).toBe("app://res/Art/new.png");
+  });
+  it("dirty edit THEN portrait write: both land in one save (interleave)", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error test access
+    view.editState!.setInspiration(9);
+    await Promise.resolve();
+    view.applyPortrait("[[Art/face.png]]");
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out).toMatch(/inspiration:\s*9/);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+});
