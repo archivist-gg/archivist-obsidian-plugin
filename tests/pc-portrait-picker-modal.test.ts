@@ -1,14 +1,18 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
 import { PortraitPickerModal } from "../packages/obsidian/src/modules/pc/components/portrait-picker-modal";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
 import { TFile } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
 
 function img(path: string, ext: string): TFile {
   const f = new TFile();
-  f.path = path; f.name = path.split("/").pop()!; f.extension = ext;
+  f.path = path;
+  f.name = path.split("/").pop()!;
+  f.extension = ext;
   return f;
 }
 function mockApp(files: TFile[]) {
@@ -16,73 +20,173 @@ function mockApp(files: TFile[]) {
     vault: {
       getFiles: () => files,
       getResourcePath: (f: TFile) => `app://res/${f.path}`,
+      getAbstractFileByPath: vi.fn(() => null),
+      createFolder: vi.fn(async () => undefined),
       createBinary: vi.fn(async (path: string) => img(path, path.split(".").pop()!)),
-    },
-    fileManager: {
-      getAvailablePathForAttachment: vi.fn(async (name: string) => `attachments/${name}`),
     },
   };
 }
 const pcFile = img("PlayerCharacters/Test.md", "md");
+const VAULT_FILES = [
+  img("PlayerCharacters/Portraits/baelor.png", "png"),
+  img("PlayerCharacters/Portraits/zed.jpg", "jpg"),
+  img("Art/elsewhere.png", "png"),
+  img("notes/n.md", "md"),
+];
 
 function open(opts?: Partial<ConstructorParameters<typeof PortraitPickerModal>[1]>, files?: TFile[]) {
-  const app = mockApp(files ?? [img("Art/a.png", "png"), img("Art/B.JPG", "JPG"), img("notes/n.md", "md")]);
+  const app = mockApp(files ?? VAULT_FILES);
   const modal = new PortraitPickerModal(app as never, {
-    pcFile, hasPortrait: false, isCurrentFile: () => true,
-    onPick: vi.fn(), onRemove: vi.fn(), ...opts,
+    pcFile,
+    hasPortrait: false,
+    portraitsFolder: "PlayerCharacters/Portraits",
+    isCurrentFile: () => true,
+    onPick: vi.fn(),
+    onRemove: vi.fn(),
+    ...opts,
   } as never);
   modal.open();
   return { modal, el: (modal as unknown as { contentEl: HTMLElement }).contentEl, app };
 }
+const cells = (el: HTMLElement) => [
+  ...el.querySelectorAll("button.pc-portrait-picker-cell:not(.pc-portrait-picker-import)"),
+];
 
-describe("PortraitPickerModal", () => {
-  it("lists only image files (case-insensitive ext), sorted, with thumbs", () => {
+describe("PortraitPickerModal grid stage", () => {
+  it("scopes to the portraits folder by default; import tile is first", () => {
     const { el } = open();
-    const rows = el.querySelectorAll(".pc-portrait-picker-row");
-    expect(rows.length).toBe(2);
-    expect(rows[0].textContent).toContain("Art/B.JPG");
-    expect(rows[1].textContent).toContain("Art/a.png");
-    expect(rows[1].querySelector("img")!.getAttribute("src")).toBe("app://res/Art/a.png");
+    const all = [...el.querySelectorAll("button.pc-portrait-picker-cell")];
+    expect(all[0].classList.contains("pc-portrait-picker-import")).toBe(true);
+    expect(all[0].getAttribute("aria-label")).toBe("Import image from computer");
+    expect(cells(el).map((c) => c.getAttribute("aria-label"))).toEqual([
+      "Choose baelor.png",
+      "Choose zed.jpg",
+    ]);
   });
-  it("pins Import always; Remove only when hasPortrait", () => {
-    const a = open();
-    expect(a.el.textContent).toContain("Import from computer...");
-    expect(a.el.textContent).not.toContain("Remove current image");
-    const b = open({ hasPortrait: true });
-    expect(b.el.textContent).toContain("Remove current image");
-  });
-  it("search filters the list but never the action rows", () => {
+  it("show-all checkbox reveals the whole vault (images only)", () => {
     const { el } = open();
-    const input = el.querySelector("input[type='text'], input:not([type='file'])") as HTMLInputElement;
-    input.value = "b.jpg";
+    (el.querySelector(".pc-portrait-picker-check input") as HTMLInputElement).click();
+    expect(cells(el).length).toBe(3);
+    expect(el.textContent).toContain("elsewhere.png");
+  });
+  it("search filters the ACTIVE scope after the 150ms debounce", () => {
+    const { el } = open();
+    const input = el.querySelector("input.pc-portrait-picker-search") as HTMLInputElement;
+    input.value = "zed";
     input.dispatchEvent(new Event("input"));
-    expect(el.querySelectorAll(".pc-portrait-picker-row").length).toBe(1);
-    expect(el.textContent).toContain("Import from computer...");
+    expect(cells(el).length).toBe(2); // not yet (debounced)
+    vi.advanceTimersByTime(160);
+    expect(cells(el).length).toBe(1);
+    expect(el.textContent).toContain("zed.jpg");
+    expect(el.querySelector(".pc-portrait-picker-import")).toBeTruthy(); // tile never filtered
   });
-  it("row click calls onPick with the TFile and closes", () => {
-    const onPick = vi.fn();
-    const { el } = open({ onPick });
-    (el.querySelectorAll(".pc-portrait-picker-row")[1] as HTMLElement).click();
-    expect(onPick).toHaveBeenCalledTimes(1);
-    expect(onPick.mock.calls[0][0].path).toBe("Art/a.png");
+  it("caps AFTER the search filter with the hint row", () => {
+    const many = Array.from({ length: 230 }, (_, i) => img(`Art/x${String(i).padStart(3, "0")}.png`, "png"));
+    const { el } = open({}, many);
+    (el.querySelector(".pc-portrait-picker-check input") as HTMLInputElement).click();
+    expect(cells(el).length).toBe(200);
+    expect(el.textContent).toContain("More images match. Refine your search.");
   });
-  it("isCurrentFile=false blocks the write", () => {
-    const onPick = vi.fn();
-    const { el } = open({ onPick, isCurrentFile: () => false });
-    (el.querySelectorAll(".pc-portrait-picker-row")[0] as HTMLElement).click();
-    expect(onPick).not.toHaveBeenCalled();
+  it("empty scoped state hints at the checkbox", () => {
+    const { el } = open({}, [img("Art/only.png", "png")]);
+    expect(el.textContent).toContain("No images in PlayerCharacters/Portraits yet.");
+    expect(el.textContent).toContain("Show all vault images");
   });
-  it("remove row calls onRemove", () => {
+  it("Remove appears in the footer only when hasPortrait, and fires onRemove", () => {
+    const none = open();
+    expect(none.el.querySelector(".pc-portrait-picker-remove")).toBeNull();
     const onRemove = vi.fn();
     const { el } = open({ hasPortrait: true, onRemove });
-    const row = Array.from(el.querySelectorAll(".pc-portrait-picker-action"))
-      .find((r) => r.textContent!.includes("Remove")) as HTMLElement;
-    row.click();
+    (el.querySelector(".pc-portrait-picker-remove") as HTMLElement).click();
     expect(onRemove).toHaveBeenCalledTimes(1);
   });
-  it("import file input carries the exact accept list, not image/*", () => {
+  it("search input carries the parchment class (styling hook)", () => {
     const { el } = open();
+    expect(el.querySelector("input.pc-portrait-picker-search")).toBeTruthy();
+  });
+});
+
+describe("PortraitPickerModal crop stage", () => {
+  it("cell click swaps to the crop stage; commit disabled before image load", () => {
+    const { el } = open();
+    (cells(el)[0] as HTMLElement).click();
+    expect(el.querySelector(".pc-portrait-crop-img")).toBeTruthy();
+    const use = [...el.querySelectorAll("button")].find((b) => b.textContent === "Use this framing")!;
+    expect((use as HTMLButtonElement).disabled).toBe(true);
+    expect(el.querySelector(".pc-portrait-picker-grid")).toBeNull();
+  });
+  it("Back returns to the grid without committing", () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    ([...el.querySelectorAll("button")].find((b) => b.textContent === "Back") as HTMLElement).click();
+    expect(el.querySelector(".pc-portrait-picker-grid")).toBeTruthy();
+    expect(onPick).not.toHaveBeenCalled();
+  });
+  it("import defers createBinary: nothing written on Back", async () => {
+    const { el, app } = open();
     const fi = el.querySelector("input[type='file']") as HTMLInputElement;
     expect(fi.getAttribute("accept")).toBe(".png,.jpg,.jpeg,.webp,.gif,.svg,.avif,.bmp");
+    const file = new File([new Uint8Array([1])], "new.png", { type: "image/png" });
+    Object.defineProperty(fi, "files", { value: [file] });
+    fi.dispatchEvent(new Event("change"));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(el.querySelector(".pc-portrait-crop-img")).toBeTruthy();
+    ([...el.querySelectorAll("button")].find((b) => b.textContent === "Back") as HTMLElement).click();
+    expect(app.vault.createBinary).not.toHaveBeenCalled();
+  });
+  it("isCurrentFile=false blocks a vault-pick commit", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick, isCurrentFile: () => false });
+    (cells(el)[0] as HTMLElement).click();
+    const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+    Object.defineProperty(im, "naturalWidth", { value: 100 });
+    Object.defineProperty(im, "naturalHeight", { value: 100 });
+    im.dispatchEvent(new Event("load"));
+    const use = [...el.querySelectorAll("button")].find(
+      (b) => b.textContent === "Use this framing",
+    ) as HTMLButtonElement;
+    use.click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(onPick).not.toHaveBeenCalled();
+  });
+  it("default framing commits crop=null (cover)", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+    Object.defineProperty(im, "naturalWidth", { value: 100 });
+    Object.defineProperty(im, "naturalHeight", { value: 100 });
+    im.dispatchEvent(new Event("load"));
+    const use = [...el.querySelectorAll("button")].find(
+      (b) => b.textContent === "Use this framing",
+    ) as HTMLButtonElement;
+    expect(use.disabled).toBe(false);
+    use.click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0][0].path).toBe("PlayerCharacters/Portraits/baelor.png");
+    expect(onPick.mock.calls[0][1]).toBeNull();
+  });
+  it("import commit creates the binary in the portraits folder and picks it", async () => {
+    const onPick = vi.fn();
+    const { el, app } = open({ onPick });
+    const fi = el.querySelector("input[type='file']") as HTMLInputElement;
+    const file = new File([new Uint8Array([1])], "new.png", { type: "image/png" });
+    Object.defineProperty(fi, "files", { value: [file] });
+    fi.dispatchEvent(new Event("change"));
+    await vi.advanceTimersByTimeAsync(10);
+    const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+    Object.defineProperty(im, "naturalWidth", { value: 100 });
+    Object.defineProperty(im, "naturalHeight", { value: 100 });
+    im.dispatchEvent(new Event("load"));
+    (
+      [...el.querySelectorAll("button")].find((b) => b.textContent === "Use this framing") as HTMLButtonElement
+    ).click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(app.vault.createBinary).toHaveBeenCalledTimes(1);
+    expect(app.vault.createBinary.mock.calls[0][0]).toBe("PlayerCharacters/Portraits/new.png");
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0][0].path).toBe("PlayerCharacters/Portraits/new.png");
   });
 });

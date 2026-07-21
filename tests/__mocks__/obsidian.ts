@@ -8,6 +8,7 @@ export class Notice {
 export class Modal {
   app: unknown;
   contentEl: HTMLElement;
+  scope = { register: () => {} };
   constructor(app: unknown) {
     this.app = app;
     this.contentEl = document.createElement("div");

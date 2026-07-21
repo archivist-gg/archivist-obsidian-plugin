@@ -2,7 +2,13 @@ import { Notice, TextFileView, type WorkspaceLeaf } from "obsidian";
 import { renderPCSheet, renderPCSheetError } from "./pc.sheet";
 import { extractPCCodeBlock, spliceCodeBlock } from "./pc.parser";
 import { readFrontmatterValue, spliceFrontmatterKey } from "./pc.frontmatter";
-import { PORTRAIT_KEY, PORTRAIT_IMAGE_EXTENSIONS, normalizeLinkValue, wikiLinkFor } from "./pc.portrait";
+import {
+  PORTRAIT_KEY,
+  PORTRAIT_IMAGE_EXTENSIONS,
+  normalizeLinkValue,
+  wikiLinkFor,
+  getPortraitsFolder,
+} from "./pc.portrait";
 import { PortraitPickerModal } from "./components/portrait-picker-modal";
 import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 import { recalc } from "@archivist-gg/dnd5e/pc/pc.recalc";
@@ -310,6 +316,9 @@ export class PCSheetView extends TextFileView {
     new PortraitPickerModal(this.app, {
       pcFile: file,
       hasPortrait: readFrontmatterValue(this.rawFileData, PORTRAIT_KEY) !== null,
+      // TODO(P4b T5): resolve from real plugin settings; this bridges the
+      // new required option until T5 wires the settings source through.
+      portraitsFolder: getPortraitsFolder(undefined),
       isCurrentFile: () => this.file?.path === file.path,
       onPick: (image) => {
         this.applyPortrait(
