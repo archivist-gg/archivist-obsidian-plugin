@@ -3,6 +3,7 @@ import type { ItemEntry } from "./action-model";
 import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 const RARITY_CLASS: Record<string, string> = {
   "common": "rarity-common", "uncommon": "rarity-uncommon", "rare": "rarity-rare",
@@ -73,8 +74,14 @@ export function renderItemRow(
 
   // Expand block = a full-width sibling div AFTER the row, rendered once and
   // toggled via `hidden` (no table row, no colspan, no container redraw).
+  // item.index = the ORIGINAL equipment index; a Remove shifts indices so the
+  // slug at a persisted index no longer matches → row treated as collapsed
+  // (self-healing, no pruning pass).
+  const expandKey = rowExpandKey("items", index, slug);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
   renderInventoryRowExpand(inner, {
     entry,
@@ -88,8 +95,10 @@ export function renderItemRow(
   // bubble here.
   row.addEventListener("click", () => {
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 }
 

@@ -4,6 +4,7 @@ import type { ActionEntry } from "./action-model";
 import { renderConditionTag } from "../condition-tag";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
 
@@ -171,8 +172,13 @@ export function renderWeaponRow(
   // Expand block = a full-width sibling div AFTER the row, rendered once and
   // toggled via `hidden` (no container redraw). Built eagerly like the feature
   // rows; the inventory expand is a pure read of the resolved equipment.
+  // AttackRow.id is `${index}:standard` — unique per equipped weapon slot and
+  // self-healing on index shift (same D1 contract as the item rows).
+  const expandKey = rowExpandKey("weapon", a.id);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
   const entry = findEntryForAttack(ctx, a);
   const resolved = findResolvedForAttack(ctx, a);
@@ -202,8 +208,10 @@ export function renderWeaponRow(
   // own listeners below so their clicks don't bubble up here.
   row.addEventListener("click", () => {
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 
   // Dice tags rolled inline — prevent bubbling to the row click.

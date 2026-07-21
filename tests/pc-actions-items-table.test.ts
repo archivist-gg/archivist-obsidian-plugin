@@ -153,3 +153,36 @@ describe("renderItemRow", () => {
     expect(root.querySelector("table")).toBeNull();
   });
 });
+
+describe("renderItemRow — D1 expand persistence", () => {
+  it("re-applies an item row's expanded state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c = { ...rowCtx(), builderUiState: bag };
+    const root1 = mountContainer();
+    renderItems(root1, [itemEntry({ index: 2 })], c);
+    const row1 = root1.querySelector(".pc-action-row") as HTMLElement;
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect((row1.nextElementSibling as HTMLElement & { hidden: boolean }).hidden).toBe(false);
+
+    const root2 = mountContainer();
+    renderItems(root2, [itemEntry({ index: 2 })], c);
+    const expand2 = (root2.querySelector(".pc-action-row") as HTMLElement)
+      .nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand2.hidden).toBe(false);
+  });
+
+  it("self-heals: a persisted key for an index whose slug changed reads as collapsed (no throw)", () => {
+    const bag = new Map<string, unknown>([["rowexpand.items:2:wand-of-fireballs", true]]);
+    const c = { ...rowCtx(), builderUiState: bag };
+    const root = mountContainer();
+    // Same index 2, DIFFERENT item → different key → not in bag → collapsed.
+    renderItems(root, [itemEntry({
+      index: 2,
+      entry: { item: "[[staff-of-power]]", equipped: true } as ItemEntry["entry"],
+      entity: { name: "Staff of Power", rarity: "rare", actions: {} },
+    })], c);
+    const expand = (root.querySelector(".pc-action-row") as HTMLElement)
+      .nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(true);
+  });
+});
