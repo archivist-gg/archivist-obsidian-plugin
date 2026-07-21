@@ -1,4 +1,4 @@
-import { Modal, Notice, type App, type TFile } from "obsidian";
+import { Modal, Notice, setIcon, type App, type TFile } from "obsidian";
 import { PORTRAIT_IMAGE_EXTENSIONS, coverCrop, marqueeToCrop, isCoverCrop, type CropParams } from "../pc.portrait";
 
 export interface PortraitPickerOptions {
@@ -192,8 +192,10 @@ export class PortraitPickerModal extends Modal {
       const removeBtn = footer.createEl("button", {
         cls: "pc-portrait-picker-remove",
         attr: { type: "button" },
-        text: "Remove current image",
       });
+      const removeIcon = removeBtn.createSpan({ cls: "pc-portrait-picker-remove-icon" });
+      setIcon(removeIcon, "trash-2");
+      removeBtn.appendText("Remove current image");
       removeBtn.addEventListener("click", () => {
         this.opts.onRemove();
         this.close();
