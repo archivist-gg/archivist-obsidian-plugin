@@ -18,6 +18,7 @@ import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 import { recalc } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import { seedFeatureUses } from "./pc.resource-seed";
 import { CharacterEditState } from "./pc.edit-state";
+import { closeMaxHpModal } from "./components/max-hp-modal";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -75,6 +76,10 @@ export class PCSheetView extends TextFileView {
   }
 
   setViewData(data: string, clear: boolean): void {
+    // Obsidian does NOT fire Modal.onClose on a same-leaf file switch, so this
+    // (and onLoadFile/clear below) is the teardown hook: without it a Max HP
+    // modal opened against the previous file's editState would linger, stale.
+    closeMaxHpModal();
     // Loop guard: Obsidian echoes our just-written bytes back through
     // setViewData after save. Short-circuit before re-running the render
     // pipeline (which would rebuild the entire sheet and re-create editState,
@@ -193,6 +198,7 @@ export class PCSheetView extends TextFileView {
   }
 
   clear(): void {
+    closeMaxHpModal();
     this.character = null;
     this.derived = null;
     this.editState = null;
@@ -216,6 +222,7 @@ export class PCSheetView extends TextFileView {
   }
 
   async onLoadFile(file: import("obsidian").TFile): Promise<void> {
+    closeMaxHpModal();
     // Obsidian calls this when the view's underlying file changes. Reset all
     // SP4 mutation/persistence state so no stale references survive across
     // file switches (especially lastWrittenData, which would otherwise cause

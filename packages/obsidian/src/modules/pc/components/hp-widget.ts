@@ -1,6 +1,7 @@
 import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
-import { numberField, numberOverride } from "./edit-primitives";
+import { numberField } from "./edit-primitives";
+import { openMaxHpModal, refreshMaxHpModal } from "./max-hp-modal";
 
 /**
  * HP widget in the hero right.
@@ -20,6 +21,7 @@ export class HpWidget implements SheetComponent {
   readonly type = "hp-widget";
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    refreshMaxHpModal(ctx);
     const wrap = el.createDiv({ cls: "pc-panel pc-hp-widget" });
 
     const ds = ctx.resolved?.state?.death_saves;
@@ -90,9 +92,9 @@ export class HpWidget implements SheetComponent {
     } else {
       // Normal body — the tiles + HIT POINTS label.
       const nums = body.createDiv({ cls: "pc-hp-nums" });
-      const curVal = this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
-      const maxVal = this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
-      const tempVal = this.col(
+      const curTile = this.col(nums, "pc-hp-current", "CURRENT", String(ctx.derived.hp.current));
+      const maxTile = this.col(nums, "pc-hp-max", "MAX", String(ctx.derived.hp.max));
+      const tempTile = this.col(
         nums,
         "pc-hp-temp",
         "TEMP",
@@ -100,26 +102,28 @@ export class HpWidget implements SheetComponent {
       );
 
       if (ce && ce.hp_max_multiplier < 1) {
-        setTooltip(maxVal, `HP max halved by exhaustion ${ce.exhaustion_level}`);
+        setTooltip(maxTile.val, `HP max halved by exhaustion ${ce.exhaustion_level}`);
       }
 
       if (ctx.editState) {
         const editState = ctx.editState;
-        numberField(curVal, {
+        numberField(curTile.val, {
           getValue: () => ctx.resolved.state.hp.current,
           onSet: (n) => editState.setCurrentHp(n),
           min: 0,
           max: ctx.derived.hp.max,
         });
         const overridesHp = ctx.resolved.definition?.overrides?.hp;
-        numberOverride(maxVal, {
-          getEffective: () => ctx.derived.hp.max,
-          isOverridden: () => overridesHp?.max !== undefined,
-          onSet: (n) => editState.setMaxHpOverride(n),
-          onClear: () => editState.clearMaxHpOverride(),
-          min: 1,
-        });
-        numberField(tempVal, {
+        if (overridesHp?.max !== undefined) {
+          maxTile.val.createSpan({
+            cls: "archivist-override-mark",
+            text: "*",
+            attr: { title: "Manual override active · click the tile to manage" },
+          });
+        }
+        maxTile.col.addClass("pc-edit-click");
+        maxTile.col.addEventListener("click", () => openMaxHpModal(ctx));
+        numberField(tempTile.val, {
           getValue: () => ctx.resolved.state.hp.temp,
           onSet: (n) => editState.setTempHP(n),
           min: 0,
@@ -165,9 +169,10 @@ export class HpWidget implements SheetComponent {
     input.addEventListener("keypress", stopProp);
   }
 
-  private col(parent: HTMLElement, cls: string, label: string, value: string): HTMLElement {
+  private col(parent: HTMLElement, cls: string, label: string, value: string): { col: HTMLElement; val: HTMLElement } {
     const col = parent.createDiv({ cls: `pc-hp-col ${cls}` });
     col.createDiv({ cls: "pc-hp-lbl", text: label });
-    return col.createDiv({ cls: "pc-hp-val", text: value });
+    const val = col.createDiv({ cls: "pc-hp-val", text: value });
+    return { col, val };
   }
 }
