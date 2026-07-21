@@ -104,6 +104,26 @@ describe("PortraitPickerModal grid stage", () => {
     const { el } = open();
     expect(el.querySelector("input.pc-portrait-picker-search")).toBeTruthy();
   });
+  it("caches the candidate list per scope state; search doesn't re-derive it from the vault", () => {
+    const files = [img("PlayerCharacters/Portraits/baelor.png", "png")];
+    const { el } = open({}, files);
+    expect(cells(el).length).toBe(1);
+    files.push(img("PlayerCharacters/Portraits/new.png", "png")); // vault "changes" post-open
+    const input = el.querySelector("input.pc-portrait-picker-search") as HTMLInputElement;
+    input.value = "png";
+    input.dispatchEvent(new Event("input"));
+    vi.advanceTimersByTime(160);
+    expect(cells(el).length).toBe(1); // still the cached list, not re-fetched
+  });
+  it("a search that empties a non-empty scope shows the generic no-match text, not the show-all hint", () => {
+    const { el } = open();
+    const input = el.querySelector("input.pc-portrait-picker-search") as HTMLInputElement;
+    input.value = "nonexistent";
+    input.dispatchEvent(new Event("input"));
+    vi.advanceTimersByTime(160);
+    expect(el.textContent).toContain("No images match.");
+    expect(el.textContent).not.toContain("Tick 'Show all vault images'");
+  });
 });
 
 describe("PortraitPickerModal crop stage", () => {

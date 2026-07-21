@@ -1835,6 +1835,7 @@
 }
 .pc-portrait-picker-scope b { color: var(--pc-crimson); }
 .pc-portrait-picker-check { display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.pc-portrait-picker-check input { accent-color: var(--pc-crimson); }
 
 .pc-portrait-picker-grid {
   display: grid;

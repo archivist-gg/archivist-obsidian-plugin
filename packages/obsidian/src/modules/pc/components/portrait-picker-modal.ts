@@ -90,6 +90,9 @@ export class PortraitPickerModal extends Modal {
   private fileInputEl!: HTMLInputElement;
   private listWrapEl!: HTMLElement;
   private originKey: string | null = null;
+  // Cached per scope-state (modal open + checkbox toggle only, NOT per keystroke —
+  // Gate-1b #2). Search filters this cached list; it never re-derives it.
+  private candidates: TFile[] = [];
 
   // Crop-stage state.
   private pendingSource: PendingSource | null = null;
@@ -113,6 +116,7 @@ export class PortraitPickerModal extends Modal {
 
   onOpen(): void {
     this.contentEl.addClass("archivist-modal", "pc-portrait-picker");
+    this.refreshCandidates();
     this.renderGridStage(true);
 
     this.scope.register([], "Escape", () => {
@@ -169,6 +173,7 @@ export class PortraitPickerModal extends Modal {
     checkLabel.appendText("Show all vault images");
     checkbox.addEventListener("change", () => {
       this.showAll = checkbox.checked;
+      this.refreshCandidates();
       this.renderGridList();
     });
 
@@ -198,18 +203,20 @@ export class PortraitPickerModal extends Modal {
     cancelBtn.addEventListener("click", () => this.close());
   }
 
-  private computeCandidates(): TFile[] {
+  /** Recomputes the cached candidate list for the current scope. Call ONLY on
+   * modal open and show-all toggle (Gate-1b #2) — never per keystroke. */
+  private refreshCandidates(): void {
     const folder = this.opts.portraitsFolder;
     const images = this.app.vault
       .getFiles()
       .filter((f) => PORTRAIT_IMAGE_EXTENSIONS.has(f.extension.toLowerCase()));
     const scoped = this.showAll ? images : images.filter((f) => f.path.startsWith(folder + "/"));
-    return scoped.slice().sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    this.candidates = scoped.slice().sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
   }
 
   private renderGridList(): void {
     this.listWrapEl.empty();
-    const candidates = this.computeCandidates();
+    const candidates = this.candidates;
     const term = this.searchTerm;
     const filtered = term.length === 0 ? candidates : candidates.filter((f) => f.path.toLowerCase().includes(term));
     const capped = filtered.slice(0, GRID_CAP);
@@ -225,11 +232,16 @@ export class PortraitPickerModal extends Modal {
     importTile.addEventListener("click", () => this.fileInputEl.click());
 
     if (filtered.length === 0) {
+      // Scope genuinely empty (before any search) gets the "tick show-all" hint;
+      // a search that empties an otherwise non-empty scope just says no match
+      // (spec §3.4 — same string show-all-with-no-matches uses).
+      const scopeIsEmpty = candidates.length === 0;
       this.listWrapEl.createEl("p", {
         cls: "pc-portrait-picker-empty",
-        text: this.showAll
-          ? "No images match."
-          : `No images in ${this.opts.portraitsFolder} yet. Tick 'Show all vault images' to browse the whole vault.`,
+        text:
+          scopeIsEmpty && !this.showAll
+            ? `No images in ${this.opts.portraitsFolder} yet. Tick 'Show all vault images' to browse the whole vault.`
+            : "No images match.",
       });
       return;
     }
