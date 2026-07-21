@@ -280,6 +280,7 @@ export class PortraitPickerModal extends Modal {
   }
 
   private enterCropStage(): void {
+    if (this.searchDebounceTimer) activeWindow.clearTimeout(this.searchDebounceTimer);
     this.stage = "crop";
     this.dispW = 0;
     this.dispH = 0;
