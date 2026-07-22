@@ -162,6 +162,22 @@ function mkCtxWithOrphanSubclass(): ComponentRenderContext {
   return mkCtx({ classEntries: [], entities: [entityOf("srd-2024_bard", "Bard", bardData()), sub] });
 }
 
+/** Clone of mkCtxWithBardSubclass whose College-of-Lore subclass carries a live
+ *  `parent_class` pointing at the Bard class that IS registered in this fixture's
+ *  registry (encoded the same way mkCtxWithOrphanSubclass does). GUARD VALIDITY:
+ *  the orphan filter skips any subclass with no `parent_class`, so without this
+ *  the "never triggers the callout" assertion would pass vacuously. Used by the
+ *  non-site visibility guard: the parent is present, so no orphan callout fires
+ *  even when its compendium is hidden. */
+function mkCtxWithBardSubclassWithParent(): ComponentRenderContext {
+  const sub = entityOf("srd-2024_college-of-lore", "College of Lore", {} as ClassData, "subclass");
+  (sub.data as Record<string, unknown>).parent_class = "[[SRD 2024/Classes/Bard]]";
+  return mkCtx({
+    classEntries: [{ name: "srd-2024_bard", level: 5, subclass: "srd-2024_college-of-lore" }],
+    entities: [entityOf("srd-2024_bard", "Bard", bardData()), sub],
+  });
+}
+
 describe("renderClassStep", () => {
   it("class-less: muted intro + ONE compact hero Add button, no card stack", () => {
     const c = mountContainer();
@@ -433,5 +449,28 @@ describe("renderClassStep", () => {
     const c = mountContainer();
     renderClassStep(c, mkCtxWithOrphanSubclass());
     expect(c.querySelector(".pc-bclass-orphan")).not.toBeNull();
+  });
+
+  // R3-P6 non-site regression guards: the orphan-subclass diagnostic reads the
+  // registry directly and must NOT consult compendium visibility. Both pass
+  // fail-open today; a FUTURE accidental filter on the class/subclass enumeration
+  // would break exactly one of them. A non-empty hidden set (a superset of every
+  // fixture compendium) makes the guards bite regardless of default compendium.
+  it("orphan-subclass diagnostic ignores compendium visibility (non-site guard)", () => {
+    const c = mountContainer();
+    const ctx = mkCtxWithOrphanSubclass();
+    (ctx.services as { plugin?: unknown }).plugin =
+      { settings: { hiddenCompendiums: ["Mock", "SRD 5e", "SRD 2024", "SRD 5.2"] } };
+    renderClassStep(c, ctx);
+    expect(c.querySelector(".pc-bclass-orphan")).not.toBeNull(); // still warns: parent truly absent
+  });
+
+  it("a present-but-hidden parent class never triggers the orphan callout (non-site guard)", () => {
+    const c = mountContainer();
+    const ctx = mkCtxWithBardSubclassWithParent();
+    (ctx.services as { plugin?: unknown }).plugin =
+      { settings: { hiddenCompendiums: ["Mock", "SRD 5e", "SRD 2024", "SRD 5.2"] } };
+    renderClassStep(c, ctx);
+    expect(c.querySelector(".pc-bclass-orphan")).toBeNull(); // parent present, merely hidden
   });
 });
