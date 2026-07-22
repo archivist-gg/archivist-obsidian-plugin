@@ -242,11 +242,14 @@
   overflow-wrap: anywhere;
 }
 
-/* Labeled header row for a has-mastery weapons group: shares the 6-col grid so
- * the column labels line up over the rows. The leading cell above the cost
- * badge is intentionally blank. */
+/* Labeled header row for a weapons group. It ALWAYS renders and matches the
+ * base 5-col weapons-row grid so the column labels line up over the rows. A
+ * has-mastery group overrides this with the 6-col template below (adding the
+ * Mastery column). The leading cell above the cost badge is intentionally
+ * blank. */
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
   display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr);
   align-items: baseline;
   gap: var(--pc-space-2);
   padding: var(--pc-space-1);

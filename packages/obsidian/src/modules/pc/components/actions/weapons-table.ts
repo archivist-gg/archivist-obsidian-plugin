@@ -18,11 +18,12 @@ const attackDisSources = new Set([
  * weapon-specific logic (the once-per-group has-mastery scan, the labeled
  * header row, threading `hasMastery` into each row) lives in this file.
  *
- * When ANY entry carries 2024 weapon mastery, a labeled header row renders
- * (a blank leading cell over the cost badge, then Name · Range · Hit · Damage ·
- * Mastery) and every row switches to the 6-col has-mastery grid so the Mastery
- * column lines up. A group with no mastery renders no header and keeps the
- * unchanged 5-col grid.
+ * The labeled header ALWAYS renders: a blank leading cell over the cost badge,
+ * then Name, Range, Hit, Damage over the base 5-col grid. The Mastery column
+ * only renders when the group has a mastery weapon: the header then also gains
+ * the `has-mastery` class plus a trailing Mastery cell, and every row switches
+ * to the 6-col has-mastery grid so the Mastery column lines up. A group with no
+ * mastery keeps the unchanged 5-col grid, now with column labels above it.
  */
 export function renderWeaponsGroup(
   list: HTMLElement,
@@ -34,13 +35,14 @@ export function renderWeaponsGroup(
     .map((e) => e.attack);
   const hasMastery = attacks.some((a) => !!a.mastery);
 
+  const header = list.createDiv({ cls: "pc-weapon-header" });
+  if (hasMastery) header.addClass("has-mastery");
+  header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
   if (hasMastery) {
-    const header = list.createDiv({ cls: "pc-weapon-header has-mastery" });
-    header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
     header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-mastery", text: "Mastery" });
   }
 

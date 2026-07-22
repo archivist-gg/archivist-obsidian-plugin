@@ -105,10 +105,26 @@ describe("WeaponsTable · 2024 weapon mastery column (in-block, no hover)", () =
     expect(gist.textContent).toBe("on hit: target Disadvantage");
   });
 
-  it("renders NO header + NO Mastery cell for a no-mastery group (unchanged 5-col grid)", () => {
+  it("renders a labeled header (Name/Range/Hit/Damage, NO Mastery) for a no-mastery group + unchanged 5-col rows", () => {
     const root = mountContainer();
     renderGroup(root, [rowWithMastery(undefined)]);
-    expect(root.querySelector(".pc-weapon-header")).toBeNull();
+
+    // Header ALWAYS renders now, but a no-mastery group gets no mastery affordances.
+    const header = root.querySelector(".pc-weapon-header") as HTMLElement;
+    expect(header).not.toBeNull();
+    expect(header.classList.contains("has-mastery")).toBe(false);
+    const headerText = header.textContent ?? "";
+    for (const label of ["Name", "Range", "Hit", "Damage"]) {
+      expect(headerText, label).toContain(label);
+    }
+    // No Mastery column: no trailing label cell in the header, no "Mastery" text.
+    expect(header.querySelector(".pc-weapon-header-mastery")).toBeNull();
+    expect(headerText).not.toContain("Mastery");
+    // Leading cost cell is blank (no label over the cost badge column).
+    const leadingCell = header.firstElementChild as HTMLElement;
+    expect(leadingCell?.textContent).toBe("");
+
+    // Rows keep the unchanged 5-col grid: no mastery cell, no has-mastery class.
     expect(root.querySelector(".pc-weapon-mastery")).toBeNull();
     const row = root.querySelector(".pc-action-row") as HTMLElement;
     expect(row.classList.contains("has-mastery")).toBe(false);
