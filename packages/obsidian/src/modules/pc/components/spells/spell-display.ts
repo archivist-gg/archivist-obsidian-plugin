@@ -1,6 +1,6 @@
 import type { ResolvedSpell, SpellLimitInfo } from "@archivist-gg/dnd5e/pc/pc.types";
 import { baseClassName } from "@archivist-gg/dnd5e/class/class.slug";
-import { bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { bareEntitySlug } from "@archivist-gg/dnd5e/entities/slug";
 import { ATTACK_ROLL_SPELLS } from "./attack-spells";
 
 const ABBR: Record<string, string> = { strength: "STR", dexterity: "DEX", constitution: "CON", intelligence: "INT", wisdom: "WIS", charisma: "CHA" };

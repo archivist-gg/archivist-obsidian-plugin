@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { castingTimeBadge, componentLetters, effectTags, groupByLevel, slotCells, hitDcDescriptor } from "../packages/obsidian/src/modules/pc/components/spells/spell-display";
-import { bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { bareEntitySlug } from "@archivist-gg/dnd5e/entities/slug";
 import type { ResolvedSpell } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const sp = (over: Partial<ResolvedSpell["entity"]> & { name: string }, p: Partial<ResolvedSpell> = {}): ResolvedSpell =>
