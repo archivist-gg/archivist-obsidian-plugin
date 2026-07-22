@@ -5,6 +5,7 @@ import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
+import type { Coin } from "./pc.coin-math";
 import { resolveEntityForEntry } from "@archivist-gg/dnd5e/pc/pc.slotting";
 import { computeRestPlan, type RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { applyRestResets } from "./pc.rest";
@@ -886,8 +887,15 @@ export class CharacterEditState {
     this.onChange();
   }
 
-  setCurrency(coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
+  setCurrency(coin: Coin, value: number): void {
     eq.setCurrency(this.character, coin, value);
+    this.onChange();
+  }
+
+  /** Atomic multi-coin apply: one mutation → ONE persist/re-render, instead of
+   *  up to five sequential setCurrency round-trips. */
+  adjustCurrency(deltas: Partial<Record<Coin, number>>): void {
+    eq.adjustCurrency(this.character, deltas);
     this.onChange();
   }
 
