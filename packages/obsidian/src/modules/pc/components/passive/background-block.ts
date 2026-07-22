@@ -18,9 +18,9 @@ const PLACEHOLDER_NAME = "Background Feature";
 const NO_DESC = "(No description provided.)";
 
 /** A `.pc-cb-prop` reference line: a caps label + its value. Omitted when empty. */
-function prop(host: HTMLElement, label: string, value: string): void {
+function prop(host: HTMLElement, label: string, value: string, cls?: string): void {
   if (!value) return;
-  const p = host.createDiv({ cls: "pc-cb-prop" });
+  const p = host.createDiv({ cls: cls ? `pc-cb-prop ${cls}` : "pc-cb-prop" });
   p.createSpan({ cls: "pc-cb-prop-l", text: label });
   p.createSpan({ text: value });
 }
@@ -209,15 +209,13 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
       prop(host, "Tools", fixedToolNames(bg.tool_proficiencies));
       prop(host, "Languages", languageSummary(bg.language_proficiencies));
 
-      // ── Origin Feat line (2024 only). "· see Feats" auto-appends once the feat
-      //    renders as a Feats row (Task 3b); before that it degrades to the name. ──
+      // ── Origin Feat line (2024 only), a labeled prop() row like its siblings.
+      //    "· see Feats" auto-appends once the feat renders as a Feats row
+      //    (Task 3b); before that it degrades to the name. ──
       if (bg.origin_feat) {
         const name = originFeatName(bg.origin_feat);
         const seeFeats = originFeatRendersAsRow(ctx, bg.origin_feat);
-        host.createDiv({
-          cls: "pc-cb-prop pc-bg-origin",
-          text: `Origin Feat: ${name}${seeFeats ? " · see Feats" : ""}`,
-        });
+        prop(host, "Origin Feat", `${name}${seeFeats ? " · see Feats" : ""}`, "pc-bg-origin");
       }
 
       // ── Starting-equipment reference. ──

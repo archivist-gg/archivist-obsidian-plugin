@@ -298,14 +298,18 @@ describe("PassiveFeaturesTab", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
-      expect(line.textContent).toBe("Origin Feat: Savage Attacker");
+      // R3-P3 item B: the line is now a labeled prop() row (small-caps label + value span).
+      expect(line.classList.contains("pc-cb-prop")).toBe(true);
+      expect(line.querySelector(".pc-cb-prop-l")!.textContent).toBe("Origin Feat");
+      expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker");
     });
 
     it("auto-upgrades to 'Origin Feat: <name> · see Feats' once a matching feat feature is present (post-3b)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 }));
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
-      expect(line.textContent).toBe("Origin Feat: Savage Attacker · see Feats");
+      expect(line.querySelector(".pc-cb-prop-l")!.textContent).toBe("Origin Feat");
+      expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker · see Feats");
     });
 
     it("shows the real feature prose (NOT suppressed) for a 2014 background with no origin feat", () => {
