@@ -72,8 +72,11 @@ function originFeatName(ref: string): string {
  * feat-sourced resolved feature that matches this origin-feat ref? Match by the
  * bare tail slug (`srd-2024_savage-attacker` endsWith `_savage-attacker`), the
  * parenthetical-variant base slug (Magic Initiate (Cleric) → magic-initiate), or
- * the display name. Absent (today) → "Origin Feat: <name>"; present (post-3b) →
- * "… · see Feats", with NO cross-task edit.
+ * the display name. Absent (today) → value renders as "<name>" in a labeled
+ * Origin Feat row (a small-caps `.pc-cb-prop-l` "Origin Feat" label span + a
+ * separate value span; the literal ": " is gone, supplied visually by layout);
+ * present (post-3b) → value renders as "<name> · see Feats", with NO cross-task
+ * edit.
  */
 function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boolean {
   const slug = wikilinkTailSlug(ref);

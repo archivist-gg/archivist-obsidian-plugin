@@ -25,7 +25,10 @@ const inlineCancels = new WeakMap<HTMLInputElement, () => void>();
 
 /** Cancel the active inline edit inside `root`, if any. Returns true only when
  *  an active edit was actually cancelled (used by the Max-HP modal's two-stage
- *  Escape). */
+ *  Escape).
+ *  Assumes a single active inline edit per `root`: cancels the FIRST
+ *  `input.pc-edit-inline` found (fine for current consumers; a future
+ *  multi-field consumer must not rely on it cancelling more than one). */
 export function cancelInlineEdit(root: ParentNode): boolean {
   const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline");
   if (!input) return false;
