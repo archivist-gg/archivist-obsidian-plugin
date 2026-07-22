@@ -101,3 +101,34 @@ describe("renderAddDrawer: known-set excludes scroll (source:item) spells (AC-S4
     expect(editState.removeKnownSpell).not.toHaveBeenCalled();
   });
 });
+
+// Hidden-compendium filtering (R3-P6, F3). SpellCandidate carries no compendium,
+// so the drawer re-derives it via the registry's slug lookup. All three spells
+// satisfy classSpellCandidates' class/level gates (wizard, level <= maxLevel=3)
+// so each becomes a candidate row; only the FILTER can then remove one.
+const HIDDEN_REG = buildMockRegistry([
+  { slug: "hidden-new", name: "Hidden New Spell", entityType: "spell", compendium: "SRD 5e", data: { name: "Hidden New Spell", level: 2, classes: ["wizard"] } },
+  { slug: "visible-2024", name: "Visible Spell", entityType: "spell", compendium: "SRD 2024", data: { name: "Visible Spell", level: 2, classes: ["wizard"] } },
+  { slug: "known-hidden", name: "Known Hidden Spell", entityType: "spell", compendium: "SRD 5e", data: { name: "Known Hidden Spell", level: 1, classes: ["wizard"] } },
+]);
+
+function ctxHidden(): ComponentRenderContext {
+  return {
+    // The known hidden spell is genuinely known via the class list (source not "item").
+    resolved: { spells: [{ slug: "known-hidden", source: "class" }] } as never,
+    derived: { spellcastingClasses: [{ classSlug: "wizard" }], derivedSpellSlots: { 3: 1 }, pactMagic: null } as never,
+    services: { entities: HIDDEN_REG, plugin: { settings: { hiddenCompendiums: ["SRD 5e"] } } } as never,
+    app: {} as never, editState: { addKnownSpell: vi.fn(), removeKnownSpell: vi.fn() } as never,
+  };
+}
+
+describe("renderAddDrawer: hidden compendiums filtered, known-exempt (F3)", () => {
+  it("hidden-compendium spells are absent from the add table; known ones stay (F3)", () => {
+    const root = mountContainer();
+    renderAddDrawer(root, ctxHidden());
+    const names = [...root.querySelectorAll(".pc-add-name")].map((n) => n.textContent);
+    expect(names).not.toContain("Hidden New Spell");   // hidden compendium, unknown: removed
+    expect(names).toContain("Visible Spell");           // visible compendium: present
+    expect(names).toContain("Known Hidden Spell");      // hidden compendium but known: exempt
+  });
+});
