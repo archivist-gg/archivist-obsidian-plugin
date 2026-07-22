@@ -56,7 +56,7 @@ import {
 import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
-import { hiddenCompendiumSet } from "./shared/entities/compendium-visibility";
+import { hiddenCompendiumSet, reconcileHiddenCompendiums } from "./shared/entities/compendium-visibility";
 
 // Settings
 import type { ArchivistSettings } from "./core/plugin-settings";
@@ -322,9 +322,49 @@ export default class ArchivistPlugin extends Plugin {
       console.error("Archivist: compendium discovery failed", err);
     }
 
+    // R3-P7 F4: reconcile the durable per-file `hidden` flag with settings.
+    // File-declared values win (settings membership synced); compendiums the
+    // settings hide without a declared file value get `hidden: true` seeded
+    // into their _compendium.md (lossless merge, one-time migration). Orphan
+    // settings entries stay for the settings-tab's orphan rows. Failures are
+    // fail-open: filtering keeps reading settings either way.
+    try {
+      await this.reconcileCompendiumVisibility();
+    } catch (err) {
+      console.error("Archivist: hidden-compendium reconciliation failed", err);
+    }
+
     // Register compendium ref extension after entities are loaded so decorations
     // can resolve references immediately (avoids "Entity not found" on open)
     this.registerEditorExtension(compendiumRefPlugin);
+  }
+
+  private async reconcileCompendiumVisibility(): Promise<void> {
+    const manager = this.compendiumManager;
+    if (!manager) return;
+
+    const plan = reconcileHiddenCompendiums(
+      manager.getAll(),
+      this.settings.hiddenCompendiums,
+    );
+
+    if (plan.settingsChanged) {
+      // REASSIGN a fresh array (never mutate: the loaded value may alias
+      // DEFAULT_SETTINGS' own array).
+      this.settings.hiddenCompendiums = plan.hiddenCompendiums;
+      await this.saveSettings();
+    }
+
+    for (const name of plan.seedHidden) {
+      try {
+        await manager.setHidden(name, true);
+      } catch (err) {
+        console.error(
+          `Archivist: failed to seed hidden flag for compendium "${name}"`,
+          err,
+        );
+      }
+    }
   }
 
   /**

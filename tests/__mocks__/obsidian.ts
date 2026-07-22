@@ -22,8 +22,121 @@ export class Modal {
   }
 }
 export class Plugin {}
-export class PluginSettingTab {}
-export class Setting {}
+
+export class PluginSettingTab {
+  app: unknown;
+  containerEl: HTMLElement;
+  constructor(app: unknown, _plugin: unknown) {
+    this.app = app;
+    this.containerEl = document.createElement("div");
+  }
+  display(): void {}
+  hide(): void {}
+}
+
+/** Structural ToggleComponent mock: `.checkbox-container` host div (matching
+ *  Obsidian's DOM), `.is-enabled` tracks the value, click flips + fires
+ *  onChange (setValue alone does NOT fire onChange, as in Obsidian). */
+export class ToggleComponent {
+  toggleEl: HTMLElement;
+  private value = false;
+  private changeCb: ((value: boolean) => unknown) | null = null;
+  constructor(containerEl: HTMLElement) {
+    this.toggleEl = document.createElement("div");
+    this.toggleEl.classList.add("checkbox-container");
+    containerEl.appendChild(this.toggleEl);
+    this.toggleEl.addEventListener("click", () => {
+      this.setValue(!this.value);
+      this.changeCb?.(this.value);
+    });
+  }
+  getValue(): boolean {
+    return this.value;
+  }
+  setValue(value: boolean): this {
+    this.value = value;
+    this.toggleEl.classList.toggle("is-enabled", value);
+    return this;
+  }
+  setTooltip(tooltip: string): this {
+    this.toggleEl.setAttribute("aria-label", tooltip);
+    return this;
+  }
+  onChange(cb: (value: boolean) => unknown): this {
+    this.changeCb = cb;
+    return this;
+  }
+}
+
+interface TextComponentMock {
+  inputEl: HTMLInputElement;
+  setPlaceholder(v: string): TextComponentMock;
+  setValue(v: string): TextComponentMock;
+  onChange(cb: (value: string) => unknown): TextComponentMock;
+}
+
+/** Structural Setting mock mirroring Obsidian's settings-row DOM:
+ *  .setting-item > (.setting-item-info > .setting-item-name/.setting-item-description)
+ *  + .setting-item-control hosting the components. */
+export class Setting {
+  settingEl: HTMLElement;
+  infoEl: HTMLElement;
+  nameEl: HTMLElement;
+  descEl: HTMLElement;
+  controlEl: HTMLElement;
+  constructor(containerEl: HTMLElement) {
+    this.settingEl = document.createElement("div");
+    this.settingEl.classList.add("setting-item");
+    this.infoEl = document.createElement("div");
+    this.infoEl.classList.add("setting-item-info");
+    this.nameEl = document.createElement("div");
+    this.nameEl.classList.add("setting-item-name");
+    this.descEl = document.createElement("div");
+    this.descEl.classList.add("setting-item-description");
+    this.controlEl = document.createElement("div");
+    this.controlEl.classList.add("setting-item-control");
+    this.infoEl.append(this.nameEl, this.descEl);
+    this.settingEl.append(this.infoEl, this.controlEl);
+    containerEl.appendChild(this.settingEl);
+  }
+  setName(name: string): this {
+    this.nameEl.textContent = name;
+    return this;
+  }
+  setDesc(desc: string): this {
+    this.descEl.textContent = desc;
+    return this;
+  }
+  setHeading(): this {
+    this.settingEl.classList.add("setting-item-heading");
+    return this;
+  }
+  addToggle(cb: (toggle: ToggleComponent) => unknown): this {
+    cb(new ToggleComponent(this.controlEl));
+    return this;
+  }
+  addText(cb: (text: TextComponentMock) => unknown): this {
+    const inputEl = document.createElement("input");
+    this.controlEl.appendChild(inputEl);
+    const comp: TextComponentMock = {
+      inputEl,
+      setPlaceholder(v: string) {
+        inputEl.placeholder = v;
+        return comp;
+      },
+      setValue(v: string) {
+        inputEl.value = v ?? "";
+        return comp;
+      },
+      onChange(fn: (value: string) => unknown) {
+        inputEl.addEventListener("input", () => fn(inputEl.value));
+        return comp;
+      },
+    };
+    cb(comp);
+    return this;
+  }
+}
 export class Component {
   load() {}
   unload() {}

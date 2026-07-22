@@ -25,6 +25,14 @@ export interface Compendium {
   description: string;
   readonly: boolean;
   homebrew: boolean;
+  /** Hidden from pickers/suggest surfaces (R3-P7 F4). Durable twin of
+   *  `settings.hiddenCompendiums` membership; the settings array remains the
+   *  runtime cache every filter site reads. */
+  hidden: boolean;
+  /** True when `_compendium.md` carried an explicit boolean `hidden:` key.
+   *  Load-time reconciliation treats declared file values as authoritative
+   *  and seeds the file when undeclared-but-settings-hidden. */
+  hiddenDeclared?: boolean;
   folderPath: string;
 }
 
@@ -96,12 +104,16 @@ export function parseCompendiumMetadata(
     typeof parsed.readonly === "boolean" ? parsed.readonly : false;
   const homebrew =
     typeof parsed.homebrew === "boolean" ? parsed.homebrew : true;
+  const hiddenDeclared = typeof parsed.hidden === "boolean";
+  const hidden = hiddenDeclared ? (parsed.hidden as boolean) : false;
 
   return {
     name,
     description,
     readonly,
     homebrew,
+    hidden,
+    hiddenDeclared,
     folderPath,
   };
 }
@@ -120,6 +132,7 @@ export function generateCompendiumMetadata(comp: Compendium): string {
     name: comp.name,
     description: comp.description,
     readonly: comp.readonly,
+    hidden: comp.hidden,
     homebrew: comp.homebrew,
   };
   const fm = yaml.dump(frontmatter, {
@@ -347,6 +360,10 @@ export class CompendiumManager {
       description,
       readonly,
       homebrew,
+      // New compendiums are visible by default; generateCompendiumMetadata
+      // writes `hidden: false` into the new file, so the value is declared.
+      hidden: false,
+      hiddenDeclared: true,
       folderPath,
     };
 
@@ -376,6 +393,21 @@ export class CompendiumManager {
 
     comp.readonly = value;
     await this.writeMetadataKeys(comp, { readonly: value });
+  }
+
+  /**
+   * Update the hidden flag for a compendium via the same lossless key-level
+   * merge into its `_compendium.md` (R3-P7 F4). Mirrors setReadonly.
+   */
+  async setHidden(name: string, value: boolean): Promise<void> {
+    const comp = this.compendiums.get(name);
+    if (!comp) {
+      throw new Error(`Compendium not found: ${name}`);
+    }
+
+    comp.hidden = value;
+    comp.hiddenDeclared = true;
+    await this.writeMetadataKeys(comp, { hidden: value });
   }
 
   /**

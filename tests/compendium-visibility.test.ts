@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   hiddenCompendiumSet, isCompendiumVisible, visibleCompendiums,
-  entityCompendiumVisible, withCompendiumVisibility,
+  entityCompendiumVisible, withCompendiumVisibility, reconcileHiddenCompendiums,
 } from "../packages/obsidian/src/shared/entities/compendium-visibility";
 import { DEFAULT_SETTINGS } from "../packages/obsidian/src/core/plugin-settings";
 
@@ -54,6 +54,78 @@ describe("withCompendiumVisibility (settings-toggle writer)", () => {
     expect(withCompendiumVisibility(["SRD 5e", "SRD 5e"], "SRD 5e", true)).toEqual([]);
     expect(withCompendiumVisibility(undefined, "SRD 5e", false)).toEqual(["SRD 5e"]);
     expect(withCompendiumVisibility(42, "SRD 5e", false)).toEqual(["SRD 5e"]);
+  });
+});
+
+describe("reconcileHiddenCompendiums (load-time file <-> settings sync)", () => {
+  const comp = (name: string, hidden: boolean, hiddenDeclared: boolean) =>
+    ({ name, hidden, hiddenDeclared });
+
+  it("file-declared hidden:true adds the name to settings", () => {
+    const plan = reconcileHiddenCompendiums([comp("MCDM", true, true)], []);
+    expect(plan.hiddenCompendiums).toEqual(["MCDM"]);
+    expect(plan.settingsChanged).toBe(true);
+    expect(plan.seedHidden).toEqual([]);
+  });
+
+  it("file-declared hidden:false removes the name from settings (file wins)", () => {
+    const plan = reconcileHiddenCompendiums([comp("SRD 5e", false, true)], ["SRD 5e"]);
+    expect(plan.hiddenCompendiums).toEqual([]);
+    expect(plan.settingsChanged).toBe(true);
+    expect(plan.seedHidden).toEqual([]);
+  });
+
+  it("declared value matching settings changes nothing", () => {
+    const plan = reconcileHiddenCompendiums([comp("SRD 5e", true, true)], ["SRD 5e"]);
+    expect(plan.hiddenCompendiums).toEqual(["SRD 5e"]);
+    expect(plan.settingsChanged).toBe(false);
+    expect(plan.seedHidden).toEqual([]);
+  });
+
+  it("undeclared + settings-hidden requests a seed, settings unchanged", () => {
+    const plan = reconcileHiddenCompendiums([comp("SRD 5e", false, false)], ["SRD 5e"]);
+    expect(plan.hiddenCompendiums).toEqual(["SRD 5e"]);
+    expect(plan.settingsChanged).toBe(false);
+    expect(plan.seedHidden).toEqual(["SRD 5e"]);
+  });
+
+  it("undeclared + not hidden touches nothing (no write on every load)", () => {
+    const plan = reconcileHiddenCompendiums([comp("Me", false, false)], []);
+    expect(plan.hiddenCompendiums).toEqual([]);
+    expect(plan.settingsChanged).toBe(false);
+    expect(plan.seedHidden).toEqual([]);
+  });
+
+  it("orphan settings entries (no matching compendium) are left untouched", () => {
+    const plan = reconcileHiddenCompendiums([comp("Me", false, false)], ["Ghost"]);
+    expect(plan.hiddenCompendiums).toEqual(["Ghost"]);
+    expect(plan.settingsChanged).toBe(false);
+    expect(plan.seedHidden).toEqual([]);
+  });
+
+  it("mixed batch: adds, removes, seeds, keeps orphans in one pass", () => {
+    const plan = reconcileHiddenCompendiums(
+      [
+        comp("A", true, true),   // file wins: add
+        comp("B", false, true),  // file wins: remove
+        comp("C", false, false), // undeclared + hidden: seed
+        comp("D", false, false), // undeclared + visible: nothing
+      ],
+      ["B", "C", "Ghost"],
+    );
+    expect(new Set(plan.hiddenCompendiums)).toEqual(new Set(["A", "C", "Ghost"]));
+    expect(plan.settingsChanged).toBe(true);
+    expect(plan.seedHidden).toEqual(["C"]);
+  });
+
+  it("returns a FRESH array (aliasing rule) and tolerates corrupt current", () => {
+    const current = ["SRD 5e"];
+    const plan = reconcileHiddenCompendiums([comp("SRD 5e", true, true)], current);
+    expect(plan.hiddenCompendiums).not.toBe(current);
+
+    const corrupt = reconcileHiddenCompendiums([comp("A", true, true)], 42);
+    expect(corrupt.hiddenCompendiums).toEqual(["A"]);
+    expect(corrupt.settingsChanged).toBe(true);
   });
 });
 

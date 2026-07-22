@@ -10,7 +10,7 @@ import type { RegisteredEntity } from "@core/entity-registry";
 beforeAll(() => installObsidianDomHelpers());
 
 const comp = (name: string, homebrew = false): Compendium =>
-  ({ name, description: "", readonly: !homebrew, homebrew, folderPath: `Compendium/${name}` });
+  ({ name, description: "", readonly: !homebrew, homebrew, hidden: false, folderPath: `Compendium/${name}` });
 
 const ent = (compendium: string, homebrew: boolean, edition?: string): RegisteredEntity =>
   ({

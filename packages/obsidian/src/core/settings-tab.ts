@@ -93,6 +93,17 @@ export class ArchivistSettingTab extends PluginSettingTab {
                 this.plugin.settings.hiddenCompendiums =
                   withCompendiumVisibility(this.plugin.settings.hiddenCompendiums, comp.name, value);
                 await this.plugin.saveSettings();
+                // Durability: mirror the flag into _compendium.md via the
+                // lossless merge writer (settings stay the runtime cache all
+                // filter sites read). A file failure must not break the toggle.
+                try {
+                  await compManager.setHidden(comp.name, !value);
+                } catch (err) {
+                  console.error(
+                    `Archivist: failed to write hidden flag for compendium "${comp.name}"`,
+                    err,
+                  );
+                }
               });
           })
           .addToggle((toggle) => {

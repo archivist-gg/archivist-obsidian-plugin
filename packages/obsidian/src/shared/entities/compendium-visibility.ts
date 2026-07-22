@@ -58,3 +58,51 @@ export function withCompendiumVisibility(
   else next.add(name);
   return [...next];
 }
+
+/** Per-compendium hidden state as parsed from `_compendium.md` (structural
+ *  subset of Compendium). `hiddenDeclared` = the file carried an explicit
+ *  boolean `hidden:` key. */
+export interface CompendiumHiddenState {
+  name: string;
+  hidden: boolean;
+  hiddenDeclared?: boolean;
+}
+
+export interface HiddenReconciliationPlan {
+  /** Next settings value: always a FRESH array (the aliasing rule). */
+  hiddenCompendiums: string[];
+  /** True when membership differs from the current settings value. */
+  settingsChanged: boolean;
+  /** Compendiums whose `_compendium.md` needs `hidden: true` seeded (the
+   *  field was absent but settings mark them hidden — one-time migration). */
+  seedHidden: string[];
+}
+
+/** Load-time reconciliation between the durable per-file `hidden` field and
+ *  `settings.hiddenCompendiums` (R3-P7 F4). Pure planner — callers apply:
+ *  - file HAS a boolean `hidden` -> the FILE wins: settings membership synced;
+ *  - field ABSENT + settings-hidden -> seed request (file gets hidden: true);
+ *  - field ABSENT + visible -> nothing (no write on every load);
+ *  - orphan settings entries (no matching compendium) are left untouched
+ *    (the settings-tab's orphan rows own them). */
+export function reconcileHiddenCompendiums(
+  comps: readonly CompendiumHiddenState[],
+  current: unknown,
+): HiddenReconciliationPlan {
+  const before = hiddenCompendiumSet({ hiddenCompendiums: current });
+  const next = new Set(before);
+  const seedHidden: string[] = [];
+
+  for (const comp of comps) {
+    if (comp.hiddenDeclared) {
+      if (comp.hidden) next.add(comp.name);
+      else next.delete(comp.name);
+    } else if (next.has(comp.name)) {
+      seedHidden.push(comp.name);
+    }
+  }
+
+  const settingsChanged =
+    next.size !== before.size || [...next].some((n) => !before.has(n));
+  return { hiddenCompendiums: [...next], settingsChanged, seedHidden };
+}
