@@ -704,6 +704,7 @@
   line-height: var(--pc-lh-value);
 }
 .archivist-pc-sheet .pc-currency-val.pc-edit-click { cursor: pointer; }
+.archivist-pc-sheet .pc-currency-row.pc-currency-clickable { cursor: pointer; }
 
 /* ---------- Orphan-row placeholder (entry has no compendium entity) ---------- */
 .archivist-pc-sheet .pc-inv-orphan {
