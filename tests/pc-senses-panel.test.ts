@@ -153,10 +153,10 @@ describe("SensesPanel — senses", () => {
   });
 });
 
-describe("SensesPanel — Size (relocated from race-block, AC-size)", () => {
-  // Size was previously surfaced ONLY by the now-retired race-block; §3.8 moves
-  // it here so retiring that block does not silently drop it. Read from
-  // ctx.resolved.race.size via cast — there is no derived.size.
+describe("SensesPanel — Size row removed (R3-P7)", () => {
+  // The Size row was relocated here from the retired race-block (§3.8), but
+  // R3-P7 removes it from Passive Senses entirely (user request): even a race
+  // that carries a size must NOT surface a Size row in this section.
   const mkCtx = (size?: string): ComponentRenderContext => ({
     resolved: (size ? { race: { size } } : {}) as unknown as ResolvedCharacter,
     derived: { passives: { perception: 14, investigation: 10, insight: 11 } } as DerivedStats,
@@ -164,15 +164,12 @@ describe("SensesPanel — Size (relocated from race-block, AC-size)", () => {
     editState: null,
   });
 
-  it("renders a Size row reading the resolved race size", () => {
+  it("renders no Size row even when the resolved race has a size", () => {
     const container = mountContainer();
     new SensesPanel().render(container, mkCtx("Small"));
     const names = [...container.querySelectorAll(".pc-sense-name")].map((v) => v.textContent);
-    expect(names).toContain("Size");
-    const sizeRow = [...container.querySelectorAll(".pc-sense-row")].find(
-      (r) => r.querySelector(".pc-sense-name")?.textContent === "Size",
-    );
-    expect(sizeRow?.querySelector(".pc-sense-dist")?.textContent).toBe("Small");
+    expect(names).not.toContain("Size");
+    expect(container.querySelectorAll(".pc-sense-row").length).toBe(3); // 3 passive rows only
   });
 
   it("renders no Size row when the resolved race has no size", () => {
@@ -183,7 +180,7 @@ describe("SensesPanel — Size (relocated from race-block, AC-size)", () => {
     expect(names).not.toContain("Size");
   });
 
-  it("Size row does not displace the first passive row (perception stays first)", () => {
+  it("leaves the passive rows undisturbed with a sized race (perception stays first)", () => {
     const container = mountContainer();
     new SensesPanel().render(container, mkCtx("Medium"));
     const first = container.querySelectorAll(".pc-sense-row")[0];
