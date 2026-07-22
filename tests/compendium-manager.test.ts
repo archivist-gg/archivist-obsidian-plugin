@@ -4,6 +4,7 @@ import {
   Compendium,
   parseCompendiumMetadata,
   generateCompendiumMetadata,
+  updateCompendiumFrontmatter,
   CompendiumManager,
   buildHomebrewSlug,
 } from "../packages/obsidian/src/shared/entities/compendium-manager";
@@ -169,6 +170,113 @@ describe("generateCompendiumMetadata", () => {
     expect(parsed!.readonly).toBe(original.readonly);
     expect(parsed!.homebrew).toBe(original.homebrew);
     expect(parsed!.folderPath).toBe(original.folderPath);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// updateCompendiumFrontmatter (lossless single-key merge)
+// ---------------------------------------------------------------------------
+describe("updateCompendiumFrontmatter", () => {
+  // Mirrors the real bundle-shipped SRD file: carries keys the Compendium
+  // model does not know about (edition, version stamp, import timestamp).
+  const srdContent = `---
+archivist_compendium: true
+name: SRD 5e
+description: D&D 5e System Reference Document 5.1
+edition: '2014'
+readonly: true
+homebrew: false
+archivist_compendium_version: 0.2.0
+archivist_compendium_imported_at: '2026-07-21T08:14:58.947Z'
+---
+
+# SRD 5e
+`;
+
+  it("updates only the given key, preserving every unknown frontmatter key", () => {
+    const result = updateCompendiumFrontmatter(srdContent, { readonly: false });
+    expect(result).not.toBeNull();
+    expect(result!).toContain("readonly: false");
+    expect(result!).toContain("edition: '2014'");
+    expect(result!).toContain("archivist_compendium_version: 0.2.0");
+    expect(result!).toContain("archivist_compendium_imported_at: '2026-07-21T08:14:58.947Z'");
+    expect(result!).toContain("archivist_compendium: true");
+    expect(result!).toContain("name: SRD 5e");
+    expect(result!).toContain("homebrew: false");
+  });
+
+  it("preserves key order and the body below the frontmatter", () => {
+    const result = updateCompendiumFrontmatter(srdContent, { readonly: false })!;
+    // Order preserved: edition before readonly, version stamp after homebrew
+    const editionIdx = result.indexOf("edition:");
+    const readonlyIdx = result.indexOf("readonly:");
+    const homebrewIdx = result.indexOf("homebrew:");
+    const versionIdx = result.indexOf("archivist_compendium_version:");
+    expect(editionIdx).toBeGreaterThan(-1);
+    expect(editionIdx).toBeLessThan(readonlyIdx);
+    expect(readonlyIdx).toBeLessThan(homebrewIdx);
+    expect(homebrewIdx).toBeLessThan(versionIdx);
+    // Body verbatim
+    expect(result.endsWith("---\n\n# SRD 5e\n")).toBe(true);
+  });
+
+  it("changing nothing but the target key round-trips the file byte-identically", () => {
+    // readonly is already true — writing the same value must reproduce the file
+    const result = updateCompendiumFrontmatter(srdContent, { readonly: true });
+    expect(result).toBe(srdContent);
+  });
+
+  it("inserts a NEW key next to readonly rather than at the end", () => {
+    const result = updateCompendiumFrontmatter(srdContent, { hidden: true })!;
+    const readonlyIdx = result.indexOf("readonly: true");
+    const hiddenIdx = result.indexOf("hidden: true");
+    const homebrewIdx = result.indexOf("homebrew: false");
+    expect(readonlyIdx).toBeLessThan(hiddenIdx);
+    expect(hiddenIdx).toBeLessThan(homebrewIdx);
+    // Everything else still intact
+    expect(result).toContain("archivist_compendium_version: 0.2.0");
+    expect(result.endsWith("# SRD 5e\n")).toBe(true);
+  });
+
+  it("appends a new key at the end when no readonly key exists", () => {
+    const minimal = `---
+archivist_compendium: true
+name: Minimal
+---
+
+# Minimal
+`;
+    const result = updateCompendiumFrontmatter(minimal, { hidden: true })!;
+    expect(result).toContain("hidden: true");
+    expect(result.indexOf("name: Minimal")).toBeLessThan(result.indexOf("hidden: true"));
+    expect(result.endsWith("# Minimal\n")).toBe(true);
+  });
+
+  it("preserves a multi-line body with its own --- horizontal rules", () => {
+    const content = `---
+archivist_compendium: true
+name: Notes
+readonly: false
+---
+
+# Notes
+
+Some prose the user wrote.
+
+---
+
+More prose after a horizontal rule.
+`;
+    const result = updateCompendiumFrontmatter(content, { readonly: true })!;
+    expect(result).toContain("readonly: true");
+    expect(result).toContain("Some prose the user wrote.");
+    expect(result).toContain("More prose after a horizontal rule.");
+  });
+
+  it("returns null for empty / non-frontmatter / malformed content", () => {
+    expect(updateCompendiumFrontmatter("", { readonly: true })).toBeNull();
+    expect(updateCompendiumFrontmatter("# No frontmatter", { readonly: true })).toBeNull();
+    expect(updateCompendiumFrontmatter("---\nname: [unclosed\n---\n", { readonly: true })).toBeNull();
   });
 });
 
@@ -487,14 +595,61 @@ type: humanoid
         folderPath: "Compendium/SRD",
       });
 
+      // Empty/corrupt existing content: merge is impossible, so the writer
+      // falls back to full regeneration from the in-memory model.
       const compFile = makeFile("_compendium.md", "Compendium/SRD/_compendium.md", "");
       vault.getAbstractFileByPath.mockReturnValue(compFile);
+      vault.cachedRead.mockImplementation((file: any) => Promise.resolve(file._content));
       vault.modify.mockResolvedValue(undefined);
 
       await manager.setReadonly("SRD", true);
 
       expect(manager.getByName("SRD")!.readonly).toBe(true);
       expect(vault.modify).toHaveBeenCalledWith(compFile, expect.any(String));
+      const written = vault.modify.mock.calls[0][1] as string;
+      expect(written).toContain("readonly: true");
+      expect(written).toContain("name: SRD");
+    });
+
+    it("preserves frontmatter keys it does not own (regression: bundle version stamp)", async () => {
+      // The bundle-shipped SRD `_compendium.md` carries edition, a version
+      // stamp, and an import timestamp. Toggling read-only must NOT strip
+      // them: `archivist_compendium_version` gates bootstrap re-copy, so
+      // losing it re-installs the whole bundle on next load.
+      manager.addCompendium({
+        name: "SRD 5e",
+        description: "D&D 5e System Reference Document 5.1",
+        readonly: true,
+        homebrew: false,
+        folderPath: "Compendium/SRD 5e",
+      });
+
+      const bundleContent = `---
+archivist_compendium: true
+name: SRD 5e
+description: D&D 5e System Reference Document 5.1
+edition: '2014'
+readonly: true
+homebrew: false
+archivist_compendium_version: 0.2.0
+archivist_compendium_imported_at: '2026-07-21T08:14:58.947Z'
+---
+
+# SRD 5e
+`;
+      const compFile = makeFile("_compendium.md", "Compendium/SRD 5e/_compendium.md", bundleContent);
+      vault.getAbstractFileByPath.mockReturnValue(compFile);
+      vault.cachedRead.mockImplementation((file: any) => Promise.resolve(file._content));
+      vault.modify.mockResolvedValue(undefined);
+
+      await manager.setReadonly("SRD 5e", false);
+
+      const written = vault.modify.mock.calls[0][1] as string;
+      expect(written).toContain("readonly: false");
+      expect(written).toContain("edition: '2014'");
+      expect(written).toContain("archivist_compendium_version: 0.2.0");
+      expect(written).toContain("archivist_compendium_imported_at: '2026-07-21T08:14:58.947Z'");
+      expect(written).toContain("# SRD 5e");
     });
 
     it("throws for unknown compendium", async () => {
