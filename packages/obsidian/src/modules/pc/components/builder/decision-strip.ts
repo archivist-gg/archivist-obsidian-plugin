@@ -3,7 +3,7 @@ import type { DecisionItem } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import type { RegisteredEntity } from "@archivist-gg/core";
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";
-import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, humanizeToken } from "../../../../shared/rendering/renderer-utils";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import type { Ability } from "@archivist-gg/dnd5e/types/choice";
@@ -63,15 +63,13 @@ export function domainPill(item: DecisionItem): string {
   const ch = item.choice;
   if (ch.kind === "ability-points") return "Ability";
   if (ch.kind === "select-proficiency") return PROF_PILL[ch.domain] ?? "Pick";
-  if (ch.kind === "select-entity") return humanizeToken(ch.entity_type);
+  if (ch.kind === "select-entity") return humanizeToken(ch.entity_type) || "Pick";
   if (ch.kind === "select-inline") {
     const tail = (ch.id ?? "").split("-").filter(Boolean).pop();
     return tail ? humanizeToken(tail) : "Pick";
   }
   return "Pick";
 }
-
-const humanizeToken = (t: string): string => (t ? t.charAt(0).toUpperCase() + t.slice(1) : "Pick");
 
 /** SP2 Plan 5 §Amendment: the always-open decision strip. Every actionable row
  *  keeps its control mounted; only the dress tracks state — `open` (unresolved /
