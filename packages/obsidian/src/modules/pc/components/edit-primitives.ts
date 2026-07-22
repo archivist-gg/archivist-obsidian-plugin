@@ -18,6 +18,23 @@
  * (Max HP, AC, ability scores).
  */
 
+/** Live inline edits, keyed by their input element. An entry exists exactly
+ *  while the edit is ACTIVE: both commit() and cancel() delete it the moment
+ *  `done` flips, so a committed-but-still-mounted input is not "active". */
+const inlineCancels = new WeakMap<HTMLInputElement, () => void>();
+
+/** Cancel the active inline edit inside `root`, if any. Returns true only when
+ *  an active edit was actually cancelled (used by the Max-HP modal's two-stage
+ *  Escape). */
+export function cancelInlineEdit(root: ParentNode): boolean {
+  const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline");
+  if (!input) return false;
+  const cancel = inlineCancels.get(input);
+  if (!cancel) return false;
+  cancel();
+  return true;
+}
+
 export interface InlineInputOpts {
   initial: number;
   min?: number;
@@ -58,6 +75,7 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   const commit = () => {
     if (done) return;
     done = true;
+    inlineCancels.delete(input);
     const parsed = parseInt(input.value, 10);
     const next = Number.isFinite(parsed) ? clamp(parsed) : opts.initial;
     opts.onCommit(next);
@@ -66,6 +84,7 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   const cancel = () => {
     if (done) return;
     done = true;
+    inlineCancels.delete(input);
     // Restore the original value element in place of the input. We hold
     // a reference to valueEl (it's still in memory, just detached from
     // the DOM after valueEl.remove() during input setup), so re-inserting
@@ -96,6 +115,8 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
     if (input.value !== String(opts.initial)) commit();
     else cancel();
   });
+
+  inlineCancels.set(input, cancel);
 }
 
 export interface NumberFieldOpts {
