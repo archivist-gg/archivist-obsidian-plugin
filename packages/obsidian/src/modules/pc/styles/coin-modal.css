@@ -78,6 +78,16 @@
   letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
   padding: 5px 12px; border: 1px solid var(--pc-tan); border-radius: 4px;
   background: var(--pc-parchment-light); color: var(--pc-text-primary); cursor: pointer;
+  box-shadow: none;
+}
+/* Obsidian dresses <button> with var(--input-shadow) (plus hover/focus/active
+   variants) which reads as a spurious drop shadow on these action buttons.
+   Null it in ALL states, scoped to the coin modal's buttons only. */
+.pc-coin-modal button.pc-coin-btn:hover,
+.pc-coin-modal button.pc-coin-btn:focus,
+.pc-coin-modal button.pc-coin-btn:focus-visible,
+.pc-coin-modal button.pc-coin-btn:active {
+  box-shadow: none;
 }
 .pc-coin-modal button.pc-coin-btn.is-add { color: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon); background: rgba(47, 111, 58, .07); }
 .pc-coin-modal button.pc-coin-btn.is-add:hover { background: rgba(47, 111, 58, .14); }
