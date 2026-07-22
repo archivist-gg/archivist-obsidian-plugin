@@ -5,6 +5,7 @@ import type { ComponentRenderContext } from "./components/component.types";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "./pc.edit-state";
 import type { CropParams } from "./pc.portrait";
+import { closeCoinModal } from "./components/coin-modal";
 
 export interface RenderSheetOptions {
   root: HTMLElement;
@@ -79,6 +80,10 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
 
   // Class-less character → render the Builder shell instead of the sheet.
   if (isBuilder) {
+    // Most builder steps render no CurrencyStrip, so an open coin modal
+    // would have no refresh source and could go stale after its own writes —
+    // close it on builder entry.
+    closeCoinModal();
     safeRender(sheet, "pc-builder-host", "builder", registry, ctx, { wrap: false });
     root.scrollTop = prevScroll;
     return;

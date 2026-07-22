@@ -27,6 +27,17 @@ vi.mock("../packages/obsidian/src/modules/pc/components/max-hp-modal", async () 
   return { ...actual, closeMaxHpModal: closeMaxHpModalMock };
 });
 
+// Twin spy for closeCoinModal — every view-teardown site that closes the Max HP
+// modal must also close the coin modal (same zombie-modal hazard). Keep the rest
+// of the coin-modal module real so the strip's refresh path stays live.
+const closeCoinModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/coin-modal", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>(
+    "../packages/obsidian/src/modules/pc/components/coin-modal",
+  );
+  return { ...actual, closeCoinModal: closeCoinModalMock };
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BLADESWORN = {
@@ -240,8 +251,10 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     // view.
     const { view } = await bootView();
     closeMaxHpModalMock.mockClear();
+    closeCoinModalMock.mockClear();
     view.onunload();
     expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
+    expect(closeCoinModalMock).toHaveBeenCalledTimes(1);
   });
 });
 
