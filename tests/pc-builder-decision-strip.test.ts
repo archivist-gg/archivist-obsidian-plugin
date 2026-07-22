@@ -615,6 +615,120 @@ describe("renderDecisionStrip", () => {
   });
 });
 
+// ── Compendium visibility (F6) ──────────────────────────────────────────────
+// A registry-backed select-entity pick (kind "select-entity", no `from`) is
+// resolved by the engine into item.options[].entity. Hidden compendiums drop
+// those candidates from the NEW-pick surfaces (inline table + long-list browse),
+// exempting the current selection; a two-tier empty copy distinguishes "hidden
+// by settings" from "vault has none". The `from` chips fall-through is
+// feature-curated and is never filtered.
+describe("compendium visibility (F6)", () => {
+  const HIDDEN = "SRD 5e";
+  const VISIBLE = "SRD 2024";
+
+  // An entity pinned to a named compendium, with a display NAME distinct from
+  // its raw slug (so a "renders by name" assertion can't pass on the slug).
+  const compEntity = (slug: string, name: string, compendium: string): RegisteredEntity =>
+    ({ ...registeredEntity(slug), name, compendium }) as unknown as RegisteredEntity;
+  const compOpt = (slug: string, name: string, compendium: string): ResolvedOption =>
+    ({ value: slug, label: name, entity: compEntity(slug, name, compendium) });
+
+  // A registry-backed select-entity row (no `from`) over the given options.
+  const selectEntityItem = (options: ResolvedOption[], over: Partial<DecisionItem> = {}): DecisionItem =>
+    item({
+      key: "weapon-mastery", source: { kind: "class" } as never, level: 1,
+      featureName: "Weapon Mastery",
+      choice: { kind: "select-entity", id: "weapon-mastery", count: 1, entity_type: "weapon" } as never,
+      options, selected: undefined, status: "unresolved",
+      ...over,
+    });
+
+  // ctx whose services carry a live plugin.settings with hidden compendiums.
+  const ctxHiding = (...hiddenCompendiums: string[]): ComponentRenderContext =>
+    ({
+      resolved: { definition: {} }, derived: {},
+      services: { entities: {}, plugin: { settings: { hiddenCompendiums } } },
+      editState: { setChoice: vi.fn() }, builderUiState: new Map(),
+    }) as unknown as ComponentRenderContext;
+
+  it("registry-backed select-entity candidates from hidden compendiums are filtered", () => {
+    const c = mountContainer();
+    // item: select-entity, no `from`, two options (one per compendium), nothing
+    // selected → the inline table rows contain only the SRD 2024 entity.
+    renderDecisionStrip(c, ctxHiding(HIDDEN), {
+      items: [selectEntityItem([
+        compOpt("longsword", "Longsword", HIDDEN),
+        compOpt("rapier", "Rapier", VISIBLE),
+      ])],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const names = [...c.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toEqual(["Rapier"]);
+    expect(names).not.toContain("Longsword");
+  });
+
+  it("selected-exemption: a selected hidden-compendium option keeps its row/chip", () => {
+    const c = mountContainer();
+    // same item with item.selected = the SRD 5e entity's slug → its row still
+    // renders by NAME, not the raw slug (the exemption predicate keeps it).
+    renderDecisionStrip(c, ctxHiding(HIDDEN), {
+      items: [selectEntityItem([
+        compOpt("longsword", "Longsword", HIDDEN),
+        compOpt("rapier", "Rapier", VISIBLE),
+      ], { selected: "longsword", status: "resolved" })],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const names = [...c.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toContain("Longsword");      // selected hidden option retained…
+    expect(names).not.toContain("longsword");  // …by NAME, not the raw slug.
+  });
+
+  it("filtering to empty shows the hidden-aware copy, not 'in your vault yet'", () => {
+    const c = mountContainer();
+    // item whose options ALL sit in "SRD 5e" → candidates empty, allCandidates
+    // non-empty → the hidden-aware empty copy.
+    renderDecisionStrip(c, ctxHiding(HIDDEN), {
+      items: [selectEntityItem([
+        compOpt("longsword", "Longsword", HIDDEN),
+        compOpt("shortsword", "Shortsword", HIDDEN),
+      ])],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available. Some exist in a hidden compendium (see Archivist settings).");
+  });
+
+  it("a genuinely empty option list keeps the original copy", () => {
+    const c = mountContainer();
+    // item with zero options → allCandidates empty too → the original copy.
+    renderDecisionStrip(c, ctxHiding(HIDDEN), {
+      items: [selectEntityItem([])],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available in your vault yet.");
+  });
+
+  it("an explicit `from` chips list is NOT filtered", () => {
+    const c = mountContainer();
+    // select-entity WITH `from` (the chips fall-through): both option chips
+    // render despite BOTH options sitting in the hidden compendium.
+    const fromItem = selectEntityItem([
+      compOpt("longsword", "Longsword", HIDDEN),
+      compOpt("shortsword", "Shortsword", HIDDEN),
+    ], {
+      choice: {
+        kind: "select-entity", id: "weapon-mastery", count: 1, entity_type: "weapon",
+        from: ["longsword", "shortsword"],
+      } as never,
+    });
+    renderDecisionStrip(c, ctxHiding(HIDDEN), {
+      items: [fromItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    expect(c.querySelectorAll(".pc-bchoice-chip").length).toBe(2);
+  });
+});
+
 // ── Decision descriptions (smoke r7) ──
 // A top-level live row carrying a `description` renders it as a quiet markdown
 // block at the TOP of the row's nest, BEFORE the control. Children and browse

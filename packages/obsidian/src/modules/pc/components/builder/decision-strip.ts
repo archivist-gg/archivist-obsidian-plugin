@@ -4,6 +4,7 @@ import type { RegisteredEntity } from "@archivist-gg/core";
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";
 import { humanizeSlug } from "../../../../shared/rendering/renderer-utils";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import type { Ability } from "@archivist-gg/dnd5e/types/choice";
 
@@ -362,16 +363,29 @@ function renderControl(
     const need = requiredOf(item);
     const selected = new Set(selectedSlugs(item));
     // Candidates ride on the options the engine already resolved (each carries
-    // its `.entity`); there is no separate registry pass here.
-    const candidates = item.options.flatMap((o) => (o.entity ? [o.entity] : []));
+    // its `.entity`); there is no separate registry pass here. Hidden
+    // compendiums filter NEW choices only: the current selection is exempt,
+    // so its inline row and long-list chip label keep resolving.
+    const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+    const allCandidates = item.options.flatMap((o) => (o.entity ? [o.entity] : []));
+    const candidates = allCandidates.filter(
+      (e) => entityCompendiumVisible(e, hidden) || selected.has(e.slug),
+    );
     // Top-level only: the parent-derived caps header. In child scope the
     // `.pc-dstrip-fcl` sub-label (childLabel) already precedes this control and
     // carries the requirement, so re-emitting tlabel would duplicate the label
     // and leak the inherited parent featureName ("FEAT FEAT").
     if (!inChild) nest.createDiv({ cls: "pc-dstrip-tlabel", text: `${labelOf(item)} — choose ${need}` });
-    // Zero resolved candidates → a quiet line, not the full table chrome.
+    // Zero resolved candidates → a quiet line, not the full table chrome. The
+    // copy distinguishes "vault has none" from "all hidden by settings".
     if (candidates.length === 0) {
-      nest.createDiv({ cls: "pc-dstrip-empty", text: "No options available in your vault yet." });
+      nest.createDiv({
+        cls: "pc-dstrip-empty",
+        text:
+          allCandidates.length > 0
+            ? "No options available. Some exist in a hidden compendium (see Archivist settings)."
+            : "No options available in your vault yet.",
+      });
       return;
     }
     // Long candidate lists (e.g. Fighter Weapon Mastery — choose 3 from ~70)
