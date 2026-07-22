@@ -5351,6 +5351,14 @@ body.theme-light .archivist-tag-atk:hover {
   outline: 1px dashed var(--pc-crimson, #8a2414);
   outline-offset: 1px;
   border-radius: 2px;
+  /* R3-P7 F2 · makeInlineInput copies the value box's class onto the input,
+     and the value box carries .pc-edit-click { cursor: pointer }. Force the
+     text I-beam so a focused inline input reads like a normal text field, and
+     pin a visible caret matching the inputs' inherited ink color (the value
+     text resolves to --pc-text-primary) so the blinking cursor is never
+     invisible against the parchment. */
+  cursor: text;
+  caret-color: var(--pc-text-primary, #1a1a1a);
 }
 .archivist-pc-sheet input.pc-edit-inline::-webkit-outer-spin-button,
 .archivist-pc-sheet input.pc-edit-inline::-webkit-inner-spin-button {
