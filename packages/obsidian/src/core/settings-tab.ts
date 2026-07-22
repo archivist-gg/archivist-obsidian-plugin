@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type ArchivistPlugin from "../main";
+import { hiddenCompendiumSet, isCompendiumVisible, withCompendiumVisibility } from "../shared/entities/compendium-visibility";
 
 /**
  * Settings tab for D&D Content configuration.
@@ -58,7 +59,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
 
     new Setting(containerEl).setName("Compendiums").setHeading();
     containerEl.createEl("p", {
-      text: 'Compendiums are folders of game entities (monsters, spells, items) stored in your vault. Read-only compendiums cannot be edited; "save as new" will create a copy in a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder.',
+      text: 'Compendiums are folders of game entities (monsters, spells, items) stored in your vault. Read-only compendiums cannot be edited; "save as new" will create a copy in a writable compendium. Toggle read-only here or by editing the _compendium.md file inside each compendium folder. Each compendium row has two toggles. The first controls whether its content appears in character-sheet and builder pickers and in the {{...}} suggestion list (on = visible). The second makes the compendium read-only.',
       cls: "setting-item-description",
     });
 
@@ -67,6 +68,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
       const allCompendiums = compManager.getAll();
       const registry = this.plugin.entityRegistry;
 
+      const hidden = hiddenCompendiumSet(this.plugin.settings);
       for (const comp of allCompendiums) {
         // Count entities in this compendium
         let entityCount = 0;
@@ -76,17 +78,50 @@ export class ArchivistSettingTab extends PluginSettingTab {
           entityCount = allEntities.filter((e) => e.compendium === comp.name).length;
         }
 
-        const desc = `${comp.description || ""} \u2014 ${entityCount} entities${comp.homebrew ? " \u2014 homebrew" : ""}`;
+        const desc = `${comp.description || ""} \u00b7 ${entityCount} entities${comp.homebrew ? " \u00b7 homebrew" : ""}`;
 
         new Setting(containerEl)
           .setName(comp.name)
           .setDesc(desc)
           .addToggle((toggle) => {
             toggle
+              .setTooltip("Visible in pickers")
+              .setValue(isCompendiumVisible(comp.name, hidden))
+              .onChange(async (value: boolean) => {
+                // REASSIGN a fresh array (never mutate: the loaded value may
+                // alias DEFAULT_SETTINGS' own array).
+                this.plugin.settings.hiddenCompendiums =
+                  withCompendiumVisibility(this.plugin.settings.hiddenCompendiums, comp.name, value);
+                await this.plugin.saveSettings();
+              });
+          })
+          .addToggle((toggle) => {
+            toggle
               .setTooltip("Read-only")
               .setValue(comp.readonly)
               .onChange(async (value: boolean) => {
                 await compManager.setReadonly(comp.name, value);
+              });
+          });
+      }
+
+      // Hidden names not currently discovered in the vault (renamed/deleted
+      // compendiums, or the shipped default in a vault without that folder):
+      // still rendered so the hide is clearable from the UI.
+      const discovered = new Set(allCompendiums.map((c) => c.name));
+      for (const name of this.plugin.settings.hiddenCompendiums) {
+        if (discovered.has(name)) continue;
+        new Setting(containerEl)
+          .setName(name)
+          .setDesc("Not currently in the vault. Hidden by settings.")
+          .addToggle((toggle) => {
+            toggle
+              .setTooltip("Visible in pickers")
+              .setValue(false)
+              .onChange(async (value: boolean) => {
+                this.plugin.settings.hiddenCompendiums =
+                  withCompendiumVisibility(this.plugin.settings.hiddenCompendiums, name, value);
+                await this.plugin.saveSettings();
               });
           });
       }
