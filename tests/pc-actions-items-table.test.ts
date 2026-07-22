@@ -39,9 +39,9 @@ function rowCtx(editState: CharacterEditState | null = null): ComponentRenderCon
   };
 }
 
-function renderItems(root: HTMLElement, items: ItemEntry[], c: ComponentRenderContext): HTMLElement {
+function renderItems(root: HTMLElement, items: ItemEntry[], c: ComponentRenderContext, passive = false): HTMLElement {
   const list = root.createDiv({ cls: "pc-actions-table pc-items-table" });
-  for (const it of items) renderItemRow(list, it, c);
+  for (const it of items) renderItemRow(list, it, c, passive);
   return list;
 }
 
@@ -151,6 +151,28 @@ describe("renderItemRow", () => {
     (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(expand.hidden).toBe(false);
     expect(root.querySelector("table")).toBeNull();
+  });
+
+  // R3-P3 item C: the Passive tab suppresses the FREE badge but keeps the cell
+  // div (shared 4-col .pc-items-table grid; "special" still renders a badge).
+  it("renders an EMPTY badge cell (div present, no badge) for a free item on the passive tab", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry({ action: { cost: "free" } as ItemAction })], rowCtx(), true);
+    const row = root.querySelector(".pc-action-row")!;
+    expect(row.firstElementChild!.tagName).toBe("DIV");
+    expect(row.querySelector(".pc-cost-badge")).toBeNull();
+  });
+
+  it("keeps the Special badge for a special item on the passive tab", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry({ action: { cost: "special" } as ItemAction })], rowCtx(), true);
+    expect(root.querySelector(".pc-cost-badge.cost-special")).toBeTruthy();
+  });
+
+  it("keeps the Free badge on the Actions tab (passive omitted)", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry({ action: { cost: "free" } as ItemAction })], rowCtx());
+    expect(root.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
   });
 });
 

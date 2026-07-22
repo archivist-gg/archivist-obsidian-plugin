@@ -40,10 +40,9 @@ export function renderBoonRow(
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row pc-boon-row" });
 
-  // D3: mirror feature rows — Actions tab keeps the badge column; Passive drops it
-  // and renders a FREE boon's pill inline in the name cell. Read the pill from the
-  // boon's OWN action_cost (NOT the section: boonEconomy maps free→passive, so the
-  // section can't tell Free from a truly-passive boon).
+  // Mirror feature rows: Actions tab keeps the badge column; the Passive tab
+  // drops it and renders no cost mark (all passive costs are unmarked). The
+  // boon's OWN action_cost still drives incapacitated dimming below.
   const cost = e.action_cost;
   if (!passive) {
     const badge = row.createDiv({ cls: "pc-feature-badge" });
@@ -56,12 +55,8 @@ export function renderBoonRow(
   const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
   if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
-  // Name cell — name + the pool label as the source/type sub-label. On the
-  // Passive tab (no badge column) a FREE boon renders its pill inline here.
+  // Name cell: name + the pool label as the source/type sub-label.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
-  if (passive && cost === "free") {
-    renderCostBadge(nameCell, "free").classList.add("pc-cost-badge-inline");
-  }
   nameCell.createDiv({ cls: "pc-action-row-name", text: e.name });
   nameCell.createDiv({ cls: "pc-action-row-sub", text: poolLabel });
 

@@ -62,10 +62,9 @@ export function renderFeatureRow(
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  // D3: the Actions tab keeps the 66px badge column; the Passive tab drops it and
-  // renders the only cost that can occur there (FREE) inline at the start of the
-  // name cell (verified via featureEconomy: free/special/absent bucket to
-  // Passive, and special/absent render no pill).
+  // The Actions tab keeps the 66px badge column; the Passive tab drops it and
+  // renders NO cost pill at all: all passive costs are unmarked (free/special/
+  // absent bucket to Passive via featureEconomy).
   const cost = feature.action;
   if (!opts.passive) {
     const badge = row.createDiv({ cls: "pc-feature-badge" });
@@ -84,11 +83,6 @@ export function renderFeatureRow(
   // editState.toggleActiveBuff, with a static duration label. stopPropagation
   // keeps the toggle click from bubbling into the row-expand handler.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
-  // D3: on the Passive tab (no badge column) a FREE cost renders inline here at
-  // the start of the name cell; every other passive cost renders no pill.
-  if (opts.passive && cost === "free") {
-    renderCostBadge(nameCell, "free").classList.add("pc-cost-badge-inline");
-  }
   nameCell.createDiv({ cls: "pc-action-row-name", text: title });
   if (sourceLabel) nameCell.createDiv({ cls: "pc-action-row-sub", text: sourceLabel });
   if (feature.activatable && feature.id) {

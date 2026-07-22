@@ -399,18 +399,18 @@ describe("PassiveFeaturesTab", () => {
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
     });
 
-    it("gives a free-cost feature a FREE pill inline in the name cell under Passive & Free Actions", () => {
+    it("renders a free-cost feature with NO cost pill under Passive & Free Actions", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })]));
       const row = rowByName(c, "Free Thing");
-      // D3: the FREE pill renders inline at the start of the name cell (no badge column).
+      // R3-P3 item C: the Passive tab renders NO cost pill; all passive costs are unmarked.
       expect(row.querySelector(".pc-feature-badge")).toBeNull();
-      expect(row.querySelector(".pc-action-namecell > .pc-cost-badge.cost-free.pc-cost-badge-inline")).toBeTruthy();
+      expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(headings(c)).toContain("Passive & Free Actions");
       expect(headings(c)).not.toContain("Actions");
     });
 
-    it("renders ZERO Passive tags across the whole tab (features, race, background, boons) while a FREE row keeps its pill", () => {
+    it("renders ZERO Passive tags across the whole tab (features, race, background, boons) and no FREE pill", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx(
         [passiveFeat, freeFeat],
@@ -420,11 +420,11 @@ describe("PassiveFeaturesTab", () => {
           pools: [pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true })] })],
         },
       ));
-      // Task 6: not a single ".pc-passive-tag" survives anywhere on the tab —
+      // Task 6: not a single ".pc-passive-tag" survives anywhere on the tab:
       // feature rows, the Race row, the Background row, and boon rows are all clean.
       expect(c.querySelectorAll(".pc-passive-tag").length).toBe(0);
-      // The FREE-cost row still carries its filled FREE pill (read from raw cost).
-      expect(rowByName(c, "Free Thing").querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
+      // R3-P3 item C: the free-cost row renders with no pill either.
+      expect(rowByName(c, "Free Thing").querySelector(".pc-cost-badge")).toBeNull();
     });
 
     it("renders the Passive & Free Actions heading for the passive half of a mixed feature set (split from grouping L59)", () => {
@@ -523,16 +523,15 @@ describe("PassiveFeaturesTab", () => {
       expect(row.querySelector(".pc-boon-status")).toBeNull();
     });
 
-    it("gives a granted free boon a FREE pill (not ACTION) + a quiet 'granted' marker", () => {
+    it("renders a granted free boon with NO cost pill + a quiet 'granted' marker", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ grants: [entry("red-cant", { name: "Red Cant", action_cost: "free" })] })],
       }));
       const row = boonRowByName(c, "Red Cant");
-      expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
-      // D3: no badge column; the FREE pill renders inline in the name cell.
+      // R3-P3 item C: no badge column AND no inline pill on the Passive tab.
       expect(row.querySelector(".pc-feature-badge")).toBeNull();
-      expect(row.querySelector(".pc-action-namecell > .pc-cost-badge.cost-free.pc-cost-badge-inline")).toBeTruthy();
+      expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(row.querySelector(".pc-feature-detail .pc-boon-status")!.textContent).toBe("granted");
     });
 

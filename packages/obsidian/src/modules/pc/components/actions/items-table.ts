@@ -28,14 +28,18 @@ export function renderItemRow(
   list: HTMLElement,
   item: ItemEntry,
   ctx: ComponentRenderContext,
+  passive = false,
 ): void {
   const { index, entry, entity, entityType, action } = item;
   const slug = entry.item.match(/^\[\[(.+)\]\]$/)?.[1] ?? "";
 
   const row = list.createDiv({ cls: "pc-action-row" });
 
-  // Cost
-  renderCostBadge(row.createDiv(), action.cost);
+  // Cost · the Passive tab renders no FREE badge (all passive costs are
+  // unmarked); the cell div stays for the shared 4-col grid, and "special"
+  // keeps its badge there.
+  const badgeCell = row.createDiv();
+  if (!(passive && action.cost === "free")) renderCostBadge(badgeCell, action.cost);
 
   const ce = ctx.derived.conditionEffects;
   const isAction = action.cost === "action" || action.cost === "reaction" || action.cost === "bonus-action";

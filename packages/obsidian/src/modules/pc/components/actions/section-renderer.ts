@@ -40,7 +40,7 @@ export function renderActionSections(
       // feature that (theoretically) appears in two sub-groups never key-collides.
       const sectionKey = `${section.key}:${sg.key}`;
       sg.entries.forEach((e, entryIdx) => {
-        if (e.kind === "item") renderItemRow(list, e.item, ctx);
+        if (e.kind === "item") renderItemRow(list, e.item, ctx, passive);
         else if (e.kind === "boon") renderBoonRow(list, e.entry, e.status, e.poolLabel, ctx, passive);
         else if (e.kind === "feature") renderFeatureRow(list, e.rf, ctx, { merged: e.merged, sectionKey, entryIdx, passive });
       });
