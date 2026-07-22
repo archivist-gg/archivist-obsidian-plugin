@@ -2176,6 +2176,21 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 0.4em 0;
 }
 
+/* Settings: labeled compendium toggles (R3-P7 F5). Each per-compendium
+   toggle is wrapped with an always-visible muted caption ("Visible" /
+   "Read-only") so the two identical pills are distinguishable without
+   hovering. Tooltips remain for the longer explanation. */
+.archivist-labeled-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+}
+.archivist-toggle-caption {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 
 /* ================================================================
    PART 2: Edit Mode (from src/styles/archivist-edit.css)

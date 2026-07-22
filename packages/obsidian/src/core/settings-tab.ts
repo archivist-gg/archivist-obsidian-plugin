@@ -1,6 +1,19 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, type ToggleComponent } from "obsidian";
 import type ArchivistPlugin from "../main";
 import { hiddenCompendiumSet, isCompendiumVisible, withCompendiumVisibility } from "../shared/entities/compendium-visibility";
+
+/**
+ * Always-visible caption beside a settings toggle (R3-P7 F5): wraps the
+ * toggle in a flex group with a small muted label so the per-compendium
+ * toggles are distinguishable without hovering. Hover tooltips are kept.
+ */
+function attachToggleCaption(toggle: ToggleComponent, caption: string): void {
+  const host = toggle.toggleEl.parentElement;
+  if (!host) return;
+  const wrap = host.createDiv({ cls: "archivist-labeled-toggle" });
+  wrap.createSpan({ cls: "archivist-toggle-caption", text: caption });
+  wrap.appendChild(toggle.toggleEl);
+}
 
 /**
  * Settings tab for D&D Content configuration.
@@ -84,6 +97,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
           .setName(comp.name)
           .setDesc(desc)
           .addToggle((toggle) => {
+            attachToggleCaption(toggle, "Visible");
             toggle
               .setTooltip("Visible in pickers")
               .setValue(isCompendiumVisible(comp.name, hidden))
@@ -107,6 +121,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
               });
           })
           .addToggle((toggle) => {
+            attachToggleCaption(toggle, "Read-only");
             toggle
               .setTooltip("Read-only")
               .setValue(comp.readonly)
@@ -126,6 +141,7 @@ export class ArchivistSettingTab extends PluginSettingTab {
           .setName(name)
           .setDesc("Not currently in the vault. Hidden by settings.")
           .addToggle((toggle) => {
+            attachToggleCaption(toggle, "Visible");
             toggle
               .setTooltip("Visible in pickers")
               .setValue(false)

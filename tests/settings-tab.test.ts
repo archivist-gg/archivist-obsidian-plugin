@@ -158,3 +158,54 @@ describe("ArchivistSettingTab compendium rows", () => {
     expect(plugin.compendiumManager.setHidden).not.toHaveBeenCalledWith("Ghost", false);
   });
 });
+
+describe("ArchivistSettingTab toggle captions (R3-P7 F5)", () => {
+  function captions(row: HTMLElement): string[] {
+    return Array.from(row.querySelectorAll<HTMLElement>(".archivist-toggle-caption"))
+      .map((el) => el.textContent ?? "");
+  }
+
+  it("every compendium row shows always-visible Visible and Read-only captions, in toggle order", () => {
+    const { tab } = makeEnv();
+    expect(captions(rowByName(tab, "SRD 5e"))).toEqual(["Visible", "Read-only"]);
+    expect(captions(rowByName(tab, "Me"))).toEqual(["Visible", "Read-only"]);
+  });
+
+  it("captions are grouped with their own toggle (caption + toggle share a wrapper)", () => {
+    const { tab } = makeEnv();
+    const row = rowByName(tab, "SRD 5e");
+    const wraps = Array.from(row.querySelectorAll<HTMLElement>(".archivist-labeled-toggle"));
+    expect(wraps).toHaveLength(2);
+    for (const wrap of wraps) {
+      const caption = wrap.querySelector(".archivist-toggle-caption");
+      const toggle = wrap.querySelector(".checkbox-container");
+      expect(caption).not.toBeNull();
+      expect(toggle).not.toBeNull();
+      // Caption reads before its toggle
+      expect(
+        caption!.compareDocumentPosition(toggle!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+  });
+
+  it("existing hover tooltips are kept alongside the captions", () => {
+    const { tab } = makeEnv();
+    const row = rowByName(tab, "Me");
+    const [visible, readonly] = toggles(row);
+    expect(visible.getAttribute("aria-label")).toBe("Visible in pickers");
+    expect(readonly.getAttribute("aria-label")).toBe("Read-only");
+  });
+
+  it("orphan rows also caption their single visibility toggle", () => {
+    const { tab } = makeEnv({ hiddenCompendiums: ["SRD 5e", "Ghost"] });
+    expect(captions(rowByName(tab, "Ghost"))).toEqual(["Visible"]);
+  });
+
+  it("wired toggles still work inside the caption wrapper (dual write intact)", async () => {
+    const { tab, plugin } = makeEnv();
+    toggles(rowByName(tab, "SRD 5e"))[0].click();
+    await flush();
+    expect(plugin.settings.hiddenCompendiums).toEqual([]);
+    expect(plugin.compendiumManager.setHidden).toHaveBeenCalledWith("SRD 5e", false);
+  });
+});
