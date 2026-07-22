@@ -6902,7 +6902,12 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-primary);
   line-height: var(--pc-lh-value);
 }
-.archivist-pc-sheet .pc-currency-val.pc-edit-click { cursor: pointer; }
+/* R3-P7 F2 follow-up · :not(input) keeps the pointer on the un-clicked value
+   BOX only. makeInlineInput copies both classes onto the swapped <input>, and
+   without the exclusion this (0,3,0) compound outranks the shared
+   input.pc-edit-inline cursor:text rule (0,2,1), leaving a pointer hand on
+   the focused input. Excluded, the input falls through to text + caret. */
+.archivist-pc-sheet .pc-currency-val.pc-edit-click:not(input) { cursor: pointer; }
 .archivist-pc-sheet .pc-currency-row.pc-currency-clickable { cursor: pointer; }
 
 /* ---------- Orphan-row placeholder (entry has no compendium entity) ---------- */
