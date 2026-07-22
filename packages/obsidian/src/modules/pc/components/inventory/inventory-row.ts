@@ -11,6 +11,7 @@ import { prettifyName } from "./filter-state";
 import { unequipWithAttunementCheck } from "./unequip-flow";
 import { isScrollItem, isUnidentifiedPlaceholder } from "./item-predicates";
 import { openScrollSpellPicker } from "./scroll-spell-picker";
+import { humanizeToken } from "../../../../shared/rendering/renderer-utils";
 
 export interface InventoryRowCtx {
   entry: EquipmentEntry;
@@ -132,11 +133,11 @@ function fillSubtitle(sub: HTMLElement, ctx: InventoryRowCtx): void {
   if (!e) {
     parts.push({ text: "Custom · inline · no compendium entry" });
   } else if (ctx.resolved.entityType === "weapon") {
-    parts.push({ text: capitalize(e.type ?? "weapon") });
+    parts.push({ text: humanizeToken(e.type ?? "weapon") });
   } else if (ctx.resolved.entityType === "armor") {
-    parts.push({ text: capitalize(e.type ?? "armor") });
+    parts.push({ text: humanizeToken(e.type ?? "armor") });
   } else {
-    if (e.type)    parts.push({ text: capitalize(e.type) });
+    if (e.type)    parts.push({ text: humanizeToken(e.type) });
     if (e.rarity)  parts.push({ text: e.rarity.toLowerCase() });
     if (requiresAttunement(ctx.resolved.entity)) parts.push({ text: "requires attunement" });
   }
@@ -152,7 +153,7 @@ function fillSubtitle(sub: HTMLElement, ctx: InventoryRowCtx): void {
  *  true identity (e.g. "Potion", "Wondrous Item"). */
 function maskedCategoryLabel(entity: InventoryRowCtx["resolved"]["entity"]): string {
   const mc = (entity as { masked_category?: string } | null)?.masked_category;
-  return mc ? capitalize(mc) : "Unidentified";
+  return mc ? humanizeToken(mc) : "Unidentified";
 }
 
 /** Append the scroll's spell affordance to the sub-line. When a spell is chosen
@@ -265,8 +266,4 @@ function handleToggleClick(ctx: InventoryRowCtx): void {
     const res = ctx.editState.equipItemWithSwap(ctx.resolved.index);
     if (res.unequipped?.length) new Notice(`Unequipped ${res.unequipped.join(", ")} (slot occupied).`);
   }
-}
-
-function capitalize(s: string): string {
-  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }

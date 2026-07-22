@@ -1,9 +1,6 @@
 import type { WeaponEntity, WeaponProperty } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
-
-function capitalize(s: string): string {
-  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { humanizeToken } from "../../shared/rendering/renderer-utils";
 
 function formatDamage(d: WeaponEntity["damage"]): string {
   if (!d.dice || d.dice === "0") return "—";
@@ -18,8 +15,8 @@ function formatRange(r: { normal: number; long: number } | undefined): string | 
 }
 
 function formatProperty(p: WeaponProperty): string {
-  if (typeof p === "string") return capitalize(p);
-  return capitalize(p.uid);
+  if (typeof p === "string") return humanizeToken(p);
+  return humanizeToken(p.uid);
 }
 
 export function renderWeaponBlock(weapon: WeaponEntity, mastery?: AttackRow["mastery"]): HTMLElement {
@@ -40,7 +37,7 @@ export function renderWeaponBlock(weapon: WeaponEntity, mastery?: AttackRow["mas
   title.textContent = weapon.name;
   header.appendChild(title);
 
-  const subtitle = capitalize(weapon.category);
+  const subtitle = humanizeToken(weapon.category);
   const sub = doc.createElement("div");
   sub.className = "archivist-item-subtitle";
   sub.textContent = subtitle;

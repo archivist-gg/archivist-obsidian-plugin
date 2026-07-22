@@ -7,6 +7,7 @@ import { visibleItems, type FilterState, type VisibleEntry } from "./filter-stat
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 import { renderRowExpand } from "./inventory-row-expand";
+import { humanizeToken } from "../../../../shared/rendering/renderer-utils";
 
 const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 
@@ -168,8 +169,8 @@ function renderBrowseRow(
   nameCell.createDiv({ cls: nameClass(e), text: e?.name ?? v.entry.item });
   const sub = nameCell.createDiv({ cls: "pc-inv-sub" });
   const parts: string[] = [];
-  if (v.resolved.entityType) parts.push(capitalize(v.resolved.entityType));
-  if (e?.type) parts.push(capitalize(e.type));
+  if (v.resolved.entityType) parts.push(humanizeToken(v.resolved.entityType));
+  if (e?.type) parts.push(humanizeToken(e.type));
   if (e?.rarity) parts.push(e.rarity);
   sub.setText(parts.join(" · "));
 
@@ -198,10 +199,6 @@ function nameClass(e: { rarity?: string } | null): string {
   const r = e?.rarity?.toLowerCase().replace(/\s+/g, "-") ?? "";
   const rarityCls = ["uncommon", "rare", "very-rare", "legendary", "artifact"].includes(r) ? `rarity-${r}` : "";
   return `pc-inv-name${rarityCls ? " " + rarityCls : ""}`;
-}
-
-function capitalize(s: string): string {
-  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function collectCompendiumItems(ctx: ComponentRenderContext): VisibleEntry[] {
