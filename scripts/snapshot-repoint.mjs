@@ -20,8 +20,8 @@ import { execFileSync } from "node:child_process";
 const CORE_PKG = "@archivist-gg/core";
 const DND5E_PKG = "@archivist-gg/dnd5e";
 const CORE_RANGE = "^0.1.0";
-const DND5E_RANGE = "^0.2.0";
-const TARGET_VERSION = "0.3.0";
+const DND5E_RANGE = "^0.3.0";
+const TARGET_VERSION = "0.4.0";
 const MIN_APP = "1.7.2";
 const BACKFILL = {};
 // Expected caret minor per package (from its RANGE), so assertLock validates each
