@@ -333,3 +333,21 @@ describe("renderWeaponRow", () => {
     expect(root.querySelector("table")).toBeNull();
   });
 });
+
+describe("renderWeaponRow — D1 expand persistence", () => {
+  it("re-applies a weapon row's expanded state across a re-render with the same bag (keyed by AttackRow.id)", () => {
+    const bag = new Map<string, unknown>();
+    const ctx = { ...ctxWithAttacks([sword()]), builderUiState: bag };
+    const root1 = mountContainer();
+    renderWeapons(root1, [sword()], ctx);
+    const row1 = root1.querySelector(".pc-action-row") as HTMLElement;
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect((row1.nextElementSibling as HTMLElement & { hidden: boolean }).hidden).toBe(false);
+
+    const root2 = mountContainer();
+    renderWeapons(root2, [sword()], ctx);
+    const expand2 = (root2.querySelector(".pc-action-row") as HTMLElement)
+      .nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand2.hidden).toBe(false);
+  });
+});

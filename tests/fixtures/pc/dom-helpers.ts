@@ -112,6 +112,14 @@ export function installObsidianDomHelpers(): void {
     else if (force) this.classList.add(cls);
     else this.classList.remove(cls);
   };
+
+  // Obsidian's `setCssProps` sets one or more CSS custom properties directly
+  // on the element's inline style. jsdom doesn't provide it, so component
+  // tests exercising real modules that call `el.setCssProps(...)` would crash
+  // with "setCssProps is not a function" without this augmentation.
+  proto.setCssProps = function (this: HTMLElement, props: Record<string, string>) {
+    for (const [k, v] of Object.entries(props)) this.style.setProperty(k, v);
+  };
 }
 
 export function mountContainer(): HTMLElement {

@@ -250,7 +250,7 @@ describe("renderRowExpand", () => {
 
   it("magic weapon (entityType='item' with base_item) renders item card only — no duplicate base weapon block", async () => {
     const longsword = {
-      slug: "srd-5e_longsword",
+      slug: "srd-5e_weapon_longsword",
       name: "Longsword",
       category: "martial-melee",
       damage: { dice: "1d8", type: "slashing" },
@@ -264,7 +264,7 @@ describe("renderRowExpand", () => {
       description: "Flames erupt from the blade.",
     };
     const registry = buildMockRegistry([
-      { slug: "srd-5e_longsword", entityType: "weapon", data: longsword, name: "Longsword" },
+      { slug: "srd-5e_weapon_longsword", entityType: "weapon", data: longsword, name: "Longsword" },
     ]);
     const { entry, resolved } = make(
       "[[flame-tongue-longsword]]",

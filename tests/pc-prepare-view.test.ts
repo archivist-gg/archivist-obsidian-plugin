@@ -156,3 +156,18 @@ describe("renderPrepareView", () => {
     expect([...root2.querySelectorAll(".pc-spell-name")].map((n) => n.textContent)).toContain("Fire Bolt");
   });
 });
+
+describe("renderPrepareView — D1 spell-block persistence", () => {
+  it("re-creates an open prepare-row reference block across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const root1 = mountContainer();
+    renderPrepareView(root1, { ...ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }), builderUiState: bag });
+    const name1 = root1.querySelector(".pc-spell-prep-row .pc-spell-namewrap") as HTMLElement;
+    name1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-prep-row-host > .pc-spell-expand")).not.toBeNull();
+
+    const root2 = mountContainer();
+    renderPrepareView(root2, { ...ctx([sp("Magic Missile", 1, true)], { togglePrepared: vi.fn() }), builderUiState: bag });
+    expect(root2.querySelector(".pc-spell-prep-row-host > .pc-spell-expand")).not.toBeNull();
+  });
+});

@@ -54,6 +54,6 @@ export class PassiveFeaturesTab implements SheetComponent {
     // sections.
     renderRaceBlock(root, ctx);
     renderBackgroundBlock(root, ctx);
-    renderActionSections(root, sections, ctx);
+    renderActionSections(root, sections, ctx, true);
   }
 }

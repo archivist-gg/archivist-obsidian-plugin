@@ -80,6 +80,16 @@
   letter-spacing: var(--pc-ls-caps-md);
   font-weight: 600;
 }
+/* D4 (item #8): SCOPED to the Actions + Passive tabs only (both roots carry
+ * `pc-actions-tab`; pool-tab + spells-prepare heads are NOT under it, so they
+ * keep their own spacing). Sub-section headers gain a small top offset so they
+ * no longer hug the divider/preceding list, and each sub-group list gains a
+ * small bottom margin so the last row no longer hugs what follows (mirrors the
+ * `.pc-spell-cast-table` reference). `.pc-tab-heading:first-child` already zeroes
+ * a tab's first heading, so no double offset lands there. Values may be tuned
+ * +/- one spacing token during the live pass. */
+.archivist-pc-sheet .pc-actions-tab .pc-actions-section-head { margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-actions-tab .pc-actions-table { margin-bottom: var(--pc-space-2); }
 
 /* ---------- Actions-tab lists (Weapons / Items / Features) — grid rows ---------- */
 .archivist-pc-sheet .pc-actions-table { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
@@ -108,18 +118,24 @@
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
   grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
-/* Passive-tab-scoped gutter tighten (Task 6): the "Passive" tag was removed, so
- * the badge column no longer needs the 66px it took on the Actions tab — reclaim
- * ~12px so the name column starts closer to the left. SCOPED to the passive tab
- * (`.pc-passive-features-tab`) ONLY: the base rule above is SHARED with the
- * Actions tab (class-features/feats render there too and must stay 66px to align
- * with weapon/item rows). The first track is a FIXED 54px — NOT auto/min-content
- * (each row is its own grid → auto would collapse tag-less rows to 0 while a
- * FREE-pill row keeps 52px → cross-row misalignment) and NOT 40px (the FREE pill
- * is min-width:52px → would overflow the name column). 54px fits the 52px FREE
- * pill AND keeps every row aligned. */
+/* D2 (item #5): zero the flex gap the base `.pc-feature-list` (blocks.css) leaks
+ * onto the economy lists. The compound selector (specificity 0,3,0) beats the
+ * base `.pc-feature-list` rule and hits EXACTLY the three live feature-list
+ * constructions (section-renderer, race-block, background-block, incl. the boons
+ * list). Weapons/items lists never carry `.pc-feature-list`, so they are
+ * untouched. Rows stay separated by their own padding + border-bottom, matching
+ * the inventory/spells reference density; the row->expand seam is flush. */
+.archivist-pc-sheet .pc-actions-table.pc-feature-list { gap: 0; }
+/* Passive-tab-scoped grid (Task 8, D3): the badge column is DROPPED entirely, so
+ * a passive row is a 3-col grid [name · detail · caret] — every passive row
+ * (feature, boon, Race, Background) emits exactly those three cells. No cost mark
+ * renders on the Passive tab (all passive costs are unmarked), so no track is
+ * reserved for one. SCOPED
+ * to the passive tab (`.pc-passive-features-tab`) ONLY: the base 4-col rule above
+ * is SHARED with the Actions tab (class-features/feats render there too and must
+ * keep the 66px badge column to align with the weapon/item rows). */
 .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
-  grid-template-columns: 54px minmax(0, 1fr) minmax(0, 2fr) 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
@@ -189,6 +205,16 @@
   color: var(--pc-text-muted);
 }
 
+/* Range cell: the main line always renders; a throwable melee weapon stacks its
+ * thrown range as a second muted line. Muted-line tokens match .pc-action-row-sub
+ * (--pc-fs-small / --pc-text-muted, this file's local idiom for the Obsidian
+ * --font-smallest / --text-muted the plan drafted against). */
+.archivist-pc-sheet .pc-weapon-range { white-space: nowrap; }
+.archivist-pc-sheet .pc-weapon-range-thrown {
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
 /* 2024 Weapon Mastery: a real trailing grid CELL (6th column) on the weapons
  * table, NOT a hover chip. The label chip stacks over a compact one-line gist
  * (e.g. "Save DC 13 · on fail: Prone"). The full glossary prose lives in the
@@ -216,11 +242,14 @@
   overflow-wrap: anywhere;
 }
 
-/* Labeled header row for a has-mastery weapons group: shares the 6-col grid so
- * the column labels line up over the rows. The leading cell above the cost
- * badge is intentionally blank. */
+/* Labeled header row for a weapons group. It ALWAYS renders and matches the
+ * base 5-col weapons-row grid so the column labels line up over the rows. A
+ * has-mastery group overrides this with the 6-col template below (adding the
+ * Mastery column). The leading cell above the cost badge is intentionally
+ * blank. */
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
   display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr);
   align-items: baseline;
   gap: var(--pc-space-2);
   padding: var(--pc-space-1);

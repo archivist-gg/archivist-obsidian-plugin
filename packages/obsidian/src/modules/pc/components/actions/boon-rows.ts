@@ -2,6 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { ResolvedPoolEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { renderFeatureCard, sourceBadgeText } from "../../blocks/feature-card";
 import { renderCostBadge } from "./cost-badge";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /**
  * A single Interdict Boon row on the consolidated Actions tab (spec §3.6 / #1b).
@@ -32,21 +33,21 @@ export function renderBoonRow(
   kind: "selected" | "granted",
   poolLabel: string,
   ctx: ComponentRenderContext,
+  passive = false,
 ): void {
   const e = entry.entity;
   const activatable = kind === "selected" && !!e.activatable;
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row pc-boon-row" });
 
-  // Badge column — the boon's ECONOMY pill, read from its OWN action_cost (NOT
-  // the section: boonEconomy maps free→passive, so the section can't tell Free
-  // from a truly-passive boon). Mirrors the feature-row badge rule: a real cost →
-  // filled pill; special/no-cost → an EMPTY badge cell (the redundant "Passive"
-  // tag was removed in Task 6). The cell is still created so the 4-col grid stays
-  // aligned, and a granted Free boon still shows its FREE pill.
-  const badge = row.createDiv({ cls: "pc-feature-badge" });
+  // Mirror feature rows: Actions tab keeps the badge column; the Passive tab
+  // drops it and renders no cost mark (all passive costs are unmarked). The
+  // boon's OWN action_cost still drives incapacitated dimming below.
   const cost = e.action_cost;
-  if (cost && cost !== "special") renderCostBadge(badge, cost);
+  if (!passive) {
+    const badge = row.createDiv({ cls: "pc-feature-badge" });
+    if (cost && cost !== "special") renderCostBadge(badge, cost);
+  }
 
   // Incapacitated dimming — keyed off the EXACT cost (action/bonus/reaction dim;
   // free/special/passive never), matching weapons-table.ts / items-table.ts.
@@ -54,7 +55,7 @@ export function renderBoonRow(
   const isAction = cost === "action" || cost === "bonus-action" || cost === "reaction";
   if (ce && isAction && ce.actions_disabled) row.addClass("pc-row-disabled");
 
-  // Name cell — name + the pool label as the source/type sub-label.
+  // Name cell: name + the pool label as the source/type sub-label.
   const nameCell = row.createDiv({ cls: "pc-action-namecell" });
   nameCell.createDiv({ cls: "pc-action-row-name", text: e.name });
   nameCell.createDiv({ cls: "pc-action-row-sub", text: poolLabel });
@@ -84,8 +85,11 @@ export function renderBoonRow(
 
   // Sibling expand card (hidden until the row is clicked) — the shared block
   // card with the boon description. Resource-less: no Recharge/Die line.
+  const expandKey = rowExpandKey("boon", poolLabel, kind, entry.slug);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
   renderFeatureCard(inner, {
     title: e.name,
@@ -100,7 +104,9 @@ export function renderBoonRow(
     // The Active toggle has its own handler; never expand on its click.
     if (t?.closest(".pc-pool-active")) return;
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 }

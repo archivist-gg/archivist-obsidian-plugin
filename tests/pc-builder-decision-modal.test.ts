@@ -32,6 +32,31 @@ function mkCtx(): ComponentRenderContext {
 
 const CANDS = ["longsword", "shortsword", "greataxe", "dagger", "rapier"].map(weaponEntity);
 
+function compEntity(slug: string, name: string, compendium: string): RegisteredEntity {
+  return {
+    slug, name, entityType: "weapon", filePath: `Compendium/Weapons/${name}.md`,
+    data: { edition: compendium === "SRD 2024" ? "2024" : "2014" } as unknown as Record<string, unknown>,
+    compendium, readonly: true, homebrew: false,
+  } as RegisteredEntity;
+}
+
+// ctx variant that carries hidden-compendium settings + a two-compendium roster.
+function mkVisCtx(): ComponentRenderContext {
+  return {
+    services: {
+      plugin: { settings: { hiddenCompendiums: ["SRD 5e"] } },
+      compendiums: {
+        getAll: () => [
+          { name: "SRD 5e", description: "", readonly: true, homebrew: false, folderPath: "" },
+          { name: "SRD 2024", description: "", readonly: true, homebrew: false, folderPath: "" },
+        ],
+      },
+      modules: { getByEntityType: () => undefined },
+    },
+    builderUiState: new Map(),
+  } as unknown as ComponentRenderContext;
+}
+
 describe("renderDecisionPickBody", () => {
   it("renders a search input, a compendium filter, and the selection table rows", () => {
     const c = mountContainer();
@@ -81,5 +106,38 @@ describe("renderDecisionPickBody", () => {
     });
     (c.querySelector(".pc-bdecide-done") as HTMLElement).click();
     expect(close).toHaveBeenCalled();
+  });
+});
+
+describe("compendium visibility (F7)", () => {
+  it("the chip list omits hidden compendiums", () => {
+    const c = mountContainer();
+    renderDecisionPickBody(c, mkVisCtx(), {
+      title: "Pick: choose 2", need: 2,
+      candidates: [compEntity("halberd", "Halberd", "SRD 2024")],
+      initialSelected: [], writeValue: vi.fn(), close: vi.fn(), stateKey: "t",
+    });
+    const chips = [...c.querySelectorAll(".pc-bfilter-chip")].map((el) => el.textContent);
+    expect(chips).toEqual(["SRD 2024"]);
+  });
+
+  it("self-protecting predicate: an unfiltered hidden candidate is dropped; a selected one is kept", () => {
+    const c = mountContainer();
+    // Deliberately unfiltered: a future caller passing raw candidates. The
+    // predicate must drop the hidden-and-unselected row on its own, yet keep
+    // the hidden row that seeded initialSelected (selected-exemption).
+    const candidates = [
+      compEntity("flail", "Flail", "SRD 5e"),        // hidden, unselected → dropped
+      compEntity("rapier", "Rapier", "SRD 5e"),      // hidden, selected   → kept
+      compEntity("halberd", "Halberd", "SRD 2024"),  // visible            → kept
+    ];
+    renderDecisionPickBody(c, mkVisCtx(), {
+      title: "Pick: choose 3", need: 3, candidates,
+      initialSelected: ["rapier"], writeValue: vi.fn(), close: vi.fn(), stateKey: "t",
+    });
+    const names = [...c.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).not.toContain("Flail");
+    expect(names).toContain("Rapier");
+    expect(names).toContain("Halberd");
   });
 });

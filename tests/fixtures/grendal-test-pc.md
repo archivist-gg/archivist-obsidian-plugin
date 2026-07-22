@@ -12,11 +12,11 @@ emitted by `packages/dnd5e/tools/srd-canonical/`). All narrative prose has been 
 name: Grendal the Wary
 edition: "2014"
 alignment: Lawful Good
-race: "[[srd-5e_dwarf]]"
+race: "[[srd-5e_race_dwarf]]"
 subrace: null
-background: "[[srd-5e_acolyte]]"
+background: "[[srd-5e_background_acolyte]]"
 class:
-  - name: "[[srd-5e_fighter]]"
+  - name: "[[srd-5e_class_fighter]]"
     level: 5
     subclass: null
     choices:
@@ -48,33 +48,33 @@ spells:
   known: []
   overrides: []
 equipment:
-  - item: "[[srd-5e_longsword]]"
+  - item: "[[srd-5e_weapon_longsword]]"
     equipped: true
     attuned: false
     slot: mainhand
   - item: Traveler pack
     equipped: true
-  - item: "[[srd-5e_amulet-of-health]]"
+  - item: "[[srd-5e_item_amulet-of-health]]"
     equipped: false
     attuned: false
-  - item: "[[srd-5e_bracers-of-defense]]"
+  - item: "[[srd-5e_item_bracers-of-defense]]"
     equipped: false
     attuned: false
-  - item: "[[srd-5e_chain-mail]]"
+  - item: "[[srd-5e_armor_chain-mail]]"
     equipped: false
-  - item: "[[srd-5e_shield-of-missile-attraction]]"
+  - item: "[[srd-5e_item_shield-of-missile-attraction]]"
     equipped: false
     attuned: true
-  - item: "[[srd-5e_arrow-catching-shield]]"
+  - item: "[[srd-5e_item_arrow-catching-shield]]"
     equipped: true
     attuned: true
-  - item: "[[srd-5e_necklace-of-fireballs]]"
+  - item: "[[srd-5e_item_necklace-of-fireballs]]"
     equipped: true
     state:
       charges:
         current: 6
         max: 9
-  - item: "[[srd-5e_wand-of-fireballs]]"
+  - item: "[[srd-5e_item_wand-of-fireballs]]"
     equipped: true
     attuned: true
     state:

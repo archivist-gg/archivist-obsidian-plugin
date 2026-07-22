@@ -2,7 +2,8 @@ import type { ComponentRenderContext } from "../component.types";
 import type { StartingEquipmentEntry, EquipmentGrant, StartingGold } from "@archivist-gg/dnd5e/types/equipment-grant";
 import type { ChoiceValue } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { DecisionItem, DecisionLedger } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
-import { buildDecisionLedger, bareEntitySlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { buildDecisionLedger } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { bareEntitySlug } from "@archivist-gg/dnd5e/entities/slug";
 import { renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
 import { InventoryList } from "../inventory/inventory-list";
@@ -370,8 +371,10 @@ interface BareEntity { fullSlug: string; entityType: string; name: string; packC
  *  `category: "heavy"` (and 2014 has no shield entry), so a category check would
  *  never fire and would mis-slot a shield into the armor slot. Pack contents have
  *  no structured field in the runtime data, so `packContents` stays undefined
- *  (forward-compatible; a resolvable pack item seeds as-is). */
-function seedRegistry(ctx: ComponentRenderContext): SeedRegistry {
+ *  (forward-compatible; a resolvable pack item seeds as-is).
+ *  Exported for the R3-P6 visibility non-site regression test: grant resolution
+ *  must IGNORE hidden compendiums. */
+export function seedRegistry(ctx: ComponentRenderContext): SeedRegistry {
   const reg = ctx.services.entities;
   const byBare = new Map<string, BareEntity>();
   for (const type of ["weapon", "armor", "item"]) {

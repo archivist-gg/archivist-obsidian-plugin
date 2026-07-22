@@ -39,9 +39,9 @@ function rowCtx(editState: CharacterEditState | null = null): ComponentRenderCon
   };
 }
 
-function renderItems(root: HTMLElement, items: ItemEntry[], c: ComponentRenderContext): HTMLElement {
+function renderItems(root: HTMLElement, items: ItemEntry[], c: ComponentRenderContext, passive = false): HTMLElement {
   const list = root.createDiv({ cls: "pc-actions-table pc-items-table" });
-  for (const it of items) renderItemRow(list, it, c);
+  for (const it of items) renderItemRow(list, it, c, passive);
   return list;
 }
 
@@ -151,5 +151,60 @@ describe("renderItemRow", () => {
     (root.querySelector(".pc-action-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(expand.hidden).toBe(false);
     expect(root.querySelector("table")).toBeNull();
+  });
+
+  // R3-P3 item C: the Passive tab suppresses the FREE badge but keeps the cell
+  // div (shared 4-col .pc-items-table grid; "special" still renders a badge).
+  it("renders an EMPTY badge cell (div present, no badge) for a free item on the passive tab", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry({ action: { cost: "free" } as ItemAction })], rowCtx(), true);
+    const row = root.querySelector(".pc-action-row")!;
+    expect(row.firstElementChild!.tagName).toBe("DIV");
+    expect(row.querySelector(".pc-cost-badge")).toBeNull();
+  });
+
+  it("keeps the Special badge for a special item on the passive tab", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry({ action: { cost: "special" } as ItemAction })], rowCtx(), true);
+    expect(root.querySelector(".pc-cost-badge.cost-special")).toBeTruthy();
+  });
+
+  it("keeps the Free badge on the Actions tab (passive omitted)", () => {
+    const root = mountContainer();
+    renderItems(root, [itemEntry({ action: { cost: "free" } as ItemAction })], rowCtx());
+    expect(root.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
+  });
+});
+
+describe("renderItemRow — D1 expand persistence", () => {
+  it("re-applies an item row's expanded state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c = { ...rowCtx(), builderUiState: bag };
+    const root1 = mountContainer();
+    renderItems(root1, [itemEntry({ index: 2 })], c);
+    const row1 = root1.querySelector(".pc-action-row") as HTMLElement;
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect((row1.nextElementSibling as HTMLElement & { hidden: boolean }).hidden).toBe(false);
+
+    const root2 = mountContainer();
+    renderItems(root2, [itemEntry({ index: 2 })], c);
+    const expand2 = (root2.querySelector(".pc-action-row") as HTMLElement)
+      .nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand2.hidden).toBe(false);
+  });
+
+  it("self-heals: a persisted key for an index whose slug changed reads as collapsed (no throw)", () => {
+    const bag = new Map<string, unknown>([["rowexpand.items:2:wand-of-fireballs", true]]);
+    const c = { ...rowCtx(), builderUiState: bag };
+    const root = mountContainer();
+    // Same index 2, DIFFERENT item → different key → not in bag → collapsed.
+    renderItems(root, [itemEntry({
+      index: 2,
+      entry: { item: "[[staff-of-power]]", equipped: true } as ItemEntry["entry"],
+      entity: { name: "Staff of Power", rarity: "rare", actions: {} },
+    })], c);
+    const expand = (root.querySelector(".pc-action-row") as HTMLElement)
+      .nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(true);
   });
 });

@@ -6,6 +6,7 @@ import { renderCostBadge } from "./cost-badge";
 import { renderChargeBoxes } from "./charge-boxes";
 import { renderFeatureCard, formatSourceLabel, sourceBadgeText, featureCardDescription } from "../../blocks/feature-card";
 import { resolveScalingDie } from "@archivist-gg/dnd5e/dnd/resource-die";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /** Reset trigger → the charge-box recovery bucket (moved verbatim from actions-tab.ts). */
 const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> = {
@@ -26,14 +27,30 @@ const RESET_TO_RECOVERY: Record<string, "dawn" | "short" | "long" | "special"> =
  * Hellspeaker 3" sub-label, the card body concatenates every feature's prose, and
  * the card gains each secondary's resource trackers + chosen-inline picks.
  */
+/** Layout + persistence options threaded from `renderActionSections`. `merged`
+ *  is the same-parent subclass collapse (spec §2); `sectionKey` + `entryIdx`
+ *  namespace the D1 expand key; `passive` (Task 8, D3) drops the badge column. */
+export interface FeatureRowOpts {
+  merged?: ResolvedFeature[];
+  sectionKey?: string;
+  entryIdx?: number;
+  passive?: boolean;
+}
+
 export function renderFeatureRow(
   list: HTMLElement,
   rf: ResolvedFeature,
   ctx: ComponentRenderContext,
-  merged?: ResolvedFeature[],
+  opts: FeatureRowOpts = {},
 ): void {
   const feature = rf.feature;
-  const secondaries = merged ?? [];
+  const secondaries = opts.merged ?? [];
+  // D1 expand key: feature identity (source kind+slug + feature.id, falling back
+  // to name) plus the section + per-entry index for stability/uniqueness.
+  const expandKey = rowExpandKey(
+    "feature", opts.sectionKey, rf.source.kind, rf.source.slug,
+    feature.id ?? feature.name, opts.entryIdx,
+  );
   const title = featureRowTitle(rf, ctx.resolved);
   // Sub-label joins the primary source with each merged (subclass) source; for a
   // lone feature this is exactly `formatSourceLabel(rf.source)` (no behavior
@@ -45,15 +62,14 @@ export function renderFeatureRow(
 
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  // Badge column — read from the feature's OWN action cost, not the section
-  // bucket: a real cost (incl. `free`) → filled cost pill; `special`/absent →
-  // an EMPTY badge cell (no tag). The redundant "Passive" tag was removed
-  // (Task 6): on the Passive tab every row is passive, so the tag was pure
-  // noise. The `.pc-feature-badge` cell is still created so the 4-col grid stays
-  // aligned, and the FREE pill (a real `free` cost) still renders here.
-  const badge = row.createDiv({ cls: "pc-feature-badge" });
+  // The Actions tab keeps the 66px badge column; the Passive tab drops it and
+  // renders NO cost pill at all: all passive costs are unmarked (free/special/
+  // absent bucket to Passive via featureEconomy).
   const cost = feature.action;
-  if (cost && cost !== "special") renderCostBadge(badge, cost);
+  if (!opts.passive) {
+    const badge = row.createDiv({ cls: "pc-feature-badge" });
+    if (cost && cost !== "special") renderCostBadge(badge, cost);
+  }
 
   // Dim only when the EXACT action cost is action/bonus/reaction (free/special/
   // passive stay live) — one rule across weapons/items/features/boons.
@@ -103,7 +119,9 @@ export function renderFeatureRow(
   // Sibling expand card (hidden until the row is clicked) — the shared
   // block card, plus any extra resource trackers (resources[1..N]).
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
   // Concatenate every feature's `description ?? entries` (blank-line separated)
   // and pass it as an explicit `description` — this OVERRIDES the per-feature
@@ -156,8 +174,10 @@ export function renderFeatureRow(
     // Tracker + buff-toggle clicks are handled by their own listeners; never expand.
     if (t?.closest(".pc-feature-track") || t?.closest(".pc-action-buff")) return;
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 }
 

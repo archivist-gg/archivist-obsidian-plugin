@@ -166,4 +166,45 @@ describe("BrowseMode", () => {
     // No equip / remove / attune buttons in browse mode
     expect(root.querySelector(".pc-inv-actions")).toBeFalsy();
   });
+
+  // Clone of ctxWithRegistry whose registry entries carry a `compendium` tag and
+  // whose `search` stub emits it, plus a `plugin.settings.hiddenCompendiums` on
+  // services. Without the emitted `compendium` every entity is fail-open-visible.
+  function ctxWithHidden(
+    registry: Map<string, { entityType: string; compendium: string; data: { name?: string; [k: string]: unknown } }>,
+    hiddenCompendiums: string[],
+  ): ComponentRenderContext {
+    const c = baseChar();
+    return {
+      resolved: { definition: c, race: null, classes: [], background: null, feats: [], totalLevel: 1, features: [], spells: [], state: c.state } as ResolvedCharacter,
+      derived: { ac: 0, acBreakdown: [], attacks: [], equippedSlots: {} as EquippedSlots, carriedWeight: 0, attunementUsed: 0, attunementLimit: 3 } as DerivedStats,
+      services: {
+        entities: {
+          getBySlug: (slug: string) => registry.get(slug) ?? null,
+          search: (_query: string, type: string | undefined, _limit: number) =>
+            [...registry.entries()]
+              .filter(([_, v]) => !type || v.entityType === type)
+              .map(([slug, v]) => ({ slug, name: v.data.name ?? slug, entityType: v.entityType, data: v.data, compendium: v.compendium })),
+        },
+        plugin: { settings: { hiddenCompendiums } },
+      } as never,
+      app: {} as never,
+      editState: null as never,
+    };
+  }
+
+  it("hidden compendiums are excluded from the browse sweep and the banner count (F1)", () => {
+    const reg = new Map<string, { entityType: string; compendium: string; data: { name?: string; [k: string]: unknown } }>([
+      ["longsword", { entityType: "weapon", compendium: "SRD 2024", data: { name: "Longsword" } }],
+      ["studded-leather", { entityType: "armor", compendium: "SRD 5e", data: { name: "Studded Leather" } }],
+    ]);
+    const root = mountContainer();
+    new BrowseMode({ filters: { status: "all", types: new Set(), rarities: new Set(), search: "" } })
+      .render(root, ctxWithHidden(reg, ["SRD 5e"]));
+    const rows = root.querySelectorAll(".pc-inv-row");
+    expect(rows.length).toBe(1);
+    expect(root.querySelector(".pc-inv-browse-meta")!.textContent).toContain("1 of 1");
+    const names = [...root.querySelectorAll(".pc-inv-name")].map((n) => n.textContent);
+    expect(names).not.toContain("Studded Leather");
+  });
 });

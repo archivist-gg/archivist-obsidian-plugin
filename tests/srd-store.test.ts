@@ -316,7 +316,8 @@ describe("SrdStore", () => {
       const s = new SrdStore();
       s.loadFromBundledJson();
       const goblin =
-        s.getBySlug("srd-2024_goblin") ?? s.getBySlug("srd-5e_goblin");
+        s.getBySlug("srd-2024_monster_goblin") ??
+        s.getBySlug("srd-5e_monster_goblin");
       expect(goblin).toBeDefined();
       expect(goblin!.name).toBe("Goblin");
       expect(goblin!.entityType).toBe("monster");
@@ -326,7 +327,8 @@ describe("SrdStore", () => {
       const s = new SrdStore();
       s.loadFromBundledJson();
       const fireball =
-        s.getBySlug("srd-2024_fireball") ?? s.getBySlug("srd-5e_fireball");
+        s.getBySlug("srd-2024_spell_fireball") ??
+        s.getBySlug("srd-5e_spell_fireball");
       expect(fireball).toBeDefined();
       expect(fireball!.name).toBe("Fireball");
     });
@@ -343,8 +345,8 @@ describe("SrdStore", () => {
       // After Phase 6, Aboleth's mechanics should be rich (ac=17), not the
       // legacy zero-data shape.
       const aboleth =
-        s.getBySlug("srd-2024_aboleth") ??
-        s.getBySlug("srd-5e_aboleth") ??
+        s.getBySlug("srd-2024_monster_aboleth") ??
+        s.getBySlug("srd-5e_monster_aboleth") ??
         s.getBySlug("aboleth");
       expect(aboleth).toBeDefined();
       if (aboleth) {

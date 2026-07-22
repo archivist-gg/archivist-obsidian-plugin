@@ -1,6 +1,6 @@
 {
   "name": "archivist-gg",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "D&D 5e/2024 toolkit for Obsidian: parchment stat blocks from YAML, inline dice tags, a full SRD compendium, homebrew compendiums, and player-character sheets.",
   "main": "main.js",
   "scripts": {

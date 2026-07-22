@@ -9,6 +9,7 @@ import { wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 
 /** The generator-baked placeholder every 2024 SRD background carries in place of a
  *  per-feature description (`background-merge.ts`). Detected exactly (name +
@@ -17,9 +18,9 @@ const PLACEHOLDER_NAME = "Background Feature";
 const NO_DESC = "(No description provided.)";
 
 /** A `.pc-cb-prop` reference line: a caps label + its value. Omitted when empty. */
-function prop(host: HTMLElement, label: string, value: string): void {
+function prop(host: HTMLElement, label: string, value: string, cls?: string): void {
   if (!value) return;
-  const p = host.createDiv({ cls: "pc-cb-prop" });
+  const p = host.createDiv({ cls: cls ? `pc-cb-prop ${cls}` : "pc-cb-prop" });
   p.createSpan({ cls: "pc-cb-prop-l", text: label });
   p.createSpan({ text: value });
 }
@@ -71,8 +72,11 @@ function originFeatName(ref: string): string {
  * feat-sourced resolved feature that matches this origin-feat ref? Match by the
  * bare tail slug (`srd-2024_savage-attacker` endsWith `_savage-attacker`), the
  * parenthetical-variant base slug (Magic Initiate (Cleric) → magic-initiate), or
- * the display name. Absent (today) → "Origin Feat: <name>"; present (post-3b) →
- * "… · see Feats", with NO cross-task edit.
+ * the display name. Absent (today) → value renders as "<name>" in a labeled
+ * Origin Feat row (a small-caps `.pc-cb-prop-l` "Origin Feat" label span + a
+ * separate value span; the literal ": " is gone, supplied visually by layout);
+ * present (post-3b) → value renders as "<name> · see Feats", with NO cross-task
+ * edit.
  */
 function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boolean {
   const slug = wikilinkTailSlug(ref);
@@ -121,9 +125,11 @@ function originFeatRendersAsRow(ctx: ComponentRenderContext, ref: string): boole
  * `feature` prose and `origin_feat:null` → the real prose is surfaced (NOT
  * suppressed).
  *
- * Collapse is the same self-contained `.hidden` DOM-toggle the Race/feature rows
- * use (the flag lives on the DOM node, reset each render, so it never touches
- * `ctx.builderUiState`/`redraw()`). Default COLLAPSED, matching the Race block and
+ * Collapse is the same `.hidden` DOM-toggle the Race/feature rows use, but the
+ * open state is now PERSISTED (P3 D1): it is recorded in `ctx.builderUiState` under
+ * `background:<slug>` and re-applied on render, so a click survives the whole-sheet
+ * re-render every editState mutation fires (previously the flag lived only on the
+ * DOM node and reset each render). Default COLLAPSED, matching the Race block and
  * the sibling rows. Renders nothing when there is no background.
  */
 export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderContext): void {
@@ -139,11 +145,10 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   const list = parent.createDiv({ cls: "pc-actions-table pc-feature-list" });
   const row = list.createDiv({ cls: "pc-action-row pc-feature-row" });
 
-  // Badge column: kept present-but-empty so the 4-col feature-row grid stays
-  // aligned with its siblings. The redundant "Passive" tag was removed (Task 6):
-  // on the Passive tab every row is passive, so the tag was pure noise (mirrors
+  // D3: the Passive tab dropped the badge column (3-col grid), so this row emits
+  // NO `.pc-feature-badge` cell — its three grid children are nameCell, detail,
+  // and caret, matching the passive feature/boon rows beside it (mirrors
   // race-block.ts).
-  row.createDiv({ cls: "pc-feature-badge" });
 
   // Name cell: the background name, with the edition as the quiet sub-label (the
   // same slot feature rows use for their source line). Sub-label omitted when the
@@ -152,15 +157,18 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
   nameCell.createDiv({ cls: "pc-action-row-name", text: bg.name });
   if (bg.edition) nameCell.createDiv({ cls: "pc-action-row-sub", text: String(bg.edition) });
 
-  // Detail column kept present-but-empty so the 4-col feature-row grid
-  // (badge | name | detail | caret) stays aligned with its siblings.
+  // Detail column kept present-but-empty so the 3-col feature-row grid
+  // (name | detail | caret) stays aligned with its siblings.
   row.createDiv({ cls: "pc-feature-detail" });
   row.createDiv({ cls: "pc-action-caret", text: "›" });
 
   // ── Sibling expand card (hidden until the row is clicked): the FULL chronicle
   //    block, carded by `.pc-action-expand-inner > .pc-cblock` (chronicle.css). ──
+  const expandKey = rowExpandKey("background", bg.slug);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
 
   renderChronicleBlock(inner, {
@@ -204,15 +212,13 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
       prop(host, "Tools", fixedToolNames(bg.tool_proficiencies));
       prop(host, "Languages", languageSummary(bg.language_proficiencies));
 
-      // ── Origin Feat line (2024 only). "· see Feats" auto-appends once the feat
-      //    renders as a Feats row (Task 3b); before that it degrades to the name. ──
+      // ── Origin Feat line (2024 only), a labeled prop() row like its siblings.
+      //    "· see Feats" auto-appends once the feat renders as a Feats row
+      //    (Task 3b); before that it degrades to the name. ──
       if (bg.origin_feat) {
         const name = originFeatName(bg.origin_feat);
         const seeFeats = originFeatRendersAsRow(ctx, bg.origin_feat);
-        host.createDiv({
-          cls: "pc-cb-prop pc-bg-origin",
-          text: `Origin Feat: ${name}${seeFeats ? " · see Feats" : ""}`,
-        });
+        prop(host, "Origin Feat", `${name}${seeFeats ? " · see Feats" : ""}`, "pc-bg-origin");
       }
 
       // ── Starting-equipment reference. ──
@@ -233,12 +239,15 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
     },
   });
 
-  // Row click toggles the sibling expand. Stateless: the `.hidden` flag lives on
-  // the DOM node, reset each render (default COLLAPSED). Mirrors the Race /
-  // feature-row open/close class toggles exactly.
+  // Row click toggles the sibling expand. The open state is persisted in
+  // `ctx.builderUiState` under `background:<slug>` (P3 D1) and re-applied on
+  // render, so a click survives the whole-sheet re-render every editState mutation
+  // fires (default COLLAPSED). Mirrors the Race / feature-row toggles exactly.
   row.addEventListener("click", () => {
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 }

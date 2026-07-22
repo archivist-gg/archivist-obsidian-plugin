@@ -1573,6 +1573,11 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-amber: #a3690e;
   --pc-row-open-bg: rgba(146, 38, 16, 0.04);
   --pc-rarity-uncommon: #2f6f3a;
+  --pc-coin-pp: #1f3f7a;
+  --pc-coin-gp: #a3590a;
+  --pc-coin-ep: #6b6f2a;
+  --pc-coin-sp: #4a5a66;
+  --pc-coin-cp: #8a3d1f;
   --pc-space-1: 4px;
   --pc-space-2: 8px;
   --pc-space-3: 12px;
@@ -2162,4 +2167,19 @@ body.theme-light .archivist-tag-atk:hover {
   font-style: italic;
   font-size: 0.85em;
   padding: 0.4em 0;
+}
+
+/* Settings: labeled compendium toggles (R3-P7 F5). Each per-compendium
+   toggle is wrapped with an always-visible muted caption ("Visible" /
+   "Read-only") so the two identical pills are distinguishable without
+   hovering. Tooltips remain for the longer explanation. */
+.archivist-labeled-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+}
+.archivist-toggle-caption {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  white-space: nowrap;
 }

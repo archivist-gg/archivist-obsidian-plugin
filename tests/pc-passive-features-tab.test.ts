@@ -298,14 +298,18 @@ describe("PassiveFeaturesTab", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
-      expect(line.textContent).toBe("Origin Feat: Savage Attacker");
+      // R3-P3 item B: the line is now a labeled prop() row (small-caps label + value span).
+      expect(line.classList.contains("pc-cb-prop")).toBe(true);
+      expect(line.querySelector(".pc-cb-prop-l")!.textContent).toBe("Origin Feat");
+      expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker");
     });
 
     it("auto-upgrades to 'Origin Feat: <name> · see Feats' once a matching feat feature is present (post-3b)", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat, savageAttackerFeat], { background: bg2024 }));
       const line = bgBlock(c)!.querySelector(".pc-bg-origin")!;
-      expect(line.textContent).toBe("Origin Feat: Savage Attacker · see Feats");
+      expect(line.querySelector(".pc-cb-prop-l")!.textContent).toBe("Origin Feat");
+      expect(line.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Savage Attacker · see Feats");
     });
 
     it("shows the real feature prose (NOT suppressed) for a 2014 background with no origin feat", () => {
@@ -388,33 +392,29 @@ describe("PassiveFeaturesTab", () => {
       expect(rowByName(c, "Free Thing").classList.contains("pc-row-disabled")).toBe(false);
     });
 
-    it("renders an EMPTY badge cell (no Passive tag, no cost badge) on passive rows", () => {
+    it("drops the badge column (no badge div, 3-col grid) on passive rows", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Darkvision", passive: true })]));
       const row = rowByName(c, "Darkvision");
-      // Task 6: the redundant "Passive" tag was removed — a passive row now shows
-      // an EMPTY badge cell. The cell itself must still exist so the 4-col grid
-      // stays aligned with the FREE-pill rows beside it.
-      const badge = row.querySelector(".pc-feature-badge");
-      expect(badge).toBeTruthy();
-      expect(badge!.childElementCount).toBe(0);
+      // D3: passive rows drop the badge column entirely (3-col grid).
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.childElementCount).toBe(3); // name · detail · caret
       expect(row.querySelector(".pc-passive-tag")).toBeNull();
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
     });
 
-    it("gives a free-cost feature a FREE pill (not a Passive tag) under Passive & Free Actions", () => {
+    it("renders a free-cost feature with NO cost pill under Passive & Free Actions", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Free Thing", action: "free" })]));
       const row = rowByName(c, "Free Thing");
-      // Badge is read from the raw cost, so free keeps its filled FREE pill even
-      // though the row files under the passive section.
-      expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
-      expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull();
+      // R3-P3 item C: the Passive tab renders NO cost pill; all passive costs are unmarked.
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(headings(c)).toContain("Passive & Free Actions");
       expect(headings(c)).not.toContain("Actions");
     });
 
-    it("renders ZERO Passive tags across the whole tab (features, race, background, boons) while a FREE row keeps its pill", () => {
+    it("renders ZERO Passive tags across the whole tab (features, race, background, boons) and no FREE pill", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx(
         [passiveFeat, freeFeat],
@@ -424,11 +424,11 @@ describe("PassiveFeaturesTab", () => {
           pools: [pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true })] })],
         },
       ));
-      // Task 6: not a single ".pc-passive-tag" survives anywhere on the tab —
+      // Task 6: not a single ".pc-passive-tag" survives anywhere on the tab:
       // feature rows, the Race row, the Background row, and boon rows are all clean.
       expect(c.querySelectorAll(".pc-passive-tag").length).toBe(0);
-      // The FREE-cost row still carries its filled FREE pill (read from raw cost).
-      expect(rowByName(c, "Free Thing").querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
+      // R3-P3 item C: the free-cost row renders with no pill either.
+      expect(rowByName(c, "Free Thing").querySelector(".pc-cost-badge")).toBeNull();
     });
 
     it("renders the Passive & Free Actions heading for the passive half of a mixed feature set (split from grouping L59)", () => {
@@ -512,44 +512,43 @@ describe("PassiveFeaturesTab", () => {
       expect(btn.classList.contains("on")).toBe(true);
     });
 
-    it("renders an EMPTY badge cell (no Active toggle, no status marker) on a plain no-cost non-activatable selected boon", () => {
+    it("drops the badge column (3-col grid) on a plain no-cost non-activatable selected boon", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("wrath", { name: "Boon of Wrath" })] })],
       }));
       const row = boonRowByName(c, "Boon of Wrath");
-      // Task 6: the "Passive" tag was removed — an empty badge cell remains.
-      const badge = row.querySelector(".pc-feature-badge");
-      expect(badge).toBeTruthy();
-      expect(badge!.childElementCount).toBe(0);
+      // D3: passive rows drop the badge column entirely (3-col grid).
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.childElementCount).toBe(3); // name · detail · caret
       expect(row.querySelector(".pc-passive-tag")).toBeNull();
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(row.querySelector(".pc-pool-active")).toBeNull();
       expect(row.querySelector(".pc-boon-status")).toBeNull();
     });
 
-    it("gives a granted free boon a FREE pill (not ACTION) + a quiet 'granted' marker", () => {
+    it("renders a granted free boon with NO cost pill + a quiet 'granted' marker", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ grants: [entry("red-cant", { name: "Red Cant", action_cost: "free" })] })],
       }));
       const row = boonRowByName(c, "Red Cant");
-      expect(row.querySelector(".pc-cost-badge.cost-free")).toBeTruthy();
-      expect(row.querySelector(".pc-feature-badge .pc-passive-tag")).toBeNull(); // no status-in-badge
+      // R3-P3 item C: no badge column AND no inline pill on the Passive tab.
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(row.querySelector(".pc-feature-detail .pc-boon-status")!.textContent).toBe("granted");
     });
 
-    it("renders an EMPTY badge cell (no cost badge, no marker) for a special-cost plain selected boon", () => {
+    it("drops the badge column (3-col grid) for a special-cost plain selected boon", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([], {
         pools: [pool({ selected: [entry("frenzy", { name: "Frenzy", action_cost: "special" })] })],
       }));
       const row = boonRowByName(c, "Frenzy");
-      // Task 6: `special` cost → empty badge cell (no tag, no cost pill), matching
-      // the passive-feature row treatment.
-      const badge = row.querySelector(".pc-feature-badge");
-      expect(badge).toBeTruthy();
-      expect(badge!.childElementCount).toBe(0);
+      // D3: `special` cost → no badge column and no inline pill (only FREE renders
+      // inline), matching the passive-feature row treatment.
+      expect(row.querySelector(".pc-feature-badge")).toBeNull();
+      expect(row.childElementCount).toBe(3); // name · detail · caret
       expect(row.querySelector(".pc-passive-tag")).toBeNull();
       expect(row.querySelector(".pc-cost-badge")).toBeNull();
       expect(row.querySelector(".pc-boon-status")).toBeNull();
@@ -607,5 +606,99 @@ describe("PassiveFeaturesTab", () => {
       }));
       expect(boonRowByName(c, "Free Boon").classList.contains("pc-row-disabled")).toBe(false);
     });
+  });
+});
+
+describe("D3 passive layout (badge column dropped, FREE inline)", () => {
+  it("a passive feature row has 3 grid children and no badge div", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([rf({ name: "Darkvision", passive: true })]));
+    const row = rowByName(c, "Darkvision");
+    expect(row.querySelector(".pc-feature-badge")).toBeNull();
+    expect(row.childElementCount).toBe(3);
+  });
+  it("a passive boon row has 3 grid children and no badge div", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([], {
+      pools: [pool({ selected: [entry("stoic", { name: "Boon of Endurance", passive: true })] })],
+    }));
+    const row = boonRowByName(c, "Boon of Endurance");
+    expect(row.querySelector(".pc-feature-badge")).toBeNull();
+    expect(row.childElementCount).toBe(3);
+  });
+  it("race and background rows have 3 grid children (no badge div)", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([], { race: raceFixture, background: bg2024 }));
+    const raceRow = rowByName(c, "Kalashtar");
+    const bgRow = rowByName(c, "Soldier");
+    expect(raceRow.querySelector(".pc-feature-badge")).toBeNull();
+    expect(raceRow.childElementCount).toBe(3);
+    expect(bgRow.querySelector(".pc-feature-badge")).toBeNull();
+    expect(bgRow.childElementCount).toBe(3);
+  });
+});
+
+describe("D1 feature-row expand persistence", () => {
+  it("re-applies a feature row's expanded state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx([passiveFeat]), builderUiState: bag });
+    const row1 = rowByName(c1, "Darkvision");
+    const expand1 = row1.nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand1.hidden).toBe(true);
+    row1.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(expand1.hidden).toBe(false);
+
+    // Simulated mutation re-render: fresh container, SAME bag → rebuilt expanded.
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx([passiveFeat]), builderUiState: bag });
+    const row2 = rowByName(c2, "Darkvision");
+    const expand2 = row2.nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand2.hidden).toBe(false);
+    expect(row2.classList.contains("pc-row-open")).toBe(true);
+  });
+
+  it("keeps two distinct feature rows independently persisted", () => {
+    const bag = new Map<string, unknown>();
+    const feats = [passiveFeat, rf({ name: "Fey Ancestry" })];
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx(feats), builderUiState: bag });
+    rowByName(c1, "Fey Ancestry").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx(feats), builderUiState: bag });
+    const darkExpand = rowByName(c2, "Darkvision").nextElementSibling as HTMLElement & { hidden: boolean };
+    const feyExpand = rowByName(c2, "Fey Ancestry").nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(feyExpand.hidden).toBe(false); // the one that was opened
+    expect(darkExpand.hidden).toBe(true); // its sibling stays collapsed
+  });
+});
+
+describe("D1 boon-row expand persistence", () => {
+  it("re-applies a boon row's expanded state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const pools = [pool({ selected: [entry("wrath", { name: "Boon of Wrath", description: "x" })] })];
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx([], { pools }), builderUiState: bag });
+    boonRowByName(c1, "Boon of Wrath").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx([], { pools }), builderUiState: bag });
+    const expand = boonRowByName(c2, "Boon of Wrath").nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(false);
+  });
+});
+
+describe("D1 background-block expand persistence", () => {
+  it("re-applies the Background block open state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c1 = mountContainer();
+    new PassiveFeaturesTab().render(c1, { ...renderCtx([], { background: bg2024 }), builderUiState: bag });
+    rowByName(c1, "Soldier").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const c2 = mountContainer();
+    new PassiveFeaturesTab().render(c2, { ...renderCtx([], { background: bg2024 }), builderUiState: bag });
+    const expand = rowByName(c2, "Soldier").nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(false);
   });
 });

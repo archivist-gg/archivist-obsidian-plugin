@@ -18,6 +18,26 @@
  * (Max HP, AC, ability scores).
  */
 
+/** Live inline edits, keyed by their input element. An entry exists exactly
+ *  while the edit is ACTIVE: both commit() and cancel() delete it the moment
+ *  `done` flips, so a committed-but-still-mounted input is not "active". */
+const inlineCancels = new WeakMap<HTMLInputElement, () => void>();
+
+/** Cancel the active inline edit inside `root`, if any. Returns true only when
+ *  an active edit was actually cancelled (used by the Max-HP modal's two-stage
+ *  Escape).
+ *  Assumes a single active inline edit per `root`: cancels the FIRST
+ *  `input.pc-edit-inline` found (fine for current consumers; a future
+ *  multi-field consumer must not rely on it cancelling more than one). */
+export function cancelInlineEdit(root: ParentNode): boolean {
+  const input = root.querySelector<HTMLInputElement>("input.pc-edit-inline");
+  if (!input) return false;
+  const cancel = inlineCancels.get(input);
+  if (!cancel) return false;
+  cancel();
+  return true;
+}
+
 export interface InlineInputOpts {
   initial: number;
   min?: number;
@@ -58,6 +78,7 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   const commit = () => {
     if (done) return;
     done = true;
+    inlineCancels.delete(input);
     const parsed = parseInt(input.value, 10);
     const next = Number.isFinite(parsed) ? clamp(parsed) : opts.initial;
     opts.onCommit(next);
@@ -66,6 +87,7 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   const cancel = () => {
     if (done) return;
     done = true;
+    inlineCancels.delete(input);
     // Restore the original value element in place of the input. We hold
     // a reference to valueEl (it's still in memory, just detached from
     // the DOM after valueEl.remove() during input setup), so re-inserting
@@ -85,7 +107,19 @@ export function makeInlineInput(valueEl: HTMLElement, opts: InlineInputOpts): vo
   });
   input.addEventListener("keyup", stopProp);
   input.addEventListener("keypress", stopProp);
-  input.addEventListener("blur", () => { if (!done) commit(); });
+  input.addEventListener("blur", () => {
+    if (done) return;
+    // A blur with the value unchanged from what was seeded is not user
+    // intent to commit (e.g. clicking into a placeholder-seeded field and
+    // clicking away without typing). Only commit when the raw value
+    // actually differs from the initial; otherwise cancel so no spurious
+    // onChange/file write happens. Enter always commits unconditionally
+    // (see keydown above) since pressing Enter IS explicit intent.
+    if (input.value !== String(opts.initial)) commit();
+    else cancel();
+  });
+
+  inlineCancels.set(input, cancel);
 }
 
 export interface NumberFieldOpts {

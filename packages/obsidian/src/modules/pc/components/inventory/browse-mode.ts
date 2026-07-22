@@ -7,6 +7,8 @@ import { visibleItems, type FilterState, type VisibleEntry } from "./filter-stat
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 import { renderRowExpand } from "./inventory-row-expand";
+import { humanizeToken } from "../../../../shared/rendering/renderer-utils";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 
@@ -168,8 +170,8 @@ function renderBrowseRow(
   nameCell.createDiv({ cls: nameClass(e), text: e?.name ?? v.entry.item });
   const sub = nameCell.createDiv({ cls: "pc-inv-sub" });
   const parts: string[] = [];
-  if (v.resolved.entityType) parts.push(capitalize(v.resolved.entityType));
-  if (e?.type) parts.push(capitalize(e.type));
+  if (v.resolved.entityType) parts.push(humanizeToken(v.resolved.entityType));
+  if (e?.type) parts.push(humanizeToken(e.type));
   if (e?.rarity) parts.push(e.rarity);
   sub.setText(parts.join(" · "));
 
@@ -200,10 +202,6 @@ function nameClass(e: { rarity?: string } | null): string {
   return `pc-inv-name${rarityCls ? " " + rarityCls : ""}`;
 }
 
-function capitalize(s: string): string {
-  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 function collectCompendiumItems(ctx: ComponentRenderContext): VisibleEntry[] {
   // PCServices.entities IS the EntityRegistry directly. The registry has no
   // `getAllByType`; the closest enumeration is `search("", type, limit)`.
@@ -213,14 +211,16 @@ function collectCompendiumItems(ctx: ComponentRenderContext): VisibleEntry[] {
           query: string,
           entityType: string | undefined,
           limit?: number,
-        ) => Array<{ slug: string; name?: string; entityType?: string; data?: object }>;
+        ) => Array<{ slug: string; name?: string; entityType?: string; data?: object; compendium?: string }>;
       }
     | undefined;
 
+  const hidden = hiddenCompendiumSet(ctx.services?.plugin?.settings);
   const out: VisibleEntry[] = [];
   for (const type of COMPENDIUM_TYPES) {
     const all = reg?.search?.("", type, ENUMERATE_LIMIT) ?? [];
     for (const ent of all) {
+      if (!entityCompendiumVisible(ent, hidden)) continue;
       const entry: EquipmentEntry = { item: `[[${ent.slug}]]` };
       const entity = (ent.data ?? {}) as never;
       const entityType = ent.entityType ?? type;

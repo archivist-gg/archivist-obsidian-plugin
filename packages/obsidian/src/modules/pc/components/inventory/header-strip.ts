@@ -20,6 +20,6 @@ export class HeaderStrip implements SheetComponent {
     strip.createDiv({ cls: "pc-header-divider" });
 
     const currency = strip.createDiv({ cls: "pc-header-currency" });
-    new CurrencyStrip().render(currency, ctx);
+    new CurrencyStrip({ interaction: "modal" }).render(currency, ctx);
   }
 }

@@ -5,6 +5,7 @@ import type { WeaponEntity } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import type { ItemEntity } from "@archivist-gg/dnd5e/item/item.types";
 import type { Character, EquipmentEntry, SlotKey } from "@archivist-gg/dnd5e/pc/pc.types";
 import { resolveEntityForEntry, defaultSlotForType, isWeaponEntity } from "@archivist-gg/dnd5e/pc/pc.slotting";
+import { COIN_KEYS, MAX_COIN, type Coin } from "./pc.coin-math";
 
 export type EquipResult =
   | { kind: "ok" }
@@ -209,9 +210,25 @@ export function clearCharges(character: Character, index: number): void {
   delete entry.state.charges;
 }
 
-export function setCurrency(character: Character, coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
+export function setCurrency(character: Character, coin: Coin, value: number): void {
   if (!character.currency) character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
   character.currency[coin] = Math.max(0, Math.floor(value));
+}
+
+/**
+ * Atomic multi-coin delta apply (coin-modal Add/Subtract). The UI pre-validates
+ * with validateAdjust so atomic-reject semantics (nothing written when any coin
+ * would leave [0, MAX_COIN]) live at the call site; the clamp here is defensive
+ * only. Fractional deltas truncate toward zero.
+ */
+export function adjustCurrency(character: Character, deltas: Partial<Record<Coin, number>>): void {
+  if (!character.currency) character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
+  for (const coin of COIN_KEYS) {
+    const delta = deltas[coin];
+    if (delta === undefined) continue;
+    const next = (character.currency[coin] ?? 0) + Math.trunc(delta);
+    character.currency[coin] = Math.max(0, Math.min(MAX_COIN, next));
+  }
 }
 
 /**

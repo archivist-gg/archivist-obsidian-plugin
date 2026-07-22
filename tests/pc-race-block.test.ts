@@ -146,3 +146,19 @@ describe("renderRaceBlock (section -> row -> expand idiom)", () => {
     expect(c.childElementCount).toBe(0);
   });
 });
+
+describe("renderRaceBlock — D1 expand persistence", () => {
+  it("re-applies the Race block open state across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const r = race();
+    const root1 = mountContainer();
+    renderRaceBlock(root1, { ...ctxWith(r), builderUiState: bag } as never);
+    (root1.querySelector(".pc-feature-row") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const root2 = mountContainer();
+    renderRaceBlock(root2, { ...ctxWith(r), builderUiState: bag } as never);
+    const expand = (root2.querySelector(".pc-feature-row") as HTMLElement)
+      .nextElementSibling as HTMLElement & { hidden: boolean };
+    expect(expand.hidden).toBe(false);
+  });
+});

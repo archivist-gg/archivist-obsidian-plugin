@@ -1,0 +1,323 @@
+/** @vitest-environment jsdom */
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { PortraitPickerModal } from "../packages/obsidian/src/modules/pc/components/portrait-picker-modal";
+import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
+import { TFile } from "obsidian";
+
+beforeAll(() => installObsidianDomHelpers());
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => vi.useRealTimers());
+
+function img(path: string, ext: string): TFile {
+  const f = new TFile();
+  f.path = path;
+  f.name = path.split("/").pop()!;
+  f.extension = ext;
+  return f;
+}
+function mockApp(files: TFile[]) {
+  return {
+    vault: {
+      getFiles: () => files,
+      getResourcePath: (f: TFile) => `app://res/${f.path}`,
+      getAbstractFileByPath: vi.fn(() => null),
+      createFolder: vi.fn(async () => undefined),
+      createBinary: vi.fn(async (path: string) => img(path, path.split(".").pop()!)),
+    },
+  };
+}
+const pcFile = img("PlayerCharacters/Test.md", "md");
+const VAULT_FILES = [
+  img("PlayerCharacters/Portraits/baelor.png", "png"),
+  img("PlayerCharacters/Portraits/zed.jpg", "jpg"),
+  img("Art/elsewhere.png", "png"),
+  img("notes/n.md", "md"),
+];
+
+function open(opts?: Partial<ConstructorParameters<typeof PortraitPickerModal>[1]>, files?: TFile[]) {
+  const app = mockApp(files ?? VAULT_FILES);
+  const modal = new PortraitPickerModal(app as never, {
+    pcFile,
+    hasPortrait: false,
+    portraitsFolder: "PlayerCharacters/Portraits",
+    isCurrentFile: () => true,
+    onPick: vi.fn(),
+    onRemove: vi.fn(),
+    ...opts,
+  } as never);
+  modal.open();
+  return { modal, el: (modal as unknown as { contentEl: HTMLElement }).contentEl, app };
+}
+const cells = (el: HTMLElement) => [
+  ...el.querySelectorAll("button.pc-portrait-picker-cell:not(.pc-portrait-picker-import)"),
+];
+
+describe("PortraitPickerModal grid stage", () => {
+  it("scopes to the portraits folder by default; import tile is first", () => {
+    const { el } = open();
+    const all = [...el.querySelectorAll("button.pc-portrait-picker-cell")];
+    expect(all[0].classList.contains("pc-portrait-picker-import")).toBe(true);
+    expect(all[0].getAttribute("aria-label")).toBe("Import image from computer");
+    expect(cells(el).map((c) => c.getAttribute("aria-label"))).toEqual([
+      "Choose baelor.png",
+      "Choose zed.jpg",
+    ]);
+  });
+  it("show-all checkbox reveals the whole vault (images only)", () => {
+    const { el } = open();
+    (el.querySelector(".pc-portrait-picker-check input") as HTMLInputElement).click();
+    expect(cells(el).length).toBe(3);
+    expect(el.textContent).toContain("elsewhere.png");
+  });
+  it("search filters the ACTIVE scope after the 150ms debounce", () => {
+    const { el } = open();
+    const input = el.querySelector("input.pc-portrait-picker-search") as HTMLInputElement;
+    input.value = "zed";
+    input.dispatchEvent(new Event("input"));
+    expect(cells(el).length).toBe(2); // not yet (debounced)
+    vi.advanceTimersByTime(160);
+    expect(cells(el).length).toBe(1);
+    expect(el.textContent).toContain("zed.jpg");
+    expect(el.querySelector(".pc-portrait-picker-import")).toBeTruthy(); // tile never filtered
+  });
+  it("caps AFTER the search filter with the hint row", () => {
+    const many = Array.from({ length: 230 }, (_, i) => img(`Art/x${String(i).padStart(3, "0")}.png`, "png"));
+    const { el } = open({}, many);
+    (el.querySelector(".pc-portrait-picker-check input") as HTMLInputElement).click();
+    expect(cells(el).length).toBe(200);
+    expect(el.textContent).toContain("More images match. Refine your search.");
+  });
+  it("empty scoped state hints at the checkbox", () => {
+    const { el } = open({}, [img("Art/only.png", "png")]);
+    expect(el.textContent).toContain("No images in PlayerCharacters/Portraits yet.");
+    expect(el.textContent).toContain("Show all vault images");
+  });
+  it("Remove appears in the footer only when hasPortrait, and fires onRemove", () => {
+    const none = open();
+    expect(none.el.querySelector(".pc-portrait-picker-remove")).toBeNull();
+    const onRemove = vi.fn();
+    const { el } = open({ hasPortrait: true, onRemove });
+    (el.querySelector(".pc-portrait-picker-remove") as HTMLElement).click();
+    expect(onRemove).toHaveBeenCalledTimes(1);
+  });
+  it("search input carries the parchment class (styling hook)", () => {
+    const { el } = open();
+    expect(el.querySelector("input.pc-portrait-picker-search")).toBeTruthy();
+  });
+  it("caches the candidate list per scope state; search doesn't re-derive it from the vault", () => {
+    const files = [img("PlayerCharacters/Portraits/baelor.png", "png")];
+    const { el } = open({}, files);
+    expect(cells(el).length).toBe(1);
+    files.push(img("PlayerCharacters/Portraits/new.png", "png")); // vault "changes" post-open
+    const input = el.querySelector("input.pc-portrait-picker-search") as HTMLInputElement;
+    input.value = "png";
+    input.dispatchEvent(new Event("input"));
+    vi.advanceTimersByTime(160);
+    expect(cells(el).length).toBe(1); // still the cached list, not re-fetched
+  });
+  it("a search that empties a non-empty scope shows the generic no-match text, not the show-all hint", () => {
+    const { el } = open();
+    const input = el.querySelector("input.pc-portrait-picker-search") as HTMLInputElement;
+    input.value = "nonexistent";
+    input.dispatchEvent(new Event("input"));
+    vi.advanceTimersByTime(160);
+    expect(el.textContent).toContain("No images match.");
+    expect(el.textContent).not.toContain("Tick 'Show all vault images'");
+  });
+});
+
+describe("PortraitPickerModal crop stage", () => {
+  it("cell click swaps to the crop stage; commit disabled before image load", () => {
+    const { el } = open();
+    (cells(el)[0] as HTMLElement).click();
+    expect(el.querySelector(".pc-portrait-crop-img")).toBeTruthy();
+    const use = [...el.querySelectorAll("button")].find((b) => b.textContent === "Use this framing")!;
+    expect((use as HTMLButtonElement).disabled).toBe(true);
+    expect(el.querySelector(".pc-portrait-picker-grid")).toBeNull();
+  });
+  it("Back returns to the grid without committing", () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    ([...el.querySelectorAll("button")].find((b) => b.textContent === "Back") as HTMLElement).click();
+    expect(el.querySelector(".pc-portrait-picker-grid")).toBeTruthy();
+    expect(onPick).not.toHaveBeenCalled();
+  });
+  it("import defers createBinary: nothing written on Back", async () => {
+    const { el, app } = open();
+    const fi = el.querySelector("input[type='file']") as HTMLInputElement;
+    expect(fi.getAttribute("accept")).toBe(".png,.jpg,.jpeg,.webp,.gif,.svg,.avif,.bmp");
+    const file = new File([new Uint8Array([1])], "new.png", { type: "image/png" });
+    Object.defineProperty(fi, "files", { value: [file] });
+    fi.dispatchEvent(new Event("change"));
+    await vi.advanceTimersByTimeAsync(10);
+    expect(el.querySelector(".pc-portrait-crop-img")).toBeTruthy();
+    ([...el.querySelectorAll("button")].find((b) => b.textContent === "Back") as HTMLElement).click();
+    expect(app.vault.createBinary).not.toHaveBeenCalled();
+  });
+  it("isCurrentFile=false blocks a vault-pick commit", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick, isCurrentFile: () => false });
+    (cells(el)[0] as HTMLElement).click();
+    const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+    Object.defineProperty(im, "naturalWidth", { value: 100 });
+    Object.defineProperty(im, "naturalHeight", { value: 100 });
+    im.dispatchEvent(new Event("load"));
+    const use = [...el.querySelectorAll("button")].find(
+      (b) => b.textContent === "Use this framing",
+    ) as HTMLButtonElement;
+    use.click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(onPick).not.toHaveBeenCalled();
+  });
+  it("default framing commits crop=null (cover)", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+    Object.defineProperty(im, "naturalWidth", { value: 100 });
+    Object.defineProperty(im, "naturalHeight", { value: 100 });
+    im.dispatchEvent(new Event("load"));
+    const use = [...el.querySelectorAll("button")].find(
+      (b) => b.textContent === "Use this framing",
+    ) as HTMLButtonElement;
+    expect(use.disabled).toBe(false);
+    use.click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0][0].path).toBe("PlayerCharacters/Portraits/baelor.png");
+    expect(onPick.mock.calls[0][1]).toBeNull();
+  });
+  it("import commit creates the binary in the portraits folder and picks it", async () => {
+    const onPick = vi.fn();
+    const { el, app } = open({ onPick });
+    const fi = el.querySelector("input[type='file']") as HTMLInputElement;
+    const file = new File([new Uint8Array([1])], "new.png", { type: "image/png" });
+    Object.defineProperty(fi, "files", { value: [file] });
+    fi.dispatchEvent(new Event("change"));
+    await vi.advanceTimersByTimeAsync(10);
+    const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+    Object.defineProperty(im, "naturalWidth", { value: 100 });
+    Object.defineProperty(im, "naturalHeight", { value: 100 });
+    im.dispatchEvent(new Event("load"));
+    (
+      [...el.querySelectorAll("button")].find((b) => b.textContent === "Use this framing") as HTMLButtonElement
+    ).click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(app.vault.createBinary).toHaveBeenCalledTimes(1);
+    expect(app.vault.createBinary.mock.calls[0][0]).toBe("PlayerCharacters/Portraits/new.png");
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0][0].path).toBe("PlayerCharacters/Portraits/new.png");
+  });
+});
+
+function loadCropImage(el: HTMLElement, nw: number, nh: number): HTMLImageElement {
+  const im = el.querySelector(".pc-portrait-crop-img") as HTMLImageElement;
+  Object.defineProperty(im, "naturalWidth", { value: nw });
+  Object.defineProperty(im, "naturalHeight", { value: nh });
+  im.dispatchEvent(new Event("load"));
+  return im;
+}
+// jsdom lacks PointerEvent; the modal only reads pointerId/clientX/clientY and
+// guards setPointerCapture, so a MouseEvent with the pointer type name works.
+const ptr = (type: string, x: number, y: number) => new MouseEvent(type, { clientX: x, clientY: y });
+const useBtn = (el: HTMLElement) =>
+  [...el.querySelectorAll("button")].find((b) => b.textContent === "Use this framing") as HTMLButtonElement;
+
+// jsdom has no layout (getBoundingClientRect() is all zeros), so these drive
+// the modal's FALLBACK dims derivation: 2000x500 -> height cap 320 gives
+// 1280x320, then the 432 width cap (.pc-portrait-picker-body) re-derives
+// 432x108. The default-cover commit is scale-invariant (regression guard); the
+// dragged commit is the real detector: without the width cap the space is
+// 1280x320 (cover marquee mx=480 side=320) and x would commit as 380/1280.
+describe("PortraitPickerModal crop stage wide-image containment", () => {
+  it("wide image: default framing still commits crop=null (cover)", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    loadCropImage(el, 2000, 500);
+    useBtn(el).click();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0][1]).toBeNull();
+  });
+  it("wide image: dragged marquee converts against the CLAMPED dispW=432", async () => {
+    const onPick = vi.fn();
+    const { el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    loadCropImage(el, 2000, 500);
+    const marquee = el.querySelector(".pc-portrait-crop-marquee") as HTMLElement;
+    // Clamped dims 432x108 -> default cover marquee mx=162, my=0, side=108.
+    expect(marquee.style.getPropertyValue("--pc-crop-side")).toBe("108px");
+    expect(marquee.style.getPropertyValue("--pc-crop-mx")).toBe("162px");
+    marquee.dispatchEvent(ptr("pointerdown", 200, 50));
+    marquee.dispatchEvent(ptr("pointermove", 100, 50)); // dx -100 -> mx 62
+    marquee.dispatchEvent(ptr("pointerup", 100, 50));
+    expect(marquee.style.getPropertyValue("--pc-crop-mx")).toBe("62px");
+    useBtn(el).click();
+    await vi.advanceTimersByTimeAsync(10);
+    const crop = onPick.mock.calls[0][1] as { x: number; y: number; size: number };
+    expect(crop.x).toBeCloseTo(62 / 432, 6);
+    expect(crop.y).toBe(0);
+    expect(crop.size).toBeCloseTo(0.25, 6);
+  });
+  it("commit re-clamps a stale out-of-bounds marquee to the refreshed dims (window shrink)", async () => {
+    const onPick = vi.fn();
+    const { modal, el } = open({ onPick });
+    (cells(el)[0] as HTMLElement).click();
+    loadCropImage(el, 2000, 500); // fallback dims 432x108
+    // A live window shrink re-renders the responsive img smaller with NO
+    // gesture, so the marquee px go stale. jsdom's natural-based fallback
+    // can't reproduce the resize itself, so plant the stale state directly:
+    // marquee px valid only in a larger, pre-shrink space.
+    (modal as unknown as { marquee: { mx: number; my: number; side: number } }).marquee = {
+      mx: 400,
+      my: 60,
+      side: 200,
+    };
+    useBtn(el).click();
+    await vi.advanceTimersByTimeAsync(10);
+    const crop = onPick.mock.calls[0][1] as { x: number; y: number; size: number };
+    // Re-clamped against 432x108: side -> min(200, 432, 108) = 108,
+    // mx -> clamp(400, 0, 324) = 324, my -> clamp(60, 0, 0) = 0.
+    expect(crop.size).toBeCloseTo(108 / 432, 6);
+    expect(crop.x).toBeCloseTo(324 / 432, 6);
+    expect(crop.y).toBe(0);
+    // The stored-value invariant parseCropValue enforces on read.
+    expect(crop.x + crop.size).toBeLessThanOrEqual(1 + 0.005);
+  });
+});
+
+// CSS-source contract (jsdom has no layout; pattern: pc-portrait-crop-render
+// .test.ts). The TS fallback derivation MUST mirror these rules or rendered
+// dims diverge from derived dims and every committed crop fraction is wrong
+// (the P4b framing-defect class): body width 432px == MAX_DISPLAY_WIDTH,
+// max-height 320px == MAX_DISPLAY_HEIGHT.
+describe("portrait picker crop-stage CSS contract", () => {
+  const cssPath = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles/components.css");
+  const ruleOf = (selector: string): string => {
+    const css = readFileSync(cssPath, "utf8");
+    const match = css.match(new RegExp(selector.replace(/[.\\[\]()]/g, "\\$&") + "\\s*\\{([^}]+)\\}"));
+    expect(match, `${selector} rule missing from components.css`).toBeTruthy();
+    return (match as RegExpMatchArray)[1];
+  };
+  it("crop img is capped on BOTH axes (fits inside the modal body)", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-img");
+    expect(body).toMatch(/max-width:\s*100%/);
+    expect(body).toMatch(/max-height:\s*320px/);
+  });
+  it("stage's fit-content is capped so the img's max-width: 100% resolves to the body width", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-stage");
+    expect(body).toMatch(/max-width:\s*100%/);
+  });
+  it("body width matches the TS MAX_DISPLAY_WIDTH fallback (432)", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-picker-body");
+    expect(body).toMatch(/width:\s*432px/);
+  });
+  it("marquee is a circle (border-radius: 50%)", () => {
+    const body = ruleOf(".pc-portrait-picker .pc-portrait-crop-marquee");
+    expect(body).toMatch(/border-radius:\s*50%/);
+  });
+});

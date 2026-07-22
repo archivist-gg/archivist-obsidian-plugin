@@ -3,6 +3,7 @@ import type { DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { Ability } from "@archivist-gg/dnd5e";
 import type { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
 import { DecisionPickModal } from "../builder/decision-modal";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 // `search("", "spell", ENUMERATE_LIMIT)` is the empty-query enumeration shim (see
 // browse-mode.ts collectCompendiumItems): the registry has no getAllByType, and
@@ -31,8 +32,13 @@ export function buildScrollSpellCandidates(
   reg: EntityRegistry,
   scrollLevel: number,
   charEdition: string,
+  hidden: ReadonlySet<string> = new Set(),
+  keepSlug: string | null = null,
 ): RegisteredEntity[] {
   return reg.search("", "spell", ENUMERATE_LIMIT).filter((e) => {
+    // Hidden compendiums drop out unless this is the currently-assigned spell
+    // (selected-exemption); the level/edition gates below apply to everyone.
+    if (!entityCompendiumVisible(e, hidden) && e.slug !== keepSlug) return false;
     const data = e.data as { level?: number; edition?: unknown };
     return (data.level ?? 0) === scrollLevel && editionMatches(data.edition, charEdition);
   });
@@ -70,8 +76,11 @@ export function openScrollSpellPicker(
   const editState = ctx.editState;
   if (!reg || !editState) return;
 
-  const candidates = buildScrollSpellCandidates(reg, scrollLevel, ctx.resolved.definition.edition);
   const current = ctx.resolved.definition.equipment?.[entryIndex]?.overrides?.spell;
+  const hidden = hiddenCompendiumSet(ctx.services?.plugin?.settings);
+  const candidates = buildScrollSpellCandidates(
+    reg, scrollLevel, ctx.resolved.definition.edition, hidden, current ? stripSlug(current) : null,
+  );
   const levelLabel = scrollLevel === 0 ? "cantrip" : `level ${scrollLevel}`;
 
   new DecisionPickModal(ctx.app, ctx, {

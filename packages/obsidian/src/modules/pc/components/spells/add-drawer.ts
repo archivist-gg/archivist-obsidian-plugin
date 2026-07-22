@@ -10,6 +10,7 @@ import {
 import { compareCandidates } from "@archivist-gg/dnd5e/spell/spell.filter";
 import type { SortKey } from "@archivist-gg/dnd5e/spell/spell.filter";
 import { confirmResetFilters } from "./reset-filters-modal";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 /** How many rows to show initially, and how many each "Load more" reveals. */
 const PAGE = 50;
@@ -240,7 +241,13 @@ export function renderAddDrawer(parent: HTMLElement, ctx: ComponentRenderContext
     if (state.moreOpen) renderMorePanel(panelHost, state, draw);
 
     const known = knownSet();
+    // Hidden compendiums (R3-P6): SpellCandidate carries no compendium, so
+    // re-derive it via the registry's O(1) slug lookup. Known spells are exempt
+    // (selected-exemption): their ✓ rows must stay removable here.
+    const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
     const all = classSpellCandidates(ctx.services.entities, classSlugs, maxLevel, new Set(), state.showAll, state.query)
+      .filter((c) => known.has(c.slug) ||
+        entityCompendiumVisible(ctx.services.entities.getBySlug(c.slug) ?? {}, hidden))
       .filter((c) => matchesFilters(c, state))
       .sort((a, b) => compareCandidates(a, b, state.sortKey, state.sortDir));
     const shown = getShown();

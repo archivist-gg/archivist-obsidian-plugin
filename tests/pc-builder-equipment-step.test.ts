@@ -1,9 +1,10 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderEquipmentStep } from "../packages/obsidian/src/modules/pc/components/builder/equipment-step";
+import { renderEquipmentStep, seedRegistry } from "../packages/obsidian/src/modules/pc/components/builder/equipment-step";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -216,5 +217,25 @@ describe("renderEquipmentStep", () => {
       classes: [{ entity: classEntity, level: 1, subclass: null, choices: { 1: {} } }],
     });
     expect(() => renderEquipmentStep(c, x)).not.toThrow();
+  });
+
+  // R3-P6 non-site regression guard: class-GRANTED starting equipment must resolve
+  // from ANY compendium, including a hidden one. seedRegistry reads the registry
+  // directly and never consults hiddenCompendiums; this catches a FUTURE accidental
+  // filter leaked into that non-site path. Non-vacuous: chain-mail's compendium
+  // ("SRD 5e") IS in the hidden set, so a wrongly-added visibility filter would
+  // drop it and lookup would return null.
+  it("seedRegistry grant resolution ignores compendium visibility (non-site guard)", () => {
+    const registry = buildMockRegistry([
+      { slug: "srd-5e_armor_chain-mail", name: "Chain Mail", entityType: "armor",
+        data: {}, compendium: "SRD 5e" },
+    ]);
+    const x = {
+      services: { entities: registry, plugin: { settings: { hiddenCompendiums: ["SRD 5e"] } } },
+    } as unknown as ComponentRenderContext;
+    const seed = seedRegistry(x);
+    // bareEntitySlug strips the 3-part namespaced slug down to "chain-mail".
+    expect(seed.lookup("chain-mail")).not.toBeNull();
+    expect(seed.lookup("chain-mail")!.fullSlug).toBe("srd-5e_armor_chain-mail");
   });
 });

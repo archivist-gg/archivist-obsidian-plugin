@@ -5,6 +5,7 @@ import type { GrantedEntry } from "./builder/equipment-seed";
 import type { ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { characterToYaml } from "./pc.yaml-serializer";
 import * as eq from "./pc.equipment-edit";
+import type { Coin } from "./pc.coin-math";
 import { resolveEntityForEntry } from "@archivist-gg/dnd5e/pc/pc.slotting";
 import { computeRestPlan, type RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { applyRestResets } from "./pc.rest";
@@ -98,6 +99,45 @@ export class CharacterEditState {
   clearMaxHpOverride(): void {
     if (!this.character.overrides.hp) { this.onChange(); return; }
     delete this.character.overrides.hp.max;
+    if (Object.keys(this.character.overrides.hp).length === 0) {
+      delete this.character.overrides.hp;
+    }
+    this.onChange();
+  }
+
+  /** Record the rolled hit-dice sum (replaces the PHB-average dice component).
+   *  Does NOT clamp current: computed-max drops follow the exhaustion
+   *  convention (tolerated until the next heal). */
+  setRolledHp(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.max(1, Math.floor(value));
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.rolled = next;
+    this.onChange();
+  }
+
+  clearRolledHp(): void {
+    if (!this.character.overrides.hp) { this.onChange(); return; }
+    delete this.character.overrides.hp.rolled;
+    if (Object.keys(this.character.overrides.hp).length === 0) {
+      delete this.character.overrides.hp;
+    }
+    this.onChange();
+  }
+
+  /** In-game max-HP adjustment (Aid, life drain). 0 clears. No current clamp. */
+  setHpModifier(value: number): void {
+    if (!Number.isFinite(value)) return;
+    const next = Math.trunc(value);
+    if (next === 0) { this.clearHpModifier(); return; }
+    if (!this.character.overrides.hp) this.character.overrides.hp = {};
+    this.character.overrides.hp.modifier = next;
+    this.onChange();
+  }
+
+  clearHpModifier(): void {
+    if (!this.character.overrides.hp) { this.onChange(); return; }
+    delete this.character.overrides.hp.modifier;
     if (Object.keys(this.character.overrides.hp).length === 0) {
       delete this.character.overrides.hp;
     }
@@ -847,8 +887,15 @@ export class CharacterEditState {
     this.onChange();
   }
 
-  setCurrency(coin: "pp" | "gp" | "ep" | "sp" | "cp", value: number): void {
+  setCurrency(coin: Coin, value: number): void {
     eq.setCurrency(this.character, coin, value);
+    this.onChange();
+  }
+
+  /** Atomic multi-coin apply: one mutation → ONE persist/re-render, instead of
+   *  up to five sequential setCurrency round-trips. */
+  adjustCurrency(deltas: Partial<Record<Coin, number>>): void {
+    eq.adjustCurrency(this.character, deltas);
     this.onChange();
   }
 

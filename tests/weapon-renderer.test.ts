@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { renderWeaponBlock } from "../packages/obsidian/src/modules/weapon/weapon.renderer";
 import { parseWeapon } from "@archivist-gg/dnd5e/weapon/weapon.parser";
-import { LONGSWORD, DAGGER, NET, LANCE } from "./fixtures/weapon";
+import { LONGSWORD, DAGGER, LONGBOW, NET, LANCE } from "./fixtures/weapon";
 
 beforeEach(() => {
   document.body.replaceChildren();
@@ -22,11 +22,24 @@ describe("renderWeaponBlock", () => {
     expect(el.textContent).toContain("Versatile");
   });
 
-  it("renders Dagger with range", () => {
+  it("renders Dagger: thrown-melee range line and corrected category", () => {
     const el = renderFromYaml(DAGGER);
-    expect(el.textContent).toContain("20 / 60 ft");
+    expect(el.textContent).toContain("5 ft · thrown 20/60 ft");
+    expect(el.textContent).toContain("Simple Melee"); // corrected category (fixture is simple-ranged)
     expect(el.textContent).toContain("Finesse");
     expect(el.textContent).toContain("Thrown");
+  });
+
+  it("renders melee-only weapon (no range struct) with a 5 ft range line", () => {
+    const el = renderFromYaml(LONGSWORD);
+    expect(el.textContent).toContain("5 ft");
+  });
+
+  it("renders pure-ranged weapon: N/M ft line, no thrown, unchanged category", () => {
+    const el = renderFromYaml(LONGBOW);
+    expect(el.textContent).toContain("150/600 ft");
+    expect(el.textContent).not.toContain("thrown");
+    expect(el.textContent).toContain("Martial Ranged");
   });
 
   it("renders Net with em-dash for damage-less weapon", () => {

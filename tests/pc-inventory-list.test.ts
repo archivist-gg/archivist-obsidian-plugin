@@ -155,3 +155,34 @@ describe("InventoryList", () => {
     expect(name?.classList.contains("rarity-rare")).toBe(true);
   });
 });
+
+describe("InventoryList — D1 expand persistence", () => {
+  it("re-applies an expanded row across a re-render with the same builderUiState bag", () => {
+    const bag = new Map<string, unknown>();
+    const root1 = mountContainer();
+    new InventoryList().render(root1, { ...ctx(baseChar()), builderUiState: bag });
+    (root1.querySelector(".pc-inv-row") as HTMLElement).click();
+    expect(root1.querySelectorAll(".pc-inv-expand")).toHaveLength(1);
+
+    const root2 = mountContainer();
+    new InventoryList().render(root2, { ...ctx(baseChar()), builderUiState: bag });
+    expect(root2.querySelectorAll(".pc-inv-expand")).toHaveLength(1);
+  });
+
+  it("self-heals: a stale persisted key whose slug no longer matches its index is collapsed (no throw)", () => {
+    // Seed the bag with an expand for an item that will NOT be at that index now.
+    const bag = new Map<string, unknown>([["rowexpand.inv:0:gone-item", true]]);
+    const root = mountContainer();
+    expect(() =>
+      new InventoryList().render(root, { ...ctx(baseChar()), builderUiState: bag }),
+    ).not.toThrow();
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(0);
+  });
+
+  it("still expands with NO bag (render-scoped fallback preserves the legacy path)", () => {
+    const root = mountContainer();
+    new InventoryList().render(root, ctx(baseChar())); // no builderUiState
+    (root.querySelector(".pc-inv-row") as HTMLElement).click();
+    expect(root.querySelectorAll(".pc-inv-expand")).toHaveLength(1);
+  });
+});

@@ -4,6 +4,8 @@ import type { ComponentRegistry } from "./components/component-registry";
 import type { ComponentRenderContext } from "./components/component.types";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "./pc.edit-state";
+import type { CropParams } from "./pc.portrait";
+import { closeCoinModal } from "./components/coin-modal";
 
 export interface RenderSheetOptions {
   root: HTMLElement;
@@ -26,6 +28,16 @@ export interface RenderSheetOptions {
   onActiveStepChange?: (stepId: string) => void;
   /** Per-file transient Builder UI state bag (lifted to PCSheetView). */
   builderUiState?: Map<string, unknown>;
+  /** Resolved portrait image URL for the header avatar, or null/undefined for
+   *  the d20 placeholder icon. */
+  portraitUrl?: string | null;
+  /** Square-crop region for the portrait image, or null/undefined to fall
+   *  back to the default `object-fit: cover` framing. Ignored when
+   *  `portraitUrl` is unset. */
+  portraitCrop?: CropParams | null;
+  /** Callback fired when the user clicks the header avatar to change the
+   *  portrait. */
+  onOpenPortraitPicker?: () => void;
 }
 
 /**
@@ -61,10 +73,17 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     activeStepId: opts.activeStepId,
     onActiveStepChange: opts.onActiveStepChange,
     builderUiState: opts.builderUiState,
+    portraitUrl: opts.portraitUrl,
+    portraitCrop: opts.portraitCrop,
+    onOpenPortraitPicker: opts.onOpenPortraitPicker,
   };
 
   // Class-less character → render the Builder shell instead of the sheet.
   if (isBuilder) {
+    // Most builder steps render no CurrencyStrip, so an open coin modal
+    // would have no refresh source and could go stale after its own writes —
+    // close it on builder entry.
+    closeCoinModal();
     safeRender(sheet, "pc-builder-host", "builder", registry, ctx, { wrap: false });
     root.scrollTop = prevScroll;
     return;

@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@archivist-gg/core": "^0.1.0",
-    "@archivist-gg/dnd5e": "^0.2.0",
+    "@archivist-gg/dnd5e": "^0.3.0",
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.38.6",

@@ -5,6 +5,9 @@ import {
   type CompendiumTickState,
 } from "./compendium-filter";
 import { renderSelectionTable, type ColSpec } from "./selection-table";
+import {
+  hiddenCompendiumSet, entityCompendiumVisible, visibleCompendiums,
+} from "../../../../shared/entities/compendium-visibility";
 
 /** Reserved for the pinned ✦ Create-homebrew entry (parent spec §6). The
  *  Builder renders these in Plan 6; the option exists now so call-sites are
@@ -61,7 +64,12 @@ export function renderEntityPicker(
     (bag?.get(opts.stateKey) as PickerUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
-  const compendiums = ctx.services.compendiums.getAll();
+  // Hidden compendiums (R3-P6): removed from the chip list AND hard-filtered
+  // from candidates so stale persisted ticks can't resurrect them. The current
+  // selection is exempt from BOTH gates (selected-exemption): its seal row and
+  // resting expansion must survive hiding.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+  const compendiums = visibleCompendiums(ctx.services.compendiums.getAll(), hidden);
   if (!st.ticked) st.ticked = allTicked(compendiums);
 
   const root = parent.createDiv({ cls: "pc-bpicker" });
@@ -80,7 +88,11 @@ export function renderEntityPicker(
 
     const cands = ctx.services.entities
       .search(st.query, opts.entityType, Number.POSITIVE_INFINITY)
-      .filter((e) => matchesTicked(e, st.ticked!))
+      .filter(
+        (e) =>
+          (entityCompendiumVisible(e, hidden) && matchesTicked(e, st.ticked!)) ||
+          e.slug === opts.selectedSlug,
+      )
       .filter((e) => !opts.exclude?.has(e.slug));
     renderSelectionTable(tableHost, ctx, {
       columns: opts.columns ?? [],

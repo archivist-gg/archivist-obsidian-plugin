@@ -54,6 +54,17 @@ describe("buildIdentifyCandidates", () => {
       "potion-of-healing",
     ]);
   });
+
+  it("hidden-compendium items are excluded from identify candidates (F5)", () => {
+    const local = buildMockRegistry([
+      { slug: "srd-5e_weapon_longsword", name: "Longsword", entityType: "weapon",
+        data: {}, compendium: "SRD 5e" },
+      { slug: "srd-2024_weapon_longsword", name: "Longsword", entityType: "weapon",
+        data: {}, compendium: "SRD 2024" },
+    ]);
+    const out = buildIdentifyCandidates(local, "weapon", new Set(["SRD 5e"]));
+    expect(out.map((e) => e.slug)).toEqual(["srd-2024_weapon_longsword"]);
+  });
 });
 
 describe("openIdentifyPicker", () => {

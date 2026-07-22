@@ -36,4 +36,14 @@ describe("HeaderStrip", () => {
     expect(onPickEmpty).toHaveBeenCalledTimes(1);
     expect(onPickEmpty).toHaveBeenCalledWith(0);
   });
+
+  it("constructs the currency strip in modal mode (clickable row, no inline inputs)", () => {
+    const root = mountContainer();
+    new HeaderStrip().render(root, {
+      ...makeCtx(),
+      editState: { setCurrency: vi.fn() } as never,
+    } as ComponentRenderContext);
+    expect(root.querySelector(".pc-header-currency .pc-currency-row.pc-currency-clickable")).toBeTruthy();
+    expect(root.querySelector(".pc-header-currency input")).toBeNull();
+  });
 });

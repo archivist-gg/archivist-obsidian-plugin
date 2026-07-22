@@ -7,6 +7,9 @@ import {
 } from "./compendium-filter";
 import { renderSelectionTable } from "./selection-table";
 import { applyChoiceToggle } from "./decision-strip";
+import {
+  hiddenCompendiumSet, entityCompendiumVisible, visibleCompendiums,
+} from "../../../../shared/entities/compendium-visibility";
 
 export interface DecisionPickBodyOptions {
   /** Modal heading + the strip's tlabel sentence, e.g. "Weapon Mastery — choose 3". */
@@ -51,7 +54,12 @@ export function renderDecisionPickBody(
     (bag?.get(opts.stateKey) as PickUiState | undefined) ?? { query: "", ticked: null };
   bag?.set(opts.stateKey, st);
 
-  const compendiums = ctx.services.compendiums.getAll();
+  // Hidden compendiums (R3-P6): chips omit hidden names; the candidate chain is
+  // self-protecting (callers pre-filter today · decision-strip, scroll-spell-,
+  // identify-item-picker · but a future caller must not leak hidden rows).
+  // Selected entities are exempt (selected-exemption).
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+  const compendiums = visibleCompendiums(ctx.services.compendiums.getAll(), hidden);
   if (!st.ticked) st.ticked = allTicked(compendiums);
 
   // Const-indirection so the sentence-case UI lint (bare-literal only) leaves
@@ -85,7 +93,11 @@ export function renderDecisionPickBody(
     const q = st.query.trim().toLowerCase();
     const cands = opts.candidates
       .filter((e) => !q || e.name.toLowerCase().includes(q))
-      .filter((e) => matchesTicked(e, st.ticked!));
+      .filter(
+        (e) =>
+          (entityCompendiumVisible(e, hidden) && matchesTicked(e, st.ticked!)) ||
+          selected.has(e.slug),
+      );
 
     renderSelectionTable(tableHost, ctx, {
       columns: [],

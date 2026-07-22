@@ -39,7 +39,11 @@ export function resolveGrants(
     entries.push({ slug: r.fullSlug, qty, equipped: slot !== null, slot });
   };
   const pushFull = (full: string) => {
-    const bare = full.includes("_") ? full.slice(full.indexOf("_") + 1) : full;
+    // Arity-robust prefix strip: a full slug is `<prefix>_<type>_<name>` (3-part)
+    // or the legacy `<prefix>_<name>` (2-part); a bare slug has no `_`. Name-slugs
+    // never contain `_`, so `parts.slice(2).join("_")` is the bare name for 3-part.
+    const p = full.split("_");
+    const bare = p.length >= 3 ? p.slice(2).join("_") : p[p.length - 1];
     pushBare(bare, 1);
   };
   for (const g of grants) {

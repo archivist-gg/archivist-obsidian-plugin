@@ -8,7 +8,9 @@ export default defineConfig({
     // test trees; without this, vitest discovers them and double-runs / pollutes
     // the suite. They have their own package.json + vitest config and are run
     // from within their own checkout, never from the root.
-    exclude: [...configDefaults.exclude, "**/.worktrees/**"],
+    // scratchpad/ holds throwaway probe/migration scripts (some are node:test,
+    // not vitest) — never part of the suite.
+    exclude: [...configDefaults.exclude, "**/.worktrees/**", "**/scratchpad/**"],
   },
   resolve: {
     alias: {

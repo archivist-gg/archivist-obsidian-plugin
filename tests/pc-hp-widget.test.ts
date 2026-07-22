@@ -4,6 +4,13 @@ import { HpWidget } from "../packages/obsidian/src/modules/pc/components/hp-widg
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
+const openMaxHpModalMock = vi.hoisted(() => vi.fn());
+const refreshMaxHpModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/max-hp-modal", () => ({
+  openMaxHpModal: openMaxHpModalMock,
+  refreshMaxHpModal: refreshMaxHpModalMock,
+}));
+
 beforeAll(() => installObsidianDomHelpers());
 
 function ctx(hp: { current: number; max: number; temp: number }): ComponentRenderContext {
@@ -23,6 +30,14 @@ describe("HpWidget", () => {
     expect(wrap?.querySelector(".pc-hp-max .pc-hp-val")?.textContent).toBe("71");
     expect(wrap?.querySelector(".pc-hp-temp .pc-hp-val")?.textContent).toBe("—");
     expect(wrap?.querySelector(".pc-hp-label")?.textContent).toBe("HIT POINTS");
+  });
+
+  it("render calls refreshMaxHpModal(ctx) on every render, including read-mode", () => {
+    refreshMaxHpModalMock.mockClear();
+    const root = mountContainer();
+    const c = ctx({ current: 71, max: 71, temp: 0 });
+    new HpWidget().render(root, c);
+    expect(refreshMaxHpModalMock).toHaveBeenCalledWith(c);
   });
 
   it("shows numeric TEMP when > 0", () => {
@@ -334,16 +349,23 @@ describe("HpWidget — click-to-edit numerics (SP4b)", () => {
     expect(editState.setCurrentHp).toHaveBeenCalledWith(15);
   });
 
-  it("click MAX value opens input, Enter commits via setMaxHpOverride", () => {
+  it("clicking the MAX tile calls openMaxHpModal(ctx)", () => {
+    openMaxHpModalMock.mockClear();
     const root = mountContainer();
-    const { ctx, editState } = interactiveCtx({ current: 20, max: 30, temp: 0 });
+    const { ctx } = interactiveCtx({ current: 20, max: 30, temp: 0 });
+    new HpWidget().render(root, ctx);
+    const tile = root.querySelector<HTMLElement>(".pc-hp-col.pc-hp-max")!;
+    tile.click();
+    expect(openMaxHpModalMock).toHaveBeenCalledWith(ctx);
+  });
+
+  it("clicking .pc-hp-max .pc-hp-val does NOT spawn input.pc-edit-inline (MAX no longer inline-edits)", () => {
+    const root = mountContainer();
+    const { ctx } = interactiveCtx({ current: 20, max: 30, temp: 0 });
     new HpWidget().render(root, ctx);
     const val = root.querySelector<HTMLElement>(".pc-hp-max .pc-hp-val")!;
     val.click();
-    const input = root.querySelector<HTMLInputElement>(".pc-hp-max input.pc-edit-inline")!;
-    input.value = "40";
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
-    expect(editState.setMaxHpOverride).toHaveBeenCalledWith(40);
+    expect(root.querySelector(".pc-hp-max input.pc-edit-inline")).toBeNull();
   });
 
   it("click TEMP opens input with 0 when display shows dash", () => {
@@ -366,12 +388,14 @@ describe("HpWidget — click-to-edit numerics (SP4b)", () => {
     expect(mark!.textContent).toBe("*");
   });
 
-  it("click on MAX override mark calls clearMaxHpOverride", () => {
+  it("click on MAX override mark does NOT call clearMaxHpOverride and DOES open the modal (no own handler, bubbles to tile)", () => {
+    openMaxHpModalMock.mockClear();
     const root = mountContainer();
     const { ctx, editState } = interactiveCtx({ current: 20, max: 40, temp: 0 }, 40);
     new HpWidget().render(root, ctx);
     root.querySelector<HTMLElement>(".pc-hp-max .archivist-override-mark")!.click();
-    expect(editState.clearMaxHpOverride).toHaveBeenCalledTimes(1);
+    expect(editState.clearMaxHpOverride).not.toHaveBeenCalled();
+    expect(openMaxHpModalMock).toHaveBeenCalledWith(ctx);
   });
 
   it("unconscious mode does NOT render editable CURRENT/MAX/TEMP inputs", () => {

@@ -25,7 +25,45 @@ export interface Compendium {
   description: string;
   readonly: boolean;
   homebrew: boolean;
+  /** Hidden from pickers/suggest surfaces (R3-P7 F4). Durable twin of
+   *  `settings.hiddenCompendiums` membership; the settings array remains the
+   *  runtime cache every filter site reads. */
+  hidden: boolean;
+  /** True when `_compendium.md` carried an explicit boolean `hidden:` key.
+   *  Load-time reconciliation treats declared file values as authoritative
+   *  and seeds the file when undeclared-but-settings-hidden. */
+  hiddenDeclared?: boolean;
   folderPath: string;
+}
+
+// ---------------------------------------------------------------------------
+// buildHomebrewSlug
+// ---------------------------------------------------------------------------
+
+/**
+ * Mints the base slug for a newly saved homebrew entity, type-namespaced as
+ * `<compendium-prefix>_<entity-type>_<name-slug>` (matching the SRD build-time
+ * generator). The compendium prefix keeps slugs globally unique across
+ * compendiums; the entity-type token disambiguates same-name entities of
+ * different kinds (e.g. the Shield armor vs. the Shield spell). Callers must
+ * still pass the result through `ensureUniqueSlug` to resolve in-compendium
+ * same-type duplicates.
+ *
+ * All live call sites pass a singular canonical presenter `type`
+ * (armor|weapon|item|spell|monster|class|subclass|background|race|feat|
+ * optional-feature|condition). Defensively, the one legacy alias "magic-item"
+ * is normalized to "item", then the token is slugified so it is always
+ * file-safe (slugify preserves hyphens, so "optional-feature" is unchanged).
+ */
+export function buildHomebrewSlug(args: {
+  compendium: string;
+  entityType: string;
+  name: string;
+}): string {
+  const normalizedType =
+    args.entityType === "magic-item" ? "item" : args.entityType;
+  const type = slugify(normalizedType);
+  return `${slugify(args.compendium)}_${type}_${slugify(args.name)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -66,12 +104,16 @@ export function parseCompendiumMetadata(
     typeof parsed.readonly === "boolean" ? parsed.readonly : false;
   const homebrew =
     typeof parsed.homebrew === "boolean" ? parsed.homebrew : true;
+  const hiddenDeclared = typeof parsed.hidden === "boolean";
+  const hidden = hiddenDeclared ? (parsed.hidden as boolean) : false;
 
   return {
     name,
     description,
     readonly,
     homebrew,
+    hidden,
+    hiddenDeclared,
     folderPath,
   };
 }
@@ -90,6 +132,7 @@ export function generateCompendiumMetadata(comp: Compendium): string {
     name: comp.name,
     description: comp.description,
     readonly: comp.readonly,
+    hidden: comp.hidden,
     homebrew: comp.homebrew,
   };
   const fm = yaml.dump(frontmatter, {
@@ -98,6 +141,75 @@ export function generateCompendiumMetadata(comp: Compendium): string {
     sortKeys: false,
   });
   return `---\n${fm}---\n\n# ${comp.name}\n`;
+}
+
+// ---------------------------------------------------------------------------
+// updateCompendiumFrontmatter
+// ---------------------------------------------------------------------------
+
+/**
+ * Lossless key-level frontmatter update for `_compendium.md` content.
+ *
+ * Parses the existing frontmatter, sets/updates ONLY the given keys, and
+ * re-serializes preserving every other key (in original order) AND the body
+ * below the frontmatter verbatim. This is the required write path for
+ * mutating existing compendium metadata: the bundle-shipped files carry keys
+ * the Compendium model does not own (`edition`,
+ * `archivist_compendium_version`, `archivist_compendium_imported_at`), and
+ * `archivist_compendium_version` gates bootstrap re-copy, so a regenerating
+ * writer would trigger a full bundle re-install on the next load.
+ *
+ * New keys (not present in the file) are inserted directly after `readonly`
+ * when that key exists, else appended at the end of the frontmatter.
+ *
+ * Returns null when the content has no parseable frontmatter (caller decides
+ * the fallback). `generateCompendiumMetadata` remains ONLY for creating
+ * brand-new compendium files.
+ */
+export function updateCompendiumFrontmatter(
+  content: string,
+  updates: Record<string, unknown>,
+): string | null {
+  if (!content || !content.startsWith("---\n")) return null;
+
+  const endIndex = content.indexOf("\n---", 3);
+  if (endIndex === -1) return null;
+
+  const yamlBlock = content.substring(4, endIndex);
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = yaml.load(yamlBlock) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+
+  const merged: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(parsed)) {
+    merged[key] = key in updates ? updates[key] : value;
+    if (key === "readonly") {
+      for (const [uk, uv] of Object.entries(updates)) {
+        if (!(uk in parsed)) merged[uk] = uv;
+      }
+    }
+  }
+  // New keys when no `readonly` anchor existed in the file
+  for (const [uk, uv] of Object.entries(updates)) {
+    if (!(uk in merged)) merged[uk] = uv;
+  }
+
+  const fm = yaml.dump(merged, {
+    lineWidth: -1,
+    noRefs: true,
+    sortKeys: false,
+  });
+
+  // Body: everything from the newline that terminates the closing `---` line,
+  // preserved verbatim (including that leading newline).
+  const lineEnd = content.indexOf("\n", endIndex + 1);
+  const body = lineEnd === -1 ? "\n" : content.substring(lineEnd);
+  return `---\n${fm}---${body}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -248,6 +360,10 @@ export class CompendiumManager {
       description,
       readonly,
       homebrew,
+      // New compendiums are visible by default; generateCompendiumMetadata
+      // writes `hidden: false` into the new file, so the value is declared.
+      hidden: false,
+      hiddenDeclared: true,
       folderPath,
     };
 
@@ -266,7 +382,8 @@ export class CompendiumManager {
   }
 
   /**
-   * Update the readonly flag for a compendium by rewriting its `_compendium.md`.
+   * Update the readonly flag for a compendium via a lossless key-level merge
+   * into its `_compendium.md` (unknown frontmatter keys and body preserved).
    */
   async setReadonly(name: string, value: boolean): Promise<void> {
     const comp = this.compendiums.get(name);
@@ -275,15 +392,45 @@ export class CompendiumManager {
     }
 
     comp.readonly = value;
+    await this.writeMetadataKeys(comp, { readonly: value });
+  }
 
+  /**
+   * Update the hidden flag for a compendium via the same lossless key-level
+   * merge into its `_compendium.md` (R3-P7 F4). Mirrors setReadonly.
+   */
+  async setHidden(name: string, value: boolean): Promise<void> {
+    const comp = this.compendiums.get(name);
+    if (!comp) {
+      throw new Error(`Compendium not found: ${name}`);
+    }
+
+    comp.hidden = value;
+    comp.hiddenDeclared = true;
+    await this.writeMetadataKeys(comp, { hidden: value });
+  }
+
+  /**
+   * Merge the given frontmatter keys into a compendium's `_compendium.md`,
+   * preserving all other keys and the body. Falls back to full regeneration
+   * from the in-memory model only when the existing file has no parseable
+   * frontmatter (corrupt/empty — it carried nothing worth preserving).
+   */
+  private async writeMetadataKeys(
+    comp: Compendium,
+    updates: Record<string, unknown>,
+  ): Promise<void> {
     const metaPath = `${comp.folderPath}/_compendium.md`;
     const metaFile = this.vault.getAbstractFileByPath(metaPath);
     if (!(metaFile instanceof TFile)) {
       throw new Error(`Compendium metadata file not found: ${metaPath}`);
     }
 
-    const metaContent = generateCompendiumMetadata(comp);
-    await this.vault.modify(metaFile, metaContent);
+    const current = await this.vault.cachedRead(metaFile);
+    const next =
+      updateCompendiumFrontmatter(current, updates) ??
+      generateCompendiumMetadata(comp);
+    await this.vault.modify(metaFile, next);
   }
 
   /**
@@ -304,12 +451,17 @@ export class CompendiumManager {
       throw new Error("Entity data must include a 'name' field");
     }
 
-    // Compendium-prefixed slug: `<compendium-id>_<name-slug>`. The compendium
-    // prefix makes slugs globally unique across compendiums; ensureUniqueSlug
-    // still handles in-compendium duplicates ("Dwarf" + "Dwarf" → "..._dwarf"
-    // and "..._dwarf-custom").
-    const compendiumPrefix = slugify(comp.name);
-    const baseSlug = `${compendiumPrefix}_${slugify(name)}`;
+    // Type-namespaced, compendium-prefixed slug:
+    // `<compendium-id>_<entity-type>_<name-slug>`. The compendium prefix makes
+    // slugs globally unique across compendiums; the entity-type token matches
+    // the SRD generator and disambiguates same-name entities of different kinds.
+    // ensureUniqueSlug still handles in-compendium duplicates ("Dwarf" + "Dwarf"
+    // → "..._race_dwarf" and "..._race_dwarf-custom").
+    const baseSlug = buildHomebrewSlug({
+      compendium: comp.name,
+      entityType,
+      name,
+    });
     const slug = ensureUniqueSlug(baseSlug, this.registry.getAllSlugs());
 
     const typeFolder = TYPE_FOLDER_MAP[entityType] || entityType;

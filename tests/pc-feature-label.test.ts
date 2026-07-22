@@ -19,6 +19,14 @@ describe("source label cleanup", () => {
     expect(formatSourceLabel({ kind: "background", slug: "srd-2024_soldier" })).toBe("Background: Soldier");
   });
 
+  it("strips the type token from a 3-part type-namespaced slug", () => {
+    expect(formatSourceLabel({ kind: "class", slug: "mcdm_class_illrigger", level: 3 })).toBe("Illrigger 3");
+    expect(formatSourceLabel({ kind: "subclass", slug: "mcdm_subclass_hellspeaker", level: 3 })).toBe("Hellspeaker 3");
+    expect(formatSourceLabel({ kind: "feat", slug: "srd-2024_feat_ability-score-improvement" }))
+      .toBe("Feat: Ability Score Improvement");
+    expect(formatSourceLabel({ kind: "background", slug: "srd-2024_background_soldier" })).toBe("Background: Soldier");
+  });
+
   it("leaves a bare (no-namespace) slug unchanged", () => {
     expect(formatSourceLabel({ kind: "class", slug: "fighter", level: 1 })).toBe("Fighter 1");
     expect(formatSourceLabel({ kind: "race", slug: "elf" })).toBe("Elf");

@@ -281,11 +281,12 @@ export function formatSourceLabel(source: FeatureSource | undefined): string {
 }
 
 function capitalizeSlug(slug: string): string {
-  // Strip a leading compendium namespace ("mcdm_", "srd-2024_", "srd-5e_", …).
-  // The slugify convention removes underscores from names, so the FIRST
-  // underscore is always the namespace separator; a bare (no-namespace) slug
-  // has no underscore and is left untouched.
-  const bare = slug.replace(/^[^_]+_/, "");
+  // Recover the bare name from a type-namespaced slug
+  // (`<prefix>_<entity_type>_<name>`). slugify never emits `_`, so a slug
+  // splits on `_` into exactly 3 parts and the name is `slice(2)`. Arity-robust:
+  // also handles a legacy 2-part `<prefix>_<name>` slug and a bare name.
+  const p = slug.split("_");
+  const bare = p.length >= 3 ? p.slice(2).join("_") : p[p.length - 1];
   return bare.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
 }
 

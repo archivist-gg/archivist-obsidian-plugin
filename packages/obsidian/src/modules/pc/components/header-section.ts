@@ -3,6 +3,7 @@ import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import type { ComponentRegistry } from "./component-registry";
 import type { ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import { RestButtons } from "./rest-buttons";
+import { renderAvatarContent } from "./avatar-content";
 
 /**
  * V7 hero: crest + name/subtitle on the left, right cluster with AC shield,
@@ -17,8 +18,12 @@ export class HeaderSection implements SheetComponent {
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const root = el.createDiv({ cls: "pc-header-root" });
 
-    const avatar = root.createDiv({ cls: "pc-avatar" });
-    avatar.createDiv({ cls: "pc-avatar-placeholder" });
+    const avatar = root.createEl("button", {
+      cls: "pc-avatar",
+      attr: { "aria-label": "Set character portrait", title: "Set character portrait" },
+    });
+    renderAvatarContent(avatar, ctx.portraitUrl, ctx.portraitCrop);
+    avatar.addEventListener("click", () => ctx.onOpenPortraitPicker?.());
 
     const identity = root.createDiv({ cls: "pc-identity" });
     const nameRow = identity.createDiv({ cls: "pc-name-row" });

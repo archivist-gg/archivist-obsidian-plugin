@@ -2,6 +2,7 @@ import type { App } from "obsidian";
 import type { PCServices } from "../pc.services";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
+import type { CropParams } from "../pc.portrait";
 
 export interface ComponentRenderContext {
   resolved: ResolvedCharacter;
@@ -42,6 +43,16 @@ export interface ComponentRenderContext {
    * type-narrow their own entry; the view never inspects contents.
    */
   builderUiState?: Map<string, unknown>;
+  /** Resolved portrait image URL for the header avatar, or null/undefined for
+   *  the d20 placeholder icon. */
+  portraitUrl?: string | null;
+  /** Square-crop region for the portrait image, or null/undefined to fall
+   *  back to the default `object-fit: cover` framing. Ignored when
+   *  `portraitUrl` is unset. */
+  portraitCrop?: CropParams | null;
+  /** Callback fired when the user clicks the header avatar to change the
+   *  portrait. */
+  onOpenPortraitPicker?: () => void;
 }
 
 export interface SheetComponent {

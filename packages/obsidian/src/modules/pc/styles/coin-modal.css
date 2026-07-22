@@ -1,0 +1,96 @@
+/* Coin modal (R3-P5). Frame comes from .archivist-modal; everything here is
+   layout + token-mapped typography, scoped under .pc-coin-modal. The coin
+   color tokens (--pc-coin-*) are sheet-scope in tokens.css and are
+   re-declared for modal scope in src/styles/archivist-dnd.css's
+   .archivist-modal token block — without that, the SVG fills resolve to
+   nothing. Metrics mirror the user-approved companion mock
+   (scratchpad/p5-coin/companion/, minus the removed .pc-coin-hint footer). */
+.pc-coin-modal { text-align: center; font-family: var(--pc-font-serif); min-width: 340px; }
+.pc-coin-title {
+  display: flex; justify-content: center; align-items: baseline; gap: 8px;
+  margin: 0 0 10px;
+  font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--pc-text-primary);
+}
+.pc-coin-total { margin: 0 0 2px; font-size: var(--pc-fs-big); font-weight: 700; line-height: 1.15; color: var(--pc-text-primary); }
+.pc-coin-total-unit { font-size: var(--pc-fs-body); font-weight: 400; opacity: .6; margin-left: 4px; }
+
+.pc-coin-shape { display: inline-flex; flex: none; }
+.pc-coin-modal .pc-currency-denom {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; line-height: 1;
+}
+.pc-coin-modal .coin-pp { color: var(--pc-coin-pp); }
+.pc-coin-modal .coin-gp { color: var(--pc-coin-gp); }
+.pc-coin-modal .coin-ep { color: var(--pc-coin-ep); }
+.pc-coin-modal .coin-sp { color: var(--pc-coin-sp); }
+.pc-coin-modal .coin-cp { color: var(--pc-coin-cp); }
+
+.pc-coin-ledger { margin-top: 10px; }
+.pc-coin-lrow {
+  display: flex; align-items: center; gap: 10px; padding: 7px 2px;
+  border-top: 1px dashed rgba(217, 196, 132, .8); text-align: left;
+}
+.pc-coin-lrow:first-child { border-top: none; }
+.pc-coin-lrow-main { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.pc-coin-lrow-name { font-family: var(--pc-font-serif); font-size: var(--pc-fs-body); font-weight: 700; color: var(--pc-text-primary); }
+.pc-coin-lrow-abbr { font-weight: 400; color: var(--pc-text-muted); margin-left: 3px; }
+.pc-coin-lrow-hint { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+.pc-coin-lrow-val {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-mid); font-weight: 700;
+  color: var(--pc-text-primary); cursor: pointer; min-width: 44px; text-align: right;
+}
+/* makeInlineInput copies the host's classes onto the input; the shared
+   input.pc-edit-inline base (3ch, borderless) outranks the copied class, so
+   re-assert the value metrics at higher specificity (max-hp-modal.css model). */
+.pc-coin-modal .pc-coin-lrow input.pc-edit-inline {
+  width: 64px; min-width: 44px; box-sizing: border-box; text-align: right;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-mid); font-weight: 700;
+  box-shadow: none;
+}
+
+.pc-coin-adjust { margin-top: 12px; border-top: 1px dashed var(--pc-tan); padding-top: 10px; }
+.pc-coin-adjust-title {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase;
+  color: var(--pc-text-soft); margin: 0 0 8px; text-align: left;
+}
+.pc-coin-adjust-grid { display: flex; gap: 8px; justify-content: center; }
+.pc-coin-adjust-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pc-coin-adjust-lbl { display: flex; align-items: center; gap: 4px; }
+/* box-shadow:none kills Obsidian's var(--input-shadow) inner box — SCOPED
+   here on purpose; the global input fix is P3's lane (idempotent overlap). */
+.pc-coin-modal input.pc-coin-adjust-input {
+  width: 52px; text-align: center; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  padding: 4px 6px; border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light); color: var(--pc-text-primary);
+  box-shadow: none; outline: none;
+}
+.pc-coin-modal input.pc-coin-adjust-input:focus { border-color: var(--pc-crimson); box-shadow: none; }
+.pc-coin-modal input.pc-coin-adjust-input.is-error { border-color: var(--pc-crimson); background: rgba(146, 38, 16, .06); }
+
+.pc-coin-adjust-btns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+/* display:inline-block + height:auto resets Obsidian's forced button height
+   (the passive-tab gotcha). */
+.pc-coin-modal button.pc-coin-btn {
+  display: inline-block; height: auto;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  padding: 5px 12px; border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light); color: var(--pc-text-primary); cursor: pointer;
+  box-shadow: none;
+}
+/* Obsidian dresses <button> with var(--input-shadow) (plus hover/focus/active
+   variants) which reads as a spurious drop shadow on these action buttons.
+   Null it in ALL states, scoped to the coin modal's buttons only. */
+.pc-coin-modal button.pc-coin-btn:hover,
+.pc-coin-modal button.pc-coin-btn:focus,
+.pc-coin-modal button.pc-coin-btn:focus-visible,
+.pc-coin-modal button.pc-coin-btn:active {
+  box-shadow: none;
+}
+.pc-coin-modal button.pc-coin-btn.is-add { color: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon); background: rgba(47, 111, 58, .07); }
+.pc-coin-modal button.pc-coin-btn.is-add:hover { background: rgba(47, 111, 58, .14); }
+.pc-coin-modal button.pc-coin-btn.is-sub { color: var(--pc-crimson); border-color: var(--pc-crimson); background: rgba(146, 38, 16, .06); }
+.pc-coin-modal button.pc-coin-btn.is-sub:hover { background: rgba(146, 38, 16, .12); }
+.pc-coin-modal button.pc-coin-btn.is-clear { color: var(--pc-text-soft); }

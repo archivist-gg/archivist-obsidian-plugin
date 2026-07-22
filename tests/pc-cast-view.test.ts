@@ -411,3 +411,40 @@ describe("renderCastView · scrolls & consumables", () => {
     expect(row.querySelector(".pc-spell-hitdc-v")?.textContent).toBe("15");
   });
 });
+
+describe("renderCastView — D1 spell-block persistence", () => {
+  it("re-creates a spell's open reference block across a re-render with the same bag", () => {
+    const bag = new Map<string, unknown>();
+    const c1 = ctxFor([sp("Hold Person", 2)]);
+    const root1 = mountContainer();
+    renderCastView(root1, { ...c1, builderUiState: bag });
+    const row1 = root1.querySelector(".pc-spell-cast-row") as HTMLElement;
+    (row1.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(root1.querySelector(".pc-spell-expand-row")).not.toBeNull();
+
+    const root2 = mountContainer();
+    renderCastView(root2, { ...ctxFor([sp("Hold Person", 2)]), builderUiState: bag });
+    expect(root2.querySelector(".pc-spell-expand-row")).not.toBeNull();
+    expect((root2.querySelector(".pc-spell-cast-row") as HTMLElement).classList.contains("pc-row-open")).toBe(true);
+  });
+
+  it("upcast uniqueness: opening the base-level row re-expands ONLY that row, not its upcast copy", () => {
+    const bag = new Map<string, unknown>();
+    const mm = () => sp("Magic Missile", 1, { casting_options: [{ type: "slot_level_2", target_count: 4 }] as never });
+    const root1 = mountContainer();
+    renderCastView(root1, { ...ctxFor([mm()]), builderUiState: bag });
+    // The base row is the one WITHOUT the upcast badge.
+    const rows1 = [...root1.querySelectorAll<HTMLElement>(".pc-spell-cast-row")];
+    const baseRow = rows1.find((r) => !r.querySelector(".pc-spell-up"))!;
+    (baseRow.querySelector(".pc-spell-namecell") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+    const root2 = mountContainer();
+    renderCastView(root2, { ...ctxFor([mm()]), builderUiState: bag });
+    const rows2 = [...root2.querySelectorAll<HTMLElement>(".pc-spell-cast-row")];
+    const base2 = rows2.find((r) => !r.querySelector(".pc-spell-up"))!;
+    const upcast2 = rows2.find((r) => r.querySelector(".pc-spell-up"))!;
+    expect(base2.classList.contains("pc-row-open")).toBe(true);
+    expect(upcast2.classList.contains("pc-row-open")).toBe(false);
+    expect(root2.querySelectorAll(".pc-spell-expand-row").length).toBe(1);
+  });
+});

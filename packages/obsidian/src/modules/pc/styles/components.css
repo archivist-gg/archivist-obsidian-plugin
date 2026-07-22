@@ -26,12 +26,58 @@
   flex-wrap: wrap;
 }
 .archivist-pc-sheet .pc-avatar {
-  width: 64px;
-  height: 64px;
+  position: relative;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: var(--pc-parchment-dark);
   border: 2px solid var(--pc-tan);
   flex-shrink: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-avatar:hover { border-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-avatar .pc-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+.archivist-pc-sheet .pc-avatar svg.pc-avatar-icon,
+.archivist-pc-sheet .pc-avatar .pc-avatar-icon {
+  width: 54%;
+  height: 54%;
+  color: var(--pc-crimson);
+  opacity: 0.85;
+}
+/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side).
+ * max-width: none is load-bearing: Obsidian's app.css sets
+ * `.workspace-leaf-content img:not([width]) { max-width: 100% }`, and max-width
+ * beats width regardless of specificity. Any crop with size < 1 needs
+ * width > 100% (--pc-crop-w = 1/size), so without this the image is clamped
+ * back to the box width and leaves empty parchment bottom/right. */
+.archivist-pc-sheet .pc-avatar.pc-avatar-cropped .pc-avatar-img {
+  position: absolute;
+  width: calc(var(--pc-crop-w) * 100%);
+  max-width: none;
+  height: auto;
+  left: calc(var(--pc-crop-x) * -100%);
+  top: calc(var(--pc-crop-y) * -100%);
+  object-fit: unset;
+  /* border-radius: 0 is load-bearing: the base .pc-avatar-img rule sets
+   * border-radius: 50%, which is a harmless circle only while the img is
+   * square (the cover path). A crop makes this img a NON-square rectangle
+   * (width = 1/size of a square box, height auto), so 50% renders it as a
+   * flat ELLIPSE that curves inside the circular host box, leaving parchment
+   * gaps on the sides ("left/right of an oval"). The circular mask must come
+   * solely from the host .pc-avatar (overflow: hidden + border-radius: 50%),
+   * so the img itself is a plain rectangle the host clips to a circle. */
+  border-radius: 0;
 }
 .archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
 .archivist-pc-sheet .pc-name {
@@ -1000,6 +1046,7 @@
     gap: var(--pc-space-3);
   }
   .archivist-pc-sheet .pc-name { font-size: var(--pc-fs-display); }
+  .archivist-pc-sheet .pc-avatar { width: 64px; height: 64px; }
 }
 
 /* Widget-mode state outlines — thin border-colour shift only.
@@ -1241,7 +1288,7 @@
 /* PC-scoped override mark: replaces the global .archivist-override-mark
    cursor:help (defined in src/styles/archivist-edit.css) with a clickable
    pointer + subtle hover affordance, matched to the PC palette. */
-.archivist-pc-sheet .archivist-override-mark {
+:is(.archivist-pc-sheet, .archivist-modal) .archivist-override-mark {
   cursor: pointer;
   color: var(--pc-crimson, var(--red, #8a2414));
   font-weight: 700;
@@ -1261,7 +1308,7 @@
    Visually minimal so it sits in place of the value text it replaces:
    no native widget chrome (border, background, spinners), just a subtle
    dashed outline that communicates "edit mode" and a solid focus ring. */
-.archivist-pc-sheet input.pc-edit-inline {
+:is(.archivist-pc-sheet, .archivist-modal) input.pc-edit-inline {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
@@ -1283,6 +1330,14 @@
   outline: 1px dashed var(--pc-crimson, #8a2414);
   outline-offset: 1px;
   border-radius: 2px;
+  /* R3-P7 F2 · makeInlineInput copies the value box's class onto the input,
+     and the value box carries .pc-edit-click { cursor: pointer }. Force the
+     text I-beam so a focused inline input reads like a normal text field, and
+     pin a visible caret matching the inputs' inherited ink color (the value
+     text resolves to --pc-text-primary) so the blinking cursor is never
+     invisible against the parchment. */
+  cursor: text;
+  caret-color: var(--pc-text-primary, #1a1a1a);
 }
 .archivist-pc-sheet input.pc-edit-inline::-webkit-outer-spin-button,
 .archivist-pc-sheet input.pc-edit-inline::-webkit-inner-spin-button {
@@ -1293,6 +1348,24 @@
 .archivist-pc-sheet input.pc-edit-inline:focus {
   outline: 2px solid var(--pc-crimson, #8a2414);
   outline-offset: 1px;
+}
+
+/* R3-P3 item D · Obsidian dresses native text inputs with `box-shadow:
+   var(--input-shadow)` (plus hover/focus variants), which reads as a spurious
+   inner box inside every styled input host on the sheet, the modals, and the
+   builder. Null it in ALL states, for text-entry inputs only (checkbox/file
+   keep their Obsidian chrome). Our own focus cues are borders/outlines and are
+   unaffected; intentional input rings (portrait-picker search) are re-asserted
+   at equal specificity LATER in this file, so they win by source order. */
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])),
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):hover,
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus,
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus-visible {
+  box-shadow: none;
 }
 
 /* SP4b — click affordance on editable values */
@@ -1771,3 +1844,235 @@
     row-gap: 2px;
   }
 }
+
+/* Portrait picker modal (two-stage: grid + crop) */
+.pc-portrait-picker .pc-portrait-picker-body { width: 432px; max-width: 100%; }
+
+.pc-portrait-picker .pc-portrait-picker-search {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: var(--pc-space-2);
+  padding: 6px 10px;
+  background: var(--pc-parchment-light, #fff9ec);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-body);
+}
+.pc-portrait-picker .pc-portrait-picker-search::placeholder { color: var(--pc-text-muted); }
+.pc-portrait-picker .pc-portrait-picker-search:hover,
+.pc-portrait-picker .pc-portrait-picker-search:focus,
+.pc-portrait-picker .pc-portrait-picker-search:focus-visible {
+  background: var(--pc-parchment-light, #fff9ec);
+  border-color: var(--pc-tan);
+  box-shadow: none;
+}
+/* `input` element added (R3-P3 item D): ties the global box-shadow null at
+   (0,3,1) and wins by source order, keeping this intentional ring. */
+.pc-portrait-picker input.pc-portrait-picker-search:focus,
+.pc-portrait-picker input.pc-portrait-picker-search:focus-visible {
+  outline: none;
+  border-color: var(--pc-crimson);
+  box-shadow: 0 0 0 1px rgba(146, 38, 16, 0.25);
+}
+
+.pc-portrait-picker .pc-portrait-picker-scope {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+  margin-bottom: var(--pc-space-2);
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-small);
+}
+.pc-portrait-picker .pc-portrait-picker-scope b { color: var(--pc-crimson); }
+.pc-portrait-picker .pc-portrait-picker-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pc-portrait-picker .pc-portrait-picker-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--pc-tan);
+  border-radius: 3px;
+  background: var(--pc-parchment-light, #fff9ec);
+  cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: none;
+}
+.pc-portrait-picker .pc-portrait-picker-check input[type="checkbox"]:checked {
+  background-color: var(--pc-crimson);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+  border-color: var(--pc-crimson);
+}
+.pc-portrait-picker .pc-portrait-picker-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: 1px;
+}
+
+.pc-portrait-picker .pc-portrait-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-height: min(45vh, 320px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.pc-portrait-picker .pc-portrait-picker-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  min-width: 0;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--pc-radius-sm);
+}
+.pc-portrait-picker .pc-portrait-picker-cell:focus-visible { outline: none; }
+.pc-portrait-picker .pc-portrait-picker-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--pc-tan);
+  border-radius: 6px;
+  background: var(--pc-parchment-dark);
+}
+.pc-portrait-picker .pc-portrait-picker-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pc-portrait-picker .pc-portrait-picker-cellname {
+  overflow: hidden;
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-label);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-portrait-picker .pc-portrait-picker-cell:hover .pc-portrait-picker-thumb,
+.pc-portrait-picker .pc-portrait-picker-cell:focus-visible .pc-portrait-picker-thumb {
+  border-color: var(--pc-crimson);
+  box-shadow: 0 0 0 2px rgba(146, 38, 16, 0.2);
+}
+
+.pc-portrait-picker .pc-portrait-picker-import .pc-portrait-picker-thumb {
+  background: transparent;
+  border-style: dashed;
+  color: var(--pc-crimson);
+  font-size: 22px;
+  font-weight: 700;
+}
+.pc-portrait-picker .pc-portrait-picker-import:hover .pc-portrait-picker-thumb,
+.pc-portrait-picker .pc-portrait-picker-import:focus-visible .pc-portrait-picker-thumb {
+  background: rgba(146, 38, 16, 0.06);
+  border-color: var(--pc-crimson);
+}
+
+.pc-portrait-picker .pc-portrait-picker-empty,
+.pc-portrait-picker .pc-portrait-picker-hint-cap {
+  margin-top: var(--pc-space-2);
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-small);
+  font-style: italic;
+}
+
+.pc-portrait-picker .pc-portrait-picker-file-input { display: none; }
+
+.pc-portrait-picker .pc-portrait-picker-foot { align-items: center; }
+.pc-portrait-picker .pc-portrait-picker-remove,
+.pc-portrait-picker .pc-portrait-picker-back {
+  margin-right: auto;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-crimson);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+.pc-portrait-picker .pc-portrait-picker-remove:hover,
+.pc-portrait-picker .pc-portrait-picker-back:hover { background: rgba(146, 38, 16, 0.06); }
+.pc-portrait-picker .pc-portrait-picker-remove-icon { display: inline-block; vertical-align: middle; margin-right: 4px; }
+.pc-portrait-picker .pc-portrait-picker-remove-icon .svg-icon { width: 14px; height: 14px; color: var(--pc-crimson); }
+
+.pc-portrait-picker .pc-portrait-crop-hint {
+  margin: 0 0 var(--pc-space-2);
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-small);
+  font-style: italic;
+}
+.pc-portrait-picker .pc-portrait-crop-stage {
+  position: relative;
+  display: block;
+  width: fit-content;
+  /* Cap the img's containing block: without this, fit-content tracks the
+     image's intrinsic width and the img's own max-width: 100% resolves
+     against an uncapped stage. 100% here = the 432px picker body; the TS
+     fallback MAX_DISPLAY_WIDTH mirrors that number (portrait-picker-modal.ts). */
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--pc-radius-sm);
+  line-height: 0;
+}
+.pc-portrait-picker .pc-portrait-crop-stage.is-loading .pc-portrait-crop-img { opacity: 0.35; filter: grayscale(30%); }
+.pc-portrait-picker .pc-portrait-crop-img { display: block; width: auto; max-width: 100%; max-height: 320px; }
+
+.pc-portrait-picker .pc-portrait-crop-marquee {
+  position: absolute;
+  top: var(--pc-crop-my, 0px);
+  left: var(--pc-crop-mx, 0px);
+  width: var(--pc-crop-side, 0px);
+  height: var(--pc-crop-side, 0px);
+  border: 2px solid var(--pc-parchment-light, #fff9ec);
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: -1px;
+  /* Circle preview of the (square-encoded) crop: border, outline, and the
+     9999px dim shadow all follow the radius, so the surround gets a circular
+     hole. Storage stays the "x,y,size" square; visual only. */
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(43, 32, 20, 0.55);
+  cursor: move;
+  touch-action: none;
+}
+.pc-portrait-picker .pc-portrait-crop-handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: var(--pc-parchment-light, #fff9ec);
+  border: 1.5px solid var(--pc-crimson);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+.pc-portrait-picker .pc-portrait-crop-handle-nw { top: 0; left: 0; cursor: nwse-resize; }
+.pc-portrait-picker .pc-portrait-crop-handle-ne { top: 0; left: 100%; cursor: nesw-resize; }
+.pc-portrait-picker .pc-portrait-crop-handle-sw { top: 100%; left: 0; cursor: nesw-resize; }
+.pc-portrait-picker .pc-portrait-crop-handle-se { top: 100%; left: 100%; cursor: nwse-resize; }

@@ -1580,6 +1580,11 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-amber: #a3690e;
   --pc-row-open-bg: rgba(146, 38, 16, 0.04);
   --pc-rarity-uncommon: #2f6f3a;
+  --pc-coin-pp: #1f3f7a;
+  --pc-coin-gp: #a3590a;
+  --pc-coin-ep: #6b6f2a;
+  --pc-coin-sp: #4a5a66;
+  --pc-coin-cp: #8a3d1f;
   --pc-space-1: 4px;
   --pc-space-2: 8px;
   --pc-space-3: 12px;
@@ -2169,6 +2174,21 @@ body.theme-light .archivist-tag-atk:hover {
   font-style: italic;
   font-size: 0.85em;
   padding: 0.4em 0;
+}
+
+/* Settings: labeled compendium toggles (R3-P7 F5). Each per-compendium
+   toggle is wrapped with an always-visible muted caption ("Visible" /
+   "Read-only") so the two identical pills are distinguishable without
+   hovering. Tooltips remain for the longer explanation. */
+.archivist-labeled-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+}
+.archivist-toggle-caption {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 
@@ -4042,12 +4062,58 @@ body.theme-light .archivist-tag-atk:hover {
   flex-wrap: wrap;
 }
 .archivist-pc-sheet .pc-avatar {
-  width: 64px;
-  height: 64px;
+  position: relative;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: var(--pc-parchment-dark);
   border: 2px solid var(--pc-tan);
   flex-shrink: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+}
+.archivist-pc-sheet .pc-avatar:hover { border-color: var(--pc-crimson); }
+.archivist-pc-sheet .pc-avatar .pc-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+.archivist-pc-sheet .pc-avatar svg.pc-avatar-icon,
+.archivist-pc-sheet .pc-avatar .pc-avatar-icon {
+  width: 54%;
+  height: 54%;
+  color: var(--pc-crimson);
+  opacity: 0.85;
+}
+/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side).
+ * max-width: none is load-bearing: Obsidian's app.css sets
+ * `.workspace-leaf-content img:not([width]) { max-width: 100% }`, and max-width
+ * beats width regardless of specificity. Any crop with size < 1 needs
+ * width > 100% (--pc-crop-w = 1/size), so without this the image is clamped
+ * back to the box width and leaves empty parchment bottom/right. */
+.archivist-pc-sheet .pc-avatar.pc-avatar-cropped .pc-avatar-img {
+  position: absolute;
+  width: calc(var(--pc-crop-w) * 100%);
+  max-width: none;
+  height: auto;
+  left: calc(var(--pc-crop-x) * -100%);
+  top: calc(var(--pc-crop-y) * -100%);
+  object-fit: unset;
+  /* border-radius: 0 is load-bearing: the base .pc-avatar-img rule sets
+   * border-radius: 50%, which is a harmless circle only while the img is
+   * square (the cover path). A crop makes this img a NON-square rectangle
+   * (width = 1/size of a square box, height auto), so 50% renders it as a
+   * flat ELLIPSE that curves inside the circular host box, leaving parchment
+   * gaps on the sides ("left/right of an oval"). The circular mask must come
+   * solely from the host .pc-avatar (overflow: hidden + border-radius: 50%),
+   * so the img itself is a plain rectangle the host clips to a circle. */
+  border-radius: 0;
 }
 .archivist-pc-sheet .pc-identity { flex: 1 1 auto; min-width: 0; }
 .archivist-pc-sheet .pc-name {
@@ -5016,6 +5082,7 @@ body.theme-light .archivist-tag-atk:hover {
     gap: var(--pc-space-3);
   }
   .archivist-pc-sheet .pc-name { font-size: var(--pc-fs-display); }
+  .archivist-pc-sheet .pc-avatar { width: 64px; height: 64px; }
 }
 
 /* Widget-mode state outlines — thin border-colour shift only.
@@ -5257,7 +5324,7 @@ body.theme-light .archivist-tag-atk:hover {
 /* PC-scoped override mark: replaces the global .archivist-override-mark
    cursor:help (defined in src/styles/archivist-edit.css) with a clickable
    pointer + subtle hover affordance, matched to the PC palette. */
-.archivist-pc-sheet .archivist-override-mark {
+:is(.archivist-pc-sheet, .archivist-modal) .archivist-override-mark {
   cursor: pointer;
   color: var(--pc-crimson, var(--red, #8a2414));
   font-weight: 700;
@@ -5277,7 +5344,7 @@ body.theme-light .archivist-tag-atk:hover {
    Visually minimal so it sits in place of the value text it replaces:
    no native widget chrome (border, background, spinners), just a subtle
    dashed outline that communicates "edit mode" and a solid focus ring. */
-.archivist-pc-sheet input.pc-edit-inline {
+:is(.archivist-pc-sheet, .archivist-modal) input.pc-edit-inline {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
@@ -5299,6 +5366,14 @@ body.theme-light .archivist-tag-atk:hover {
   outline: 1px dashed var(--pc-crimson, #8a2414);
   outline-offset: 1px;
   border-radius: 2px;
+  /* R3-P7 F2 · makeInlineInput copies the value box's class onto the input,
+     and the value box carries .pc-edit-click { cursor: pointer }. Force the
+     text I-beam so a focused inline input reads like a normal text field, and
+     pin a visible caret matching the inputs' inherited ink color (the value
+     text resolves to --pc-text-primary) so the blinking cursor is never
+     invisible against the parchment. */
+  cursor: text;
+  caret-color: var(--pc-text-primary, #1a1a1a);
 }
 .archivist-pc-sheet input.pc-edit-inline::-webkit-outer-spin-button,
 .archivist-pc-sheet input.pc-edit-inline::-webkit-inner-spin-button {
@@ -5309,6 +5384,24 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet input.pc-edit-inline:focus {
   outline: 2px solid var(--pc-crimson, #8a2414);
   outline-offset: 1px;
+}
+
+/* R3-P3 item D · Obsidian dresses native text inputs with `box-shadow:
+   var(--input-shadow)` (plus hover/focus variants), which reads as a spurious
+   inner box inside every styled input host on the sheet, the modals, and the
+   builder. Null it in ALL states, for text-entry inputs only (checkbox/file
+   keep their Obsidian chrome). Our own focus cues are borders/outlines and are
+   unaffected; intentional input rings (portrait-picker search) are re-asserted
+   at equal specificity LATER in this file, so they win by source order. */
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])),
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):hover,
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus,
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus-visible {
+  box-shadow: none;
 }
 
 /* SP4b — click affordance on editable values */
@@ -5787,6 +5880,238 @@ body.theme-light .archivist-tag-atk:hover {
     row-gap: 2px;
   }
 }
+
+/* Portrait picker modal (two-stage: grid + crop) */
+.pc-portrait-picker .pc-portrait-picker-body { width: 432px; max-width: 100%; }
+
+.pc-portrait-picker .pc-portrait-picker-search {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: var(--pc-space-2);
+  padding: 6px 10px;
+  background: var(--pc-parchment-light, #fff9ec);
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-text-primary);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-body);
+}
+.pc-portrait-picker .pc-portrait-picker-search::placeholder { color: var(--pc-text-muted); }
+.pc-portrait-picker .pc-portrait-picker-search:hover,
+.pc-portrait-picker .pc-portrait-picker-search:focus,
+.pc-portrait-picker .pc-portrait-picker-search:focus-visible {
+  background: var(--pc-parchment-light, #fff9ec);
+  border-color: var(--pc-tan);
+  box-shadow: none;
+}
+/* `input` element added (R3-P3 item D): ties the global box-shadow null at
+   (0,3,1) and wins by source order, keeping this intentional ring. */
+.pc-portrait-picker input.pc-portrait-picker-search:focus,
+.pc-portrait-picker input.pc-portrait-picker-search:focus-visible {
+  outline: none;
+  border-color: var(--pc-crimson);
+  box-shadow: 0 0 0 1px rgba(146, 38, 16, 0.25);
+}
+
+.pc-portrait-picker .pc-portrait-picker-scope {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--pc-space-2);
+  margin-bottom: var(--pc-space-2);
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-small);
+}
+.pc-portrait-picker .pc-portrait-picker-scope b { color: var(--pc-crimson); }
+.pc-portrait-picker .pc-portrait-picker-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pc-portrait-picker .pc-portrait-picker-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--pc-tan);
+  border-radius: 3px;
+  background: var(--pc-parchment-light, #fff9ec);
+  cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: none;
+}
+.pc-portrait-picker .pc-portrait-picker-check input[type="checkbox"]:checked {
+  background-color: var(--pc-crimson);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5 L6.5 11.5 L12.5 4.5' stroke='%23fdf1dc' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+  border-color: var(--pc-crimson);
+}
+.pc-portrait-picker .pc-portrait-picker-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: 1px;
+}
+
+.pc-portrait-picker .pc-portrait-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-height: min(45vh, 320px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.pc-portrait-picker .pc-portrait-picker-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  min-width: 0;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  border-radius: var(--pc-radius-sm);
+}
+.pc-portrait-picker .pc-portrait-picker-cell:focus-visible { outline: none; }
+.pc-portrait-picker .pc-portrait-picker-thumb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--pc-tan);
+  border-radius: 6px;
+  background: var(--pc-parchment-dark);
+}
+.pc-portrait-picker .pc-portrait-picker-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pc-portrait-picker .pc-portrait-picker-cellname {
+  overflow: hidden;
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-label);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pc-portrait-picker .pc-portrait-picker-cell:hover .pc-portrait-picker-thumb,
+.pc-portrait-picker .pc-portrait-picker-cell:focus-visible .pc-portrait-picker-thumb {
+  border-color: var(--pc-crimson);
+  box-shadow: 0 0 0 2px rgba(146, 38, 16, 0.2);
+}
+
+.pc-portrait-picker .pc-portrait-picker-import .pc-portrait-picker-thumb {
+  background: transparent;
+  border-style: dashed;
+  color: var(--pc-crimson);
+  font-size: 22px;
+  font-weight: 700;
+}
+.pc-portrait-picker .pc-portrait-picker-import:hover .pc-portrait-picker-thumb,
+.pc-portrait-picker .pc-portrait-picker-import:focus-visible .pc-portrait-picker-thumb {
+  background: rgba(146, 38, 16, 0.06);
+  border-color: var(--pc-crimson);
+}
+
+.pc-portrait-picker .pc-portrait-picker-empty,
+.pc-portrait-picker .pc-portrait-picker-hint-cap {
+  margin-top: var(--pc-space-2);
+  color: var(--pc-text-muted);
+  font-size: var(--pc-fs-small);
+  font-style: italic;
+}
+
+.pc-portrait-picker .pc-portrait-picker-file-input { display: none; }
+
+.pc-portrait-picker .pc-portrait-picker-foot { align-items: center; }
+.pc-portrait-picker .pc-portrait-picker-remove,
+.pc-portrait-picker .pc-portrait-picker-back {
+  margin-right: auto;
+  padding: 5px 14px;
+  background: transparent;
+  border: 1px solid var(--pc-tan);
+  border-radius: var(--pc-radius-sm);
+  color: var(--pc-crimson);
+  font-family: var(--pc-font-sans);
+  font-size: var(--pc-fs-small);
+  font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase;
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+.pc-portrait-picker .pc-portrait-picker-remove:hover,
+.pc-portrait-picker .pc-portrait-picker-back:hover { background: rgba(146, 38, 16, 0.06); }
+.pc-portrait-picker .pc-portrait-picker-remove-icon { display: inline-block; vertical-align: middle; margin-right: 4px; }
+.pc-portrait-picker .pc-portrait-picker-remove-icon .svg-icon { width: 14px; height: 14px; color: var(--pc-crimson); }
+
+.pc-portrait-picker .pc-portrait-crop-hint {
+  margin: 0 0 var(--pc-space-2);
+  color: var(--pc-text-soft);
+  font-size: var(--pc-fs-small);
+  font-style: italic;
+}
+.pc-portrait-picker .pc-portrait-crop-stage {
+  position: relative;
+  display: block;
+  width: fit-content;
+  /* Cap the img's containing block: without this, fit-content tracks the
+     image's intrinsic width and the img's own max-width: 100% resolves
+     against an uncapped stage. 100% here = the 432px picker body; the TS
+     fallback MAX_DISPLAY_WIDTH mirrors that number (portrait-picker-modal.ts). */
+  max-width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--pc-radius-sm);
+  line-height: 0;
+}
+.pc-portrait-picker .pc-portrait-crop-stage.is-loading .pc-portrait-crop-img { opacity: 0.35; filter: grayscale(30%); }
+.pc-portrait-picker .pc-portrait-crop-img { display: block; width: auto; max-width: 100%; max-height: 320px; }
+
+.pc-portrait-picker .pc-portrait-crop-marquee {
+  position: absolute;
+  top: var(--pc-crop-my, 0px);
+  left: var(--pc-crop-mx, 0px);
+  width: var(--pc-crop-side, 0px);
+  height: var(--pc-crop-side, 0px);
+  border: 2px solid var(--pc-parchment-light, #fff9ec);
+  outline: 2px solid var(--pc-crimson);
+  outline-offset: -1px;
+  /* Circle preview of the (square-encoded) crop: border, outline, and the
+     9999px dim shadow all follow the radius, so the surround gets a circular
+     hole. Storage stays the "x,y,size" square; visual only. */
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(43, 32, 20, 0.55);
+  cursor: move;
+  touch-action: none;
+}
+.pc-portrait-picker .pc-portrait-crop-handle {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: var(--pc-parchment-light, #fff9ec);
+  border: 1.5px solid var(--pc-crimson);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+.pc-portrait-picker .pc-portrait-crop-handle-nw { top: 0; left: 0; cursor: nwse-resize; }
+.pc-portrait-picker .pc-portrait-crop-handle-ne { top: 0; left: 100%; cursor: nesw-resize; }
+.pc-portrait-picker .pc-portrait-crop-handle-sw { top: 100%; left: 0; cursor: nesw-resize; }
+.pc-portrait-picker .pc-portrait-crop-handle-se { top: 100%; left: 100%; cursor: nwse-resize; }
 
 
 /* ============================================
@@ -6592,7 +6917,13 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-primary);
   line-height: var(--pc-lh-value);
 }
-.archivist-pc-sheet .pc-currency-val.pc-edit-click { cursor: pointer; }
+/* R3-P7 F2 follow-up · :not(input) keeps the pointer on the un-clicked value
+   BOX only. makeInlineInput copies both classes onto the swapped <input>, and
+   without the exclusion this (0,3,0) compound outranks the shared
+   input.pc-edit-inline cursor:text rule (0,2,1), leaving a pointer hand on
+   the focused input. Excluded, the input falls through to text + caret. */
+.archivist-pc-sheet .pc-currency-val.pc-edit-click:not(input) { cursor: pointer; }
+.archivist-pc-sheet .pc-currency-row.pc-currency-clickable { cursor: pointer; }
 
 /* ---------- Orphan-row placeholder (entry has no compendium entity) ---------- */
 .archivist-pc-sheet .pc-inv-orphan {
@@ -6848,6 +7179,16 @@ body.theme-light .archivist-tag-atk:hover {
   letter-spacing: var(--pc-ls-caps-md);
   font-weight: 600;
 }
+/* D4 (item #8): SCOPED to the Actions + Passive tabs only (both roots carry
+ * `pc-actions-tab`; pool-tab + spells-prepare heads are NOT under it, so they
+ * keep their own spacing). Sub-section headers gain a small top offset so they
+ * no longer hug the divider/preceding list, and each sub-group list gains a
+ * small bottom margin so the last row no longer hugs what follows (mirrors the
+ * `.pc-spell-cast-table` reference). `.pc-tab-heading:first-child` already zeroes
+ * a tab's first heading, so no double offset lands there. Values may be tuned
+ * +/- one spacing token during the live pass. */
+.archivist-pc-sheet .pc-actions-tab .pc-actions-section-head { margin-top: var(--pc-space-3); }
+.archivist-pc-sheet .pc-actions-tab .pc-actions-table { margin-bottom: var(--pc-space-2); }
 
 /* ---------- Actions-tab lists (Weapons / Items / Features) — grid rows ---------- */
 .archivist-pc-sheet .pc-actions-table { display: flex; flex-direction: column; font-size: var(--pc-fs-body); }
@@ -6876,18 +7217,24 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-feature-list .pc-feature-row {
   grid-template-columns: 66px minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
-/* Passive-tab-scoped gutter tighten (Task 6): the "Passive" tag was removed, so
- * the badge column no longer needs the 66px it took on the Actions tab — reclaim
- * ~12px so the name column starts closer to the left. SCOPED to the passive tab
- * (`.pc-passive-features-tab`) ONLY: the base rule above is SHARED with the
- * Actions tab (class-features/feats render there too and must stay 66px to align
- * with weapon/item rows). The first track is a FIXED 54px — NOT auto/min-content
- * (each row is its own grid → auto would collapse tag-less rows to 0 while a
- * FREE-pill row keeps 52px → cross-row misalignment) and NOT 40px (the FREE pill
- * is min-width:52px → would overflow the name column). 54px fits the 52px FREE
- * pill AND keeps every row aligned. */
+/* D2 (item #5): zero the flex gap the base `.pc-feature-list` (blocks.css) leaks
+ * onto the economy lists. The compound selector (specificity 0,3,0) beats the
+ * base `.pc-feature-list` rule and hits EXACTLY the three live feature-list
+ * constructions (section-renderer, race-block, background-block, incl. the boons
+ * list). Weapons/items lists never carry `.pc-feature-list`, so they are
+ * untouched. Rows stay separated by their own padding + border-bottom, matching
+ * the inventory/spells reference density; the row->expand seam is flush. */
+.archivist-pc-sheet .pc-actions-table.pc-feature-list { gap: 0; }
+/* Passive-tab-scoped grid (Task 8, D3): the badge column is DROPPED entirely, so
+ * a passive row is a 3-col grid [name · detail · caret] — every passive row
+ * (feature, boon, Race, Background) emits exactly those three cells. No cost mark
+ * renders on the Passive tab (all passive costs are unmarked), so no track is
+ * reserved for one. SCOPED
+ * to the passive tab (`.pc-passive-features-tab`) ONLY: the base 4-col rule above
+ * is SHARED with the Actions tab (class-features/feats render there too and must
+ * keep the 66px badge column to align with the weapon/item rows). */
 .archivist-pc-sheet .pc-passive-features-tab .pc-feature-list .pc-feature-row {
-  grid-template-columns: 54px minmax(0, 1fr) minmax(0, 2fr) 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 18px;
 }
 .archivist-pc-sheet .pc-feature-detail {
   display: flex;
@@ -6957,6 +7304,16 @@ body.theme-light .archivist-tag-atk:hover {
   color: var(--pc-text-muted);
 }
 
+/* Range cell: the main line always renders; a throwable melee weapon stacks its
+ * thrown range as a second muted line. Muted-line tokens match .pc-action-row-sub
+ * (--pc-fs-small / --pc-text-muted, this file's local idiom for the Obsidian
+ * --font-smallest / --text-muted the plan drafted against). */
+.archivist-pc-sheet .pc-weapon-range { white-space: nowrap; }
+.archivist-pc-sheet .pc-weapon-range-thrown {
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
 /* 2024 Weapon Mastery: a real trailing grid CELL (6th column) on the weapons
  * table, NOT a hover chip. The label chip stacks over a compact one-line gist
  * (e.g. "Save DC 13 · on fail: Prone"). The full glossary prose lives in the
@@ -6984,11 +7341,14 @@ body.theme-light .archivist-tag-atk:hover {
   overflow-wrap: anywhere;
 }
 
-/* Labeled header row for a has-mastery weapons group: shares the 6-col grid so
- * the column labels line up over the rows. The leading cell above the cost
- * badge is intentionally blank. */
+/* Labeled header row for a weapons group. It ALWAYS renders and matches the
+ * base 5-col weapons-row grid so the column labels line up over the rows. A
+ * has-mastery group overrides this with the 6-col template below (adding the
+ * Mastery column). The leading cell above the cost badge is intentionally
+ * blank. */
 .archivist-pc-sheet .pc-weapons-table .pc-weapon-header {
   display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) 72px 64px minmax(120px, 1.2fr);
   align-items: baseline;
   gap: var(--pc-space-2);
   padding: var(--pc-space-1);
@@ -7774,8 +8134,34 @@ body.theme-light .archivist-tag-atk:hover {
   padding: 9px 14px; border-bottom: 2px solid var(--pc-crimson);
 }
 .archivist-pc-sheet .pc-builder-avatar {
+  position: relative;
   width: 24px; height: 24px; border-radius: 50%;
   background: var(--pc-parchment-dark); border: 1px solid var(--pc-tan);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.archivist-pc-sheet .pc-builder-avatar .pc-avatar-img {
+  width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 50%;
+}
+.archivist-pc-sheet .pc-builder-avatar svg.pc-avatar-icon {
+  width: 60%; height: 60%; color: var(--pc-crimson); opacity: 0.85;
+}
+/* Crop math is valid ONLY in a square box (left/top % resolve against the equal box side).
+ * max-width: none is load-bearing (see the header-avatar crop rule in components.css):
+ * Obsidian's `.workspace-leaf-content img:not([width]) { max-width: 100% }` would
+ * otherwise clamp the width > 100% upscale every size < 1 crop needs. */
+.archivist-pc-sheet .pc-builder-avatar.pc-avatar-cropped .pc-avatar-img {
+  position: absolute;
+  width: calc(var(--pc-crop-w) * 100%);
+  max-width: none;
+  height: auto;
+  left: calc(var(--pc-crop-x) * -100%);
+  top: calc(var(--pc-crop-y) * -100%);
+  object-fit: unset;
+  /* border-radius: 0 is load-bearing (see the header-avatar crop rule in
+   * components.css): the base .pc-avatar-img border-radius: 50% turns this
+   * NON-square cropped img into an ellipse that leaves parchment gaps; the
+   * circular mask must come from the host box's overflow: hidden alone. */
+  border-radius: 0;
 }
 .archivist-pc-sheet .pc-builder-title {
   font-family: var(--pc-font-serif); font-weight: 700; color: var(--pc-crimson); font-size: var(--pc-fs-heading);
@@ -8876,3 +9262,164 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-builder-foot-hint + .pc-builder-next { margin-left: 8px; }
 .archivist-pc-sheet .pc-builder-step-badge { flex-basis: 100%; padding-left: 22px; font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); color: var(--pc-text-muted); letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; }
 .archivist-pc-sheet .pc-builder-step { flex-wrap: wrap; }
+
+
+/* ============================================
+   pc/max-hp-modal.css
+   ============================================ */
+/* Max HP modal (P5). Frame comes from .archivist-modal; everything here is
+   layout + token-mapped typography, scoped under .pc-maxhp-modal.
+   NB: --pc-fs-display does not exist in the .archivist-modal token set (it
+   only redeclares a subset of tokens.css's full list): .pc-maxhp-big uses
+   --pc-fs-big instead (same 22px value, present in both scopes). */
+.pc-maxhp-modal { text-align: center; font-family: var(--pc-font-serif); }
+.pc-maxhp-title {
+  display: flex; justify-content: center; align-items: baseline; gap: 8px;
+  margin: 0 0 10px;
+  font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--pc-text-primary);
+}
+.pc-maxhp-dice { font-weight: 400; letter-spacing: 0; text-transform: none; opacity: 0.7; }
+.pc-maxhp-big { margin: 0 0 6px; font-size: var(--pc-fs-big); font-weight: 700; line-height: 1.15; color: var(--pc-text-primary); }
+.pc-maxhp-eq { font-size: var(--pc-fs-body); margin: 4px 0 12px; }
+.pc-maxhp-eq.is-greyed { opacity: 0.42; }
+.pc-maxhp-term.is-negative { color: var(--pc-crimson); }
+.pc-maxhp-fields {
+  display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+  border-top: 1px dashed var(--pc-tan); padding-top: 12px;
+}
+.pc-maxhp-field { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.pc-maxhp-field-lbl {
+  font-size: var(--pc-fs-micro); font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; opacity: 0.65; font-family: var(--pc-font-sans);
+}
+/* Keep the value box centered under its label: the clear mark hangs OUTSIDE
+   the centering flow (absolute, to the right of the box) instead of shifting
+   the box left by half its width. */
+.pc-maxhp-field-val {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.pc-maxhp-field-val .archivist-override-mark {
+  position: absolute; left: 100%; margin-left: 3px;
+}
+.pc-maxhp-box {
+  display: inline-block; min-width: 58px; text-align: center;
+  font-size: var(--pc-fs-mid); padding: 3px 8px; cursor: pointer;
+  border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light);
+}
+/* The inline input replaces .pc-maxhp-box on click (makeInlineInput copies the
+   box's classes). The shared input.pc-edit-inline base (width 3ch, no border,
+   transparent) outranks .pc-maxhp-box, so re-assert the box metrics at higher
+   specificity to stop the swap from jumping. */
+.pc-maxhp-modal .pc-maxhp-field-val input.pc-edit-inline {
+  width: auto; min-width: 58px; max-width: 84px; box-sizing: border-box;
+  text-align: center; font-size: var(--pc-fs-mid); padding: 3px 8px;
+  border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light);
+}
+.pc-maxhp-box.is-placeholder { opacity: 0.55; font-style: italic; font-weight: 400; }
+.pc-maxhp-box.is-negative { color: var(--pc-crimson); }
+.pc-maxhp-field-hint { font-size: var(--pc-fs-micro); opacity: 0.55; font-style: italic; }
+
+
+/* ============================================
+   pc/coin-modal.css
+   ============================================ */
+/* Coin modal (R3-P5). Frame comes from .archivist-modal; everything here is
+   layout + token-mapped typography, scoped under .pc-coin-modal. The coin
+   color tokens (--pc-coin-*) are sheet-scope in tokens.css and are
+   re-declared for modal scope in src/styles/archivist-dnd.css's
+   .archivist-modal token block — without that, the SVG fills resolve to
+   nothing. Metrics mirror the user-approved companion mock
+   (scratchpad/p5-coin/companion/, minus the removed .pc-coin-hint footer). */
+.pc-coin-modal { text-align: center; font-family: var(--pc-font-serif); min-width: 340px; }
+.pc-coin-title {
+  display: flex; justify-content: center; align-items: baseline; gap: 8px;
+  margin: 0 0 10px;
+  font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--pc-text-primary);
+}
+.pc-coin-total { margin: 0 0 2px; font-size: var(--pc-fs-big); font-weight: 700; line-height: 1.15; color: var(--pc-text-primary); }
+.pc-coin-total-unit { font-size: var(--pc-fs-body); font-weight: 400; opacity: .6; margin-left: 4px; }
+
+.pc-coin-shape { display: inline-flex; flex: none; }
+.pc-coin-modal .pc-currency-denom {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase; line-height: 1;
+}
+.pc-coin-modal .coin-pp { color: var(--pc-coin-pp); }
+.pc-coin-modal .coin-gp { color: var(--pc-coin-gp); }
+.pc-coin-modal .coin-ep { color: var(--pc-coin-ep); }
+.pc-coin-modal .coin-sp { color: var(--pc-coin-sp); }
+.pc-coin-modal .coin-cp { color: var(--pc-coin-cp); }
+
+.pc-coin-ledger { margin-top: 10px; }
+.pc-coin-lrow {
+  display: flex; align-items: center; gap: 10px; padding: 7px 2px;
+  border-top: 1px dashed rgba(217, 196, 132, .8); text-align: left;
+}
+.pc-coin-lrow:first-child { border-top: none; }
+.pc-coin-lrow-main { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.pc-coin-lrow-name { font-family: var(--pc-font-serif); font-size: var(--pc-fs-body); font-weight: 700; color: var(--pc-text-primary); }
+.pc-coin-lrow-abbr { font-weight: 400; color: var(--pc-text-muted); margin-left: 3px; }
+.pc-coin-lrow-hint { font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); color: var(--pc-text-muted); }
+.pc-coin-lrow-val {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-mid); font-weight: 700;
+  color: var(--pc-text-primary); cursor: pointer; min-width: 44px; text-align: right;
+}
+/* makeInlineInput copies the host's classes onto the input; the shared
+   input.pc-edit-inline base (3ch, borderless) outranks the copied class, so
+   re-assert the value metrics at higher specificity (max-hp-modal.css model). */
+.pc-coin-modal .pc-coin-lrow input.pc-edit-inline {
+  width: 64px; min-width: 44px; box-sizing: border-box; text-align: right;
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-mid); font-weight: 700;
+  box-shadow: none;
+}
+
+.pc-coin-adjust { margin-top: 12px; border-top: 1px dashed var(--pc-tan); padding-top: 10px; }
+.pc-coin-adjust-title {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-md); text-transform: uppercase;
+  color: var(--pc-text-soft); margin: 0 0 8px; text-align: left;
+}
+.pc-coin-adjust-grid { display: flex; gap: 8px; justify-content: center; }
+.pc-coin-adjust-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pc-coin-adjust-lbl { display: flex; align-items: center; gap: 4px; }
+/* box-shadow:none kills Obsidian's var(--input-shadow) inner box — SCOPED
+   here on purpose; the global input fix is P3's lane (idempotent overlap). */
+.pc-coin-modal input.pc-coin-adjust-input {
+  width: 52px; text-align: center; font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  padding: 4px 6px; border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light); color: var(--pc-text-primary);
+  box-shadow: none; outline: none;
+}
+.pc-coin-modal input.pc-coin-adjust-input:focus { border-color: var(--pc-crimson); box-shadow: none; }
+.pc-coin-modal input.pc-coin-adjust-input.is-error { border-color: var(--pc-crimson); background: rgba(146, 38, 16, .06); }
+
+.pc-coin-adjust-btns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+/* display:inline-block + height:auto resets Obsidian's forced button height
+   (the passive-tab gotcha). */
+.pc-coin-modal button.pc-coin-btn {
+  display: inline-block; height: auto;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-label); font-weight: 700;
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  padding: 5px 12px; border: 1px solid var(--pc-tan); border-radius: 4px;
+  background: var(--pc-parchment-light); color: var(--pc-text-primary); cursor: pointer;
+  box-shadow: none;
+}
+/* Obsidian dresses <button> with var(--input-shadow) (plus hover/focus/active
+   variants) which reads as a spurious drop shadow on these action buttons.
+   Null it in ALL states, scoped to the coin modal's buttons only. */
+.pc-coin-modal button.pc-coin-btn:hover,
+.pc-coin-modal button.pc-coin-btn:focus,
+.pc-coin-modal button.pc-coin-btn:focus-visible,
+.pc-coin-modal button.pc-coin-btn:active {
+  box-shadow: none;
+}
+.pc-coin-modal button.pc-coin-btn.is-add { color: var(--pc-rarity-uncommon); border-color: var(--pc-rarity-uncommon); background: rgba(47, 111, 58, .07); }
+.pc-coin-modal button.pc-coin-btn.is-add:hover { background: rgba(47, 111, 58, .14); }
+.pc-coin-modal button.pc-coin-btn.is-sub { color: var(--pc-crimson); border-color: var(--pc-crimson); background: rgba(146, 38, 16, .06); }
+.pc-coin-modal button.pc-coin-btn.is-sub:hover { background: rgba(146, 38, 16, .12); }
+.pc-coin-modal button.pc-coin-btn.is-clear { color: var(--pc-text-soft); }

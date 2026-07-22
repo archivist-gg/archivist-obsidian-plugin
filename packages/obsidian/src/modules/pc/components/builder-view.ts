@@ -8,6 +8,7 @@ import { renderDetailsStep, getHpSeedChoice } from "./builder/details-step";
 import { renderEquipmentStep } from "./builder/equipment-step";
 import { stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
 import { humanizeSlug } from "../../../shared/rendering/renderer-utils";
+import { renderAvatarContent } from "./avatar-content";
 
 /** The full-screen Character Builder shell. Rendered by renderPCSheet in place
  *  of the sheet body when the character has no class. Step bodies are filled in
@@ -25,7 +26,8 @@ export class BuilderView implements SheetComponent {
     // Top bar with a live summary.
     const name = ctx.resolved.definition?.name ?? "New Character";
     const bar = root.createDiv({ cls: "pc-builder-topbar" });
-    bar.createDiv({ cls: "pc-builder-avatar" });
+    const av = bar.createDiv({ cls: "pc-builder-avatar" });
+    renderAvatarContent(av, ctx.portraitUrl, ctx.portraitCrop);
     bar.createDiv({ cls: "pc-builder-title", text: `Create Character: ${name}` });
     const sum = bar.createDiv({ cls: "pc-builder-summary" });
     const lvl = ctx.derived?.totalLevel ?? 0;

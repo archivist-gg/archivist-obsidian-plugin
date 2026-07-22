@@ -184,8 +184,10 @@ describe("InventoryTab — full integration", () => {
     // List rows — one per equipment entry
     expect(root.querySelectorAll(".pc-inv-row").length).toBe(4);
 
-    // Currency strip — all 5 coins
-    expect(root.querySelectorAll(".pc-currency-cell")).toHaveLength(5);
+    // Currency strip — EP hidden at 0 on the sheet (modal-mode EP-hide), 4 of 5 coins visible
+    expect([...root.querySelectorAll(".pc-currency-denom")].map((d) => d.textContent))
+      .toEqual(["PP", "GP", "SP", "CP"]);
+    expect(root.querySelectorAll(".pc-currency-cell")).toHaveLength(4);
 
     // Carried-weight in heading
     expect(root.querySelector(".pc-inv-meta-suffix")?.textContent).toMatch(/24/);

@@ -439,7 +439,7 @@ describe("recalc against bundle conditional bonuses", () => {
   }
 
   it("Bracers of Defense applies +2 AC when no armor and no shield", () => {
-    const bracers = loadBundleItem("srd-5e_bracers-of-defense");
+    const bracers = loadBundleItem("srd-5e_item_bracers-of-defense");
     expect(bracers.bonuses?.ac).toMatchObject({
       value: 2,
       when: [{ kind: "no_armor" }, { kind: "no_shield" }],
@@ -450,7 +450,7 @@ describe("recalc against bundle conditional bonuses", () => {
   });
 
   it("Bracers of Defense skips when shield equipped", () => {
-    const bracers = loadBundleItem("srd-5e_bracers-of-defense");
+    const bracers = loadBundleItem("srd-5e_item_bracers-of-defense");
     const ctx = makeBundleContext({
       equippedSlots: {
         armor: undefined,
@@ -462,7 +462,7 @@ describe("recalc against bundle conditional bonuses", () => {
   });
 
   it("Arrow-Catching Shield is informational (Tier 2 vs ranged)", () => {
-    const acs = loadBundleItem("srd-5e_arrow-catching-shield");
+    const acs = loadBundleItem("srd-5e_item_arrow-catching-shield");
     expect(acs.bonuses?.ac).toMatchObject({
       value: 2,
       when: [{ kind: "vs_attack_type", value: "ranged" }],

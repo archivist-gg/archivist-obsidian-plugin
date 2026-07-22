@@ -16,6 +16,28 @@ import {
 import type { PCServices } from "../packages/obsidian/src/modules/pc/pc.services";
 import { WorkspaceLeaf } from "obsidian";
 
+// Spy on closeMaxHpModal while keeping openMaxHpModal/refreshMaxHpModal real —
+// HpWidget (rendered as part of every sheet render in this file) calls
+// refreshMaxHpModal unconditionally, so it must stay live.
+const closeMaxHpModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/max-hp-modal", async () => {
+  const actual = await vi.importActual<
+    typeof import("../packages/obsidian/src/modules/pc/components/max-hp-modal")
+  >("../packages/obsidian/src/modules/pc/components/max-hp-modal");
+  return { ...actual, closeMaxHpModal: closeMaxHpModalMock };
+});
+
+// Twin spy for closeCoinModal — every view-teardown site that closes the Max HP
+// modal must also close the coin modal (same zombie-modal hazard). Keep the rest
+// of the coin-modal module real so the strip's refresh path stays live.
+const closeCoinModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/coin-modal", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>(
+    "../packages/obsidian/src/modules/pc/components/coin-modal",
+  );
+  return { ...actual, closeCoinModal: closeCoinModalMock };
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BLADESWORN = {
@@ -219,5 +241,133 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     expect(view.lastWrittenData).toBeNull();
     // @ts-expect-error
     expect(view.isDirty).toBe(false);
+  });
+
+  it("onunload closes the Max HP modal (view unload: plugin disable / pane close)", async () => {
+    // setViewData/onLoadFile/clear only cover same-leaf file switches — none of
+    // them fire when the VIEW ITSELF is unloaded (plugin disable, leaf/tab
+    // close, workspace teardown). Without an onunload hook, a modal opened
+    // against this view's editState would survive as a zombie wired to a dead
+    // view.
+    const { view } = await bootView();
+    closeMaxHpModalMock.mockClear();
+    closeCoinModalMock.mockClear();
+    view.onunload();
+    expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
+    expect(closeCoinModalMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("PCSheetView — portrait write path (P4)", () => {
+  it("applyPortrait adds the frontmatter line, preserves pc block + tail, and survives a later pc-block edit (AC5)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]");
+    let out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out.startsWith("---\narchivist-type: pc\n")).toBe(true);
+    expect(out).toContain("```pc");
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+    // THE RISK-1 regression: a subsequent pc-block edit must splice at the
+    // recomputed range, not the stale pre-splice line numbers.
+    // @ts-expect-error test access
+    view.editState!.setInspiration(3);
+    await Promise.resolve();
+    out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out).toMatch(/inspiration:\s*3/);
+    expect(out.match(/```/g)!.length).toBe(2);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+  it("applyPortrait(null) removes the line entirely (AC3)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]");
+    view.applyPortrait(null);
+    expect(view.getViewData()).not.toContain("archivist-portrait");
+  });
+  it("keeps the active tab across a portrait write (AC6) and swallows its own save echo", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error test access
+    view.activeTabId = "panel-inventory";
+    view.applyPortrait("[[Art/face.png]]");
+    // @ts-expect-error test access
+    expect(view.activeTabId).toBe("panel-inventory");
+    const echoed = view.getViewData();
+    const hc = vi.spyOn(view as unknown as { handleChange: () => void }, "handleChange");
+    view.setViewData(echoed, false);
+    expect(hc).not.toHaveBeenCalled();
+  });
+  it("resolve path is null-guarded in the mock env: portraitUrl stays null, no throw (F2)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]");
+    // @ts-expect-error test access
+    expect(view.portraitUrl).toBeNull();
+  });
+  it("preResolvedUrl bypasses the read path (import flow, AC2)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/new.png]]", "app://res/Art/new.png");
+    // @ts-expect-error test access
+    expect(view.portraitUrl).toBe("app://res/Art/new.png");
+  });
+  it("dirty edit THEN portrait write: both land in one save (interleave)", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error test access
+    view.editState!.setInspiration(9);
+    await Promise.resolve();
+    view.applyPortrait("[[Art/face.png]]");
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out).toMatch(/inspiration:\s*9/);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+});
+
+describe("PCSheetView - crop write path (P4b)", () => {
+  it("writes both keys in one save; crop line sits in frontmatter; pc block intact", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]", undefined, { x: 0.2, y: 0.3, size: 0.6 });
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[Art/face.png]]"');
+    expect(out).toContain('archivist-portrait-crop: "0.2000,0.3000,0.6000"');
+    expect(out.match(/```/g)!.length).toBe(2);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+  it("crop undefined leaves an existing crop line untouched", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[a.png]]", undefined, { x: 0.1, y: 0.1, size: 0.5 });
+    view.applyPortrait("[[b.png]]");
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait: "[[b.png]]"');
+    expect(out).toContain('archivist-portrait-crop: "0.1000,0.1000,0.5000"');
+  });
+  it("crop null removes the crop line; link null removes BOTH regardless of crop arg", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[a.png]]", undefined, { x: 0.1, y: 0.1, size: 0.5 });
+    view.applyPortrait("[[a.png]]", undefined, null);
+    expect(view.getViewData()).not.toContain("archivist-portrait-crop");
+    view.applyPortrait("[[a.png]]", undefined, { x: 0.1, y: 0.1, size: 0.5 });
+    view.applyPortrait(null, undefined, { x: 0.9, y: 0.9, size: 0.1 });
+    const out = view.getViewData();
+    expect(out).not.toContain("archivist-portrait");
+  });
+  it("AC8 extended: pc-block edit after portrait+crop write splices correctly", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[Art/face.png]]", undefined, { x: 0.2, y: 0.3, size: 0.6 });
+    // @ts-expect-error test access
+    view.editState!.setInspiration(4);
+    await Promise.resolve();
+    const out = view.getViewData();
+    expect(out).toContain('archivist-portrait-crop: "0.2000,0.3000,0.6000"');
+    expect(out).toMatch(/inspiration:\s*4/);
+    expect(out.match(/```/g)!.length).toBe(2);
+    expect(out.trimEnd().endsWith("The wary one.")).toBe(true);
+  });
+  it("portraitCrop state re-read from the spliced file (mock env: parse works without app)", async () => {
+    const { view } = await bootView();
+    view.applyPortrait("[[a.png]]", "app://res/a.png", { x: 0.2, y: 0.3, size: 0.6 });
+    // @ts-expect-error test access
+    expect(view.portraitCrop).toEqual({ x: 0.2, y: 0.3, size: 0.6 });
+    view.applyPortrait(null);
+    // @ts-expect-error test access
+    expect(view.portraitCrop).toBeNull();
   });
 });

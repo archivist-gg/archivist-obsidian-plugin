@@ -4,6 +4,7 @@ import type { ActionEntry } from "./action-model";
 import { renderConditionTag } from "../condition-tag";
 import { renderCostBadge, type ActionCost } from "./cost-badge";
 import { renderRowExpand as renderInventoryRowExpand } from "../inventory/inventory-row-expand";
+import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
 import { renderSituationalRows } from "../situational-rows";
 import { renderTextWithInlineTags } from "../../../../shared/rendering/renderer-utils";
 
@@ -17,11 +18,12 @@ const attackDisSources = new Set([
  * weapon-specific logic (the once-per-group has-mastery scan, the labeled
  * header row, threading `hasMastery` into each row) lives in this file.
  *
- * When ANY entry carries 2024 weapon mastery, a labeled header row renders
- * (a blank leading cell over the cost badge, then Name · Range · Hit · Damage ·
- * Mastery) and every row switches to the 6-col has-mastery grid so the Mastery
- * column lines up. A group with no mastery renders no header and keeps the
- * unchanged 5-col grid.
+ * The labeled header ALWAYS renders: a blank leading cell over the cost badge,
+ * then Name, Range, Hit, Damage over the base 5-col grid. The Mastery column
+ * only renders when the group has a mastery weapon: the header then also gains
+ * the `has-mastery` class plus a trailing Mastery cell, and every row switches
+ * to the 6-col has-mastery grid so the Mastery column lines up. A group with no
+ * mastery keeps the unchanged 5-col grid, now with column labels above it.
  */
 export function renderWeaponsGroup(
   list: HTMLElement,
@@ -33,13 +35,14 @@ export function renderWeaponsGroup(
     .map((e) => e.attack);
   const hasMastery = attacks.some((a) => !!a.mastery);
 
+  const header = list.createDiv({ cls: "pc-weapon-header" });
+  if (hasMastery) header.addClass("has-mastery");
+  header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
+  header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
   if (hasMastery) {
-    const header = list.createDiv({ cls: "pc-weapon-header has-mastery" });
-    header.createDiv({ cls: "pc-weapon-header-cost" }); // blank leading cell over the cost badge
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Name" });
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Range" });
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Hit" });
-    header.createDiv({ cls: "pc-weapon-header-cell", text: "Damage" });
     header.createDiv({ cls: "pc-weapon-header-cell pc-weapon-header-mastery", text: "Mastery" });
   }
 
@@ -89,8 +92,14 @@ export function renderWeaponRow(
     nameCell.createDiv({ cls: "pc-weapon-note", text: a.attackNotes.join(" · ") });
   }
 
-  // Range
-  row.createDiv({ cls: "pc-weapon-range", text: a.range ?? "" });
+  // Range — container so a throwable melee weapon can stack its thrown range
+  // as a second muted line ("5 ft" over "20/60 ft").
+  const rangeCell = row.createDiv({ cls: "pc-weapon-range" });
+  rangeCell.createDiv({ cls: "pc-weapon-range-main", text: a.range ?? "" });
+  if (a.thrownRange) {
+    const thrown = rangeCell.createDiv({ cls: "pc-weapon-range-thrown", text: a.thrownRange });
+    thrown.title = "Thrown range";
+  }
 
   // Hit (inline italic)
   const hitCell = row.createDiv({ cls: "pc-weapon-hit" });
@@ -171,8 +180,13 @@ export function renderWeaponRow(
   // Expand block = a full-width sibling div AFTER the row, rendered once and
   // toggled via `hidden` (no container redraw). Built eagerly like the feature
   // rows; the inventory expand is a pure read of the resolved equipment.
+  // AttackRow.id is `${index}:standard` — unique per equipped weapon slot and
+  // self-healing on index shift (same D1 contract as the item rows).
+  const expandKey = rowExpandKey("weapon", a.id);
   const expand = list.createDiv({ cls: "pc-action-expand pc-open-expand" });
-  expand.hidden = true;
+  const expanded = isRowExpanded(ctx, expandKey);
+  expand.hidden = !expanded;
+  if (expanded) row.classList.add("open", "pc-row-open");
   const inner = expand.createDiv({ cls: "pc-action-expand-inner" });
   const entry = findEntryForAttack(ctx, a);
   const resolved = findResolvedForAttack(ctx, a);
@@ -202,8 +216,10 @@ export function renderWeaponRow(
   // own listeners below so their clicks don't bubble up here.
   row.addEventListener("click", () => {
     expand.hidden = !expand.hidden;
-    row.classList.toggle("open", !expand.hidden);
-    row.classList.toggle("pc-row-open", !expand.hidden);
+    const nowOpen = !expand.hidden;
+    row.classList.toggle("open", nowOpen);
+    row.classList.toggle("pc-row-open", nowOpen);
+    setRowExpanded(ctx, expandKey, nowOpen);
   });
 
   // Dice tags rolled inline — prevent bubbling to the row click.

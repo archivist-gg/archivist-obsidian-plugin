@@ -5,6 +5,7 @@ import type { RegisteredEntity } from "@archivist-gg/core";
 import { ALL_SKILL_SLUGS } from "@archivist-gg/dnd5e/types/choice";
 import { renderChoiceCallout } from "./choice-callout";
 import { applyChoiceToggle } from "./decision-strip";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 // ── Form state ────────────────────────────────────────────────────────────
 
@@ -314,7 +315,13 @@ function renderBorrow(
   st: CustomBackgroundState,
   redraw: () => void,
 ): void {
-  const backgrounds = ctx.services.entities.search("", "background", Number.POSITIVE_INFINITY);
+  // Hidden compendiums drop out of the borrow list. A borrowed feature is copied
+  // by VALUE into state (name + description), never held as a slug reference, so
+  // there is no currently-selected slug to exempt: hidden means gone.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+  const backgrounds = ctx.services.entities
+    .search("", "background", Number.POSITIVE_INFINITY)
+    .filter((e) => entityCompendiumVisible(e, hidden));
   // Every background's feature, as {name, description} options keyed by name.
   const features = backgrounds
     .map((e: RegisteredEntity) => (e.data as { feature?: { name?: string; description?: string } }).feature)
@@ -409,7 +416,13 @@ function render2024Drawer(
   // ── Origin feat: a simple select over registry feats, "None" by default.
   const featRow = box.createDiv({ cls: "pc-b2024-featrow" });
   featRow.createSpan({ cls: "pc-b2024-featlbl", text: "Origin Feat" });
-  const feats = ctx.services.entities.search("", "feat", Number.POSITIVE_INFINITY);
+  // Hidden compendiums drop out of the origin-feat list. The origin feat is a
+  // SLUG reference (extras.originFeat), so the currently-selected feat is exempt
+  // and keeps resolving even when its compendium is hidden.
+  const hidden = hiddenCompendiumSet(ctx.services.plugin?.settings);
+  const feats = ctx.services.entities
+    .search("", "feat", Number.POSITIVE_INFINITY)
+    .filter((e) => entityCompendiumVisible(e, hidden) || e.slug === extras.originFeat);
   const select = featRow.createEl("select", { cls: "pc-b2024-feat pc-bdd" });
   select.createEl("option", { text: "None", attr: { value: "" } });
   for (const f of feats) {

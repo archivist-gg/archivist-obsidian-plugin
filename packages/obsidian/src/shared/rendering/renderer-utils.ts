@@ -12,6 +12,13 @@ export type { FormulaContext };
 export const humanizeSlug = (s: string): string =>
   s.replace(/-/g, " ").replace(/(^|\s)\w/g, (c) => c.toUpperCase());
 
+/** "two_handed" → "Two Handed", "special_(net)" → "Special (Net)". Apostrophe-safe
+ *  title-case for -/_ tokens (categories, properties, kinds). Distinct from
+ *  humanizeSlug, which must preserve underscores in compendium-namespaced slugs.
+ *  MUST stay byte-identical to the dnd5e engine's humanizeWeaponToken (spec D7). */
+export const humanizeToken = (s: string): string =>
+  s.replace(/[-_]/g, " ").replace(/(^|[\s(])\w/g, (c) => c.toUpperCase());
+
 /** Display string for one starting-equipment grant (renderer-side preview only). */
 export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number }): string {
   if (g.gold != null) return `${g.gold} GP`;

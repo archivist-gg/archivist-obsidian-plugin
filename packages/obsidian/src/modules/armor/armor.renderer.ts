@@ -1,14 +1,11 @@
 import type { ArmorEntity } from "@archivist-gg/dnd5e/armor/armor.types";
+import { humanizeToken } from "../../shared/rendering/renderer-utils";
 
 function buildSubtitle(armor: ArmorEntity): string {
   const parts: string[] = [];
-  if (armor.category) parts.push(capitalize(armor.category));
-  if (armor.rarity) parts.push(capitalize(armor.rarity));
+  if (armor.category) parts.push(humanizeToken(armor.category));
+  if (armor.rarity) parts.push(humanizeToken(armor.rarity));
   return parts.join(" • ");
-}
-
-function capitalize(s: string): string {
-  return s.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function formatAC(ac: ArmorEntity["ac"]): string {
