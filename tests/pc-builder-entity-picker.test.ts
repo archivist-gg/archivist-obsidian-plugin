@@ -15,10 +15,10 @@ const races: RegisteredEntity[] = [
     data: { name: "Human", edition: "2024", size: "medium" }, compendium: "SRD 2024", readonly: true, homebrew: false },
 ];
 
-function fakeCtx(bag: Map<string, unknown>): ComponentRenderContext {
+function fakeCtx(bag: Map<string, unknown>, hidden: string[] = []): ComponentRenderContext {
   return {
     services: {
-      plugin: {},
+      plugin: { settings: { hiddenCompendiums: hidden } },
       entities: {
         search: (q: string, type: string) =>
           races.filter((r) => r.entityType === type && r.name.toLowerCase().includes(q.toLowerCase())),
@@ -169,5 +169,34 @@ describe("renderEntityPicker (single-select ledger)", () => {
     input.dispatchEvent(new Event("input"));
     expect(root.querySelectorAll(".pc-btable-row").length).toBe(0);
     expect(root.querySelector(".pc-btable-empty")?.textContent).toBe("No matches.");
+  });
+});
+
+describe("compendium visibility (F2)", () => {
+  it("a hidden compendium's chip is absent and its rows are gone", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map(), ["SRD 5e"]), baseOpts());
+    const chips = [...root.querySelectorAll(".pc-bfilter-chip")].map((c) => c.textContent);
+    expect(chips).toEqual(["SRD 2024"]);
+    const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toEqual(["Human"]);
+  });
+
+  it("stale persisted ticked state cannot resurrect a hidden compendium", () => {
+    const bag = new Map<string, unknown>();
+    bag.set("p", { query: "", ticked: { ticked: new Set(["SRD 5e", "SRD 2024"]) } });
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(bag, ["SRD 5e"]), baseOpts());
+    const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toEqual(["Human"]);
+  });
+
+  it("selected-exemption: the current selection's row survives hiding its compendium", () => {
+    const root = mountContainer();
+    renderEntityPicker(root, fakeCtx(new Map(), ["SRD 5e"]),
+      { ...baseOpts(), selectedSlug: "srd-5e_elf" });
+    const names = [...root.querySelectorAll(".pc-btable-name")].map((n) => n.textContent);
+    expect(names).toContain("Elf");
+    expect(names).toContain("Human");
   });
 });
