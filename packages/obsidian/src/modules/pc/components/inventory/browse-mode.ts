@@ -8,6 +8,7 @@ import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
 import { renderRowExpand } from "./inventory-row-expand";
 import { humanizeToken } from "../../../../shared/rendering/renderer-utils";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 
@@ -210,14 +211,16 @@ function collectCompendiumItems(ctx: ComponentRenderContext): VisibleEntry[] {
           query: string,
           entityType: string | undefined,
           limit?: number,
-        ) => Array<{ slug: string; name?: string; entityType?: string; data?: object }>;
+        ) => Array<{ slug: string; name?: string; entityType?: string; data?: object; compendium?: string }>;
       }
     | undefined;
 
+  const hidden = hiddenCompendiumSet(ctx.services?.plugin?.settings);
   const out: VisibleEntry[] = [];
   for (const type of COMPENDIUM_TYPES) {
     const all = reg?.search?.("", type, ENUMERATE_LIMIT) ?? [];
     for (const ent of all) {
+      if (!entityCompendiumVisible(ent, hidden)) continue;
       const entry: EquipmentEntry = { item: `[[${ent.slug}]]` };
       const entity = (ent.data ?? {}) as never;
       const entityType = ent.entityType ?? type;
