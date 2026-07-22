@@ -56,6 +56,7 @@ import {
 import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
+import { hiddenCompendiumSet } from "./shared/entities/compendium-visibility";
 
 // Settings
 import type { ArchivistSettings } from "./core/plugin-settings";
@@ -229,7 +230,9 @@ export default class ArchivistPlugin extends Plugin {
     this.registerEditorExtension(dndBlockDeleteKeymap);
 
     // Editor entity suggest ({{monster:, {{spell:, etc.)
-    this.registerEditorSuggest(new CompendiumEditorSuggest(this.app, this.entityRegistry));
+    this.registerEditorSuggest(
+      new CompendiumEditorSuggest(this.app, this.entityRegistry, () => hiddenCompendiumSet(this.settings)),
+    );
 
     // D&D insert commands — one per module that exposes an insert modal.
     // Command names preserve the pre-refactor wording so existing hotkey

@@ -1,6 +1,12 @@
 import { App, Editor, EditorPosition, EditorSuggest, EditorSuggestContext, EditorSuggestTriggerInfo, TFile } from "obsidian";
 import { setIcon } from "obsidian";
 import { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
+import { entityCompendiumVisible } from "../entities/compendium-visibility";
+
+/** Display cap. Enumerate the FULL match pool, filter, then slice: the registry
+ *  sorts the whole pool before slicing anyway, so this is free and hidden-heavy
+ *  prefixes can never starve visible suggestions below the cap. */
+const SUGGEST_LIMIT = 20;
 
 const TYPE_PREFIXES: Record<string, string> = {
   monster: "monster",
@@ -49,10 +55,12 @@ export function adjustEndForBracketMatch(
 
 export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
   private registry: EntityRegistry;
+  private getHidden: () => ReadonlySet<string>;
 
-  constructor(app: App, registry: EntityRegistry) {
+  constructor(app: App, registry: EntityRegistry, getHidden: () => ReadonlySet<string>) {
     super(app);
     this.registry = registry;
+    this.getHidden = getHidden;
   }
 
   onTrigger(cursor: EditorPosition, editor: Editor, _file: TFile | null): EditorSuggestTriggerInfo | null {
@@ -81,7 +89,11 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
       searchQuery = query.trim();
     }
 
-    return this.registry.search(searchQuery, entityType, 20);
+    const hidden = this.getHidden();
+    return this.registry
+      .search(searchQuery, entityType, Number.POSITIVE_INFINITY)
+      .filter((e) => entityCompendiumVisible(e, hidden))
+      .slice(0, SUGGEST_LIMIT);
   }
 
   renderSuggestion(entity: RegisteredEntity, el: HTMLElement): void {

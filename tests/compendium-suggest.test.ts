@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { detectCompendiumTrigger, adjustEndForBracketMatch } from "../packages/obsidian/src/shared/extensions/compendium-suggest";
+import { CompendiumEditorSuggest } from "../packages/obsidian/src/shared/extensions/compendium-suggest";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import type { EditorSuggestContext } from "obsidian";
 
 describe("compendium suggest trigger detection", () => {
   it("triggers on {{ with bracket matching (cursor between {{ and }})", () => {
@@ -57,5 +60,38 @@ describe("adjustEndForBracketMatch", () => {
   it("returns endCh unchanged when only single } follows", () => {
     const result = adjustEndForBracketMatch("{{monster:gob} text", 13);
     expect(result).toBe(13);
+  });
+});
+
+describe("getSuggestions compendium visibility (F9)", () => {
+  function mkSuggest(entries: Parameters<typeof buildMockRegistry>[0], hidden: string[]) {
+    return new CompendiumEditorSuggest({} as never, buildMockRegistry(entries), () => new Set(hidden));
+  }
+  const ctxFor = (query: string) => ({ query }) as EditorSuggestContext;
+
+  it("drops hidden-compendium entities and keeps visible ones", () => {
+    const s = mkSuggest([
+      { slug: "srd-5e_spell_fireball", name: "Fireball", entityType: "spell", data: {}, compendium: "SRD 5e" },
+      { slug: "srd-2024_spell_fireball", name: "Fireball", entityType: "spell", data: {}, compendium: "SRD 2024" },
+    ], ["SRD 5e"]);
+    expect(s.getSuggestions(ctxFor("fire")).map((e) => e.slug)).toEqual(["srd-2024_spell_fireball"]);
+  });
+
+  it("caps at 20 AFTER filtering: hidden matches never starve visible ones", () => {
+    const entries = [];
+    for (let i = 0; i < 25; i++) {
+      entries.push({ slug: `h_spell_a${i}`, name: `Aspell ${i}`, entityType: "spell", data: {}, compendium: "Hidden HB" });
+      entries.push({ slug: `v_spell_b${i}`, name: `Aspell z${i}`, entityType: "spell", data: {}, compendium: "Visible HB" });
+    }
+    const out = mkSuggest(entries, ["Hidden HB"]).getSuggestions(ctxFor("aspell"));
+    expect(out.length).toBe(20);
+    expect(out.every((e) => e.compendium === "Visible HB")).toBe(true);
+  });
+
+  it("empty hidden set returns everything (fail-open path)", () => {
+    const s = mkSuggest([
+      { slug: "srd-5e_spell_fireball", name: "Fireball", entityType: "spell", data: {}, compendium: "SRD 5e" },
+    ], []);
+    expect(s.getSuggestions(ctxFor("fire")).length).toBe(1);
   });
 });
