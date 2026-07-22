@@ -90,8 +90,14 @@ export function renderWeaponRow(
     nameCell.createDiv({ cls: "pc-weapon-note", text: a.attackNotes.join(" · ") });
   }
 
-  // Range
-  row.createDiv({ cls: "pc-weapon-range", text: a.range ?? "" });
+  // Range — container so a throwable melee weapon can stack its thrown range
+  // as a second muted line ("5 ft" over "20/60 ft").
+  const rangeCell = row.createDiv({ cls: "pc-weapon-range" });
+  rangeCell.createDiv({ cls: "pc-weapon-range-main", text: a.range ?? "" });
+  if (a.thrownRange) {
+    const thrown = rangeCell.createDiv({ cls: "pc-weapon-range-thrown", text: a.thrownRange });
+    thrown.title = "Thrown range";
+  }
 
   // Hit (inline italic)
   const hitCell = row.createDiv({ cls: "pc-weapon-hit" });

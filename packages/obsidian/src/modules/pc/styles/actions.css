@@ -208,6 +208,16 @@
   color: var(--pc-text-muted);
 }
 
+/* Range cell: the main line always renders; a throwable melee weapon stacks its
+ * thrown range as a second muted line. Muted-line tokens match .pc-action-row-sub
+ * (--pc-fs-small / --pc-text-muted, this file's local idiom for the Obsidian
+ * --font-smallest / --text-muted the plan drafted against). */
+.archivist-pc-sheet .pc-weapon-range { white-space: nowrap; }
+.archivist-pc-sheet .pc-weapon-range-thrown {
+  font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted);
+}
+
 /* 2024 Weapon Mastery: a real trailing grid CELL (6th column) on the weapons
  * table, NOT a hover chip. The label chip stacks over a compact one-line gist
  * (e.g. "Save DC 13 · on fail: Prone"). The full glossary prose lives in the
