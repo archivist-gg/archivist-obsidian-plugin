@@ -1573,6 +1573,11 @@ body.theme-light .archivist-tag-atk:hover {
   --pc-amber: #a3690e;
   --pc-row-open-bg: rgba(146, 38, 16, 0.04);
   --pc-rarity-uncommon: #2f6f3a;
+  --pc-coin-pp: #1f3f7a;
+  --pc-coin-gp: #a3590a;
+  --pc-coin-ep: #6b6f2a;
+  --pc-coin-sp: #4a5a66;
+  --pc-coin-cp: #8a3d1f;
   --pc-space-1: 4px;
   --pc-space-2: 8px;
   --pc-space-3: 12px;
