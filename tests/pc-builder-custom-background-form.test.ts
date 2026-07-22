@@ -10,7 +10,10 @@ vi.mock("obsidian", async () => {
 
 import { Notice } from "obsidian";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
-import { renderCustomBackgroundRow } from "../packages/obsidian/src/modules/pc/components/builder/custom-background";
+import {
+  renderCustomBackgroundRow,
+  emptyCustomBackgroundState,
+} from "../packages/obsidian/src/modules/pc/components/builder/custom-background";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
 
@@ -44,15 +47,57 @@ const LUCKY: RegisteredEntity = {
 
 const FEATS = [ALERT, LUCKY];
 
+// F8 fixtures: a hidden-compendium background/feat pair plus visible
+// counterparts, to prove the borrow list and origin-feat select drop
+// hidden-compendium content ("SRD 5e" is the hidden compendium below).
+const HIDDEN_BG: RegisteredEntity = {
+  slug: "srd-5e_shadow", name: "Shadow", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 5e",
+  data: { name: "Shadow", feature: { name: "Hidden Feature", description: "Hidden desc." } },
+} as unknown as RegisteredEntity;
+
+const VISIBLE_BG: RegisteredEntity = {
+  slug: "srd-2024_scholar", name: "Scholar", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024",
+  data: { name: "Scholar", feature: { name: "Visible Feature", description: "Visible desc." } },
+} as unknown as RegisteredEntity;
+
+const HIDDEN_ALERT: RegisteredEntity = {
+  slug: "srd-5e_feat_alert", name: "Alert", entityType: "feat", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 5e",
+  data: { name: "Alert" },
+} as unknown as RegisteredEntity;
+
+const HIDDEN_LUCKY: RegisteredEntity = {
+  slug: "srd-5e_feat_lucky", name: "Lucky", entityType: "feat", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 5e",
+  data: { name: "Lucky" },
+} as unknown as RegisteredEntity;
+
+const VISIBLE_TOUGH: RegisteredEntity = {
+  slug: "srd-2024_feat_tough", name: "Tough", entityType: "feat", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024",
+  data: { name: "Tough" },
+} as unknown as RegisteredEntity;
+
 function flushPromises(): Promise<void> {
   return new Promise((r) => setTimeout(r, 0));
 }
 
 /** Build a ctx whose compendium manager exposes both getAll() (a homebrew "Me")
  *  and a spy saveEntity resolving a registered entity with a generated slug. */
-function mkCtx(over: { saveEntity?: ReturnType<typeof vi.fn>; setBackground?: ReturnType<typeof vi.fn>; edition?: string } = {}): ComponentRenderContext {
+function mkCtx(over: {
+  saveEntity?: ReturnType<typeof vi.fn>;
+  setBackground?: ReturnType<typeof vi.fn>;
+  edition?: string;
+  backgrounds?: RegisteredEntity[];
+  feats?: RegisteredEntity[];
+  hiddenCompendiums?: string[];
+} = {}): ComponentRenderContext {
   const saveEntity = over.saveEntity ?? vi.fn().mockResolvedValue({ slug: "me_wandering-scholar" });
   const setBackground = over.setBackground ?? vi.fn();
+  const backgrounds = over.backgrounds ?? BACKGROUNDS;
+  const feats = over.feats ?? FEATS;
   return {
     resolved: {
       definition: { background: null, origin_choices: {}, class: [], edition: over.edition ?? "2014" },
@@ -60,10 +105,10 @@ function mkCtx(over: { saveEntity?: ReturnType<typeof vi.fn>; setBackground?: Re
     },
     derived: {},
     services: {
-      plugin: {},
+      plugin: over.hiddenCompendiums ? { settings: { hiddenCompendiums: over.hiddenCompendiums } } : {},
       entities: {
         search: (_q: string, type: string) =>
-          type === "background" ? BACKGROUNDS : type === "feat" ? FEATS : [],
+          type === "background" ? backgrounds : type === "feat" ? feats : [],
         getByTypeAndSlug: () => undefined,
       },
       compendiums: {
@@ -290,5 +335,40 @@ describe("renderCustomBackgroundRow", () => {
     await flushPromises();
     expect(Notice).toHaveBeenCalledWith(expect.stringContaining("File already exists"));
     expect(setBackground).not.toHaveBeenCalled();
+  });
+
+  it("borrow list omits features from hidden-compendium backgrounds (F8)", () => {
+    // Borrowed features are copied by VALUE into state (name + description), so
+    // there is no selected-exemption: a hidden-compendium background's feature
+    // simply never appears in the borrow list.
+    const container = mountContainer();
+    const ctx = mkCtx({ backgrounds: [HIDDEN_BG, VISIBLE_BG], hiddenCompendiums: ["SRD 5e"] });
+    renderCustomBackgroundRow(container, ctx);
+    container.querySelector<HTMLElement>(".pc-bcustomrow")!.click();
+    const options = [...container.querySelectorAll(".pc-bborrow option")].map((o) => o.textContent);
+    expect(options).not.toContain("Hidden Feature");
+    expect(options).toContain("Visible Feature");
+  });
+
+  it("origin-feat select omits hidden-compendium feats but keeps the selected one (F8)", () => {
+    // The origin feat is a SLUG reference (extras.originFeat), so the currently
+    // selected feat is exempt from hiding while other hidden feats drop out.
+    const container = mountContainer();
+    const ctx = mkCtx({
+      feats: [HIDDEN_ALERT, HIDDEN_LUCKY, VISIBLE_TOUGH],
+      hiddenCompendiums: ["SRD 5e"],
+    });
+    // Pre-seed the drawer open with the hidden Alert already selected as origin feat.
+    const st = emptyCustomBackgroundState();
+    st.extras2024 = { pool: [], originFeat: "srd-5e_feat_alert" };
+    ctx.builderUiState!.set("builder.bg-custom", st);
+    ctx.builderUiState!.set("builder.bg-custom.open", true);
+    renderCustomBackgroundRow(container, ctx);
+    const options = [...container.querySelectorAll(".pc-b2024-feat option")].map((o) =>
+      o.getAttribute("value"),
+    );
+    expect(options).toContain(""); // the "None" entry
+    expect(options).toContain("srd-5e_feat_alert"); // selected hidden feat kept
+    expect(options).not.toContain("srd-5e_feat_lucky"); // unselected hidden feat gone
   });
 });
