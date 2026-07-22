@@ -1,5 +1,6 @@
 import type { WeaponEntity, WeaponProperty } from "@archivist-gg/dnd5e/weapon/weapon.types";
 import type { AttackRow } from "@archivist-gg/dnd5e/pc/pc.types";
+import { classifyWeaponRange, type WeaponRangeModes } from "@archivist-gg/dnd5e/weapon/weapon.classify";
 import { humanizeToken } from "../../shared/rendering/renderer-utils";
 
 function formatDamage(d: WeaponEntity["damage"]): string {
@@ -9,9 +10,12 @@ function formatDamage(d: WeaponEntity["damage"]): string {
   return `${d.dice}${versatile}${type}`;
 }
 
-function formatRange(r: { normal: number; long: number } | undefined): string | null {
-  if (!r) return null;
-  return `${r.normal} / ${r.long} ft`;
+function formatRangeLine(modes: WeaponRangeModes): string | null {
+  const fmt = (r: { normal: number; long: number }) => `${r.normal}/${r.long} ft`;
+  if (modes.melee && modes.ranged) return `${modes.melee.reach} ft · thrown ${fmt(modes.ranged)}`;
+  if (modes.melee) return `${modes.melee.reach} ft`;
+  if (modes.ranged) return fmt(modes.ranged);
+  return null;
 }
 
 function formatProperty(p: WeaponProperty): string {
@@ -20,6 +24,13 @@ function formatProperty(p: WeaponProperty): string {
 }
 
 export function renderWeaponBlock(weapon: WeaponEntity, mastery?: AttackRow["mastery"]): HTMLElement {
+  // Derive the melee/ranged split from the same engine classifier the Actions-tab
+  // weapons row uses, so the expand card's range line and category subtitle agree
+  // with the row by construction (the SRD miscategorizes throwable melee weapons
+  // as `*-ranged`; the classifier reconstructs the true modes). `properties`
+  // defaults to [] to preserve this renderer's tolerance for partial weapon
+  // objects (inventory/browse call sites, mirrored by the guard below).
+  const modes = classifyWeaponRange({ ...weapon, properties: weapon.properties ?? [] });
   const doc = activeDocument;
   const wrapper = doc.createElement("div");
   wrapper.className = "archivist-weapon-block-wrapper archivist-item-block-wrapper";
@@ -37,7 +48,14 @@ export function renderWeaponBlock(weapon: WeaponEntity, mastery?: AttackRow["mas
   title.textContent = weapon.name;
   header.appendChild(title);
 
-  const subtitle = humanizeToken(weapon.category);
+  // Same token swap as the engine: a throwable melee weapon carries a `*-ranged`
+  // category in the data, so relabel it `*-melee` when the classifier says it has
+  // a melee mode. Pure-ranged weapons keep their real category.
+  const displayCategory =
+    modes.melee && /ranged/.test(weapon.category)
+      ? weapon.category.replace("ranged", "melee")
+      : weapon.category;
+  const subtitle = humanizeToken(displayCategory);
   const sub = doc.createElement("div");
   sub.className = "archivist-item-subtitle";
   sub.textContent = subtitle;
@@ -48,7 +66,7 @@ export function renderWeaponBlock(weapon: WeaponEntity, mastery?: AttackRow["mas
   block.appendChild(props);
 
   appendProperty(props, "Damage", formatDamage(weapon.damage));
-  const range = formatRange(weapon.range);
+  const range = formatRangeLine(modes);
   if (range) appendProperty(props, "Range", range);
 
   if (weapon.properties && weapon.properties.length > 0) {

@@ -17,7 +17,7 @@ edition: "2014"
 export const DAGGER = `
 name: Dagger
 slug: dagger
-category: simple-melee
+category: simple-ranged
 damage:
   dice: 1d4
   type: piercing
