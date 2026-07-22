@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 // are, see max-hp-modal.ts's Produces contract).
 interface MockModalInstance {
   contentEl: HTMLElement;
+  scope: { handlers: Record<string, () => boolean | void> };
   onOpen?: () => void;
   onClose?: () => void;
 }
@@ -19,6 +20,12 @@ vi.mock("obsidian", async () => {
     Modal: class {
       app: unknown;
       contentEl: HTMLElement;
+      scope = {
+        handlers: {} as Record<string, () => boolean | void>,
+        register(_mods: unknown, key: string, cb: () => boolean | void): void {
+          this.handlers[key] = cb;
+        },
+      };
       constructor(app: unknown) {
         this.app = app;
         this.contentEl = document.createElement("div");
@@ -346,5 +353,33 @@ describe("MaxHpModal", () => {
     const before = modalInstances.length;
     openMaxHpModal(ctx);
     expect(modalInstances.length).toBe(before + 1);
+  });
+
+  it("two-stage Escape: first cancels the active inline edit (modal stays open), second closes", () => {
+    const ctx = makeCtx({ breakdown: { averageDiceSum: 70, final: 70, derivedMax: 70 } });
+    openMaxHpModal(ctx);
+    const modal = lastModal();
+    const esc = modal.scope.handlers["Escape"];
+    expect(esc).toBeTypeOf("function");
+
+    // Start an inline edit on the Rolled field box.
+    (modal.contentEl.querySelectorAll(".pc-maxhp-box")[0] as HTMLElement).click();
+    expect(modal.contentEl.querySelector("input.pc-edit-inline")).not.toBeNull();
+
+    // Escape #1: edit cancelled, modal still open (repainted), event consumed.
+    expect(esc()).toBe(false);
+    expect(modal.contentEl.querySelector("input.pc-edit-inline")).toBeNull();
+    expect(modal.contentEl.childElementCount).toBeGreaterThan(0);
+
+    // Escape #2: modal closes (onClose empties contentEl).
+    expect(esc()).toBe(false);
+    expect(modal.contentEl.childElementCount).toBe(0);
+  });
+
+  it("Escape with no active inline edit closes immediately", () => {
+    openMaxHpModal(makeCtx({}));
+    const modal = lastModal();
+    expect(modal.scope.handlers["Escape"]()).toBe(false);
+    expect(modal.contentEl.childElementCount).toBe(0);
   });
 });

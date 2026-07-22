@@ -4,7 +4,7 @@ import type { HPBreakdown } from "@archivist-gg/dnd5e/pc/pc.types";
 import { parseDieSize } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
-import { makeInlineInput } from "./edit-primitives";
+import { makeInlineInput, cancelInlineEdit } from "./edit-primitives";
 
 let current: MaxHpModal | null = null;
 
@@ -41,6 +41,15 @@ class MaxHpModal extends Modal {
 
   onOpen(): void {
     this.contentEl.addClass("archivist-modal", "pc-maxhp-modal");
+    // Two-stage Escape (spec §6): Escape #1 cancels an active inline edit
+    // (the field's onCancel repaints, modal stays open); Escape #2, or Escape
+    // with no edit, closes. Registered on the Modal's EXISTING scope: a
+    // later-registered handler runs before Obsidian's built-in Escape-close,
+    // and returning false consumes the event (portrait-picker precedent).
+    this.scope.register([], "Escape", () => {
+      if (!cancelInlineEdit(this.contentEl)) this.close();
+      return false;
+    });
     this.render();
   }
 
