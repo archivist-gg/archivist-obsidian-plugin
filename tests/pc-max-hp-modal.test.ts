@@ -5,9 +5,20 @@ import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
 // plus a hoisted instance registry so tests can reach `contentEl` even though
 // the MaxHpModal class itself is not exported (only the three module functions
 // are, see max-hp-modal.ts's Produces contract).
+//
+// The mock scope models REAL Obsidian semantics that caused the live bug: a
+// `keys` array of {modifiers, key, func} entries dispatched in FIFO
+// registration order, plus a `unregister(handler)` that removes by identity.
+// The Modal constructor SEEDS a built-in Escape-close entry exactly like real
+// Obsidian, so a modal that fails to unregister it would have the built-in win.
+interface MockScopeEntry {
+  modifiers: unknown;
+  key: string;
+  func: () => boolean | void;
+}
 interface MockModalInstance {
   contentEl: HTMLElement;
-  scope: { handlers: Record<string, () => boolean | void> };
+  scope: { keys: MockScopeEntry[] };
   onOpen?: () => void;
   onClose?: () => void;
 }
@@ -21,14 +32,24 @@ vi.mock("obsidian", async () => {
       app: unknown;
       contentEl: HTMLElement;
       scope = {
-        handlers: {} as Record<string, () => boolean | void>,
-        register(_mods: unknown, key: string, cb: () => boolean | void): void {
-          this.handlers[key] = cb;
+        keys: [] as MockScopeEntry[],
+        register(mods: unknown, key: string, cb: () => boolean | void): MockScopeEntry {
+          const entry: MockScopeEntry = { modifiers: mods, key, func: cb };
+          this.keys.push(entry);
+          return entry;
+        },
+        unregister(h: MockScopeEntry): void {
+          const i = this.keys.indexOf(h);
+          if (i >= 0) this.keys.splice(i, 1);
         },
       };
       constructor(app: unknown) {
         this.app = app;
         this.contentEl = document.createElement("div");
+        // Mirror the native Modal constructor: it registers a built-in Escape
+        // handler that closes the modal. This is the FIFO-first entry the
+        // live bug's handler could never beat until it unregisters it.
+        this.scope.register([], "Escape", () => this.close());
         modalInstances.push(this as unknown as MockModalInstance);
       }
       open(): void { this.onOpen?.(); }
@@ -355,11 +376,36 @@ describe("MaxHpModal", () => {
     expect(modalInstances.length).toBe(before + 1);
   });
 
+  // Regression guard for the live bug: Obsidian's Modal constructor seeds a
+  // built-in Escape-close handler and dispatches Escape FIFO, stopping at the
+  // first match, so a later-registered handler never fires. onOpen must
+  // unregister the built-in, leaving OUR two-stage handler as the sole owner.
+  it("owns Escape: onOpen unregisters the built-in, leaving exactly one Escape handler (ours)", () => {
+    const ctx = makeCtx({ breakdown: { averageDiceSum: 70, final: 70, derivedMax: 70 } });
+    openMaxHpModal(ctx);
+    const modal = lastModal();
+
+    const escHandlers = modal.scope.keys.filter((h) => h.key === "Escape");
+    expect(escHandlers.length).toBe(1);
+
+    // Real Obsidian invokes the FIRST matching Escape entry. With an inline
+    // edit open, the sole remaining handler must CANCEL the edit and keep the
+    // modal open (the seeded built-in would instead have closed the modal),
+    // so this proves the surviving handler is ours.
+    (modal.contentEl.querySelectorAll(".pc-maxhp-box")[0] as HTMLElement).click();
+    expect(modal.contentEl.querySelector("input.pc-edit-inline")).not.toBeNull();
+
+    expect(escHandlers[0].func()).toBe(false);
+    expect(modal.contentEl.querySelector("input.pc-edit-inline")).toBeNull();
+    expect(modal.contentEl.childElementCount).toBeGreaterThan(0);
+  });
+
   it("two-stage Escape: first cancels the active inline edit (modal stays open), second closes", () => {
     const ctx = makeCtx({ breakdown: { averageDiceSum: 70, final: 70, derivedMax: 70 } });
     openMaxHpModal(ctx);
     const modal = lastModal();
-    const esc = modal.scope.handlers["Escape"];
+    // Simulate real FIFO dispatch: invoke the FIRST Escape entry in keys order.
+    const esc = modal.scope.keys.find((h) => h.key === "Escape")!.func;
     expect(esc).toBeTypeOf("function");
 
     // Start an inline edit on the Rolled field box.
@@ -379,7 +425,8 @@ describe("MaxHpModal", () => {
   it("Escape with no active inline edit closes immediately", () => {
     openMaxHpModal(makeCtx({}));
     const modal = lastModal();
-    expect(modal.scope.handlers["Escape"]()).toBe(false);
+    const esc = modal.scope.keys.find((h) => h.key === "Escape")!.func;
+    expect(esc()).toBe(false);
     expect(modal.contentEl.childElementCount).toBe(0);
   });
 });

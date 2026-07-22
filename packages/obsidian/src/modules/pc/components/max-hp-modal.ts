@@ -1,5 +1,5 @@
 // src/modules/pc/components/max-hp-modal.ts
-import { Modal, type App } from "obsidian";
+import { Modal, type App, type KeymapEventHandler } from "obsidian";
 import type { HPBreakdown } from "@archivist-gg/dnd5e/pc/pc.types";
 import { parseDieSize } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import type { ComponentRenderContext } from "./component.types";
@@ -43,9 +43,20 @@ class MaxHpModal extends Modal {
     this.contentEl.addClass("archivist-modal", "pc-maxhp-modal");
     // Two-stage Escape (spec §6): Escape #1 cancels an active inline edit
     // (the field's onCancel repaints, modal stays open); Escape #2, or Escape
-    // with no edit, closes. Registered on the Modal's EXISTING scope: a
-    // later-registered handler runs before Obsidian's built-in Escape-close,
-    // and returning false consumes the event (portrait-picker precedent).
+    // with no edit, closes explicitly.
+    // Obsidian's Scope dispatches Escape handlers in REGISTRATION order and
+    // stops at the first match, so the Modal constructor's built-in
+    // Escape-close would always win over a later-registered handler (verified
+    // live). Remove any pre-existing Escape handlers (here, only the built-in)
+    // so this modal's two-stage handler is the sole Escape owner. `scope.keys`
+    // is internal-but-stable; if it is ever absent this degrades to the old
+    // behavior instead of throwing.
+    const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
+    if (Array.isArray(scopeKeys)) {
+      for (const h of scopeKeys.filter((k) => (k as unknown as { key?: string }).key === "Escape")) {
+        this.scope.unregister(h);
+      }
+    }
     this.scope.register([], "Escape", () => {
       if (!cancelInlineEdit(this.contentEl)) this.close();
       return false;
