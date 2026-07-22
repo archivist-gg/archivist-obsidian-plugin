@@ -1342,6 +1342,24 @@
   outline-offset: 1px;
 }
 
+/* R3-P3 item D · Obsidian dresses native text inputs with `box-shadow:
+   var(--input-shadow)` (plus hover/focus variants), which reads as a spurious
+   inner box inside every styled input host on the sheet, the modals, and the
+   builder. Null it in ALL states, for text-entry inputs only (checkbox/file
+   keep their Obsidian chrome). Our own focus cues are borders/outlines and are
+   unaffected; intentional input rings (portrait-picker search) are re-asserted
+   at equal specificity LATER in this file, so they win by source order. */
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])),
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):hover,
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus,
+:is(.archivist-pc-sheet, .archivist-modal)
+  input:is([type="text"], [type="number"], [type="search"], :not([type])):focus-visible {
+  box-shadow: none;
+}
+
 /* SP4b — click affordance on editable values */
 .archivist-pc-sheet .pc-edit-click {
   cursor: pointer;
@@ -1843,8 +1861,10 @@
   border-color: var(--pc-tan);
   box-shadow: none;
 }
-.pc-portrait-picker .pc-portrait-picker-search:focus,
-.pc-portrait-picker .pc-portrait-picker-search:focus-visible {
+/* `input` element added (R3-P3 item D): ties the global box-shadow null at
+   (0,3,1) and wins by source order, keeping this intentional ring. */
+.pc-portrait-picker input.pc-portrait-picker-search:focus,
+.pc-portrait-picker input.pc-portrait-picker-search:focus-visible {
   outline: none;
   border-color: var(--pc-crimson);
   box-shadow: 0 0 0 1px rgba(146, 38, 16, 0.25);
