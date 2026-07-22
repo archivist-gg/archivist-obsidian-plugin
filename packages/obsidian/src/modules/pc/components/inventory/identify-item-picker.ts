@@ -3,6 +3,7 @@ import type { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
 import { DecisionPickModal } from "../builder/decision-modal";
 import { categoryOf } from "./filter-state";
 import { isUnidentifiedPlaceholder } from "./item-predicates";
+import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 
 // `search("", type, ENUMERATE_LIMIT)` is the empty-query enumeration shim (see
 // browse-mode.ts collectCompendiumItems): the registry has no getAllByType, and
@@ -26,11 +27,13 @@ const COMPENDIUM_TYPES = ["weapon", "armor", "item"] as const;
 export function buildIdentifyCandidates(
   reg: EntityRegistry,
   maskedCategory: string,
+  hidden: ReadonlySet<string> = new Set(),
 ): RegisteredEntity[] {
   const scope = maskedCategory.trim().toLowerCase();
   const out: RegisteredEntity[] = [];
   for (const type of COMPENDIUM_TYPES) {
     for (const e of reg.search("", type, ENUMERATE_LIMIT)) {
+      if (!entityCompendiumVisible(e, hidden)) continue;
       if (isUnidentifiedPlaceholder(e.data)) continue;
       const itemType = (e.data as { type?: string }).type;
       if (categoryOf(e.entityType, itemType) === scope) out.push(e);
@@ -57,7 +60,7 @@ export function openIdentifyPicker(
   const editState = ctx.editState;
   if (!reg || !editState) return;
 
-  const candidates = buildIdentifyCandidates(reg, maskedCategory);
+  const candidates = buildIdentifyCandidates(reg, maskedCategory, hiddenCompendiumSet(ctx.services?.plugin?.settings));
   const category = maskedCategory.trim();
 
   new DecisionPickModal(ctx.app, ctx, {
