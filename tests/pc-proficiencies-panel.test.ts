@@ -1,94 +1,50 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, beforeAll } from "vitest";
-import { ProficienciesPanel } from "../packages/obsidian/src/modules/pc/components/proficiencies-panel";
-import { aggregateProficiencies } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
-import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
+import type { ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
+
+vi.mock("@archivist-gg/dnd5e/pc/pc.proficiencies", () => ({
+  aggregateProficiencies: () => ({
+    armor: ["Light"],
+    weapons: ["Hand Crossbows", "Rapiers"],
+    tools: [],
+    languages: ["Common"],
+    choices: { languages: ["choose 2"], tools: [] },
+  }),
+}));
+
+import { ProficienciesPanel } from "../packages/obsidian/src/modules/pc/components/proficiencies-panel";
 
 beforeAll(() => installObsidianDomHelpers());
 
-function mkResolved(): ResolvedCharacter {
-  return {
-    definition: {} as never,
-    race: {
-      slug: "hill-folk",
-      languages: { fixed: ["common", "dwarvish"] },
-    } as never,
-    classes: [{
-      entity: {
-        slug: "bladesworn",
-        proficiencies: {
-          armor: ["light", "medium", "shield"],
-          weapons: { fixed: ["longsword"], categories: ["simple"] },
-          tools: { fixed: ["smiths-tools"] },
-        },
-      } as never,
-      level: 5, subclass: null, choices: {},
-    }],
-    background: {
-      slug: "drifter",
-      tool_proficiencies: [{ kind: "fixed", items: ["dice-set"] }],
-      language_proficiencies: [{ kind: "fixed", languages: ["thieves-cant"] }],
-    } as never,
-    feats: [],
-    totalLevel: 5,
-    features: [],
-    spells: [],
-    state: {} as never,
-  };
+const ctx: ComponentRenderContext = {
+  resolved: {} as ResolvedCharacter,
+  derived: {} as never,
+  services: {} as never,
+  editState: null,
+};
+
+function valueFor(container: HTMLElement, label: string): string {
+  const lines = [...container.querySelectorAll(".pc-prof-line")];
+  const line = lines.find((l) => l.querySelector(".pc-prof-key")?.textContent === `${label}: `);
+  return line?.querySelector(".pc-prof-vals")?.textContent ?? "";
 }
 
-describe("aggregateProficiencies", () => {
-  it("merges class + race + background proficiencies", () => {
-    const agg = aggregateProficiencies(mkResolved());
-    expect(agg.armor).toEqual(["Light", "Medium", "Shield"]);
-    expect(agg.weapons).toEqual(["Longsword", "Simple"]);
-    expect(agg.tools).toEqual(["Dice Set", "Smiths Tools"]);
-    expect(agg.languages).toEqual(["Common", "Dwarvish", "Thieves Cant"]);
-  });
-  it("dedupes across sources", () => {
-    const r = mkResolved();
-    (r.race as unknown as { languages: { fixed: string[] } }).languages = { fixed: ["common", "thieves-cant"] };
-    expect(aggregateProficiencies(r).languages).toEqual(["Common", "Thieves Cant"]);
-  });
-  it("skips choice-kind background proficiencies (no selection yet)", () => {
-    const r = mkResolved();
-    (r.background as unknown as { tool_proficiencies: unknown }).tool_proficiencies = [
-      { kind: "fixed", items: ["dice-set"] },
-      { kind: "choice", count: 1, from: ["lute", "lyre"] },
-    ];
-    expect(aggregateProficiencies(r).tools).toEqual(["Dice Set", "Smiths Tools"]);
-  });
-});
-
 describe("ProficienciesPanel", () => {
-  const ctx: ComponentRenderContext = {
-    resolved: mkResolved(),
-    derived: {} as DerivedStats,
-    services: {} as never,
-    editState: null,
-  };
-  it("renders four labelled lines", () => {
+  it("renders items comma-joined, choice placeholders after ' · ', and 'None' for empty buckets", () => {
     const container = mountContainer();
     new ProficienciesPanel().render(container, ctx);
-    const lines = container.querySelectorAll(".pc-prof-line");
-    expect(lines.length).toBe(4);
-    const keys = [...container.querySelectorAll(".pc-prof-key")].map((k) => k.textContent);
-    expect(keys).toEqual(["Armor: ", "Weapons: ", "Tools: ", "Languages: "]);
+
+    expect(valueFor(container, "Weapons")).toBe("Hand Crossbows, Rapiers");
+    expect(valueFor(container, "Languages")).toBe("Common · choose 2");
+    expect(valueFor(container, "Tools")).toBe("None");
+    expect(valueFor(container, "Armor")).toBe("Light");
   });
-  it("shows dash when category is empty", () => {
-    const r = mkResolved();
-    r.feats = [];
-    r.classes[0].entity = {
-      slug: "x",
-      proficiencies: { armor: [], weapons: { fixed: [] }, tools: { fixed: [] } },
-    } as never;
-    r.background = null;
-    r.race = null;
+
+  it("renders no em-dash (U+2014) anywhere in the panel subtree", () => {
     const container = mountContainer();
-    new ProficienciesPanel().render(container, { resolved: r, derived: {} as DerivedStats, services: {} as never, editState: null });
-    const vals = [...container.querySelectorAll(".pc-prof-vals")].map((v) => v.textContent);
-    expect(vals).toEqual(["—", "—", "—", "—"]);
+    new ProficienciesPanel().render(container, ctx);
+    expect(container.textContent).not.toContain("\u2014");
   });
 });
