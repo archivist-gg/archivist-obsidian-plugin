@@ -21,7 +21,7 @@ const BG_COLUMNS: ColSpec[] = [
     label: "Skills", cls: "col-skills", width: "180px",
     render: (cell, e) => {
       const s = skillsOf(e).map(humanizeSlug);
-      cell.setText(s.length ? s.join(", ") : "—");
+      cell.setText(s.length ? s.join(", ") : "");
     },
   },
 ];
