@@ -75,6 +75,31 @@ const CRIMINAL_ROW: RegisteredEntity = {
   readonly: true, homebrew: false, compendium: "SRD 2024", data: CRIMINAL_2024_DATA,
 } as unknown as RegisteredEntity;
 
+// SOLDIER_2024: the P2 language model on a 2024 background — a FIXED Common
+// grant in language_proficiencies PLUS a select-proficiency language choice
+// (count 2) in choices[] (mirrors the regenerated compendium, e.g.
+// SRD 2024/Backgrounds/Acolyte.md). The Languages glance tile must COMBINE the
+// two into "Common, choose 2".
+const SOLDIER_2024_DATA = {
+  name: "Soldier",
+  edition: "2024",
+  skill_proficiencies: ["athletics", "intimidation"],
+  tool_proficiencies: [{ kind: "fixed", items: ["gaming-set"] }],
+  language_proficiencies: [{ kind: "fixed", languages: ["common"] }],
+  feature: { name: "Background Feature", description: "(No description provided.)" },
+  ability_score_increases: { pool: ["str", "dex", "con"] },
+  origin_feat: "[[SRD 2024/Feats/Savage Attacker]]",
+  choices: [
+    { kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["str", "dex", "con"] },
+    { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+  ],
+};
+
+const SOLDIER_2024_ROW: RegisteredEntity = {
+  slug: "srd-2024_soldier", name: "Soldier", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024", data: SOLDIER_2024_DATA,
+} as unknown as RegisteredEntity;
+
 const ALERT_FEAT: RegisteredEntity = {
   slug: "srd-2024_alert", name: "Alert", entityType: "feat", filePath: "x",
   readonly: true, homebrew: false, compendium: "SRD 2024", data: { name: "Alert" },
@@ -140,6 +165,9 @@ const resolvedAcolyte2014 = {
 };
 const resolvedSage2014 = {
   slug: "srd-5e_sage", name: "Sage", choices: undefined,
+};
+const resolvedSoldier2024 = {
+  slug: "srd-2024_soldier", name: "Soldier", choices: SOLDIER_2024_DATA.choices,
 };
 
 // Chosen-background factories used by the Task-7 composition tests.
@@ -346,5 +374,20 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     } finally {
       (ACOLYTE_2024_ROW.data as { origin_feat?: string }).origin_feat = prev;
     }
+  });
+
+  it("2024 background Languages tile COMBINES the fixed Common grant with the language choice count (Common, choose 2)", () => {
+    const c = mountContainer();
+    const ctx = mkCtx({ background: "[[srd-2024_soldier]]", resolvedBackground: resolvedSoldier2024 });
+    // Surface the P2 Soldier row (fixed Common + a select-proficiency language
+    // choice) through the picker search WITHOUT disturbing the 4-row fixture set.
+    (ctx.services.entities as { search: unknown }).search = (_q: string, type: string) =>
+      type === "background" ? [SOLDIER_2024_ROW] : type === "feat" ? [ALERT_FEAT] : [];
+    renderBackgroundStep(c, ctx);
+    const langTile = [...c.querySelectorAll(".pc-cb-tile")].find(
+      (t) => t.querySelector(".pc-cb-tl")!.textContent === "Languages");
+    expect(langTile, "2024 branch must render a Languages glance tile").not.toBeUndefined();
+    // COMBINE fixed Common with the unresolved "choose 2" — joined with ", " (no em dash).
+    expect(langTile!.querySelector(".pc-cb-tv")!.textContent).toBe("Common, choose 2");
   });
 });
