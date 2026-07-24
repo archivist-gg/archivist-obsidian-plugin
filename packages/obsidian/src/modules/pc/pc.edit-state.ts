@@ -1064,6 +1064,13 @@ export class CharacterEditState {
     this.onChange();
   }
 
+  /** Set (or clear) the per-class spellcasting-ability override. Delegates to
+   *  the pure mutator (delete-empty when clearing the last key), then notifies. */
+  setSpellcastingAbilityForClass(classSlug: string, ability: Ability | null): void {
+    eq.setSpellcastingAbilityForClass(this.character, classSlug, ability);
+    this.onChange();
+  }
+
   // ─── Known spell list ──────────────────────────────────────────────
   private static bare(ref: string): string {
     const m = ref.match(/^\[\[(.+?)\]\]$/);

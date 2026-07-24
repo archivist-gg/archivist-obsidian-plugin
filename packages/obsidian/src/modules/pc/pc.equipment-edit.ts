@@ -242,6 +242,25 @@ export function setSpellcastingAbility(character: Character, ability: Ability): 
   character.overrides.spellcasting_ability = ability;
 }
 
+/**
+ * Set (or clear) the per-class spellcasting-ability override. Writes
+ * overrides.spellcasting_ability_by_class[classSlug]. Passing ability === null
+ * deletes that class key; when the record becomes empty it is removed entirely
+ * so characterToYaml emits no orphan {} line (matches the active_buffs precedent).
+ */
+export function setSpellcastingAbilityForClass(
+  character: Character, classSlug: string, ability: Ability | null,
+): void {
+  if (ability === null) {
+    const rec = character.overrides.spellcasting_ability_by_class;
+    if (!rec) return;
+    delete rec[classSlug];
+    if (Object.keys(rec).length === 0) delete character.overrides.spellcasting_ability_by_class;
+  } else {
+    (character.overrides.spellcasting_ability_by_class ??= {})[classSlug] = ability;
+  }
+}
+
 export function expendCharge(character: Character, entryIdx: number, defaultMax?: number): void {
   const e = character.equipment?.[entryIdx];
   if (!e) return;
