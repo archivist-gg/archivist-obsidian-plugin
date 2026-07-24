@@ -9466,26 +9466,30 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .pc-spellability-derived b { color: var(--pc-text-primary); }
 
-/* Six-ability segmented control (modal-local twin of .pc-mode-seg). */
-.pc-spellability-toggle {
+/* Six-ability segmented control (modal-local twin of .pc-mode-seg). Rules are
+   scoped under .pc-spellability-modal so they outrank Obsidian's default
+   button:not(.clickable-icon) (0,1,1): an unscoped .pc-ability-seg (0,1,0) loses
+   to it, so inactive segs would otherwise show Obsidian's dark default button
+   chrome. box-shadow:none / border-radius:0 drop the default input shadow+radius. */
+.pc-spellability-modal .pc-spellability-toggle {
   display: inline-flex; align-self: stretch;
   border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
   overflow: hidden;
 }
-.pc-ability-seg {
+.pc-spellability-modal .pc-ability-seg {
   flex: 1; font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
-  padding: 4px 0; background: transparent; color: var(--pc-text-soft);
-  border: none; border-left: 1px solid var(--pc-tan-muted); cursor: pointer;
-  letter-spacing: 0.04em;
+  padding: 4px 0; background-color: transparent; color: var(--pc-text-soft);
+  border: none; border-left: 1px solid var(--pc-tan-muted); border-radius: 0;
+  box-shadow: none; cursor: pointer; letter-spacing: 0.04em;
 }
-.pc-ability-seg:first-child { border-left: none; }
-.pc-ability-seg.active { background: var(--pc-crimson); color: #fff; }
+.pc-spellability-modal .pc-ability-seg:first-child { border-left: none; }
+.pc-spellability-modal .pc-ability-seg.active { background-color: var(--pc-crimson); color: #fff; }
 
-.pc-spellability-revert {
+.pc-spellability-modal .pc-spellability-revert {
   align-self: flex-start;
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
-  background: transparent; color: var(--pc-crimson); border: none;
-  padding: 0; cursor: pointer; text-decoration: underline;
+  background-color: transparent; color: var(--pc-crimson); border: none;
+  box-shadow: none; padding: 0; cursor: pointer; text-decoration: underline;
 }
 
 /* Non-caster launcher shown at the top of the Cast view (wired in Task 8). */
