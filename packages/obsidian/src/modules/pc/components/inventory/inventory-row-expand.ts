@@ -221,6 +221,6 @@ function renderScrollSpellSection(parent: HTMLElement, ctx: RowExpandCtx, sheet:
       openScrollSpellPicker(sheet, entryIndex, scrollLevel);
     });
   }
-  // The no-caster casting ability is set once at the top of the Spells tab
-  // (character-level overrides.spellcasting_ability), not per scroll row here.
+  // The no-caster casting ability is set once via the top-of-Cast-view modal
+  // launcher (character-level overrides.spellcasting_ability), not per scroll row here.
 }

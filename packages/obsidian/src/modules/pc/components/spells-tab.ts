@@ -4,7 +4,8 @@ import { renderPrepareView } from "./spells/prepare-view";
 import { renderActiveEffectsRail } from "./active-effects-rail";
 import { attachStatTooltip } from "./stat-tooltip";
 import { renderSituationalRows } from "./situational-rows";
-import { characterHasOwnSpellcastingAbility, SCROLL_ABILITIES } from "./inventory/scroll-spell-picker";
+import { characterHasOwnSpellcastingAbility } from "./inventory/scroll-spell-picker";
+import { openSpellAbilityModal, refreshSpellAbilityModal } from "./spell-ability-modal";
 
 type SpellsMode = "cast" | "prepare";
 
@@ -14,6 +15,11 @@ export class SpellsTab implements SheetComponent {
   private modeForCharacter: string | null = null;
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
+    // Repaint/tear down an open spell-ability modal on every sheet pass. Safe
+    // here because every tab panel re-renders each pass (TabsContainer renders
+    // all panels; setActive only toggles a CSS class), same as hp-widget.ts:24
+    // and currency-strip.ts:29; the one fragility is a future lazy-tab-render.
+    refreshSpellAbilityModal(ctx);
     el.empty();
     const root = el.createDiv({ cls: "pc-tab-body pc-spells-body" });
     const casters = ctx.derived.spellcastingClasses;
@@ -41,12 +47,14 @@ export class SpellsTab implements SheetComponent {
     const dcRow = header.createDiv({ cls: "pc-spell-dc-row" });
     casters.forEach((c, i) => {
       if (i > 0) dcRow.createSpan({ text: "   " });
-      dcRow.createSpan({ text: `${c.ability.toUpperCase()} ` });
-      dcRow.createSpan({ text: "Save DC " });
-      dcRow.createEl("b", { text: `${c.saveDC}` });
-      dcRow.createSpan({ text: " · Atk " });
-      dcRow.createEl("b", { text: `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}` });
-      if (casters.length > 1) dcRow.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
+      const entry = dcRow.createSpan({ cls: "pc-spell-dc-entry pc-edit-click" });
+      entry.createSpan({ text: `${c.ability.toUpperCase()} ` });
+      entry.createSpan({ text: "Save DC " });
+      entry.createEl("b", { text: `${c.saveDC}` });
+      entry.createSpan({ text: " · Atk " });
+      entry.createEl("b", { text: `${c.attackBonus >= 0 ? "+" : ""}${c.attackBonus}` });
+      if (casters.length > 1) entry.createSpan({ cls: "pc-spell-dc-class", text: ` (${c.className})` });
+      entry.addEventListener("click", () => openSpellAbilityModal(ctx));
     });
 
     // Situational spell-attack / save-DC bonuses surface in a hover popover on
@@ -80,7 +88,7 @@ export class SpellsTab implements SheetComponent {
     }
 
     if (this.mode === "cast") {
-      this.renderSpellcastingAbilityControl(root, ctx);
+      this.renderSpellAbilityLauncher(root, ctx);
       renderCastView(root, ctx);
     } else {
       renderPrepareView(root, ctx);
@@ -88,27 +96,20 @@ export class SpellsTab implements SheetComponent {
   }
 
   /**
-   * Compact "Cast scrolls using" control at the top of the Cast region. Shown ONLY
-   * for a character who casts item (scroll) spells but has NO own class spellcasting
-   * ability, whose scrolls would otherwise be DC-less. Picking INT/WIS/CHA writes
-   * the character-level `overrides.spellcasting_ability` (the resolver's scroll
-   * DC-ability fallback) and reflects the current pick. Reuses the segmented
-   * `pc-spell-modetoggle` / `pc-mode-seg` control (no bespoke pill).
+   * Small "Cast scrolls using" launcher at the top of the Cast region. Shown
+   * ONLY for a character who casts item (scroll) spells but has NO own class
+   * spellcasting ability, whose scrolls would otherwise be DC-less. Clicking it
+   * opens the spell-ability modal, which writes the character-level
+   * `overrides.spellcasting_ability` (the resolver's scroll DC-ability fallback).
    */
-  private renderSpellcastingAbilityControl(root: HTMLElement, ctx: ComponentRenderContext): void {
+  private renderSpellAbilityLauncher(root: HTMLElement, ctx: ComponentRenderContext): void {
     const hasScrollSpells = ctx.resolved.spells.some((s) => s.source === "item");
     if (!hasScrollSpells || characterHasOwnSpellcastingAbility(ctx.derived)) return;
 
+    const launcher = root.createDiv({ cls: "pc-spellability-launcher pc-edit-click" });
+    launcher.createSpan({ cls: "pc-spellability-launcher-label", text: "Cast scrolls using" });
     const current = ctx.resolved.definition.overrides.spellcasting_ability;
-    const row = root.createDiv({ cls: "pc-spellability-set" });
-    row.createSpan({ cls: "pc-spellability-set-label", text: "Cast scrolls using" });
-    const seg = row.createDiv({ cls: "pc-spell-modetoggle" });
-    for (const ability of SCROLL_ABILITIES) {
-      const btn = seg.createEl("button", {
-        cls: `pc-mode-seg${current === ability ? " active" : ""}`,
-        text: ability.toUpperCase(),
-      });
-      btn.addEventListener("click", () => ctx.editState?.setSpellcastingAbility(ability));
-    }
+    launcher.createSpan({ cls: "pc-spellability-launcher-value", text: current ? current.toUpperCase() : "set ability" });
+    launcher.addEventListener("click", () => openSpellAbilityModal(ctx));
   }
 }
