@@ -20,6 +20,7 @@ import { seedFeatureUses } from "./pc.resource-seed";
 import { CharacterEditState } from "./pc.edit-state";
 import { closeMaxHpModal } from "./components/max-hp-modal";
 import { closeCoinModal } from "./components/coin-modal";
+import { closeSpellAbilityModal } from "./components/spell-ability-modal";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -82,6 +83,7 @@ export class PCSheetView extends TextFileView {
     // modal opened against the previous file's editState would linger, stale.
     closeMaxHpModal();
     closeCoinModal();
+    closeSpellAbilityModal();
     // Loop guard: Obsidian echoes our just-written bytes back through
     // setViewData after save. Short-circuit before re-running the render
     // pipeline (which would rebuild the entire sheet and re-create editState,
@@ -202,6 +204,7 @@ export class PCSheetView extends TextFileView {
   clear(): void {
     closeMaxHpModal();
     closeCoinModal();
+    closeSpellAbilityModal();
     this.character = null;
     this.derived = null;
     this.editState = null;
@@ -225,6 +228,7 @@ export class PCSheetView extends TextFileView {
     // view's editState survives as a zombie wired to a dead view.
     closeMaxHpModal();
     closeCoinModal();
+    closeSpellAbilityModal();
     super.onunload();
   }
 
@@ -238,6 +242,7 @@ export class PCSheetView extends TextFileView {
   async onLoadFile(file: import("obsidian").TFile): Promise<void> {
     closeMaxHpModal();
     closeCoinModal();
+    closeSpellAbilityModal();
     // Obsidian calls this when the view's underlying file changes. Reset all
     // SP4 mutation/persistence state so no stale references survive across
     // file switches (especially lastWrittenData, which would otherwise cause
