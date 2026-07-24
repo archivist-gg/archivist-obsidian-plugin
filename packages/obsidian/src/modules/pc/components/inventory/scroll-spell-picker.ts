@@ -1,6 +1,5 @@
 import type { ComponentRenderContext } from "../component.types";
 import type { DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
-import type { Ability } from "@archivist-gg/dnd5e";
 import type { EntityRegistry, RegisteredEntity } from "@archivist-gg/core";
 import { DecisionPickModal } from "../builder/decision-modal";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
@@ -9,10 +8,6 @@ import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared
 // browse-mode.ts collectCompendiumItems): the registry has no getAllByType, and
 // `name.includes("")` matches every entity of the type.
 const ENUMERATE_LIMIT = 10_000;
-
-/** Abilities a no-caster scroll can be cast with (INT/WIS/CHA, the three
- *  spellcasting abilities). Offered by the top-of-Spells-tab ability control. */
-export const SCROLL_ABILITIES: Ability[] = ["int", "wis", "cha"];
 
 /** A spell matches its scroll when it sits at the scroll's level AND shares the
  *  character's edition. An edition-less spell (homebrew) is kept so the picker

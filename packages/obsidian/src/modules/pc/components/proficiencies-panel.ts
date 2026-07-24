@@ -10,14 +10,16 @@ export class ProficienciesPanel implements SheetComponent {
     const body = section.createDiv({ cls: "pc-prof-body" });
     const agg = aggregateProficiencies(ctx.resolved);
 
-    const labelFor = (label: string, items: string[]) => {
+    const labelFor = (label: string, items: string[], choiceKey?: "languages" | "tools") => {
       const p = body.createDiv({ cls: "pc-prof-line" });
       p.createSpan({ cls: "pc-prof-key", text: `${label}: ` });
-      p.createSpan({ cls: "pc-prof-vals", text: items.length ? items.join(", ") : "—" });
+      const parts = items.length ? [items.join(", ")] : [];
+      if (choiceKey && agg.choices[choiceKey]?.length) parts.push(...agg.choices[choiceKey]);
+      p.createSpan({ cls: "pc-prof-vals", text: parts.length ? parts.join(" · ") : "None" });
     };
     labelFor("Armor", agg.armor);
     labelFor("Weapons", agg.weapons);
-    labelFor("Tools", agg.tools);
-    labelFor("Languages", agg.languages);
+    labelFor("Tools", agg.tools, "tools");
+    labelFor("Languages", agg.languages, "languages");
   }
 }

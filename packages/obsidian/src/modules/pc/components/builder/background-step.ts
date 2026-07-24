@@ -21,7 +21,7 @@ const BG_COLUMNS: ColSpec[] = [
     label: "Skills", cls: "col-skills", width: "180px",
     render: (cell, e) => {
       const s = skillsOf(e).map(humanizeSlug);
-      cell.setText(s.length ? s.join(", ") : "—");
+      cell.setText(s.length ? s.join(", ") : "");
     },
   },
 ];
@@ -39,7 +39,7 @@ interface BackgroundData {
   feature?: { name: string; description?: string };
   ability_score_increases?: { pool?: string[] } | null;
   origin_feat?: string | null;
-  choices?: Array<{ kind: string; count?: number; points?: number; max_per?: number; pool?: string[] }>;
+  choices?: Array<{ kind: string; id?: string; domain?: string; count?: number; points?: number; max_per?: number; pool?: string[] }>;
 }
 
 const stripSummary = (items: DecisionItem[]): string => {
@@ -136,9 +136,11 @@ function backgroundTiles(
   const tool = fixedToolNames(d);
   const is2024 = !!d.ability_score_increases || (d.choices ?? []).some((c) => c.kind === "ability-points");
   if (is2024) {
+    const lang = languagesTile(d);
     return [
       ...(skills ? [{ label: "Skills", value: skills }] : []),
       ...(tool ? [{ label: "Tool", value: tool }] : []),
+      ...(lang ? [{ label: "Languages", value: lang }] : []),
       ...abilityPointsTile(d),
       ...(suppressOriginFeat ? [] : originFeatTile(d)),
     ];
@@ -167,16 +169,26 @@ function originFeatTile(d: BackgroundData): Array<{ label: string; value: string
   return [{ label: "Origin Feat", value: originFeatDisplayName(d.origin_feat) }];
 }
 
-/** 2014 Languages tile: prefers the fixed-entry language names, else the choice
- *  entry → `choose <n>`. */
+/** Languages glance tile: COMBINE the fixed-entry language names with the
+ *  unresolved language CHOICE into e.g. "Common, choose 2" (segments joined
+ *  ", "). The choice is the select-proficiency over the language domain in
+ *  `d.choices` (id "languages" / domain "language") — where BOTH editions carry
+ *  it — NOT a `kind:"choice"` entry in language_proficiencies. */
 function languagesTile(d: BackgroundData): string {
   const fixed = fixedLanguageNames(d);
-  if (fixed) return fixed;
-  const choice = (d.language_proficiencies ?? []).find(
-    (l): l is Extract<BackgroundLanguageProficiency, { kind: "choice" }> => l.kind === "choice",
+  const count = languageChoiceCount(d);
+  const choice = count ? `choose ${count}` : "";
+  return [fixed, choice].filter(Boolean).join(", ");
+}
+
+/** The unresolved language-choice count — the select-proficiency over the
+ *  language domain in the origin `choices`. Zero when the background grants no
+ *  language pick. */
+function languageChoiceCount(d: BackgroundData): number {
+  const choice = (d.choices ?? []).find(
+    (c) => c.kind === "select-proficiency" && (c.domain === "language" || c.id === "languages"),
   );
-  if (choice) return `choose ${choice.count ?? 1}`;
-  return "";
+  return choice?.count ?? 0;
 }
 
 /** Fixed tool name(s) humanized — only `kind:"fixed"` entries carrying items. */

@@ -20,7 +20,7 @@ function resolved(spells: ResolvedSpell[]): ResolvedCharacter {
     background: null, feats: [], totalLevel: 5, features: [], spells, state: emptyState as never,
   };
 }
-const wizardClass: SpellcastingClassInfo = { classSlug: "wizard", className: "Wizard", ability: "int", saveDC: 15, attackBonus: 7, casterType: "full", preparation: "prepared" };
+const wizardClass: SpellcastingClassInfo = { classSlug: "wizard", className: "Wizard", ability: "int", defaultAbility: "int", saveDC: 15, attackBonus: 7, casterType: "full", preparation: "prepared" };
 function derived(over: Partial<DerivedStats> = {}): DerivedStats {
   return { spellcastingClasses: [wizardClass], derivedSpellSlots: { 1: 4, 2: 2 }, pactMagic: null, spellLimits: [], ...over } as DerivedStats;
 }
@@ -88,6 +88,17 @@ describe("SpellsTab", () => {
     expect(c.querySelectorAll(".archivist-toggle-box").length).toBe(4 + 2); // cast-view slot boxes
   });
 
+  it("wraps each caster's own DC chunk in a clickable .pc-spell-dc-entry.pc-edit-click span (P4 T8)", () => {
+    const c = mountContainer();
+    const sorcerer: SpellcastingClassInfo = { ...wizardClass, classSlug: "sorcerer", className: "Sorcerer", ability: "cha", saveDC: 13, attackBonus: 5, preparation: "known" };
+    new SpellsTab().render(c, { resolved: resolved([spell("Magic Missile", 1)]), derived: derived({ spellcastingClasses: [wizardClass, sorcerer] }), services: {} as never, app: {} as never, editState: null });
+    const entries = [...c.querySelectorAll(".pc-spell-dc-row .pc-spell-dc-entry.pc-edit-click")];
+    expect(entries.length).toBe(2);
+    expect(entries[0].textContent).toContain("INT");
+    expect(entries[0].textContent).toContain("15");
+    expect(entries[1].textContent).toContain("(Sorcerer)");
+  });
+
   it("clicking Prepare switches to the prepare view (counters visible)", () => {
     const c = mountContainer();
     const tab = new SpellsTab();
@@ -146,44 +157,22 @@ describe("SpellsTab", () => {
     expect(dcRow.querySelector(".pc-stat-tooltip")).toBeNull();
   });
 
-  it("shows the top-of-Cast 'Cast scrolls using' control for a non-caster holding a scroll and writes overrides.spellcasting_ability on pick (P4)", () => {
+  it("renders a .pc-spellability-launcher (and NOT the old inline .pc-spellability-set toggle) for a non-caster holding a scroll (P4 T8)", () => {
     const c = mountContainer();
     const scrollSpell: ResolvedSpell = {
       entity: { name: "Fireball", level: 3 } as never,
       slug: "fireball", classSlug: null, source: "item", prepared: true, alwaysPrepared: true, entryIndex: 0,
     };
-    const setSpellcastingAbility = vi.fn();
     new SpellsTab().render(c, {
       resolved: resolved([scrollSpell]),
       derived: derived({ spellcastingClasses: [], derivedSpellSlots: {} }),
-      services: {} as never, app: {} as never, editState: { setSpellcastingAbility } as never,
-    });
-    const ctrl = c.querySelector(".pc-spellability-set");
-    expect(ctrl).not.toBeNull();
-    const btns = [...ctrl!.querySelectorAll(".pc-mode-seg")].map((b) => b.textContent);
-    expect(btns).toEqual(["INT", "WIS", "CHA"]);
-    // The 2nd segmented button (WIS) writes the character-level override.
-    (ctrl!.querySelector(".pc-mode-seg:nth-child(2)") as HTMLElement).dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    expect(setSpellcastingAbility).toHaveBeenCalledWith("wis");
-  });
-
-  it("reflects the current overrides.spellcasting_ability as the active segment", () => {
-    const c = mountContainer();
-    const scrollSpell: ResolvedSpell = {
-      entity: { name: "Fireball", level: 3 } as never,
-      slug: "fireball", classSlug: null, source: "item", prepared: true, alwaysPrepared: true, entryIndex: 0,
-    };
-    const r = resolved([scrollSpell]);
-    (r.definition.overrides as { spellcasting_ability?: string }).spellcasting_ability = "wis";
-    new SpellsTab().render(c, {
-      resolved: r, derived: derived({ spellcastingClasses: [], derivedSpellSlots: {} }),
       services: {} as never, app: {} as never, editState: { setSpellcastingAbility: vi.fn() } as never,
     });
-    const active = c.querySelector(".pc-spellability-set .pc-mode-seg.active");
-    expect(active?.textContent).toBe("WIS");
+    expect(c.querySelector(".pc-spellability-launcher")).not.toBeNull();
+    expect(c.querySelector(".pc-spellability-set")).toBeNull();
   });
 
-  it("hides the 'Cast scrolls using' control when the character has its own spellcasting ability", () => {
+  it("hides the launcher when the character has its own spellcasting ability", () => {
     const c = mountContainer();
     const scrollSpell: ResolvedSpell = {
       entity: { name: "Fireball", level: 3 } as never,
@@ -193,7 +182,7 @@ describe("SpellsTab", () => {
       resolved: resolved([scrollSpell]), derived: derived(), // wizard caster present
       services: {} as never, app: {} as never, editState: null,
     });
-    expect(c.querySelector(".pc-spellability-set")).toBeNull();
+    expect(c.querySelector(".pc-spellability-launcher")).toBeNull();
   });
 
   it("shows a concentration tile (brain) in the active-effects rail when concentrating", () => {

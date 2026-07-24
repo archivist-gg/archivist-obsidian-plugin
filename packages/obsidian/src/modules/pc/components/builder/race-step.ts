@@ -21,7 +21,7 @@ const RACE_COLUMNS: ColSpec[] = [
     sort: (a, b) => SIZE_ORDER.indexOf(sizeOf(a)) - SIZE_ORDER.indexOf(sizeOf(b)),
     render: (cell, e) => {
       const s = sizeOf(e);
-      cell.setText(s ? s.charAt(0).toUpperCase() + s.slice(1) : "—");
+      cell.setText(s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
     },
   },
   {
@@ -29,7 +29,7 @@ const RACE_COLUMNS: ColSpec[] = [
     sort: (a, b) => walkOf(a) - walkOf(b),
     render: (cell, e) => {
       const w = walkOf(e);
-      cell.setText(w ? `${w} ft.` : "—");
+      cell.setText(w ? `${w} ft.` : "");
     },
   },
 ];

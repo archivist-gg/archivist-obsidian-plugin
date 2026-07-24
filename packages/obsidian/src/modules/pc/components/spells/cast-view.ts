@@ -256,7 +256,7 @@ function renderRow(
   // HIT / DC. A no-ability scroll (no own casting ability + no per-instance
   // spell_ability + no character-level spellcasting_ability) has no DC source, so
   // it shows a small muted, non-interactive "set ability" hint rather than a
-  // fabricated DC 0. The ability is set from the top-of-Spells-tab control
+  // fabricated DC 0. The ability is set via the top-of-Cast-view modal launcher
   // (character-level) or the scroll's per-instance override. Every other row keeps
   // the existing descriptor cell (T8 extends this for attack-roll spells).
   const hd = tr.createDiv({ cls: "pc-spell-hitdc" });
