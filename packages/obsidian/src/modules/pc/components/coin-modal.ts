@@ -1,9 +1,9 @@
 // src/modules/pc/components/coin-modal.ts
-import { type App } from "obsidian";
+import { type App, type KeymapEventHandler } from "obsidian";
 import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
-import { makeInlineInput } from "./edit-primitives";
+import { makeInlineInput, cancelInlineEdit } from "./edit-primitives";
 import {
   COIN_KEYS, COIN_META, MAX_COIN, totalCp, formatGpTotal, validateAdjust, assembleDeltas,
   type Coin, type CurrencyLike,
@@ -77,6 +77,22 @@ class CoinModal extends PaneCenteredModal {
 
   onOpen(): void {
     this.contentEl.addClass("archivist-modal", "pc-coin-modal");
+    // Two-stage Escape (max-hp-modal.ts:55-64 pattern): Escape #1 cancels an
+    // active ledger inline edit, Escape #2 (or Escape with no edit) closes.
+    // Obsidian's Keymap listens on `window` at the CAPTURE phase and Scope stops
+    // at the first matching entry, so the constructor's built-in Escape-close
+    // always wins until it is unregistered. A bubble-phase listener on the input
+    // cannot prevent it.
+    const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
+    if (Array.isArray(scopeKeys)) {
+      for (const h of scopeKeys.filter((k) => (k as unknown as { key?: string }).key === "Escape")) {
+        this.scope.unregister(h);
+      }
+    }
+    this.scope.register([], "Escape", () => {
+      if (!cancelInlineEdit(this.contentEl)) this.close();
+      return false;
+    });
     this.buildSkeleton();
     this.updateDynamic();
   }
@@ -159,11 +175,13 @@ class CoinModal extends PaneCenteredModal {
 
       const stopProp = (e: Event) => e.stopPropagation();
       input.addEventListener("keydown", (e) => {
-        // stopPropagation keeps Obsidian's hotkey manager from swallowing
-        // digits (hp-widget model) — but it ALSO blocks Obsidian's own
-        // Escape-to-close from ever seeing the event, so BOTH keys are
-        // handled locally here (makeInlineInput model); never rely on a
-        // stopped event bubbling to Obsidian.
+        // stopPropagation keeps Obsidian's hotkey manager from swallowing digits
+        // (hp-widget model). It does NOT stop Obsidian's Escape-to-close: Keymap
+        // listens on `window` at the CAPTURE phase, so the built-in has already
+        // run by the time this bubble-phase listener sees the event. Escape is
+        // owned by onOpen's scope handler above. This local Escape is still
+        // load-bearing in POP-OUT windows, where Keymap (bound to the main
+        // window) never fires at all. Do not delete it as dead code.
         stopProp(e);
         if (e.key === "Enter") { e.preventDefault(); this.applyAdjust(1); return; }
         if (e.key === "Escape") { e.preventDefault(); this.close(); return; }
