@@ -1,12 +1,6 @@
 import { type App, Setting } from "obsidian";
 import { PaneCenteredModal } from "./pane-centered-modal";
 
-export function confirmDelete(app: App, message: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    new ConfirmModal(app, message, resolve).open();
-  });
-}
-
 export function confirm(app: App, message: string, confirmText: string): Promise<boolean> {
   return new Promise((resolve) => {
     new ConfirmModal(app, message, resolve, confirmText).open();
