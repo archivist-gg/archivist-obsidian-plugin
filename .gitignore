@@ -22,3 +22,21 @@ test-vault/
 # loose files would add ~15MB of duplicated content to the repo.
 .compendium-bundle/*/
 
+.DS_Store
+WATCHDOG.yml
+
+# Private, local-only working state. `.claude/skills/gitnexus/*` stays TRACKED on
+# purpose (its shipping fate is an open G11 question); only these two are ignored.
+.claude/memory/
+.claude/settings.json
+
+# Throwaway probes, migration scripts and vault-content backups. The 5 tracked
+# files under scratchpad/p1/migrate/ stay tracked · gitignore does not affect
+# tracked files. Same shape as docs/superpowers/ above.
+scratchpad/
+
+# Local-only per the standing directive recorded in
+# .claude/memory/decoupling-roadmap-top-level.md:13-16. The FILE, not the
+# directory: docs/design/ holds 9 tracked files.
+docs/design/decoupling-roadmap.md
+
