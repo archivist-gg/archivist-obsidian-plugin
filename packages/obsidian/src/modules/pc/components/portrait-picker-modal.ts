@@ -1,4 +1,4 @@
-import { Notice, setIcon, type App, type TFile } from "obsidian";
+import { Notice, setIcon, type App, type KeymapEventHandler, type TFile } from "obsidian";
 import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import { PORTRAIT_IMAGE_EXTENSIONS, coverCrop, marqueeToCrop, isCoverCrop, type CropParams } from "../pc.portrait";
 
@@ -127,12 +127,22 @@ export class PortraitPickerModal extends PaneCenteredModal {
     this.refreshCandidates();
     this.renderGridStage(true);
 
-    this.scope.register([], "Escape", () => {
-      if (this.stage === "crop") {
-        this.backToGrid();
-        return false;
+    // Obsidian's Scope dispatches Escape in REGISTRATION order and stops at the
+    // first match, and the Modal constructor seeds a built-in Escape-close, so a
+    // later-registered handler can never win. Remove the built-in first (the
+    // max-hp-modal.ts:55-64 pattern) so this modal owns Escape. `scope.keys` is
+    // internal-but-stable; if it is ever absent this degrades to the old
+    // behavior instead of throwing.
+    const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
+    if (Array.isArray(scopeKeys)) {
+      for (const h of scopeKeys.filter((k) => (k as unknown as { key?: string }).key === "Escape")) {
+        this.scope.unregister(h);
       }
-      return true;
+    }
+    this.scope.register([], "Escape", () => {
+      if (this.stage === "crop") this.backToGrid();
+      else this.close();
+      return false;
     });
     this.scope.register([], "Enter", () => {
       if (this.stage === "crop" && this.commitEnabled) {
