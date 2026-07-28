@@ -1,4 +1,5 @@
-import { App, Editor, Modal } from "obsidian";
+import { App, Editor } from "obsidian";
+import { PaneCenteredModal } from "../../shared/modals/pane-centered-modal";
 import {
   addTextField,
   addDropdown,
@@ -56,7 +57,7 @@ const SIZE_OPTIONS: Record<string, string> = {
   Gargantuan: "Gargantuan",
 };
 
-export class MonsterModal extends Modal {
+export class MonsterModal extends PaneCenteredModal {
   private editor: Editor;
   private form: MonsterFormData;
 

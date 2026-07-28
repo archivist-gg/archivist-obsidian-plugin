@@ -5,14 +5,26 @@ export function setTooltip(el: HTMLElement, tooltip: string) {
 export class Notice {
   constructor(_message: string) {}
 }
+/** Mirrors Obsidian's real portal nesting — containerEl (.modal-container) >
+ *  modalEl (.modal) > contentEl — because PaneCenteredModal measures and pads
+ *  containerEl. contentEl still lands in the document on construction, as
+ *  before, just one level deeper. */
 export class Modal {
   app: unknown;
+  containerEl: HTMLElement;
+  modalEl: HTMLElement;
   contentEl: HTMLElement;
   scope = { register: () => {} };
   constructor(app: unknown) {
     this.app = app;
+    this.containerEl = document.createElement("div");
+    this.containerEl.className = "modal-container mod-dim";
+    this.modalEl = document.createElement("div");
+    this.modalEl.className = "modal";
     this.contentEl = document.createElement("div");
-    document.body.appendChild(this.contentEl);
+    this.modalEl.appendChild(this.contentEl);
+    this.containerEl.appendChild(this.modalEl);
+    document.body.appendChild(this.containerEl);
   }
   open(): void {
     (this as { onOpen?: () => void }).onOpen?.();

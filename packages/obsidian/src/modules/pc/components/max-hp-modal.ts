@@ -1,5 +1,6 @@
 // src/modules/pc/components/max-hp-modal.ts
-import { Modal, type App, type KeymapEventHandler } from "obsidian";
+import { type App, type KeymapEventHandler } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { HPBreakdown } from "@archivist-gg/dnd5e/pc/pc.types";
 import { parseDieSize } from "@archivist-gg/dnd5e/pc/pc.recalc";
 import type { ComponentRenderContext } from "./component.types";
@@ -32,7 +33,7 @@ export function closeMaxHpModal(): void {
   current?.close();
 }
 
-class MaxHpModal extends Modal {
+class MaxHpModal extends PaneCenteredModal {
   constructor(
     app: App,
     private ctx: ComponentRenderContext,

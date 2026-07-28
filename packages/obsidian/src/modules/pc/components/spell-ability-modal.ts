@@ -1,5 +1,6 @@
 // src/modules/pc/components/spell-ability-modal.ts
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { Ability } from "@archivist-gg/dnd5e";
 import { ABILITY_KEYS } from "@archivist-gg/dnd5e/dnd/constants";
 import type { ComponentRenderContext } from "./component.types";
@@ -33,7 +34,7 @@ export function closeSpellAbilityModal(): void {
   current?.close();
 }
 
-class SpellAbilityModal extends Modal {
+class SpellAbilityModal extends PaneCenteredModal {
   constructor(
     app: App,
     private ctx: ComponentRenderContext,

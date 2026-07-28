@@ -1,4 +1,5 @@
-import { App, Editor, Modal } from "obsidian";
+import { App, Editor } from "obsidian";
+import { PaneCenteredModal } from "../../shared/modals/pane-centered-modal";
 import {
   addTextField,
   addDropdown,
@@ -34,7 +35,7 @@ const RARITY_OPTIONS: Record<string, string> = {
   artifact: "Artifact",
 };
 
-export class ItemModal extends Modal {
+export class ItemModal extends PaneCenteredModal {
   private editor: Editor;
   private form: ItemFormData;
 

@@ -1,5 +1,6 @@
 // src/modules/pc/components/coin-modal.ts
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
 import { makeInlineInput } from "./edit-primitives";
@@ -63,7 +64,7 @@ function coinShapeSvg(doc: Document, coin: Coin, sizePx: number): SVGSVGElement 
   return svg;
 }
 
-class CoinModal extends Modal {
+class CoinModal extends PaneCenteredModal {
   private totalNumEl!: HTMLElement;
   private ledgerEl!: HTMLElement;
   private adjustInputs = new Map<Coin, HTMLInputElement>();

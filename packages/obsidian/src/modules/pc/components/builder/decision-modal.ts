@@ -1,4 +1,5 @@
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "../component.types";
 import type { RegisteredEntity } from "@archivist-gg/core";
 import {
@@ -140,7 +141,7 @@ export interface DecisionPickModalOptions {
  *  chrome (.archivist-modal portal scope), swapping the class-specific
  *  .pc-bclass-modal flag for .pc-bdecide-modal so the shared modal CSS and the
  *  width override target it too. */
-export class DecisionPickModal extends Modal {
+export class DecisionPickModal extends PaneCenteredModal {
   constructor(
     app: App,
     private readonly ctx: ComponentRenderContext,

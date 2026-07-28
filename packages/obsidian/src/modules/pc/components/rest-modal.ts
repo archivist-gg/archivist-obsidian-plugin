@@ -1,5 +1,6 @@
 // src/modules/pc/components/rest-modal.ts
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 import type { CharacterEditState } from "../pc.edit-state";
 import type { EntityRegistry } from "@archivist-gg/core";
@@ -15,7 +16,7 @@ import {
  * (added in Slice 5). HD spends fire editState primitives immediately;
  * opt-out resets commit only on Confirm.
  */
-export class RestModal extends Modal {
+export class RestModal extends PaneCenteredModal {
   private optouts = new Set<RestCategoryId>();
   private rollLog: Array<{ die: string; value: number; tag?: "manual" | "avg" }> = [];
   private manualOpen = false;

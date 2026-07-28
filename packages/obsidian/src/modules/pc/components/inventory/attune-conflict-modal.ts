@@ -1,4 +1,5 @@
-import { Modal, type App } from "obsidian";
+import { type App } from "obsidian";
+import { PaneCenteredModal } from "../../../../shared/modals/pane-centered-modal";
 import type { ResolvedEquipped } from "@archivist-gg/dnd5e/pc/pc.types";
 import { iconForEntity } from "./icon-mapping";
 import { setInventoryIcon } from "../../assets/inventory-icons";
@@ -9,7 +10,7 @@ export interface AttuneConflictOptions {
   onSwap: (slotIndex: number) => void;  // slot's equipment[].index, NOT slot ordinal
 }
 
-export class AttuneConflictModal extends Modal {
+export class AttuneConflictModal extends PaneCenteredModal {
   constructor(app: App, private readonly opts: AttuneConflictOptions) {
     super(app);
   }

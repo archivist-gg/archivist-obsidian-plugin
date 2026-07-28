@@ -1,4 +1,5 @@
-import { App, Modal, Notice, Setting } from "obsidian";
+import { App, Notice, Setting } from "obsidian";
+import { PaneCenteredModal } from "../modals/pane-centered-modal";
 import { Compendium, CompendiumManager } from "./compendium-manager";
 
 const NEW_COMPENDIUM_KEY = "__new_compendium__";
@@ -11,7 +12,7 @@ const NEW_COMPENDIUM_KEY = "__new_compendium__";
  * Modal that prompts for a name and creates a new writable compendium.
  * After creation, calls onCreated with the new Compendium.
  */
-export class CreateCompendiumModal extends Modal {
+export class CreateCompendiumModal extends PaneCenteredModal {
   private manager: CompendiumManager;
   private onCreated: (compendium: Compendium) => void;
   private compName = "";
@@ -90,7 +91,7 @@ export class CreateCompendiumModal extends Modal {
  * Modal that presents a dropdown of compendiums and lets the user pick one.
  * Includes a "+ New Compendium" option that opens CreateCompendiumModal.
  */
-export class CompendiumSelectModal extends Modal {
+export class CompendiumSelectModal extends PaneCenteredModal {
   private compendiums: Compendium[];
   private onSelect: (compendium: Compendium) => void;
   private selected: Compendium | null;
@@ -173,7 +174,7 @@ export class CompendiumSelectModal extends Modal {
  * Modal that lets the user name a new entity and pick a target compendium.
  * Includes a "+ New Compendium" option that opens CreateCompendiumModal.
  */
-export class SaveAsNewModal extends Modal {
+export class SaveAsNewModal extends PaneCenteredModal {
   private compendiums: Compendium[];
   private entityName: string;
   private onSave: (compendium: Compendium, name: string) => void;

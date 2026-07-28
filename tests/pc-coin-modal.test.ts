@@ -16,9 +16,14 @@ vi.mock("obsidian", async () => {
     Modal: class {
       app: unknown;
       contentEl: HTMLElement;
+      containerEl: HTMLElement;
       constructor(app: unknown) {
         this.app = app;
+        // Mirror the native portal nesting (.modal-container > .modal >
+        // content): PaneCenteredModal measures and pads containerEl.
+        this.containerEl = document.createElement("div");
         this.contentEl = document.createElement("div");
+        this.containerEl.appendChild(this.contentEl);
         modalInstances.push(this as unknown as MockModalInstance);
       }
       open(): void { (this as unknown as MockModalInstance).onOpen?.(); }
