@@ -5,6 +5,14 @@ export function setTooltip(el: HTMLElement, tooltip: string) {
 export class Notice {
   constructor(_message: string) {}
 }
+/** Mirrors real Obsidian: a FIFO `keys` array dispatched in registration order,
+ *  `unregister` by identity, and a constructor-seeded built-in Escape-close.
+ *  A modal that fails to unregister the built-in can never own Escape. */
+export interface ScopeEntry {
+  modifiers: unknown;
+  key: string;
+  func: () => boolean | void;
+}
 /** Mirrors Obsidian's real portal nesting — containerEl (.modal-container) >
  *  modalEl (.modal) > contentEl — because PaneCenteredModal measures and pads
  *  containerEl. contentEl still lands in the document on construction, as
@@ -14,7 +22,18 @@ export class Modal {
   containerEl: HTMLElement;
   modalEl: HTMLElement;
   contentEl: HTMLElement;
-  scope = { register: () => {} };
+  scope = {
+    keys: [] as ScopeEntry[],
+    register(mods: unknown, key: string, cb: () => boolean | void): ScopeEntry {
+      const entry: ScopeEntry = { modifiers: mods, key, func: cb };
+      this.keys.push(entry);
+      return entry;
+    },
+    unregister(h: ScopeEntry): void {
+      const i = this.keys.indexOf(h);
+      if (i >= 0) this.keys.splice(i, 1);
+    },
+  };
   constructor(app: unknown) {
     this.app = app;
     this.containerEl = document.createElement("div");
@@ -25,6 +44,9 @@ export class Modal {
     this.modalEl.appendChild(this.contentEl);
     this.containerEl.appendChild(this.modalEl);
     document.body.appendChild(this.containerEl);
+    // Seeded LAST, mirroring the native constructor: this is the FIFO-first
+    // Escape entry a modal must unregister before it can own the key.
+    this.scope.register([], "Escape", () => this.close());
   }
   open(): void {
     (this as { onOpen?: () => void }).onOpen?.();
