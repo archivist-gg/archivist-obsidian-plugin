@@ -38,6 +38,17 @@ vi.mock("../packages/obsidian/src/modules/pc/components/coin-modal", async () =>
   return { ...actual, closeCoinModal: closeCoinModalMock };
 });
 
+// Third spy for closeSpellAbilityModal, same shape as the two above: the view
+// teardown sites close all three modals together, so a two-spy test cannot
+// cover the "they move as one" requirement. Rest of the module stays real.
+const closeSpellAbilityModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/spell-ability-modal", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>(
+    "../packages/obsidian/src/modules/pc/components/spell-ability-modal",
+  );
+  return { ...actual, closeSpellAbilityModal: closeSpellAbilityModalMock };
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BLADESWORN = {
@@ -141,6 +152,44 @@ describe("PCSheetView — write path", () => {
     const hc = vi.spyOn(view as unknown as { handleChange: () => void }, "handleChange");
     view.setViewData(crlfBytes, false);
     expect(hc).not.toHaveBeenCalled();
+  });
+
+  it("the setViewData echo does NOT close open modals (loop guard runs first)", async () => {
+    const { view } = await bootView();
+    // Mutate first: getViewData only arms lastWrittenData on the dirty path
+    // (pc.view.ts:197-201), so without this the guard can never fire and the
+    // test would fail even WITH the fix. Mirrors the loop-guard tests at :121.
+    // @ts-expect-error — access the view-owned edit state in test
+    view.editState!.setInspiration(5);
+    await Promise.resolve();
+    const echoed = view.getViewData();          // arms lastWrittenData
+    closeMaxHpModalMock.mockClear();
+    closeCoinModalMock.mockClear();
+    closeSpellAbilityModalMock.mockClear();
+
+    view.setViewData(echoed, false);
+
+    expect(closeMaxHpModalMock).not.toHaveBeenCalled();
+    expect(closeCoinModalMock).not.toHaveBeenCalled();
+    expect(closeSpellAbilityModalMock).not.toHaveBeenCalled();
+  });
+
+  it("a genuine file switch still closes all three modals", async () => {
+    const { view } = await bootView();
+    // @ts-expect-error
+    view.editState!.setInspiration(5);
+    await Promise.resolve();
+    view.getViewData();                         // arm the guard, so its NOT firing below is meaningful
+    closeMaxHpModalMock.mockClear();
+    closeCoinModalMock.mockClear();
+    closeSpellAbilityModalMock.mockClear();
+
+    // PC_FILE has inspiration 0, lastWrittenData has 5, genuinely different bytes.
+    view.setViewData(PC_FILE, false);
+
+    expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
+    expect(closeCoinModalMock).toHaveBeenCalledTimes(1);
+    expect(closeSpellAbilityModalMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -252,9 +301,11 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     const { view } = await bootView();
     closeMaxHpModalMock.mockClear();
     closeCoinModalMock.mockClear();
+    closeSpellAbilityModalMock.mockClear();
     view.onunload();
     expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
     expect(closeCoinModalMock).toHaveBeenCalledTimes(1);
+    expect(closeSpellAbilityModalMock).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -78,12 +78,6 @@ export class PCSheetView extends TextFileView {
   }
 
   setViewData(data: string, clear: boolean): void {
-    // Obsidian does NOT fire Modal.onClose on a same-leaf file switch, so this
-    // (and onLoadFile/clear below) is the teardown hook: without it a Max HP
-    // modal opened against the previous file's editState would linger, stale.
-    closeMaxHpModal();
-    closeCoinModal();
-    closeSpellAbilityModal();
     // Loop guard: Obsidian echoes our just-written bytes back through
     // setViewData after save. Short-circuit before re-running the render
     // pipeline (which would rebuild the entire sheet and re-create editState,
@@ -95,6 +89,13 @@ export class PCSheetView extends TextFileView {
       this.rawFileData = data;
       return;
     }
+    // Obsidian does NOT fire Modal.onClose on a same-leaf file switch, so this
+    // (and onLoadFile/clear below) is the teardown hook. It sits AFTER the loop
+    // guard on purpose: the guard's echo path is not a file switch, and closing
+    // there would make an open modal vanish on the debounced autosave echo.
+    closeMaxHpModal();
+    closeCoinModal();
+    closeSpellAbilityModal();
     this.rawFileData = data;
     this.isDirty = false;
     this.lastWrittenData = null;
