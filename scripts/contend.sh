@@ -7,7 +7,24 @@
 # starve Obsidian and poison any live verification.
 #
 # Usage: scripts/contend.sh [-n SUITES] [-c CAP_SECONDS] [-- <extra vitest args>]
+#
+# CLEANUP, what it covers and what it does not:
+#   * The trap below fires on EXIT, INT and TERM. It does NOT fire on SIGKILL
+#     (kill -9), which no process can trap. After a -9 the burners keep running
+#     until their own wall-clock cap expires; sweep them with
+#     `pkill -f contend-burner`.
+#   * Each suite is killed by PROCESS GROUP, not by pid. `npx` spawns vitest,
+#     which spawns a worker pool, and those grandchildren are what actually
+#     load the machine. Killing only the subshell orphans them, and an orphaned
+#     worker pool IS the contention this harness exists to study: it would
+#     manufacture the very flake class the phase is closing.
+#   * `set -m` below is what makes the group kill possible: with job control
+#     on, every background job becomes its own process group leader, so its pid
+#     doubles as its pgid and `kill -- "-$pid"` reaches the whole tree.
+#   * Deliberately NOT done: a bare `pkill -f vitest`. It would kill a second
+#     agent's concurrent suite, which is exactly the scenario in scope here.
 set -uo pipefail
+set -m
 
 SUITES=2
 CAP=600
@@ -30,7 +47,22 @@ BURNER_PIDS=()
 SUITE_PIDS=()
 cleanup() {
   for p in "${BURNER_PIDS[@]:-}"; do kill "$p" 2>/dev/null; done
-  for p in "${SUITE_PIDS[@]:-}"; do kill "$p" 2>/dev/null; done
+  # Only escalate if a suite is actually still running, so the normal
+  # run-to-completion path pays no grace period.
+  local alive=0 p
+  for p in "${SUITE_PIDS[@]:-}"; do kill -0 "$p" 2>/dev/null && alive=1; done
+  [ "$alive" = 0 ] && return 0
+  # Group kill (see the header note): "-$p" is the process GROUP, so vitest and
+  # its worker pool go with the subshell instead of being orphaned onto the
+  # machine. TERM first, then a short grace, then KILL for anything that
+  # ignored it. The trailing per-pid kill covers the case where job control was
+  # somehow unavailable and the group did not exist.
+  for p in "${SUITE_PIDS[@]:-}"; do kill -TERM -- "-$p" 2>/dev/null; done
+  sleep 2
+  for p in "${SUITE_PIDS[@]:-}"; do
+    kill -KILL -- "-$p" 2>/dev/null
+    kill -KILL "$p" 2>/dev/null
+  done
 }
 trap cleanup EXIT
 trap 'cleanup; exit 130' INT TERM
@@ -45,6 +77,14 @@ for _ in $(seq 1 "$BURNERS"); do
   # parentheses are grouping metacharacters and the pattern matches nothing, ever.
   nice -n 19 node -e "/* contend-burner */ const e=Date.now()+${CAP}000; while(Date.now()<e){Math.sqrt(Math.random())}" &
   BURNER_PIDS+=($!)
+  # Drop the burner from the job table. `set -m` above turns on job control,
+  # and job control makes bash announce every job it reaps ("[3] Terminated"),
+  # which on cleanup would print 16 lines of noise straight over this script's
+  # own results block. disown suppresses that. It does NOT detach the process:
+  # the pid stays valid and killable, which is all cleanup needs (burners are
+  # never `wait`ed on). Suites are deliberately NOT disowned, because `wait`
+  # below requires them to stay in the job table.
+  disown $! 2>/dev/null || true
 done
 
 for i in $(seq 1 "$SUITES"); do
