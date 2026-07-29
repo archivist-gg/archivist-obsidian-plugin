@@ -10,12 +10,9 @@ import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers";
 
 beforeAll(() => installObsidianDomHelpers());
 
-const dirs = ["SRD 5e/Monsters", "SRD 2024/Monsters"].map((d) =>
-  path.resolve(__dirname, "../../.compendium-bundle", d));
-
-function monsterFiles(): string[] {
-  return dirs.flatMap((d) =>
-    readdirSync(d).filter((f) => f.endsWith(".md")).map((f) => path.join(d, f)));
+function monsterFiles(edition: string): string[] {
+  const dir = path.resolve(__dirname, "../../.compendium-bundle", edition, "Monsters");
+  return readdirSync(dir).filter((f) => f.endsWith(".md")).map((f) => path.join(dir, f));
 }
 
 /** First index where two strings differ, or -1 if identical. */
@@ -40,11 +37,12 @@ function firstDiff(a: string, b: string): number {
  * `renderMonsterBlock(monsterCodec.parse(body))` produce byte-identical
  * `outerHTML`.
  */
-describe("monster render equivalence (parseMonster vs monsterCodec)", () => {
-  it("renders identical HTML for the entire SRD monster corpus", () => {
-    const files = monsterFiles();
-    // Guard against a vacuous pass if the corpus dirs were absent/empty.
-    expect(files.length).toBeGreaterThan(500);
+describe.each(["SRD 5e", "SRD 2024"])("monster render equivalence (%s)", (edition) => {
+  it("renders identical HTML for the entire monster corpus", () => {
+    const files = monsterFiles(edition);
+    // Guard against a vacuous pass if the corpus dir were absent/empty.
+    // Measured 2026-07-28: SRD 5e = 325, SRD 2024 = 331.
+    expect(files.length).toBeGreaterThan(300);
 
     const failures: string[] = [];
     for (const file of files) {
