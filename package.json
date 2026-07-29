@@ -10,7 +10,8 @@
     "lint": "eslint 'packages/obsidian/src/**/*.ts'",
     "lint:fix": "eslint 'packages/obsidian/src/**/*.ts' --fix",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test",
+    "check": "npm run check:css && npm run typecheck && npm run lint && npm run test",
+    "check:css": "node scripts/check-css.mjs",
     "typecheck": "tsc -b --force",
     "test:watch": "vitest",
     "migrate-formula-tags": "tsx scripts/migrate-formula-tags.ts"
