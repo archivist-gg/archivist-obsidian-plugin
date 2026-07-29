@@ -417,11 +417,13 @@ if (found > 0 && WIDTHS_RAW) {
     const restoreCtx = await evaljs(`(() => {
       var sheet = document.querySelector('.archivist-pc-sheet');
       var leaf = document.querySelector('.workspace-leaf.mod-active') || (sheet && sheet.closest('.workspace-leaf'));
+      if(leaf) leaf.setAttribute('data-vv-sweep-leaf', '1');
       return {
         leafStyle: leaf ? (leaf.getAttribute('style')||'') : null,
         sheetStyle: sheet ? (sheet.getAttribute('style')||'') : null,
         leftCollapsed: !!(app.workspace.leftSplit && app.workspace.leftSplit.collapsed),
-        rightCollapsed: !!(app.workspace.rightSplit && app.workspace.rightSplit.collapsed)
+        rightCollapsed: !!(app.workspace.rightSplit && app.workspace.rightSplit.collapsed),
+        tagged: !!leaf
       };
     })()`);
 
@@ -433,7 +435,7 @@ if (found > 0 && WIDTHS_RAW) {
       if(app.workspace.leftSplit && app.workspace.leftSplit.collapse) app.workspace.leftSplit.collapse();
       if(app.workspace.rightSplit && app.workspace.rightSplit.collapse) app.workspace.rightSplit.collapse();
       var sheet = document.querySelector('.archivist-pc-sheet');
-      var leaf = document.querySelector('.workspace-leaf.mod-active') || (sheet && sheet.closest('.workspace-leaf'));
+      var leaf = document.querySelector('[data-vv-sweep-leaf="1"]');
       if(leaf){ leaf.style.flex='0 0 ${width}px'; leaf.style.width='${width}px'; leaf.style.maxWidth='${width}px'; }
       await new Promise(function(r){ setTimeout(r,250); });
       var content = document.querySelector('.pc-content');
@@ -445,59 +447,77 @@ if (found > 0 && WIDTHS_RAW) {
       return { contentClientWidth: content ? content.clientWidth : null, method: fellBack ? 'sheet-direct' : 'leaf' };
     })()`);
 
-    const perWidth = [];
-    for (const w of requested) {
-      const n = await narrow(w);
-      const belowBreakpoint = n.contentClientWidth != null && n.contentClientWidth < BREAKPOINT;
-      const entry = { width: w, contentClientWidth: n.contentClientWidth, method: n.method, belowBreakpoint, tabs: [] };
-      console.log(`== width ${w}: .pc-content clientWidth = ${n.contentClientWidth}px (${belowBreakpoint ? 'below' : 'at/above'} ${BREAKPOINT}px breakpoint, via ${n.method})`);
-      for (const panelId of tabList) {
-        const tabRes = await clickTab(panelId);
-        await sleep(200);
-        const shotP = join(OUT, `verify-${stamp}-w${w}-${panelId}.png`);
-        const s = await send('Page.captureScreenshot', { format: 'png' });
-        writeFileSync(shotP, Buffer.from(s.data, 'base64'));
-        const tabEntry = { tab: panelId, active: !!tabRes.ok, screenshot: shotP };
-        if (CHECK_OVERFLOW) {
-          tabEntry.overflow = await evaljs(`window.__vv.overflow(${JSON.stringify(CHECK_ROOT)})`);
-          if (!tabEntry.overflow.present) rootMissingFail = true;
-          if (tabEntry.overflow.overflow) {
-            overflowFail = true;
-            console.log(`   OVERFLOW @ ${w}/${panelId}: scrollWidth ${tabEntry.overflow.scrollWidth} > clientWidth ${tabEntry.overflow.clientWidth}; culprit ${tabEntry.overflow.culprits[0] ? tabEntry.overflow.culprits[0].el : '?'}`);
+    // The sweep below mutates both sidebars and the leaf, so it runs under
+    // try/finally: the restore must happen on EVERY exit path, or a mid-sweep
+    // throw leaves the workspace collapsed and poisons the next run's capture.
+    // restoreCtx and narrow stay OUTSIDE the try on purpose: the finally
+    // interpolates restoreCtx, so sweeping it inside would make the finally
+    // throw ReferenceError.
+    try {
+      const perWidth = [];
+      for (const w of requested) {
+        const n = await narrow(w);
+        const belowBreakpoint = n.contentClientWidth != null && n.contentClientWidth < BREAKPOINT;
+        const entry = { width: w, contentClientWidth: n.contentClientWidth, method: n.method, belowBreakpoint, tabs: [] };
+        console.log(`== width ${w}: .pc-content clientWidth = ${n.contentClientWidth}px (${belowBreakpoint ? 'below' : 'at/above'} ${BREAKPOINT}px breakpoint, via ${n.method})`);
+        for (const panelId of tabList) {
+          const tabRes = await clickTab(panelId);
+          await sleep(200);
+          const shotP = join(OUT, `verify-${stamp}-w${w}-${panelId}.png`);
+          const s = await send('Page.captureScreenshot', { format: 'png' });
+          writeFileSync(shotP, Buffer.from(s.data, 'base64'));
+          const tabEntry = { tab: panelId, active: !!tabRes.ok, screenshot: shotP };
+          if (CHECK_OVERFLOW) {
+            tabEntry.overflow = await evaljs(`window.__vv.overflow(${JSON.stringify(CHECK_ROOT)})`);
+            if (!tabEntry.overflow.present) rootMissingFail = true;
+            if (tabEntry.overflow.overflow) {
+              overflowFail = true;
+              console.log(`   OVERFLOW @ ${w}/${panelId}: scrollWidth ${tabEntry.overflow.scrollWidth} > clientWidth ${tabEntry.overflow.clientWidth}; culprit ${tabEntry.overflow.culprits[0] ? tabEntry.overflow.culprits[0].el : '?'}`);
+            }
           }
-        }
-        if (CHECK_OVERLAP) {
-          tabEntry.overlap = await evaljs(`window.__vv.overlap(${JSON.stringify(CHECK_ROOT)})`);
-          if (!tabEntry.overlap.present) rootMissingFail = true;
-          if (tabEntry.overlap.overlaps.length) {
-            overlapFail = true;
-            console.log(`   OVERLAP @ ${w}/${panelId}: ${tabEntry.overlap.overlaps.length} pair(s), first ${JSON.stringify(tabEntry.overlap.overlaps[0])}`);
+          if (CHECK_OVERLAP) {
+            tabEntry.overlap = await evaljs(`window.__vv.overlap(${JSON.stringify(CHECK_ROOT)})`);
+            if (!tabEntry.overlap.present) rootMissingFail = true;
+            if (tabEntry.overlap.overlaps.length) {
+              overlapFail = true;
+              console.log(`   OVERLAP @ ${w}/${panelId}: ${tabEntry.overlap.overlaps.length} pair(s), first ${JSON.stringify(tabEntry.overlap.overlaps[0])}`);
+            }
           }
+          entry.tabs.push(tabEntry);
         }
-        entry.tabs.push(tabEntry);
+        perWidth.push(entry);
       }
-      perWidth.push(entry);
+
+      const narrowEntry = perWidth.find((e) => e.width === narrowStep);
+      vacuousFail =
+        !(narrowStep < BREAKPOINT) ||
+        !(narrowEntry && narrowEntry.contentClientWidth != null && narrowEntry.contentClientWidth < BREAKPOINT);
+      report.widthSweep = { requested, narrowStep, breakpoint: BREAKPOINT, vacuous: vacuousFail, perWidth };
+      if (vacuousFail) {
+        console.error(`== VACUOUS SWEEP: narrow step ${narrowStep}px did not drop .pc-content below ${BREAKPOINT}px; responsive rules were never exercised.`);
+      }
+    } finally {
+      // restore pane + sidebars, and drop the sweep tag
+      await evaljs(`(() => {
+        var sheet = document.querySelector('.archivist-pc-sheet');
+        var leaf = document.querySelector('[data-vv-sweep-leaf="1"]');
+        if(leaf){ ${restoreCtx.leafStyle ? `leaf.setAttribute('style', ${JSON.stringify(restoreCtx.leafStyle)});` : `leaf.removeAttribute('style');`} leaf.removeAttribute('data-vv-sweep-leaf'); }
+        if(sheet){ ${restoreCtx.sheetStyle ? `sheet.setAttribute('style', ${JSON.stringify(restoreCtx.sheetStyle)});` : `sheet.removeAttribute('style');`} }
+        ${restoreCtx.leftCollapsed ? '' : `if(app.workspace.leftSplit && app.workspace.leftSplit.expand) app.workspace.leftSplit.expand();`}
+        ${restoreCtx.rightCollapsed ? '' : `if(app.workspace.rightSplit && app.workspace.rightSplit.expand) app.workspace.rightSplit.expand();`}
+        return true;
+      })()`);
     }
 
-    const narrowEntry = perWidth.find((e) => e.width === narrowStep);
-    vacuousFail =
-      !(narrowStep < BREAKPOINT) ||
-      !(narrowEntry && narrowEntry.contentClientWidth != null && narrowEntry.contentClientWidth < BREAKPOINT);
-    report.widthSweep = { requested, narrowStep, breakpoint: BREAKPOINT, vacuous: vacuousFail, perWidth };
-    if (vacuousFail) {
-      console.error(`== VACUOUS SWEEP: narrow step ${narrowStep}px did not drop .pc-content below ${BREAKPOINT}px; responsive rules were never exercised.`);
-    }
-
-    // restore pane + sidebars
-    await evaljs(`(() => {
-      var sheet = document.querySelector('.archivist-pc-sheet');
-      var leaf = document.querySelector('.workspace-leaf.mod-active') || (sheet && sheet.closest('.workspace-leaf'));
-      if(leaf){ ${restoreCtx.leafStyle ? `leaf.setAttribute('style', ${JSON.stringify(restoreCtx.leafStyle)});` : `leaf.removeAttribute('style');`} }
-      if(sheet){ ${restoreCtx.sheetStyle ? `sheet.setAttribute('style', ${JSON.stringify(restoreCtx.sheetStyle)});` : `sheet.removeAttribute('style');`} }
-      ${restoreCtx.leftCollapsed ? '' : `if(app.workspace.leftSplit && app.workspace.leftSplit.expand) app.workspace.leftSplit.expand();`}
-      ${restoreCtx.rightCollapsed ? '' : `if(app.workspace.rightSplit && app.workspace.rightSplit.expand) app.workspace.rightSplit.expand();`}
-      return true;
-    })()`);
+    // AFTER the try/finally on purpose: inside the finally this could fail on
+    // its own assertion and mask the restore it is checking.
+    const restored = await evaljs(`(() => ({
+      stray: document.querySelectorAll('[data-vv-sweep-leaf]').length,
+      left: !!(app.workspace.leftSplit && app.workspace.leftSplit.collapsed),
+      right: !!(app.workspace.rightSplit && app.workspace.rightSplit.collapsed)
+    }))()`);
+    report.restoreCheck = restored;
+    if (restored.stray > 0) console.log(`WARNING: ${restored.stray} stray sweep tag(s) left on the workspace.`);
   }
 }
 
