@@ -384,11 +384,16 @@ if (found > 0 && SELF_TEST) {
 // --- overflow / overlap at natural width when checks requested without a sweep ---
 let overflowFail = false;
 let overlapFail = false;
+// Both detectors report present:false when the check root matches no element. Without this flag a
+// missing root returns overflow:false / overlaps:[] and the run passes having checked nothing.
+let rootMissingFail = false;
 if (found > 0 && (CHECK_OVERFLOW || CHECK_OVERLAP) && !WIDTHS_RAW) {
   const nat = {};
   if (CHECK_OVERFLOW) nat.overflow = await evaljs('window.__vv.overflow(".pc-content")');
   if (CHECK_OVERLAP) nat.overlap = await evaljs('window.__vv.overlap(".pc-content")');
   report.naturalCheck = nat;
+  if (nat.overflow && !nat.overflow.present) rootMissingFail = true;
+  if (nat.overlap && !nat.overlap.present) rootMissingFail = true;
   if (nat.overflow && nat.overflow.overflow) overflowFail = true;
   if (nat.overlap && nat.overlap.overlaps && nat.overlap.overlaps.length) overlapFail = true;
   console.log(`== natural-width check: overflow=${nat.overflow ? nat.overflow.overflow : 'n/a'} overlap=${nat.overlap ? nat.overlap.overlaps.length : 'n/a'}`);
@@ -447,6 +452,7 @@ if (found > 0 && WIDTHS_RAW) {
         const tabEntry = { tab: panelId, active: !!tabRes.ok, screenshot: shotP };
         if (CHECK_OVERFLOW) {
           tabEntry.overflow = await evaljs('window.__vv.overflow(".pc-content")');
+          if (!tabEntry.overflow.present) rootMissingFail = true;
           if (tabEntry.overflow.overflow) {
             overflowFail = true;
             console.log(`   OVERFLOW @ ${w}/${panelId}: scrollWidth ${tabEntry.overflow.scrollWidth} > clientWidth ${tabEntry.overflow.clientWidth}; culprit ${tabEntry.overflow.culprits[0] ? tabEntry.overflow.culprits[0].el : '?'}`);
@@ -454,6 +460,7 @@ if (found > 0 && WIDTHS_RAW) {
         }
         if (CHECK_OVERLAP) {
           tabEntry.overlap = await evaljs('window.__vv.overlap(".pc-content")');
+          if (!tabEntry.overlap.present) rootMissingFail = true;
           if (tabEntry.overlap.overlaps.length) {
             overlapFail = true;
             console.log(`   OVERLAP @ ${w}/${panelId}: ${tabEntry.overlap.overlaps.length} pair(s), first ${JSON.stringify(tabEntry.overlap.overlaps[0])}`);
@@ -490,6 +497,12 @@ report.consoleErrors = consoleErrors;
 report.consoleWarnings = consoleWarnings;
 report.exceptions = exceptions;
 
+// STDOUT on purpose: every other loud failure here uses console.error, but the control run asserts
+// this marker on stdout. Do not "fix" it to stderr for consistency.
+if (rootMissingFail) {
+  console.log(`ROOT NOT FOUND: no element matched the check root; the overflow/overlap checks were vacuous.`);
+}
+
 const ok =
   report.noteOpened &&
   found > 0 &&
@@ -498,6 +511,7 @@ const ok =
   assertionsPass &&
   !overflowFail &&
   !overlapFail &&
+  !rootMissingFail &&
   !vacuousFail &&
   !selfTestFail;
 report.ok = ok;
@@ -514,6 +528,7 @@ if (ok) {
   if (!assertionsPass) reasons.push('failed assertion');
   if (overflowFail) reasons.push('horizontal overflow');
   if (overlapFail) reasons.push('element overlap');
+  if (rootMissingFail) reasons.push('check root not found');
   if (vacuousFail) reasons.push('vacuous width sweep');
   if (selfTestFail) reasons.push('self-test detector miss');
   console.log(`\nNOT VERIFIED: ${reasons.join('; ')}.`);
