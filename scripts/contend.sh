@@ -8,6 +8,16 @@
 #
 # Usage: scripts/contend.sh [-n SUITES] [-c CAP_SECONDS] [-- <extra vitest args>]
 #
+# OUTPUT COLLISION, the extra vitest args go to EVERY suite:
+#   "$@" is passed verbatim to all N suites, so a caller-supplied
+#   `--outputFile.json=<path>` makes every suite write the SAME path. The file
+#   that survives is whichever suite finished LAST, silently and with no marker
+#   of which one it was. Any figure read out of that JSON is therefore "slowest
+#   in ONE ARBITRARY suite", NOT "slowest across the run". Measured in R4-P2a:
+#   an arm's JSON reported 13212 ms while that same arm's own log reported
+#   7959 ms. For per-suite timings read "$OUT/suite-N.log", which is genuinely
+#   per suite; treat a shared JSON as a single unidentified sample.
+#
 # CLEANUP, what it covers and what it does not:
 #   * The trap below fires on EXIT, INT and TERM. It does NOT fire on SIGKILL
 #     (kill -9), which no process can trap. After a -9 the burners keep running
