@@ -33,6 +33,10 @@
 //                 --plugin archivist-gg, --selector .archivist-pc-sheet, --out DIR,
 //                 --no-reload, --timeout 15000
 //
+// Reliability: --cdp-timeout 60000 bounds every individual CDP message, so a stalled or dropped
+//              socket fails loudly instead of hanging forever. It is separate from --timeout,
+//              which is and stays the selector poll budget.
+//
 // Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a failed
 //             assertion, a vacuous width sweep, or a self-test detector miss) · 2 cannot connect,
 //             wrong vault, or misuse (no-emdash without --within)
@@ -64,6 +68,9 @@ const PLUGIN = opt('plugin', 'archivist-gg');
 const SELECTOR = opt('selector', '.archivist-pc-sheet');
 const OUT = opt('out', '/Users/shinoobi/w/archivist-obsidian/.superpowers/verify');
 const TIMEOUT = Number(opt('timeout', '15000'));
+// Per-message CDP reply budget. Deliberately NOT derived from TIMEOUT (the selector poll):
+// the plugin reload and the screenshot capture legitimately take longer than 15s.
+const CDP_TIMEOUT = Number(opt('cdp-timeout', '60000'));
 
 // new opt-in modes
 const TAB = opt('tab', null);
@@ -134,10 +141,32 @@ ws.onmessage = (ev) => {
   }
 };
 
+// A dead socket must not strand in-flight requests. This REPLACES the handshake-only onerror
+// binding above, which stayed bound but unhandled once that promise had settled.
+const failAllPending = (why) => {
+  for (const [, { reject }] of pending) reject(new Error(why));
+  pending.clear();
+};
+ws.onclose = () => failAllPending('CDP socket closed while requests were in flight');
+ws.onerror = () => failAllPending('CDP socket error while requests were in flight');
+
 const send = (method, params = {}) =>
   new Promise((resolve, reject) => {
+    // A send on an already-CLOSED socket is a silent no-op per WHATWG (only
+    // CONNECTING throws), so without this guard the reply never arrives and the
+    // call blocks for the FULL CDP_TIMEOUT before rejecting with the wrong
+    // message. failAllPending clears the map, but any LATER send registers a new
+    // entry, and the sweep's restore in the finally is exactly such a call.
+    if (ws.readyState !== 1) {
+      reject(new Error(`CDP socket is not open (readyState ${ws.readyState}): ${method}`));
+      return;
+    }
     const id = nextId++;
-    pending.set(id, { resolve, reject });
+    const timer = setTimeout(() => {
+      if (pending.delete(id)) reject(new Error(`CDP timeout after ${CDP_TIMEOUT}ms: ${method}`));
+    }, CDP_TIMEOUT);
+    const done = (fn) => (v) => { clearTimeout(timer); fn(v); };
+    pending.set(id, { resolve: done(resolve), reject: done(reject) });
     ws.send(JSON.stringify({ id, method, params }));
   });
 
