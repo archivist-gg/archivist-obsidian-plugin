@@ -15,8 +15,11 @@
 //   --widths 1200,768,400       responsive width sweep: narrow the pane per width, MEASURE
 //                               .pc-content clientWidth, screenshot each width, and fail the
 //                               sweep as VACUOUS if the narrowest step does not drop below 499px
-//   --check-overflow            fail on horizontal overflow (scrollWidth > clientWidth) on .pc-content
+//   --check-overflow            fail on horizontal overflow (scrollWidth > clientWidth) on the check root
 //   --check-overlap             fail on bounding-box overlap of in-flow sibling rows/cells
+//   --check-root <sel>          check root for the two detectors above (default .pc-content). The --widths
+//                               breakpoint measurement stays PINNED to .pc-content: BREAKPOINT = 499 is
+//                               PC-sheet-specific, so routing it would pass meaninglessly off the PC sheet.
 //   --assert-selector <sel>     fail unless at least one element matches <sel>
 //   --assert-text <text>        fail unless rendered text matches: substring, /regex/flags, or the
 //                               literal keyword  no-emdash  (which flags U+2014 or the &mdash; entity).
@@ -67,6 +70,7 @@ const TAB = opt('tab', null);
 const WIDTHS_RAW = opt('widths', null);
 const CHECK_OVERFLOW = has('check-overflow');
 const CHECK_OVERLAP = has('check-overlap');
+const CHECK_ROOT = opt('check-root', '.pc-content');
 const ASSERT_SELECTOR = opt('assert-selector', null);
 const ASSERT_TEXT = opt('assert-text', null);
 const WITHIN = opt('within', null);
@@ -389,8 +393,8 @@ let overlapFail = false;
 let rootMissingFail = false;
 if (found > 0 && (CHECK_OVERFLOW || CHECK_OVERLAP) && !WIDTHS_RAW) {
   const nat = {};
-  if (CHECK_OVERFLOW) nat.overflow = await evaljs('window.__vv.overflow(".pc-content")');
-  if (CHECK_OVERLAP) nat.overlap = await evaljs('window.__vv.overlap(".pc-content")');
+  if (CHECK_OVERFLOW) nat.overflow = await evaljs(`window.__vv.overflow(${JSON.stringify(CHECK_ROOT)})`);
+  if (CHECK_OVERLAP) nat.overlap = await evaljs(`window.__vv.overlap(${JSON.stringify(CHECK_ROOT)})`);
   report.naturalCheck = nat;
   if (nat.overflow && !nat.overflow.present) rootMissingFail = true;
   if (nat.overlap && !nat.overlap.present) rootMissingFail = true;
@@ -421,6 +425,10 @@ if (found > 0 && WIDTHS_RAW) {
       };
     })()`);
 
+    // PINNED to .pc-content on purpose: this measures the container-query
+    // breakpoint, and BREAKPOINT = 499 is PC-sheet-specific. Routing it
+    // through --check-root would let a non-PC sweep pass meaninglessly
+    // against the wrong breakpoint; pinned, it fails loudly as vacuous.
     const narrow = async (width) => evaljs(`(async () => {
       if(app.workspace.leftSplit && app.workspace.leftSplit.collapse) app.workspace.leftSplit.collapse();
       if(app.workspace.rightSplit && app.workspace.rightSplit.collapse) app.workspace.rightSplit.collapse();
@@ -451,7 +459,7 @@ if (found > 0 && WIDTHS_RAW) {
         writeFileSync(shotP, Buffer.from(s.data, 'base64'));
         const tabEntry = { tab: panelId, active: !!tabRes.ok, screenshot: shotP };
         if (CHECK_OVERFLOW) {
-          tabEntry.overflow = await evaljs('window.__vv.overflow(".pc-content")');
+          tabEntry.overflow = await evaljs(`window.__vv.overflow(${JSON.stringify(CHECK_ROOT)})`);
           if (!tabEntry.overflow.present) rootMissingFail = true;
           if (tabEntry.overflow.overflow) {
             overflowFail = true;
@@ -459,7 +467,7 @@ if (found > 0 && WIDTHS_RAW) {
           }
         }
         if (CHECK_OVERLAP) {
-          tabEntry.overlap = await evaljs('window.__vv.overlap(".pc-content")');
+          tabEntry.overlap = await evaljs(`window.__vv.overlap(${JSON.stringify(CHECK_ROOT)})`);
           if (!tabEntry.overlap.present) rootMissingFail = true;
           if (tabEntry.overlap.overlaps.length) {
             overlapFail = true;
