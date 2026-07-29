@@ -45,7 +45,10 @@ const PARSER_MAP: Record<string, ParseFn> = {
   spell: parseSpell,
   subclass: parseSubclass,
   weapon: parseWeapon,
-  // condition: no runtime parser exists yet — skipped via SKIPPED_LANGS.
+  // condition: no runtime parser exists in dnd5e at all (no src/condition/,
+  // no parseCondition). Lang-gated via SKIPPED_LANGS below, NOT env-gated.
+  // R4-P2a ruling: keep the skip; a condition parser is a feature, out of
+  // arc scope. See the per-edition corpus assertion below.
 };
 
 const SKIPPED_LANGS = new Set<string>(["condition"]);
@@ -100,6 +103,22 @@ describe("MD-through-parser: every emitted bundle MD parses with its runtime par
 
   it("bundle has at least 2500 MD files (sanity check)", () => {
     expect(entries.length).toBeGreaterThan(2500);
+  });
+
+  // The `condition` corpus is deliberately skipped (SKIPPED_LANGS) because no
+  // runtime parser exists. That skip is silent if the corpus itself vanishes, so
+  // assert per edition that it is still there. Measured 2026-07-28: 15 and 15.
+  // Catches removal, a lang change, and a directory rename. Does NOT catch
+  // per-file re-slugging: walkBundle keys on codeblock lang, not on path.
+  // Both editions are counted BEFORE asserting so one empty edition cannot mask
+  // the other: the failure names the offending edition and its count.
+  it("both SRD editions still ship a Conditions corpus", () => {
+    const counts = ["SRD 5e", "SRD 2024"].map((edition) => {
+      const dir = path.join(BUNDLE_ROOT, edition, "Conditions");
+      return [edition, fs.readdirSync(dir).filter((f) => f.endsWith(".md")).length] as const;
+    });
+    const short = counts.filter(([, n]) => n <= 10);
+    expect(short, "editions whose Conditions corpus is missing or truncated").toEqual([]);
   });
 
   for (const entry of entries) {
