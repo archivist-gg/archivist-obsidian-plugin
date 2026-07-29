@@ -6,6 +6,7 @@ import { installObsidianDomHelpers } from "../fixtures/pc/dom-helpers"; // S1: r
 import type { RenderContext } from "../../packages/obsidian/src/shared/rendering/entity-presenter";
 import { spellCodec } from "@archivist-gg/dnd5e/spell/spell.codec";
 import { parseSpell } from "@archivist-gg/dnd5e/spell/spell.parser"; // moved parser (post-move path)
+import { dnd5ePack } from "@archivist-gg/dnd5e"; // barrel: dnd5ePack has no ./pack subpath export (S2)
 import { spellModule } from "../../packages/obsidian/src/modules/spell/spell.module"; // (a2) uses the module's real render (B1)
 import { enrichSpell } from "@archivist-gg/dnd5e/spell/spell.enrichment";
 
@@ -96,8 +97,7 @@ describe("spell port equivalence", () => {
   });
 
   // de-list guard: kernel pack declares spell with the PACK codec (not the legacy bridge)
-  it("dnd5ePack declares spell with its pack codec", async () => {
-    const { dnd5ePack } = await import("@archivist-gg/dnd5e"); // S2: barrel, no ./pack subpath
+  it("dnd5ePack declares spell with its pack codec", () => {
     expect(dnd5ePack.entityTypes.some((et) => et.type === "spell" && et.doc === spellCodec)).toBe(true);
   });
 });
