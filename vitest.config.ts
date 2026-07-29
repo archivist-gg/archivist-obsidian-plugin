@@ -22,7 +22,11 @@ export default defineConfig({
     //
     // The 5000 ms default has caught zero real hangs here and produced at
     // least three false reds: under real contention (two agent sessions running
-    // suites at once) the machine amplified 1272 ms to 6708 ms, a factor of 5.3.
+    // suites at once) the then-unsplit corpus test was observed at 6708 ms.
+    // That observation is the source of the 5.3x amplification figure quoted
+    // elsewhere in this phase, but the ratio was computed against the 1272 ms
+    // estimate recorded at the time, so treat 6708 ms as the measurement and
+    // 5.3x as historical bookkeeping rather than as a derived fact.
     // Task 5's tracked reproducer (scripts/contend.sh: 2 concurrent suites plus
     // 16 niced burners on 8 cores) independently inflated the post-split worst
     // half to 6867 ms and 7780 ms, a factor of 4.0 to 4.5, and both of those
@@ -37,8 +41,16 @@ export default defineConfig({
     // different, invisible budget. slowTestThreshold stays at its 300 ms
     // default so creep stays visible in every run.
     //
-    // RULE: if any test ever exceeds about 2000 ms unloaded, re-derive this
-    // number from measurement rather than raising it reflexively.
+    // RULE: re-derive this number from measurement, rather than raising it
+    // reflexively, as soon as any test exceeds about 1.75x the measured
+    // unloaded max recorded above (1718 ms), i.e. roughly 3000 ms unloaded.
+    // The tripwire is anchored to that measured max instead of to a bare
+    // absolute because a bare absolute is what went stale last time: the
+    // previous "about 2000 ms" was calibrated against the retired 735 ms
+    // estimate, and against the real 1718 ms it would fire on ordinary
+    // run-to-run variance, which measures 1.37x between idle runs here.
+    // 1.75x clears that variance and still leaves the tripwire about 6.7x
+    // below the budget it guards.
     testTimeout: 20000,
     hookTimeout: 20000,
     setupFiles: [path.resolve(__dirname, "tests/setup.ts")],
