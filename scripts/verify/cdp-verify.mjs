@@ -322,11 +322,18 @@ const clickTab = async (panelId) => {
   })()`);
 };
 
+// Declared HERE, deliberately not beside overflowFail/overlapFail/rootMissingFail further down: the
+// first write is inside the block immediately below, so a declaration down there would put this write
+// in the flag's temporal dead zone and only the --tab arm would ever detonate. Starts false, so a run
+// that never requests a tab passes by construction; there is no "absent" branch on purpose.
+let tabFail = false;
+
 // If a single tab was requested (and we are not sweeping both), select it before the default shot.
 if (found > 0 && TAB) {
   const panelId = tabToPanel(TAB);
   const tabRes = await clickTab(panelId);
   report.tab = { requested: panelId, active: !!tabRes.ok };
+  if (!tabRes.ok) tabFail = true;
   console.log(`== tab "${panelId}": ${tabRes.ok ? 'active' : 'FAILED to activate (' + (tabRes.error || '') + ')'}`);
   await sleep(150);
 }
@@ -496,6 +503,7 @@ if (found > 0 && WIDTHS_RAW) {
           const s = await send('Page.captureScreenshot', { format: 'png' });
           writeFileSync(shotP, Buffer.from(s.data, 'base64'));
           const tabEntry = { tab: panelId, active: !!tabRes.ok, screenshot: shotP };
+          if (!tabRes.ok) tabFail = true;
           if (CHECK_OVERFLOW) {
             tabEntry.overflow = await evaljs(`window.__vv.overflow(${JSON.stringify(CHECK_ROOT)})`);
             if (!tabEntry.overflow.present) rootMissingFail = true;
@@ -569,6 +577,7 @@ const ok =
   !overflowFail &&
   !overlapFail &&
   !rootMissingFail &&
+  !tabFail &&
   !vacuousFail &&
   !selfTestFail;
 report.ok = ok;
@@ -586,6 +595,7 @@ if (ok) {
   if (overflowFail) reasons.push('horizontal overflow');
   if (overlapFail) reasons.push('element overlap');
   if (rootMissingFail) reasons.push('check root not found');
+  if (tabFail) reasons.push('tab failed to activate');
   if (vacuousFail) reasons.push('vacuous width sweep');
   if (selfTestFail) reasons.push('self-test detector miss');
   console.log(`\nNOT VERIFIED: ${reasons.join('; ')}.`);
