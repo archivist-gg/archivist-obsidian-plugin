@@ -34,6 +34,19 @@
 //   --within <sel>             scope --assert-text (esp. the no-emdash modes) to a subtree
 //   --self-test                inject a known-bad + a known-good fixture and assert the overflow /
 //                               overlap detector fires on the bad one and stays clean on the good one
+//   --click <sel>              ORDERED STEPS. These six verbs are collected by a walk over argv,
+//   --press-key Escape|Enter|Tab   not by opt() (which keeps only the FIRST occurrence of a
+//   --wait <ms>                    repeated flag), so they may repeat and they run in the order
+//   --expect <sel>                 written. --expect-absent is the negative form --assert-selector
+//   --expect-absent <sel>          lacks: without it "Escape closes the modal" is not expressible.
+//   --shot <name>                  Keys go out as TRUSTED Input.dispatchKeyEvent events, because an
+//                                  untrusted dispatchEvent does not drive Obsidian's Keymap. Every
+//                                  verb needs a value; a missing one is misuse and exits 2 before
+//                                  connecting. Steps run after the --tab click and before the
+//                                  screenshot, and under --widths once per (width, tab) PAIR, so
+//                                  they MUST be self-reverting: nothing left open, no note written.
+//                                  --shot names carry the pair label, or the images from a
+//                                  multi-width sweep would overwrite each other.
 //
 // Retained flags: --port 9222, --vault DnD, --note "PlayerCharacters/Grendal.md",
 //                 --plugin archivist-gg, --selector .archivist-pc-sheet, --out DIR,
@@ -44,8 +57,9 @@
 //              which is and stays the selector poll budget.
 //
 // Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a failed
-//             assertion, a vacuous width sweep, or a self-test detector miss) · 2 cannot connect,
-//             wrong vault, or misuse (a no-emdash mode without --within)
+//             assertion, a failed step, a vacuous width sweep, or a self-test detector miss)
+//             · 2 cannot connect, wrong vault, or misuse (a no-emdash mode without --within, or a
+//             step verb with no value)
 //
 // NOTE on --vault: Obsidian can have SEVERAL vault windows open at once, each its own CDP page
 // target. Targets are matched by the stable " - <vault> - Obsidian" window-title segment, and the
@@ -91,6 +105,32 @@ const SELF_TEST = has('self-test');
 
 const BREAKPOINT = 499; // .pc-content below this exercises the narrow container-query path
 const tabToPanel = (t) => (t == null ? null : t.startsWith('panel-') ? t : `panel-${t}`);
+
+// --- ordered step list -----------------------------------------------------
+// Collected by an ordered walk over argv rather than opt(): opt() uses args.indexOf and returns
+// only the FIRST occurrence, silently dropping every repeat with no diagnostic. The walk is
+// therefore required both for SEQUENCING (steps run in the order given) and to avoid silent loss.
+// STEP_VERBS is a Set, NOT an object literal: with a bare object, --constructor, --toString and
+// --valueOf all resolve truthy through Object.prototype and would be consumed as step verbs.
+// This sits ABOVE the misuse guard below because both guards must precede the first fetch, so
+// the no-value guard is reachable without a running Obsidian.
+const STEP_VERBS = new Set(['click', 'press-key', 'wait', 'expect', 'expect-absent', 'shot']);
+const STEPS = [];
+for (let i = 0; i < args.length; i++) {
+  const tok = args[i];
+  if (!tok.startsWith('--')) continue;
+  const verb = tok.slice(2);
+  if (!STEP_VERBS.has(verb)) continue;
+  const value = args[i + 1];
+  // "No value" covers BOTH shapes on purpose: a trailing --press-key, and --press-key --wait 100
+  // where the next token merely looks like a flag.
+  if (value === undefined || value.startsWith('--')) {
+    console.error(`FAIL: --${verb} requires a value (got ${value === undefined ? 'end of arguments' : value}).`);
+    process.exit(2);
+  }
+  STEPS.push({ verb, value });
+  i++;
+}
 
 // misuse guard (before touching the environment): a sheet-wide em-dash scan is intentionally
 // disabled, so EVERY no-emdash mode requires an explicit --within scope. Widening this list and
@@ -346,6 +386,57 @@ const clickTab = async (panelId) => {
   })()`);
 };
 
+// --- step runner (--click / --press-key / --wait / --expect / --expect-absent / --shot) ---
+// Keys are dispatched as TRUSTED events via Input.dispatchKeyEvent. An
+// untrusted element.dispatchEvent does NOT drive Obsidian's Keymap, which
+// binds window at the CAPTURE phase, so a synthetic event never reaches the
+// handler under test.
+const VK = { Escape: 27, Enter: 13, Tab: 9 };
+const pressKey = async (name) => {
+  const vk = VK[name];
+  if (!vk) throw new Error(`unsupported --press-key value: ${name} (known: ${Object.keys(VK).join(', ')})`);
+  await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: name, code: name, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
+  await send('Input.dispatchKeyEvent', { type: 'keyUp',     key: name, code: name, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
+};
+
+// Steps MUST be self-reverting. The sweep's restore covers only leaf style, sheet style and the
+// two sidebars, and runSteps is called once per (width, tab) pair: a step that opens a modal
+// leaves it open for every later width, and a step that clicks an Activate toggle calls
+// editState.toggleActiveBuff, which mutates state.active_buffs and WRITES the note. Leave the
+// UI as you found it, and leave real vault notes pristine.
+let stepsFail = false;
+const runSteps = async (label) => {
+  if (!STEPS.length) return;
+  for (const [n, st] of STEPS.entries()) {
+    const rec = { label, n, verb: st.verb, value: st.value };
+    try {
+      if (st.verb === 'click') {
+        const hit = await evaljs(`(() => { var e = document.querySelector(${JSON.stringify(st.value)}); if(!e) return false; e.click(); return true; })()`);
+        rec.pass = !!hit;
+      } else if (st.verb === 'press-key') { await pressKey(st.value); rec.pass = true; }
+      else if (st.verb === 'wait') { await sleep(Number(st.value)); rec.pass = true; }
+      else if (st.verb === 'expect') {
+        rec.count = await evaljs(`document.querySelectorAll(${JSON.stringify(st.value)}).length`);
+        rec.pass = rec.count > 0;
+      } else if (st.verb === 'expect-absent') {
+        rec.count = await evaljs(`document.querySelectorAll(${JSON.stringify(st.value)}).length`);
+        rec.pass = rec.count === 0;
+      } else if (st.verb === 'shot') {
+        // label is in the filename on purpose: without it, a --shot in the
+        // default two-tab sweep over two widths overwrites itself four times
+        // and three evidence images are silently lost.
+        const p = join(OUT, `verify-${stamp}-step-${label}-${st.value}.png`);
+        const s = await send('Page.captureScreenshot', { format: 'png' });
+        writeFileSync(p, Buffer.from(s.data, 'base64'));
+        rec.screenshot = p; rec.pass = true;
+      }
+    } catch (e) { rec.pass = false; rec.error = String(e && e.message || e); }
+    if (!rec.pass) stepsFail = true;
+    (report.steps || (report.steps = [])).push(rec);
+    console.log(`== step ${label}#${n} ${st.verb} ${st.value}: ${rec.pass ? 'PASS' : 'FAIL'}`);
+  }
+};
+
 // Declared HERE, deliberately not beside overflowFail/overlapFail/rootMissingFail further down: the
 // first write is inside the block immediately below, so a declaration down there would put this write
 // in the flag's temporal dead zone and only the --tab arm would ever detonate. Starts false, so a run
@@ -361,6 +452,10 @@ if (found > 0 && TAB) {
   console.log(`== tab "${panelId}": ${tabRes.ok ? 'active' : 'FAILED to activate (' + (tabRes.error || '') + ')'}`);
   await sleep(150);
 }
+
+// Steps run AFTER the --tab click and BEFORE the default screenshot, so the evidence image is
+// post-interaction without changing the backward-compatible filename.
+if (found > 0) await runSteps('main');
 
 // --- default screenshot (natural width; filename unchanged for backward compatibility) ---
 const shotPath = join(OUT, `verify-${stamp}.png`);
@@ -534,6 +629,9 @@ if (found > 0 && WIDTHS_RAW) {
         for (const panelId of tabList) {
           const tabRes = await clickTab(panelId);
           await sleep(200);
+          // Once per (width, tab) PAIR: this loop is nested, so with no --tab there are TWO
+          // clicks and TWO screenshots per width. Before the screenshot, as above.
+          await runSteps(`w${w}-${panelId}`);
           const shotP = join(OUT, `verify-${stamp}-w${w}-${panelId}.png`);
           const s = await send('Page.captureScreenshot', { format: 'png' });
           writeFileSync(shotP, Buffer.from(s.data, 'base64'));
@@ -614,6 +712,7 @@ const ok =
   !rootMissingFail &&
   !tabFail &&
   !vacuousFail &&
+  !stepsFail &&
   !selfTestFail;
 report.ok = ok;
 
@@ -632,6 +731,7 @@ if (ok) {
   if (rootMissingFail) reasons.push('check root not found');
   if (tabFail) reasons.push('tab failed to activate');
   if (vacuousFail) reasons.push('vacuous width sweep');
+  if (stepsFail) reasons.push('failed step');
   if (selfTestFail) reasons.push('self-test detector miss');
   console.log(`\nNOT VERIFIED: ${reasons.join('; ')}.`);
 }
