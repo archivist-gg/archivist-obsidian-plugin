@@ -21,11 +21,17 @@
 //                               breakpoint measurement stays PINNED to .pc-content: BREAKPOINT = 499 is
 //                               PC-sheet-specific, so routing it would pass meaninglessly off the PC sheet.
 //   --assert-selector <sel>     fail unless at least one element matches <sel>
-//   --assert-text <text>        fail unless rendered text matches: substring, /regex/flags, or the
-//                               literal keyword  no-emdash  (which flags U+2014 or the &mdash; entity).
-//                               no-emdash MUST be scoped with --within (a sheet-wide scan is disabled
+//   --assert-text <text>        fail unless rendered text matches: substring, /regex/flags, or one of
+//                               the literal keywords  no-emdash  /  no-emdash-strict . Both scan for
+//                               U+2014 and report BOTH signals (inVisible from innerText, inHtml from
+//                               innerHTML); only the verdict differs. no-emdash keys to visible text;
+//                               no-emdash-strict keys to innerHTML and so also sees a hidden/inactive
+//                               tab panel, whose innerText is '' while its innerHTML is populated.
+//                               Neither looks for the &mdash; entity: the HTML serializer escapes only
+//                               & < > NBSP (and " in attributes), so that string is never produced.
+//                               BOTH modes MUST be scoped with --within (a sheet-wide scan is disabled
 //                               on purpose: weapon formatDamage emits U+2014 for zero-dice weapons).
-//   --within <sel>             scope --assert-text (esp. no-emdash) to a subtree
+//   --within <sel>             scope --assert-text (esp. the no-emdash modes) to a subtree
 //   --self-test                inject a known-bad + a known-good fixture and assert the overflow /
 //                               overlap detector fires on the bad one and stays clean on the good one
 //
@@ -39,7 +45,7 @@
 //
 // Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a failed
 //             assertion, a vacuous width sweep, or a self-test detector miss) · 2 cannot connect,
-//             wrong vault, or misuse (no-emdash without --within)
+//             wrong vault, or misuse (a no-emdash mode without --within)
 //
 // NOTE on --vault: Obsidian can have SEVERAL vault windows open at once, each its own CDP page
 // target. Targets are matched by the stable " - <vault> - Obsidian" window-title segment, and the
@@ -86,10 +92,14 @@ const SELF_TEST = has('self-test');
 const BREAKPOINT = 499; // .pc-content below this exercises the narrow container-query path
 const tabToPanel = (t) => (t == null ? null : t.startsWith('panel-') ? t : `panel-${t}`);
 
-// misuse guard (before touching the environment): a sheet-wide no-emdash scan is intentionally
-// disabled, so no-emdash requires an explicit --within scope.
-if (ASSERT_TEXT === 'no-emdash' && !WITHIN) {
-  console.error('FAIL: --assert-text no-emdash requires --within <selector>.');
+// misuse guard (before touching the environment): a sheet-wide em-dash scan is intentionally
+// disabled, so EVERY no-emdash mode requires an explicit --within scope. Widening this list and
+// the dispatch below must stay in lockstep: a mode the guard knows but the dispatch does not
+// degrades into an always-failing substring match, and a mode the dispatch knows but the guard
+// does not silently skips the --within requirement.
+const EMDASH_MODES = ['no-emdash', 'no-emdash-strict'];
+if (EMDASH_MODES.includes(ASSERT_TEXT) && !WITHIN) {
+  console.error(`FAIL: --assert-text ${ASSERT_TEXT} requires --within <selector>.`);
   console.error('      A sheet-wide em-dash scan is disabled on purpose: weapon formatDamage emits U+2014');
   console.error('      for zero-dice weapons (pre-existing, benign). Scope it, e.g. --within ".pc-weapon-mastery".');
   process.exit(2);
@@ -357,14 +367,25 @@ if (found > 0 && ASSERT_SELECTOR) {
   assertions.push({ type: 'selector', selector: ASSERT_SELECTOR, count, pass: count > 0 });
 }
 if (found > 0 && ASSERT_TEXT) {
-  if (ASSERT_TEXT === 'no-emdash') {
+  if (EMDASH_MODES.includes(ASSERT_TEXT)) {
+    const strict = ASSERT_TEXT === 'no-emdash-strict';
     const scope = await textOf(WITHIN);
     if (!scope.present) {
-      assertions.push({ type: 'no-emdash', within: WITHIN, pass: false, reason: 'within selector matched no element' });
+      assertions.push({ type: ASSERT_TEXT, within: WITHIN, pass: false, reason: 'within selector matched no element' });
     } else {
-      const foundChar = scope.text.indexOf('\u2014') >= 0;
-      const foundEntity = scope.html.indexOf('&mdash;') >= 0;
-      assertions.push({ type: 'no-emdash', within: WITHIN, foundChar, foundEntity, pass: !(foundChar || foundEntity) });
+      const inVisible = scope.text.indexOf('\u2014') >= 0;
+      const inHtml = scope.html.indexOf('\u2014') >= 0;
+      // A hidden .pc-tab-panel has innerText '' but a fully populated innerHTML,
+      // so a default (visible) scan of an inactive panel is VACUOUS. Report both
+      // signals always; key the verdict to the requested mode.
+      const vacuous = scope.text.length === 0 && scope.html.length > 0;
+      assertions.push({
+        type: ASSERT_TEXT, within: WITHIN, inVisible, inHtml, vacuousScope: vacuous,
+        pass: !(strict ? inHtml : inVisible),
+      });
+      if (vacuous && !strict) {
+        console.log(`WARNING: --within "${WITHIN}" has empty visible text but non-empty innerHTML (hidden panel?); a default no-emdash scan here is vacuous. Use no-emdash-strict or activate the tab.`);
+      }
     }
   } else {
     const scopeSel = WITHIN || SELECTOR;
