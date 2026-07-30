@@ -51,6 +51,21 @@
 //                                  Steps MUST be self-reverting: nothing left open, no note
 //                                  written. --shot names carry the pair label, or the images from
 //                                  a multi-width sweep would overwrite each other.
+//   --scroll-capture [sel]      step the SCROLL CONTAINER by one clientHeight at a time, screenshot
+//                               each viewport-full, then restore scrollTop. The container is
+//                               Obsidian's own reading-view scroller, NOT .pc-content, which carries
+//                               no overflow-y in any partial. Resolution order: .markdown-preview-view
+//                               then .cm-scroller, first candidate that actually scrolls wins, else
+//                               first that merely exists. A container that matches nothing, or a
+//                               scrollTop that does not come back to where it started, FAILS the run.
+//                               The selector is OPTIONAL, and opt() returns the NEXT argv token
+//                               whenever the flag is present, so the parse must treat BOTH undefined
+//                               (a trailing --scroll-capture) and a leading "--" (the next flag) as
+//                               "no value given" using strict ===. A loose == null would fold the
+//                               trailing case into the flag-absent branch and silently disable it.
+//                               Runs ONCE, at natural width, after any --widths sweep has restored
+//                               the pane: the shot names carry no width/tab label, so running it per
+//                               sweep pair would overwrite its own evidence.
 //
 // Retained flags: --port 9222, --vault DnD, --note "PlayerCharacters/Grendal.md",
 //                 --plugin archivist-gg, --selector .archivist-pc-sheet, --out DIR,
@@ -61,7 +76,8 @@
 //              which is and stays the selector poll budget.
 //
 // Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a failed
-//             assertion, a failed step, a vacuous width sweep, or a self-test detector miss)
+//             assertion, a failed step, a vacuous width sweep, a self-test detector miss, or a
+//             scroll container that is missing or left unrestored)
 //             · 2 cannot connect, wrong vault, or misuse (a no-emdash mode without --within, or a
 //             step verb with no value)
 //
@@ -106,6 +122,19 @@ const ASSERT_SELECTOR = opt('assert-selector', null);
 const ASSERT_TEXT = opt('assert-text', null);
 const WITHIN = opt('within', null);
 const SELF_TEST = has('self-test');
+// The value comes from opt(), so guard against swallowing the next flag:
+// `--scroll-capture --check-overflow` must not take "--check-overflow" as the
+// container selector. Same rule the step walk uses. [Gate-2 N7a]
+//
+// STRICT === on BOTH clauses, never ==. opt() returns args[i + 1], NOT the default, whenever the
+// flag is present, so a TRAILING --scroll-capture yields undefined. Under `SCROLL_RAW == null` that
+// case collapses into the flag-absent branch, SCROLL_CAPTURE becomes null, the capture block is
+// skipped, scrollFail stays false and the run exits 0 having taken ZERO shots. `--widths 400
+// --scroll-capture` is exactly that shape, so the flag would ship silently disabled in its own
+// prescribed invocation. The tell for the bug is that the `=== undefined` clause goes dead.
+const SCROLL_RAW = has('scroll-capture') ? opt('scroll-capture', '') : null;
+const SCROLL_CAPTURE = SCROLL_RAW === null ? null
+  : (SCROLL_RAW === undefined || SCROLL_RAW.startsWith('--') ? '' : SCROLL_RAW);
 
 const BREAKPOINT = 499; // .pc-content below this exercises the narrow container-query path
 const tabToPanel = (t) => (t == null ? null : t.startsWith('panel-') ? t : `panel-${t}`);
@@ -724,6 +753,47 @@ if (found > 0 && WIDTHS_RAW) {
   }
 }
 
+// --- scroll capture (--scroll-capture) -------------------------------------
+// Runs AFTER the sweep's try/finally has restored the pane, so these shots are natural-width. The
+// filenames carry only the shot index, so this must stay a single pass: calling it per (width, tab)
+// pair would overwrite its own evidence, which is the hazard --shot solves with a pair label.
+let scrollFail = false;
+if (found > 0 && SCROLL_CAPTURE !== null) {
+  // Resolution order: opening the note forces reading view (setViewState with
+  // state.mode = 'preview' above), so .markdown-preview-view is live and
+  // .cm-scroller is the editing fallback.
+  const candidates = SCROLL_CAPTURE ? [SCROLL_CAPTURE] : ['.markdown-preview-view', '.cm-scroller'];
+  const chosen = await evaljs(`(() => {
+    var list = ${JSON.stringify(candidates)};
+    for (var i=0;i<list.length;i++){ var e=document.querySelector(list[i]); if(e && e.scrollHeight > e.clientHeight + 1) return list[i]; }
+    for (var j=0;j<list.length;j++){ if(document.querySelector(list[j])) return list[j]; }
+    return null;
+  })()`);
+  if (!chosen) {
+    scrollFail = true;
+    console.log(`SCROLL CONTAINER NOT FOUND: tried ${candidates.join(', ')}.`);
+  } else {
+    const start = await evaljs(`document.querySelector(${JSON.stringify(chosen)}).scrollTop`);
+    const shots = [];
+    for (let i = 0; i < 20; i++) {
+      const at = await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(chosen)});
+        e.scrollTop = ${i} * e.clientHeight;
+        return { top: e.scrollTop, max: e.scrollHeight - e.clientHeight }; })()`);
+      await sleep(150);
+      const p = join(OUT, `verify-${stamp}-scroll${i}.png`);
+      const s = await send('Page.captureScreenshot', { format: 'png' });
+      writeFileSync(p, Buffer.from(s.data, 'base64'));
+      shots.push({ index: i, scrollTop: at.top, screenshot: p });
+      if (at.top >= at.max) break;
+    }
+    await evaljs(`(() => { document.querySelector(${JSON.stringify(chosen)}).scrollTop = ${start}; return true; })()`);
+    const back = await evaljs(`document.querySelector(${JSON.stringify(chosen)}).scrollTop`);
+    report.scrollCapture = { container: chosen, shots, startScrollTop: start, restoredScrollTop: back };
+    if (back !== start) { scrollFail = true; console.log(`SCROLL NOT RESTORED: ${back} != ${start}`); }
+    console.log(`== scroll-capture: ${shots.length} shot(s) via ${chosen}`);
+  }
+}
+
 report.consoleErrors = consoleErrors;
 report.consoleWarnings = consoleWarnings;
 report.exceptions = exceptions;
@@ -753,6 +823,7 @@ const ok =
   !tabFail &&
   !vacuousFail &&
   !stepsFail &&
+  !scrollFail &&
   !selfTestFail;
 report.ok = ok;
 
@@ -772,6 +843,7 @@ if (ok) {
   if (tabFail) reasons.push('tab failed to activate');
   if (vacuousFail) reasons.push('vacuous width sweep');
   if (stepsFail) reasons.push('failed step');
+  if (scrollFail) reasons.push('scroll capture failed');
   if (selfTestFail) reasons.push('self-test detector miss');
   console.log(`\nNOT VERIFIED: ${reasons.join('; ')}.`);
 }
