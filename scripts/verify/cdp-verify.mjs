@@ -52,12 +52,23 @@
 //                                  written. --shot names carry the pair label, or the images from
 //                                  a multi-width sweep would overwrite each other.
 //   --scroll-capture [sel]      step the SCROLL CONTAINER by one clientHeight at a time, screenshot
-//                               each viewport-full, then restore scrollTop. The container is
-//                               Obsidian's own reading-view scroller, NOT .pc-content, which carries
-//                               no overflow-y in any partial. Resolution order: .markdown-preview-view
-//                               then .cm-scroller, first candidate that actually scrolls wins, else
-//                               first that merely exists. A container that matches nothing, or a
-//                               scrollTop that does not come back to where it started, FAILS the run.
+//                               each viewport-full, then restore scrollTop. The container is the
+//                               view's own scroller, NOT .pc-content, which carries no overflow-y in
+//                               any partial. WITHOUT a selector, resolution is LEAF-SCOPED: it looks
+//                               only inside the .workspace-leaf that holds SELECTOR (falling back to
+//                               .workspace-leaf.mod-active), trying .markdown-preview-view then
+//                               .cm-scroller then .view-content, and the first candidate that
+//                               actually scrolls wins. Scoping is load-bearing, not tidiness: a
+//                               custom ItemView such as the PC sheet has NEITHER markdown scroller
+//                               inside its leaf, so a document-global lookup resolved to a hidden 0x0
+//                               element in an unrelated background tab and the run exited 0 with one
+//                               shot having scrolled nothing. WITH a selector, resolution is the
+//                               unchanged document-global querySelector, first match.
+//                               FAILS the run: a container that matches nothing, a container that
+//                               cannot scroll (scrollHeight <= clientHeight + 1, which is either
+//                               "nothing to scroll" or "wrong element" and the tool cannot tell them
+//                               apart), a capture that produced fewer than TWO shots, or a scrollTop
+//                               that does not come back to where it started.
 //                               The selector is OPTIONAL, and opt() returns the NEXT argv token
 //                               whenever the flag is present, so the parse must treat BOTH undefined
 //                               (a trailing --scroll-capture) and a leading "--" (the next flag) as
@@ -78,7 +89,7 @@
 // Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a check root that
 //             matched no element, a --tab that failed to activate, a failed assertion, a failed
 //             step, a vacuous width sweep, a self-test detector miss, or a scroll container that is
-//             missing or left unrestored)
+//             missing, cannot scroll, yielded fewer than two shots, or was left unrestored)
 //             · 2 cannot connect, wrong vault, or misuse. MISUSE is the FULL offline parse-time
 //             set, and this line is the one that goes stale: a no-emdash mode without --within, a
 //             step verb with no value, an unknown --press-key value, and a non-finite --wait. The
@@ -761,40 +772,135 @@ if (found > 0 && WIDTHS_RAW) {
 // Runs AFTER the sweep's try/finally has restored the pane, so these shots are natural-width. The
 // filenames carry only the shot index, so this must stay a single pass: calling it per (width, tab)
 // pair would overwrite its own evidence, which is the hazard --shot solves with a pair label.
+//
+// The resolved element is TAGGED and then re-queried by that tag, rather than by a selector string.
+// A selector string cannot address "the third .view-content"; document.querySelector always returns
+// the first match, which is precisely how the default resolution used to land on a foreign leaf.
+const SCROLL_HOST = '[data-vv-scroll-host]';
 let scrollFail = false;
 if (found > 0 && SCROLL_CAPTURE !== null) {
-  // Resolution order: opening the note forces reading view (setViewState with
-  // state.mode = 'preview' above), so .markdown-preview-view is live and
-  // .cm-scroller is the editing fallback.
-  const candidates = SCROLL_CAPTURE ? [SCROLL_CAPTURE] : ['.markdown-preview-view', '.cm-scroller'];
-  const chosen = await evaljs(`(() => {
-    var list = ${JSON.stringify(candidates)};
-    for (var i=0;i<list.length;i++){ var e=document.querySelector(list[i]); if(e && e.scrollHeight > e.clientHeight + 1) return list[i]; }
-    for (var j=0;j<list.length;j++){ if(document.querySelector(list[j])) return list[j]; }
-    return null;
+  // LEAF-SCOPED resolution, and the scoping is the whole point. Measured live: the PC sheet is a
+  // custom `archivist-pc-sheet` ItemView, so .markdown-preview-view and .cm-scroller do not exist
+  // inside its leaf at all; they exist only in whatever OTHER leaves happen to be open, at 0x0 if
+  // those leaves are hidden. A document-global resolver therefore picked a hidden 0x0 element from
+  // an unrelated background tab, computed max = 0 - 0 = 0, broke out of the capture loop at i = 0,
+  // and exited 0 having taken exactly ONE shot. That is a silent under-capture: the run reports
+  // success having scrolled nothing. Worse, it was CONTINGENT ON UNRELATED TABS, since with no
+  // markdown leaf open anywhere the old resolver found nothing and correctly exited 1.
+  //
+  // So the default candidates are searched only inside the leaf that actually holds the element
+  // under test (SELECTOR), falling back to the active leaf. .view-content is the generic Obsidian
+  // view scroller and is what carries overflow-y on an ItemView; .markdown-preview-view /
+  // .cm-scroller stay ahead of it so a markdown leaf still resolves to the reading-view scroller
+  // exactly as before.
+  const scrollProbe = await evaljs(`(() => {
+    // Idempotent: a run that threw mid-capture cannot leave the next run a poisoned tag.
+    var stale = document.querySelectorAll('[data-vv-scroll-host]');
+    for (var s = 0; s < stale.length; s++) stale[s].removeAttribute('data-vv-scroll-host');
+
+    var explicit = ${JSON.stringify(SCROLL_CAPTURE)};
+    var el = null, how = null, scope = null, tried = [];
+    var note = function(e, sel, sc){ return { selector: sel, scope: sc, scrollHeight: e.scrollHeight,
+      clientHeight: e.clientHeight, scrolls: e.scrollHeight > e.clientHeight + 1 }; };
+
+    if (explicit) {
+      // Honoured EXACTLY as before: document-global, first match, no leaf scoping. This is the arm
+      // that already worked, and a caller who pins ".workspace-leaf.mod-active .view-content" is
+      // relying on it resolving that selector verbatim.
+      scope = 'document (explicit selector)';
+      el = document.querySelector(explicit);
+      if (el) { how = explicit; tried.push(note(el, explicit, scope)); }
+    } else {
+      var anchor = document.querySelector(${JSON.stringify(SELECTOR)});
+      var leaf = anchor ? anchor.closest('.workspace-leaf') : null;
+      scope = leaf ? 'leaf containing ' + ${JSON.stringify(SELECTOR)} : null;
+      if (!leaf) { leaf = document.querySelector('.workspace-leaf.mod-active'); scope = leaf ? 'active leaf' : 'no leaf'; }
+      if (leaf) {
+        var list = ['.markdown-preview-view', '.cm-scroller', '.view-content'];
+        var all = [];
+        for (var i = 0; i < list.length; i++) {
+          var m = leaf.querySelectorAll(list[i]);
+          for (var j = 0; j < m.length; j++) all.push({ el: m[j], sel: list[i] });
+        }
+        for (var k = 0; k < all.length; k++) tried.push(note(all[k].el, all[k].sel, scope));
+        for (var a = 0; a < all.length && !el; a++) {
+          if (all[a].el.scrollHeight > all[a].el.clientHeight + 1) { el = all[a].el; how = all[a].sel; }
+        }
+        // Nothing in the leaf scrolls: still surface the first candidate, so the failure below can
+        // name a concrete element and its measurements instead of only "not found".
+        if (!el && all.length) { el = all[0].el; how = all[0].sel; }
+      }
+    }
+    if (!el) return { found: false, scope: scope, tried: tried };
+    el.setAttribute('data-vv-scroll-host', '1');
+    return { found: true, scope: scope, container: how, tried: tried,
+             scrollHeight: el.scrollHeight, clientHeight: el.clientHeight,
+             scrolls: el.scrollHeight > el.clientHeight + 1 };
   })()`);
-  if (!chosen) {
+
+  if (!scrollProbe.found) {
     scrollFail = true;
-    console.log(`SCROLL CONTAINER NOT FOUND: tried ${candidates.join(', ')}.`);
+    report.scrollCapture = { found: false, scope: scrollProbe.scope, tried: scrollProbe.tried, shots: [] };
+    console.log(`SCROLL CONTAINER NOT FOUND: nothing matched in ${scrollProbe.scope || 'any leaf'}.`);
+  } else if (!scrollProbe.scrolls) {
+    // A container that cannot scroll is EITHER "there is nothing to scroll" OR "this is the wrong
+    // element", and the tool cannot tell those apart, so it must not report success either way.
+    // This is the guard that turns the old silent one-shot green into a loud red. [Gate-2 N7b]
+    scrollFail = true;
+    report.scrollCapture = { found: true, container: scrollProbe.container, scope: scrollProbe.scope,
+      scrollHeight: scrollProbe.scrollHeight, clientHeight: scrollProbe.clientHeight,
+      scrolls: false, tried: scrollProbe.tried, shots: [] };
+    console.log(`SCROLL CONTAINER DOES NOT SCROLL: ${scrollProbe.container} in ${scrollProbe.scope} measures scrollHeight ${scrollProbe.scrollHeight} <= clientHeight ${scrollProbe.clientHeight} + 1. Either there is nothing to scroll or this is the wrong element; a single-shot capture is not a pass.`);
   } else {
-    const start = await evaljs(`document.querySelector(${JSON.stringify(chosen)}).scrollTop`);
+    const start = await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(SCROLL_HOST)}); return e ? e.scrollTop : null; })()`);
     const shots = [];
+    let lost = false;
+    let prevTop = null;
     for (let i = 0; i < 20; i++) {
-      const at = await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(chosen)});
+      const at = await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(SCROLL_HOST)});
+        if(!e) return null;
         e.scrollTop = ${i} * e.clientHeight;
         return { top: e.scrollTop, max: e.scrollHeight - e.clientHeight }; })()`);
+      // The host is a stable Obsidian element, but a re-render between steps would otherwise throw
+      // a page exception here and lose every shot already taken.
+      if (!at) { lost = true; scrollFail = true; console.log(`SCROLL HOST VANISHED mid-capture at step ${i}.`); break; }
+      // NO-PROGRESS terminator, checked BEFORE the screenshot so the duplicate is never written.
+      // scrollTop clamped and did not advance, so this step would re-shoot the previous viewport.
+      if (prevTop !== null && at.top <= prevTop) break;
       await sleep(150);
       const p = join(OUT, `verify-${stamp}-scroll${i}.png`);
       const s = await send('Page.captureScreenshot', { format: 'png' });
       writeFileSync(p, Buffer.from(s.data, 'base64'));
       shots.push({ index: i, scrollTop: at.top, screenshot: p });
-      if (at.top >= at.max) break;
+      prevTop = at.top;
+      // 1px tolerance, and it is not defensive padding. scrollHeight and clientHeight are ROUNDED
+      // integers while scrollTop is fractional: measured live on this sheet, scrollTop clamps at
+      // 1324.5 while scrollHeight - clientHeight computes 2047 - 722 = 1325, so a bare
+      // `top >= max` is FALSE at the bottom forever and the loop runs its full 20 iterations,
+      // writing 17 identical screenshots of the same final viewport. It mirrors the +1 already
+      // used to decide whether the container scrolls at all.
+      if (at.top >= at.max - 1) break;
     }
-    await evaljs(`(() => { document.querySelector(${JSON.stringify(chosen)}).scrollTop = ${start}; return true; })()`);
-    const back = await evaljs(`document.querySelector(${JSON.stringify(chosen)}).scrollTop`);
-    report.scrollCapture = { container: chosen, shots, startScrollTop: start, restoredScrollTop: back };
+    const back = lost ? null : await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(SCROLL_HOST)});
+      if(!e) return null; e.scrollTop = ${start}; return e.scrollTop; })()`);
+    report.scrollCapture = { container: scrollProbe.container, scope: scrollProbe.scope,
+      scrollHeight: scrollProbe.scrollHeight, clientHeight: scrollProbe.clientHeight, scrolls: true,
+      tried: scrollProbe.tried, shots, startScrollTop: start, restoredScrollTop: back };
     if (back !== start) { scrollFail = true; console.log(`SCROLL NOT RESTORED: ${back} != ${start}`); }
-    console.log(`== scroll-capture: ${shots.length} shot(s) via ${chosen}`);
+    // Belt to the "does not scroll" braces above: a resolved container that scrolls MUST yield at
+    // least two viewport-fulls, because the loop only breaks once scrollTop has reached max. One
+    // shot means the stepping never moved, and a run that scrolled nothing has verified nothing.
+    if (shots.length < 2) {
+      scrollFail = true;
+      console.log(`SCROLL CAPTURE VACUOUS: ${shots.length} shot(s) from a container reported as scrollable; the viewport never moved.`);
+    }
+    console.log(`== scroll-capture: ${shots.length} shot(s) via ${scrollProbe.container} in ${scrollProbe.scope}`);
+  }
+
+  if (scrollProbe.found) {
+    const cleared = await evaljs(`(() => { var n=document.querySelectorAll('[data-vv-scroll-host]'); var c=n.length;
+      for(var i=0;i<c;i++) n[i].removeAttribute('data-vv-scroll-host'); return c; })()`);
+    if (cleared !== 1) console.log(`WARNING: cleared ${cleared} scroll-host tag(s), expected 1.`);
   }
 }
 
