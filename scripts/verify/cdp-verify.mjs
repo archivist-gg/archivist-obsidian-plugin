@@ -277,6 +277,20 @@ if (found > 0 && (SELF_TEST || CHECK_OVERFLOW || CHECK_OVERLAP || WIDTHS_RAW)) {
         var root = document.querySelector(rootSel);
         if(!root) return { root: rootSel, present:false, overlaps:[] };
         var overlaps = [];
+        // Ruling (R4-P2b): this filter deliberately does NOT special-case
+        // position:sticky, transforms, or negative margins.
+        //  - sticky: zero declarations exist in this codebase, so the filter
+        //    proposed upstream would have guarded nothing.
+        //  - negative margins: the canonical TRUE-positive shape. The
+        //    self-test's own known-bad fixture manufactures its overlap with
+        //    margin-top:-30px, so filtering them would destroy the detector's
+        //    only proof that it fires.
+        //  - transforms: getBoundingClientRect returns the TRANSFORMED box, so
+        //    a transform-shifted visual overlap is a real visual overlap.
+        // The residual worth watching is a transformed element whose layout box
+        // does not overlap but whose painted box does while being visually
+        // intended (icon nudges, hover lifts). Measured in R4-P2b's 7a probe;
+        // any treatment is PARKED to the ledger, never applied blind.
         var inflow = function(el){
           var cs = getComputedStyle(el);
           if(cs.position==='absolute'||cs.position==='fixed') return false;
