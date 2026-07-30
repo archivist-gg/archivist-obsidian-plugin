@@ -40,13 +40,17 @@
 //   --expect <sel>                 written. --expect-absent is the negative form --assert-selector
 //   --expect-absent <sel>          lacks: without it "Escape closes the modal" is not expressible.
 //   --shot <name>                  Keys go out as TRUSTED Input.dispatchKeyEvent events, because an
-//                                  untrusted dispatchEvent does not drive Obsidian's Keymap. Every
-//                                  verb needs a value; a missing one is misuse and exits 2 before
-//                                  connecting. Steps run after the --tab click and before the
-//                                  screenshot, and under --widths once per (width, tab) PAIR, so
-//                                  they MUST be self-reverting: nothing left open, no note written.
-//                                  --shot names carry the pair label, or the images from a
-//                                  multi-width sweep would overwrite each other.
+//                                  untrusted dispatchEvent does not drive Obsidian's Keymap.
+//                                  MISUSE, all caught offline at parse time and exiting 2 before
+//                                  connecting: a verb with no value, an unknown --press-key, and a
+//                                  non-numeric --wait. WHERE they run: WITHOUT --widths, once at
+//                                  natural width, after the --tab click and before the screenshot.
+//                                  WITH --widths, once per (width, tab) PAIR and NOT at natural
+//                                  width, so a step list cannot fire before the sweep has narrowed
+//                                  anything. Declaring steps that never execute fails the run.
+//                                  Steps MUST be self-reverting: nothing left open, no note
+//                                  written. --shot names carry the pair label, or the images from
+//                                  a multi-width sweep would overwrite each other.
 //
 // Retained flags: --port 9222, --vault DnD, --note "PlayerCharacters/Grendal.md",
 //                 --plugin archivist-gg, --selector .archivist-pc-sheet, --out DIR,
@@ -115,6 +119,14 @@ const tabToPanel = (t) => (t == null ? null : t.startsWith('panel-') ? t : `pane
 // This sits ABOVE the misuse guard below because both guards must precede the first fetch, so
 // the no-value guard is reachable without a running Obsidian.
 const STEP_VERBS = new Set(['click', 'press-key', 'wait', 'expect', 'expect-absent', 'shot']);
+// Known --press-key values. Declared HERE, above the walk rather than beside pressKey, so an
+// unknown key is misuse caught OFFLINE: validating it inside runSteps would only fire after
+// connecting, after the plugin reload, and after every preceding step had already executed
+// against the LIVE vault. Membership is tested with Object.hasOwn, never a truthiness check on
+// VK[value]: this is a plain object, so VK['constructor'] is truthy and a bare `!VK[value]`
+// would wave --press-key constructor straight through, which is the same Object.prototype
+// hazard STEP_VERBS uses a Set to avoid.
+const VK = { Escape: 27, Enter: 13, Tab: 9 };
 const STEPS = [];
 for (let i = 0; i < args.length; i++) {
   const tok = args[i];
@@ -126,6 +138,16 @@ for (let i = 0; i < args.length; i++) {
   // where the next token merely looks like a flag.
   if (value === undefined || value.startsWith('--')) {
     console.error(`FAIL: --${verb} requires a value (got ${value === undefined ? 'end of arguments' : value}).`);
+    process.exit(2);
+  }
+  if (verb === 'press-key' && !Object.hasOwn(VK, value)) {
+    console.error(`FAIL: --press-key ${value} is not a known key (known: ${Object.keys(VK).join(', ')}).`);
+    process.exit(2);
+  }
+  // Number('abc') is NaN and setTimeout(r, NaN) fires in about 2ms, so an unvalidated --wait
+  // would report PASS having waited for nothing.
+  if (verb === 'wait' && !Number.isFinite(Number(value))) {
+    console.error(`FAIL: --wait requires a finite number of milliseconds (got ${value}).`);
     process.exit(2);
   }
   STEPS.push({ verb, value });
@@ -391,10 +413,12 @@ const clickTab = async (panelId) => {
 // untrusted element.dispatchEvent does NOT drive Obsidian's Keymap, which
 // binds window at the CAPTURE phase, so a synthetic event never reaches the
 // handler under test.
-const VK = { Escape: 27, Enter: 13, Tab: 9 };
+// VK itself is declared up with the argv walk, which is where an unknown key is now REJECTED
+// (offline, exit 2). This throw is an unreachable-by-CLI backstop for any future non-CLI caller;
+// Object.hasOwn, not a truthiness test, for the VK['constructor'] reason given up there.
 const pressKey = async (name) => {
+  if (!Object.hasOwn(VK, name)) throw new Error(`unsupported --press-key value: ${name} (known: ${Object.keys(VK).join(', ')})`);
   const vk = VK[name];
-  if (!vk) throw new Error(`unsupported --press-key value: ${name} (known: ${Object.keys(VK).join(', ')})`);
   await send('Input.dispatchKeyEvent', { type: 'rawKeyDown', key: name, code: name, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
   await send('Input.dispatchKeyEvent', { type: 'keyUp',     key: name, code: name, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk });
 };
@@ -455,7 +479,16 @@ if (found > 0 && TAB) {
 
 // Steps run AFTER the --tab click and BEFORE the default screenshot, so the evidence image is
 // post-interaction without changing the backward-compatible filename.
-if (found > 0) await runSteps('main');
+//
+// !WIDTHS_RAW is REQUIRED, not a tidy-up: the spec rules that under --widths steps run once per
+// (width, tab) PAIR, and this call would make it five runs for the default two-tab two-width
+// sweep. The miscount is the lesser harm. With no --tab there is ZERO settle here (the selector
+// poll breaks out the instant the element exists, and the sleep(150) above is on the --tab arm
+// only), so "open the modal at 400px" would open it at NATURAL width first. If the list's
+// closing Escape then missed, the modal would still be open when restoreCtx is captured, for
+// every clickTab, and in all four sweep screenshots, and the exit-1 would LOOK like a 400px
+// failure. That is a silent-cause failure, which is the class this driver exists to eliminate.
+if (found > 0 && !WIDTHS_RAW) await runSteps('main');
 
 // --- default screenshot (natural width; filename unchanged for backward compatibility) ---
 const shotPath = join(OUT, `verify-${stamp}.png`);
@@ -700,6 +733,13 @@ report.exceptions = exceptions;
 if (rootMissingFail) {
   console.log(`ROOT NOT FOUND: no element matched the check root; the overflow/overlap checks were vacuous.`);
 }
+
+// Steps declared but never executed is vacuous: --widths that parses to no valid numbers skips
+// the sweep with only a console.error and no failure flag, and the natural-width call is guarded
+// off, so without this `--widths garbage --click X` would run zero steps and exit 0. This is the
+// companion to that guard, not an extra: together they make "I asked for steps and got a green
+// run" impossible.
+if (STEPS.length && !(report.steps && report.steps.length)) stepsFail = true;
 
 const ok =
   report.noteOpened &&
