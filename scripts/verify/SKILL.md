@@ -18,10 +18,10 @@ Any change that touches the PC character sheet UI MUST, before it is declared do
 1. **A responsive width sweep** across at least 3 named widths including a step below the 499px breakpoint: `--widths 1200,768,400`. The tool measures `.pc-content` clientWidth at each width and FAILS the sweep as vacuous if the narrow step never drops below 499px (meaning the responsive rules were never exercised).
 2. **The overlap + horizontal-overflow check** at every swept width: `--check-overflow --check-overlap`.
 3. **At least one functional assertion** that the feature is actually present: `--assert-selector <sel>` and/or `--assert-text <text>`.
-4. **EVERY tab the sheet exposes for that PC, not just the two the sweep defaults to.** With no `--tab`, the sweep drives ONLY Actions + Passive & Features. The sheet also has `panel-spells`, `panel-inventory`, and dynamic pool tabs (`panel-pool-<id>`, e.g. `panel-pool-interdict-boons` on the Illrigger PC). Drive the rest with additional runs: `--tab spells`, `--tab inventory`, `--tab pool-interdict-boons` (any `X` maps to `panel-X`). A tab your change "shouldn't affect" still gets at least one look — shared CSS/rows leak across tabs.
-5. **Scroll through everything that scrolls.** The screenshot captures ONLY the visible fold, and `--assert-text` reads VISIBLE text only (hidden/below-fold content false-negatives — proven in live testing). If the sheet content scrolls at any swept size (and at narrow widths it always does), you MUST scroll through the FULL content and capture/inspect each viewport-full, top to bottom. **Tool gap:** cdp-verify.mjs has no scroll-capture flag yet — drive it manually over CDP (`Runtime.evaluate` stepping the scroll container's `scrollTop` by clientHeight + `Page.captureScreenshot` per step), or extend the tool. Do NOT skip this because the tool lacks the flag.
+4. **EVERY tab the sheet exposes for that PC, not just the two the sweep defaults to.** With no `--tab`, the sweep drives ONLY Actions + Passive & Features. The sheet also has `panel-spells`, `panel-inventory`, and dynamic pool tabs (`panel-pool-<id>`, built as `panel-pool-${decl.id}` in `tabs-container.ts`). On the Illrigger test PC the pool decl id is `boons`, so the real panel is **`panel-pool-boons`**, driven as **`--tab pool-boons`**. Drive the rest with additional runs: `--tab spells`, `--tab inventory`, `--tab pool-boons` (any `X` maps to `panel-X`). A tab your change "shouldn't affect" still gets at least one look: shared CSS/rows leak across tabs. **A `--tab` that does not activate now FAILS the run** (exit 1). It used to pass vacuously, which is how the stale `--tab pool-interdict-boons` command this file used to print stayed green while driving no tab at all.
+5. **Scroll through everything that scrolls.** The screenshot captures ONLY the visible fold, and `--assert-text` reads VISIBLE text only (hidden/below-fold content false-negatives, proven in live testing). If the sheet content scrolls at any swept size (and at narrow widths it always does), you MUST scroll through the FULL content and capture/inspect each viewport-full, top to bottom. Use **`--scroll-capture`**: it steps the reading-view scroll container by one `clientHeight` at a time, screenshots each viewport-full, then restores `scrollTop`, and it FAILS the run if the container matches nothing or `scrollTop` does not come back to where it started. It runs ONCE, at natural width, AFTER any `--widths` sweep has restored the pane, because its filenames carry no width or tab label and a per-pair run would overwrite its own evidence. The requirement is the scrolling, not the flag: cover the full content either way.
 
-**Do NOT vary viewport heights / aspect ratios** — user directive 2026-07-21: height/short-viewport passes are NOT part of the flow (widths + full scrolling + every tab + expanded states cover it). Do not resurrect a `--heights` step.
+**Do NOT vary viewport heights / aspect ratios** · user directive 2026-07-21: height/short-viewport passes are NOT part of the flow (widths + full scrolling + every tab + expanded states cover it). Do not resurrect a `--heights` step.
 
 Additionally, when the change touches rows/expandable content: **expand at least one row per affected section type** before asserting/screenshotting (collapsed-state-only verification has missed expanded-state breakage before).
 
@@ -33,7 +33,7 @@ node <skill-dir>/cdp-verify.mjs --vault DnD --note "PlayerCharacters/Test.md" \
   --assert-selector ".pc-weapon-mastery"
 ```
 
-Exit 0 means: sheet rendered, zero console errors, the sweep narrowed below 499px and found no overflow / overlap, and every assertion held. Exit 1 means one of those failed. Read the printed screenshots (one per width per tab) and confirm the layout visually. Then cover items 4-5 with the extra `--tab` runs and the manual full-content scroll passes — they are not optional, and "the tool doesn't do it" is not a waiver.
+Exit 0 means: sheet rendered, zero console errors, the sweep narrowed below 499px and found no overflow / overlap, every requested tab actually activated, and every assertion held. Exit 1 means one of those failed. Read the printed screenshots (one per width per tab) and confirm the layout visually. Then cover items 4-5 with the extra `--tab` runs and a `--scroll-capture` pass: they are not optional.
 
 Before trusting the detector on real work, prove it fires at least once with `--self-test`.
 
@@ -54,19 +54,38 @@ Other block types: pass `--selector .archivist-monster-block` / `.archivist-item
 
 ## Flags
 
-Default (retained): `--port 9222`, `--vault DnD`, `--note <path>`, `--plugin archivist-gg`, `--selector .archivist-pc-sheet`, `--out DIR`, `--no-reload`, `--timeout 15000`. With none of the flags below, behavior is identical to the original single-run verify.
+Default (retained): `--port 9222`, `--vault DnD`, `--note <path>`, `--plugin archivist-gg`, `--selector .archivist-pc-sheet`, `--out DIR`, `--no-reload`, `--timeout 15000`. With none of the flags below, a run still does what the original single-run verify did. It is NOT true that every prior invocation is unchanged: see "Behavior changes" under the table before you reuse an old command line.
 
 | Flag | What it does | Example |
 |---|---|---|
 | `--tab actions\|passive` | Clicks that PC tab (`button.pc-tab-btn[data-tab="panel-actions"\|"panel-passive"]`) before asserting / screenshotting. | `--tab passive` |
 | `--widths 1200,768,400` | Responsive sweep: per width, collapses both sidebars and narrows the active workspace leaf, measures `.pc-content` clientWidth, screenshots (one file per width per tab). Fails (vacuous) if the narrow step does not drop below 499px. | `--widths 1200,768,400` |
-| `--check-overflow` | Fails on horizontal overflow (`scrollWidth > clientWidth`) on `.pc-content`, reporting the culprit element. | `--check-overflow` |
-| `--check-overlap` | Fails on bounding-box overlap of in-flow sibling rows / cells. | `--check-overlap` |
+| `--check-overflow` | Fails on horizontal overflow (`scrollWidth > clientWidth`) on the check root, reporting the culprit element. | `--check-overflow` |
+| `--check-overlap` | Fails on bounding-box overlap of in-flow sibling rows / cells under the check root. | `--check-overlap` |
+| `--check-root <sel>` | Root for the two detectors above. Default `.pc-content`. A root matching no element now FAILS loudly (`ROOT NOT FOUND`) instead of passing vacuously. **This is a THIRD root flag beside `--selector` (what must render) and `--within` (what `--assert-text` scans); the three are independent.** The `--widths` breakpoint measurement stays pinned to `.pc-content` regardless, because the 499px breakpoint is PC-sheet-specific. | `--check-root ".archivist-monster-block"` |
 | `--assert-selector <sel>` | Fails unless at least one element matches `<sel>`. | `--assert-selector ".pc-weapon-mastery"` |
-| `--assert-text <text>` | Fails unless rendered text matches. Modes: plain substring, `/regex/flags`, or the keyword `no-emdash`. | `--assert-text "Second Wind"` |
-| `--assert-text no-emdash` | Flags any em-dash char (`U+2014`) or `&mdash;` entity. REQUIRES `--within` (see caveat). | `--assert-text no-emdash --within ".pc-weapon-mastery"` |
-| `--within <sel>` | Scopes `--assert-text` (and required for `no-emdash`) to a subtree. | `--within "#panel-passive"` |
+| `--assert-text <text>` | Fails unless rendered text matches. Modes: plain substring, `/regex/flags`, or the literal keywords `no-emdash` / `no-emdash-strict`. | `--assert-text "Second Wind"` |
+| `--assert-text no-emdash` | Flags the em-dash char `U+2014` in VISIBLE text (`innerText`). It does NOT look for a `&mdash;` entity, and such a check could never have fired: the HTML fragment serializer escapes only `&`, `<`, `>` and NBSP in text nodes (plus `"` in attributes), so that string is never produced. Both modes report BOTH signals (`inVisible` from `innerText`, `inHtml` from `innerHTML`); only the verdict differs. REQUIRES `--within` (see caveat). | `--assert-text no-emdash --within ".pc-weapon-mastery"` |
+| `--assert-text no-emdash-strict` | Same scan, but the verdict keys to `innerHTML`, so hidden panels and attribute values are included. Use it when the subtree you own may be an inactive tab panel. Also REQUIRES `--within`. | `--assert-text no-emdash-strict --within "#panel-passive"` |
+| `--within <sel>` | Scopes `--assert-text` (and required for both `no-emdash` modes) to a subtree. Point it at a subtree that is actually rendered: a default `no-emdash` scoped to an INACTIVE panel is vacuous (see below). | `--within ".pc-weapon-mastery"` |
+| `--cdp-timeout <ms>` | Per-CDP-message reply budget, default 60000. Deliberately NOT derived from `--timeout`, which is and stays the selector poll budget. Raise it if the plugin reload or a screenshot legitimately runs long. | `--cdp-timeout 90000` |
+| `--click <sel>` · `--press-key Escape\|Enter\|Tab` · `--wait <ms>` · `--expect <sel>` · `--expect-absent <sel>` · `--shot <label>` | Ordered step verbs, collected by a walk over argv (so they may REPEAT and run in the order written) and run after the `--tab` click and before the screenshot. `--expect-absent` is the negative form `--assert-selector` lacks, so "Escape closes the modal" is expressible. Keys go out as TRUSTED `Input.dispatchKeyEvent` events, because an untrusted `dispatchEvent` does not drive Obsidian's Keymap. Steps MUST be self-reverting: nothing left open, no note written. Declaring steps that never execute fails the run. | `--click ".pc-currency-clickable" --expect ".pc-coin-modal" --press-key Escape --expect-absent ".pc-coin-modal"` |
+| `--scroll-capture [sel]` | Screenshots each viewport-full of the scroll container (up to 20 steps, stopping at the bottom), then restores `scrollTop`. The container is Obsidian's own reading-view scroller (`.markdown-preview-view`, then `.cm-scroller`), NOT `.pc-content`, which carries no `overflow-y`. A container matching nothing, or a `scrollTop` left unrestored, FAILS the run. Runs ONCE, at natural width, after any `--widths` sweep has restored the pane. The selector argument is optional. | `--scroll-capture` |
 | `--self-test` | Injects a known-overflowing and a known-good fixture, asserts the detector fires on the bad one and stays clean on the good one, then cleans up. Exits non-zero if the detector misses. Run it to trust the detector before gating real work. | `--self-test` |
+
+### Behavior changes (R4-P2b) that can turn an old green command red
+
+These are real verdict changes, not additions. If a command you have run before starts failing, check here first.
+
+- **A check root that matches no element now FAILS** (`ROOT NOT FOUND`, exit 1). Previously the detectors returned "no overflow / no overlaps" for a missing root and the run passed having checked nothing.
+- **A `--tab` that does not activate now FAILS** (exit 1). Previously a typo'd or renamed panel id was silently ignored and the run screenshotted whatever tab happened to be open.
+- **Under `--widths`, ordered steps run once per (width, tab) PAIR and NOT at natural width.** With `--widths 1200,768,400` and no `--tab`, a step list therefore executes six times (3 widths x 2 default tabs), and never before the sweep has narrowed the pane. Without `--widths` the steps run exactly once, at natural width. Budget `--wait` values accordingly, and give every `--shot` a label.
+
+Misuse (exit 2) is caught OFFLINE at parse time, before anything connects: a `no-emdash` mode without `--within`, a step verb with no value, an unknown `--press-key` value, and a non-finite `--wait`.
+
+### Step verbs: a maintenance hazard worth knowing
+
+`STEP_VERBS` (the argv-walk `Set`) and the step runner's if-chain are a LOCKSTEP PAIR. A verb in the `Set` but missing from the chain records a silent FAIL with no `rec.pass`; a verb in the chain but missing from the `Set` is never collected and is silently DROPPED. Adding a verb means editing both, in the same change.
 
 ## Container-query caveat (read before sweeping)
 
@@ -74,14 +93,16 @@ The PC sheet is **container-query** responsive: its breakpoints (including the 4
 
 ## no-emdash is scoped on purpose
 
-`no-emdash` never runs sheet-wide: it requires `--within <selector>` and exits 2 without it. The sheet legitimately renders em dashes (`U+2014`) in several pre-existing spots (weapon `formatDamage` emits U+2014 for zero-dice weapons; HP / proficiency placeholders; prose descriptions), so a whole-sheet scan would false-fail. Point it at the specific subtree your change owns, e.g. `--within ".pc-weapon-mastery"`.
+Both `no-emdash` and `no-emdash-strict` never run sheet-wide: each requires `--within <selector>` and exits 2 without it. The sheet legitimately renders em dashes (`U+2014`) in several pre-existing spots (weapon `formatDamage` emits U+2014 for zero-dice weapons; HP / proficiency placeholders; prose descriptions), so a whole-sheet scan would false-fail. Point it at the specific subtree your change owns, e.g. `--within ".pc-weapon-mastery"`.
+
+**Scoping it to an INACTIVE tab panel is vacuous.** A hidden `.pc-tab-panel` has `display: none`, so its `innerText` is empty while its `innerHTML` is fully populated: a default `no-emdash --within "#panel-passive"` on an unopened Passive tab scans an empty string and passes having read nothing. Either activate the tab first (`--tab passive`) or use `no-emdash-strict`, which keys the verdict to `innerHTML`. The tool prints a WARNING when it sees that shape (empty visible text, non-empty `innerHTML`), but the warning is not a failure: read it.
 
 ## Gotchas (hit in live testing)
 
 - **Multiple vault windows can be open at once** (an old "V" vault window has coexisted with "DnD"). The script picks the window by vault name and aborts on mismatch: never drop `--vault`, and do not "fix" a wrong-vault abort by removing the check; close the stray window or name the right vault.
 - The verdict counts console **errors** and exceptions; warnings are reported in the JSON but non-fatal.
 - The reload step disables + enables the plugin in the target vault only. If verification is interrupted mid-run, re-running it is safe and idempotent.
-- A horizontal overflow at the 400px step on the Actions tab (weapon-damage cell) is a KNOWN pre-existing baseline on the current build: the tool correctly reports it (exit 1). When you see it, confirm it is the baseline and not a regression your change introduced, rather than silently passing it.
+- **There is no known-good overflow baseline on the current build.** Treat any reported overflow as a real finding and adjudicate it on its own evidence. (The former "400px Actions-tab weapon-damage cell" baseline was retired by R3-P1 and no longer fires; leaving it documented would invite mis-adjudicating a fresh regression as an accepted one.)
 
 ## Common mistakes
 
@@ -91,7 +112,10 @@ The PC sheet is **container-query** responsive: its breakpoints (including the 4
 | Trusting `selectorCount > 0` without viewing the screenshot | The block can mount and still render wrong; the screenshot is the evidence |
 | Verifying before deploying | You verified the OLD bundle; deploy, then verify |
 | Declaring PC-sheet UI done without a width sweep | Responsive breakage below 499px is invisible at desktop width; sweep with `--widths 1200,768,400` |
-| Sweeping only the two default tabs | Spells, Inventory, and pool tabs (`--tab spells` / `inventory` / `pool-<id>`) render shared rows/CSS too; drive every tab the PC exposes |
-| Screenshotting only the top fold | Below-fold content is invisible in the shot and to `--assert-text`; scroll through the FULL content and capture each viewport-full |
+| Sweeping only the two default tabs | Spells, Inventory, and pool tabs (`--tab spells` / `inventory` / `pool-boons`) render shared rows/CSS too; drive every tab the PC exposes |
+| Guessing a pool tab id | The id is `panel-pool-<decl.id>`; on the Illrigger test PC that is `panel-pool-boons`, not `pool-interdict-boons`. A wrong id now fails the run instead of passing silently |
+| Screenshotting only the top fold | Below-fold content is invisible in the shot and to `--assert-text`; use `--scroll-capture` and read every shot |
 | Asserting on collapsed rows only | Expanded-state breakage is invisible; expand at least one row per affected section before asserting |
 | Running `no-emdash` sheet-wide | Pre-existing benign dashes false-fail it; always `--within` the subtree you changed |
+| `no-emdash --within` an unopened tab panel | Hidden panels have empty `innerText`, so the scan reads nothing and passes vacuously; activate the tab or use `no-emdash-strict` |
+| Reusing an old command line and trusting the old verdict | A missing check root, a dead `--tab` id, and steps under `--widths` all behave differently now; see "Behavior changes" |

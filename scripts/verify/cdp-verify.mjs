@@ -75,11 +75,15 @@
 //              socket fails loudly instead of hanging forever. It is separate from --timeout,
 //              which is and stays the selector poll budget.
 //
-// Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a failed
-//             assertion, a failed step, a vacuous width sweep, a self-test detector miss, or a
-//             scroll container that is missing or left unrestored)
-//             · 2 cannot connect, wrong vault, or misuse (a no-emdash mode without --within, or a
-//             step verb with no value)
+// Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a check root that
+//             matched no element, a --tab that failed to activate, a failed assertion, a failed
+//             step, a vacuous width sweep, a self-test detector miss, or a scroll container that is
+//             missing or left unrestored)
+//             · 2 cannot connect, wrong vault, or misuse. MISUSE is the FULL offline parse-time
+//             set, and this line is the one that goes stale: a no-emdash mode without --within, a
+//             step verb with no value, an unknown --press-key value, and a non-finite --wait. The
+//             last two are also recorded in the step-verb flag block above; the two statements must
+//             agree, because a reader who trusts only this line under-tests the parse guards.
 //
 // NOTE on --vault: Obsidian can have SEVERAL vault windows open at once, each its own CDP page
 // target. Targets are matched by the stable " - <vault> - Obsidian" window-title segment, and the
