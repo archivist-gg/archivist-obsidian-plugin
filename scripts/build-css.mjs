@@ -6,7 +6,7 @@
  * styles.css for the Obsidian plugin.
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, realpathSync } from 'fs';
 import { join, dirname, resolve, relative } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
@@ -112,4 +112,6 @@ function build() {
   console.log(`Built styles.css (${(output.length / 1024).toFixed(1)} KB)`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) build();
+// Node realpaths ESM specifiers but only path.resolves argv[1], so a symlinked path
+// component would make these two disagree and silently skip the build.
+if (import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) build();
