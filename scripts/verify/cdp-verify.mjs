@@ -25,8 +25,12 @@
 //                               the literal keywords  no-emdash  /  no-emdash-strict . Both scan for
 //                               U+2014 and report BOTH signals (inVisible from innerText, inHtml from
 //                               innerHTML); only the verdict differs. no-emdash keys to visible text;
-//                               no-emdash-strict keys to innerHTML and so also sees a hidden/inactive
-//                               tab panel, whose innerText is '' while its innerHTML is populated.
+//                               no-emdash-strict keys to innerHTML, so it additionally sees attribute
+//                               values and markup that no text reading ever surfaces. Note that a
+//                               HIDDEN element is NOT a blind spot for the default mode: innerText
+//                               falls back to textContent when an element is not being rendered, so
+//                               an inactive tab panel is scanned in FULL, which is over-broad rather
+//                               than vacuous. Measured, not assumed.
 //                               Neither looks for the &mdash; entity: the HTML serializer escapes only
 //                               & < > NBSP (and " in attributes), so that string is never produced.
 //                               BOTH modes MUST be scoped with --within (a sheet-wide scan is disabled
@@ -561,17 +565,26 @@ if (found > 0 && ASSERT_TEXT) {
     } else {
       const inVisible = scope.text.indexOf('\u2014') >= 0;
       const inHtml = scope.html.indexOf('\u2014') >= 0;
-      // A hidden .pc-tab-panel has innerText '' but a fully populated innerHTML,
-      // so a default (visible) scan of an inactive panel is VACUOUS. Report both
-      // signals always; key the verdict to the requested mode.
-      const vacuous = scope.text.length === 0 && scope.html.length > 0;
+      // Both signals are always reported; only the verdict keys to the requested mode.
+      //
+      // There is NO vacuity hazard here, and the belief that there was one cost a warning branch
+      // that could never fire. What matters is WHERE the display:none sits. At the ROOT of the
+      // scan: per the HTML spec, innerText on an element that is NOT BEING RENDERED returns
+      // textContent, so an inactive .pc-tab-panel is read in FULL. Measured live, its innerText and
+      // textContent were both 12002 characters, identical, and every hidden panel on the sheet
+      // behaved the same way. BELOW the root, hidden descendants really are skipped: the ACTIVE
+      // panel returned 621 characters against 7633 of textContent, which is also what proves the
+      // measurement was taken with layout live rather than flattened.
+      //
+      // So scoping a default no-emdash to an inactive panel is OVER-BROAD, not vacuous: it scans
+      // the panel's full textContent, strictly MORE than the user can see, and it can false-FAIL on
+      // a dash nobody is looking at. The failure mode is a spurious red, never a silent green.
+      // no-emdash-strict is still meaningfully stricter, because innerHTML additionally carries
+      // attribute values and markup that textContent never surfaces.
       assertions.push({
-        type: ASSERT_TEXT, within: WITHIN, inVisible, inHtml, vacuousScope: vacuous,
+        type: ASSERT_TEXT, within: WITHIN, inVisible, inHtml,
         pass: !(strict ? inHtml : inVisible),
       });
-      if (vacuous && !strict) {
-        console.log(`WARNING: --within "${WITHIN}" has empty visible text but non-empty innerHTML (hidden panel?); a default no-emdash scan here is vacuous. Use no-emdash-strict or activate the tab.`);
-      }
     }
   } else {
     const scopeSel = WITHIN || SELECTOR;
