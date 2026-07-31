@@ -14,6 +14,10 @@ export interface ClassData {
   primary_abilities?: string[];
   saving_throws?: string[];
   skill_choices?: { count: number; from: string[] } | null;
+  /** Entity-level decisions the class grants at L1 (`ClassEntity.choices`), the
+   *  class-wide sibling of the per-feature `choices`. Typed `unknown[]` like the
+   *  feature ones: this view reads only the optional display label. */
+  choices?: unknown[];
   proficiencies?: { armor?: string[]; weapons?: { fixed?: string[]; categories?: string[] } };
   spellcasting?: { ability: string; preparation: string; spell_list: string } | null;
   subclass_level?: number | null;
@@ -93,6 +97,15 @@ function isAuthoredSubclassChoice(c: unknown): boolean {
   );
 }
 
+/** An entity-level `ClassEntity.choices` entry, narrowed from the local
+ *  `unknown[]` view. Only the optional display label is read; the fallback is
+ *  the "Proficiencies" header the owned ledger groups these items under, so the
+ *  browse preview and the owned strip name the same decision the same way. */
+function entityChoiceLabel(c: unknown): string {
+  const label = typeof c === "object" && c !== null ? (c as { label?: unknown }).label : undefined;
+  return typeof label === "string" && label.length > 0 ? label : "Proficiencies";
+}
+
 /** Browse-side walker: every authored feature choice, plus recognizer-synthesized
  *  homebrew decisions (the recognizer returns Choice[] for those), skipping
  *  informational prose (it returns "informational") and plain features (null).
@@ -104,6 +117,16 @@ function isAuthoredSubclassChoice(c: unknown): boolean {
  *  and need not agree, which would otherwise synthesize a duplicate L3 row. */
 export function collectBrowseDecisions(d: ClassData): BrowseDecision[] {
   const out: BrowseDecision[] = [];
+  // Entity-level class `choices`: a class-wide L1 decision belonging to no single
+  // feature (a Bard's "three musical instruments of your choice" · none of its L1
+  // features can host a tool pick). The owned card's ledger emits ONE item per
+  // entity-level choice at L1, so one row each keeps this preview's count from
+  // under-reporting what the player will actually be asked.
+  //
+  // Scope is entity-level `choices` ONLY. The L1 `skill_choices` row is a
+  // SEPARATE, pre-existing divergence (this walker has never counted it) and is
+  // deliberately left alone here.
+  for (const ch of d.choices ?? []) out.push({ level: 1, name: entityChoiceLabel(ch) });
   let sawAuthoredSubclass = false;
   for (const [lvl, feats] of Object.entries(d.features_by_level ?? {})) {
     for (const f of feats) {

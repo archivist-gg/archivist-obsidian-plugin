@@ -205,6 +205,29 @@ describe("collectBrowseDecisions", () => {
     const l3 = rows.filter((r) => r.level === 3);
     expect(l3).toEqual([{ level: 3, name: "Bard Subclass" }]); // single authored row, no synthesized duplicate
   });
+
+  // A Bard's "three musical instruments of your choice" is authored on the CLASS
+  // entity (`ClassEntity.choices`), not on any L1 feature · Bardic Inspiration and
+  // Spellcasting can host neither. The owned card's ledger emits one item per
+  // entity-level choice at L1, so the browse card's "What you decide · N ahead"
+  // must count them too, or the two views of the same class disagree the moment
+  // the overlay data lands. Scope here is entity-level `choices` ONLY: the
+  // separate, pre-existing divergence over the L1 skill_choices row is parked.
+  it("counts an entity-level class choice at L1, labelled by the choice", () => {
+    const d = bardData();
+    d.choices = [{ kind: "select-proficiency", id: "bard-instruments", label: "Musical Instruments",
+      count: 3, domain: "tool", from: ["bagpipes", "drum", "lute"] }];
+    const rows = collectBrowseDecisions(d);
+    expect(rows).toContainEqual({ level: 1, name: "Musical Instruments" });
+    expect(rows.filter((r) => r.level === 1)).toHaveLength(1);   // bardData's L1 features carry no choices
+    expect(rows.map((r) => r.level)).toEqual([...rows.map((r) => r.level)].sort((a, b) => a - b));
+  });
+
+  it("falls back to the ledger's 'Proficiencies' header for an unlabelled entity-level choice", () => {
+    const d = bardData();
+    d.choices = [{ kind: "select-proficiency", id: "bard-instruments", count: 3, domain: "tool" }];
+    expect(collectBrowseDecisions(d)).toContainEqual({ level: 1, name: "Proficiencies" });
+  });
 });
 
 describe("renderClassChronicle (browse)", () => {
