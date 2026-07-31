@@ -960,8 +960,11 @@ report.consoleErrors = consoleErrors;
 report.consoleWarnings = consoleWarnings;
 report.exceptions = exceptions;
 
-// STDOUT on purpose: every other loud failure here uses console.error, but the control run asserts
-// this marker on stdout. Do not "fix" it to stderr for consistency.
+// STDOUT on purpose, and it must stay there: the control run asserts this exact marker on stdout.
+// Do not "fix" it to stderr for consistency with the console.error diagnostics elsewhere in this
+// file. There is no such consistency to restore: BOTH streams already carry loud failures here
+// (every --scroll-capture failure and the terminal NOT VERIFIED line are console.log too), so the
+// stream is not a convention to tidy up, it is a contract with the control.
 if (rootMissingFail) {
   console.log(`ROOT NOT FOUND: no element matched the check root; the overflow/overlap checks were vacuous.`);
 }
