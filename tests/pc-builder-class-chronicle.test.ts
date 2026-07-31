@@ -213,14 +213,24 @@ describe("collectBrowseDecisions", () => {
   // must count them too, or the two views of the same class disagree the moment
   // the overlay data lands. Scope here is entity-level `choices` ONLY: the
   // separate, pre-existing divergence over the L1 skill_choices row is parked.
-  it("counts an entity-level class choice at L1, labelled by the choice", () => {
+  it("counts ONE L1 row per entity-level class choice, labelled by the choice", () => {
     const d = bardData();
-    d.choices = [{ kind: "select-proficiency", id: "bard-instruments", label: "Musical Instruments",
-      count: 3, domain: "tool", from: ["bagpipes", "drum", "lute"] }];
+    // TWO choices, deliberately: one row per choice is the property that keeps
+    // this preview's count aligned with the ledger's one-item-per-choice, and it
+    // is the only thing that separates the real loop from a `d.choices?.length`
+    // test emitting a single lumped row. A single-choice fixture cannot see it.
+    d.choices = [
+      { kind: "select-proficiency", id: "bard-instruments", label: "Musical Instruments",
+        count: 3, domain: "tool", from: ["bagpipes", "drum", "lute"] },
+      { kind: "select-proficiency", id: "bard-extra-tool", label: "Artisan's Tools",
+        count: 1, domain: "tool", from: ["calligrapher's-supplies"] },
+    ];
     const rows = collectBrowseDecisions(d);
     expect(rows).toContainEqual({ level: 1, name: "Musical Instruments" });
-    expect(rows.filter((r) => r.level === 1)).toHaveLength(1);   // bardData's L1 features carry no choices
-    expect(rows.map((r) => r.level)).toEqual([...rows.map((r) => r.level)].sort((a, b) => a - b));
+    expect(rows).toContainEqual({ level: 1, name: "Artisan's Tools" });
+    // bardData's own L1 features carry no choices, so every L1 row here is an
+    // entity-level one: exactly two, never one lumped row and never a duplicate.
+    expect(rows.filter((r) => r.level === 1)).toHaveLength(2);
   });
 
   it("falls back to the ledger's 'Proficiencies' header for an unlabelled entity-level choice", () => {
