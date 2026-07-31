@@ -414,6 +414,14 @@ function renderControl(
   // a dangling slug. NO `muted` chips at-limit — always-open means clicking
   // another chip in a resolved choose-1 row swaps directly (applyChoiceToggle
   // swaps for choose-1; choose-N still refuses past the cap).
+  // A choice whose option pool resolved empty must say so. Reaching the chips row
+  // with zero options renders a header and nothing clickable, which reads as a
+  // broken UI rather than as missing data. Distinct copy from the select-entity
+  // empty-state above: compendium visibility is meaningless for a proficiency domain.
+  if (item.options.length === 0) {
+    nest.createDiv({ cls: "pc-dstrip-empty", text: "No options available for this choice." });
+    return;
+  }
   const need = requiredOf(item);
   const selected = new Set(selectedSlugs(item));
   const chips = nest.createDiv({ cls: "pc-bchoice-chips" });

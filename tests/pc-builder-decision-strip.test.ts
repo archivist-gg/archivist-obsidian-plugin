@@ -184,6 +184,32 @@ describe("renderDecisionStrip", () => {
     expect(setOriginChoice).toHaveBeenCalledWith("race:elven-lineage", null);
   });
 
+  // A choice whose option pool resolves EMPTY must say so. Reaching the chips
+  // fall-through with zero options renders a header and nothing clickable, which
+  // reads as a broken UI rather than as missing data. `live: true` is load-bearing:
+  // in browse mode renderRow returns before renderControl is ever reached.
+  it("renders an empty-state line, and no chips row, when a choice has zero options", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({
+        key: "tool",
+        choice: { kind: "select-proficiency", id: "tool", count: 1, domain: "tool" },
+        options: [],            // the whole point: an empty pool
+        selected: undefined,
+        status: "unresolved",
+      })],
+      pill: domainPill,
+      live: true,               // load-bearing, see above
+      stateKey: "t",
+    });
+
+    const empty = c.querySelector(".pc-dstrip-empty");
+    expect(empty).not.toBeNull();
+    expect(empty!.textContent).toBe("No options available for this choice.");
+    expect(empty!.textContent).not.toMatch(/compendium/i);
+    expect(c.querySelector(".pc-bchoice-chips")).toBeNull();
+  });
+
   // ── Long select-entity lists open a filtered picker modal (smoke r1) ──
   // A registry-backed select-entity item (no `from`) with many candidates must
   // NOT splat the full table inline; instead it shows the current picks as
