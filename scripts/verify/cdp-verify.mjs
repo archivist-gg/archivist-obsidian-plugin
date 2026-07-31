@@ -24,13 +24,17 @@
 //   --assert-text <text>        fail unless rendered text matches: substring, /regex/flags, or one of
 //                               the literal keywords  no-emdash  /  no-emdash-strict . Both scan for
 //                               U+2014 and report BOTH signals (inVisible from innerText, inHtml from
-//                               innerHTML); only the verdict differs. no-emdash keys to visible text;
-//                               no-emdash-strict keys to innerHTML, so it additionally sees attribute
-//                               values and markup that no text reading ever surfaces. Note that a
-//                               HIDDEN element is NOT a blind spot for the default mode: innerText
-//                               falls back to textContent when an element is not being rendered, so
-//                               an inactive tab panel is scanned in FULL, which is over-broad rather
-//                               than vacuous. Measured, not assumed.
+//                               innerHTML); only the verdict differs. no-emdash keys to the innerText
+//                               reading, which is NOT a synonym for "what the user can see"; the key
+//                               is named inVisible for history, and the next sentence is the accurate
+//                               statement. no-emdash-strict keys to innerHTML, so it additionally sees
+//                               attribute values and markup that no text reading ever surfaces.
+//                               innerText is layout-aware only BELOW A RENDERED ROOT. On a root that
+//                               is NOT being rendered it falls back to textContent, so an inactive tab
+//                               panel is scanned in FULL (over-broad, not vacuous), and under a
+//                               rendered root it also includes text that is merely BELOW THE FOLD.
+//                               What it does skip is a hidden DESCENDANT of a rendered root. Measured
+//                               live, not assumed: see the SKILL.md section for the counts.
 //                               Neither looks for the &mdash; entity: the HTML serializer escapes only
 //                               & < > NBSP (and " in attributes), so that string is never produced.
 //                               BOTH modes MUST be scoped with --within (a sheet-wide scan is disabled
@@ -71,8 +75,11 @@
 //                               FAILS the run: a container that matches nothing, a container that
 //                               cannot scroll (scrollHeight <= clientHeight + 1, which is either
 //                               "nothing to scroll" or "wrong element" and the tool cannot tell them
-//                               apart), a capture that produced fewer than TWO shots, or a scrollTop
-//                               that does not come back to where it started.
+//                               apart), a capture that produced fewer than TWO shots, a capture cut
+//                               short by the 20-step cap with the bottom never reached (the cap is a
+//                               runaway guard, NOT a coverage criterion, so exiting through it means
+//                               only the TOP of the container was captured), or a scrollTop that does
+//                               not come back to where it started.
 //                               The selector is OPTIONAL, and opt() returns the NEXT argv token
 //                               whenever the flag is present, so the parse must treat BOTH undefined
 //                               (a trailing --scroll-capture) and a leading "--" (the next flag) as
@@ -93,7 +100,8 @@
 // Exit codes: 0 verified · 1 verification failed (now ALSO on overflow, overlap, a check root that
 //             matched no element, a --tab that failed to activate, a failed assertion, a failed
 //             step, a vacuous width sweep, a self-test detector miss, or a scroll container that is
-//             missing, cannot scroll, yielded fewer than two shots, or was left unrestored)
+//             missing, cannot scroll, yielded fewer than two shots, was truncated at the step cap
+//             without reaching the bottom, or was left unrestored)
 //             · 2 cannot connect, wrong vault, or misuse. MISUSE is the FULL offline parse-time
 //             set, and this line is the one that goes stale: a no-emdash mode without --within, a
 //             step verb with no value, an unknown --press-key value, and a non-finite --wait. The
@@ -570,11 +578,16 @@ if (found > 0 && ASSERT_TEXT) {
       // There is NO vacuity hazard here, and the belief that there was one cost a warning branch
       // that could never fire. What matters is WHERE the display:none sits. At the ROOT of the
       // scan: per the HTML spec, innerText on an element that is NOT BEING RENDERED returns
-      // textContent, so an inactive .pc-tab-panel is read in FULL. Measured live, its innerText and
-      // textContent were both 12002 characters, identical, and every hidden panel on the sheet
-      // behaved the same way. BELOW the root, hidden descendants really are skipped: the ACTIVE
-      // panel returned 621 characters against 7633 of textContent, which is also what proves the
-      // measurement was taken with layout live rather than flattened.
+      // textContent, so an inactive .pc-tab-panel is read in FULL. Measured live in one pass, as
+      // innerText/textContent per HIDDEN panel: panel-actions 7633/7633, panel-spells 79/79,
+      // panel-inventory 258/258, panel-pool-boons 621/621. Every one read in full, identical.
+      // BELOW the root, hidden descendants really are skipped: in the same pass the one RENDERED
+      // panel, panel-passive, returned 568 characters against 12002 of textContent, which is also
+      // what proves the measurement was taken with layout live rather than flattened.
+      //
+      // Layout-live does NOT mean on-screen. Under a rendered root, innerText includes text merely
+      // scrolled BELOW THE FOLD: measured at scrollTop 0 with the fold at y=800, a sample from an
+      // element at y=2022 was present in innerText. Off-screen is not a blind spot either.
       //
       // So scoping a default no-emdash to an inactive panel is OVER-BROAD, not vacuous: it scans
       // the panel's full textContent, strictly MORE than the user can see, and it can false-FAIL on
@@ -790,6 +803,9 @@ if (found > 0 && WIDTHS_RAW) {
 // A selector string cannot address "the third .view-content"; document.querySelector always returns
 // the first match, which is precisely how the default resolution used to land on a foreign leaf.
 const SCROLL_HOST = '[data-vv-scroll-host]';
+// A runaway guard, NOT a completeness criterion. Leaving the loop through it means the bottom was
+// never reached, which is checked for and failed below: see the truncation verdict.
+const SCROLL_MAX_STEPS = 20;
 let scrollFail = false;
 if (found > 0 && SCROLL_CAPTURE !== null) {
   // LEAF-SCOPED resolution, and the scoping is the whole point. Measured live: the PC sheet is a
@@ -869,7 +885,12 @@ if (found > 0 && SCROLL_CAPTURE !== null) {
     const shots = [];
     let lost = false;
     let prevTop = null;
-    for (let i = 0; i < 20; i++) {
+    // Which terminator ended the loop is the whole verdict. Both of the breaks below mean the
+    // bottom was actually seen; falling out of the `for` header means only the cap stopped it, and
+    // the run then holds the TOP of the container and nothing else.
+    let reachedBottom = false;
+    let lastMax = null;
+    for (let i = 0; i < SCROLL_MAX_STEPS; i++) {
       const at = await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(SCROLL_HOST)});
         if(!e) return null;
         e.scrollTop = ${i} * e.clientHeight;
@@ -877,9 +898,12 @@ if (found > 0 && SCROLL_CAPTURE !== null) {
       // The host is a stable Obsidian element, but a re-render between steps would otherwise throw
       // a page exception here and lose every shot already taken.
       if (!at) { lost = true; scrollFail = true; console.log(`SCROLL HOST VANISHED mid-capture at step ${i}.`); break; }
+      lastMax = at.max;
       // NO-PROGRESS terminator, checked BEFORE the screenshot so the duplicate is never written.
       // scrollTop clamped and did not advance, so this step would re-shoot the previous viewport.
-      if (prevTop !== null && at.top <= prevTop) break;
+      // Non-advancing means the PREVIOUS step already sat at the clamp, so the bottom HAS been
+      // captured: this is a legitimate end of the content, not a truncation.
+      if (prevTop !== null && at.top <= prevTop) { reachedBottom = true; break; }
       await sleep(150);
       const p = join(OUT, `verify-${stamp}-scroll${i}.png`);
       const s = await send('Page.captureScreenshot', { format: 'png' });
@@ -889,17 +913,30 @@ if (found > 0 && SCROLL_CAPTURE !== null) {
       // 1px tolerance, and it is not defensive padding. scrollHeight and clientHeight are ROUNDED
       // integers while scrollTop is fractional: measured live on this sheet, scrollTop clamps at
       // 1324.5 while scrollHeight - clientHeight computes 2047 - 722 = 1325, so a bare
-      // `top >= max` is FALSE at the bottom forever and the loop runs its full 20 iterations,
-      // writing 17 identical screenshots of the same final viewport. It mirrors the +1 already
-      // used to decide whether the container scrolls at all.
-      if (at.top >= at.max - 1) break;
+      // `top >= max` is FALSE at the bottom forever. Left alone it filled the run to the cap: the
+      // on-disk 20-shot capture taken from that state holds only SIX distinct images, one of them
+      // repeated THIRTEEN times. The no-progress terminator above now catches the same case one
+      // step later, so the two overlap deliberately: the +1 is what stops the duplicate from being
+      // written at all. It mirrors the +1 already used to decide whether the container scrolls.
+      if (at.top >= at.max - 1) { reachedBottom = true; break; }
     }
     const back = lost ? null : await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(SCROLL_HOST)});
       if(!e) return null; e.scrollTop = ${start}; return e.scrollTop; })()`);
-    report.scrollCapture = { container: scrollProbe.container, scope: scrollProbe.scope,
+    // `found` is set on BOTH failure branches above, so omitting it here made the success path the
+    // only one where `scrollCapture.found === true` reads undefined. Keys must not depend on verdict.
+    report.scrollCapture = { found: true, container: scrollProbe.container, scope: scrollProbe.scope,
       scrollHeight: scrollProbe.scrollHeight, clientHeight: scrollProbe.clientHeight, scrolls: true,
-      tried: scrollProbe.tried, shots, startScrollTop: start, restoredScrollTop: back };
+      tried: scrollProbe.tried, shots, startScrollTop: start, restoredScrollTop: back,
+      reachedBottom, maxSteps: SCROLL_MAX_STEPS };
     if (back !== start) { scrollFail = true; console.log(`SCROLL NOT RESTORED: ${back} != ${start}`); }
+    // The cap is a runaway guard and says NOTHING about coverage. Without this, a container needing
+    // more than SCROLL_MAX_STEPS viewport-fulls leaves the loop through the `for` header, prints its
+    // shot count, and exits 0 holding only the TOP of the content: the same silent under-capture the
+    // one-shot guard closes at the other end. `lost` is excluded because it already failed the run.
+    if (!lost && !reachedBottom) {
+      scrollFail = true;
+      console.log(`SCROLL CAPTURE TRUNCATED: hit the ${SCROLL_MAX_STEPS}-step cap without reaching the bottom (last scrollTop ${prevTop} of max ${lastMax}). Only the top of the container was captured, so the run verified nothing below it.`);
+    }
     // Belt to the "does not scroll" braces above: a resolved container that scrolls MUST yield at
     // least two viewport-fulls, because the loop only breaks once scrollTop has reached max. One
     // shot means the stepping never moved, and a run that scrolled nothing has verified nothing.
