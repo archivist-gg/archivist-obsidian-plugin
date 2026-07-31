@@ -913,11 +913,13 @@ if (found > 0 && SCROLL_CAPTURE !== null) {
       // 1px tolerance, and it is not defensive padding. scrollHeight and clientHeight are ROUNDED
       // integers while scrollTop is fractional: measured live on this sheet, scrollTop clamps at
       // 1324.5 while scrollHeight - clientHeight computes 2047 - 722 = 1325, so a bare
-      // `top >= max` is FALSE at the bottom forever. Left alone it filled the run to the cap: the
-      // on-disk 20-shot capture taken from that state holds only SIX distinct images, one of them
-      // repeated THIRTEEN times. The no-progress terminator above now catches the same case one
-      // step later, so the two overlap deliberately: the +1 is what stops the duplicate from being
-      // written at all. It mirrors the +1 already used to decide whether the container scrolls.
+      // `top >= max` is FALSE at the bottom forever. Before the no-progress terminator existed that
+      // filled the run to the cap: the on-disk 20-shot capture taken from that state holds only SIX
+      // distinct images, indices 7 through 19 being one identical shot of the final viewport.
+      // The terminator above now catches the same case one step later, and it is checked BEFORE the
+      // screenshot, so NEITHER guard lets a duplicate reach disk and the +1 now saves only a single
+      // CDP round-trip. Keep it: it mirrors the +1 already used to decide whether the container
+      // scrolls at all, and a run that ends on the round-trip it saves is one step cheaper.
       if (at.top >= at.max - 1) { reachedBottom = true; break; }
     }
     const back = lost ? null : await evaljs(`(() => { var e=document.querySelector(${JSON.stringify(SCROLL_HOST)});
