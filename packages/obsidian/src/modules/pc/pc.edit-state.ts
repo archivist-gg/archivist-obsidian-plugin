@@ -8,6 +8,8 @@ import * as eq from "./pc.equipment-edit";
 import type { Coin } from "./pc.coin-math";
 import { resolveEntityForEntry } from "@archivist-gg/dnd5e/pc/pc.slotting";
 import { computeRestPlan, type RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
+import { computeEffectiveProficiencies } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
 import { applyRestResets } from "./pc.rest";
 
 export interface EditStateContext {
@@ -642,6 +644,86 @@ export class CharacterEditState {
     if (Object.keys(saves).length === 0) {
       delete this.character.overrides.saves;
     }
+    this.onChange();
+  }
+
+  // ─── Proficiency overrides (languages / tools) ─────────────────────
+  //
+  // Spec R4-P3b §3.6 / §8. These are POSTCONDITION mutators, not token swaps:
+  // `remove[]` SUPPRESSES a rules-granted entry ("a dwarf who doesn't know
+  // dwarvish"), so which array a value belongs in depends on what the rules
+  // currently grant, which changes under the character's feet when the race,
+  // class, background or feats change.
+  //
+  // Values are stored RAW and compared CANONICALLY through `toProfSlug` (§3.3),
+  // so the user's casing survives a round trip while two spellings of one value
+  // (`Thieves' Tools` / `Thieves’ Tools`) can never both be stored.
+  //
+  // On-disk conflict (a hand edit or a merge puts one value in BOTH arrays):
+  // `remove` wins, which is what the engine's effective set already does, and
+  // what `removeProficiency` below produces. Nothing special-cases it.
+
+  private ensureProfOverride(domain: "languages" | "tools") {
+    const o = this.character.overrides;
+    // No `!` on the return: `??=` already narrows it, and the repo's
+    // no-unnecessary-type-assertion rule rejects the redundant assertion.
+    o[domain] ??= {};
+    return o[domain];
+  }
+
+  /** Empty arrays and an empty container go back to `delete`, never to `[]`/`{}`
+   *  (precedent: `toggleActiveBuff` and `clearSaveBonusOverride` above). Without
+   *  this a suppress-then-restore round trip leaves a residual `languages: {}` and
+   *  the note does not return to its original bytes. */
+  private pruneProfOverride(domain: "languages" | "tools"): void {
+    const s = this.character.overrides[domain];
+    if (!s) return;
+    if (s.add?.length === 0) delete s.add;
+    if (s.remove?.length === 0) delete s.remove;
+    if (!s.add && !s.remove) delete this.character.overrides[domain];
+  }
+
+  /** Ask the ENGINE whether the value is currently effective. Reads
+   *  `getContext().resolved`, whose `definition` is the very object this class
+   *  mutates (`pc.view.ts` passes `parsed.data` to both, `pc.resolver.ts` sets
+   *  `definition: character`), so this sees the LIVE, just-mutated overrides. */
+  private isEffective(domain: "languages" | "tools", value: string): boolean {
+    const eff = computeEffectiveProficiencies(this.getContext().resolved);
+    const slug = toProfSlug(value);
+    return eff[domain].some((e) => toProfSlug(e.value) === slug);
+  }
+
+  /** Postcondition: the value IS effective afterwards. */
+  addProficiency(domain: "languages" | "tools", value: string): void {
+    const slug = toProfSlug(value);
+    const store = this.ensureProfOverride(domain);
+    if (store.remove) store.remove = store.remove.filter((v) => toProfSlug(v) !== slug);
+    // Re-evaluate AFTER the removal, against the live overrides object. Evaluating
+    // BEFORE would drop the value from remove[] AND push it to add[], so restoring a
+    // suppressed grant would leave `{add:["dwarvish"]}` instead of returning the note
+    // to its original bytes. Both orders satisfy the postcondition sentence · only the
+    // byte comparison in the tests tells them apart.
+    if (!this.isEffective(domain, value)) {
+      store.add ??= [];
+      if (!store.add.some((v) => toProfSlug(v) === slug)) store.add.push(value);
+    }
+    this.pruneProfOverride(domain);
+    this.onChange();
+  }
+
+  /** Postcondition: the value is NOT effective afterwards. */
+  removeProficiency(domain: "languages" | "tools", value: string): void {
+    const slug = toProfSlug(value);
+    const store = this.ensureProfOverride(domain);
+    if (store.add) store.add = store.add.filter((v) => toProfSlug(v) !== slug);
+    // Same AFTER-the-mutation rule as addProficiency: a value that is still granted
+    // once its manual add is gone needs a real suppression, or the chip never leaves
+    // the sheet.
+    if (this.isEffective(domain, value)) {
+      store.remove ??= [];
+      if (!store.remove.some((v) => toProfSlug(v) === slug)) store.remove.push(value);
+    }
+    this.pruneProfOverride(domain);
     this.onChange();
   }
 

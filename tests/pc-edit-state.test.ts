@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { CharacterEditState, type EditStateContext } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
+import { computeEffectiveProficiencies } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
+import { toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import type { Character, DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -1026,5 +1028,132 @@ describe("CharacterEditState — attuneItem auto-equip (Task 4, #10)", () => {
     expect(c.equipment[0].attuned).toBe(false);
     expect(c.equipment[0].equipped).toBe(true); // still equipped
     expect(c.equipment[0].slot).toBe("mainhand");
+  });
+});
+
+// ─── Proficiency overrides (R4-P3b, spec §3.6 / §8) ──────────────────────────
+//
+// The mutators decide what to write by asking the ENGINE what is effective, via
+// `getContext().resolved`. So the fixture has to reproduce the PRODUCTION ALIASING:
+// `pc.view.ts:150-152` hands `parsed.data` to the edit state as `character` AND builds
+// the context from the resolver's output, whose `definition` is that very object
+// (`pc.resolver.ts:253` `definition: character`). One object, two paths.
+//
+// A fixture that CLONED would let the mutator write one object while the effective-set
+// read hits another, and every assertion below would pass vacuously. The fixture-integrity
+// test at the top of the describe block pins that identity so a future edit cannot quietly
+// break it.
+//
+// The two local `makeES` helpers above cannot be reused here: both stub getContext as
+// `({}) as unknown as EditStateContext`, so `resolved` is undefined and the mutators'
+// effectiveness read throws on the outer dereference.
+function makeDwarfEditState(onChange: () => void = () => {}): CharacterEditState {
+  const parsed = parsePC(MINIMAL_YAML);
+  if (!parsed.success) throw new Error(parsed.error);
+  const character = parsed.data;
+  const resolved = {
+    definition: character,   // ALIAS, never a copy. See the note above.
+    // The grant walk reads `resolved.race`, never `definition.race`, so the race lives on
+    // the resolved side only · the same shape as the engine's own effective-set fixture.
+    race: { name: "Dwarf", languages: { fixed: ["common", "dwarvish"] }, traits: [], choices: [] },
+    classes: [],
+    background: null,
+    feats: [],
+    features: [],
+  } as unknown as ResolvedCharacter;
+  const derived = { hp: { max: 24, current: 24, temp: 0 } } as unknown as DerivedStats;
+  return new CharacterEditState(character, () => ({ resolved, derived }), onChange);
+}
+
+/** Re-point the race's fixed languages IN PLACE, on the object the context closure
+ *  already holds, so the next effective-set read sees the new grants. Replacing
+ *  `resolved` or `definition` would sever the aliasing the mutators depend on. */
+function setRaceGrants(es: CharacterEditState, name: string, fixed: string[]): void {
+  const race = es.getContext().resolved.race as unknown as { name: string; languages: { fixed: string[] } };
+  race.name = name;
+  race.languages.fixed = fixed;
+}
+const swapRaceToElf = (es: CharacterEditState): void => setRaceGrants(es, "Elf", ["common", "elvish"]);
+const swapRaceToHuman = (es: CharacterEditState): void => setRaceGrants(es, "Human", ["common"]);
+
+describe("proficiency overrides", () => {
+  const isEffective = (es: CharacterEditState, v: string) =>
+    computeEffectiveProficiencies(es.getContext().resolved).languages.some(
+      (e) => toProfSlug(e.value) === toProfSlug(v),
+    );
+
+  // FIXTURE INTEGRITY, not a behaviour test. Everything below is vacuous if the edit
+  // state's character and the resolved definition are two objects: the mutator would
+  // write one and the effectiveness read would consult the other, so `toYaml()` could
+  // never disagree with a no-op. Both halves are asserted: reference identity, and that
+  // a write through the edit state is observable through the context path.
+  it("FIXTURE: character and resolved.definition are the SAME object (production aliasing)", () => {
+    const es = makeDwarfEditState();
+    expect(es.character).toBe(es.getContext().resolved.definition);
+    es.character.overrides.languages = { remove: ["probe"] };
+    expect(es.getContext().resolved.definition.overrides.languages).toEqual({ remove: ["probe"] });
+    // ...and the swap helpers must not sever it.
+    swapRaceToElf(es);
+    expect(es.character).toBe(es.getContext().resolved.definition);
+  });
+
+  it("suppress-then-restore returns the note to its ORIGINAL bytes", () => {
+    const es = makeDwarfEditState();          // grants common + dwarvish
+    const before = es.toYaml();
+    es.removeProficiency("languages", "dwarvish");
+    expect(isEffective(es, "dwarvish")).toBe(false);
+    es.addProficiency("languages", "dwarvish");
+    expect(isEffective(es, "dwarvish")).toBe(true);
+    // Only passes if `+` re-evaluates AFTER dropping from remove[] (so it pushes nothing to add[]),
+    // and if the mutator prunes the emptied container back to `delete`.
+    expect(es.toYaml()).toBe(before);
+  });
+
+  it("add-then-remove of a manual entry also returns to the original bytes", () => {
+    const es = makeDwarfEditState();
+    const before = es.toYaml();
+    es.addProficiency("languages", "elvish");
+    expect(isEffective(es, "elvish")).toBe(true);
+    es.removeProficiency("languages", "elvish");
+    expect(isEffective(es, "elvish")).toBe(false);
+    expect(es.toYaml()).toBe(before);
+  });
+
+  it("canonicalize-compares on push so one value cannot be stored twice", () => {
+    const es = makeDwarfEditState();
+    es.addProficiency("tools", "Thieves' Tools");
+    es.addProficiency("tools", "Thieves’ Tools");   // U+2019 · same value
+    expect(es.character.overrides.tools?.add).toHaveLength(1);
+  });
+
+  it("calls onChange exactly once per mutation", () => {
+    const onChange = vi.fn();
+    const es = makeDwarfEditState(onChange);
+    es.addProficiency("languages", "elvish");
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  // ---- Spec §16.3 test 6: THE TWO REACHABLE FAILURE STATES. ----
+  // These are the whole reason §8 was rewritten from a token swap into postconditions. Both need a
+  // GRANT CHANGE between the two mutator calls; the four tests above all pass under a naive token
+  // swap, so without these the states §8 exists to fix ship unpinned.
+
+  it("add-then-granted: × removes the chip even though the value became a grant", () => {
+    const es = makeDwarfEditState();
+    es.addProficiency("languages", "elvish");          // manual add
+    swapRaceToElf(es);                                 // elvish is NOW ALSO granted
+    es.removeProficiency("languages", "elvish");
+    // A token swap deletes only the add[] entry, the grant keeps it effective, and the chip stays.
+    expect(isEffective(es, "elvish")).toBe(false);
+    expect(es.character.overrides.languages?.remove).toContain("elvish");
+  });
+
+  it("orphaned suppression: + restores the value after its grant disappears", () => {
+    const es = makeDwarfEditState();
+    es.removeProficiency("languages", "dwarvish");     // suppress a grant
+    swapRaceToHuman(es);                               // dwarvish is no longer granted at all
+    es.addProficiency("languages", "dwarvish");
+    // A token swap drops it from remove[] and pushes nothing => NO chip appears. Silent no-op.
+    expect(isEffective(es, "dwarvish")).toBe(true);
   });
 });
