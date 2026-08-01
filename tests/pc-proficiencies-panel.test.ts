@@ -6,10 +6,13 @@ import type { ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 
 vi.mock("@archivist-gg/dnd5e/pc/pc.proficiencies", () => ({
   aggregateProficiencies: () => ({
-    armor: ["Light"],
-    weapons: ["Hand Crossbows", "Rapiers"],
+    armor: [{ value: "light", label: "Light", sources: [], origin: "grant" }],
+    weapons: [
+      { value: "hand-crossbows", label: "Hand Crossbows", sources: [], origin: "grant" },
+      { value: "rapiers", label: "Rapiers", sources: [], origin: "grant" },
+    ],
     tools: [],
-    languages: ["Common"],
+    languages: [{ value: "common", label: "Common", sources: [], origin: "grant" }],
     choices: { languages: ["choose 2"], tools: [] },
   }),
 }));

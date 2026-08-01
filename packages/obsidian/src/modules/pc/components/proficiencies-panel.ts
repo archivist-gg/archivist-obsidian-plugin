@@ -1,5 +1,6 @@
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { aggregateProficiencies } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
+import type { ProficiencyEntry } from "@archivist-gg/dnd5e/pc/pc.proficiencies";
 
 export class ProficienciesPanel implements SheetComponent {
   readonly type = "proficiencies-panel";
@@ -10,7 +11,8 @@ export class ProficienciesPanel implements SheetComponent {
     const body = section.createDiv({ cls: "pc-prof-body" });
     const agg = aggregateProficiencies(ctx.resolved);
 
-    const labelFor = (label: string, items: string[], choiceKey?: "languages" | "tools") => {
+    const labelFor = (label: string, entries: ProficiencyEntry[], choiceKey?: "languages" | "tools") => {
+      const items = entries.map((e) => e.label);
       const p = body.createDiv({ cls: "pc-prof-line" });
       p.createSpan({ cls: "pc-prof-key", text: `${label}: ` });
       const parts = items.length ? [items.join(", ")] : [];
