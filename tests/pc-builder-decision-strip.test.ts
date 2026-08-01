@@ -28,6 +28,7 @@ const item = (over: Partial<DecisionItem>): DecisionItem =>
     ],
     selected: undefined,
     status: "unresolved",
+    satisfied: false,
     ...over,
   }) as DecisionItem;
 
@@ -208,6 +209,176 @@ describe("renderDecisionStrip", () => {
     expect(empty!.textContent).toBe("No options available for this choice.");
     expect(empty!.textContent).not.toMatch(/compendium/i);
     expect(c.querySelector(".pc-bchoice-chips")).toBeNull();
+  });
+
+  // ── `.pc-dstrip-val` on an OPEN row (spec §13.1, §16.3 item 1) ──
+  // Previously UNPINNED: all four prior `.pc-dstrip-val` assertions hit the
+  // resolved `✓` branch, so `statusText` had no coverage at all. It reported the
+  // TOTAL, so after picking 1 of 3 the builder said "choose 3" while the sheet
+  // said "choose 2". It now shares `requirementSuffix` with `childLabel`.
+  it("an OPEN row's .pc-dstrip-val reports what is REMAINING, not the total", () => {
+    const skills = (count: number, selected: string[] | undefined, status: DecisionItem["status"]) =>
+      item({
+        key: "skills",
+        choice: { kind: "select-proficiency", id: "skills", count, domain: "skill" },
+        options: [
+          { value: "acrobatics", label: "Acrobatics" },
+          { value: "arcana", label: "Arcana" },
+          { value: "stealth", label: "Stealth" },
+        ],
+        selected,
+        status,
+      });
+    const valOf = (it_: DecisionItem): string => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [it_], pill: domainPill, live: true, stateKey: "t" });
+      const row = c.querySelector(".pc-dstrip-row")!;
+      expect(row.classList.contains("open")).toBe(true);   // NOT the ✓ branch
+      return row.querySelector(".pc-dstrip-val")!.textContent!;
+    };
+
+    // partial: the "k picked" form, the whole point of the §13.1 fix.
+    expect(valOf(skills(3, ["acrobatics"], "partial"))).toBe("choose 3 · 1 picked");
+    // nothing picked: bare requirement, never "0 picked".
+    expect(valOf(skills(3, undefined, "unresolved"))).toBe("choose 3");
+    // single-pick: `requirementSuffix` returns "" (a child's label wants no
+    // suffix there), and statusText's `||` fallback keeps "choose 1" alive.
+    expect(valOf(skills(1, undefined, "unresolved"))).toBe("choose 1");
+    // ability-points keeps its own remaining idiom, untouched by the extraction.
+    expect(valOf(item({
+      key: "asi",
+      choice: { kind: "ability-points", id: "asi", points: 2, max_per: 2 },
+      options: [{ value: "str", label: "STR" }, { value: "dex", label: "DEX" }],
+      selected: { str: 1 },
+      status: "partial",
+    }))).toBe("1 point(s) left");
+  });
+
+  // ── The satisfied dress (spec §6.3, §13.4) ──
+  // A SATISFIED row is one whose pool was non-empty BEFORE exclusion and empty
+  // after: the character already holds every language/tool it could grant. The
+  // engine resolves it to `resolved`, which creates a shape that did not exist
+  // before this phase (`status: "resolved"` with `selected === undefined`), so
+  // the ✓ branch renders a bare "✓ " with an empty summary. The nest therefore
+  // carries its own honest copy, and it must NOT be P3a's broken-UI string.
+  it("a SATISFIED row wears the done dress and gets its own copy, not P3a's", () => {
+    const langs = (satisfied: boolean): DecisionItem => item({
+      key: "languages",
+      choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+      options: [],              // exclusion emptied the pool
+      selected: undefined,
+      status: satisfied ? "resolved" : "unresolved",
+      satisfied,
+    });
+
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), { items: [langs(true)], pill: domainPill, live: true, stateKey: "t" });
+    const row = c.querySelector(".pc-dstrip-row")!;
+    expect(row.classList.contains("done")).toBe(true);
+    expect(row.querySelector(".pc-dstrip-bang")).toBeNull();
+    // §13.4 site 1, pinned as-shipped: `resolved` + no `selected` ⇒ a bare ✓.
+    // The honest copy lives in the nest, below.
+    expect(row.querySelector(".pc-dstrip-val")!.textContent).toBe("✓ ");
+
+    const empty = c.querySelector(".pc-dstrip-empty")!;
+    expect(empty.textContent).toBe("You already have every option this choice offers.");
+    // Distinct from ALL THREE existing empty strings, and silent about
+    // compendiums (visibility is meaningless for a proficiency domain).
+    expect(empty.textContent).not.toBe("No options available for this choice.");
+    expect(empty.textContent).not.toBe("No options available in your vault yet.");
+    expect(empty.textContent).not.toBe(
+      "No options available. Some exist in a hidden compendium (see Archivist settings).",
+    );
+    expect(empty.textContent).not.toMatch(/compendium/i);
+
+    // §6.3's ACCEPTANCE CRITERION for the split: the else-branch is still
+    // reachable. The same zero-option item with `satisfied: false` (a
+    // `domain:"save"` choice, an empty registry, an authored `from: []`) keeps
+    // P3a's string verbatim, so the pin above at `:208` cannot be dead code.
+    const c2 = mountContainer();
+    renderDecisionStrip(c2, mkCtx(), { items: [langs(false)], pill: domainPill, live: true, stateKey: "t" });
+    expect(c2.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("No options available for this choice.");
+  });
+
+  // ── `labelOf` names an ENTITY-level origin row by its choice (spec §13.3) ──
+  // `pushOrigin` passes the SAME `source` object for the entity-level and the
+  // trait-level rows, so only `featureName` discriminates them: the 2024 Soldier
+  // rendered three sibling rows all named "Soldier". BOTH predicate clauses are
+  // load-bearing and pinned here.
+  it("labelOf renames an entity-level origin row, and ONLY that shape", () => {
+    const nameOf = (over: Partial<DecisionItem>): string => {
+      const c = mountContainer();
+      renderDecisionStrip(c, mkCtx(), { items: [item(over)], pill: domainPill, live: true, stateKey: "t" });
+      return c.querySelector(".pc-dstrip-name")!.textContent!;
+    };
+    const langChoice = { kind: "select-proficiency", id: "languages", count: 2, domain: "language" };
+
+    // Entity-level: featureName IS the entity name → renamed after the choice.
+    expect(nameOf({
+      source: { kind: "background", slug: "srd-2024_background_soldier" },
+      featureName: "Soldier", choice: langChoice,
+    })).toBe("Languages");
+    // Same shape on a race, and toProfSlug's fold is why we never hand-roll it.
+    expect(nameOf({
+      source: { kind: "race", slug: "srd-5e_race_human" },
+      featureName: "Human", choice: langChoice,
+    })).toBe("Languages");
+    // Trait-level: same source object, different featureName → left ALONE.
+    // ("Extra Language" is the high-elf's, and it is already correct today.)
+    expect(nameOf({
+      source: { kind: "race", slug: "srd-5e_race_high-elf" },
+      featureName: "Extra Language", choice: langChoice,
+    })).toBe("Extra Language");
+    // The `kind` clause, NOT decoration: the origin-feat push sets
+    // featureName = originFeat.display AND source.slug = feat.slug, so it passes
+    // the name test and would be rewritten to "Languages" without it.
+    expect(nameOf({
+      source: { kind: "feat", slug: "srd-2024_feat_magic-initiate" },
+      featureName: "Magic Initiate", choice: langChoice,
+    })).toBe("Magic Initiate");
+    // Class rows can never be rewritten by construction (the `kind` clause).
+    expect(nameOf({
+      source: { kind: "class", slug: "srd-2024_class_bard", level: 1 }, level: 1,
+      featureName: "Bard", choice: langChoice,
+    })).toBe("Bard");
+    // An authored `choice.label` still wins: the rewrite sits in the
+    // featureName FALLBACK, so homebrew keeps its own copy.
+    expect(nameOf({
+      source: { kind: "background", slug: "srd-2024_background_soldier" },
+      featureName: "Soldier", choice: { ...langChoice, label: "Two Extra Tongues" },
+    })).toBe("Two Extra Tongues");
+  });
+
+  // ── `data-prof` on the builder chip (spec §10.3 deviation 4, §17 assertion 4) ──
+  // The rendered text is a humanized label and is prefixed "✓ " when selected,
+  // so it is not addressable by a CSS selector. Without this hook §17's
+  // `--expect-absent '.pc-bchoice-chip[data-prof="dwarvish"]'` matches nothing
+  // and passes UNCONDITIONALLY, which is a silent false green.
+  it("every builder chip carries data-prof with its option value", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({
+        key: "languages",
+        choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+        options: [
+          { value: "dwarvish", label: "Dwarvish" },
+          { value: "elvish", label: "Elvish" },
+          { value: "sylvan", label: "Sylvan", missing: true },
+        ],
+        selected: ["elvish"],
+        status: "partial",
+      })],
+      pill: domainPill, live: true, stateKey: "t",
+    });
+    const chips = [...c.querySelectorAll(".pc-bchoice-chip")];
+    expect(chips.map((n) => n.getAttribute("data-prof")))
+      .toEqual(["dwarvish", "elvish", "sylvan"]);
+    // The hook survives BOTH text decorations that hide the value.
+    expect(c.querySelector('.pc-bchoice-chip[data-prof="elvish"]')!.textContent).toBe("✓ Elvish");
+    expect(c.querySelector('.pc-bchoice-chip[data-prof="sylvan"]')!.textContent).toBe("Sylvan (missing)");
+    // And the selector §17 asserts absent resolves on the live DOM.
+    expect(c.querySelector('.pc-bchoice-chip[data-prof="giant"]')).toBeNull();
   });
 
   // ── Long select-entity lists open a filtered picker modal (smoke r1) ──
@@ -410,7 +581,7 @@ describe("renderDecisionStrip", () => {
     const fc = c.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc")!;
     expect(fc.classList.contains("partial")).toBe(true);
     expect(fc.querySelector(".pc-dstrip-fc-flag")!.textContent).toBe("!");
-    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Skills — choose 3 · 1 picked");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Skills: choose 3 · 1 picked");
     expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(4);
   });
 
@@ -493,7 +664,7 @@ describe("renderDecisionStrip", () => {
     // humanizeSlug title-cases the unknown id; CSS uppercases it for display.
     const names = [...group.querySelectorAll(".pc-dstrip-fc-name")].map((n) => n.textContent);
     expect(names).toContain("Proficiency Shape");
-    expect(names).toContain("Skills — choose 3 · 1 picked");
+    expect(names).toContain("Skills: choose 3 · 1 picked");
     // Only ONE L-pill total (on the top-level row).
     expect(c.querySelectorAll(".pc-dstrip-pill").length).toBe(1);
   });
@@ -907,11 +1078,11 @@ describe("childLabel", () => {
     expect(childLabel(child("feat:skills", {
       choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
       selected: ["acrobatics"],
-    }))).toBe("Skills — choose 3 · 1 picked");
+    }))).toBe("Skills: choose 3 · 1 picked");
     // choose-3, none picked → bare requirement, no "0 picked".
     expect(childLabel(child("feat:skills", {
       choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
       selected: undefined,
-    }))).toBe("Skills — choose 3");
+    }))).toBe("Skills: choose 3");
   });
 });

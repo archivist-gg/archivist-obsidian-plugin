@@ -4,6 +4,8 @@ import type { RegisteredEntity } from "@archivist-gg/core";
 import { renderSelectionTable } from "./selection-table";
 import { DecisionPickModal } from "./decision-modal";
 import { humanizeSlug, humanizeToken } from "../../../../shared/rendering/renderer-utils";
+import { toProfSlug, humanizeProficiency } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
+import { bareEntitySlug } from "@archivist-gg/dnd5e/entities/slug";
 import { hiddenCompendiumSet, entityCompendiumVisible } from "../../../../shared/entities/compendium-visibility";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import type { Ability } from "@archivist-gg/dnd5e/types/choice";
@@ -210,7 +212,7 @@ function renderChildRow(
   if (done) label.createSpan({ cls: "pc-dstrip-fc-ok", text: "✓" });
 
   // inChild = true: the `.pc-dstrip-fcl` sub-label above already names this
-  // sub-choice (via childLabel — carrying the "— choose N" requirement), so the
+  // sub-choice (via childLabel, carrying the ": choose N" requirement), so the
   // long-list control must NOT re-emit its own `.pc-dstrip-tlabel` header
   // (which is parent-derived from labelOf and would read "FEAT FEAT" / surface
   // the inherited parent featureName). The control suppresses it in child scope.
@@ -234,20 +236,36 @@ const CHILD_LABEL_MAP: Record<string, string> = {
 /** Presentation-layer sub-choice label for a flat child — names the REAL
  *  sub-choice from the child's `choice.id`, never the inherited featureName
  *  (the bug Variant II fixes). Strips a `feat:` key prefix, special-cases the
- *  known ids, else humanizes the slug. When a multi-pick is in progress the
- *  requirement is appended per the mockup's Variant II ("Skills — choose 3 ·
- *  1 picked"); a resolved or single-pick child shows the bare label. */
+ *  known ids, else humanizes the slug. When the row carries a requirement it is
+ *  appended per the mockup's Variant II ("Skills: choose 3 · 1 picked"); a
+ *  single-pick or ability-points child shows the bare label. Separator is `:`,
+ *  never a U+2014 (spec §13.2: routing statusText through this idiom would
+ *  otherwise widen a known em-dash violation into `.pc-dstrip-val`). */
 export function childLabel(item: DecisionItem): string {
   const id = (item.choice.id ?? "").replace(/^feat:/, "");
   const base = CHILD_LABEL_MAP[id] ?? (id ? humanizeSlug(id) : "Choice");
-  // ability-points carries a ±-stepper that shows "N point(s) left" itself —
-  // its `points` is not a "choose N" count, so never suffix it.
+  const suffix = requirementSuffix(item);
+  return suffix ? `${base}: ${suffix}` : base;
+}
+
+/** The shared requirement copy behind BOTH `childLabel`'s suffix and
+ *  `statusText` (spec §13.1: one function, two callers, so the builder can no
+ *  longer say "choose 2" while the sheet says "choose 1"). Returns "" when the
+ *  row carries NO requirement copy; else "choose N" | "choose N · k picked".
+ *
+ *  Three guard conditions, each load-bearing:
+ *  1. the ability-points clamp (`need = 1`): its ±-stepper reports "N point(s)
+ *     left" itself and its `points` is not a "choose N" count, so it is never
+ *     suffixed;
+ *  2. the `need <= 1` early return, which keeps a single-pick child's label bare;
+ *  3. the UPPER bound `have < need`, which is NOT the same as `have > 0 && need >
+ *     1`: a fully-selected count:2 child must read "choose 2", never
+ *     "choose 2 · 2 picked". */
+function requirementSuffix(item: DecisionItem): string {
   const need = item.choice.kind === "ability-points" ? 1 : requiredOf(item);
-  if (need <= 1) return base;
+  if (need <= 1) return "";
   const have = selectionCountOf(item);
-  return have > 0 && have < need
-    ? `${base} — choose ${need} · ${have} picked`
-    : `${base} — choose ${need}`;
+  return have > 0 && have < need ? `choose ${need} · ${have} picked` : `choose ${need}`;
 }
 
 /** Count of picks already made on a child (array length / non-zero allocation
@@ -262,6 +280,13 @@ function selectionCountOf(item: DecisionItem): number {
   return 0;
 }
 
+/** `.pc-dstrip-val` copy for a row that is NOT resolved. Shares
+ *  `requirementSuffix` with `childLabel` so a partially-picked row reports what
+ *  is REMAINING, not the total (spec §13.1). The `||` fallback is what keeps
+ *  "choose 1" alive: `requirementSuffix` returns "" for a single-pick row
+ *  because a child's label wants no suffix there, but the value column still
+ *  has to say something. The ability-points arm already uses a remaining idiom
+ *  and is left exactly as it was. */
 function statusText(item: DecisionItem): string {
   if (item.choice.kind === "ability-points") {
     const spent = Object.values(
@@ -269,13 +294,32 @@ function statusText(item: DecisionItem): string {
     ).reduce((s, v) => s + (v ?? 0), 0);
     return `${item.choice.points - spent} point(s) left`;
   }
-  return `choose ${requiredOf(item)}`;
+  return requirementSuffix(item) || `choose ${requiredOf(item)}`;
 }
 
 // ── module-private helpers ──────────────────────────────────────────────────
 
+/** Top-level row label. An authored `choice.label` always wins; otherwise the
+ *  source feature/trait name, EXCEPT for an ENTITY-level origin choice, where
+ *  `featureName` is the entity's own name and three sibling rows would all read
+ *  "Soldier" (spec §13.3). `pushOrigin` passes the SAME `source` object for both
+ *  levels, so `bareEntitySlug` alone cannot discriminate: only `featureName`
+ *  differs, hence the name test. Trait-level rows ("Skill Versatility",
+ *  "Extra Language") fail it and keep their correct name.
+ *
+ *  The `kind` clause is NOT decoration. The origin-feat push sets
+ *  `featureName = originFeat.display` AND `source.slug = feat.slug`, so it
+ *  satisfies the name test and would otherwise be rewritten · an origin-feat
+ *  row's feat name is the right label. Class rows can never be rewritten by
+ *  construction. */
 function labelOf(item: DecisionItem): string {
   if (item.choice.kind !== "ability-points" && item.choice.label) return item.choice.label;
+  if (
+    (item.source.kind === "race" || item.source.kind === "background") &&
+    toProfSlug(item.featureName) === bareEntitySlug(item.source.slug)
+  ) {
+    return humanizeProficiency(item.choice.id);
+  }
   return item.featureName;
 }
 
@@ -418,8 +462,21 @@ function renderControl(
   // with zero options renders a header and nothing clickable, which reads as a
   // broken UI rather than as missing data. Distinct copy from the select-entity
   // empty-state above: compendium visibility is meaningless for a proficiency domain.
+  //
+  // The two zero-option cases are NOT coextensive (spec §6.1/§6.3), so the copy
+  // splits on the engine's `satisfied` flag rather than on the count. SATISFIED
+  // means exclusion emptied a pool that WAS non-empty: the character already
+  // holds every language/tool this choice could grant, so it is complete, not a
+  // broken row. The else-branch stays reachable for the three genuinely-open
+  // shapes (a `domain:"save"` choice, an empty registry, an authored `from: []`)
+  // and keeps P3a's string verbatim.
   if (item.options.length === 0) {
-    nest.createDiv({ cls: "pc-dstrip-empty", text: "No options available for this choice." });
+    nest.createDiv({
+      cls: "pc-dstrip-empty",
+      text: item.satisfied
+        ? "You already have every option this choice offers."
+        : "No options available for this choice.",
+    });
     return;
   }
   const need = requiredOf(item);
@@ -431,6 +488,15 @@ function renderControl(
       cls: `pc-bchoice-chip${sel ? " sel" : ""}${o.missing ? " inert" : ""}`,
       text: sel ? `✓ ${o.label}` : o.missing ? `${o.label} (missing)` : o.label,
     });
+    // The chip's option value, exposed as a stable DOM hook. The rendered text
+    // is a humanized label (and is prefixed with "✓ " when selected), so it is
+    // not addressable by a CSS selector; `data-prof` carries the chip's real
+    // identity · the same `o.value` the `sel` test above uses. Spec §17
+    // assertion 4 (`--expect-absent '.pc-bchoice-chip[data-prof="dwarvish"]'`)
+    // cannot be written without it, and its failure mode is SILENT: an
+    // `--expect-absent` on a selector nothing ever emits returns 0 and passes
+    // unconditionally.
+    chip.setAttribute("data-prof", o.value);
     // Each option's own prose as a hover tooltip, so the player can preview what an
     // option does before picking it (the data carries it — it was never surfaced).
     if (o.description) chip.setAttribute("title", o.description);
