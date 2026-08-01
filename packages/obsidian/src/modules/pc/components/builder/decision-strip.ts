@@ -163,16 +163,28 @@ function renderRow(
     head.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
     if (!done) head.createSpan({ cls: "pc-dstrip-bang", text: "!" });
     head.createSpan({ cls: "pc-dstrip-name", text: labelOf(item) });
-    // A SATISFIED row is `resolved` with NO `selected` (spec §6.2), a shape that
-    // did not exist before P3b: `selectedSummary` returns "" for it, so the ✓
-    // branch would render a bare "✓ " on a row the user never acted on. It gets
-    // its own copy, deliberately DIFFERENT from the nest's line just below it
+    // A SATISFIED row is `resolved` and USUALLY has no `selected` (spec §6.2), a
+    // shape that did not exist before P3b: `selectedSummary` returns "" for it, so
+    // the ✓ branch would render a bare "✓ " on a row the user never acted on. It
+    // gets its own copy, deliberately DIFFERENT from the nest's line just below it
     // (both are on screen at once, so printing one sentence twice reads as a
     // rendering bug) and phrased as "there was nothing to take", never as a pick.
+    //
+    // `satisfied` does NOT imply `selected === undefined`, which is why the copy
+    // is gated on the SUMMARY being empty rather than on the flag alone.
+    // `canonicalizeSelection` (engine :295-301) keeps a pool no-match verbatim
+    // (`matchPool(v, pool) ?? v`) precisely so a homebrew or legacy value is never
+    // erased, and the per-choice exemption (engine :375) re-admits only options
+    // that are IN the pool. So a persisted value outside the enumerated pool
+    // survives while the pool empties around it: the row is satisfied AND carries
+    // a real frontmatter pick. Announcing "nothing left to pick" over it would
+    // hide the user's own data.
     head.createSpan({
       cls: "pc-dstrip-val",
       text: done
-        ? item.satisfied ? "✓ Nothing left to pick" : `✓ ${selectedSummary(item)}`
+        ? item.satisfied && !selectedSummary(item)
+          ? "✓ Nothing left to pick"
+          : `✓ ${selectedSummary(item)}`
         : statusText(item),
     });
     head.addEventListener("click", () => {

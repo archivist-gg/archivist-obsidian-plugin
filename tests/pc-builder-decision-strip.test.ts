@@ -311,6 +311,32 @@ describe("renderDecisionStrip", () => {
     expect(c.querySelector(".pc-dstrip-empty")!.textContent).not.toBe(val);
   });
 
+  // ── A satisfied row must never HIDE a persisted pick ──
+  // `satisfied` does not imply `selected === undefined`. canonicalizeSelection
+  // (engine :295-301) keeps a pool no-match verbatim, by design, so a homebrew or
+  // legacy value is never erased; the per-choice exemption (engine :375) re-admits
+  // only options that are IN the pool. A value OUTSIDE the pool therefore survives
+  // while the pool empties around it, and the val column would announce
+  // "Nothing left to pick" over the user's own frontmatter.
+  it("a SATISFIED row still shows a persisted pick that is outside the pool", () => {
+    const c = mountContainer();
+    renderDecisionStrip(c, mkCtx(), {
+      items: [item({
+        key: "tool",
+        choice: { kind: "select-proficiency", id: "tool", count: 1, domain: "tool" },
+        options: [],                    // exclusion emptied the enumerated pool
+        selected: "grandfather's-lute", // a no-match canonicalizeSelection KEPT
+        status: "resolved",
+        satisfied: true,
+      })],
+      pill: domainPill, live: true, stateKey: "t",
+    });
+    const val = c.querySelector(".pc-dstrip-val")!.textContent!;
+    // selectedSummary falls back to the raw slug when no option resolves it.
+    expect(val).toBe("✓ grandfather's-lute");
+    expect(val).not.toBe("✓ Nothing left to pick");
+  });
+
   // ── A satisfied CHILD row (spec §13.4 site 2, reachable per §5.4) ──
   // `renderChildRow` has its own `done` binding and `childLabel` appends the
   // requirement from `requiredOf`, so before `requirementSuffix`'s satisfied
@@ -1138,5 +1164,22 @@ describe("childLabel", () => {
       choice: { kind: "select-proficiency", id: "skills", count: 3, domain: "skill" } as never,
       selected: undefined,
     }))).toBe("Skills: choose 3");
+  });
+
+  // requirementSuffix's UPPER bound (`have < need`), previously unpinned: all
+  // other coverage is 1-of-3 or 0-of-3, so `have === need` was never exercised
+  // and dropping the bound to `have > 0` moved no assertion in the file. It is
+  // NOT equivalent: a FULLY-selected multi-pick is done, and "choose 2 · 2
+  // picked" is noise on a row with nothing left to do. The lower bound
+  // (`have > 0`) is pinned by the "none picked" case above; this pins the top.
+  it("drops the 'k picked' tail once the multi-pick is FULL, at every arity", () => {
+    const full = (count: number, selected: string[]) => childLabel(child("feat:skills", {
+      choice: { kind: "select-proficiency", id: "skills", count, domain: "skill" } as never,
+      selected,
+    }));
+    expect(full(2, ["acrobatics", "arcana"])).toBe("Skills: choose 2");
+    expect(full(3, ["acrobatics", "arcana", "athletics"])).toBe("Skills: choose 3");
+    // One short of full still carries the tail, so the bound is `<`, not `<=`.
+    expect(full(3, ["acrobatics", "arcana"])).toBe("Skills: choose 3 · 2 picked");
   });
 });
