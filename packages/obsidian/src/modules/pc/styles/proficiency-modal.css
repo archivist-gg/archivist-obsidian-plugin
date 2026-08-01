@@ -1,0 +1,175 @@
+/* Proficiency override modal (R4-P3b). Frame comes from .archivist-modal;
+   everything here is layout + token-mapped typography, scoped under
+   .pc-prof-modal.
+
+   Four traps this partial is written around, all verified:
+
+   1. EVERY selector is scoped. The approved mockup's proposal block is entirely
+      unscoped and each of its `button` rules is (0,1,0), which LOSES to
+      Obsidian's own `button:not(.clickable-icon)` at (0,1,1) · the buttons would
+      silently keep Obsidian's dark default chrome. Button rules therefore use
+      the (0,2,0) form `.pc-prof-modal button.pc-prof-modal-pip`, the same shape
+      spell-ability-modal.css uses for .pc-ability-seg.
+   2. The sheet's blanket button reset (components.css) does NOT reach a
+      portalled modal, so it is redone per-modal here · including
+      `display:inline-block; height:auto`, which undoes Obsidian's forced button
+      height (the passive-tab gotcha), and `box-shadow:none` in every state,
+      which kills var(--input-shadow).
+   3. The active-button text colour MUST be a literal #fff. --pc-white exists in
+      tokens.css but the .archivist-modal token block redeclares only a SUBSET of
+      that list and omits it, exactly as it omits --pc-fs-display (see
+      max-hp-modal.css). var(--pc-white) would resolve to nothing and render
+      dark-on-crimson.
+   4. Input focus. The global input box-shadow null computes to (0,3,1) and fires
+      on :focus too, so the focus cue here is a border, asserted at an equal
+      (0,3,1) that wins by SOURCE ORDER · this partial is the last @import in the
+      barrel. Do not move it earlier in styles/index.css.
+
+   No .vc-* scaffolding (mockup-only) and no bare --pc-parchment (undefined
+   inside .archivist-modal) appear below. */
+
+.pc-prof-modal { min-width: 360px; max-width: 420px; font-family: var(--pc-font-serif); }
+.pc-prof-modal-title {
+  margin: 0 0 4px;
+  font-size: var(--pc-fs-label); font-weight: 700; letter-spacing: var(--pc-ls-caps-sm);
+  text-transform: uppercase; color: var(--pc-text-primary); text-align: center;
+}
+.pc-prof-modal-sub {
+  margin: 0 0 12px; text-align: center;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  color: var(--pc-text-soft); opacity: 0.85;
+}
+
+/* ── known chips ── */
+.pc-prof-modal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.pc-prof-modal-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  color: var(--pc-text-primary);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 2px 8px; background: transparent;
+}
+/* Rules-granted: dashed border + softer ink. It still carries its ×, because
+   suppressing a granted entry is the whole point of this modal. */
+.pc-prof-modal-chip.granted { border-style: dashed; color: var(--pc-text-soft); }
+.pc-prof-modal-chip-src {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  color: var(--pc-text-soft); letter-spacing: 0.04em;
+}
+.pc-prof-modal-chip-x {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  color: var(--pc-text-soft); cursor: pointer;
+}
+.pc-prof-modal-chip-x:hover { color: var(--pc-crimson); }
+
+/* Empty chips row, and an addable list with nothing left to show. */
+.pc-prof-modal-empty {
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  color: var(--pc-text-muted); font-style: italic; padding: 4px 2px;
+}
+
+/* ── filter row ── */
+.pc-prof-modal-searchrow { display: flex; gap: 6px; align-items: center; margin: 8px 0 4px; }
+.pc-prof-modal input.pc-prof-modal-filter {
+  flex: 1 1 auto; min-width: 0; box-sizing: border-box; margin: 0;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  padding: 4px 8px; border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-md); background: transparent;
+  color: var(--pc-text-primary); box-shadow: none;
+}
+.pc-prof-modal input.pc-prof-modal-filter:focus {
+  border-color: var(--pc-crimson); box-shadow: none; outline: none;
+}
+.pc-prof-modal button.pc-prof-modal-custombtn {
+  display: inline-block; height: auto; flex: 0 0 auto; white-space: nowrap;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  color: var(--pc-crimson); background-color: transparent;
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  padding: 4px 10px; cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-custombtn:hover,
+.pc-prof-modal button.pc-prof-modal-custombtn:focus,
+.pc-prof-modal button.pc-prof-modal-custombtn:focus-visible,
+.pc-prof-modal button.pc-prof-modal-custombtn:active {
+  border-color: var(--pc-crimson); background-color: var(--pc-row-open-bg); box-shadow: none;
+}
+
+/* ── custom-entry form (hidden until "+ Custom") ── */
+.pc-prof-modal-customform { display: none; }
+.pc-prof-modal-customform.is-open {
+  display: flex; gap: 6px; align-items: center; margin-top: 8px;
+  padding: 8px; border: 1px dashed var(--pc-crimson);
+  border-radius: var(--pc-radius-md); background: var(--pc-row-open-bg);
+}
+.pc-prof-modal input.pc-prof-modal-custominput {
+  flex: 1 1 auto; min-width: 0; box-sizing: border-box; margin: 0;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
+  padding: 4px 8px; border: 1px solid var(--pc-tan-muted);
+  border-radius: var(--pc-radius-md); background: var(--pc-parchment-light);
+  color: var(--pc-text-primary); box-shadow: none;
+}
+.pc-prof-modal input.pc-prof-modal-custominput:focus {
+  border-color: var(--pc-crimson); box-shadow: none; outline: none;
+}
+.pc-prof-modal input.pc-prof-modal-custominput.is-error { border-color: var(--pc-crimson); }
+.pc-prof-modal button.pc-prof-modal-ok {
+  display: inline-block; height: auto;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-small); font-weight: 700;
+  /* Literal #fff · see trap 3 in this file's header. */
+  background-color: var(--pc-crimson); color: #fff;
+  border: 1px solid var(--pc-crimson); border-radius: var(--pc-radius-md);
+  padding: 4px 12px; cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-ok:hover,
+.pc-prof-modal button.pc-prof-modal-ok:focus,
+.pc-prof-modal button.pc-prof-modal-ok:focus-visible,
+.pc-prof-modal button.pc-prof-modal-ok:active {
+  background-color: var(--pc-crimson-light); color: #fff; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-cancel {
+  display: inline-block; height: auto;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  background-color: transparent; color: var(--pc-text-soft); border: none;
+  padding: 4px 6px; cursor: pointer; text-decoration: underline; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-cancel:hover,
+.pc-prof-modal button.pc-prof-modal-cancel:focus,
+.pc-prof-modal button.pc-prof-modal-cancel:focus-visible,
+.pc-prof-modal button.pc-prof-modal-cancel:active {
+  color: var(--pc-crimson); box-shadow: none;
+}
+
+/* ── addable list. Its own scroll container: 35 tools plus 4 group headers
+      overflow the modal otherwise. ── */
+.pc-prof-modal-list { max-height: 300px; overflow-y: auto; }
+.pc-prof-modal-group {
+  margin-top: 10px; padding-top: 6px; border-top: 1px dashed var(--pc-tan);
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro);
+  letter-spacing: var(--pc-ls-caps-sm); text-transform: uppercase;
+  color: var(--pc-text-soft);
+}
+.pc-prof-modal-group:first-child { border-top: none; margin-top: 0; }
+.pc-prof-modal-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 5px 6px; border-bottom: 1px solid var(--pc-tan-muted);
+}
+.pc-prof-modal-row:last-child { border-bottom: 0; }
+.pc-prof-modal-row:hover { background: var(--pc-row-open-bg); }
+.pc-prof-modal-name {
+  font-family: var(--pc-font-serif); font-size: var(--pc-fs-body);
+  color: var(--pc-text-primary);
+}
+.pc-prof-modal button.pc-prof-modal-pip {
+  display: inline-block; height: auto;
+  width: 22px; flex: 0 0 22px; line-height: 1; padding: 4px 0;
+  font-family: var(--pc-font-sans); font-size: var(--pc-fs-micro); font-weight: 700;
+  background-color: transparent; color: var(--pc-text-soft);
+  border: 1px solid var(--pc-tan-muted); border-radius: var(--pc-radius-md);
+  cursor: pointer; box-shadow: none;
+}
+.pc-prof-modal button.pc-prof-modal-pip:hover,
+.pc-prof-modal button.pc-prof-modal-pip:focus,
+.pc-prof-modal button.pc-prof-modal-pip:focus-visible,
+.pc-prof-modal button.pc-prof-modal-pip:active {
+  color: var(--pc-crimson); border-color: var(--pc-crimson); box-shadow: none;
+}
