@@ -41,20 +41,30 @@ export class RestModal extends PaneCenteredModal {
     this.contentEl.addClass("archivist-modal", "pc-rest-modal");
     // Two-stage Escape: Escape #1 collapses the open manual-heal input,
     // Escape #2 (or Escape with the input closed) closes the modal.
-    this.takeOverEscape(() => {
-      if (this.manualOpen) {
-        this.manualOpen = false;
-        this.render();
-      } else {
-        this.close();
-      }
-    });
+    this.takeOverEscape(() => this.escapeStage());
     this.render();
   }
 
   onClose(): void {
     this.contentEl.empty();
     this.onCloseCallback?.();
+  }
+
+  /**
+   * One stage of Escape: collapse the open manual-heal input if there is one,
+   * otherwise close the modal.
+   *
+   * Deliberately a method rather than an inline callback: BOTH Escape paths
+   * route through it (the `Scope` handler in `onOpen` and the manual-input
+   * keydown listener in `renderHdButtons`), so the two can never drift apart.
+   */
+  private escapeStage(): void {
+    if (this.manualOpen) {
+      this.manualOpen = false;
+      this.render();
+    } else {
+      this.close();
+    }
   }
 
   /** Recompute plan from current state and re-render. Cheap. */
@@ -249,12 +259,21 @@ export class RestModal extends PaneCenteredModal {
         this.render();
       };
       apply.addEventListener("click", submit);
-      // Escape is owned by the modal `Scope` (see `onOpen`), not by this input:
-      // Obsidian's Keymap binds `window` at the CAPTURE phase, so the built-in
-      // Escape-close fired first and `render()` then repainted a detached
-      // `contentEl` that `onClose()` had already emptied.
       input.addEventListener("keydown", (e: KeyboardEvent) => {
         if (e.key === "Enter") submit();
+        // In the MAIN window this Escape branch can never fire: `onOpen`'s scope
+        // handler returns a strict `false`, the only return that makes `Keymap`
+        // call `preventDefault()` + `stopPropagation()`, and `Keymap` is bound to
+        // `window` at the CAPTURE phase, so the event is already stopped before
+        // it can bubble to this listener. It is load-bearing in POP-OUT windows,
+        // where `Keymap` (bound to the main window only) never fires at all,
+        // which makes this the SOLE Escape path there. Do not delete it as dead
+        // code. Same shape as coin-modal.ts:176. Both paths call `escapeStage()`
+        // so main-window and pop-out Escape can never diverge.
+        if (e.key === "Escape") {
+          e.preventDefault();
+          this.escapeStage();
+        }
       });
     }
   }

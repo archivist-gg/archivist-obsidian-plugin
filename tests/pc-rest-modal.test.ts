@@ -226,6 +226,29 @@ describe("RestModal — short rest — Manual entry", () => {
     expect(m.contentEl.childElementCount).toBe(0);
   });
 
+  it("Escape on the manual input routes through the same handler (the pop-out path)", () => {
+    const c = clone(MONK_6_DRAINED);
+    const { m } = makeModal("short", c);
+    (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
+    (Array.from(m.contentEl.querySelectorAll("button"))
+      .find((b) => b.textContent?.includes("manual")) as HTMLButtonElement).click();
+    const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
+
+    // SCOPE OF THIS TEST: it proves the input's bubble-phase keydown listener
+    // routes into the SAME `escapeStage()` the scope handler uses, and that it
+    // calls preventDefault. It canNOT prove real pop-out dispatch: jsdom has no
+    // Obsidian `Keymap`, so nothing intercepts at the window CAPTURE phase the
+    // way the main window does, which is precisely why this listener is dead in
+    // the main window and live in a pop-out. Pop-out behaviour itself is only
+    // verifiable in a live vault.
+    const ev = new KeyboardEvent("keydown", { key: "Escape", cancelable: true, bubbles: true });
+    input.dispatchEvent(ev);
+    expect(ev.defaultPrevented).toBe(true);
+    expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
+    // Collapsed one stage only: the modal is still open.
+    expect(m.contentEl.childElementCount).toBeGreaterThan(0);
+  });
+
   it("Apply with empty input does NOT spend HD and does NOT heal", () => {
     // Regression: `Number("")` is 0, which passed the finite/≥0 guard and
     // burned HD for a 0-value heal (plus CON × spends). The empty-string

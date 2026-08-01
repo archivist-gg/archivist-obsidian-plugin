@@ -52,6 +52,11 @@ export class PaneCenteredModal extends Modal {
    * Filter by `.key === "Escape"` and NEVER by `modifiers`: real Obsidian normalizes
    * `KeymapEventHandler.modifiers` to a string ("") while the test doubles keep the raw array, so a
    * modifiers-keyed filter is green in tests and dead in the app.
+   *
+   * `scope.keys` is internal-but-stable, so the `Array.isArray` guard is deliberate: if a future Obsidian
+   * ever renames or removes it, this degrades to the old behaviour (the built-in Escape keeps winning and
+   * the modal's own handler silently never fires) instead of throwing. That failure is SILENT, with no
+   * throw and no warning, so suspect it first if a modal stops owning Escape after an Obsidian upgrade.
    */
   protected takeOverEscape(handler: () => void): void {
     const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
