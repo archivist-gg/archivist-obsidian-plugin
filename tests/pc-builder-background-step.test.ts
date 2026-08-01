@@ -24,7 +24,11 @@ const ACOLYTE_2024_DATA = {
   name: "Acolyte",
   skill_proficiencies: ["insight", "religion"],
   tool_proficiencies: [{ kind: "fixed", items: ["calligrapher's-supplies"] }],
-  language_proficiencies: [],
+  // Refreshed (R4-P3b §16.4) to the live `SRD 2024/Backgrounds/Acolyte.md`: the
+  // fixed `common` grant AND the language choice, which every 2024 SRD background
+  // carries as a `select-proficiency` in `choices[]`. The stale `[]` + no choice
+  // meant the Languages glance tile never rendered for a 2024 background here.
+  language_proficiencies: [{ kind: "fixed", languages: ["common"] }],
   equipment: [
     { kind: "fixed", grants: [{ item: "holy-symbol", qty: 1 }, { item: "parchment", qty: 10 }] },
     { kind: "gold", amount: 8 },
@@ -32,7 +36,10 @@ const ACOLYTE_2024_DATA = {
   feature: { name: "Background Feature", description: "(No description provided.)" },
   ability_score_increases: { pool: ["int", "wis", "cha"] },
   origin_feat: "[[SRD 2024/Feats/Alert]]",
-  choices: [{ kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] }],
+  choices: [
+    { kind: "ability-points", id: "abilities", points: 3, max_per: 2, pool: ["int", "wis", "cha"] },
+    { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+  ],
 };
 
 // SAGE_2014: a 2014 background carrying FIXED languages (the real normalizer
@@ -250,8 +257,14 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     // F13 guard: for the CHOSEN background the resolver pipeline now owns the
     // origin feat (real Feats row + the strip reference below name it), so the
     // redundant "Origin Feat" glance TILE is suppressed — no double-render.
+    // "Languages" joined the set when the fixture was refreshed to the live note
+    // (R4-P3b §16.4): the 2024 Acolyte grants a fixed `common` AND a language
+    // choice, so the Languages glance tile now has something to show.
     expect([...block.querySelectorAll(".pc-cb-tl")].map((n) => n.textContent)).toEqual(
-      ["Skills", "Tool", "Ability Points"]);
+      ["Skills", "Tool", "Languages", "Ability Points"]);
+    const langTile = [...block.querySelectorAll(".pc-cb-tile")].find(
+      (t) => t.querySelector(".pc-cb-tl")!.textContent === "Languages")!;
+    expect(langTile.querySelector(".pc-cb-tv")!.textContent).toBe("Common, choose 2");
     expect(block.querySelector(".pc-dstrip")).not.toBeNull();
     const info = block.querySelector(".pc-dstrip-row.info")!;
     // The row is a lightweight NAME reference — the feat name, no "▸" expand affordance.

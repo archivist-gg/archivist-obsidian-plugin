@@ -1,12 +1,8 @@
 import type { ComponentRenderContext } from "../component.types";
-import type {
-  BackgroundEntity,
-  BackgroundToolProficiency,
-  BackgroundLanguageProficiency,
-} from "@archivist-gg/dnd5e/background/background.types";
+import type { BackgroundEntity } from "@archivist-gg/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
-import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, grantLabel, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
@@ -23,26 +19,6 @@ function prop(host: HTMLElement, label: string, value: string, cls?: string): vo
   const p = host.createDiv({ cls: cls ? `pc-cb-prop ${cls}` : "pc-cb-prop" });
   p.createSpan({ cls: "pc-cb-prop-l", text: label });
   p.createSpan({ text: value });
-}
-
-/** Fixed tool name(s) humanized — only `kind:"fixed"` entries carrying items. */
-function fixedToolNames(tools: BackgroundToolProficiency[] | undefined): string {
-  return (tools ?? [])
-    .filter((t): t is Extract<BackgroundToolProficiency, { kind: "fixed" }> => t.kind === "fixed")
-    .flatMap((t) => (t.items ?? []).map(humanizeSlug))
-    .join(", ");
-}
-
-/** Language reference: fixed names when present, else the choice entry → "choose N". */
-function languageSummary(langs: BackgroundLanguageProficiency[] | undefined): string {
-  const fixed = (langs ?? [])
-    .filter((l): l is Extract<BackgroundLanguageProficiency, { kind: "fixed" }> => l.kind === "fixed")
-    .flatMap((l) => l.languages.map(humanizeSlug));
-  if (fixed.length) return fixed.join(", ");
-  const choice = (langs ?? []).find(
-    (l): l is Extract<BackgroundLanguageProficiency, { kind: "choice" }> => l.kind === "choice",
-  );
-  return choice ? `choose ${choice.count ?? 1}` : "";
 }
 
 /** Starting-equipment reference — the same display strings the builder shows,
@@ -208,9 +184,17 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
       if (pool.length) prop(host, "Ability Scores", pool.map((a) => a.toUpperCase()).join(" · "));
 
       // ── Proficiency references: skills / tools / languages. ──
+      //    Languages reads the FIXED entries only. A background's language CHOICE
+      //    lives in `choices[]` as a `select-proficiency`, never as a
+      //    `kind:"choice"` language_proficiencies entry (all four 2024 SRD
+      //    backgrounds carry `{kind:"fixed",languages:["common"]}` plus the choice
+      //    in `choices[]`; zero carry a `kind:"choice"` language entry), so there
+      //    is no "choose N" to summarize here. This block REFERENCES applied
+      //    grants; the unresolved pick belongs to the builder. When a background
+      //    grants no fixed language the row is omitted entirely by `prop()`.
       prop(host, "Skills", (bg.skill_proficiencies ?? []).map(humanizeSlug).join(", "));
-      prop(host, "Tools", fixedToolNames(bg.tool_proficiencies));
-      prop(host, "Languages", languageSummary(bg.language_proficiencies));
+      prop(host, "Tools", fixedNamesFrom(bg.tool_proficiencies, "items").join(", "));
+      prop(host, "Languages", fixedNamesFrom(bg.language_proficiencies, "languages").join(", "));
 
       // ── Origin Feat line (2024 only), a labeled prop() row like its siblings.
       //    "· see Feats" auto-appends once the feat renders as a Feats row

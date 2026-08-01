@@ -27,6 +27,38 @@ export function grantLabel(g: { item?: string; category?: string; qty?: number; 
   return g.qty && g.qty > 1 ? `${name} ×${g.qty}` : name;
 }
 
+/**
+ * The humanized names carried by the `kind:"fixed"` entries of a background
+ * proficiency array, flattened in source order. ONE implementation for the two
+ * surfaces that need it: the passive Background block and the builder background
+ * step (this replaces their twin `fixedToolNames` / `fixedLanguageNames` /
+ * `languageSummary` helpers). Homed here because it is neutral between the two
+ * components and already sits beside `humanizeSlug`, which it calls.
+ *
+ * `kind:"choice"` entries are skipped and NOT summarized: a background's tool or
+ * language CHOICE lives in `choices[]` as a `select-proficiency`, never as a
+ * `kind:"choice"` proficiency entry, so there is nothing here to render.
+ *
+ * The parameter is deliberately STRUCTURAL, not the engine's
+ * `BackgroundToolProficiency` / `BackgroundLanguageProficiency` unions, so this
+ * shared module stays free of engine types and neither caller has to widen its
+ * local shape to use it.
+ *
+ * Twin reconciliation: the two tool twins guarded `items` with `?? []` while the
+ * two language twins read `l.languages` bare, which throws on a `kind:"fixed"`
+ * entry whose array is missing (possible, since entity data is parsed YAML cast
+ * to the type). The GUARDED form wins for both fields: a malformed entry
+ * contributes no names instead of taking down the render.
+ */
+export function fixedNamesFrom(
+  entries: ReadonlyArray<{ kind?: string; items?: string[]; languages?: string[] }> | undefined,
+  field: "items" | "languages",
+): string[] {
+  return (entries ?? [])
+    .filter((e) => e.kind === "fixed")
+    .flatMap((e) => (e[field] ?? []).map(humanizeSlug));
+}
+
 interface ElOptions {
   cls?: string | string[];
   text?: string;

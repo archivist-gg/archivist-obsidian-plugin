@@ -8,7 +8,7 @@ import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { buildDecisionLedger, wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { resolveOriginFeat, stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
-import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, grantLabel, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
@@ -120,7 +120,9 @@ export function renderBackgroundStep(body: HTMLElement, ctx: ComponentRenderCont
  *  present (the tool segment is the fixed tool name, omitted when none). */
 function backgroundSub(d: BackgroundData): string {
   const skills = (d.skill_proficiencies ?? []).map(humanizeSlug).join(" & ");
-  return ["Background", skills, fixedToolNames(d)].filter(Boolean).join(" · ");
+  return ["Background", skills, fixedNamesFrom(d.tool_proficiencies, "items").join(", ")]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /** Edition-specific glance tiles. 2024: Skills / Tool / Ability Points / Origin
@@ -133,7 +135,7 @@ function backgroundTiles(
   suppressOriginFeat = false,
 ): Array<{ label: string; value: string; small?: string }> {
   const skills = (d.skill_proficiencies ?? []).map(humanizeSlug).join(", ");
-  const tool = fixedToolNames(d);
+  const tool = fixedNamesFrom(d.tool_proficiencies, "items").join(", ");
   const is2024 = !!d.ability_score_increases || (d.choices ?? []).some((c) => c.kind === "ability-points");
   if (is2024) {
     const lang = languagesTile(d);
@@ -175,7 +177,7 @@ function originFeatTile(d: BackgroundData): Array<{ label: string; value: string
  *  `d.choices` (id "languages" / domain "language") — where BOTH editions carry
  *  it — NOT a `kind:"choice"` entry in language_proficiencies. */
 function languagesTile(d: BackgroundData): string {
-  const fixed = fixedLanguageNames(d);
+  const fixed = fixedNamesFrom(d.language_proficiencies, "languages").join(", ");
   const count = languageChoiceCount(d);
   const choice = count ? `choose ${count}` : "";
   return [fixed, choice].filter(Boolean).join(", ");
@@ -189,23 +191,6 @@ function languageChoiceCount(d: BackgroundData): number {
     (c) => c.kind === "select-proficiency" && (c.domain === "language" || c.id === "languages"),
   );
   return choice?.count ?? 0;
-}
-
-/** Fixed tool name(s) humanized — only `kind:"fixed"` entries carrying items. */
-function fixedToolNames(d: BackgroundData): string {
-  const names = (d.tool_proficiencies ?? [])
-    .filter((t) => t.kind === "fixed")
-    .flatMap((t) => (t.items ?? []).map(humanizeSlug));
-  return names.join(", ");
-}
-
-/** Fixed language names humanized — only `kind:"fixed"` entries' `languages`
- *  arrays (flattened); choice entries are skipped. */
-function fixedLanguageNames(d: BackgroundData): string {
-  const names = (d.language_proficiencies ?? [])
-    .filter((l): l is Extract<BackgroundLanguageProficiency, { kind: "fixed" }> => l.kind === "fixed")
-    .flatMap((l) => l.languages.map(humanizeSlug));
-  return names.join(", ");
 }
 
 /** §6: the one mechanical edition-mix conflict — a species that grants ability
@@ -264,9 +249,9 @@ function renderOriginFeatStripRow(host: HTMLElement, ctx: ComponentRenderContext
 function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: BackgroundData): void {
   renderSectionRule(host, "Proficiencies & starting gear");
   prop(host, "Skills", (d.skill_proficiencies ?? []).map(humanizeSlug).join(", "));
-  const tool = fixedToolNames(d);
+  const tool = fixedNamesFrom(d.tool_proficiencies, "items").join(", ");
   if (tool) prop(host, "Tool", tool);
-  const langs = fixedLanguageNames(d);
+  const langs = fixedNamesFrom(d.language_proficiencies, "languages").join(", ");
   if (langs) prop(host, "Languages", langs);
   const eqLines: string[] = [];
   for (const e of d.equipment ?? []) {

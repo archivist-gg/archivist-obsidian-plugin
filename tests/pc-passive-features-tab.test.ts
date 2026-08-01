@@ -122,7 +122,10 @@ const bg2024 = {
   slug: "soldier", name: "Soldier", edition: "2024", source: "", description: "",
   skill_proficiencies: ["athletics", "intimidation"],
   tool_proficiencies: [{ kind: "fixed", items: ["gaming-set"] }],
-  language_proficiencies: [],
+  // Refreshed to the live `SRD 2024/Backgrounds/Soldier.md`: every 2024 SRD
+  // background grants a FIXED `common` here and carries its language CHOICE in
+  // `choices[]` (a `select-proficiency`), which this block does not read.
+  language_proficiencies: [{ kind: "fixed", languages: ["common"] }],
   equipment: [{ kind: "gold", amount: 50 }],
   feature: { name: "Background Feature", description: "(No description provided.)" },
   ability_score_increases: { pool: ["str", "dex", "con"] },
@@ -292,6 +295,31 @@ describe("PassiveFeaturesTab", () => {
       expect(labels).toContain("Skills");
       expect(block.textContent).toContain("Athletics");
       expect(block.textContent).toContain("Intimidation");
+    });
+
+    // R4-P3b §12: the Languages reference reads the FIXED entries only. A
+    // background's language CHOICE lives in `choices[]` as a select-proficiency
+    // (where the builder reads it), never as a `kind:"choice"` entry here, so the
+    // old "choose N" fallback was reading a shape the data never produces.
+    it("2024 background: the Languages reference is PRESENT and reads the fixed grant", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));
+      const block = bgBlock(c)!;
+      expect(propLabels(block)).toContain("Languages");
+      const langProp = [...block.querySelectorAll(".pc-cb-prop")].find(
+        (p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Languages")!;
+      expect(langProp.querySelector("span:not(.pc-cb-prop-l)")!.textContent).toBe("Common");
+    });
+
+    it("2014 background whose only language entry is a CHOICE: the Languages row is ABSENT, not blank", () => {
+      const c = mountContainer();
+      new PassiveFeaturesTab().render(c, renderCtx([], { background: bg2014 }));
+      const block = bgBlock(c)!;
+      // `prop()` omits an empty value, so the row is GONE rather than blank ·
+      // asserted as an exact label set, which also proves the block's reference
+      // lines rendered at all (so the absence is not vacuous).
+      expect(propLabels(block)).toEqual(["Skills"]);
+      expect(propLabels(block)).not.toContain("Languages");
     });
 
     it("renders 'Origin Feat: <name>' WITHOUT 'see Feats' when no matching feat row is present (pre-3b)", () => {
