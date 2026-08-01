@@ -163,7 +163,18 @@ function renderRow(
     head.createSpan({ cls: "pc-dstrip-pill", text: opts.pill(item) });
     if (!done) head.createSpan({ cls: "pc-dstrip-bang", text: "!" });
     head.createSpan({ cls: "pc-dstrip-name", text: labelOf(item) });
-    head.createSpan({ cls: "pc-dstrip-val", text: done ? `✓ ${selectedSummary(item)}` : statusText(item) });
+    // A SATISFIED row is `resolved` with NO `selected` (spec §6.2), a shape that
+    // did not exist before P3b: `selectedSummary` returns "" for it, so the ✓
+    // branch would render a bare "✓ " on a row the user never acted on. It gets
+    // its own copy, deliberately DIFFERENT from the nest's line just below it
+    // (both are on screen at once, so printing one sentence twice reads as a
+    // rendering bug) and phrased as "there was nothing to take", never as a pick.
+    head.createSpan({
+      cls: "pc-dstrip-val",
+      text: done
+        ? item.satisfied ? "✓ Nothing left to pick" : `✓ ${selectedSummary(item)}`
+        : statusText(item),
+    });
     head.addEventListener("click", () => {
       if (open) collapsed.add(rowKey); else collapsed.delete(rowKey);
       draw();
@@ -253,7 +264,12 @@ export function childLabel(item: DecisionItem): string {
  *  longer say "choose 2" while the sheet says "choose 1"). Returns "" when the
  *  row carries NO requirement copy; else "choose N" | "choose N · k picked".
  *
- *  Three guard conditions, each load-bearing:
+ *  FOUR guard conditions, each load-bearing:
+ *  0. the `satisfied` clause, FIRST: a satisfied row has nothing left to grant
+ *     (spec §6.1), so it carries no requirement copy at all. Without it a
+ *     satisfied count:2 CHILD renders the quiet dress and its ✓ beside
+ *     "Languages: choose 2" (spec §13.4) · the incoherence §6.1 exists to
+ *     prevent, one level down. Children are reachable per §5.4;
  *  1. the ability-points clamp (`need = 1`): its ±-stepper reports "N point(s)
  *     left" itself and its `points` is not a "choose N" count, so it is never
  *     suffixed;
@@ -262,6 +278,7 @@ export function childLabel(item: DecisionItem): string {
  *     1`: a fully-selected count:2 child must read "choose 2", never
  *     "choose 2 · 2 picked". */
 function requirementSuffix(item: DecisionItem): string {
+  if (item.satisfied) return "";
   const need = item.choice.kind === "ability-points" ? 1 : requiredOf(item);
   if (need <= 1) return "";
   const have = selectionCountOf(item);
@@ -286,7 +303,22 @@ function selectionCountOf(item: DecisionItem): number {
  *  "choose 1" alive: `requirementSuffix` returns "" for a single-pick row
  *  because a child's label wants no suffix there, but the value column still
  *  has to say something. The ability-points arm already uses a remaining idiom
- *  and is left exactly as it was. */
+ *  and is left exactly as it was.
+ *
+ *  ⚠️ The `||` swallows `requirementSuffix`'s SATISFIED return the same way it
+ *  swallows the `need <= 1` one, so calling this on a satisfied row would print
+ *  "choose N" for exactly the row the satisfied state exists to silence. That is
+ *  UNREACHABLE, and deliberately not defended against here · verified, not
+ *  assumed:
+ *    - a satisfied row is `resolved`, so the live header takes the ✓ branch and
+ *      never reaches this function;
+ *    - the only other caller is the BROWSE header, which runs under `!live`, and
+ *      all four production `renderDecisionStrip` calls pass `live: true`
+ *      (race-step:101, background-step:105, class-chronicle:251,
+ *      equipment-step:177), so that path is dead (spec §13.1).
+ *  Reviving the browse path, or making a satisfied row anything other than
+ *  `resolved`, re-arms this. Pinned by the satisfied-dress test, which asserts
+ *  the live value column never says "choose". */
 function statusText(item: DecisionItem): string {
   if (item.choice.kind === "ability-points") {
     const spent = Object.values(

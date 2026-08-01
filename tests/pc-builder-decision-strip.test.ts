@@ -276,9 +276,17 @@ describe("renderDecisionStrip", () => {
     const row = c.querySelector(".pc-dstrip-row")!;
     expect(row.classList.contains("done")).toBe(true);
     expect(row.querySelector(".pc-dstrip-bang")).toBeNull();
-    // §13.4 site 1, pinned as-shipped: `resolved` + no `selected` ⇒ a bare ✓.
-    // The honest copy lives in the nest, below.
-    expect(row.querySelector(".pc-dstrip-val")!.textContent).toBe("✓ ");
+    // §13.4 site 1: `resolved` + no `selected` used to render a bare "✓ " here,
+    // because selectedSummary returns "" for a row nobody picked on. The value
+    // column now says what is true, in its OWN words: the nest's sentence is on
+    // screen at the same time, so the two must not be the same string.
+    const val = row.querySelector(".pc-dstrip-val")!.textContent!;
+    expect(val).toBe("✓ Nothing left to pick");
+    // The `statusText` `||` trap, pinned rather than left latent: if a satisfied
+    // row ever routed through statusText, requirementSuffix's "" would fall
+    // through to `choose ${requiredOf(item)}` and print "choose 2" on exactly the
+    // row the satisfied state exists to silence.
+    expect(val).not.toMatch(/choose/i);
 
     const empty = c.querySelector(".pc-dstrip-empty")!;
     expect(empty.textContent).toBe("You already have every option this choice offers.");
@@ -299,6 +307,52 @@ describe("renderDecisionStrip", () => {
     renderDecisionStrip(c2, mkCtx(), { items: [langs(false)], pill: domainPill, live: true, stateKey: "t" });
     expect(c2.querySelector(".pc-dstrip-empty")!.textContent)
       .toBe("No options available for this choice.");
+    // The two copy strings are on screen together and must stay distinct.
+    expect(c.querySelector(".pc-dstrip-empty")!.textContent).not.toBe(val);
+  });
+
+  // ── A satisfied CHILD row (spec §13.4 site 2, reachable per §5.4) ──
+  // `renderChildRow` has its own `done` binding and `childLabel` appends the
+  // requirement from `requiredOf`, so before `requirementSuffix`'s satisfied
+  // clause a satisfied count:2 child rendered the quiet dress and its ✓ beside
+  // "Languages: choose 2": the same incoherence as the parent, one level down.
+  it("a SATISFIED child drops the requirement suffix, not just the parent", () => {
+    const c = mountContainer();
+    const child = item({
+      key: "languages",
+      choice: { kind: "select-proficiency", id: "languages", count: 2, domain: "language" },
+      options: [],              // exclusion emptied the pool
+      selected: undefined,
+      status: "resolved",
+      satisfied: true,
+    });
+    const parent = item({
+      key: "feat", source: { kind: "class", slug: "srd-2024_class_rogue", level: 4 }, level: 4,
+      featureName: "Ability Score Improvement",
+      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" },
+      options: [], selected: "srd-2024_skilled", status: "resolved", children: [child],
+    });
+    renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
+      items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    const fc = c.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc")!;
+    expect(fc.classList.contains("quiet")).toBe(true);          // resolved dress
+    expect(fc.querySelector(".pc-dstrip-fc-ok")!.textContent).toBe("✓");
+    // The bare label, with NO requirement beside the ✓.
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Languages");
+    expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).not.toMatch(/choose/i);
+    // And the child's own nest carries the satisfied copy, not P3a's.
+    expect(fc.querySelector(".pc-dstrip-empty")!.textContent)
+      .toBe("You already have every option this choice offers.");
+    // The satisfied clause is scoped: an UNsatisfied count:2 child on the same
+    // shape keeps its requirement, so the clause cannot swallow live copy.
+    const c2 = mountContainer();
+    renderDecisionStrip(c2, mkCtx({ setChoice: vi.fn() }), {
+      items: [item({ ...parent, children: [item({ ...child, satisfied: false, status: "unresolved" })] })],
+      pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+    expect(c2.querySelector(".pc-dstrip-fgroup .pc-dstrip-fc .pc-dstrip-fc-name")!.textContent)
+      .toBe("Languages: choose 2");
   });
 
   // ── `labelOf` names an ENTITY-level origin row by its choice (spec §13.3) ──
