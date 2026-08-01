@@ -86,6 +86,11 @@ const TOOL_GROUPS: { label: string; slugs: string[] }[] = [
   { label: "Other Tools", slugs: OTHER_TOOLS },
 ];
 
+/** Shown in place of the chips row when there is nothing to show. Deliberately
+ *  domain-neutral and instructive: the subtitle immediately above already states
+ *  the zero count, so this says what to DO rather than repeating it. */
+const CHIPS_EMPTY_HINT = "Add one from the list below, or create a custom one.";
+
 /** Header for off-vocabulary rows, which can only be a suppressed HOMEBREW grant
  *  (a custom `add[]` value never reaches `remove[]`: `×` on a non-granted value
  *  just drops the add, so nothing is written to `remove[]`). */
@@ -102,6 +107,9 @@ export class ProficiencyEditModal extends PaneCenteredModal {
   private customFormEl!: HTMLElement;
   private customInputEl!: HTMLInputElement;
   private listEl!: HTMLElement;
+  /** The current repaint's offerable rows, computed ONCE in `updateDynamic`.
+   *  `renderList` filters this; it never rebuilds it. */
+  private candidates: AddableRow[] = [];
 
   constructor(
     app: App,
@@ -171,10 +179,13 @@ export class ProficiencyEditModal extends PaneCenteredModal {
       attr: { type: "text", placeholder: copy.filterPlaceholder },
     });
     this.guardKeys(this.filterEl, () => this.addSoleMatch());
-    // No debounce: the candidate pool is a fixed in-memory vocabulary of at most
-    // 35 entries and the rebuild is a synchronous sub-40-node DOM write. The
-    // portrait picker debounces (portrait-picker-modal.ts:18) because its search
-    // rescans the whole vault; nothing comparable happens here.
+    // No debounce, and `updateDynamic`'s hoisted snapshot is what earns that:
+    // a keystroke runs `renderList` ONLY, which filters an already-built array of
+    // at most 35 rows and writes fewer than 40 DOM nodes. No engine call is on
+    // this path · see `updateDynamic`, which is the only thing that walks it.
+    // The portrait picker debounces (portrait-picker-modal.ts:18) because its
+    // search rescans the whole vault on every keystroke; that is the shape a
+    // debounce is for, and it is precisely what the snapshot removes here.
     this.filterEl.addEventListener("input", () => this.renderList());
 
     // eslint-disable-next-line obsidianmd/ui/sentence-case -- button label; leading glyph misleads the rule into lowercasing the first word
@@ -187,6 +198,11 @@ export class ProficiencyEditModal extends PaneCenteredModal {
       attr: { type: "text", placeholder: copy.customPlaceholder },
     });
     this.guardKeys(this.customInputEl, () => this.commitCustom());
+    // Typing clears the rejection dress. Without this the box stays red while the
+    // user fixes the very thing that reddened it.
+    this.customInputEl.addEventListener("input", () => {
+      this.customInputEl.classList.remove("is-error");
+    });
     const ok = this.customFormEl.createEl("button", { cls: "pc-prof-modal-ok", text: "Add" });
     ok.addEventListener("click", () => this.commitCustom());
     const cancel = this.customFormEl.createEl("button", { cls: "pc-prof-modal-cancel", text: "Cancel" });
@@ -223,18 +239,29 @@ export class ProficiencyEditModal extends PaneCenteredModal {
   // ─── dynamic ───
 
   /** Rebuilt on every repaint: the subtitle text, the chips row and the addable
-   *  list. Nothing else is touched. */
+   *  list. Nothing else is touched.
+   *
+   *  This is the ONLY place that enters the engine, and it enters it ONCE: the
+   *  effective set is computed here and handed to both consumers. Letting
+   *  `renderChips` and the candidate build each call `entries()` would run
+   *  `aggregateProficiencies` (two full walks: `collectProficiencySources` plus
+   *  `computeEffectiveProficiencies`, each traversing race/classes/background/
+   *  feats and the decision engine) twice per repaint, plus once more per
+   *  KEYSTROKE, since the filter input rebuilds the list. It is memoized nowhere. */
   private updateDynamic(): void {
     const entries = this.entries();
     this.subEl.setText(this.copy().count(entries.length));
     this.renderChips(entries);
+    this.candidates = this.buildCandidates(entries);
     this.renderList();
   }
 
   private renderChips(entries: ProficiencyEntry[]): void {
     this.chipsEl.empty();
     if (entries.length === 0) {
-      this.chipsEl.createDiv({ cls: "pc-prof-modal-empty", text: this.copy().count(0) });
+      // NOT the zero-count sentence: the subtitle directly above already says it,
+      // and printing it twice, stacked, reads as a rendering bug.
+      this.chipsEl.createDiv({ cls: "pc-prof-modal-chips-empty", text: CHIPS_EMPTY_HINT });
       return;
     }
     for (const entry of entries) {
@@ -255,7 +282,11 @@ export class ProficiencyEditModal extends PaneCenteredModal {
     }
   }
 
-  /** Re-reads the filter input on EVERY call. The input's text survives a repaint
+  /** Filters the CURRENT repaint's candidate snapshot. Cheap by construction: no
+   *  engine call, no allocation beyond the surviving rows.
+   *
+   *  The needle is re-read from the live filter input on EVERY call, and that is
+   *  deliberate and NOT part of the snapshot. The input's text survives a repaint
    *  because it is skeleton; the list does not, so a rebuild that ignored the
    *  filter would leave a filter box showing text over an unfiltered list
    *  (spec §10.1). Reading the live input rather than a cached field is what
@@ -263,11 +294,10 @@ export class ProficiencyEditModal extends PaneCenteredModal {
   private renderList(): void {
     this.listEl.empty();
     const needle = this.filterEl.value.trim().toLowerCase();
-    const rows = this.addableRows()
-      .filter((r) => matchesFilter(r, needle));
+    const rows = this.candidates.filter((r) => matchesFilter(r, needle));
     if (rows.length === 0) {
       this.listEl.createDiv({
-        cls: "pc-prof-modal-empty",
+        cls: "pc-prof-modal-list-empty",
         text: needle ? `No match for "${this.filterEl.value.trim()}".` : this.copy().exhausted,
       });
       return;
@@ -296,9 +326,12 @@ export class ProficiencyEditModal extends PaneCenteredModal {
    *  The union is what lets a suppressed entry come back AT ALL: suppressing
    *  Dwarvish drops it from the effective set, and without the union it would
    *  also be missing from "vocabulary minus effective" for every value the
-   *  vocabulary does not carry · a homebrew grant would be unrestorable. */
-  private addableRows(): AddableRow[] {
-    const effective = new Set(this.entries().map((e) => toProfSlug(e.value)));
+   *  vocabulary does not carry · a homebrew grant would be unrestorable.
+   *
+   *  Takes the repaint's already-computed effective set rather than calling
+   *  `entries()` again: this runs once per repaint, never per keystroke. */
+  private buildCandidates(entries: ProficiencyEntry[]): AddableRow[] {
+    const effective = new Set(entries.map((e) => toProfSlug(e.value)));
     const suppressed = this.suppressed();
     const seen = new Set<string>();
     /** Collect one section, skipping anything effective or already claimed by an
@@ -335,9 +368,14 @@ export class ProficiencyEditModal extends PaneCenteredModal {
   }
 
   private openCustomForm(): void {
-    this.customInputEl.value = "";
-    this.customInputEl.classList.remove("is-error");
-    this.customFormEl.classList.add("is-open");
+    // The search row stays visible while the form is open, so "+ Custom" is still
+    // clickable · clearing unconditionally would wipe an in-progress value on a
+    // stray second click. Re-opening an open form is just a refocus.
+    if (!this.isCustomFormOpen()) {
+      this.customInputEl.value = "";
+      this.customInputEl.classList.remove("is-error");
+      this.customFormEl.classList.add("is-open");
+    }
     this.customInputEl.focus();
   }
 

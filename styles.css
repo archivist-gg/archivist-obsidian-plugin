@@ -9570,8 +9570,11 @@ body.theme-light .archivist-tag-atk:hover {
 }
 .pc-prof-modal-chip-x:hover { color: var(--pc-crimson); }
 
-/* Empty chips row, and an addable list with nothing left to show. */
-.pc-prof-modal-empty {
+/* The two empty states. They share a dress but NOT a class: the next task and
+   the live verification select by class, and one shared class would match both
+   ambiguously. */
+.pc-prof-modal-chips-empty,
+.pc-prof-modal-list-empty {
   font-family: var(--pc-font-sans); font-size: var(--pc-fs-small);
   color: var(--pc-text-muted); font-style: italic; padding: 4px 2px;
 }

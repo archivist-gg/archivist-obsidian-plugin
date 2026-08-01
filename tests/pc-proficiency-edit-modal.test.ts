@@ -54,6 +54,27 @@ vi.mock("obsidian", async () => {
   };
 });
 
+/** COUNTING PASSTHROUGH, not a stub: the real `aggregateProficiencies` still runs
+ *  and its real output is returned, so nothing about engine faithfulness is
+ *  traded away. The counter exists to pin that the engine is entered ONCE per
+ *  repaint and NEVER per keystroke · `aggregateProficiencies` is unmemoized and
+ *  runs two full walks (collectProficiencySources + computeEffectiveProficiencies)
+ *  per call, so a regression that moved it back onto the filter path would be
+ *  silent, and would falsify the comment that justifies having no debounce. */
+const engineCalls = vi.hoisted(() => ({ n: 0 }));
+vi.mock("@archivist-gg/dnd5e/pc/pc.proficiencies", async () => {
+  const actual = await vi.importActual<
+    typeof import("@archivist-gg/dnd5e/pc/pc.proficiencies")
+  >("@archivist-gg/dnd5e/pc/pc.proficiencies");
+  return {
+    ...actual,
+    aggregateProficiencies: (r: Parameters<typeof actual.aggregateProficiencies>[0]) => {
+      engineCalls.n++;
+      return actual.aggregateProficiencies(r);
+    },
+  };
+});
+
 import {
   openProficiencyModal, refreshProficiencyModal, closeProficiencyModal,
   type ProficiencyDomain,
@@ -206,13 +227,20 @@ describe("openProficiencyModal / refreshProficiencyModal guards", () => {
     expect(lastModal().contentEl.childElementCount).toBe(0);
   });
 
-  it("owns Escape through the base takeover, leaving exactly one Escape handler", () => {
+  it("registers ONE Escape handler and it is the takeover's, not the built-in", () => {
     const es = makeEditState();
     openProficiencyModal(makeCtx({ race: DWARF }, es), "languages");
     const modal = lastModal();
-    // The double seeds one built-in Escape; a forgotten unregister shows up as 2.
+    // Count is 1 BEFORE any takeover too (spec §11): the double seeds exactly one
+    // built-in Escape, so this clause guards only against a FORGOTTEN unregister
+    // (which shows up as 2), never against a missing takeover.
     expect(modal.scope.keys.filter((k) => k.key === "Escape").length).toBe(1);
-    modal.scope.keys.find((k) => k.key === "Escape")!.func();
+    // What discriminates: takeOverEscape wraps the handler to return a STRICT
+    // false (pane-centered-modal.ts), the only return that makes Keymap
+    // preventDefault/stopPropagation. The built-in returns Modal.close()'s void.
+    // Drop the takeover and this is `undefined`.
+    const escape = modal.scope.keys.find((k) => k.key === "Escape")!;
+    expect(escape.func()).toBe(false);
     expect(modal.contentEl.childElementCount).toBe(0);
   });
 });
@@ -268,9 +296,19 @@ describe("ProficiencyEditModal chips", () => {
 
   it("shows the empty state and a singular-aware subtitle", () => {
     const empty = openFor("languages", {}).el;
-    expect(empty.querySelector(".pc-prof-modal-sub")?.textContent).toBe("You speak no languages.");
+    const sub = empty.querySelector(".pc-prof-modal-sub")?.textContent;
+    expect(sub).toBe("You speak no languages.");
     expect(chips(empty).length).toBe(0);
-    expect(empty.querySelector(".pc-prof-modal-chips .pc-prof-modal-empty")).toBeTruthy();
+    // The empty chips row must NOT restate the subtitle: the two sit stacked and
+    // the duplicate reads as a rendering bug. Distinct class, distinct sentence.
+    const chipsEmpty = empty.querySelector(".pc-prof-modal-chips .pc-prof-modal-chips-empty");
+    expect(chipsEmpty).toBeTruthy();
+    expect(chipsEmpty?.textContent).not.toBe(sub);
+    expect(chipsEmpty?.textContent).toBe("Add one from the list below, or create a custom one.");
+    // The two empty states are separately addressable: neither class matches the
+    // other's element, so T10 and §17 cannot select the wrong one.
+    expect(empty.querySelectorAll(".pc-prof-modal-chips-empty").length).toBe(1);
+    expect(empty.querySelectorAll(".pc-prof-modal-list-empty").length).toBe(0);
     closeProficiencyModal();
 
     const one = openFor("languages", { race: { name: "Human", languages: { fixed: ["common"] } } }).el;
@@ -381,12 +419,34 @@ describe("ProficiencyEditModal filtering", () => {
     expect(rowValues(el)).toEqual(["elvish"]);
   });
 
+  it("enters the engine ONCE per repaint and never on a keystroke", () => {
+    // The property that earns "no debounce". aggregateProficiencies is unmemoized
+    // and walks race/classes/background/feats plus the decision engine twice per
+    // call; updateDynamic hoists it so renderList filters a prebuilt snapshot.
+    const es = makeEditState();
+    const shape = { race: DWARF };
+    const { el } = openFor("languages", shape, es);
+
+    engineCalls.n = 0;
+    typeFilter(el, "e");
+    typeFilter(el, "el");
+    typeFilter(el, "elv");
+    typeFilter(el, "");
+    expect(engineCalls.n).toBe(0);
+
+    // ONE per repaint, not two: renderChips and the candidate build share the
+    // single effective set updateDynamic computes.
+    refreshProficiencyModal(makeCtx(shape, es));
+    expect(engineCalls.n).toBe(1);
+  });
+
   it("shows a no-match empty state, and Enter adds the sole match", () => {
     const { el, editState } = openFor("languages", { race: DWARF });
     typeFilter(el, "zzz");
     expect(rows(el).length).toBe(0);
-    expect(el.querySelector(".pc-prof-modal-list .pc-prof-modal-empty")?.textContent)
+    expect(el.querySelector(".pc-prof-modal-list .pc-prof-modal-list-empty")?.textContent)
       .toBe('No match for "zzz".');
+    expect(el.querySelectorAll(".pc-prof-modal-chips-empty").length).toBe(0);
 
     typeFilter(el, "elv");
     filterInput(el).dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
@@ -448,6 +508,25 @@ describe("ProficiencyEditModal custom entry", () => {
     expect((el.querySelector(".pc-prof-modal-customform") as HTMLElement).classList.contains("is-open"))
       .toBe(true);
     expect(customInput(el).classList.contains("is-error")).toBe(true);
+
+    // Typing clears the rejection dress · otherwise the box stays red while the
+    // user fixes the very thing that reddened it.
+    customInput(el).value = "Deep Runes";
+    customInput(el).dispatchEvent(new Event("input", { bubbles: true }));
+    expect(customInput(el).classList.contains("is-error")).toBe(false);
+  });
+
+  it("re-clicking '+ Custom' on an OPEN form refocuses instead of wiping the value", () => {
+    const { el } = openFor("languages", { race: DWARF });
+    const custom = btn(el, "pc-prof-modal-custombtn");
+    custom.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    customInput(el).value = "Deep Runes";
+    // The search row stays visible while the form is open, so the button is still
+    // clickable · an unconditional clear here loses in-progress text.
+    filterInput(el).focus();
+    custom.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(customInput(el).value).toBe("Deep Runes");
+    expect(el.ownerDocument.activeElement).toBe(customInput(el));
   });
 
   it("Escape discards the custom form first, then closes the modal", () => {
