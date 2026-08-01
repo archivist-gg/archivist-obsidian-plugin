@@ -1,4 +1,4 @@
-import { Modal } from "obsidian";
+import { Modal, type KeymapEventHandler } from "obsidian";
 
 /**
  * Base class for every Archivist modal. Behaves exactly like Obsidian's `Modal`
@@ -39,6 +39,31 @@ export class PaneCenteredModal extends Modal {
     this.paneObserver?.disconnect();
     this.paneObserver = null;
     super.close();
+  }
+
+  /**
+   * Take ownership of Escape for this modal.
+   *
+   * Obsidian's `Modal` constructor seeds exactly one `Escape -> close()` handler, and `Scope.handleKey`
+   * walks its `keys` FIFO and STOPS AT THE FIRST MATCH. So a modal that registers Escape without first
+   * unregistering the built-in can never win. A bubble-phase `stopPropagation()` on an input cannot help
+   * either: `Keymap` binds `window` at the CAPTURE phase.
+   *
+   * Filter by `.key === "Escape"` and NEVER by `modifiers`: real Obsidian normalizes
+   * `KeymapEventHandler.modifiers` to a string ("") while the test doubles keep the raw array, so a
+   * modifiers-keyed filter is green in tests and dead in the app.
+   */
+  protected takeOverEscape(handler: () => void): void {
+    const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
+    if (Array.isArray(scopeKeys)) {
+      for (const h of scopeKeys.filter((k) => (k as unknown as { key?: string }).key === "Escape")) {
+        this.scope.unregister(h);
+      }
+    }
+    this.scope.register([], "Escape", () => {
+      handler();
+      return false;
+    });
   }
 
   private centerOnActivePane(): void {

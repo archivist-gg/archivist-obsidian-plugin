@@ -1,5 +1,5 @@
 // src/modules/pc/components/max-hp-modal.ts
-import { type App, type KeymapEventHandler } from "obsidian";
+import { type App } from "obsidian";
 import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { HPBreakdown } from "@archivist-gg/dnd5e/pc/pc.types";
 import { parseDieSize } from "@archivist-gg/dnd5e/pc/pc.recalc";
@@ -45,22 +45,8 @@ class MaxHpModal extends PaneCenteredModal {
     // Two-stage Escape (spec §6): Escape #1 cancels an active inline edit
     // (the field's onCancel repaints, modal stays open); Escape #2, or Escape
     // with no edit, closes explicitly.
-    // Obsidian's Scope dispatches Escape handlers in REGISTRATION order and
-    // stops at the first match, so the Modal constructor's built-in
-    // Escape-close would always win over a later-registered handler (verified
-    // live). Remove any pre-existing Escape handlers (here, only the built-in)
-    // so this modal's two-stage handler is the sole Escape owner. `scope.keys`
-    // is internal-but-stable; if it is ever absent this degrades to the old
-    // behavior instead of throwing.
-    const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
-    if (Array.isArray(scopeKeys)) {
-      for (const h of scopeKeys.filter((k) => (k as unknown as { key?: string }).key === "Escape")) {
-        this.scope.unregister(h);
-      }
-    }
-    this.scope.register([], "Escape", () => {
+    this.takeOverEscape(() => {
       if (!cancelInlineEdit(this.contentEl)) this.close();
-      return false;
     });
     this.render();
   }

@@ -39,6 +39,16 @@ export class RestModal extends PaneCenteredModal {
     // `archivist-modal` brings the shared parchment frame, tokens, checkbox,
     // and primary-button theme. `pc-rest-modal` adds rest-specific layout.
     this.contentEl.addClass("archivist-modal", "pc-rest-modal");
+    // Two-stage Escape: Escape #1 collapses the open manual-heal input,
+    // Escape #2 (or Escape with the input closed) closes the modal.
+    this.takeOverEscape(() => {
+      if (this.manualOpen) {
+        this.manualOpen = false;
+        this.render();
+      } else {
+        this.close();
+      }
+    });
     this.render();
   }
 
@@ -239,12 +249,12 @@ export class RestModal extends PaneCenteredModal {
         this.render();
       };
       apply.addEventListener("click", submit);
+      // Escape is owned by the modal `Scope` (see `onOpen`), not by this input:
+      // Obsidian's Keymap binds `window` at the CAPTURE phase, so the built-in
+      // Escape-close fired first and `render()` then repainted a detached
+      // `contentEl` that `onClose()` had already emptied.
       input.addEventListener("keydown", (e: KeyboardEvent) => {
         if (e.key === "Enter") submit();
-        if (e.key === "Escape") {
-          this.manualOpen = false;
-          this.render();
-        }
       });
     }
   }

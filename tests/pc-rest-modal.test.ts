@@ -1,6 +1,12 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll } from "vitest";
 
+interface ScopeEntry {
+  modifiers: unknown;
+  key: string;
+  func: () => boolean | void;
+}
+
 // Mock Obsidian's Modal with a minimal real class
 vi.mock("obsidian", async () => {
   const actual = await vi.importActual<Record<string, unknown>>("obsidian");
@@ -9,9 +15,26 @@ vi.mock("obsidian", async () => {
     Modal: class {
       app: unknown;
       contentEl: HTMLElement;
+      // Mirrors the real `Scope`: a FIFO `keys` array dispatched in
+      // registration order, `unregister` by identity.
+      scope = {
+        keys: [] as ScopeEntry[],
+        register(mods: unknown, key: string, cb: () => boolean | void): ScopeEntry {
+          const entry: ScopeEntry = { modifiers: mods, key, func: cb };
+          this.keys.push(entry);
+          return entry;
+        },
+        unregister(h: ScopeEntry): void {
+          const i = this.keys.indexOf(h);
+          if (i >= 0) this.keys.splice(i, 1);
+        },
+      };
       constructor(app: unknown) {
         this.app = app;
         this.contentEl = document.createElement("div");
+        // Seeded LAST, mirroring the native constructor: this is the FIFO-first
+        // Escape entry a modal must unregister before it can own the key.
+        this.scope.register([], "Escape", () => this.close());
       }
       open(): void { this.onOpen?.(); }
       close(): void { this.onClose?.(); }
@@ -182,9 +205,25 @@ describe("RestModal — short rest — Manual entry", () => {
     (m.contentEl.querySelector(".pc-rest-pip:not(.spent)") as HTMLDivElement).click();
     (Array.from(m.contentEl.querySelectorAll("button"))
       .find((b) => b.textContent?.includes("manual")) as HTMLButtonElement).click();
-    const input = m.contentEl.querySelector(".pc-rest-manual-number") as HTMLInputElement;
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    expect(m.contentEl.querySelector(".pc-rest-manual-number")).not.toBeNull();
+    // Escape is owned by the modal `Scope`, not by the input: Obsidian's Keymap
+    // binds `window` at the CAPTURE phase, so an input-level keydown listener
+    // never saw the key and the built-in Escape-close fired first, leaving
+    // `render()` to repaint a `contentEl` that `onClose()` had already emptied.
+    // Drive the handler the way real dispatch reaches it.
+    const keys = (m.scope as unknown as { keys: { key: string; func: () => unknown }[] }).keys;
+    // Guards a forgotten unregister of the constructor-seeded built-in (count 2).
+    expect(keys.filter((h) => h.key === "Escape")).toHaveLength(1);
+    const entry = keys.find((h) => h.key === "Escape")!;
+
+    // Escape #1: the manual input collapses and the modal stays open.
+    expect(entry.func()).toBe(false);
     expect(m.contentEl.querySelector(".pc-rest-manual-input")).toBeNull();
+    expect(m.contentEl.childElementCount).toBeGreaterThan(0);
+
+    // Escape #2: with no manual input open, the modal closes (onClose empties).
+    expect(entry.func()).toBe(false);
+    expect(m.contentEl.childElementCount).toBe(0);
   });
 
   it("Apply with empty input does NOT spend HD and does NOT heal", () => {

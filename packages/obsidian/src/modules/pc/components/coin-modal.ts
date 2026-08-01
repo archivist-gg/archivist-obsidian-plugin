@@ -1,5 +1,5 @@
 // src/modules/pc/components/coin-modal.ts
-import { type App, type KeymapEventHandler } from "obsidian";
+import { type App } from "obsidian";
 import { PaneCenteredModal } from "../../../shared/modals/pane-centered-modal";
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
@@ -77,21 +77,10 @@ class CoinModal extends PaneCenteredModal {
 
   onOpen(): void {
     this.contentEl.addClass("archivist-modal", "pc-coin-modal");
-    // Two-stage Escape (max-hp-modal.ts:55-64 pattern): Escape #1 cancels an
-    // active ledger inline edit, Escape #2 (or Escape with no edit) closes.
-    // Obsidian's Keymap listens on `window` at the CAPTURE phase and Scope stops
-    // at the first matching entry, so the constructor's built-in Escape-close
-    // always wins until it is unregistered. A bubble-phase listener on the input
-    // cannot prevent it.
-    const scopeKeys = (this.scope as unknown as { keys?: KeymapEventHandler[] }).keys;
-    if (Array.isArray(scopeKeys)) {
-      for (const h of scopeKeys.filter((k) => (k as unknown as { key?: string }).key === "Escape")) {
-        this.scope.unregister(h);
-      }
-    }
-    this.scope.register([], "Escape", () => {
+    // Two-stage Escape: Escape #1 cancels an active ledger inline edit,
+    // Escape #2 (or Escape with no edit) closes.
+    this.takeOverEscape(() => {
       if (!cancelInlineEdit(this.contentEl)) this.close();
-      return false;
     });
     this.buildSkeleton();
     this.updateDynamic();
