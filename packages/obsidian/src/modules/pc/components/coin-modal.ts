@@ -165,12 +165,13 @@ class CoinModal extends PaneCenteredModal {
       const stopProp = (e: Event) => e.stopPropagation();
       input.addEventListener("keydown", (e) => {
         // stopPropagation keeps Obsidian's hotkey manager from swallowing digits
-        // (hp-widget model). It does NOT stop Obsidian's Escape-to-close: Keymap
-        // listens on `window` at the CAPTURE phase, so the built-in has already
-        // run by the time this bubble-phase listener sees the event. Escape is
-        // owned by onOpen's scope handler above. This local Escape is still
-        // load-bearing in POP-OUT windows, where Keymap (bound to the main
-        // window) never fires at all. Do not delete it as dead code.
+        // (hp-widget model). In the MAIN window the Escape branch below can never
+        // fire: `onOpen`'s `takeOverEscape` handler returns a strict `false`, the
+        // only return that makes `Keymap` call `preventDefault()` +
+        // `stopPropagation()`, and `Keymap` binds `window` at the CAPTURE phase,
+        // so the event never reaches this bubble listener at all. It is
+        // load-bearing in POP-OUT windows, where `Keymap` (bound to the main
+        // window only) never fires. Not dead code · do not delete it.
         stopProp(e);
         if (e.key === "Enter") { e.preventDefault(); this.applyAdjust(1); return; }
         if (e.key === "Escape") { e.preventDefault(); this.close(); return; }

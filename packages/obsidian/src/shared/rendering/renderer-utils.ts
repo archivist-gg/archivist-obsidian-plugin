@@ -35,9 +35,18 @@ export function grantLabel(g: { item?: string; category?: string; qty?: number; 
  * `languageSummary` helpers). Homed here because it is neutral between the two
  * components and already sits beside `humanizeSlug`, which it calls.
  *
- * `kind:"choice"` entries are skipped and NOT summarized: a background's tool or
- * language CHOICE lives in `choices[]` as a `select-proficiency`, never as a
- * `kind:"choice"` proficiency entry, so there is nothing here to render.
+ * `kind:"choice"` entries are skipped and deliberately NOT summarized. That is a
+ * POLICY, not a claim about the data: such entries DO occur. None of the four
+ * 2024 SRD backgrounds carries one (each pairs `{kind:"fixed",languages:
+ * ["common"]}` with the pick in `choices[]`), but the single 2014 SRD background
+ * does · `srd-5e_background_acolyte` carries exactly `language_proficiencies:
+ * [{kind:"choice",count:2,from:"any"}]` and no fixed entry at all.
+ *
+ * Skipping them is still right: callers summarize APPLIED grants, and an
+ * unresolved pick belongs to the builder. No information is lost, because a
+ * background that offers a pick also carries it in `choices[]` as a
+ * `select-proficiency` (the 2014 Acolyte does), which is where the builder
+ * reads it.
  *
  * The parameter is deliberately STRUCTURAL, not the engine's
  * `BackgroundToolProficiency` / `BackgroundLanguageProficiency` unions, so this

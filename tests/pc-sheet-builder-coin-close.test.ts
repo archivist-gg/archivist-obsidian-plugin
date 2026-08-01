@@ -35,9 +35,10 @@ describe("builder entry closes the sheet-owned modals", () => {
     const root = mountContainer();
     // An EMPTY ComponentRegistry makes every safeRender render its
     // "(No renderer for X)" placeholder without throwing (safeRender has NO
-    // try/catch — a bare `{}` registry would TypeError on registry.get and
-    // abort before the assertion). The builder branch still runs its
-    // closeCoinModal() teardown first, which is all this test asserts.
+    // try/catch · a bare `{}` registry would TypeError on registry.get and
+    // abort before the assertions). The builder branch still runs its
+    // closeCoinModal() and closeProficiencyModal() teardown first, which is what
+    // the two assertions below check.
     renderPCSheet({
       root,
       resolved: { definition: { builder: true, class: [] } },

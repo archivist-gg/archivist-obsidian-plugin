@@ -297,10 +297,13 @@ describe("PassiveFeaturesTab", () => {
       expect(block.textContent).toContain("Intimidation");
     });
 
-    // R4-P3b §12: the Languages reference reads the FIXED entries only. A
-    // background's language CHOICE lives in `choices[]` as a select-proficiency
-    // (where the builder reads it), never as a `kind:"choice"` entry here, so the
-    // old "choose N" fallback was reading a shape the data never produces.
+    // R4-P3b §12: the Languages reference reads the FIXED entries only, by
+    // POLICY rather than because a `kind:"choice"` entry cannot occur · it can,
+    // and the 2014 fixture below is modelled on the one shipped background that
+    // has one (`srd-5e_background_acolyte`). The old "choose N" fallback was
+    // dropped because this block references APPLIED grants; an unresolved pick is
+    // the builder's to render, from the parallel `select-proficiency` in
+    // `choices[]`. No 2024 background carries a `kind:"choice"` language entry.
     it("2024 background: the Languages reference is PRESENT and reads the fixed grant", () => {
       const c = mountContainer();
       new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg2024 }));

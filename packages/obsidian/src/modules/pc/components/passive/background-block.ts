@@ -184,14 +184,17 @@ export function renderBackgroundBlock(parent: HTMLElement, ctx: ComponentRenderC
       if (pool.length) prop(host, "Ability Scores", pool.map((a) => a.toUpperCase()).join(" · "));
 
       // ── Proficiency references: skills / tools / languages. ──
-      //    Languages reads the FIXED entries only. A background's language CHOICE
-      //    lives in `choices[]` as a `select-proficiency`, never as a
-      //    `kind:"choice"` language_proficiencies entry (all four 2024 SRD
-      //    backgrounds carry `{kind:"fixed",languages:["common"]}` plus the choice
-      //    in `choices[]`; zero carry a `kind:"choice"` language entry), so there
-      //    is no "choose N" to summarize here. This block REFERENCES applied
-      //    grants; the unresolved pick belongs to the builder. When a background
-      //    grants no fixed language the row is omitted entirely by `prop()`.
+      //    Languages reads the FIXED entries only, by POLICY: this block
+      //    REFERENCES applied grants, and an unresolved pick belongs to the
+      //    builder. A `kind:"choice"` language entry is NOT impossible · none of
+      //    the four 2024 SRD backgrounds has one (each carries
+      //    `{kind:"fixed",languages:["common"]}` plus the pick in `choices[]`),
+      //    but the one 2014 SRD background does: `srd-5e_background_acolyte` is
+      //    `[{kind:"choice",count:2,from:"any"}]` with no fixed entry. It is
+      //    dropped here deliberately, and nothing is lost · that background also
+      //    carries the pick in `choices[]` as a `select-proficiency`, so the
+      //    builder still surfaces it. When a background grants no fixed language
+      //    the row is omitted entirely by `prop()`.
       prop(host, "Skills", (bg.skill_proficiencies ?? []).map(humanizeSlug).join(", "));
       prop(host, "Tools", fixedNamesFrom(bg.tool_proficiencies, "items").join(", "));
       prop(host, "Languages", fixedNamesFrom(bg.language_proficiencies, "languages").join(", "));

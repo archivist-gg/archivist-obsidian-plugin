@@ -181,7 +181,10 @@ export class ProficiencyEditModal extends PaneCenteredModal {
     this.guardKeys(this.filterEl, () => this.addSoleMatch());
     // No debounce, and `updateDynamic`'s hoisted snapshot is what earns that:
     // a keystroke runs `renderList` ONLY, which filters an already-built array of
-    // at most 35 rows and writes fewer than 40 DOM nodes. No engine call is on
+    // at most 35 rows and writes fewer than 40 DIRECT CHILDREN of the list · an
+    // unfiltered tools list is 35 rows plus 4 group headers = 39. Counted as
+    // ELEMENTS it is 109, because each row nests a name span and a pip button;
+    // the "fewer than 40" figure is the direct-child count. No engine call is on
     // this path · see `updateDynamic`, which is the only thing that walks it.
     // The portrait picker debounces (portrait-picker-modal.ts:18) because its
     // search rescans the whole vault on every keystroke; that is the shape a

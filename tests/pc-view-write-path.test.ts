@@ -39,8 +39,9 @@ vi.mock("../packages/obsidian/src/modules/pc/components/coin-modal", async () =>
 });
 
 // Third spy for closeSpellAbilityModal, same shape as the two above: the view
-// teardown sites close all three modals together, so a two-spy test cannot
-// cover the "they move as one" requirement. Rest of the module stays real.
+// teardown sites close all FOUR sheet-owned modals together (the fourth is
+// mocked just below), so a partial set of spies cannot cover the "they move as
+// one" requirement. Rest of the module stays real.
 const closeSpellAbilityModalMock = vi.hoisted(() => vi.fn());
 vi.mock("../packages/obsidian/src/modules/pc/components/spell-ability-modal", async () => {
   const actual = await vi.importActual<Record<string, unknown>>(

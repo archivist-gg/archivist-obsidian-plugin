@@ -268,7 +268,8 @@ export class RestModal extends PaneCenteredModal {
         // it can bubble to this listener. It is load-bearing in POP-OUT windows,
         // where `Keymap` (bound to the main window only) never fires at all,
         // which makes this the SOLE Escape path there. Do not delete it as dead
-        // code. Same shape as coin-modal.ts:176. Both paths call `escapeStage()`
+        // code. Same shape as the adjust-input keydown in coin-modal.ts. Both
+        // paths call `escapeStage()`
         // so main-window and pop-out Escape can never diverge.
         if (e.key === "Escape") {
           e.preventDefault();
