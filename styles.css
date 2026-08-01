@@ -4234,6 +4234,13 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-prof-line:last-child { border-bottom: none; }
 .archivist-pc-sheet .pc-prof-key { font-weight: 700; color: var(--pc-crimson); }
 .archivist-pc-sheet .pc-prof-vals { color: var(--pc-text-primary); }
+/* Editable proficiency rows (Tools, Languages), which open the override modal.
+   The WHOLE row is the click target, so the pointer sits on the row rather than
+   on the mockup's key span · that matches .pc-currency-row.pc-currency-clickable,
+   the existing row-as-one-target precedent. The mockup's .pc-prof-edit badge is
+   unused and deliberately not shipped. */
+.archivist-pc-sheet .pc-prof-line.editable { cursor: pointer; }
+.archivist-pc-sheet .pc-prof-line.editable:hover .pc-prof-vals { text-decoration: underline dotted var(--pc-tan); }
 /* Tab content body — flat on parchment, no card/border. */
 .archivist-pc-sheet .pc-tab-body { padding: 0; background: transparent; border: none; border-radius: 0; }
 .archivist-pc-sheet .pc-tab-heading {

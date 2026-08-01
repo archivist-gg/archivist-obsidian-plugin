@@ -21,6 +21,7 @@ import { CharacterEditState } from "./pc.edit-state";
 import { closeMaxHpModal } from "./components/max-hp-modal";
 import { closeCoinModal } from "./components/coin-modal";
 import { closeSpellAbilityModal } from "./components/spell-ability-modal";
+import { closeProficiencyModal } from "./components/proficiency-edit-modal";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -96,6 +97,7 @@ export class PCSheetView extends TextFileView {
     closeMaxHpModal();
     closeCoinModal();
     closeSpellAbilityModal();
+    closeProficiencyModal();
     this.rawFileData = data;
     this.isDirty = false;
     this.lastWrittenData = null;
@@ -206,6 +208,7 @@ export class PCSheetView extends TextFileView {
     closeMaxHpModal();
     closeCoinModal();
     closeSpellAbilityModal();
+    closeProficiencyModal();
     this.character = null;
     this.derived = null;
     this.editState = null;
@@ -230,6 +233,7 @@ export class PCSheetView extends TextFileView {
     closeMaxHpModal();
     closeCoinModal();
     closeSpellAbilityModal();
+    closeProficiencyModal();
     super.onunload();
   }
 
@@ -244,6 +248,7 @@ export class PCSheetView extends TextFileView {
     closeMaxHpModal();
     closeCoinModal();
     closeSpellAbilityModal();
+    closeProficiencyModal();
     // Obsidian calls this when the view's underlying file changes. Reset all
     // SP4 mutation/persistence state so no stale references survive across
     // file switches (especially lastWrittenData, which would otherwise cause
