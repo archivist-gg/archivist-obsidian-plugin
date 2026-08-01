@@ -49,6 +49,19 @@ vi.mock("../packages/obsidian/src/modules/pc/components/spell-ability-modal", as
   return { ...actual, closeSpellAbilityModal: closeSpellAbilityModalMock };
 });
 
+// Fourth spy for closeProficiencyModal, same shape as the three above. The view
+// teardown sites close all four modals together, so a three-spy test cannot
+// cover the "they move as one" requirement. Rest of the module stays real:
+// ProficienciesPanel (rendered as part of every sheet render in this file) calls
+// refreshProficiencyModal unconditionally, so that path must stay live.
+const closeProficiencyModalMock = vi.hoisted(() => vi.fn());
+vi.mock("../packages/obsidian/src/modules/pc/components/proficiency-edit-modal", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>(
+    "../packages/obsidian/src/modules/pc/components/proficiency-edit-modal",
+  );
+  return { ...actual, closeProficiencyModal: closeProficiencyModalMock };
+});
+
 beforeAll(() => installObsidianDomHelpers());
 
 const BLADESWORN = {
@@ -166,15 +179,17 @@ describe("PCSheetView — write path", () => {
     closeMaxHpModalMock.mockClear();
     closeCoinModalMock.mockClear();
     closeSpellAbilityModalMock.mockClear();
+    closeProficiencyModalMock.mockClear();
 
     view.setViewData(echoed, false);
 
     expect(closeMaxHpModalMock).not.toHaveBeenCalled();
     expect(closeCoinModalMock).not.toHaveBeenCalled();
     expect(closeSpellAbilityModalMock).not.toHaveBeenCalled();
+    expect(closeProficiencyModalMock).not.toHaveBeenCalled();
   });
 
-  it("a genuine file switch still closes all three modals", async () => {
+  it("a genuine file switch still closes all four modals", async () => {
     const { view } = await bootView();
     // @ts-expect-error
     view.editState!.setInspiration(5);
@@ -183,6 +198,7 @@ describe("PCSheetView — write path", () => {
     closeMaxHpModalMock.mockClear();
     closeCoinModalMock.mockClear();
     closeSpellAbilityModalMock.mockClear();
+    closeProficiencyModalMock.mockClear();
 
     // PC_FILE has inspiration 0, lastWrittenData has 5, genuinely different bytes.
     view.setViewData(PC_FILE, false);
@@ -190,6 +206,7 @@ describe("PCSheetView — write path", () => {
     expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
     expect(closeCoinModalMock).toHaveBeenCalledTimes(1);
     expect(closeSpellAbilityModalMock).toHaveBeenCalledTimes(1);
+    expect(closeProficiencyModalMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -292,7 +309,7 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     expect(view.isDirty).toBe(false);
   });
 
-  it("onunload closes the Max HP modal (view unload: plugin disable / pane close)", async () => {
+  it("onunload closes all four modals (view unload: plugin disable / pane close)", async () => {
     // setViewData/onLoadFile/clear only cover same-leaf file switches — none of
     // them fire when the VIEW ITSELF is unloaded (plugin disable, leaf/tab
     // close, workspace teardown). Without an onunload hook, a modal opened
@@ -302,10 +319,12 @@ describe("PCSheetView — error boundary + lifecycle", () => {
     closeMaxHpModalMock.mockClear();
     closeCoinModalMock.mockClear();
     closeSpellAbilityModalMock.mockClear();
+    closeProficiencyModalMock.mockClear();
     view.onunload();
     expect(closeMaxHpModalMock).toHaveBeenCalledTimes(1);
     expect(closeCoinModalMock).toHaveBeenCalledTimes(1);
     expect(closeSpellAbilityModalMock).toHaveBeenCalledTimes(1);
+    expect(closeProficiencyModalMock).toHaveBeenCalledTimes(1);
   });
 });
 

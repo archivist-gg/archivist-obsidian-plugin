@@ -6,6 +6,7 @@ import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.
 import type { CharacterEditState } from "./pc.edit-state";
 import type { CropParams } from "./pc.portrait";
 import { closeCoinModal } from "./components/coin-modal";
+import { closeProficiencyModal } from "./components/proficiency-edit-modal";
 
 export interface RenderSheetOptions {
   root: HTMLElement;
@@ -80,10 +81,14 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
 
   // Class-less character → render the Builder shell instead of the sheet.
   if (isBuilder) {
-    // Most builder steps render no CurrencyStrip, so an open coin modal
-    // would have no refresh source and could go stale after its own writes —
-    // close it on builder entry.
+    // The builder shell renders no CurrencyStrip on most steps, and no
+    // ProficienciesPanel at all (the whole sidebar is skipped below), so an open
+    // coin or proficiency modal would have no refresh source and could go stale
+    // after its own writes · close both on builder entry. This branch is
+    // reachable FROM the sheet: the header gear calls editState.openBuilder(),
+    // which flips `builder: true` and re-renders with the modal still open.
     closeCoinModal();
+    closeProficiencyModal();
     safeRender(sheet, "pc-builder-host", "builder", registry, ctx, { wrap: false });
     root.scrollTop = prevScroll;
     return;
