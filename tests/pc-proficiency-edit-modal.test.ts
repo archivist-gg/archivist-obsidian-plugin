@@ -176,9 +176,17 @@ function makeCtx(shape: CharacterShape, editState: CharacterEditState | null): C
  *  `source` is supplied on the fixture feature deliberately, and every future
  *  fixture feature must supply one too: `collectProficiencyEffectGrants`
  *  dereferences `rf.source.kind` and `rf.source.slug` with no guard, so an
- *  omission throws a TypeError out of `aggregateProficiencies` · verified, and
- *  it escapes through `onOpen`, so the modal renders NOTHING rather than one
- *  chip with a blank source line.
+ *  omission throws a TypeError out of `aggregateProficiencies`.
+ *
+ *  What that LOOKS like, measured rather than assumed: the throw lands inside
+ *  `updateDynamic()`, which `onOpen` runs AFTER `buildSkeleton()`, so the
+ *  skeleton is fully rendered · contentEl keeps all 6 children (title, sub,
+ *  chips, searchrow, customform, list) and reads "Languages+ CustomAddCancel".
+ *  Only the three things `updateDynamic` fills stay empty: the subtitle text,
+ *  the chips row (not even the `chips-empty` hint, since `renderChips` never
+ *  ran) and the list. The symptom is therefore a modal that looks FUNCTIONAL
+ *  and is simply blank inside, with no error surfaced · not a missing modal.
+ *  Do not go looking for a render that never happened.
  *
  *  The race SLUG is inert for the display name · `nameFor`'s `race` arm reads
  *  `resolved.race.name` and never matches the slug. It is carried anyway because
