@@ -110,6 +110,7 @@ interface CharacterShape {
   classes?: unknown[];
   background?: unknown;
   feats?: unknown[];
+  features?: unknown[];
   overrides?: Record<string, unknown>;
 }
 
@@ -121,7 +122,16 @@ function resolved(shape: CharacterShape): ResolvedCharacter {
     feats: shape.feats ?? [],
     // Non-optional on the real type and walked by the decision engine whenever a
     // class is present, so it is supplied here rather than cast away.
-    features: [],
+    // Shape-driven since R4-P3c: a hardcoded `[]` here cannot host a feature
+    // EFFECT grant, and effect grants are now a display-path proficiency source
+    // (assembleEffectFeatures -> collectProficiencyEffectGrants).
+    features: shape.features ?? [],
+    // Non-optional on the real type as well. Both are GUARDED in
+    // assembleEffectFeatures (`resolved.pools ?? []`, `resolved.state?.
+    // active_buffs ?? []`), so neither is what makes the effect-grant tests
+    // pass · they are here for the same reason `features` is, not as the fix.
+    pools: [],
+    state: {},
     definition: { origin_choices: {}, overrides: shape.overrides ?? {} },
   } as unknown as ResolvedCharacter;
 }
@@ -157,6 +167,34 @@ function makeCtx(shape: CharacterShape, editState: CharacterEditState | null): C
     app: {} as never,
     editState,
   } as ComponentRenderContext;
+}
+
+/** A race whose TRAIT grants a proficiency through a `kind: "proficiency"`
+ *  effect · the shape R4-P3c gives the five SRD-2014 traits that used to state a
+ *  proficiency in prose and grant nothing.
+ *
+ *  `source` is supplied on the fixture feature deliberately, and every future
+ *  fixture feature must supply one too: `collectProficiencyEffectGrants`
+ *  dereferences `rf.source.kind` and `rf.source.slug` with no guard, so an
+ *  omission throws a TypeError out of `aggregateProficiencies` · verified, and
+ *  it escapes through `onOpen`, so the modal renders NOTHING rather than one
+ *  chip with a blank source line.
+ *
+ *  The race SLUG is inert for the display name · `nameFor`'s `race` arm reads
+ *  `resolved.race.name` and never matches the slug. It is carried anyway because
+ *  the `feat`, `class` and `subclass` arms DO match on it, so a fixture that
+ *  omitted it would not generalize. */
+function ctxWithEffectGrant(spec: {
+  race: { slug: string; name: string };
+  trait: { name: string; effects: unknown[] };
+}): ComponentRenderContext {
+  return makeCtx({
+    race: spec.race,
+    features: [{
+      feature: { id: `${spec.race.slug}:${spec.trait.name}`, name: spec.trait.name, effects: spec.trait.effects },
+      source: { kind: "race", slug: spec.race.slug, level: 1 },
+    }],
+  }, makeEditState());
 }
 
 function openFor(
@@ -269,6 +307,33 @@ describe("ProficiencyEditModal chips", () => {
     expect(chip?.textContent).toBe("Rogue · Criminal");
     // ONE chip, not two: the two spellings folded.
     expect(chips(el).length).toBe(1);
+  });
+
+  it("renders the granting SPECIES name on an effect-granted chip, not the trait name", () => {
+    const ctx = ctxWithEffectGrant({
+      race: { slug: "srd-5e_race_rock-gnome", name: "Rock Gnome" },
+      trait: { name: "Tinker", effects: [{ kind: "proficiency", proficiency_type: "tool", value: "tinker's-tools" }] },
+    });
+    openProficiencyModal(ctx, "tools");
+    // NB: a CSS single-quoted string terminates at the apostrophe, so
+    // "[data-prof='tinker's-tools']" throws SyntaxError. Use the file's own
+    // chips() helper instead.
+    const chip = chips(document.body).find((c) => c.getAttribute("data-prof") === "tinker's-tools")!;
+    // EXACT string. toContain/toBeTruthy are forbidden here: a source-resolution
+    // miss yields sources: [] -> sourceText returns "" -> a blank line that no
+    // loose assertion would catch.
+    expect(chip.querySelector(".pc-prof-modal-chip-src")!.textContent).toBe("Rock Gnome");
+    expect(chip.classList.contains("granted")).toBe(true);
+  });
+
+  it("renders the granting species name on an effect-granted LANGUAGE chip", () => {
+    const ctx = ctxWithEffectGrant({
+      race: { slug: "r", name: "Warden-Touched" },
+      trait: { name: "T", effects: [{ kind: "proficiency", proficiency_type: "language", value: "orc" }] },
+    });
+    openProficiencyModal(ctx, "languages");
+    const chip = chips(document.body).find((c) => c.getAttribute("data-prof") === "orc")!;
+    expect(chip.querySelector(".pc-prof-modal-chip-src")!.textContent).toBe("Warden-Touched");
   });
 
   it("renders a custom chip verbatim, preserving casing", () => {
