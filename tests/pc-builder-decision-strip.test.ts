@@ -665,27 +665,84 @@ describe("renderDecisionStrip", () => {
     expect(fc.querySelectorAll(".pc-bchoice-chip").length).toBe(4);
   });
 
-  // ── child long-list header (smoke r4) ──
-  // A feat CHILD whose registry-backed entity pick has a long candidate list
-  // (the flat L4 → Feat → Magic Initiate nesting) must NOT re-emit the
-  // parent-derived `.pc-dstrip-tlabel` header inside the child: the
-  // `.pc-dstrip-fcl` sub-label (childLabel → "Feat") already precedes the
-  // control. The control must NEVER surface the inherited parent featureName.
-  it("a long-list feat CHILD suppresses the tlabel and never shows the parent featureName", () => {
+  // ── flat top-level feat pick, long list (R4-P4) ──
+  // The SRD's authored two-step `select-inline#asi-or-feat` is normalized into a
+  // FLAT top-level `select-entity` feat pick, so no SRD output nests a feat
+  // child any more: there is no child group, and the parent-derived
+  // `.pc-dstrip-tlabel` header RENDERS, because `inChild` is false.
+  // This is NOT a claim that the child shape is gone. `flattenAsiOrFeat` is a
+  // permanent compatibility layer keyed strictly on the `asi-or-feat` id, so a
+  // feat `select-entity` CHILD stays reachable via homebrew it returns
+  // untouched · the test below this one covers that scope.
+  // What was wrong with the version this replaced: it modelled the two-step
+  // shape as SRD output and built the items by hand, so it stayed green while
+  // asserting the exact inverse of what the SRD path now produces.
+  it("a flat top-level feat pick renders its own tlabel and no child row", () => {
+    const flatItem = item({
+      key: "feat", level: 4, featureName: "Ability Score Improvement",
+      source: { kind: "class", slug: "srd-5e_class_wizard", level: 4 },
+      choice: { kind: "select-entity", id: "feat", entity_type: "feat", count: 1 },
+      options: Array.from({ length: 18 }, (_, i) => entityOpt(`feat-${i}`)),
+      selected: undefined, status: "unresolved", satisfied: false,
+    });
+    const root = mountContainer();
+    renderDecisionStrip(root, mkCtx({ setChoice: vi.fn() }), {
+      items: [flatItem], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
+    });
+
+    // The child group is gone: a flat pick has no children until a feat is picked.
+    expect(root.querySelector(".pc-dstrip-fgroup")).toBeNull();
+    expect(root.querySelector(".pc-dstrip-fc")).toBeNull();
+
+    // The tlabel now RENDERS, because `inChild` is false at the top level.
+    const tlabel = root.querySelector(".pc-dstrip-tlabel")!;
+    // Do NOT delete this as redundant-after-the-`!`: the `!` is a compile-time
+    // assertion only, and this line is the sole detector for a mutation that
+    // drops the header. Without it the failure degrades to a TypeError.
+    expect(tlabel).not.toBeNull();
+    // Two `toContain` rather than one exact-string assertion on the whole tlabel:
+    // the separator the renderer puts between the label and "choose 1" is U+2014
+    // today and P8 will change it, so pinning the full string would couple this
+    // test to a phase that has not run.
+    expect(tlabel.textContent).toContain("Ability Score Improvement");
+    expect(tlabel.textContent).toContain("choose 1");
+
+    // Binding decision 8: the browse affordance is KEPT.
+    expect(root.querySelector(".pc-dstrip-browse")!.textContent).toContain("Browse all 18");
+  });
+
+  // ── homebrew two-step feat, CHILD scope (R4-P4) ──
+  // The suppression side of the `!inChild` guard at decision-strip.ts:464, which
+  // the flat test above cannot reach. `flattenAsiOrFeat` (dnd5e
+  // pc.asi-flatten.ts:19-31) is keyed strictly on `id === "asi-or-feat"` and
+  // returns its input BY IDENTITY otherwise (`:20`), so a differently-keyed
+  // homebrew `select-inline` keeps its feat `select-entity` child all the way
+  // into the render. Its own docstring calls it a permanent compatibility layer,
+  // not a migration shim.
+  // In child scope the `.pc-dstrip-fcl` sub-label (childLabel) already names the
+  // sub-choice and carries the requirement, so the control must NOT re-emit the
+  // parent-derived `.pc-dstrip-tlabel`: that is the "FEAT FEAT" duplication
+  // decision-strip.ts:237-241 exists to prevent. A child inherits the parent's
+  // `featureName` verbatim (pc.decision-engine.ts:428), so an unsuppressed
+  // header would also leak that name into the child row.
+  it("a feat CHILD of a homebrew two-step parent suppresses the tlabel and hides the parent featureName", () => {
     const c = mountContainer();
+    const hbSource = { kind: "class", slug: "hb_class_illrigger", level: 4 } as const;
     const featChild = item({
-      key: "feat", source: { kind: "class" } as never, level: 4,
-      featureName: "Ability Score Improvement",        // inherited parent name — must NOT leak
-      choice: { kind: "select-entity", id: "feat", count: 1, entity_type: "feat" } as never,
+      key: "feat", source: hbSource, level: 4,
+      featureName: "Diabolic Boon",   // inherited from the parent verbatim, must NOT leak
+      choice: { kind: "select-entity", id: "feat", entity_type: "feat", count: 1 },
       options: Array.from({ length: 18 }, (_, i) => entityOpt(`feat-${i}`)),  // long list
-      selected: undefined, status: "unresolved",
+      selected: undefined, status: "unresolved", satisfied: false,
     });
     const parent = item({
-      key: "asi-or-feat", source: { kind: "class" } as never, level: 4,
-      featureName: "Ability Score Improvement",
-      choice: { kind: "select-inline", id: "asi-or-feat", count: 1, options: [] } as never,
+      key: "boon-or-feat", source: hbSource, level: 4,
+      featureName: "Diabolic Boon",
+      // Deliberately NOT the `asi-or-feat` id: that is what keeps this shape
+      // reachable, because flattenAsiOrFeat returns it untouched.
+      choice: { kind: "select-inline", id: "boon-or-feat", count: 1, options: [] },
       options: [{ value: "feat", label: "Take a Feat" }], selected: "feat",
-      status: "partial", children: [featChild],
+      status: "partial", satisfied: false, children: [featChild],
     });
     renderDecisionStrip(c, mkCtx({ setChoice: vi.fn() }), {
       items: [parent], pill: (i) => `L${i.level}`, live: true, classIndex: 0, stateKey: "t",
@@ -694,13 +751,14 @@ describe("renderDecisionStrip", () => {
       r.querySelector(".pc-dstrip-browse"),
     )!;
     expect(fc).not.toBeUndefined();
-    // The child's own sub-label names the sub-choice (childLabel → "Feat").
+    // The child's own sub-label names the sub-choice, and it is the ONLY label
+    // the child gets (childLabel maps the `feat` key to "Feat").
     expect(fc.querySelector(".pc-dstrip-fc-name")!.textContent).toBe("Feat");
-    // No parent-derived caps header inside the child…
+    // The suppression itself: no parent-derived caps header inside the child.
     expect(fc.querySelector(".pc-dstrip-tlabel")).toBeNull();
-    // …and the inherited parent featureName never appears anywhere in the child.
-    expect(fc.textContent).not.toContain("Ability Score Improvement");
-    // The long-list ghost still renders (unresolved → "Browse all 18 ▸").
+    // And the inherited parent featureName never surfaces anywhere in the child.
+    expect(fc.textContent).not.toContain("Diabolic Boon");
+    // The long-list ghost still renders in child scope (unresolved, 18 > threshold).
     expect((fc.querySelector(".pc-dstrip-browse") as HTMLElement).textContent).toContain("Browse all 18");
   });
 
