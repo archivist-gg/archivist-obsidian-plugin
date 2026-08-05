@@ -262,8 +262,13 @@ describe("generateCompendiumMetadata", () => {
 // updateCompendiumFrontmatter (lossless single-key merge)
 // ---------------------------------------------------------------------------
 describe("updateCompendiumFrontmatter", () => {
-  // Mirrors the real bundle-shipped SRD file: carries keys the Compendium
-  // model does not know about (edition, version stamp, import timestamp).
+  // Mirrors a real on-disk SRD file: carries keys the Compendium model does
+  // not know about (edition, version stamp, import timestamp). The import
+  // timestamp is LEGACY as of R4-P4 · the generator no longer emits it, so a
+  // freshly shipped bundle has no such key, but a vault installed before that
+  // regeneration keeps it on disk forever. It stays in this fixture on
+  // purpose: preserving it is precisely what the lossless writer owes those
+  // vaults, and deleting it here would retire the only cover for that.
   const srdContent = `---
 archivist_compendium: true
 name: SRD 5e
@@ -707,10 +712,11 @@ type: humanoid
     });
 
     it("preserves frontmatter keys it does not own (regression: bundle version stamp)", async () => {
-      // The bundle-shipped SRD `_compendium.md` carries edition, a version
-      // stamp, and an import timestamp. Toggling read-only must NOT strip
-      // them: `archivist_compendium_version` gates bootstrap re-copy, so
-      // losing it re-installs the whole bundle on next load.
+      // An on-disk SRD `_compendium.md` carries edition, a version stamp, and
+      // (in vaults installed before R4-P4, where the generator still emitted
+      // it) an import timestamp. Toggling read-only must NOT strip them:
+      // `archivist_compendium_version` gates bootstrap re-copy, so losing it
+      // re-installs the whole bundle on next load.
       manager.addCompendium({
         name: "SRD 5e",
         description: "D&D 5e System Reference Document 5.1",

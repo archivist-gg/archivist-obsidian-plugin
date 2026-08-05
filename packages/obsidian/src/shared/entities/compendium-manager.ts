@@ -153,11 +153,16 @@ export function generateCompendiumMetadata(comp: Compendium): string {
  * Parses the existing frontmatter, sets/updates ONLY the given keys, and
  * re-serializes preserving every other key (in original order) AND the body
  * below the frontmatter verbatim. This is the required write path for
- * mutating existing compendium metadata: the bundle-shipped files carry keys
- * the Compendium model does not own (`edition`,
- * `archivist_compendium_version`, `archivist_compendium_imported_at`), and
- * `archivist_compendium_version` gates bootstrap re-copy, so a regenerating
+ * mutating existing compendium metadata: the on-disk files carry keys the
+ * Compendium model does not own (`edition`, `archivist_compendium_version`,
+ * and in vaults installed before R4-P4 also `archivist_compendium_imported_at`),
+ * and `archivist_compendium_version` gates bootstrap re-copy, so a regenerating
  * writer would trigger a full bundle re-install on the next load.
+ *
+ * `archivist_compendium_imported_at` is now a LEGACY key: the generator stopped
+ * emitting it, so freshly shipped bundles do not carry it. It must still be
+ * preserved, because a vault installed earlier keeps the key on disk forever
+ * and this writer is the only thing standing between it and being dropped.
  *
  * New keys (not present in the file) are inserted directly after `readonly`
  * when that key exists, else appended at the end of the frontmatter.
