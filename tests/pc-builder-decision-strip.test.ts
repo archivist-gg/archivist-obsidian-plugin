@@ -723,8 +723,12 @@ describe("renderDecisionStrip", () => {
   // sub-choice and carries the requirement, so the control must NOT re-emit the
   // parent-derived `.pc-dstrip-tlabel`: that is the "FEAT FEAT" duplication
   // decision-strip.ts:237-241 exists to prevent. A child inherits the parent's
-  // `featureName` verbatim (pc.decision-engine.ts:428), so an unsuppressed
-  // header would also leak that name into the child row.
+  // `featureName` verbatim · BOTH of `buildItem`'s child recursions in dnd5e
+  // `pc.decision-engine.ts` (the select-inline branch reveal and the chosen-feat
+  // expansion) pass `featureName` straight through. Cited by SYMBOL, not line:
+  // a `:428` here went stale the moment a dnd5e commit on this same branch added
+  // lines above it, and no plugin-side check catches a cross-repo line move.
+  // So an unsuppressed header would also leak that name into the child row.
   it("a feat CHILD of a homebrew two-step parent suppresses the tlabel and hides the parent featureName", () => {
     const c = mountContainer();
     const hbSource = { kind: "class", slug: "hb_class_illrigger", level: 4 } as const;

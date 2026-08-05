@@ -160,9 +160,16 @@ export function generateCompendiumMetadata(comp: Compendium): string {
  * writer would trigger a full bundle re-install on the next load.
  *
  * `archivist_compendium_imported_at` is now a LEGACY key: the generator stopped
- * emitting it, so freshly shipped bundles do not carry it. It must still be
- * preserved, because a vault installed earlier keeps the key on disk forever
- * and this writer is the only thing standing between it and being dropped.
+ * emitting it, so freshly shipped bundles do not carry it. It stays in the
+ * preserve set because a vault installed earlier still holds it on disk, and a
+ * key-level update must not be what drops it. That is NOT a claim that this
+ * writer is the last line of defense for it: `copyBundle` (compendium-init/
+ * bundle-copier.ts) writes every bundle path with `vault.adapter.write`, i.e.
+ * overwrite semantics, and the shipped bundle's own `_compendium.md` no longer
+ * carries the key · so the next bootstrap re-copy replaces that file wholesale
+ * and the key is gone regardless of what happens here. The preserve set is what
+ * this writer owes any key it does not own, legacy or otherwise · the list above
+ * is the enumeration, not a durability guarantee.
  *
  * New keys (not present in the file) are inserted directly after `readonly`
  * when that key exists, else appended at the end of the frontmatter.

@@ -265,10 +265,14 @@ describe("updateCompendiumFrontmatter", () => {
   // Mirrors a real on-disk SRD file: carries keys the Compendium model does
   // not know about (edition, version stamp, import timestamp). The import
   // timestamp is LEGACY as of R4-P4 · the generator no longer emits it, so a
-  // freshly shipped bundle has no such key, but a vault installed before that
-  // regeneration keeps it on disk forever. It stays in this fixture on
-  // purpose: preserving it is precisely what the lossless writer owes those
-  // vaults, and deleting it here would retire the only cover for that.
+  // freshly shipped bundle has no such key, while a vault installed before that
+  // regeneration still holds it on disk. It stays in this fixture on purpose:
+  // preserving an unknown key across a key-level update is precisely what the
+  // lossless writer owes, and deleting it here would retire the only cover for
+  // that. It does NOT survive indefinitely on disk · `copyBundle` overwrites
+  // `_compendium.md` wholesale on the next bootstrap re-copy, with a bundle that
+  // no longer carries the key. What this test pins is the writer's contract, not
+  // the key's lifetime.
   const srdContent = `---
 archivist_compendium: true
 name: SRD 5e
