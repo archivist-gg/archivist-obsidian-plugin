@@ -11,6 +11,7 @@ import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,
 } from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
 import { FIGHTER_5_CLERIC_3, clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { App } from "obsidian";
@@ -253,7 +254,11 @@ describe("defense popover · seeding keys on the canonical value (bug D-1)", () 
     expect(damageRow("Psychic").dataset.type).toBe("psychic");
     for (const row of panel("damages").querySelectorAll<HTMLElement>(".pc-def-popover-row")) {
       const shown = row.querySelector(".pc-def-popover-name")?.textContent ?? "";
-      expect(row.dataset.type).toBe(shown.toLowerCase());
+      // Oracle is `toDefenseSlug`, not `shown.toLowerCase()`. The two agree on every value
+      // in today's vocabulary, but `toLowerCase` is the exact expression the row key would
+      // be WRONG to use, so encoding it here would make this assertion fail against correct
+      // code the moment a whitespace-irregular display value entered the list.
+      expect(row.dataset.type).toBe(toDefenseSlug(shown));
     }
   });
 });
