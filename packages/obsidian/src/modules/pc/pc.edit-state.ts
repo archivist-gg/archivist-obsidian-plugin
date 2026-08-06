@@ -375,9 +375,12 @@ export class CharacterEditState {
     const manual = this.character.defenses?.[bucket] ?? [];
     const i = manual.findIndex((v) => toDefenseSlug(v) === slug);
     // `entry.value` is canonical by construction (the engine builds it with toDefenseSlug),
-    // so this compares slug to slug. Read off the PRE-mutation derived · `pc.view.ts:154`
-    // closes over `this.derived`, recomputed only in `handleChange` at `:177`, which runs
-    // after our `onChange()`.
+    // so this compares slug to slug. Read off the PRE-mutation derived · the `getContext`
+    // closure `PCSheetView.renderResolvedData` passes to this constructor closes over the
+    // view's `this.derived`, and the only recompute on the edit path is the `recalc` call
+    // inside `PCSheetView.handleChange`, which runs after our `onChange()`.
+    // Cited by SYMBOL, not line: the line form of this cite was true when written and was
+    // falsified by a later commit on this same branch that inserted lines above the target.
     const entry = this.getContext().derived.defenses[bucket].find((e) => e.value === slug);
     if (i < 0 && !entry) return;   // genuine no-op: do NOT dirty the file
     // `i >= 0` proves `manual` is the live array, not the `?? []` fallback.

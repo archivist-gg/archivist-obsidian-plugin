@@ -463,8 +463,9 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
 
   // A realistically SHAPED off-vocabulary value · multi-word, punctuated, and absent from
   // the picker's vocabulary, which carries only DAMAGE_TYPES. It is NOT a value any PC path
-  // emits: DAMAGE_NONMAGICAL_VARIANTS' only consumer anywhere is the monster editor's damage
-  // presets (modules/monster/edit/info-editor.ts). The fixture is chosen for its shape.
+  // emits: DAMAGE_NONMAGICAL_VARIANTS' only PRODUCTION consumer is the monster editor's damage
+  // presets (modules/monster/edit/info-editor.ts); tests consume it as well, so that is a claim
+  // about product code, not an absolute. The fixture is chosen for its shape.
   it("renders an off-vocabulary NONMAGICAL variant with its full authored label", () => {
     const label = "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks";
     const { ctx, anchor } = withDefenses({
@@ -485,7 +486,7 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
   //
   // ⚠️ It does NOT separate keying on `value` from keying on `label` · `toDefenseSlug`
   // maps both spellings to the same string, and a probe keying on `toDefenseSlug(label)`
-  // survives the whole 14089-test suite. Nor does it constrain the SHIPPED call site's
+  // survives the whole suite. Nor does it constrain the SHIPPED call site's
   // normalizer: that keys off `value`, which is already canonical, so a bare lowercase
   // THERE survives too. The name says "of the label" because that is the only expression
   // this fixture can speak about. Measured, not assumed · read no more into it than that.

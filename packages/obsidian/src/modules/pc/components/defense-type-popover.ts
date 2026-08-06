@@ -44,8 +44,9 @@ type DefenseOption = { slug: string; display: string };
  * damage type, an unrecognised condition, anything a future overlay introduces · the
  * picker SHOWS it, with a live pip, instead of silently hiding a defense the character
  * actually has. (No PC path emits such a value today. `DAMAGE_NONMAGICAL_VARIANTS` looks
- * like a candidate but is NOT one: its only consumer anywhere is the monster editor's
- * damage presets in modules/monster/edit/info-editor.ts.)
+ * like a candidate but is NOT one: its only PRODUCTION consumer is the monster editor's
+ * damage presets in modules/monster/edit/info-editor.ts. Tests consume it too, so this is
+ * a claim about product code, not an absolute.)
  *
  * The keying is the whole point and is not optional · and it matters far more broadly than
  * "someone typed a lowercase value". `composeDefenseEntries` (dnd5e pc.recalc.ts, the sole

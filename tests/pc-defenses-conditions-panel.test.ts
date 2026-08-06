@@ -27,7 +27,7 @@ function ents(...vals: string[]): DefenseEntry[] {
  * origin. `ents` above can express neither: while every fixture in this file used it no
  * assertion could tell which of the two fields the panel read (the `entry.value` →
  * `entry.label` mutation on both mutator call sites was measured surviving the whole
- * 281-file suite), and every entry it seeds is `origin: "manual"`.
+ * suite), and every entry it seeds is `origin: "manual"`.
  */
 function ent(value: string, label: string, origin: DefenseOrigin = "grant"): DefenseEntry {
   return { value, label, origin };

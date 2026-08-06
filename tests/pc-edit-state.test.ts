@@ -41,8 +41,13 @@ const MINIMAL_YAML = [
  * All four buckets default to empty, so every pre-existing caller is unaffected.
  *
  * The seed is STATIC: it does not recompute between mutator calls, which is exactly what
- * the production closure does too (`pc.view.ts:154` closes over `this.derived`, recomputed
- * only in `handleChange` at `:177`, i.e. AFTER the mutator's `onChange()`).
+ * the production closure does too: the `getContext` closure `PCSheetView.renderResolvedData`
+ * passes to the `CharacterEditState` constructor closes over the view's `this.derived`, and
+ * the only recompute on the edit path is the `recalc` call inside `PCSheetView.handleChange`,
+ * i.e. AFTER the mutator's `onChange()`.
+ *
+ * Cited by SYMBOL, not line: the line form of this cite was true when written and was
+ * falsified by a later commit on this same branch that inserted lines above the target.
  */
 function makeState(
   over?: (c: Character) => void,
@@ -1247,9 +1252,11 @@ describe("CharacterEditState — attuneItem auto-equip (Task 4, #10)", () => {
 //
 // The mutators decide what to write by asking the ENGINE what is effective, via
 // `getContext().resolved`. So the fixture has to reproduce the PRODUCTION ALIASING:
-// `pc.view.ts:150-152` hands `parsed.data` to the edit state as `character` AND builds
-// the context from the resolver's output, whose `definition` is that very object
-// (`pc.resolver.ts:253` `definition: character`). One object, two paths.
+// `PCSheetView.renderResolvedData` hands `parsed.data` to the `CharacterEditState`
+// constructor as `character` AND builds the context from the resolver's output, whose
+// `definition` is that very object (`PCResolver.resolve` sets `definition: character`,
+// in the dnd5e package's `src/pc/pc.resolver.ts` · that file does not exist in this repo).
+// One object, two paths.
 //
 // A fixture that CLONED would let the mutator write one object while the effective-set
 // read hits another, and every assertion below would pass vacuously. The fixture-integrity

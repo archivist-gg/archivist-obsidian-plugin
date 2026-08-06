@@ -170,9 +170,9 @@ describe("PCSheetView — write path", () => {
 
   it("the setViewData echo does NOT close open modals (loop guard runs first)", async () => {
     const { view } = await bootView();
-    // Mutate first: getViewData only arms lastWrittenData on the dirty path
-    // (pc.view.ts:197-201), so without this the guard can never fire and the
-    // test would fail even WITH the fix. Mirrors the loop-guard tests at :121.
+    // Mutate first: `PCSheetView.getViewData` returns `rawFileData` untouched and arms
+    // nothing until `isDirty`, so without this the guard can never fire and the test
+    // would fail even WITH the fix. Mirrors the two loop-guard cases above.
     // @ts-expect-error — access the view-owned edit state in test
     view.editState!.setInspiration(5);
     await Promise.resolve();
