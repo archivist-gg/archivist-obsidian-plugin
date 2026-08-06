@@ -59,8 +59,15 @@ type DefenseOption = { slug: string; display: string };
  * DISPLAY rule, expressed as seeding order rather than a per-entry fallback: the
  * vocabulary is inserted first and `present` entries never overwrite an existing key, so a
  * known slug keeps the vocabulary's spelling ("Fire", "Charmed") and an unknown one falls
- * back to the entry's authored `label`. That is exactly `VOCAB[slug] ?? entry.label`,
- * without a branch that is unreachable by construction.
+ * back to the entry's authored `label`.
+ *
+ * ⚠️ That matches `VOCAB[slug] ?? entry.label` for VOCABULARY-vs-DERIVED, and only there.
+ * The two forms DISAGREE for derived-vs-derived: when the same off-vocabulary slug appears
+ * in two buckets, seeding order keeps the FIRST label and a literal per-entry `??` would
+ * keep the LAST. That is a real behavioural difference, not a stylistic one · it is pinned
+ * by "collapses an off-vocabulary value repeated across two buckets, first label winning"
+ * in tests/pc-defense-popover.test.ts, which goes RED against a last-wins implementation.
+ * Do not "simplify" this to the `??` form; it is not an equivalent rewrite.
  */
 function unionDefenseOptions(
   vocabulary: readonly DefenseOption[],

@@ -408,8 +408,11 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
   //
   // ⚠️ It does NOT separate keying on `value` from keying on `label` · `toDefenseSlug`
   // maps both spellings to the same string, and a probe keying on `toDefenseSlug(label)`
-  // survives the whole file. Measured, not assumed. Do not read more into it than that.
-  it("keys the union through toDefenseSlug, not through a bare toLowerCase", () => {
+  // survives the whole 14089-test suite. Nor does it constrain the SHIPPED call site's
+  // normalizer: that keys off `value`, which is already canonical, so a bare lowercase
+  // THERE survives too. The name says "of the label" because that is the only expression
+  // this fixture can speak about. Measured, not assumed · read no more into it than that.
+  it("keys on a whitespace-collapsed string, not a bare lowercase of the label", () => {
     const { ctx, anchor } = withDefenses({
       vulnerabilities: [{ value: "ionized plasma", label: "Ionized  Plasma", origin: "grant" }],
     });
