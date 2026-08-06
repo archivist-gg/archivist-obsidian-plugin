@@ -7,11 +7,23 @@ import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc
 beforeAll(() => installObsidianDomHelpers());
 
 type Defenses = ComponentRenderContext["derived"]["defenses"];
+type DefenseEntry = Defenses["resistances"][number];
+
+/**
+ * Seed a bucket with `DefenseEntry` objects. `value` is the canonical slug the
+ * mutators key on; `label` is the first-spelling-wins display string. These seeds
+ * use the same string for both, which is what the buckets held before R4-P5
+ * reshaped them from `string[]`.
+ */
+function ents(...vals: string[]): DefenseEntry[] {
+  return vals.map((v) => ({ value: v, label: v, origin: "manual" as const }));
+}
+
 function ctx(p: { defenses?: Defenses; conditions?: string[]; exhaustion?: number; editState?: unknown } = {}): ComponentRenderContext {
   return {
     derived: {
       defenses: p.defenses ?? {
-        resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [],
+        resistances: ents(), immunities: ents(), vulnerabilities: ents(), condition_immunities: ents(),
       },
     },
     resolved: { state: { conditions: p.conditions ?? [], exhaustion: p.exhaustion ?? 0 } },
@@ -32,10 +44,10 @@ describe("DefensesConditionsPanel", () => {
     const root = mountContainer();
     new DefensesConditionsPanel().render(root, ctx({
       defenses: {
-        resistances: ["fire", "cold"],
-        immunities: ["poison"],
-        vulnerabilities: ["radiant"],
-        condition_immunities: ["charmed"],
+        resistances: ents("fire", "cold"),
+        immunities: ents("poison"),
+        vulnerabilities: ents("radiant"),
+        condition_immunities: ents("charmed"),
       },
     }));
     const left = root.querySelector(".pc-def-cond-left");
@@ -121,10 +133,10 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     const root = mountContainer();
     new DefensesConditionsPanel().render(root, ctx({
       defenses: {
-        resistances: ["fire"],
-        immunities: [],
-        vulnerabilities: [],
-        condition_immunities: ["charmed"],
+        resistances: ents("fire"),
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: ents("charmed"),
       },
       editState: {},
     }));
@@ -147,7 +159,7 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     const root = mountContainer();
     const editState = { removeDefense: vi.fn() };
     new DefensesConditionsPanel().render(root, ctx({
-      defenses: { resistances: ["fire", "cold"], immunities: [], vulnerabilities: [], condition_immunities: [] },
+      defenses: { resistances: ents("fire", "cold"), immunities: ents(), vulnerabilities: ents(), condition_immunities: ents() },
       editState,
     }));
     const chips = root.querySelectorAll(".pc-def-cond-left .pc-def-chip");
@@ -160,7 +172,7 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     const root = mountContainer();
     const editState = { removeConditionImmunity: vi.fn() };
     new DefensesConditionsPanel().render(root, ctx({
-      defenses: { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: ["charmed"] },
+      defenses: { resistances: ents(), immunities: ents(), vulnerabilities: ents(), condition_immunities: ents("charmed") },
       editState,
     }));
     const chip = root.querySelector(".pc-def-cond-left .pc-def-chip")!;

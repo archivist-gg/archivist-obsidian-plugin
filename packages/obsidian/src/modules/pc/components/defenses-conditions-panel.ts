@@ -54,21 +54,25 @@ export class DefensesConditionsPanel implements SheetComponent {
         const row = leftBody.createEl("p", { cls: "pc-def-line" });
         row.createEl("b", { text: label });
         row.appendText(" ");
-        for (const v of vals) {
+        for (const entry of vals) {
           const chip = row.createSpan({ cls: "pc-def-chip" });
+          // `value` is canonical (toDefenseSlug); `label` is the first-spelling-wins
+          // authored display string. Condition immunities get the PascalCase label
+          // table, keyed on the canonical value, and fall back to the authored label.
           const displayText = key === "condition_immunities"
-            ? (CONDITION_DISPLAY_NAMES[v as ConditionSlug] ?? v)
-            : v;
+            ? (CONDITION_DISPLAY_NAMES[entry.value as ConditionSlug] ?? entry.label)
+            : entry.label;
           chip.createSpan({ cls: "pc-def-chip-label", text: displayText });
           if (ctx.editState) {
             const x = chip.createSpan({ cls: "pc-def-chip-x", text: "×" });
             const editState = ctx.editState;
             x.addEventListener("click", (e) => {
               e.stopPropagation();
+              // Mutators key on the canonical value, never the display label.
               if (key === "condition_immunities") {
-                editState.removeConditionImmunity(v as ConditionSlug);
+                editState.removeConditionImmunity(entry.value as ConditionSlug);
               } else {
-                editState.removeDefense(key, v);
+                editState.removeDefense(key, entry.value);
               }
             });
           }

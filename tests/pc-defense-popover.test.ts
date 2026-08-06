@@ -18,6 +18,19 @@ import type { App } from "obsidian";
 beforeAll(() => installObsidianDomHelpers());
 afterEach(() => closeDefenseTypePopover());
 
+type Derived = ComponentRenderContext["derived"];
+type DefenseEntry = Derived["defenses"]["resistances"][number];
+
+/**
+ * Seed a bucket with `DefenseEntry` objects. `value` is the canonical slug;
+ * `label` is the first-spelling-wins display string. These seeds use the same
+ * string for both, matching what the buckets held before R4-P5 reshaped them
+ * from `string[]`, so the popover's seeding behaviour is unchanged here.
+ */
+function ents(vals: string[]): DefenseEntry[] {
+  return vals.map((v) => ({ value: v, label: v, origin: "manual" as const }));
+}
+
 function withDefenses(over: Partial<{
   resistances: string[];
   immunities: string[];
@@ -26,20 +39,23 @@ function withDefenses(over: Partial<{
 }> = {}) {
   const character = clone(FIGHTER_5_CLERIC_3);
   const resolved = fakeResolved(character);
-  const derived = fakeDerived(character) as { hp: { max: number; current: number; temp: number }; defenses: { resistances: string[]; immunities: string[]; vulnerabilities: string[]; condition_immunities: string[] } };
+  // Typed against the REAL `DerivedStats` (via ComponentRenderContext) so the
+  // `defenses` seeding below is checked against the engine shape rather than a
+  // hand-written local one that can silently drift out of date.
+  const derived = fakeDerived(character) as Derived;
   derived.defenses = {
-    resistances: over.resistances ?? [],
-    immunities: over.immunities ?? [],
-    vulnerabilities: over.vulnerabilities ?? [],
-    condition_immunities: over.condition_immunities ?? [],
+    resistances: ents(over.resistances ?? []),
+    immunities: ents(over.immunities ?? []),
+    vulnerabilities: ents(over.vulnerabilities ?? []),
+    condition_immunities: ents(over.condition_immunities ?? []),
   };
   const onChange = vi.fn();
-  const editState = new CharacterEditState(character, () => ({ resolved, derived: derived as never }), onChange);
+  const editState = new CharacterEditState(character, () => ({ resolved, derived }), onChange);
   const anchor = document.createElement("button");
   document.body.appendChild(anchor);
   const ctx: ComponentRenderContext = {
     resolved,
-    derived: derived as never,
+    derived,
     services: {} as never,
     app: {} as App,
     editState,

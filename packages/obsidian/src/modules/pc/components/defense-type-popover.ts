@@ -111,9 +111,14 @@ export function openDefenseTypePopover(
     // the source of truth — `editState.{add,remove}Defense` writes through.)
     const initialState = ((): DefenseRowState => {
       const d = ctx.derived.defenses;
-      if (d.resistances?.includes(slug)) return "resistance";
-      if (d.immunities?.includes(slug)) return "immunity";
-      if (d.vulnerabilities?.includes(slug)) return "vulnerability";
+      // FAITHFUL PORT of the pre-reshape `string[]` behaviour, bug included. Those buckets
+      // held exactly the first-spelling-wins display strings that `label` now holds, so
+      // comparing against `label` keeps the existing (case-sensitive) matching bit-for-bit.
+      // R4-P5 Task 7 replaces these three with a canonical `value` compare: that is the
+      // phase's headline fix (D-1), and it needs to observe these RED first.
+      if (d.resistances?.map((e) => e.label).includes(slug)) return "resistance";
+      if (d.immunities?.map((e) => e.label).includes(slug)) return "immunity";
+      if (d.vulnerabilities?.map((e) => e.label).includes(slug)) return "vulnerability";
       return null;
     })();
     let rowState: DefenseRowState = initialState;
@@ -152,7 +157,11 @@ export function openDefenseTypePopover(
 
     // Row-local mirror of the binary state. Seeded from `ctx.derived.defenses`
     // and flipped optimistically on tap — same pattern as damage rows.
-    let condState = (ctx.derived.defenses.condition_immunities ?? []).includes(slug);
+    // FAITHFUL PORT of the pre-reshape `string[]` behaviour, bug included: see the
+    // damage-row note above. R4-P5 Task 7 replaces this with a canonical `value` compare.
+    let condState = (ctx.derived.defenses.condition_immunities ?? [])
+      .map((e) => e.label)
+      .includes(slug);
     const pip = row.createEl("button", {
       cls: "pc-def-popover-pip",
       text: "I",
