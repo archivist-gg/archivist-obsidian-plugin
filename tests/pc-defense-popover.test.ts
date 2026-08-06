@@ -384,8 +384,10 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
     expect(damageRows()).toHaveLength(DAMAGE_TYPES.length + 1);
   });
 
-  // A genuinely off-vocabulary value the engine can already produce: the nonmagical
-  // variants live in DAMAGE_NONMAGICAL_VARIANTS, which the picker's vocabulary omits.
+  // A realistically SHAPED off-vocabulary value · multi-word, punctuated, and absent from
+  // the picker's vocabulary, which carries only DAMAGE_TYPES. It is NOT a value any PC path
+  // emits: DAMAGE_NONMAGICAL_VARIANTS' only consumer anywhere is the monster editor's damage
+  // presets (modules/monster/edit/info-editor.ts). The fixture is chosen for its shape.
   it("renders an off-vocabulary NONMAGICAL variant with its full authored label", () => {
     const label = "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks";
     const { ctx, anchor } = withDefenses({
@@ -399,10 +401,15 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
     expect(pip(row as HTMLElement, "immunity").classList.contains("on")).toBe(true);
   });
 
-  // The union's KEY comes from `value`; its DISPLAY comes from `label`. Normalizing the
-  // label would collapse its double space too, so a key built from the label lands on a
-  // DIFFERENT string than one built from the value · which is what this fixture separates.
-  it("keys the union on the entry's canonical value, not on its display label", () => {
+  // What this fixture separates is `toDefenseSlug` from a BARE `toLowerCase`: the label's
+  // double space survives `.trim().toLowerCase()` ("ionized  plasma") and is collapsed by
+  // `toDefenseSlug` ("ionized plasma"), so a key that skips the whitespace step misses the
+  // row this test asks for.
+  //
+  // ⚠️ It does NOT separate keying on `value` from keying on `label` · `toDefenseSlug`
+  // maps both spellings to the same string, and a probe keying on `toDefenseSlug(label)`
+  // survives the whole file. Measured, not assumed. Do not read more into it than that.
+  it("keys the union through toDefenseSlug, not through a bare toLowerCase", () => {
     const { ctx, anchor } = withDefenses({
       vulnerabilities: [{ value: "ionized plasma", label: "Ionized  Plasma", origin: "grant" }],
     });
@@ -414,13 +421,19 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
     expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Ionized  Plasma");
   });
 
-  it("collapses an off-vocabulary value repeated across two buckets into one row", () => {
+  // Row COUNT alone does not pin the tie-break: last-derived-wins collapses to one row too.
+  // The label assertion is what fixes FIRST-derived-wins, which is what seeding order gives
+  // and what a literal per-entry `??` fallback would have inverted. Buckets are visited
+  // resistances, immunities, vulnerabilities, so "Void" must beat the later "VOID".
+  it("collapses an off-vocabulary value repeated across two buckets, first label winning", () => {
     const { ctx, anchor } = withDefenses({
       resistances: [{ value: "void", label: "Void", origin: "grant" }],
       vulnerabilities: [{ value: "void", label: "VOID", origin: "manual" }],
     });
     openDefenseTypePopover(anchor, ctx);
-    expect(panel("damages").querySelectorAll('.pc-def-popover-row[data-type="void"]')).toHaveLength(1);
+    const rows = panel("damages").querySelectorAll<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    expect(rows).toHaveLength(1);
+    expect(rows[0].querySelector(".pc-def-popover-name")?.textContent).toBe("Void");
     expect(damageRows()).toHaveLength(DAMAGE_TYPES.length + 1);
   });
 
