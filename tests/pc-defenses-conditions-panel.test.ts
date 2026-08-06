@@ -8,6 +8,7 @@ beforeAll(() => installObsidianDomHelpers());
 
 type Defenses = ComponentRenderContext["derived"]["defenses"];
 type DefenseEntry = Defenses["resistances"][number];
+type DefenseOrigin = DefenseEntry["origin"];
 
 /**
  * Seed a bucket with `DefenseEntry` objects. `value` is the canonical slug the
@@ -20,13 +21,14 @@ function ents(...vals: string[]): DefenseEntry[] {
 }
 
 /**
- * One entry whose AUTHORED spelling differs from the canonical slug. `ents` above cannot
- * express that, and while every fixture in this file used it no assertion could tell which
- * of the two fields the panel read · the `entry.value` → `entry.label` mutation on both
- * mutator call sites was measured surviving the whole 281-file suite.
+ * One entry whose AUTHORED spelling differs from the canonical slug, with a settable
+ * origin. `ents` above can express neither: while every fixture in this file used it no
+ * assertion could tell which of the two fields the panel read (the `entry.value` →
+ * `entry.label` mutation on both mutator call sites was measured surviving the whole
+ * 281-file suite), and every entry it seeds is `origin: "manual"`.
  */
-function ent(value: string, label: string): DefenseEntry {
-  return { value, label, origin: "grant" as const };
+function ent(value: string, label: string, origin: DefenseOrigin = "grant"): DefenseEntry {
+  return { value, label, origin };
 }
 
 function ctx(p: { defenses?: Defenses; conditions?: string[]; exhaustion?: number; editState?: unknown } = {}): ComponentRenderContext {
@@ -215,5 +217,70 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
     chips[1].querySelector<HTMLElement>(".pc-def-chip-x")!.click();
     expect(editState.removeConditionImmunity).toHaveBeenCalledWith("charmed");
+  });
+});
+
+describe("DefensesConditionsPanel · granted marking + data-type addressing", () => {
+  it("adds .granted to a chip whose origin is 'grant' OR 'equipment', and not to a manual one", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        // Three origins in one bucket · a `=== "grant"` test would drop the equipment chip,
+        // so the equipment seed is what pins the predicate to `!== "manual"`.
+        resistances: [ent("fire", "Fire", "manual"), ent("psychic", "Psychic", "grant"), ent("cold", "Cold", "equipment")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: ents(),
+      },
+    }));
+    const chips = [...root.querySelectorAll<HTMLElement>(".pc-def-cond-left .pc-def-chip")];
+    expect(chips.length).toBe(3);
+    expect(chips.map((c) => c.classList.contains("granted"))).toEqual([false, true, true]);
+  });
+
+  it("chip `data-type` carries the canonical `value`, never the authored or displayed label", () => {
+    const root = mountContainer();
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: [ent("psychic", "Psychic")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        // Condition immunities display a THIRD spelling (the PascalCase table), so this chip
+        // separates `value` from `label` and from the rendered text at the same time.
+        condition_immunities: [ent("charmed", "CHARMED")],
+      },
+    }));
+    const chips = [...root.querySelectorAll<HTMLElement>(".pc-def-cond-left .pc-def-chip")];
+    expect(chips.length).toBe(2);
+    expect(chips.map((c) => c.getAttribute("data-type"))).toEqual(["psychic", "charmed"]);
+    expect(chips.map((c) => c.querySelector(".pc-def-chip-label")?.textContent)).toEqual(["Psychic", "Charmed"]);
+    // The two rejected candidates, per chip: the authored `label` the fixture seeded, and
+    // the text actually rendered. Either one substituted for `value` fails the block above.
+    const authored = ["Psychic", "CHARMED"];
+    chips.forEach((c, i) => {
+      expect(c.getAttribute("data-type")).not.toBe(authored[i]);
+      expect(c.getAttribute("data-type")).not.toBe(c.querySelector(".pc-def-chip-label")!.textContent);
+    });
+  });
+
+  it("a [data-type] selector reaches a bucket's SECOND chip, which a bare .pc-def-chip-x cannot", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn() };
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: [ent("fire", "Fire", "manual"), ent("psychic", "Psychic", "grant")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: ents(),
+      },
+      editState,
+    }));
+    // What a CDP `--click '… .pc-def-chip-x'` resolves to: the FIRST match, Fire.
+    expect(root.querySelector(".pc-def-chip")!.getAttribute("data-type")).toBe("fire");
+    // `data-type` names the second one outright, without leaning on `.granted` (a
+    // display-policy class) to do the addressing.
+    root.querySelector<HTMLElement>('.pc-def-chip[data-type="psychic"] .pc-def-chip-x')!.click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
+    expect(editState.removeDefense).toHaveBeenCalledTimes(1);
   });
 });

@@ -55,7 +55,12 @@ export class DefensesConditionsPanel implements SheetComponent {
         row.createEl("b", { text: label });
         row.appendText(" ");
         for (const entry of vals) {
-          const chip = row.createSpan({ cls: "pc-def-chip" });
+          // `data-type` is the canonical slug, and it is ADDRESSING, not decoration: two chips
+          // in one row are otherwise indistinguishable to a selector, so `.pc-def-chip-x` alone
+          // can only ever reach the first. Do not substitute `.granted` for it · that class is
+          // display policy, and it happens to single a chip out only for some characters.
+          const chip = row.createSpan({ cls: "pc-def-chip", attr: { "data-type": entry.value } });
+          if (entry.origin !== "manual") chip.addClass("granted");
           // `value` is canonical (toDefenseSlug); `label` is the first-spelling-wins
           // authored display string. Condition immunities get the PascalCase label
           // table, keyed on the canonical value, and fall back to the authored label.

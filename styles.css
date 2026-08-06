@@ -5530,6 +5530,13 @@ body.theme-light .archivist-tag-atk:hover {
 .archivist-pc-sheet .pc-def-chip .pc-def-chip-x:hover {
   opacity: 1;
 }
+/* Not manually added (a rules grant or a worn item): dashed border + softer ink,
+   matching the shipped `.pc-prof-modal-chip.granted`. It keeps its ×, because
+   suppressing a granted entry is what the remove list is for. */
+.archivist-pc-sheet .pc-def-chip.granted {
+  border-style: dashed;
+  color: var(--pc-text-soft);
+}
 
 /* SP4b — single + button on the DEFENSES title row (mirrors .pc-cond-add). */
 .archivist-pc-sheet .pc-def-cond-left .pc-def-add-main {
