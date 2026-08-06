@@ -55,10 +55,15 @@ export class DefensesConditionsPanel implements SheetComponent {
         row.createEl("b", { text: label });
         row.appendText(" ");
         for (const entry of vals) {
-          // `data-type` is the canonical slug, and it is ADDRESSING, not decoration: two chips
-          // in one row are otherwise indistinguishable to a selector, so `.pc-def-chip-x` alone
-          // can only ever reach the first. Do not substitute `.granted` for it · that class is
-          // display policy, and it happens to single a chip out only for some characters.
+          // `data-type` is the canonical slug, and it is ADDRESSING, not decoration: without it
+          // the only thing separating two chips in a row is POSITION, so `.pc-def-chip-x`
+          // resolves to the first and naming the second needs an order-fragile `:nth-child`.
+          // Do not substitute `.granted` for it · that class is display policy, and it happens
+          // to single a chip out only for some characters.
+          // NOT a unique address, by design: the same slug in two buckets (resistances AND
+          // immunities to fire) renders two chips that both match `[data-type="fire"]`, because
+          // neither the chip nor its `p.pc-def-line` carries the bucket. A `data-bucket` on the
+          // row would close that; no surface needs it yet.
           const chip = row.createSpan({ cls: "pc-def-chip", attr: { "data-type": entry.value } });
           if (entry.origin !== "manual") chip.addClass("granted");
           // `value` is canonical (toDefenseSlug); `label` is the first-spelling-wins

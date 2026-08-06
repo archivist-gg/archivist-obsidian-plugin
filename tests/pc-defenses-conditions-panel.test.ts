@@ -1,5 +1,7 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, beforeAll, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { DefensesConditionsPanel } from "../packages/obsidian/src/modules/pc/components/defenses-conditions-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
@@ -263,7 +265,7 @@ describe("DefensesConditionsPanel · granted marking + data-type addressing", ()
     });
   });
 
-  it("a [data-type] selector reaches a bucket's SECOND chip, which a bare .pc-def-chip-x cannot", () => {
+  it("a [data-type] selector reaches a row's SECOND chip, where a bare .pc-def-chip-x resolves to the first", () => {
     const root = mountContainer();
     const editState = { removeDefense: vi.fn() };
     new DefensesConditionsPanel().render(root, ctx({
@@ -275,12 +277,36 @@ describe("DefensesConditionsPanel · granted marking + data-type addressing", ()
       },
       editState,
     }));
-    // What a CDP `--click '… .pc-def-chip-x'` resolves to: the FIRST match, Fire.
+    // What a CDP `--click '… .pc-def-chip-x'` resolves to: the FIRST match, whose chip is Fire.
+    // cdp-verify's --click is a `document.querySelector`, so this is the real resolution rule.
     expect(root.querySelector(".pc-def-chip")!.getAttribute("data-type")).toBe("fire");
+    const firstX = root.querySelector<HTMLElement>(".pc-def-chip-x")!;
+    expect(firstX.closest(".pc-def-chip")!.getAttribute("data-type")).toBe("fire");
     // `data-type` names the second one outright, without leaning on `.granted` (a
-    // display-policy class) to do the addressing.
+    // display-policy class) to do the addressing. A positional `:nth-child` could also
+    // reach it · that is order-fragile, not impossible.
     root.querySelector<HTMLElement>('.pc-def-chip[data-type="psychic"] .pc-def-chip-x')!.click();
     expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
     expect(editState.removeDefense).toHaveBeenCalledTimes(1);
+  });
+});
+
+// CSS-source contract (jsdom does no layout; same pattern as pc-ac-tooltip.test.ts and
+// pc-portrait-picker-modal.test.ts, which read THIS file). This is the only PRESENCE guard on
+// the rule: `check:css` compares styles.css against a fresh build, so it catches a stale
+// artifact, not a deleted one · deleting the rule from the partial AND re-running build:css
+// leaves `check:css` green (measured rc=0, on this tree). THIS test is what goes red.
+describe("defense chip .granted CSS contract", () => {
+  const cssPath = resolve(__dirname, "../packages/obsidian/src/modules/pc/styles/components.css");
+  const ruleOf = (selector: string): string => {
+    const css = readFileSync(cssPath, "utf8");
+    const match = css.match(new RegExp(selector.replace(/[.\\[\]()]/g, "\\$&") + "\\s*\\{([^}]+)\\}"));
+    expect(match, `${selector} rule missing from components.css`).toBeTruthy();
+    return (match as RegExpMatchArray)[1];
+  };
+  it("the rule exists in components.css and declares a dashed border + soft ink", () => {
+    const block = ruleOf(".archivist-pc-sheet .pc-def-chip.granted");
+    expect(block).toMatch(/border-style:\s*dashed/);
+    expect(block).toMatch(/color:\s*var\(--pc-text-soft/);
   });
 });
