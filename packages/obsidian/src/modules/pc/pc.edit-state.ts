@@ -10,12 +10,25 @@ import { resolveEntityForEntry } from "@archivist-gg/dnd5e/pc/pc.slotting";
 import { computeRestPlan, type RestCategoryId } from "@archivist-gg/dnd5e/pc/pc.rest";
 import { computeEffectiveProficiencies } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
+import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
 import { applyRestResets } from "./pc.rest";
 
 export interface EditStateContext {
   resolved: ResolvedCharacter;
   derived: DerivedStats;
 }
+
+/** The four defense buckets, DERIVED from the suppression store rather than re-typed, so a
+ *  fifth bucket cannot be added on one side only. `character.defenses` carries the same four. */
+type DefenseBucket = keyof NonNullable<Character["overrides"]["defenses"]>;
+
+/** The three damage buckets the public `add/removeDefense` pair accepts · condition
+ *  immunities keep their own named pair because the picker and the panel call them that. */
+type DamageDefenseKind = Exclude<DefenseBucket, "condition_immunities">;
+
+const DEFENSE_BUCKETS: readonly DefenseBucket[] = [
+  "resistances", "immunities", "vulnerabilities", "condition_immunities",
+];
 
 /** Wrap a bare compendium slug as a [[wikilink]]; pass through existing links;
  *  empty string returns empty. Mirrors the inline wrapping done elsewhere in
@@ -242,6 +255,28 @@ export class CharacterEditState {
   }
 
   // ─── Defenses ──────────────────────────────────────────────────────
+  //
+  // Spec R4-P5 §3.5. These are POSTCONDITION mutators, like the proficiency pair below:
+  // `overrides.defenses.<bucket>.remove[]` SUPPRESSES a value some rule currently supplies
+  // (a grant, a worn item), while `character.defenses.<bucket>` is the additive manual list.
+  // There is deliberately NO additive override channel · see the store's comment in
+  // pc.schema.ts for why completing that pattern would recreate the divergence R4-P5 removes.
+  //
+  // Values are stored RAW and compared CANONICALLY through `toDefenseSlug`, so the authored
+  // spelling ("Psychic") survives a round trip while two spellings of one value can never
+  // both be stored.
+  //
+  // ⚠️ The pair is NOT symmetric with `addProficiency`/`removeProficiency`, and the reason is
+  // easy to get wrong. P3b re-asks `computeEffectiveProficiencies` AFTER its mutation because
+  // that is a pure exported function. Defenses have no such function: they are composed only
+  // inside `recalc`, and `derived` does not recompute inside a mutator. Worse, a suppressed
+  // value is ABSENT from `derived.defenses` entirely (recalc subtracts it), so in the ADD
+  // direction there is no `DefenseEntry` whose `origin` could be read at all.
+  //
+  // The resolution is an INVARIANT, not a query: `removeDefense` writes a suppression ONLY
+  // when `origin !== "manual"`, therefore MEMBERSHIP IN `remove[]` IS ITSELF THE PROOF that a
+  // non-manual source existed. `addDefense` needs no lookup.
+
   private ensureDefenses(): NonNullable<Character["defenses"]> {
     if (!this.character.defenses) {
       this.character.defenses = {
@@ -259,34 +294,118 @@ export class CharacterEditState {
     return d;
   }
 
-  addDefense(kind: "resistances" | "immunities" | "vulnerabilities", type: string): void {
-    const d = this.ensureDefenses();
-    const list = d[kind]!;
-    if (!list.includes(type)) list.push(type);
+  private ensureDefenseOverride(bucket: DefenseBucket) {
+    const o = this.character.overrides;
+    // No `!` on either return path: `??=` already narrows, and the repo's
+    // no-unnecessary-type-assertion rule rejects the redundant assertion.
+    o.defenses ??= {};
+    const d = o.defenses;
+    d[bucket] ??= {};
+    return d[bucket];
+  }
+
+  /** Empty arrays and empty containers go back to `delete`, never to `[]`/`{}` (precedent:
+   *  `pruneProfOverride` below). Without this a suppress-then-restore round trip leaves a
+   *  residual `defenses: { resistances: {} }` and the note does not return to its bytes. */
+  private pruneDefenseOverride(bucket: DefenseBucket): void {
+    const d = this.character.overrides.defenses;
+    if (!d) return;
+    const s = d[bucket];
+    if (s) {
+      if (s.remove?.length === 0) delete s.remove;
+      if (!s.remove) delete d[bucket];
+    }
+    if (Object.keys(d).length === 0) delete this.character.overrides.defenses;
+  }
+
+  /** Same rule for the ADDITIVE store. A note that never carried a `defenses:` key at all
+   *  (the common case) must not gain one just because the user suppressed and restored a
+   *  grant, so an all-empty container is deleted outright. Once the key IS present the
+   *  schema materializes all four buckets on parse regardless, so only key-less notes are
+   *  at byte risk. */
+  private pruneDefenses(): void {
+    const d = this.character.defenses;
+    if (!d) return;
+    for (const bucket of DEFENSE_BUCKETS) {
+      if (d[bucket]?.length === 0) delete d[bucket];
+    }
+    if (Object.keys(d).length === 0) delete this.character.defenses;
+  }
+
+  /** Postcondition: the value IS supplied afterwards. Shared by all four public mutators ·
+   *  A-N8 requires the condition bucket to behave identically, and one body is the only way
+   *  to guarantee that it keeps doing so. */
+  private addDefenseValue(bucket: DefenseBucket, value: string): void {
+    const slug = toDefenseSlug(value);
+    const store = this.character.overrides.defenses?.[bucket];
+    const before = store?.remove ?? [];
+    if (store && before.some((v) => toDefenseSlug(v) === slug)) {
+      store.remove = before.filter((v) => toDefenseSlug(v) !== slug);
+      this.pruneDefenseOverride(bucket);
+      // STOP. Membership in remove[] was itself proof that a non-manual source existed,
+      // because removeDefense only ever writes a suppression when origin !== "manual".
+      // Stripping it restores that source, so pushing to the manual list here would
+      // duplicate the value and change the bytes.
+      //
+      // Two other shapes can put a value in remove[], and they do NOT behave alike:
+      //   · a hand-authored suppression of a value that IS in the manual list heals on THIS
+      //     tap · the subtraction was the only thing hiding it, so it reappears at once;
+      //   · a suppression whose source has since disappeared needs a SECOND tap, which finds
+      //     nothing in remove[] and adds it manually.
+      this.onChange();
+      return;
+    }
+    // Membership test BEFORE `ensureDefenses()`: a duplicate add must neither materialize
+    // four arrays on a key-less note nor dirty the file.
+    const manual = this.character.defenses?.[bucket] ?? [];
+    if (manual.some((v) => toDefenseSlug(v) === slug)) return;
+    this.ensureDefenses()[bucket]!.push(value);
     this.onChange();
   }
 
-  removeDefense(kind: "resistances" | "immunities" | "vulnerabilities", type: string): void {
-    const d = this.ensureDefenses();
-    const list = d[kind]!;
-    const i = list.indexOf(type);
-    if (i >= 0) list.splice(i, 1);
+  /** Postcondition: the value is NOT supplied afterwards. */
+  private removeDefenseValue(bucket: DefenseBucket, value: string): void {
+    const slug = toDefenseSlug(value);
+    const manual = this.character.defenses?.[bucket] ?? [];
+    const i = manual.findIndex((v) => toDefenseSlug(v) === slug);
+    // `entry.value` is canonical by construction (the engine builds it with toDefenseSlug),
+    // so this compares slug to slug. Read off the PRE-mutation derived · `pc.view.ts:154`
+    // closes over `this.derived`, recomputed only in `handleChange` at `:177`, which runs
+    // after our `onChange()`.
+    const entry = this.getContext().derived.defenses[bucket].find((e) => e.value === slug);
+    if (i < 0 && !entry) return;   // genuine no-op: do NOT dirty the file
+    // `i >= 0` proves `manual` is the live array, not the `?? []` fallback.
+    if (i >= 0) manual.splice(i, 1);
+    // If anything other than the manual list supplies this value, dropping the manual entry
+    // is not enough and the value must be suppressed.
+    if (entry && entry.origin !== "manual") {
+      const store = this.ensureDefenseOverride(bucket);
+      if (!(store.remove ?? []).some((v) => toDefenseSlug(v) === slug)) {
+        (store.remove ??= []).push(value);
+      }
+    }
+    this.pruneDefenses();
+    this.pruneDefenseOverride(bucket);
     this.onChange();
   }
 
-  addConditionImmunity(slug: ConditionSlug): void {
-    const d = this.ensureDefenses();
-    const list = d.condition_immunities!;
-    if (!list.includes(slug)) list.push(slug);
-    this.onChange();
+  addDefense(kind: DamageDefenseKind, type: string): void {
+    this.addDefenseValue(kind, type);
   }
 
-  removeConditionImmunity(slug: ConditionSlug): void {
-    const d = this.ensureDefenses();
-    const list = d.condition_immunities!;
-    const i = list.indexOf(slug);
-    if (i >= 0) list.splice(i, 1);
-    this.onChange();
+  removeDefense(kind: DamageDefenseKind, type: string): void {
+    this.removeDefenseValue(kind, type);
+  }
+
+  /** `string`, not `ConditionSlug` (C-1): the picker unions in whatever
+   *  `derived.condition_immunities` holds, which an overlay can populate with a condition
+   *  outside `CONDITION_SLUGS`. Widening is backwards-compatible with every caller. */
+  addConditionImmunity(slug: string): void {
+    this.addDefenseValue("condition_immunities", slug);
+  }
+
+  removeConditionImmunity(slug: string): void {
+    this.removeDefenseValue("condition_immunities", slug);
   }
 
   // ─── Hit dice ──────────────────────────────────────────────────────

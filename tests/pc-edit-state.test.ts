@@ -33,7 +33,20 @@ const MINIMAL_YAML = [
   "  inspiration: 0",
 ].join("\n");
 
-function makeState(over?: (c: Character) => void): { es: CharacterEditState; char: Character; onChange: ReturnType<typeof vi.fn> } {
+/**
+ * `derivedDefenses` seeds `getContext().derived.defenses`, which the R4-P5 defense
+ * mutators read to decide whether a removal needs a SUPPRESSION. Without it the first
+ * `removeDefense` call dies on `Cannot read properties of undefined (reading 'resistances')`.
+ * All four buckets default to empty, so every pre-existing caller is unaffected.
+ *
+ * The seed is STATIC: it does not recompute between mutator calls, which is exactly what
+ * the production closure does too (`pc.view.ts:154` closes over `this.derived`, recomputed
+ * only in `handleChange` at `:177`, i.e. AFTER the mutator's `onChange()`).
+ */
+function makeState(
+  over?: (c: Character) => void,
+  derivedDefenses?: Partial<DerivedStats["defenses"]>,
+): { es: CharacterEditState; char: Character; onChange: ReturnType<typeof vi.fn> } {
   const parsed = parsePC(MINIMAL_YAML);
   if (!parsed.success) throw new Error(parsed.error);
   const char = parsed.data;
@@ -43,7 +56,13 @@ function makeState(over?: (c: Character) => void): { es: CharacterEditState; cha
     char,
     () => ({
       resolved: { classes: [{ entity: { saving_throws: ["str", "con"] } }] } as unknown as ResolvedCharacter,
-      derived: { hp: { max: 24, current: char.state.hp.current, temp: char.state.hp.temp } } as unknown as DerivedStats,
+      derived: {
+        hp: { max: 24, current: char.state.hp.current, temp: char.state.hp.temp },
+        defenses: {
+          resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [],
+          ...derivedDefenses,
+        },
+      } as unknown as DerivedStats,
     }),
     onChange,
   );
@@ -593,8 +612,8 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     es.addDefense("resistances", "fire");
     es.addDefense("resistances", "fire");
     expect(char.defenses?.resistances).toEqual(["fire"]);
-    // Both calls notify (mutator doesn't know outcome in advance)
-    expect(onChange).toHaveBeenCalledTimes(2);
+    // R4-P5 Task 6: the duplicate is a no-op, and a no-op must not dirty the file.
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 
   it("addDefense keeps kinds independent", () => {
@@ -615,11 +634,12 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     expect(char.defenses?.resistances).toEqual(["cold"]);
   });
 
-  it("removeDefense on missing entry is a no-op but still notifies", () => {
+  it("removeDefense on missing entry is a no-op and does NOT notify", () => {
     const { es, char, onChange } = makeState();
     es.removeDefense("resistances", "acid");
     expect(char.defenses?.resistances ?? []).toEqual([]);
-    expect(onChange).toHaveBeenCalled();
+    // R4-P5 Task 6: nothing in the manual list and nothing in `derived` · no dirty.
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it("addConditionImmunity stores slug in defenses.condition_immunities", () => {
@@ -641,6 +661,176 @@ describe("CharacterEditState — defenses (SP4b)", () => {
     es.addConditionImmunity("frightened");
     es.removeConditionImmunity("charmed");
     expect(char.defenses?.condition_immunities).toEqual(["frightened"]);
+  });
+});
+
+/**
+ * R4-P5 Task 6 · the defense mutators are POSTCONDITION pairs, not token swaps.
+ *
+ * Every fixture below authors a spelling that DIFFERS from the canonical slug
+ * ("Psychic"/"psychic", "Fire"/"fire", "Charmed"/"charmed"). That is deliberate: the
+ * buckets previously seeded `label === value` everywhere, which made it impossible for
+ * any assertion to prove WHICH field a caller read or WHICH spelling a mutator stored.
+ */
+const GRANT_PSYCHIC = { value: "psychic", label: "Psychic", origin: "grant" as const };
+const MANUAL_FIRE = { value: "fire", label: "Fire", origin: "manual" as const };
+const MANUAL_COLD = { value: "cold", label: "Cold", origin: "manual" as const };
+
+describe("CharacterEditState: defenses · postcondition pair (R4-P5 Task 6)", () => {
+  it("suppresses a granted defense instead of no-oping, storing the RAW spelling", () => {
+    const { es, char, onChange } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");
+    expect(char.overrides.defenses?.resistances?.remove).toEqual(["Psychic"]);
+    // A key-less note stays key-less: nothing was in the manual list to splice.
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("suppresses per bucket · a resistance suppression leaves the other three absent", () => {
+    const { es, char } = makeState(undefined, { immunities: [GRANT_PSYCHIC] });
+    es.removeDefense("immunities", "psychic");
+    expect(char.overrides.defenses?.immunities?.remove).toEqual(["psychic"]);
+    expect(Object.keys(char.overrides.defenses ?? {})).toEqual(["immunities"]);
+  });
+
+  it("matches the manual list CANONICALLY, not by identity", () => {
+    // The panel hands the mutator `entry.value` (canonical) while the note authored "Fire".
+    // An `indexOf` compare misses this and the chip never leaves the sheet.
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: ["Fire"], immunities: [], vulnerabilities: [], condition_immunities: [] }; },
+      { resistances: [MANUAL_FIRE] },
+    );
+    es.removeDefense("resistances", "fire");
+    // Purely manual · NO suppression, and every bucket is now empty so the key goes away.
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+  });
+
+  it("does not write a suppression when removing a purely manual defense", () => {
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: ["Fire", "Cold"], immunities: [], vulnerabilities: [], condition_immunities: [] }; },
+      { resistances: [MANUAL_FIRE, MANUAL_COLD] },
+    );
+    es.removeDefense("resistances", "Fire");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses?.resistances).toEqual(["Cold"]);
+  });
+
+  it("writes the suppression once, whatever spelling the second tap uses", () => {
+    const { es, char } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");
+    es.removeDefense("resistances", "psychic");
+    expect(char.overrides.defenses?.resistances?.remove).toEqual(["Psychic"]);
+  });
+
+  it("a grant-only suppress → restore round trip returns the note to its original bytes", () => {
+    const { es, char, onChange } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");
+    es.addDefense("resistances", "Psychic");
+    // Membership in remove[] was itself the proof that a non-manual source existed, so
+    // stripping the suppression is sufficient · nothing is pushed to the manual list.
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("strips the suppression on a canonical match, not an exact one", () => {
+    const { es, char } = makeState(undefined, { resistances: [GRANT_PSYCHIC] });
+    es.removeDefense("resistances", "Psychic");   // stores "Psychic"
+    es.addDefense("resistances", "psychic");      // the panel's canonical spelling
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+  });
+
+  it("a value supplied by BOTH the manual list and a grant loses the manual entry on a round trip", () => {
+    // Spec §3.5 edge case 1. `origin` is strongest-wins, so the entry reports "grant";
+    // removeDefense splices the manual entry AND suppresses, and addDefense adds nothing
+    // back. LOSSY and NOT self-healing · the rendered sheet is unchanged, so severity is
+    // LOW, but this is pinned so nobody "restores" the bytes claim to this case.
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: ["Psychic"], immunities: [], vulnerabilities: [], condition_immunities: [] }; },
+      { resistances: [GRANT_PSYCHIC] },
+    );
+    es.removeDefense("resistances", "Psychic");
+    expect(char.defenses).toBeUndefined();
+    expect(char.overrides.defenses?.resistances?.remove).toEqual(["Psychic"]);
+    es.addDefense("resistances", "Psychic");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();   // the manual entry is gone for good
+  });
+
+  it("does not fire onChange when a removal is a no-op", () => {
+    const { es, char, onChange } = makeState();
+    es.removeDefense("resistances", "not-present-anywhere");
+    expect(onChange).not.toHaveBeenCalled();
+    // D-2's second half: a key-less note must not be re-persisted with four empty arrays.
+    expect(char.defenses).toBeUndefined();
+    expect(char.overrides.defenses).toBeUndefined();
+  });
+
+  it("does not fire onChange or materialize buckets when an add is a duplicate", () => {
+    const { es, char, onChange } = makeState((c) => { c.defenses = { resistances: ["Fire"] }; });
+    es.addDefense("resistances", "fire");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(char.defenses?.resistances).toEqual(["Fire"]);
+    expect(Object.keys(char.defenses ?? {})).toEqual(["resistances"]);
+  });
+});
+
+describe("CharacterEditState: condition immunities · postcondition pair (R4-P5 Task 6)", () => {
+  const GRANT_CHARMED = { value: "charmed", label: "Charmed", origin: "grant" as const };
+
+  it("suppresses a granted condition immunity instead of no-oping", () => {
+    const { es, char, onChange } = makeState(undefined, { condition_immunities: [GRANT_CHARMED] });
+    es.removeConditionImmunity("Charmed");
+    expect(char.overrides.defenses?.condition_immunities?.remove).toEqual(["Charmed"]);
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not write a suppression when removing a purely manual condition immunity", () => {
+    const { es, char } = makeState(
+      (c) => { c.defenses = { resistances: [], immunities: [], vulnerabilities: [], condition_immunities: ["Charmed"] }; },
+      { condition_immunities: [{ value: "charmed", label: "Charmed", origin: "manual" as const }] },
+    );
+    es.removeConditionImmunity("charmed");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+  });
+
+  it("a grant-only suppress → restore round trip returns the note to its original bytes", () => {
+    const { es, char, onChange } = makeState(undefined, { condition_immunities: [GRANT_CHARMED] });
+    es.removeConditionImmunity("Charmed");
+    es.addConditionImmunity("charmed");
+    expect(char.overrides.defenses).toBeUndefined();
+    expect(char.defenses).toBeUndefined();
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not fire onChange when a condition-immunity removal is a no-op", () => {
+    const { es, char, onChange } = makeState();
+    es.removeConditionImmunity("petrified");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(char.defenses).toBeUndefined();
+    expect(char.overrides.defenses).toBeUndefined();
+  });
+
+  it("does not fire onChange or materialize buckets when a condition immunity is added twice", () => {
+    const { es, char, onChange } = makeState((c) => { c.defenses = { condition_immunities: ["Charmed"] }; });
+    es.addConditionImmunity("charmed");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(char.defenses?.condition_immunities).toEqual(["Charmed"]);
+    expect(Object.keys(char.defenses ?? {})).toEqual(["condition_immunities"]);
+  });
+
+  it("accepts an off-vocabulary value · C-1 widened the signature from ConditionSlug to string", () => {
+    // The picker unions in whatever `derived.condition_immunities` holds, which a homebrew
+    // overlay can populate with a condition outside CONDITION_SLUGS.
+    const { es, char } = makeState(undefined, {
+      condition_immunities: [{ value: "dazed", label: "Dazed", origin: "grant" as const }],
+    });
+    es.removeConditionImmunity("Dazed");
+    expect(char.overrides.defenses?.condition_immunities?.remove).toEqual(["Dazed"]);
   });
 });
 

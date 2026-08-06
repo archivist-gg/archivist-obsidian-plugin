@@ -70,7 +70,9 @@ export class DefensesConditionsPanel implements SheetComponent {
               e.stopPropagation();
               // Mutators key on the canonical value, never the display label.
               if (key === "condition_immunities") {
-                editState.removeConditionImmunity(entry.value as ConditionSlug);
+                // No cast: R4-P5 C-1 widened the parameter to `string`, because the picker
+                // unions in whatever `derived.condition_immunities` holds.
+                editState.removeConditionImmunity(entry.value);
               } else {
                 editState.removeDefense(key, entry.value);
               }

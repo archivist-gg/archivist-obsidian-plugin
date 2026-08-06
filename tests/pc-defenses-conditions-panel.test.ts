@@ -19,6 +19,16 @@ function ents(...vals: string[]): DefenseEntry[] {
   return vals.map((v) => ({ value: v, label: v, origin: "manual" as const }));
 }
 
+/**
+ * One entry whose AUTHORED spelling differs from the canonical slug. `ents` above cannot
+ * express that, and while every fixture in this file used it no assertion could tell which
+ * of the two fields the panel read · the `entry.value` → `entry.label` mutation on both
+ * mutator call sites was measured surviving the whole 281-file suite.
+ */
+function ent(value: string, label: string): DefenseEntry {
+  return { value, label, origin: "grant" as const };
+}
+
 function ctx(p: { defenses?: Defenses; conditions?: string[]; exhaustion?: number; editState?: unknown } = {}): ComponentRenderContext {
   return {
     derived: {
@@ -177,6 +187,33 @@ describe("DefensesConditionsPanel — editable left pane (SP4b)", () => {
     }));
     const chip = root.querySelector(".pc-def-cond-left .pc-def-chip")!;
     (chip.querySelector<HTMLElement>(".pc-def-chip-x"))!.click();
+    expect(editState.removeConditionImmunity).toHaveBeenCalledWith("charmed");
+  });
+
+  it("× hands the mutators the canonical `value`, never the displayed `label`", () => {
+    const root = mountContainer();
+    const editState = { removeDefense: vi.fn(), removeConditionImmunity: vi.fn() };
+    new DefensesConditionsPanel().render(root, ctx({
+      defenses: {
+        resistances: [ent("psychic", "Psychic")],
+        immunities: ents(),
+        vulnerabilities: ents(),
+        condition_immunities: [ent("charmed", "CHARMED")],
+      },
+      editState,
+    }));
+    const chips = [...root.querySelectorAll<HTMLElement>(".pc-def-cond-left .pc-def-chip")];
+    expect(chips.length).toBe(2);
+    // The chip DISPLAYS the authored spelling (and the PascalCase table for conditions)…
+    expect(chips.map((c) => c.querySelector(".pc-def-chip-label")?.textContent)).toEqual([
+      "Psychic",
+      "Charmed",
+    ]);
+    // …but both mutators receive the canonical slug, which is what `overrides.defenses.*
+    // .remove[]` and the manual list are matched on.
+    chips[0].querySelector<HTMLElement>(".pc-def-chip-x")!.click();
+    expect(editState.removeDefense).toHaveBeenCalledWith("resistances", "psychic");
+    chips[1].querySelector<HTMLElement>(".pc-def-chip-x")!.click();
     expect(editState.removeConditionImmunity).toHaveBeenCalledWith("charmed");
   });
 });
