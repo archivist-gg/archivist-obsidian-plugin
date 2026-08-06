@@ -3,6 +3,7 @@ import { CharacterEditState, type EditStateContext } from "../packages/obsidian/
 import { parsePC } from "@archivist-gg/dnd5e/pc/pc.parser";
 import { computeEffectiveProficiencies } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { toProfSlug } from "@archivist-gg/dnd5e/pc/pc.proficiency-normalize";
+import { characterToYaml } from "../packages/obsidian/src/modules/pc/pc.yaml-serializer";
 import { buildEquipmentRegistry } from "./fixtures/pc/equipment-fixtures";
 import type { Character, DerivedStats, ResolvedCharacter } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -768,6 +769,19 @@ describe("CharacterEditState: defenses · postcondition pair (R4-P5 Task 6)", ()
     expect(char.overrides.defenses).toBeUndefined();
   });
 
+  it("an add on a key-less note SERIALIZES one bucket, not three empty siblings", () => {
+    // §3.5 addDefense step 4 ("prune both sides") on the PUSH path. Object state alone cannot
+    // see this defect: `immunities: []` and a deleted `immunities` key read identically through
+    // the `?? []` that every consumer uses, which is why it went unguarded. Only the emitted
+    // yaml, i.e. what actually lands in the user's note, tells them apart.
+    const { es, char } = makeState();
+    expect(char.defenses).toBeUndefined();
+    es.addDefense("resistances", "fire");
+    const emitted = characterToYaml(char);
+    expect(emitted).toContain("defenses:\n  resistances:\n    - fire\n");
+    expect(emitted).not.toMatch(/^ {2}(immunities|vulnerabilities|condition_immunities): \[\]$/m);
+  });
+
   it("does not fire onChange or materialize buckets when an add is a duplicate", () => {
     const { es, char, onChange } = makeState((c) => { c.defenses = { resistances: ["Fire"] }; });
     es.addDefense("resistances", "fire");
@@ -813,6 +827,14 @@ describe("CharacterEditState: condition immunities · postcondition pair (R4-P5 
     expect(onChange).not.toHaveBeenCalled();
     expect(char.defenses).toBeUndefined();
     expect(char.overrides.defenses).toBeUndefined();
+  });
+
+  it("an add on a key-less note SERIALIZES one bucket, not three empty siblings", () => {
+    const { es, char } = makeState();
+    es.addConditionImmunity("charmed");
+    const emitted = characterToYaml(char);
+    expect(emitted).toContain("defenses:\n  condition_immunities:\n    - charmed\n");
+    expect(emitted).not.toMatch(/^ {2}(resistances|immunities|vulnerabilities): \[\]$/m);
   });
 
   it("does not fire onChange or materialize buckets when a condition immunity is added twice", () => {

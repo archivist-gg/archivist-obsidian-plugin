@@ -341,7 +341,6 @@ export class CharacterEditState {
     const before = store?.remove ?? [];
     if (store && before.some((v) => toDefenseSlug(v) === slug)) {
       store.remove = before.filter((v) => toDefenseSlug(v) !== slug);
-      this.pruneDefenseOverride(bucket);
       // STOP. Membership in remove[] was itself proof that a non-manual source existed,
       // because removeDefense only ever writes a suppression when origin !== "manual".
       // Stripping it restores that source, so pushing to the manual list here would
@@ -352,14 +351,21 @@ export class CharacterEditState {
       //     tap · the subtraction was the only thing hiding it, so it reappears at once;
       //   · a suppression whose source has since disappeared needs a SECOND tap, which finds
       //     nothing in remove[] and adds it manually.
-      this.onChange();
-      return;
+    } else {
+      // Membership test BEFORE `ensureDefenses()`: a duplicate add must neither materialize
+      // four arrays on a key-less note nor dirty the file.
+      const manual = this.character.defenses?.[bucket] ?? [];
+      if (manual.some((v) => toDefenseSlug(v) === slug)) return;
+      this.ensureDefenses()[bucket]!.push(value);
     }
-    // Membership test BEFORE `ensureDefenses()`: a duplicate add must neither materialize
-    // four arrays on a key-less note nor dirty the file.
-    const manual = this.character.defenses?.[bucket] ?? [];
-    if (manual.some((v) => toDefenseSlug(v) === slug)) return;
-    this.ensureDefenses()[bucket]!.push(value);
+    // §3.5 addDefense step 4, "prune BOTH sides", and it applies to BOTH paths. The push path
+    // needs it as much as the strip path: `ensureDefenses()` materializes all four buckets, so
+    // without this an add on a key-less note emits three `[]` siblings that the next
+    // `removeDefenseValue` would delete again · the note's shape would flip-flop with whichever
+    // mutator ran last. Assert the SERIALIZED yaml, not the object: `[]` and a deleted key are
+    // indistinguishable through `?? []` readers, which is why this went unguarded.
+    this.pruneDefenses();
+    this.pruneDefenseOverride(bucket);
     this.onChange();
   }
 
@@ -380,6 +386,12 @@ export class CharacterEditState {
     // is not enough and the value must be suppressed.
     if (entry && entry.origin !== "manual") {
       const store = this.ensureDefenseOverride(bucket);
+      // ⚠️ This dedupe is DEFENSIVE, not a live guard, and a mutation test that kills it is
+      // reporting a fixture artifact. In production a second tap cannot reach here: `onChange`
+      // runs `handleChange` synchronously, which recomputes `derived`, and `suppress()` has by
+      // then subtracted the value · so the second tap finds `i < 0 && !entry` and returns at
+      // the no-op guard above. Only a test harness holding `derived` static reaches this line.
+      // It stays because a hand-authored `remove[]` can already contain the value.
       if (!(store.remove ?? []).some((v) => toDefenseSlug(v) === slug)) {
         (store.remove ??= []).push(value);
       }
