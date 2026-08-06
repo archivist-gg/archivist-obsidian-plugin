@@ -1,7 +1,11 @@
 import { setTooltip } from "obsidian";
 import type { SheetComponent, ComponentRenderContext } from "./component.types";
 import { openConditionsPopover } from "./conditions-popover";
-import { openDefenseTypePopover, type DefenseKind } from "./defense-type-popover";
+import {
+  openDefenseTypePopover,
+  refreshDefenseTypePopover,
+  type DefenseKind,
+} from "./defense-type-popover";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
 import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
 
@@ -30,17 +34,32 @@ export class DefensesConditionsPanel implements SheetComponent {
     const left = panel.createDiv({ cls: "pc-def-cond-left" });
     const leftHead = left.createDiv({ cls: "pc-def-cond-head" });
     leftHead.createDiv({ cls: "pc-def-cond-title", text: "DEFENSES" });
+    let defAdd: HTMLButtonElement | null = null;
     if (ctx.editState) {
-      const defAdd = leftHead.createEl("button", {
+      defAdd = leftHead.createEl("button", {
         cls: "pc-def-add-main",
         text: "+",
         attr: { title: "Add defense" },
       });
-      defAdd.addEventListener("click", (e) => {
+      // A `const` alias for the handler: `defAdd` is a `let`, which TypeScript
+      // will not narrow to non-null inside a closure.
+      const addBtn = defAdd;
+      addBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        openDefenseTypePopover(defAdd, ctx);
+        openDefenseTypePopover(addBtn, ctx);
       });
     }
+    // Repaint an open defense picker from THIS render's ctx, and rebind it to the
+    // `+` above · the one it was opened against has just been destroyed. Called
+    // UNCONDITIONALLY, as `HpWidget.render`, `SpellsTab.render` and
+    // `ProficienciesPanel.render` call their own refreshers: the refresher already
+    // no-ops when nothing is open, and a read-mode render is precisely the pass
+    // that has to CLOSE the picker rather than skip it. It cannot sit at the TOP of
+    // render the way those three do, because the anchor it rebinds to is created
+    // directly above it; read mode builds no `+` at all, so `null` goes in and
+    // `refreshDefenseTypePopover`'s editState guard closes the picker before any
+    // anchor is read.
+    refreshDefenseTypePopover(ctx, defAdd);
 
     const def = ctx.derived.defenses;
     const leftBody = left.createDiv({ cls: "pc-def-body" });

@@ -1,4 +1,5 @@
 import type { ComponentRenderContext } from "./component.types";
+import type { CharacterEditState } from "../pc.edit-state";
 import type { DefenseEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "@archivist-gg/dnd5e/pc/conditions.constants";
@@ -88,7 +89,19 @@ function unionDefenseOptions(
   return [...bySlug.values()];
 }
 
-let current: { root: HTMLElement; cleanup: () => void } | null = null;
+/**
+ * The open popover, or null. `openedWith` and `refresh` are what make it a LIVE
+ * surface rather than a snapshot: the same singleton shape the four modal
+ * refreshers use (max-hp, coin, spell-ability, proficiency).
+ */
+let current: {
+  root: HTMLElement;
+  /** The edit state the popover was opened against · its character identity.
+   *  A repaint carrying a different one is a file switch, not a repaint. */
+  openedWith: CharacterEditState;
+  refresh: (ctx: ComponentRenderContext, anchor: HTMLElement | null) => void;
+  cleanup: () => void;
+} | null = null;
 
 /**
  * Tabbed popover for adding any defense:
@@ -114,10 +127,6 @@ export function openDefenseTypePopover(
 
   const editState = ctx.editState;
   const popover = activeDocument.body.createDiv({ cls: "pc-def-popover" });
-
-  const anchorRect = anchor.getBoundingClientRect();
-  popover.style.top = `${anchorRect.bottom + activeWindow.scrollY + 4}px`;
-  popover.style.left = `${anchorRect.left + activeWindow.scrollX}px`;
 
   popover.createDiv({ cls: "pc-def-popover-header", text: "Add Defense" });
 
@@ -157,68 +166,88 @@ export function openDefenseTypePopover(
   });
   const damageList = damagesPanel.createDiv({ cls: "pc-def-popover-list" });
 
-  // `DAMAGE_TYPES` holds display strings ("Psychic"), so each row's key has to be
-  // canonicalized. Deriving it with `toDefenseSlug`, the one normalizer the whole
-  // defenses path shares, means the value a row COMPARES on and the value it
-  // WRITES through `editState.{add,remove}Defense` are the same string by construction ·
-  // and it is what lets the union below collapse "Fire" and a manual "fire" onto one row.
-  const damageOptions = unionDefenseOptions(
-    DAMAGE_TYPES.map((type) => ({ slug: toDefenseSlug(type), display: type })),
-    [
-      ctx.derived.defenses?.resistances,
-      ctx.derived.defenses?.immunities,
-      ctx.derived.defenses?.vulnerabilities,
-    ],
-  );
+  /**
+   * Rebuild the damage list from `c`. Called once on open and again on every
+   * sheet render through `refreshDefenseTypePopover`, so the rows read the
+   * CURRENT `derived.defenses` rather than the one that happened to be live when
+   * the `+` was clicked.
+   *
+   * Everything above this point is SKELETON, built once and never rebuilt · which
+   * is what carries the active tab across a repaint, the popover's version of the
+   * proficiency modal keeping its typed filter text (proficiency-edit-modal.ts'
+   * buildSkeleton records the same rule).
+   */
+  const paintDamages = (c: ComponentRenderContext) => {
+    damageList.empty();
 
-  for (const { slug, display } of damageOptions) {
-    const row = damageList.createDiv({
-      cls: "pc-def-popover-row",
-      attr: { "data-type": slug },
-    });
-    row.createSpan({ cls: "pc-def-popover-name", text: display });
-    const tri = row.createDiv({ cls: "pc-def-popover-tri" });
+    // `DAMAGE_TYPES` holds display strings ("Psychic"), so each row's key has to be
+    // canonicalized. Deriving it with `toDefenseSlug`, the one normalizer the whole
+    // defenses path shares, means the value a row COMPARES on and the value it
+    // WRITES through `editState.{add,remove}Defense` are the same string by construction ·
+    // and it is what lets the union below collapse "Fire" and a manual "fire" onto one row.
+    const damageOptions = unionDefenseOptions(
+      DAMAGE_TYPES.map((type) => ({ slug: toDefenseSlug(type), display: type })),
+      [
+        c.derived.defenses?.resistances,
+        c.derived.defenses?.immunities,
+        c.derived.defenses?.vulnerabilities,
+      ],
+    );
 
-    const renderRow = (state: DefenseRowState) => {
+    for (const { slug, display } of damageOptions) {
+      const row = damageList.createDiv({
+        cls: "pc-def-popover-row",
+        attr: { "data-type": slug },
+      });
+      row.createSpan({ cls: "pc-def-popover-name", text: display });
+      const tri = row.createDiv({ cls: "pc-def-popover-tri" });
+
+      const renderRow = (state: DefenseRowState) => {
+        for (const kind of ["resistance", "immunity", "vulnerability"] as const) {
+          const pip = tri.querySelector<HTMLButtonElement>(`.pc-def-popover-pip[data-kind="${kind}"]`);
+          if (pip) pip.classList.toggle("on", state === kind);
+        }
+      };
+
+      // Row-local mirror of the tri-state, re-seeded from `c.derived.defenses` on
+      // every repaint; a tap updates it optimistically so the pip answers the
+      // click without waiting for the resolver round-trip. (The data model is
+      // still the source of truth · `editState.{add,remove}Defense` writes
+      // through, and the repaint that follows overwrites this mirror.)
+      const initialState = ((): DefenseRowState => {
+        const d = c.derived.defenses;
+        // Key on `value`, never `label`. `value` is canonical by construction (the engine
+        // builds it with `toDefenseSlug`), whereas `label` preserves the authored spelling,
+        // so a rules-granted "Psychic" only matches this row's canonical slug through `value`.
+        if (d.resistances?.some((e) => e.value === slug)) return "resistance";
+        if (d.immunities?.some((e) => e.value === slug)) return "immunity";
+        if (d.vulnerabilities?.some((e) => e.value === slug)) return "vulnerability";
+        return null;
+      })();
+      let rowState: DefenseRowState = initialState;
+
       for (const kind of ["resistance", "immunity", "vulnerability"] as const) {
-        const pip = tri.querySelector<HTMLButtonElement>(`.pc-def-popover-pip[data-kind="${kind}"]`);
-        if (pip) pip.classList.toggle("on", state === kind);
+        const pip = tri.createEl("button", {
+          cls: "pc-def-popover-pip",
+          text: kind.charAt(0).toUpperCase(),
+          attr: { "data-kind": kind, type: "button" },
+        });
+        pip.addEventListener("click", () => {
+          // The OPEN-TIME `editState`, exactly as the modals write through
+          // `this.openedWith`. It cannot go stale: `refreshDefenseTypePopover`
+          // closes the popover outright when the identity changes, so any repaint
+          // that survives is a repaint of this same edit state.
+          const action = cycleAction(rowState, kind);
+          if (action.removeKind) editState.removeDefense(defenseKindFor(action.removeKind), slug);
+          if (action.addKind) editState.addDefense(defenseKindFor(action.addKind), slug);
+          rowState = action.addKind ?? null;
+          renderRow(rowState);
+        });
       }
-    };
 
-    // Row-local mirror of the tri-state. Seeded from `ctx.derived.defenses`
-    // on first render; subsequent taps update it optimistically so re-renders
-    // don't need a round-trip through the resolver. (The data model is still
-    // the source of truth — `editState.{add,remove}Defense` writes through.)
-    const initialState = ((): DefenseRowState => {
-      const d = ctx.derived.defenses;
-      // Key on `value`, never `label`. `value` is canonical by construction (the engine
-      // builds it with `toDefenseSlug`), whereas `label` preserves the authored spelling,
-      // so a rules-granted "Psychic" only matches this row's canonical slug through `value`.
-      if (d.resistances?.some((e) => e.value === slug)) return "resistance";
-      if (d.immunities?.some((e) => e.value === slug)) return "immunity";
-      if (d.vulnerabilities?.some((e) => e.value === slug)) return "vulnerability";
-      return null;
-    })();
-    let rowState: DefenseRowState = initialState;
-
-    for (const kind of ["resistance", "immunity", "vulnerability"] as const) {
-      const pip = tri.createEl("button", {
-        cls: "pc-def-popover-pip",
-        text: kind.charAt(0).toUpperCase(),
-        attr: { "data-kind": kind, type: "button" },
-      });
-      pip.addEventListener("click", () => {
-        const action = cycleAction(rowState, kind);
-        if (action.removeKind) editState.removeDefense(defenseKindFor(action.removeKind), slug);
-        if (action.addKind) editState.addDefense(defenseKindFor(action.addKind), slug);
-        rowState = action.addKind ?? null;
-        renderRow(rowState);
-      });
+      renderRow(rowState);
     }
-
-    renderRow(rowState);
-  }
+  };
 
   // ─── Panel 2: Conditions ──────────────────────────────────────────
   const conditionsPanel = panels.createDiv({
@@ -227,56 +256,86 @@ export function openDefenseTypePopover(
   });
   const condList = conditionsPanel.createDiv({ cls: "pc-def-popover-list" });
 
-  // Same union, seeded from `CONDITION_SLUGS` · NOT from `dnd/constants`' `CONDITIONS`.
-  // The two vocabularies disagree by one member: `CONDITIONS` carries "Exhaustion", which
-  // `CONDITION_SLUGS` deliberately omits. Seeding from `CONDITIONS` would add a brand-new
-  // row to a shipped picker, which this change is not allowed to do (it is protective, not
-  // corrective), and it would offer a LEVEL-based condition as a boolean immunity. So the
-  // conditions union widens only by what `derived.condition_immunities` actually holds.
-  const conditionOptions = unionDefenseOptions(
-    CONDITION_SLUGS.map((s) => ({ slug: s, display: CONDITION_DISPLAY_NAMES[s] })),
-    [ctx.derived.defenses?.condition_immunities],
-  );
+  /** Rebuild the conditions list from `c` · the damages twin, same repaint rule. */
+  const paintConditions = (c: ComponentRenderContext) => {
+    condList.empty();
 
-  for (const { slug, display } of conditionOptions) {
-    const row = condList.createDiv({
-      cls: "pc-def-popover-row",
-      attr: { "data-slug": slug },
-    });
-    row.createSpan({ cls: "pc-def-popover-name", text: display });
+    // Same union, seeded from `CONDITION_SLUGS` · NOT from `dnd/constants`' `CONDITIONS`.
+    // The two vocabularies disagree by one member: `CONDITIONS` carries "Exhaustion", which
+    // `CONDITION_SLUGS` deliberately omits. Seeding from `CONDITIONS` would add a brand-new
+    // row to a shipped picker, which this change is not allowed to do (it is protective, not
+    // corrective), and it would offer a LEVEL-based condition as a boolean immunity. So the
+    // conditions union widens only by what `derived.condition_immunities` actually holds.
+    const conditionOptions = unionDefenseOptions(
+      CONDITION_SLUGS.map((s) => ({ slug: s, display: CONDITION_DISPLAY_NAMES[s] })),
+      [c.derived.defenses?.condition_immunities],
+    );
 
-    // Row-local mirror of the binary state. Seeded from `ctx.derived.defenses`
-    // and flipped optimistically on tap · same pattern as damage rows, and keyed on
-    // the canonical `value` for the same reason. `slug` needs no normalizing here:
-    // both of its sources are already canonical · `CONDITION_SLUGS` is the canonical
-    // vocabulary rather than a display list, and the union's other half is
-    // `toDefenseSlug(entry.value)`. It is a plain `string` and not a `ConditionSlug`,
-    // which is why `editState.{add,remove}ConditionImmunity` take `string`: the union
-    // can by construction surface a value outside the closed slug type.
-    let condState = (ctx.derived.defenses.condition_immunities ?? [])
-      .some((e) => e.value === slug);
-    const pip = row.createEl("button", {
-      cls: "pc-def-popover-pip",
-      text: "I",
-      attr: { "data-kind": "immunity", type: "button" },
-    });
-    if (condState) pip.classList.add("on");
-    pip.addEventListener("click", () => {
-      if (condState) editState.removeConditionImmunity(slug);
-      else editState.addConditionImmunity(slug);
-      condState = !condState;
-      pip.classList.toggle("on", condState);
-    });
-  }
+    for (const { slug, display } of conditionOptions) {
+      const row = condList.createDiv({
+        cls: "pc-def-popover-row",
+        attr: { "data-slug": slug },
+      });
+      row.createSpan({ cls: "pc-def-popover-name", text: display });
 
-  // Keep the popover inside the viewport — same helper the conditions
-  // popover uses; final placement runs after both panels render.
-  clampPopoverToViewport(popover, anchorRect);
+      // Row-local mirror of the binary state. Re-seeded from `c.derived.defenses`
+      // on every repaint and flipped optimistically on tap · same pattern as damage rows,
+      // and keyed on the canonical `value` for the same reason. `slug` needs no normalizing
+      // here: both of its sources are already canonical · `CONDITION_SLUGS` is the canonical
+      // vocabulary rather than a display list, and the union's other half is
+      // `toDefenseSlug(entry.value)`. It is a plain `string` and not a `ConditionSlug`,
+      // which is why `editState.{add,remove}ConditionImmunity` take `string`: the union
+      // can by construction surface a value outside the closed slug type.
+      let condState = (c.derived.defenses.condition_immunities ?? [])
+        .some((e) => e.value === slug);
+      const pip = row.createEl("button", {
+        cls: "pc-def-popover-pip",
+        text: "I",
+        attr: { "data-kind": "immunity", type: "button" },
+      });
+      if (condState) pip.classList.add("on");
+      pip.addEventListener("click", () => {
+        if (condState) editState.removeConditionImmunity(slug);
+        else editState.addConditionImmunity(slug);
+        condState = !condState;
+        pip.classList.toggle("on", condState);
+      });
+    }
+  };
+
+  /**
+   * The `+` button the popover hangs off, REBOUND on every repaint. The panel
+   * destroys and rebuilds that button on every sheet render, so a popover that
+   * kept the open-time node would be deciding outside-clicks against a node that
+   * is no longer in the document · every click on the live `+` would read as
+   * outside. It is a `let`, not a parameter capture, for exactly that reason.
+   */
+  let boundAnchor: HTMLElement = anchor;
+
+  /**
+   * Anchor the popover under `a` and clamp it into the viewport. The rect is read
+   * HERE, per placement, rather than snapshotted once at open: the clamp uses
+   * `anchorRect.top` to decide whether to flip the popover ABOVE the anchor, and
+   * a stale rect answers that for a button that no longer exists.
+   */
+  const place = (a: HTMLElement) => {
+    const rect = a.getBoundingClientRect();
+    popover.style.top = `${rect.bottom + activeWindow.scrollY + 4}px`;
+    popover.style.left = `${rect.left + activeWindow.scrollX}px`;
+    // Keep the popover inside the viewport · same helper the conditions popover
+    // uses; placement runs after both panels render, so the clamp measures the
+    // popover at its real height.
+    clampPopoverToViewport(popover, rect);
+  };
+
+  paintDamages(ctx);
+  paintConditions(ctx);
+  place(anchor);
 
   const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") closeDefenseTypePopover(); };
   const onClick = (e: MouseEvent) => {
     if (!(e.target instanceof Node)) return;
-    if (popover.contains(e.target) || anchor.contains(e.target)) return;
+    if (popover.contains(e.target) || boundAnchor.contains(e.target)) return;
     closeDefenseTypePopover();
   };
   // Close on page/anchor scroll (which would visually disconnect the popover),
@@ -292,12 +351,57 @@ export function openDefenseTypePopover(
 
   current = {
     root: popover,
+    openedWith: editState,
+    refresh: (c, a) => {
+      paintDamages(c);
+      paintConditions(c);
+      // A render that named no anchor. This is NOT the read-mode case, which
+      // `refreshDefenseTypePopover` has already closed out before reaching here;
+      // it is a caller that still holds an editState and simply passed none. Keep
+      // the previous binding rather than dropping outside-click handling.
+      if (a) {
+        boundAnchor = a;
+        place(a);
+      }
+    },
     cleanup: () => {
       activeDocument.removeEventListener("keydown", onKeyDown);
       activeDocument.removeEventListener("click", onClick);
       activeWindow.removeEventListener("scroll", onScroll, true);
     },
   };
+}
+
+/**
+ * Called from `DefensesConditionsPanel.render` on every sheet render. Repaints an
+ * open picker from fresh ctx and REBINDS it to the `+` button that render just
+ * built; CLOSES it when the editState identity changed (a file switch, or a split
+ * view painting character B over character A's open picker).
+ *
+ * Copied from `refreshProficiencyModal` (proficiency-edit-modal.ts), which is the
+ * same shape as `refreshMaxHpModal`, `refreshSpellAbilityModal` and
+ * `refreshCoinModal`. The anchor is the popover-only half: a modal has nothing to
+ * rebind, a popover hangs off a button the sheet destroys on every pass.
+ */
+export function refreshDefenseTypePopover(
+  ctx: ComponentRenderContext,
+  anchor: HTMLElement | null,
+): void {
+  if (!current) return;
+  // ⚠️ The `!ctx.editState` disjunct is REDUNDANT, and measured so on this tree: with
+  // the disjunct deleted the WHOLE suite stays green. It is not a test gap · the two
+  // conditions agree on every input. `openedWith` is only ever assigned a truthy
+  // `editState`, so a falsy `ctx.editState` is already `!== openedWith` and the
+  // identity check alone closes on a read-mode render. Nothing can observe the
+  // difference, so no test can guard it and none should claim to. It ships for
+  // parity with the four modal refreshers (`refreshProficiencyModal`,
+  // `refreshMaxHpModal`, `refreshSpellAbilityModal`, `refreshCoinModal`), all of
+  // which carry the same disjunct, and because it states the read-mode rule outright.
+  if (!ctx.editState || ctx.editState !== current.openedWith) {
+    closeDefenseTypePopover();
+    return;
+  }
+  current.refresh(ctx, anchor);
 }
 
 export function closeDefenseTypePopover(): void {

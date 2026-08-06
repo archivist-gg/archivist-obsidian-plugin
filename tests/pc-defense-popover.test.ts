@@ -1,11 +1,34 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+
+/** Every `clampPopoverToViewport` call, in order. The REAL implementation still runs
+ *  (the viewport-clamp test at the bottom measures it), so this adds an observable
+ *  without changing behaviour · and it is the only observable that can separate
+ *  "re-clamped against the anchor this render built" from "re-clamped against the
+ *  open-time snapshot rect", since both anchors are `<button>`s and jsdom lays
+ *  neither of them out. */
+const clampCalls = vi.hoisted(() => [] as { popover: HTMLElement; rect: DOMRect }[]);
+vi.mock("../packages/obsidian/src/modules/pc/components/popover-utils", async (importOriginal) => {
+  const actual = await importOriginal<
+    typeof import("../packages/obsidian/src/modules/pc/components/popover-utils")
+  >();
+  return {
+    ...actual,
+    clampPopoverToViewport: (popover: HTMLElement, rect: DOMRect) => {
+      clampCalls.push({ popover, rect });
+      actual.clampPopoverToViewport(popover, rect);
+    },
+  };
+});
+
 import {
   openDefenseTypePopover,
+  refreshDefenseTypePopover,
   closeDefenseTypePopover,
 } from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
+import { DefensesConditionsPanel } from "../packages/obsidian/src/modules/pc/components/defenses-conditions-panel";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
-import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
+import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { DAMAGE_TYPES, CONDITIONS } from "@archivist-gg/dnd5e/dnd/constants";
 import {
   CONDITION_SLUGS,
@@ -17,7 +40,10 @@ import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc
 import type { App } from "obsidian";
 
 beforeAll(() => installObsidianDomHelpers());
-afterEach(() => closeDefenseTypePopover());
+afterEach(() => {
+  closeDefenseTypePopover();
+  clampCalls.length = 0;
+});
 
 type Derived = ComponentRenderContext["derived"];
 type DefenseEntry = Derived["defenses"]["resistances"][number];
@@ -112,6 +138,57 @@ function conditionRow(slug: string): HTMLElement {
 
 function conditionPip(slug: string): HTMLButtonElement {
   return pip(conditionRow(slug), "immunity");
+}
+
+/**
+ * The ctx object a LATER sheet render hands the panel: a brand-new `derived`
+ * (the resolver rebuilds it every pass) carrying the SAME `editState` instance.
+ * The identity is the whole point · it is what tells a repaint apart from a file
+ * switch, and `{ ...prev }` is how the real sheet composes it too.
+ */
+function nextCtx(prev: ComponentRenderContext, over: Partial<{
+  resistances: DefenseSeed[];
+  immunities: DefenseSeed[];
+  vulnerabilities: DefenseSeed[];
+  condition_immunities: DefenseSeed[];
+}> = {}): ComponentRenderContext {
+  return {
+    ...prev,
+    derived: {
+      ...prev.derived,
+      defenses: {
+        resistances: ents(over.resistances ?? []),
+        immunities: ents(over.immunities ?? []),
+        vulnerabilities: ents(over.vulnerabilities ?? []),
+        condition_immunities: ents(over.condition_immunities ?? []),
+      },
+    } as Derived,
+  };
+}
+
+/**
+ * An anchor with a STATED box. jsdom runs no layout, so every real element's
+ * `getBoundingClientRect()` is all-zero · two anchors would be indistinguishable
+ * by rect, which is exactly the question the rebind tests ask.
+ */
+function anchorAt(left: number, bottom: number): HTMLElement {
+  const el = document.createElement("button");
+  el.getBoundingClientRect = () => ({
+    bottom, top: bottom - 20, left, right: left + 30,
+    width: 30, height: 20, x: left, y: bottom - 20, toJSON() { return this; },
+  } as DOMRect);
+  document.body.appendChild(el);
+  return el;
+}
+
+/** A real, bubbling click · the document-level outside-click handler only ever
+ *  sees events that reach `document`. */
+function clickOn(el: HTMLElement): void {
+  el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+}
+
+function isOpen(): boolean {
+  return document.body.querySelector(".pc-def-popover") !== null;
 }
 
 describe("defense popover — structure", () => {
@@ -508,6 +585,209 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
     expect(damageRows().map((r) => r.querySelector(".pc-def-popover-name")?.textContent))
       .toEqual([...DAMAGE_TYPES]);
     expect(condRows().map((r) => r.dataset.slug)).toEqual([...CONDITION_SLUGS]);
+  });
+});
+
+/**
+ * The repaint hook (Task 10). An open picker used to be a SNAPSHOT: every row seeded
+ * its state from the ctx that opened it and never read another one, so a sheet render
+ * that changed `derived.defenses` (an item equipped, a `×` on a chip in the panel
+ * behind it, a rules grant recomputed) left the picker showing state the sheet had
+ * already moved past.
+ *
+ * The fix is the shape shipped four times over for modals · `refreshProficiencyModal`
+ * and friends · plus one delta no modal has: the popover hangs off the panel's `+`
+ * button, and the panel DESTROYS that button on every render.
+ *
+ * Every fixture below spells `label` differently from `value` where it can, because a
+ * `label === value` seed cannot say which field a row read.
+ */
+describe("defense popover · repaint hook (Task 10)", () => {
+  const PSYCHIC = { value: "psychic", label: "Psychic", origin: "grant" as const };
+
+  it("no-ops when nothing is open", () => {
+    const { ctx, anchor } = withDefenses();
+    expect(() => refreshDefenseTypePopover(ctx, anchor)).not.toThrow();
+    expect(isOpen()).toBe(false);
+  });
+
+  it("repaints a damage pip ON from the NEW ctx", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(false);
+    refreshDefenseTypePopover(nextCtx(ctx, { resistances: [PSYCHIC] }), anchor);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("repaints a damage pip OFF when the new ctx no longer carries the entry", () => {
+    const { ctx, anchor } = withDefenses({ resistances: [PSYCHIC] });
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+    refreshDefenseTypePopover(nextCtx(ctx), anchor);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(false);
+  });
+
+  it("repaints a condition pip from the NEW ctx", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(false);
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { condition_immunities: [{ value: "charmed", label: "Charmed", origin: "grant" }] }),
+      anchor,
+    );
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+
+  // Pip classes alone would survive a repaint that only re-toggled the EXISTING rows.
+  // An off-vocabulary value has no row to toggle: it can only appear if the repaint
+  // re-ran `unionDefenseOptions` against the new ctx, in both tabs.
+  it("re-runs the option union, so a value only the NEW ctx carries grows a row", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(panel("damages").querySelectorAll(".pc-def-popover-row")).toHaveLength(DAMAGE_TYPES.length);
+    refreshDefenseTypePopover(nextCtx(ctx, {
+      immunities: [{ value: "void", label: "Void", origin: "grant" }],
+      condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }],
+    }), anchor);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Void");
+    expect(pip(row as HTMLElement, "immunity").classList.contains("on")).toBe(true);
+    expect(panel("damages").querySelectorAll(".pc-def-popover-row")).toHaveLength(DAMAGE_TYPES.length + 1);
+    expect(conditionRow("bewildered").querySelector(".pc-def-popover-name")?.textContent).toBe("Bewildered");
+    expect(panel("conditions").querySelectorAll(".pc-def-popover-row"))
+      .toHaveLength(CONDITION_SLUGS.length + 1);
+  });
+
+  // The tab bar and the two panels are SKELETON: rebuilt by nothing. A repaint that
+  // rebuilt the popover wholesale would throw the user back to Damages mid-task, which
+  // is the popover's version of the proficiency modal losing its typed filter text.
+  it("keeps the Conditions tab active across a repaint", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    tab("conditions").click();
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { condition_immunities: [{ value: "charmed", label: "Charmed", origin: "grant" }] }),
+      anchor,
+    );
+    expect(tab("conditions").classList.contains("active")).toBe(true);
+    expect(panel("conditions").classList.contains("active")).toBe(true);
+    expect(panel("damages").classList.contains("active")).toBe(false);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+
+  // The popover-only half of the hook. `onClick` closes on any click that is neither
+  // inside the popover nor inside the anchor, and the panel destroys the anchor on
+  // every render · so a picker that kept the open-time node would be measuring
+  // outside-clicks against a node no longer in the document.
+  //
+  // Both halves are load-bearing: the first fails when the new anchor is never bound,
+  // the second when the old one is not RELEASED.
+  it("rebinds the anchor · the re-rendered + button is inside, the destroyed one is not", () => {
+    const { ctx } = withDefenses();
+    const oldPlus = anchorAt(10, 100);
+    openDefenseTypePopover(oldPlus, ctx);
+    const newPlus = anchorAt(300, 400);
+    refreshDefenseTypePopover(ctx, newPlus);
+    clickOn(newPlus);
+    expect(isOpen(), "a click on the rebound anchor must not close the picker").toBe(true);
+    clickOn(oldPlus);
+    expect(isOpen(), "the open-time anchor is now just another outside node").toBe(false);
+  });
+
+  it("re-places and re-clamps against the NEW anchor's rect, not the open-time snapshot", () => {
+    const { ctx } = withDefenses();
+    openDefenseTypePopover(anchorAt(10, 100), ctx);
+    const popover = getPopover();
+    expect(clampCalls).toHaveLength(1);
+    expect(clampCalls[0].rect.left).toBe(10);
+    expect(popover.style.top).toBe("104px");
+
+    refreshDefenseTypePopover(ctx, anchorAt(300, 400));
+    expect(clampCalls).toHaveLength(2);
+    expect(clampCalls[1].popover).toBe(popover);
+    // The rect handed to the clamp is READ FRESH from the new anchor. A repaint that
+    // rebound the anchor but reused the open-time `anchorRect` lands 10 here, and the
+    // clamp would keep deciding whether to flip above a button that no longer exists.
+    expect(clampCalls[1].rect.left).toBe(300);
+    // `top` is the un-nudged half of the placement: 400 (new bottom) + 0 (scrollY) + 4.
+    expect(popover.style.top).toBe("404px");
+    // 300 from the new anchor PLUS the clamp's own 8px left-edge margin. jsdom lays
+    // nothing out, so the popover always measures 0x0 at the origin and the left-edge
+    // nudge always fires · which is what makes this assertion evidence that the clamp
+    // ran on the NEW placement rather than evidence about the margin.
+    expect(popover.style.left).toBe("308px");
+  });
+
+  it("keeps the existing binding when the render passes no anchor", () => {
+    const { ctx } = withDefenses();
+    const plus = anchorAt(10, 100);
+    openDefenseTypePopover(plus, ctx);
+    refreshDefenseTypePopover(nextCtx(ctx, { resistances: [PSYCHIC] }), null);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+    expect(clampCalls, "no anchor means nothing to re-place against").toHaveLength(1);
+    clickOn(plus);
+    expect(isOpen(), "the open-time binding survives an anchor-less repaint").toBe(true);
+  });
+
+  it("closes when the render carries a DIFFERENT editState (a file switch)", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    // A second sheet, with its own CharacterEditState instance · what a split view
+    // rendering character B while B's picker is open over character A looks like.
+    const other = withDefenses({ resistances: [PSYCHIC] });
+    refreshDefenseTypePopover(other.ctx, other.anchor);
+    expect(isOpen()).toBe(false);
+  });
+
+  // ⚠️ Behaviour test, NOT an isolation of the `!ctx.editState` disjunct: `openedWith`
+  // is never null, so the identity check alone already closes here. Measured: deleting
+  // the disjunct leaves this and the whole suite green. See the comment on
+  // `refreshDefenseTypePopover`.
+  it("closes when the render has no editState (read mode)", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    refreshDefenseTypePopover({ ...ctx, editState: null }, null);
+    expect(isOpen()).toBe(false);
+  });
+});
+
+/**
+ * The wiring, against the REAL panel rather than a mock of it: what the panel owes is
+ * a call on EVERY render, read-mode included. Both assertions below are observations
+ * of the picker, so neither can drift the way a mocked module signature can.
+ */
+describe("DefensesConditionsPanel · repaint wiring (Task 10)", () => {
+  it("a panel re-render repaints an open picker from THAT render's ctx", () => {
+    const { ctx } = withDefenses();
+    const root = mountContainer();
+    const panel_ = new DefensesConditionsPanel();
+    panel_.render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-def-add-main")!.click();
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(false);
+
+    // What the sheet does on an edit: empty the container (destroying the `+` the
+    // picker is anchored to) and render again from a fresh ctx.
+    const ctx2 = nextCtx(ctx, { resistances: [{ value: "psychic", label: "Psychic", origin: "grant" }] });
+    root.empty();
+    panel_.render(root, ctx2);
+    expect(isOpen()).toBe(true);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("a READ-MODE panel re-render closes an open picker", () => {
+    const { ctx } = withDefenses();
+    const root = mountContainer();
+    const panel_ = new DefensesConditionsPanel();
+    panel_.render(root, ctx);
+    root.querySelector<HTMLButtonElement>(".pc-def-add-main")!.click();
+    expect(isOpen()).toBe(true);
+
+    // A read-mode render draws no `+` at all, so this is also the case that fixes the
+    // call OUTSIDE the `if (ctx.editState)` block: guarded, the picker would survive a
+    // switch out of edit mode with no anchor left to close it.
+    root.empty();
+    panel_.render(root, { ...ctx, editState: null });
+    expect(isOpen()).toBe(false);
   });
 });
 
