@@ -21,21 +21,29 @@ afterEach(() => closeDefenseTypePopover());
 type Derived = ComponentRenderContext["derived"];
 type DefenseEntry = Derived["defenses"]["resistances"][number];
 
+type DefenseSeed = string | DefenseEntry;
+
 /**
  * Seed a bucket with `DefenseEntry` objects. `value` is the canonical slug;
- * `label` is the first-spelling-wins display string. These seeds use the same
- * string for both, matching what the buckets held before R4-P5 reshaped them
- * from `string[]`, so the popover's seeding behaviour is unchanged here.
+ * `label` is the first-spelling-wins display string.
+ *
+ * A BARE STRING seeds `label === value`. Under that seed a canonical `value`
+ * compare and a `label` compare are indistinguishable, which is exactly why
+ * bug D-1 shipped green: every fixture in the file spelled both fields the
+ * same way. Pass a full entry whenever the test needs to tell them apart ·
+ * `{ value: "psychic", label: "Psychic", origin: "grant" }`.
  */
-function ents(vals: string[]): DefenseEntry[] {
-  return vals.map((v) => ({ value: v, label: v, origin: "manual" as const }));
+function ents(vals: DefenseSeed[]): DefenseEntry[] {
+  return vals.map((v) =>
+    typeof v === "string" ? { value: v, label: v, origin: "manual" as const } : v,
+  );
 }
 
 function withDefenses(over: Partial<{
-  resistances: string[];
-  immunities: string[];
-  vulnerabilities: string[];
-  condition_immunities: string[];
+  resistances: DefenseSeed[];
+  immunities: DefenseSeed[];
+  vulnerabilities: DefenseSeed[];
+  condition_immunities: DefenseSeed[];
 }> = {}) {
   const character = clone(FIGHTER_5_CLERIC_3);
   const resolved = fakeResolved(character);
@@ -194,6 +202,59 @@ describe("defense popover — initial state mirrors derived.defenses", () => {
     const { ctx, anchor } = withDefenses({ condition_immunities: ["charmed"] });
     openDefenseTypePopover(anchor, ctx);
     expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+});
+
+describe("defense popover · seeding keys on the canonical value (bug D-1)", () => {
+  it("checks the R pip for a Title-Case granted resistance", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "psychic", label: "Psychic", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("checks the I and V pips for Title-Case granted damage entries", () => {
+    const { ctx, anchor } = withDefenses({
+      immunities: [{ value: "cold", label: "Cold", origin: "grant" }],
+      vulnerabilities: [{ value: "fire", label: "Fire", origin: "equipment" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(pip(damageRow("Cold"), "immunity").classList.contains("on")).toBe(true);
+    expect(pip(damageRow("Fire"), "vulnerability").classList.contains("on")).toBe(true);
+  });
+
+  it("checks the immunity pip for a Title-Case granted condition immunity", () => {
+    const { ctx, anchor } = withDefenses({
+      condition_immunities: [{ value: "charmed", label: "Charmed", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+
+  // A pip that mis-seeds OFF turns one tap into `addDefense` on a value the
+  // character already has, writing a manual duplicate of a grant into the note.
+  // Seeding ON makes the same tap the intended `removeDefense`.
+  it("tapping a Title-Case granted resistance removes it instead of adding a duplicate", () => {
+    const { ctx, editState, anchor } = withDefenses({
+      resistances: [{ value: "psychic", label: "Psychic", origin: "grant" }],
+    });
+    const addSpy = vi.spyOn(editState, "addDefense");
+    const removeSpy = vi.spyOn(editState, "removeDefense");
+    openDefenseTypePopover(anchor, ctx);
+    pip(damageRow("Psychic"), "resistance").click();
+    expect(removeSpy).toHaveBeenCalledWith("resistances", "psychic");
+    expect(addSpy).not.toHaveBeenCalled();
+  });
+
+  it("addresses every damage row by its canonical value in data-type", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(damageRow("Psychic").dataset.type).toBe("psychic");
+    for (const row of panel("damages").querySelectorAll<HTMLElement>(".pc-def-popover-row")) {
+      const shown = row.querySelector(".pc-def-popover-name")?.textContent ?? "";
+      expect(row.dataset.type).toBe(shown.toLowerCase());
+    }
   });
 });
 

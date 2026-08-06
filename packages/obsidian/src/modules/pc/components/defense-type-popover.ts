@@ -1,6 +1,7 @@
 import type { ComponentRenderContext } from "./component.types";
 import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
 import { clampPopoverToViewport } from "./popover-utils";
 import {
   cycleAction,
@@ -93,8 +94,15 @@ export function openDefenseTypePopover(
   const damageList = damagesPanel.createDiv({ cls: "pc-def-popover-list" });
 
   for (const type of DAMAGE_TYPES) {
-    const slug = type.toLowerCase();
-    const row = damageList.createDiv({ cls: "pc-def-popover-row" });
+    // `DAMAGE_TYPES` holds display strings ("Psychic"), so the row's key has to be
+    // canonicalized. Deriving it with `toDefenseSlug`, the one normalizer the whole
+    // defenses path shares, means the value this row COMPARES on and the value it
+    // WRITES through `editState.{add,remove}Defense` are the same string by construction.
+    const slug = toDefenseSlug(type);
+    const row = damageList.createDiv({
+      cls: "pc-def-popover-row",
+      attr: { "data-type": slug },
+    });
     row.createSpan({ cls: "pc-def-popover-name", text: type });
     const tri = row.createDiv({ cls: "pc-def-popover-tri" });
 
@@ -111,32 +119,12 @@ export function openDefenseTypePopover(
     // the source of truth — `editState.{add,remove}Defense` writes through.)
     const initialState = ((): DefenseRowState => {
       const d = ctx.derived.defenses;
-      // FAITHFUL PORT of the pre-reshape `string[]` behaviour, bug included. Those buckets
-      // held the first-spelling-wins display strings that `label` now holds, so comparing
-      // against `label` preserves the case-sensitive mismatch that IS bug D-1.
-      // R4-P5 Task 7 replaces these three with a canonical `value` compare: that is the
-      // phase's headline fix, and it needs to observe these RED first.
-      //
-      // This is NOT a bit-for-bit identity. It is identical to the pre-reshape behaviour
-      // EXCEPT where the engine's new `label: raw.trim()` differs from the old untrimmed
-      // push: `dedupeDefenseList` keyed on `v.trim().toLowerCase()` but pushed `v` as-is,
-      // so a padded first occurrence ("  fire  ") used to read OFF here and now reads ON.
-      // That divergence is upstream and unavoidable (the untrimmed string no longer exists
-      // in DerivedStats) and it does not weaken Task 7's control.
-      //
-      // Two facts are what actually make this port safe, and both are easy to assume:
-      //   1. `toDefenseSlug` collapses whitespace RUNS (/\s+/g) where the old dedup key did
-      //      not, so the two group differently IN GENERAL. That is irrelevant here only
-      //      because every `slug` compared against comes from `DAMAGE_TYPES.toLowerCase()`
-      //      or `CONDITION_SLUGS`, which are all single whitespace-free tokens. If the
-      //      picker's vocabulary ever gains a multi-word value (DAMAGE_NONMAGICAL_VARIANTS
-      //      sits in the same constants file), this dependency goes live.
-      //   2. A value appearing in MORE THAN ONE source list is NOT a divergence: old and
-      //      new both walk manual, then equipment, then grants, and keep the first spelling
-      //      on a case-insensitive key. Only `origin` upgrades on a later hit; never `label`.
-      if (d.resistances?.map((e) => e.label).includes(slug)) return "resistance";
-      if (d.immunities?.map((e) => e.label).includes(slug)) return "immunity";
-      if (d.vulnerabilities?.map((e) => e.label).includes(slug)) return "vulnerability";
+      // Key on `value`, never `label`. `value` is canonical by construction (the engine
+      // builds it with `toDefenseSlug`), whereas `label` preserves the authored spelling,
+      // so a rules-granted "Psychic" only matches this row's canonical slug through `value`.
+      if (d.resistances?.some((e) => e.value === slug)) return "resistance";
+      if (d.immunities?.some((e) => e.value === slug)) return "immunity";
+      if (d.vulnerabilities?.some((e) => e.value === slug)) return "vulnerability";
       return null;
     })();
     let rowState: DefenseRowState = initialState;
@@ -174,14 +162,11 @@ export function openDefenseTypePopover(
     row.createSpan({ cls: "pc-def-popover-name", text: CONDITION_DISPLAY_NAMES[slug] });
 
     // Row-local mirror of the binary state. Seeded from `ctx.derived.defenses`
-    // and flipped optimistically on tap — same pattern as damage rows.
-    // FAITHFUL PORT of the pre-reshape `string[]` behaviour, bug included: identical
-    // EXCEPT where the engine's new `label: raw.trim()` differs from the old untrimmed
-    // push. See the damage-row note above for the full divergence and the two facts that
-    // make it safe. R4-P5 Task 7 replaces this with a canonical `value` compare.
+    // and flipped optimistically on tap · same pattern as damage rows, and keyed on
+    // the canonical `value` for the same reason. `slug` needs no normalizing here:
+    // `CONDITION_SLUGS` is the canonical vocabulary, not a display list.
     let condState = (ctx.derived.defenses.condition_immunities ?? [])
-      .map((e) => e.label)
-      .includes(slug);
+      .some((e) => e.value === slug);
     const pip = row.createEl("button", {
       cls: "pc-def-popover-pip",
       text: "I",
