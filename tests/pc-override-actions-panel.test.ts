@@ -48,9 +48,11 @@ describe("OverrideActionsPanel", () => {
     // genuinely carries the resistance.
     //
     // "Psychic" is chosen because its authored spelling DIFFERS from its canonical
-    // slug. The seeds either side of this test spell both the same way ("fire"),
-    // and under that seed a canonical read and a raw read are indistinguishable ·
-    // which is precisely how this instance shipped green.
+    // slug. The test that FOLLOWS this one is the only other stored-read case in
+    // the file and it seeds `resist: ["fire"]`, where label and value spell the
+    // same and a canonical read is indistinguishable from a raw one · which is
+    // precisely how this instance shipped green. (The test ABOVE seeds no stored
+    // resist at all; it exercises the write path, so it never reads one back.)
     const root = mountContainer();
     const entry = { item: "[[armor-of-resistance]]", overrides: { resist: ["Psychic"] } } as EquipmentEntry;
     renderOverrideActionsPanel(root, { entry, entryIndex: 0, editState: {} as never });

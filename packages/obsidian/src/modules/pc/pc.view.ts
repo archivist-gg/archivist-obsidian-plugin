@@ -102,13 +102,15 @@ export class PCSheetView extends TextFileView {
     closeProficiencyModal();
     // The two defenses popovers ride with the modals at all four teardown sites.
     // They capture `ctx.editState` at open time exactly as the modals do, and
-    // `this.editState = null` twelve lines down is precisely the discarded-state
-    // condition · a pip tap after that point writes through an edit state no
-    // getViewData() will ever serialize. `refreshDefenseTypePopover` does close
-    // the DEFENSE picker on its own, but only on the NEXT render, which this
-    // method defers behind `compendiumsReady` (a real wait on cold start); the
-    // conditions popover has no refresher at all and would otherwise survive
-    // indefinitely.
+    // `setViewData`'s own `this.editState = null` reset, further down this
+    // method, is precisely the discarded-state condition · a pip tap after that
+    // point writes through an edit state no `getViewData` will ever serialize.
+    // (Anchored to the assignment, not to a line offset: this file has moved
+    // repeatedly and a counted-lines cite goes stale on the next edit.)
+    // `refreshDefenseTypePopover` does close the DEFENSE picker on its own, but
+    // only on the NEXT render, which this method defers behind
+    // `compendiumsReady` (a real wait on cold start); the conditions popover has
+    // no refresher at all and would otherwise survive indefinitely.
     closeDefenseTypePopover();
     closeConditionsPopover();
     this.rawFileData = data;

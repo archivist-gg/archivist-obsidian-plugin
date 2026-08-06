@@ -152,22 +152,35 @@ describe("PCSheetView tears down the defenses popovers", () => {
 });
 
 /**
- * The FIFTH site, and not one of the view's teardown hooks: the header gear
- * calls `editState.openBuilder()`, which flips `builder: true` and re-renders
- * IN PLACE · no setViewData, no clear, no onunload, no onLoadFile. The builder
- * branch of `renderPCSheet` returns before `defenses-conditions-panel` renders,
- * so `refreshDefenseTypePopover` is never reached on that render or on any
- * later builder render, and `root.empty()` has already detached the `+` the
- * picker is bound to.
+ * The FIFTH site, and not one of the view's teardown hooks: `openBuilder()`
+ * flips `builder: true` and re-renders IN PLACE · no setViewData, no clear, no
+ * onunload, no onLoadFile. The builder branch of `renderPCSheet` returns before
+ * `defenses-conditions-panel` renders, so `refreshDefenseTypePopover` is never
+ * reached on that render or on any later builder render, and `root.empty()` has
+ * already detached the `+` the picker is bound to.
  *
- * This is exercised through the REAL view rather than through `renderPCSheet`
- * directly, so it also measures that none of the four hooks above happens to
- * cover it. Its spy-level twin lives in tests/pc-sheet-builder-coin-close.test.ts,
- * beside the coin/proficiency closes it copies · that one also carries the
- * negative case, that a NON-builder render closes neither popover.
+ * ⚠️ WHAT THESE TWO CASES DO AND DO NOT MEASURE. They call
+ * `editState.openBuilder()` DIRECTLY, so what they pin is exactly this: no
+ * PCSheetView teardown hook covers the openBuilder path. They are named for
+ * that and must not be read as reproducing a user gesture.
+ *
+ * They do NOT establish a live user-facing regression, and an earlier draft of
+ * these names claimed the header gear, which would have. The gear's listener
+ * (header-section.ts) is `openBuilder`'s only caller and does not
+ * stopPropagation, so in an ATTACHED DOM that click keeps bubbling to
+ * `activeDocument` and both popovers close themselves at the end of the same
+ * dispatch. This fixture cannot see that: the obsidian mock's ItemView builds
+ * `contentEl` with `document.createElement` and never attaches it, so
+ * `contentEl.isConnected` is false and no click from inside it ever reaches
+ * `activeDocument`. Measured with the builder-branch closes removed: detached
+ * leaves the picker up, attached does not. R4-P5 task 14 settles it live.
+ *
+ * The spy-level twin lives in tests/pc-sheet-builder-coin-close.test.ts, beside
+ * the coin/proficiency closes it copies · that one also carries the negative
+ * case, that a NON-builder render closes neither popover.
  */
-describe("builder entry closes the defenses popovers", () => {
-  it("removes an open defense picker when the header gear reopens the builder", async () => {
+describe("openBuilder is a fifth teardown site, covered by no view hook", () => {
+  it("openBuilder() called directly removes an open defense picker from the document", async () => {
     const { view } = await bootView();
     openDefensePicker(view);
     (view as unknown as { editState: { openBuilder(): void } }).editState.openBuilder();
@@ -175,7 +188,7 @@ describe("builder entry closes the defenses popovers", () => {
     expect(document.body.querySelector(".pc-def-popover")).toBeNull();
   });
 
-  it("removes an open conditions popover when the header gear reopens the builder", async () => {
+  it("openBuilder() called directly removes an open conditions popover from the document", async () => {
     const { view } = await bootView();
     openConditions(view);
     (view as unknown as { editState: { openBuilder(): void } }).editState.openBuilder();

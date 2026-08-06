@@ -28,6 +28,10 @@ vi.mock("../packages/obsidian/src/modules/pc/components/proficiency-edit-modal",
 // refreshDefenseTypePopover, so an open picker loses its only refresh source at
 // this boundary. Keep refreshDefenseTypePopover real: the sheet path calls it on
 // every render and the negative case below depends on that path being live.
+// ⚠️ "Loses its refresh source" is the whole claim · a live user-facing
+// regression is NOT established, because the gear click that calls openBuilder
+// also bubbles to activeDocument and closes both popovers itself. Scope note in
+// pc.sheet.ts's builder branch and in tests/pc-view-popover-teardown.test.ts.
 const closeDefenseTypePopoverMock = vi.hoisted(() => vi.fn());
 vi.mock("../packages/obsidian/src/modules/pc/components/defense-type-popover", async () => {
   const actual = await vi.importActual<Record<string, unknown>>(

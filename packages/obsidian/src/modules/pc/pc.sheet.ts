@@ -93,14 +93,28 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     closeProficiencyModal();
     // Same rule, one step further: the builder renders no DefensesConditionsPanel
     // either, and that panel is where `refreshDefenseTypePopover` is called from.
-    // So builder entry silently takes the defense picker's ONLY refresh source
-    // away · it would keep painting the `derived.defenses` that were live when
-    // the `+` was tapped, including after its own pips write new ones, hanging
-    // off a `+` the `root.empty()` above just detached. That loss is MEASURED
-    // (tests/pc-view-popover-teardown.test.ts drove the real view into the
-    // builder and found both popovers still in the document), and none of the
-    // view's four teardown hooks fires here: the gear calls openBuilder(), which
-    // re-renders IN PLACE without a file switch or an unload.
+    // So builder entry takes the defense picker's ONLY refresh source away · it
+    // would keep painting the `derived.defenses` that were live when the `+` was
+    // tapped, including after its own pips write new ones, hanging off a `+` the
+    // `root.empty()` above just detached.
+    //
+    // ⚠️ SCOPE OF THE EVIDENCE, so nobody upgrades it later. What is MEASURED is
+    // that no PCSheetView teardown hook covers this path: `openBuilder()`
+    // re-renders IN PLACE, with no file switch and no unload, and with these two
+    // calls removed the openBuilder cases in
+    // tests/pc-view-popover-teardown.test.ts go red while the eight hook cases
+    // stay green. What is NOT established is a live user-facing regression. The
+    // sole caller of `openBuilder` is the header gear's own click listener
+    // (header-section.ts), which does not stopPropagation, so in an ATTACHED DOM
+    // that same click finishes bubbling to `activeDocument` and both popovers'
+    // outside-click handlers close them at the end of the very same dispatch.
+    // Measured both ways with these calls removed: detached mock contentEl (the
+    // test fixture · `isConnected === false`) leaves the picker up, attached
+    // does not. So this close is DEFENSIVE · it covers any future entry into the
+    // builder that is not a bubbling click on the gear, and it removes the
+    // within-dispatch window in which the builder is already painted while the
+    // picker is still live. R4-P5 task 14 is where that gets settled in the
+    // real app.
     //
     // The conditions popover rides along for the detached anchor and because the
     // builder shows no conditions surface to float over · NOT because builder
