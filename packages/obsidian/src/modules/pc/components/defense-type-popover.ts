@@ -1,4 +1,5 @@
 import type { ComponentRenderContext } from "./component.types";
+import type { DefenseEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
 import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
@@ -23,6 +24,56 @@ export type DefenseKind =
   | "condition_immunities";
 
 type DefenseTab = "damages" | "conditions";
+
+/**
+ * One row of a picker tab: the canonical key the row reads and writes on, and the
+ * string the user sees. They are NOT interchangeable · `slug` is what
+ * `editState.{add,remove}Defense` receives and what the pip compares against
+ * `DefenseEntry.value`, while `display` is presentation only.
+ */
+type DefenseOption = { slug: string; display: string };
+
+/**
+ * `union(shipped vocabulary, everything present in `derived.defenses`)`, KEYED BY
+ * `toDefenseSlug`.
+ *
+ * PROTECTIVE, not corrective. Zero off-vocabulary values exist in the product today, so
+ * on every character that ships this returns exactly the vocabulary. What it buys is that
+ * the day a value the picker's list does not carry reaches `derived.defenses` · a
+ * homebrew damage type, one of `DAMAGE_NONMAGICAL_VARIANTS`, an unrecognised condition ·
+ * the picker SHOWS it, with a live pip, instead of silently hiding a defense the
+ * character actually has.
+ *
+ * The keying is the whole point and is not optional. A vault character can legitimately
+ * hold a hand-typed lowercase `fire` next to `DAMAGE_TYPES`' Title-Case `"Fire"`; unioned
+ * on raw strings those are two members and the picker grows a duplicate `fire` row whose
+ * pips fight the `Fire` row above it. Normalizing BOTH sides with the one normalizer the
+ * defenses path shares collapses them to a single row by construction.
+ *
+ * DISPLAY rule, expressed as seeding order rather than a per-entry fallback: the
+ * vocabulary is inserted first and `present` entries never overwrite an existing key, so a
+ * known slug keeps the vocabulary's spelling ("Fire", "Charmed") and an unknown one falls
+ * back to the entry's authored `label`. That is exactly `VOCAB[slug] ?? entry.label`,
+ * without a branch that is unreachable by construction.
+ */
+function unionDefenseOptions(
+  vocabulary: readonly DefenseOption[],
+  present: readonly (readonly DefenseEntry[] | undefined)[],
+): DefenseOption[] {
+  const bySlug = new Map<string, DefenseOption>();
+  for (const option of vocabulary) bySlug.set(option.slug, option);
+  for (const bucket of present) {
+    for (const entry of bucket ?? []) {
+      // `entry.value` is canonical by construction (the engine builds it with this same
+      // function), so this call is idempotent · it is written out anyway so that BOTH
+      // sides of the union visibly go through one normalizer, which is the invariant
+      // that makes the collapse true rather than accidental.
+      const slug = toDefenseSlug(entry.value);
+      if (!bySlug.has(slug)) bySlug.set(slug, { slug, display: entry.label });
+    }
+  }
+  return [...bySlug.values()];
+}
 
 let current: { root: HTMLElement; cleanup: () => void } | null = null;
 
@@ -93,17 +144,26 @@ export function openDefenseTypePopover(
   });
   const damageList = damagesPanel.createDiv({ cls: "pc-def-popover-list" });
 
-  for (const type of DAMAGE_TYPES) {
-    // `DAMAGE_TYPES` holds display strings ("Psychic"), so the row's key has to be
-    // canonicalized. Deriving it with `toDefenseSlug`, the one normalizer the whole
-    // defenses path shares, means the value this row COMPARES on and the value it
-    // WRITES through `editState.{add,remove}Defense` are the same string by construction.
-    const slug = toDefenseSlug(type);
+  // `DAMAGE_TYPES` holds display strings ("Psychic"), so each row's key has to be
+  // canonicalized. Deriving it with `toDefenseSlug`, the one normalizer the whole
+  // defenses path shares, means the value a row COMPARES on and the value it
+  // WRITES through `editState.{add,remove}Defense` are the same string by construction ·
+  // and it is what lets the union below collapse "Fire" and a manual "fire" onto one row.
+  const damageOptions = unionDefenseOptions(
+    DAMAGE_TYPES.map((type) => ({ slug: toDefenseSlug(type), display: type })),
+    [
+      ctx.derived.defenses?.resistances,
+      ctx.derived.defenses?.immunities,
+      ctx.derived.defenses?.vulnerabilities,
+    ],
+  );
+
+  for (const { slug, display } of damageOptions) {
     const row = damageList.createDiv({
       cls: "pc-def-popover-row",
       attr: { "data-type": slug },
     });
-    row.createSpan({ cls: "pc-def-popover-name", text: type });
+    row.createSpan({ cls: "pc-def-popover-name", text: display });
     const tri = row.createDiv({ cls: "pc-def-popover-tri" });
 
     const renderRow = (state: DefenseRowState) => {
@@ -154,17 +214,32 @@ export function openDefenseTypePopover(
   });
   const condList = conditionsPanel.createDiv({ cls: "pc-def-popover-list" });
 
-  for (const slug of CONDITION_SLUGS) {
+  // Same union, seeded from `CONDITION_SLUGS` · NOT from `dnd/constants`' `CONDITIONS`.
+  // The two vocabularies disagree by one member: `CONDITIONS` carries "Exhaustion", which
+  // `CONDITION_SLUGS` deliberately omits. Seeding from `CONDITIONS` would add a brand-new
+  // row to a shipped picker, which this change is not allowed to do (it is protective, not
+  // corrective), and it would offer a LEVEL-based condition as a boolean immunity. So the
+  // conditions union widens only by what `derived.condition_immunities` actually holds.
+  const conditionOptions = unionDefenseOptions(
+    CONDITION_SLUGS.map((s) => ({ slug: s, display: CONDITION_DISPLAY_NAMES[s] })),
+    [ctx.derived.defenses?.condition_immunities],
+  );
+
+  for (const { slug, display } of conditionOptions) {
     const row = condList.createDiv({
       cls: "pc-def-popover-row",
       attr: { "data-slug": slug },
     });
-    row.createSpan({ cls: "pc-def-popover-name", text: CONDITION_DISPLAY_NAMES[slug] });
+    row.createSpan({ cls: "pc-def-popover-name", text: display });
 
     // Row-local mirror of the binary state. Seeded from `ctx.derived.defenses`
     // and flipped optimistically on tap · same pattern as damage rows, and keyed on
     // the canonical `value` for the same reason. `slug` needs no normalizing here:
-    // `CONDITION_SLUGS` is the canonical vocabulary, not a display list.
+    // both of its sources are already canonical · `CONDITION_SLUGS` is the canonical
+    // vocabulary rather than a display list, and the union's other half is
+    // `toDefenseSlug(entry.value)`. It is a plain `string` and not a `ConditionSlug`,
+    // which is why `editState.{add,remove}ConditionImmunity` take `string`: the union
+    // can by construction surface a value outside the closed slug type.
     let condState = (ctx.derived.defenses.condition_immunities ?? [])
       .some((e) => e.value === slug);
     const pip = row.createEl("button", {

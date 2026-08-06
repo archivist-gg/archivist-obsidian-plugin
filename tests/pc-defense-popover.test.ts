@@ -6,7 +6,7 @@ import {
 } from "../packages/obsidian/src/modules/pc/components/defense-type-popover";
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers } from "./fixtures/pc/dom-helpers";
-import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
+import { DAMAGE_TYPES, CONDITIONS } from "@archivist-gg/dnd5e/dnd/constants";
 import {
   CONDITION_SLUGS,
   CONDITION_DISPLAY_NAMES,
@@ -330,6 +330,168 @@ describe("defense popover — condition pip clicks", () => {
     expect(p.classList.contains("on")).toBe(true);
     p.click();
     expect(p.classList.contains("on")).toBe(false);
+  });
+});
+
+/**
+ * The option list each tab renders is `union(shipped vocabulary, everything in
+ * `derived.defenses`)` KEYED BY `toDefenseSlug`. PROTECTIVE, not corrective: zero
+ * off-vocabulary values exist in the product today, so none of these assertions
+ * describes anything a user can currently see. What they pin is the behaviour when
+ * one appears · the picker surfaces it rather than silently hiding it, and it does
+ * so WITHOUT the keyless union's duplicate row.
+ *
+ * Every fixture below deliberately spells `label` differently from `value`, because
+ * a `label === value` seed cannot tell which field a row read.
+ */
+describe("defense popover · the option list is a KEYED union (Task 8)", () => {
+  function damageRows(): HTMLElement[] {
+    return [...panel("damages").querySelectorAll<HTMLElement>(".pc-def-popover-row")];
+  }
+  function condRows(): HTMLElement[] {
+    return [...panel("conditions").querySelectorAll<HTMLElement>(".pc-def-popover-row")];
+  }
+
+  // The real vault case the keying exists for: a hand-typed lowercase `fire` sitting
+  // beside `DAMAGE_TYPES`' Title-Case "Fire". Keyless, this is a 14th row.
+  it("renders ONE row when derived and DAMAGE_TYPES disagree only on case", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "fire", label: "fire", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(panel("damages").querySelectorAll('.pc-def-popover-row[data-type="fire"]')).toHaveLength(1);
+    expect(damageRows()).toHaveLength(DAMAGE_TYPES.length);
+  });
+
+  it("shows the DAMAGE_TYPES spelling, not the derived label, for a slug the vocabulary knows", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "fire", label: "fire", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="fire"]');
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Fire");
+  });
+
+  it("renders a row for an off-vocabulary damage value present in derived", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "void", label: "Void", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    expect(row).not.toBeNull();
+    // Display falls back to the entry's authored label · "Void" appears nowhere in DAMAGE_TYPES.
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Void");
+    expect(damageRows()).toHaveLength(DAMAGE_TYPES.length + 1);
+  });
+
+  // A genuinely off-vocabulary value the engine can already produce: the nonmagical
+  // variants live in DAMAGE_NONMAGICAL_VARIANTS, which the picker's vocabulary omits.
+  it("renders an off-vocabulary NONMAGICAL variant with its full authored label", () => {
+    const label = "Bludgeoning, Piercing, and Slashing from Nonmagical Attacks";
+    const { ctx, anchor } = withDefenses({
+      immunities: [{ value: toDefenseSlug(label), label, origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>(
+      `.pc-def-popover-row[data-type="${toDefenseSlug(label)}"]`,
+    );
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe(label);
+    expect(pip(row as HTMLElement, "immunity").classList.contains("on")).toBe(true);
+  });
+
+  // The union's KEY comes from `value`; its DISPLAY comes from `label`. Normalizing the
+  // label would collapse its double space too, so a key built from the label lands on a
+  // DIFFERENT string than one built from the value · which is what this fixture separates.
+  it("keys the union on the entry's canonical value, not on its display label", () => {
+    const { ctx, anchor } = withDefenses({
+      vulnerabilities: [{ value: "ionized plasma", label: "Ionized  Plasma", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>(
+      '.pc-def-popover-row[data-type="ionized plasma"]',
+    );
+    expect(row).not.toBeNull();
+    expect(row?.querySelector(".pc-def-popover-name")?.textContent).toBe("Ionized  Plasma");
+  });
+
+  it("collapses an off-vocabulary value repeated across two buckets into one row", () => {
+    const { ctx, anchor } = withDefenses({
+      resistances: [{ value: "void", label: "Void", origin: "grant" }],
+      vulnerabilities: [{ value: "void", label: "VOID", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(panel("damages").querySelectorAll('.pc-def-popover-row[data-type="void"]')).toHaveLength(1);
+    expect(damageRows()).toHaveLength(DAMAGE_TYPES.length + 1);
+  });
+
+  it("writes the off-vocabulary damage row through its canonical slug", () => {
+    const { ctx, editState, anchor } = withDefenses({
+      resistances: [{ value: "void", label: "Void", origin: "grant" }],
+    });
+    const removeSpy = vi.spyOn(editState, "removeDefense");
+    const addSpy = vi.spyOn(editState, "addDefense");
+    openDefenseTypePopover(anchor, ctx);
+    const row = panel("damages").querySelector<HTMLElement>('.pc-def-popover-row[data-type="void"]');
+    // Seeded ON from derived, so the first tap is the REMOVE half, not a duplicate add.
+    expect(pip(row as HTMLElement, "resistance").classList.contains("on")).toBe(true);
+    pip(row as HTMLElement, "resistance").click();
+    expect(removeSpy).toHaveBeenCalledWith("resistances", "void");
+    expect(addSpy).not.toHaveBeenCalled();
+  });
+
+  // ─── Conditions half · ruling C-1 ────────────────────────────────────────
+  it("renders a row for an off-vocabulary condition immunity present in derived", () => {
+    const { ctx, anchor } = withDefenses({
+      condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    const row = conditionRow("bewildered");
+    expect(row.querySelector(".pc-def-popover-name")?.textContent).toBe("Bewildered");
+    expect(conditionPip("bewildered").classList.contains("on")).toBe(true);
+    expect(condRows()).toHaveLength(CONDITION_SLUGS.length + 1);
+  });
+
+  it("writes the off-vocabulary condition row through its canonical slug", () => {
+    const { ctx, editState, anchor } = withDefenses({
+      condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }],
+    });
+    const spy = vi.spyOn(editState, "removeConditionImmunity");
+    openDefenseTypePopover(anchor, ctx);
+    conditionPip("bewildered").click();
+    expect(spy).toHaveBeenCalledWith("bewildered");
+  });
+
+  it("collapses a lowercase derived condition onto its CONDITION_SLUGS row", () => {
+    const { ctx, anchor } = withDefenses({
+      condition_immunities: [{ value: "charmed", label: "charmed", origin: "manual" }],
+    });
+    openDefenseTypePopover(anchor, ctx);
+    expect(condRows()).toHaveLength(CONDITION_SLUGS.length);
+    // Display stays CONDITION_DISPLAY_NAMES' spelling, not the derived label.
+    expect(conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent).toBe("Charmed");
+  });
+
+  // Ruling C-1, first half. `CONDITIONS` carries a 15th member `CONDITION_SLUGS` omits.
+  // The union is PROTECTIVE, so it may not inject that member: adding an "Exhaustion" row
+  // to a shipped picker is a corrective product change, and it would misrepresent a
+  // level-based condition as a boolean immunity.
+  it("never injects Exhaustion, the CONDITIONS-only member CONDITION_SLUGS omits", () => {
+    expect(CONDITIONS).toContain("Exhaustion");
+    expect(CONDITION_SLUGS as readonly string[]).not.toContain("exhaustion");
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(condRows()).toHaveLength(CONDITION_SLUGS.length);
+    expect(condRows().map((r) => r.dataset.slug)).not.toContain("exhaustion");
+    expect(condRows().map((r) => r.querySelector(".pc-def-popover-name")?.textContent))
+      .not.toContain("Exhaustion");
+  });
+
+  it("leaves both option lists equal to the shipped vocabulary when derived is empty", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    expect(damageRows().map((r) => r.querySelector(".pc-def-popover-name")?.textContent))
+      .toEqual([...DAMAGE_TYPES]);
+    expect(condRows().map((r) => r.dataset.slug)).toEqual([...CONDITION_SLUGS]);
   });
 });
 
