@@ -752,6 +752,144 @@ describe("defense popover · repaint hook (Task 10)", () => {
 });
 
 /**
+ * A repaint that happens DURING event dispatch · the case every other test in this
+ * file structurally cannot see.
+ *
+ * The real loop is synchronous and re-entrant: a pip tap calls
+ * `editState.addDefense`, whose `onChange` is `PCView.handleChange`, which runs
+ * `renderSheet` · `DefensesConditionsPanel.render` · `refreshDefenseTypePopover` ·
+ * `paintDamages` · `damageList.empty()` before the tap has finished bubbling. The
+ * tapped pip is therefore DETACHED by the time the document-level outside-click
+ * listener runs, so a `contains()`-based containment test reads the tap as an outside
+ * click and closes the picker on every single tap.
+ *
+ * That regression shipped in 13833b1a and was caught in review, not by these tests:
+ * every other test here drives the refresh out of band (calling the refresher
+ * directly, or `root.empty(); panel.render(...)` between clicks), so none of them
+ * ever repaints mid-dispatch. The fixture below is the review probe, kept.
+ */
+describe("defense popover · a repaint DURING the tap's own dispatch (Task 10 review)", () => {
+  /** A live sheet: a REAL `CharacterEditState` whose `onChange` does what
+   *  `PCView.handleChange` does · fresh ctx, `root.empty()`, re-render · inside the
+   *  click that caused the write. `after` stands in for the resolver's next answer. */
+  function liveSheet(after: Parameters<typeof nextCtx>[1]) {
+    const character = clone(FIGHTER_5_CLERIC_3);
+    const resolved = fakeResolved(character);
+    const derived = fakeDerived(character) as Derived;
+    derived.defenses = {
+      resistances: [], immunities: [], vulnerabilities: [], condition_immunities: [],
+    };
+    const root = mountContainer();
+    const sheetPanel = new DefensesConditionsPanel();
+    let ctx: ComponentRenderContext;
+    let renders = 0;
+    const onChange = () => {
+      renders++;
+      ctx = nextCtx(ctx, after);
+      root.empty();
+      sheetPanel.render(root, ctx);
+    };
+    const editState = new CharacterEditState(character, () => ({ resolved, derived }), onChange);
+    ctx = { resolved, derived, services: {} as never, app: {} as App, editState };
+    sheetPanel.render(root, ctx);
+    clickOn(root.querySelector<HTMLButtonElement>(".pc-def-add-main")!);
+    return { renders: () => renders };
+  }
+
+  it("survives a DAMAGE pip tap, and shows the state that tap produced", () => {
+    const sheet = liveSheet({ resistances: [{ value: "psychic", label: "Psychic", origin: "manual" }] });
+    expect(isOpen(), "picker opens").toBe(true);
+    clickOn(pip(damageRow("Psychic"), "resistance"));
+    expect(sheet.renders(), "the write drove a synchronous re-render").toBeGreaterThan(0);
+    expect(isOpen(), "the picker must survive its own tap").toBe(true);
+    // Re-queried on purpose: the row the tap landed on was destroyed mid-dispatch, so
+    // this pip can only be ON because the in-dispatch repaint seeded it from the new
+    // ctx · the optimistic `renderRow` afterwards toggles the DETACHED old pip.
+    expect(pip(damageRow("Psychic"), "resistance").classList.contains("on")).toBe(true);
+  });
+
+  it("survives a CONDITION pip tap, and shows the state that tap produced", () => {
+    liveSheet({ condition_immunities: [{ value: "charmed", label: "Charmed", origin: "manual" }] });
+    expect(isOpen(), "picker opens").toBe(true);
+    clickOn(conditionPip("charmed"));
+    expect(isOpen(), "the picker must survive its own tap").toBe(true);
+    expect(conditionPip("charmed").classList.contains("on")).toBe(true);
+  });
+});
+
+/**
+ * `.pc-def-popover-list` is `overflow-y: auto` under a 240px cap (components.css) and
+ * both tabs carry more rows than that shows, so a rebuild that ignored the scroll
+ * offset would yank a scrolled user back to the top on every tap.
+ *
+ * ⚠️ These assert the ACCESS PATTERN, not a surviving value, and that is forced:
+ * jsdom performs no layout, so `list.empty()` does NOT zero `scrollTop` there the way
+ * a browser does (measured: 120 before, 120 after). "Set it, repaint, assert it
+ * survived" would therefore pass against an implementation that does nothing at all ·
+ * vacuous. Recording WHEN the property is read and written, against the row count
+ * live at that moment, is falsifiable: it pins the read to before the rebuild and the
+ * write to after it, which is the half a browser actually needs (a scrollTop written
+ * to an emptied list clamps to 0). Same technique as pc-proficiencies-panel.test.ts'
+ * `refreshAtChildCount`, which proves call ordering by recording childElementCount.
+ */
+describe("defense popover · the repaint preserves each list's scroll offset", () => {
+  type ScrollOp = { op: "get" | "set"; value: number; rows: number };
+
+  /** Replace `scrollTop` with a recording accessor that round-trips its value and
+   *  logs the row count live at each access. */
+  function traceScroll(list: HTMLElement): ScrollOp[] {
+    const log: ScrollOp[] = [];
+    let value = 0;
+    Object.defineProperty(list, "scrollTop", {
+      configurable: true,
+      get() { log.push({ op: "get", value, rows: list.childElementCount }); return value; },
+      set(v: number) { value = v; log.push({ op: "set", value: v, rows: list.childElementCount }); },
+    });
+    return log;
+  }
+
+  function listOf(t: "damages" | "conditions"): HTMLElement {
+    const el = panel(t).querySelector<HTMLElement>(".pc-def-popover-list");
+    if (!el) throw new Error(`no list in the ${t} panel`);
+    return el;
+  }
+
+  it("reads the DAMAGE list's offset before the rebuild and writes it back after", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    const log = traceScroll(listOf("damages"));
+    listOf("damages").scrollTop = 120;
+    // An OFF-VOCABULARY value, so the row count differs before and after the rebuild ·
+    // that difference is what makes "before" and "after" distinguishable at all.
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { immunities: [{ value: "void", label: "Void", origin: "grant" }] }),
+      anchor,
+    );
+    const during = log.slice(1);
+    expect(during.map((o) => o.op)).toEqual(["get", "set"]);
+    expect(during[0].rows, "read while the OLD rows are still mounted").toBe(DAMAGE_TYPES.length);
+    expect(during[1].value, "the same offset goes back").toBe(120);
+    expect(during[1].rows, "written only once the NEW rows exist").toBe(DAMAGE_TYPES.length + 1);
+  });
+
+  it("reads the CONDITION list's offset before the rebuild and writes it back after", () => {
+    const { ctx, anchor } = withDefenses();
+    openDefenseTypePopover(anchor, ctx);
+    const log = traceScroll(listOf("conditions"));
+    listOf("conditions").scrollTop = 90;
+    refreshDefenseTypePopover(
+      nextCtx(ctx, { condition_immunities: [{ value: "bewildered", label: "Bewildered", origin: "grant" }] }),
+      anchor,
+    );
+    const during = log.slice(1);
+    expect(during.map((o) => o.op)).toEqual(["get", "set"]);
+    expect(during[0].rows, "read while the OLD rows are still mounted").toBe(CONDITION_SLUGS.length);
+    expect(during[1].value, "the same offset goes back").toBe(90);
+    expect(during[1].rows, "written only once the NEW rows exist").toBe(CONDITION_SLUGS.length + 1);
+  });
+});
+
+/**
  * The wiring, against the REAL panel rather than a mock of it: what the panel owes is
  * a call on EVERY render, read-mode included. Both assertions below are observations
  * of the picker, so neither can drift the way a mocked module signature can.

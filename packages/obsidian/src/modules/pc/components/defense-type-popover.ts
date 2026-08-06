@@ -178,6 +178,13 @@ export function openDefenseTypePopover(
    * buildSkeleton records the same rule).
    */
   const paintDamages = (c: ComponentRenderContext) => {
+    // The list is `overflow-y: auto` under a 240px cap (components.css
+    // `.pc-def-popover-list`) and both tabs carry more rows than that shows · 13
+    // damage types and 14 conditions, against a row of 7px+7px padding plus a text
+    // line box. Rebuilding it would otherwise yank a scrolled user back to the top
+    // on every single tap. Read BEFORE the rows go and written back AFTER the new
+    // ones exist: a browser clamps a scrollTop written to an empty list to 0.
+    const scrollTop = damageList.scrollTop;
     damageList.empty();
 
     // `DAMAGE_TYPES` holds display strings ("Psychic"), so each row's key has to be
@@ -247,6 +254,8 @@ export function openDefenseTypePopover(
 
       renderRow(rowState);
     }
+
+    damageList.scrollTop = scrollTop;
   };
 
   // ─── Panel 2: Conditions ──────────────────────────────────────────
@@ -256,8 +265,10 @@ export function openDefenseTypePopover(
   });
   const condList = conditionsPanel.createDiv({ cls: "pc-def-popover-list" });
 
-  /** Rebuild the conditions list from `c` · the damages twin, same repaint rule. */
+  /** Rebuild the conditions list from `c` · the damages twin, same repaint rule
+   *  and the same scroll-offset handling, for the same overflowing list. */
   const paintConditions = (c: ComponentRenderContext) => {
+    const scrollTop = condList.scrollTop;
     condList.empty();
 
     // Same union, seeded from `CONDITION_SLUGS` · NOT from `dnd/constants`' `CONDITIONS`.
@@ -301,6 +312,8 @@ export function openDefenseTypePopover(
         pip.classList.toggle("on", condState);
       });
     }
+
+    condList.scrollTop = scrollTop;
   };
 
   /**
@@ -333,9 +346,32 @@ export function openDefenseTypePopover(
   place(anchor);
 
   const onKeyDown = (e: KeyboardEvent) => { if (e.key === "Escape") closeDefenseTypePopover(); };
+  /**
+   * Close on a click that landed outside the popover and outside the anchor.
+   *
+   * Containment is measured against `composedPath()` and NOT `contains()`, and
+   * that is load-bearing, not stylistic. A pip tap writes through `editState`,
+   * whose `onChange` runs `PCView.handleChange` · `renderSheet` ·
+   * `DefensesConditionsPanel.render` · `refreshDefenseTypePopover` ·
+   * `paintDamages` · `damageList.empty()` SYNCHRONOUSLY, inside the pip's own
+   * handler. By the time this bubble-phase listener runs, the tapped pip has been
+   * detached, `popover.contains(e.target)` is false, and the picker would close
+   * on its own tap. `composedPath()` returns the path the event was dispatched
+   * ALONG, built before any listener ran, so it still names the popover.
+   * (Measured in jsdom against a detached target: `contains` false, path
+   * membership true. It is what the DOM standard requires · dispatch computes
+   * the path up front, and `composedPath()` reads that record back.)
+   *
+   * This is deliberately a fix to the CONTAINMENT TEST rather than
+   * `e.stopPropagation()` on each pip: propagation to `activeDocument` is
+   * behaviour that shipped long before the repaint hook, the repaint makes EVERY
+   * writing control in the popover detach itself, and a per-control opt-out has
+   * to be remembered by the next control anyone adds.
+   */
   const onClick = (e: MouseEvent) => {
     if (!(e.target instanceof Node)) return;
-    if (popover.contains(e.target) || boundAnchor.contains(e.target)) return;
+    const path = e.composedPath();
+    if (path.includes(popover) || path.includes(boundAnchor)) return;
     closeDefenseTypePopover();
   };
   // Close on page/anchor scroll (which would visually disconnect the popover),
