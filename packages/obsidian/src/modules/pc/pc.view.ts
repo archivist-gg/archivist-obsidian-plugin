@@ -22,6 +22,8 @@ import { closeMaxHpModal } from "./components/max-hp-modal";
 import { closeCoinModal } from "./components/coin-modal";
 import { closeSpellAbilityModal } from "./components/spell-ability-modal";
 import { closeProficiencyModal } from "./components/proficiency-edit-modal";
+import { closeDefenseTypePopover } from "./components/defense-type-popover";
+import { closeConditionsPopover } from "./components/conditions-popover";
 import type { PCModule } from "./pc.module";
 import type { ResolvedCharacter, DerivedStats } from "@archivist-gg/dnd5e/pc/pc.types";
 
@@ -98,6 +100,17 @@ export class PCSheetView extends TextFileView {
     closeCoinModal();
     closeSpellAbilityModal();
     closeProficiencyModal();
+    // The two defenses popovers ride with the modals at all four teardown sites.
+    // They capture `ctx.editState` at open time exactly as the modals do, and
+    // `this.editState = null` twelve lines down is precisely the discarded-state
+    // condition · a pip tap after that point writes through an edit state no
+    // getViewData() will ever serialize. `refreshDefenseTypePopover` does close
+    // the DEFENSE picker on its own, but only on the NEXT render, which this
+    // method defers behind `compendiumsReady` (a real wait on cold start); the
+    // conditions popover has no refresher at all and would otherwise survive
+    // indefinitely.
+    closeDefenseTypePopover();
+    closeConditionsPopover();
     this.rawFileData = data;
     this.isDirty = false;
     this.lastWrittenData = null;
@@ -209,6 +222,8 @@ export class PCSheetView extends TextFileView {
     closeCoinModal();
     closeSpellAbilityModal();
     closeProficiencyModal();
+    closeDefenseTypePopover();
+    closeConditionsPopover();
     this.character = null;
     this.derived = null;
     this.editState = null;
@@ -228,12 +243,15 @@ export class PCSheetView extends TextFileView {
     // setViewData/onLoadFile/clear above only cover same-leaf file switches.
     // None of them fire when the VIEW ITSELF is unloaded (plugin disable,
     // leaf/tab close, workspace teardown) — Modal.onClose does not fire for
-    // those either, so without this hook a Max HP modal opened against this
-    // view's editState survives as a zombie wired to a dead view.
+    // those either, so without this hook a Max HP modal (or either defenses
+    // popover) opened against this view's editState survives as a zombie wired
+    // to a dead view.
     closeMaxHpModal();
     closeCoinModal();
     closeSpellAbilityModal();
     closeProficiencyModal();
+    closeDefenseTypePopover();
+    closeConditionsPopover();
     super.onunload();
   }
 
@@ -249,6 +267,8 @@ export class PCSheetView extends TextFileView {
     closeCoinModal();
     closeSpellAbilityModal();
     closeProficiencyModal();
+    closeDefenseTypePopover();
+    closeConditionsPopover();
     // Obsidian calls this when the view's underlying file changes. Reset all
     // SP4 mutation/persistence state so no stale references survive across
     // file switches (especially lastWrittenData, which would otherwise cause

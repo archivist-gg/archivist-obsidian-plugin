@@ -7,6 +7,8 @@ import type { CharacterEditState } from "./pc.edit-state";
 import type { CropParams } from "./pc.portrait";
 import { closeCoinModal } from "./components/coin-modal";
 import { closeProficiencyModal } from "./components/proficiency-edit-modal";
+import { closeDefenseTypePopover } from "./components/defense-type-popover";
+import { closeConditionsPopover } from "./components/conditions-popover";
 
 export interface RenderSheetOptions {
   root: HTMLElement;
@@ -89,6 +91,23 @@ export function renderPCSheet(opts: RenderSheetOptions): void {
     // which flips `builder: true` and re-renders with the modal still open.
     closeCoinModal();
     closeProficiencyModal();
+    // Same rule, one step further: the builder renders no DefensesConditionsPanel
+    // either, and that panel is where `refreshDefenseTypePopover` is called from.
+    // So builder entry silently takes the defense picker's ONLY refresh source
+    // away · it would keep painting the `derived.defenses` that were live when
+    // the `+` was tapped, including after its own pips write new ones, hanging
+    // off a `+` the `root.empty()` above just detached. That loss is MEASURED
+    // (tests/pc-view-popover-teardown.test.ts drove the real view into the
+    // builder and found both popovers still in the document), and none of the
+    // view's four teardown hooks fires here: the gear calls openBuilder(), which
+    // re-renders IN PLACE without a file switch or an unload.
+    //
+    // The conditions popover rides along for the detached anchor and because the
+    // builder shows no conditions surface to float over · NOT because builder
+    // entry made it stale. It has no refresher anywhere, on the sheet or here,
+    // so unlike the three above it loses nothing at this boundary.
+    closeDefenseTypePopover();
+    closeConditionsPopover();
     safeRender(sheet, "pc-builder-host", "builder", registry, ctx, { wrap: false });
     root.scrollTop = prevScroll;
     return;
