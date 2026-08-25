@@ -7,9 +7,12 @@ beforeAll(() => installObsidianDomHelpers());
 
 it("renders the equipment step body (not the placeholder) when active", () => {
   const c = mountContainer();
-  // The step's single reconcile site now runs in EVERY mode, `empty` included,
-  // and `?.` guards a null editState rather than a missing method · a stub
-  // without these two would throw instead of asserting anything.
+  // The step's single reconcile site now runs in EVERY mode, `empty` included:
+  // `reconcileGold(ctx, 0)` fires here. With a bag present that is a first-render
+  // ADOPT · goldStep rule 1 lands 0, so adjustCurrency is never reached · and
+  // reconcileGear does not run in `empty` mode at all. These two mocks pin that
+  // ZERO-WRITE adopt, so a future "adopt then apply" regression fails them by
+  // assertion rather than as a stub TypeError.
   const adjustCurrency = vi.fn();
   const syncStartingEquipment = vi.fn();
   new BuilderView().render(c, {

@@ -24,6 +24,9 @@ function makeRegistry(pool: RegisteredEntity[]) {
 
 interface CtxOverrides {
   gp?: number;
+  /** Origin choices as the FILE holds them · already `background:`-prefixed,
+   *  which is the key `readOriginChoice` builds. */
+  originChoices?: Record<string, unknown>;
   startingEquipment?: unknown[];
   mode?: "starting" | "gold" | "empty";
   choices?: Record<number, Record<string, unknown>>;
@@ -61,7 +64,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
     name: "Test", class: over.classes !== undefined ? [] : [classDef],
     background: over.background ?? null, equipment: [],
     currency: { cp: 0, sp: 0, ep: 0, gp: over.gp ?? 0, pp: 0 },
-    builder_equipment_mode: mode, origin_choices: {},
+    builder_equipment_mode: mode, origin_choices: over.originChoices ?? {},
   };
   // Keep definition.class in sync when classes is explicitly empty (empty-mode test).
   if (over.classes !== undefined) definition.class = over.classes.length ? [classDef] : [];
@@ -509,21 +512,44 @@ describe("R4-P5b · the dead background limb and the no-bag disable", () => {
   // so the whole background limb is dead: no rows render and no gold is granted.
   // This is recorded as its own unowned row; the fixture exists so that repairing
   // the key reddens here rather than silently changing what characters receive.
+  //
+  // ⚠️ Three things ARM it · without any one of them the repair changes nothing
+  // here and the guard is decoration:
+  //   · the entry is `kind: "choice"`. The background section rule (and the name
+  //     "Acolyte" with it) is gated on `hasChoice`, which is `kind === "choice"`,
+  //     so a `fixed` entry stays invisible even with the key repaired.
+  //   · the pick is recorded under `background:equipment-0` · the key
+  //     `readOriginChoice` builds · so `resolveSelections` actually consumes the
+  //     option and its 15 gp instead of returning at the unselected branch.
+  //   · the baseline is pre-seeded. On a FRESH bag `goldStep` takes rule 1
+  //     (adopt), which lands 0 whatever the contribution is, and would mask the
+  //     write entirely; seeded at lastG 0 a repaired limb takes rule 3 instead.
+  // Repaired, BOTH assertions go red: "Acolyte" renders and adjustCurrency is
+  // called with { gp: 15 }. `expect.soft` so one run evidences both arms.
   it("a background's starting equipment is NOT rendered or granted (dead limb, pinned)", () => {
     const c = mountContainer();
     const background = { name: "Acolyte", equipment: [
-      { kind: "fixed", grants: [{ gold: 15 }] },
+      { kind: "choice", options: [{ label: "15 GP", grants: [{ gold: 15 }] }] },
     ] };
-    const x = ctx({ background, startingEquipment: [] });
+    const x = ctx({ background, startingEquipment: [],
+      originChoices: { "background:equipment-0": "option-0" } });
+    x.builderUiState!.set("builder.eqrec.gold", { applied: 0, lastG: 0 });
     renderEquipmentStep(c, x);
-    expect(c.textContent).not.toContain("Acolyte");
-    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+    expect.soft(c.textContent).not.toContain("Acolyte");
+    expect.soft((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
       .not.toHaveBeenCalled();
   });
 
   // G8 · no bag means the gold half is disabled outright, never "always adopt".
+  // ⚠️ The kit must GRANT GOLD, so this fixture is inline rather than ROGUE_FIXED:
+  // with G = 0 every write-shaped degradation of `reconcileGold` still lands 0 and
+  // the two spy assertions can never fire · only the gear assertion would carry a
+  // kill. At +10 gp the spec's named degradation ("no store ⇒ deposit anyway")
+  // deposits a real, wrong 10 gp and `adjustSpy` catches it.
   it("G8: with no builderUiState the gold reconcile writes nothing, and gear still seeds", () => {
-    const h = mountStep({ bag: false, mode: "starting", startingEquipment: ROGUE_FIXED });
+    const h = mountStep({ bag: false, mode: "starting", startingEquipment: [
+      { kind: "fixed", grants: [{ item: "leather" }, { item: "dagger", qty: 2 }, { gold: 10 }] },
+    ] });
     h.render();
     expect(h.adjustSpy).not.toHaveBeenCalled();
     expect(h.setCurrencySpy).not.toHaveBeenCalled();
