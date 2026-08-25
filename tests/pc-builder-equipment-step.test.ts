@@ -334,3 +334,162 @@ describe("R4-P5b · the Equipment step no longer mutates on navigation", () => {
     expect(h.character.currency!.gp).toBe(155);
   });
 });
+
+const FIGHTER_155 = [{ kind: "choice", options: [
+  { label: "Chain Mail", grants: [{ item: "chain-mail" }] },
+  { label: "155 GP", grants: [{ gold: 155 }] },
+] }];
+
+// `pick()` is defined in Task 3's block above · do NOT redeclare it here. A
+// duplicate top-level `function pick` is a hard esbuild error ("The symbol
+// "pick" has already been declared") and the whole file fails to transform.
+
+describe("R4-P5b · mode, clamp and residual behaviour", () => {
+  // G7 · the genuine first-build grant still works, on a draft with no currency key.
+  it("G7: picking the 155 GP option on a fresh draft deposits 155", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: FIGHTER_155 });
+    h.render();                                   // adopt at G = 0
+    expect(h.character.currency).toBeUndefined(); // adopt-only leaves no currency line
+    pick(h, "equipment-0", "option-1");
+    h.render();
+    expect(h.character.currency!.gp).toBe(155);
+  });
+
+  // G5 · the arithmetic, asserted on the CALL, not only the end state.
+  it("G5: applies the clamped difference against `applied` and never uses setCurrency", () => {
+    const h = mountStep({ gp: 7, mode: "starting", startingEquipment: FIGHTER_155 });
+    h.bag!.set("builder.eqrec.gold", { applied: 100, lastG: 90 });
+    pick(h, "equipment-0", "option-1");
+    h.render();
+    expect(h.adjustSpy).toHaveBeenCalledTimes(1);
+    expect(h.adjustSpy).toHaveBeenCalledWith({ gp: 55 });
+    expect(h.setCurrencySpy).not.toHaveBeenCalled();
+    expect(h.character.currency!.gp).toBe(62);
+  });
+
+  // G10 · a draft saved under the OLD semantics adopts and writes nothing, twice over.
+  it("G10: mid-build back-compat · gp already equal to the budget produces zero writes", () => {
+    const h = mountStep({ gp: 155, mode: "gold", startingGold: { fixed: 155 } });
+    h.render();
+    h.render();
+    expect(h.counts.onChange).toBe(0);
+    expect(h.character.currency!.gp).toBe(155);
+  });
+
+  // G12 · E1 pinned: an absolute set does not discharge the builder's claim.
+  it("G12: 100 -> types 200 -> gold (+50) -> empty (-55) -> 195", () => {
+    const h = mountStep({ gp: 100, mode: "starting", startingGold: { fixed: 55 },
+      startingEquipment: [{ kind: "choice", options: [{ label: "5 GP", grants: [{ gold: 5 }] }] }] });
+    pick(h, "equipment-0", "option-0");
+    h.render();                                   // adopt at G = 5
+    h.es.setCurrency("gp", 200);
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();                                   // G = 55, intended 55 - 5 = +50
+    expect(h.character.currency!.gp).toBe(250);
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();                                   // G = 0, intended 0 - 55 = -55
+    expect(h.character.currency!.gp).toBe(195);
+  });
+
+  // G9 · a bag reset re-adopts; the reclaim is bounded by the wallet.
+  it("G9: after a bag reset the next render adopts, and the empty switch reclaims G, floored at 0", () => {
+    const h = mountStep({ gp: 162, mode: "gold", startingGold: { fixed: 155 } });
+    h.render();
+    h.bag!.clear();                               // simulate a non-echo setViewData
+    h.render();                                   // re-adopt at G = 155
+    expect(h.counts.onChange).toBe(0);
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();
+    expect(h.character.currency!.gp).toBe(7);     // 162 - 155, NOT "reclaims nothing"
+  });
+
+  it("G9b: the same reclaim floors at 0 rather than going negative", () => {
+    const h = mountStep({ gp: 7, mode: "gold", startingGold: { fixed: 155 } });
+    h.render();                                   // adopt at G = 155
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();
+    expect(h.character.currency!.gp).toBe(0);
+  });
+
+  // G18 · a clamped reclaim must not create gold on the way back.
+  it("G18: 7 -> +155 -> spend 160 -> Start Empty -> Starting Equipment ends at 2, not 155", () => {
+    const h = mountStep({ gp: 7, mode: "starting", startingEquipment: FIGHTER_155 });
+    h.render();                                   // adopt at G = 0
+    pick(h, "equipment-0", "option-1");
+    h.render();                                   // +155 -> 162
+    expect(h.character.currency!.gp).toBe(162);
+    h.es.setCurrency("gp", 2);                    // the user spends 160
+    h.es.setBuilderEquipmentMode("empty");
+    h.render();                                   // reclaim clamped to -2 -> 0
+    expect(h.character.currency!.gp).toBe(0);
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // re-grant lands +2
+    expect(h.character.currency!.gp).toBe(2);
+  });
+
+  // G19 · the two DECIDED residuals of the latent remainder. These are accepted
+  // behaviour; the guard exists so a future change cannot alter them silently.
+  it("G19 arm A: a grant can be withheld after a clamped reclaim (accepted residual)", () => {
+    const h = mountStep({ gp: 0, mode: "starting", startingGold: { fixed: 155 },
+      startingEquipment: FIGHTER_155 });
+    h.render();                                   // adopt at G = 0
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();                                   // +155 -> 155
+    h.es.setCurrency("gp", 0);                    // the user types 0
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // reclaim clamps to 0; applied stays 155
+    expect(h.character.currency!.gp).toBe(0);
+    pick(h, "equipment-0", "option-1");
+    h.render();                                   // G = 155, intended 155 - 155 = 0
+    expect(h.character.currency!.gp).toBe(0);     // the grant is withheld
+  });
+
+  it("G19 arm B: a later balance is over-reclaimed (accepted residual)", () => {
+    const h = mountStep({ gp: 0, mode: "starting", startingGold: { fixed: 155 },
+      startingEquipment: FIGHTER_155 });
+    h.render();
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();
+    h.es.setCurrency("gp", 0);
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // desynced: applied 155, lastG 0
+    h.es.setCurrency("gp", 500);                  // NOT the coin modal - it is closed in the builder
+    h.es.setBuilderEquipmentMode("gold");
+    h.render();                                   // intended 0, no call, lastG -> 155
+    expect(h.character.currency!.gp).toBe(500);
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();                                   // intended -155
+    expect(h.character.currency!.gp).toBe(345);
+  });
+
+  // G16 · E5 pinned, plus the qty arm of the gear gate.
+  // ⚠️ The untagged original must NOT cover the whole resolved multiset, or the
+  // gate correctly skips and the test measures G3's behaviour instead of E5's.
+  // Here the file holds leather but not the two daggers, so containment fails,
+  // the seed fires, and leather ends up duplicated · which IS E5.
+  it("G16: a re-pick on a reopened finished character adds the new kit beside the untagged original", () => {
+    const h = mountStep({
+      mode: undefined,
+      startingEquipment: [{ kind: "choice", options: [
+        { label: "Leather + 2 daggers", grants: [{ item: "leather" }, { item: "dagger", qty: 2 }] },
+      ] }],
+      equipment: [{ item: "[[srd-5e_armor_leather]]", equipped: true, slot: "armor" }] as never,
+    });
+    h.render();
+    pick(h, "equipment-0", "option-0");
+    h.render();
+    const items = h.character.equipment.map((e) => e.item);
+    expect(items.filter((i) => i === "[[srd-5e_armor_leather]]")).toHaveLength(2);
+    expect(h.character.equipment.some((e) => e.granted_by === "builder:starting")).toBe(true);
+  });
+
+  it("G16b: a hand-added single dagger does NOT suppress a dagger x2 seed", () => {
+    const h = mountStep({
+      mode: undefined,
+      startingEquipment: [{ kind: "fixed", grants: [{ item: "dagger", qty: 2 }] }],
+      equipment: [{ item: "[[srd-5e_weapon_dagger]]" }] as never,
+    });
+    h.render();
+    expect(h.character.equipment.some((e) => e.granted_by === "builder:starting")).toBe(true);
+  });
+});
