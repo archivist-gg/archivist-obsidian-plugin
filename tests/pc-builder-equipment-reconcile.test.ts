@@ -1,28 +1,40 @@
 import { describe, it, expect } from "vitest";
-import { goldStep, alreadySeeded } from "../packages/obsidian/src/modules/pc/builder/equipment-reconcile";
+import { goldStep, alreadySeeded, type GoldBaseline } from "../packages/obsidian/src/modules/pc/builder/equipment-reconcile";
 import type { GrantedEntry } from "../packages/obsidian/src/modules/pc/builder/equipment-seed";
 import type { EquipmentEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 
 const g = (slug: string, qty = 1): GrantedEntry => ({ slug, qty, equipped: false, slot: null });
 
-describe("goldStep — rule 1, adopt", () => {
+describe("goldStep · rule 1, adopt", () => {
   it("with no baseline it seeds the pair and lands nothing", () => {
     expect(goldStep({ G: 155, baseline: null, currentGp: 7 }))
       .toEqual({ landed: 0, applied: 155, lastG: 155 });
   });
 });
 
-describe("goldStep — rule 2, unchanged contribution", () => {
+describe("goldStep · rule 2, unchanged contribution", () => {
   it("returns null (no call at all) when G equals lastG, even if applied differs", () => {
     // applied !== lastG is the post-clamp state; rule 2 must still suppress the call.
     expect(goldStep({ G: 0, baseline: { applied: 153, lastG: 0 }, currentGp: 500 })).toBeNull();
   });
 });
 
-describe("goldStep — rule 3, clamped delta", () => {
+describe("goldStep · a non-finite contribution owes nothing and never reaches the pair", () => {
+  it("returns null with no baseline (never adopts NaN into the pair)", () => {
+    expect(goldStep({ G: Number.NaN, baseline: null, currentGp: 7 })).toBeNull();
+  });
+
+  it("returns null with a baseline, even when G differs from lastG", () => {
+    expect(goldStep({ G: Number.POSITIVE_INFINITY, baseline: { applied: 100, lastG: 90 }, currentGp: 7 }))
+      .toBeNull();
+  });
+});
+
+describe("goldStep · rule 3, clamped delta", () => {
   it("applies the difference against `applied`, not against `lastG`", () => {
-    // The §9.1 prescribed fixture: 7 / 100 / 155 / +55 / 62. No two values coincide.
-    expect(goldStep({ G: 155, baseline: { applied: 100, lastG: 100 }, currentGp: 7 }))
+    // The §9.1 prescribed fixture: 7 / 90 / 100 / 155 / +55 / 62. No two values coincide,
+    // and `applied` (100) differs from `lastG` (90) so a read of the wrong field lands 65, not 55.
+    expect(goldStep({ G: 155, baseline: { applied: 100, lastG: 90 }, currentGp: 7 }))
       .toEqual({ landed: 55, applied: 155, lastG: 155 });
   });
 
@@ -42,9 +54,9 @@ describe("goldStep — rule 3, clamped delta", () => {
   });
 });
 
-describe("goldStep — the G18 sequence: a clamped reclaim must not create gold", () => {
+describe("goldStep · the G18 sequence: a clamped reclaim must not create gold", () => {
   it("wallet 7 -> +155 -> spend 160 -> reclaim -> re-grant lands +2, not +155", () => {
-    let bag = goldStep({ G: 0, baseline: null, currentGp: 7 })!;            // adopt
+    let bag: GoldBaseline = goldStep({ G: 0, baseline: null, currentGp: 7 })!;  // adopt
     expect(bag).toEqual({ landed: 0, applied: 0, lastG: 0 });
 
     const grant = goldStep({ G: 155, baseline: bag, currentGp: 7 })!;       // pick "155 GP"
@@ -64,7 +76,7 @@ describe("goldStep — the G18 sequence: a clamped reclaim must not create gold"
   });
 });
 
-describe("alreadySeeded — the world-relative gear gate", () => {
+describe("alreadySeeded · the world-relative gear gate", () => {
   const untagged = (item: string, qty?: number): EquipmentEntry =>
     (qty === undefined ? { item } : { item, qty }) as EquipmentEntry;
 
@@ -81,7 +93,7 @@ describe("alreadySeeded — the world-relative gear gate", () => {
     expect(alreadySeeded([g("srd-5e_armor_leather"), g("srd-5e_weapon_dagger", 2)], eq)).toBe(true);
   });
 
-  it("false on a QTY SHORTFALL — a hand-added single javelin must not suppress javelin x4", () => {
+  it("false on a QTY SHORTFALL · a hand-added single javelin must not suppress javelin x4", () => {
     expect(alreadySeeded([g("srd-5e_weapon_javelin", 4)], [untagged("[[srd-5e_weapon_javelin]]")]))
       .toBe(false);
   });
@@ -95,6 +107,8 @@ describe("alreadySeeded — the world-relative gear gate", () => {
   it("free-text entries never match a resolved slug", () => {
     // Volker really carries `item: Traveler pack` with no wikilink.
     expect(alreadySeeded([g("srd-5e_item_traveler-pack")], [untagged("Traveler pack")])).toBe(false);
+    // Same string as the slug but without the wikilink: still free text, still no match.
+    expect(alreadySeeded([g("srd-5e_item_traveler-pack")], [untagged("srd-5e_item_traveler-pack")])).toBe(false);
   });
 
   it("compares FULL edition slugs on both sides, with no bare-izing", () => {

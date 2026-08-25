@@ -3,11 +3,11 @@ import type { GrantedEntry } from "./equipment-seed";
 import { MAX_COIN } from "../pc.coin-math";
 
 /** The builder's per-view-session claim on this wallet.
- *  `applied` — gold it has actually deposited this session, PLUS (after an adopt)
+ *  `applied` · gold it has actually deposited this session, PLUS (after an adopt)
  *  the contribution its selections already justified when the session began.
- *  `lastG`   — the contribution its selections justified at the last reconcile.
+ *  `lastG`   · the contribution its selections justified at the last reconcile.
  *  They diverge only when a clamp bites; that divergence is the whole point of
- *  the pair (a single scalar creates gold — see the spec's G18 sequence). */
+ *  the pair (a single scalar creates gold · see the spec's G18 sequence). */
 export interface GoldBaseline { applied: number; lastG: number; }
 
 export interface GoldStep { landed: number; applied: number; lastG: number; }
@@ -16,8 +16,9 @@ export interface GoldStep { landed: number; applied: number; lastG: number; }
  * The gold state machine. Returns the next baseline plus the amount to hand to
  * `adjustCurrency`, or `null` when there is nothing to do at all.
  *
- * `null` means RULE 2 ONLY (`G === lastG`). An adopt returns a step with
- * `landed: 0` so the caller still seeds the bag — conflating the two would leave
+ * `null` means NOTHING TO DO: rule 2 (`G === lastG`), or a non-finite `G`
+ * (guarded first, below). It never means adopt: an adopt returns a step with
+ * `landed: 0` so the caller still seeds the bag · conflating the two would leave
  * the bag unseeded forever and the builder would silently never grant anything.
  *
  * The caller MUST commit the returned `applied`/`lastG` to its store BEFORE
@@ -31,11 +32,17 @@ export function goldStep(input: {
   currentGp: number;
 }): GoldStep | null {
   const { G, baseline, currentGp } = input;
-  // Rule 1 — adopt. No claim yet, so make no claim on the wallet either.
+  // A non-finite contribution owes nothing either way and must never reach the
+  // pair: once `lastG` is NaN, rule 2 can never fire again and the poison is
+  // permanent. Unreachable with schema-validated data (`fixed`, `multiplier` and
+  // `gold` are finite ints; `itemCost` already maps non-numbers to 0); kept as
+  // the defence `syncStartingEquipment` used to carry for its `gold` argument.
+  if (!Number.isFinite(G)) return null;
+  // Rule 1 · adopt. No claim yet, so make no claim on the wallet either.
   if (!baseline) return { landed: 0, applied: G, lastG: G };
-  // Rule 2 — the justified contribution is unchanged; nothing is owed either way.
+  // Rule 2 · the justified contribution is unchanged; nothing is owed either way.
   if (G === baseline.lastG) return null;
-  // Rule 3 — settle the difference against what was actually deposited, clamped
+  // Rule 3 · settle the difference against what was actually deposited, clamped
   // to the same window `adjustCurrency` would clamp to, so `landed` is exact.
   const intended = Math.trunc(G - baseline.applied);
   const landed = Math.max(-currentGp, Math.min(MAX_COIN - currentGp, intended));
@@ -55,7 +62,7 @@ function wikilinkRef(item: string): string | null {
  *  1. the builder owns no `builder:starting` entries to reconcile against, and
  *  2. every resolved entry is already present as an UNTAGGED entry.
  *
- * Together these are the state `finishBuild` creates — it strips every
+ * Together these are the state `finishBuild` creates · it strips every
  * `granted_by`, so the kit the builder seeded becomes indistinguishable from
  * hand-managed gear and the ordinary replace-in-place reconcile would push a
  * second copy on every visit. Matching is a MULTISET containment on the
