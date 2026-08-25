@@ -5,6 +5,7 @@ import { renderEquipmentStep, seedRegistry } from "../packages/obsidian/src/modu
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 import type { RegisteredEntity } from "@core/entity-registry";
 import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import { mountStep, entity } from "./fixtures/pc/builder-equipment-harness";
 
 beforeAll(() => installObsidianDomHelpers());
 
@@ -19,10 +20,6 @@ function makeRegistry(pool: RegisteredEntity[]) {
     getByTypeAndSlug: (type: string, slug: string) =>
       pool.find((e) => e.entityType === type && e.slug === slug),
   };
-}
-
-function entity(slug: string, name: string, entityType: string, data: Record<string, unknown> = {}): RegisteredEntity {
-  return { slug, name, entityType, filePath: "", data, compendium: "SRD", readonly: true, homebrew: false };
 }
 
 interface CtxOverrides {
@@ -238,5 +235,102 @@ describe("renderEquipmentStep", () => {
     // bareEntitySlug strips the 3-part namespaced slug down to "chain-mail".
     expect(seed.lookup("chain-mail")).not.toBeNull();
     expect(seed.lookup("chain-mail")!.fullSlug).toBe("srd-5e_armor_chain-mail");
+  });
+});
+
+// The SRD-5e Rogue's unconditional kit, exactly as the shipped data declares it.
+const ROGUE_FIXED = [{ kind: "fixed", grants: [{ item: "leather" }, { item: "dagger", qty: 2 }] }];
+
+/** Record a class-level equipment choice. ⚠️ `readClassChoice` reads
+ *  `ctx.resolved.definition.class[0].choices[1][key]` · the CHARACTER side, never
+ *  `ctx.resolved.classes`. The level key is load-bearing. The harness aliases one
+ *  object into both places so either write lands, but the character-side alias is
+ *  the one that must not be dropped. */
+function pick(h: ReturnType<typeof mountStep>, key: string, value: string) {
+  (h.character.class[0].choices as Record<number, Record<string, unknown>>)[1][key] = value;
+}
+
+describe("R4-P5b · the Equipment step no longer mutates on navigation", () => {
+  // G2 · the reported bug at render level. Pre-fix this wrote gp = 0.
+  it("G2: a reopened finished character with G=0 is left completely alone", () => {
+    const h = mountStep({ gp: 10, mode: undefined, startingEquipment: [] });
+    h.render();
+    expect(h.character.currency!.gp).toBe(10);
+    expect(h.counts.onChange).toBe(0);
+    expect(h.adjustSpy).not.toHaveBeenCalled();
+    expect(h.setCurrencySpy).not.toHaveBeenCalled();
+  });
+
+  // G3 · the same, with a genuinely NON-ZERO justified contribution and the kit
+  // already untagged. ⚠️ ROGUE_FIXED alone grants no gold, so a fixture built
+  // from it would silently duplicate G2 on the gold axis; the surviving
+  // `equipment-1` choice is what makes G = 5 here.
+  it("G3: a reopened finished character with G>0 is left completely alone", () => {
+    const h = mountStep({
+      gp: 900, mode: undefined,
+      startingEquipment: [
+        ...ROGUE_FIXED,
+        { kind: "choice", options: [{ label: "5 GP", grants: [{ gold: 5 }] }] },
+      ],
+      choices: { 1: { "equipment-1": "option-0" } },   // survives finishBuild
+      equipment: [
+        { item: "[[srd-5e_armor_leather]]", equipped: true, slot: "armor" },
+        { item: "[[srd-5e_weapon_dagger]]", qty: 2 },
+      ] as never,
+    });
+    const before = h.character.equipment.length;
+    h.render();
+    expect(h.character.currency!.gp).toBe(900);   // pre-fix this became 5
+    expect(h.character.equipment).toHaveLength(before);
+    expect(h.counts.onChange).toBe(0);
+  });
+
+  // G11 · a hand-edited wallet is never reverted.
+  it("G11: a hand-edited gp survives two further renders with no user action", () => {
+    const h = mountStep({ gp: 0, mode: "starting", startingEquipment: [] });
+    h.render();                       // adopt
+    h.es.setCurrency("gp", 42);       // the inline strip's absolute set
+    h.render();
+    h.render();
+    expect(h.character.currency!.gp).toBe(42);
+  });
+
+  // G14 · the genuine first build still seeds its unconditional kit.
+  it("G14: a fresh 2014 Rogue draft seeds leather + 2 daggers on its first render", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: ROGUE_FIXED });
+    h.render();
+    const items = h.character.equipment.map((e) => e.item);
+    expect(items).toContain("[[srd-5e_armor_leather]]");
+    expect(items).toContain("[[srd-5e_weapon_dagger]]");
+    expect(h.character.equipment.every((e) => e.granted_by === "builder:starting")).toBe(true);
+  });
+
+  // G15 · a mode round trip restores the kit rather than losing it.
+  it("G15: starting -> gold -> starting restores the seeded kit", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: ROGUE_FIXED });
+    h.render();
+    expect(h.character.equipment.length).toBeGreaterThan(0);
+    h.es.setBuilderEquipmentMode("gold");
+    expect(h.character.equipment).toHaveLength(0);   // the switch drops all builder:* gear
+    h.render();
+    h.es.setBuilderEquipmentMode("starting");
+    h.render();
+    expect(h.character.equipment.map((e) => e.item)).toContain("[[srd-5e_armor_leather]]");
+  });
+
+  // G1 · re-entrancy. A real onChange that re-renders must converge.
+  it("G1: a granting reconcile under a re-rendering onChange calls adjustCurrency exactly once", () => {
+    const h = mountStep({
+      gp: 0, mode: "starting", reRenderOnChange: true,
+      startingEquipment: [{ kind: "choice", options: [
+        { label: "155 GP", grants: [{ gold: 155 }] },
+      ] }],
+    });
+    h.render();                                            // adopt, G = 0
+    pick(h, "equipment-0", "option-0");
+    h.render();                                            // G = 155, applies once
+    expect(h.adjustSpy).toHaveBeenCalledTimes(1);
+    expect(h.adjustSpy).toHaveBeenCalledWith({ gp: 155 });
+    expect(h.character.currency!.gp).toBe(155);
   });
 });

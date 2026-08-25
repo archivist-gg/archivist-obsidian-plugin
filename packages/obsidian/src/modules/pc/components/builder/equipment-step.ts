@@ -10,19 +10,93 @@ import { InventoryList } from "../inventory/inventory-list";
 import { CurrencyStrip } from "../inventory/currency-strip";
 import { BrowseMode } from "../inventory/browse-mode";
 import { resolveGrants, type GrantedEntry, type SeedRegistry } from "../../builder/equipment-seed";
+import { goldStep, alreadySeeded, type GoldBaseline } from "../../builder/equipment-reconcile";
 
 type Mode = "starting" | "gold" | "empty";
+
+/** Per-view-session key for the gold baseline. Deliberately NOT under the
+ *  `builder.equip.` prefix that the nested category pickers use for their own
+ *  state keys. */
+const GOLD_BAG_KEY = "builder.eqrec.gold";
+
+function readGoldBaseline(ctx: ComponentRenderContext): GoldBaseline | null {
+  const v = ctx.builderUiState?.get(GOLD_BAG_KEY);
+  if (!v || typeof v !== "object") return null;
+  const b = v as Partial<GoldBaseline>;
+  return typeof b.applied === "number" && typeof b.lastG === "number"
+    ? { applied: b.applied, lastG: b.lastG }
+    : null;
+}
+
+/** Settle the wallet against the builder's session claim.
+ *
+ *  ⚠️ The bag write MUST precede `adjustCurrency`. That mutator calls onChange,
+ *  which re-renders SYNCHRONOUSLY, and the intended contribution does not depend
+ *  on the wallet · so a bag write placed after the call would have the re-entrant
+ *  pass read the stale baseline, recompute the same amount and apply it again,
+ *  without bound. The old code was safe only because its guard compared against
+ *  the wallet itself and therefore self-satisfied after one write. */
+function reconcileGold(ctx: ComponentRenderContext, g: number): void {
+  const bag = ctx.builderUiState;
+  if (!bag) return; // no per-view store ⇒ the builder makes no claim and writes nothing
+  const step = goldStep({
+    G: g,
+    baseline: readGoldBaseline(ctx),
+    currentGp: ctx.resolved.definition.currency?.gp ?? 0,
+  });
+  if (!step) return; // the justified contribution is unchanged
+  bag.set(GOLD_BAG_KEY, { applied: step.applied, lastG: step.lastG });
+  if (step.landed !== 0) ctx.editState?.adjustCurrency({ gp: step.landed });
+}
+
+/** Seed the starting kit, unless the file already holds it with no builder
+ *  provenance · the state `finishBuild` leaves behind, where an unguarded
+ *  reconcile pushes a duplicate on every visit. */
+function reconcileGear(ctx: ComponentRenderContext, entries: GrantedEntry[]): void {
+  if (alreadySeeded(entries, ctx.resolved.definition.equipment ?? [])) return;
+  ctx.editState?.syncStartingEquipment(entries);
+}
+
+/** Cost of everything the Buy-with-Gold browser has added. Shared by the
+ *  reconcile dispatch and the meter so the two can never disagree. */
+function goldBuySpend(ctx: ComponentRenderContext): number {
+  const reg = ctx.services?.entities as { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined;
+  let spent = 0;
+  for (const e of ctx.resolved.definition.equipment ?? []) {
+    if (e.granted_by !== "builder:gold-buy") continue;
+    const slug = e.item.match(/^\[\[(.+)\]\]$/)?.[1];
+    if (slug) spent += itemCost(reg, slug);
+  }
+  return spent;
+}
 
 /** SP2 Equipment step (Task C2). Three modes via the `.pc-bmtab` pills
  *  (matching the Abilities step tab idiom): Starting Equipment (option rows +
  *  nested category pickers, seeded
  *  live into the inventory), Buy with Gold (placeholder until Task C3), and
- *  Start Empty (a quiet note). The Starting mode resolves the chosen options'
- *  grants on every render and reconciles them through `syncStartingEquipment`
- *  (no-op guarded, so it never loops), then renders the live inventory panel. */
+ *  Start Empty (a quiet note).
+ *  The Starting mode resolves the chosen options' grants on every render; the
+ *  step's single reconcile site then seeds the gear (unless the file already
+ *  holds it untagged) and settles the wallet against a per-session baseline. */
 export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const def = ctx.resolved.definition;
   const mode: Mode = (def.builder_equipment_mode) ?? "starting";
+
+  // ── the single reconcile site ────────────────────────────────────────────
+  // Both halves are settled here, before any DOM is built, so there is exactly
+  // one place that can write to the character during this step's render.
+  // Gear before gold is a readability convention, not a correctness constraint:
+  // in starting mode `totalGold` comes only from the selections and is
+  // independent of `equipment`, so either order converges.
+  if (mode === "starting") {
+    const { entries, totalGold } = resolveSelections(ctx);
+    reconcileGear(ctx, entries);
+    reconcileGold(ctx, totalGold);
+  } else if (mode === "gold") {
+    reconcileGold(ctx, Math.max(0, startingBudget(ctx) - goldBuySpend(ctx)));
+  } else {
+    reconcileGold(ctx, 0);
+  }
 
   renderModeToggle(body, ctx, mode);
 
@@ -39,11 +113,6 @@ export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderConte
   }
 
   renderStartingChoices(body, ctx);
-  // Runs every render and may fire syncStartingEquipment→onChange→a synchronous
-  // full re-render (re-entrant). Safe: syncStartingEquipment's no-op guard makes
-  // the re-entrant pass a no-op, so recursion self-terminates at depth 2 and the
-  // inner render produces the visible DOM.
-  syncFromSelections(ctx);
   renderInventoryPanel(body, ctx);
 }
 
@@ -147,7 +216,7 @@ function renderSourceChoices(
     // DecisionItem (revealed-on-selection). Render those children through the
     // SAME decision-strip select-entity picker the rest of the builder uses, so
     // each pick writes under its category child key (equipment-${i}-opt-${j}-
-    // cat-${k}) via the strip's writeValue → the path syncFromSelections reads.
+    // cat-${k}) via the strip's writeValue → the path resolveSelections reads.
     if (selectedIdx != null) {
       renderNestedCategoryPickers(group, ctx, ledger, w.scope, key);
     }
@@ -202,9 +271,9 @@ function findEquipmentItem(
 // ── live reconcile ───────────────────────────────────────────────────────────
 
 /** Resolve the currently-chosen options' grants (+ their nested category picks)
- *  into seedable entries + total gold, then hand them to the no-op-guarded
- *  `syncStartingEquipment`. Safe to call on every render. */
-function syncFromSelections(ctx: ComponentRenderContext): void {
+ *  into seedable entries + total gold. PURE · it performs no mutation; the
+ *  caller decides what to do with the result. */
+function resolveSelections(ctx: ComponentRenderContext): { entries: GrantedEntry[]; totalGold: number } {
   const reg = seedRegistry(ctx);
   const all: GrantedEntry[] = [];
   let totalGold = 0;
@@ -250,7 +319,7 @@ function syncFromSelections(ctx: ComponentRenderContext): void {
   const bg = ctx.resolved.background as { starting_equipment?: StartingEquipmentEntry[] } | null;
   consume(bg?.starting_equipment ?? [], "background", (key) => readOriginChoice(ctx, key));
 
-  ctx.editState?.syncStartingEquipment(all);
+  return { entries: all, totalGold };
 }
 
 // ── inventory panel ──────────────────────────────────────────────────────────
@@ -311,20 +380,12 @@ function itemCost(reg: { getBySlug?: (s: string) => { data?: { cost?: number | s
 
 /** Buy-with-Gold mode: a starting-gold budget meter (real .pc-bctx idiom) over
  *  the live compendium browse table whose "+ Add" tags each item
- *  `builder:gold-buy`. Spent gp is the sum of those items' costs; the remaining
- *  budget is mirrored into `currency.gp` (equality-guarded so the
- *  setCurrency→onChange→re-render converges instead of looping). */
+ *  `builder:gold-buy`. The meter is a pure display of `budget - spent`; the
+ *  wallet is settled by the step's single reconcile site, not here. */
 function renderBuyWithGold(body: HTMLElement, ctx: ComponentRenderContext): void {
-  const def = ctx.resolved.definition;
   const budget = startingBudget(ctx);
-  const reg = ctx.services?.entities as { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined;
 
-  let spent = 0;
-  for (const e of def.equipment ?? []) {
-    if (e.granted_by !== "builder:gold-buy") continue;
-    const slug = e.item.match(/^\[\[(.+)\]\]$/)?.[1];
-    if (slug) spent += itemCost(reg, slug);
-  }
+  const spent = goldBuySpend(ctx);
   const remaining = Math.max(0, budget - spent);
   const over = spent > budget;
 
@@ -337,13 +398,6 @@ function renderBuyWithGold(body: HTMLElement, ctx: ComponentRenderContext): void
   fill.style.width = `${budget ? Math.min(100, (spent / budget) * 100) : 0}%`;
   bar.createSpan({ cls: "pc-bleft-n", text: String(remaining) });
   bar.createSpan({ cls: `pc-bleft-l${over ? " over" : ""}`, text: "left" });
-
-  // Keep currency.gp in sync with the remaining budget. Equality-guarded so the
-  // setCurrency→onChange→full re-render converges (no loop), same pattern as the
-  // starting-mode syncStartingEquipment no-op guard. setBuilderEquipmentMode
-  // already cleared builder:starting gear on the switch into gold, so there is
-  // no starting-mode/gold-mode gp conflict to reconcile here.
-  if ((def.currency?.gp ?? 0) !== remaining) ctx.editState?.setCurrency("gp", remaining);
 
   // The live compendium browse table; its "+ Add" tags items builder:gold-buy.
   new BrowseMode({
