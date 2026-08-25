@@ -130,6 +130,7 @@ describe("renderEquipmentStep", () => {
     expect(sync).toHaveBeenCalled();
     const [entries] = sync.mock.calls[0];
     expect(entries.map((e: { slug: string }) => e.slug)).toContain("srd-2024_chain-mail");
+    expect(sync.mock.calls[0]).toHaveLength(1);
   });
 
   it("Start Empty mode shows the quiet note", () => {

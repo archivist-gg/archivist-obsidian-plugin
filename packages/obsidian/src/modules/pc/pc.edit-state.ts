@@ -943,34 +943,38 @@ export class CharacterEditState {
   }
 
   // ─── Builder: Equipment step ───────────────────────────────────
-  /** Replace all `builder:starting` provenance entries with `entries` (each
-   *  tagged `builder:starting`) and set `currency.gp` from the summed starting
-   *  gold. Leaves hand-managed (untagged) + `builder:gold-buy` entries untouched.
+  /** Replace all `builder:starting` provenance entries with `entries` (each tagged
+   *  `builder:starting`). Leaves hand-managed (untagged) + `builder:gold-buy`
+   *  entries untouched, and **never touches `currency`** · the wallet is settled
+   *  separately by the Equipment step's gold reconcile, against a session baseline
+   *  it owns (see `goldStep`).
+   *
    *  Idempotent + resume-safe: NO-OP (skips onChange, returns early) when the
-   *  resulting `builder:starting` set + gp are unchanged, so the Equipment step
-   *  may call it on every render without triggering a re-render loop. */
-  syncStartingEquipment(entries: GrantedEntry[], gold: number): void {
+   *  resulting `builder:starting` set is unchanged, so the Equipment step may call
+   *  it on every render without triggering a re-render loop.
+   *
+   *  ⚠️ Dropping the old `curGp === nextGp` term from the guard below is precisely
+   *  what fixes the reported bug: a reopened finished character resolves to the
+   *  same (usually empty) set, so `prevStarting === nextStarting` and the method
+   *  now returns early · no `onChange`, no file mutation. Previously the gp term
+   *  alone could fail the guard and rewrite the wallet on pure navigation. */
+  syncStartingEquipment(entries: GrantedEntry[]): void {
     const STARTING = "builder:starting";
     const prevStarting = this.character.equipment.filter((e) => e.granted_by === STARTING);
-    const nextGp = Math.max(0, Math.floor(Number.isFinite(gold) ? gold : 0));
-    // Build the next builder:starting entries from the resolved grants.
     const nextStarting: EquipmentEntry[] = entries.map((g) => {
       const entry: EquipmentEntry = { item: `[[${g.slug}]]`, equipped: g.equipped, granted_by: STARTING };
       if (g.slot) entry.slot = g.slot;
       if (g.qty > 1) entry.qty = g.qty;
       return entry;
     });
-    // No-op guard: compare the serialized prev vs next starting set + gp. The
+    // No-op guard: compare the serialized prev vs next starting set. The
     // identity-bearing fields (item/equipped/slot/qty) are normalized into a
     // stable shape so key order cannot produce a false diff.
     const serialize = (arr: EquipmentEntry[]): string =>
       JSON.stringify(arr.map((e) => ({ item: e.item, equipped: e.equipped, slot: e.slot ?? null, qty: e.qty ?? null })));
-    const curGp = this.character.currency?.gp ?? 0;
-    if (serialize(prevStarting) === serialize(nextStarting) && curGp === nextGp) return;
+    if (serialize(prevStarting) === serialize(nextStarting)) return;
     this.character.equipment = this.character.equipment.filter((e) => e.granted_by !== STARTING);
     this.character.equipment.push(...nextStarting);
-    if (!this.character.currency) this.character.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
-    this.character.currency.gp = nextGp;
     this.onChange();
   }
 

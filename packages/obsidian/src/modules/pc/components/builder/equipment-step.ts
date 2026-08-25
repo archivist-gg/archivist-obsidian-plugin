@@ -250,7 +250,7 @@ function syncFromSelections(ctx: ComponentRenderContext): void {
   const bg = ctx.resolved.background as { starting_equipment?: StartingEquipmentEntry[] } | null;
   consume(bg?.starting_equipment ?? [], "background", (key) => readOriginChoice(ctx, key));
 
-  ctx.editState?.syncStartingEquipment(all, totalGold);
+  ctx.editState?.syncStartingEquipment(all);
 }
 
 // ── inventory panel ──────────────────────────────────────────────────────────
