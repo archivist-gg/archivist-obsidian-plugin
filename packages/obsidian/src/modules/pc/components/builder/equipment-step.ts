@@ -73,7 +73,7 @@ function goldBuySpend(ctx: ComponentRenderContext): number {
 /** SP2 Equipment step (Task C2). Three modes via the `.pc-bmtab` pills
  *  (matching the Abilities step tab idiom): Starting Equipment (option rows +
  *  nested category pickers, seeded
- *  live into the inventory), Buy with Gold (placeholder until Task C3), and
+ *  live into the inventory), Buy with Gold, and
  *  Start Empty (a quiet note).
  *  The Starting mode resolves the chosen options' grants on every render; the
  *  step's single reconcile site then seeds the gear (unless the file already

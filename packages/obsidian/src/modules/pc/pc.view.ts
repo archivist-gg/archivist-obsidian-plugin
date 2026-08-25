@@ -52,11 +52,19 @@ export class PCSheetView extends TextFileView {
   // survives the renderSheet-driven re-render that every editState mutation
   // triggers (root.empty() in renderPCSheet wipes the tab DOM, and without
   // this anchor the container would always re-activate the first tab).
-  // Reset only on file switch (onLoadFile / setViewData(clear=true) / clear),
+  // Reset only on file switch (onLoadFile / any non-echo setViewData / clear),
   // never on internal mutations.
   private activeTabId: string = DEFAULT_ACTIVE_TAB;
-  // Builder step + transient builder UI state (search/filter/expand), lifted
-  // for the same survival reason as activeTabId. Reset on file switch only.
+  // Builder step id, lifted for the same survival reason as activeTabId and
+  // reset at those same three sites. The bag below rides with it and is the
+  // more consequential half:
+  // Per-loaded-file bag for Builder state that must survive re-renders: search
+  // queries, ticked compendiums, expanded rows, focused detail · and the
+  // Equipment step's gold baseline, whose loss changes what gets written (the
+  // step re-adopts and makes no claim until the next real change). Reassigned on
+  // every NON-ECHO setViewData, on clear(), and on onLoadFile; never on a
+  // re-render and never on an editState change. Created in lockstep with the
+  // editState, which is why the baseline can never outlive the state it describes.
   private activeStepId: string | null = null;
   private builderUiState = new Map<string, unknown>();
   // Exposed for tests to await the deferred render. Obsidian itself treats

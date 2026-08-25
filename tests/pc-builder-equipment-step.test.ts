@@ -23,6 +23,7 @@ function makeRegistry(pool: RegisteredEntity[]) {
 }
 
 interface CtxOverrides {
+  gp?: number;
   startingEquipment?: unknown[];
   mode?: "starting" | "gold" | "empty";
   choices?: Record<number, Record<string, unknown>>;
@@ -37,6 +38,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
   const syncStartingEquipment = vi.fn();
   const setBuilderEquipmentMode = vi.fn();
   const setCurrency = vi.fn();
+  const adjustCurrency = vi.fn();
   const startingEquipment = over.startingEquipment ?? [
     { kind: "choice", options: [
       { label: "Chain Mail, Greatsword", grants: [{ item: "chain-mail" }] },
@@ -58,7 +60,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
   const definition = {
     name: "Test", class: over.classes !== undefined ? [] : [classDef],
     background: over.background ?? null, equipment: [],
-    currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
+    currency: { cp: 0, sp: 0, ep: 0, gp: over.gp ?? 0, pp: 0 },
     builder_equipment_mode: mode, origin_choices: {},
   };
   // Keep definition.class in sync when classes is explicitly empty (empty-mode test).
@@ -75,7 +77,7 @@ function ctx(over: CtxOverrides = {}): ComponentRenderContext {
     app: {} as never,
     services: { entities: makeRegistry(pool) } as never,
     editState: { setChoice, setOriginChoice, syncStartingEquipment, setBuilderEquipmentMode, setCurrency,
-      addItem: vi.fn(), removeItem: vi.fn() } as never,
+      adjustCurrency, addItem: vi.fn(), removeItem: vi.fn() } as never,
     builderUiState: new Map(),
   } as unknown as ComponentRenderContext;
 }
@@ -198,6 +200,13 @@ describe("renderEquipmentStep", () => {
     // The starting-gold budget meter renders (real .pc-bctx idiom) and shows 155.
     expect(c.querySelector(".pc-bctx")).not.toBeNull();
     expect(c.textContent).toContain("155");
+    // A first render in gold mode ADOPTS the budget · it writes nothing to the
+    // wallet. Without these two the repaired stub would swallow Task 4's G10
+    // mutant (adopt landing G), which only reddened here as a stub TypeError.
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .not.toHaveBeenCalled();
+    expect((x.editState as unknown as { setCurrency: ReturnType<typeof vi.fn> }).setCurrency)
+      .not.toHaveBeenCalled();
   });
 
   it("Buy with Gold does NOT crash on old-shape starting equipment (string options)", () => {
@@ -491,5 +500,33 @@ describe("R4-P5b · mode, clamp and residual behaviour", () => {
     });
     h.render();
     expect(h.character.equipment.some((e) => e.granted_by === "builder:starting")).toBe(true);
+  });
+});
+
+describe("R4-P5b · the dead background limb and the no-bag disable", () => {
+  // §7.1 · pins CURRENT behaviour, deliberately. The Equipment step reads
+  // `background.starting_equipment`, but BackgroundEntity's key is `equipment`,
+  // so the whole background limb is dead: no rows render and no gold is granted.
+  // This is recorded as its own unowned row; the fixture exists so that repairing
+  // the key reddens here rather than silently changing what characters receive.
+  it("a background's starting equipment is NOT rendered or granted (dead limb, pinned)", () => {
+    const c = mountContainer();
+    const background = { name: "Acolyte", equipment: [
+      { kind: "fixed", grants: [{ gold: 15 }] },
+    ] };
+    const x = ctx({ background, startingEquipment: [] });
+    renderEquipmentStep(c, x);
+    expect(c.textContent).not.toContain("Acolyte");
+    expect((x.editState as unknown as { adjustCurrency: ReturnType<typeof vi.fn> }).adjustCurrency)
+      .not.toHaveBeenCalled();
+  });
+
+  // G8 · no bag means the gold half is disabled outright, never "always adopt".
+  it("G8: with no builderUiState the gold reconcile writes nothing, and gear still seeds", () => {
+    const h = mountStep({ bag: false, mode: "starting", startingEquipment: ROGUE_FIXED });
+    h.render();
+    expect(h.adjustSpy).not.toHaveBeenCalled();
+    expect(h.setCurrencySpy).not.toHaveBeenCalled();
+    expect(h.character.equipment.length).toBeGreaterThan(0);   // the gear half is unaffected
   });
 });
