@@ -58,7 +58,12 @@ function reconcileGear(ctx: ComponentRenderContext, entries: GrantedEntry[]): vo
 }
 
 /** Cost of everything the Buy-with-Gold browser has added. Shared by the
- *  reconcile dispatch and the meter so the two can never disagree. */
+ *  reconcile dispatch and the meter so the two can never disagree. It does NOT
+ *  reuse `wikilinkRef` from `../../builder/equipment-reconcile`, and a future DRY
+ *  pass must not merge the two: that parser feeds the seed gate, where a false
+ *  match inflates the containment count and SUPPRESSES a seed, whereas this is a
+ *  display/budget sum over entries `addItem` writes as a bare `[[slug]]` with no
+ *  qty, so a miss here only under-counts what has been spent. */
 function goldBuySpend(ctx: ComponentRenderContext): number {
   const reg = ctx.services?.entities as { getBySlug?: (s: string) => { data?: { cost?: number | string } } | null } | undefined;
   let spent = 0;
@@ -70,14 +75,13 @@ function goldBuySpend(ctx: ComponentRenderContext): number {
   return spent;
 }
 
-/** SP2 Equipment step (Task C2). Three modes via the `.pc-bmtab` pills
- *  (matching the Abilities step tab idiom): Starting Equipment (option rows +
- *  nested category pickers, seeded
- *  live into the inventory), Buy with Gold, and
- *  Start Empty (a quiet note).
- *  The Starting mode resolves the chosen options' grants on every render; the
- *  step's single reconcile site then seeds the gear (unless the file already
- *  holds it untagged) and settles the wallet against a per-session baseline. */
+/** SP2 Equipment step. Three modes via the `.pc-bmtab` pills (matching the
+ *  Abilities step tab idiom): Starting Equipment (option rows + nested category
+ *  pickers, seeded live into the inventory), Buy with Gold, and Start Empty (a
+ *  quiet note). The Starting mode resolves the chosen options' grants on every
+ *  render; the step's single reconcile site then seeds the gear (unless the file
+ *  already holds it untagged) and settles the wallet against a per-session
+ *  baseline. */
 export function renderEquipmentStep(body: HTMLElement, ctx: ComponentRenderContext): void {
   const def = ctx.resolved.definition;
   const mode: Mode = (def.builder_equipment_mode) ?? "starting";

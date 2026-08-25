@@ -59,7 +59,7 @@ export class PCSheetView extends TextFileView {
   // reset at those same three sites. The bag below rides with it and is the
   // more consequential half:
   // Per-loaded-file bag for Builder state that must survive re-renders: search
-  // queries, ticked compendiums, expanded rows, focused detail · and the
+  // queries, ticked compendiums, expanded rows · and the
   // Equipment step's gold baseline, whose loss changes what gets written (the
   // step re-adopts and makes no claim until the next real change). Reassigned on
   // every NON-ECHO setViewData, on clear(), and on onLoadFile; never on a

@@ -51,6 +51,12 @@ describe("goldStep · rule 3, clamped delta", () => {
   it("truncates a fractional difference toward zero, matching adjustCurrency", () => {
     expect(goldStep({ G: 50.75, baseline: { applied: 0, lastG: 0 }, currentGp: 0 }))
       .toEqual({ landed: 50, applied: 50, lastG: 50.75 });
+    // The NEGATIVE arm is the one that discriminates trunc from floor: the
+    // positive fixture above agrees under both. intended = trunc(0 - 50.75) = -50
+    // (floor would give -51), the clamp window [-100, 999_899] does not bite, and
+    // 50.75 - 50 = 0.75 is exact in binary (floor would leave -0.25).
+    expect(goldStep({ G: 0, baseline: { applied: 50.75, lastG: 1 }, currentGp: 100 }))
+      .toEqual({ landed: -50, applied: 0.75, lastG: 0 });
   });
 });
 

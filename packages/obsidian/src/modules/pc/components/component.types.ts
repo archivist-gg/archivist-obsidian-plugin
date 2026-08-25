@@ -37,7 +37,7 @@ export interface ComponentRenderContext {
   /** Callback fired when the user moves to a different Builder step. */
   onActiveStepChange?: (stepId: string) => void;
   /** Per-loaded-file bag for Builder state that must survive re-renders (search
-   *  queries, ticked compendiums, expanded rows, focused detail, and the
+   *  queries, ticked compendiums, expanded rows, and the
    *  Equipment step's gold baseline). Owned by PCSheetView; reassigned on every
    *  non-echo setViewData, on clear() and on onLoadFile · not on re-render.
    *  Components key into it with a stateKey and type-narrow their own entry; the

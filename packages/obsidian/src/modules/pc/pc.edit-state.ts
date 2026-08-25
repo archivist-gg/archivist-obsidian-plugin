@@ -954,10 +954,18 @@ export class CharacterEditState {
    *  it on every render without triggering a re-render loop.
    *
    *  ⚠️ Dropping the old `curGp === nextGp` term from the guard below is precisely
-   *  what fixes the reported bug: a reopened finished character resolves to the
-   *  same (usually empty) set, so `prevStarting === nextStarting` and the method
-   *  now returns early · no `onChange`, no file mutation. Previously the gp term
-   *  alone could fail the guard and rewrite the wallet on pure navigation. */
+   *  what fixes the reported bug. In Volker's shape · a reopened finished character
+   *  whose selections resolve to nothing · `prevStarting` and `nextStarting` are
+   *  both empty, so this returns early: no `onChange`, no file mutation. Where the
+   *  kit resolves NON-empty (9 of the 12 SRD-2014 classes carry a `kind: fixed`
+   *  entry that seeds gear with no user input) `prevStarting` is empty because
+   *  `finishBuild` deleted every `granted_by`, `nextStarting` is not, and this
+   *  guard does NOT fire; there the write is suppressed one level up, by
+   *  `reconcileGear` in `components/builder/equipment-step.ts`, which returns
+   *  before calling this whenever `alreadySeeded` (`builder/equipment-reconcile.ts`
+   *  · a multiset containment of the resolved kit against the file's untagged
+   *  entries) holds. Previously the gp term alone could fail the guard and rewrite
+   *  the wallet on pure navigation. */
   syncStartingEquipment(entries: GrantedEntry[]): void {
     const STARTING = "builder:starting";
     const prevStarting = this.character.equipment.filter((e) => e.granted_by === STARTING);

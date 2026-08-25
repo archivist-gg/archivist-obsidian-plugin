@@ -94,9 +94,10 @@ describe("builder equipment mutators (SP2 Equipment step)", () => {
     expect(starting).toHaveLength(1);
     expect(starting[0].item).toBe("[[srd_leather]]");
     expect(c.equipment.some((e) => e.granted_by === "builder:gold-buy")).toBe(true);
-    // baseChar() has NO currency key, so a surviving write would materialize the
-    // object via setCurrency's lazy init. This assertion genuinely fails if the
-    // currency write is still there.
+    // baseChar() has NO currency key, so a surviving write in this method would
+    // first have to materialize the object (the deleted inline
+    // `if (!this.character.currency) …` init did exactly that). This assertion
+    // genuinely fails if the write is still there.
     expect(c.currency).toBeUndefined();
   });
 
