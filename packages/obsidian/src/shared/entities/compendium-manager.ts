@@ -156,20 +156,19 @@ export function generateCompendiumMetadata(comp: Compendium): string {
  * mutating existing compendium metadata: the on-disk files carry keys the
  * Compendium model does not own (`edition`, `archivist_compendium_version`,
  * and in vaults installed before R4-P4 also `archivist_compendium_imported_at`),
- * and `archivist_compendium_version` gates bootstrap re-copy, so a regenerating
- * writer would trigger a full bundle re-install on the next load.
+ * and `archivist_compendium_version` is the stamp the bootstrap compares with the bundle's own
+ * (compendium-init/compendium-version.ts), so a writer that dropped it would make the next
+ * load plan an upgrade.
  *
- * `archivist_compendium_imported_at` is now a LEGACY key: the generator stopped
- * emitting it, so freshly shipped bundles do not carry it. It stays in the
- * preserve set because a vault installed earlier still holds it on disk, and a
- * key-level update must not be what drops it. That is NOT a claim that this
- * writer is the last line of defense for it: `copyBundle` (compendium-init/
- * bundle-copier.ts) writes every bundle path with `vault.adapter.write`, i.e.
- * overwrite semantics, and the shipped bundle's own `_compendium.md` no longer
- * carries the key · so the next bootstrap re-copy replaces that file wholesale
- * and the key is gone regardless of what happens here. The preserve set is what
- * this writer owes any key it does not own, legacy or otherwise · the list above
- * is the enumeration, not a durability guarantee.
+ * `archivist_compendium_imported_at` is a LEGACY key: the generator stopped emitting it, so
+ * freshly shipped bundles do not carry it. It stays in the preserve set because a vault
+ * installed earlier still holds it on disk. The bootstrap's upgrade path (compendium-init/
+ * compendium-index.ts, `mergeCompendiumIndex`) writes `_compendium.md` through THIS function
+ * too, refreshing the bundle-owned keys (and restoring an undeclared `readonly` from the
+ * bundle; a declared `readonly` or `hidden` is never touched, and `hidden` is never written
+ * on that path even when undeclared), so a legacy key survives upgrades as well. The flip
+ * side is that a key the generator DROPS can no longer be removed by an upgrade; the
+ * wholesale overwrite that used to do that is gone.
  *
  * New keys (not present in the file) are inserted directly after `readonly`
  * when that key exists, else appended at the end of the frontmatter.

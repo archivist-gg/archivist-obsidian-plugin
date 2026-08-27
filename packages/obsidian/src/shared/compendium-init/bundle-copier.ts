@@ -8,9 +8,11 @@ import type { Vault } from "obsidian";
 export type CompendiumBundle = Record<string, string>;
 
 /**
- * Copy a compendium bundle into the user's vault under the given root folder.
- * Creates parent directories as needed. Uses overwrite semantics — safe because
- * readonly compendium notes are plugin-managed.
+ * Copy a compendium bundle's ENTITY files into the user's vault under the given root folder
+ * with overwrite semantics (readonly compendium notes are plugin-managed). Creates parent
+ * directories as needed. The compendium's `_compendium.md` is NOT written here: the caller
+ * strips it from the map and writes it last through `writeCompendiumIndex`
+ * (compendium-index.ts), verbatim on a fresh install and as a lossless merge on an upgrade.
  */
 export async function copyBundle(
   vault: Vault,

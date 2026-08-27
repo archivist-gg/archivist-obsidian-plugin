@@ -269,10 +269,11 @@ describe("updateCompendiumFrontmatter", () => {
   // regeneration still holds it on disk. It stays in this fixture on purpose:
   // preserving an unknown key across a key-level update is precisely what the
   // lossless writer owes, and deleting it here would retire the only cover for
-  // that. It does NOT survive indefinitely on disk · `copyBundle` overwrites
-  // `_compendium.md` wholesale on the next bootstrap re-copy, with a bundle that
-  // no longer carries the key. What this test pins is the writer's contract, not
-  // the key's lifetime.
+  // that. After R4-P6 it survives a bootstrap upgrade too: `copyBundle` no
+  // longer receives `_compendium.md`, and `mergeCompendiumIndex`
+  // (compendium-init/compendium-index.ts) writes only the bundle-owned keys
+  // (plus an undeclared `readonly`) through THIS writer. What this test pins is
+  // the writer's contract, not the key's lifetime.
   const srdContent = `---
 archivist_compendium: true
 name: SRD 5e
@@ -718,9 +719,9 @@ type: humanoid
     it("preserves frontmatter keys it does not own (regression: bundle version stamp)", async () => {
       // An on-disk SRD `_compendium.md` carries edition, a version stamp, and
       // (in vaults installed before R4-P4, where the generator still emitted
-      // it) an import timestamp. Toggling read-only must NOT strip them:
-      // `archivist_compendium_version` gates bootstrap re-copy, so losing it
-      // re-installs the whole bundle on next load.
+      // it) an import timestamp. Toggling read-only must NOT strip them: for
+      // `archivist_compendium_version`, losing it would make the next bootstrap
+      // plan an upgrade (the stamp gates it).
       manager.addCompendium({
         name: "SRD 5e",
         description: "D&D 5e System Reference Document 5.1",
