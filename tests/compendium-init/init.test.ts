@@ -53,7 +53,6 @@ describe("initializeCompendium", () => {
       rootFolder: "Compendium",
       compendiumName: "SRD 5e",
       bundle: { "SRD 5e/Races/Dwarf.md": "x" },
-      bundleVersion: "1.0.0",
     });
 
     expect(result).toBe("skipped");
@@ -71,10 +70,9 @@ describe("initializeCompendium", () => {
       rootFolder: "Compendium",
       compendiumName: "SRD 5e",
       bundle: {
-        "SRD 5e/_compendium.md": "---\narchivist_compendium: true\n---",
+        "SRD 5e/_compendium.md": "---\narchivist_compendium: true\narchivist_compendium_version: 1.0.0\n---",
         "SRD 5e/Races/Dwarf.md": "---\nname: Dwarf\n---",
       },
-      bundleVersion: "1.0.0",
     });
 
     expect(result).toBe("copied");

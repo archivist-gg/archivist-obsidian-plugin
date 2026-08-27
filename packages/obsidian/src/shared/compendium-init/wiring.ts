@@ -48,7 +48,6 @@ export async function bootstrapCompendiums(opts: CompendiumWiringOptions): Promi
       rootFolder: opts.rootFolder,
       compendiumName: compendium,
       bundle,
-      bundleVersion: opts.pluginVersion,
     });
     perCompendium.push({ compendium, action });
   }
