@@ -13,7 +13,9 @@ export interface Harness {
   log: ActionEvent[];
   /** Rebuild the TFolder/TFile index and the cachedRead cache from the disk. Adapter writes
    *  are invisible to getAbstractFileByPath and cachedRead until this is called (models
-   *  Obsidian's watcher lag conservatively); process() updates both immediately. */
+   *  Obsidian's watcher lag conservatively); process() updates both immediately.
+   *  Handles obtained before a reindex() are stale afterwards; re-fetch through fileOf() /
+   *  getAbstractFileByPath() before trashing. */
   reindex(): void;
   trashThrowsFor(path: string | null): void;
   /** Make the adapter's `read` or `write` reject for exactly this path (null clears). Lets a
