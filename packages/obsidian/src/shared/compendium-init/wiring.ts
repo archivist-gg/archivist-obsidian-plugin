@@ -1,5 +1,5 @@
 import { type Vault, type FileManager, TFolder } from "obsidian";
-import { initializeCompendium } from "./init";
+import { planCompendium, applyCompendium } from "./init";
 import { embeddedBundle, splitBundleByCompendium } from "./embedded-bundle";
 
 export interface CompendiumWiringOptions {
@@ -44,12 +44,21 @@ export async function bootstrapCompendiums(opts: CompendiumWiringOptions): Promi
   const perCompendium: CompendiumWiringResult["perCompendium"] = [];
   const subBundles = splitBundleByCompendium(embeddedBundle);
   for (const [compendium, bundle] of subBundles) {
-    const action = await initializeCompendium(opts.vault, {
+    const entry = await planCompendium(opts.vault, {
       rootFolder: opts.rootFolder,
       compendiumName: compendium,
       bundle,
     });
-    perCompendium.push({ compendium, action });
+    const r = await applyCompendium(
+      opts.vault,
+      opts.fileManager,
+      { rootFolder: opts.rootFolder, compendiumName: compendium, bundle },
+      entry,
+    );
+    perCompendium.push({
+      compendium,
+      action: r.action === "skipped" || r.action === "error" ? "skipped" : "copied",
+    });
   }
 
   return { legacySrdRemoved, perCompendium };
