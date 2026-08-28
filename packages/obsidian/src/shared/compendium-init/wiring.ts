@@ -1,65 +1,125 @@
 import { type Vault, type FileManager, TFolder } from "obsidian";
-import { planCompendium, applyCompendium } from "./init";
+import { planCompendium, applyCompendium, type CompendiumPlanEntry, type CompendiumApplyResult } from "./init";
 import { embeddedBundle, splitBundleByCompendium } from "./embedded-bundle";
+import type { CompendiumBundle } from "./bundle-copier";
 
-export interface CompendiumWiringOptions {
+export interface CompendiumPlanOptions {
   vault: Vault;
-  /** Used to trash the legacy SRD folder via the user's deletion preference. */
-  fileManager: FileManager;
-  /** Vault-relative folder that contains all compendiums (e.g. "Compendium"). */
+  /** Vault-relative folder that contains all compendiums (e.g. "Compendium"), already normalized. */
   rootFolder: string;
-  /** Plugin manifest version — written to `_compendium.md` and used to
-   *  detect upgrade-vs-up-to-date on subsequent loads. */
-  pluginVersion: string;
-  /** When true, removes `<rootFolder>/SRD` before copying the new editions.
-   *  Skip-migration shortcut: any user edits there are moved to trash (per the
-   *  user's "Deleted files" setting), not permanently destroyed. */
+  /** When true, `<rootFolder>/SRD` (the pre-canonical layout) is trashed per the user's
+   *  "Deleted files" preference before the bundles are applied. */
   removeLegacySrdFolder: boolean;
 }
 
-export interface CompendiumWiringResult {
-  legacySrdRemoved: boolean;
-  perCompendium: Array<{ compendium: string; action: "skipped" | "copied" }>;
+export interface CompendiumApplyOptions extends CompendiumPlanOptions {
+  fileManager: FileManager;
 }
 
+export interface CompendiumBootstrapPlan {
+  entries: CompendiumPlanEntry[];
+  legacySrdPresent: boolean;
+  /** True when the apply would do anything a user should hear about: any entry not
+   *  up-to-date (fresh, upgrade, error) or a legacy folder to trash. */
+  shouldNotify: boolean;
+}
+
+export interface CompendiumBootstrapResult {
+  legacySrdRemoved: boolean;
+  perCompendium: CompendiumApplyResult[];
+}
+
+function legacySrdFolder(vault: Vault, rootFolder: string): TFolder | null {
+  const legacy = vault.getAbstractFileByPath(`${rootFolder}/SRD`);
+  return legacy instanceof TFolder ? legacy : null;
+}
+
+const failedReason = (compendium: string, err: unknown): string =>
+  `${compendium} failed: ${err instanceof Error ? err.message : String(err)}; existing notes kept`;
+
 /**
- * Auto-run on plugin load. For each compendium in the embedded bundle, check
- * the installed version and copy the bundle if missing or outdated. Optionally
- * delete the legacy `Compendium/SRD/` folder first (this replaces the
- * Phase 13 migration orchestrator for users who don't need a backup-prompt UX).
+ * Read-only plan for every compendium in the embedded bundle. Each sub-bundle's own
+ * `_compendium.md` stamp is compared with the installed one; nothing else is an input. An IO
+ * rejection while reading one compendium's index becomes that compendium's `error` entry
+ * (nothing is copied for it later) so a sibling still installs.
  */
-export async function bootstrapCompendiums(opts: CompendiumWiringOptions): Promise<CompendiumWiringResult> {
+export async function planCompendiumBootstrap(
+  opts: CompendiumPlanOptions,
+  bundle: CompendiumBundle = embeddedBundle,
+): Promise<CompendiumBootstrapPlan> {
+  const legacySrdPresent = opts.removeLegacySrdFolder && legacySrdFolder(opts.vault, opts.rootFolder) !== null;
+  const entries: CompendiumPlanEntry[] = [];
+  for (const [compendium, sub] of splitBundleByCompendium(bundle)) {
+    try {
+      entries.push(await planCompendium(opts.vault, { rootFolder: opts.rootFolder, compendiumName: compendium, bundle: sub }));
+    } catch (err) {
+      entries.push({
+        compendium, action: "error", installed: { state: "unreadable" }, bundleVersion: null,
+        reason: failedReason(compendium, err),
+      });
+    }
+  }
+  const shouldNotify = legacySrdPresent || entries.some((e) => e.action !== "up-to-date");
+  return { entries, legacySrdPresent, shouldNotify };
+}
+
+const errorResult = (compendium: string, reason: string): CompendiumApplyResult =>
+  ({ compendium, action: "error", reason, pruned: [], keptModified: [], pruneFailures: [] });
+
+/**
+ * Apply a plan. The legacy folder is trashed first (as before); then each compendium is
+ * applied in its own try/catch so one failure never blocks its sibling.
+ */
+export async function applyCompendiumBootstrap(
+  opts: CompendiumApplyOptions,
+  plan: CompendiumBootstrapPlan,
+  bundle: CompendiumBundle = embeddedBundle,
+): Promise<CompendiumBootstrapResult> {
   let legacySrdRemoved = false;
   if (opts.removeLegacySrdFolder) {
-    const legacyPath = `${opts.rootFolder}/SRD`;
-    const legacy = opts.vault.getAbstractFileByPath(legacyPath);
-    if (legacy instanceof TFolder) {
-      // Trash (don't permanently delete) so the user can recover the legacy
-      // folder per their Obsidian "Deleted files" preference.
+    const legacy = legacySrdFolder(opts.vault, opts.rootFolder);
+    if (legacy) {
       await opts.fileManager.trashFile(legacy);
       legacySrdRemoved = true;
     }
   }
-
-  const perCompendium: CompendiumWiringResult["perCompendium"] = [];
-  const subBundles = splitBundleByCompendium(embeddedBundle);
-  for (const [compendium, bundle] of subBundles) {
-    const entry = await planCompendium(opts.vault, {
-      rootFolder: opts.rootFolder,
-      compendiumName: compendium,
-      bundle,
-    });
-    const r = await applyCompendium(
-      opts.vault,
-      opts.fileManager,
-      { rootFolder: opts.rootFolder, compendiumName: compendium, bundle },
-      entry,
-    );
-    perCompendium.push({
-      compendium,
-      action: r.action === "skipped" || r.action === "error" ? "skipped" : "copied",
-    });
+  const subBundles = splitBundleByCompendium(bundle);
+  const perCompendium: CompendiumApplyResult[] = [];
+  for (const entry of plan.entries) {
+    const sub = subBundles.get(entry.compendium);
+    if (!sub) {
+      perCompendium.push(errorResult(entry.compendium, `${entry.compendium} failed: sub-bundle missing at apply time; existing notes kept`));
+      continue;
+    }
+    try {
+      perCompendium.push(await applyCompendium(opts.vault, opts.fileManager,
+        { rootFolder: opts.rootFolder, compendiumName: entry.compendium, bundle: sub }, entry));
+    } catch (err) {
+      perCompendium.push(errorResult(entry.compendium, failedReason(entry.compendium, err)));
+    }
   }
-
   return { legacySrdRemoved, perCompendium };
+}
+
+const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
+
+/** The Notice text after an apply. Sentence case; the only proper noun is the compendium name. */
+export function describeBootstrapResult(result: CompendiumBootstrapResult): string {
+  const parts: string[] = [];
+  const installed = result.perCompendium.filter((r) => r.action === "installed").map((r) => r.compendium);
+  if (installed.length > 0) parts.push(`installed ${installed.join(" + ")}`);
+  for (const r of result.perCompendium) {
+    if (r.action === "upgraded") {
+      const details: string[] = [];
+      if (r.pruned.length > 0) details.push(`pruned ${plural(r.pruned.length, "stale note", "stale notes")}`);
+      if (r.keptModified.length > 0) details.push(`kept ${r.keptModified.length} modified`);
+      if (r.pruneFailures.length > 0) details.push(`${r.pruneFailures.length} could not be trashed`);
+      parts.push(`updated ${r.compendium}${details.length > 0 ? ` (${details.join(", ")})` : ""}`);
+    } else if (r.action === "error") {
+      parts.push(r.reason ?? `${r.compendium} failed; existing notes kept`);
+    }
+  }
+  const summary = parts.length > 0 ? parts.join("; ") : "compendiums up-to-date";
+  const legacy = result.legacySrdRemoved ? " (legacy SRD removed)" : "";
+  return `Archivist: ${summary}${legacy}`;
 }

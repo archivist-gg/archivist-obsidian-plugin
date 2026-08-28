@@ -1,4 +1,4 @@
-import { Plugin, Notice, setIcon } from "obsidian";
+import { Plugin, Notice, setIcon, normalizePath } from "obsidian";
 
 // Entity module presenters
 import { monsterModule } from "./modules/monster/monster.module";
@@ -53,7 +53,7 @@ import {
   setEntityPresenterKernel,
   setEntityPresenterPlugin,
 } from "./shared/rendering/entity-presenter-dispatch";
-import { bootstrapCompendiums } from "./shared/compendium-init/wiring";
+import { planCompendiumBootstrap, applyCompendiumBootstrap, describeBootstrapResult } from "./shared/compendium-init/wiring";
 import { CompendiumManager } from "./shared/entities/compendium-manager";
 import { CompendiumSelectModal, CreateCompendiumModal } from "./shared/entities/compendium-modal";
 import { hiddenCompendiumSet, reconcileHiddenCompendiums } from "./shared/entities/compendium-visibility";
@@ -268,6 +268,10 @@ export default class ArchivistPlugin extends Plugin {
   async loadSettings(): Promise<void> {
     const data = (await this.loadData()) as { settings?: Partial<ArchivistSettings> } | null | undefined;
     this.settings = Object.assign({}, DEFAULT_SETTINGS, data?.settings);
+    // The one user-defined path this subsystem consumes, normalized ONCE (obsidian rule 22) so
+    // the CompendiumManager constructed in onload and the bootstrap below agree on it; a
+    // trailing slash in data.json must not install under one path and discover() another.
+    this.settings.compendiumRoot = normalizePath(this.settings.compendiumRoot);
   }
 
   async saveSettings(): Promise<void> {
@@ -287,29 +291,32 @@ export default class ArchivistPlugin extends Plugin {
   private async initializeCompendiumsInner(): Promise<void> {
     if (!this.compendiumManager || !this.srdStore) return;
 
-    // Canonical pipeline bootstrap: delete the legacy `Compendium/SRD/` folder,
-    // then copy the embedded `SRD 5e/` and `SRD 2024/` bundles into the vault.
-    // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper noun: "SRD" is an acronym (System Reference Document)
-    const n = new Notice("Archivist: setting up SRD compendiums...", 0);
+    // Canonical pipeline bootstrap: plan first (a pure read), tell the user only when the
+    // plan has work (a fresh install, an upgrade, an error, or the legacy `Compendium/SRD/`
+    // folder to trash), then apply. The bundle's own `_compendium.md` stamp is the only
+    // version authority, so an up-to-date vault does nothing and shows nothing.
+    const rootFolder = this.settings.compendiumRoot;
+    let notice: Notice | null = null;
     try {
-      const result = await bootstrapCompendiums({
-        vault: this.app.vault,
-        fileManager: this.app.fileManager,
-        rootFolder: this.settings.compendiumRoot,
-        pluginVersion: this.manifest.version,
-        removeLegacySrdFolder: true,
-      });
-      const copied = result.perCompendium.filter(c => c.action === "copied").map(c => c.compendium);
-      const summary = copied.length > 0
-        ? `installed ${copied.join(" + ")}`
-        : "compendiums up-to-date";
-      const legacy = result.legacySrdRemoved ? " (legacy SRD removed)" : "";
-      n.setMessage(`Archivist: ${summary}${legacy}`);
-      activeWindow.setTimeout(() => n.hide(), 3000);
-      this.settings.srdImported = true;
-      await this.saveSettings();
+      const plan = await planCompendiumBootstrap({ vault: this.app.vault, rootFolder, removeLegacySrdFolder: true });
+      if (plan.shouldNotify) {
+        // eslint-disable-next-line obsidianmd/ui/sentence-case -- proper noun: "SRD" is an acronym (System Reference Document)
+        notice = new Notice("Archivist: setting up SRD compendiums...", 0);
+      }
+      const result = await applyCompendiumBootstrap(
+        { vault: this.app.vault, fileManager: this.app.fileManager, rootFolder, removeLegacySrdFolder: true },
+        plan,
+      );
+      for (const r of result.perCompendium) {
+        if (r.action === "error") console.error(`Archivist: compendium bootstrap: ${r.reason ?? r.compendium}`);
+      }
+      if (notice) {
+        const n = notice;
+        n.setMessage(describeBootstrapResult(result));
+        activeWindow.setTimeout(() => n.hide(), 3000);
+      }
     } catch (err) {
-      n.hide();
+      notice?.hide();
       console.error("Archivist: compendium bootstrap failed", err);
       new Notice("Archivist: compendium bootstrap failed; existing compendiums will still load.");
     }
