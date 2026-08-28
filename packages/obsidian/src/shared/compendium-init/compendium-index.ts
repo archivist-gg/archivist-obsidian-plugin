@@ -73,8 +73,9 @@ export type IndexWriteVia = "process" | "adapter";
  * Writes the compendium index. `verbatim` (fresh install) goes through the adapter, like the
  * entity files. `merge` (upgrade) goes through `vault.process` on the indexed TFile so the
  * new stamp is visible to `cachedRead` later in the same load (the hidden-flag reconcile
- * reads and rewrites this very file after the bootstrap); when the file is on disk but not
- * yet indexed it falls back to an adapter read-merge-write and reports it.
+ * reads this very file after the bootstrap, and rewrites it when the hidden flag needs
+ * seeding); when the file is on disk but not yet indexed it falls back to an adapter
+ * read-merge-write and reports it.
  */
 export async function writeCompendiumIndex(
   vault: Vault,

@@ -90,6 +90,19 @@ describe("pruneOrphans (G8, G9, G9b, G10, G13)", () => {
     expect(h.log).toEqual([{ kind: "trash", path: `${ROOT}/SRD 5e/Backgrounds/Orphan.md` }]);
     expect(h.files.has(`${ROOT}/SRD 5e/Backgrounds/Acolyte.md`)).toBe(true);
   });
+  // The upgrade path against a note-less sub-bundle: without the keep.size guard every pristine note
+  // under the compendium is an orphan, all three are trashed, and the stamp then lands on the hole.
+  it("G8c: a sub-bundle with no entity keys prunes NOTHING (an empty keep set never empties a compendium)", async () => {
+    const h = vaultOf(bundle, {});
+    const report = await pruneOrphans(h.vault, h.fileManager, {
+      rootFolder: ROOT, compendiumName: "SRD 5e", bundle: { "SRD 5e/_compendium.md": bundle["SRD 5e/_compendium.md"] },
+    });
+    expect(report).toEqual({ pruned: [], keptModified: [], pruneFailures: [] });
+    expect(h.log).toEqual([]);
+    expect(h.files.has(`${ROOT}/SRD 5e/Backgrounds/Acolyte.md`)).toBe(true);
+    expect(h.files.has(`${ROOT}/SRD 5e/Backgrounds/Sage.md`)).toBe(true);
+    expect(h.files.has(`${ROOT}/SRD 5e/Races/Dwarf.md`)).toBe(true);
+  });
   it("G9 / G9b / G10: the five-key note, the six+other-key note and the prose note are KEPT; the seven-key legacy note is TRASHED", async () => {
     const h = vaultOf(bundle, {
       [`${ROOT}/SRD 5e/Backgrounds/Mine.md`]: fiveKey,

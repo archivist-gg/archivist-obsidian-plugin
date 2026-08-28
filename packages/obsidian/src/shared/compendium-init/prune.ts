@@ -21,8 +21,10 @@ const FRONTMATTER_RE = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/;
 /**
  * The comparison key of the prune's keep set. Lower-casing is explicit and load-bearing: on a
  * case-insensitive volume (macOS APFS default, Windows) an adapter write to a case-variant
- * path overwrites the existing inode while the vault index keeps the old casing, so without
- * it a case-only rename between bundle versions would make the live note a candidate.
+ * path is expected to overwrite the existing inode while the vault index keeps the old casing
+ * (unverified for Obsidian specifically; the fold is fail-safe either way, keeping being the
+ * safe direction), so without it a case-only rename between bundle versions could make the
+ * live note a candidate.
  * Nothing else is normalized: the compared strings are generator keys (ASCII, single forward
  * slashes, pinned by the bundle tripwires) joined to the once-normalized compendium root, and
  * Obsidian index paths, which are always forward-slash.
@@ -34,8 +36,10 @@ export function keepKey(path: string): string {
 /**
  * True when the note carries every bundle key, no key outside the bundle and legacy sets,
  * and no text outside fenced code blocks: the shape every note this plugin ever shipped has,
- * and one no plugin-authored note has. A user edit to the keys or outside the fence breaks
- * the shape; an edit INSIDE the fence does not and still reads as pristine (spec §8).
+ * and one no plugin-authored note has. The comparison is over key SETS and the outside-fence
+ * body only, never values: editing a value (`name:`, `slug:`, the fenced data) leaves the shape
+ * pristine, and deleting the optional legacy key does too. What breaks it is an extra key, a
+ * missing bundle key, or prose outside the fence (spec §5.5, §8).
  */
 export function isPristineBundleNote(content: string): boolean {
   const match = FRONTMATTER_RE.exec(content);
@@ -96,6 +100,7 @@ export interface PruneOptions {
  * is not in the new bundle AND is a pristine bundle note; keep and report everything else.
  * Best effort per file: a failure is reported and never blocks the caller's version stamp.
  * Reads the disk (`vault.read`) for the destructive decision, never the cache.
+ * An empty keep set (a sub-bundle with no entity keys) prunes nothing.
  */
 export async function pruneOrphans(vault: Vault, fileManager: FileManager, opts: PruneOptions): Promise<PruneReport> {
   const report: PruneReport = { pruned: [], keptModified: [], pruneFailures: [] };
@@ -108,6 +113,10 @@ export async function pruneOrphans(vault: Vault, fileManager: FileManager, opts:
       .filter((key) => !key.endsWith(`/${INDEX_FILE}`))
       .map((key) => keepKey(`${opts.rootFolder}/${key}`)),
   );
+  // Fail safe: a sub-bundle with no entity keys (a generator regression the bundle tripwires
+  // would catch in CI but a shipped bundle would not) must never empty a user's compendium;
+  // with nothing to keep, nothing is pruned, and the stamp still lands so the load converges.
+  if (keep.size === 0) return report;
   for (const file of collectPruneCandidates(folder, keep)) {
     try {
       if (!isPristineBundleNote(await vault.read(file))) {

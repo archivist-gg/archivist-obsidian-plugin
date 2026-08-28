@@ -129,6 +129,7 @@ describe("writeCompendiumIndex (G5b, G6 write halves)", () => {
     expect(h.files.get(P)).toBe(BAKED);
     expect(h.log).toEqual([{ kind: "write", path: P }]);
   });
+  // The vault.process half is the assertion; the "cachedRead sees the new stamp" half is a harness property by construction (spec §9); the live witness is spec §7 step 4.
   it("G5b (i): merge mode goes through vault.process on the indexed TFile, so cachedRead sees the new stamp in the same load", async () => {
     const h = makeHarness({ [P]: EXISTING });
     expect(await writeCompendiumIndex(h.vault, P, BAKED, "merge")).toBe("process");

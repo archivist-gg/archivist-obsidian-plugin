@@ -10,7 +10,9 @@ describe("harness · index lag model", () => {
     expect(await h.vault.adapter.read("Compendium/SRD 5e/Races/Dwarf.md")).toBe("new");
     expect(h.vault.getAbstractFileByPath("Compendium/SRD 5e/Races/Dwarf.md")).toBeNull();
     // The cache half: an unindexed path has no TFile handle at all, so cachedRead cannot be
-    // called on it. fileOf() returning null IS the cache miss, and the reindexed handle's
+    // called on it, so fileOf() returning null is a HANDLE assertion, not a cache-miss one.
+    // The cache-negative half is carried by the adapter-overwrite guard below (cachedRead
+    // STALE while read() sees the disk), never by fileOf; here the reindexed handle's
     // cachedRead is what proves the cache was filled from the disk.
     expect(h.fileOf("Compendium/SRD 5e/Races/Dwarf.md")).toBeNull();
     h.reindex();
@@ -94,7 +96,7 @@ describe("harness · index lag model", () => {
     expect(await h.vault.adapter.exists("Compendium/SRD 5e/Races/Elf.md")).toBe(false);
   });
 
-  it("adapter.mkdir makes exactly that path exist", async () => {
+  it("adapter.mkdir makes that path exist", async () => {
     const h = makeHarness({ "Compendium/SRD 5e/Races/Dwarf.md": "x" });
     expect(await h.vault.adapter.exists("Compendium/SRD 5e/Feats")).toBe(false);
     await h.vault.adapter.mkdir("Compendium/SRD 5e/Feats");

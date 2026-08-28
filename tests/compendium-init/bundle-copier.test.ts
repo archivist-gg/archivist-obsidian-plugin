@@ -32,6 +32,7 @@ describe("copyBundle", () => {
   });
 
   it("creates target folder + writes each file from the bundle map", async () => {
+    // copyBundle writes whatever it is given; production (applyCompendium) strips the index entry first, so this fixture models the function's contract, not a call the bootstrap makes.
     const bundle: Record<string, string> = {
       "SRD 5e/_compendium.md": "---\narchivist_compendium: true\n---",
       "SRD 5e/Races/Dwarf.md": "---\nname: Dwarf\n---",
