@@ -111,9 +111,11 @@ When the slug scheme changes, three data surfaces must be brought forward togeth
 delivery (so there is no transition window where a reference dangles):
 
 1. **SRD compendiums** (bundle-managed) — regenerate (`build:srd-canonical`), rebuild the
-   plugin (re-inlines the bundle), deploy, then reseed the vault (the reseed re-copies
-   every SRD `.md` because the stamped bundle version differs from the plugin manifest;
-   deleting `Compendium/{SRD 2024,SRD 5e}/_compendium.md` forces it deterministically).
+   plugin (re-inlines the bundle), deploy, then reseed the vault (to force a reseed, set
+   `archivist_compendium_version` in the compendium's `_compendium.md` to `0.0.0` and
+   reload: the bootstrap takes the upgrade path, refreshing the bundle-owned keys and
+   pruning stale bundle notes. Do not delete `_compendium.md`: an absent index is a fresh
+   install, which writes the index verbatim and never prunes).
 2. **Homebrew compendiums** (not bundle-managed) — an idempotent, dry-run-first script
    rewrites each entity's own `slug` computed from its frontmatter
    `(compendium, entity_type, name)`, leaving all cross-reference fields untouched.

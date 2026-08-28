@@ -27,13 +27,16 @@ const upToDate = {
 const opts = (h: ReturnType<typeof makeHarness>) => ({ vault: h.vault, fileManager: h.fileManager, rootFolder: ROOT, removeLegacySrdFolder: true });
 
 describe("planCompendiumBootstrap · G14 shouldNotify", () => {
-  it("false for all-up-to-date with no legacy folder", async () => {
+  it("false for all-up-to-date with no legacy folder; planning and applying write nothing", async () => {
     const h = makeHarness(upToDate);
     const plan = await planCompendiumBootstrap(opts(h), bundle);
     expect(plan.entries.map((e) => e.action)).toEqual(["up-to-date", "up-to-date"]);
     expect(plan.legacySrdPresent).toBe(false);
     expect(plan.shouldNotify).toBe(false);
     expect(h.log).toEqual([]);   // planning writes nothing
+    const result = await applyCompendiumBootstrap(opts(h), plan, bundle);
+    expect(result.perCompendium.map((r) => r.action)).toEqual(["skipped", "skipped"]);
+    expect(h.log).toEqual([]);   // and applying an all-up-to-date plan writes nothing either
   });
   it("true for fresh, for upgrade, for error, and for a legacy folder alone", async () => {
     expect((await planCompendiumBootstrap(opts(makeHarness({})), bundle)).shouldNotify).toBe(true);

@@ -50,8 +50,9 @@ const noPrune = (): PruneReport => ({ pruned: [], keptModified: [], pruneFailure
 
 /**
  * Apply one plan entry. Order per compendium: entity files, then (upgrade only) the prune,
- * then the index LAST, so a failure mid-copy leaves the old stamp and the next load retries,
- * and a prune that runs before the stamp cannot be skipped forever by a crash in between.
+ * then the index LAST, so a failure mid-copy leaves the old stamp (or, on a fresh install, no
+ * stamp) and the next load retries, and a prune that runs before the stamp cannot be skipped
+ * forever by a crash in between.
  * The compendium folder is created by the entity files' copy (the index entry is stripped
  * before copyBundle), so the verbatim index write on a fresh install relies on the sub-bundle
  * having entity notes; every shipped one does (spec §8 records the residual).

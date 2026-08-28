@@ -34,7 +34,8 @@ export function keepKey(path: string): string {
 /**
  * True when the note carries every bundle key, no key outside the bundle and legacy sets,
  * and no text outside fenced code blocks: the shape every note this plugin ever shipped has,
- * and one no plugin-authored or user-edited note has.
+ * and one no plugin-authored note has. A user edit to the keys or outside the fence breaks
+ * the shape; an edit INSIDE the fence does not and still reads as pristine (spec §8).
  */
 export function isPristineBundleNote(content: string): boolean {
   const match = FRONTMATTER_RE.exec(content);
