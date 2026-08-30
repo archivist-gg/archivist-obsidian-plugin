@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { featureEffectSchema } from "@archivist-gg/dnd5e/schemas/feature-effect-schema";
+import type { FeatureEffect } from "@archivist-gg/dnd5e/types/feature-effect";
 
 describe("featureEffectSchema — ac-bonus", () => {
   it("accepts ac-bonus with requires_armor", () => {
@@ -226,3 +227,73 @@ describe("featureEffectSchema — speed-bonus set", () => {
     expect(featureEffectSchema.safeParse({ kind: "speed-bonus", mode: "walk", value: 60, set: "yes" }).success).toBe(false);
   });
 });
+
+const KINDS_24 = [
+  "initiative-bonus", "immune-condition", "resistance", "hp-per-level-bonus", "speed-bonus", "sense",
+  "apply-condition", "damage-bonus", "proficiency", "ac-bonus", "unarmored-ac", "weapon-ability", "roll-modifier",
+  "extra-attack", "crit-range", "reroll-damage", "attack-rule",
+  "immunity", "vulnerability", "temp-hp", "heal", "ability-score-increase", "extra-action", "save-outcome",
+] as const;
+
+describe("featureEffectSchema · the 24-arm union (R4-G1a D1, G1)", () => {
+  it("declares exactly the 24 kinds, in order", () => {
+    const kinds = featureEffectSchema.options.map((o) => (o.shape.kind as { value: string }).value);
+    expect(kinds).toEqual([...KINDS_24]);
+  });
+  it("every arm declares subject; every arm but the two condition-name arms declares the condition qualifier; proficiency declares expertise (G5)", () => {
+    for (const o of featureEffectSchema.options) {
+      const kind = (o.shape.kind as { value: string }).value;
+      const keys = Object.keys(o.shape);
+      expect(keys, kind).toContain("subject");
+      if (kind !== "apply-condition" && kind !== "immune-condition") expect(keys, kind).toContain("condition");
+      if (kind === "proficiency") expect(keys).toContain("expertise");
+    }
+  });
+  it("subject and condition SURVIVE parsing on the arms the corpus emits them on (G5 output-read)", () => {
+    const samples: Record<string, unknown>[] = [
+      { kind: "damage-bonus", damage_type: "Fire", amount: "1d6", subject: "self" },
+      { kind: "resistance", damage_type: "Poison", subject: "self", condition: "While raging" },
+      { kind: "temp-hp", amount: "your Artificer level", subject: "self", condition: "While *Bloodied*" },
+      { kind: "immunity", damage_type: "necrotic", subject: "self", condition: "While using your Form of Dread" },
+      { kind: "proficiency", proficiency_type: "skill", value: "Athletics", subject: "self", expertise: true },
+      { kind: "sense", type: "darkvision", range: 60, subject: "self", condition: "while in dim light" },
+      { kind: "extra-attack", count: 1, subject: "self" },
+      { kind: "immune-condition", condition: "frightened", while: "while raging", subject: "self" },
+      { kind: "vulnerability", damage_type: "radiant", subject: "self" },
+      { kind: "initiative-bonus", value: 2, subject: "self" },
+      { kind: "reroll-damage", max_reroll: 2, subject: "self" },
+      { kind: "attack-rule", flag: "no-ranged-in-melee-disadvantage", subject: "self" },
+    ];
+    for (const s of samples) expect(featureEffectSchema.parse(s), String(s.kind)).toEqual(s);
+  });
+  it("subject must be non-empty when present", () => {
+    expect(featureEffectSchema.safeParse({ kind: "resistance", damage_type: "Fire", subject: "" }).success).toBe(false);
+  });
+  it("roll-modifier accepts all eight members (G4)", () => {
+    for (const mode of ["advantage", "disadvantage", "reroll", "add-d4"])
+      for (const roll of ["ability-check", "saving-throw", "attack", "any"])
+        expect(featureEffectSchema.safeParse({ kind: "roll-modifier", mode, roll }).success, `${mode}/${roll}`).toBe(true);
+    expect(featureEffectSchema.safeParse({ kind: "roll-modifier", mode: "auto-fail", roll: "attack" }).success).toBe(false);
+  });
+  it("ability-score-increase: choose is required IFF abilities is chosen (G3)", () => {
+    const ok = (o: object) => featureEffectSchema.safeParse({ kind: "ability-score-increase", amount: 2, max: 20, ...o }).success;
+    expect(ok({ abilities: "chosen", choose: 1 })).toBe(true);
+    expect(ok({ abilities: "chosen", choose: null })).toBe(false);
+    expect(ok({ abilities: ["str", "con"], amount: 4, choose: null, max: 24 })).toBe(true);
+    expect(ok({ abilities: ["dex", "wis"], amount: 4, choose: null, max: 25 })).toBe(true);
+    expect(ok({ abilities: ["str", "con"], choose: 1 })).toBe(false);
+  });
+  it("the seven new arms parse their attested shapes", () => {
+    const ok = (o: object) => featureEffectSchema.safeParse(o).success;
+    expect(ok({ kind: "heal", amount: "1d10", subject: "self" })).toBe(true);
+    expect(ok({ kind: "temp-hp", amount: "2d4 + 2", subject: "self" })).toBe(true);
+    expect(ok({ kind: "extra-action", count: 1, action_type: "bonus-action", subject: "self", condition: "used only to take the Dash action" })).toBe(true);
+    expect(ok({ kind: "save-outcome", ability: "dex", on_success: "none", on_failure: "half", applies_to: null, subject: "self" })).toBe(true);
+    expect(ok({ kind: "heal", subject: "self" })).toBe(false);
+  });
+});
+
+// Compile-time twin of the runtime pin (spec D8): the union's discriminators and the hand-written type agree.
+type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+const _kindsAgree: Equals<FeatureEffect["kind"], (typeof KINDS_24)[number]> = true;
+void _kindsAgree;
