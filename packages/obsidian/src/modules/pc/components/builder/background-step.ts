@@ -8,7 +8,7 @@ import { renderEntityPicker } from "./entity-picker";
 import { renderCustomBackgroundRow } from "./custom-background";
 import { buildDecisionLedger, wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
 import { resolveOriginFeat, stripSlug } from "@archivist-gg/dnd5e/pc/pc.resolver";
-import { humanizeSlug, grantLabel, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
 import { renderChronicleBlock, renderSectionRule } from "./chronicle-block";
 import { renderDecisionStrip, renderStripInfoRow, domainPill } from "./decision-strip";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
@@ -256,7 +256,7 @@ function renderGearProps(host: HTMLElement, ctx: ComponentRenderContext, d: Back
   const eqLines: string[] = [];
   for (const e of d.equipment ?? []) {
     if (e.kind === "choice") eqLines.push(e.options.map((o) => o.label).join("  or  "));
-    else if (e.kind === "fixed") eqLines.push(e.label ?? e.grants.map(grantLabel).join(", "));
+    else if (e.kind === "fixed") eqLines.push(fixedGrantLines(e));
     else eqLines.push(`${e.amount} GP`);
   }
   const eqText = eqLines.filter(Boolean).join("; ");

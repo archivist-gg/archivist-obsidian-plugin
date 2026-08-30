@@ -3,6 +3,8 @@ import {
   humanizeSlug,
   humanizeToken,
   fixedNamesFrom,
+  grantLabel,
+  fixedGrantLines,
 } from "../packages/obsidian/src/shared/rendering/renderer-utils";
 
 describe("humanizeSlug", () => {
@@ -68,4 +70,24 @@ describe("humanizeToken", () => {
   it("parens", () => expect(humanizeToken("special_(net)")).toBe("Special (Net)"));
   it("apostrophe-safe", () => expect(humanizeToken("hunter's-mark")).toBe("Hunter's Mark"));
   it("slash intentionally not capitalized", () => expect(humanizeToken("enlarge/reduce")).toBe("Enlarge/reduce"));
+});
+
+describe("grantLabel / fixedGrantLines (R4-G1a D5, G9)", () => {
+  it("prefers display_name after gold and before category/item", () => {
+    expect(grantLabel({ gold: 5 })).toBe("5 GP");
+    expect(grantLabel({ item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" })).toBe("holy symbol (a gift to you when you entered the priesthood)");
+    expect(grantLabel({ item: "book", display_name: "prayer book", qty: 2 })).toBe("prayer book \u00d72");
+    expect(grantLabel({ category: "gaming-set", display_name: "gaming set matching your chosen proficiency" })).toBe("gaming set matching your chosen proficiency");
+    // Deviation (recorded): the brief spelled this "a martial weapon". `grantLabel`'s category
+    // spelling is `a ${humanizeSlug(...)}`, which title-cases; the expectation is the MEASURED
+    // string, so no surface's text changes.
+    expect(grantLabel({ category: "martial-weapon" })).toBe("a Martial Weapon");
+  });
+  it("fixedGrantLines: label short-circuits; grants join with a comma; missing grants degrade to an empty string", () => {
+    expect(fixedGrantLines({ label: "Robe", grants: [{ item: "robe" }] })).toBe("Robe");
+    // Deviation (recorded): the brief spelled the first grant "pouch"; the undecorated item arm
+    // humanizes the slug, so the measured join is "Pouch, holy symbol".
+    expect(fixedGrantLines({ grants: [{ item: "pouch", contains_value: 1500 }, { item: "holy-symbol", display_name: "holy symbol" }] })).toBe("Pouch, holy symbol");
+    expect(fixedGrantLines({} as { grants?: unknown })).toBe("");
+  });
 });

@@ -124,6 +124,10 @@ function mkCtx(over: {
   resolvedBackground?: unknown;
   race?: unknown;
   editState?: unknown;
+  /** Overrides the picker pool. The default four-row BACKGROUNDS is what the row-count
+   *  assertions above measure, so a case needing its own background supplies it here
+   *  rather than growing the shared list. */
+  backgrounds?: RegisteredEntity[];
 } = {}): ComponentRenderContext {
   const builderUiState = new Map<string, unknown>();
   const chosenSlug = over.background ? over.background.replace(/\[\[|\]\]/g, "") : null;
@@ -144,7 +148,7 @@ function mkCtx(over: {
       plugin: {},
       entities: {
         search: (_q: string, type: string) =>
-          type === "background" ? BACKGROUNDS : type === "feat" ? [ALERT_FEAT] : [],
+          type === "background" ? (over.backgrounds ?? BACKGROUNDS) : type === "feat" ? [ALERT_FEAT] : [],
         getByTypeAndSlug: () => undefined,
       },
       compendiums: {
@@ -402,5 +406,50 @@ describe("renderBackgroundStep — Chronicle composition", () => {
     expect(langTile, "2024 branch must render a Languages glance tile").not.toBeUndefined();
     // COMBINE fixed Common with the unresolved "choose 2" — joined with ", " (no em dash).
     expect(langTile!.querySelector(".pc-cb-tv")!.textContent).toBe("Common, choose 2");
+  });
+});
+
+// R4-G1a D5 / G9: the converter's passthrough grant keys reach the Equipment line.
+// A 2024 Acolyte whose fixed entry carries both attested item shapes: a
+// `display_name` override, and an undecorated slug beside a `contains_value`.
+const PASSTHROUGH_ROW: RegisteredEntity = {
+  slug: "srd-2024_acolyte", name: "Acolyte", entityType: "background", filePath: "x",
+  readonly: true, homebrew: false, compendium: "SRD 2024",
+  data: {
+    ...ACOLYTE_2024_DATA,
+    equipment: [{ kind: "fixed", grants: [
+      { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+      { item: "pouch", contains_value: 1500 },
+    ] }],
+  },
+} as unknown as RegisteredEntity;
+
+// The same background with a raw-cast fixed entry that carries no grants array at all.
+const NO_GRANTS_ROW: RegisteredEntity = {
+  ...PASSTHROUGH_ROW,
+  data: { ...ACOLYTE_2024_DATA, equipment: [{ kind: "fixed" } as never] },
+} as unknown as RegisteredEntity;
+
+describe("renderBackgroundStep · the fixed entry's Equipment text (R4-G1a D5, G9)", () => {
+  const mount = (row: RegisteredEntity) => {
+    const c = mountContainer();
+    const ctx = mkCtx({
+      background: "[[srd-2024_acolyte]]", resolvedBackground: resolvedAcolyte2024, backgrounds: [row],
+    });
+    return { c, ctx };
+  };
+
+  it("prefers display_name and still humanizes the undecorated slug beside it", () => {
+    const { c, ctx } = mount(PASSTHROUGH_ROW);
+    renderBackgroundStep(c, ctx);
+    expect(c.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(c.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array renders with no throw and no Equipment line", () => {
+    const { c, ctx } = mount(NO_GRANTS_ROW);
+    expect(() => renderBackgroundStep(c, ctx)).not.toThrow();
+    expect(c.textContent).not.toContain("Equipment");
   });
 });

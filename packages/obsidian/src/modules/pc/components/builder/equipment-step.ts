@@ -290,7 +290,10 @@ function resolveSelections(ctx: ComponentRenderContext): { entries: GrantedEntry
     entries.forEach((entry, i) => {
       if (entry.kind === "gold") { totalGold += entry.amount; return; }
       if (entry.kind === "fixed") {
-        const { entries: e, gold } = resolveGrants(entry.grants, {}, reg);
+        // Same tolerance the choice branch gives its options below: entity data is
+        // parsed YAML cast to the type, so a raw-cast fixed entry can reach here with
+        // no grants array. It seeds nothing instead of throwing.
+        const { entries: e, gold } = resolveGrants(entry.grants ?? [], {}, reg);
         all.push(...e); totalGold += gold;
         return;
       }

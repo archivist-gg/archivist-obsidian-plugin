@@ -2,7 +2,7 @@ import type { ComponentRenderContext } from "../component.types";
 import type { BackgroundEntity } from "@archivist-gg/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
 import { wikilinkTailSlug } from "@archivist-gg/dnd5e/pc/pc.decision-engine";
-import { humanizeSlug, grantLabel, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, fixedGrantLines, fixedNamesFrom } from "../../../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../../../shared/rendering/markdown-description";
 import { renderChronicleBlock, renderSectionRule } from "../builder/chronicle-block";
 import { rowExpandKey, isRowExpanded, setRowExpanded } from "../row-expand-state";
@@ -27,7 +27,7 @@ function equipmentSummary(equipment: StartingEquipmentEntry[] | undefined): stri
   const lines: string[] = [];
   for (const e of equipment ?? []) {
     if (e.kind === "choice") lines.push(e.options.map((o) => o.label).join("  or  "));
-    else if (e.kind === "fixed") lines.push(e.label ?? e.grants.map(grantLabel).join(", "));
+    else if (e.kind === "fixed") lines.push(fixedGrantLines(e));
     else lines.push(`${e.amount} GP`);
   }
   return lines.filter(Boolean).join("; ");

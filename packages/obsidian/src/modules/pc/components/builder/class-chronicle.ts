@@ -6,7 +6,7 @@ import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment
 import { recognizeDecision } from "@archivist-gg/dnd5e/pc/decision-recognizer";
 import { renderChronicleBlock, renderSectionRule, firstSentence } from "./chronicle-block";
 import { renderDecisionStrip } from "./decision-strip";
-import { humanizeSlug, grantLabel } from "../../../../shared/rendering/renderer-utils";
+import { humanizeSlug, fixedGrantLines } from "../../../../shared/rendering/renderer-utils";
 
 /** Structural view of the class runtime entity (class.types.ts). */
 export interface ClassData {
@@ -452,7 +452,7 @@ export function renderProfsEquipment(host: HTMLElement, d: ClassData): void {
         row.createSpan({ cls: "pc-cb-eqtext", text: opt.label });
       });
     } else if (eq.kind === "fixed") {
-      const text = eq.label ?? eq.grants.map(grantLabel).join(", ");
+      const text = fixedGrantLines(eq);
       if (text) prop(host, "Equipment", text);
     } else {
       prop(host, "Gold", `${eq.amount} GP`);

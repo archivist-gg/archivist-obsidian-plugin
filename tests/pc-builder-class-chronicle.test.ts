@@ -440,6 +440,51 @@ describe("equipment & proficiencies fold", () => {
     expect(equipProp.textContent).toContain("Leather Armor");
     expect(equipProp.textContent).toContain("Dagger");
   });
+
+  // R4-G1a D5 / G9: the converter's passthrough grant keys on the Equipment prop.
+  /** The `Equipment` prop, located by its label (the fold HEADER also says "Equipment",
+   *  so a whole-root text assertion could not tell an absent prop from the header). */
+  const equipProp = (c: HTMLElement) => Array.from(c.querySelectorAll(".pc-cb-prop"))
+    .find((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment");
+
+  const mountWith = (startingEquipment: unknown[]) => {
+    const data = bardData();
+    data.starting_equipment = startingEquipment as never;
+    const c = mountContainer();
+    renderClassChronicle(c, mkCtx(), {
+      entity: { ...bardEntity(), data: data as unknown as Record<string, unknown> },
+      level: 1, mode: "browse", stateKey: "t",
+    });
+    openEquipment(c);
+    return c;
+  };
+
+  it("a fixed entry prefers display_name and still humanizes the undecorated slug beside it", () => {
+    const c = mountWith([{ kind: "fixed", grants: [
+      { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+      { item: "pouch", contains_value: 1500 },
+    ] }]);
+    expect(equipProp(c)!.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(equipProp(c)!.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array degrades with no throw: the entry after it still renders", () => {
+    // This fold renders inside a CLICK handler and jsdom does not propagate a
+    // listener's exception out of `click()`, so a bare `.not.toThrow()` here is
+    // VACUOUS (measured: it survives removing the Array.isArray guard). A second,
+    // well-formed entry after the degraded one is the observable: it only renders
+    // if the loop survived, and it is the ONLY Equipment prop if the first one
+    // really contributed no text.
+    const c = mountWith([
+      { kind: "fixed" },
+      { kind: "fixed", grants: [{ item: "dagger" }] },
+    ]);
+    const props = Array.from(c.querySelectorAll(".pc-cb-prop"))
+      .filter((p) => p.querySelector(".pc-cb-prop-l")!.textContent === "Equipment");
+    expect(props).toHaveLength(1);
+    expect(props[0].textContent).toContain("Dagger");
+  });
 });
 
 // ── Fix A: subclass granted features in the class card ────────────────────────

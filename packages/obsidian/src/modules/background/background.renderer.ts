@@ -5,7 +5,7 @@ import type {
   BackgroundLanguageProficiency,
 } from "@archivist-gg/dnd5e/background/background.types";
 import type { StartingEquipmentEntry } from "@archivist-gg/dnd5e/types/equipment-grant";
-import { el, createIconProperty, sourceBadgeText, grantLabel } from "../../shared/rendering/renderer-utils";
+import { el, createIconProperty, sourceBadgeText, fixedGrantLines } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
 /** Capitalize only the first letter of each whitespace-delimited word. Anchoring
@@ -45,7 +45,7 @@ function languageText(l: BackgroundLanguageProficiency): string {
  *  grants), or a gold amount. */
 function equipmentText(e: StartingEquipmentEntry): string {
   if (e.kind === "choice") return e.options.map((o) => o.label).join(" or ");
-  if (e.kind === "fixed") return e.label ?? e.grants.map(grantLabel).join(", ");
+  if (e.kind === "fixed") return fixedGrantLines(e);
   return `${e.amount} GP`;
 }
 

@@ -733,3 +733,30 @@ describe("D1 background-block expand persistence", () => {
     expect(expand.hidden).toBe(false);
   });
 });
+
+// R4-G1a D5 / G9: the converter's passthrough grant keys in the passive Background block.
+describe("PassiveFeaturesTab · the background block's fixed-entry Equipment text (R4-G1a D5, G9)", () => {
+  const withEquipment = (equipment: unknown[]): BackgroundEntity =>
+    ({ ...bg2024, equipment }) as unknown as BackgroundEntity;
+
+  it("prefers display_name and still humanizes the undecorated slug beside it", () => {
+    const c = mountContainer();
+    new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: withEquipment([
+      { kind: "fixed", grants: [
+        { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+        { item: "pouch", contains_value: 1500 },
+      ] },
+    ]) }));
+    expect(bgBlock(c)!.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(bgBlock(c)!.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array renders with no throw and no Equipment line", () => {
+    const c = mountContainer();
+    const bg = withEquipment([{ kind: "fixed" } as never]);
+    expect(() => new PassiveFeaturesTab().render(c, renderCtx([bgPlaceholderFeat], { background: bg })))
+      .not.toThrow();
+    expect(bgBlock(c)!.textContent).not.toContain("Equipment");
+  });
+});

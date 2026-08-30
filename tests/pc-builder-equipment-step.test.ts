@@ -556,3 +556,12 @@ describe("R4-P5b · the dead background limb and the no-bag disable", () => {
     expect(h.character.equipment.length).toBeGreaterThan(0);   // the gear half is unaffected
   });
 });
+
+// R4-G1a D5 / G9: the `fixed` branch of the live reconcile.
+describe("renderEquipmentStep · a fixed entry with no grants (R4-G1a D5, G9)", () => {
+  it("Starting mode: the reconcile runs with no throw and seeds nothing", () => {
+    const h = mountStep({ mode: "starting", startingEquipment: [{ kind: "fixed" }] });
+    expect(() => h.render()).not.toThrow();
+    expect(h.character.equipment).toHaveLength(0);
+  });
+});

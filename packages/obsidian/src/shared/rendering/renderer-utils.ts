@@ -19,12 +19,23 @@ export const humanizeSlug = (s: string): string =>
 export const humanizeToken = (s: string): string =>
   s.replace(/[-_]/g, " ").replace(/(^|[\s(])\w/g, (c) => c.toUpperCase());
 
-/** Display string for one starting-equipment grant (renderer-side preview only). */
-export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number }): string {
+/** Display string for one starting-equipment grant. `display_name` (the converter's display override) wins after
+ *  the gold test and before the category/item spellings (a gold grant cannot carry one). */
+export function grantLabel(g: { item?: string; category?: string; qty?: number; gold?: number; display_name?: string }): string {
   if (g.gold != null) return `${g.gold} GP`;
+  if (g.display_name) return g.qty && g.qty > 1 ? `${g.display_name} ×${g.qty}` : g.display_name;
   if (g.category) return `a ${humanizeSlug(g.category)}`;
   const name = humanizeSlug(g.item ?? "");
   return g.qty && g.qty > 1 ? `${name} ×${g.qty}` : name;
+}
+
+/** ONE spelling of a `kind:"fixed"` entry's text for the four surfaces that render it (background note, passive
+ *  block, builder background step, builder class chronicle): the label wins; else the grants joined by ", ";
+ *  a raw-cast entry with no grants array degrades to "" instead of throwing. */
+export function fixedGrantLines(entry: { label?: string; grants?: unknown }): string {
+  return entry.label ?? (Array.isArray(entry.grants)
+    ? (entry.grants as Parameters<typeof grantLabel>[0][]).map(grantLabel).join(", ")
+    : "");
 }
 
 /**

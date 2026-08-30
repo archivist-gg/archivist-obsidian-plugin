@@ -179,3 +179,42 @@ describe("backgroundModule.render (async block + catch path)", () => {
     expect(root.querySelector(".archivist-block-error")?.textContent).toContain("Acolyte");
   });
 });
+
+// R4-G1a D5 / G9: the converter's passthrough grant keys on the note's Equipment line.
+describe("renderBackgroundBlock · the fixed entry's Equipment text (R4-G1a D5, G9)", () => {
+  const withEquipment = (equipment: unknown[]): BackgroundEntity =>
+    ({ ...acolyte, equipment }) as unknown as BackgroundEntity;
+
+  /** The `Equipment:` icon-property line, located by its label. */
+  const equipLine = (root: HTMLElement) =>
+    Array.from(root.querySelectorAll(".archivist-property-line-icon"))
+      .find((l) => l.querySelector(".archivist-property-label")?.textContent === "Equipment:");
+
+  it("prefers display_name and still humanizes the undecorated slug beside it", async () => {
+    const root = mountContainer();
+    root.appendChild(await renderBackgroundBlock(withEquipment([
+      { kind: "fixed", grants: [
+        { item: "holy-symbol", display_name: "holy symbol (a gift to you when you entered the priesthood)" },
+        { item: "pouch", contains_value: 1500 },
+      ] },
+    ])));
+    await flush();
+    expect(root.textContent).toContain("holy symbol (a gift to you when you entered the priesthood)");
+    // The undecorated item arm humanizes its slug, so the rendered token is "Pouch".
+    expect(root.textContent).toContain("Pouch");
+  });
+
+  it("a fixed entry with no grants array renders with no throw and an empty Equipment value", async () => {
+    const root = mountContainer();
+    let block: HTMLElement | null = null;
+    // This surface does NOT drop the line: it gates on `equipment.length`, not on the
+    // joined text, so the label stays and only the value goes empty.
+    await expect(
+      (async () => { block = await renderBackgroundBlock(withEquipment([{ kind: "fixed" } as never])); })(),
+    ).resolves.toBeUndefined();
+    root.appendChild(block!);
+    await flush();
+    expect(equipLine(root)).toBeDefined();
+    expect(equipLine(root)!.querySelector(".archivist-property-value")!.textContent).toBe("");
+  });
+});
