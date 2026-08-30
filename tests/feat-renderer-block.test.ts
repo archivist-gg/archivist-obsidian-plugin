@@ -92,4 +92,19 @@ describe("renderFeatBlock", () => {
     );
     expect(root.textContent).toContain("High Elf");
   });
+
+  it("renders the seven R4-G1a prerequisite kinds as readable text (G8)", async () => {
+    const f = { ...feat, prerequisites: [
+      { kind: "feat", slug: "mark-of-shadow" }, { kind: "campaign", slug: "eberron" },
+      { kind: "exclusive-feat-category", slug: "D" }, { kind: "feature", slug: "fighting-style" },
+      { kind: "other", detail: "Level 4+, Dragonmark of Shadow" }, { kind: "feat-category", slug: "D" },
+      { kind: "background", slug: "acolyte" },
+    ] } as unknown as FeatEntity;
+    const root = mountContainer();
+    root.appendChild(await renderFeatBlock(f));
+    const t = root.textContent ?? "";
+    for (const s of ["Feat: Mark Of Shadow", "Campaign: Eberron", "No other Dragonmark feat", "Feature: Fighting Style",
+      "Level 4+, Dragonmark of Shadow", "A Dragonmark feat", "Background: Acolyte"]) expect(t).toContain(s);
+    expect(t).not.toContain("No other D feat");
+  });
 });

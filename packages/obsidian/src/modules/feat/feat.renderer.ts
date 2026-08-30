@@ -1,5 +1,6 @@
 import type { App, Component } from "obsidian";
 import type { FeatEntity, FeatPrerequisite } from "@archivist-gg/dnd5e/feat/feat.types";
+import { featCategoryLabel } from "@archivist-gg/dnd5e/feat/feat.category-codes";
 import { el, createIconProperty, sourceBadgeText } from "../../shared/rendering/renderer-utils";
 import { renderMarkdownDescription } from "../../shared/rendering/markdown-description";
 
@@ -37,6 +38,13 @@ function prereqText(p: FeatPrerequisite): string {
     case "proficiency": return `${labelCase(p.proficiency_type)} proficiency: ${labelCase(p.value)}`;
     case "race": return slugName(p.slug);
     case "class": return slugName(p.slug);
+    case "feat": return `Feat: ${slugName(p.slug)}`;
+    case "campaign": return `Campaign: ${slugName(p.slug)}`;
+    case "exclusive-feat-category": return `No other ${featCategoryLabel(p.slug)} feat`;
+    case "feature": return `Feature: ${slugName(p.slug)}`;
+    case "other": return p.detail;
+    case "feat-category": return `A ${featCategoryLabel(p.slug)} feat`;
+    case "background": return `Background: ${slugName(p.slug)}`;
   }
 }
 

@@ -72,6 +72,20 @@ describe("optionalFeatureEntitySchema", () => {
     expect(optionalFeatureEntitySchema.safeParse(bad).success).toBe(false);
   });
 
+  it("keeps the level prerequisite's named class ref, including visible_stats (R4-G1a D4)", () => {
+    const withNamedRef = {
+      ...minimalInvocation,
+      prerequisites: [{ kind: "level", min: 2, class: { name: "Warlock", source: "XPHB", visible_stats: true } }],
+    };
+    const parsed = optionalFeatureEntitySchema.safeParse(withNamedRef);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.prerequisites[0]).toEqual({
+      kind: "level",
+      min: 2,
+      class: { name: "Warlock", source: "XPHB", visible_stats: true },
+    });
+  });
+
   it("rejects level prerequisite missing min", () => {
     const bad = { ...minimalInvocation, prerequisites: [{ kind: "level" }] };
     expect(optionalFeatureEntitySchema.safeParse(bad).success).toBe(false);
