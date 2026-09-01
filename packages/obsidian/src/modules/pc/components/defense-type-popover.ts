@@ -1,9 +1,12 @@
 import type { ComponentRenderContext } from "./component.types";
 import type { CharacterEditState } from "../pc.edit-state";
+import type { PCServices } from "../pc.services";
 import type { DefenseEntry } from "@archivist-gg/dnd5e/pc/pc.types";
 import { DAMAGE_TYPES } from "@archivist-gg/dnd5e/dnd/constants";
-import { CONDITION_SLUGS, CONDITION_DISPLAY_NAMES } from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { CONDITION_SLUGS } from "@archivist-gg/dnd5e/pc/conditions.constants";
 import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
+import { buildConditionLabelMap, conditionDisplayName } from "../condition-labels";
+import { hiddenCompendiumSet } from "../../../shared/entities/compendium-visibility";
 import { clampPopoverToViewport } from "./popover-utils";
 import {
   cycleAction,
@@ -278,8 +281,18 @@ export function openDefenseTypePopover(
     // row to a shipped picker, which this change is not allowed to do (it is protective, not
     // corrective), and it would offer a LEVEL-based condition as a boolean immunity. So the
     // conditions union widens only by what `derived.condition_immunities` actually holds.
+    // One registry scan per repaint, off THIS repaint's ctx. The cast is not
+    // cosmetic: several sheet render paths hand components a ctx whose
+    // `services` is absent or partial, and `buildConditionLabelMap` is
+    // fail-open on exactly that (see condition-labels.ts) — an empty map
+    // reproduces the retired `CONDITION_DISPLAY_NAMES` spellings byte for byte.
+    const services = c.services as Partial<PCServices> | undefined;
+    const conditionLabels = buildConditionLabelMap(
+      services?.entities,
+      hiddenCompendiumSet(services?.plugin?.settings),
+    );
     const conditionOptions = unionDefenseOptions(
-      CONDITION_SLUGS.map((s) => ({ slug: s, display: CONDITION_DISPLAY_NAMES[s] })),
+      CONDITION_SLUGS.map((s) => ({ slug: s, display: conditionDisplayName(s, conditionLabels) })),
       [c.derived.defenses?.condition_immunities],
     );
 

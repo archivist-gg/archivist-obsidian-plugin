@@ -30,10 +30,8 @@ import { DefensesConditionsPanel } from "../packages/obsidian/src/modules/pc/com
 import { CharacterEditState } from "../packages/obsidian/src/modules/pc/pc.edit-state";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
 import { DAMAGE_TYPES, CONDITIONS } from "@archivist-gg/dnd5e/dnd/constants";
-import {
-  CONDITION_SLUGS,
-  CONDITION_DISPLAY_NAMES,
-} from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { CONDITION_SLUGS } from "@archivist-gg/dnd5e/pc/conditions.constants";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
 import { toDefenseSlug } from "@archivist-gg/dnd5e/pc/pc.defense-normalize";
 import { FIGHTER_5_CLERIC_3, clone, fakeResolved, fakeDerived } from "./fixtures/pc/rest-fixtures";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
@@ -44,6 +42,31 @@ afterEach(() => {
   closeDefenseTypePopover();
   clampCalls.length = 0;
 });
+
+/**
+ * The 14 shipped condition spellings, LOCAL to this file. Until R4-G2 Task 6
+ * they were imported from dnd5e's `CONDITION_DISPLAY_NAMES`, which is now
+ * retired: labels come from the registered `condition` entity, and this table
+ * is what every surface must STILL show when the ctx carries no registry — the
+ * `titleCase(slug)` fallback. Copied verbatim off the retired table so it stays
+ * an independent witness instead of a re-derivation of the code under test.
+ */
+const EXPECTED_CONDITION_LABELS: Record<string, string> = {
+  blinded: "Blinded",
+  charmed: "Charmed",
+  deafened: "Deafened",
+  frightened: "Frightened",
+  grappled: "Grappled",
+  incapacitated: "Incapacitated",
+  invisible: "Invisible",
+  paralyzed: "Paralyzed",
+  petrified: "Petrified",
+  poisoned: "Poisoned",
+  prone: "Prone",
+  restrained: "Restrained",
+  stunned: "Stunned",
+  unconscious: "Unconscious",
+};
 
 type Derived = ComponentRenderContext["derived"];
 type DefenseEntry = Derived["defenses"]["resistances"][number];
@@ -231,12 +254,14 @@ describe("defense popover — structure", () => {
     }
   });
 
-  it("displays condition rows by their CONDITION_DISPLAY_NAMES label", () => {
+  it("displays every condition row by its entity-backed label (registry-less fallback)", () => {
     const { ctx, anchor } = withDefenses();
     openDefenseTypePopover(anchor, ctx);
-    expect(conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent).toBe(
-      CONDITION_DISPLAY_NAMES.charmed,
-    );
+    // All 14, not just charmed: the fallback is a per-slug transform now, so one
+    // sample could pass while another slug's spelling drifted.
+    for (const [slug, expected] of Object.entries(EXPECTED_CONDITION_LABELS)) {
+      expect(conditionRow(slug).querySelector(".pc-def-popover-name")?.textContent).toBe(expected);
+    }
   });
 });
 
@@ -561,7 +586,8 @@ describe("defense popover · the option list is a KEYED union (Task 8)", () => {
     });
     openDefenseTypePopover(anchor, ctx);
     expect(condRows()).toHaveLength(CONDITION_SLUGS.length);
-    // Display stays CONDITION_DISPLAY_NAMES' spelling, not the derived label.
+    // Display stays the canonical condition-entity spelling (here its
+    // registry-less `titleCase` fallback), not the derived label.
     expect(conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent).toBe("Charmed");
   });
 
@@ -943,5 +969,225 @@ describe("defense popover — viewport clamp", () => {
     const popover = getPopover();
     const rect = popover.getBoundingClientRect();
     expect(rect.right).toBeLessThanOrEqual(1016);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R4-G2 Task 6 · entity-backed labels + the tooltip append (spec §6, floor §11.6)
+// ---------------------------------------------------------------------------
+
+/** A condition entity as the vault registers it: `data` is the fenced
+ *  code-block payload, so `description` is a real key on it. */
+function conditionEntity(slug: string, name: string, description = "", compendium = "SRD 2024") {
+  return {
+    slug,
+    name,
+    entityType: "condition",
+    compendium,
+    data: { slug, name, edition: "2024", source: "SRD 5.2", description },
+  };
+}
+
+/**
+ * A sheet ctx with a REAL `EntityRegistry` behind `services.entities` (never an
+ * ad-hoc `search` stub) and the plugin's real `hiddenCompendiums` shape behind
+ * `services.plugin.settings`.
+ */
+function sheetCtx(p: {
+  entities?: Parameters<typeof buildMockRegistry>[0];
+  hiddenCompendiums?: string[];
+  conditions?: string[];
+  exhaustion?: number;
+  condition_immunities?: DefenseSeed[];
+  effects?: Array<{ condition: string; effects: string[] }>;
+} = {}): ComponentRenderContext {
+  const character = clone(FIGHTER_5_CLERIC_3);
+  // Annotated, not inferred: `fakeResolved` returns `as never`, which is
+  // assignable everywhere but has no readable properties.
+  const resolved: ComponentRenderContext["resolved"] = fakeResolved(character);
+  resolved.state.conditions = (p.conditions ?? []) as never;
+  resolved.state.exhaustion = p.exhaustion ?? 0;
+  const derived = fakeDerived(character) as Derived;
+  derived.defenses = {
+    resistances: ents([]), immunities: ents([]), vulnerabilities: ents([]),
+    condition_immunities: ents(p.condition_immunities ?? []),
+  };
+  (derived as { conditionEffects?: unknown }).conditionEffects =
+    p.effects === undefined ? undefined : ({ sources: p.effects } as never);
+  return {
+    resolved,
+    derived,
+    services: {
+      entities: buildMockRegistry(p.entities ?? []),
+      plugin: { settings: { hiddenCompendiums: p.hiddenCompendiums ?? [] } },
+    } as never,
+    app: {} as App,
+    editState: null,
+  };
+}
+
+function renderPanel(ctx: ComponentRenderContext): HTMLElement {
+  const root = mountContainer();
+  new DefensesConditionsPanel().render(root, ctx);
+  return root;
+}
+
+function condChipLabels(root: HTMLElement): (string | null)[] {
+  // `Array.from`, not a spread: this file's tsconfig has no DOM.Iterable, so a
+  // NodeList spread is a tsc error (the file carries 8 of them already · TS2488).
+  return Array.from(
+    root.querySelectorAll(".pc-cond-chip:not(.pc-cond-chip-exhaustion) .pc-cond-chip-label"),
+  ).map((n) => n.textContent);
+}
+
+describe("condition labels come from the registered entity", () => {
+  it("the picker row shows the ENTITY name, not the title-cased slug", () => {
+    const ctx = withDefenses().ctx;
+    (ctx as { services: unknown }).services = {
+      entities: buildMockRegistry([conditionEntity("srd-2024_condition_charmed", "Charmed (2024 text)")]),
+      plugin: { settings: { hiddenCompendiums: [] } },
+    };
+    openDefenseTypePopover(anchorAt(0, 0), ctx);
+    const shown = conditionRow("charmed").querySelector(".pc-def-popover-name")?.textContent;
+    expect(shown).toBe("Charmed (2024 text)");
+    expect(shown).not.toBe(EXPECTED_CONDITION_LABELS.charmed);
+  });
+
+  it("the PC condition chip shows the ENTITY name", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      entities: [conditionEntity("srd-2024_condition_prone", "Prone (2024 text)")],
+    }));
+    expect(condChipLabels(root)).toEqual(["Prone (2024 text)"]);
+  });
+
+  it("a hidden compendium's copy loses to a visible one", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      hiddenCompendiums: ["SRD 5e"],
+      entities: [
+        conditionEntity("srd-5e_condition_prone", "Alpha Prone", "", "SRD 5e"),
+        conditionEntity("srd-2024_condition_prone", "Zulu Prone", "", "SRD 2024"),
+      ],
+    }));
+    expect(condChipLabels(root)).toEqual(["Zulu Prone"]);
+  });
+
+  it("with NO condition entities registered, all 14 chips keep the retired spellings", () => {
+    const root = renderPanel(sheetCtx({ conditions: Object.keys(EXPECTED_CONDITION_LABELS) }));
+    expect(condChipLabels(root)).toEqual(Object.values(EXPECTED_CONDITION_LABELS));
+  });
+});
+
+describe("the exhaustion chip label · parity with the inline literal it replaces", () => {
+  it("renders `Exhaustion 3` with no registry, exactly as the literal did", () => {
+    const root = renderPanel(sheetCtx({ exhaustion: 3 }));
+    expect(root.querySelector(".pc-cond-chip-exhaustion .pc-cond-chip-label")?.textContent)
+      .toBe("Exhaustion 3");
+  });
+
+  it("takes the registered Exhaustion entity's name when one is present", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 2,
+      entities: [conditionEntity("srd-2024_condition_exhaustion", "Weariness")],
+    }));
+    expect(root.querySelector(".pc-cond-chip-exhaustion .pc-cond-chip-label")?.textContent)
+      .toBe("Weariness 2");
+  });
+});
+
+describe("the condition-immunity chip stays NON-total (spec §6's stated exception)", () => {
+  it("an OUT-OF-VOCABULARY immunity keeps its authored label, never a title-cased slug", () => {
+    const root = renderPanel(sheetCtx({
+      condition_immunities: [{ value: "bewildered", label: "BEWILDERED!!", origin: "grant" }],
+    }));
+    const chip = root.querySelector('.pc-def-cond-left .pc-def-chip[data-type="bewildered"]');
+    expect(chip?.querySelector(".pc-def-chip-label")?.textContent).toBe("BEWILDERED!!");
+    // What `conditionDisplayName` would have produced · the substitution this
+    // site must not make.
+    expect(chip?.querySelector(".pc-def-chip-label")?.textContent).not.toBe("Bewildered");
+  });
+
+  it("an IN-VOCABULARY immunity takes the registered entity name over the authored label", () => {
+    const root = renderPanel(sheetCtx({
+      condition_immunities: [{ value: "charmed", label: "CHARMED", origin: "grant" }],
+      entities: [conditionEntity("srd-2024_condition_charmed", "Charmed")],
+    }));
+    expect(
+      root.querySelector('.pc-def-cond-left .pc-def-chip[data-type="charmed"] .pc-def-chip-label')
+        ?.textContent,
+    ).toBe("Charmed");
+  });
+});
+
+describe("chip tooltips append the entity's authored first paragraph", () => {
+  const PRONE_DESC = "While you have the Prone condition, you experience the following effects.\n\n**Speed 0.** Your Speed is 0.";
+  const EXH_DESC = "Exhaustion is measured in six levels.\n\n| Level | Effect |";
+
+  function tip(root: HTMLElement, selector: string): string | null {
+    return root.querySelector(selector)?.getAttribute("aria-label") ?? null;
+  }
+
+  it("condition chip: engine lines first, the authored paragraph under them", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      effects: [{ condition: "prone", effects: ["Disadvantage on attack rolls"] }],
+      entities: [conditionEntity("srd-2024_condition_prone", "Prone", PRONE_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)")).toBe(
+      "Disadvantage on attack rolls\n\nWhile you have the Prone condition, you experience the following effects.",
+    );
+  });
+
+  it("condition chip: the authored paragraph ALONE when the engine produced no lines", () => {
+    // Today's guard sets NO tooltip in this case · Gate 2 I-9.
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      entities: [conditionEntity("srd-2024_condition_prone", "Prone", PRONE_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)")).toBe(
+      "While you have the Prone condition, you experience the following effects.",
+    );
+  });
+
+  it("condition chip: an UNRESOLVABLE entity leaves the engine-only tooltip unchanged", () => {
+    const root = renderPanel(sheetCtx({
+      conditions: ["prone"],
+      effects: [{ condition: "prone", effects: ["Disadvantage on attack rolls"] }],
+    }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)"))
+      .toBe("Disadvantage on attack rolls");
+  });
+
+  it("condition chip: no entity and no engine lines still means NO tooltip", () => {
+    const root = renderPanel(sheetCtx({ conditions: ["prone"] }));
+    expect(tip(root, ".pc-cond-chip:not(.pc-cond-chip-exhaustion)")).toBeNull();
+  });
+
+  it("exhaustion chip: its own branch appends the same way", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 4,
+      effects: [{ condition: "exhaustion", effects: ["Hit point maximum halved"] }],
+      entities: [conditionEntity("srd-2024_condition_exhaustion", "Exhaustion", EXH_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip-exhaustion")).toBe(
+      "Hit point maximum halved\n\nExhaustion is measured in six levels.",
+    );
+  });
+
+  it("exhaustion chip: the authored paragraph ALONE when the engine produced no lines", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 1,
+      entities: [conditionEntity("srd-2024_condition_exhaustion", "Exhaustion", EXH_DESC)],
+    }));
+    expect(tip(root, ".pc-cond-chip-exhaustion")).toBe("Exhaustion is measured in six levels.");
+  });
+
+  it("exhaustion chip: unresolvable entity leaves the engine-only tooltip unchanged", () => {
+    const root = renderPanel(sheetCtx({
+      exhaustion: 6,
+      effects: [{ condition: "exhaustion", effects: ["Death"] }],
+    }));
+    expect(tip(root, ".pc-cond-chip-exhaustion")).toBe("Death");
   });
 });

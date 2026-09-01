@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { DefensesConditionsPanel } from "../packages/obsidian/src/modules/pc/components/defenses-conditions-panel";
 import { installObsidianDomHelpers, mountContainer } from "./fixtures/pc/dom-helpers";
+import { buildMockRegistry } from "./fixtures/pc/mock-entity-registry";
+import type { EntityRegistry } from "@archivist-gg/core";
 import type { ComponentRenderContext } from "../packages/obsidian/src/modules/pc/components/component.types";
 
 beforeAll(() => installObsidianDomHelpers());
@@ -33,6 +35,23 @@ function ent(value: string, label: string, origin: DefenseOrigin = "grant"): Def
   return { value, label, origin };
 }
 
+/** R4-G2 Task 6: chip labels come from the registered `condition` entity, not
+ *  from a table in the engine, so a fixture that asserts a display spelling has
+ *  to install the entity that carries it — exactly as a real vault does. Only
+ *  the three this file names are registered; anything else falls back to
+ *  `titleCase(slug)`, which is the retired table's spelling anyway. */
+function conditionRegistry(): EntityRegistry {
+  return buildMockRegistry(
+    [["charmed", "Charmed"], ["prone", "Prone"], ["poisoned", "Poisoned"]].map(([bare, name]) => ({
+      slug: `srd-2024_condition_${bare}`,
+      entityType: "condition",
+      name,
+      compendium: "SRD 2024",
+      data: { slug: `srd-2024_condition_${bare}`, name, edition: "2024", source: "SRD 5.2", description: "" },
+    })),
+  );
+}
+
 function ctx(p: { defenses?: Defenses; conditions?: string[]; exhaustion?: number; editState?: unknown } = {}): ComponentRenderContext {
   return {
     derived: {
@@ -41,6 +60,7 @@ function ctx(p: { defenses?: Defenses; conditions?: string[]; exhaustion?: numbe
       },
     },
     resolved: { state: { conditions: p.conditions ?? [], exhaustion: p.exhaustion ?? 0 } },
+    services: { entities: conditionRegistry(), plugin: { settings: { hiddenCompendiums: [] } } },
     editState: p.editState,
   } as unknown as ComponentRenderContext;
 }

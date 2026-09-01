@@ -16,6 +16,7 @@ import * as path from "node:path";
 import { parseArmor } from "@archivist-gg/dnd5e/armor/armor.parser";
 import { parseBackground } from "@archivist-gg/dnd5e/background/background.parser";
 import { parseClass } from "@archivist-gg/dnd5e/class/class.parser";
+import { parseCondition } from "@archivist-gg/dnd5e/condition/condition.parser";
 import { parseFeat } from "@archivist-gg/dnd5e/feat/feat.parser";
 import { parseItem } from "@archivist-gg/dnd5e/item/item.parser";
 import { parseMonster } from "@archivist-gg/dnd5e/monster/monster.parser";
@@ -37,6 +38,7 @@ const PARSER_MAP: Record<string, ParseFn> = {
   armor: parseArmor,
   background: parseBackground,
   class: parseClass,
+  condition: parseCondition,
   feat: parseFeat,
   item: parseItem,
   monster: parseMonster,
@@ -45,13 +47,13 @@ const PARSER_MAP: Record<string, ParseFn> = {
   spell: parseSpell,
   subclass: parseSubclass,
   weapon: parseWeapon,
-  // condition: no runtime parser exists in dnd5e at all (no src/condition/,
-  // no parseCondition). Lang-gated via SKIPPED_LANGS below, NOT env-gated.
-  // R4-P2a ruling: keep the skip; a condition parser is a feature, out of
-  // arc scope. See the per-edition corpus assertion below.
 };
 
-const SKIPPED_LANGS = new Set<string>(["condition"]);
+// R4-G2 Task 4 shipped `src/condition/` in dnd5e, so `condition` moved out of
+// this set and into PARSER_MAP above · per the guard below, a lang may not sit
+// in both. The set stays (empty) because it is the declared escape hatch for a
+// future lang the bundle emits before its parser exists.
+const SKIPPED_LANGS = new Set<string>([]);
 
 // Sanity: PARSER_MAP and SKIPPED_LANGS must not overlap.
 for (const lang of SKIPPED_LANGS) {
@@ -105,9 +107,10 @@ describe("MD-through-parser: every emitted bundle MD parses with its runtime par
     expect(entries.length).toBeGreaterThan(2500);
   });
 
-  // The `condition` corpus is deliberately skipped (SKIPPED_LANGS) because no
-  // runtime parser exists. That skip is silent if the corpus itself vanishes, so
-  // assert per edition that it is still there. Measured 2026-07-28: 15 and 15.
+  // The `condition` corpus now routes through `parseCondition` like every other
+  // lang. This assertion predates that and still earns its place: the per-file
+  // `parses …` cases are generated FROM the walk, so a corpus that vanished
+  // would produce no failing case at all. Measured 2026-07-28: 15 and 15.
   // Catches removal, a lang change, and a directory rename. Does NOT catch
   // per-file re-slugging: walkBundle keys on codeblock lang, not on path.
   // Both editions are counted BEFORE asserting so one empty edition cannot mask

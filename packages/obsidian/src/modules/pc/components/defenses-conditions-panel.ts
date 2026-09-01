@@ -7,7 +7,14 @@ import {
   type DefenseKind,
 } from "./defense-type-popover";
 import { setConditionIcon, setExhaustionIcon } from "../assets/condition-icons";
-import { CONDITION_DISPLAY_NAMES, type ConditionSlug } from "@archivist-gg/dnd5e/pc/conditions.constants";
+import type { PCServices } from "../pc.services";
+import {
+  buildConditionEntityMap,
+  conditionDisplayName,
+  conditionLabelMapFrom,
+  conditionTooltipParagraph,
+} from "../condition-labels";
+import { hiddenCompendiumSet } from "../../../shared/entities/compendium-visibility";
 
 const DEFENSE_ROWS: ReadonlyArray<[label: string, key: DefenseKind]> = [
   ["Damage Resistances", "resistances"],
@@ -15,6 +22,18 @@ const DEFENSE_ROWS: ReadonlyArray<[label: string, key: DefenseKind]> = [
   ["Damage Vulnerabilities", "vulnerabilities"],
   ["Condition Immunities", "condition_immunities"],
 ];
+
+/**
+ * The chip tooltip: engine-computed lines first, the condition entity's authored
+ * first paragraph under them (spec §6). One expression covers all three cases —
+ * lines only (byte-identical to what shipped), lines + authored, and authored
+ * ALONE when the engine produced no lines at all, which is the case today's
+ * guard left with no tooltip whatsoever (Gate 2 I-9). Empty result means the
+ * caller sets no tooltip, so an unresolvable entity leaves behaviour unchanged.
+ */
+function conditionChipTooltip(effects: readonly string[], authored: string): string {
+  return [effects.join("\n"), authored].filter((part) => part.length > 0).join("\n\n");
+}
 
 /**
  * Merged Defenses + Conditions panel.
@@ -29,6 +48,20 @@ export class DefensesConditionsPanel implements SheetComponent {
 
   render(el: HTMLElement, ctx: ComponentRenderContext): void {
     const panel = el.createDiv({ cls: "pc-panel pc-def-cond" });
+
+    // ONE `search("", "condition", ∞)` for the whole render pass: the chips need
+    // both the entity NAME (labels) and its authored `description` (tooltips),
+    // so the entity map is built once and the label map derived from it. The
+    // cast is not cosmetic: several sheet render paths hand components a ctx
+    // whose `services` is absent or partial, and the builder is fail-open on
+    // exactly that (see condition-labels.ts) — an empty map reproduces the
+    // retired `CONDITION_DISPLAY_NAMES` spellings byte for byte.
+    const services = ctx.services as Partial<PCServices> | undefined;
+    const conditionEntities = buildConditionEntityMap(
+      services?.entities,
+      hiddenCompendiumSet(services?.plugin?.settings),
+    );
+    const conditionLabels = conditionLabelMapFrom(conditionEntities);
 
     // ─── Left pane: DEFENSES ───────────────────────────────────────
     const left = panel.createDiv({ cls: "pc-def-cond-left" });
@@ -86,10 +119,16 @@ export class DefensesConditionsPanel implements SheetComponent {
           const chip = row.createSpan({ cls: "pc-def-chip", attr: { "data-type": entry.value } });
           if (entry.origin !== "manual") chip.addClass("granted");
           // `value` is canonical (toDefenseSlug); `label` is the first-spelling-wins
-          // authored display string. Condition immunities get the PascalCase label
-          // table, keyed on the canonical value, and fall back to the authored label.
+          // authored display string. Condition immunities get the registered
+          // condition entity's name, keyed on the canonical value, and fall back to
+          // the authored label.
+          // DELIBERATELY NON-TOTAL (spec §6's stated exception): this is the one
+          // site that must NOT use `conditionDisplayName`. Its fallback is the
+          // AUTHORED label, because an out-of-vocabulary condition immunity
+          // ("Bewildered") carries a real authored spelling that a title-cased slug
+          // would silently replace.
           const displayText = key === "condition_immunities"
-            ? (CONDITION_DISPLAY_NAMES[entry.value as ConditionSlug] ?? entry.label)
+            ? (conditionLabels.get(entry.value) ?? entry.label)
             : entry.label;
           chip.createSpan({ cls: "pc-def-chip-label", text: displayText });
           if (ctx.editState) {
@@ -135,13 +174,19 @@ export class DefensesConditionsPanel implements SheetComponent {
         const chip = body.createSpan({ cls: "pc-cond-chip pc-cond-chip-exhaustion" });
         const iconWrap = chip.createSpan({ cls: "pc-cond-chip-icon" });
         setExhaustionIcon(iconWrap);
-        chip.createSpan({ cls: "pc-cond-chip-label", text: `Exhaustion ${exhaustion}` });
-        if (ce) {
-          const source = ce.sources.find((s) => s.condition === "exhaustion");
-          if (source && source.effects.length > 0) {
-            setTooltip(chip, source.effects.join("\n"));
-          }
-        }
+        // Exhaustion is a 15th condition ENTITY (it never lived in the retired
+        // table, whose 14 slugs are the boolean vocabulary), so its label comes
+        // from the same map. Parity baseline is the inline literal this replaces:
+        // `Exhaustion ${exhaustion}`.
+        chip.createSpan({
+          cls: "pc-cond-chip-label",
+          text: `${conditionDisplayName("exhaustion", conditionLabels)} ${exhaustion}`,
+        });
+        const exhaustionTip = conditionChipTooltip(
+          ce?.sources.find((s) => s.condition === "exhaustion")?.effects ?? [],
+          conditionTooltipParagraph(conditionEntities.get("exhaustion")),
+        );
+        if (exhaustionTip.length > 0) setTooltip(chip, exhaustionTip);
         if (ctx.editState) {
           chip.addEventListener("click", () => openConditionsPopover(addBtn, ctx));
         }
@@ -150,13 +195,12 @@ export class DefensesConditionsPanel implements SheetComponent {
         const chip = body.createSpan({ cls: "pc-cond-chip" });
         const iconWrap = chip.createSpan({ cls: "pc-cond-chip-icon" });
         setConditionIcon(iconWrap, c);
-        chip.createSpan({ cls: "pc-cond-chip-label", text: CONDITION_DISPLAY_NAMES[c] });
-        if (ce) {
-          const source = ce.sources.find((s) => s.condition === c);
-          if (source && source.effects.length > 0) {
-            setTooltip(chip, source.effects.join("\n"));
-          }
-        }
+        chip.createSpan({ cls: "pc-cond-chip-label", text: conditionDisplayName(c, conditionLabels) });
+        const chipTip = conditionChipTooltip(
+          ce?.sources.find((s) => s.condition === c)?.effects ?? [],
+          conditionTooltipParagraph(conditionEntities.get(c)),
+        );
+        if (chipTip.length > 0) setTooltip(chip, chipTip);
         if (ctx.editState) {
           const x = chip.createSpan({ cls: "pc-cond-chip-x", text: "×" });
           x.addEventListener("click", (e) => {

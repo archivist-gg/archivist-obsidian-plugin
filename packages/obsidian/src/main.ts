@@ -13,6 +13,7 @@ import { optionalFeatureModule } from "./modules/optional-feature/optional-featu
 import { pcModule } from "./modules/pc/pc.module";
 import { armorModule } from "./modules/armor/armor.module";
 import { weaponModule } from "./modules/weapon/weapon.module";
+import { conditionModule } from "./modules/condition/condition.module";
 
 import { parseInlineTag } from "@archivist-gg/dnd5e/inline-tag-parser";
 import { renderInlineTag } from "./shared/rendering/inline-tag-renderer";
@@ -115,12 +116,12 @@ export default class ArchivistPlugin extends Plugin {
       notify: makeNoticeSink(),
     });
 
-    // The 11 entity presenters: how each authored type is DRAWN. Keyed by
+    // The 12 entity presenters: how each authored type is DRAWN. Keyed by
     // `type` into the presenter map the shared dispatch reads (D3/D4).
     const presenterList: EntityPresenter[] = [
       monsterModule, spellModule, itemModule, classModule, raceModule,
       subclassModule, backgroundModule, featModule, optionalFeatureModule,
-      armorModule, weaponModule,
+      armorModule, weaponModule, conditionModule,
     ];
     this.presenters = new Map(presenterList.map((p) => [p.type, p]));
 
@@ -477,7 +478,7 @@ export default class ArchivistPlugin extends Plugin {
         // Delegate to the presenter's edit-mode renderer. The presenter reads
         // `plugin` / `ctx` from the EditContext and invokes `onExit` when it
         // needs to restore the view-mode render without a content change
-        // (e.g. cancel with no edits). Only monster/spell/item define it.
+        // (e.g. cancel with no edits). Only monster/spell/item/condition define it.
         pres.renderEditMode?.(el, codecResult.data, {
           plugin: this,
           ctx,

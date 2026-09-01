@@ -33,7 +33,7 @@ export type ModalConstructor = new (app: App, editor: Editor) => { open(): void 
  * (view render, edit-mode UI, insert modal). Parsing is the kernel's job —
  * a presenter never parses. `type` is simultaneously the code-block language,
  * the compendium entityType, and the insert-command suffix (verified identical
- * for all 11 authored types).
+ * for all 12 authored types).
  */
 export interface EntityPresenter {
   type: string;
