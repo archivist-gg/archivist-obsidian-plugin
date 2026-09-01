@@ -113,7 +113,8 @@ export class CompendiumEditorSuggest extends EditorSuggest<RegisteredEntity> {
 
   /** The untyped pool, lazily: `getAllSlugs()` order resolved through the O(1)
    *  `getBySlug()`. Identical to what core's untyped `search` enumerates, and it
-   *  materialises nothing. */
+   *  never materialises the entities or sorts them (the slug set itself is one
+   *  O(n) allocation from `getAllSlugs()`). */
   private *allEntities(): Generator<RegisteredEntity> {
     for (const slug of this.registry.getAllSlugs()) {
       const entity = this.registry.getBySlug(slug);
